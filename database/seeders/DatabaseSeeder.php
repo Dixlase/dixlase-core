@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -17,7 +16,7 @@ class DatabaseSeeder extends Seeder
             UsersTableSeeder::class,
             AdminsTableSeeder::class,
             ApplicationsTableSeeder::class,
-            ApplicationDetailTableSeeder::class,
+            ApplicationDetailsTableSeeder::class,
             EventsTableSeeder::class,
             EventSortsTableSeeder::class,
             EventTimetablesTableSeeder::class,
