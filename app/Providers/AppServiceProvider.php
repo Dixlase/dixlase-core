@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use Config;
 use Illuminate\Support\ServiceProvider;
+use URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -17,8 +19,17 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(): void
+    /*
+    public function boot()
     {
-        //
+        URL::forceScheme('https');
+    }
+    */
+
+    public function boot()
+    {
+        //$this->app['request']->server->set('HTTPS', true);
+        //URL::forceRootUrl(Config::get('app.url'));// ルートURLを設定
+        //$url->forceScheme('https');
     }
 }
