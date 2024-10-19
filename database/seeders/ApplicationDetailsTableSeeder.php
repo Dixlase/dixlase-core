@@ -4,8 +4,9 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\ApplicationDetail;
 
-class ApplicationDetailTableSeeder extends Seeder
+class ApplicationDetailsTableSeeder extends Seeder
 {
     /**
      * Run the database seeds.

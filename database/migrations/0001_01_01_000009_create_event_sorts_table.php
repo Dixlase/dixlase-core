@@ -18,7 +18,7 @@ class CreateEventSortsTable extends Migration
     {
         Schema::create($this->table, function (Blueprint $table) {
             $table->id();
-            $table->integer('schedule_id');
+            $table->integer('event_id');
             $table->string('timetable_ids');
             $table->smallInteger("created_by")->nullable();
             $table->smallInteger("edited_by")->nullable();
