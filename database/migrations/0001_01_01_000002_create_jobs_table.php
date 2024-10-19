@@ -9,9 +9,12 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
+
+    protected $table = 'jobs';
+
     public function up(): void
     {
-        Schema::create('jobs', function (Blueprint $table) {
+        Schema::create($this->table, function (Blueprint $table) {
             $table->id();
             $table->string('queue')->index();
             $table->longText('payload');
