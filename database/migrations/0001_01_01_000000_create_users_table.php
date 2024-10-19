@@ -9,9 +9,12 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
+
+    protected $table = 'users';
+
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create($this->table, function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
