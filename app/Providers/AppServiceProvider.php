@@ -27,7 +27,6 @@
 
 
 
-
 namespace App\Providers;
 
 use Config;
