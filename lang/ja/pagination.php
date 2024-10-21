@@ -20,19 +20,20 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace Database\Seeders;
+return [
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use App\Models\SlotCategory;
+    /*
+    |--------------------------------------------------------------------------
+    | ページネーション言語行
+    |--------------------------------------------------------------------------
+    |
+    | 以下の言語行は、ページネーターライブラリによってシンプルなページネーションリンクを
+    | 構築するために使用されます。これらは自由に変更し、ビューに合わせてカスタマイズする
+    | ことができます。
+    |
+    */
 
-class SlotCategoriesTableSeeder extends Seeder
-{
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
-    {
-        //
-    }
-}
+    'previous' => '&laquo; 前へ',
+    'next' => '次へ &raquo;',
+
+];

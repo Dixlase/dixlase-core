@@ -20,19 +20,20 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace Database\Seeders;
+return [
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use App\Models\SlotCategory;
+    /*
+    |--------------------------------------------------------------------------
+    | 認証言語行
+    |--------------------------------------------------------------------------
+    |
+    | 以下の言語行は、認証中にさまざまなメッセージをユーザーに表示するために使用されます。
+    | これらの言語行は、アプリケーションの要件に応じて自由に変更できます。
+    |
+    */
 
-class SlotCategoriesTableSeeder extends Seeder
-{
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
-    {
-        //
-    }
-}
+    'failed' => 'これらの認証情報は記録と一致しません。',
+    'password' => '提供されたパスワードが正しくありません。',
+    'throttle' => 'ログイン試行が多すぎます。:seconds 秒後に再試行してください。',
+
+];
