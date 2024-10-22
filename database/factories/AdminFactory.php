@@ -20,25 +20,34 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Controllers\Admin\Auth;
+namespace Database\Factories;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
-class EmailVerificationNotificationController extends Controller
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Admin>
+ */
+class AdminFactory extends Factory
 {
     /**
-     * Send a new email verification notification.
+     * The current password being used by the factory.
      */
-    public function store(Request $request): RedirectResponse
+    protected static ?string $password;
+
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition(): array
     {
-        if ($request->user('admins')->hasVerifiedEmail()) {
-            return redirect()->intended('/admin' . RouteServiceProvider::HOME);
-        }
-
-        $request->user()->sendEmailVerificationNotification();
-
-        return back()->with('status', 'verification-link-sent');
+        return [
+            'name' => fake()->name(),
+            'email' => fake()->unique()->safeEmail(),
+            'password' => static::$password ??= Hash::make('password'),
+            'remember_token' => Str::random(10),
+        ];
     }
 }

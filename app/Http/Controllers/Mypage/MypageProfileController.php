@@ -20,48 +20,62 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Controllers\Admin\Auth;
+namespace App\Http\Controllers\Mypage;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
-class AuthenticatedSessionController extends Controller
+class MypageProfileController extends Controller
 {
     /**
-     * Display the login view.
+     * Display the user's profile form.
      */
-    public function create(): View
+    public function edit(Request $request): View
     {
-        return view('admin.auth.login');
+        return view('mypage.profile.edit', [
+            'user' => $request->user(),
+        ]);
     }
 
     /**
-     * Handle an incoming authentication request.
+     * Update the user's profile information.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->authenticate('admin');
+        $request->user()->fill($request->validated());
 
-        $request->session()->regenerate();
+        if ($request->user()->isDirty('email')) {
+            $request->user()->email_verified_at = null;
+        }
 
-        return redirect()->intended(route('admin.dashboard', absolute: false));
+        $request->user()->save();
+
+        return Redirect::route('mypage.profile.edit')->with('status', 'profile-updated');
     }
 
     /**
-     * Destroy an authenticated session.
+     * Delete the user's account.
      */
     public function destroy(Request $request): RedirectResponse
     {
-        Auth::guard('admin')->logout();
+        $request->validateWithBag('userDeletion', [
+            'password' => ['required', 'current_password'],
+        ]);
+
+        $user = $request->user();
+
+        Auth::logout();
+
+        $user->delete();
 
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
-        return to_route('admin.login');
+        return Redirect::to('/');
     }
 }

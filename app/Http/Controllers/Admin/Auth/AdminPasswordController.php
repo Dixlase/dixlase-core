@@ -25,17 +25,25 @@ namespace App\Http\Controllers\Admin\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
-class EmailVerificationPromptController extends Controller
+class AdminPasswordController extends Controller
 {
     /**
-     * Display the email verification prompt.
+     * Update the user's password.
      */
-    public function __invoke(Request $request): RedirectResponse|View
+    public function update(Request $request): RedirectResponse
     {
-        return $request->user('admins')->hasVerifiedEmail()
-            ? redirect()->intended('/admin' . RouteServiceProvider::HOME)
-            : view('admin.auth.verify-email');
+        $validated = $request->validateWithBag('updatePassword', [
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', Password::defaults(), 'confirmed'],
+        ]);
+
+        $request->user('admins')->update([
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        return back()->with('status', 'password-updated');
     }
 }

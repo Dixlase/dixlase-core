@@ -20,22 +20,25 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Admin\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 
-class EmailVerificationPromptController extends Controller
+class AdminEmailVerificationNotificationController extends Controller
 {
     /**
-     * Display the email verification prompt.
+     * Send a new email verification notification.
      */
-    public function __invoke(Request $request): RedirectResponse|View
+    public function store(Request $request): RedirectResponse
     {
-        return $request->user()->hasVerifiedEmail()
-            ? redirect()->intended(route('mypage.dashboard', absolute: false))
-            : view('auth.verify-email');
+        if ($request->user('admins')->hasVerifiedEmail()) {
+            return redirect()->intended('/admin' . RouteServiceProvider::HOME);
+        }
+
+        $request->user()->sendEmailVerificationNotification();
+
+        return back()->with('status', 'verification-link-sent');
     }
 }

@@ -20,24 +20,28 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace Database\Seeders;
+namespace App\Http\Controllers\Mypage\Auth;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use App\Http\Controllers\Controller;
+use Illuminate\Auth\Events\Verified;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Http\RedirectResponse;
 
-class UsersTableSeeder extends Seeder
+class MypageVerifyEmailController extends Controller
 {
     /**
-     * Run the database seeds.
+     * Mark the authenticated user's email address as verified.
      */
-    public function run(): void
+    public function __invoke(EmailVerificationRequest $request): RedirectResponse
     {
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => Hash::make('password'),
-        ]);
+        if ($request->user()->hasVerifiedEmail()) {
+            return redirect()->intended(route('mypage.dashboard', absolute: false) . '?verified=1');
+        }
+
+        if ($request->user()->markEmailAsVerified()) {
+            event(new Verified($request->user()));
+        }
+
+        return redirect()->intended(route('mypage.dashboard', absolute: false) . '?verified=1');
     }
 }

@@ -20,7 +20,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Mypage\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\PasswordReset;
@@ -32,14 +32,14 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
-class NewPasswordController extends Controller
+class MypageNewPasswordController extends Controller
 {
     /**
      * Display the password reset view.
      */
     public function create(Request $request): View
     {
-        return view('auth.reset-password', ['request' => $request]);
+        return view('mypage.auth.reset-password', ['request' => $request]);
     }
 
     /**
@@ -74,7 +74,7 @@ class NewPasswordController extends Controller
         // the application's home authenticated view. If there is an error we can
         // redirect them back to where they came from with their error message.
         return $status == Password::PASSWORD_RESET
-            ? redirect()->route('mypage.login')->with('status', __($status))
+            ? redirect()->route('mypage.auth.login')->with('status', __($status))
             : back()->withInput($request->only('email'))
             ->withErrors(['email' => __($status)]);
     }
