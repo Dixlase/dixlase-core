@@ -20,9 +20,10 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use App\Http\Controllers\Auth\RegisteredUserController;
-use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Mypage\Auth\MypageRegisteredUserController;
+use App\Http\Controllers\Mypage\MypageProfileController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
     return view('welcome');
@@ -30,9 +31,9 @@ Route::get('/', function () {
 
 //アカウント登録
 Route::middleware('guest')->group(function () {
-    Route::get('register', [RegisteredUserController::class, 'create'])
+    Route::get('register', [MypageRegisteredUserController::class, 'create'])
         ->name('register');
-    Route::post('register', [RegisteredUserController::class, 'store']);
+    Route::post('register', [MypageRegisteredUserController::class, 'store']);
 });
 
 Route::prefix('mypage')->name('mypage.')->group(function () {
@@ -46,18 +47,18 @@ Route::prefix('mypage')->name('mypage.')->group(function () {
     });
 
     Route::get('/dashboard', function () {
-        return view('dashboard');
+        return view('mypage.dashboard');
     })->middleware(['auth:web', 'verified'])->name('dashboard');
 
     Route::middleware('auth')->group(function () {
-        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+        Route::get('/profile', [MypageProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [MypageProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/profile', [MypageProfileController::class, 'destroy'])->name('profile.destroy');
     });
 
-    require __DIR__.'/auth.php';
+    require __DIR__ . '/auth.php';
 });
 
 Route::prefix('admin')->name('admin.')->group(function () {
-    require __DIR__.'/admin.php';
+    require __DIR__ . '/admin.php';
 });

@@ -20,30 +20,18 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Controllers\Admin\Auth;
+namespace App\View\Components;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
+use Illuminate\View\Component;
+use Illuminate\View\View;
 
-class PasswordController extends Controller
+class AdminLayout extends Component
 {
     /**
-     * Update the user's password.
+     * Get the view / contents that represents the component.
      */
-    public function update(Request $request): RedirectResponse
+    public function render(): View
     {
-        $validated = $request->validateWithBag('updatePassword', [
-            'current_password' => ['required', 'current_password'],
-            'password' => ['required', Password::defaults(), 'confirmed'],
-        ]);
-
-        $request->user('admins')->update([
-            'password' => Hash::make($validated['password']),
-        ]);
-
-        return back()->with('status', 'password-updated');
+        return view('layouts.admin');
     }
 }

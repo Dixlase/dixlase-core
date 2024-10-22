@@ -35,7 +35,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     >{{ __('Delete Account') }}</x-danger-button>
 
     <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
-        <form method="post" action="{{ route('profile.destroy') }}" class="p-6">
+        <form method="post" action="{{ route('mypage.profile.destroy') }}" class="p-6">
             @csrf
             @method('delete')
 

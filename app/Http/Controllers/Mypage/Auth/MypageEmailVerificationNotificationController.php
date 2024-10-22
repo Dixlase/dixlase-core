@@ -20,28 +20,25 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Mypage\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Auth\Events\Verified;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
-class VerifyEmailController extends Controller
+class MypageEmailVerificationNotificationController extends Controller
 {
     /**
-     * Mark the authenticated user's email address as verified.
+     * Send a new email verification notification.
      */
-    public function __invoke(EmailVerificationRequest $request): RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
         if ($request->user()->hasVerifiedEmail()) {
-            return redirect()->intended(route('mypage.dashboard', absolute: false) . '?verified=1');
+            return redirect()->intended(route('mypage.dashboard', absolute: false));
         }
 
-        if ($request->user()->markEmailAsVerified()) {
-            event(new Verified($request->user()));
-        }
+        $request->user()->sendEmailVerificationNotification();
 
-        return redirect()->intended(route('mypage.dashboard', absolute: false) . '?verified=1');
+        return back()->with('status', 'verification-link-sent');
     }
 }

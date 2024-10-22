@@ -29,7 +29,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </p>
     </header>
 
-    <form method="post" action="{{ route('password.update') }}" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('mypage.password.update') }}" class="mt-6 space-y-6">
         @csrf
         @method('put')
 

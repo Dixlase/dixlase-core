@@ -23,25 +23,38 @@
 namespace App\Http\Controllers\Admin\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Auth\Events\Verified;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
 
-class VerifyEmailController extends Controller
+class AdminConfirmablePasswordController extends Controller
 {
     /**
-     * Mark the authenticated user's email address as verified.
+     * Show the confirm password view.
      */
-    public function __invoke(EmailVerificationRequest $request): RedirectResponse
+    public function show(): View
     {
-        if ($request->user('admins')->hasVerifiedEmail()) {
-            return redirect()->intended('/admin' . RouteServiceProvider::HOME . '?verified=1');
+        return view('admin.auth.confirm-password');
+    }
+
+    /**
+     * Confirm the user's password.
+     */
+    public function store(Request $request): RedirectResponse
+    {
+        if (! Auth::guard('admins')->validate([
+            'email' => $request->user('admins')->email,
+            'password' => $request->password,
+        ])) {
+            throw ValidationException::withMessages([
+                'password' => __('admin.auth.password'),
+            ]);
         }
 
-        if ($request->user('admins')->markEmailAsVerified()) {
-            event(new Verified($request->user('admins')));
-        }
+        $request->session()->put('admin.auth.password_confirmed_at', time());
 
-        return redirect()->intended(route('admin.dashboard', absolute: false) . '?verified=1');
+        return redirect()->intended(route('admin.dashboard', absolute: false));
     }
 }
