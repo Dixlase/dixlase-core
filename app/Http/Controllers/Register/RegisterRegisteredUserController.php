@@ -39,7 +39,7 @@ class RegisterRegisteredUserController extends Controller
      */
     public function create(): View
     {
-        return view('mypage.auth.register');
+        return view('register.register');
     }
 
     /**
