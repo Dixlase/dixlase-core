@@ -36,29 +36,8 @@ Route::middleware('guest')->group(function () {
     Route::post('register', [MypageRegisteredUserController::class, 'store']);
 });
 
-Route::prefix('mypage')->name('mypage.')->group(function () {
-    Route::get('/', function () {
-        $user = Auth::guard('web')->user();
-        if ($user) {
-            return redirect()->route('mypage.dashboard');
-        } else {
-            return redirect()->route('mypage.login');
-        }
-    });
+//マイページ用のルーティング
+require __DIR__ . '/mypage.php';
 
-    Route::get('/dashboard', function () {
-        return view('mypage.dashboard');
-    })->middleware(['auth:web', 'verified'])->name('dashboard');
-
-    Route::middleware('auth')->group(function () {
-        Route::get('/profile', [MypageProfileController::class, 'edit'])->name('profile.edit');
-        Route::patch('/profile', [MypageProfileController::class, 'update'])->name('profile.update');
-        Route::delete('/profile', [MypageProfileController::class, 'destroy'])->name('profile.destroy');
-    });
-
-    require __DIR__ . '/auth.php';
-});
-
-Route::prefix('admin')->name('admin.')->group(function () {
-    require __DIR__ . '/admin.php';
-});
+//管理者用のルーティング
+require __DIR__ . '/admin.php';
