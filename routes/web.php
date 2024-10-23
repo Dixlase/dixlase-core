@@ -20,8 +20,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use App\Http\Controllers\Mypage\Auth\MypageRegisteredUserController;
-use App\Http\Controllers\Mypage\MypageProfileController;
+use App\Http\Controllers\Register\RegisterRegisteredUserController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -31,9 +30,9 @@ Route::get('/', function () {
 
 //アカウント登録
 Route::middleware('guest')->group(function () {
-    Route::get('register', [MypageRegisteredUserController::class, 'create'])
+    Route::get('register', [RegisterRegisteredUserController::class, 'create'])
         ->name('register');
-    Route::post('register', [MypageRegisteredUserController::class, 'store']);
+    Route::post('register', [RegisterRegisteredUserController::class, 'store']);
 });
 
 //マイページ用のルーティング
