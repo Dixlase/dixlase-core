@@ -31,27 +31,29 @@ use App\Http\Controllers\Admin\Auth\AdminVerifyEmailController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
-Route::get('/', function () {
-    $user = Auth::guard('admin')->user();
-    if ($user) {
-        return redirect()->route('admin.dashboard');
-    } else {
-        return redirect()->route('admin.login');
-    }
-});
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', function () {
+        $user = Auth::guard('admin')->user();
+        if ($user) {
+            return redirect()->route('admin.dashboard');
+        } else {
+            return redirect()->route('admin.login');
+        }
+    });
 
-Route::get('/login', [AdminAuthenticatedSessionController::class, 'create'])
-    ->name('login');
+    Route::get('/login', [AdminAuthenticatedSessionController::class, 'create'])
+        ->name('login');
 
-Route::post('/login', [AdminAuthenticatedSessionController::class, 'store']);
+    Route::post('/login', [AdminAuthenticatedSessionController::class, 'store']);
 
 
-Route::middleware('auth:admin')->group(function () {
+    Route::middleware('auth:admin')->group(function () {
 
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('dashboard');
+        Route::get('/dashboard', function () {
+            return view('admin.dashboard');
+        })->name('dashboard');
 
-    Route::post('/logout', [AdminAuthenticatedSessionController::class, 'destroy'])
-        ->name('logout');
+        Route::post('/logout', [AdminAuthenticatedSessionController::class, 'destroy'])
+            ->name('logout');
+    });
 });
