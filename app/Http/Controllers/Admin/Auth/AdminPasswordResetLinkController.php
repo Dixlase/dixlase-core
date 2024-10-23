@@ -25,7 +25,7 @@ namespace App\Http\Controllers\Admin\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Password;
+use App\Facades\Password;
 use Illuminate\View\View;
 
 class AdminPasswordResetLinkController extends Controller
