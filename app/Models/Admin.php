@@ -30,8 +30,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Admin extends Authenticatable
 {
-    use HasFactory, Notifiable; // MustVerifyEmailを追加
-    use SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes; // MustVerifyEmailを追加
 
 
     /**

@@ -33,6 +33,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 
 
 class User extends Model implements
@@ -41,7 +43,7 @@ class User extends Model implements
     CanResetPasswordContract,
     MustVerifyEmailContract
 {
-    use HasFactory, Notifiable, Authenticatable, Authorizable, CanResetPassword, MustVerifyEmail;
+    use HasFactory, Notifiable, Authenticatable, Authorizable, CanResetPassword, MustVerifyEmail, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
