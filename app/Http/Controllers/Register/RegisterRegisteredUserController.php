@@ -20,7 +20,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Controllers\Mypage\Auth;
+namespace App\Http\Controllers\Register;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -32,7 +32,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
-class MypageRegisteredUserController extends Controller
+class RegisterRegisteredUserController extends Controller
 {
     /**
      * Display the registration view.

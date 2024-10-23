@@ -28,7 +28,7 @@ use App\Http\Controllers\Mypage\Auth\MypageNewPasswordController;
 use App\Http\Controllers\Mypage\Auth\MypagePasswordController;
 use App\Http\Controllers\Mypage\Auth\MypagePasswordResetLinkController;
 use App\Http\Controllers\Mypage\Auth\MypageVerifyEmailController;
-use App\Http\Controllers\Mypage\MypageProfileController;
+use App\Http\Controllers\Mypage\Profile\MypageProfileController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
