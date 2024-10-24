@@ -20,45 +20,41 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Controllers\Mypage\Auth;
+namespace App\Http\Controllers\Mypage\Confirm;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use App\Facades\Password;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
-class MypagePasswordResetLinkController extends Controller
+class MypageConfirmablePasswordController extends Controller
 {
     /**
-     * Display the password reset link request view.
+     * Show the confirm password view.
      */
-    public function create(): View
+    public function show(): View
     {
-        return view('mypage.auth.forgot-password');
+        return view('mypage.confirm.confirm-password');
     }
 
     /**
-     * Handle an incoming password reset link request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
+     * Confirm the user's password.
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'email' => ['required', 'email'],
-        ]);
+        if (! Auth::guard('web')->validate([
+            'email' => $request->user()->email,
+            'password' => $request->password,
+        ])) {
+            throw ValidationException::withMessages([
+                'password' => __('mypage.password'),
+            ]);
+        }
 
-        // We will send the password reset link to this user. Once we have attempted
-        // to send the link, we will examine the response then see the message we
-        // need to show to the user. Finally, we'll send out a proper response.
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
+        $request->session()->put('mypage.password_confirmed_at', time());
 
-        return $status == Password::RESET_LINK_SENT
-            ? back()->with('status', __($status))
-            : back()->withInput($request->only('email'))
-            ->withErrors(['email' => __($status)]);
+        return redirect()->intended(route('mypage.dashboard', absolute: false));
     }
 }

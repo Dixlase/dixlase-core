@@ -20,41 +20,45 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Controllers\Mypage\Auth;
+namespace App\Http\Controllers\Mypage\Forgot;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
+use App\Facades\Password;
 use Illuminate\View\View;
 
-class MypageConfirmablePasswordController extends Controller
+class MypagePasswordResetLinkController extends Controller
 {
     /**
-     * Show the confirm password view.
+     * Display the password reset link request view.
      */
-    public function show(): View
+    public function create(): View
     {
-        return view('mypage.auth.confirm-password');
+        return view('mypage.forgot.forgot-password');
     }
 
     /**
-     * Confirm the user's password.
+     * Handle an incoming password reset link request.
+     *
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function store(Request $request): RedirectResponse
     {
-        if (! Auth::guard('web')->validate([
-            'email' => $request->user()->email,
-            'password' => $request->password,
-        ])) {
-            throw ValidationException::withMessages([
-                'password' => __('mypage.password'),
-            ]);
-        }
+        $request->validate([
+            'email' => ['required', 'email'],
+        ]);
 
-        $request->session()->put('mypage.password_confirmed_at', time());
+        // We will send the password reset link to this user. Once we have attempted
+        // to send the link, we will examine the response then see the message we
+        // need to show to the user. Finally, we'll send out a proper response.
+        $status = Password::sendResetLink(
+            $request->only('email')
+        );
 
-        return redirect()->intended(route('mypage.dashboard', absolute: false));
+        return $status == Password::RESET_LINK_SENT
+            ? back()->with('status', __($status))
+            : back()->withInput($request->only('email'))
+            ->withErrors(['email' => __($status)]);
     }
 }

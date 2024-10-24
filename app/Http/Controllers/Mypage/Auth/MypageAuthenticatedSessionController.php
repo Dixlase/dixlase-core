@@ -36,7 +36,7 @@ class MypageAuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        return view('mypage.auth.login');
+        return view('mypage.login');
     }
 
     /**
