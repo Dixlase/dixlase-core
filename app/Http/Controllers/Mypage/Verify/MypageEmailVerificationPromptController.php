@@ -20,7 +20,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Controllers\Mypage\Auth;
+namespace App\Http\Controllers\Mypage\Verify;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
@@ -36,6 +36,6 @@ class MypageEmailVerificationPromptController extends Controller
     {
         return $request->user()->hasVerifiedEmail()
             ? redirect()->intended(route('mypage.dashboard', absolute: false))
-            : view('mypage.auth.verify-email');
+            : view('mypage.verify.verify-email');
     }
 }

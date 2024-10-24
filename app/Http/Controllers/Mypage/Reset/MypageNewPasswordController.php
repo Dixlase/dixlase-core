@@ -20,7 +20,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Controllers\Mypage\Auth;
+namespace App\Http\Controllers\Mypage\Reset;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\PasswordReset;
@@ -39,7 +39,7 @@ class MypageNewPasswordController extends Controller
      */
     public function create(Request $request): View
     {
-        return view('mypage.auth.reset-password', ['request' => $request]);
+        return view('mypage.reset.reset-password', ['request' => $request]);
     }
 
     /**

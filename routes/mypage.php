@@ -21,12 +21,12 @@
  */
 
 use App\Http\Controllers\Mypage\Auth\MypageAuthenticatedSessionController;
-use App\Http\Controllers\Mypage\Auth\MypageConfirmablePasswordController;
+use App\Http\Controllers\Mypage\Confirm\MypageConfirmablePasswordController;
 use App\Http\Controllers\Mypage\Auth\MypageEmailVerificationNotificationController;
-use App\Http\Controllers\Mypage\Auth\MypageEmailVerificationPromptController;
-use App\Http\Controllers\Mypage\Auth\MypageNewPasswordController;
+use App\Http\Controllers\Mypage\Verify\MypageEmailVerificationPromptController;
+use App\Http\Controllers\Mypage\Reset\MypageNewPasswordController;
 use App\Http\Controllers\Mypage\Auth\MypagePasswordController;
-use App\Http\Controllers\Mypage\Auth\MypagePasswordResetLinkController;
+use App\Http\Controllers\Mypage\Forgot\MypagePasswordResetLinkController;
 use App\Http\Controllers\Mypage\Auth\MypageVerifyEmailController;
 use App\Http\Controllers\Mypage\Profile\MypageProfileController;
 use Illuminate\Support\Facades\Route;
