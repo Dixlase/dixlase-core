@@ -25,7 +25,7 @@ use App\Http\Controllers\Mypage\Confirm\MypageConfirmablePasswordController;
 use App\Http\Controllers\Mypage\Auth\MypageEmailVerificationNotificationController;
 use App\Http\Controllers\Mypage\Verify\MypageEmailVerificationPromptController;
 use App\Http\Controllers\Mypage\Reset\MypageNewPasswordController;
-use App\Http\Controllers\Mypage\Auth\MypagePasswordController;
+use App\Http\Controllers\Mypage\Profile\MypagePasswordController;
 use App\Http\Controllers\Mypage\Forgot\MypagePasswordResetLinkController;
 use App\Http\Controllers\Mypage\Auth\MypageVerifyEmailController;
 use App\Http\Controllers\Mypage\Profile\MypageProfileController;

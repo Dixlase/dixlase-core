@@ -20,7 +20,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Controllers\Mypage\Auth;
+namespace App\Http\Controllers\Mypage\Profile;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
