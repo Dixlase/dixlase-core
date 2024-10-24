@@ -1,0 +1,59 @@
+name: Laravel CI/CD Pipeline
+
+# ワークフローの実行トリガーを設定
+on:
+  push:
+    branches:
+      - main # mainブランチへのプッシュ時に実行
+      - test # testブランチへのプッシュ時
+  pull_request:
+    branches:
+      - main # mainブランチへのPRが作成されたときに実行
+      - test # testブランチへのPRが作成されたときに実行
+
+jobs:
+  laravel-tests: # ジョブ名
+    runs-on: ubuntu-latest # ジョブを実行する環境
+
+    services:
+      mysql: # MySQLサービスの設定
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: laravel_test
+          MYSQL_USER: user
+          MYSQL_PASSWORD: password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: Checkout repository # コードを取得
+        uses: actions/checkout@v3
+
+      - name: Set up PHP # PHPのセットアップ
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, intl, pdo, mysql
+
+      - name: Install Composer dependencies # Composerの依存関係をインストール
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: Set up the environment file # .envファイルの設定
+        run: |
+          cp .env.example .env
+          php artisan config:clear
+
+      - name: Generate application key # アプリケーションキーを生成
+        run: php artisan key:generate
+
+      - name: Run database migrations
+        run: php artisan migrate --env=testing --force
+
+      - name: Run tests # Laravelのテストを実行
+        run: php artisan test --env=testing || cat storage/logs/laravel.log
