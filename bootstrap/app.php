@@ -18,7 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
         ]);
-        //$middleware->alias('verified', \App\Http\Middleware\EnsureEmailIsVerified::class);
+
+        // CheckInstallationミドルウェアをグローバルに追加
+        $middleware->prepend(\App\Http\Middleware\CheckInstallation::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

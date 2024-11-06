@@ -21,19 +21,28 @@
  */
 
 use App\Http\Controllers\Register\RegisterRegisteredUserController;
+use App\Http\Controllers\Install\InstallController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
-Route::get('/', function () {
-    return view('welcome');
+// インストール用ルート（ミドルウェア適用なし）
+Route::get('/install', [InstallController::class, 'showForm'])->name('install');
+Route::post('/install', [InstallController::class, 'processForm'])->name('install.process');
+
+// インストール済みの場合にアクセス可能なルート
+Route::middleware('web')->group(function () {
+    Route::get('/', function () {
+        return view('welcome');
+    });
+    //アカウント登録
+    Route::middleware('guest')->group(function () {
+        Route::get('register', [RegisterRegisteredUserController::class, 'create'])
+            ->name('register');
+        Route::post('register', [RegisterRegisteredUserController::class, 'store']);
+    });
 });
 
-//アカウント登録
-Route::middleware('guest')->group(function () {
-    Route::get('register', [RegisterRegisteredUserController::class, 'create'])
-        ->name('register');
-    Route::post('register', [RegisterRegisteredUserController::class, 'store']);
-});
+
 
 //マイページ用のルーティング
 require __DIR__ . '/mypage.php';
