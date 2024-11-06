@@ -32,6 +32,104 @@ use Illuminate\Support\Facades\Log;
 
 class InstallController extends Controller
 {
+    // 最初の画面
+    public function showWelcome()
+    {
+        return view('install.welcome');
+    }
+
+    // サイト設定の入力画面
+    public function showSiteSettings()
+    {
+        return view('install.settings');
+    }
+
+    // サイト設定の入力処理
+    public function postSiteSettings(Request $request)
+    {
+        $request->validate([
+            'site_name' => 'required|string|max:255',
+            'admin_email' => 'required|email',
+            'admin_password' => 'required|string|min:8|confirmed',
+            'db_host' => 'required|string',
+            'db_database' => 'required|string',
+            'db_username' => 'required|string',
+            'db_password' => 'nullable|string',
+        ]);
+
+        // 入力内容をセッションに保存
+        session([
+            'install_data' => $request->only([
+                'site_name',
+                'admin_email',
+                'admin_password',
+                'db_host',
+                'db_database',
+                'db_username',
+                'db_password'
+            ])
+        ]);
+
+        return redirect()->route('install.confirm');
+    }
+
+    // 入力内容の確認画面
+    public function showConfirm()
+    {
+        $data = session('install_data');
+        return view('install.confirm', compact('data'));
+    }
+
+    // 確認画面の処理
+    public function postConfirm()
+    {
+        $data = session('install_data');
+
+        // .envファイルの更新やインストール処理
+        $this->updateEnv([
+            'APP_NAME' => $data['site_name'],
+            'DB_HOST' => $data['db_host'],
+            'DB_DATABASE' => $data['db_database'],
+            'DB_USERNAME' => $data['db_username'],
+            'DB_PASSWORD' => $data['db_password'],
+            'INSTALLED' => 'true',
+        ]);
+
+        // その他のインストール処理（例：マイグレーション、管理者作成など）
+        Artisan::call('migrate', ['--force' => true]);
+
+        return redirect()->route('install.complete');
+    }
+
+    // 完了画面
+    public function showComplete()
+    {
+        return view('install.complete');
+    }
+
+    // 環境変数を更新するメソッド
+    protected function updateEnv($data)
+    {
+        $envPath = base_path('.env');
+        $envContent = file_get_contents($envPath);
+
+        foreach ($data as $key => $value) {
+            if (preg_match("/^{$key}=.*$/m", $envContent)) {
+                $envContent = preg_replace("/^{$key}=.*$/m", "{$key}={$value}", $envContent);
+            } else {
+                $envContent .= "\n{$key}={$value}";
+            }
+        }
+
+        file_put_contents($envPath, $envContent);
+        Artisan::call('config:clear');
+    }
+
+
+
+    /*
+
+
     public function showForm()
     {
         // インストール済みかどうかを確認
@@ -101,9 +199,13 @@ class InstallController extends Controller
         }
     }
 
+    */
+
     /**
      * .env ファイルを更新するメソッド
      */
+
+    /*
     protected function updateEnv($data)
     {
         $envPath = base_path('.env');
@@ -132,4 +234,5 @@ class InstallController extends Controller
         Artisan::call('config:clear');
         Artisan::call('config:cache');
     }
+        */
 }

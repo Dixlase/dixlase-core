@@ -25,15 +25,26 @@ use App\Http\Controllers\Install\InstallController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
+/*
 // インストール用ルート（ミドルウェア適用なし）
 Route::get('/install', [InstallController::class, 'showForm'])->name('install');
 Route::post('/install', [InstallController::class, 'processForm'])->name('install.process');
+*/
 
 // インストール済みの場合にアクセス可能なルート
 Route::middleware('web')->group(function () {
+
+    Route::get('/install', [InstallController::class, 'showWelcome'])->name('install.welcome');
+    Route::get('/install/site-settings', [InstallController::class, 'showSiteSettings'])->name('install.site-settings');
+    Route::post('/install/site-settings', [InstallController::class, 'postSiteSettings']);
+    Route::get('/install/confirm', [InstallController::class, 'showConfirm'])->name('install.confirm');
+    Route::post('/install/confirm', [InstallController::class, 'postConfirm']);
+    Route::get('/install/complete', [InstallController::class, 'showComplete'])->name('install.complete');
+
     Route::get('/', function () {
         return view('welcome');
     });
+
     //アカウント登録
     Route::middleware('guest')->group(function () {
         Route::get('register', [RegisterRegisteredUserController::class, 'create'])
