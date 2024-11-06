@@ -123,4 +123,17 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Installed
+    |-------------------------------------------------------------------------
+    |
+    | This value determines whether the application has been installed or not.
+    | This is used to prevent the installer from being accessed after the
+    | application has been installed.
+    |
+    */
+
+    'installed' => env('INSTALLED', false),
+
 ];

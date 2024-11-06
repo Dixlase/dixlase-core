@@ -44,8 +44,10 @@ class CheckInstallation
         */
 
 
+
+
         // インストール済みであるかどうかを確認
-        if (env('INSTALLED') !== 'true') {
+        if (env('INSTALLED') !== true) {
             // .envファイルが存在しない場合、.env.example からコピーして生成
             if (!file_exists(base_path('.env'))) {
                 copy(base_path('.env.example'), base_path('.env'));
@@ -65,8 +67,12 @@ class CheckInstallation
             if (!$request->is('install', 'install/*')) {
                 return redirect('/install');
             }
+        } else {
+            // インストール済みの場合、インストール画面にはアクセスできないようにする
+            if ($request->is('install', 'install/*')) {
+                return redirect('/')->with('message', 'このアプリケーションは既にインストールされています。');
+            }
         }
-
 
         return $next($request);
     }
