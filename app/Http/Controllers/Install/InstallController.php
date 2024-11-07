@@ -57,18 +57,25 @@ class InstallController extends Controller
             'db_password' => 'nullable|string',
         ]);
 
+        $installData = [
+            'db_connection' => $request->db_connection,
+            'site_name' => $request->site_name,
+            'admin_email' => $request->admin_email,
+            'admin_password' => $request->admin_password,
+        ];
+
+        if ($request->db_connection === 'mysql') {
+            $installData['db_host'] = $request->db_host;
+            $installData['db_database'] = $request->db_database;
+            $installData['db_username'] = $request->db_username;
+            $installData['db_password'] = $request->db_password;
+        } elseif ($request->db_connection === 'sqlite') {
+            $installData['db_database'] = $request->db_database_sqlite;
+        }
+
+
         // 入力内容をセッションに保存
-        session([
-            'install_data' => $request->only([
-                'site_name',
-                'admin_email',
-                'admin_password',
-                'db_host',
-                'db_database',
-                'db_username',
-                'db_password'
-            ])
-        ]);
+        session(['install_data' => $installData]);
 
         return redirect()->route('install.confirm');
     }
@@ -86,14 +93,20 @@ class InstallController extends Controller
         $data = session('install_data');
 
         // .envファイルの更新やインストール処理
-        $this->updateEnv([
+        $envData = [
             'APP_NAME' => $data['site_name'],
-            'DB_HOST' => $data['db_host'],
+            'DB_CONNECTION' => $data['db_connection'],
             'DB_DATABASE' => $data['db_database'],
-            'DB_USERNAME' => $data['db_username'],
-            'DB_PASSWORD' => $data['db_password'],
             'INSTALLED' => 'true',
-        ]);
+        ];
+
+        if ($data['db_connection'] === 'mysql') {
+            $envData['DB_HOST'] = $data['db_host'];
+            $envData['DB_USERNAME'] = $data['db_username'];
+            $envData['DB_PASSWORD'] = $data['db_password'];
+        }
+
+        $this->updateEnv($envData);
 
         // その他のインストール処理（例：マイグレーション、管理者作成など）
         Artisan::call('migrate', ['--force' => true]);
@@ -110,19 +123,29 @@ class InstallController extends Controller
     // 環境変数を更新するメソッド
     protected function updateEnv($data)
     {
+        // .envファイルの読み込み
         $envPath = base_path('.env');
-        $envContent = file_get_contents($envPath);
+        $envContent = file_exists($envPath) ? file_get_contents($envPath) : '';
 
         foreach ($data as $key => $value) {
+            // 存在するキーを検索し、更新
             if (preg_match("/^{$key}=.*$/m", $envContent)) {
-                $envContent = preg_replace("/^{$key}=.*$/m", "{$key}={$value}", $envContent);
+                $envContent = preg_replace("/^{$key}=.*$/m", "{$key}={$value}\n", $envContent);
             } else {
+                // 存在しないキーを追加
                 $envContent .= "\n{$key}={$value}";
             }
         }
 
+        // 上書きする前に余分な空行を削除
+        $envContent = preg_replace("/\n+/", "\n", $envContent);
+
+        // .envファイルに書き込み
         file_put_contents($envPath, $envContent);
+
+        // キャッシュをクリアして再適用
         Artisan::call('config:clear');
+        Artisan::call('config:cache');
     }
 
 

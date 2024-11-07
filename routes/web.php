@@ -35,8 +35,8 @@ Route::post('/install', [InstallController::class, 'processForm'])->name('instal
 Route::middleware('web')->group(function () {
 
     Route::get('/install', [InstallController::class, 'showWelcome'])->name('install.welcome');
-    Route::get('/install/site-settings', [InstallController::class, 'showSiteSettings'])->name('install.site-settings');
-    Route::post('/install/site-settings', [InstallController::class, 'postSiteSettings']);
+    Route::get('/install/settings', [InstallController::class, 'showSiteSettings'])->name('install.settings');
+    Route::post('/install/settings', [InstallController::class, 'postSiteSettings']);
     Route::get('/install/confirm', [InstallController::class, 'showConfirm'])->name('install.confirm');
     Route::post('/install/confirm', [InstallController::class, 'postConfirm']);
     Route::get('/install/complete', [InstallController::class, 'showComplete'])->name('install.complete');

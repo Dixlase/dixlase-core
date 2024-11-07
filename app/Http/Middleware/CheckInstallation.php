@@ -36,16 +36,6 @@ class CheckInstallation
      */
     public function handle(Request $request, Closure $next): Response
     {
-        /*
-        // .envファイルが存在しないかつ現在のURLがインストールURLでない場合にリダイレクト
-        if (!file_exists(base_path('.env')) && !$request->is('install', 'install/*')) {
-            return redirect('/install');
-        }
-        */
-
-
-
-
         // インストール済みであるかどうかを確認
         if (env('INSTALLED') !== true) {
             // .envファイルが存在しない場合、.env.example からコピーして生成
@@ -55,12 +45,8 @@ class CheckInstallation
 
             // 仮のAPP_KEYが設定されていない場合、生成して追加
             if (empty(env('APP_KEY'))) {
-                $temporaryKey = 'base64:' . base64_encode(random_bytes(32));
-                file_put_contents(base_path('.env'), "\nAPP_KEY={$temporaryKey}", FILE_APPEND);
-
-                // 環境設定を再適用
-                Artisan::call('config:clear');
-                Artisan::call('config:cache');
+                $newKey = 'base64:' . base64_encode(random_bytes(32));
+                $this->updateAppKey($newKey);
             }
 
             // インストール画面にリダイレクト
@@ -75,5 +61,25 @@ class CheckInstallation
         }
 
         return $next($request);
+    }
+
+    protected function updateAppKey($newKey)
+    {
+        // .envファイルの読み込み
+        $envPath = base_path('.env');
+        $envContent = file_exists($envPath) ? file_get_contents($envPath) : '';
+
+        // APP_KEYの設定が存在する場合、置換
+        if (preg_match("/^APP_KEY=.*$/m", $envContent)) {
+            $envContent = preg_replace("/^APP_KEY=.*$/m", "APP_KEY={$newKey}\n", $envContent);
+        } else {
+            // APP_KEYの設定が存在しない場合、追加
+            $envContent .= "APP_KEY={$newKey}\n";
+        }
+        // .envファイルに書き込み
+        file_put_contents($envPath, $envContent);
+
+        Artisan::call('config:clear');
+        Artisan::call('config:cache');
     }
 }
