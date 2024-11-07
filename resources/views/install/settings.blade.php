@@ -22,7 +22,7 @@
         </div>
     @endif
 
-    <form action="/install" method="POST">
+    <form action="{{ url('/install/settings') }}" method="POST">
         @csrf
         <div>
             <label for="site_name">サイト名:</label>
@@ -40,22 +40,44 @@
             <label for="admin_password_confirmation">管理者パスワード確認:</label>
             <input type="password" name="admin_password_confirmation" id="admin_password_confirmation" required>
         </div>
-        <div>
-            <label for="db_host">データベースホスト:</label>
-            <input type="text" name="db_host" id="db_host" value="{{ old('db_host') }}" required>
+
+        <!-- サイト設定の入力フィールド -->
+        <div id="db_type">
+            <label for="db_connection">データベースの種類:</label>
+            <select name="db_connection" id="db_connection" onchange="toggleDbFields(this.value)">
+                <option value="mysql">MySQL</option>
+                <option value="sqlite">SQLite</option>
+            </select>
         </div>
-        <div>
-            <label for="db_database">データベース名:</label>
-            <input type="text" name="db_database" id="db_database" value="{{ old('db_database') }}" required>
+
+        <div id="mysql_fields">
+            <div>
+                <label for="db_host">データベースホスト:</label>
+                <input type="text" name="db_host" id="db_host" value="127.0.0.1">
+            </div>
+
+            <div>
+                <label for="db_database">データベース名:</label>
+                <input type="text" name="db_database" id="db_database" value="my_database">
+            </div>
+
+            <div>
+                <label for="db_username">データベースユーザー名:</label>
+                <input type="text" name="db_username" id="db_username" value="root">
+            </div>
+
+            <div>
+                <label for="db_password">データベースパスワード:</label>
+                <input type="password" name="db_password" id="db_password">
+            </div>
         </div>
-        <div>
-            <label for="db_username">データベースユーザー名:</label>
-            <input type="text" name="db_username" id="db_username" value="{{ old('db_username') }}" required>
+
+        <div id="sqlite_fields" style="display: none;">
+            <label for="db_database_sqlite">DBファイルパス:</label>
+            <input type="text" name="db_database_sqlite" id="db_database_sqlite" value="{{ database_path('database.sqlite') }}">
         </div>
-        <div>
-            <label for="db_password">データベースパスワード:</label>
-            <input type="password" name="db_password" id="db_password">
-        </div>
+
+        {{--
         <div>
             <label for="mail_host">メールホスト:</label>
             <input type="text" name="mail_host" id="mail_host" value="{{ old('mail_host') }}" required>
@@ -72,9 +94,16 @@
             <label for="mail_password">メールパスワード:</label>
             <input type="password" name="mail_password" id="mail_password">
         </div>
+        --}}
         <div>
             <button type="submit">インストール</button>
         </div>
     </form>
+    <script>
+        function toggleDbFields(value) {
+            document.getElementById('mysql_fields').style.display = value === 'mysql' ? 'block' : 'none';
+            document.getElementById('sqlite_fields').style.display = value === 'sqlite' ? 'block' : 'none';
+        }
+    </script>
 </body>
 </html>
