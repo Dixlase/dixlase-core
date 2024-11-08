@@ -17,8 +17,13 @@ return [
     'password' => 'The provided password is incorrect.',
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
 
+    'menu' => 'Admin Menu',
     'dashboard' => 'Dashboard',
-    'systems' => 'Systems',
+    'settings' => [
+        'index' => 'Settings',
+        'admins' => 'Admins',
+        'systems' => 'Systems'
+    ],
     'users' => 'Users',
     'roles' => 'Roles',
     'permissions' => 'Permissions',
