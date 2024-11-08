@@ -18,6 +18,7 @@ return [
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
 
     'dashboard' => 'Dashboard',
+    'systems' => 'Systems',
     'users' => 'Users',
     'roles' => 'Roles',
     'permissions' => 'Permissions',

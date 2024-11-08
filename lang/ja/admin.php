@@ -30,10 +30,15 @@ return [
 
 
     'dashboard' => 'ダッシュボード',
+    'settings' => [
+        'index' => '設定',
+        'admins' => '管理者',
+        'systems' => 'システム設定'
+    ],
     'users' => 'ユーザー',
     'roles' => 'ロール',
     'permissions' => '権限',
-    'settings' => '設定',
+
     'logout' => 'ログアウト',
 
 ];

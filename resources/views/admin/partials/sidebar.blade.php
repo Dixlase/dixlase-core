@@ -18,21 +18,57 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
+
+@php
+/**
+ * サブメニューが存在するかをチェックする関数
+ *
+ * @param array $item メニュー項目
+ * @return bool サブメニューが存在する場合は true
+ */
+function hasSubmenu(array $item): bool
+{
+    return isset($item['children']) && is_array($item['children']);
+}
+@endphp
+
+
+
 <ul class="nav flex-column">
     @foreach (config('admin.nav') as $key => $item)
         <li class="nav-item">
-            <a href="{{ route($item['route']) }}" class="nav-link">
-                <i class="{{ $item['icon'] }}"></i>
-                <span>{{ __($item['text']) }}</span>
-            </a>
+            @if (isset($item['route']) && is_string($item['route']))
+                <a href="{{ route($item['route']) }}" class="nav-link">
+                    <i class="{{ $item['icon'] }}"></i>
+                    <span>{{ __($item['text']) }}</span>
+                </a>
+            @else
+                <span class="nav-link">
+                    <i class="{{ $item['icon'] }}"></i>
+                    <span>{{ __($item['text']) }}</span>
+                </span>
+            @endif
 
-            @if (isset($item['master']))
+            {{-- サブメニューが存在する場合、再帰的にレンダリング --}}
+            @if (hasSubmenu($item))
                 <ul class="nav flex-column ml-3">
-                    <li class="nav-item">
-                        <a href="{{ route($item['master']['route']) }}" class="nav-link">
-                            <span>{{ __($item['text']) }}</span>
-                        </a>
-                    </li>
+                    @foreach ($item['children'] as $subKey => $subItem)
+                        <li class="nav-item">
+                            @if (isset($subItem['route']) && is_string($subItem['route']))
+                                <a href="{{ route($subItem['route']) }}" class="nav-link">
+                                    <i class="{{ $subItem['icon'] }}"></i>
+                                    <span>{{ __($subItem['text']) }}</span>
+                                </a>
+                            @else
+                                <span class="nav-link">
+                                    <i class="{{ $subItem['icon'] }}"></i>
+                                    <span>{{ __($subItem['text']) }}</span>
+                                </span>
+                            @endif
+
+
+                        </li>
+                    @endforeach
                 </ul>
             @endif
         </li>
