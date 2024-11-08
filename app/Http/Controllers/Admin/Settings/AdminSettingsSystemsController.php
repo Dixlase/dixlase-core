@@ -22,11 +22,11 @@
 
 namespace App\Http\Controllers\Admin\Settings;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Admin\AdminController;
 use App\Models\SettingSystem;
 use Illuminate\Http\Request;
 
-class AdminSettingsSystemController extends Controller
+class AdminSettingsSystemsController extends AdminController
 {
     /**
      * Display a listing of the resource.
@@ -34,6 +34,9 @@ class AdminSettingsSystemController extends Controller
     public function index()
     {
         //
+        return view('admin.settings.systems.index', [
+            'title' => 'admin.settings.systems',
+        ]);
     }
 
     /**

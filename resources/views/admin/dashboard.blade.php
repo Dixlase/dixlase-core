@@ -19,24 +19,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @php
+// テーマの設定を取得
 $theme = config('admin.theme');
-$isDark = $theme === 'dark';
+$theme_class_header = $theme == 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900';
 @endphp
 
-
-<x-admin-layout>
+<x-admin-layout :title="__($title)">
     <!-- メインコンテンツ -->
-    <div class="{{ $isDark ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800' }} w-full min-h-screen py-12">
+    <div class="{{ $theme_class }} w-full min-h-screen py-12">
         <div>
-            <x-slot name="header">
-                <h2 class="font-semibold text-xl {{ $isDark ? 'text-white' : 'text-gray-800' }} leading-tight">
-                    {{ __('Dashboard') }}
-                </h2>
-            </x-slot>
-
             <!-- コンテンツ部分 -->
             <div class="w-full sm:px-6 lg:px-8">
-                <div class="{{ $isDark ? 'bg-gray-800 text-white' : 'bg-white text-gray-900' }} overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="{{ $theme_class_header }} overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
                         {{ __("You're logged in!") }}
                     </div>

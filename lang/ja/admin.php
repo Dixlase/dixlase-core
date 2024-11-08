@@ -28,7 +28,6 @@ return [
     |
     */
 
-    'menu' => '管理メニュー',
     'dashboard' => 'ダッシュボード',
     'settings' => [
         'index' => '設定',

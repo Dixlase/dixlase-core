@@ -37,7 +37,7 @@ function hasSubmenu(array $item): bool
 }
 @endphp
 
-<div class="flex flex-col w-64 h-full {{ $isDark ? 'bg-gray-800 text-white' : 'bg-white text-gray-800' }}">
+<div class="flex flex-col w-64 h-full">
     <nav class="flex-1 px-4 py-4 space-y-1">
         @foreach (config('admin.nav') as $key => $item)
             <div x-data="{ open: false }">

@@ -21,8 +21,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @php
 // テーマの設定を取得
 $theme = config('admin.theme');
-$isDark = $theme === 'dark';
 @endphp
+
+@props([
+    'title' => ''
+])
 
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
@@ -45,24 +48,23 @@ $isDark = $theme === 'dark';
             @vite(['resources/js/app.js', 'resources/scss/app.scss'], 'build')
         @endif
     </head>
-    <body class="font-sans antialiased {{ $isDark ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800' }}">
+    <body class="font-sans antialiased {{ config('admin.theme_class.' . $theme . '.body') }}">
         <div class="min-h-screen">
             <!-- Header -->
-            @include('layouts.navigation_admin')
+            @include('admin.partials.header')
             <!-- Side Bar -->
             <div class="min-h-screen flex">
-                <aside class="{{ $isDark ? 'bg-gray-800' : 'bg-white' }} w-64 flex-shrink-0">
+                <aside class="{{ config('admin.theme_class.' . $theme . '.aside') }} w-64 flex-shrink-0">
                     @include('admin.partials.sidebar')
                 </aside>
-                <main class="{{ $isDark ? 'bg-gray-900' : 'bg-gray-100' }} flex-1">
+                <main class="{{ config('admin.theme_class.' . $theme . '.main') }} flex-1">
                     <!-- Page Heading -->
-                    @if (isset($header))
-                        <header class="{{ $isDark ? 'bg-gray-800 text-white' : 'bg-white text-gray-800' }} shadow">
-                            <div class="mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                                {{ $header }}
-                            </div>
-                        </header>
-                    @endif
+                    <div class="{{ config('admin.theme_class.' . $theme . '.title') }} mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                        <h2 class="font-semibold text-xl {{ config('admin.theme_class.' . $theme . '.headding') }} leading-tight">
+                            <!-- ここにページタイトルを表示 -->
+                            {{ $title ?? '' }}
+                        </h2>
+                    </div>
                     <div class="px-4 sm:px-6 lg:px-8">
                         <!-- Page Content -->
                         {{ $slot }}

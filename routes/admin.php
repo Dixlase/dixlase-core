@@ -29,7 +29,7 @@ use App\Http\Controllers\Admin\Auth\AdminNewPasswordController;
 use App\Http\Controllers\Admin\Auth\AdminPasswordResetLinkController;
 use App\Http\Controllers\Admin\Auth\AdminRegisteredUserController;
 use App\Http\Controllers\Admin\Auth\AdminVerifyEmailController;
-use App\Http\Controllers\Admin\Settings\AdminSettingsSystemController;
+use App\Http\Controllers\Admin\Settings\AdminSettingsSystemsController;
 use App\Http\Controllers\Admin\Admins\AdminAdminsController;
 use App\Http\Controllers\Admin\Users\AdminUsersController;
 use Illuminate\Support\Facades\Route;
@@ -59,7 +59,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/users', [AdminUsersController::class, 'index'])->name('users.index');
         // Settings
         Route::get('/settings/admins', [AdminAdminsController::class, 'index'])->name('settings.admins');
-        Route::get('/settings/systems', [AdminSettingsSystemController::class, 'index'])->name('settings.systems');
+        Route::get('/settings/systems', [AdminSettingsSystemsController::class, 'index'])->name('settings.systems');
         // Logout
         Route::post('/logout', [AdminAuthenticatedSessionController::class, 'destroy'])
             ->name('logout');

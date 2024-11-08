@@ -20,25 +20,33 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\View\Components;
+namespace App\Http\Controllers\Admin;
 
-use Illuminate\View\Component;
-use Illuminate\View\View;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 
-class AdminLayout extends Component
+class AdminController extends Controller
 {
+    //変数を宣言する
     protected $theme = 'light';
     protected $theme_class;
 
-    /**
-     * Get the view / contents that represents the component.
-     */
-    public function render(): View
+    //
+    //初期設定を行う
+    public function __construct()
     {
+        //テーマを設定する
+        $this->setTheme();
+    }
+    public function setTheme()
+    {
+        //テーマをコンフィグから取得する
         $this->theme = config('app.theme');
-
-        return view('layouts.admin', [
-            'theme' => $this->theme
-        ]);
+        //テーマCSSを設定する
+        if ($this->theme == 'light') {
+            $this->theme_class = config('app.theme_class_light');
+        } else {
+            $this->theme_class = config('app.theme_class_dark');
+        }
     }
 }
