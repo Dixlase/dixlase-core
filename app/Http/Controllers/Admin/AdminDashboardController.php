@@ -25,11 +25,16 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class AdminDashboardController extends Controller
+class AdminDashboardController extends AdminController
 {
     //
     public function index()
     {
-        return view('admin.dashboard');
+
+        return view('admin.dashboard', [
+            'title' => 'admin.dashboard',
+            'theme' => $this->theme,
+            'theme_class' => $this->theme_class
+        ]);
     }
 }

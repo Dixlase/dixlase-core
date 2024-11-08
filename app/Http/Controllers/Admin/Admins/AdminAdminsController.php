@@ -34,7 +34,10 @@ class AdminAdminsController extends Controller
     public function index()
     {
         //
-        return view('admin.settings.admins.index');
+        return view('admin.settings.admins.index', [
+            'title' => 'admin.settings.admins',
+            'admins' => Admin::all()
+        ]);
     }
 
     /**

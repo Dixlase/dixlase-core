@@ -22,11 +22,12 @@
 
 namespace App\Http\Controllers\Admin\Users;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Admin\AdminController;
+use App\Models\Admin;
 use App\Models\User;
 use Illuminate\Http\Request;
 
-class AdminUsersController extends Controller
+class AdminUsersController extends AdminController
 {
     /**
      * Display a listing of the resource.
@@ -34,7 +35,10 @@ class AdminUsersController extends Controller
     public function index()
     {
 
-        return view('admin.users.index');
+        return view('admin.users.index', [
+            'title' => 'admin.users',
+            'admins' => Admin::all()
+        ]);
     }
 
     /**

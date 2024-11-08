@@ -7,6 +7,8 @@ export default {
         './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
         './storage/framework/views/*.php',
         './resources/views/**/*.blade.php',
+        './resources/**/*.js',
+        './resources/**/*.vue',
     ],
 
     theme: {
@@ -16,6 +18,16 @@ export default {
             },
         },
     },
+    safelist: [
+        'bg-black',
+        'bg-gray-950',
+        'text-white',
+        'bg-white',
+        'text-black',
+        'border-gray-700',
+        'border-gray-800'
+    ],
+
 
     plugins: [forms],
 };
