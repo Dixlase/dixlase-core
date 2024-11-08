@@ -18,20 +18,34 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-<x-admin-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Dashboard') }}
-        </h2>
-    </x-slot>
-    <!-- resources/views/admin/layouts/app.blade.php -->
-    @include('admin.partials.sidebar')
+@php
+$theme = config('admin.theme');
+$isDark = $theme === 'dark';
+@endphp
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    {{ __("You're logged in!") }}
+
+<x-admin-layout>
+    <!-- resources/views/admin/layouts/app.blade.php -->
+    <!-- サイドバーのインクルード -->
+
+
+
+    <!-- メインコンテンツ -->
+    <div class="{{ $isDark ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800' }} w-full min-h-screen py-12">
+
+        <div>
+            <x-slot name="header">
+                <h2 class="font-semibold text-xl {{ $isDark ? 'text-white' : 'text-gray-800' }} leading-tight">
+                    {{ __('Dashboard') }}
+                </h2>
+            </x-slot>
+
+            <!-- コンテンツ部分 -->
+            <div class="w-full sm:px-6 lg:px-8">
+                <div class="{{ $isDark ? 'bg-gray-800 text-white' : 'bg-white text-gray-900' }} overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6">
+                        {{ __("You're logged in!") }}
+                    </div>
                 </div>
             </div>
         </div>

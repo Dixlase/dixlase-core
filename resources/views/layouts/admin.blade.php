@@ -18,6 +18,12 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
+@php
+// テーマの設定を取得
+$theme = config('admin.theme');
+$isDark = $theme === 'dark';
+@endphp
+
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
@@ -39,23 +45,30 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @vite(['resources/js/app.js', 'resources/scss/app.scss'], 'build')
         @endif
     </head>
-    <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100">
+    <body class="font-sans antialiased {{ $isDark ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800' }}">
+        <div class="min-h-screen">
+            <!-- Header -->
             @include('layouts.navigation_admin')
-
-            <!-- Page Heading -->
-            @if (isset($header))
-                <header class="bg-white shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
+            <!-- Side Bar -->
+            <div class="min-h-screen flex">
+                <aside class="{{ $isDark ? 'bg-gray-800' : 'bg-white' }} w-64 flex-shrink-0">
+                    @include('admin.partials.sidebar')
+                </aside>
+                <main class="{{ $isDark ? 'bg-gray-900' : 'bg-gray-100' }} flex-1">
+                    <!-- Page Heading -->
+                    @if (isset($header))
+                        <header class="{{ $isDark ? 'bg-gray-800 text-white' : 'bg-white text-gray-800' }} shadow">
+                            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                                {{ $header }}
+                            </div>
+                        </header>
+                    @endif
+                    <div class="px-4 sm:px-6 lg:px-8">
+                        <!-- Page Content -->
+                        {{ $slot }}
                     </div>
-                </header>
-            @endif
-
-            <!-- Page Content -->
-            <main>
-                {{ $slot }}
-            </main>
+                </main>
+            </div>
         </div>
     </body>
 </html>
