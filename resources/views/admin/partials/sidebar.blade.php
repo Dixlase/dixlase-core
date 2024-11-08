@@ -19,7 +19,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 
+
 @php
+
+
+// テーマの設定を取得
+$theme = config('admin.theme');
+$isDark = $theme === 'dark';
+
 /**
  * サブメニューが存在するかをチェックする関数
  *
@@ -32,45 +39,42 @@ function hasSubmenu(array $item): bool
 }
 @endphp
 
+<div class="flex flex-col w-64 h-full {{ $isDark ? 'bg-gray-800 text-white' : 'bg-white text-gray-800' }}">
+    <div class="flex items-center justify-center h-16 {{ $isDark ? 'bg-gray-900' : 'bg-gray-100' }}">
+        <span class="text-xl font-bold">{{ __('admin.menu') }}</span>
+    </div>
+    <nav class="flex-1 px-4 py-4 space-y-1">
+        @foreach (config('admin.nav') as $key => $item)
+            <div x-data="{ open: false }">
+                @if (isset($item['route']) && is_string($item['route']))
+                    <a href="{{ route($item['route']) }}"
+                       class="flex items-center px-4 py-2 text-sm font-medium {{ $isDark ? 'text-gray-300 hover:bg-gray-700 hover:text-white' : 'text-gray-700 hover:bg-gray-200 hover:text-black' }} rounded-md">
+                        <i class="{{ $item['icon'] }} mr-3"></i>
+                        <span>{{ __($item['text']) }}</span>
+                    </a>
+                @else
+                    <button @click="open = !open"
+                            class="flex items-center w-full px-4 py-2 text-sm font-medium {{ $isDark ? 'text-gray-300 hover:bg-gray-700 hover:text-white' : 'text-gray-700 hover:bg-gray-200 hover:text-black' }} rounded-md focus:outline-none">
+                        <i class="{{ $item['icon'] }} mr-3"></i>
+                        <span>{{ __($item['text']) }}</span>
+                        <svg class="w-4 h-4 ml-auto transform" :class="{ 'rotate-180': open }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                @endif
 
-
-<ul class="nav flex-column">
-    @foreach (config('admin.nav') as $key => $item)
-        <li class="nav-item">
-            @if (isset($item['route']) && is_string($item['route']))
-                <a href="{{ route($item['route']) }}" class="nav-link">
-                    <i class="{{ $item['icon'] }}"></i>
-                    <span>{{ __($item['text']) }}</span>
-                </a>
-            @else
-                <span class="nav-link">
-                    <i class="{{ $item['icon'] }}"></i>
-                    <span>{{ __($item['text']) }}</span>
-                </span>
-            @endif
-
-            {{-- サブメニューが存在する場合、再帰的にレンダリング --}}
-            @if (hasSubmenu($item))
-                <ul class="nav flex-column ml-3">
-                    @foreach ($item['children'] as $subKey => $subItem)
-                        <li class="nav-item">
-                            @if (isset($subItem['route']) && is_string($subItem['route']))
-                                <a href="{{ route($subItem['route']) }}" class="nav-link">
-                                    <i class="{{ $subItem['icon'] }}"></i>
-                                    <span>{{ __($subItem['text']) }}</span>
-                                </a>
-                            @else
-                                <span class="nav-link">
-                                    <i class="{{ $subItem['icon'] }}"></i>
-                                    <span>{{ __($subItem['text']) }}</span>
-                                </span>
-                            @endif
-
-
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
-        </li>
-    @endforeach
-</ul>
+                @if (hasSubmenu($item))
+                    <div x-show="open" class="ml-4 space-y-1">
+                        @foreach ($item['children'] as $subKey => $subItem)
+                            <a href="{{ route($subItem['route']) }}"
+                               class="flex items-center px-4 py-2 text-sm font-medium {{ $isDark ? 'text-gray-300 hover:bg-gray-700 hover:text-white' : 'text-gray-700 hover:bg-gray-200 hover:text-black' }} rounded-md">
+                                <i class="{{ $subItem['icon'] }} mr-3"></i>
+                                <span>{{ __($subItem['text']) }}</span>
+                            </a>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+        @endforeach
+    </nav>
+</div>
