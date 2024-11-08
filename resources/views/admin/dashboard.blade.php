@@ -24,6 +24,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             {{ __('Dashboard') }}
         </h2>
     </x-slot>
+    <!-- resources/views/admin/layouts/app.blade.php -->
+    @include('admin.partials.sidebar')
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">

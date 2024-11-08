@@ -53,6 +53,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
             return view('admin.dashboard');
         })->name('dashboard');
 
+        Route::get('/settings', function () {
+            return view('admin.dashboard');
+        })->name('settings.index');
+
+
         Route::post('/logout', [AdminAuthenticatedSessionController::class, 'destroy'])
             ->name('logout');
     });
