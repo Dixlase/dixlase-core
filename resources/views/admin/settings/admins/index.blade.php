@@ -30,7 +30,7 @@ $isDark = $theme === 'dark';
         <div>
             <x-slot name="header">
                 <h2 class="font-semibold text-xl {{ $isDark ? 'text-white' : 'text-gray-800' }} leading-tight">
-                    {{ __('Dashboard') }}
+                    {{ __('Admins') }}
                 </h2>
             </x-slot>
 

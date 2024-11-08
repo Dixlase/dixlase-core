@@ -31,6 +31,7 @@ use App\Http\Controllers\Admin\Auth\AdminRegisteredUserController;
 use App\Http\Controllers\Admin\Auth\AdminVerifyEmailController;
 use App\Http\Controllers\Admin\Settings\AdminSettingsSystemController;
 use App\Http\Controllers\Admin\Admins\AdminAdminsController;
+use App\Http\Controllers\Admin\Users\AdminUsersController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -52,13 +53,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     Route::middleware('auth:admin')->group(function () {
 
+        // Dashboard
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-
+        //Users
+        Route::get('/users', [AdminUsersController::class, 'index'])->name('users.index');
+        // Settings
         Route::get('/settings/admins', [AdminAdminsController::class, 'index'])->name('settings.admins');
-
         Route::get('/settings/systems', [AdminSettingsSystemController::class, 'index'])->name('settings.systems');
-
-
+        // Logout
         Route::post('/logout', [AdminAuthenticatedSessionController::class, 'destroy'])
             ->name('logout');
     });
