@@ -20,10 +20,30 @@ return [
         ],
         //
         'setting' => [
-            'text' => 'admin.setting',
-            'route' => 'admin.setting.index',
+            'text' => 'admin.settings.index',
             'icon' => 'fas fa-fw fa-cogs',
-        ],
+            'children' => [
+                'admins' => [
+                    'text' => 'admin.settings.admins',
+                    'route' => 'admin.settings.admins',
+                    'icon' => 'fas fa-fw fa-users',
+                ],
+                'systems' => [
+                    'text' => 'admin.settings.systems',
+                    'route' => 'admin.settings.systems',
+                    'icon' => 'fas fa-fw fa-users',
+                    'children' => [
+                        'create' => [
+                            'text' => 'admin.settings.systems.create',
+                            'route' => 'admin.settings.systems.create',
+                            'icon' => 'fas fa-fw fa-users',
+                        ]
+                    ]
+                ],
+
+            ],
+        ]
+
         /*
         'users' => [
             'text' => 'admin.users',

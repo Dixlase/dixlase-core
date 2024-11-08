@@ -20,6 +20,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\Auth\AdminAuthenticatedSessionController;
 use App\Http\Controllers\Admin\Auth\AdminConfirmablePasswordController;
 use App\Http\Controllers\Admin\Auth\AdminEmailVerificationNotificationController;
@@ -28,6 +29,8 @@ use App\Http\Controllers\Admin\Auth\AdminNewPasswordController;
 use App\Http\Controllers\Admin\Auth\AdminPasswordResetLinkController;
 use App\Http\Controllers\Admin\Auth\AdminRegisteredUserController;
 use App\Http\Controllers\Admin\Auth\AdminVerifyEmailController;
+use App\Http\Controllers\Admin\Settings\AdminSettingsSystemController;
+use App\Http\Controllers\Admin\Admins\AdminAdminsController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -49,13 +52,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     Route::middleware('auth:admin')->group(function () {
 
-        Route::get('/dashboard', function () {
-            return view('admin.dashboard');
-        })->name('dashboard');
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-        Route::get('/settings', function () {
-            return view('admin.dashboard');
-        })->name('settings.index');
+        Route::get('/settings/admins', [AdminAdminsController::class, 'index'])->name('settings.admins');
+
+        Route::get('/settings/systems', [AdminSettingsSystemController::class, 'index'])->name('settings.systems');
 
 
         Route::post('/logout', [AdminAuthenticatedSessionController::class, 'destroy'])
