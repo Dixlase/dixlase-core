@@ -30,7 +30,11 @@ return [
             'route' => 'admin.dashboard',
             'icon' => 'fas fa-fw fa-tachometer-alt',
         ],
-        //
+        'users' => [
+            'text' => 'admin.users',
+            'route' => 'admin.users.index',
+            'icon' => 'fas fa-fw fa-users',
+        ],
         'setting' => [
             'text' => 'admin.settings.index',
             'icon' => 'fas fa-fw fa-cogs',

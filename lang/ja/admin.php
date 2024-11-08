@@ -35,7 +35,7 @@ return [
         'admins' => '管理者',
         'systems' => 'システム設定'
     ],
-    'users' => 'ユーザー',
+    'users' => 'ユーザー管理',
     'roles' => 'ロール',
     'permissions' => '権限',
 
