@@ -1,5 +1,6 @@
 # .gitattributes
 
+/stubs
 /stubs/* export-ignore
 /app/Console/Commands/AddCopyright.php export-ignore
 .gitignore export-ignore
