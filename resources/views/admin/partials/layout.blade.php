@@ -54,7 +54,7 @@ $theme = config('admin.theme');
             @include('admin.partials.header')
             <!-- Side Bar -->
             <div class="min-h-screen flex">
-                <aside class="{{ config('admin.theme_class.' . $theme . '.aside') }} w-64 flex-shrink-0">
+                <aside class="hidden sm:block {{ config('admin.theme_class.' . $theme . '.aside') }} w-64 flex-shrink-0">
                     @include('admin.partials.sidebar')
                 </aside>
                 <main class="{{ config('admin.theme_class.' . $theme . '.main') }} flex-1">
