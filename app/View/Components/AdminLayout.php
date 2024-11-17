@@ -37,7 +37,7 @@ class AdminLayout extends Component
     {
         $this->theme = config('app.theme');
 
-        return view('layouts.admin', [
+        return view('admin.partials.layout', [
             'theme' => $this->theme
         ]);
     }

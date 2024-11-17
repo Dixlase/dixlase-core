@@ -24,17 +24,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 // テーマの設定を取得
 $theme = config('admin.theme');
 $isDark = $theme === 'dark';
-
-/**
- * サブメニューが存在するかをチェックする関数
- *
- * @param array $item メニュー項目
- * @return bool サブメニューが存在する場合は true
- */
-function hasSubmenu(array $item): bool
-{
-    return isset($item['children']) && is_array($item['children']);
-}
 @endphp
 
 <div class="flex flex-col w-64 h-full">
