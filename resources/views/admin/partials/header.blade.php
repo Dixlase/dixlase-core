@@ -35,42 +35,37 @@ function hasSubmenu(array $item): bool
 }
 @endphp
 
-<header x-data="{ openSidebar: false, openUserMenu: false }" class="{{ config('admin.theme_class.' . $theme . '.header') }} w-full flex">
+<header x-data="{ openSidebar: false, openUserMenu: false}" class="{{ config('admin.theme_class.' . $theme . '.header') }} w-full flex">
     <!-- Primary Navigation Menu -->
-    <div class="w-full mx-4 sm:mx-0 sm:px-6 lg:px-8 flex items-center h-16 justify-between">
-        <div class="flex glow">
-            <!-- Logo -->
-            <div class="flex items-center">
-                <a href="{{ route('admin.dashboard') }}">
-                    <x-application-logo class="block h-9 w-auto fill-current {{ config('admin.theme_class.' . $theme . '.logo') }}" />
-                </a>
-            </div>
+    <div class="w-full mx-4 sm:mx-0 sm:px-6 lg:px-8 flex items-center h-16 justify-between sm:justify-start">
+        <!-- Logo -->
+        <div class="flex items-center order-2 sm:order-1">
+            <a href="{{ route('admin.dashboard') }}">
+                <x-application-logo class="block h-9 w-auto fill-current {{ config('admin.theme_class.' . $theme . '.logo') }}" />
+            </a>
+        </div>
 
-            <!-- Site Name (PCレイアウトのみ表示) -->
-            <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex items-center">
-                <a href="{{ route('admin.dashboard') }}">
-                    {{ env('APP_NAME') }}
-                </a>
-            </div>
-            <!-- Navigation Hamburger (スマホ用) -->
-            <button @click="openSidebar = ! openSidebar" class="sm:hidden ms-4 inline-flex items-center justify-center p-2 rounded-md {{ config('admin.theme_class.' . $theme . '.button_hamburger') }} focus:outline-none transition duration-150 ease-in-out"">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path :class="{'hidden': openSidebar, 'inline-flex': ! openSidebar }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                    <path :class="{'hidden': ! openSidebar, 'inline-flex': openSidebar }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
+        <!-- Site Name (PCレイアウトのみ表示) -->
+        <div class="hidden space-x-8 sm:-my-px sm:ms-6 sm:flex items-center sm:order-2">
+            <a href="{{ route('admin.dashboard') }}">
+                {{ env('APP_NAME') }}
+            </a>
         </div>
+        <!-- Navigation Hamburger (スマホ用) -->
+        <button @click="openSidebar = true, openMenu= true" class="sm:hidden inline-flex items-center justify-center p-2 rounded-md order-1 {{ config('admin.theme_class.' . $theme . '.button_hamburger') }} focus:outline-none transition duration-150 ease-in-out">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path :class="{'hidden': openSidebar, 'inline-flex': ! openSidebar }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                <path :class="{'hidden': ! openSidebar, 'inline-flex': openSidebar }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+
         <!-- User Hamburger -->
-        <div class="flex items-center h-16">
-            <div class="-me-2 flex items-center sm:hidden flex-grow">
-                <button @click="openUserMenu = ! openUserMenu" class="inline-flex items-center justify-center p-2 rounded-md {{ config('admin.theme_class.' . $theme . '.button_hamburger') }} focus:outline-none transition duration-150 ease-in-out">
-                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': openUserMenu, 'inline-flex': ! openUserMenu }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        <path :class="{'hidden': ! openUserMenu, 'inline-flex': openUserMenu }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-        </div>
+        <button @click="openUserMenu = true, openMenu= true" class="inline-flex items-center justify-center rounded-md order-2 sm:hidden {{ config('admin.theme_class.' . $theme . '.button_hamburger') }} focus:outline-none transition duration-150 ease-in-out">
+            <svg class="h-8 w-8" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18c0-2.21 1.79-4 4-4h4c2.21 0 4 1.79 4 4v1H6v-1z" />
+            </svg>
+        </button>
     </div>
 
     <!-- Settings Dropdown -->
@@ -107,8 +102,37 @@ function hasSubmenu(array $item): bool
         </x-dropdown>
     </div>
 
-    <!-- Responsive User Navigation Menu -->
-    <div :class="{'block': openUserMenu, 'hidden': ! openUserMenu}" class="hidden sm:hidden">
+    <!-- スライドメニューのバックグラウンド -->
+    <div x-show="openSidebar || openUserMenu" @click="openSidebar = !true; openUserMenu = false" class="fixed inset-0 bg-transparent z-10 w-full h-full"></div>
+
+    <!-- 左側スライドインメニュー -->
+    <div class="fixed inset-y-0 w-64 shadow-lg transform transition-transform duration-300 ease-in-out translate-x-minus-full z-20 {{ $isDark ? 'text-gray-300 bg-gray-900' : 'text-gray-700 bg-gray-200' }}"
+    :class="{ 'translate-x-minus-full': !openSidebar, 'translate-x-0': openSidebar }">
+        <button @click="openSidebar = !openSidebar" class="p-4 {{ $isDark ? "text-gray-300" : "text-gray-700" }}">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+        <!-- スマホレイアウト用のサイト名 -->
+        <div class="px-4 py-2 border-b {{ $isDark ? "border-gray-700" : "border-gray-300" }}">
+            <a href="{{ route('admin.dashboard') }}" class="text-lg font-bold">
+                {{ env('APP_NAME') }}
+            </a>
+        </div>
+        @include('admin.partials.sidebar')
+    </div>
+
+
+    <!-- 右側スライドインメニュー -->
+    <div class="sm:hidden fixed w-64 h-full shadow-lg transform transition-transform duration-300 ease-in-out z-20 translate-x-100vw {{ $isDark ? 'text-gray-300 bg-gray-900' : 'text-gray-700 bg-gray-200' }}"
+    :class="{ 'translate-x-100vw': !openUserMenu, 'translate-x-100vw-16': openUserMenu,'sm:block': openUserMenu, 'sm:hidden': ! openUserMenu }">
+
+        <!-- Close Button -->
+        <button @click="openUserMenu = false" class="absolute top-4 right-4 p-2 {{ $isDark ? "text-gray-300" : "text-gray-700" }}">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
 
         <!-- Responsive Settings Options -->
         <div class="pt-4 pb-1 border-t {{ config('admin.theme_class.' . $theme . '.option_1') }}">
@@ -125,7 +149,6 @@ function hasSubmenu(array $item): bool
                 <!-- Authentication -->
                 <form method="POST" action="{{ route('mypage.logout') }}">
                     @csrf
-
                     <x-responsive-nav-link :href="route('mypage.logout')"
                             onclick="event.preventDefault();
                                         this.closest('form').submit();">
@@ -134,16 +157,5 @@ function hasSubmenu(array $item): bool
                 </form>
             </div>
         </div>
-    </div>
-
-    <!-- Navigation Links (スマホ用ナビゲーション) -->
-    <div x-show="openSidebar" class="{'block': openSidebar, 'hidden': ! openSidebar} pt-4 pb-1 w-full {{ $isDark ? 'text-gray-300 hover:bg-gray-700 hover:text-white' : 'text-gray-700 hover:bg-gray-200 hover:text-black' }} shadow-lg sm:hidden">
-        <!-- スマホレイアウト用のサイト名 -->
-        <div class="px-4 py-2 border-b">
-            <a href="{{ route('admin.dashboard') }}" class="text-lg font-bold">
-                {{ env('APP_NAME') }}
-            </a>
-        </div>
-        @include('admin.partials.sidebar')
     </div>
 </header>
