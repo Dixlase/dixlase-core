@@ -25,7 +25,13 @@ export default {
         'bg-white',
         'text-black',
         'border-gray-700',
-        'border-gray-800'
+        'border-gray-800',
+        'transform',
+        'transition-transform',
+        'duration-300',
+        'translate-x-full',
+        'translate-x-0'
+
     ],
 
 

@@ -18,7 +18,15 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+
+ // Your custom styles here
+ @use 'admin';
+ @use 'tailwind-custom';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+
 

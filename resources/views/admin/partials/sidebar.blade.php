@@ -48,7 +48,14 @@ $isDark = $theme === 'dark';
                 @endif
 
                 @if (hasSubmenu($item))
-                    <div x-show="open" class="ml-4 space-y-1">
+                    <div x-show="open"
+                        x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0 transform -translate-y-2"
+                        x-transition:enter-end="opacity-100 transform translate-y-0"
+                        x-transition:leave="transition ease-in duration-200"
+                        x-transition:leave-start="opacity-100 transform translate-y-0"
+                        x-transition:leave-end="opacity-0 transform -translate-y-2"
+                        class="ml-4 space-y-1">
                         @foreach ($item['children'] as $subKey => $subItem)
                             <a href="{{ route($subItem['route']) }}"
                                class="flex items-center px-4 py-2 text-sm font-medium {{ $isDark ? 'text-gray-300 hover:bg-gray-700 hover:text-white' : 'text-gray-700 hover:bg-gray-200 hover:text-black' }} rounded-md">
