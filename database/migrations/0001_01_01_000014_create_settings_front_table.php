@@ -20,19 +20,38 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace Database\Seeders;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use App\Models\SettingFront;
-
-class SettingFrontTableSeeder extends Seeder
+class CreateSettingsFrontTable extends Migration
 {
     /**
-     * Run the database seeds.
+     * Run the migrations.
+     *
+     * @return void
      */
-    public function run(): void
+
+    protected $table = 'settings_front';
+
+    public function up()
     {
-        //
+        Schema::create($this->table, function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string("name", 255);
+            $table->text("value");
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists($this->table);
     }
 }

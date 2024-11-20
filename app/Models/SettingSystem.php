@@ -23,11 +23,61 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class SettingSystem extends Model
 {
-    protected $table = 'setting_systems';
-    protected $fillable = [
-        'title',
-    ];
+    /**
+     * テーブル名
+     *
+     * @var string
+     */
+    protected $table = 'settings_system';
+
+    /**
+     * ホワイトリスト
+     *
+     * @var array
+     */
+    protected $fillable = ['name', 'value'];
+
+    /**
+     * 設定の取得
+     *
+     * @param string $title
+     * @param mixed $default
+     * @return mixed
+     */
+
+    public static function getValue($name, $default = null)
+    {
+        $setting = self::where('name', $name)->first();
+        return $setting ? json_decode($setting->value, true) ?? $setting->value : $default;
+    }
+
+    /**
+     * 設定の保存
+     *
+     * @param string $name
+     * @param mixed $value
+     * @return void
+     */
+    public static function setValue($name, $value)
+    {
+        $setting = self::where('name', $name)->first();
+
+        if ($setting) {
+            // 既存の設定がある場合は更新
+            Log::info("Updating existing setting: $name");
+            $setting->value = is_array($value) ? json_encode($value) : $value;
+            $setting->save();
+        } else {
+            // 設定がない場合は新規作成
+            Log::info("Creating new setting: $name");
+            self::create([
+                'name' => $name,
+                'value' => is_array($value) ? json_encode($value) : $value,
+            ]);
+        }
+    }
 }

@@ -22,68 +22,71 @@
 
 namespace App\Http\Controllers\Admin\Settings;
 
+
+
 use App\Http\Controllers\Admin\AdminController;
 use App\Models\SettingSystem;
-use Illuminate\Http\Request;
+use App\Http\Requests\Admin\AdminSettingsSystemRequest;
 
 class AdminSettingsSystemsController extends AdminController
 {
     /**
-     * Display a listing of the resource.
+     * 設定の表示
      */
+
     public function index()
     {
-        //
-        return view('admin.settings.systems.index', [
-            'title' => 'admin.settings.systems',
+        $settings = [
+            'site_name' => SettingSystem::getValue('site_name', 'My Site'),
+            'admin_theme' => SettingSystem::getValue('admin_theme', 'light'),
+            'is_member_site' => SettingSystem::getValue('is_member_site', 'false'),
+            'allow_external_registration' => SettingSystem::getValue('allow_external_registration', 'false'),
+            'maintenance_mode' => SettingSystem::getValue('maintenance_mode', 'false'),
+            'maintenance_message' => SettingSystem::getValue('maintenance_message', '現在メンテナンス中です。しばらくお待ちください。'),
+            'allow_guest_registration' => SettingSystem::getValue('allow_guest_registration', 'false'),
+            'required_fields' => SettingSystem::getValue('required_fields', [
+                'address' => false,
+                'phone' => false,
+                'gender' => false,
+                'birthday' => false,
+            ]),
+        ];
+
+        return view(
+            'admin.settings.systems.index',
+            [
+                'settings' => $settings,
+                'title' => 'admin.settings.systems',
+            ]
+
+        );
+    }
+
+    /**
+     * 設定の更新
+     */
+    public function update(AdminSettingsSystemRequest $request)
+    {
+
+        $settings = $request->only([
+            'site_name',
+            'admin_theme',
+            'is_member_site',
+            'allow_external_registration',
+            'maintenance_mode',
+            'maintenance_message',
+            'allow_guest_registration',
         ]);
-    }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+        // JSON形式の必須項目設定
+        $required_fields = $request->input('required_fields', []);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+        SettingSystem::setValue('required_fields', $required_fields);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(SettingSystem $settingSystem)
-    {
-        //
-    }
+        foreach ($settings as $name => $value) {
+            SettingSystem::setValue($name, $value);
+        }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(SettingSystem $settingSystem)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, SettingSystem $settingSystem)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(SettingSystem $settingSystem)
-    {
-        //
+        return redirect()->route('admin.settings.systems')->with('success', '設定が更新されました。');
     }
 }

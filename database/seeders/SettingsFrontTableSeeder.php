@@ -24,9 +24,9 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\SettingSystem;
+use App\Models\SettingFront;
 
-class SettingSystemTableSeeder extends Seeder
+class SettingsFrontTableSeeder extends Seeder
 {
     /**
      * Run the database seeds.

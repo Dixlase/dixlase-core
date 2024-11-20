@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error {{ $exception->getStatusCode() }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+        .error-code { font-size: 72px; color: #ff6f61; }
+        .error-message { font-size: 24px; color: #333; }
+        a { color: #007bff; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <h1 class="error-code">{{ $exception->getStatusCode() }}</h1>
+    <p class="error-message">{{ $exception->getMessage() ?: 'Oops! Something went wrong.' }}</p>
+    <a href="{{ url('/') }}">Return to Home</a>
+</body>
+</html>

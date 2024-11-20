@@ -24,7 +24,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateSettingSystemTable extends Migration
+class CreateSettingsSystemTable extends Migration
 {
     /**
      * Run the migrations.
@@ -32,17 +32,16 @@ class CreateSettingSystemTable extends Migration
      * @return void
      */
 
-    protected $table = 'setting_system';
+    protected $table = 'settings_system';
 
     public function up()
     {
         Schema::create($this->table, function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string("title", 255)->nullable();
+            $table->string("name", 255)->nullable();
             $table->text("value")->nullable();
             $table->timestamps();
             $table->softDeletes();
-
         });
     }
 

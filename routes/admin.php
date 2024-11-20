@@ -58,8 +58,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         //Users
         Route::get('/users', [AdminUsersController::class, 'index'])->name('users.index');
         // Settings
+        // Admins
         Route::get('/settings/admins', [AdminAdminsController::class, 'index'])->name('settings.admins');
-        Route::get('/settings/systems', [AdminSettingsSystemsController::class, 'index'])->name('settings.systems');
+        // Systems
+        Route::get('/admin/settings/systems', [AdminSettingsSystemsController::class, 'index'])->name('settings.systems');
+        Route::put('/admin/settings', [AdminSettingsSystemsController::class, 'update'])->name('settings.systems.update');
+
         // Logout
         Route::post('/logout', [AdminAuthenticatedSessionController::class, 'destroy'])
             ->name('logout');
