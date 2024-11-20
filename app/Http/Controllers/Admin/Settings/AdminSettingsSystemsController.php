@@ -52,13 +52,12 @@ class AdminSettingsSystemsController extends AdminController
             ]),
         ];
 
+        $this->viewParams['settings'] = $settings;
+        $this->viewParams['title'] = 'admin.settings.systems';
+
         return view(
             'admin.settings.systems.index',
-            [
-                'settings' => $settings,
-                'title' => 'admin.settings.systems',
-            ]
-
+            $this->viewParams
         );
     }
 

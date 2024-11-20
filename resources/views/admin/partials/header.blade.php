@@ -20,8 +20,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @php
 // テーマの設定を取得
-$theme = config('admin.theme');
-$isDark = $theme === 'dark';
+//$theme = config('admin.theme');
+//$isDark = $theme === 'dark';
 
 /**
  * サブメニューが存在するかをチェックする関数
@@ -89,7 +89,7 @@ function hasSubmenu(array $item): bool
                     <div class="font-medium text-sm {{ config('admin.theme_class.' . $theme . '.option_3') }}">{{ Auth::user()->email }}</div>
                 </div>
 
-                <x-dropdown-link :href="route('mypage.profile.edit')">
+                <x-dropdown-link :href="route('admin.settings.admins.profile')">
                     {{ __('Profile') }}
                 </x-dropdown-link>
 

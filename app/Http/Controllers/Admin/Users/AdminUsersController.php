@@ -35,10 +35,10 @@ class AdminUsersController extends AdminController
     public function index()
     {
 
-        return view('admin.users.index', [
-            'title' => 'admin.users',
-            'admins' => Admin::all()
-        ]);
+        $this->viewParams['title'] = 'admin.users.index';
+        $this->viewParams['admins'] = Admin::all();
+
+        return view('admin.users.index', $this->viewParams);
     }
 
     /**
@@ -46,7 +46,9 @@ class AdminUsersController extends AdminController
      */
     public function create()
     {
-        //
+        $this->viewParams['title'] = 'admin.users.create';
+
+        return view('admin.users.create', $this->viewParams);
     }
 
     /**

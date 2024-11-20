@@ -22,11 +22,11 @@
 
 namespace App\Http\Controllers\Admin\Admins;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Admin\AdminController;
 use App\Models\Admin;
 use Illuminate\Http\Request;
 
-class AdminAdminsController extends Controller
+class AdminAdminsController extends AdminController
 {
     /**
      * Display a listing of the resource.
@@ -34,10 +34,10 @@ class AdminAdminsController extends Controller
     public function index()
     {
         //
-        return view('admin.settings.admins.index', [
-            'title' => 'admin.settings.admins',
-            'admins' => Admin::all()
-        ]);
+        $this->viewParams['title'] = 'admin.settings.admins.index';
+        $this->viewParams['admins'] = Admin::all();
+
+        return view('admin.settings.admins.index', $this->viewParams);
     }
 
     /**
@@ -86,5 +86,16 @@ class AdminAdminsController extends Controller
     public function destroy(Admin $admin)
     {
         //
+    }
+
+    /**
+     * Show the form for editing the profile.
+     */
+    public function profile()
+    {
+        $this->viewParams['title'] = 'admin.settings.admins.profile';
+
+
+        return view('admin.settings.admins.profile', $this->viewParams);
     }
 }

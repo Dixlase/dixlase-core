@@ -29,12 +29,22 @@ return [
     */
 
     'dashboard' => 'ダッシュボード',
+    'users' => [
+        'text' => 'ユーザー管理',
+        'index' => 'ユーザーマスター',
+        'create' => 'ユーザー新規作成',
+    ],
     'settings' => [
-        'index' => '設定',
-        'admins' => '管理者',
+        'text' => '設定',
+        'admins' => [
+            'text' => '管理者設定',
+            'index' => '管理者マスター',
+            'create' => '管理者新規作成',
+            'edit' => '編集',
+            'profile' => 'プロフィール設定',
+        ],
         'systems' => 'システム設定'
     ],
-    'users' => 'ユーザー管理',
     'roles' => 'ロール',
     'permissions' => '権限',
 

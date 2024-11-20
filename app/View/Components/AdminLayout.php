@@ -29,6 +29,7 @@ class AdminLayout extends Component
 {
     protected $theme = 'light';
     protected $theme_class;
+    protected $viewParams = [];
 
     /**
      * Get the view / contents that represents the component.
@@ -36,9 +37,32 @@ class AdminLayout extends Component
     public function render(): View
     {
         $this->theme = config('app.theme');
+        //テーマクラスを設定する
+        if ($this->theme == 'light') {
+            $this->theme_class = config('app.theme_class_light');
+        } else {
+            $this->theme_class = config('app.theme_class_dark');
+        }
 
-        return view('admin.partials.layout', [
-            'theme' => $this->theme
-        ]);
+        $isDark = $this->theme === 'dark';
+
+
+        $this->viewParams = [
+            'theme' => $this->theme,
+            'theme_class' => $this->theme_class,
+            'isDark' => $isDark
+        ];
+
+        return view('admin.partials.layout', $this->viewParams);
+    }
+    /**
+     * サブメニューが存在するかをチェックする関数
+     *
+     * @param array $item メニュー項目
+     * @return bool サブメニューが存在する場合は true
+     */
+    function hasSubmenu(array $item): bool
+    {
+        return isset($item['children']) && is_array($item['children']);
     }
 }
