@@ -21,6 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @php
 // テーマの設定を取得
 $theme = config('admin.theme');
+$isDark = $theme === 'dark';
 @endphp
 
 @props([
@@ -57,7 +58,7 @@ $theme = config('admin.theme');
                 <aside class="hidden sm:block {{ config('admin.theme_class.' . $theme . '.aside') }} w-64 flex-shrink-0">
                     @include('admin.partials.sidebar')
                 </aside>
-                <main class="{{ config('admin.theme_class.' . $theme . '.main') }} flex-1">
+                <main class="{{ config('admin.theme_class.' . $theme . '.main') }} {{ $isDark ? 'text-gray-300' : 'text-gray-700' }} flex-1">
                     <!-- Page Heading -->
                     <div class="{{ config('admin.theme_class.' . $theme . '.title') }} mx-auto py-6 px-4 sm:px-6 lg:px-8">
                         <h2 class="font-semibold text-xl {{ config('admin.theme_class.' . $theme . '.headding') }} leading-tight">

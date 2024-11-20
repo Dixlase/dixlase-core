@@ -36,22 +36,22 @@ function hasSubmenu(array $item): bool
 @endphp
 
 <header x-data="{ openSidebar: false, openUserMenu: false}" class="{{ config('admin.theme_class.' . $theme . '.header') }} w-full flex">
-    <!-- Primary Navigation Menu -->
+    <!-- プライマリーナビゲーションメニュー -->
     <div class="w-full mx-4 sm:mx-0 sm:px-6 lg:px-8 flex items-center h-16 justify-between sm:justify-start">
-        <!-- Logo -->
+        <!-- ロゴ -->
         <div class="flex items-center order-2 sm:order-1">
             <a href="{{ route('admin.dashboard') }}">
                 <x-application-logo class="block h-9 w-auto fill-current {{ config('admin.theme_class.' . $theme . '.logo') }}" />
             </a>
         </div>
 
-        <!-- Site Name (PCレイアウトのみ表示) -->
+        <!-- サイト名 (PCレイアウトのみ表示) -->
         <div class="hidden space-x-8 sm:-my-px sm:ms-6 sm:flex items-center sm:order-2">
             <a href="{{ route('admin.dashboard') }}">
                 {{ env('APP_NAME') }}
             </a>
         </div>
-        <!-- Navigation Hamburger (スマホ用) -->
+        <!-- サイドメニューのハンバーガー (スマホ用) -->
         <button @click="openSidebar = true, openMenu= true" class="sm:hidden inline-flex items-center justify-center p-2 rounded-md order-1 {{ config('admin.theme_class.' . $theme . '.button_hamburger') }} focus:outline-none transition duration-150 ease-in-out">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path :class="{'hidden': openSidebar, 'inline-flex': ! openSidebar }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -59,7 +59,7 @@ function hasSubmenu(array $item): bool
             </svg>
         </button>
 
-        <!-- User Hamburger -->
+        <!-- ユーザーメニューのハンバーガー (スマホ用) -->
         <button @click="openUserMenu = true, openMenu= true" class="inline-flex items-center justify-center rounded-md order-2 sm:hidden {{ config('admin.theme_class.' . $theme . '.button_hamburger') }} focus:outline-none transition duration-150 ease-in-out">
             <svg class="h-8 w-8" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z" />
@@ -68,8 +68,8 @@ function hasSubmenu(array $item): bool
         </button>
     </div>
 
-    <!-- Settings Dropdown -->
-    <div class="hidden w-36 sm:flex sm:items-center sm:ms-6">
+    <!-- ユーザードロップダウンメニュー -->
+    <div class="hidden w-36 sm:flex sm:items-center sm:ms-6 ">
         <x-dropdown align="right" width="48">
             <x-slot name="trigger">
                 <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md {{ config('admin.theme_class.' . $theme . '.button_admin_user') }} focus:outline-none transition ease-in-out duration-150">
@@ -84,11 +84,16 @@ function hasSubmenu(array $item): bool
             </x-slot>
 
             <x-slot name="content">
+                <div class="px-4">
+                    <div class="font-medium text-base {{ config('admin.theme_class.' . $theme . '.option_2') }}">{{ Auth::user()->name }}</div>
+                    <div class="font-medium text-sm {{ config('admin.theme_class.' . $theme . '.option_3') }}">{{ Auth::user()->email }}</div>
+                </div>
+
                 <x-dropdown-link :href="route('mypage.profile.edit')">
                     {{ __('Profile') }}
                 </x-dropdown-link>
 
-                <!-- Authentication -->
+                <!-- ログアウト -->
                 <form method="POST" action="{{ route('admin.logout') }}">
                     @csrf
 
@@ -127,14 +132,14 @@ function hasSubmenu(array $item): bool
     <div class="sm:hidden fixed w-64 h-full shadow-lg transform transition-transform duration-300 ease-in-out z-20 translate-x-100vw {{ $isDark ? 'text-gray-300 bg-gray-900' : 'text-gray-700 bg-gray-200' }}"
     :class="{ 'translate-x-100vw': !openUserMenu, 'translate-x-100vw-16': openUserMenu,'sm:block': openUserMenu, 'sm:hidden': ! openUserMenu }">
 
-        <!-- Close Button -->
+        <!-- 閉じるボタン -->
         <button @click="openUserMenu = false" class="absolute top-4 right-4 p-2 {{ $isDark ? "text-gray-300" : "text-gray-700" }}">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
         </button>
 
-        <!-- Responsive Settings Options -->
+        <!-- ユーザーメニュー(スマホ用) -->
         <div class="pt-4 pb-1 border-t {{ config('admin.theme_class.' . $theme . '.option_1') }}">
             <div class="px-4">
                 <div class="font-medium text-base {{ config('admin.theme_class.' . $theme . '.option_2') }}">{{ Auth::user()->name }}</div>
@@ -146,7 +151,7 @@ function hasSubmenu(array $item): bool
                     {{ __('Profile') }}
                 </x-responsive-nav-link>
 
-                <!-- Authentication -->
+                <!-- ログアウト -->
                 <form method="POST" action="{{ route('mypage.logout') }}">
                     @csrf
                     <x-responsive-nav-link :href="route('mypage.logout')"
