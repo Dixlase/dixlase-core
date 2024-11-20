@@ -79,30 +79,50 @@ return [
             'icon' => 'fas fa-fw fa-tachometer-alt',
         ],
         'users' => [
-            'text' => 'admin.users',
-            'route' => 'admin.users.index',
+            'text' => 'admin.users.text',
             'icon' => 'fas fa-fw fa-users',
+            'children' => [
+                'index' => [
+                    'text' => 'admin.users.index',
+                    'route' => 'admin.users.index',
+                    'icon' => 'fas fa-fw fa-users',
+                ],
+                'create' => [
+                    'text' => 'admin.users.create',
+                    'route' => 'admin.users.create',
+                    'icon' => 'fas fa-fw fa-users',
+                ],
+            ]
         ],
         'setting' => [
-            'text' => 'admin.settings.index',
+            'text' => 'admin.settings.text',
             'icon' => 'fas fa-fw fa-cogs',
             'children' => [
                 'admins' => [
-                    'text' => 'admin.settings.admins',
-                    'route' => 'admin.settings.admins',
+                    'text' => 'admin.settings.admins.text',
                     'icon' => 'fas fa-fw fa-users',
+                    'children' => [
+                        'index' => [
+                            'text' => 'admin.settings.admins.index',
+                            'route' => 'admin.settings.admins.index',
+                            'icon' => 'fas fa-fw fa-users',
+                        ],
+                        'create' => [
+                            'text' => 'admin.settings.admins.create',
+                            'route' => 'admin.settings.admins.create',
+                            'icon' => 'fas fa-fw fa-users',
+                        ],
+                        'profile' => [
+                            'text' => 'admin.settings.admins.profile',
+                            'route' => 'admin.settings.admins.profile',
+                            'icon' => 'fas fa-fw fa-users',
+                        ]
+                    ]
                 ],
                 'systems' => [
                     'text' => 'admin.settings.systems',
                     'route' => 'admin.settings.systems',
                     'icon' => 'fas fa-fw fa-users',
-                    'children' => [
-                        'create' => [
-                            'text' => 'admin.settings.systems.create',
-                            'route' => 'admin.settings.systems.create',
-                            'icon' => 'fas fa-fw fa-users',
-                        ]
-                    ]
                 ],
 
             ],

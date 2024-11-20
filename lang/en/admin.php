@@ -19,12 +19,23 @@ return [
 
     'menu' => 'Admin Menu',
     'dashboard' => 'Dashboard',
-    'settings' => [
-        'index' => 'Settings',
-        'admins' => 'Admins',
-        'systems' => 'Systems'
+
+    'users' => [
+        'text' => 'Users',
+        'index' => 'User Master',
+        'create' => 'Create User',
     ],
-    'users' => 'Users',
+    'settings' => [
+        'text' => 'Settings',
+        'admins' => [
+            'text' => 'Admin Settings',
+            'index' => 'Admin Master',
+            'create' => 'Create Admin',
+            'profile' => 'Profile',
+        ],
+        'systems' => 'システム設定'
+    ],
+
     'roles' => 'Roles',
     'permissions' => 'Permissions',
     'settings' => 'Settings',

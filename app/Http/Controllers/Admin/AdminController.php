@@ -30,6 +30,7 @@ class AdminController extends Controller
     //変数を宣言する
     protected $theme = 'light';
     protected $theme_class;
+    protected $viewParams = [];
 
     //
     //初期設定を行う
@@ -42,11 +43,16 @@ class AdminController extends Controller
     {
         //テーマをコンフィグから取得する
         $this->theme = config('app.theme');
-        //テーマCSSを設定する
+        //テーマクラスを設定する
         if ($this->theme == 'light') {
             $this->theme_class = config('app.theme_class_light');
         } else {
             $this->theme_class = config('app.theme_class_dark');
         }
+
+        //ビューパラメータにテーマを設定する
+        $this->viewParams['theme'] = $this->theme;
+        $this->viewParams['theme_class'] = $this->theme_class;
+        $this->viewParams['isDark'] = $this->theme == 'dark';
     }
 }

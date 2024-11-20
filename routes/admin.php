@@ -55,14 +55,26 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Dashboard
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
         //Users
         Route::get('/users', [AdminUsersController::class, 'index'])->name('users.index');
+        Route::get('/users/create', [AdminUsersController::class, 'create'])->name('users.create');
+        Route::get('/users/edit', [AdminUsersController::class, 'edit'])->name('users.edit');
+        Route::get('/users/update', [AdminUsersController::class, 'update'])->name('users.update');
+        Route::get('/users/delete', [AdminUsersController::class, 'delete'])->name('users.delete');
+
         // Settings
         // Admins
-        Route::get('/settings/admins', [AdminAdminsController::class, 'index'])->name('settings.admins');
+        Route::get('/settings/admins', [AdminAdminsController::class, 'index'])->name('settings.admins.index');
+        Route::get('/settings/admins/create', [AdminAdminsController::class, 'create'])->name('settings.admins.create');
+        Route::get('/settings/admins/edit', [AdminAdminsController::class, 'edit'])->name('settings.admins.edit');
+        Route::put('/settings/admins/update', [AdminAdminsController::class, 'update'])->name('settings.admins.update');
+        Route::put('/settings/admins/delete', [AdminAdminsController::class, 'delete'])->name('settings.admins.delete');
+        Route::get('/settings/admins/profile', [AdminAdminsController::class, 'profile'])->name('settings.admins.profile');
+
         // Systems
         Route::get('/admin/settings/systems', [AdminSettingsSystemsController::class, 'index'])->name('settings.systems');
-        Route::put('/admin/settings', [AdminSettingsSystemsController::class, 'update'])->name('settings.systems.update');
+        Route::put('/admin/settings/update', [AdminSettingsSystemsController::class, 'update'])->name('settings.systems.update');
 
         // Logout
         Route::post('/logout', [AdminAuthenticatedSessionController::class, 'destroy'])
