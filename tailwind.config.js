@@ -30,8 +30,9 @@ export default {
         'transition-transform',
         'duration-300',
         'translate-x-full',
-        'translate-x-0'
-
+        'translate-x-0',
+        'bg-indigo-600',
+        'hover:bg-indigo-500',
     ],
 
 

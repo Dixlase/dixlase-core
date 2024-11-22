@@ -18,14 +18,9 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-@php
-// テーマの設定を取得
-$theme = config('admin.theme');
-$isDark = $theme === 'dark';
-@endphp
-
 @props([
-    'title' => ''
+    'title' => '',
+    'theme' => 'light',
 ])
 
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -52,7 +47,7 @@ $isDark = $theme === 'dark';
     <body class="font-sans antialiased {{ config('admin.theme_class.' . $theme . '.body') }}">
         <div class="min-h-screen">
             <!-- Header -->
-            @include('admin.partials.header')
+            @include('admin.partials.header', ['siteName' => $siteName])
             <!-- Side Bar -->
             <div class="min-h-screen flex">
                 <aside class="hidden sm:block {{ config('admin.theme_class.' . $theme . '.aside') }} w-64 flex-shrink-0">
@@ -63,7 +58,7 @@ $isDark = $theme === 'dark';
                     <div class="{{ config('admin.theme_class.' . $theme . '.title') }} mx-auto py-6 px-4 sm:px-6 lg:px-8">
                         <h2 class="font-semibold text-xl {{ config('admin.theme_class.' . $theme . '.headding') }} leading-tight">
                             <!-- ここにページタイトルを表示 -->
-                            {{ $title ?? '' }}
+                            {{ __($title) ?? '' }}
                         </h2>
                     </div>
                     <div class="px-4 sm:px-6 lg:px-8">

@@ -19,9 +19,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @php
-// テーマの設定を取得
-//$theme = config('admin.theme');
-//$isDark = $theme === 'dark';
 
 /**
  * サブメニューが存在するかをチェックする関数
@@ -48,7 +45,7 @@ function hasSubmenu(array $item): bool
         <!-- サイト名 (PCレイアウトのみ表示) -->
         <div class="hidden space-x-8 sm:-my-px sm:ms-6 sm:flex items-center sm:order-2">
             <a href="{{ route('admin.dashboard') }}">
-                {{ env('APP_NAME') }}
+                {{ $siteName ?? env('APP_NAME') }}
             </a>
         </div>
         <!-- サイドメニューのハンバーガー (スマホ用) -->
@@ -90,7 +87,7 @@ function hasSubmenu(array $item): bool
                 </div>
 
                 <x-dropdown-link :href="route('admin.settings.admins.profile')">
-                    {{ __('Profile') }}
+                    {{ __('admin.settings.admins.profile') }}
                 </x-dropdown-link>
 
                 <!-- ログアウト -->
@@ -100,7 +97,7 @@ function hasSubmenu(array $item): bool
                     <x-dropdown-link :href="route('admin.logout')"
                             onclick="event.preventDefault();
                                         this.closest('form').submit();">
-                        {{ __('Log Out') }}
+                        {{ __('common.Logout') }}
                     </x-dropdown-link>
                 </form>
             </x-slot>

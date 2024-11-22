@@ -24,6 +24,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Config;
 
 class AdminController extends Controller
 {
@@ -41,8 +43,6 @@ class AdminController extends Controller
     }
     public function setTheme()
     {
-        //テーマをコンフィグから取得する
-        $this->theme = config('app.theme');
         //テーマクラスを設定する
         if ($this->theme == 'light') {
             $this->theme_class = config('app.theme_class_light');

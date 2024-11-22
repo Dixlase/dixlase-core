@@ -24,33 +24,45 @@ namespace App\View\Components;
 
 use Illuminate\View\Component;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Config;
 
 class AdminLayout extends Component
 {
+    protected $siteName;
     protected $theme = 'light';
     protected $theme_class;
+    protected $title = '';
     protected $viewParams = [];
+
 
     /**
      * Get the view / contents that represents the component.
      */
     public function render(): View
     {
-        $this->theme = config('app.theme');
+        // データベースからサイト名を取得。取得できなかった場合は.encからデフォルト値を使用
+        $this->siteName = DB::table('settings_system')->where('name', 'site_name')->value('value')
+            ?? env('APP_NAME', 'EventManagementSystem');
+
+        // データベースからテーマ情報を取得。取得できなかった場合はコンフィグからデフォルト値を使用
+        $this->theme = DB::table('settings_system')->where('name', 'admin_theme')->value('value')
+            ?? Config::get('admin.theme', 'light'); // デフォルト値を 'light' に設定
+
         //テーマクラスを設定する
         if ($this->theme == 'light') {
-            $this->theme_class = config('app.theme_class_light');
+            $this->theme_class = config('admin.theme_class_light');
         } else {
-            $this->theme_class = config('app.theme_class_dark');
+            $this->theme_class = config('admin.theme_class_dark');
         }
-
         $isDark = $this->theme === 'dark';
 
 
         $this->viewParams = [
+            'siteName' => $this->siteName,
             'theme' => $this->theme,
             'theme_class' => $this->theme_class,
-            'isDark' => $isDark
+            'isDark' => $isDark,
         ];
 
         return view('admin.partials.layout', $this->viewParams);

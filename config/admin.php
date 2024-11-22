@@ -30,7 +30,7 @@ return [
             'option_2' => 'text-gray-800',
             'option_3' => 'text-gray-500',
             'form_input' => 'text-gray-500',
-            'form_input_button' => 'bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none',
+            'form_input_button' => 'bg-indigo-600 text-white hover:bg-indigo-500 focus:outline-none',
             'form_input_text' => 'bg-white text-gray-700 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500',
         ],
         'dark' => [
@@ -49,7 +49,7 @@ return [
             'option_2' => 'text-white',
             'option_3' => 'text-gray-400',
             'form_input' => 'text-gray-600',
-            'form_input_button' => 'bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none',
+            'form_input_button' => 'bg-indigo-600 text-white hover:bg-indigo-500 focus:outline-none',
             'form_input_text' => 'bg-gray-900 border-gray-500 focus:border-indigo-500 focus:ring-indigo-500',
 
         ],
