@@ -19,12 +19,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @php
-$theme = config('admin.theme');
+// テーマの設定を取得
 $theme_class_header = $theme == 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900';
 @endphp
 
 
-<x-admin-layout :title="__($title)">
+<x-admin-layout x-data="{ title : $title }">
     <!-- メインコンテンツ -->
     <div class="w-full min-h-screen py-12">
         <div>

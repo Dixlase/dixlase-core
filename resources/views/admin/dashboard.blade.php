@@ -20,7 +20,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @php
 // テーマの設定を取得
-$theme = config('admin.theme');
 $theme_class_header = $theme == 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900';
 @endphp
 

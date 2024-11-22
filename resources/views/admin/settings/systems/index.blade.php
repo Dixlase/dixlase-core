@@ -18,17 +18,19 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-@php
-$theme = config('admin.theme');
-$theme_class_header = $theme == 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900';
-$isDark = $theme === 'dark';
-@endphp
 
 
-<x-admin-layout :title="__($title)">
-    <div class="w-full min-h-screen py-12">
+
+<x-admin-layout :title="$title" :theme="$theme">
+    @php
+    //$theme_class_header = $theme == 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900';
+    @endphp
+    <div class="w-full min-h-screen" x-data="{
+        theme: {{ json_encode($theme) }},
+        contents_class: $theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}">
+
         <div class="max-w-4xl mx-auto">
-            <div class="{{ $theme_class_header }} overflow-hidden shadow-lg rounded-lg">
+            <div class="max-w-4xl mx-auto rounded-lg" :class="contents_class">
                 <div class="p-6">
                     @if (session('success'))
                         <div class="mb-4 p-4 text-green-800 bg-green-100 border border-green-200 rounded-lg">

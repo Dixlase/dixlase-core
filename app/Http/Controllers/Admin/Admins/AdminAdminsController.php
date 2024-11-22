@@ -34,7 +34,7 @@ class AdminAdminsController extends AdminController
     public function index()
     {
         //
-        $this->viewParams['title'] = 'admin.settings.admins.index';
+        $this->viewParams['title'] = __('admin.settings.admins.index');
         $this->viewParams['admins'] = Admin::all();
 
         return view('admin.settings.admins.index', $this->viewParams);
@@ -45,7 +45,8 @@ class AdminAdminsController extends AdminController
      */
     public function create()
     {
-        //
+        $this->viewParams['title'] = 'admin.settings.admins.create';
+        return view('admin.settings.admins.create', $this->viewParams);
     }
 
     /**
@@ -94,8 +95,6 @@ class AdminAdminsController extends AdminController
     public function profile()
     {
         $this->viewParams['title'] = 'admin.settings.admins.profile';
-
-
         return view('admin.settings.admins.profile', $this->viewParams);
     }
 }
