@@ -20,7 +20,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Requests\Admin;
+namespace App\Http\Requests\Admin\Settings;
 
 use Illuminate\Foundation\Http\FormRequest;
 

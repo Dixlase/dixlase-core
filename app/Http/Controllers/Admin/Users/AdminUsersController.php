@@ -25,7 +25,8 @@ namespace App\Http\Controllers\Admin\Users;
 use App\Http\Controllers\Admin\AdminController;
 use App\Models\Admin;
 use App\Models\User;
-use Illuminate\Http\Request;
+use App\Http\Requests\Admin\Users\AdminUserStoreRequest;
+
 
 class AdminUsersController extends AdminController
 {
@@ -54,9 +55,20 @@ class AdminUsersController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(AdminUserStoreRequest $request)
     {
-        //
+        // バリデーション済みデータを取得
+        $validated = $request->validated();
+
+        // 新しいユーザーを作成
+        User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => bcrypt($validated['password']), // パスワードをハッシュ化
+        ]);
+
+        // リダイレクト
+        return redirect()->route('admin.users.index')->with('success', '新しいユーザーが作成されました！');
     }
 
     /**

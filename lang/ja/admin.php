@@ -50,4 +50,14 @@ return [
 
     'logout' => 'ログアウト',
 
+    'required' => ':attribute は必須です。',
+    'email' => ':attribute は正しいメールアドレス形式で入力してください。',
+    'unique' => ':attribute は既に存在しています。',
+    'min' => ':attribute は最低 :min 文字必要です。',
+    'confirmed' => ':attribute 確認が一致しません。',
+    'attributes' => [
+        'name' => '名前',
+        'email' => 'メールアドレス',
+        'password' => 'パスワード',
+    ],
 ];
