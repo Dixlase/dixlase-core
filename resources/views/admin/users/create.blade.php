@@ -19,23 +19,57 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @php
-$theme = config('admin.theme');
 $theme_class_header = $theme == 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900';
 @endphp
 
 
 <x-admin-layout :title="__($title)">
-    <!-- メインコンテンツ -->
-    <div class="w-full min-h-screen py-12">
-        <div>
-            <!-- コンテンツ部分 -->
-            <div class="w-full sm:px-6 lg:px-8">
-                <div class="{{ $theme_class_header }} overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        {{ __("You're logged in!") }}
-                    </div>
+    <div class="max-w-4xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <div class="bg-white shadow-md rounded p-6">
+            <form action="{{ route('admin.users.store') }}" method="POST">
+                @csrf
+                <div class="mb-4">
+                    <label for="name" class="block text-sm font-medium text-gray-700">名前</label>
+                    <input type="text" name="name" id="name" required
+                           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                           value="{{ old('name') }}">
+                    @error('name')
+                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                    @enderror
                 </div>
-            </div>
+
+                <div class="mb-4">
+                    <label for="email" class="block text-sm font-medium text-gray-700">メールアドレス</label>
+                    <input type="email" name="email" id="email" required
+                           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                           value="{{ old('email') }}">
+                    @error('email')
+                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div class="mb-4">
+                    <label for="password" class="block text-sm font-medium text-gray-700">パスワード</label>
+                    <input type="password" name="password" id="password" required
+                           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    @error('password')
+                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div class="mb-4">
+                    <label for="password_confirmation" class="block text-sm font-medium text-gray-700">パスワード確認</label>
+                    <input type="password" name="password_confirmation" id="password_confirmation" required
+                           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit"
+                            class="py-2 px-4 bg-indigo-600 text-white rounded-md shadow-sm hover:bg-indigo-700">
+                        ユーザーを作成
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </x-admin-layout>

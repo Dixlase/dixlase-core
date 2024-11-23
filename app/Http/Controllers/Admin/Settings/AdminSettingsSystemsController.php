@@ -26,7 +26,7 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Http\Controllers\Admin\AdminController;
 use App\Models\SettingSystem;
-use App\Http\Requests\Admin\AdminSettingsSystemRequest;
+use App\Http\Requests\Admin\Settings\AdminSettingsSystemRequest;
 
 class AdminSettingsSystemsController extends AdminController
 {
