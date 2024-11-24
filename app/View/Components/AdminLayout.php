@@ -41,7 +41,7 @@ class AdminLayout extends Component
      */
     public function render(): View
     {
-        // データベースからサイト名を取得。取得できなかった場合は.encからデフォルト値を使用
+        // データベースからサイト名を取得。取得できなかった場合は.envからデフォルト値を使用
         $this->siteName = DB::table('settings_system')->where('name', 'site_name')->value('value')
             ?? env('APP_NAME', 'EventManagementSystem');
 

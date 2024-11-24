@@ -60,6 +60,11 @@ return [
         ],
     ],
 
+    'form_class' => [
+        'text' => 'block w-full rounded-md shadow-sm sm:text-sm',
+        'button' => 'ml-2 px-4 py-2 bg-indigo-600 text-white rounded-md shadow-sm hover:bg-indigo-700',
+        'input' => 'block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm',
+    ],
 
     /*
     |--------------------------------------------------------------------------

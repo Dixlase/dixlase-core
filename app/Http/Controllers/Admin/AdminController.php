@@ -38,6 +38,11 @@ class AdminController extends Controller
     //初期設定を行う
     public function __construct()
     {
+
+        // データベースからテーマ情報を取得。取得できなかった場合はコンフィグからデフォルト値を使用
+        $this->theme = DB::table('settings_system')->where('name', 'admin_theme')->value('value')
+            ?? Config::get('admin.theme', 'light'); // デフォルト値を 'light' に設定
+
         //テーマを設定する
         $this->setTheme();
     }

@@ -18,13 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-
-
-
 <x-admin-layout :title="$title" :theme="$theme">
-    @php
-    //$theme_class_header = $theme == 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900';
-    @endphp
     <div class="w-full min-h-screen" x-data="{
         theme: {{ json_encode($theme) }},
         contents_class: $theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}">

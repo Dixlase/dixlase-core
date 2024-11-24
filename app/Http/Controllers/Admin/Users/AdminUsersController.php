@@ -26,6 +26,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Models\Admin;
 use App\Models\User;
 use App\Http\Requests\Admin\Users\AdminUserStoreRequest;
+use Illuminate\Http\Request;
 
 
 class AdminUsersController extends AdminController
@@ -33,12 +34,26 @@ class AdminUsersController extends AdminController
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
 
         $this->viewParams['title'] = 'admin.users.index';
-        $this->viewParams['admins'] = Admin::all();
 
+        // 検索条件の取得
+        $search = $request->input('search');
+
+        // ユーザーを検索
+        $users = User::query()
+            ->when($search, function ($query, $search) {
+                $query->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%');
+            })
+            ->paginate(10); // ページネーション
+
+        $this->viewParams['users'] = $users;
+        $this->viewParams['search'] = $search;
+
+        // ビューにデータを渡す
         return view('admin.users.index', $this->viewParams);
     }
 
@@ -84,7 +99,10 @@ class AdminUsersController extends AdminController
      */
     public function edit(User $user)
     {
-        //
+        $this->viewParams['title'] = 'admin.users.create';
+        $this->viewParams['user'] = $user;
+
+        return view('admin.users.edit', $this->viewParams);
     }
 
     /**
@@ -92,7 +110,14 @@ class AdminUsersController extends AdminController
      */
     public function update(Request $request, User $user)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+        ]);
+
+        $user->update($validated);
+
+        return redirect()->route('admin.users.index')->with('success', 'ユーザー情報を更新しました！');
     }
 
     /**
