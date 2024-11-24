@@ -24,17 +24,59 @@ $theme_class_header = $theme == 'dark' ? 'bg-gray-900 text-white' : 'bg-white te
 @endphp
 
 
-<x-admin-layout :title="__($title)">
-    <!-- メインコンテンツ -->
-    <div class="w-full min-h-screen py-12">
-        <div>
-            <!-- コンテンツ部分 -->
-            <div class="w-full sm:px-6 lg:px-8">
-                <div class="{{ $theme_class_header }} overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        {{ __("You're logged in!") }}
-                    </div>
-                </div>
+<x-admin-layout :title="$title" :theme="$theme">
+    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <h2 class="text-lg font-semibold">ユーザー検索</h2>
+
+        <!-- 検索フォーム -->
+        <form action="{{ route('admin.users.index') }}" method="GET" class="mb-6">
+            <div class="flex items-center">
+                <input
+                    type="text"
+                    name="search"
+                    placeholder="ユーザー名やメールアドレスで検索"
+                    value="{{ $search }}"
+                    class="{{ config('admin.form_class.text') }} {{ config('admin.theme_class.' . $theme . '.form_input_text') }}"
+                >
+                <button
+                    type="submit"
+                    class="ml-2 px-4 py-2 bg-indigo-600 text-white rounded-md shadow-sm hover:bg-indigo-700">
+                    検索
+                </button>
+            </div>
+        </form>
+
+        <!-- ユーザー一覧 -->
+        <div class="shadow-md rounded p-6">
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr class="">
+                        <th class="border px-4 py-2">ID</th>
+                        <th class="border px-4 py-2">名前</th>
+                        <th class="border px-4 py-2">メールアドレス</th>
+                        <th class="border px-4 py-2">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($users as $user)
+                        <tr>
+                            <td class="border px-4 py-2">{{ $user->id }}</td>
+                            <td class="border px-4 py-2">{{ $user->name }}</td>
+                            <td class="border px-4 py-2">{{ $user->email }}</td>
+                            <td class="border px-4 py-2">
+                                <a href="{{ route('admin.users.edit', ['user' => $user->id]) }}"
+                                   class="text-indigo-600 hover:text-indigo-900">
+                                    編集
+                                </a>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+
+            <!-- ページネーション -->
+            <div class="mt-4">
+                {{ $users->links() }}
             </div>
         </div>
     </div>
