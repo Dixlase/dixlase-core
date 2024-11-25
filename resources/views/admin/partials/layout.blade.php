@@ -21,9 +21,38 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @props([
     'title' => '',
     'theme' => 'light',
+
+    'theme_class' => [
+        'body' => 'bg-white text-gray-900 dark:bg-gray-950 dark:text-white',
+        'header' => 'bg-gray-200 dark:bg-gray-800 border-gray-300 dark:border-gray-700 border-b',
+        'logo' => 'text-gray-900 dark:text-white',
+        'aside' => 'bg-gray-100 dark:bg-gray-800 text-gray-900 border-r border-gray-300  dark:text-white dark:border-r dark:border-gray-700',
+        'main' => 'bg-white text-gray-900 dark:bg-gray-900 dark:text-white',
+        'title' => 'bg-gray-100 text-gray-800 border-b border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white',
+        'heading' => 'text-gray-800 dark:text-white',
+        'nav_link' => 'text-gray-700 hover:text-black dark:text-gray-300 dark:hover:text-white',
+        'button_admin_user' => 'text-gray-500 bg-white hover:text-gray-700 dark:text-gray-300 dark:bg-gray-800 dark:hover:text-white',
+        'button_hamburger' => 'text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700',
+        'responsive_navigation_menu' => 'text-gray-700 hover:text-black dark:text-gray-300 dark:hover:text-white',
+        'option_1' => 'border-gray-200 dark:border-gray-700',
+        'option_2' => 'text-gray-800 dark:text-white',
+        'option_3' => 'text-gray-500 dark:text-gray-400',
+        'table' => [
+            'header' => 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white',
+            'row' => 'bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white',
+            'row_hover' => 'hover:bg-gray-100 dark:hover:bg-gray-600',
+            'row_selected' => 'bg-gray-200 dark:bg-gray-600',
+            'row_selected_hover' => 'hover:bg-gray-200 dark:hover:bg-gray-600',
+            'cell' => 'border-b border-gray-200 dark:border-gray-700',
+            'cell_selected' => 'border-b border-gray-200 dark:border-gray-700',
+            'cell_selected_hover' => 'border-b border-gray-200 dark:border-gray-700',
+        ]
+    ],
+
 ])
 
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="{{ $theme === 'dark' ? 'dark' : '' }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -44,23 +73,32 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @vite(['resources/js/app.js', 'resources/scss/app.scss'], 'build')
         @endif
     </head>
-    <body class="font-sans antialiased {{ config('admin.theme_class.' . $theme . '.body') }}">
+    <body class="font-sans antialiased {{ config('admin.theme_class.layout.body') }}">
         <div class="min-h-screen">
             <!-- Header -->
-            @include('admin.partials.header', ['siteName' => $siteName])
-            <!-- Side Bar -->
+            @include('admin.partials.header', [
+                'siteName' => $siteName,
+                'theme' => $theme,
+            ])
+
+
             <div class="min-h-screen flex">
-                <aside class="hidden sm:block {{ config('admin.theme_class.' . $theme . '.aside') }} w-64 flex-shrink-0">
+                 <!-- Side Bar -->
+                <aside class="hidden sm:block w-64 flex-shrink-0 {{ config('admin.theme_class.layout.aside') }}">
                     @include('admin.partials.sidebar')
                 </aside>
-                <main class="{{ config('admin.theme_class.' . $theme . '.main') }} {{ $isDark ? 'text-gray-300' : 'text-gray-700' }} flex-1">
+
+                <!-- Main -->
+                <main class="flex-1 {{ config('admin.theme_class.main') }}">
+
                     <!-- Page Heading -->
-                    <div class="{{ config('admin.theme_class.' . $theme . '.title') }} mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        <h2 class="font-semibold text-xl {{ config('admin.theme_class.' . $theme . '.headding') }} leading-tight">
+                    <div class="{{ config('admin.theme_class.title') }} mx-auto py-6 px-4 sm:px-6 lg:px-8 mb-10">
+                        <h2 class="font-semibold text-xl leading-tight {{ config('admin.theme_class.layout.heading') }}">
                             <!-- ここにページタイトルを表示 -->
                             {{ __($title) ?? '' }}
                         </h2>
                     </div>
+
                     <div class="px-4 sm:px-6 lg:px-8">
                         <!-- Page Content -->
                         {{ $slot }}
@@ -68,5 +106,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </main>
             </div>
         </div>
+        <script>
+
     </body>
 </html>

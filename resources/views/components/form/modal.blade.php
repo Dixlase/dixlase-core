@@ -1,0 +1,69 @@
+@props([
+    'id' => 'confirmationModal', // モーダルのID
+    'title' => '確認',          // モーダルのタイトル
+    'message' => 'この操作を実行しますか？', // モーダルのメッセージ
+    'confirmText' => '確認',     // 確認ボタンのテキスト
+    'cancelText' => 'キャンセル', // キャンセルボタンのテキスト
+    'class' => '',               // モーダルのカスタムクラス
+    'theme' => 'light',            // モーダルのテーマ
+])
+
+@php
+    $theme_class = $theme === 'light'
+        ? 'bg-white'
+        : 'bg-gray-900';
+@endphp
+
+<div id="{{ $id }}" class="mt-0 fixed inset-0 z-50 flex items-center justify-center bg-opacity-80 opacity-0 pointer-events-none transition-opacity duration-300 {{ $theme === 'light' ? 'bg-gray-100 ' : 'bg-black'}}">
+    <div class="relative transform overflow-hidden rounded-lg text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg scale-95 {{ $theme === 'light' ? 'bg-white' : 'bg-gray-900' }}">
+        <div class="px-4 pb-4 pt-5 sm:p-6 sm:pb-4 {{ $theme === 'light' ? 'bg-white' : 'bg-gray-900' }}">
+            <div class="sm:flex sm:items-start">
+                <div class="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                    </svg>
+                </div>
+                <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                    <h3 class="text-base font-semibold {{ $theme === 'light' ? 'text-gray-900' : 'text-white' }}" id="modal-title">{{ $title }}</h3>
+                    <div class="mt-2">
+                        <p class="text-sm {{ $theme === 'light' ? 'text-gray-900' : 'text-white' }}">{{ $message }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 {{ $theme === 'light' ? 'bg-gray-50' : 'bg-gray-800' }}">
+            <button type="submit" class="inline-flex w-full justify-center rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 sm:ml-3 sm:w-auto">
+                {{ $confirmText }}
+            </button>
+            <button type="button" onclick="closeModal('{{ $id }}')" class="mt-3 inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm ring-1 ring-inset  sm:mt-0 sm:w-auto {{ $theme === 'light' ? 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50' : 'bg-gray-900 text-white ring-gray-300 hover:bg-gray-50' }}">
+                {{ $cancelText }}
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+
+const modalId = '{{ $id }}';
+// モーダルウィンドウを開く
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
+    modal.classList.add('opacity-100', 'scale-100');
+}
+
+// モーダルウィンドウを閉じる
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.classList.remove('opacity-100', 'scale-100');
+    modal.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    @if ($errors->any())
+        // モーダルを閉じる処理
+        closeModal(modalId);
+    @endif
+});
+
+</script>

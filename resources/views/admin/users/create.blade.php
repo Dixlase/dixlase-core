@@ -24,52 +24,28 @@ $theme_class_header = $theme == 'dark' ? 'bg-gray-900 text-white' : 'bg-white te
 
 
 <x-admin-layout :title="__($title)">
-    <div class="max-w-4xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <div class="shadow-md rounded p-6">
-            <form action="{{ route('admin.users.store') }}" method="POST">
-                @csrf
-                <div class="mb-4">
-                    <label for="name" class="block text-sm font-medium text-gray-700">名前</label>
-                    <input type="text" name="name" id="name" required
-                           class="{{ config('admin.form_class.text') }} {{ config('admin.theme_class.' . $theme . '.form_input_text') }}"
-                           value="{{ old('name') }}">
-                    @error('name')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
-                </div>
+    <form action="{{ route('admin.users.store') }}" method="POST">
+        @csrf
 
-                <div class="mb-4">
-                    <label for="email" class="block text-sm font-medium text-gray-700">メールアドレス</label>
-                    <input type="email" name="email" id="email" required
-                           class="{{ config('admin.form_class.text') }} {{ config('admin.theme_class.' . $theme . '.form_input_text') }}"
-                           value="{{ old('email') }}">
-                    @error('email')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
-                </div>
+        <!-- フォーム -->
+        @include('admin.users.partials.form', ['theme' => $theme])
 
-                <div class="mb-4">
-                    <label for="password" class="block text-sm font-medium text-gray-700">パスワード</label>
-                    <input type="password" name="password" id="password" required
-                           class="{{ config('admin.form_class.text') }} {{ config('admin.theme_class.' . $theme . '.form_input_text') }}">
-                    @error('password')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
-                </div>
+        <!-- 保存ボタン -->
+        @include('components.form.button', [
+            'type' => 'button',
+            'label' => 'ユーザーを作成',
+            'onclick' => "openModal('confirmationModal')",
+            'theme' => $theme,
+        ])
 
-                <div class="mb-4">
-                    <label for="password_confirmation" class="block text-sm font-medium text-gray-700">パスワード確認</label>
-                    <input type="password" name="password_confirmation" id="password_confirmation" required
-                           class="{{ config('admin.form_class.text') }} {{ config('admin.theme_class.' . $theme . '.form_input_text') }}">
-                </div>
+        <!-- モーダル -->
+        @include('components.form.modal', [
+            'id' => 'confirmationModal',
+            'title' => 'ユーザー作成の確認',
+            'message' => 'この内容でユーザーを作成しますか？',
+            'cancelText' => '戻る',
+            'theme' => $theme
+        ])
 
-                <div class="flex justify-end">
-                    <button type="submit"
-                            class="py-2 px-4 bg-indigo-600 text-white rounded-md shadow-sm hover:bg-indigo-700">
-                        ユーザーを作成
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+    </form>
 </x-admin-layout>

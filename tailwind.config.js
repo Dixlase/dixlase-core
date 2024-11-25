@@ -3,6 +3,7 @@ import forms from '@tailwindcss/forms';
 
 /** @type {import('tailwindcss').Config} */
 export default {
+    darkMode: 'class', // 'media' または 'class' を指定
     content: [
         './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
         './storage/framework/views/*.php',
@@ -33,7 +34,15 @@ export default {
         'translate-x-0',
         'bg-indigo-600',
         'hover:bg-indigo-500',
+        'dark:text-indigo-300',
+        'dark:hover:text-indigo-500',
+        'odd:dark:bg-gray-900',
+        'even:bg-gray-50',
+        'even:dark:bg-gray-800'
     ],
+    theme: {
+        extend: {},
+    },
 
 
     plugins: [forms],
