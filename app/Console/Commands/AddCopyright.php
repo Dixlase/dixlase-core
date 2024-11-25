@@ -152,7 +152,7 @@ EOT;
                     if (preg_match('/<!DOCTYPE html>/', $content)) {
                         $content = preg_replace('/(<!DOCTYPE html>)/', $newCopyright . "\n$1", $content, 1);
                     } else {
-                        $content = $newCopyright . "\n" . $content;
+                        $content = $newCopyright . "\n\n" . $content;
                     }
                     break;
                 case 'php':        // PHPファイル
