@@ -18,6 +18,13 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
+
+@props([
+    'theme' => 'light',
+
+])
+
+
 @php
 
 /**
@@ -30,15 +37,19 @@ function hasSubmenu(array $item): bool
 {
     return isset($item['children']) && is_array($item['children']);
 }
+
 @endphp
 
-<header x-data="{ openSidebar: false, openUserMenu: false}" class="{{ config('admin.theme_class.' . $theme . '.header') }} w-full flex">
+<header x-data="{ openSidebar: false, openUserMenu: false}" class="w-full flex border-b {{ config('admin.theme_class.layout.header') }}">
     <!-- プライマリーナビゲーションメニュー -->
     <div class="w-full mx-4 sm:mx-0 sm:px-6 lg:px-8 flex items-center h-16 justify-between sm:justify-start">
         <!-- ロゴ -->
         <div class="flex items-center order-2 sm:order-1">
             <a href="{{ route('admin.dashboard') }}">
-                <x-application-logo class="block h-9 w-auto fill-current {{ config('admin.theme_class.' . $theme . '.logo') }}" />
+                @include('components.application-logo', [
+                    'class' => 'block h-9 w-9 fill-current ' . $theme_class['logo'],
+                    'alt' => $siteName ?? env('APP_NAME')
+                ])
             </a>
         </div>
 
@@ -69,7 +80,7 @@ function hasSubmenu(array $item): bool
     <div class="hidden w-36 sm:flex sm:items-center sm:ms-6 ">
         <x-dropdown align="right" width="48">
             <x-slot name="trigger">
-                <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md {{ config('admin.theme_class.' . $theme . '.button_admin_user') }} focus:outline-none transition ease-in-out duration-150">
+                <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md focus:outline-none transition ease-in-out duration-150 {{ $theme_class['button_admin_user'] }}">
                     <div>{{ Auth::user()->name }}</div>
 
                     <div class="ms-1">
@@ -82,8 +93,8 @@ function hasSubmenu(array $item): bool
 
             <x-slot name="content">
                 <div class="px-4">
-                    <div class="font-medium text-base {{ config('admin.theme_class.' . $theme . '.option_2') }}">{{ Auth::user()->name }}</div>
-                    <div class="font-medium text-sm {{ config('admin.theme_class.' . $theme . '.option_3') }}">{{ Auth::user()->email }}</div>
+                    <div class="font-medium text-base {{ $theme_class['option_2'] }}">{{ Auth::user()->name }}</div>
+                    <div class="font-medium text-sm {{ $theme_class['option_3'] }}">{{ Auth::user()->email }}</div>
                 </div>
 
                 <x-dropdown-link :href="route('admin.settings.admins.profile')">
@@ -108,15 +119,15 @@ function hasSubmenu(array $item): bool
     <div x-show="openSidebar || openUserMenu" @click="openSidebar = !true; openUserMenu = false" class="fixed inset-0 bg-transparent z-10 w-full h-full"></div>
 
     <!-- 左側スライドインメニュー -->
-    <div class="fixed inset-y-0 w-64 shadow-lg transform transition-transform duration-300 ease-in-out translate-x-minus-full z-20 {{ $isDark ? 'text-gray-300 bg-gray-900' : 'text-gray-700 bg-gray-200' }}"
+    <div class="fixed inset-y-0 w-64 shadow-lg transform transition-transform duration-300 ease-in-out translate-x-minus-full z-20 text-gray-700 bg-gray-200 dark:text-gray-300 dark:bg-gray-900"
     :class="{ 'translate-x-minus-full': !openSidebar, 'translate-x-0': openSidebar }">
-        <button @click="openSidebar = !openSidebar" class="p-4 {{ $isDark ? "text-gray-300" : "text-gray-700" }}">
+        <button @click="openSidebar = !openSidebar" class="p-4 text-gray-700 dark:text-gray-300">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
         </button>
         <!-- スマホレイアウト用のサイト名 -->
-        <div class="px-4 py-2 border-b {{ $isDark ? "border-gray-700" : "border-gray-300" }}">
+        <div class="px-4 py-2 border-b border-gray-300 dark:border-gray-700">
             <a href="{{ route('admin.dashboard') }}" class="text-lg font-bold">
                 {{ env('APP_NAME') }}
             </a>
@@ -130,17 +141,17 @@ function hasSubmenu(array $item): bool
     :class="{ 'translate-x-100vw': !openUserMenu, 'translate-x-100vw-16': openUserMenu,'sm:block': openUserMenu, 'sm:hidden': ! openUserMenu }">
 
         <!-- 閉じるボタン -->
-        <button @click="openUserMenu = false" class="absolute top-4 right-4 p-2 {{ $isDark ? "text-gray-300" : "text-gray-700" }}">
+        <button @click="openUserMenu = false" class="absolute top-4 right-4 p-2 text-gray-700 dark:text-gray-300">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
         </button>
 
         <!-- ユーザーメニュー(スマホ用) -->
-        <div class="pt-4 pb-1 border-t {{ config('admin.theme_class.' . $theme . '.option_1') }}">
+        <div class="pt-4 pb-1 border-t {{ $theme_class['option_1'] }}">
             <div class="px-4">
-                <div class="font-medium text-base {{ config('admin.theme_class.' . $theme . '.option_2') }}">{{ Auth::user()->name }}</div>
-                <div class="font-medium text-sm {{ config('admin.theme_class.' . $theme . '.option_3') }}">{{ Auth::user()->email }}</div>
+                <div class="font-medium text-base {{ config('admin.theme_class.option_2') }}">{{ Auth::user()->name }}</div>
+                <div class="font-medium text-sm {{ config('admin.theme_class.option_3') }}">{{ Auth::user()->email }}</div>
             </div>
 
             <div class="mt-3 space-y-1">

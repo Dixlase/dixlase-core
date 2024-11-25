@@ -4,26 +4,27 @@
             <form action="{{ route('admin.users.update', $user->id) }}" method="POST">
                 @csrf
                 @method('PUT')
-                <div class="mb-4">
-                    <label for="name" class="block text-sm font-medium text-gray-700">名前</label>
-                    <input type="text" name="name" id="name" required
-                           class="{{ config('admin.form_class.text') }} {{ config('admin.theme_class.' . $theme . '.form_input_text') }}"
-                           value="{{ old('name', $user->name) }}">
-                </div>
 
-                <div class="mb-4">
-                    <label for="email" class="block text-sm font-medium text-gray-700">メールアドレス</label>
-                    <input type="email" name="email" id="email" required
-                           class="{{ config('admin.form_class.text') }} {{ config('admin.theme_class.' . $theme . '.form_input_text') }}"
-                           value="{{ old('email', $user->email) }}">
-                </div>
+                <!-- フォーム -->
+                @include('admin.users.partials.form', ['theme' => $theme])
 
-                <div class="flex justify-end">
-                    <button type="submit"
-                            class="px-4 py-2 bg-indigo-600 text-white rounded-md shadow-sm hover:bg-indigo-700">
-                        更新
-                    </button>
-                </div>
+                <!-- 保存ボタン -->
+                @include('components.form.button', [
+                    'type' => 'button',
+                    'label' => 'ユーザーを更新',
+                    'onclick' => "openModal('confirmationModal')",
+                    'theme' => $theme,
+                ])
+
+                <!-- モーダル -->
+                @include('components.form.modal', [
+                    'id' => 'confirmationModal',
+                    'title' => 'ユーザー情報更新の確認',
+                    'message' => 'この内容でユーザー情報を更新しますか？',
+                    'cancelText' => '戻る',
+                    'theme' => $theme
+                ])
+
             </form>
         </div>
     </div>

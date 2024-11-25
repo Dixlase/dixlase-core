@@ -21,35 +21,37 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @php
 // テーマの設定を取得
 $theme_class_header = $theme == 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900';
+
 @endphp
 
 
 <x-admin-layout :title="$title" :theme="$theme">
     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <h2 class="text-lg font-semibold">ユーザー検索</h2>
+        <h3 class="text-lg font-semibold">ユーザー検索</h3>
 
         <!-- 検索フォーム -->
         <form action="{{ route('admin.users.index') }}" method="GET" class="mb-6">
             <div class="flex items-center">
-                <input
-                    type="text"
-                    name="search"
-                    placeholder="ユーザー名やメールアドレスで検索"
-                    value="{{ $search }}"
-                    class="{{ config('admin.form_class.text') }} {{ config('admin.theme_class.' . $theme . '.form_input_text') }}"
-                >
-                <button
-                    type="submit"
-                    class="ml-2 px-4 py-2 bg-indigo-600 text-white rounded-md shadow-sm hover:bg-indigo-700">
-                    検索
-                </button>
+                @csrf
+                @include('components.form.text', [
+                    'name' => 'search',
+                    'placeholder' => 'ユーザー名やメールアドレスで検索',
+                    'value' => $search,
+
+                ])
+
+                @include('components.form.button', [
+                    'type' => "submit",
+                    'label' => '検索',
+                ])
+
             </div>
         </form>
 
         <!-- ユーザー一覧 -->
         <div class="shadow-md rounded p-6">
-            <table class="w-full border-collapse">
-                <thead>
+            <table class="w-full text-sm text-left rtl:text-right">
+                <thead class="text-xs uppercase {{ config('admin.theme_class.table.header') }}">
                     <tr class="">
                         <th class="border px-4 py-2">ID</th>
                         <th class="border px-4 py-2">名前</th>
@@ -59,13 +61,13 @@ $theme_class_header = $theme == 'dark' ? 'bg-gray-900 text-white' : 'bg-white te
                 </thead>
                 <tbody>
                     @foreach ($users as $user)
-                        <tr>
+                        <tr class="{{ config('admin.theme_class.table.row') }}">
                             <td class="border px-4 py-2">{{ $user->id }}</td>
                             <td class="border px-4 py-2">{{ $user->name }}</td>
                             <td class="border px-4 py-2">{{ $user->email }}</td>
                             <td class="border px-4 py-2">
                                 <a href="{{ route('admin.users.edit', ['user' => $user->id]) }}"
-                                   class="text-indigo-600 hover:text-indigo-900">
+                                    class="{{ config('admin.theme_class.link') }}">
                                     編集
                                 </a>
                             </td>

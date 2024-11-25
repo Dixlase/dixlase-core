@@ -24,7 +24,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div x-data="{ open: false,open_child: false }">
                 @if (isset($item['route']) && is_string($item['route']))
                     <a href="{{ route($item['route']) }}"
-                    class="flex items-center px-4 py-2 text-sm font-medium {{ $isDark ? 'text-gray-300 hover:bg-gray-700 hover:text-white' : 'text-gray-700 hover:bg-gray-200 hover:text-black' }} {{ Request::is($item['text']) ? 'active' : '' }} rounded-md">
+                    class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-black dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white {{ Request::is($item['text']) ? 'active' : '' }} rounded-md">
                         <i class="{{ $item['icon'] }} mr-3"></i>
                         <span>{{ __($item['text']) }}</span>
                     </a>
