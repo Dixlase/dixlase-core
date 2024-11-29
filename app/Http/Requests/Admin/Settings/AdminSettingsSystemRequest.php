@@ -42,6 +42,7 @@ class AdminSettingsSystemRequest extends FormRequest
         return [
             'site_name' => 'required|string|max:255',
             'admin_theme' => 'required|in:light,dark',
+            'language' => 'required|in:ja,en',
             'is_member_site' => 'required|boolean',
             'allow_external_registration' => 'required|boolean',
             'maintenance_mode' => 'required|boolean',
@@ -63,6 +64,7 @@ class AdminSettingsSystemRequest extends FormRequest
         return [
             'site_name.required' => 'サイト名は必須です。',
             'admin_theme.required' => '管理画面のテーマを選択してください。',
+            'language.required' => '言語を選択してください。',
             'is_member_site.required' => '会員サイトの設定は必須です。',
             'allow_external_registration.required' => '外部ユーザー登録の設定は必須です。',
             'maintenance_mode.required' => 'メンテナンスモードの設定は必須です。',

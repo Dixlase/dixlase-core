@@ -30,5 +30,5 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endphp
 
 <label for="{{ $for }}" class="block font-medium text-lg {{ $theme_class }} {{ $class }}">
-    {{ $text }}
+   {{ __($text) }}
 </label>

@@ -37,6 +37,7 @@ class AdminController extends Controller
     protected $title = '';
     protected $view_params = [];
     protected $route_name = '';
+    protected $settings = [];
 
     //
     //初期設定を行う
@@ -52,8 +53,18 @@ class AdminController extends Controller
         $this->theme = DB::table('settings_system')->where('name', 'admin_theme')->value('value')
             ?? Config::get('admin.theme', 'light'); // デフォルト値を 'light' に設定
 
+        // データベースからシステム設定を取得
+        $this->settings = DB::table('settings_system')->get()->keyBy('name')->toArray();
+
+
+
+
         //ビューパラメータにサイト名を設定する
         $this->view_params['site_name'] = $this->site_name;
+
+        //ビューパラメータにシステム設定を設定する
+        $this->view_params['settings'] = $this->settings;
+
 
         //テーマを設定する
         $this->setTheme();

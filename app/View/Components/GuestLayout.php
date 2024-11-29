@@ -24,14 +24,51 @@ namespace App\View\Components;
 
 use Illuminate\View\Component;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Config;
 
 class GuestLayout extends Component
 {
+    protected $site_name;
+    protected $theme = 'light';
+    protected $theme_class;
+    protected $title = '';
+    protected $view_params = [];
+
     /**
      * Get the view / contents that represents the component.
      */
     public function render(): View
     {
-        return view('layouts.guest');
+
+        // データベースからサイト名を取得。取得できなかった場合は.envからデフォルト値を使用
+        $this->siteName = DB::table('settings_system')->where('name', 'site_name')->value('value')
+            ?? env('APP_NAME', 'EventManagementSystem');
+
+        // データベースからテーマ情報を取得。取得できなかった場合はコンフィグからデフォルト値を使用
+        $this->theme = DB::table('settings_system')->where('name', 'admin_theme')->value('value')
+            ?? Config::get('admin.theme', 'light'); // デフォルト値を 'light' に設定
+
+        //テーマクラスを設定する
+        if ($this->theme == 'light') {
+            $this->theme_class = config('admin.theme_class_light');
+        } else {
+            $this->theme_class = config('admin.theme_class_dark');
+        }
+        $isDark = $this->theme === 'dark';
+
+
+        $this->view_params = [
+            'site_name' => $this->site_name,
+            'theme' => $this->theme,
+            'theme_class' => $this->theme_class,
+            'isDark' => $isDark,
+        ];
+
+
+        return view(
+            'layouts.guest',
+            $this->view_params
+        );
     }
 }

@@ -48,7 +48,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div>
                         @include('components.form.label', [
                             'for' => 'site_name',
-                            'text' => 'サイト名',
+                            'text' => 'common.site_name',
                         ])
                         @include('components.form.text', [
                             'id' => 'site_name',
@@ -62,14 +62,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div class="mt-4">
                         @include('components.form.label', [
                             'for' => 'admin_theme',
-                            'text' => '管理画面のテーマ',
+                            'text' => 'admin.pages.settings.systems.admin_theme',
                         ])
                         @include('components.form.select', [
                             'id' => 'admin_theme',
                             'name' => 'admin_theme',
                             'options' => [
-                                'light' => 'common.Light',
-                                'dark' => 'common.Dark',
+                                'light' => 'common.light',
+                                'dark' => 'common.dark',
                             ],
                             'value' => $settings['admin_theme'],
                             'class' => config('admin.theme_class.' . $theme . '.form_input_text'),
@@ -80,7 +80,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     <div class="mt-4">
                         @include('components.form.label', [
-                            'text' => '会員サイトにする',
+                            'for' => 'language',
+                            'text' => 'common.language',
+                        ])
+
+                        @include('components.form.select', [
+                            'id' => 'language',
+                            'name' => 'language',
+                            'options' => config('admin.languages.available'),
+                            'value' => $settings['language'],
+                            'class' => config('admin.theme_class.' . $theme . '.form_input_text'),
+                            'required' => true,
+                            'theme' => $theme
+                        ])
+
+                    <div class="mt-4">
+                        @include('components.form.label', [
+                            'text' => 'admin.pages.settings.systems.is_member_site',
                         ])
                         @include('components.form.hidden', [
                             'id' => 'is_member_site',
@@ -90,8 +106,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         @include('components.form.radio-group', [
                             'name' => 'is_member_site',
                             'options' => [
-                                1 => 'はい',
-                                0 => 'いいえ',
+                                1 => 'common.yes',
+                                0 => 'common.no'
                             ],
                             'value' => $settings['is_member_site'],
                             'theme' => $theme

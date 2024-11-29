@@ -47,6 +47,7 @@ class AdminSettingsSystemsController extends AdminController
         $settings = [
             'site_name' => SettingSystem::getValue('site_name', 'My Site'),
             'admin_theme' => SettingSystem::getValue('admin_theme', 'light'),
+            'language' => SettingSystem::getValue('language', 'ja'),
             'is_member_site' => SettingSystem::getValue('is_member_site', 'false'),
             'allow_external_registration' => SettingSystem::getValue('allow_external_registration', 'false'),
             'maintenance_mode' => SettingSystem::getValue('maintenance_mode', 'false'),
@@ -61,7 +62,7 @@ class AdminSettingsSystemsController extends AdminController
         ];
 
         $this->view_params['settings'] = $settings;
-        $this->view_params['title'] = 'admin.settings.systems';
+        $this->view_params['title'] = 'admin.pages.settings.systems.title';
 
         return view(
             'admin.settings.systems.index',
@@ -78,6 +79,7 @@ class AdminSettingsSystemsController extends AdminController
         $settings = $request->only([
             'site_name',
             'admin_theme',
+            'language',
             'is_member_site',
             'allow_external_registration',
             'maintenance_mode',
