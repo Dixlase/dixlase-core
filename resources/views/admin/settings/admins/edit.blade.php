@@ -18,20 +18,20 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-
 @extends('admin.partials.layout')
 
 @section('content')
-    <form action="{{ route('admin.users.store') }}" method="POST">
+    <form action="{{ route('admin.users.update', $admin->id) }}" method="POST">
         @csrf
+        @method('PUT')
 
         <!-- フォーム -->
-        @include('admin.users.partials.form', ['theme' => $theme])
+        @include('admin.settings.admins.partials.form')
 
         <!-- 保存ボタン -->
         @include('components.form.button', [
             'type' => 'button',
-            'label' => 'ユーザーを作成',
+            'label' => 'ユーザーを更新',
             'onclick' => "openModal('confirmationModal')",
             'theme' => $theme,
         ])
@@ -39,8 +39,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- モーダル -->
         @include('components.form.modal', [
             'id' => 'confirmationModal',
-            'title' => 'ユーザー作成の確認',
-            'message' => 'この内容でユーザーを作成しますか？',
+            'title' => 'ユーザー情報更新の確認',
+            'message' => 'この内容でユーザー情報を更新しますか？',
             'cancelText' => '戻る',
             'theme' => $theme
         ])

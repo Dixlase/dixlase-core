@@ -39,7 +39,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('description')->nullable();
             $table->string('email')->unique();
-            $table->tinyInteger('role')->default(0);
+            $table->string('role')->default('admin');
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();

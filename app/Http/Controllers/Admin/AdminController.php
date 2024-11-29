@@ -26,22 +26,33 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Config;
+use App\Models\SettingSystem;
 
 class AdminController extends Controller
 {
     //変数を宣言する
+    protected $site_name;
     protected $theme = 'light';
     protected $theme_class;
-    protected $viewParams = [];
+    protected $title = '';
+    protected $view_params = [];
 
     //
     //初期設定を行う
     public function __construct()
     {
 
+
+        // データベースからサイト名を取得。取得できなかった場合は.envからデフォルト値を使用
+        $this->site_name = DB::table('settings_system')->where('name', 'site_name')->value('value')
+            ?? env('APP_NAME', 'EventManagementSystem');
+
         // データベースからテーマ情報を取得。取得できなかった場合はコンフィグからデフォルト値を使用
         $this->theme = DB::table('settings_system')->where('name', 'admin_theme')->value('value')
             ?? Config::get('admin.theme', 'light'); // デフォルト値を 'light' に設定
+
+        //ビューパラメータにサイト名を設定する
+        $this->view_params['site_name'] = $this->site_name;
 
         //テーマを設定する
         $this->setTheme();
@@ -56,8 +67,8 @@ class AdminController extends Controller
         }
 
         //ビューパラメータにテーマを設定する
-        $this->viewParams['theme'] = $this->theme;
-        $this->viewParams['theme_class'] = $this->theme_class;
-        $this->viewParams['isDark'] = $this->theme == 'dark';
+        $this->view_params['theme'] = $this->theme;
+        $this->view_params['theme_class'] = $this->theme_class;
+        $this->view_params['isDark'] = $this->theme == 'dark';
     }
 }

@@ -36,8 +36,17 @@ return [
         'systems' => 'システム設定'
     ],
 
-    'roles' => 'Roles',
+    'roles' => [
+        'text' => 'Roles',
+        'super_admin' => 'Super Admin',
+        'admin' => 'Admin',
+        'editor' => 'Editor',
+        'receptionist' => 'Reception',
+    ],
+
     'permissions' => 'Permissions',
     'settings' => 'Settings',
     'logout' => 'Logout',
+
+
 ];

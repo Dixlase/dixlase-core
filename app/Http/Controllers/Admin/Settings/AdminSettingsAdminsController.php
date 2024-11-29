@@ -20,48 +20,47 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Controllers\Admin\Users;
+namespace App\Http\Controllers\Admin\Settings;
 
 use App\Http\Controllers\Admin\AdminController;
 use App\Models\Admin;
-use App\Models\User;
-use App\Http\Requests\Admin\Users\AdminUserStoreRequest;
+use App\Http\Requests\Admin\Settings\Admin\AdminSettingsAdminStoreRequest;
 use Illuminate\Http\Request;
 
-
-class AdminUsersController extends AdminController
+class AdminSettingsAdminsController extends AdminController
 {
+
     //初期設定を行う
     public function __construct()
     {
         // 親クラスのコンストラクタを呼び出す
         parent::__construct();
     }
-
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-
-        $this->view_params['title'] = 'admin.users.index';
+        //
+        $this->view_params['title'] = __('admin.settings.admins.index');
+        $this->view_params['admins'] = Admin::all();
 
         // 検索条件の取得
         $search = $request->input('search');
 
         // ユーザーを検索
-        $users = User::query()
+        $admins = Admin::query()
             ->when($search, function ($query, $search) {
                 $query->where('name', 'like', '%' . $search . '%')
                     ->orWhere('email', 'like', '%' . $search . '%');
             })
             ->paginate(10); // ページネーション
 
-        $this->view_params['users'] = $users;
+        $this->view_params['admins'] = $admins;
         $this->view_params['search'] = $search;
 
         // ビューにデータを渡す
-        return view('admin.users.index', $this->view_params);
+        return view('admin.settings.admins.index', $this->view_params);
     }
 
     /**
@@ -69,34 +68,31 @@ class AdminUsersController extends AdminController
      */
     public function create()
     {
-        $this->view_params['title'] = 'admin.users.create';
-
-        return view('admin.users.create', $this->view_params);
+        $this->view_params['title'] = 'admin.settings.admins.create';
+        return view('admin.settings.admins.create', $this->view_params);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(AdminUserStoreRequest $request)
+    public function store(AdminSettingsAdminStoreRequest $request)
     {
+
         // バリデーション済みデータを取得
         $validated = $request->validated();
+        $validated['password'] = bcrypt($validated['password']);
 
         // 新しいユーザーを作成
-        User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => bcrypt($validated['password']), // パスワードをハッシュ化
-        ]);
+        Admin::create($validated);
 
         // リダイレクト
-        return redirect()->route('admin.users.index')->with('success', '新しいユーザーが作成されました！');
+        return redirect()->route('admin.settings.admins.index')->with('success', '新しい管理者アカウントが作成されました！');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(User $user)
+    public function show(Admin $admin)
     {
         //
     }
@@ -104,25 +100,26 @@ class AdminUsersController extends AdminController
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(User $user)
+    public function edit(Admin $admin)
     {
         $this->view_params['title'] = 'admin.users.create';
-        $this->view_params['user'] = $user;
+        $this->view_params['admin'] = $admin;
 
-        return view('admin.users.edit', $this->view_params);
+        return view('admin.settings.admins.edit', $this->view_params);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, User $user)
+    public function update(AdminSettingsAdminStoreRequest $request, Admin $admin)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'email' => 'required|email|unique:users,email,' . $admin->id,
         ]);
 
-        $user->update($validated);
+        $admin->update($validated);
+
 
         return redirect()->route('admin.users.index')->with('success', 'ユーザー情報を更新しました！');
     }
@@ -130,8 +127,17 @@ class AdminUsersController extends AdminController
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(User $user)
+    public function destroy(Admin $admin)
     {
         //
+    }
+
+    /**
+     * Show the form for editing the profile.
+     */
+    public function profile()
+    {
+        $this->view_params['title'] = 'admin.settings.admins.profile';
+        return view('admin.settings.admins.profile', $this->view_params);
     }
 }

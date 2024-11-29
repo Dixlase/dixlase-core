@@ -18,14 +18,9 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-@php
-// テーマの設定を取得
-$theme_class_header = $theme == 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900';
+@extends('admin.partials.layout')
 
-@endphp
-
-
-<x-admin-layout :title="$title" :theme="$theme">
+@section('content')
     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <h3 class="text-lg font-semibold">ユーザー検索</h3>
 
@@ -82,4 +77,4 @@ $theme_class_header = $theme == 'dark' ? 'bg-gray-900 text-white' : 'bg-white te
             </div>
         </div>
     </div>
-</x-admin-layout>
+@endsection

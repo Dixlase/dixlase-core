@@ -30,7 +30,7 @@ use App\Http\Controllers\Admin\Auth\AdminPasswordResetLinkController;
 use App\Http\Controllers\Admin\Auth\AdminRegisteredUserController;
 use App\Http\Controllers\Admin\Auth\AdminVerifyEmailController;
 use App\Http\Controllers\Admin\Settings\AdminSettingsSystemsController;
-use App\Http\Controllers\Admin\Admins\AdminAdminsController;
+use App\Http\Controllers\Admin\Settings\AdminSettingsAdminsController;
 use App\Http\Controllers\Admin\Users\AdminUsersController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -67,14 +67,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Settings
         // Admins
-        Route::get('/settings/admins', [AdminAdminsController::class, 'index'])->name('settings.admins.index');
-        Route::get('/settings/admins/create', [AdminAdminsController::class, 'create'])->name('settings.admins.create');
-        Route::get('/settings/admins/edit', [AdminAdminsController::class, 'edit'])->name('settings.admins.edit');
+        Route::get('/settings/admins', [AdminSettingsAdminsController::class, 'index'])->name('settings.admins.index');
+        Route::get('/settings/admins/create', [AdminSettingsAdminsController::class, 'create'])->name('settings.admins.create');
+        Route::post('/settings/admins/store', [AdminSettingsAdminsController::class, 'store'])->name('settings.admins.store');
+        Route::get('/settings/admins/edit', [AdminSettingsAdminsController::class, 'edit'])->name('settings.admins.edit');
 
 
-        Route::put('/settings/admins/update', [AdminAdminsController::class, 'update'])->name('settings.admins.update');
-        Route::put('/settings/admins/delete', [AdminAdminsController::class, 'delete'])->name('settings.admins.delete');
-        Route::get('/settings/admins/profile', [AdminAdminsController::class, 'profile'])->name('settings.admins.profile');
+        Route::put('/settings/admins/update', [AdminSettingsAdminsController::class, 'update'])->name('settings.admins.update');
+        Route::put('/settings/admins/delete', [AdminSettingsAdminsController::class, 'delete'])->name('settings.admins.delete');
+        Route::get('/settings/admins/profile', [AdminSettingsAdminsController::class, 'profile'])->name('settings.admins.profile');
 
         // Systems
         Route::get('/admin/settings/systems', [AdminSettingsSystemsController::class, 'index'])->name('settings.systems');

@@ -18,39 +18,6 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-@props([
-    'title' => '',
-    'theme' => 'light',
-
-    'theme_class' => [
-        'body' => 'bg-white text-gray-900 dark:bg-gray-950 dark:text-white',
-        'header' => 'bg-gray-200 dark:bg-gray-800 border-gray-300 dark:border-gray-700 border-b',
-        'logo' => 'text-gray-900 dark:text-white',
-        'aside' => 'bg-gray-100 dark:bg-gray-800 text-gray-900 border-r border-gray-300  dark:text-white dark:border-r dark:border-gray-700',
-        'main' => 'bg-white text-gray-900 dark:bg-gray-900 dark:text-white',
-        'title' => 'bg-gray-100 text-gray-800 border-b border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white',
-        'heading' => 'text-gray-800 dark:text-white',
-        'nav_link' => 'text-gray-700 hover:text-black dark:text-gray-300 dark:hover:text-white',
-        'button_admin_user' => 'text-gray-500 bg-white hover:text-gray-700 dark:text-gray-300 dark:bg-gray-800 dark:hover:text-white',
-        'button_hamburger' => 'text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700',
-        'responsive_navigation_menu' => 'text-gray-700 hover:text-black dark:text-gray-300 dark:hover:text-white',
-        'option_1' => 'border-gray-200 dark:border-gray-700',
-        'option_2' => 'text-gray-800 dark:text-white',
-        'option_3' => 'text-gray-500 dark:text-gray-400',
-        'table' => [
-            'header' => 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white',
-            'row' => 'bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white',
-            'row_hover' => 'hover:bg-gray-100 dark:hover:bg-gray-600',
-            'row_selected' => 'bg-gray-200 dark:bg-gray-600',
-            'row_selected_hover' => 'hover:bg-gray-200 dark:hover:bg-gray-600',
-            'cell' => 'border-b border-gray-200 dark:border-gray-700',
-            'cell_selected' => 'border-b border-gray-200 dark:border-gray-700',
-            'cell_selected_hover' => 'border-b border-gray-200 dark:border-gray-700',
-        ]
-    ],
-
-])
-
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="{{ $theme === 'dark' ? 'dark' : '' }}">
     <head>
@@ -77,7 +44,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="min-h-screen">
             <!-- Header -->
             @include('admin.partials.header', [
-                'siteName' => $siteName,
+                'site_name' => $site_name,
                 'theme' => $theme,
             ])
 
@@ -95,14 +62,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div class="{{ config('admin.theme_class.title') }} mx-auto py-6 px-4 sm:px-6 lg:px-8 mb-10">
                         <h2 class="font-semibold text-xl leading-tight {{ config('admin.theme_class.layout.heading') }}">
                             <!-- ここにページタイトルを表示 -->
-                            {{ __($title) ?? '' }}
+                            {{__($title)}}
                         </h2>
                     </div>
 
                     <div class="px-4 sm:px-6 lg:px-8">
                         <!-- Page Content -->
-                        {{ $slot }}
+                        @yield('content')
                     </div>
+
                 </main>
             </div>
         </div>

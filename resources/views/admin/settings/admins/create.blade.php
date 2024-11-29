@@ -18,24 +18,18 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-@php
-// テーマの設定を取得
-$theme_class_header = $theme == 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900';
-@endphp
+@extends('admin.partials.layout')
 
-
-<x-admin-layout x-data="{ title : $title }">
-    <!-- メインコンテンツ -->
-    <div class="w-full min-h-screen py-12">
-        <div>
-            <!-- コンテンツ部分 -->
-            <div class="w-full sm:px-6 lg:px-8">
-                <div class="{{ $theme_class_header }} overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        {{ __("You're logged in!") }}
-                    </div>
-                </div>
-            </div>
+@section('content')
+    <form action="{{ route('admin.settings.admins.store') }}" method="POST" class="mt-6">
+        @csrf
+        @include('admin.settings.admins.partials.form')
+        <div class="mt-4">
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700">
+                作成
+            </button>
         </div>
-    </div>
-</x-admin-layout>
+    </form>
+@endsection
+
+

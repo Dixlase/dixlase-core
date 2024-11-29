@@ -18,7 +18,9 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-<x-admin-layout :title="__($title)">
+@extends('admin.partials.layout')
+
+@section('content')
     <div class="max-w-4xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <div class="shadow-md rounded p-6">
             <form action="{{ route('admin.users.update', $user->id) }}" method="POST">
@@ -48,4 +50,4 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </form>
         </div>
     </div>
-</x-admin-layout>
+@endsection
