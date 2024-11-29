@@ -18,20 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-@php
 
-/**
- * サブメニューが存在するかをチェックする関数
- *
- * @param array $item メニュー項目
- * @return bool サブメニューが存在する場合は true
- */
-function hasSubmenu(array $item): bool
-{
-    return isset($item['children']) && is_array($item['children']);
-}
-
-@endphp
 
 <header x-data="{ openSidebar: false, openUserMenu: false}" class="w-full flex border-b {{ config('admin.theme_class.layout.header') }}">
     <!-- プライマリーナビゲーションメニュー -->
@@ -68,9 +55,6 @@ function hasSubmenu(array $item): bool
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18c0-2.21 1.79-4 4-4h4c2.21 0 4 1.79 4 4v1H6v-1z" />
             </svg>
         </button>
-
-
-
     </div>
 
     <!-- ユーザードロップダウンメニュー -->

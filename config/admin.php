@@ -34,7 +34,7 @@ return [
                 ],
             ]
         ],
-        'setting' => [
+        'settings' => [
             'text' => 'admin.settings.text',
             'icon' => 'fas fa-fw fa-cogs',
             'children' => [
@@ -119,6 +119,9 @@ return [
             'option_1' => 'border-gray-200 dark:border-gray-700',
             'option_2' => 'text-gray-800 dark:text-white',
             'option_3' => 'text-gray-500 dark:text-gray-400',
+        ],
+        'sidebar' => [
+            'active' => 'bg-gray-200 text-gray-900 font-bold border-l-4 border-blue-500 pl-3 rounded-md hover:bg-gray-300 hover:text-black dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600'
         ],
         'table' => [
             'header' => 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white',

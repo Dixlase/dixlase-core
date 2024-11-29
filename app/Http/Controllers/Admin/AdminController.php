@@ -26,7 +26,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Config;
-use App\Models\SettingSystem;
+use Illuminate\Support\Facades\Route;
 
 class AdminController extends Controller
 {
@@ -36,6 +36,7 @@ class AdminController extends Controller
     protected $theme_class;
     protected $title = '';
     protected $view_params = [];
+    protected $route_name = '';
 
     //
     //初期設定を行う
@@ -56,6 +57,10 @@ class AdminController extends Controller
 
         //テーマを設定する
         $this->setTheme();
+
+        // ルート名を取得
+        $this->route_name = Route::currentRouteName();
+        $this->view_params['route_name'] = $this->route_name;
     }
     public function setTheme()
     {
