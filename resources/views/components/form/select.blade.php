@@ -38,7 +38,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @if ($required) required @endif>
     @foreach ($options as $optionValue => $optionText)
         <option value="{{ $optionValue }}" {{ $value == $optionValue ? 'selected' : '' }}>
-            {{ $optionText }}
+            {{ __($optionText) }}
         </option>
     @endforeach
 </select>

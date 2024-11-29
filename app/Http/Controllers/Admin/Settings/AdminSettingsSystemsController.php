@@ -30,6 +30,14 @@ use App\Http\Requests\Admin\Settings\AdminSettingsSystemRequest;
 
 class AdminSettingsSystemsController extends AdminController
 {
+
+    //初期設定を行う
+    public function __construct()
+    {
+        // 親クラスのコンストラクタを呼び出す
+        parent::__construct();
+    }
+
     /**
      * 設定の表示
      */
@@ -52,12 +60,12 @@ class AdminSettingsSystemsController extends AdminController
             ]),
         ];
 
-        $this->viewParams['settings'] = $settings;
-        $this->viewParams['title'] = 'admin.settings.systems';
+        $this->view_params['settings'] = $settings;
+        $this->view_params['title'] = 'admin.settings.systems';
 
         return view(
             'admin.settings.systems.index',
-            $this->viewParams
+            $this->view_params
         );
     }
 

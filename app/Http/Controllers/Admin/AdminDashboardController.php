@@ -27,14 +27,15 @@ use Illuminate\Http\Request;
 
 class AdminDashboardController extends AdminController
 {
+    //初期設定を行う
+    public function __construct()
+    {
+        parent::__construct();
+    }
     //
     public function index()
     {
-
-        return view('admin.dashboard', [
-            'title' => 'admin.dashboard',
-            'theme' => $this->theme,
-            'theme_class' => $this->theme_class
-        ]);
+        $this->view_params['title'] = 'admin.dashboard';
+        return view('admin.dashboard', $this->view_params);
     }
 }

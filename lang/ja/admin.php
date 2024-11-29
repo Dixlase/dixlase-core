@@ -17,17 +17,6 @@ return [
     'password' => 'The provided password is incorrect.',
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
 
-    /*
-    |--------------------------------------------------------------------------
-    | Admin Language Lines
-    |--------------------------------------------------------------------------
-    |
-    | The following language lines are used during admin for various
-    | messages that we need to display to the user. You are free to modify
-    | these language lines according to your application's requirements.
-    |
-    */
-
     'dashboard' => 'ダッシュボード',
     'users' => [
         'text' => 'ユーザー管理',
@@ -39,7 +28,7 @@ return [
         'admins' => [
             'text' => '管理者設定',
             'index' => '管理者マスター',
-            'create' => '管理者新規作成',
+            'create' => '新規管理者作成',
             'edit' => '編集',
             'profile' => 'プロフィール設定',
         ],
@@ -59,5 +48,13 @@ return [
         'name' => '名前',
         'email' => 'メールアドレス',
         'password' => 'パスワード',
+    ],
+
+    'roles' => [
+        'text' => '権限',
+        'super_admin' => '特権管理者',
+        'admin' => '管理者',
+        'editor' => '編集者',
+        'receptionist' => '受付',
     ],
 ];
