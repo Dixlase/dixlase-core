@@ -17,23 +17,74 @@ return [
     'password' => 'The provided password is incorrect.',
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
 
-    'dashboard' => 'ダッシュボード',
-    'users' => [
-        'text' => 'ユーザー管理',
-        'index' => 'ユーザーマスター',
-        'create' => 'ユーザー新規作成',
-    ],
-    'settings' => [
-        'text' => '設定',
-        'admins' => [
-            'text' => '管理者設定',
-            'index' => '管理者マスター',
-            'create' => '新規管理者作成',
-            'edit' => '編集',
-            'profile' => 'プロフィール設定',
+
+    'nav' => [
+        'dashboard' => 'ダッシュボード',
+        'users' => [
+            'text' => 'ユーザー管理',
+            'index' => 'ユーザーマスター',
+            'create' => 'ユーザー新規作成',
         ],
-        'systems' => 'システム設定'
+        'settings' => [
+            'text' => '設定',
+            'admins' => [
+                'text' => '管理者設定',
+                'index' => '管理者マスター',
+                'create' => '新規管理者作成',
+                'edit' => '編集',
+                'profile' => 'プロフィール設定',
+            ],
+            'systems' => 'システム設定',
+        ],
     ],
+
+    'pages' => [
+        'settings' => [
+            'admins' => [
+                'create' => [
+                    'title' => '新規管理者作成',
+                    'name' => '名前',
+                    'email' => 'メールアドレス',
+                    'password' => 'パスワード',
+                    'password_confirmation' => 'パスワード確認',
+                    'role' => 'ロール',
+                    'submit' => '登録',
+                ],
+                'edit' => [
+                    'title' => '管理者編集',
+                    'name' => '名前',
+                    'email' => 'メールアドレス',
+                    'password' => 'パスワード',
+                    'password_confirmation' => 'パスワード確認',
+                    'role' => 'ロール',
+                    'submit' => '更新',
+                ],
+                'profile' => [
+                    'title' => 'プロフィール設定',
+                    'name' => '名前',
+                    'email' => 'メールアドレス',
+                    'password' => 'パスワード',
+                    'password_confirmation' => 'パスワード確認',
+                    'submit' => '更新',
+                ],
+            ],
+            'systems' => [
+                'title' => 'システム設定',
+                'site_name' => 'サイト名',
+                'is_member_site' => '会員サイト',
+                'allow_external_registration' => '外部登録',
+                'allow_guest_registration' => 'ゲスト登録',
+                'required_fields' => '必須項目',
+                'admin_theme' => '管理画面テーマ',
+                'language' => '言語',
+                'maintenance_mode' => 'メンテナンスモード',
+                'maintenance_message' => 'メンテナンスメッセージ',
+                'submit' => '更新',
+            ],
+        ],
+    ],
+
+
     'roles' => 'ロール',
     'permissions' => '権限',
 
@@ -57,4 +108,6 @@ return [
         'editor' => '編集者',
         'receptionist' => '受付',
     ],
+
+
 ];

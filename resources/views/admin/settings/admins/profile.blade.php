@@ -18,11 +18,9 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-
 @extends('admin.partials.layout')
 
 @section('content')
-
     <div class="w-full sm:px-6 lg:px-8">
         <div class="overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6">

@@ -33,14 +33,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endphp
 
 <div class="flex items-center space-x-4">
-    @foreach ($options as $optionValue => $optionLabel)
+    @foreach ($options as $option_value => $option_label)
         <label class="inline-flex items-center">
             <input type="radio"
                 name="{{ $name }}"
-                value="{{ $optionValue }}"
+                value="{{ $option_value }}"
                 class="{{ $theme_class }} {{ $class }}"
-                @if ($value == $optionValue) checked @endif>
-            <span class="ml-2">{{ $optionLabel }}</span>
+                @if ($value == $option_value) checked @endif>
+            <span class="ml-2">{{ __($option_label) }}</span>
         </label>
     @endforeach
 </div>

@@ -14,53 +14,53 @@ return [
     'nav' => [
 
         'dashboard' => [
-            'text' =>  'admin.dashboard',
+            'text' =>  'admin.nav.dashboard',
             'route' => 'admin.dashboard',
             'icon' => 'fas fa-fw fa-tachometer-alt',
         ],
         'users' => [
-            'text' => 'admin.users.text',
+            'text' => 'admin.nav.users.text',
             'icon' => 'fas fa-fw fa-users',
             'children' => [
                 'index' => [
-                    'text' => 'admin.users.index',
+                    'text' => 'admin.nav.users.index',
                     'route' => 'admin.users.index',
                     'icon' => 'fas fa-fw fa-users',
                 ],
                 'create' => [
-                    'text' => 'admin.users.create',
+                    'text' => 'admin.nav.users.create',
                     'route' => 'admin.users.create',
                     'icon' => 'fas fa-fw fa-users',
                 ],
             ]
         ],
         'settings' => [
-            'text' => 'admin.settings.text',
+            'text' => 'admin.nav.settings.text',
             'icon' => 'fas fa-fw fa-cogs',
             'children' => [
                 'admins' => [
-                    'text' => 'admin.settings.admins.text',
+                    'text' => 'admin.nav.settings.admins.text',
                     'icon' => 'fas fa-fw fa-users',
                     'children' => [
                         'index' => [
-                            'text' => 'admin.settings.admins.index',
+                            'text' => 'admin.nav.settings.admins.index',
                             'route' => 'admin.settings.admins.index',
                             'icon' => 'fas fa-fw fa-users',
                         ],
                         'create' => [
-                            'text' => 'admin.settings.admins.create',
+                            'text' => 'admin.nav.settings.admins.create',
                             'route' => 'admin.settings.admins.create',
                             'icon' => 'fas fa-fw fa-users',
                         ],
                         'profile' => [
-                            'text' => 'admin.settings.admins.profile',
+                            'text' => 'admin.nav.settings.admins.profile',
                             'route' => 'admin.settings.admins.profile',
                             'icon' => 'fas fa-fw fa-users',
                         ]
                     ]
                 ],
                 'systems' => [
-                    'text' => 'admin.settings.systems',
+                    'text' => 'admin.nav.settings.systems',
                     'route' => 'admin.settings.systems',
                     'icon' => 'fas fa-fw fa-users',
                 ],
@@ -152,6 +152,37 @@ return [
         'button' => 'ml-2 px-4 py-2 bg-indigo-600 text-white rounded-md shadow-sm hover:bg-indigo-700',
         'input' => 'block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm',
     ],
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | フロントページテンプレート
+    |--------------------------------------------------------------------------
+    |
+    | ここでは、フロントページのテンプレートに関する設定を行います。
+    | これにより、フロントページのテンプレートを簡単に変更できます。
+    |
+    */
+
+    'template' => 'default',
+
+    /*
+    |--------------------------------------------------------------------------
+    | 言語設定
+    |--------------------------------------------------------------------------
+    |
+    | ここでは、言語設定に関する設定を行います。
+    | これにより、言語設定を簡単に変更できます。
+    |
+    */
+
+    'languages' => [
+        'default' => 'ja',
+        'available' => [
+            'ja' => '日本語',
+            'en' => 'English',
+        ],
+    ]
 
 
 

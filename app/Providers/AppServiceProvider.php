@@ -25,6 +25,8 @@ namespace App\Providers;
 use Config;
 use Illuminate\Support\ServiceProvider;
 use URL;
+use Illuminate\Support\Facades\View;
+use App\Models\SettingSystem;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -51,5 +53,14 @@ class AppServiceProvider extends ServiceProvider
         //$this->app['request']->server->set('HTTPS', true);
         //URL::forceRootUrl(Config::get('app.url'));// ルートURLを設定
         //$url->forceScheme('https');
+
+        // テーマの設定
+        $currentTheme = config('admin.template', 'default');
+        View::addNamespace('theme', resource_path("views/themes/{$currentTheme}"));
+
+        //言語の設定
+        $language = SettingSystem::where('name', 'language')->value('value');
+        $lang = $language ?? config('admin.lang', 'ja');
+        app()->setLocale($lang);
     }
 }
