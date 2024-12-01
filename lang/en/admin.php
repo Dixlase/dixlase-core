@@ -19,6 +19,14 @@ return [
 
     'nav' => [
         'dashboard' => 'Dashboard',
+        'contents' => [
+            'text' => 'Contents',
+            'pages' => [
+                'text' => 'Pages',
+                'index' => 'Page Master',
+                'create' => 'Create Page',
+            ],
+        ],
         'users' => [
             'text' => 'Users',
             'index' => 'User Master',
@@ -36,11 +44,52 @@ return [
         ],
     ],
 
-    'pages' => [
+    'features' => [
+        'contents' => [
+            'pages' => [
+                'index' => [
+                    'heading' => 'Page Master',
+                    'name' => 'Name',
+                    'slug' => 'Slug',
+                    'status' => 'Status',
+                    'created_at' => 'Created At',
+                    'updated_at' => 'Updated At',
+                    'actions' => 'Actions',
+                    'edit' => 'Edit',
+                    'delete' => 'Delete',
+                ],
+                'create' => [
+                    'heading' => 'Create Page',
+                    'name' => 'Name',
+                    'slug' => 'Slug',
+                    'status' => 'Status',
+                    'submit' => 'Submit',
+                ],
+                'edit' => [
+                    'heading' => 'Edit Page',
+                    'name' => 'Name',
+                    'slug' => 'Slug',
+                    'status' => 'Status',
+                    'submit' => 'Update',
+                ],
+            ],
+        ],
+        'users' => [
+            'index' => [
+                'heading' => 'User Master',
+            ],
+            'create' => [
+                'heading' => 'Create User',
+            ],
+
+        ],
         'settings' => [
             'admins' => [
+                'index' => [
+                    'heading' => 'Admin Master',
+                ],
                 'create' => [
-                    'title' => 'Create Admin',
+                    'heading' => 'Create Admin',
                     'name' => 'Name',
                     'email' => 'Email',
                     'password' => 'Password',
@@ -49,7 +98,7 @@ return [
                     'submit' => 'Submit',
                 ],
                 'edit' => [
-                    'title' => 'Edit Admin',
+                    'heading' => 'Edit Admin',
                     'name' => 'Name',
                     'email' => 'Email',
                     'password' => 'Password',
@@ -58,7 +107,7 @@ return [
                     'submit' => 'Update',
                 ],
                 'profile' => [
-                    'title' => 'Profile',
+                    'heading' => 'Profile',
                     'name' => 'Name',
                     'email' => 'Email',
                     'password' => 'Password',
@@ -68,7 +117,7 @@ return [
                 ],
             ],
             'systems' => [
-                'title' => 'System Settings',
+                'heading' => 'System Settings',
                 'site_name' => 'Site Name',
                 'admin_theme' => 'Admin Theme',
                 'language' => 'Language',

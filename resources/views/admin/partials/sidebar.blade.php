@@ -18,6 +18,10 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
+@props([
+    'button_class' => 'flex items-center px-4 py-2 text-sm font-medium rounded-md focus:outline-none',
+    'arrow_class' => 'w-4 h-4 ml-auto transform'
+])
 
 <div class="flex flex-col w-64 h-full">
     <nav class="flex-1 px-4 py-4 space-y-1">
@@ -30,16 +34,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div x-data="{ {{ $open_key }} : {{ $is_open ? 'true' : 'false' }} }">
                 @if (isset($item['route']) && is_string($item['route']))
                     <a href="{{ route($item['route']) }}"
-                    class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-black dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white rounded-md {{ $item['route'] === $route_name ? config('admin.theme_class.sidebar.active') : '' }}">
+                    class="{{ $button_class }} {{ $item['route'] === $route_name ? config('admin.theme_class.sidebar.active') : config('admin.theme_class.sidebar.normal') }}">
                         <i class="{{ $item['icon'] }} mr-3"></i>
                         <span>{{ __($item['text']) }}</span>
                     </a>
                 @else
-                    <button @click="{{ $open_key }} = !{{ $open_key }}"
-                            class="flex items-center w-full px-4 py-2 text-sm font-medium {{ $isDark ? 'text-gray-300 hover:bg-gray-700 hover:text-white' : 'text-gray-700 hover:bg-gray-200 hover:text-black' }} rounded-md focus:outline-none">
+                    <button @click="{{ $open_key }} = !{{ $open_key }}" class="{{ $button_class }} w-full">
                         <i class="{{ $item['icon'] }} mr-3"></i>
                         <span>{{ __($item['text']) }}</span>
-                        <svg class="w-4 h-4 ml-auto transform" :class="{ 'rotate-180': {{ $open_key }} }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg class="{{ $arrow_class }}" :class="{ 'rotate-180': {{ $open_key }} }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                         </svg>
                     </button>
@@ -54,25 +57,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         x-transition:leave-start="opacity-100 transform translate-y-0 h-auto"
                         x-transition:leave-end="opacity-0 transform -translate-y-2 h-0"
                         class="ml-4 space-y-1">
-                        @foreach ($item['children'] as $childKey => $childItem)
-                            @if (isset($childItem['route']) && is_string($childItem['route']))
-                                <a href="{{ route($childItem['route']) }}"
-                                class="flex items-center px-4 py-2 text-sm font-medium rounded-md {{ $isDark ? 'text-gray-300 hover:bg-gray-700 hover:text-white' : 'text-gray-700 hover:bg-gray-200 hover:text-black' }} {{ $childItem['route'] === $route_name ? config('admin.theme_class.sidebar.active') : '' }}">
-                                    <i class="{{ $childItem['icon'] }} mr-3"></i>
-                                    <span>{{ __($childItem['text']) }}</span>
+                        @foreach ($item['children'] as $child_key => $child_item)
+                            @if (isset($child_item['route']) && is_string($child_item['route']))
+                                <a href="{{ route($child_item['route']) }}" class="{{ $button_class }} {{ $child_item['route'] === $route_name ? config('admin.theme_class.sidebar.active') : config('admin.theme_class.sidebar.normal') }}">
+                                    <i class="{{ $child_item['icon'] }} mr-3"></i>
+                                    <span>{{ __($child_item['text']) }}</span>
                                 </a>
                             @else
                                 @php
-                                    $open_child_key = 'open_' . $childKey;
-                                    $is_open_child = preg_match('/' . preg_quote($childKey, '/') . '/', $route_name);
+                                    $open_child_key = 'open_' . $child_key;
+                                    $is_open_child = preg_match('/' . preg_quote($child_key, '/') . '/', $route_name);
                                 @endphp
 
                                 <div x-data="{ {{ $open_child_key }}: {{ $is_open_child ? 'true' : 'false' }} }">
-                                    <button @click="{{ $open_child_key }} = !{{ $open_child_key }}"
-                                            class="flex items-center w-full px-4 py-2 text-sm font-medium {{ $isDark ? 'text-gray-300 hover:bg-gray-700 hover:text-white' : 'text-gray-700 hover:bg-gray-200 hover:text-black' }} rounded-md focus:outline-none">
-                                        <i class="{{ $childItem['icon'] }} mr-3"></i>
-                                        <span>{{ __($childItem['text']) }}</span>
-                                        <svg class="w-4 h-4 ml-auto transform" :class="{ 'rotate-180': {{ $open_child_key }} }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <button @click="{{ $open_child_key }} = !{{ $open_child_key }}" class="{{ $button_class }} w-full">
+                                        <i class="{{ $child_item['icon'] }} mr-3"></i>
+                                        <span>{{ __($child_item['text']) }}</span>
+                                        <svg class="{{ $arrow_class }}" :class="{ 'rotate-180': {{ $open_child_key }} }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
@@ -87,11 +88,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             x-transition:leave-start="opacity-100 transform translate-y-0"
                                             x-transition:leave-end="opacity-0 transform -translate-y-2"
                                             class="ml-4 space-y-1">
-                                            @foreach ($childItem['children'] as $sgrandchildKey => $grandchildItem)
-                                                <a href="{{ route($grandchildItem['route']) }}"
-                                                class="flex items-center px-4 py-2 text-sm font-medium rounded-md {{ $isDark ? 'text-gray-300 hover:bg-gray-700 hover:text-white' : 'text-gray-700 hover:bg-gray-200 hover:text-black' }} {{ $grandchildItem['route'] === $route_name ? config('admin.theme_class.sidebar.active') : '' }}">
-                                                    <i class="{{ $grandchildItem['icon'] }} mr-3"></i>
-                                                    <span>{{ __($grandchildItem['text']) }}</span>
+                                            @foreach ($child_item['children'] as $grand_child_key => $grand_child_item)
+                                                <a href="{{ route($grand_child_item['route']) }}"
+                                                class="{{ $button_class }} {{ $grand_child_item['route'] === $route_name ? config('admin.theme_class.sidebar.active') : config('admin.theme_class.sidebar.normal') }}">
+                                                    <i class="{{ $grand_child_item['icon'] }} mr-3"></i>
+                                                    <span>{{ __($grand_child_item['text']) }}</span>
                                                 </a>
                                             @endforeach
                                         </div>

@@ -20,6 +20,14 @@ return [
 
     'nav' => [
         'dashboard' => 'ダッシュボード',
+        'contents' => [
+            'text' => 'コンテンツ管理',
+            'pages' => [
+                'text' => 'ページ管理',
+                'index' => 'ページマスター',
+                'create' => 'ページ新規作成',
+            ],
+        ],
         'users' => [
             'text' => 'ユーザー管理',
             'index' => 'ユーザーマスター',
@@ -38,11 +46,61 @@ return [
         ],
     ],
 
-    'pages' => [
+    'features' => [
+        'dashboard' => [
+            'heading' => 'ダッシュボード',
+        ],
+        'contents' => [
+            'pages' => [
+                'title' => 'ページタイトル',
+                'slug' => 'スラッグ',
+                'content' => 'コンテンツ',
+                'status' => 'ステータス',
+                'index' => [
+                    'heading' => 'ページマスター',
+                ],
+                'create' => [
+                    'heading' => '新規ページ作成',
+                ],
+                'edit' => [
+                    'heading' => 'ページ編集',
+                ],
+            ],
+        ],
+        'users' => [
+            'index' => [
+                'heading' => 'ユーザーマスター',
+                'name' => '名前',
+                'email' => 'メールアドレス',
+                'role' => 'ロール',
+
+            ],
+            'create' => [
+                'heading' => '新規ユーザー作成',
+                'name' => '名前',
+                'email' => 'メールアドレス',
+                'password' => 'パスワード',
+                'password_confirmation' => 'パスワード確認',
+                'role' => 'ロール',
+                'submit' => '登録',
+            ],
+            'edit' => [
+                'title' => 'ユーザー編集',
+                'name' => '名前',
+                'email' => 'メールアドレス',
+                'password' => 'パスワード',
+                'password_confirmation' => 'パスワード確認',
+                'role' => 'ロール',
+                'submit' => '更新',
+            ],
+        ],
         'settings' => [
             'admins' => [
+                'index' => [
+                    'heading' => '管理者マスター',
+                ],
                 'create' => [
-                    'title' => '新規管理者作成',
+                    'heading' => '新規管理者作成',
                     'name' => '名前',
                     'email' => 'メールアドレス',
                     'password' => 'パスワード',
@@ -51,7 +109,7 @@ return [
                     'submit' => '登録',
                 ],
                 'edit' => [
-                    'title' => '管理者編集',
+                    'heading' => '管理者編集',
                     'name' => '名前',
                     'email' => 'メールアドレス',
                     'password' => 'パスワード',
@@ -60,7 +118,7 @@ return [
                     'submit' => '更新',
                 ],
                 'profile' => [
-                    'title' => 'プロフィール設定',
+                    'heading' => 'プロフィール設定',
                     'name' => '名前',
                     'email' => 'メールアドレス',
                     'password' => 'パスワード',
@@ -69,7 +127,7 @@ return [
                 ],
             ],
             'systems' => [
-                'title' => 'システム設定',
+                'heading' => 'システム設定',
                 'site_name' => 'サイト名',
                 'is_member_site' => '会員サイト',
                 'allow_external_registration' => '外部登録',

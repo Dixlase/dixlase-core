@@ -23,6 +23,8 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+
+use App\Models\Page;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -43,12 +45,14 @@ class DatabaseSeeder extends Seeder
             FilesTableSeeder::class,
             OptionsTableSeeder::class,
             OptionCategoriesTableSeeder::class,
+            PagesTableSeeder::class,
             SettingsFrontTableSeeder::class,
             SettingsSystemTableSeeder::class,
             SlotsTableSeeder::class,
             SlotCategoriesTableSeeder::class,
             SlotEventsTableSeeder::class,
-            SlotSchedulesTableSeeder::class
+            SlotSchedulesTableSeeder::class,
+
         ]);
     }
 }

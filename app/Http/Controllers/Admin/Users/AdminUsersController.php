@@ -44,7 +44,7 @@ class AdminUsersController extends AdminController
     public function index(Request $request)
     {
 
-        $this->view_params['title'] = 'admin.users.index';
+        $this->view_params['heading'] = 'admin.features.users.index.heading';
 
         // 検索条件の取得
         $search = $request->input('search');
@@ -69,7 +69,7 @@ class AdminUsersController extends AdminController
      */
     public function create()
     {
-        $this->view_params['title'] = 'admin.users.create';
+        $this->view_params['heading'] = 'admin.features.users.create.heading';
 
         return view('admin.users.create', $this->view_params);
     }
@@ -106,7 +106,7 @@ class AdminUsersController extends AdminController
      */
     public function edit(User $user)
     {
-        $this->view_params['title'] = 'admin.users.create';
+        $this->view_params['heading'] = 'admin.users.create.heading';
         $this->view_params['user'] = $user;
 
         return view('admin.users.edit', $this->view_params);
@@ -132,6 +132,8 @@ class AdminUsersController extends AdminController
      */
     public function destroy(User $user)
     {
-        //
+        $user->delete();
+
+        return redirect()->route('admin.users.index')->with('success', 'ユーザーを削除しました！');
     }
 }

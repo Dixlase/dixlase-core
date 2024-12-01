@@ -20,22 +20,20 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Controllers\Admin;
+namespace App\Models;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
-class AdminDashboardController extends AdminController
+class Page extends Model
 {
-    //初期設定を行う
-    public function __construct()
+
+    protected static function booted()
     {
-        parent::__construct();
-    }
-    //
-    public function index()
-    {
-        $this->view_params['heading'] = 'admin.features.dashboard.heading';
-        return view('admin.dashboard', $this->view_params);
+        static::creating(function ($page) {
+            if (empty($page->slug)) {
+                $page->slug = Str::slug($page->title);
+            }
+        });
     }
 }

@@ -188,24 +188,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         ])
                     </div>
 
-                    <!-- 保存ボタン -->
-                    @include('components.form.button', [
-                        'type' => 'button',
-                        'label' => '保存',
-                        'class' => 'mt-4',
-                        'onclick' => "openModal('confirmationModal')",
-                        'theme' => $theme
-                    ])
-
-                    <!-- モーダル -->
-                    @include('components.form.modal', [
+                    <!-- 保存ボタンとモーダル -->
+                    @include('components.form.save', [
+                        'theme' => $theme,
                         'id' => 'confirmationModal',
+                        'onclick' => "openModal('confirmationModal')",
                         'title' => '保存の確認',
                         'message' => '変更内容を保存しますか？',
-                        'confirmText' => '保存',
-                        'cancelText' => '戻る',
-                        'theme' => $theme
+                        'confirm_label' => '保存',
+                        'cancel_label' => '戻る',
                     ])
+
                 </form>
             </div>
         </div>

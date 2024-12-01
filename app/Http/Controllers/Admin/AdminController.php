@@ -34,7 +34,7 @@ class AdminController extends Controller
     protected $site_name;
     protected $theme = 'light';
     protected $theme_class;
-    protected $title = '';
+    protected $heading = '';
     protected $view_params = [];
     protected $route_name = '';
     protected $settings = [];
@@ -86,5 +86,6 @@ class AdminController extends Controller
         $this->view_params['theme'] = $this->theme;
         $this->view_params['theme_class'] = $this->theme_class;
         $this->view_params['isDark'] = $this->theme == 'dark';
+        $this->view_params['heading'] = $this->heading;
     }
 }

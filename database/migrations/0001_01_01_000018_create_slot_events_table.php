@@ -24,7 +24,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateSlotEvents extends Migration
+class CreateSlotEventsTable extends Migration
 {
     /**
      * Run the migrations.

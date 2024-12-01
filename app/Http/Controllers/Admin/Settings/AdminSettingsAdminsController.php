@@ -42,7 +42,7 @@ class AdminSettingsAdminsController extends AdminController
     public function index(Request $request)
     {
         //
-        $this->view_params['title'] = __('admin.settings.admins.index');
+        $this->view_params['heading'] = __('admin.features.settings.admins.index.heading');
         $this->view_params['admins'] = Admin::all();
 
         // 検索条件の取得
@@ -68,7 +68,7 @@ class AdminSettingsAdminsController extends AdminController
      */
     public function create()
     {
-        $this->view_params['title'] = 'admin.settings.admins.create';
+        $this->view_params['heading'] = 'admin.features.settings.admins.create.heading';
         return view('admin.settings.admins.create', $this->view_params);
     }
 
@@ -102,7 +102,7 @@ class AdminSettingsAdminsController extends AdminController
      */
     public function edit(Admin $admin)
     {
-        $this->view_params['title'] = 'admin.users.create';
+        $this->view_params['heading'] = 'admin.users.create.heading';
         $this->view_params['admin'] = $admin;
 
         return view('admin.settings.admins.edit', $this->view_params);
@@ -129,7 +129,9 @@ class AdminSettingsAdminsController extends AdminController
      */
     public function destroy(Admin $admin)
     {
-        //
+        $admin->delete();
+
+        return redirect()->route('admin.settings.admins.index')->with('success', '管理者アカウントを削除しました！');
     }
 
     /**
@@ -137,7 +139,7 @@ class AdminSettingsAdminsController extends AdminController
      */
     public function profile()
     {
-        $this->view_params['title'] = 'admin.settings.admins.profile';
+        $this->view_params['heading'] = 'admin.settings.admins.profile.heading';
         return view('admin.settings.admins.profile', $this->view_params);
     }
 }

@@ -25,22 +25,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'id' => 'confirmationModal',            // モーダルのID
     'title' => '保存の確認',                  // モーダルのタイトル
     'message' => 'この内容で保存しますか？',    // モーダルのメッセージ
-    'cancelText' => '戻る',                  // キャンセルボタンのテキスト
+    'confirm_label' => '保存',                  // キャンセルボタンのテキスト
     'theme' => 'light',                     // テーマ
 ])
 <!-- 保存ボタン -->
-@include('components.form.button', [
-    'type' => $type,
-    'label' => $label,
-    'theme' => $theme,
-])
+<div class="fixed bottom-0 left-0 w-full flex z-50 justify-center mt-6 border-t py-3 px-3 {{ config('admin.theme_class.layout.save_button') }}">
+    @include('components.form.button', [
+        'type' => $type,
+        'label' => $label,
+        'theme' => $theme,
+    ])
+</div>
 
 <!-- モーダル -->
 @include('components.form.modal', [
     'id' => $id,
     'title' => $title,
     'message' => $message,
-    'confirmText' => $label,
-    'cancelText' => $cancelText,
+    'confirm_label' => $label,
+    'cancel_label' => $cancel_label,
     'theme' => $theme
 ])

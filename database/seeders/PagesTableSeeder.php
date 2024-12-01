@@ -20,22 +20,33 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Controllers\Admin;
+namespace Database\Seeders;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
 
-class AdminDashboardController extends AdminController
+class PagesTableSeeder extends Seeder
 {
-    //初期設定を行う
-    public function __construct()
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
     {
-        parent::__construct();
-    }
-    //
-    public function index()
-    {
-        $this->view_params['heading'] = 'admin.features.dashboard.heading';
-        return view('admin.dashboard', $this->view_params);
+        $pages = [
+            [
+                'title' => 'About Us',
+                'slug' => 'about-us',
+                'content' => 'This is the about us page content.',
+            ],
+            [
+                'title' => 'Contact Us',
+                'slug' => 'contact-us',
+                'content' => 'This is the contact us page content.',
+            ],
+        ];
+
+        foreach ($pages as $page) {
+            \App\Models\Page::create($page);
+        }
     }
 }

@@ -49,20 +49,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             ])
 
 
-            <div class="min-h-screen flex">
+            <div class="min-h-screen flex pt-16">
                  <!-- Side Bar -->
                 <aside class="hidden sm:block w-64 flex-shrink-0 {{ config('admin.theme_class.layout.aside') }}">
                     @include('admin.partials.sidebar')
                 </aside>
 
                 <!-- Main -->
-                <main class="flex-1 {{ config('admin.theme_class.main') }}">
+                <main class="flex-1 {{ config('admin.theme_class.layout.main') }}">
 
                     <!-- Page Heading -->
-                    <div class="{{ config('admin.theme_class.title') }} mx-auto py-6 px-4 sm:px-6 lg:px-8 mb-10">
+                    <div class="{{ config('admin.theme_class.layout.title') }} mx-auto py-6 px-4 sm:px-6 lg:px-8 mb-10">
                         <h2 class="font-semibold text-xl leading-tight {{ config('admin.theme_class.layout.heading') }}">
                             <!-- ここにページタイトルを表示 -->
-                            {{__($title)}}
+                            {{__($heading)}}
                         </h2>
                     </div>
 
