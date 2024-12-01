@@ -28,21 +28,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- フォーム -->
         @include('admin.users.partials.form', ['theme' => $theme])
 
-        <!-- 保存ボタン -->
-        @include('components.form.button', [
-            'type' => 'button',
-            'label' => 'ユーザーを作成',
-            'onclick' => "openModal('confirmationModal')",
+        <!-- 保存ボタンとモーダル -->
+        @include('components.form.save', [
             'theme' => $theme,
-        ])
-
-        <!-- モーダル -->
-        @include('components.form.modal', [
             'id' => 'confirmationModal',
-            'title' => 'ユーザー作成の確認',
+            'onclick' => "openModal('confirmationModal')",
+            'title' => '保存の確認',
+            'label' => 'ユーザーを作成',
             'message' => 'この内容でユーザーを作成しますか？',
-            'cancelText' => '戻る',
-            'theme' => $theme
+            'confirm_label' => '作成',
+            'cancel_label' => '戻る',
         ])
 
     </form>

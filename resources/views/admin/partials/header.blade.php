@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-<header x-data="{ openSidebar: false, openUserMenu: false}" class="w-full flex border-b {{ config('admin.theme_class.layout.header') }}">
+<header x-data="{ openSidebar: false, openUserMenu: false}" class="fixed top-0 z-50 w-full flex border-b {{ config('admin.theme_class.layout.header') }}">
     <!-- プライマリーナビゲーションメニュー -->
     <div class="w-full mx-4 sm:mx-0 sm:px-6 lg:px-8 flex items-center h-16 justify-between sm:justify-start">
         <!-- ロゴ -->
@@ -107,7 +107,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- スマホレイアウト用のサイト名 -->
         <div class="px-4 py-2 border-b border-gray-300 dark:border-gray-700">
             <a href="{{ route('admin.dashboard') }}" class="text-lg font-bold">
-                {{ env('APP_NAME') }}
+                {{ $site_name ?? env('APP_NAME') }}
             </a>
         </div>
         @include('admin.partials.sidebar')

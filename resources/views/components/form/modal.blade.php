@@ -22,8 +22,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'id' => 'confirmationModal', // モーダルのID
     'title' => '確認',          // モーダルのタイトル
     'message' => 'この操作を実行しますか？', // モーダルのメッセージ
-    'confirmText' => '確認',     // 確認ボタンのテキスト
-    'cancelText' => 'キャンセル', // キャンセルボタンのテキスト
+    'confirm_label' => '確認',     // 確認ボタンのテキスト
+    'cancel_label' => 'キャンセル', // キャンセルボタンのテキスト
     'class' => '',               // モーダルのカスタムクラス
     'theme' => 'light',            // モーダルのテーマ
 ])
@@ -53,10 +53,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
         <div class="px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 {{ $theme === 'light' ? 'bg-gray-50' : 'bg-gray-800' }}">
             <button type="submit" class="inline-flex w-full justify-center rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 sm:ml-3 sm:w-auto">
-                {{ $confirmText }}
+                {{ $confirm_label }}
             </button>
             <button type="button" onclick="closeModal('{{ $id }}')" class="mt-3 inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm ring-1 ring-inset  sm:mt-0 sm:w-auto {{ $theme === 'light' ? 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50' : 'bg-gray-900 text-white ring-gray-300 hover:bg-gray-50' }}">
-                {{ $cancelText }}
+                {{ $cancel_label }}
             </button>
         </div>
     </div>

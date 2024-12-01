@@ -18,7 +18,7 @@ return [
     'name' => '名前',
     'value' => '値',
     'created_at' => '作成日時',
-    'Updated_at' => '更新日時',
+    'updated_at' => '更新日時',
     'deleted_at' => '削除日時',
     'site_name' => 'サイト名',
     'is_member_site' => '会員サイト',
@@ -31,6 +31,9 @@ return [
     'Maintenance Message' => 'メンテナンスメッセージ',
     'yes' => 'はい',
     'no' => 'いいえ',
+    'actions' => '操作',
+    'edit' => '編集',
+    'delete' => '削除',
 
 
 ];

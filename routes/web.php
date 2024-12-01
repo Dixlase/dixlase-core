@@ -23,6 +23,7 @@
 use App\Http\Controllers\Register\RegisterRegisteredUserController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Page;
 
 Route::get('/', function () {
     return view('welcome');
@@ -34,6 +35,14 @@ Route::middleware('guest')->group(function () {
         ->name('register');
     Route::post('register', [RegisterRegisteredUserController::class, 'store']);
 });
+
+//個別ページ
+
+Route::get(config('custom.pages_directory') . '/{slug}', function ($slug) {
+    $page = Page::where('slug', $slug)->firstOrFail();
+    return view('default/pages', compact('page'));
+});
+
 
 //マイページ用のルーティング
 require __DIR__ . '/mypage.php';

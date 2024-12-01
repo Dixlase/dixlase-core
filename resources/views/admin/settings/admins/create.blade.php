@@ -24,11 +24,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <form action="{{ route('admin.settings.admins.store') }}" method="POST" class="mt-6">
         @csrf
         @include('admin.settings.admins.partials.form')
-        <div class="mt-4">
-            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700">
-                作成
-            </button>
-        </div>
+
+        <!-- 保存ボタンとモーダル -->
+        @include('components.form.save', [
+            'theme' => $theme,
+            'id' => 'confirmationModal',
+            'label' => '作成',
+            'onclick' => "openModal('confirmationModal')",
+            'title' => '作成の確認',
+            'message' => '新規管理者を作成しますか？',
+            'confirm_label' => '作成',
+            'cancel_label' => '戻る',
+        ])
+
     </form>
 @endsection
 

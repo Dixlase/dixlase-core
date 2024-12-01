@@ -43,7 +43,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     'id' => 'confirmationModal',
                     'title' => 'ユーザー情報更新の確認',
                     'message' => 'この内容でユーザー情報を更新しますか？',
-                    'cancelText' => '戻る',
+                    'cancel_label' => '戻る',
                     'theme' => $theme
                 ])
 
