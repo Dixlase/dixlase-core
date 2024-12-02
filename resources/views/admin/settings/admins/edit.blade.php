@@ -41,7 +41,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- 保存ボタンとモーダル -->
         @include('components.form.save', [
-            'theme' => $theme,
             'id' => 'confirmationModal',
             'onclick' => "openModal('confirmationModal')",
             'title' => '更新の確認',
@@ -72,7 +71,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'message' => 'このユーザーを削除しますか？',
             'confirm_label' => '削除',
             'cancel_label' => 'キャンセル',
-            'theme' => 'danger',
         ])
 
     </form>

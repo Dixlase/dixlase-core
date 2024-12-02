@@ -29,7 +29,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <div id="{{ $id }}" class="mt-0 fixed inset-0 z-50 flex items-center justify-center bg-opacity-80 opacity-0 pointer-events-none transition-opacity duration-300 bg-gray-100 dark:bg-black">
     <div class="relative transform overflow-hidden rounded-lg text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg scale-95 bg-white dark:bg-gray-900">
-        <div class="px-4 pb-4 pt-5 sm:p-6 sm:pb-4 {{ config('admin.theme_class.form.modal') }}">
+        <div class="px-4 pb-4 pt-5 sm:p-6 sm:pb-4 {{ config('admin.appearance_class.form.modal') }}">
             <div class="sm:flex sm:items-start">
                 <div class="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
                     <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">

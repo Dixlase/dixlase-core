@@ -40,7 +40,7 @@ return new class extends Migration
             $table->string('description')->nullable();
             $table->string('email')->unique();
             $table->string('role')->default('admin');   // super_admin, admin, editor, author, contributor,
-            $table->integer('theme')->default(0); // 0= auto, 1 = light, 2 = dark
+            $table->integer('appearance')->default(0); // 0= auto, 1 = light, 2 = dark
             $table->string('password'); // Hashed
             $table->integer('status')->default(0);  // 0 = inactive, 1 = active
             $table->rememberToken();

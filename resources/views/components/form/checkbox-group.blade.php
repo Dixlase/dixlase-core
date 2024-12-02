@@ -33,7 +33,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 id="{{ $option_name }}"
                 name="{{ $name }}[{{ $option_name }}]"
                 value="1"
-                class="{{ config('admin.theme_class.form.checkbox') }} {{ $class }}"
+                class="{{ config('admin.appearance_class.form.checkbox') }} {{ $class }}"
                 @if (!empty($values[$option_name])) checked @endif>
             <span class="ml-2">{{ $option_label }}</span>
         </label>

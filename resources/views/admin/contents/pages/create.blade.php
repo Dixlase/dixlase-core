@@ -10,12 +10,11 @@
 
     <!-- フォーム -->
     @include('admin.contents.pages.partials.form', [
-        'theme' => $theme,
+
     ])
 
     <!-- 保存ボタンとモーダル -->
     @include('components.form.save', [
-        'theme' => $theme,
         'id' => 'confirmationModal',
         'onclick' => "openModal('confirmationModal')",
         'title' => '保存の確認',

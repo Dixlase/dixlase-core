@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\Config;
 class GuestLayout extends Component
 {
     protected $site_name;
-    protected $theme = 'light';
+    protected $appearance = 'light';
     protected $theme_class;
     protected $title = '';
     protected $view_params = [];

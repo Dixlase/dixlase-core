@@ -103,16 +103,14 @@ return [
     */
 
     //テーマの設定
-    'theme' => [
+    'appearance' => [
         0 => 'admin.theme.auto',
         1 => 'admin.theme.light',
         2 => 'admin.theme.dark',
     ],
 
-    'theme_default' => [],
-
     //テーマのクラス
-    'theme_class' => [
+    'appearance_class' => [
         'layout' => [
             'body' => 'bg-white text-gray-900 dark:bg-gray-950 dark:text-white',
             'header' => 'bg-gray-200 dark:bg-gray-800 border-gray-300 dark:border-gray-700',

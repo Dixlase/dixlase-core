@@ -49,23 +49,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- デスクトップ用テーブル -->
         <div class="hidden md:block overflow-x-auto">
-            <table class="{{ config('admin.theme_class.table.table') }}">
-                <thead class="{{ config('admin.theme_class.table.thead') }}">
+            <table class="{{ config('admin.appearance_class.table.table') }}">
+                <thead class="{{ config('admin.appearance_class.table.thead') }}">
                     <tr>
-                        <th class="{{ config('admin.theme_class.table.td') }}">ID</th>
-                        <th class="{{ config('admin.theme_class.table.td') }}">名前</th>
-                        <th class="{{ config('admin.theme_class.table.td') }}">メールアドレス</th>
-                        <th class="{{ config('admin.theme_class.table.td') }}">操作</th>
+                        <th class="{{ config('admin.appearance_class.table.td') }}">ID</th>
+                        <th class="{{ config('admin.appearance_class.table.td') }}">名前</th>
+                        <th class="{{ config('admin.appearance_class.table.td') }}">メールアドレス</th>
+                        <th class="{{ config('admin.appearance_class.table.td') }}">操作</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($users as $user)
-                        <tr class="{{ config('admin.theme_class.table.tr') }}">
-                            <td class="{{ config('admin.theme_class.table.td') }}">{{ $user->id }}</td>
-                            <td class="{{ config('admin.theme_class.table.td') }}">{{ $user->name }}</td>
-                            <td class="{{ config('admin.theme_class.table.td') }}">{{ $user->email }}</td>
-                            <td class="{{ config('admin.theme_class.table.td') }}">
-                                <a href="{{ route('admin.users.edit', ['user' => $user->id]) }}" class="{{ config('admin.theme_class.link') }}">
+                        <tr class="{{ config('admin.appearance_class.table.tr') }}">
+                            <td class="{{ config('admin.appearance_class.table.td') }}">{{ $user->id }}</td>
+                            <td class="{{ config('admin.appearance_class.table.td') }}">{{ $user->name }}</td>
+                            <td class="{{ config('admin.appearance_class.table.td') }}">{{ $user->email }}</td>
+                            <td class="{{ config('admin.appearance_class.table.td') }}">
+                                <a href="{{ route('admin.users.edit', ['user' => $user->id]) }}" class="{{ config('admin.appearance_class.link') }}">
                                     編集
                                 </a>
                             </td>
@@ -84,7 +84,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <p><strong>メールアドレス:</strong> {{ $user->email }}</p>
                     <div class="mt-2">
                         <a href="{{ route('admin.users.edit', ['user' => $user->id]) }}"
-                        class="{{ config('admin.theme_class.link') }}">
+                        class="{{ config('admin.appearance_class.link') }}">
                             編集
                         </a>
                     </div>

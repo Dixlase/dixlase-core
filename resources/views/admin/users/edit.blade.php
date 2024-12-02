@@ -34,14 +34,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- Form -->
         @include('admin.users.partials.form', [
-            'theme' => $theme,
             'require_password' => false,
         ])
 
         <!-- 保存ボタンとモーダル -->
         @include('components.form.save', [
-            'theme' => $theme,
-
             'onclick' => "openModal('confirmationModal')",
             'title' => '更新の確認',
             'label' => 'ユーザーを更新',
@@ -70,7 +67,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'message' => 'このユーザーを削除しますか？',
             'confirm_label' => '削除',
             'cancel_label' => 'キャンセル',
-            'theme' => 'danger',
         ])
     </form>
 

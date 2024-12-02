@@ -29,7 +29,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <input type="text"
     id="{{ $id }}"
     name="{{ $name }}"
-    class="mt-1 block w-full rounded-md shadow-sm text-lg {{ config('admin.theme_class.form.text') }} {{ $class }}"
+    class="mt-1 block w-full rounded-md shadow-sm text-lg {{ config('admin.appearance_class.form.text') }} {{ $class }}"
     value="{{ old($name, $value) }}"
     @if ($required) required @endif>
 

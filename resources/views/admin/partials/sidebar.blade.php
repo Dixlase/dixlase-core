@@ -34,7 +34,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div x-data="{ {{ $open_key }} : {{ $is_open ? 'true' : 'false' }} }">
                 @if (isset($item['route']) && is_string($item['route']))
                     <a href="{{ route($item['route']) }}"
-                    class="{{ $button_class }} {{ $item['route'] === $route_name ? config('admin.theme_class.sidebar.active') : config('admin.theme_class.sidebar.normal') }}">
+                    class="{{ $button_class }} {{ $item['route'] === $route_name ? config('admin.appearance_class.sidebar.active') : config('admin.appearance_class.sidebar.normal') }}">
                         <i class="{{ $item['icon'] }} mr-3"></i>
                         <span>{{ __($item['text']) }}</span>
                     </a>
@@ -59,7 +59,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         class="ml-4 space-y-1">
                         @foreach ($item['children'] as $child_key => $child_item)
                             @if (isset($child_item['route']) && is_string($child_item['route']))
-                                <a href="{{ route($child_item['route']) }}" class="{{ $button_class }} {{ $child_item['route'] === $route_name ? config('admin.theme_class.sidebar.active') : config('admin.theme_class.sidebar.normal') }}">
+                                <a href="{{ route($child_item['route']) }}" class="{{ $button_class }} {{ $child_item['route'] === $route_name ? config('admin.appearance_class.sidebar.active') : config('admin.appearance_class.sidebar.normal') }}">
                                     <i class="{{ $child_item['icon'] }} mr-3"></i>
                                     <span>{{ __($child_item['text']) }}</span>
                                 </a>
@@ -90,7 +90,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             class="ml-4 space-y-1">
                                             @foreach ($child_item['children'] as $grand_child_key => $grand_child_item)
                                                 <a href="{{ route($grand_child_item['route']) }}"
-                                                class="{{ $button_class }} {{ $grand_child_item['route'] === $route_name ? config('admin.theme_class.sidebar.active') : config('admin.theme_class.sidebar.normal') }}">
+                                                class="{{ $button_class }} {{ $grand_child_item['route'] === $route_name ? config('admin.appearance_class.sidebar.active') : config('admin.appearance_class.sidebar.normal') }}">
                                                     <i class="{{ $grand_child_item['icon'] }} mr-3"></i>
                                                     <span>{{ __($grand_child_item['text']) }}</span>
                                                 </a>

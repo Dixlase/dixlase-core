@@ -32,7 +32,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'name' => 'name',
         'value' => old('name', $admin->name ?? ''),
         'required' => true,
-        'theme' => $theme
     ])
     @include('components.form.error', [
         'messages' => $errors->get('name')
@@ -52,7 +51,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'name' => 'email',
         'value' => old('email', $admin->email ?? ''),
         'required' => true,
-        'theme' => $theme
     ])
     @include('components.form.error', [
         'messages' => $errors->get('email')
@@ -69,7 +67,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'id' => 'password',
         'name' => 'password',
         'required' => $require_password,
-        'theme' => $theme
     ])
     @include('components.form.error', [
         'messages' => $errors->get('password')
@@ -89,23 +86,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'options' => config('admin.roles'),
         'value' => old('role', $admin->role ?? ''),
         'required' => true,
-        'theme' => $theme
     ])
 </div>
 
 <div class="mb-4">
     @include('components.form.label', [
-        'for' => 'theme',
-        'text' => 'テーマ',
+        'for' => 'appearance',
+        'text' => '外観モード',
 
     ])
     @include('components.form.select', [
-        'id' => 'theme',
-        'name' => 'theme',
-        'options' => config('admin.theme'),
-        'value' => old('theme', $admin->theme ?? ''),
+        'id' => 'appearance',
+        'name' => 'appearance',
+        'options' => config('admin.appearance'),
+        'value' => old('appearance', $admin->appearance ?? ''),
         'required' => true,
-        'theme' => $theme
     ])
 </div>
 
@@ -121,7 +116,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'options' => config('admin.status.admins'),
         'value' => old('status', $admin->status ?? ''),
         'required' => true,
-        'theme' => $theme
     ])
 </div>
 

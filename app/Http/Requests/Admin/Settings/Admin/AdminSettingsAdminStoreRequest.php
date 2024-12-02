@@ -49,7 +49,7 @@ class AdminSettingsAdminStoreRequest extends FormRequest
             'email' => 'required|email|unique:admins,email,' . ($isUpdate ? $this->route('admin')->id : 'NULL'),
             'password' => $isUpdate ? 'nullable|string|min:8' : 'required|string|min:8', // 作成時は必須、編集時は任意
             'role' => 'required||in:admin,super_admin,editor,author,receptionist',
-            'theme' => 'required|numeric|in:0,1,2',
+            'appearance' => 'required|numeric|in:0,1,2',
             'status' => 'required|numeric|in:0,1',
         ];
     }

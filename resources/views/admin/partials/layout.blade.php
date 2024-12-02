@@ -19,7 +19,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="{{ $theme === 2 ? 'dark' : ($theme === 1 ? 'light' : 'auto') }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="{{ $appearance === 2 ? 'dark' : ($appearance === 1 ? 'light' : 'auto') }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -40,27 +40,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @vite(['resources/js/app.js', 'resources/scss/app.scss'], 'build')
         @endif
     </head>
-    <body class="font-sans antialiased {{ config('admin.theme_class.layout.body') }}">
+    <body class="font-sans antialiased {{ config('admin.appearance_class.layout.body') }}">
         <div class="min-h-screen">
             <!-- Header -->
             @include('admin.partials.header', [
                 'site_name' => $site_name,
-                'theme' => $theme,
             ])
 
 
             <div class="min-h-screen flex pt-16">
                  <!-- Side Bar -->
-                <aside class="hidden sm:block w-64 flex-shrink-0 {{ config('admin.theme_class.layout.aside') }}">
+                <aside class="hidden sm:block w-64 flex-shrink-0 {{ config('admin.appearance_class.layout.aside') }}">
                     @include('admin.partials.sidebar')
                 </aside>
 
                 <!-- Main -->
-                <main class="flex-1 pb-10 {{ config('admin.theme_class.layout.main') }}">
+                <main class="flex-1 pb-10 {{ config('admin.appearance_class.layout.main') }}">
 
                     <!-- Page Heading -->
-                    <div class="{{ config('admin.theme_class.layout.title') }} mx-auto py-6 px-4 sm:px-6 lg:px-8 mb-10">
-                        <h2 class="font-semibold text-xl leading-tight {{ config('admin.theme_class.layout.heading') }}">
+                    <div class="{{ config('admin.appearance_class.layout.title') }} mx-auto py-6 px-4 sm:px-6 lg:px-8 mb-10">
+                        <h2 class="font-semibold text-xl leading-tight {{ config('admin.appearance_class.layout.heading') }}">
                             <!-- ここにページタイトルを表示 -->
                             {{__($heading)}}
                         </h2>
@@ -78,12 +77,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <script>
 
             // テーマの設定
-            const currentTheme = '{{ $theme }}';
-            if (currentTheme === '0') { // 0: auto
+            const current_appearance_class = '{{ $appearance }}';
+            if (current_appearance_class === '0') { // 0: auto
                 const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
                 document.documentElement.classList.toggle('dark', isDarkMode);
                 document.documentElement.classList.toggle('light', !isDarkMode);
-            } else if (currentTheme === '2') { // 2: dark
+            } else if (current_appearance_class === '2') { // 2: dark
                 document.documentElement.classList.add('dark');
                 document.documentElement.classList.remove('light');
             } else { // 1: light

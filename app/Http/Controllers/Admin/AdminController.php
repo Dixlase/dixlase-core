@@ -32,8 +32,7 @@ class AdminController extends Controller
 {
     //変数を宣言する
     protected $site_name;
-    protected $theme = 'light';
-    protected $theme_class;
+    protected $appearance = 'light';
     protected $heading = '';
     protected $view_params = [];
     protected $route_name = '';
@@ -52,11 +51,8 @@ class AdminController extends Controller
         //ログイン中の管理者情報を取得
         $admin = auth('admin')->user();
 
-        //ログイン中の管理者のテーマをDBから取得
-        $this->theme = $admin->theme ?? 0;
-
-        //$this->theme = DB::table('settings_system')->where('name', 'admin_theme')->value('value')
-        //    ?? Config::get('admin.theme', 'light'); // デフォルト値を 'light' に設定
+        //ログイン中の管理者の外観モードをDBから取得
+        $this->appearance = $admin->appearance ?? 0;
 
         // データベースからシステム設定を取得
         $this->settings = DB::table('settings_system')->get()->keyBy('name')->toArray();
@@ -68,10 +64,10 @@ class AdminController extends Controller
         $this->view_params['settings'] = $this->settings;
 
         //ビューパラメータにテーマを設定する
-        $this->view_params['theme'] = $this->theme;
+        $this->view_params['appearance'] = $this->appearance;
 
         //セッションにテーマを保存する
-        session(['theme' => $this->theme]);
+        session(['appearance' => $this->appearance]);
 
         // ルート名を取得
         $this->route_name = Route::currentRouteName();

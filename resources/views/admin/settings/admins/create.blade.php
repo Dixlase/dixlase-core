@@ -33,7 +33,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- 保存ボタンとモーダル -->
         @include('components.form.save', [
-            'theme' => $theme,
             'id' => 'confirmationModal',
             'label' => '作成',
             'onclick' => "openModal('confirmationModal')",
