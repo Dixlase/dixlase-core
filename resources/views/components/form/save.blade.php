@@ -27,22 +27,31 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'message' => 'この内容で保存しますか？',    // モーダルのメッセージ
     'confirm_label' => '保存',                  // キャンセルボタンのテキスト
     'theme' => 'light',                     // テーマ
+    'id_confirmation' => 'confirmationModal',        // モーダルのID
+    'id_delete' => 'deleteModal',                  // 削除モーダルのID
+
+
 ])
-<!-- 保存ボタン -->
-<div class="fixed bottom-0 left-0 w-full flex z-50 justify-center mt-6 border-t py-3 px-3 {{ config('admin.theme_class.layout.save_button') }}">
+
+<!--<div class="fixed bottom-0 left-0 w-full flex z-50 justify-center mt-6 border-t py-3 px-3 {{ config('admin.theme_class.layout.save_button') }}">-->
+    <!-- 保存ボタン -->
     @include('components.form.button', [
         'type' => $type,
         'label' => $label,
         'theme' => $theme,
-    ])
-</div>
+        'onclick' => "openModal('" . $id_confirmation . "')",
 
-<!-- モーダル -->
+    ])
+<!--</div>-->
+
+<!-- 保存モーダル -->
 @include('components.form.modal', [
-    'id' => $id,
+    'id' => $id_confirmation,
     'title' => $title,
     'message' => $message,
     'confirm_label' => $label,
     'cancel_label' => $cancel_label,
     'theme' => $theme
 ])
+
+

@@ -39,5 +39,7 @@ class UsersTableSeeder extends Seeder
             'email' => 'test@example.com',
             'password' => Hash::make('password'),
         ]);
+
+        User::factory()->count(100)->create();
     }
 }

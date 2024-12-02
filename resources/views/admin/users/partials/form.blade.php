@@ -17,6 +17,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
+@props([
+    'require_password' => false,
+])
 
 <div class="mb-4">
     @include('components.form.label', [
@@ -79,7 +82,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'type' => 'password',
         'id' => 'password',
         'name' => 'password',
-        'required' => true,
+        'value' => '',
+        'required' => $require_password,
         'theme' => $theme
     ])
     @include('components.form.error', [

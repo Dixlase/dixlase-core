@@ -22,20 +22,15 @@
 
 namespace Database\Factories;
 
+
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Admin>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Page>
  */
-class AdminFactory extends Factory
+class PageFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
-    protected static ?string $password;
-
     /**
      * Define the model's default state.
      *
@@ -43,13 +38,35 @@ class AdminFactory extends Factory
      */
     public function definition(): array
     {
+        $title = $this->faker->sentence(3); // ランダムな3単語のタイトル
+
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'password' => static::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
-            'role' => fake()->randomElement(['super_admin', 'admin', 'editor', 'receptionist']), // 役割を追加
-            'status' => fake()->randomElement([0, 1]), // ステータスを追加
+            'title' => $title,
+            'slug' => Str::slug($title), // タイトルを基にスラッグを生成
+            'status' => $this->faker->randomElement([0, 1]), // 0: 非公開, 1: 公開
+            'content' => $this->faker->paragraphs(3, true), // ランダムな段落を生成
+            'created_at' => now(),
+            'updated_at' => now(),
         ];
+    }
+
+    /**
+     * Indicate that the page is published.
+     */
+    public function published(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'status' => 1, // 公開
+        ]);
+    }
+
+    /**
+     * Indicate that the page is unpublished.
+     */
+    public function unpublished(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'status' => 0, // 非公開
+        ]);
     }
 }

@@ -21,6 +21,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('admin.partials.layout')
 
 @section('content')
+    <!-- Flash message for success or error -->
+    @include('components.flash_message')
+
     <h3 class="text-lg font-semibold">管理者検索</h3>
 
     <!-- 検索フォーム -->
@@ -42,37 +45,61 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </form>
 
-    <!-- ユーザー一覧 -->
+    <!-- 管理者一覧 -->
     <div class="shadow-md rounded p-6">
-        <table class="w-full text-sm text-left rtl:text-right">
-            <thead class="text-xs uppercase {{ config('admin.theme_class.table.header') }}">
-                <tr class="">
-                    <th class="border px-4 py-2">ID</th>
-                    <th class="border px-4 py-2">名前</th>
-                    <th class="border px-4 py-2">メールアドレス</th>
-                    <th class="border px-4 py-2">操作</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($admins as $admin)
-                    <tr class="{{ config('admin.theme_class.table.row') }}">
-                        <td class="border px-4 py-2">{{ $admin->id }}</td>
-                        <td class="border px-4 py-2">{{ $admin->name }}</td>
-                        <td class="border px-4 py-2">{{ $admin->email }}</td>
-                        <td class="border px-4 py-2">
-                            <a href="{{ route('admin.settings.admins.edit', ['admin' => $admin->id]) }}"
-                                class="{{ config('admin.theme_class.link') }}">
-                                編集
-                            </a>
-                        </td>
+
+        <!-- デスクトップ用テーブル -->
+        <div class="hidden md:block overflow-x-auto">
+            <table class="w-full text-sm text-left rtl:text-right">
+                <thead class="text-xs uppercase {{ config('admin.theme_class.table.header') }}">
+                    <tr>
+                        <th class="border px-4 py-2">ID</th>
+                        <th class="border px-4 py-2">名前</th>
+                        <th class="border px-4 py-2">メールアドレス</th>
+                        <th class="border px-4 py-2">権限</th>
+                        <th class="border px-4 py-2">操作</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach ($admins as $admin)
+                        <tr class="{{ config('admin.theme_class.table.row') }}">
+                            <td class="border px-4 py-2">{{ $admin->id }}</td>
+                            <td class="border px-4 py-2">{{ $admin->name }}</td>
+                            <td class="border px-4 py-2">{{ $admin->email }}</td>
+                            <td class="border px-4 py-2">{{ $admin->role }}</td>
+                            <td class="border px-4 py-2">
+                                <a href="{{ route('admin.settings.admins.edit', ['admin' => $admin->id]) }}"
+                                    class="{{ config('admin.theme_class.link') }}">
+                                    編集
+                                </a>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+
+        <!-- モバイル用カード -->
+        <div class="block md:hidden">
+            @foreach ($admins as $admin)
+                <div class="border rounded-lg p-4 mb-4 shadow">
+                    <p><strong>ID:</strong> {{ $admin->id }}</p>
+                    <p><strong>名前:</strong> {{ $admin->name }}</p>
+                    <p><strong>メールアドレス:</strong> {{ $admin->email }}</p>
+                    <p><strong>権限:</strong>{{ __('admin.roles.' . $admin->role) }}</p>
+                    <div class="mt-2">
+                        <a href="{{ route('admin.settings.admins.edit', ['admin' => $admin->id]) }}"
+                            class="text-blue-600 hover:text-blue-800">
+                            編集
+                        </a>
+                    </div>
+                </div>
+            @endforeach
+        </div>
 
         <!-- ページネーション -->
         <div class="mt-4">
-            {{-- $admin->links() --}}
+            {{ $admins->links() }}
         </div>
     </div>
 @endsection

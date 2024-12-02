@@ -41,7 +41,7 @@ class CreatePageTable extends Migration
             $table->id();
             $table->string('title'); // ページのタイトル
             $table->string('slug')->unique(); // ページのURL（スラッグ）
-            $table->integer('public')->default(0); // 公開設定（0:非公開, 1:公開）
+            $table->integer('status')->default(0); // 公開設定（0:非公開, 1:公開）
             $table->text('content')->nullable(); // ページの内容
             $table->timestamps();
             $table->softDeletes();

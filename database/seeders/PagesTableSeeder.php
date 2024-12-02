@@ -24,6 +24,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\Page;
 
 class PagesTableSeeder extends Seeder
 {
@@ -48,5 +49,7 @@ class PagesTableSeeder extends Seeder
         foreach ($pages as $page) {
             \App\Models\Page::create($page);
         }
+
+        Page::factory()->count(20)->create();
     }
 }

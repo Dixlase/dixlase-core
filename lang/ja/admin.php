@@ -85,7 +85,7 @@ return [
                 'submit' => '登録',
             ],
             'edit' => [
-                'title' => 'ユーザー編集',
+                'heading' => 'ユーザー編集',
                 'name' => '名前',
                 'email' => 'メールアドレス',
                 'password' => 'パスワード',

@@ -23,6 +23,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'name' => null, // selectのname属性
     'options' => [], // 選択肢の配列
     'value' => null, // 初期選択値
+
     'class' => 'default-class', // 追加クラス
     'required' => false, // 必須フラグ
     'theme' => 'light', // テーマ

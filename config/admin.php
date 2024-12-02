@@ -127,9 +127,10 @@ return [
             'active' => 'bg-gray-200 text-gray-900 font-bold border-blue-500 pl-3 rounded-md hover:bg-gray-300 hover:text-black dark:bg-gray-100 dark:text-black dark:hover:bg-gray-600'
         ],
         'table' => [
-            'header' => 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white',
-            //'row' => 'bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white',
-            'row' => 'odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700',
+            'table' => 'w-full text-sm text-left rtl:text-right mb-4',
+            'thead' => 'text-xs uppercase bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white',
+            'tr' => 'odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700',
+            'td' => 'px-4 py-4 border-b dark:border-gray-700',
             'row_hover' => 'hover:bg-gray-100 dark:hover:bg-gray-600',
             'row_selected' => 'bg-gray-200 dark:bg-gray-600',
             'row_selected_hover' => 'hover:bg-gray-200 dark:hover:bg-gray-600',
@@ -138,6 +139,12 @@ return [
             'cell_selected_hover' => 'border-b border-gray-200 dark:border-gray-700',
         ],
         'link' => 'text-indigo-600 hover:text-indigo-500 dark:text-indigo-300 dark:hover:text-indigo-500',
+        'form' => [
+            'label' => 'block text-sm font-medium text-gray-700 dark:text-gray-300',
+            'input' => 'block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm',
+            'button' => 'ml-2 px-4 py-2 bg-indigo-600 text-white rounded-md shadow-sm hover:bg-indigo-700',
+            'error' => 'text-red-600 dark:text-red-400',
+        ]
     ],
 
 
@@ -210,7 +217,12 @@ return [
             'ja' => '日本語',
             'en' => 'English',
         ],
-    ]
+    ],
+
+    'status' => [
+        '1' => '公開',
+        '0' => '下書き',
+    ],
 
 
 

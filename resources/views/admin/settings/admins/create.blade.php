@@ -21,9 +21,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('admin.partials.layout')
 
 @section('content')
+
+    <!-- Flash message for success or error -->
+    @include('components.flash_message')
+
     <form action="{{ route('admin.settings.admins.store') }}" method="POST" class="mt-6">
         @csrf
-        @include('admin.settings.admins.partials.form')
+        @include('admin.settings.admins.partials.form',[
+            'require_password' => true,
+        ])
 
         <!-- 保存ボタンとモーダル -->
         @include('components.form.save', [

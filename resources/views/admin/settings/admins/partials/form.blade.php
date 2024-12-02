@@ -18,6 +18,10 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
+@props([
+    'require_password' => false,
+])
+
 <div class="mb-4">
     @include('components.form.label', [
         'for' => 'name',
@@ -64,7 +68,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'type' => 'password',
         'id' => 'password',
         'name' => 'password',
-        'required' => true,
+        'required' => $require_password,
         'theme' => $theme
     ])
     @include('components.form.error', [
@@ -77,15 +81,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @include('components.form.label', [
         'for' => 'admin_theme',
         'text' => '権限',
+
     ])
 
     @include('components.form.select', [
         'id' => 'role',
         'name' => 'role',
         'options' => config('admin.roles'),
+        'value' => old('role', $admin->role ?? ''),
         'class' => config('admin.theme_class.' . $theme . '.form_input_text'),
         'required' => true,
         'theme' => $theme
     ])
+
+
 
 </div>

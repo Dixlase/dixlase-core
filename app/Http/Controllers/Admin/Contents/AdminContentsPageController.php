@@ -25,6 +25,8 @@ namespace App\Http\Controllers\Admin\Contents;
 use App\Http\Controllers\Admin\AdminController;
 use App\Models\Page;
 use Illuminate\Http\Request;
+use App\Http\Requests\Admin\Contents\Pages\AdminContentsPagesStoreRequest;
+
 
 class AdminContentsPageController extends AdminController
 {
@@ -68,41 +70,42 @@ class AdminContentsPageController extends AdminController
         );
     }
 
-    public function edit()
+    public function edit(Page $page)
     {
+        // 見出し
+        $this->view_params['heading'] = 'admin.features.contents.pages.edit.heading';
+
+        // 内容を取得
+        $this->view_params['page'] = $page;
+
+
+
+        // ビューにデータを渡す
         return view(
             'admin.contents.pages.edit',
             $this->view_params
         );
     }
 
-    public function store(Request $request)
+    public function store(AdminContentsPagesStoreRequest $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:pages,slug',
-            'content' => 'nullable|string',
-        ]);
+        // バリデーションを通過したデータを取得
+        $validated = $request->validated();
 
-        Page::create($validated);
+        // ページを作成し、作成したページのインスタンスを取得
+        $page = Page::create($validated);
 
-        return redirect()->route(
-            'admin.pages.index',
-            $this->view_params
-        )->with('success', 'Page created successfully!');
+        return redirect()->route('admin.contents.pages.edit', ['page' => $page->id])->with('success', 'Page created successfully!');
     }
 
-    public function update(Request $request, Page $page)
+    public function update(AdminContentsPagesStoreRequest $request, Page $page)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:pages,slug,' . $page->id,
-            'content' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
+        // ページを更新
         $page->update($validated);
 
-        return redirect()->route('admin.contents.pages.index', $this->view_params)->with('success', 'Page updated successfully!');
+        return redirect()->route('admin.contents.pages.edit', ['page' => $page->id])->with('success', 'Page updated successfully!');
     }
 
     public function destroy(Page $page)
