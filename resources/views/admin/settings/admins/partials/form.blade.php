@@ -79,21 +79,52 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <div class="mb-4">
     @include('components.form.label', [
-        'for' => 'admin_theme',
+        'for' => 'role',
         'text' => '権限',
 
     ])
-
     @include('components.form.select', [
         'id' => 'role',
         'name' => 'role',
         'options' => config('admin.roles'),
         'value' => old('role', $admin->role ?? ''),
-        'class' => config('admin.theme_class.' . $theme . '.form_input_text'),
         'required' => true,
         'theme' => $theme
     ])
-
-
-
 </div>
+
+<div class="mb-4">
+    @include('components.form.label', [
+        'for' => 'theme',
+        'text' => 'テーマ',
+
+    ])
+    @include('components.form.select', [
+        'id' => 'theme',
+        'name' => 'theme',
+        'options' => config('admin.theme'),
+        'value' => old('theme', $admin->theme ?? ''),
+        'required' => true,
+        'theme' => $theme
+    ])
+</div>
+
+<div class="mb-4">
+    @include('components.form.label', [
+        'for' => 'status',
+        'text' => 'ステータス',
+
+    ])
+    @include('components.form.select', [
+        'id' => 'status',
+        'name' => 'status',
+        'options' => config('admin.status.admins'),
+        'value' => old('status', $admin->status ?? ''),
+        'required' => true,
+        'theme' => $theme
+    ])
+</div>
+
+
+
+

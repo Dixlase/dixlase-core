@@ -9,7 +9,6 @@
         'name' => 'title',
         'value' => old('title', $page->title ?? ''),
         'required' => true,
-        'theme' => $theme
     ])
     @include('components.form.error', [
         'messages' => $errors->get('title')
@@ -27,7 +26,6 @@
         'name' => 'slug',
         'value' => old('slug', $page->slug ?? ''),
         'required' => true,
-        'theme' => $theme
     ])
     @include('components.form.error', [
         'messages' => $errors->get('slug')
@@ -46,7 +44,6 @@
         'name' => 'content',
         'value' => old('content', $page->content ?? ''),
         'required' => true,
-        'theme' => $theme
     ])
 </div>
 
@@ -60,9 +57,8 @@
         'id' => 'status',
         'name' => 'status',
         'value' => old('status', $page->status ?? ''),
-        'options' => config('admin.status'),
+        'options' => config('admin.status.pages'),
         'required' => true,
-        'theme' => $theme
     ])
     @include('components.form.error', [
         'messages' => $errors->get('status')

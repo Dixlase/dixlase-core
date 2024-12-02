@@ -39,7 +39,6 @@ class SettingsSystemTableSeeder extends Seeder
             ['name' => 'allow_external_registration', 'value' => 'false'],
             ['name' => 'allow_guest_registration', 'value' => 'false'],
             ['name' => 'required_fields', 'value' => '{"address": false, "phone": false, "gender": false, "birthday": false}'],
-            ['name' => 'admin_theme', 'value' => 'light'],
             ['name' => 'language', 'value' => 'ja'],
             ['name' => 'maintenance_mode', 'value' => 'false'],
             ['name' => 'maintenance_message', 'value' => '現在メンテナンス中です。しばらくお待ちください。'],

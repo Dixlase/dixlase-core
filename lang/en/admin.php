@@ -143,6 +143,13 @@ return [
         'receptionist' => 'Reception',
     ],
 
+    'theme' => [
+        'auto' => 'Auto',
+        'dark' => 'Dark',
+        'light' => 'Light',
+    ],
+
+
     'permissions' => 'Permissions',
     'settings' => 'Settings',
     'logout' => 'Logout',

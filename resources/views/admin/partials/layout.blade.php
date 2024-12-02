@@ -19,7 +19,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="{{ $theme === 'dark' ? 'dark' : '' }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="{{ $theme === 2 ? 'dark' : ($theme === 1 ? 'light' : 'auto') }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -56,7 +56,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </aside>
 
                 <!-- Main -->
-                <main class="flex-1 {{ config('admin.theme_class.layout.main') }}">
+                <main class="flex-1 pb-10 {{ config('admin.theme_class.layout.main') }}">
 
                     <!-- Page Heading -->
                     <div class="{{ config('admin.theme_class.layout.title') }} mx-auto py-6 px-4 sm:px-6 lg:px-8 mb-10">
@@ -74,7 +74,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </main>
             </div>
         </div>
+
         <script>
 
+            // テーマの設定
+            const currentTheme = '{{ $theme }}';
+            if (currentTheme === '0') { // 0: auto
+                const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                document.documentElement.classList.toggle('dark', isDarkMode);
+                document.documentElement.classList.toggle('light', !isDarkMode);
+            } else if (currentTheme === '2') { // 2: dark
+                document.documentElement.classList.add('dark');
+                document.documentElement.classList.remove('light');
+            } else { // 1: light
+                document.documentElement.classList.add('light');
+                document.documentElement.classList.remove('dark');
+            }
+
+        </script>
     </body>
 </html>
