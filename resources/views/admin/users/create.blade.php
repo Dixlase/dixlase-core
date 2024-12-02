@@ -22,11 +22,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('admin.partials.layout')
 
 @section('content')
+
+    <!-- Flash message for success or error -->
+    @include('components.flash_message')
+
     <form action="{{ route('admin.users.store') }}" method="POST">
         @csrf
 
         <!-- フォーム -->
-        @include('admin.users.partials.form', ['theme' => $theme])
+        @include('admin.users.partials.form', [
+            'theme' => $theme,
+            'require_password' => true,
+        ])
 
         <!-- 保存ボタンとモーダル -->
         @include('components.form.save', [

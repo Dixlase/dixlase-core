@@ -21,33 +21,57 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('admin.partials.layout')
 
 @section('content')
-    <div class="max-w-4xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <div class="shadow-md rounded p-6">
-            <form action="{{ route('admin.users.update', $user->id) }}" method="POST">
-                @csrf
-                @method('PUT')
+    <!-- Flash message for success or error -->
+    @include('components.flash_message')
 
-                <!-- フォーム -->
-                @include('admin.users.partials.form', ['theme' => $theme])
+    <form action="{{ route('admin.users.update', ['user' => $user->id] ) }}" method="POST">
+        @csrf
+        @method('PATCH')
+        @include('components.form.hidden', [
+            'name' => 'id',
+            'value' => $user->id,
+        ])
 
-                <!-- 保存ボタン -->
-                @include('components.form.button', [
-                    'type' => 'button',
-                    'label' => 'ユーザーを更新',
-                    'onclick' => "openModal('confirmationModal')",
-                    'theme' => $theme,
-                ])
+        <!-- Form -->
+        @include('admin.users.partials.form', [
+            'theme' => $theme,
+            'require_password' => false,
+        ])
 
-                <!-- モーダル -->
-                @include('components.form.modal', [
-                    'id' => 'confirmationModal',
-                    'title' => 'ユーザー情報更新の確認',
-                    'message' => 'この内容でユーザー情報を更新しますか？',
-                    'cancel_label' => '戻る',
-                    'theme' => $theme
-                ])
+        <!-- 保存ボタンとモーダル -->
+        @include('components.form.save', [
+            'theme' => $theme,
 
-            </form>
-        </div>
-    </div>
+            'onclick' => "openModal('confirmationModal')",
+            'title' => '更新の確認',
+            'label' => 'ユーザーを更新',
+            'message' => 'この内容でユーザー情報を更新しますか？',
+            'confirm_label' => '更新',
+            'cancel_label' => '戻る',
+        ])
+
+    </form>
+
+    <!-- 削除ボタン -->
+    <form action="{{ route('admin.users.destroy', ['user' => $user->id] ) }}" method="POST">
+        @csrf
+        @method('DELETE')
+        @include('components.form.button', [
+            'type' => 'button',
+            'label' => 'ユーザーを削除',
+            'class' => 'text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900',
+            'onclick' => "openModal('deleteModal')",
+        ])
+
+        <!-- 削除モーダル -->
+        @include('components.form.modal', [
+            'id' => 'deleteModal',
+            'title' => '削除の確認',
+            'message' => 'このユーザーを削除しますか？',
+            'confirm_label' => '削除',
+            'cancel_label' => 'キャンセル',
+            'theme' => 'danger',
+        ])
+    </form>
+
 @endsection

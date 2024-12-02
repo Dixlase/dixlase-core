@@ -35,6 +35,7 @@ export default {
         'bg-indigo-600',
         'hover:bg-indigo-500',
         'dark:text-indigo-300',
+        'dark:text-red-400',
         'dark:hover:text-indigo-500',
         'dark:bg-gray-100',
         'dark:bg-gray-300',

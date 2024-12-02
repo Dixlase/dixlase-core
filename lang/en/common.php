@@ -40,4 +40,7 @@ return [
     'actions' => 'Actions',
     'edit' => 'Edit',
     'delete' => 'Delete',
+    'id' => 'ID',
+    'title' => 'Title',
+    'url' => 'URL',
 ];

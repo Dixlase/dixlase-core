@@ -52,9 +52,13 @@ class User extends Model implements
      */
     protected $fillable = [
         'name',
+        'last_name',
+        'first_name',
         'email',
         'password',
     ];
+
+    protected $guarded = []; // すべての属性を更新可能にする
 
     /**
      * The attributes that should be hidden for serialization.

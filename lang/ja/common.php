@@ -34,6 +34,9 @@ return [
     'actions' => '操作',
     'edit' => '編集',
     'delete' => '削除',
+    'id' => 'ID',
+    'title' => 'タイトル',
+    'url' => 'URL',
 
 
 ];

@@ -63,9 +63,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Pages
         Route::get('/contents/pages', [AdminContentsPageController::class, 'index'])->name('contents.pages.index');
         Route::get('/contents/pages/create', [AdminContentsPageController::class, 'create'])->name('contents.pages.create');
-        Route::get('/contents/pages/edit', [AdminContentsPageController::class, 'edit'])->name('contents.pages.edit');
+        Route::get('/contents/pages/edit/{page}', [AdminContentsPageController::class, 'edit'])->name('contents.pages.edit');
         Route::post('/contents/pages/store', [AdminContentsPageController::class, 'store'])->name('contents.pages.store');
-        Route::put('/contents/pages/update', [AdminContentsPageController::class, 'update'])->name('contents.pages.update');
+        Route::patch('/contents/pages/update/{page}', [AdminContentsPageController::class, 'update'])->name('contents.pages.update');
         Route::get('/contents/pages/destroy', [AdminContentsPageController::class, 'destroy'])->name('contents.pages.destroy');
 
         //Users
@@ -73,25 +73,17 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/users/create', [AdminUsersController::class, 'create'])->name('users.create');
         Route::get('users/edit/{user}', [AdminUsersController::class, 'edit'])->name('users.edit');
         Route::post('/users/store', [AdminUsersController::class, 'store'])->name('users.store');
-        Route::get('/users/update', [AdminUsersController::class, 'update'])->name('users.update');
-        Route::put('users/update/{user}', [AdminUsersController::class, 'update'])->name('users.update');
-        Route::get('/users/destroy', [AdminUsersController::class, 'destroy'])->name('users.destroy');
-        Route::post('/users/destroy', [AdminUsersController::class, 'destroy'])->name('users.destroy');
+        Route::patch('users/update/{user}', [AdminUsersController::class, 'update'])->name('users.update');
+        Route::delete('/users/destroy/{user}', [AdminUsersController::class, 'destroy'])->name('users.destroy');
 
         // Settings
         // Admins
         Route::get('/settings/admins', [AdminSettingsAdminsController::class, 'index'])->name('settings.admins.index');
         Route::get('/settings/admins/create', [AdminSettingsAdminsController::class, 'create'])->name('settings.admins.create');
         Route::post('/settings/admins/store', [AdminSettingsAdminsController::class, 'store'])->name('settings.admins.store');
-        Route::get('/settings/admins/edit', [AdminSettingsAdminsController::class, 'edit'])->name('settings.admins.edit');
-        Route::put('/settings/admins/update', [AdminSettingsAdminsController::class, 'update'])->name('settings.admins.update');
-        Route::get('/settings/admins/destroy', [AdminSettingsAdminsController::class, 'destroy'])->name('settings.admins.destroy');
-        Route::post('/settings/admins/destroy', [AdminSettingsAdminsController::class, 'destroy'])->name('settings.admins.destroy');
-
-
-        // Systems
-        Route::put('/settings/admins/update', [AdminSettingsAdminsController::class, 'update'])->name('settings.admins.update');
-        Route::put('/settings/admins/delete', [AdminSettingsAdminsController::class, 'delete'])->name('settings.admins.delete');
+        Route::get('/settings/admins/edit/{admin}', [AdminSettingsAdminsController::class, 'edit'])->name('settings.admins.edit');
+        Route::patch('/settings/admins/update/{admin}', [AdminSettingsAdminsController::class, 'update'])->name('settings.admins.update');
+        Route::delete('/settings/admins/destroy/{admin}', [AdminSettingsAdminsController::class, 'destroy'])->name('settings.admins.destroy');
         Route::get('/settings/admins/profile', [AdminSettingsAdminsController::class, 'profile'])->name('settings.admins.profile');
 
         // Systems

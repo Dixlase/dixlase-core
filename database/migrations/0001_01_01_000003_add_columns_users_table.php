@@ -52,6 +52,7 @@ class AddColumnsUsersTable extends Migration
             $table->string('tel')->nullable()->after('birth_day');
             $table->datetime('logged_in_at')->nullable()->after('email_verified_at');
             $table->datetime('previous_logged_in_at')->nullable()->after('logged_in_at');
+            $table->integer('status')->default(0);
             $table->softDeletes();
         });
     }

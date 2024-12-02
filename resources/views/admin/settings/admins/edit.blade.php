@@ -21,29 +21,60 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('admin.partials.layout')
 
 @section('content')
-    <form action="{{ route('admin.users.update', $admin->id) }}" method="POST">
+
+    <!-- Flash message for success or error -->
+    @include('components.flash_message')
+
+    <form action="{{ route('admin.settings.admins.update', ['admin' => $admin->id]) }}" method="POST">
         @csrf
-        @method('PUT')
-
-        <!-- フォーム -->
-        @include('admin.settings.admins.partials.form')
-
-        <!-- 保存ボタン -->
-        @include('components.form.button', [
-            'type' => 'button',
-            'label' => 'ユーザーを更新',
-            'onclick' => "openModal('confirmationModal')",
-            'theme' => $theme,
+        @method('PATCH')
+        @include('components.form.hidden', [
+            'name' => 'id',
+            'value' => $admin->id,
         ])
 
-        <!-- モーダル -->
-        @include('components.form.modal', [
+
+        <!-- フォーム -->
+        @include('admin.settings.admins.partials.form',[
+            'require_password' => false,
+        ])
+
+        <!-- 保存ボタンとモーダル -->
+        @include('components.form.save', [
+            'theme' => $theme,
             'id' => 'confirmationModal',
-            'title' => 'ユーザー情報更新の確認',
-            'message' => 'この内容でユーザー情報を更新しますか？',
+            'onclick' => "openModal('confirmationModal')",
+            'title' => '更新の確認',
+            'label' => '管理者を更新',
+            'message' => 'この内容で管理者情報を更新しますか？',
+            'confirm_label' => '更新',
             'cancel_label' => '戻る',
-            'theme' => $theme
         ])
 
     </form>
+
+
+    <form action="{{ route('admin.settings.admins.destroy', ['admin' => $admin->id]) }}" method="POST">
+        @csrf
+        @method('DELETE')
+        <!-- 削除ボタン -->
+        @include('components.form.button', [
+            'type' => 'button',
+            'label' => '管理者を削除',
+            'class' => 'text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900',
+            'onclick' => "openModal('deleteModal')",
+        ])
+
+        <!-- 削除モーダル -->
+        @include('components.form.modal', [
+            'id' => 'deleteModal',
+            'title' => '削除の確認',
+            'message' => 'このユーザーを削除しますか？',
+            'confirm_label' => '削除',
+            'cancel_label' => 'キャンセル',
+            'theme' => 'danger',
+        ])
+
+    </form>
+
 @endsection

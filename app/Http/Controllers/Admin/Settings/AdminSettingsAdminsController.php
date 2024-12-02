@@ -82,6 +82,14 @@ class AdminSettingsAdminsController extends AdminController
         $validated = $request->validated();
         $validated['password'] = bcrypt($validated['password']);
 
+        // 新しい管理者を作成
+        $admin = Admin::create($validated);
+
+        // リダイレクト
+        return redirect()->route('admin.settings.admins.edit', ['admin' => $admin->id])->with('success', '新しいユーザーが作成されました！');
+
+
+
         // 新しいユーザーを作成
         Admin::create($validated);
 
@@ -102,8 +110,10 @@ class AdminSettingsAdminsController extends AdminController
      */
     public function edit(Admin $admin)
     {
-        $this->view_params['heading'] = 'admin.users.create.heading';
+        $this->view_params['heading'] = 'admin.features.settings.admins.edit.heading';
         $this->view_params['admin'] = $admin;
+
+
 
         return view('admin.settings.admins.edit', $this->view_params);
     }
@@ -113,15 +123,20 @@ class AdminSettingsAdminsController extends AdminController
      */
     public function update(AdminSettingsAdminStoreRequest $request, Admin $admin)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $admin->id,
-        ]);
+        // バリデーション済みデータを取得
+        $validated = $request->validated();
+
+        // パスワードが送信されている場合のみ更新
+        if (!empty($validated['password'])) {
+            $validated['password'] = bcrypt($validated['password']);
+        } else {
+            unset($validated['password']); // パスワードが空の場合は更新しない
+        }
 
         $admin->update($validated);
+        $id = $admin->id;
 
-
-        return redirect()->route('admin.users.index')->with('success', 'ユーザー情報を更新しました！');
+        return redirect()->route('admin.settings.admins.edit', ['admin' => $id])->with('success', '管理車情報を更新しました！');
     }
 
     /**

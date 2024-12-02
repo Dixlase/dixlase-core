@@ -21,6 +21,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('admin.partials.layout')
 
 @section('content')
+    <!-- Flash message for success or error -->
+    @include('components.flash_message')
+
     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <h3 class="text-lg font-semibold">ユーザー検索</h3>
 
@@ -42,27 +45,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             </div>
         </form>
+    </div>
 
-        <!-- ユーザー一覧 -->
-        <div class="shadow-md rounded p-6">
-            <table class="w-full text-sm text-left rtl:text-right">
-                <thead class="text-xs uppercase {{ config('admin.theme_class.table.header') }}">
-                    <tr class="">
-                        <th class="border px-4 py-2">ID</th>
-                        <th class="border px-4 py-2">名前</th>
-                        <th class="border px-4 py-2">メールアドレス</th>
-                        <th class="border px-4 py-2">操作</th>
+        <!-- デスクトップ用テーブル -->
+        <div class="hidden md:block overflow-x-auto">
+            <table class="{{ config('admin.theme_class.table.table') }}">
+                <thead class="{{ config('admin.theme_class.table.thead') }}">
+                    <tr>
+                        <th class="{{ config('admin.theme_class.table.td') }}">ID</th>
+                        <th class="{{ config('admin.theme_class.table.td') }}">名前</th>
+                        <th class="{{ config('admin.theme_class.table.td') }}">メールアドレス</th>
+                        <th class="{{ config('admin.theme_class.table.td') }}">操作</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($users as $user)
-                        <tr class="{{ config('admin.theme_class.table.row') }}">
-                            <td class="border px-4 py-2">{{ $user->id }}</td>
-                            <td class="border px-4 py-2">{{ $user->name }}</td>
-                            <td class="border px-4 py-2">{{ $user->email }}</td>
-                            <td class="border px-4 py-2">
-                                <a href="{{ route('admin.users.edit', ['user' => $user->id]) }}"
-                                    class="{{ config('admin.theme_class.link') }}">
+                        <tr class="{{ config('admin.theme_class.table.tr') }}">
+                            <td class="{{ config('admin.theme_class.table.td') }}">{{ $user->id }}</td>
+                            <td class="{{ config('admin.theme_class.table.td') }}">{{ $user->name }}</td>
+                            <td class="{{ config('admin.theme_class.table.td') }}">{{ $user->email }}</td>
+                            <td class="{{ config('admin.theme_class.table.td') }}">
+                                <a href="{{ route('admin.users.edit', ['user' => $user->id]) }}" class="{{ config('admin.theme_class.link') }}">
                                     編集
                                 </a>
                             </td>
@@ -70,11 +73,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @endforeach
                 </tbody>
             </table>
-
-            <!-- ページネーション -->
-            <div class="mt-4">
-                {{ $users->links() }}
-            </div>
         </div>
-    </div>
+
+        <!-- モバイル用カード -->
+        <div class="block md:hidden">
+            @foreach ($users as $user)
+                <div class="border rounded-lg p-4 mb-4">
+                    <p><strong>ID:</strong> {{ $user->id }}</p>
+                    <p><strong>名前:</strong> {{ $user->name }}</p>
+                    <p><strong>メールアドレス:</strong> {{ $user->email }}</p>
+                    <div class="mt-2">
+                        <a href="{{ route('admin.users.edit', ['user' => $user->id]) }}"
+                        class="{{ config('admin.theme_class.link') }}">
+                            編集
+                        </a>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
+        <!-- ページネーション -->
+        <div class="mt-4">
+            {{ $users->links() }}
+        </div>
+
 @endsection

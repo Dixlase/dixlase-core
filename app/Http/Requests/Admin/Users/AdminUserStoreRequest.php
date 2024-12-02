@@ -42,10 +42,15 @@ class AdminUserStoreRequest extends FormRequest
      */
     public function rules(): array
     {
+
+        // ユーザーIDがリクエストされているかで判断
+        $isUpdate = $this->route('user') !== null;
+
         return [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8|confirmed', // password_confirmation を検証
+            'last_name' => 'required|string|max:255',
+            'first_name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . ($isUpdate ? $this->route('user')->id : 'NULL'),
+            'password' => $isUpdate ? 'nullable|string|min:8' : 'required|string|min:8', // 作成時は必須、編集時は任意
         ];
     }
 
@@ -55,6 +60,8 @@ class AdminUserStoreRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'last_name.required' => '姓は必須です。',
+            'first_name.required' => '名は必須です。',
             'name.required' => '名前は必須です。',
             'email.required' => 'メールアドレスは必須です。',
             'email.email' => 'メールアドレスの形式が正しくありません。',

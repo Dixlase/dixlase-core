@@ -24,9 +24,35 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Page extends Model
 {
+    use HasFactory, Notifiable, SoftDeletes; // MustVerifyEmailを追加
+
+    /**
+     * テーブル名
+     *
+     * @var string
+     */
+    protected $table = 'pages';
+
+    /**
+     * ホワイトリスト
+     * @var array
+     */
+
+    protected $fillable = [
+        'title',
+        'slug',
+        'content',
+        'status',
+        //'meta_title',
+        //'meta_description',
+        //'meta_keywords',
+    ];
 
     protected static function booted()
     {
