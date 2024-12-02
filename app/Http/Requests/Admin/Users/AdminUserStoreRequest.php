@@ -51,6 +51,7 @@ class AdminUserStoreRequest extends FormRequest
             'first_name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . ($isUpdate ? $this->route('user')->id : 'NULL'),
             'password' => $isUpdate ? 'nullable|string|min:8' : 'required|string|min:8', // 作成時は必須、編集時は任意
+            'status' => 'required|numeric|in:0,1',
         ];
     }
 

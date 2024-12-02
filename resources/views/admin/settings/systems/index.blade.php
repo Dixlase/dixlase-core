@@ -55,26 +55,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             'name' => 'site_name',
                             'value' => old('site_name', $settings['site_name']),
                             'required' => true,
-                            'theme' => $theme
-                        ])
-                    </div>
-
-                    <div class="mt-4">
-                        @include('components.form.label', [
-                            'for' => 'admin_theme',
-                            'text' => 'admin.pages.settings.systems.admin_theme',
-                        ])
-                        @include('components.form.select', [
-                            'id' => 'admin_theme',
-                            'name' => 'admin_theme',
-                            'options' => [
-                                'light' => 'common.light',
-                                'dark' => 'common.dark',
-                            ],
-                            'value' => $settings['admin_theme'],
-                            'class' => config('admin.theme_class.' . $theme . '.form_input_text'),
-                            'required' => true,
-                            'theme' => $theme
                         ])
                     </div>
 
@@ -89,9 +69,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             'name' => 'language',
                             'options' => config('admin.languages.available'),
                             'value' => $settings['language'],
-                            'class' => config('admin.theme_class.' . $theme . '.form_input_text'),
                             'required' => true,
-                            'theme' => $theme
                         ])
 
                     <div class="mt-4">

@@ -49,15 +49,17 @@ class AdminController extends Controller
         $this->site_name = DB::table('settings_system')->where('name', 'site_name')->value('value')
             ?? env('APP_NAME', 'EventManagementSystem');
 
-        // データベースからテーマ情報を取得。取得できなかった場合はコンフィグからデフォルト値を使用
-        $this->theme = DB::table('settings_system')->where('name', 'admin_theme')->value('value')
-            ?? Config::get('admin.theme', 'light'); // デフォルト値を 'light' に設定
+        //ログイン中の管理者情報を取得
+        $admin = auth('admin')->user();
+
+        //ログイン中の管理者のテーマをDBから取得
+        $this->theme = $admin->theme ?? 0;
+
+        //$this->theme = DB::table('settings_system')->where('name', 'admin_theme')->value('value')
+        //    ?? Config::get('admin.theme', 'light'); // デフォルト値を 'light' に設定
 
         // データベースからシステム設定を取得
         $this->settings = DB::table('settings_system')->get()->keyBy('name')->toArray();
-
-
-
 
         //ビューパラメータにサイト名を設定する
         $this->view_params['site_name'] = $this->site_name;
@@ -65,27 +67,14 @@ class AdminController extends Controller
         //ビューパラメータにシステム設定を設定する
         $this->view_params['settings'] = $this->settings;
 
+        //ビューパラメータにテーマを設定する
+        $this->view_params['theme'] = $this->theme;
 
-        //テーマを設定する
-        $this->setTheme();
+        //セッションにテーマを保存する
+        session(['theme' => $this->theme]);
 
         // ルート名を取得
         $this->route_name = Route::currentRouteName();
         $this->view_params['route_name'] = $this->route_name;
-    }
-    public function setTheme()
-    {
-        //テーマクラスを設定する
-        if ($this->theme == 'light') {
-            $this->theme_class = config('app.theme_class_light');
-        } else {
-            $this->theme_class = config('app.theme_class_dark');
-        }
-
-        //ビューパラメータにテーマを設定する
-        $this->view_params['theme'] = $this->theme;
-        $this->view_params['theme_class'] = $this->theme_class;
-        $this->view_params['isDark'] = $this->theme == 'dark';
-        $this->view_params['heading'] = $this->heading;
     }
 }

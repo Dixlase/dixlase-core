@@ -26,16 +26,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'theme' => 'light',      // テーマ
 ])
 
-@php
-    // テーマに応じたクラス設定
-    $theme_class = $theme === 'light'
-        ? 'bg-indigo-600 text-white hover:bg-indigo-500 focus:outline-none'
-        : 'bg-indigo-600 text-white hover:bg-indigo-500 focus:outline-none';
-@endphp
-
-
 <button type="{{ $type }}"
     @if ($onclick) onclick="{{ $onclick }}" @endif
-    class="py-2 px-4 rounded-md shadow-sm {{ $theme_class }} {{ $class }}">
+    class="py-2 px-4 rounded-md shadow-sm {{ config('admin.theme_class.form.button') }} {{ $class }}">
     {{ $label }}
 </button>

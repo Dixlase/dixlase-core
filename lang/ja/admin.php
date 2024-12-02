@@ -145,7 +145,6 @@ return [
 
     'roles' => 'ロール',
     'permissions' => '権限',
-
     'logout' => 'ログアウト',
 
     'required' => ':attribute は必須です。',
@@ -165,6 +164,12 @@ return [
         'admin' => '管理者',
         'editor' => '編集者',
         'receptionist' => '受付',
+    ],
+
+    'theme' => [
+        'auto' => '自動',
+        'dark' => 'ダーク',
+        'light' => 'ライト',
     ],
 
 

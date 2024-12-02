@@ -115,7 +115,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
     <!-- 右側スライドインメニュー -->
-    <div class="sm:hidden fixed w-64 h-full shadow-lg transform transition-transform duration-300 ease-in-out z-20 translate-x-100vw {{ $isDark ? 'text-gray-300 bg-gray-900' : 'text-gray-700 bg-gray-200' }}"
+    <div class="sm:hidden fixed w-64 h-full shadow-lg transform transition-transform duration-300 ease-in-out z-20 translate-x-100vw text-gray-300 dark:text-gray-700 bg-gray-900 dark:bg-gray-200' }}"
     :class="{ 'translate-x-100vw': !openUserMenu, 'translate-x-100vw-16': openUserMenu,'sm:block': openUserMenu, 'sm:hidden': ! openUserMenu }">
 
         <!-- 閉じるボタン -->

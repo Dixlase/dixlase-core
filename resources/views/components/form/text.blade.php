@@ -24,19 +24,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'value' => '',
     'required' => false,
     'class' => '',
-    'theme' => 'light',
 ])
-
-@php
-    $theme_class = $theme === 'light'
-        ? 'bg-white text-gray-700 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
-        : 'bg-gray-900 border-gray-500 focus:border-indigo-500 focus:ring-indigo-500';
-@endphp
 
 <input type="text"
     id="{{ $id }}"
     name="{{ $name }}"
-    class="mt-1 block w-full rounded-md shadow-sm text-lg {{ $theme_class }} {{ $class }}"
+    class="mt-1 block w-full rounded-md shadow-sm text-lg {{ config('admin.theme_class.form.text') }} {{ $class }}"
     value="{{ old($name, $value) }}"
     @if ($required) required @endif>
 

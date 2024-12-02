@@ -23,14 +23,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'options' => [],   // 選択肢の配列
     'value' => '',     // 現在の選択値
     'class' => '',     // カスタムクラス
-    'theme' => 'light' // テーマ
 ])
-
-@php
-    $theme_class = $theme === 'light'
-        ? 'text-gray-600'
-        : 'text-gray-600';
-@endphp
 
 <div class="flex items-center space-x-4">
     @foreach ($options as $option_value => $option_label)
@@ -38,7 +31,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <input type="radio"
                 name="{{ $name }}"
                 value="{{ $option_value }}"
-                class="{{ $theme_class }} {{ $class }}"
+                class="{{ config('admin.theme_class.form.radio') }} {{ $class }}"
                 @if ($value == $option_value) checked @endif>
             <span class="ml-2">{{ __($option_label) }}</span>
         </label>

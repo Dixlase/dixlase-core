@@ -20,30 +20,37 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace Database\Seeders;
+namespace Tests\Feature\Admin\Users;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use App\Models\Admin;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\WithFaker;
+use Tests\TestCase;
+use App\Models\User;
 
-
-class AdminsTableSeeder extends Seeder
+class AdminUserFeatureTest extends TestCase
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
+    public function test_user_can_be_created()
     {
-        Admin::factory()->create([
+        $response = $this->post('/admin/users/store', [
             'name' => 'Test User',
             'email' => 'test@example.com',
-            'password' => Hash::make('password'),
-            'role' => 'admin',
-            'theme' => 0,
-            'status' => 1,
+            'password' => 'password',
         ]);
 
-        Admin::factory()->count(50)->create();
+        $response->assertStatus(302); // リダイレクト確認
+        $this->assertDatabaseHas('users', [
+            'email' => 'test@example.com',
+        ]);
+    }
+
+    public function test_user_edit_form_displays_correctly()
+    {
+        $user = User::factory()->create();
+
+        $response = $this->get("/admin/users/edit/{$user->id}");
+
+        $response->assertStatus(200);
+        $response->assertSee($user->name);
+        $response->assertSee($user->email);
     }
 }

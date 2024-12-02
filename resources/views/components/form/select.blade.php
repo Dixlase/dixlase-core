@@ -26,16 +26,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     'class' => 'default-class', // 追加クラス
     'required' => false, // 必須フラグ
-    'theme' => 'light', // テーマ
 ])
-
-@php
-    $theme_class = $theme === 'light' ? 'bg-white' : 'bg-gray-900';
-@endphp
 
 <select id="{{ $id }}"
         name="{{ $name }}"
-        class="mt-1 block rounded-md shadow-sm {{ $theme_class }} {{ $class }}"
+        class="mt-1 block rounded-md shadow-sm {{ config('admin.theme_class.form.select') }} {{ $class }}"
         @if ($required) required @endif>
     @foreach ($options as $optionValue => $optionText)
         <option value="{{ $optionValue }}" {{ $value == $optionValue ? 'selected' : '' }}>

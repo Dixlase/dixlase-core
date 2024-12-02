@@ -78,7 +78,6 @@ class AdminSettingsSystemsController extends AdminController
 
         $settings = $request->only([
             'site_name',
-            'admin_theme',
             'language',
             'is_member_site',
             'allow_external_registration',

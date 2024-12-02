@@ -22,13 +22,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'for' => null, // labelのfor属性
     'text' => '',  // labelに表示するテキスト
     'class' => '',  // labelの追加クラス
-    'theme' => 'light', // テーマ
 ])
 
-@php
-    $theme_class = $theme === 'light' ? 'text-gray-700' : 'text-white';
-@endphp
 
-<label for="{{ $for }}" class="block font-medium text-lg {{ $theme_class }} {{ $class }}">
+
+<label for="{{ $for }}" class="block font-medium text-lg {{ config('admin.theme_class.form.label') }} {{ $class }}">
    {{ __($text) }}
 </label>
