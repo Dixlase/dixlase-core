@@ -46,7 +46,6 @@ class AdminSettingsSystemsController extends AdminController
     {
         $settings = [
             'site_name' => SettingSystem::getValue('site_name', 'My Site'),
-            'admin_theme' => SettingSystem::getValue('admin_theme', 'light'),
             'language' => SettingSystem::getValue('language', 'ja'),
             'is_member_site' => SettingSystem::getValue('is_member_site', 'false'),
             'allow_external_registration' => SettingSystem::getValue('allow_external_registration', 'false'),

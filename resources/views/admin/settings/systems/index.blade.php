@@ -88,7 +88,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 0 => 'common.no'
                             ],
                             'value' => $settings['is_member_site'],
-                            'theme' => $theme
                         ])
                     </div>
 
@@ -108,7 +107,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 0 => 'いいえ'
                             ],
                             'value' => $settings['allow_guest_registration'],
-                            'theme' => $theme
                         ])
                     </div>
 
@@ -168,7 +166,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     <!-- 保存ボタンとモーダル -->
                     @include('components.form.save', [
-                        'theme' => $theme,
                         'id' => 'confirmationModal',
                         'onclick' => "openModal('confirmationModal')",
                         'title' => '保存の確認',

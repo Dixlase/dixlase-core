@@ -133,7 +133,6 @@ return [
                 'allow_external_registration' => '外部登録',
                 'allow_guest_registration' => 'ゲスト登録',
                 'required_fields' => '必須項目',
-                'admin_theme' => '管理画面テーマ',
                 'language' => '言語',
                 'maintenance_mode' => 'メンテナンスモード',
                 'maintenance_message' => 'メンテナンスメッセージ',

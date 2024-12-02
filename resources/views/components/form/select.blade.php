@@ -30,7 +30,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <select id="{{ $id }}"
         name="{{ $name }}"
-        class="mt-1 block rounded-md shadow-sm {{ config('admin.theme_class.form.select') }} {{ $class }}"
+        class="mt-1 block rounded-md shadow-sm {{ config('admin.appearance_class.form.select') }} {{ $class }}"
         @if ($required) required @endif>
     @foreach ($options as $optionValue => $optionText)
         <option value="{{ $optionValue }}" {{ $value == $optionValue ? 'selected' : '' }}>

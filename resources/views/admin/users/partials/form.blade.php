@@ -31,7 +31,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'name' => 'last_name',
         'value' => old('last_name', $user->last_name ?? ''),
         'required' => true,
-        'theme' => $theme
     ])
     @include('components.form.error', [
         'messages' => $errors->get('last_name')
@@ -48,7 +47,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'name' => 'first_name',
         'value' => old('first_name', $user->first_name ?? ''),
         'required' => true,
-        'theme' => $theme
     ])
     @include('components.form.error', [
         'messages' => $errors->get('first_name')
@@ -66,7 +64,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'name' => 'email',
         'value' => old('email', $user->email ?? ''),
         'required' => true,
-        'theme' => $theme
     ])
     @include('components.form.error', [
         'messages' => $errors->get('email')
@@ -84,7 +81,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'name' => 'password',
         'value' => '',
         'required' => $require_password,
-        'theme' => $theme
     ])
     @include('components.form.error', [
         'messages' => $errors->get('password')

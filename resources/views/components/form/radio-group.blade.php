@@ -31,7 +31,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <input type="radio"
                 name="{{ $name }}"
                 value="{{ $option_value }}"
-                class="{{ config('admin.theme_class.form.radio') }} {{ $class }}"
+                class="{{ config('admin.appearance_class.form.radio') }} {{ $class }}"
                 @if ($value == $option_value) checked @endif>
             <span class="ml-2">{{ __($option_label) }}</span>
         </label>

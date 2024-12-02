@@ -2,7 +2,6 @@
 @include('components.form.button', [
     'type' => $type,
     'label' => $label,
-    'theme' => $theme,
     'onclick' => "openModal('" . $id_confirmation . "')",
 
 ])
@@ -14,5 +13,4 @@
     'message' => $message,
     'confirm_label' => $label,
     'cancel_label' => $cancel_label,
-    'theme' => $theme
 ])

@@ -51,7 +51,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- デスクトップ用テーブル -->
         <div class="hidden md:block overflow-x-auto">
             <table class="w-full text-sm text-left rtl:text-right">
-                <thead class="text-xs uppercase {{ config('admin.theme_class.table.header') }}">
+                <thead class="text-xs uppercase {{ config('admin.appearance_class.table.header') }}">
                     <tr>
                         <th class="border px-4 py-2">ID</th>
                         <th class="border px-4 py-2">名前</th>
@@ -62,14 +62,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </thead>
                 <tbody>
                     @foreach ($admins as $admin)
-                        <tr class="{{ config('admin.theme_class.table.row') }}">
+                        <tr class="{{ config('admin.appearance_class.table.row') }}">
                             <td class="border px-4 py-2">{{ $admin->id }}</td>
                             <td class="border px-4 py-2">{{ $admin->name }}</td>
                             <td class="border px-4 py-2">{{ $admin->email }}</td>
                             <td class="border px-4 py-2">{{ $admin->role }}</td>
                             <td class="border px-4 py-2">
                                 <a href="{{ route('admin.settings.admins.edit', ['admin' => $admin->id]) }}"
-                                    class="{{ config('admin.theme_class.link') }}">
+                                    class="{{ config('admin.appearance_class.link') }}">
                                     編集
                                 </a>
                             </td>

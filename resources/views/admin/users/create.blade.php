@@ -31,13 +31,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- フォーム -->
         @include('admin.users.partials.form', [
-            'theme' => $theme,
             'require_password' => true,
         ])
 
         <!-- 保存ボタンとモーダル -->
         @include('components.form.save', [
-            'theme' => $theme,
             'id' => 'confirmationModal',
             'onclick' => "openModal('confirmationModal')",
             'title' => '保存の確認',

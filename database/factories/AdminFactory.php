@@ -50,6 +50,7 @@ class AdminFactory extends Factory
             'remember_token' => Str::random(10),
             'role' => fake()->randomElement(['super_admin', 'admin', 'editor', 'receptionist']), // 役割を追加
             'status' => fake()->randomElement([0, 1]), // ステータスを追加
+            'appearance' => fake()->randomElement([0, 1, 2]), // 外観モードを追加
         ];
     }
 }

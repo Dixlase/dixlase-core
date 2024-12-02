@@ -18,14 +18,14 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-<header x-data="{ openSidebar: false, openUserMenu: false}" class="fixed top-0 z-50 w-full flex border-b {{ config('admin.theme_class.layout.header') }}">
+<header x-data="{ openSidebar: false, openUserMenu: false}" class="fixed top-0 z-50 w-full flex border-b {{ config('admin.appearance_class.layout.header') }}">
     <!-- プライマリーナビゲーションメニュー -->
     <div class="w-full mx-4 sm:mx-0 sm:px-6 lg:px-8 flex items-center h-16 justify-between sm:justify-start">
         <!-- ロゴ -->
         <div class="flex items-center order-2 sm:order-1">
             <a href="{{ route('admin.dashboard') }}">
                 @include('components.application-logo' ,[
-                    'class' => config('admin.theme_class.layout.logo'),
+                    'class' => config('admin.appearance_class.layout.logo'),
                     'site_name' => $site_name
                 ])
             </a>
@@ -39,7 +39,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
 
         <!-- サイドメニューのハンバーガー (スマホ用) -->
-        <button @click="openSidebar = true, openMenu= true" class="sm:hidden inline-flex items-center justify-center p-2 rounded-md order-1 {{ config('admin.theme_class.' . $theme . '.button_hamburger') }} focus:outline-none transition duration-150 ease-in-out">
+        <button @click="openSidebar = true, openMenu= true" class="sm:hidden inline-flex items-center justify-center p-2 rounded-md order-1 {{ config('admin.appearance_class.' . $appearance . '.button_hamburger') }} focus:outline-none transition duration-150 ease-in-out">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path :class="{'hidden': openSidebar, 'inline-flex': ! openSidebar }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                 <path :class="{'hidden': ! openSidebar, 'inline-flex': openSidebar }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -47,7 +47,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </button>
 
         <!-- ユーザーメニューのハンバーガー (スマホ用) -->
-        <button @click="openUserMenu = true, openMenu= true" class="inline-flex items-center justify-center rounded-md order-2 sm:hidden {{ config('admin.theme_class.' . $theme . '.button_hamburger') }} focus:outline-none transition duration-150 ease-in-out">
+        <button @click="openUserMenu = true, openMenu= true" class="inline-flex items-center justify-center rounded-md order-2 sm:hidden {{ config('admin.appearance_class.' . $appearance . '.button_hamburger') }} focus:outline-none transition duration-150 ease-in-out">
             <svg class="h-8 w-8" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z" />
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18c0-2.21 1.79-4 4-4h4c2.21 0 4 1.79 4 4v1H6v-1z" />
@@ -128,8 +128,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- ユーザーメニュー(スマホ用) -->
         <div class="pt-4 pb-1 border-t {{ config('admin.layout.option_1') }}">
             <div class="px-4">
-                <div class="font-medium text-base {{ config('admin.theme_class.option_2') }}">{{ Auth::user()->name }}</div>
-                <div class="font-medium text-sm {{ config('admin.theme_class.option_3') }}">{{ Auth::user()->email }}</div>
+                <div class="font-medium text-base {{ config('admin.appearance_class.option_2') }}">{{ Auth::user()->name }}</div>
+                <div class="font-medium text-sm {{ config('admin.appearance_class.option_3') }}">{{ Auth::user()->email }}</div>
             </div>
 
             <div class="mt-3 space-y-1">
