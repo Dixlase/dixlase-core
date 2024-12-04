@@ -55,19 +55,12 @@ class AppServiceProvider extends ServiceProvider
         //URL::forceRootUrl(Config::get('app.url'));// ルートURLを設定
         //$url->forceScheme('https');
 
-        /*
-        // テーマの設定
-        $currentTheme = config('admin.template', 'default');
-        View::addNamespace('theme', resource_path("views/themes/{$currentTheme}"));
 
-        $currentTheme = config('app.theme', 'default');
+        //言語の設定
+        $language = SettingSystem::where('name', 'language')->value('value');
+        $lang = $language ?? config('admin.lang', 'ja');
+        app()->setLocale($lang);
 
-        // カスタムテンプレートが優先されるように設定
-        View::addNamespace('theme', [
-            resource_path("views_custom/{$currentTheme}"),
-            resource_path("views/{$currentTheme}"),
-        ]);
-        */
 
         // 現在使用中のテンプレート名を取得
         $activeTemplate = DB::table('themes')->where('is_active', true)->first();
@@ -78,8 +71,7 @@ class AppServiceProvider extends ServiceProvider
         // テーマの設定を読み込む
         $adminTheme = config('app.admin_theme', 'admin');
         $currentTheme = $activeTemplate ? $templateSlug : config('app.default_theme', 'default_theme');
-        $themeDiretory = config('app.theme_directory', 'themes');
-
+        $themeDirectory = config('app.theme_directory', 'themes');
 
         // 管理画面のテンプレートの読み込みがviews_customのほうを優先されるように設定
         View::addNamespace('admin', [
@@ -89,8 +81,8 @@ class AppServiceProvider extends ServiceProvider
 
         // カスタムテンプレートの読み込みがviews_customのほうを優先されるように設定
         View::addNamespace('theme', [
-            resource_path("views_custom/{$themeDiretory}/{$currentTheme}"),
-            resource_path("views/{$themeDiretory}/{$currentTheme}"),
+            resource_path("views_custom/{$themeDirectory}/{$currentTheme}"),
+            resource_path("views/{$themeDirectory}/{$currentTheme}"),
         ]);
 
         // 共用コンポーネントの読み込みがviews_customのほうを優先されるように設定
@@ -98,10 +90,5 @@ class AppServiceProvider extends ServiceProvider
             resource_path('views_custom/components'), // カスタムコンポーネントを優先
             resource_path('views/components'),       // デフォルトコンポーネント
         ]);
-
-        //言語の設定
-        $language = SettingSystem::where('name', 'language')->value('value');
-        $lang = $language ?? config('admin.lang', 'ja');
-        app()->setLocale($lang);
     }
 }
