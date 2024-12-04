@@ -31,7 +31,7 @@ use App\Http\Requests\Admin\Contents\Pages\AdminContentsPagesStoreRequest;
 class AdminContentsPageController extends AdminController
 {
 
-    protected $pages_directory;
+    protected $pagesDirectory;
     //初期設定を行う
     public function __construct()
     {
@@ -39,51 +39,51 @@ class AdminContentsPageController extends AdminController
         parent::__construct();
 
         // ページのマークダウンファイルを保存するディレクトリ
-        $this->pages_directory = config('custom.pages_directory');
-        $this->view_params['pages_directory'] = $this->pages_directory;
+        $this->pagesDirectory = config('custom.pages_directory');
+        $this->viewParams['pages_directory'] = $this->pagesDirectory;
     }
 
 
     public function index()
     {
 
-        $this->view_params['heading'] = 'admin.features.contents.pages.index.heading';
+        $this->viewParams['heading'] = 'admin.features.contents.pages.index.heading';
 
 
         // ページネーションで取得
         $pages = Page::paginate(10); // 1ページあたり10件表示
-        $this->view_params['pages'] = $pages;
+        $this->viewParams['pages'] = $pages;
         return view(
             'admin.contents.pages.index',
-            $this->view_params
+            $this->viewParams
         );
     }
 
     public function create()
     {
 
-        $this->view_params['heading'] = 'admin.features.contents.pages.create.heading';
+        $this->viewParams['heading'] = 'admin.features.contents.pages.create.heading';
 
         return view(
             'admin.contents.pages.create',
-            $this->view_params
+            $this->viewParams
         );
     }
 
     public function edit(Page $page)
     {
         // 見出し
-        $this->view_params['heading'] = 'admin.features.contents.pages.edit.heading';
+        $this->viewParams['heading'] = 'admin.features.contents.pages.edit.heading';
 
         // 内容を取得
-        $this->view_params['page'] = $page;
+        $this->viewParams['page'] = $page;
 
 
 
         // ビューにデータを渡す
         return view(
             'admin.contents.pages.edit',
-            $this->view_params
+            $this->viewParams
         );
     }
 
@@ -112,6 +112,6 @@ class AdminContentsPageController extends AdminController
     {
         $page->delete();
 
-        return redirect()->route('admin.contents.ages.index', $this->view_params)->with('success', 'Page deleted successfully!');
+        return redirect()->route('admin.contents.ages.index', $this->viewParams)->with('success', 'Page deleted successfully!');
     }
 }

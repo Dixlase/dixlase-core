@@ -22,10 +22,25 @@
 
 namespace App\Http\Controllers\Front;
 
-use App\Http\Controllers\Controller;
+
 use Illuminate\Http\Request;
 
-class FrontWelcomeController extends Controller
+
+class FrontWelcomeController extends FrontController
 {
     //
+    //コンストラクタ
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
+    public function index()
+    {
+
+        $view_name = 'welcome';
+        $view_path = $this->getViewPath($view_name);
+
+        return view($view_path);
+    }
 }

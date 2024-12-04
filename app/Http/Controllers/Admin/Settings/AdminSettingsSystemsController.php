@@ -60,12 +60,12 @@ class AdminSettingsSystemsController extends AdminController
             ]),
         ];
 
-        $this->view_params['settings'] = $settings;
-        $this->view_params['heading'] = 'admin.features.settings.systems.heading';
+        $this->viewParams['settings'] = $settings;
+        $this->viewParams['heading'] = 'admin.features.settings.systems.heading';
 
         return view(
             'admin.settings.systems.index',
-            $this->view_params
+            $this->viewParams
         );
     }
 
@@ -86,9 +86,9 @@ class AdminSettingsSystemsController extends AdminController
         ]);
 
         // JSON形式の必須項目設定
-        $required_fields = $request->input('required_fields', []);
+        $requiredFields = $request->input('required_fields', []);
 
-        SettingSystem::setValue('required_fields', $required_fields);
+        SettingSystem::setValue('required_fields', $requiredFields);
 
         foreach ($settings as $name => $value) {
             SettingSystem::setValue($name, $value);

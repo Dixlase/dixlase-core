@@ -39,7 +39,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <span>{{ __($item['text']) }}</span>
                     </a>
                 @else
-                    <button @click="{{ $open_key }} = !{{ $open_key }}" class="{{ $button_class }} w-full">
+                    <button @click="{{ $open_key }} = !{{ $open_key }}" class="{{ $button_class }} {{ config('admin.appearance_class.sidebar.normal') }} w-full">
                         <i class="{{ $item['icon'] }} mr-3"></i>
                         <span>{{ __($item['text']) }}</span>
                         <svg class="{{ $arrow_class }}" :class="{ 'rotate-180': {{ $open_key }} }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">

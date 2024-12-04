@@ -31,11 +31,11 @@ use Illuminate\Support\Facades\Route;
 class AdminController extends Controller
 {
     //変数を宣言する
-    protected $site_name;
+    protected $siteName;
     protected $appearance = 'light';
     protected $heading = '';
-    protected $view_params = [];
-    protected $route_name = '';
+    protected $viewParams = [];
+    protected $routeName = '';
     protected $settings = [];
 
     //
@@ -45,7 +45,7 @@ class AdminController extends Controller
 
 
         // データベースからサイト名を取得。取得できなかった場合は.envからデフォルト値を使用
-        $this->site_name = DB::table('settings_system')->where('name', 'site_name')->value('value')
+        $this->siteName = DB::table('settings_system')->where('name', 'site_name')->value('value')
             ?? env('APP_NAME', 'EventManagementSystem');
 
         //ログイン中の管理者情報を取得
@@ -58,19 +58,19 @@ class AdminController extends Controller
         $this->settings = DB::table('settings_system')->get()->keyBy('name')->toArray();
 
         //ビューパラメータにサイト名を設定する
-        $this->view_params['site_name'] = $this->site_name;
+        $this->viewParams['site_name'] = $this->siteName;
 
         //ビューパラメータにシステム設定を設定する
-        $this->view_params['settings'] = $this->settings;
+        $this->viewParams['settings'] = $this->settings;
 
         //ビューパラメータにテーマを設定する
-        $this->view_params['appearance'] = $this->appearance;
+        $this->viewParams['appearance'] = $this->appearance;
 
         //セッションにテーマを保存する
         session(['appearance' => $this->appearance]);
 
         // ルート名を取得
-        $this->route_name = Route::currentRouteName();
-        $this->view_params['route_name'] = $this->route_name;
+        $this->routeName = Route::currentRouteName();
+        $this->viewParams['route_name'] = $this->routeName;
     }
 }
