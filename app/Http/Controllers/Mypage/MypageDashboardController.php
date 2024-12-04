@@ -20,20 +20,23 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Controllers\Front;
+namespace App\Http\Controllers\Mypage;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class FrontController extends Controller
+class MypageDashboardController extends MypageController
 {
-    //
+    //初期設定を行う
+    public function __construct()
+    {
+        parent::__construct();
+    }
 
-    //変数を宣言する
-    protected $siteName;
-    protected $appearance = 'light';
-    protected $viewParams = [];
-    //protected $currentTheme = 'default';
-
-    public function __construct() {}
+    //ダッシュボードを表示する
+    public function index()
+    {
+        $this->viewParams['heading'] = 'mypage.features.dashboard.heading';
+        return view('theme::mypage.dashboard', $this->viewParams);
+    }
 }

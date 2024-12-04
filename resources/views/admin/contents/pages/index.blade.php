@@ -1,4 +1,4 @@
-@extends('admin::components.layout')
+@extends('admin::partials.layout')
 
 @section('content')
         <!-- Flash message for success or error -->

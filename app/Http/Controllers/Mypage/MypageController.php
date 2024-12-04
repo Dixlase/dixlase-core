@@ -20,16 +20,16 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Mypage;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
 
-class AdminController extends Controller
+class MypageController extends Controller
 {
+    //
     //変数を宣言する
     protected $siteName;
     protected $appearance = 'light';
@@ -46,7 +46,7 @@ class AdminController extends Controller
             ?? env('APP_NAME', 'EventManagementSystem');
 
         //ログイン中の管理者情報を取得
-        $admin = auth('admin')->user();
+        $admin = auth('web')->user();
 
         //ログイン中の管理者の外観モードをDBから取得
         $this->appearance = $admin->appearance ?? 0;

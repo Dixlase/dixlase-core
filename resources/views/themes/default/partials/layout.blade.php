@@ -43,16 +43,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <body class="font-sans antialiased {{ config('admin.appearance_class.layout.body') }}">
         <div class="min-h-screen">
             <!-- Header -->
-            @include('admin::components.header', [
+            @include('theme::partials.header', [
                 'site_name' => $site_name,
             ])
 
 
             <div class="min-h-screen flex pt-16">
-                 <!-- Side Bar -->
-                <aside class="hidden sm:block w-64 flex-shrink-0 {{ config('admin.appearance_class.layout.aside') }}">
-                    @include('admin::components.sidebar')
-                </aside>
 
                 <!-- Main -->
                 <main class="flex-1 pb-10 {{ config('admin.appearance_class.layout.main') }}">
@@ -74,8 +70,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </div>
 
-        <script>
+        <!-- Footer -->
+        @include('theme::partials.footer', [
+            'site_name' => $site_name,
+        ])
 
+
+        <script>
             // テーマの設定
             const current_appearance_class = '{{ $appearance }}';
             if (current_appearance_class === '0') { // 0: auto
@@ -89,7 +90,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 document.documentElement.classList.add('light');
                 document.documentElement.classList.remove('dark');
             }
-
         </script>
     </body>
 </html>

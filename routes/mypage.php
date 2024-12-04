@@ -20,6 +20,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+use App\Http\Controllers\Mypage\MypageDashboardController;
 use App\Http\Controllers\Mypage\Auth\MypageAuthenticatedSessionController;
 use App\Http\Controllers\Mypage\Confirm\MypageConfirmablePasswordController;
 use App\Http\Controllers\Mypage\Auth\MypageEmailVerificationNotificationController;
@@ -43,9 +44,8 @@ Route::prefix('mypage')->name('mypage.')->group(function () {
         }
     });
 
-    Route::get('/dashboard', function () {
-        return view('mypage.dashboard');
-    })->middleware(['auth:web', 'verified'])->name('dashboard');
+    //
+    Route::get('/dashboard', [MypageDashboardController::class, 'index'])->name('dashboard');
 
     Route::middleware('auth')->group(function () {
         Route::get('/profile', [MypageProfileController::class, 'edit'])->name('profile.edit');

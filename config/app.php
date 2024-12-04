@@ -123,7 +123,7 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
-    //ここからカスタムの設定ß
+    //ここからカスタムの設定
 
     /*
     |--------------------------------------------------------------------------
@@ -136,8 +136,12 @@ return [
     |
     */
 
-    'theme_directory' => 'themes',
-    'default_theme' => env('APP_THEME', 'default'),
-    'admin_theme' => 'admin'
+    'theme_directory' => 'themes', // テーマのディレクトリ
+    'default_theme' => env('APP_THEME', 'default'), // デフォルトのテーマ
+    'admin_theme' => 'admin', // 管理画面のテーマ
+    'pages_directory' => 'pages', // ページのマークダウンファイルを保存するディレクトリ
+
+
+    //ここまでカスタムの設定
 
 ];

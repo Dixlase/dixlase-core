@@ -110,7 +110,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 {{ $site_name ?? env('APP_NAME') }}
             </a>
         </div>
-        @include('admin::components.sidebar')
+        @include('admin::partials.sidebar')
     </div>
 
 
