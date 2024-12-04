@@ -42,8 +42,8 @@ class AdminSettingsAdminsController extends AdminController
     public function index(Request $request)
     {
         //
-        $this->view_params['heading'] = __('admin.features.settings.admins.index.heading');
-        $this->view_params['admins'] = Admin::all();
+        $this->viewParams['heading'] = __('admin.features.settings.admins.index.heading');
+        $this->viewParams['admins'] = Admin::all();
 
         // 検索条件の取得
         $search = $request->input('search');
@@ -56,11 +56,11 @@ class AdminSettingsAdminsController extends AdminController
             })
             ->paginate(10); // ページネーション
 
-        $this->view_params['admins'] = $admins;
-        $this->view_params['search'] = $search;
+        $this->viewParams['admins'] = $admins;
+        $this->viewParams['search'] = $search;
 
         // ビューにデータを渡す
-        return view('admin.settings.admins.index', $this->view_params);
+        return view('admin.settings.admins.index', $this->viewParams);
     }
 
     /**
@@ -68,8 +68,8 @@ class AdminSettingsAdminsController extends AdminController
      */
     public function create()
     {
-        $this->view_params['heading'] = 'admin.features.settings.admins.create.heading';
-        return view('admin.settings.admins.create', $this->view_params);
+        $this->viewParams['heading'] = 'admin.features.settings.admins.create.heading';
+        return view('admin.settings.admins.create', $this->viewParams);
     }
 
     /**
@@ -110,12 +110,12 @@ class AdminSettingsAdminsController extends AdminController
      */
     public function edit(Admin $admin)
     {
-        $this->view_params['heading'] = 'admin.features.settings.admins.edit.heading';
-        $this->view_params['admin'] = $admin;
+        $this->viewParams['heading'] = 'admin.features.settings.admins.edit.heading';
+        $this->viewParams['admin'] = $admin;
 
 
 
-        return view('admin.settings.admins.edit', $this->view_params);
+        return view('admin.settings.admins.edit', $this->viewParams);
     }
 
     /**
@@ -154,7 +154,7 @@ class AdminSettingsAdminsController extends AdminController
      */
     public function profile()
     {
-        $this->view_params['heading'] = 'admin.settings.admins.profile.heading';
-        return view('admin.settings.admins.profile', $this->view_params);
+        $this->viewParams['heading'] = 'admin.settings.admins.profile.heading';
+        return view('admin.settings.admins.profile', $this->viewParams);
     }
 }

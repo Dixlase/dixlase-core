@@ -44,7 +44,7 @@ class AdminUsersController extends AdminController
     public function index(Request $request)
     {
 
-        $this->view_params['heading'] = 'admin.features.users.index.heading';
+        $this->viewParams['heading'] = 'admin.features.users.index.heading';
 
         // 検索条件の取得
         $search = $request->input('search');
@@ -57,11 +57,11 @@ class AdminUsersController extends AdminController
             })
             ->paginate(10); // ページネーション
 
-        $this->view_params['users'] = $users;
-        $this->view_params['search'] = $search;
+        $this->viewParams['users'] = $users;
+        $this->viewParams['search'] = $search;
 
         // ビューにデータを渡す
-        return view('admin.users.index', $this->view_params);
+        return view('admin.users.index', $this->viewParams);
     }
 
     /**
@@ -69,9 +69,9 @@ class AdminUsersController extends AdminController
      */
     public function create()
     {
-        $this->view_params['heading'] = 'admin.features.users.create.heading';
+        $this->viewParams['heading'] = 'admin.features.users.create.heading';
 
-        return view('admin.users.create', $this->view_params);
+        return view('admin.users.create', $this->viewParams);
     }
 
     /**
@@ -110,10 +110,10 @@ class AdminUsersController extends AdminController
      */
     public function edit(User $user)
     {
-        $this->view_params['heading'] = 'admin.features.users.edit.heading';
-        $this->view_params['user'] = $user;
+        $this->viewParams['heading'] = 'admin.features.users.edit.heading';
+        $this->viewParams['user'] = $user;
 
-        return view('admin.users.edit', $this->view_params);
+        return view('admin.users.edit', $this->viewParams);
     }
 
     /**

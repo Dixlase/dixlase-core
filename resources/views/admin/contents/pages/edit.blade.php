@@ -20,9 +20,6 @@
 
     ])
 
-
-
-
     <!-- 保存ボタンとモーダル -->
     @include('components.form.save', [
         'id' => 'confirmationModal',

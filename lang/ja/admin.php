@@ -27,6 +27,10 @@ return [
                 'index' => 'ページマスター',
                 'create' => 'ページ新規作成',
             ],
+            'themes' => [
+                'text' => 'テーマ設定',
+                'index' => 'テーマ一覧',
+            ]
         ],
         'users' => [
             'text' => 'ユーザー管理',
@@ -64,6 +68,15 @@ return [
                 ],
                 'edit' => [
                     'heading' => 'ページ編集',
+                ],
+            ],
+            'themes' => [
+                'title' => 'テーマ設定',
+                'color' => 'カラー',
+                'font' => 'フォント',
+                'submit' => '更新',
+                'index' => [
+                    'heading' => 'テーマ一覧',
                 ],
             ],
         ],
