@@ -3,14 +3,14 @@
 @section('content')
 
 <!-- Flash message for success or error -->
-@include('components.flash_message')
+@include('components::flash_message')
 
 <form action="{{ route('admin.contents.pages.update', ['page' => $page->id] ) }}" method="POST">
     @csrf
     @method('PATCH')
 
     <!-- id -->
-    @include('components.form.hidden', [
+    @include('components::form.hidden', [
         'name' => 'id',
         'value' => $page->id,
     ])
@@ -21,7 +21,7 @@
     ])
 
     <!-- 保存ボタンとモーダル -->
-    @include('components.form.save', [
+    @include('components::form.save', [
         'id' => 'confirmationModal',
         'onclick' => "openModal('confirmationModal')",
         'title' => '保存の確認',

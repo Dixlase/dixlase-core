@@ -26,18 +26,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="max-w-4xl mx-auto rounded-lg">
             <div class="p-6">
                 <!-- Flash message for success or error -->
-                @include('components.flash_message')
+                @include('components::flash_message')
 
                 <form action="{{ route('admin.settings.systems.update') }}" method="POST">
                     @csrf
                     @method('PUT')
 
                     <div>
-                        @include('components.form.label', [
+                        @include('components::form.label', [
                             'for' => 'site_name',
                             'text' => 'common.site_name',
                         ])
-                        @include('components.form.text', [
+                        @include('components::form.text', [
                             'id' => 'site_name',
                             'name' => 'site_name',
                             'value' => old('site_name', $settings['site_name']),
@@ -46,12 +46,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
 
                     <div class="mt-4">
-                        @include('components.form.label', [
+                        @include('components::form.label', [
                             'for' => 'language',
                             'text' => 'common.language',
                         ])
 
-                        @include('components.form.select', [
+                        @include('components::form.select', [
                             'id' => 'language',
                             'name' => 'language',
                             'options' => config('admin.languages.available'),
@@ -60,15 +60,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         ])
 
                     <div class="mt-4">
-                        @include('components.form.label', [
+                        @include('components::form.label', [
                             'text' => 'admin.pages.settings.systems.is_member_site',
                         ])
-                        @include('components.form.hidden', [
+                        @include('components::form.hidden', [
                             'id' => 'is_member_site',
                             'name' => 'is_member_site',
                             'value' => '0'
                         ])
-                        @include('components.form.radio-group', [
+                        @include('components::form.radio-group', [
                             'name' => 'is_member_site',
                             'options' => [
                                 1 => 'common.yes',
@@ -79,15 +79,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
 
                     <div class="mt-4">
-                        @include('components.form.label', [
+                        @include('components::form.label', [
                             'text' => 'ゲスト申し込みを許可する',
                         ])
-                        @include('components.form.hidden', [
+                        @include('components::form.hidden', [
                             'id' => 'allow_guest_registration',
                             'name' => 'allow_guest_registration',
                             'value' => '0'
                         ])
-                        @include('components.form.radio-group', [
+                        @include('components::form.radio-group', [
                             'name' => 'allow_guest_registration',
                             'options' => [
                                 1 => 'はい',
@@ -98,15 +98,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
 
                     <div class="mt-4">
-                        @include('components.form.label', [
+                        @include('components::form.label', [
                             'text' => '外部からユーザー登録を可能にする',
                         ])
-                        @include('components.form.hidden', [
+                        @include('components::form.hidden', [
                             'id' => 'allow_external_registration',
                             'name' => 'allow_external_registration',
                             'value' => '0'
                         ])
-                        @include('components.form.radio-group', [
+                        @include('components::form.radio-group', [
                             'name' => 'allow_external_registration',
                             'options' => [
                                 1 => 'はい',
@@ -117,10 +117,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
 
                     <div class="mt-4">
-                        @include('components.form.label', [
+                        @include('components::form.label', [
                             'text' => '必須項目の設定',
                         ])
-                        @include('components.form.checkbox-group', [
+                        @include('components::form.checkbox-group', [
                             'name' => 'required_fields',
                             'options' => [
                                 'address' => '住所',
@@ -133,15 +133,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
 
                     <div class="mt-4">
-                        @include('components.form.label', [
+                        @include('components::form.label', [
                             'text' => 'メンテナンスモード',
                         ])
-                        @include('components.form.hidden', [
+                        @include('components::form.hidden', [
                             'id' => 'maintenance_mode',
                             'name' => 'maintenance_mode',
                             'value' => '0'
                         ])
-                        @include('components.form.radio-group', [
+                        @include('components::form.radio-group', [
                             'name' => 'maintenance_mode',
                             'options' => [
                                 1 => 'はい',
@@ -152,7 +152,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
 
                     <!-- 保存ボタンとモーダル -->
-                    @include('components.form.save', [
+                    @include('components::form.save', [
                         'id' => 'confirmationModal',
                         'onclick' => "openModal('confirmationModal')",
                         'title' => '保存の確認',

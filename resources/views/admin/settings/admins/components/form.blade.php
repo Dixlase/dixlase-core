@@ -23,17 +23,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 ])
 
 <div class="mb-4">
-    @include('components.form.label', [
+    @include('components::form.label', [
         'for' => 'name',
         'text' => '名前',
     ])
-    @include('components.form.text', [
+    @include('components::form.text', [
         'id' => 'name',
         'name' => 'name',
         'value' => old('name', $admin->name ?? ''),
         'required' => true,
     ])
-    @include('components.form.error', [
+    @include('components::form.error', [
         'messages' => $errors->get('name')
     ])
 </div>
@@ -41,46 +41,46 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
 <div class="mb-4">
-    @include('components.form.label', [
+    @include('components::form.label', [
         'for' => 'email',
         'text' => 'メールアドレス',
     ])
-    @include('components.form.text', [
+    @include('components::form.text', [
         'type' => 'email',
         'id' => 'email',
         'name' => 'email',
         'value' => old('email', $admin->email ?? ''),
         'required' => true,
     ])
-    @include('components.form.error', [
+    @include('components::form.error', [
         'messages' => $errors->get('email')
     ])
 </div>
 
 <div class="mb-4">
-    @include('components.form.label', [
+    @include('components::form.label', [
         'for' => 'password',
         'text' => 'パスワード',
     ])
-    @include('components.form.text', [
+    @include('components::form.text', [
         'type' => 'password',
         'id' => 'password',
         'name' => 'password',
         'required' => $require_password,
     ])
-    @include('components.form.error', [
+    @include('components::form.error', [
         'messages' => $errors->get('password')
     ])
 </div>
 
 
 <div class="mb-4">
-    @include('components.form.label', [
+    @include('components::form.label', [
         'for' => 'role',
         'text' => '権限',
 
     ])
-    @include('components.form.select', [
+    @include('components::form.select', [
         'id' => 'role',
         'name' => 'role',
         'options' => config('admin.roles'),
@@ -90,12 +90,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 </div>
 
 <div class="mb-4">
-    @include('components.form.label', [
+    @include('components::form.label', [
         'for' => 'appearance',
         'text' => '外観モード',
 
     ])
-    @include('components.form.select', [
+    @include('components::form.select', [
         'id' => 'appearance',
         'name' => 'appearance',
         'options' => config('admin.appearance'),
@@ -105,12 +105,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 </div>
 
 <div class="mb-4">
-    @include('components.form.label', [
+    @include('components::form.label', [
         'for' => 'status',
         'text' => 'ステータス',
 
     ])
-    @include('components.form.select', [
+    @include('components::form.select', [
         'id' => 'status',
         'name' => 'status',
         'options' => config('admin.status.admins'),

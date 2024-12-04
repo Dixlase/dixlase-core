@@ -34,7 +34,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <!--<div class="fixed bottom-0 left-0 w-full flex z-50 justify-center mt-6 border-t py-3 px-3 {{ config('admin.appearance_class.layout.save_button') }}">-->
     <!-- 保存ボタン -->
-    @include('components.form.button', [
+    @include('components::form.button', [
         'type' => $type,
         'label' => $label,
         'onclick' => "openModal('" . $id_confirmation . "')",
@@ -43,7 +43,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <!--</div>-->
 
 <!-- 保存モーダル -->
-@include('components.form.modal', [
+@include('components::form.modal', [
     'id' => $id_confirmation,
     'title' => $title,
     'message' => $message,

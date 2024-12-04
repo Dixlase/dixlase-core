@@ -3,7 +3,7 @@
 @section('content')
 
         <!-- Flash message for success or error -->
-        @include('components.flash_message')
+        @include('components::flash_message')
 
         <form action="{{ route('admin.contents.themes.upload') }}" method="POST" enctype="multipart/form-data">
             @csrf
