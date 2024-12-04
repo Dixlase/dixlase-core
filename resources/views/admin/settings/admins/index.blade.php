@@ -22,7 +22,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
     <!-- Flash message for success or error -->
-    @include('components.flash_message')
+    @include('components::flash_message')
 
     <h3 class="text-lg font-semibold">管理者検索</h3>
 
@@ -30,14 +30,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <form action="{{ route('admin.users.index') }}" method="GET" class="mb-6">
         <div class="flex items-center">
             @csrf
-            @include('components.form.text', [
+            @include('components::form.text', [
                 'name' => 'search',
                 'placeholder' => 'ユーザー名やメールアドレスで検索',
                 'value' => $search,
 
             ])
 
-            @include('components.form.button', [
+            @include('components::form.button', [
                 'type' => "submit",
                 'label' => '検索',
             ])

@@ -72,20 +72,31 @@ class AppServiceProvider extends ServiceProvider
         // 現在使用中のテンプレート名を取得
         $activeTemplate = DB::table('themes')->where('is_active', true)->first();
 
+        // 現在使用中のテンプレートのスラッグ名を取得
         $templateSlug = $activeTemplate ? $activeTemplate->slug : 'default';
 
-        // テーマの設定
+        // テーマの設定を読み込む
         $adminTheme = config('app.admin_theme', 'admin');
-        $currentTheme = config('app.theme', 'default');
+        $currentTheme = $activeTemplate ? $templateSlug : config('app.theme', 'default_theme');
+        $themeDiretory = config('app.theme_directory', 'themes');
 
+
+        // 管理画面のテンプレートの読み込みがviews_customのほうを優先されるように設定
         View::addNamespace('admin', [
             resource_path("views_custom/{$adminTheme}"),
             resource_path("views/{$adminTheme}"),
         ]);
 
+        // カスタムテンプレートの読み込みがviews_customのほうを優先されるように設定
         View::addNamespace('theme', [
-            resource_path("views_custom/{$currentTheme}"),
-            resource_path("views/{$currentTheme}"),
+            resource_path("views_custom/{$themeDiretory}/{$currentTheme}"),
+            resource_path("views/{$themeDiretory}/{$currentTheme}"),
+        ]);
+
+        // 共用コンポーネントの読み込みがviews_customのほうを優先されるように設定
+        View::addNamespace('components', [
+            resource_path('views_custom/components'), // カスタムコンポーネントを優先
+            resource_path('views/components'),       // デフォルトコンポーネント
         ]);
 
         //言語の設定

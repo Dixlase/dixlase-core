@@ -136,8 +136,8 @@ return [
     |
     */
 
-
-    'theme' => env('APP_THEME', 'default'),
+    'theme_directory' => 'themes',
+    'default_theme' => env('APP_THEME', 'default'),
     'admin_theme' => 'admin'
 
 

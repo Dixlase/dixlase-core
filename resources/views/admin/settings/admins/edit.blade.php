@@ -23,12 +23,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 
     <!-- Flash message for success or error -->
-    @include('components.flash_message')
+    @include('components::flash_message')
 
     <form action="{{ route('admin.settings.admins.update', ['admin' => $admin->id]) }}" method="POST">
         @csrf
         @method('PATCH')
-        @include('components.form.hidden', [
+        @include('components::form.hidden', [
             'name' => 'id',
             'value' => $admin->id,
         ])
@@ -40,7 +40,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         ])
 
         <!-- 保存ボタンとモーダル -->
-        @include('components.form.save', [
+        @include('components::form.save', [
             'id' => 'confirmationModal',
             'onclick' => "openModal('confirmationModal')",
             'title' => '更新の確認',
@@ -57,7 +57,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @csrf
         @method('DELETE')
         <!-- 削除ボタン -->
-        @include('components.form.button', [
+        @include('components::form.button', [
             'type' => 'button',
             'label' => '管理者を削除',
             'class' => 'text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900',
@@ -65,7 +65,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         ])
 
         <!-- 削除モーダル -->
-        @include('components.form.modal', [
+        @include('components::form.modal', [
             'id' => 'deleteModal',
             'title' => '削除の確認',
             'message' => 'このユーザーを削除しますか？',

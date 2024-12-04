@@ -3,7 +3,7 @@
 @section('content')
 
 <!-- Flash message for success or error -->
-@include('components.flash_message')
+@include('components::flash_message')
 
 <form action="{{ route('admin.contents.pages.store') }}" method="POST">
     @csrf
@@ -14,7 +14,7 @@
     ])
 
     <!-- 保存ボタンとモーダル -->
-    @include('components.form.save', [
+    @include('components::form.save', [
         'id' => 'confirmationModal',
         'onclick' => "openModal('confirmationModal')",
         'title' => '保存の確認',

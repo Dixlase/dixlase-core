@@ -23,7 +23,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 
     <!-- Flash message for success or error -->
-    @include('components.flash_message')
+    @include('components::flash_message')
 
     <form action="{{ route('admin.settings.admins.store') }}" method="POST" class="mt-6">
         @csrf
@@ -32,7 +32,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         ])
 
         <!-- 保存ボタンとモーダル -->
-        @include('components.form.save', [
+        @include('components::form.save', [
             'id' => 'confirmationModal',
             'label' => '作成',
             'onclick' => "openModal('confirmationModal')",

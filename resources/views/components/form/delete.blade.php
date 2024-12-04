@@ -1,5 +1,5 @@
 <!-- 削除ボタン -->
-@include('components.form.button', [
+@include('components::form.button', [
     'type' => $type,
     'label' => $label,
     'onclick' => "openModal('" . $id_confirmation . "')",
@@ -7,7 +7,7 @@
 ])
 
 <!-- 削除モーダル -->
-@include('components.form.modal', [
+@include('components::form.modal', [
     'id' => $id_confirmation,
     'title' => $title,
     'message' => $message,

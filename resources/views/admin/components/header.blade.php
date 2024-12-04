@@ -24,7 +24,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- ロゴ -->
         <div class="flex items-center order-2 sm:order-1">
             <a href="{{ route('admin.dashboard') }}">
-                @include('components.application-logo' ,[
+                @include('components::application-logo' ,[
                     'class' => config('admin.appearance_class.layout.logo'),
                     'site_name' => $site_name
                 ])

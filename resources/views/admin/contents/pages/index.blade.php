@@ -2,7 +2,7 @@
 
 @section('content')
         <!-- Flash message for success or error -->
-        @include('components.flash_message')
+        @include('components::flash_message')
 
         <!-- デスクトップ用テーブル -->
         <div class="hidden md:block overflow-x-auto">
