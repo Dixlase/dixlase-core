@@ -33,6 +33,7 @@ use App\Http\Controllers\Admin\Settings\AdminSettingsSystemsController;
 use App\Http\Controllers\Admin\Settings\AdminSettingsAdminsController;
 use App\Http\Controllers\Admin\Users\AdminUsersController;
 use App\Http\Controllers\Admin\Contents\AdminContentsPageController;
+use App\Http\Controllers\Admin\Contents\AdminContentsThemesController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -60,21 +61,43 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         //Contents
 
+        // テーマ一覧表示
+        Route::get('/contents/themes', [AdminContentsThemesController::class, 'index'])->name('contents.themes.index');
+        // テーマアップロード
+        Route::post('/upload', [AdminContentsThemesController::class, 'uploadTheme'])->name('contents.themes.upload');
+        // テーマの有効化（切り替え）
+        Route::post('/switch/{slug}', [AdminContentsThemesController::class, 'switchTheme'])->name('contents.themes.switch');
+        // テーマ削除
+        Route::post('/delete/{slug}', [AdminContentsThemesController::class, 'deleteTheme'])->name('contents.themes.delete');
+
+
         // Pages
+        // ページマスター
         Route::get('/contents/pages', [AdminContentsPageController::class, 'index'])->name('contents.pages.index');
+        // ページ作成
         Route::get('/contents/pages/create', [AdminContentsPageController::class, 'create'])->name('contents.pages.create');
+        // ページ編集
         Route::get('/contents/pages/edit/{page}', [AdminContentsPageController::class, 'edit'])->name('contents.pages.edit');
+        // ページ保存
         Route::post('/contents/pages/store', [AdminContentsPageController::class, 'store'])->name('contents.pages.store');
+        // ページ更新
         Route::patch('/contents/pages/update/{page}', [AdminContentsPageController::class, 'update'])->name('contents.pages.update');
-        Route::get('/contents/pages/destroy', [AdminContentsPageController::class, 'destroy'])->name('contents.pages.destroy');
+        // ページ削除
+        Route::delete('/contents/pages/delete/{page}', [AdminContentsPageController::class, 'destroy'])->name('contents.pages.destroy');
 
         //Users
+        // ユーザーマスター
         Route::get('/users', [AdminUsersController::class, 'index'])->name('users.index');
+        // ユーザー作成
         Route::get('/users/create', [AdminUsersController::class, 'create'])->name('users.create');
+        // ユーザー編集
         Route::get('users/edit/{user}', [AdminUsersController::class, 'edit'])->name('users.edit');
+        // ユーザー保存
         Route::post('/users/store', [AdminUsersController::class, 'store'])->name('users.store');
+        // ユーザー更新
         Route::patch('users/update/{user}', [AdminUsersController::class, 'update'])->name('users.update');
-        Route::delete('/users/destroy/{user}', [AdminUsersController::class, 'destroy'])->name('users.destroy');
+        // ユーザー削除
+        Route::delete('/users/delete/{user}', [AdminUsersController::class, 'destroy'])->name('users.destroy');
 
         // Settings
         // Admins

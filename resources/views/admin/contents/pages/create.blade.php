@@ -1,4 +1,4 @@
-@extends('admin.partials.layout')
+@extends('admin::components.layout')
 
 @section('content')
 
@@ -9,7 +9,7 @@
     @csrf
 
     <!-- フォーム -->
-    @include('admin.contents.pages.partials.form', [
+    @include('admin::contents.pages.components.form', [
 
     ])
 

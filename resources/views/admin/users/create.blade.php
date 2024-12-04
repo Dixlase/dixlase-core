@@ -19,7 +19,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 
-@extends('admin.partials.layout')
+@extends('admin::components.layout')
 
 @section('content')
 
@@ -30,7 +30,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @csrf
 
         <!-- フォーム -->
-        @include('admin.users.partials.form', [
+        @include('admin::users.components.form', [
             'require_password' => true,
         ])
 

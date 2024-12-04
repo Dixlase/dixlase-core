@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-@extends('admin.partials.layout')
+@extends('admin::components.layout')
 
 @section('content')
     <!-- Flash message for success or error -->
@@ -33,7 +33,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         ])
 
         <!-- Form -->
-        @include('admin.users.partials.form', [
+        @include('admin::users.components.form', [
             'require_password' => false,
         ])
 

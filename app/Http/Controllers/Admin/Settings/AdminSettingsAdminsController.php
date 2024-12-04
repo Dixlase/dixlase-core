@@ -60,7 +60,7 @@ class AdminSettingsAdminsController extends AdminController
         $this->viewParams['search'] = $search;
 
         // ビューにデータを渡す
-        return view('admin.settings.admins.index', $this->viewParams);
+        return view('admin::settings.admins.index', $this->viewParams);
     }
 
     /**
@@ -69,7 +69,7 @@ class AdminSettingsAdminsController extends AdminController
     public function create()
     {
         $this->viewParams['heading'] = 'admin.features.settings.admins.create.heading';
-        return view('admin.settings.admins.create', $this->viewParams);
+        return view('admin::settings.admins.create', $this->viewParams);
     }
 
     /**
@@ -115,7 +115,7 @@ class AdminSettingsAdminsController extends AdminController
 
 
 
-        return view('admin.settings.admins.edit', $this->viewParams);
+        return view('admin::settings.admins.edit', $this->viewParams);
     }
 
     /**

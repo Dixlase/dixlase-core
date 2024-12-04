@@ -19,7 +19,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @props([
-    'button_class' => 'flex items-center px-4 py-2 text-sm font-medium rounded-md focus:outline-none',
+    'button_class' => 'flex items-center px-4 py-2 text-sm font-medium rounded-md focus:outline-none w-full',
     'arrow_class' => 'w-4 h-4 ml-auto transform'
 ])
 
@@ -39,7 +39,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <span>{{ __($item['text']) }}</span>
                     </a>
                 @else
-                    <button @click="{{ $open_key }} = !{{ $open_key }}" class="{{ $button_class }} {{ config('admin.appearance_class.sidebar.normal') }} w-full">
+                    <button @click="{{ $open_key }} = !{{ $open_key }}" class="{{ $button_class }} {{ config('admin.appearance_class.sidebar.normal') }}">
                         <i class="{{ $item['icon'] }} mr-3"></i>
                         <span>{{ __($item['text']) }}</span>
                         <svg class="{{ $arrow_class }}" :class="{ 'rotate-180': {{ $open_key }} }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -70,7 +70,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 @endphp
 
                                 <div x-data="{ {{ $open_child_key }}: {{ $is_open_child ? 'true' : 'false' }} }">
-                                    <button @click="{{ $open_child_key }} = !{{ $open_child_key }}" class="{{ $button_class }} w-full">
+                                    <button @click="{{ $open_child_key }} = !{{ $open_child_key }}" class="{{ $button_class }} {{ config('admin.appearance_class.sidebar.normal') }}">
                                         <i class="{{ $child_item['icon'] }} mr-3"></i>
                                         <span>{{ __($child_item['text']) }}</span>
                                         <svg class="{{ $arrow_class }}" :class="{ 'rotate-180': {{ $open_child_key }} }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
