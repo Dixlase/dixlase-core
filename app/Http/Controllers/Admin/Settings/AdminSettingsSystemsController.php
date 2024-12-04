@@ -64,7 +64,7 @@ class AdminSettingsSystemsController extends AdminController
         $this->viewParams['heading'] = 'admin.features.settings.systems.heading';
 
         return view(
-            'admin.settings.systems.index',
+            'admin::settings.systems.index',
             $this->viewParams
         );
     }

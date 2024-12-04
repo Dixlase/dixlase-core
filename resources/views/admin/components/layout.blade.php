@@ -43,7 +43,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <body class="font-sans antialiased {{ config('admin.appearance_class.layout.body') }}">
         <div class="min-h-screen">
             <!-- Header -->
-            @include('admin.partials.header', [
+            @include('admin::components.header', [
                 'site_name' => $site_name,
             ])
 
@@ -51,7 +51,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="min-h-screen flex pt-16">
                  <!-- Side Bar -->
                 <aside class="hidden sm:block w-64 flex-shrink-0 {{ config('admin.appearance_class.layout.aside') }}">
-                    @include('admin.partials.sidebar')
+                    @include('admin::components.sidebar')
                 </aside>
 
                 <!-- Main -->

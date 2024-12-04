@@ -39,6 +39,17 @@ return [
                         ],
                     ]
                 ],
+                'themes' => [
+                    'text' => 'admin.nav.contents.themes.text',
+                    'icon' => 'fas fa-fw fa-palette',
+                    'children' => [
+                        'index' => [
+                            'text' => 'admin.nav.contents.themes.index',
+                            'route' => 'admin.contents.themes.index',
+                            'icon' => 'fas fa-fw fa-palette',
+                        ]
+                    ]
+                ],
             ]
         ],
         'users' => [
@@ -94,22 +105,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | 管理画面テーマ
+    | 管理画面外観
     |--------------------------------------------------------------------------
     |
-    | ここでは、管理画面のテーマに関する設定を行います。
-    | これにより、管理画面のテーマを簡単に変更できます。
+    | ここでは、管理画面の外観に関する設定を行います。
+    | これにより、管理画面の外観を簡単に変更できます。
     |
     */
 
-    //テーマの設定
+    //外観モードの設定
     'appearance' => [
         0 => 'admin.theme.auto',
         1 => 'admin.theme.light',
         2 => 'admin.theme.dark',
     ],
 
-    //テーマのクラス
+    //外観モードのクラス
     'appearance_class' => [
         'layout' => [
             'body' => 'bg-white text-gray-900 dark:bg-gray-950 dark:text-white',
@@ -183,11 +194,6 @@ return [
         'viewer' => 'admin.roles.viewer',
     ],
 
-
-
-
-
-
     /*
     |--------------------------------------------------------------------------
     | 管理画面フォーム
@@ -215,7 +221,7 @@ return [
     |
     */
 
-    'template' => 'default',
+    'default_theme' => 'default',
 
     /*
     |--------------------------------------------------------------------------

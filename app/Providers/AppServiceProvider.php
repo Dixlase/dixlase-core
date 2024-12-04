@@ -27,6 +27,7 @@ use Illuminate\Support\ServiceProvider;
 use URL;
 use Illuminate\Support\Facades\View;
 use App\Models\SettingSystem;
+use Illuminate\Support\Facades\DB;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -54,9 +55,38 @@ class AppServiceProvider extends ServiceProvider
         //URL::forceRootUrl(Config::get('app.url'));// ルートURLを設定
         //$url->forceScheme('https');
 
+        /*
         // テーマの設定
         $currentTheme = config('admin.template', 'default');
         View::addNamespace('theme', resource_path("views/themes/{$currentTheme}"));
+
+        $currentTheme = config('app.theme', 'default');
+
+        // カスタムテンプレートが優先されるように設定
+        View::addNamespace('theme', [
+            resource_path("views_custom/{$currentTheme}"),
+            resource_path("views/{$currentTheme}"),
+        ]);
+        */
+
+        // 現在使用中のテンプレート名を取得
+        $activeTemplate = DB::table('themes')->where('is_active', true)->first();
+
+        $templateSlug = $activeTemplate ? $activeTemplate->slug : 'default';
+
+        // テーマの設定
+        $adminTheme = config('app.admin_theme', 'admin');
+        $currentTheme = config('app.theme', 'default');
+
+        View::addNamespace('admin', [
+            resource_path("views_custom/{$adminTheme}"),
+            resource_path("views/{$adminTheme}"),
+        ]);
+
+        View::addNamespace('theme', [
+            resource_path("views_custom/{$currentTheme}"),
+            resource_path("views/{$currentTheme}"),
+        ]);
 
         //言語の設定
         $language = SettingSystem::where('name', 'language')->value('value');

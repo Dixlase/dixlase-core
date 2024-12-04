@@ -54,7 +54,7 @@ class AdminContentsPageController extends AdminController
         $pages = Page::paginate(10); // 1ページあたり10件表示
         $this->viewParams['pages'] = $pages;
         return view(
-            'admin.contents.pages.index',
+            'admin::contents.pages.index',
             $this->viewParams
         );
     }
@@ -65,7 +65,7 @@ class AdminContentsPageController extends AdminController
         $this->viewParams['heading'] = 'admin.features.contents.pages.create.heading';
 
         return view(
-            'admin.contents.pages.create',
+            'admin::contents.pages.create',
             $this->viewParams
         );
     }
@@ -82,7 +82,7 @@ class AdminContentsPageController extends AdminController
 
         // ビューにデータを渡す
         return view(
-            'admin.contents.pages.edit',
+            'admin::contents.pages.edit',
             $this->viewParams
         );
     }

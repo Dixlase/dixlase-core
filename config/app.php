@@ -123,4 +123,24 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    //ここからカスタムの設定ß
+
+    /*
+    |--------------------------------------------------------------------------
+    | Application Theme
+    |--------------------------------------------------------------------------
+    |
+    | This value is the name of your application theme, which will be used when the
+    | framework needs to place the application's theme in a notification or
+    | other UI elements where an application theme needs to be displayed.
+    |
+    */
+
+
+    'theme' => env('APP_THEME', 'default'),
+    'admin_theme' => 'admin'
+
+
+
+
 ];

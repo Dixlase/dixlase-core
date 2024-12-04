@@ -21,13 +21,20 @@
  */
 
 use App\Http\Controllers\Register\RegisterRegisteredUserController;
+use App\Http\Controllers\Front\FrontWelcomeController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Page;
 
+
+//トップページ
+Route::get('/', [FrontWelcomeController::class, 'index'])->name('welcome');
+/*
 Route::get('/', function () {
+
     return view('welcome');
 });
+*/
 
 //アカウント登録
 Route::middleware('guest')->group(function () {

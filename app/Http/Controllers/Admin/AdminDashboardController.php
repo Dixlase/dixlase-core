@@ -36,6 +36,6 @@ class AdminDashboardController extends AdminController
     public function index()
     {
         $this->viewParams['heading'] = 'admin.features.dashboard.heading';
-        return view('admin.dashboard', $this->viewParams);
+        return view('admin::dashboard', $this->viewParams);
     }
 }
