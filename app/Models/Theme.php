@@ -20,20 +20,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Controllers\Front;
+namespace App\Models;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Model;
 
-class FrontController extends Controller
+class Theme extends Model
 {
     //
-
-    //変数を宣言する
-    protected $siteName;
-    protected $appearance = 'light';
-    protected $viewParams = [];
-    //protected $currentTheme = 'default';
-
-    public function __construct() {}
 }

@@ -18,20 +18,20 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-@extends('admin::components.layout')
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Dashboard') }}
+        </h2>
+    </x-slot>
 
-@section('content')
-    <!-- メインコンテンツ -->
-    <div class="w-full min-h-screen py-12">
-        <div>
-            <!-- コンテンツ部分 -->
-            <div class="w-full sm:px-6 lg:px-8">
-                <div class="{{ $theme_class_header }} overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        {{ __("You're logged in!") }}
-                    </div>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900">
+                    {{ __("You're logged in!") }}
                 </div>
             </div>
         </div>
     </div>
-@endsection
+</x-app-layout>

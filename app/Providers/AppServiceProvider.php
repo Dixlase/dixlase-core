@@ -28,6 +28,7 @@ use URL;
 use Illuminate\Support\Facades\View;
 use App\Models\SettingSystem;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Blade;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -60,6 +61,9 @@ class AppServiceProvider extends ServiceProvider
         $language = SettingSystem::where('name', 'language')->value('value');
         $lang = $language ?? config('admin.lang', 'ja');
         app()->setLocale($lang);
+
+        // Commonコンポーネントの名前空間を設定
+        //Blade::componentNamespace('App\\View\\Components', 'common');
 
 
         // 現在使用中のテンプレート名を取得

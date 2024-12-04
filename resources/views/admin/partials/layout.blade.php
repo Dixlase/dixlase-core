@@ -19,7 +19,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 <!DOCTYPE html>
-
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="{{ $appearance === 2 ? 'dark' : ($appearance === 1 ? 'light' : 'auto') }}">
     <head>
         <meta charset="utf-8">
@@ -44,14 +43,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <body class="font-sans antialiased {{ config('admin.appearance_class.layout.body') }}">
         <div class="min-h-screen">
             <!-- Header -->
-            @include('admin::components.header', [
+            @include('admin.partials.header', [
                 'site_name' => $site_name,
             ])
+
 
             <div class="min-h-screen flex pt-16">
                  <!-- Side Bar -->
                 <aside class="hidden sm:block w-64 flex-shrink-0 {{ config('admin.appearance_class.layout.aside') }}">
-                    @include('admin::components.sidebar')
+                    @include('admin.partials.sidebar')
                 </aside>
 
                 <!-- Main -->

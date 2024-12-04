@@ -20,20 +20,22 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Controllers\Front;
+namespace Database\Seeders;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
 
-class FrontController extends Controller
+class ThemesTableSeeder extends Seeder
 {
-    //
-
-    //変数を宣言する
-    protected $siteName;
-    protected $appearance = 'light';
-    protected $viewParams = [];
-    //protected $currentTheme = 'default';
-
-    public function __construct() {}
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        //
+        DB::table('themes')->insert([
+            ['name' => 'Default', 'slug' => 'default', 'version' => '1.0', 'is_active' => true],
+            ['name' => 'Custom Theme', 'slug' => 'custom_theme', 'version' => '1.0', 'is_active' => false],
+        ]);
+    }
 }
