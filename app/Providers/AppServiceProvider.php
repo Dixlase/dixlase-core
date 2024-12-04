@@ -77,7 +77,7 @@ class AppServiceProvider extends ServiceProvider
 
         // テーマの設定を読み込む
         $adminTheme = config('app.admin_theme', 'admin');
-        $currentTheme = $activeTemplate ? $templateSlug : config('app.theme', 'default_theme');
+        $currentTheme = $activeTemplate ? $templateSlug : config('app.default_theme', 'default_theme');
         $themeDiretory = config('app.theme_directory', 'themes');
 
 
