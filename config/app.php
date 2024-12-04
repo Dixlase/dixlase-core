@@ -140,7 +140,4 @@ return [
     'default_theme' => env('APP_THEME', 'default'),
     'admin_theme' => 'admin'
 
-
-
-
 ];
