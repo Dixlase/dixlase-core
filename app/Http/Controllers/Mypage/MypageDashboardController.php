@@ -37,6 +37,6 @@ class MypageDashboardController extends MypageController
     public function index()
     {
         $this->viewParams['heading'] = 'mypage.features.dashboard.heading';
-        return view('theme::mypage.dashboard', $this->viewParams);
+        return view('themes::mypage.dashboard', $this->viewParams);
     }
 }

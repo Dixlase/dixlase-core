@@ -29,6 +29,7 @@ use Illuminate\Support\Facades\View;
 use App\Models\SettingSystem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\File;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -62,20 +63,37 @@ class AppServiceProvider extends ServiceProvider
         $lang = $language ?? config('admin.lang', 'ja');
         app()->setLocale($lang);
 
+        // 有効なプラグインをデータベースから取得
+
+        $enabledPlugins = DB::table('plugins')->where('status', 'enabled')->get();
+
+        // プラグインのServiceProviderを登録
+        foreach ($enabledPlugins as $plugin) {
+            $pluginPath = base_path('plugins/' . $plugin->name . '/src');
+            if (File::exists($pluginPath)) {
+                // プラグインのServiceProviderをロード
+                $provider = $plugin->namespace . '\\' . $plugin->name . 'ServiceProvider';
+                if (class_exists($provider)) {
+                    $this->app->register($provider);
+                }
+            }
+        }
+
+
         // Commonコンポーネントの名前空間を設定
         //Blade::componentNamespace('App\\View\\Components', 'common');
 
 
-        // 現在使用中のテンプレート名を取得
-        $activeTemplate = DB::table('themes')->where('is_active', true)->first();
+        // 現在使用中のテーマ名を取得
+        $activeTheme = DB::table('themes')->where('is_active', true)->first();
 
         // 現在使用中のテンプレートのスラッグ名を取得
-        $templateSlug = $activeTemplate ? $activeTemplate->slug : 'default';
+        $templateSlug = $activeTheme ? $activeTheme->slug : 'default';
 
         // テーマの設定を読み込む
         $adminTheme = config('app.admin_theme', 'admin');
-        $currentTheme = $activeTemplate ? $templateSlug : config('app.default_theme', 'default_theme');
         $themeDirectory = config('app.theme_directory', 'themes');
+        $currentTheme = $activeTheme ? $templateSlug : config('app.default_theme', 'default');
 
         // 管理画面のテンプレートの読み込みがviews_customのほうを優先されるように設定
         View::addNamespace('admin', [
@@ -84,7 +102,7 @@ class AppServiceProvider extends ServiceProvider
         ]);
 
         // カスタムテンプレートの読み込みがviews_customのほうを優先されるように設定
-        View::addNamespace('theme', [
+        View::addNamespace('themes', [
             resource_path("views_custom/{$themeDirectory}/{$currentTheme}"),
             resource_path("views/{$themeDirectory}/{$currentTheme}"),
         ]);
@@ -93,6 +111,12 @@ class AppServiceProvider extends ServiceProvider
         View::addNamespace('components', [
             resource_path('views_custom/components'), // カスタムコンポーネントを優先
             resource_path('views/components'),       // デフォルトコンポーネント
+        ]);
+
+        // エラーページ用の探索順序を設定
+        View::addNamespace('errors', [
+            resource_path("views_custom/{$themeDirectory}/{$currentTheme}/errors"),
+            resource_path("views/{$themeDirectory}/{$currentTheme}/errors"),
         ]);
     }
 }

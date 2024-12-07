@@ -20,23 +20,16 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Controllers\Front;
+namespace App\Models;
 
+use Illuminate\Database\Eloquent\Model;
 
-use Illuminate\Http\Request;
-
-
-class FrontWelcomeController extends FrontController
+class Plugin extends Model
 {
     //
-    //コンストラクタ
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
-    public function index()
-    {
-        return view('themes::welcome', $this->viewParams);
-    }
+    protected $fillable = [
+        'name',
+        'namespace',
+        'status'
+    ];
 }

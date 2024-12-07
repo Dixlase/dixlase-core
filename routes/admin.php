@@ -30,6 +30,7 @@ use App\Http\Controllers\Admin\Auth\AdminPasswordResetLinkController;
 use App\Http\Controllers\Admin\Auth\AdminRegisteredUserController;
 use App\Http\Controllers\Admin\Auth\AdminVerifyEmailController;
 use App\Http\Controllers\Admin\Settings\AdminSettingsSystemsController;
+use App\Http\Controllers\Admin\Settings\AdminSettingsPluginController;
 use App\Http\Controllers\Admin\Settings\AdminSettingsAdminsController;
 use App\Http\Controllers\Admin\Users\AdminUsersController;
 use App\Http\Controllers\Admin\Contents\AdminContentsPageController;
@@ -37,7 +38,9 @@ use App\Http\Controllers\Admin\Contents\AdminContentsThemesController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
-Route::prefix('admin')->name('admin.')->group(function () {
+$adminUrl = config('security.admin_url');
+
+Route::prefix($adminUrl)->name('admin.')->group(function () {
     Route::get('/', function () {
         $user = Auth::guard('admin')->user();
         if ($user) {
@@ -59,8 +62,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
 
-        //Contents
-
+        //Contentså
         // テーマ一覧表示
         Route::get('/contents/themes', [AdminContentsThemesController::class, 'index'])->name('contents.themes.index');
         // テーマアップロード
@@ -108,6 +110,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::patch('/settings/admins/update/{admin}', [AdminSettingsAdminsController::class, 'update'])->name('settings.admins.update');
         Route::delete('/settings/admins/destroy/{admin}', [AdminSettingsAdminsController::class, 'destroy'])->name('settings.admins.destroy');
         Route::get('/settings/admins/profile', [AdminSettingsAdminsController::class, 'profile'])->name('settings.admins.profile');
+
+        // Plugins
+        Route::get('/settings/plugins', [AdminSettingsPluginController::class, 'index'])->name('settings.plugins.index');
+        Route::post('/settings/plugins/install', [AdminSettingsPluginController::class, 'install'])->name('settings.plugins.install');
+        Route::post('/enable/{id}', [AdminSettingsPluginController::class, 'enable'])->name('settings.plugins.enable');
+        Route::post('/disable/{id}', [AdminSettingsPluginController::class, 'disable'])->name('settings.plugins.disable');
+        Route::post('/uninstall/{id}', [AdminSettingsPluginController::class, 'uninstall'])->name('settings.plugins.uninstall');
 
         // Systems
         Route::get('/admin/settings/systems', [AdminSettingsSystemsController::class, 'index'])->name('settings.systems');

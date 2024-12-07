@@ -20,23 +20,30 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Controllers\Front;
+namespace Plugins\ExamplePlugin;
 
+use Illuminate\Support\ServiceProvider;
 
-use Illuminate\Http\Request;
-
-
-class FrontWelcomeController extends FrontController
+class ExamplePluginServiceProvider extends ServiceProvider
 {
-    //
-    //コンストラクタ
-    public function __construct()
+    /**
+     * Register services.
+     */
+    public function register(): void
     {
-        parent::__construct();
+        //
     }
 
-    public function index()
+    /**
+     * Bootstrap services.
+     */
+    public function boot(): void
     {
-        return view('themes::welcome', $this->viewParams);
+        //
+        // マイグレーションのロード
+        $this->loadMigrationsFrom(__DIR__ . '/../migrations');
+
+        // ビューのロード
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'example-plugin');
     }
 }

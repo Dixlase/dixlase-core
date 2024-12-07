@@ -43,7 +43,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <body class="font-sans antialiased {{ config('admin.appearance_class.layout.body') }}">
         <div class="min-h-screen">
             <!-- Header -->
-            @include('theme::partials.header', [
+            @include('themes::partials.header', [
                 'site_name' => $site_name,
             ])
 
