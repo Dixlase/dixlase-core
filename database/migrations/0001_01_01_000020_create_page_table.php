@@ -32,9 +32,6 @@ class CreatePageTable extends Migration
      * @return void
      */
 
-    protected $table = 'pages';
-
-    // database/migrations/xxxx_xx_xx_create_pages_table.php
     public function up()
     {
         Schema::create('pages', function (Blueprint $table) {

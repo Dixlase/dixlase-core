@@ -93,6 +93,22 @@ return [
                         ]
                     ]
                 ],
+                'plugins' => [
+                    'text' => 'admin.nav.settings.plugins.text',
+                    'icon' => 'fas fa-fw fa-users',
+                    'children' => [
+                        'index' => [
+                            'text' => 'admin.nav.settings.plugins.index',
+                            'route' => 'admin.settings.plugins.index',
+                            'icon' => 'fas fa-fw fa-users',
+                        ],
+                        'install' => [
+                            'text' => 'admin.nav.settings.plugins.install',
+                            'route' => 'admin.settings.plugins.install',
+                            'icon' => 'fas fa-fw fa-users',
+                        ]
+                    ]
+                ],
                 'systems' => [
                     'text' => 'admin.nav.settings.systems',
                     'route' => 'admin.settings.systems',

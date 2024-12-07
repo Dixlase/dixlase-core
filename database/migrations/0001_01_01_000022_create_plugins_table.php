@@ -20,23 +20,31 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Controllers\Front;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-
-use Illuminate\Http\Request;
-
-
-class FrontWelcomeController extends FrontController
+return new class extends Migration
 {
-    //
-    //コンストラクタ
-    public function __construct()
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
     {
-        parent::__construct();
+        Schema::create('plugins', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('namespace');
+            $table->enum('status', ['enabled', 'disabled'])->default('disabled');
+            $table->timestamps();
+        });
     }
 
-    public function index()
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
     {
-        return view('themes::welcome', $this->viewParams);
+        Schema::dropIfExists('plugins');
     }
-}
+};

@@ -19,6 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
@@ -68,8 +69,20 @@ class Handler extends ExceptionHandler
 
     public function render($request, Throwable $exception)
     {
+
+        // 404エラーの場合は、カスタムビューを読み込む
+        /*
         if ($this->isHttpException($exception)) {
             return response()->view('errors.minimal', ['exception' => $exception], $exception->getStatusCode());
+        }
+        */
+
+
+        // 特定のHTTPステータスコードのカスタムビューを読み込む
+        $status = $this->isHttpException($exception) ? $exception->getStatusCode() : 500;
+
+        if (view()->exists("errors::{$status}")) {
+            return response()->view("errors::{$status}", ['exception' => $exception], $status);
         }
 
         return parent::render($request, $exception);
