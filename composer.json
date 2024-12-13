@@ -28,7 +28,9 @@
             "Database\\Factories\\": "database/factories/",
             "Custom\\Database\\Factories\\": "custom/database/factories/",
             "Database\\Seeders\\": "database/seeders/",
-            "Custom\\Database\\Seeders\\": "custom/database/seeders/"
+            "Custom\\Database\\Seeders\\": "custom/database/seeders/",
+            "Tests\\": "tests/",
+            "Custom\\Tests\\": "custom/tests/"
 
         }
     },
