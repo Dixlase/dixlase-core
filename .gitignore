@@ -20,3 +20,16 @@ yarn-error.log
 /.vscode
 /.zed
 
+# カスタムファイルを入れるディレクトリを除外
+/custom
+# プラグインを入れるディレクトリを除外
+/plugins
+# テーマを入れるディレクトリを除外
+resources/views/themes/*
+
+# default ディレクトリとその中身は除外対象から解除
+!resources/views/themes/default/
+!resources/views/themes/default/**
+
+DS_Store
+

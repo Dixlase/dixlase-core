@@ -80,7 +80,7 @@ class AppServiceProvider extends ServiceProvider
             }
         }
 
-        //テーマ設定を読み込むヘルパーを読み込む
+        //ヘルパーを読み込む
         require_once app_path('Helpers/ThemeHelper.php');
 
         // テーマの設定を読み込む
@@ -94,36 +94,42 @@ class AppServiceProvider extends ServiceProvider
         $settingsTheme = DB::table('settings_theme')->first();
         $activeThemeId = $settingsTheme->active_theme_id ?? 0;
 
-        // 現在使用中のテンプレートのディレクトリ名を取得
+        // 現在使用中のテーマのディレクトリ名を取得
         $activeTheme = DB::table('themes')->where('id', $activeThemeId)->first();
         $activeThemeDirectory = $activeTheme->directory ?? 'default';
 
         // 管理画面のテンプレートの読み込みがviews_customのほうを優先されるように設定
         View::addNamespace('admin', [
-            resource_path("views_custom/{$adminTheme}"),
+            base_path("custom/resources/views/{$adminTheme}"),
             resource_path("views/{$adminTheme}"),
         ]);
 
 
-        // カスタムテンプレートの読み込みがviews_customのほうを優先されるように設定
+        // カスタムテーマの読み込みがcustom/resouces/viewsのほうを優先されるように設定
         View::addNamespace('themes', [
-            resource_path("views_custom/{$themeDirectory}/{$activeThemeDirectory}"),
+            base_path("custom/resources/views/{$themeDirectory}/{$activeThemeDirectory}"),
             resource_path("views/{$themeDirectory}/{$activeThemeDirectory}"),
             resource_path("views/{$themeDirectory}/{$defaultTheme}"),
         ]);
 
         // 共用コンポーネントの読み込みがviews_customのほうを優先されるように設定
         View::addNamespace('components', [
-            resource_path('views_custom/components'), // カスタムコンポーネントを優先
+            base_path('custom/resources/views/components'), // カスタムコンポーネントを優先
             resource_path('views/components'),       // デフォルトコンポーネント
         ]);
 
 
         // エラーページ用の探索順序を設定
         View::addNamespace('errors', [
-            resource_path("views_custom/{$themeDirectory}/{$activeThemeDirectory}/errors"),
-            resource_path("views/{$themeDirectory}/{$activeThemeDirectory}/errors"),
-            resource_path("views/{$themeDirectory}/{$defaultTheme}/errors"),
+            base_path('custom/resources/views/{$themeDirectory}/{$activeThemeDirectory}/errors'),
+            resource_path('views/{$themeDirectory}/{$activeThemeDirectory}/errors'),
+            resource_path('views/{$themeDirectory}/{$defaultTheme}/errors'),
+        ]);
+
+        // カスタムマイグレーションパスを追加
+        $this->loadMigrationsFrom([
+            database_path('migrations'),                // デフォルトマイグレーション
+            base_path('custom/database/migrations'),    // カスタムマイグレーション
         ]);
     }
 }
