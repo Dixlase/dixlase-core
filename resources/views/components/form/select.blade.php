@@ -23,7 +23,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'name' => null, // selectのname属性
     'options' => [], // 選択肢の配列
     'value' => null, // 初期選択値
-
+    'disabled' => false, // 無効フラグ
     'class' => 'default-class', // 追加クラス
     'required' => false, // 必須フラグ
 ])
@@ -31,6 +31,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <select id="{{ $id }}"
         name="{{ $name }}"
         class="mt-1 block rounded-md shadow-sm {{ config('admin.appearance_class.form.select') }} {{ $class }}"
+        @if ($disabled) disabled @endif
         @if ($required) required @endif>
     @foreach ($options as $optionValue => $optionText)
         <option value="{{ $optionValue }}" {{ $value == $optionValue ? 'selected' : '' }}>

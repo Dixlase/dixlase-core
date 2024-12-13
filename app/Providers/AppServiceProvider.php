@@ -22,14 +22,16 @@
 
 namespace App\Providers;
 
-use Config;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
-use URL;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use App\Models\SettingSystem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\File;
+use App\Models\SettingSecurity;
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -44,19 +46,18 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    /*
-    public function boot()
-    {
-        URL::forceScheme('https');
-    }
-    */
 
     public function boot()
     {
-        //$this->app['request']->server->set('HTTPS', true);
-        //URL::forceRootUrl(Config::get('app.url'));// ルートURLを設定
-        //$url->forceScheme('https');
 
+        //セキュリティ設定でSSLを矯正しているかどうかを判定
+        $forceSsl = SettingSecurity::get('force_ssl', config('security.force_ssl'));
+
+        if ($forceSsl) {
+            $this->app['request']->server->set('HTTPS', true);
+            URL::forceRootUrl(Config::get('app.url')); // ルートURLを設定
+            URL::forceScheme('https');
+        }
 
         //言語の設定
         $language = SettingSystem::where('name', 'language')->value('value');
@@ -79,21 +80,23 @@ class AppServiceProvider extends ServiceProvider
             }
         }
 
-
-        // Commonコンポーネントの名前空間を設定
-        //Blade::componentNamespace('App\\View\\Components', 'common');
-
-
-        // 現在使用中のテーマ名を取得
-        $activeTheme = DB::table('themes')->where('is_active', true)->first();
-
-        // 現在使用中のテンプレートのスラッグ名を取得
-        $templateSlug = $activeTheme ? $activeTheme->slug : 'default';
+        //テーマ設定を読み込むヘルパーを読み込む
+        require_once app_path('Helpers/ThemeHelper.php');
 
         // テーマの設定を読み込む
         $adminTheme = config('app.admin_theme', 'admin');
         $themeDirectory = config('app.theme_directory', 'themes');
-        $currentTheme = $activeTheme ? $templateSlug : config('app.default_theme', 'default');
+        $activeThemeDirectory = config('app.theme', 'default');
+        $defaultTheme = config('app.default_theme', 'default');
+
+
+        // 現在使用中のテーマ名を取得
+        $settingsTheme = DB::table('settings_theme')->first();
+        $activeThemeId = $settingsTheme->active_theme_id ?? 0;
+
+        // 現在使用中のテンプレートのディレクトリ名を取得
+        $activeTheme = DB::table('themes')->where('id', $activeThemeId)->first();
+        $activeThemeDirectory = $activeTheme->directory ?? 'default';
 
         // 管理画面のテンプレートの読み込みがviews_customのほうを優先されるように設定
         View::addNamespace('admin', [
@@ -101,10 +104,12 @@ class AppServiceProvider extends ServiceProvider
             resource_path("views/{$adminTheme}"),
         ]);
 
+
         // カスタムテンプレートの読み込みがviews_customのほうを優先されるように設定
         View::addNamespace('themes', [
-            resource_path("views_custom/{$themeDirectory}/{$currentTheme}"),
-            resource_path("views/{$themeDirectory}/{$currentTheme}"),
+            resource_path("views_custom/{$themeDirectory}/{$activeThemeDirectory}"),
+            resource_path("views/{$themeDirectory}/{$activeThemeDirectory}"),
+            resource_path("views/{$themeDirectory}/{$defaultTheme}"),
         ]);
 
         // 共用コンポーネントの読み込みがviews_customのほうを優先されるように設定
@@ -113,10 +118,12 @@ class AppServiceProvider extends ServiceProvider
             resource_path('views/components'),       // デフォルトコンポーネント
         ]);
 
+
         // エラーページ用の探索順序を設定
         View::addNamespace('errors', [
-            resource_path("views_custom/{$themeDirectory}/{$currentTheme}/errors"),
-            resource_path("views/{$themeDirectory}/{$currentTheme}/errors"),
+            resource_path("views_custom/{$themeDirectory}/{$activeThemeDirectory}/errors"),
+            resource_path("views/{$themeDirectory}/{$activeThemeDirectory}/errors"),
+            resource_path("views/{$themeDirectory}/{$defaultTheme}/errors"),
         ]);
     }
 }

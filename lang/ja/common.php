@@ -37,6 +37,13 @@ return [
     'id' => 'ID',
     'title' => 'タイトル',
     'url' => 'URL',
+    'address' => '住所',
+    'email' => 'メールアドレス',
+    'phone' => '電話番号',
+    'fax' => 'FAX',
+    'gender' => '性別',
+    'birthday' => '誕生日',
+
 
 
 ];

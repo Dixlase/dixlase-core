@@ -20,6 +20,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @props([
     'type' => 'button',      // ボタンのタイプ (button, submit, reset)
+    'disabled' => false,     // ボタンを無効にする
     'class' => '',                          // カスタムクラス
     'label' => '保存',                    // ボタンのテキスト
     'id' => 'confirmationModal',            // モーダルのID
@@ -37,6 +38,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @include('components::form.button', [
         'type' => $type,
         'label' => $label,
+        'disabled' => $disabled,
         'onclick' => "openModal('" . $id_confirmation . "')",
 
     ])

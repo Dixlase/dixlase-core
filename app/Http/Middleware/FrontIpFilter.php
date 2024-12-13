@@ -20,22 +20,32 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace Database\Seeders;
+namespace App\Http\Middleware;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
-class ThemesTableSeeder extends Seeder
+class FrontIpFilter
 {
     /**
-     * Run the database seeds.
+     * Handle an incoming request.
+     *
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function run(): void
+    public function handle(Request $request, Closure $next): Response
     {
-        //
-        DB::table('themes')->insert([
-            ['name' => 'Default', 'slug' => 'default', 'version' => '1.0'],
-        ]);
+        $allowedIps = config('security.allowed_frontend_ips', []);
+        $blockedIps = config('security.blocked_frontend_ips', []);
+
+        if (in_array($request->ip(), $blockedIps)) {
+            abort(403, 'Access Denied.');
+        }
+
+        if (!empty($allowedIps) && !in_array($request->ip(), $allowedIps)) {
+            abort(403, 'Unauthorized Access.');
+        }
+
+        return $next($request);
     }
 }

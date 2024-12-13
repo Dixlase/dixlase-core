@@ -47,11 +47,15 @@ class DatabaseSeeder extends Seeder
             OptionCategoriesTableSeeder::class,
             PagesTableSeeder::class,
             SettingsFrontTableSeeder::class,
+            SettingsSecurityTableSeeder::class,
             SettingsSystemTableSeeder::class,
             SlotsTableSeeder::class,
             SlotCategoriesTableSeeder::class,
             SlotEventsTableSeeder::class,
             SlotSchedulesTableSeeder::class,
+            ThemesTableSeeder::class,
+            SettingsThemeTableSeeder::class,
+
 
         ]);
     }

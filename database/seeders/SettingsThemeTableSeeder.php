@@ -26,7 +26,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class ThemesTableSeeder extends Seeder
+class SettingsThemeTableSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -34,8 +34,8 @@ class ThemesTableSeeder extends Seeder
     public function run(): void
     {
         //
-        DB::table('themes')->insert([
-            ['name' => 'Default', 'slug' => 'default', 'version' => '1.0'],
+        DB::table('settings_theme')->insert([
+            ['active_theme_id' => 1],
         ]);
     }
 }

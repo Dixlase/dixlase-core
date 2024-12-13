@@ -109,11 +109,17 @@ return [
                         ]
                     ]
                 ],
+                'security' => [
+                    'text' => 'admin.nav.settings.security',
+                    'route' => 'admin.settings.security.index',
+                    'icon' => 'fas fa-fw fa-users',
+                ],
                 'systems' => [
                     'text' => 'admin.nav.settings.systems',
                     'route' => 'admin.settings.systems',
                     'icon' => 'fas fa-fw fa-users',
                 ],
+
 
             ],
         ]

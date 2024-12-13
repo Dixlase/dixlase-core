@@ -36,7 +36,7 @@ class MypageAuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        return view('theme::mypage.login');
+        return view('themes::mypage.login');
     }
 
     /**

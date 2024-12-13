@@ -40,6 +40,12 @@ return [
                 'create' => 'Create Admin',
                 'profile' => 'Profile',
             ],
+            'plugins' => [
+                'text' => 'Plugin Settings',
+                'index' => 'Plugin Master',
+                'install'  => 'Install',
+            ],
+            'security' => 'Security Settings',
             'systems' => 'System Settings'
         ],
     ],

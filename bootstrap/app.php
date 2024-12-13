@@ -16,7 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // Laravelのデフォルトエイリアスをカスタマイズしたものに置き換え
         // エイリアスの配列を設定
         $middleware->alias([
-            'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
+            'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class, // メール認証
+            'admin.ip' => \App\Http\Middleware\AdminIpFilter::class, // IPアドレスフィルタ
+            'front.ip' => \App\Http\Middleware\FrontIpFilter::class, // フロントIPフィルタ
+
         ]);
         //$middleware->alias('verified', \App\Http\Middleware\EnsureEmailIsVerified::class);
     })

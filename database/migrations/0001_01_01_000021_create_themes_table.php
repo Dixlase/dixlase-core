@@ -37,8 +37,8 @@ return new class extends Migration
             $table->id();
             $table->string('name'); // テーマ名
             $table->string('slug')->unique(); // ディレクトリ名などの識別子
+            $table->string('directory')->nullable(); // テーマディレクトリ
             $table->string('version')->nullable(); // バージョン情報
-            $table->boolean('is_active')->default(false); // 有効フラグ
             $table->timestamps();
         });
     }

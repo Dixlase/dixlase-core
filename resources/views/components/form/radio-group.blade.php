@@ -22,6 +22,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'name' => '',      // radioのname属性
     'options' => [],   // 選択肢の配列
     'value' => '',     // 現在の選択値
+    'disabled' => false, // 無効にする
     'class' => '',     // カスタムクラス
 ])
 
@@ -31,6 +32,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <input type="radio"
                 name="{{ $name }}"
                 value="{{ $option_value }}"
+                @if ($disabled) disabled @endif
                 class="{{ config('admin.appearance_class.form.radio') }} {{ $class }}"
                 @if ($value == $option_value) checked @endif>
             <span class="ml-2">{{ __($option_label) }}</span>

@@ -2,7 +2,9 @@
 @include('components::form.button', [
     'type' => $type,
     'label' => $label,
+    'class' => $class,
     'onclick' => "openModal('" . $id_confirmation . "')",
+    'disabled' => $disabled,
 
 ])
 

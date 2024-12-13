@@ -22,14 +22,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'id' => null,
     'name' => null,
     'value' => '',
-    'required' => false,
+    'disabled' => false,
     'class' => '',
 ])
 
 <input type="text"
     id="{{ $id }}"
     name="{{ $name }}"
+    @if ($disabled) disabled @endif
     class="mt-1 block w-full rounded-md shadow-sm text-lg {{ config('admin.appearance_class.form.text') }} {{ $class }}"
     value="{{ old($name, $value) }}"
-    @if ($required) required @endif>
+    >
 

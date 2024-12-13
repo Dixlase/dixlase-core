@@ -90,8 +90,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         @include('components::form.radio-group', [
                             'name' => 'allow_guest_registration',
                             'options' => [
-                                1 => 'はい',
-                                0 => 'いいえ'
+                                1 => 'common.yes',
+                                0 => 'common.no'
                             ],
                             'value' => $settings['allow_guest_registration'],
                         ])
@@ -109,8 +109,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         @include('components::form.radio-group', [
                             'name' => 'allow_external_registration',
                             'options' => [
-                                1 => 'はい',
-                                0 => 'いいえ'
+                                1 => 'common.yes',
+                                0 => 'common.no'
                             ],
                             'value' => $settings['allow_external_registration'],
                         ])
@@ -123,10 +123,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         @include('components::form.checkbox-group', [
                             'name' => 'required_fields',
                             'options' => [
-                                'address' => '住所',
-                                'phone' => '電話番号',
-                                'gender' => '性別',
-                                'birthday' => '誕生日'
+                                'address' => 'common.address',
+                                'phone' => 'common.phone',
+                                'gender' => 'common.gender',
+                                'birthday' => 'common.birthday',
                             ],
                             'values' => old('required_fields', $settings['required_fields'] ?? []),
                         ])

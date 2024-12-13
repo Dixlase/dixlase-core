@@ -27,32 +27,34 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Page;
 
 
-//トップページ
-Route::get('/', [FrontWelcomeController::class, 'index'])->name('welcome');
-/*
-Route::get('/', function () {
+Route::middleware(['front.ip'])->group(
+    function () {
+        //トップページ
+        Route::get('/', [FrontWelcomeController::class, 'index'])->name('welcome');
+        /*
+        Route::get('/', function () {
 
-    return view('welcome');
-});
-*/
+            return view('welcome');
+        });
+        */
 
-//アカウント登録
-Route::middleware('guest')->group(function () {
-    Route::get('register', [RegisterRegisteredUserController::class, 'create'])
-        ->name('register');
-    Route::post('register', [RegisterRegisteredUserController::class, 'store']);
-});
+        //アカウント登録
+        Route::middleware('guest')->group(function () {
+            Route::get('register', [RegisterRegisteredUserController::class, 'create'])
+                ->name('register');
+            Route::post('register', [RegisterRegisteredUserController::class, 'store']);
+        });
 
-//個別ページ
+        //個別ページ
+        Route::get(config('custom.pages_directory') . '/{slug}', function ($slug) {
+            $page = Page::where('slug', $slug)->firstOrFail();
+            return view('default/pages', compact('page'));
+        });
 
-Route::get(config('custom.pages_directory') . '/{slug}', function ($slug) {
-    $page = Page::where('slug', $slug)->firstOrFail();
-    return view('default/pages', compact('page'));
-});
-
-
-//マイページ用のルーティング
-require __DIR__ . '/mypage.php';
+        //マイページ用のルーティング
+        require __DIR__ . '/mypage.php';
+    }
+);
 
 //管理者用のルーティング
 require __DIR__ . '/admin.php';
