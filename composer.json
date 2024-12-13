@@ -23,7 +23,13 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/",
-            "Plugins\\": "plugins/"
+            "Plugins\\": "plugins/",
+            "Custom\\": "custom/app/",
+            "Database\\Factories\\": "database/factories/",
+            "Custom\\Database\\Factories\\": "custom/database/factories/",
+            "Database\\Seeders\\": "database/seeders/",
+            "Custom\\Database\\Seeders\\": "custom/database/seeders/"
+
         }
     },
     "autoload-dev": {
