@@ -26,6 +26,10 @@ use App\Http\Controllers\Admin\AdminController;
 use Illuminate\Http\Request;
 use App\Models\Theme;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+
 
 
 class AdminContentsThemesController extends AdminController
@@ -36,7 +40,14 @@ class AdminContentsThemesController extends AdminController
     public function index()
     {
         $this->viewParams['heading'] = 'admin.features.contents.themes.index.heading';
-        $themes = Theme::paginate(10); // 1ページあたり10件表示
+
+        // デフォルトテーマを取得
+        $defaultTheme = Theme::where('slug', 'default')->first();
+
+        // 他のテーマを取得（デフォルトテーマ以外）
+        $themes = Theme::where('slug', '!=', 'default')->paginate(10); // 1ページあたり10件表示
+
+        $this->viewParams['defaultTheme'] = $defaultTheme;
         $this->viewParams['themes'] = $themes;
         return view('admin::contents.themes.index', $this->viewParams);
     }
@@ -50,21 +61,91 @@ class AdminContentsThemesController extends AdminController
         ]);
 
         $zip = new \ZipArchive;
-        $zipPath = $request->file('theme')->path();
+        $uploadedFile = $request->file('theme');
 
-        if ($zip->open($zipPath) === true) {
-            $extractPath = resource_path('views/themes/');
-            $zip->extractTo($extractPath);
-            $zip->close();
+        $themeDirectory = resource_path('views/themes/');
 
-            // テンプレート情報を登録
-            Theme::create([
-                'name' => $request->file('theme')->getClientOriginalName(),
-                'slug' => basename($zipPath, '.zip'),
-                'version' => '1.0', // ZIPファイル内に `theme.json` を含めることで動的に取得も可能
-            ]);
+        // ZIPファイル名からディレクトリ名を生成
+        $originalName = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME); // ZIP名
+        $directoryName = Str::slug($originalName); // デフォルトのディレクトリ名（スラッグ化）
+        $themePath = $themeDirectory . $directoryName;
 
-            return back()->with('success', 'テンプレートがインストールされました！');
+        if (is_dir($themePath)) {
+            return redirect()->route('admin.contents.themes.index')->with('error', "テーマディレクトリ '{$directoryName}' がすでに存在します。");
+        }
+
+        if ($zip->open($uploadedFile->path()) === true) {
+            try {
+
+                // ZIP内の最初のディレクトリ名を取得する
+                $extractedRootDir = null;
+                for ($i = 0; $i < $zip->numFiles; $i++) {
+                    $stat = $zip->statIndex($i);
+                    $filename = $stat['name'];
+
+                    // 最初のディレクトリ名を取得
+                    if (strpos($filename, '/') !== false) {
+                        $extractedRootDir = explode('/', $filename)[0];
+                        break;
+                    }
+                }
+
+                if (!$extractedRootDir) {
+                    return redirect()->route('admin.contents.themes.index')
+                        ->with('error', 'ZIPファイルに有効なディレクトリが含まれていません。');
+                }
+
+                // ZIPを解凍
+                $zip->extractTo($themeDirectory);
+                $zip->close();
+
+                // 解凍されたディレクトリのパス
+                $extractedDirPath = $themeDirectory . '/' . $extractedRootDir;
+
+                // リネーム後のディレクトリパス
+                $renamedDirPath = $themeDirectory . '/' . $directoryName;
+
+                // 解凍されたディレクトリをリネーム
+                if (is_dir($extractedDirPath) && basename($extractedDirPath) !== $directoryName) {
+                    File::move($extractedDirPath, $renamedDirPath);
+                    $themePath = $renamedDirPath;
+                }
+
+
+                // theme.json の読み取り
+                $themeJsonPath = $themePath . '/theme.json';
+                $themeData = [];
+                $slug = $directoryName; // デフォルトスラッグはディレクトリ名
+
+                if (file_exists($themeJsonPath)) {
+                    $themeData = json_decode(file_get_contents($themeJsonPath), true);
+
+                    // theme.jsonからスラッグを取得、なければディレクトリ名を使用
+                    $slug = isset($themeData['slug']) && !empty($themeData['slug'])
+                        ? Str::slug($themeData['slug'])
+                        : $directoryName;
+                }
+
+                // スラッグ名の重複チェック
+                if (Theme::where('slug', $slug)->exists()) {
+                    File::deleteDirectory($themePath);
+                    return redirect()->route('admin.contents.themes.index')->with('error', "同じスラッグ名 '{$slug}' のテーマがすでに存在します。");
+                }
+
+                // テーマ情報をデータベースに登録
+                Theme::create([
+                    'name' => $themeData['name'] ?? $directoryName,
+                    'slug' => $slug,            // theme.jsonまたはディレクトリ名から生成したスラッグ
+                    'directory' => $directoryName, // ディレクトリ名
+                    'version' => $themeData['version'] ?? '1.0',
+                ]);
+
+                return redirect()->route('admin.contents.themes.index')->with('success', 'テーマがインストールされました！');
+            } catch (\Exception $e) {
+                // 例外発生時にディレクトリを削除
+                File::deleteDirectory($themePath);
+                return redirect()->route('admin.contents.themes.index')->with('error', 'データベースへの登録中にエラーが発生しました: ' . $e->getMessage());
+            }
         } else {
             return back()->with('error', 'テンプレートの解凍に失敗しました。');
         }
@@ -75,35 +156,51 @@ class AdminContentsThemesController extends AdminController
     {
         $theme = Theme::where('slug', $slug)->first();
         if (!$theme) {
-            return back()->with('error', 'テンプレートが見つかりません。');
+            return redirect()->route('admin.contents.themes.index')->with('error', 'テーマが見つかりません。');
         }
 
         // デフォルトテンプレートは削除禁止
         if ($theme->slug === 'default') {
-            return back()->with('error', 'デフォルトテンプレートは削除できません。');
+            return redirect()->route('admin.contents.themes.index')->with('error', 'デフォルトテーマは削除できません。');
         }
 
-        // ファイル削除
-        $themePath = resource_path("views/themes/{$slug}");
-        if (is_dir($themePath)) {
-            File::deleteDirectory($themePath);
+        // テーマディレクトリの確認
+        $themeDirectory = resource_path('views/themes/' . $theme->directory);
+
+
+        // 安全チェック: 削除対象が `themes` そのものではないことを確認
+        if ($theme->directory === '' || realpath($themeDirectory) === realpath(resource_path('views/themes'))) {
+            return redirect()->route('admin.contents.themes.index')->with('error', '無効なディレクトリパスです。');
         }
 
-        // DB削除
+        // ディレクトリ削除とDBからの削除
+        if (is_dir($themeDirectory)) {
+            try {
+                File::deleteDirectory($themeDirectory); // 指定したテーマのディレクトリのみ削除
+            } catch (\Exception $e) {
+                return redirect()->route('admin.contents.themes.index')->with('error', 'ディレクトリの削除中にエラーが発生しました: ' . $e->getMessage());
+            }
+        }
+
+        // DBからテーマ情報を削除
         $theme->delete();
 
-        return back()->with('success', 'テンプレートが削除されました！');
+        return back()->with('success', 'テーマが削除されました！');
     }
 
     // テーマの切り替え
-    public function switchTheme($slug)
+    public function activateTheme($id)
     {
-        Theme::query()->update(['is_active' => false]); // 全テーマを無効化
-        Theme::where('slug', $slug)->update(['is_active' => true]); // 指定テーマを有効化
 
-        // 設定を保存
-        config(['app.theme' => $slug]);
+        $theme = Theme::where('id', $id)->first();
 
-        return back()->with('success', 'テンプレートが切り替えられました！');
+        if (!$theme) {
+            return back()->with('error', 'テーマが見つかりません。');
+        }
+
+        // アクティブテーマを更新
+        DB::table('settings_theme')->update(['active_theme_id' => $theme->id, 'updated_at' => now()]);
+
+        return redirect()->route('admin.contents.themes.index')->with('success', "テーマ '{$theme->name}' が有効化されました。");
     }
 }

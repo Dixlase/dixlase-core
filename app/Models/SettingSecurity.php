@@ -20,22 +20,27 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace Database\Seeders;
+namespace App\Models;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Model;
 
-class ThemesTableSeeder extends Seeder
+class SettingSecurity extends Model
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
+
+    protected $table = 'settings_security';
+
+    protected $fillable = [
+        'name',
+        'value'
+    ];
+
+    public static function get($key, $default = null)
     {
-        //
-        DB::table('themes')->insert([
-            ['name' => 'Default', 'slug' => 'default', 'version' => '1.0'],
-        ]);
+        return self::where('name', $key)->value('value') ?? $default;
+    }
+
+    public static function set($key, $value)
+    {
+        return self::updateOrCreate(['name' => $key], ['value' => $value]);
     }
 }

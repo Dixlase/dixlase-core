@@ -43,4 +43,10 @@ return [
     'id' => 'ID',
     'title' => 'Title',
     'url' => 'URL',
+    'address' => 'Address',
+    'email' => 'Email',
+    'phone' => 'Phone',
+    'fax' => 'FAX',
+    'gender' => 'Gender',
+    'birthday' => 'Birthday',
 ];

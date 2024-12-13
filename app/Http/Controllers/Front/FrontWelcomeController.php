@@ -37,6 +37,6 @@ class FrontWelcomeController extends FrontController
 
     public function index()
     {
-        return view('themes::welcome', $this->viewParams);
+        return view('themes::index', $this->viewParams);
     }
 }

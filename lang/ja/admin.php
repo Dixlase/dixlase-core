@@ -51,7 +51,9 @@ return [
                 'index' => 'プラグインマスター',
                 'install'  => 'インストール',
             ],
+            'security' => 'セキュリティ設定',
             'systems' => 'システム設定',
+
         ],
     ],
 
@@ -143,6 +145,26 @@ return [
                     'password_confirmation' => 'パスワード確認',
                     'submit' => '更新',
                 ],
+            ],
+            'plugins' => [
+                'index' => [
+                    'heading' => 'プラグインマスター',
+                ],
+                'install' => [
+                    'heading' => 'プラグインインストール',
+                    'name' => 'プラグイン名',
+                    'submit' => 'インストール',
+                ],
+            ],
+            'security' => [
+                'heading' => 'セキュリティ設定',
+                'admin_url' => '管理画面URL',
+                'enable_allowed_admin_ips' => '特定のIPアドレスのみアクセスを許可',
+                'allowed_admin_ips' => '許可IPアドレス',
+                'enable_blocked_admin_ips' => '特定のIPアドレスをブロック',
+                'blocked_admin_ips' => 'ブロックIPアドレス',
+                'force_ssl' => 'SSL強制',
+                'submit' => '更新',
             ],
             'systems' => [
                 'heading' => 'システム設定',
