@@ -6,10 +6,16 @@
 >
     <testsuites>
         <testsuite name="Unit">
+            <!-- デフォルトのUnitテスト -->
             <directory>tests/Unit</directory>
+            <!-- カスタムのUnitテスト -->
+            <directory>custom/tests/Unit</directory>
         </testsuite>
         <testsuite name="Feature">
+            <!-- デフォルトのFeatureテスト -->
             <directory>tests/Feature</directory>
+            <!-- カスタムのFeatureテスト -->
+            <directory>custom/tests/Feature</directory>
         </testsuite>
     </testsuites>
     <source>
