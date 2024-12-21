@@ -20,11 +20,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Requests\Admin\Settings\Admin;
+namespace App\Http\Requests\Admin\Settings\Member;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class AdminSettingsAdminStoreRequest extends FormRequest
+class AdminSettingsMemberStoreRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -42,11 +42,11 @@ class AdminSettingsAdminStoreRequest extends FormRequest
     public function rules(): array
     {
         // 管理者IDがリクエストされているかで判断
-        $isUpdate = $this->route('admin') !== null;
+        $isUpdate = $this->route('member') !== null;
 
         return [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:admins,email,' . ($isUpdate ? $this->route('admin')->id : 'NULL'),
+            'email' => 'required|email|unique:members,email,' . ($isUpdate ? $this->route('member')->id : 'NULL'),
             'password' => $isUpdate ? 'nullable|string|min:8' : 'required|string|min:8', // 作成時は必須、編集時は任意
             'role' => 'required||in:admin,super_admin,editor,author,receptionist',
             'appearance' => 'required|numeric|in:0,1,2',

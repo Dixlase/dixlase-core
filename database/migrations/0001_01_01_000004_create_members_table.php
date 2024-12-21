@@ -30,7 +30,7 @@ return new class extends Migration
      * Run the migrations.
      */
 
-    protected $table = 'admins';
+    protected $table = 'members';
 
     public function up(): void
     {
@@ -54,6 +54,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('admins');
+        Schema::dropIfExists('members');
     }
 };

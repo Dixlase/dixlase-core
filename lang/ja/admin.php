@@ -40,10 +40,10 @@ return [
         ],
         'settings' => [
             'text' => '設定',
-            'admins' => [
-                'text' => '管理者設定',
-                'index' => '管理者マスター',
-                'create' => '新規管理者作成',
+            'members' => [
+                'text' => 'メンバー設定',
+                'index' => 'メンバーマスター',
+                'create' => '新規メンバー作成',
                 'edit' => '編集',
                 'profile' => 'プロフィール設定',
             ],
@@ -123,10 +123,10 @@ return [
         'settings' => [
             'admins' => [
                 'index' => [
-                    'heading' => '管理者マスター',
+                    'heading' => 'メンバーマスター',
                 ],
                 'create' => [
-                    'heading' => '新規管理者作成',
+                    'heading' => '新規メンバー作成',
                     'name' => '名前',
                     'email' => 'メールアドレス',
                     'password' => 'パスワード',
@@ -135,7 +135,7 @@ return [
                     'submit' => '登録',
                 ],
                 'edit' => [
-                    'heading' => '管理者編集',
+                    'heading' => 'メンバー編集',
                     'name' => '名前',
                     'email' => 'メールアドレス',
                     'password' => 'パスワード',

@@ -30,7 +30,7 @@ return new class extends Migration
      * Run the migrations.
      */
 
-    protected $table = 'admins_password_reset_tokens';
+    protected $table = 'members_password_reset_tokens';
 
     public function up(): void
     {
@@ -46,6 +46,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('admins_password_reset_tokens');
+        Schema::dropIfExists('members_password_reset_tokens');
     }
 };

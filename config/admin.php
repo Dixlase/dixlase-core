@@ -77,23 +77,23 @@ return [
             'text' => 'admin.nav.settings.text',
             'icon' => 'fas fa-fw fa-cogs',
             'children' => [
-                'admins' => [
-                    'text' => 'admin.nav.settings.admins.text',
+                'members' => [
+                    'text' => 'admin.nav.settings.members.text',
                     'icon' => 'fas fa-fw fa-users',
                     'children' => [
                         'index' => [
-                            'text' => 'admin.nav.settings.admins.index',
-                            'route' => 'admin.settings.admins.index',
+                            'text' => 'admin.nav.settings.members.index',
+                            'route' => 'admin.settings.members.index',
                             'icon' => 'fas fa-fw fa-users',
                         ],
                         'create' => [
-                            'text' => 'admin.nav.settings.admins.create',
-                            'route' => 'admin.settings.admins.create',
+                            'text' => 'admin.nav.settings.members.create',
+                            'route' => 'admin.settings.members.create',
                             'icon' => 'fas fa-fw fa-users',
                         ],
                         'profile' => [
-                            'text' => 'admin.nav.settings.admins.profile',
-                            'route' => 'admin.settings.admins.profile',
+                            'text' => 'admin.nav.settings.members.profile',
+                            'route' => 'admin.settings.members.profile',
                             'icon' => 'fas fa-fw fa-users',
                         ]
                     ]

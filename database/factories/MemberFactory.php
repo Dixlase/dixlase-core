@@ -29,7 +29,7 @@ use Illuminate\Support\Str;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Admin>
  */
-class AdminFactory extends Factory
+class MemberFactory extends Factory
 {
     /**
      * The current password being used by the factory.

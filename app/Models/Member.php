@@ -28,9 +28,15 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Admin extends Authenticatable
+class Member extends Authenticatable
 {
     use HasFactory, Notifiable, SoftDeletes; // MustVerifyEmailを追加
+
+
+    /**
+     * テーブル名の定義
+     */
+    protected $table = 'members';
 
 
     /**

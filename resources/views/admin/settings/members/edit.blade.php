@@ -25,17 +25,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- Flash message for success or error -->
     @include('components::flash_message')
 
-    <form action="{{ route('admin.settings.admins.update', ['admin' => $admin->id]) }}" method="POST">
+    <form action="{{ route('admin.settings.members.update', ['member' => $member->id]) }}" method="POST">
         @csrf
         @method('PATCH')
         @include('components::form.hidden', [
             'name' => 'id',
-            'value' => $admin->id,
+            'value' => $member->id,
         ])
 
 
         <!-- フォーム -->
-        @include('admin::settings.admins.partials.form',[
+        @include('admin::settings.members.partials.form',[
             'require_password' => false,
         ])
 
@@ -53,7 +53,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </form>
 
 
-    <form action="{{ route('admin.settings.admins.destroy', ['admin' => $admin->id]) }}" method="POST">
+    <form action="{{ route('admin.settings.members.destroy', ['member' => $member->id]) }}" method="POST">
         @csrf
         @method('DELETE')
         <!-- 削除ボタン -->

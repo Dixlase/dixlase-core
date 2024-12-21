@@ -32,7 +32,7 @@ use App\Http\Controllers\Admin\Auth\AdminVerifyEmailController;
 use App\Http\Controllers\Admin\Settings\AdminSettingsSystemsController;
 use App\Http\Controllers\Admin\Settings\AdminSettingsPluginController;
 use App\Http\Controllers\Admin\Settings\AdminSettingsSecurityController;
-use App\Http\Controllers\Admin\Settings\AdminSettingsAdminsController;
+use App\Http\Controllers\Admin\Settings\AdminSettingsMembersController;
 use App\Http\Controllers\Admin\Users\AdminUsersController;
 use App\Http\Controllers\Admin\Contents\AdminContentsPageController;
 use App\Http\Controllers\Admin\Contents\AdminContentsThemesController;
@@ -107,14 +107,14 @@ Route::prefix($adminUrl)->name('admin.')
             Route::delete('/users/delete/{user}', [AdminUsersController::class, 'destroy'])->name('users.destroy');
 
             // Settings
-            // Admins
-            Route::get('/settings/admins', [AdminSettingsAdminsController::class, 'index'])->name('settings.admins.index');
-            Route::get('/settings/admins/create', [AdminSettingsAdminsController::class, 'create'])->name('settings.admins.create');
-            Route::post('/settings/admins/store', [AdminSettingsAdminsController::class, 'store'])->name('settings.admins.store');
-            Route::get('/settings/admins/edit/{admin}', [AdminSettingsAdminsController::class, 'edit'])->name('settings.admins.edit');
-            Route::patch('/settings/admins/update/{admin}', [AdminSettingsAdminsController::class, 'update'])->name('settings.admins.update');
-            Route::delete('/settings/admins/destroy/{admin}', [AdminSettingsAdminsController::class, 'destroy'])->name('settings.admins.destroy');
-            Route::get('/settings/admins/profile', [AdminSettingsAdminsController::class, 'profile'])->name('settings.admins.profile');
+            // Members
+            Route::get('/settings/members', [AdminSettingsMembersController::class, 'index'])->name('settings.members.index');
+            Route::get('/settings/members/create', [AdminSettingsMembersController::class, 'create'])->name('settings.members.create');
+            Route::post('/settings/members/store', [AdminSettingsMembersController::class, 'store'])->name('settings.members.store');
+            Route::get('/settings/members/edit/{member}', [AdminSettingsMembersController::class, 'edit'])->name('settings.members.edit');
+            Route::patch('/settings/members/update/{member}', [AdminSettingsMembersController::class, 'update'])->name('settings.members.update');
+            Route::delete('/settings/members/destroy/{member}', [AdminSettingsMembersController::class, 'destroy'])->name('settings.members.destroy');
+            Route::get('/settings/members/profile', [AdminSettingsMembersController::class, 'profile'])->name('settings.members.profile');
 
             // Plugins
             Route::get('/settings/plugins', [AdminSettingsPluginController::class, 'index'])->name('settings.plugins.index');
