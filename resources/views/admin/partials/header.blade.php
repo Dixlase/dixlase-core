@@ -75,8 +75,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div class="font-medium text-sm {{ config('admin.layout.option_3') }}">{{ Auth::user()->email }}</div>
                 </div>
 
-                <x-dropdown-link :href="route('admin.settings.admins.profile')">
-                    {{ __('admin.settings.admins.profile') }}
+                <x-dropdown-link :href="route('admin.settings.members.profile')">
+                    {{ __('admin.settings.members.profile') }}
                 </x-dropdown-link>
 
                 <!-- ログアウト -->

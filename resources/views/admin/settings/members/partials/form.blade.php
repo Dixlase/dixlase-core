@@ -30,7 +30,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @include('components::form.text', [
         'id' => 'name',
         'name' => 'name',
-        'value' => old('name', $admin->name ?? ''),
+        'value' => old('name', $member->name ?? ''),
         'required' => true,
     ])
     @include('components::form.error', [
@@ -49,7 +49,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'type' => 'email',
         'id' => 'email',
         'name' => 'email',
-        'value' => old('email', $admin->email ?? ''),
+        'value' => old('email', $member->email ?? ''),
         'required' => true,
     ])
     @include('components::form.error', [
@@ -84,7 +84,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'id' => 'role',
         'name' => 'role',
         'options' => config('admin.roles'),
-        'value' => old('role', $admin->role ?? ''),
+        'value' => old('role', $member->role ?? ''),
         'required' => true,
     ])
 </div>
@@ -99,7 +99,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'id' => 'appearance',
         'name' => 'appearance',
         'options' => config('admin.appearance'),
-        'value' => old('appearance', $admin->appearance ?? ''),
+        'value' => old('appearance', $member->appearance ?? ''),
         'required' => true,
     ])
 </div>

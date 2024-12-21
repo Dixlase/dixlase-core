@@ -36,7 +36,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             UsersTableSeeder::class,
-            AdminsTableSeeder::class,
+            MembersTableSeeder::class,
             ApplicationsTableSeeder::class,
             ApplicationDetailsTableSeeder::class,
             EventsTableSeeder::class,

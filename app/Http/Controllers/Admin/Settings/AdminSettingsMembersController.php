@@ -23,11 +23,11 @@
 namespace App\Http\Controllers\Admin\Settings;
 
 use App\Http\Controllers\Admin\AdminController;
-use App\Models\Admin;
-use App\Http\Requests\Admin\Settings\Admin\AdminSettingsAdminStoreRequest;
+use App\Models\Member;
+use App\Http\Requests\Admin\Settings\Member\AdminSettingsMemberStoreRequest;
 use Illuminate\Http\Request;
 
-class AdminSettingsAdminsController extends AdminController
+class AdminSettingsMembersController extends AdminController
 {
 
     //初期設定を行う
@@ -42,25 +42,25 @@ class AdminSettingsAdminsController extends AdminController
     public function index(Request $request)
     {
         //
-        $this->viewParams['heading'] = __('admin.features.settings.admins.index.heading');
-        $this->viewParams['admins'] = Admin::all();
+        $this->viewParams['heading'] = __('admin.features.settings.members.index.heading');
+        $this->viewParams['members'] = Member::all();
 
         // 検索条件の取得
         $search = $request->input('search');
 
         // ユーザーを検索
-        $admins = Admin::query()
+        $members = Member::query()
             ->when($search, function ($query, $search) {
                 $query->where('name', 'like', '%' . $search . '%')
                     ->orWhere('email', 'like', '%' . $search . '%');
             })
             ->paginate(10); // ページネーション
 
-        $this->viewParams['admins'] = $admins;
+        $this->viewParams['members'] = $members;
         $this->viewParams['search'] = $search;
 
         // ビューにデータを渡す
-        return view('admin::settings.admins.index', $this->viewParams);
+        return view('admin::settings.members.index', $this->viewParams);
     }
 
     /**
@@ -68,14 +68,14 @@ class AdminSettingsAdminsController extends AdminController
      */
     public function create()
     {
-        $this->viewParams['heading'] = 'admin.features.settings.admins.create.heading';
-        return view('admin::settings.admins.create', $this->viewParams);
+        $this->viewParams['heading'] = 'admin.features.settings.members.create.heading';
+        return view('admin::settings.members.create', $this->viewParams);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(AdminSettingsAdminStoreRequest $request)
+    public function store(AdminSettingsMemberStoreRequest $request)
     {
 
         // バリデーション済みデータを取得
@@ -83,24 +83,24 @@ class AdminSettingsAdminsController extends AdminController
         $validated['password'] = bcrypt($validated['password']);
 
         // 新しい管理者を作成
-        $admin = Admin::create($validated);
+        $member = Member::create($validated);
 
         // リダイレクト
-        return redirect()->route('admin.settings.admins.edit', ['admin' => $admin->id])->with('success', '新しいユーザーが作成されました！');
+        return redirect()->route('admin.settings.members.edit', ['admin' => $member->id])->with('success', '新しいユーザーが作成されました！');
 
 
 
         // 新しいユーザーを作成
-        Admin::create($validated);
+        Member::create($validated);
 
         // リダイレクト
-        return redirect()->route('admin.settings.admins.index')->with('success', '新しい管理者アカウントが作成されました！');
+        return redirect()->route('admin.settings.members.index')->with('success', '新しい管理者アカウントが作成されました！');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Admin $admin)
+    public function show(Member $admin)
     {
         //
     }
@@ -108,20 +108,20 @@ class AdminSettingsAdminsController extends AdminController
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Admin $admin)
+    public function edit(Member $member)
     {
-        $this->viewParams['heading'] = 'admin.features.settings.admins.edit.heading';
-        $this->viewParams['admin'] = $admin;
+        $this->viewParams['heading'] = 'admin.features.settings.members.edit.heading';
+        $this->viewParams['member'] = $member;
 
 
 
-        return view('admin::settings.admins.edit', $this->viewParams);
+        return view('admin::settings.members.edit', $this->viewParams);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(AdminSettingsAdminStoreRequest $request, Admin $admin)
+    public function update(AdminSettingsMemberStoreRequest $request, Member $member)
     {
         // バリデーション済みデータを取得
         $validated = $request->validated();
@@ -133,20 +133,20 @@ class AdminSettingsAdminsController extends AdminController
             unset($validated['password']); // パスワードが空の場合は更新しない
         }
 
-        $admin->update($validated);
-        $id = $admin->id;
+        $member->update($validated);
+        $id = $member->id;
 
-        return redirect()->route('admin.settings.admins.edit', ['admin' => $id])->with('success', '管理車情報を更新しました！');
+        return redirect()->route('admin.settings.members.edit', ['member' => $id])->with('success', '管理車情報を更新しました！');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Admin $admin)
+    public function destroy(Member $member)
     {
-        $admin->delete();
+        $member->delete();
 
-        return redirect()->route('admin.settings.admins.index')->with('success', '管理者アカウントを削除しました！');
+        return redirect()->route('admin.settings.members.index')->with('success', '管理者アカウントを削除しました！');
     }
 
     /**
@@ -154,7 +154,7 @@ class AdminSettingsAdminsController extends AdminController
      */
     public function profile()
     {
-        $this->viewParams['heading'] = 'admin.settings.admins.profile.heading';
-        return view('admin.settings.admins.profile', $this->viewParams);
+        $this->viewParams['heading'] = 'admin.settings.members.profile.heading';
+        return view('admin.settings.members.profile', $this->viewParams);
     }
 }

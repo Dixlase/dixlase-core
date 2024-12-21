@@ -24,18 +24,18 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Admin;
+use App\Models\Member;
 use Illuminate\Support\Facades\Hash;
 
 
-class AdminsTableSeeder extends Seeder
+class MembersTableSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        Admin::factory()->create([
+        Member::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => Hash::make('password'),
@@ -44,6 +44,6 @@ class AdminsTableSeeder extends Seeder
             'status' => 1,
         ]);
 
-        Admin::factory()->count(50)->create();
+        Member::factory()->count(50)->create();
     }
 }

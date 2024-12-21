@@ -61,14 +61,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($admins as $admin)
+                    @foreach ($members as $member)
                         <tr class="{{ config('admin.appearance_class.table.row') }}">
-                            <td class="border px-4 py-2">{{ $admin->id }}</td>
-                            <td class="border px-4 py-2">{{ $admin->name }}</td>
-                            <td class="border px-4 py-2">{{ $admin->email }}</td>
-                            <td class="border px-4 py-2">{{ $admin->role }}</td>
+                            <td class="border px-4 py-2">{{ $member->id }}</td>
+                            <td class="border px-4 py-2">{{ $member->name }}</td>
+                            <td class="border px-4 py-2">{{ $member->email }}</td>
+                            <td class="border px-4 py-2">{{ $member->role }}</td>
                             <td class="border px-4 py-2">
-                                <a href="{{ route('admin.settings.admins.edit', ['admin' => $admin->id]) }}"
+                                <a href="{{ route('admin.settings.members.edit', ['member' => $member->id]) }}"
                                     class="{{ config('admin.appearance_class.link') }}">
                                     編集
                                 </a>
@@ -81,14 +81,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- モバイル用カード -->
         <div class="block md:hidden">
-            @foreach ($admins as $admin)
+            @foreach ($members as $member)
                 <div class="border rounded-lg p-4 mb-4 shadow">
-                    <p><strong>ID:</strong> {{ $admin->id }}</p>
-                    <p><strong>名前:</strong> {{ $admin->name }}</p>
-                    <p><strong>メールアドレス:</strong> {{ $admin->email }}</p>
-                    <p><strong>権限:</strong>{{ __('admin.roles.' . $admin->role) }}</p>
+                    <p><strong>ID:</strong> {{ $member->id }}</p>
+                    <p><strong>名前:</strong> {{ $member->name }}</p>
+                    <p><strong>メールアドレス:</strong> {{ $member->email }}</p>
+                    <p><strong>権限:</strong>{{ __('admin.roles.' . $member->role) }}</p>
                     <div class="mt-2">
-                        <a href="{{ route('admin.settings.admins.edit', ['admin' => $admin->id]) }}"
+                        <a href="{{ route('admin.settings.members.edit', ['member' => $member->id]) }}"
                             class="text-blue-600 hover:text-blue-800">
                             編集
                         </a>
@@ -99,7 +99,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- ページネーション -->
         <div class="mt-4">
-            {{ $admins->links() }}
+            {{ $members->links() }}
         </div>
     </div>
 @endsection
