@@ -46,8 +46,13 @@ return [
                         'index' => [
                             'text' => 'admin.nav.contents.themes.index',
                             'route' => 'admin.contents.themes.index',
-                            'icon' => 'fas fa-fw fa-palette',
-                        ]
+                            'icon' => 'fas fa-fw fa-file',
+                        ],
+                        'install' => [
+                            'text' => 'admin.nav.contents.themes.install',
+                            'route' => 'admin.contents.themes.install',
+                            'icon' => 'fas fa-fw fa-file',
+                        ],
                     ]
                 ],
             ]
@@ -98,15 +103,15 @@ return [
                     'icon' => 'fas fa-fw fa-users',
                     'children' => [
                         'index' => [
-                            'text' => 'admin.nav.settings.plugins.index',
+                            'text' => 'admin.nav.contents.themes.index',
                             'route' => 'admin.settings.plugins.index',
-                            'icon' => 'fas fa-fw fa-users',
+                            'icon' => 'fas fa-fw fa-file',
                         ],
                         'install' => [
-                            'text' => 'admin.nav.settings.plugins.install',
+                            'text' => 'admin.nav.contents.themes.install',
                             'route' => 'admin.settings.plugins.install',
-                            'icon' => 'fas fa-fw fa-users',
-                        ]
+                            'icon' => 'fas fa-fw fa-file',
+                        ],
                     ]
                 ],
                 'security' => [

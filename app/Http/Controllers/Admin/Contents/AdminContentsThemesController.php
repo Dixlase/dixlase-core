@@ -52,9 +52,17 @@ class AdminContentsThemesController extends AdminController
         return view('admin::contents.themes.index', $this->viewParams);
     }
 
+    // テーマインストール
+    public function install()
+    {
+        $this->viewParams['heading'] = 'admin.features.contents.themes.install.heading';
+        return view('admin::contents.themes.install', $this->viewParams);
+    }
+
+
 
     // テーマのアップロード
-    public function uploadTheme(Request $request)
+    public function upload(Request $request)
     {
         $request->validate([
             'theme' => 'required|mimes:zip',
@@ -71,12 +79,11 @@ class AdminContentsThemesController extends AdminController
         $themePath = $themeDirectory . $directoryName;
 
         if (is_dir($themePath)) {
-            return redirect()->route('admin.contents.themes.index')->with('error', "テーマディレクトリ '{$directoryName}' がすでに存在します。");
+            return redirect()->route('admin.contents.themes.install')->with('error', "テーマディレクトリ '{$directoryName}' がすでに存在します。");
         }
 
         if ($zip->open($uploadedFile->path()) === true) {
             try {
-
                 // ZIP内の最初のディレクトリ名を取得する
                 $extractedRootDir = null;
                 for ($i = 0; $i < $zip->numFiles; $i++) {
@@ -91,7 +98,7 @@ class AdminContentsThemesController extends AdminController
                 }
 
                 if (!$extractedRootDir) {
-                    return redirect()->route('admin.contents.themes.index')
+                    return redirect()->route('admin.contents.themes.install')
                         ->with('error', 'ZIPファイルに有効なディレクトリが含まれていません。');
                 }
 
@@ -124,27 +131,31 @@ class AdminContentsThemesController extends AdminController
                     $slug = isset($themeData['slug']) && !empty($themeData['slug'])
                         ? Str::slug($themeData['slug'])
                         : $directoryName;
-                }
 
-                // スラッグ名の重複チェック
-                if (Theme::where('slug', $slug)->exists()) {
+                    // スラッグ名の重複チェック
+                    if (Theme::where('slug', $slug)->exists()) {
+                        File::deleteDirectory($themePath);
+                        return redirect()->route('admin.contents.themes.install')->with('error', "同じスラッグ名 '{$slug}' のテーマがすでに存在します。");
+                    }
+
+                    // テーマ情報をデータベースに登録
+                    Theme::create([
+                        'name' => $themeData['name'] ?? $directoryName,
+                        'slug' => $slug,            // theme.jsonまたはディレクトリ名から生成したスラッグ
+                        'directory' => $directoryName, // ディレクトリ名
+                        'version' => $themeData['version'] ?? '1.0',
+                    ]);
+
+                    return redirect()->route('admin.contents.themes.index')->with('success', 'テーマがインストールされました！');
+                } else {
+                    // theme.json が見つからない場合
                     File::deleteDirectory($themePath);
-                    return redirect()->route('admin.contents.themes.index')->with('error', "同じスラッグ名 '{$slug}' のテーマがすでに存在します。");
+                    return redirect()->route('admin.contents.themes.install')->with('error', 'theme.json が見つかりません。');
                 }
-
-                // テーマ情報をデータベースに登録
-                Theme::create([
-                    'name' => $themeData['name'] ?? $directoryName,
-                    'slug' => $slug,            // theme.jsonまたはディレクトリ名から生成したスラッグ
-                    'directory' => $directoryName, // ディレクトリ名
-                    'version' => $themeData['version'] ?? '1.0',
-                ]);
-
-                return redirect()->route('admin.contents.themes.index')->with('success', 'テーマがインストールされました！');
             } catch (\Exception $e) {
                 // 例外発生時にディレクトリを削除
                 File::deleteDirectory($themePath);
-                return redirect()->route('admin.contents.themes.index')->with('error', 'データベースへの登録中にエラーが発生しました: ' . $e->getMessage());
+                return redirect()->route('admin.contents.themes.install')->with('error', 'データベースへの登録中にエラーが発生しました: ' . $e->getMessage());
             }
         } else {
             return back()->with('error', 'テンプレートの解凍に失敗しました。');
@@ -152,7 +163,7 @@ class AdminContentsThemesController extends AdminController
     }
 
     // テーマの削除
-    public function deleteTheme($slug)
+    public function delete($slug)
     {
         $theme = Theme::where('slug', $slug)->first();
         if (!$theme) {
@@ -174,22 +185,31 @@ class AdminContentsThemesController extends AdminController
         }
 
         // ディレクトリ削除とDBからの削除
-        if (is_dir($themeDirectory)) {
-            try {
-                File::deleteDirectory($themeDirectory); // 指定したテーマのディレクトリのみ削除
-            } catch (\Exception $e) {
-                return redirect()->route('admin.contents.themes.index')->with('error', 'ディレクトリの削除中にエラーが発生しました: ' . $e->getMessage());
+        try {
+            if (is_dir($themeDirectory)) {
+                if (!File::deleteDirectory($themeDirectory)) {
+                    throw new \Exception('ディレクトリの削除に失敗しました。');
+                }
             }
+            // DBからテーマ情報を削除
+            $theme->delete();
+        } catch (\Exception $e) {
+            return redirect()->route('admin.contents.themes.index')->with('error', $e->getMessage());
         }
 
-        // DBからテーマ情報を削除
-        $theme->delete();
+        session()->flash('success', 'テーマが削除されました！');
+        session()->save();
 
-        return back()->with('success', 'テーマが削除されました！');
+        return redirect()->route('admin.contents.themes.index');
+
+
+        //return redirect()->route('admin.contents.themes.index')->with('success', "テーマが削除されました！");
     }
 
+
+
     // テーマの切り替え
-    public function activateTheme($id)
+    public function activate($id)
     {
 
         $theme = Theme::where('id', $id)->first();

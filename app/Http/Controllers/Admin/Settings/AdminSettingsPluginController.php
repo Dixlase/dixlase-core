@@ -26,38 +26,84 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Plugin;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
+use ZipArchive;
+
 
 class AdminSettingsPluginController extends AdminController
 {
     public function index()
     {
         $plugins = Plugin::all();
-        $this->viewParams['heading'] = 'プラグインマスター';
+        $this->viewParams['heading'] = config('admin.settings.plugins.index.heading');
         $this->viewParams['plugins'] = $plugins;
         return view('admin::settings.plugins.index', $this->viewParams);
     }
 
-    public function install(Request $request)
+    public function install()
     {
-        $pluginName = $request->input('name');
-        $namespace = "Plugins\\$pluginName";
+        $this->viewParams['heading'] = 'プラグインインストール';
+        return view('admin::settings.plugins.install', $this->viewParams);
+    }
 
-        // プラグインを登録
-        Plugin::create([
-            'name' => $pluginName,
-            'namespace' => $namespace,
-            'status' => 'disabled',
+    public function upload(Request $request)
+    {
+        // ファイルアップロード処理
+        $request->validate([
+            'plugin_file' => 'required|file|mimes:zip|max:2048',
         ]);
 
-        return redirect()->route('admin::settings.plugins.index')->with('success', 'プラグインをインストールしました');
+        // ZIPファイルを一時保存
+        $file = $request->file('plugin_file');
+        $fileName = $file->getClientOriginalName();
+        $tempPath = storage_path('app/temp/plugins/' . $fileName);
+
+        $file->move(storage_path('app/temp/plugins'), $fileName);
+
+        // ZIP展開
+        $zip = new ZipArchive();
+        if ($zip->open($tempPath) === true) {
+            // プラグインフォルダ名取得 (ZIP内の最初のディレクトリ)
+            $pluginDir = trim($zip->getNameIndex(0), '/');
+            $destinationPath = base_path('plugins/' . $pluginDir);
+
+            // プラグインフォルダが既に存在しているか確認
+            if (File::exists($destinationPath)) {
+                $zip->close();
+                File::delete($tempPath);
+                return redirect()->back()->with('error', 'プラグインは既に存在します。');
+            }
+
+            // ZIPを解凍
+            $zip->extractTo(base_path('plugins'));
+            $zip->close();
+
+            // ZIPファイルを削除
+            File::delete($tempPath);
+
+            // データベースに登録
+            Plugin::create([
+                'name' => $pluginDir,
+                'namespace' => "Plugins\\$pluginDir",
+                'status' => 'disabled',
+            ]);
+
+            return redirect()->route('admin.settings.plugins.index')->with('success', 'プラグインが正常にインストールされました。');
+        }
+
+        // エラー処理
+        return redirect()->back()->with('error', 'ZIPファイルの展開に失敗しました。');
     }
+
+
 
     public function enable($id)
     {
         $plugin = Plugin::findOrFail($id);
         $plugin->update(['status' => 'enabled']);
 
-        return redirect()->route('admin::settings.plugins.index')->with('success', 'プラグインを有効化しました');
+        return redirect()->route('admin.settings.plugins.index')->with('success', 'プラグインを有効化しました');
     }
 
     public function disable($id)
@@ -65,14 +111,19 @@ class AdminSettingsPluginController extends AdminController
         $plugin = Plugin::findOrFail($id);
         $plugin->update(['status' => 'disabled']);
 
-        return redirect()->route('admin::settings.plugins.index')->with('success', 'プラグインを無効化しました');
+        return redirect()->route('admin.settings.plugins.index')->with('success', 'プラグインを無効化しました');
     }
 
     public function uninstall($id)
     {
+        // データベースから削除
         $plugin = Plugin::findOrFail($id);
         $plugin->delete();
 
-        return redirect()->route('admin::settings.plugins.index')->with('success', 'プラグインをアンインストールしました');
+        // プラグインフォルダを削除
+        $pluginDir = base_path('plugins/' . $plugin->name);
+        File::deleteDirectory($pluginDir);
+
+        return redirect()->route('admin.settings.plugins.index')->with('success', 'プラグインをアンインストールしました');
     }
 }
