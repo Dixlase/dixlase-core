@@ -66,17 +66,7 @@ Route::prefix($adminUrl)->name('admin.')
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
 
-            //Contentså
-            // テーマ一覧表示
-            Route::get('/contents/themes', [AdminContentsThemesController::class, 'index'])->name('contents.themes.index');
-            // テーマアップロード
-            Route::post('/contents/themes/upload', [AdminContentsThemesController::class, 'uploadTheme'])->name('contents.themes.upload');
-            // テーマの有効化（切り替え）
-            Route::post('/contents/themes/activate/{id}', [AdminContentsThemesController::class, 'activateTheme'])->name('contents.themes.activate');
-            // テーマ削除
-            Route::post('/contents/themes/delete/{id}', [AdminContentsThemesController::class, 'deleteTheme'])->name('contents.themes.delete');
-
-
+            //Contents
             // Pages
             // ページマスター
             Route::get('/contents/pages', [AdminContentsPageController::class, 'index'])->name('contents.pages.index');
@@ -90,6 +80,17 @@ Route::prefix($adminUrl)->name('admin.')
             Route::patch('/contents/pages/update/{page}', [AdminContentsPageController::class, 'update'])->name('contents.pages.update');
             // ページ削除
             Route::delete('/contents/pages/delete/{page}', [AdminContentsPageController::class, 'destroy'])->name('contents.pages.destroy');
+
+            // テーマ一覧表示
+            Route::get('/contents/themes', [AdminContentsThemesController::class, 'index'])->name('contents.themes.index');
+            // テーマのインストール
+            Route::get('/contents/themes/install', [AdminContentsThemesController::class, 'install'])->name('contents.themes.install');
+            // テーマアップロード
+            Route::post('/contents/themes/upload', [AdminContentsThemesController::class, 'upload'])->name('contents.themes.upload');
+            // テーマの有効化（切り替え）
+            Route::post('/contents/themes/activate/{id}', [AdminContentsThemesController::class, 'activate'])->name('contents.themes.activate');
+            // テーマ削除
+            Route::post('/contents/themes/delete/{id}', [AdminContentsThemesController::class, 'delete'])->name('contents.themes.delete');
 
             //Users
             // ユーザーマスター
@@ -117,7 +118,8 @@ Route::prefix($adminUrl)->name('admin.')
 
             // Plugins
             Route::get('/settings/plugins', [AdminSettingsPluginController::class, 'index'])->name('settings.plugins.index');
-            Route::post('/settings/plugins/install', [AdminSettingsPluginController::class, 'install'])->name('settings.plugins.install');
+            Route::get('/settings/plugins/install', [AdminSettingsPluginController::class, 'install'])->name('settings.plugins.install');
+            Route::post('/settings/plugins/upload', [AdminSettingsPluginController::class, 'upload'])->name('settings.plugins.upload');
             Route::post('/enable/{id}', [AdminSettingsPluginController::class, 'enable'])->name('settings.plugins.enable');
             Route::post('/disable/{id}', [AdminSettingsPluginController::class, 'disable'])->name('settings.plugins.disable');
             Route::post('/uninstall/{id}', [AdminSettingsPluginController::class, 'uninstall'])->name('settings.plugins.uninstall');

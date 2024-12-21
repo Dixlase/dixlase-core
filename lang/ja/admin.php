@@ -29,7 +29,8 @@ return [
             ],
             'themes' => [
                 'text' => 'テーマ設定',
-                'index' => 'テーマ一覧',
+                'index' => '一覧',
+                'install' => 'インストール',
             ]
         ],
         'users' => [
@@ -84,6 +85,11 @@ return [
                 'submit' => '更新',
                 'index' => [
                     'heading' => 'テーマ一覧',
+                ],
+                'install' => [
+                    'heading' => 'テーマインストール',
+                    'name' => 'テーマ名',
+                    'submit' => 'インストール',
                 ],
             ],
         ],
