@@ -35,6 +35,10 @@ class AdminSettingsPluginController extends AdminController
 {
     public function index()
     {
+
+        // 権限を確認
+        $this->checkPermission('manager');
+
         $plugins = Plugin::all();
         $this->viewParams['heading'] = config('admin.settings.plugins.index.heading');
         $this->viewParams['plugins'] = $plugins;
@@ -43,12 +47,20 @@ class AdminSettingsPluginController extends AdminController
 
     public function install()
     {
+
+        // 権限を確認
+        $this->checkPermission('super_manager');
+
         $this->viewParams['heading'] = 'プラグインインストール';
         return view('admin::settings.plugins.install', $this->viewParams);
     }
 
     public function upload(Request $request)
     {
+
+        // 権限を確認
+        $this->checkPermission('super_manager');
+
         // ファイルアップロード処理
         $request->validate([
             'plugin_file' => 'required|file|mimes:zip|max:2048',
@@ -100,6 +112,10 @@ class AdminSettingsPluginController extends AdminController
 
     public function enable($id)
     {
+
+        // 権限を確認
+        $this->checkPermission('super_manager');
+
         $plugin = Plugin::findOrFail($id);
         $plugin->update(['status' => 'enabled']);
 
@@ -108,6 +124,10 @@ class AdminSettingsPluginController extends AdminController
 
     public function disable($id)
     {
+
+        // 権限を確認
+        $this->checkPermission('super_manager');
+
         $plugin = Plugin::findOrFail($id);
         $plugin->update(['status' => 'disabled']);
 
@@ -116,6 +136,10 @@ class AdminSettingsPluginController extends AdminController
 
     public function uninstall($id)
     {
+
+        // 権限を確認
+        $this->checkPermission('super_manager');
+
         // データベースから削除
         $plugin = Plugin::findOrFail($id);
         $plugin->delete();

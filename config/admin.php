@@ -13,28 +13,32 @@ return [
     */
 
     'nav' => [
-
         'dashboard' => [
             'text' =>  'admin.nav.dashboard',
             'route' => 'admin.dashboard',
             'icon' => 'fas fa-fw fa-tachometer-alt',
+            'can' => 'viewer',
         ],
         'contents' => [
             'text' => 'admin.nav.contents.text',
             'icon' => 'fas fa-fw fa-file',
+            'can' => 'editor',
             'children' => [
                 'pages' => [
                     'text' => 'admin.nav.contents.pages.text',
                     'icon' => 'fas fa-fw fa-file',
+                    'can' => 'editor',
                     'children' => [
                         'index' => [
                             'text' => 'admin.nav.contents.pages.index',
                             'route' => 'admin.contents.pages.index',
+                            'can' => 'editor',
                             'icon' => 'fas fa-fw fa-file',
                         ],
                         'create' => [
                             'text' => 'admin.nav.contents.pages.create',
                             'route' => 'admin.contents.pages.create',
+                            'can' => 'editor',
                             'icon' => 'fas fa-fw fa-file',
                         ],
                     ]
@@ -42,75 +46,91 @@ return [
                 'themes' => [
                     'text' => 'admin.nav.contents.themes.text',
                     'icon' => 'fas fa-fw fa-palette',
+                    'can' => 'manager',
                     'children' => [
                         'index' => [
                             'text' => 'admin.nav.contents.themes.index',
                             'route' => 'admin.contents.themes.index',
                             'icon' => 'fas fa-fw fa-file',
+                            'can' => 'manager',
                         ],
                         'install' => [
                             'text' => 'admin.nav.contents.themes.install',
                             'route' => 'admin.contents.themes.install',
+                            'can' => 'super_manager',
                             'icon' => 'fas fa-fw fa-file',
                         ],
                     ]
                 ],
             ]
         ],
+
         'users' => [
             'text' => 'admin.nav.users.text',
             'icon' => 'fas fa-fw fa-users',
+            'can' => 'viewer',
             'children' => [
                 'index' => [
                     'text' => 'admin.nav.users.index',
                     'route' => 'admin.users.index',
                     'icon' => 'fas fa-fw fa-users',
+                    'can' => 'viewer',
                 ],
                 'create' => [
                     'text' => 'admin.nav.users.create',
                     'route' => 'admin.users.create',
                     'icon' => 'fas fa-fw fa-users',
+                    'can' => 'receptionist',
                 ],
             ]
         ],
+
         'settings' => [
             'text' => 'admin.nav.settings.text',
             'icon' => 'fas fa-fw fa-cogs',
+            'can' => 'viewer',
             'children' => [
                 'members' => [
                     'text' => 'admin.nav.settings.members.text',
                     'icon' => 'fas fa-fw fa-users',
+                    'can' => 'viewer',
                     'children' => [
                         'index' => [
                             'text' => 'admin.nav.settings.members.index',
                             'route' => 'admin.settings.members.index',
                             'icon' => 'fas fa-fw fa-users',
+                            'can' => 'manager',
                         ],
                         'create' => [
                             'text' => 'admin.nav.settings.members.create',
                             'route' => 'admin.settings.members.create',
                             'icon' => 'fas fa-fw fa-users',
+                            'can' => 'manager',
                         ],
                         'profile' => [
                             'text' => 'admin.nav.settings.members.profile',
                             'route' => 'admin.settings.members.profile',
                             'icon' => 'fas fa-fw fa-users',
+                            'can' => 'viewer',
                         ]
                     ]
                 ],
                 'plugins' => [
                     'text' => 'admin.nav.settings.plugins.text',
                     'icon' => 'fas fa-fw fa-users',
+                    'can' => 'manager',
                     'children' => [
                         'index' => [
                             'text' => 'admin.nav.contents.themes.index',
                             'route' => 'admin.settings.plugins.index',
                             'icon' => 'fas fa-fw fa-file',
+                            'can' => 'manager',
                         ],
                         'install' => [
                             'text' => 'admin.nav.contents.themes.install',
                             'route' => 'admin.settings.plugins.install',
                             'icon' => 'fas fa-fw fa-file',
+                            'can' => 'super_manager',
                         ],
                     ]
                 ],
@@ -118,16 +138,17 @@ return [
                     'text' => 'admin.nav.settings.security',
                     'route' => 'admin.settings.security.index',
                     'icon' => 'fas fa-fw fa-users',
+                    'can' => 'super_manager',
                 ],
                 'systems' => [
                     'text' => 'admin.nav.settings.systems',
                     'route' => 'admin.settings.systems',
                     'icon' => 'fas fa-fw fa-users',
+                    'can' => 'super_manager',
                 ],
-
-
             ],
         ]
+
     ],
 
     /*
@@ -209,17 +230,27 @@ return [
     */
 
     'roles' => [
-        //特権管理者
-        'super_admin' => 'admin.roles.super_admin',
-        //管理者
-        'admin' => 'admin.roles.admin',
-        //編集者
+        // 特権管理者
+        'super_manager' => 'admin.roles.super_manager',
+        // 管理者
+        'manager' => 'admin.roles.manager',
+        // 編集者
         'editor' => 'admin.roles.editor',
-        //受付
+        // 受付
         'receptionist' => 'admin.roles.receptionist',
-        //閲覧者
+        // 閲覧者
         'viewer' => 'admin.roles.viewer',
     ],
+
+    // 権限の階層
+    'roles_hierarchy' => [
+        'super_manager' => ['super_manager'],
+        'manager' => ['super_manager', 'manager'],
+        'editor' => ['super_manager', 'manager', 'editor'],
+        'receptionist' => ['super_manager', 'manager', 'editor', 'receptionist'],
+        'viewer' => ['super_manager', 'manager', 'editor', 'receptionist', 'viewer'],
+    ],
+
 
     /*
     |--------------------------------------------------------------------------

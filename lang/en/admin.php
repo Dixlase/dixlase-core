@@ -143,10 +143,11 @@ return [
 
     'roles' => [
         'text' => 'Roles',
-        'super_admin' => 'Super Admin',
-        'admin' => 'Admin',
+        'super_manager' => 'Super Administator',
+        'manager' => 'Administator',
         'editor' => 'Editor',
         'receptionist' => 'Reception',
+        'viewer' => 'Viewer',
     ],
 
     'theme' => [
