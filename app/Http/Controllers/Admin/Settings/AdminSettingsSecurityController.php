@@ -36,6 +36,10 @@ class AdminSettingsSecurityController extends AdminController
 {
     public function index()
     {
+
+        // 権限を確認
+        $this->checkPermission('super_manager');
+
         $this->viewParams['heading'] = 'admin.features.settings.security.heading';
 
         $settings = [
@@ -54,6 +58,10 @@ class AdminSettingsSecurityController extends AdminController
 
     public function update(AdminSettngsSecurityUpdateRequest $request)
     {
+
+
+        // 権限を確認
+        $this->checkPermission('super_manager');
 
         // 現在の管理画面URLを取得
         $currentAdminUrl = SettingSecurity::get('admin_url', config('security.admin_url'));

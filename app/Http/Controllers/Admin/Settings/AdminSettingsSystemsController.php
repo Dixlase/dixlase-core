@@ -27,6 +27,7 @@ namespace App\Http\Controllers\Admin\Settings;
 use App\Http\Controllers\Admin\AdminController;
 use App\Models\SettingSystem;
 use App\Http\Requests\Admin\Settings\AdminSettingsSystemRequest;
+use Illuminate\Support\Facades\Gate;
 
 class AdminSettingsSystemsController extends AdminController
 {
@@ -44,6 +45,10 @@ class AdminSettingsSystemsController extends AdminController
 
     public function index()
     {
+
+        // 権限を確認
+        $this->checkPermission('super_manager');
+
         $settings = [
             'site_name' => SettingSystem::getValue('site_name', 'My Site'),
             'language' => SettingSystem::getValue('language', 'ja'),
@@ -74,6 +79,8 @@ class AdminSettingsSystemsController extends AdminController
      */
     public function update(AdminSettingsSystemRequest $request)
     {
+        // 権限を確認
+        $this->authorize('super_manager');
 
         $settings = $request->only([
             'site_name',

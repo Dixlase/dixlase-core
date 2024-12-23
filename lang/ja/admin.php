@@ -205,10 +205,11 @@ return [
 
     'roles' => [
         'text' => '権限',
-        'super_admin' => '特権管理者',
-        'admin' => '管理者',
+        'super_manager' => '特権管理者',
+        'manager' => '管理者',
         'editor' => '編集者',
         'receptionist' => '受付',
+        'viewer' => '閲覧者',
     ],
 
     'theme' => [

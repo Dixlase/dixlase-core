@@ -27,6 +27,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Traits\RoleCheck;
 
 class AdminController extends Controller
 {
@@ -37,6 +39,10 @@ class AdminController extends Controller
     protected $viewParams = [];
     protected $routeName = '';
     protected $settings = [];
+
+    //トレイトを使用する
+    use AuthorizesRequests;
+    use RoleCheck;
 
     //初期設定を行う
     public function __construct()
