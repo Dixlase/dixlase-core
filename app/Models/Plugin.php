@@ -32,4 +32,10 @@ class Plugin extends Model
         'namespace',
         'status'
     ];
+
+    // 有効化されたプラグインを取得するスコープ
+    public function scopeActive($query)
+    {
+        return $query->where('status', 1);
+    }
 }

@@ -42,7 +42,7 @@ class AdminSettingsMemberStoreRequest extends FormRequest
     public function rules(): array
     {
         // 管理者IDがリクエストされているかで判断
-        $isUpdate = $this->route('member') !== null;
+        $isUpdate = $this->route('admin') !== null;
 
         return [
             'name' => 'required|string|max:255',

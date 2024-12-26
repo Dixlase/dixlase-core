@@ -31,10 +31,17 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\File;
 use App\Models\SettingSecurity;
+use App\Traits\ThemeLoader;
+use App\Traits\PluginLoader;
+
 
 
 class AppServiceProvider extends ServiceProvider
 {
+
+    use ThemeLoader;
+    use PluginLoader;
+
     /**
      * Register any application services.
      */
@@ -65,7 +72,9 @@ class AppServiceProvider extends ServiceProvider
         app()->setLocale($lang);
 
         // 有効なプラグインをデータベースから取得
+        $this->loadActivePlugins();
 
+        /*
         $enabledPlugins = DB::table('plugins')->where('status', 'enabled')->get();
 
         // プラグインのServiceProviderを登録
@@ -79,9 +88,7 @@ class AppServiceProvider extends ServiceProvider
                 }
             }
         }
-
-        //ヘルパーを読み込む
-        require_once app_path('Helpers/ThemeHelper.php');
+        */
 
         // テーマの設定を読み込む
         $adminTheme = config('app.admin_theme', 'admin');
@@ -89,10 +96,8 @@ class AppServiceProvider extends ServiceProvider
         $activeThemeDirectory = config('app.theme', 'default');
         $defaultTheme = config('app.default_theme', 'default');
 
-
-        // 現在使用中のテーマ名を取得
-        $settingsTheme = DB::table('settings_theme')->first();
-        $activeThemeId = $settingsTheme->active_theme_id ?? 0;
+        // 現在有効化されているテーマを取得
+        $activeThemeId = $this->getActiveTheme();
 
         // 現在使用中のテーマのディレクトリ名を取得
         $activeTheme = DB::table('themes')->where('id', $activeThemeId)->first();
@@ -103,7 +108,6 @@ class AppServiceProvider extends ServiceProvider
             base_path("custom/resources/views/{$adminTheme}"),
             resource_path("views/{$adminTheme}"),
         ]);
-
 
         // カスタムテーマの読み込みがcustom/resouces/viewsのほうを優先されるように設定
         View::addNamespace('themes', [

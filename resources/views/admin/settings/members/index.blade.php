@@ -66,7 +66,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <td class="border px-4 py-2">{{ $member->id }}</td>
                             <td class="border px-4 py-2">{{ $member->name }}</td>
                             <td class="border px-4 py-2">{{ $member->email }}</td>
-                            <td class="border px-4 py-2">{{ $member->role }}</td>
+                            <td class="border px-4 py-2">{{__('admin.roles.' . $member->role)}}</td>
                             <td class="border px-4 py-2">
                                 <a href="{{ route('admin.settings.members.edit', ['member' => $member->id]) }}"
                                     class="{{ config('admin.appearance_class.link') }}">

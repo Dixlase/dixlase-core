@@ -40,7 +40,7 @@ class AdminPasswordController extends Controller
             'password' => ['required', Password::defaults(), 'confirmed'],
         ]);
 
-        $request->user('admins')->update([
+        $request->user('members')->update([
             'password' => Hash::make($validated['password']),
         ]);
 

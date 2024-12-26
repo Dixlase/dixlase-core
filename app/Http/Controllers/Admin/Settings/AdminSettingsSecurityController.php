@@ -43,7 +43,7 @@ class AdminSettingsSecurityController extends AdminController
         $this->viewParams['heading'] = 'admin.features.settings.security.heading';
 
         $settings = [
-            'admin_url' => SettingSecurity::get('admin_url', 'admin'),
+            'admin_url' => SettingSecurity::get('admin_url', 'member'),
             'enable_allowed_admin_ips' => SettingSecurity::get('enable_allowed_admin_ips', false),
             'allowed_admin_ips' => SettingSecurity::get('allowed_admin_ips', ''),
             'enable_blocked_admin_ips' => SettingSecurity::get('enable_blocked_admin_ips', false),

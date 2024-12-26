@@ -25,6 +25,7 @@ namespace App\Http\Controllers\Admin\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\RouteServiceProvider;
 
 class AdminEmailVerificationNotificationController extends Controller
 {
@@ -33,7 +34,7 @@ class AdminEmailVerificationNotificationController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        if ($request->user('admins')->hasVerifiedEmail()) {
+        if ($request->user('members')->hasVerifiedEmail()) {
             return redirect()->intended('/admin' . RouteServiceProvider::HOME);
         }
 

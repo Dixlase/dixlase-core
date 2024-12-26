@@ -24,20 +24,32 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use App\Models\Theme;
+use App\Models\Plugin;
 
-class ThemesTableSeeder extends Seeder
+class PluginsTableSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        Theme::create([
-            'name' => 'Default',
-            'slug' => 'default',
-            'version' => '1.0'
+        Plugin::insert([
+            [
+                'name' => 'EventPlugin',
+                'namespace' => 'Plugins\EventPlugin',
+                'version' => '1.0',
+                'status' => 1,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'name' => 'ResavationPlugin',
+                'namespace' => 'Plugins\ResavationPlugin',
+                'version' => '1.0',
+                'status' => 1,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]
         ]);
     }
 }

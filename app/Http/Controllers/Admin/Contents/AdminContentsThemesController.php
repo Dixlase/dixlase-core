@@ -44,11 +44,15 @@ class AdminContentsThemesController extends AdminController
         // デフォルトテーマを取得
         $defaultTheme = Theme::where('slug', 'default')->first();
 
+        // 現在有効なテーマを取得
+        $activeThemeId = DB::table('settings_theme')->value('active_theme_id');
+
         // 他のテーマを取得（デフォルトテーマ以外）
         $themes = Theme::where('slug', '!=', 'default')->paginate(10); // 1ページあたり10件表示
 
         $this->viewParams['defaultTheme'] = $defaultTheme;
         $this->viewParams['themes'] = $themes;
+        $this->viewParams['activeThemeId'] = $activeThemeId;
         return view('admin::contents.themes.index', $this->viewParams);
     }
 
