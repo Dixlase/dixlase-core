@@ -20,32 +20,21 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+namespace App\Traits;
 
-return new class extends Migration
+use Illuminate\Support\Facades\DB;
+
+
+trait ThemeLoader
 {
     /**
-     * Run the migrations.
+     * 有効化されているテーマを取得する
+     *
+     * @return int
      */
-    public function up(): void
+    public function getActiveTheme(): int
     {
-        Schema::create('plugins', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('namespace');
-            $table->string('version');
-            $table->tinyInteger('status')->default(0)->comment('0: disabled, 1: enabled');
-            $table->timestamps();
-        });
+        $activeTheme = DB::table('settings_theme')->first();
+        return $activeTheme ? $activeTheme->active_theme_id : 1; // デフォルトIDを1とする
     }
-
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('plugins');
-    }
-};
+}

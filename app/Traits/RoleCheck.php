@@ -38,7 +38,7 @@ trait RoleCheck
     public function checkPermission(string $requiredRole): void
     {
         // 管理者ガードからログイン中のユーザーを取得
-        $member = Auth::guard('admin')->user();
+        $member = Auth::guard('member')->user();
         $memberRole = $member->role ?? null; // ユーザーのロールを取得
         $rolesHierarchy = config('admin.roles_hierarchy'); // 権限階層を取得
 

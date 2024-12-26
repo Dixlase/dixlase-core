@@ -44,8 +44,8 @@ class AdminConfirmablePasswordController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        if (! Auth::guard('admins')->validate([
-            'email' => $request->user('admins')->email,
+        if (! Auth::guard('members')->validate([
+            'email' => $request->user('members')->email,
             'password' => $request->password,
         ])) {
             throw ValidationException::withMessages([

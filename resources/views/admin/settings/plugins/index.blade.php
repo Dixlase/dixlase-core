@@ -47,11 +47,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 class="inline-block px-3 py-1 rounded-full text-xs font-semibold
                                 {{ $plugin->status === 'enabled' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}"
                             >
-                                {{ $plugin->status === 'enabled' ? '有効' : '無効' }}
+                                {{ $plugin->status === 1 ? '有効' : '無効' }}
                             </span>
                         </td>
                         <td class="py-3 px-6 text-center flex justify-center space-x-2">
-                            @if ($plugin->status === 'enabled')
+                            @if ($plugin->status === 1)
                                 <form action="{{ route('admin.settings.plugins.disable', $plugin->id) }}" method="POST">
                                     @csrf
                                     <button

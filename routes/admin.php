@@ -46,7 +46,7 @@ Route::prefix($adminUrl)->name('admin.')
     ->middleware('admin.ip') // IPアドレスフィルタ
     ->group(function () {
         Route::get('/', function () {
-            $user = Auth::guard('admin')->user();
+            $user = Auth::guard('member')->user();
             if ($user) {
                 return redirect()->route('admin.dashboard');
             } else {
@@ -60,7 +60,7 @@ Route::prefix($adminUrl)->name('admin.')
         Route::post('/login', [AdminAuthenticatedSessionController::class, 'store']);
 
 
-        Route::middleware('auth:admin')->group(function () {
+        Route::middleware('auth:member')->group(function () {
 
             // Dashboard
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');

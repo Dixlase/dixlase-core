@@ -26,6 +26,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\RouteServiceProvider;
 
 class AdminVerifyEmailController extends Controller
 {
@@ -34,12 +35,12 @@ class AdminVerifyEmailController extends Controller
      */
     public function __invoke(EmailVerificationRequest $request): RedirectResponse
     {
-        if ($request->user('admins')->hasVerifiedEmail()) {
+        if ($request->user('members')->hasVerifiedEmail()) {
             return redirect()->intended('/admin' . RouteServiceProvider::HOME . '?verified=1');
         }
 
-        if ($request->user('admins')->markEmailAsVerified()) {
-            event(new Verified($request->user('admins')));
+        if ($request->user('members')->markEmailAsVerified()) {
+            event(new Verified($request->user('members')));
         }
 
         return redirect()->intended(route('admin.dashboard', absolute: false) . '?verified=1');

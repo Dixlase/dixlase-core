@@ -52,7 +52,7 @@ class AdminController extends Controller
             ?? env('APP_NAME', 'EventManagementSystem');
 
         //ログイン中の管理者情報を取得
-        $admin = auth('admin')->user();
+        $admin = auth('member')->user();
 
         //ログイン中の管理者の外観モードをDBから取得
         $this->appearance = $admin->appearance ?? 0;

@@ -86,7 +86,7 @@ class AdminSettingsMembersController extends AdminController
         $member = Member::create($validated);
 
         // リダイレクト
-        return redirect()->route('admin.settings.members.edit', ['admin' => $member->id])->with('success', '新しいユーザーが作成されました！');
+        return redirect()->route('admin.settings.members.edit', ['member' => $member->id])->with('success', '新しいユーザーが作成されました！');
 
 
 

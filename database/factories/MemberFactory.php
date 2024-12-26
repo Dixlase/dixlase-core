@@ -48,7 +48,7 @@ class MemberFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
-            'role' => fake()->randomElement(['super_admin', 'admin', 'editor', 'receptionist']), // 役割を追加
+            'role' => fake()->randomElement(['super_manager', 'manager', 'editor', 'receptionist', 'viewer']), // 役割を追加
             'status' => fake()->randomElement([0, 1]), // ステータスを追加
             'appearance' => fake()->randomElement([0, 1, 2]), // 外観モードを追加
         ];

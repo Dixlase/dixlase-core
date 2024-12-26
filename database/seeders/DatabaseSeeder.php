@@ -46,6 +46,7 @@ class DatabaseSeeder extends Seeder
             OptionsTableSeeder::class,
             OptionCategoriesTableSeeder::class,
             PagesTableSeeder::class,
+            PluginsTableSeeder::class,
             SettingsFrontTableSeeder::class,
             SettingsSecurityTableSeeder::class,
             SettingsSystemTableSeeder::class,

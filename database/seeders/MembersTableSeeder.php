@@ -39,7 +39,7 @@ class MembersTableSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => Hash::make('password'),
-            'role' => 'admin',
+            'role' => 'super_manager',
             'appearance' => 0,
             'status' => 1,
         ]);

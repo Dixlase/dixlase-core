@@ -2,8 +2,6 @@
 
 @section('content')
 
-    <pre>{{ print_r(session()->all(), true) }}</pre>
-
     <!-- Flash Message -->
     @include('components::flash_message')
 
@@ -16,7 +14,7 @@
             <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-4 relative">
                 <h3 class="text-lg font-bold mb-2">{{ $defaultTheme->name }} <span class="text-sm text-gray-500">({{ $defaultTheme->version }})</span></h3>
 
-                @if ($defaultTheme->id === getActiveTheme())
+                @if ($defaultTheme->id === $activeThemeId)
                         <span class="text-green-500 font-semibold">現在使用中</span>
                 @else
                     <!-- 有効化ボタン -->
@@ -39,7 +37,7 @@
 
 
 
-                    @if ($theme->id === getActiveTheme())
+                    @if ($theme->id === $activeThemeId)
                         <span class="text-green-500 font-semibold">現在使用中</span>
                     @else
                         <!-- 有効化ボタン -->

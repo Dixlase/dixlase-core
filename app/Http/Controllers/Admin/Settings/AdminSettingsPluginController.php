@@ -27,8 +27,11 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Plugin;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
 use ZipArchive;
+
+
 
 
 class AdminSettingsPluginController extends AdminController
@@ -100,6 +103,17 @@ class AdminSettingsPluginController extends AdminController
                 'namespace' => "Plugins\\$pluginDir",
                 'status' => 'disabled',
             ]);
+
+            // プラグインのマイグレーションディレクトリを動的に指定
+            $pluginMigrationPath = base_path("plugins/{$pluginDir}/migrations");
+
+            if (is_dir($pluginMigrationPath)) {
+                // マイグレーションを実行
+                Artisan::call('migrate', [
+                    '--path' => "plugins/{$pluginDir}/migrations",
+                    '--force' => true, // 実行確認なしで実行
+                ]);
+            }
 
             return redirect()->route('admin.settings.plugins.index')->with('success', 'プラグインが正常にインストールされました。');
         }
