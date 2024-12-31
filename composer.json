@@ -25,6 +25,7 @@
             "Database\\Seeders\\": "database/seeders/",
             "Plugins\\": "plugins/",
             "Custom\\": "custom/app/",
+            "Custom\\Plugins\\": "custom/plugins/",
             "Custom\\Database\\Factories\\": "custom/database/factories/",
             "Custom\\Database\\Seeders\\": "custom/database/seeders/"
         }
