@@ -19,9 +19,15 @@ return Application::configure(basePath: dirname(__DIR__))
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class, // メール認証
             'admin.ip' => \App\Http\Middleware\AdminIpFilter::class, // IPアドレスフィルタ
             'front.ip' => \App\Http\Middleware\FrontIpFilter::class, // フロントIPフィルタ
-
         ]);
-        //$middleware->alias('verified', \App\Http\Middleware\EnsureEmailIsVerified::class);
+    })
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->group('plugin', [
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

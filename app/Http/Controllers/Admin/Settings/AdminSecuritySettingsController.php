@@ -32,7 +32,7 @@ use Illuminate\Support\Facades\Auth;
 
 
 
-class AdminSettingsSecurityController extends AdminController
+class AdminSecuritySettingsController extends AdminController
 {
     public function index()
     {

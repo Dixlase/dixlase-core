@@ -142,6 +142,17 @@ return [
     'pages_directory' => 'pages', // ページのマークダウンファイルを保存するディレクトリ
 
 
+
+    /*
+    'providers' => [
+        // 他のプロバイダー
+        //Illuminate\Auth\AuthServiceProvider::class,
+        //App\Providers\AppServiceProvider::class,
+
+    ],
+    */
+
+
     //ここまでカスタムの設定
 
 ];

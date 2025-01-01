@@ -29,10 +29,10 @@ use App\Http\Controllers\Admin\Auth\AdminNewPasswordController;
 use App\Http\Controllers\Admin\Auth\AdminPasswordResetLinkController;
 use App\Http\Controllers\Admin\Auth\AdminRegisteredUserController;
 use App\Http\Controllers\Admin\Auth\AdminVerifyEmailController;
-use App\Http\Controllers\Admin\Settings\AdminSettingsSystemsController;
-use App\Http\Controllers\Admin\Settings\AdminSettingsPluginController;
-use App\Http\Controllers\Admin\Settings\AdminSettingsSecurityController;
-use App\Http\Controllers\Admin\Settings\AdminSettingsMembersController;
+use App\Http\Controllers\Admin\Settings\AdminBaseSettingsController;
+use App\Http\Controllers\Admin\Settings\AdminPluginsSettingsController;
+use App\Http\Controllers\Admin\Settings\AdminSecuritySettingsController;
+use App\Http\Controllers\Admin\Settings\AdminMembersSettingsController;
 use App\Http\Controllers\Admin\Users\AdminUsersController;
 use App\Http\Controllers\Admin\Contents\AdminContentsPageController;
 use App\Http\Controllers\Admin\Contents\AdminContentsThemesController;
@@ -46,8 +46,8 @@ Route::prefix($adminUrl)->name('admin.')
     ->middleware('admin.ip') // IPアドレスフィルタ
     ->group(function () {
         Route::get('/', function () {
-            $user = Auth::guard('member')->user();
-            if ($user) {
+            $member = Auth::guard('member')->user();
+            if ($member) {
                 return redirect()->route('admin.dashboard');
             } else {
                 return redirect()->route('admin.login');
@@ -59,13 +59,9 @@ Route::prefix($adminUrl)->name('admin.')
 
         Route::post('/login', [AdminAuthenticatedSessionController::class, 'store']);
 
-
         Route::middleware('auth:member')->group(function () {
-
             // Dashboard
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-
-
             //Contents
             // Pages
             // ページマスター
@@ -108,29 +104,29 @@ Route::prefix($adminUrl)->name('admin.')
 
             // Settings
             // Members
-            Route::get('/settings/members', [AdminSettingsMembersController::class, 'index'])->name('settings.members.index');
-            Route::get('/settings/members/create', [AdminSettingsMembersController::class, 'create'])->name('settings.members.create');
-            Route::post('/settings/members/store', [AdminSettingsMembersController::class, 'store'])->name('settings.members.store');
-            Route::get('/settings/members/edit/{member}', [AdminSettingsMembersController::class, 'edit'])->name('settings.members.edit');
-            Route::patch('/settings/members/update/{member}', [AdminSettingsMembersController::class, 'update'])->name('settings.members.update');
-            Route::delete('/settings/members/destroy/{member}', [AdminSettingsMembersController::class, 'destroy'])->name('settings.members.destroy');
-            Route::get('/settings/members/profile', [AdminSettingsMembersController::class, 'profile'])->name('settings.members.profile');
+            Route::get('/settings/members', [AdminMembersSettingsController::class, 'index'])->name('settings.members.index');
+            Route::get('/settings/members/create', [AdminMembersSettingsController::class, 'create'])->name('settings.members.create');
+            Route::post('/settings/members/store', [AdminMembersSettingsController::class, 'store'])->name('settings.members.store');
+            Route::get('/settings/members/edit/{member}', [AdminMembersSettingsController::class, 'edit'])->name('settings.members.edit');
+            Route::patch('/settings/members/update/{member}', [AdminMembersSettingsController::class, 'update'])->name('settings.members.update');
+            Route::delete('/settings/members/destroy/{member}', [AdminMembersSettingsController::class, 'destroy'])->name('settings.members.destroy');
+            Route::get('/settings/members/profile', [AdminMembersSettingsController::class, 'profile'])->name('settings.members.profile');
 
             // Plugins
-            Route::get('/settings/plugins', [AdminSettingsPluginController::class, 'index'])->name('settings.plugins.index');
-            Route::get('/settings/plugins/install', [AdminSettingsPluginController::class, 'install'])->name('settings.plugins.install');
-            Route::post('/settings/plugins/upload', [AdminSettingsPluginController::class, 'upload'])->name('settings.plugins.upload');
-            Route::post('/enable/{id}', [AdminSettingsPluginController::class, 'enable'])->name('settings.plugins.enable');
-            Route::post('/disable/{id}', [AdminSettingsPluginController::class, 'disable'])->name('settings.plugins.disable');
-            Route::post('/uninstall/{id}', [AdminSettingsPluginController::class, 'uninstall'])->name('settings.plugins.uninstall');
+            Route::get('/settings/plugins', [AdminPluginsSettingsController::class, 'index'])->name('settings.plugins.index');
+            Route::get('/settings/plugins/install', [AdminPluginsSettingsController::class, 'install'])->name('settings.plugins.install');
+            Route::post('/settings/plugins/upload', [AdminPluginsSettingsController::class, 'upload'])->name('settings.plugins.upload');
+            Route::post('/enable/{id}', [AdminPluginsSettingsController::class, 'enable'])->name('settings.plugins.enable');
+            Route::post('/disable/{id}', [AdminPluginsSettingsController::class, 'disable'])->name('settings.plugins.disable');
+            Route::post('/uninstall/{id}', [AdminPluginsSettingsController::class, 'uninstall'])->name('settings.plugins.uninstall');
 
             // Security
-            Route::get('/settings/security', [AdminSettingsSecurityController::class, 'index'])->name('settings.security.index');
-            Route::post('settings/security', [AdminSettingsSecurityController::class, 'update'])->name('settings.security.update');
+            Route::get('/settings/security', [AdminSecuritySettingsController::class, 'index'])->name('settings.security.index');
+            Route::post('settings/security', [AdminSecuritySettingsController::class, 'update'])->name('settings.security.update');
 
             // Systems
-            Route::get('/admin/settings/systems', [AdminSettingsSystemsController::class, 'index'])->name('settings.systems');
-            Route::put('/admin/settings/update', [AdminSettingsSystemsController::class, 'update'])->name('settings.systems.update');
+            Route::get('/settings/base', [AdminBaseSettingsController::class, 'index'])->name('settings.base.index');
+            Route::put('/settings/update', [AdminBaseSettingsController::class, 'update'])->name('settings.systems.update');
 
             // Logout
             Route::post('/logout', [AdminAuthenticatedSessionController::class, 'destroy'])

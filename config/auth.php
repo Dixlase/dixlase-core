@@ -43,6 +43,7 @@ return [
         'member' => [
             'driver' => 'session',
             'provider' => 'members',
+            'redirect' => '/admin/login',
         ],
     ],
 
@@ -100,9 +101,9 @@ return [
             'expire' => 60,
             'throttle' => 60,
         ],
-        'admins' => [
-            'provider' => 'admins',
-            'table' => 'admins_user_password_reset_tokens',
+        'members' => [
+            'provider' => 'members',
+            'table' => 'members_user_password_reset_tokens',
             'expire' => 60,
             'throttle' => 60,
         ],
@@ -120,5 +121,13 @@ return [
     */
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
+
+    'lifetime' => env('SESSION_LIFETIME', 120), // 単位: 分
+
+    'aliases' => [
+        // 他のエイリアス
+        'Auth' => Illuminate\Support\Facades\Auth::class,
+    ],
+
 
 ];

@@ -40,6 +40,8 @@ return [
         ],
         'settings' => [
             'text' => '設定',
+            'base' => '基本設定',
+            'security' => 'セキュリティ設定',
             'members' => [
                 'text' => 'メンバー設定',
                 'index' => 'メンバーマスター',
@@ -52,9 +54,6 @@ return [
                 'index' => 'プラグインマスター',
                 'install'  => 'インストール',
             ],
-            'security' => 'セキュリティ設定',
-            'systems' => 'システム設定',
-
         ],
     ],
 

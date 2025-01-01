@@ -51,6 +51,7 @@ class Member extends Authenticatable
         'role',
         'appearance',
         'status',
+
     ];
 
     /**
