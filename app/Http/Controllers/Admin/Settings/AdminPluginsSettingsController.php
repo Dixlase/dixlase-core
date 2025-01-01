@@ -131,7 +131,7 @@ class AdminPluginsSettingsController extends AdminController
         $this->checkPermission('super_manager');
 
         $plugin = Plugin::findOrFail($id);
-        $plugin->update(['status' => 'enabled']);
+        $plugin->update(['status' => 1]);
 
         return redirect()->route('admin.settings.plugins.index')->with('success', 'プラグインを有効化しました');
     }
@@ -143,7 +143,7 @@ class AdminPluginsSettingsController extends AdminController
         $this->checkPermission('super_manager');
 
         $plugin = Plugin::findOrFail($id);
-        $plugin->update(['status' => 'disabled']);
+        $plugin->update(['status' => 0]);
 
         return redirect()->route('admin.settings.plugins.index')->with('success', 'プラグインを無効化しました');
     }
