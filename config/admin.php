@@ -90,9 +90,21 @@ return [
             'icon' => 'fas fa-fw fa-cogs',
             'can' => 'viewer',
             'children' => [
+                'base' => [
+                    'text' => 'admin.nav.settings.base',
+                    'route' => 'admin.settings.base.index',
+                    'icon' => 'fas fa-fw fa-gear',
+                    'can' => 'super_manager',
+                ],
+                'security' => [
+                    'text' => 'admin.nav.settings.security',
+                    'route' => 'admin.settings.security.index',
+                    'icon' => 'fas fa-fw fa-bandage',
+                    'can' => 'super_manager',
+                ],
                 'members' => [
                     'text' => 'admin.nav.settings.members.text',
-                    'icon' => 'fas fa-fw fa-users',
+                    'icon' => 'fas fa-fw fa-users-gear',
                     'can' => 'viewer',
                     'children' => [
                         'index' => [
@@ -117,7 +129,7 @@ return [
                 ],
                 'plugins' => [
                     'text' => 'admin.nav.settings.plugins.text',
-                    'icon' => 'fas fa-fw fa-users',
+                    'icon' => 'fas fa-fw fa-toolbox',
                     'can' => 'manager',
                     'children' => [
                         'index' => [
@@ -134,21 +146,8 @@ return [
                         ],
                     ]
                 ],
-                'security' => [
-                    'text' => 'admin.nav.settings.security',
-                    'route' => 'admin.settings.security.index',
-                    'icon' => 'fas fa-fw fa-users',
-                    'can' => 'super_manager',
-                ],
-                'systems' => [
-                    'text' => 'admin.nav.settings.systems',
-                    'route' => 'admin.settings.systems',
-                    'icon' => 'fas fa-fw fa-users',
-                    'can' => 'super_manager',
-                ],
             ],
         ]
-
     ],
 
     /*

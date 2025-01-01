@@ -22,6 +22,7 @@
 
 namespace App\Http\Controllers\Admin\Auth;
 
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
@@ -29,14 +30,21 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
-class AdminAuthenticatedSessionController extends Controller
+class AdminAuthenticatedSessionController extends AdminController
 {
+
+    //初期設定を行う
+    public function __construct()
+    {
+        parent::__construct();
+    }
     /**
      * Display the login view.
      */
     public function create(): View
     {
-        return view('admin.auth.login');
+
+        return view('admin.auth.login', $this->viewParams);
     }
 
     /**

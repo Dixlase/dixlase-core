@@ -22,8 +22,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Admin\AdminController;
 
 class AdminDashboardController extends AdminController
 {

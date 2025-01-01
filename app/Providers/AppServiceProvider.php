@@ -28,13 +28,11 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use App\Models\SettingSystem;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use App\Models\SettingSecurity;
 use App\Traits\ThemeLoader;
 use App\Traits\PluginLoader;
-
-
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -47,7 +45,25 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // custom/app ディレクトリのファイルが存在する場合、それを優先してバインド
+        $customPath = base_path('custom/app');
+        $defaultPath = app_path();
+
+        if (File::exists($customPath)) {
+            $customFiles = File::allFiles($customPath);
+
+            foreach ($customFiles as $file) {
+                // クラス名を取得
+                $relativePath = Str::replaceFirst($customPath . '/', '', $file->getPathname());
+                $className = Str::replaceLast('.php', '', $relativePath);
+                $className = str_replace('/', '\\', $className);
+
+                // コンテナにクラスをバインド
+                if (class_exists("Custom\\$className")) {
+                    app()->bind("App\\$className", "Custom\\$className");
+                }
+            }
+        }
     }
 
     /**
@@ -70,25 +86,6 @@ class AppServiceProvider extends ServiceProvider
         $language = SettingSystem::where('name', 'language')->value('value');
         $lang = $language ?? config('admin.lang', 'ja');
         app()->setLocale($lang);
-
-        // 有効なプラグインをデータベースから取得
-        $this->loadActivePlugins();
-
-        /*
-        $enabledPlugins = DB::table('plugins')->where('status', 'enabled')->get();
-
-        // プラグインのServiceProviderを登録
-        foreach ($enabledPlugins as $plugin) {
-            $pluginPath = base_path('plugins/' . $plugin->name . '/src');
-            if (File::exists($pluginPath)) {
-                // プラグインのServiceProviderをロード
-                $provider = $plugin->namespace . '\\' . $plugin->name . 'ServiceProvider';
-                if (class_exists($provider)) {
-                    $this->app->register($provider);
-                }
-            }
-        }
-        */
 
         // テーマの設定を読み込む
         $adminTheme = config('app.admin_theme', 'admin');
@@ -135,5 +132,10 @@ class AppServiceProvider extends ServiceProvider
             database_path('migrations'),                // デフォルトマイグレーション
             base_path('custom/database/migrations'),    // カスタムマイグレーション
         ]);
+
+        $this->app->booted(function () {
+            // プラグインのロード
+            $this->loadActivePlugins();
+        });
     }
 }

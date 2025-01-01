@@ -34,7 +34,7 @@ use ZipArchive;
 
 
 
-class AdminSettingsPluginController extends AdminController
+class AdminPluginsSettingsController extends AdminController
 {
     public function index()
     {

@@ -29,7 +29,7 @@ use App\Models\SettingSystem;
 use App\Http\Requests\Admin\Settings\AdminSettingsSystemRequest;
 use Illuminate\Support\Facades\Gate;
 
-class AdminSettingsSystemsController extends AdminController
+class AdminBaseSettingsController extends AdminController
 {
 
     //初期設定を行う
@@ -69,7 +69,7 @@ class AdminSettingsSystemsController extends AdminController
         $this->viewParams['heading'] = 'admin.features.settings.systems.heading';
 
         return view(
-            'admin::settings.systems.index',
+            'admin::settings.base.index',
             $this->viewParams
         );
     }

@@ -23,6 +23,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'arrow_class' => 'w-4 h-4 ml-auto transform'
 ])
 
+
+{{--$route_name--}}
 <div class="flex flex-col w-64 h-full">
     <nav class="flex-1 px-4 py-4 space-y-1">
         @foreach (config('admin.nav') as $key => $item)
@@ -31,10 +33,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 $is_open = preg_match('/' . preg_quote($key, '/') . '/', $route_name);
             @endphp
 
-
-
             <div x-data="{ {{ $open_key }} : {{ $is_open ? 'true' : 'false' }} }">
-
                     @if (isset($item['route']) && is_string($item['route']))
                         @can($item['can'])
                             <a href="{{ route($item['route']) }}"

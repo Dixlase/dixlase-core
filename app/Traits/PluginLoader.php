@@ -24,6 +24,7 @@ namespace App\Traits;
 
 use App\Models\Plugin;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Route;
 
 trait PluginLoader
 {
@@ -33,21 +34,122 @@ trait PluginLoader
     public function loadActivePlugins()
     {
         $plugins = Plugin::where('status', 1)->get();
-
         foreach ($plugins as $plugin) {
-            $pluginPath = base_path('plugins/' . $plugin->name . '/app');
-            if (File::exists($pluginPath)) {
-                // プラグインのServiceProviderをロード
-                $provider = $plugin->namespace . '\\App\\Providers\\' . $plugin->name . 'ServiceProvider';
-                if (class_exists($provider)) {
-                    $this->app->register($provider);
-                    logger()->info("Plugin ServiceProvider loaded: {$provider}");
-                } else {
-                    logger()->error("Plugin ServiceProvider class not found: {$provider}");
-                }
-            } else {
-                logger()->warning("Plugin directory not found: {$pluginPath}");
+            $providerClass = $this->resolvePluginServiceProvider($plugin->name);
+            if ($providerClass) {
+                $this->app->register($providerClass);
             }
+        }
+    }
+
+
+    /**
+     * プラグインのサービスプロバイダを解決する
+     */
+    protected function resolvePluginServiceProvider(string $pluginName): ?string
+    {
+        $defaultProvider = "Plugins\\{$pluginName}\\App\\Providers\\{$pluginName}ServiceProvider";
+        $customProvider = "Custom\\Plugins\\{$pluginName}\\App\\Providers\\{$pluginName}ServiceProvider";
+
+        if (class_exists($customProvider)) {
+            return $customProvider;
+        } elseif (class_exists($defaultProvider)) {
+            return $defaultProvider;
+        }
+
+        return null;
+    }
+
+    /**
+     * プラグインのコンフィグをロードしてマージ
+     */
+    public function loadPluginConfigs($defaultConfigDir, $customConfigDir, $namespace)
+    {
+        $mergedConfigs = [];
+
+        // デフォルトのコンフィグをロード
+        if (is_dir($defaultConfigDir)) {
+            foreach (glob($defaultConfigDir . '/*.php') as $file) {
+                $configKey = basename($file, '.php');
+                $mergedConfigs[$configKey] = require $file;
+            }
+        }
+
+        // カスタムのコンフィグを優先してマージ
+        if (is_dir($customConfigDir)) {
+            foreach (glob($customConfigDir . '/*.php') as $file) {
+                $configKey = basename($file, '.php');
+                $customConfig = require $file;
+
+                // デフォルトのコンフィグとマージ
+                if (isset($mergedConfigs[$configKey])) {
+                    $mergedConfigs[$configKey] = array_merge($mergedConfigs[$configKey], $customConfig);
+                } else {
+                    $mergedConfigs[$configKey] = $customConfig;
+                }
+            }
+        }
+
+        // Laravelのconfigに登録
+        foreach ($mergedConfigs as $key => $value) {
+            config(["{$namespace}.{$key}" => $value]);
+        }
+
+        return $mergedConfigs;
+    }
+
+
+    /**
+     * プラグインのすべてのルートをロードする
+     */
+    public function loadPluginRoutes($customPath, $defaultPath)
+    {
+
+        if (is_dir(base_path($customPath))) {
+            foreach (glob(base_path($customPath) . '/*.php') as $routeFile) {
+                //$this->loadRoutesFrom($routeFile);
+                Route::middleware('web')->group($routeFile);
+            }
+        } elseif (is_dir(base_path($defaultPath))) {
+            foreach (glob(base_path($defaultPath) . '/*.php') as $routeFile) {
+                //$this->loadRoutesFrom($routeFile);
+                Route::middleware('web')->group($routeFile);
+            }
+        }
+    }
+    /**
+     * プラグインのすべてのビューをロードする
+     */
+    public function loadPluginViews($customPath, $defaultPath, $namespace)
+    {
+        if (is_dir(base_path($customPath))) {
+            $this->loadViewsFrom(base_path($customPath), $namespace);
+        } elseif (is_dir(base_path($defaultPath))) {
+            $this->loadViewsFrom(base_path($defaultPath), $namespace);
+        }
+    }
+
+    /**
+     * プラグインのすべてのマイグレーションをロードする
+     */
+    public function loadPluginMigrations($customPath, $defaultPath)
+    {
+        if (is_dir(base_path($customPath))) {
+            $this->loadMigrationsFrom(base_path($customPath));
+        } elseif (is_dir(base_path($defaultPath))) {
+            $this->loadMigrationsFrom(base_path($defaultPath));
+        }
+    }
+
+    /**
+     * プラグインのすべての言語ファイルをロードする
+     */
+    public function loadPluginTranslations($customPath, $defaultPath, $namespace)
+    {
+        if (is_dir(base_path($customPath))) {
+            $this->loadTranslationsFrom(base_path($customPath), $namespace);
+        } elseif (is_dir(base_path($defaultPath))) {
+            $this->loadTranslationsFrom(base_path($defaultPath), $namespace);
         }
     }
 }

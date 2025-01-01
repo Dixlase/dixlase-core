@@ -27,7 +27,7 @@ use App\Models\Member;
 use App\Http\Requests\Admin\Settings\Member\AdminSettingsMemberStoreRequest;
 use Illuminate\Http\Request;
 
-class AdminSettingsMembersController extends AdminController
+class AdminMembersSettingsController extends AdminController
 {
 
     //初期設定を行う

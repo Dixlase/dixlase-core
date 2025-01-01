@@ -22,12 +22,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Auth;
 use App\Traits\RoleCheck;
 
 class AdminController extends Controller
@@ -39,6 +38,7 @@ class AdminController extends Controller
     protected $viewParams = [];
     protected $routeName = '';
     protected $settings = [];
+    protected $member = null;
 
     //トレイトを使用する
     use AuthorizesRequests;
@@ -47,33 +47,39 @@ class AdminController extends Controller
     //初期設定を行う
     public function __construct()
     {
+
+        $this->initialize();
+    }
+
+    /**
+     * 初期化処理
+     */
+    public function initialize()
+    {
+        // ログイン中の管理者情報を取得
+        $this->member = Auth::guard('member')->user();
+
         // データベースからサイト名を取得。取得できなかった場合は.envからデフォルト値を使用
         $this->siteName = DB::table('settings_system')->where('name', 'site_name')->value('value')
             ?? env('APP_NAME', 'EventManagementSystem');
 
-        //ログイン中の管理者情報を取得
-        $admin = auth('member')->user();
+        // データベースからサイト名を取得
+        $this->siteName = DB::table('settings_system')->where('name', 'site_name')->value('value')
+            ?? env('APP_NAME', 'EventManagementSystem');
 
-        //ログイン中の管理者の外観モードをDBから取得
-        $this->appearance = $admin->appearance ?? 0;
+        // 外観モードを取得
+        $this->appearance = $this->member->appearance ?? 0;
 
-        // データベースからシステム設定を取得
+        // システム設定を取得
         $this->settings = DB::table('settings_system')->get()->keyBy('name')->toArray();
 
-        //ビューパラメータにサイト名を設定する
-        $this->viewParams['site_name'] = $this->siteName;
-
-        //ビューパラメータにシステム設定を設定する
-        $this->viewParams['settings'] = $this->settings;
-
-        //ビューパラメータにテーマを設定する
-        $this->viewParams['appearance'] = $this->appearance;
-
-        //セッションにテーマを保存する
-        session(['appearance' => $this->appearance]);
-
-        // ルート名を取得
-        $this->routeName = Route::currentRouteName();
-        $this->viewParams['route_name'] = $this->routeName;
+        // ビューパラメータに必要な値を設定
+        $this->viewParams = [
+            'site_name' => $this->siteName,
+            'settings' => $this->settings,
+            'appearance' => $this->appearance,
+            'member' => $this->member,
+            'route_name' => Route::currentRouteName(),
+        ];
     }
 }
