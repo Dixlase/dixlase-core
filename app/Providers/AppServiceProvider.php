@@ -33,16 +33,19 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Route;
 use App\Models\SettingSecurity;
-use App\Traits\ThemeLoader;
-use App\Traits\PluginLoader;
+use App\Traits\ThemeLoaderTrait;
+use App\Traits\PluginLoaderTrait;
+use App\Traits\CustomFilesLoaderTrait;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Filesystem\Filesystem;
 
 class AppServiceProvider extends ServiceProvider
 {
 
-    use ThemeLoader;
-    use PluginLoader;
+    use ThemeLoaderTrait;
+    use PluginLoaderTrait;
+    use CustomFilesLoaderTrait;
+
 
     /**
      * Register any application services.
@@ -50,6 +53,11 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
 
+        // カスタムディレクトリ全体をスキャン。ファイルが存在する場合、それを優先してバインド
+        $customFilesPath = base_path(config('app.custom_files_dir', 'custom'));
+        Config::set('custom_files_dir', $customFilesPath);
+
+        /*
         // custom/app ディレクトリのファイルが存在する場合、それを優先してバインド
         $customPath = base_path('custom/app');
         $defaultPath = app_path();
@@ -69,6 +77,7 @@ class AppServiceProvider extends ServiceProvider
                 }
             }
         }
+        */
     }
 
     /**
@@ -95,11 +104,64 @@ class AppServiceProvider extends ServiceProvider
         app()->setLocale($lang);
 
 
+        // テーマの設定を読み込む
+        $adminTheme = config('themes.admin_theme', 'admin'); // 管理画面テーマ
+        $themeDirectory = config('themes.theme_directory', 'themes'); // テーマディレクトリ
+        $activeThemeDirectory = config('themes.theme', 'default'); // アクティブなテーマ
+        $defaultTheme = config('themes.default_theme', 'default'); // デフォルトテーマ
+
+        // カスタムファイルのディレクトリを追加
+        $customFilesDir = base_path(config('custom.custom_files_dir', 'custom'));
 
 
-        $this->app->booted(function () {
+        // 現在有効化されているテーマを取得
+        $activeThemeId = $this->getActiveTheme();
+
+        // 現在使用中のテーマのディレクトリ名を取得
+        $activeTheme = DB::table('themes')->where('id', $activeThemeId)->first();
+        $activeThemeDirectory = $activeTheme->directory ?? 'default';
+
+        // 管理画面のテンプレートの読み込みがviews_customのほうを優先されるように設定
+        View::addNamespace('admin', [
+            base_path("{$customFilesDir}/resources/views/{$adminTheme}"),
+            resource_path("views/{$adminTheme}"),
+        ]);
+
+        // カスタムテーマの読み込みがcustom/resouces/viewsのほうを優先されるように設定
+        View::addNamespace('themes', [
+            base_path("{$customFilesDir}/resources/views/{$themeDirectory}/{$activeThemeDirectory}"),
+            resource_path("views/{$themeDirectory}/{$activeThemeDirectory}"),
+            resource_path("views/{$themeDirectory}/{$defaultTheme}"),
+        ]);
+
+
+        // 共用コンポーネントの読み込みがviews_customのほうを優先されるように設定
+        View::addNamespace('components', [
+            base_path("{$customFilesDir}/resources/views/components"), // カスタムコンポーネントを優先
+            resource_path('views/components'),       // デフォルトコンポーネント
+        ]);
+
+
+        // カスタムファイルのディレクトリを追加
+        $customFilesPath = base_path(config('custom.custom_files_dir', 'custom'));
+        $fileTypes = config('custom.custom_file_types');
+
+        // プラグインロード後にカスタムファイルをロード
+        $this->app->booted(function () use ($customFilesPath, $fileTypes) {
+
+            // カスタムファイルのロード
+            foreach ($fileTypes as $type => $typeConfig) {
+                $this->loadCustomFilesForType($customFilesPath, $typeConfig);
+            }
+
             // プラグインのロード
             $this->loadActivePlugins();
+        });
+
+
+        /*
+        $this->app->booted(function () {
+            $customFilesPath = Config::get('custom_files_path');
 
             // カスタムコンフィグの読み込み
             $customConfigPath = base_path('custom/config');
@@ -174,23 +236,14 @@ class AppServiceProvider extends ServiceProvider
                     }
                 }
             }
-
-
             // カスタムビューの読み込み
             View::addLocation(base_path('custom/resources/views'));
 
-            // テーマの設定を読み込む
-            $adminTheme = config('app.admin_theme', 'admin');
-            $themeDirectory = config('app.theme_directory', 'themes');
-            $activeThemeDirectory = config('app.theme', 'default');
-            $defaultTheme = config('app.default_theme', 'default');
 
-            // 現在有効化されているテーマを取得
-            $activeThemeId = $this->getActiveTheme();
 
-            // 現在使用中のテーマのディレクトリ名を取得
-            $activeTheme = DB::table('themes')->where('id', $activeThemeId)->first();
-            $activeThemeDirectory = $activeTheme->directory ?? 'default';
+
+
+
 
             // 管理画面のテンプレートの読み込みがviews_customのほうを優先されるように設定
             View::addNamespace('admin', [
@@ -205,11 +258,13 @@ class AppServiceProvider extends ServiceProvider
                 resource_path("views/{$themeDirectory}/{$defaultTheme}"),
             ]);
 
+
             // 共用コンポーネントの読み込みがviews_customのほうを優先されるように設定
             View::addNamespace('components', [
                 base_path('custom/resources/views/components'), // カスタムコンポーネントを優先
                 resource_path('views/components'),       // デフォルトコンポーネント
             ]);
+
 
 
             // エラーページ用の探索順序を設定
@@ -224,19 +279,8 @@ class AppServiceProvider extends ServiceProvider
                 database_path('migrations'),                // デフォルトマイグレーション
                 base_path('custom/database/migrations'),    // カスタムマイグレーション
             ]);
-        });
-    }
-}
 
-// カスタムコンフィグの配列を再帰的にマージする関数
-function array_merge_recursive_custom(array $array1, array $array2): array
-{
-    foreach ($array2 as $key => $value) {
-        if (is_array($value) && isset($array1[$key]) && is_array($array1[$key])) {
-            $array1[$key] = array_merge_recursive_custom($array1[$key], $value);
-        } else {
-            $array1[$key] = $value;
-        }
+        });
+        */
     }
-    return $array1;
 }

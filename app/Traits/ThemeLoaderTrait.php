@@ -25,7 +25,7 @@ namespace App\Traits;
 use Illuminate\Support\Facades\DB;
 
 
-trait ThemeLoader
+trait ThemeLoaderTrait
 {
     /**
      * 有効化されているテーマを取得する

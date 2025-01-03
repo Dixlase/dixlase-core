@@ -24,7 +24,7 @@ namespace App\Traits;
 
 use Illuminate\Support\Facades\Auth;
 
-trait RoleCheck
+trait RoleCheckTrait
 {
 
     protected string $defaultRole = 'viewer';
