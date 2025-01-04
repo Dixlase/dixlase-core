@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
-use App\Traits\RoleCheck;
+use App\Traits\RoleCheckTrait;
 
 class AdminController extends Controller
 {
@@ -42,7 +42,7 @@ class AdminController extends Controller
 
     //トレイトを使用する
     use AuthorizesRequests;
-    use RoleCheck;
+    use RoleCheckTrait;
 
     //初期設定を行う
     public function __construct()
