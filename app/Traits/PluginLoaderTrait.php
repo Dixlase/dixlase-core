@@ -50,22 +50,19 @@ trait PluginLoaderTrait
             if ($providerClass) {
                 $this->app->register($providerClass);
             }
-
-            // プラグインリソースのロード
-            $this->loadPluginFiles($pluginName, $corePath, $customPath);
         }
     }
 
     /**
      * プラグインのリソースをロードする
      */
-    protected function loadPluginFiles($pluginName, $corePath, $customPath)
+    protected function loadPluginFiles($pluginName, $pluginPath, $customPluginPath)
     {
         $fileTypes = config('custom.custom_file_types', []);
 
         foreach ($fileTypes as $type => $settings) {
-            $coreSubPath = "{$corePath}/{$settings['path']}";
-            $customSubPath = "{$customPath}/{$settings['path']}";
+            $coreSubPath = "{$pluginPath}/{$settings['path']}";
+            $customSubPath = "{$customPluginPath}/{$settings['path']}";
 
             $this->loadFilesByType($type, $coreSubPath, $customSubPath, $settings['namespace']);
         }
@@ -104,21 +101,38 @@ trait PluginLoaderTrait
     {
         $defaultMergeMode = config('custom.default_merge_mode', 'merge');
 
-        // デフォルトのコンフィグをロード
-        $coreConfigs = $this->loadConfigFiles($corePath);
+        // プラグインのコンフィグをロード
+        $pluginConfigs = $this->loadConfigFiles($corePath);
 
-        // カスタムのコンフィグをロード
-        $customConfigs = $this->loadConfigFiles($customPath);
+        // カスタムのプラグインのコンフィグをロード
+        $customPluginConfigs = $this->loadConfigFiles($customPath);
 
-        foreach ($customConfigs as $key => $customConfig) {
-            $mergeMode = $customConfig['_merge_mode'] ?? $defaultMergeMode;
-            unset($customConfig['_merge_mode']);
 
-            if ($mergeMode === 'replace') {
+        // デフォルトとカスタムを結合または置換し、登録
+        foreach ($pluginConfigs as $key => $coreConfig) {
+            if (isset($customPluginConfigs[$key])) {
+                $customConfig = $customPluginConfigs[$key];
+                $mergeMode = $customConfig['_merge_mode'] ?? $defaultMergeMode;
+                unset($customConfig['_merge_mode']);
+
+                if ($mergeMode === 'replace') {
+                    // カスタムコンフィグで置換
+                    config(["{$namespace}.{$key}" => $customConfig]);
+                } else { // 'merge'
+                    // デフォルトとカスタムをマージ
+                    config(["{$namespace}.{$key}" => array_merge_recursive($coreConfig, $customConfig)]);
+                }
+            } else {
+                // カスタムが存在しない場合はそのまま登録
+                config(["{$namespace}.{$key}" => $coreConfig]);
+            }
+        }
+
+        // カスタムディレクトリにのみ存在する新しいコンフィグを登録
+        foreach ($customPluginConfigs as $key => $customConfig) {
+            if (!isset($coreConfigs[$key])) {
+                unset($customConfig['_merge_mode']);
                 config(["{$namespace}.{$key}" => $customConfig]);
-            } else { // 'merge'
-                $existingConfig = config("{$namespace}.{$key}", []);
-                config(["{$namespace}.{$key}" => array_merge_recursive($existingConfig, $customConfig)]);
             }
         }
     }

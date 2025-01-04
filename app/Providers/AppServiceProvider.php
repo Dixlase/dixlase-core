@@ -149,13 +149,13 @@ class AppServiceProvider extends ServiceProvider
         // プラグインロード後にカスタムファイルをロード
         $this->app->booted(function () use ($customFilesPath, $fileTypes) {
 
+            // プラグインのロード
+            $this->loadActivePlugins();
+
             // カスタムファイルのロード
             foreach ($fileTypes as $type => $typeConfig) {
                 $this->loadCustomFilesForType($customFilesPath, $typeConfig);
             }
-
-            // プラグインのロード
-            $this->loadActivePlugins();
         });
 
 
