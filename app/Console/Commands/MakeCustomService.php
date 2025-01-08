@@ -20,24 +20,31 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace Database\Seeders;
+namespace App\Console\Commands;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use App\Models\Theme;
+use Illuminate\Console\Command;
 
-class ThemesTableSeeder extends Seeder
+class MakeCustomService extends Command
 {
     /**
-     * Run the database seeds.
+     * The name and signature of the console command.
+     *
+     * @var string
      */
-    public function run(): void
+    protected $signature = 'app:make-custom-service';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Command description';
+
+    /**
+     * Execute the console command.
+     */
+    public function handle()
     {
-        Theme::create([
-            'name' => 'DefaultTheme',
-            'slug' => 'default-theme',
-            'version' => '1.0.0'
-        ]);
+        //
     }
 }

@@ -22,8 +22,14 @@
 
 use App\Http\Controllers\Register\RegisterRegisteredUserController;
 use App\Http\Controllers\Front\FrontWelcomeController;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 use App\Models\Page;
+
+
+
+
 
 
 Route::middleware(['front.ip'])->group(
@@ -44,9 +50,30 @@ Route::middleware(['front.ip'])->group(
             return view('default/pages', compact('page'));
         });
 
+        //テーマのアセットファイル
+        Route::get('assets/{type}/{file}', function ($type, $file) {
+            $basePath = match ($type) {
+                'theme' => base_path('themes/' . getActiveThemeDirectory() . '/assets'), // アクティブテーマのディレクトリ名を取得
+                'admin' => base_path('resources/admin/assets'),
+                'plugin' => base_path("plugins/{$file}/assets"), // `file` をプラグイン名として扱う
+                default => abort(404),
+            };
+
+            $filePath = "{$basePath}/{$file}";
+            if (!File::exists($filePath)) {
+                abort(404);
+            }
+
+            return response()->file($filePath);
+        })->where('file', '.*');
+
+
         //マイページ用のルーティング
         require __DIR__ . '/mypage.php';
     }
+
+
+
 );
 
 //管理者用のルーティング

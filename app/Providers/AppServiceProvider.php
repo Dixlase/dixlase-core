@@ -87,6 +87,17 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
 
+        try {
+            $this->loadActivePlugins();
+        } catch (\Exception $e) {
+            // エラーを無視（開発時のみ）
+            if (app()->environment('local')) {
+                report($e);
+            } else {
+                throw $e;
+            }
+        }
+
 
 
         //セキュリティ設定でSSLを矯正しているかどうかを判定
@@ -107,19 +118,11 @@ class AppServiceProvider extends ServiceProvider
         // テーマの設定を読み込む
         $adminTheme = config('themes.admin_theme', 'admin'); // 管理画面テーマ
         $themeDirectory = config('themes.theme_directory', 'themes'); // テーマディレクトリ
-        $activeThemeDirectory = config('themes.theme', 'default'); // アクティブなテーマ
-        $defaultTheme = config('themes.default_theme', 'default'); // デフォルトテーマ
+        $activeThemeDirectory = config('themes.active_theme', 'default-theme'); // アクティブなテーマ
+        $defaultTheme = config('themes.default_theme', 'default-theme'); // デフォルトテーマ
 
         // カスタムファイルのディレクトリを追加
         $customFilesDir = base_path(config('custom.custom_files_dir', 'custom'));
-
-
-        // 現在有効化されているテーマを取得
-        $activeThemeId = $this->getActiveTheme();
-
-        // 現在使用中のテーマのディレクトリ名を取得
-        $activeTheme = DB::table('themes')->where('id', $activeThemeId)->first();
-        $activeThemeDirectory = $activeTheme->directory ?? 'default';
 
         // 管理画面のテンプレートの読み込みがviews_customのほうを優先されるように設定
         View::addNamespace('admin', [
@@ -127,20 +130,47 @@ class AppServiceProvider extends ServiceProvider
             resource_path("views/{$adminTheme}"),
         ]);
 
-        // カスタムテーマの読み込みがcustom/resouces/viewsのほうを優先されるように設定
-        View::addNamespace('themes', [
-            base_path("{$customFilesDir}/resources/views/{$themeDirectory}/{$activeThemeDirectory}"),
-            resource_path("views/{$themeDirectory}/{$activeThemeDirectory}"),
-            resource_path("views/{$themeDirectory}/{$defaultTheme}"),
-        ]);
-
-
         // 共用コンポーネントの読み込みがviews_customのほうを優先されるように設定
         View::addNamespace('components', [
             base_path("{$customFilesDir}/resources/views/components"), // カスタムコンポーネントを優先
             resource_path('views/components'),       // デフォルトコンポーネント
         ]);
 
+        // 共通レイアウトの名前空間
+        View::addNamespace('layouts', [
+            base_path("{$customFilesDir}/resources/views/layouts"), // カスタムレイアウトを優先
+            resource_path('views/layouts'),       // デフォルトレイアウト
+        ]);
+
+
+
+        // 現在有効化されているテーマを取得
+        $activeThemeId = $this->getActiveTheme();
+
+        // 現在使用中のテーマのディレクトリ名を取得
+        $activeTheme = DB::table('themes')->where('id', $activeThemeId)->first();
+        $activeThemeDirectory = $activeTheme->directory ?? 'default-theme';
+
+
+        // テーマファイルの読み込み、カスタムテーマの読み込みがcustom/resources/viewsのほうを優先されるように設定
+        View::addNamespace('themes', [
+            base_path("{$customFilesDir}/{$themeDirectory}/{$activeThemeDirectory}/resources/views"),
+            base_path("{$themeDirectory}/{$activeThemeDirectory}/resources/views"),
+            base_path("{$themeDirectory}/{$defaultTheme}/resources/views"),
+        ]);
+
+        // 現在のアクティブテーマディレクトリ名とアセット関数をビューに共有
+        /*
+        View::composer('*', function ($view) {
+            $themeDirectory = $this->getActiveThemeDirectory();
+
+            // `themeAsset` を利用できるように共有
+            $view->with('themeDirectory', $themeDirectory);
+            $view->with('themeAsset', function ($path) {
+                return $this->themeAsset($path);
+            });
+        });
+        */
 
         // カスタムファイルのディレクトリを追加
         $customFilesPath = base_path(config('custom.custom_files_dir', 'custom'));

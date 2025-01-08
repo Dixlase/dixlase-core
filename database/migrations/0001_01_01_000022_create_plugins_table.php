@@ -33,10 +33,11 @@ return new class extends Migration
     {
         Schema::create('plugins', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('namespace');
-            $table->string('version');
-            $table->tinyInteger('status')->default(0)->comment('0: disabled, 1: enabled');
+            $table->string('name'); // 人間が認識する名前
+            $table->string('directory'); // プラグインディレクトリ名
+            $table->string('namespace'); // プラグインの名前空間
+            $table->string('version'); // プラグインのバージョン
+            $table->tinyInteger('status')->default(0)->comment('0: disabled, 1: enabled'); // プラグインの状態
             $table->timestamps();
         });
     }

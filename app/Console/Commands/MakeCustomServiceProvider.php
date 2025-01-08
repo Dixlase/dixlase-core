@@ -20,24 +20,28 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace Database\Seeders;
+namespace App\Console\Commands;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use App\Models\Theme;
+use Illuminate\Console\GeneratorCommand;
 
-class ThemesTableSeeder extends Seeder
+class MakeCustomServiceProvider extends GeneratorCommand
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
+    protected $signature = 'make:custom-service-provider {name}';
+    protected $description = 'Create a new service provider in the custom directory';
+
+    protected function getStub()
     {
-        Theme::create([
-            'name' => 'DefaultTheme',
-            'slug' => 'default-theme',
-            'version' => '1.0.0'
-        ]);
+        return base_path('/stubs/service-provider.stub');  // サービスプロバイダースタブ（オプション）
+    }
+
+    protected function getDefaultNamespace($rootNamespace)
+    {
+        return $rootNamespace . '\Custom\Providers';  // custom/providers に作成
+    }
+
+    protected function buildClass($name)
+    {
+        $name = str_replace('Custom\\Providers', '', $name);
+        return parent::buildClass($name);
     }
 }

@@ -23,6 +23,7 @@
 namespace App\Traits;
 
 use Illuminate\Support\Facades\DB;
+use App\Models\Theme;
 
 
 trait ThemeLoaderTrait
@@ -36,5 +37,30 @@ trait ThemeLoaderTrait
     {
         $activeTheme = DB::table('settings_theme')->first();
         return $activeTheme ? $activeTheme->active_theme_id : 1; // デフォルトIDを1とする
+    }
+
+    /**
+     * 現在アクティブなテーマのディレクトリ名を取得
+     *
+     * @return string
+     */
+    public function getActiveThemeDirectory(): string
+    {
+        $activeThemeId = DB::table('settings_theme')->value('active_theme_id');
+        $theme = Theme::find($activeThemeId);
+
+        return $theme ? $theme->directory : 'default-theme';
+    }
+
+    /**
+     * テーマアセットの完全URLを生成
+     *
+     * @param string $path
+     * @return string
+     */
+    public function themeAsset(string $path): string
+    {
+        $themeDirectory = $this->getActiveThemeDirectory();
+        return asset("themes/{$themeDirectory}/{$path}");
     }
 }
