@@ -33,10 +33,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- Scripts -->
         @if (app()->environment('local'))
             {{-- 開発環境ではリソースを直接読み込み --}}
-            @vite(['resources/js/app.js', 'resources/scss/app.scss'])
+            @vite([
+                'resources/src/common/js/app.js',
+                'resources/src/common/scss/app.scss'
+            ])
         @else
             {{-- 本番環境ではmanifest.jsonを読み込み --}}
-            @vite(['resources/js/app.js', 'resources/scss/app.scss'], 'build')
+            @vite(['resources/src/common/js/app.js', 'resources/src/common/scss/app.scss'], 'build')
         @endif
     </head>
     <body class="font-sans antialiased">

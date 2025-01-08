@@ -1,5 +1,3 @@
-<?php
-
 /**
  * This file is part of Your Software Name.
  *
@@ -20,24 +18,19 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use App\Models\Theme;
+ // Your custom styles here
+ @use 'admin';
+ @use 'tailwind-custom';
+ @use "@fortawesome/fontawesome-free/css/all.min.css";
 
-class ThemesTableSeeder extends Seeder
-{
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
-    {
-        Theme::create([
-            'name' => 'DefaultTheme',
-            'slug' => 'default-theme',
-            'version' => '1.0.0'
-        ]);
-    }
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+
+
+
+

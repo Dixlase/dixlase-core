@@ -225,6 +225,14 @@ class AdminContentsThemesController extends AdminController
         // アクティブテーマを更新
         DB::table('settings_theme')->update(['active_theme_id' => $theme->id, 'updated_at' => now()]);
 
+        try {
+            // シンボリックリンクを更新
+            update_theme_symlink($theme->directory);
+        } catch (\Exception $e) {
+            return back()->with('error', "シンボリックリンクの更新に失敗しました: {$e->getMessage()}");
+        }
+
+
         return redirect()->route('admin.contents.themes.index')->with('success', "テーマ '{$theme->name}' が有効化されました。");
     }
 }

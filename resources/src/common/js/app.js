@@ -1,5 +1,3 @@
-<?php
-
 /**
  * This file is part of Your Software Name.
  *
@@ -20,24 +18,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace Database\Seeders;
+import '../scss/app.scss';
+import './bootstrap';
+import Alpine from 'alpinejs';
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use App\Models\Theme;
+window.Alpine = Alpine;
 
-class ThemesTableSeeder extends Seeder
-{
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
-    {
-        Theme::create([
-            'name' => 'DefaultTheme',
-            'slug' => 'default-theme',
-            'version' => '1.0.0'
-        ]);
-    }
-}
+Alpine.start();
+

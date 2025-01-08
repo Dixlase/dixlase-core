@@ -33,21 +33,16 @@ trait PluginLoaderTrait
      */
     public function loadActivePlugins()
     {
-        $activePlugins = Plugin::where('status', 1)->get();
 
-        $pluginsDir = base_path(config('plugins.plugins_directory', 'plugins'));
-        $customFilesDir = base_path(config('custom.custom_files_dir', 'custom'));
+        $activePlugins = Plugin::where('status', 1)->get();
 
         foreach ($activePlugins as $plugin) {
             $pluginName = $plugin->name;
 
-            // プラグインのコアとカスタムパス
-            $corePath = base_path("{$pluginsDir}/{$pluginName}");
-            $customPath = base_path("{$customFilesDir}/{$pluginsDir}/{$pluginName}");
-
             // サービスプロバイダの登録
             $providerClass = $this->resolvePluginServiceProvider($pluginName);
             if ($providerClass) {
+
                 $this->app->register($providerClass);
             }
         }
@@ -106,7 +101,6 @@ trait PluginLoaderTrait
 
         // カスタムのプラグインのコンフィグをロード
         $customPluginConfigs = $this->loadConfigFiles($customPath);
-
 
         // デフォルトとカスタムを結合または置換し、登録
         foreach ($pluginConfigs as $key => $coreConfig) {

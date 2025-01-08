@@ -131,9 +131,18 @@ class AdminPluginsSettingsController extends AdminController
         $this->checkPermission('super_manager');
 
         $plugin = Plugin::findOrFail($id);
-        $plugin->update(['status' => 1]);
 
-        return redirect()->route('admin.settings.plugins.index')->with('success', 'プラグインを有効化しました');
+        try {
+            // シンボリックリンクを作成
+            create_plugin_symlink($plugin->directory);
+
+            // プラグインを有効化
+            $plugin->update(['status' => 1]);
+
+            return redirect()->route('admin.settings.plugins.index')->with('success', 'プラグインを有効化しました');
+        } catch (\Exception $e) {
+            return back()->with('error', "プラグイン有効化中にエラーが発生しました: {$e->getMessage()}");
+        }
     }
 
     public function disable($id)
@@ -143,9 +152,17 @@ class AdminPluginsSettingsController extends AdminController
         $this->checkPermission('super_manager');
 
         $plugin = Plugin::findOrFail($id);
-        $plugin->update(['status' => 0]);
+        try {
+            // シンボリックリンクを削除
+            delete_plugin_symlink($plugin->directory);
 
-        return redirect()->route('admin.settings.plugins.index')->with('success', 'プラグインを無効化しました');
+            // プラグインを無効化
+            $plugin->update(['status' => 0]);
+
+            return redirect()->route('admin.settings.plugins.index')->with('success', 'プラグインを無効化しました');
+        } catch (\Exception $e) {
+            return back()->with('error', "プラグイン無効化中にエラーが発生しました: {$e->getMessage()}");
+        }
     }
 
     public function uninstall($id)

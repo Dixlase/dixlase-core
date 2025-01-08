@@ -24,11 +24,14 @@
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/",
             "Plugins\\": "plugins/",
-            "Custom\\": "custom/app/",
+            "Custom\\": "custom/",
             "Custom\\Plugins\\": "custom/plugins/",
             "Custom\\Database\\Factories\\": "custom/database/factories/",
             "Custom\\Database\\Seeders\\": "custom/database/seeders/"
-        }
+        },
+        "files": [
+            "app/Helpers/AssetHelper.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
