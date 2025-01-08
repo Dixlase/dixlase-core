@@ -132,9 +132,11 @@ class AdminPluginsSettingsController extends AdminController
 
         $plugin = Plugin::findOrFail($id);
 
+        // シンボリックリンクを作成
+        create_plugin_symlink($plugin->directory);
+
         try {
-            // シンボリックリンクを作成
-            create_plugin_symlink($plugin->directory);
+
 
             // プラグインを有効化
             $plugin->update(['status' => 1]);

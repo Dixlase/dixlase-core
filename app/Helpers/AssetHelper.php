@@ -45,7 +45,7 @@ if (!function_exists('update_theme_symlink')) {
      */
     function update_theme_symlink(string $themeDirectory)
     {
-        $target = base_path("themes/{$themeDirectory}/assets");
+        $target = base_path("themes/{$themeDirectory}/resources/assets");
         $link = public_path('assets/theme');
 
         // 古いシンボリックリンクを削除
@@ -59,7 +59,8 @@ if (!function_exists('update_theme_symlink')) {
             symlink($target, $link);
         } else {
             // assetsフォルダがない場合はシンボリックリンクを作成しない
-            throw new \Exception("Assets directory does not exist for theme: {$target}");
+            //$this->info("Assets directory does not exist for theme: {$target}");
+            //throw new \Exception("Assets directory does not exist for theme: {$target}");
         }
 
         symlink($target, $link);
@@ -75,7 +76,7 @@ if (!function_exists('create_plugin_symlink')) {
      */
     function create_plugin_symlink(string $pluginDirectory)
     {
-        $target = base_path("plugins/{$pluginDirectory}/assets");
+        $target = base_path("plugins/{$pluginDirectory}/resources/assets");
         $link = public_path("assets/plugins/{$pluginDirectory}");
 
         if (file_exists($target) && is_dir($target)) {
@@ -87,7 +88,8 @@ if (!function_exists('create_plugin_symlink')) {
             symlink($target, $link);
         } else {
             // assetsフォルダがない場合はシンボリックリンクを作成しない
-            throw new \Exception("Assets directory does not exist for plugin: {$target}");
+            //$this->info("Assets directory does not exist for plugin: {$target}");
+            //throw new \Exception("Assets directory does not exist for plugin: {$target}");
         }
     }
 }
