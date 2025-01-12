@@ -1,0 +1,10 @@
+<?php
+
+{{ license }}
+use Illuminate\Support\Facades\Route;
+
+// routes for: {{ fileName }}
+
+Route::get('/', function () {
+    return 'Hello from the {{ fileName }}!';
+});

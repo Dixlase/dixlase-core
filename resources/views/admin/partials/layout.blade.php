@@ -31,19 +31,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-        <!-- Scripts -->
-        @if (app()->environment('local'))
-            {{-- 開発環境ではリソースを直接読み込み --}}
-            @vite([
-                'resources/src/common/js/app.js',
-                'resources/src/common/scss/app.scss',
-                'resources/src/admin/js/app.js',
-                'resources/src/admin/scss/app.scss'
-            ])
-        @else
-            {{-- 本番環境ではmanifest.jsonを読み込み --}}
-            @vite(['resources/js/app.js', 'resources/scss/app.scss'], 'build')
-        @endif
+        <!-- アセットを読み込み -->
+        {!! load_active_assets() !!}
+
     </head>
     <body class="font-sans antialiased {{ config('admin.appearance_class.layout.body') }}">
         <div class="min-h-screen">

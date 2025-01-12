@@ -7,6 +7,11 @@
             <div class="p-6">
                 {{ __("You're logged in!") }}
             </div>
+
         </div>
+         {{__('custom.welcome')}};
+         {{__('admin.nav.custom.text')}};
+         {{ __('reservation-plugin::admin.nav.reservations.text')}};
+
     </div>
 @endsection
