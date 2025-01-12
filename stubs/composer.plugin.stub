@@ -1,0 +1,15 @@
+{
+    "name": "plugins/{{ pluginName }}",
+    "directory": "{{ pluginDirectory }}",
+    "description": "This is the {{ pluginName }} plugin.",
+    "author": "Your Name or Company",
+    "email": "your-email@example.com",
+    "web": "https://yourwebsite.com",
+    "version": "1.0.0",
+    "license": "{{ pluginLisence }}",
+    "autoload": {
+        "psr-4": {
+            "{{ namespace }}\\": "app/"
+        }
+    }
+}

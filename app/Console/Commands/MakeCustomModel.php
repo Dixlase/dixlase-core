@@ -36,12 +36,12 @@ class MakeCustomModel extends GeneratorCommand
 
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace . '\Custom\App';  // custom/app ディレクトリ内に作成
+        return $rootNamespace . '\Custom\App\Models';  // custom/app/Models ディレクトリ内に作成
     }
 
     protected function buildClass($name)
     {
-        $name = str_replace('Custom\\App', '', $name);
+        $name = str_replace('Custom\\App\\Models', '', $name);
         return parent::buildClass($name);
     }
 }

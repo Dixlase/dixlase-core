@@ -27,49 +27,62 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 use App\Services\FileGenerator;
 
-class MakeCustomController extends Command
+class MakePluginController extends Command
 {
     /**
      * Artisan コマンド名と引数/オプション定義
+     * 例: php artisan plugin:make:controller my-plugin MyController
      */
-    protected $signature = 'make:custom-controller
+    protected $signature = 'plugin:make:controller
+        {plugin : The plugin name}
         {name : The name of the controller}
         {--resource : Generate a resource controller class}
         {--api : Generate an API controller class}
         {--invokable : Generate a single method, invokable controller class}
-        {--model= : Generate a resource controller for the given model}';
+        {--model= : Generate a resource controller for the given model}
+    ';
 
     /**
-     * The console command description.
-     *
-     * @var string
+     * コマンドの簡単な説明
      */
-    protected $description = 'Create a new controller in the custom directory';
+    protected $description = 'Create a new controller class for the specified plugin.';
+
+    /**
+     * ファイル操作用のインスタンス
+     */
 
     protected FileGenerator $fileGenerator;
 
+    /**
+     * コンストラクタ（FilesystemのDIなどに利用）
+     */
     public function __construct(FileGenerator $fileGenerator)
     {
         parent::__construct();
         $this->fileGenerator = $fileGenerator;
     }
 
+    /**
+     * Execute the console command.
+     */
     public function handle()
     {
-        $fileName = $this->argument('name');
+        // 引数を取得
+        $pluginName      = $this->argument('plugin');
+        $fileName  = $this->argument('name');
 
         // ネームスペースを生成
-        $namespace = "Custom\\App\\Http\\Controllers";
+        $namespace = $this->fileGenerator->generateNamespace($pluginName, "Plugins") . "\\App\\Http\\Controllers";
 
         // ファイルパスを準備
-        $targetDirectory = base_path("custom/app/Http/Controllers");
+        $targetDirectory = base_path("plugins/{$pluginName}/app/Http/Controllers");
         $filePath = "{$targetDirectory}/{$fileName}.php";
 
         try {
             // ファイルパスを準備 (ディレクトリ作成 & 存在チェック)
             $this->fileGenerator->prepareFilePath(
                 $filePath,
-                "Controller [{$fileName}] already exists in the custom directory."
+                "Service provider [{$fileName}] already exists in plugin [{$pluginName}]."
             );
         } catch (\RuntimeException $e) {
             $this->error($e->getMessage());
@@ -84,6 +97,7 @@ class MakeCustomController extends Command
         // スタブファイルを取得
         $stub = $this->fileGenerator->getStubContent($stubFileName, $defaultStubPath, $customStubPaths);
 
+
         // ライセンス情報とプレースホルダを埋め込む
         $stub = $this->fileGenerator->embedLicense($stub, [
             '{{ rootNamespace }}' => app()->getNamespace(),
@@ -95,7 +109,7 @@ class MakeCustomController extends Command
         // ファイルを生成
         $this->fileGenerator->generateFile($filePath, $stub);
 
-        $this->info("Controller [{$fileName}] created successfully in the custom directory.");
+        $this->info("Controller [{$fileName}] created successfully in plugin [{$pluginName}].");
 
         return 0;
     }

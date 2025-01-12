@@ -1,38 +1,132 @@
 <?php
 
-if (!function_exists('asset_url')) {
+if (!function_exists('load_assets')) {
     /**
-     * アセットURLを生成する
+     * アセットを動的に読み込む関数
      *
-     * @param string $type アセットの種類（admin, theme, pluginなど）
-     * @param string $path アセットファイルのパス
-     * @return string 完全なURL
+     * @param string $type アセットのタイプ ('common', 'admin', 'theme', 'plugin')
+     * @param string|null $name テーマまたはプラグインの場合のディレクトリ名 (common, admin では null)
+     * @param array $files 読み込むJSまたはCSSファイルのリスト
+     * @return string
      */
-    function asset_url(string $type, string $path): string
+    function load_assets(string $type, ?string $name, array $files)
     {
-        switch ($type) {
-            case 'theme':
-                return url("assets/theme/{$path}");
-            case (preg_match('/^plugins\/(.+)$/', $type, $matches) ? true : false):
-                $pluginName = $matches[1];
-                return url("assets/plugins/{$pluginName}/{$path}");
-            default:
-                abort(404, "Invalid asset type: {$type}");
+        $output = '';
+        $basePath = match ($type) {
+            'common' => 'resources/src/common',
+            'admin' => 'resources/src/admin',
+            'theme' => "themes/{$name}/resources/src",
+            'plugin' => "plugins/{$name}/resources/src",
+            default => throw new InvalidArgumentException("Invalid type: {$type}"),
+        };
+
+        if (app()->environment('local')) {
+            // ローカル環境: Viteを使用
+            $viteFiles = array_map(fn($file) => "{$basePath}/{$file}", $files);
+            $output .= \Illuminate\Support\Facades\Blade::render('@vite(' . implode(', ', array_map(fn($file) => "'{$file}'", $viteFiles)) . ')');
+        } else {
+            // 本番環境: manifest.jsonを解析
+            $manifestPath = match ($type) {
+                'common' => public_path("assets/common/manifest.json"),
+                'admin' => public_path("assets/admin/manifest.json"),
+                'theme' => public_path("assets/theme/manifest.json"),
+                'plugin' => public_path("assets/plugins/{$name}/manifest.json"),
+            };
+
+
+
+            if (file_exists($manifestPath)) {
+                $manifest = json_decode(file_get_contents($manifestPath), true);
+
+                if (!empty($manifest)) {
+                    // JSファイル
+                    foreach ($manifest as $key => $entry) {
+
+                        if (isset($entry['file'])) {
+                            $output .= '<script type="module" src="' . asset("assets/{$type}/" . ($type === 'plugin' || $type === 'theme' ? "{$name}/" : '') . $entry['file']) . '"></script>';
+                        }
+                    }
+                    // CSSファイル
+                    foreach ($manifest as $key => $entry) {
+                        if (isset($entry['css'])) {
+                            // CSSファイル
+                            foreach ($entry['css'] as $css) {
+                                $output .= '<link rel="stylesheet" href="' . asset("assets/{$type}/" . ($type === 'plugin' || $type === 'theme' ? "{$name}/" : '') . $css) . '">';
+                            }
+                        }
+                    }
+
+                    // フォントやその他のアセット
+                    foreach ($manifest as $key => $entry) {
+                        if (isset($entry['assets'])) {
+
+                            foreach ($entry['assets'] as $asset) {
+                                $output .= '<link rel="preload" as="font" href="' . asset("assets/{$type}/" . ($type === 'plugin' || $type === 'theme' ? "{$name}/" : '') . $asset) . '" type="font/' . pathinfo($asset, PATHINFO_EXTENSION) . '" crossorigin="anonymous">';
+                            }
+                        }
+                    }
+                }
+            }
         }
+
+
+        return $output;
     }
 }
 
-if (!function_exists('active_theme_directory')) {
+if (!function_exists('load_active_assets')) {
     /**
-     * 現在有効化されているテーマのディレクトリ名を取得
+     * アクティブなテーマとプラグインのアセットをBladeヘッダーに追加
      *
-     * @return string アクティブテーマのディレクトリ名
+     * @return string
      */
-    function active_theme_directory(): string
+    function load_active_assets()
     {
-        $activeThemeId = DB::table('settings_theme')->value('active_theme_id');
-        $theme = \App\Models\Theme::find($activeThemeId);
-        return $theme ? $theme->directory : 'default-theme';
+        $output = '';
+
+        //共通と管理画面用のアセットを読み込み
+        $output .= load_assets(
+            'common',
+            null,
+            [
+                'js/app.js',
+                'scss/style.scss',
+            ]
+        );
+
+        // 管理画面用のアセットを読み込み
+        $output .= load_assets(
+            'admin',
+            null,
+            [
+                'js/admin.js',
+                'scss/admin.scss',
+            ]
+        );
+
+        // アクティブなテーマIDを取得
+        $activeThemeId = DB::table('settings_theme')->where('active_theme_id', 1)->first();
+        // アクティブなテーマを取得
+        $activeTheme = \App\Models\Theme::find($activeThemeId);
+
+        if ($activeTheme) {
+            $output .= load_assets('theme', $activeTheme->directory, [
+                'js/app.js',
+                'scss/style.scss',
+            ]);
+        }
+
+        // 有効なプラグインを取得
+        $activePlugins = DB::table('plugins')->where('status', 1)->get();
+
+        foreach ($activePlugins as $plugin) {
+            $output .= load_assets('plugin', $plugin->directory, [
+                'js/app.js',
+                'scss/style.scss',
+            ]);
+        }
+
+        return $output;
     }
 }
 
@@ -66,6 +160,7 @@ if (!function_exists('update_theme_symlink')) {
         symlink($target, $link);
     }
 }
+
 
 if (!function_exists('create_plugin_symlink')) {
     /**

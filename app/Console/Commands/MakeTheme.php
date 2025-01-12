@@ -4,54 +4,69 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
-use App\Models\Theme;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use App\Models\Theme;
+use App\Services\FileGenerator;
 
 class MakeTheme extends Command
 {
     protected $signature = 'make:theme {name} {--install} {--activate}';
     protected $description = 'Create a new theme, optionally register it in the database and activate it';
 
+    protected FileGenerator $fileGenerator;
+
+    /**
+     * コンストラクタ
+     */
+    public function __construct(FileGenerator $fileGenerator)
+    {
+        parent::__construct();
+        $this->fileGenerator = $fileGenerator;
+    }
+
     public function handle()
     {
+        // ユーザーが入力したテーマ名（スペース等を含むオリジナル）
         $originalName = $this->argument('name');
-        $themeName = $this->sanitizeThemeName($originalName);
-        $directory = base_path("themes/{$themeName}");
 
-        if (File::exists($directory)) {
-            $this->error("Theme '{$themeName}' already exists.");
+        // テーマ用ディレクトリ名 (ケバブケース化)
+        $themeDirName = Str::kebab($originalName);
+
+        // slug化はFileGeneratorへ委譲
+        $slugName = $this->fileGenerator->sanitizeName($originalName);
+
+        // テーマ保存先のパス
+        $themeDir = base_path("themes/{$themeDirName}");
+
+
+        // 既に存在していたらエラー
+        if (File::exists($themeDir)) {
+            $this->error("Theme '{$originalName}' already exists.");
             return Command::FAILURE;
         }
 
-        // テーマディレクトリの作成
-        $this->createThemeDirectories($directory, $themeName);
+        // テーマディレクトリ作成
+        $this->createThemeDirectories($themeDir);
+
+        // テーマ初期ファイルの生成
+        $this->createThemeFiles($themeDir, $originalName, $themeDirName);
 
         // テーマをデータベースに登録
         if ($this->option('install')) {
-            $themeId = $this->registerThemeInDatabase($originalName, $themeName);
+            $themeId = $this->registerThemeInDatabase($originalName, $themeDirName);
 
             // テーマを有効化
             if ($this->option('activate')) {
-                $this->activateTheme($themeId, $themeName);
+                $this->activateTheme($themeId, $themeDirName);
             }
         }
 
-        $this->info("Theme '{$themeName}' has been created successfully.");
+        $this->info("Theme '{$originalName}' has been created successfully.");
         return Command::SUCCESS;
     }
 
-    /**
-     * テーマ名を正規化
-     *
-     * @param string $name
-     * @return string
-     */
-    protected function sanitizeThemeName(string $name): string
-    {
-        $name = str_replace(' ', '-', $name);
-        $name = preg_replace('/[^A-Za-z0-9-_]/', '', $name);
-        return strtolower($name);
-    }
+
 
     /**
      * テーマディレクトリと初期ファイルを作成
@@ -59,63 +74,67 @@ class MakeTheme extends Command
      * @param string $directory
      * @param string $themeName
      */
-    protected function createThemeDirectories(string $directory, string $themeName)
+    protected function createThemeDirectories(string $themeDir): void
     {
         $directories = [
             'resources/views',
             'resources/src/js',
-            'resources/src/scss',
+            'resources/src/css',
             'resources/assets/js',
             'resources/assets/css',
             'resources/assets/images',
         ];
         // ルートディレクトリの作成
-        File::makeDirectory($directory, 0755, true);
+        File::makeDirectory($themeDir, 0755, true);
 
-        // サブディレクトリの作成
+        // 各サブディレクトリを作成
         foreach ($directories as $dir) {
-            File::makeDirectory("{$directory}/{$dir}", 0755, true);
+            File::makeDirectory("{$themeDir}/{$dir}", 0755, true);
         }
-
-        // Create initial files
-        File::put("{$directory}/resources/views/index.blade.php", '<h1>Welcome to ' . $themeName . '</h1>');
-        File::put("{$directory}/resources/src/scss/style.css", "/* {$themeName} theme styles */");
-        File::put("{$directory}/resources/src/js/script.js", "// {$themeName} theme scripts");
-
-        // Create vite.config.js
-        $viteConfigContent = <<<JS
-import { defineConfig } from 'vite';
-import laravel from 'laravel-vite-plugin';
-
-export default defineConfig({
-    plugins: [
-        laravel({
-            input: [
-                'themes/{$themeName}/resources/src/js/app.js',
-                'themes/{$themeName}/resources/src/scss/style.scss',
-            ],
-            refresh: true,
-        }),
-    ],
-    build: {
-        outDir: 'themes/{$themeName}/resources/assets',
-    },
-});
-JS;
-        File::put("{$directory}/vite.config.js", $viteConfigContent);
-
-        // Create composer.json
-        File::put("{$directory}/composer.json", json_encode([
-            'name' => $themeName,
-            'directory' => $themeName,
-            'description' => "A new theme named {$themeName}.",
-            'author' => 'Your Name or Company',
-            'email' => 'your-email@example.com',
-            'web' => 'https://yourwebsite.com',
-            'version' => '1.0.0',
-            'license' => 'AGPL-3.0',
-        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
     }
+
+    /**
+     * テーマ用のファイルをスタブベースで作成
+     *
+     * @param string $themeDir      テーマディレクトリのパス
+     * @param string $themeName     ユーザーが入力したテーマの人間向け名称
+     * @param string $themeDirName  テーマのディレクトリ名(ケバブケース)
+     */
+    protected function createThemeFiles(string $themeDir, string $themeName, string $themeDirName): void
+    {
+        // スタブファイルを探すパス
+        $stubPath = [base_path('stubs')];
+
+        // 外部ファイルやDBなどからライセンス情報を取得
+        $licenseContent = $this->fileGenerator->getLicenseContent();
+
+        // プレースホルダ定義
+        $placeholders = [
+            '{{ license }}'        => $licenseContent,
+            '{{ themeName }}'      => $themeName,      // 人間向け名称
+            '{{ themeDirectory }}' => $themeDirName,   // ディレクトリ名
+        ];
+
+        // ***** vite.config.js *****
+        $stubFile = $this->fileGenerator->getStubContent('vite.config.theme.stub', null, $stubPath);
+        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
+        $this->fileGenerator->generateFile("{$themeDir}/vite.config.js", $fileContent);
+
+        // ***** composer.json *****
+        $stubFile = $this->fileGenerator->getStubContent('composer.theme.stub', null, $stubPath);
+        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
+        $this->fileGenerator->generateFile("{$themeDir}/composer.json", $fileContent);
+
+        // ***** index.blade.php *****
+        // スタブを使わずに直接生成する例 (必要ならstubs化してもOK)
+        $bladeContent = "<h1>Welcome to {$themeName} Theme</h1>";
+        File::put("{$themeDir}/resources/views/index.blade.php", $bladeContent);
+
+        // ***** デフォルトJS/SCSSなどの初期ファイル *****
+        File::put("{$themeDir}/resources/src/js/app.js", "// JavaScript for {$themeDirName}");
+        File::put("{$themeDir}/resources/src/css/style.css", "/* Styles for {$themeDirName} */");
+    }
+
 
     /**
      * テーマをデータベースに登録
@@ -159,10 +178,12 @@ JS;
 
         // シンボリックリンクの作成
         if (File::exists($themeAssetsDir) && is_dir($themeAssetsDir)) {
+            // すでにリンクがあれば削除
             if (File::exists($linkDir) || is_link($linkDir)) {
-                unlink($linkDir); // 古いリンクがある場合は削除
+                unlink($linkDir);
             }
 
+            // 新しくシンボリックリンクを作成
             symlink($themeAssetsDir, $linkDir);
             $this->info("Symlink created: {$linkDir} -> {$themeAssetsDir}");
         } else {

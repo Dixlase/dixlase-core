@@ -27,3 +27,5 @@ custom/*
 plugins/*
 # テーマを入れるディレクトリを除外
 themes/**
+license-info.json
+license.txt

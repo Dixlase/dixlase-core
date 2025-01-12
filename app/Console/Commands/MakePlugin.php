@@ -7,11 +7,21 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Str;
 use App\Models\Plugin;
+use App\Services\FileGenerator;
 
 class MakePlugin extends Command
 {
     protected $signature = 'make:plugin {name} {--namespace=Vendor} {--install} {--enable}';
     protected $description = 'Create a new plugin with a predefined structure';
+
+    protected FileGenerator $fileGenerator;
+
+
+    public function __construct(FileGenerator $fileGenerator)
+    {
+        parent::__construct();
+        $this->fileGenerator = $fileGenerator;
+    }
 
     public function handle()
     {
@@ -30,6 +40,12 @@ class MakePlugin extends Command
         // Create directories and default files
         $this->createPluginDirectories($pluginDir, $pluginName, $namespace, $pluginDirName);
 
+        // Create default files using stubs
+        $this->createPluginFiles($pluginDir, $pluginName, $namespace, $pluginDirName);
+
+        // サービスプロバイダを生成
+        $this->createServiceProvider($pluginName, $pluginDirName);
+
         // Optionally install and enable the plugin
         if ($this->option('install')) {
             $this->installPlugin($pluginName, $pluginDirName);
@@ -46,72 +62,152 @@ class MakePlugin extends Command
     protected function createPluginDirectories(string $pluginDir, string $pluginName, string $namespace, string $pluginDirName)
     {
         $directories = [
-            "app/Http",
+            // Laravelアプリケーション関連
+            "app/Http/Controllers",
+            "app/Http/Middleware",
+            "app/Http/Requests",
             "app/Models",
             "app/Providers",
+            "app/Traits",       // 共通メソッドを切り出すTrait用
+            "app/Console",      // プラグイン独自のコマンドを置く場合
+            "app/Helpers",      // ヘルパー関数等を置く場合
+
+            // 設定・ルート
             "config",
             "routes",
+
+            // リソース・テンプレート関連
             "resources/views",
-            "test",            // テスト用ディレクトリ
-            "lang/en",         // 英語用言語ファイル
-            "lang/jp",         // 日本語用言語ファイル
-            "migrations",      // マイグレーション用ディレクトリ
-            "resources/assets/css",      // CSS用ディレクトリ
-            "resources/assets/js",       // JavaScript用ディレクトリ
-            "resources/assets/images",   // 画像用ディレクトリ
-            "resources/src/js",          // ES6用ディレクトリ
-            "resources/src/sass",        // Sass用ディレクトリ
-            "resources/src/images",      // 画像用ディレクトリ
+
+            // テストディレクトリ
+            "tests/Feature",
+            "tests/Unit",
+
+            // 言語ファイル
+            "lang/en",
+            "lang/jp",
+            // マイグレーションやファクトリなど
+            "database/migrations",
+            "database/factories",
+            "database/seeder",
+
+            // アセット関連
+            "resources/assets/js",
+            "resources/assets/css",
+            "resources/assets/images",
+
+            // フロントエンドの元ソース
+            "resources/src/js",
+            "resources/src/css",
+            "resources/src/images",
         ];
 
+        // ディレクトリを作成
         foreach ($directories as $dir) {
             File::makeDirectory("{$pluginDir}/{$dir}", 0755, true);
         }
-
-        // Create initial js and scss files
-        File::put("{$pluginDir}/resources/src/js/app.js", "// JavaScript for {$pluginDirName}");
-        File::put("{$pluginDir}/resources/src/scss/style.scss", "/* SCSS for {$pluginDirName} */");
-
-        // Create vite.config.js
-        $viteConfigContent = <<<JS
-import { defineConfig } from 'vite';
-import laravel from 'laravel-vite-plugin';
-
-export default defineConfig({
-    plugins: [
-        laravel({
-            input: [
-                'plugins/{$pluginDirName}/resources/src/js/app.js',
-                'plugins/{$pluginDirName}/resources/src/scss/style.scss',
-            ],
-            refresh: true,
-        }),
-    ],
-    build: {
-        outDir: 'plugins/{$pluginDirName}/resources/assets',
-    },
-});
-JS;
-        File::put("{$pluginDir}/vite.config.js", $viteConfigContent);
-
-        $composerContent = [
-            'name' => "plugins/{$pluginName}",
-            'description' => "This is the {$pluginName} plugin.",
-            'author' => 'Your Name or Company',
-            'email' => 'your-email@example.com',
-            'web' => 'https://yourwebsite.com',
-            'version' => '1.0.0',
-            'license' => 'AGPL-3.0',
-            'autoload' => [
-                'psr-4' => [
-                    "{$namespace}\\" => 'app/',
-                ],
-            ],
-        ];
-
-        File::put("{$pluginDir}/composer.json", json_encode($composerContent, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
     }
 
+
+    // 以下は、createPluginDirectories()内で生成したファイルを生成するメソッド
+    protected function createPluginFiles(string $pluginDir, string $pluginName, string $namespace, string $pluginDirName)
+    {
+
+        // 初期ファイルを作成（js/css）
+        File::put("{$pluginDir}/resources/src/js/app.js", "// JavaScript for {$pluginDirName}");
+        File::put("{$pluginDir}/resources/src/css/style.scss", "/* SCSS for {$pluginDirName} */");
+
+        //スタブファイルのパス
+        $stubPath = [base_path('stubs')];
+
+
+        // Common replacements
+        $licenseContent = $this->fileGenerator->getLicenseContent();
+        $placeholders = [
+            '{{ license }}' => $licenseContent,
+            '{{ pluginName }}' => $pluginName,
+            '{{ pluginDirName }}' => $pluginDirName,
+            '{{ namespace }}' => $namespace,
+        ];
+
+
+
+        // routes/web.php
+        $stubFile = $this->fileGenerator->getStubContent(
+            'routes.stub',
+            null,
+            $stubPath
+        );
+        // スタブ内容にプレースホルダを適用
+        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
+        $this->fileGenerator->generateFile("{$pluginDir}/routes/web.php", $fileContent);
+
+        // lang/en/messages.php
+        $stubFile = $this->fileGenerator->getStubContent(
+            'messages.en.stub',
+            null,
+            $stubPath
+        );
+        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
+        $this->fileGenerator->generateFile("{$pluginDir}/lang/en/messages.php", $fileContent);
+
+        // lang/ja/messages.php
+        $stubFile = $this->fileGenerator->getStubContent(
+            'messages.ja.stub',
+            null,
+            $stubPath
+        );
+        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
+        $this->fileGenerator->generateFile("{$pluginDir}/lang/ja/messages.php", $fileContent);
+
+        // config file
+        $stubFile = $this->fileGenerator->getStubContent(
+            'config.stub',
+            null,
+            $stubPath
+        );
+        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
+        $this->fileGenerator->generateFile("{$pluginDir}/config/{$pluginDirName}.php", $fileContent);
+
+        // vite.config.js
+        $stubFile = $this->fileGenerator->getStubContent(
+            'vite.config.plugin.stub',
+            null,
+            $stubPath
+        );
+        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
+        $this->fileGenerator->generateFile("{$pluginDir}/vite.config.js", $fileContent);
+
+        // composer.json
+        $stubFile = $this->fileGenerator->getStubContent(
+            'composer.plugin.stub',
+            null,
+            $stubPath
+        );
+        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
+        $this->fileGenerator->generateFile("{$pluginDir}/composer.json", $fileContent);
+    }
+
+
+    /**
+     * サービスプロバイダを作成
+     */
+    protected function createServiceProvider(string $pluginName, string $pluginDirName)
+    {
+        $providerName = 'PluginServiceProvider';
+
+        Artisan::call('plugin:make:provider', [
+            'plugin' => $pluginDirName,
+            'name' => $providerName,
+        ]);
+
+        $this->info("Service provider [{$providerName}] created for plugin [{$pluginName}].");
+    }
+
+
+    /**
+     * プラグインを有効化 (DBに登録）
+     */
     protected function installPlugin($pluginName, $pluginDirName)
     {
         // Register plugin in database
@@ -135,6 +231,10 @@ JS;
         $this->info("Plugin {$pluginName} has been installed.");
     }
 
+    /**
+     * プラグインを有効化 (DBでstatusを1に変更)
+     */
+
     protected function enablePlugin($pluginName)
     {
         // Enable the plugin
@@ -148,6 +248,10 @@ JS;
         }
     }
 
+
+    /**
+     * public配下へアセットディレクトリのシンボリックリンクを作成
+     */
     protected function createPluginSymlink(string $pluginDirName)
     {
         $target = base_path("plugins/{$pluginDirName}/resources/assets");
