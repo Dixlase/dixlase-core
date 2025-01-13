@@ -36,7 +36,7 @@ class PluginsTableSeeder extends Seeder
         Plugin::insert([
             [
                 'name' => 'EventsPlugin',
-                'directory' => 'events-plugin',
+                'directory' => 'EventsPlugin',
                 'namespace' => 'Plugins\EventsPlugin',
                 'version' => '1.0',
                 'status' => 1,
@@ -45,7 +45,7 @@ class PluginsTableSeeder extends Seeder
             ],
             [
                 'name' => 'ResavationsPlugin',
-                'directory' => 'resavations-plugin',
+                'directory' => 'ResavationsPlugin',
                 'namespace' => 'Plugins\ResavationsPlugin',
                 'version' => '1.0',
                 'status' => 1,

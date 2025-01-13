@@ -28,8 +28,9 @@ class MakePlugin extends Command
         $pluginName = $this->argument('name'); // 人間が認識する名前
         $namespace = $this->option('namespace') . '\\' . $pluginName;
 
-        // ケバブケースでディレクトリ名を生成
-        $pluginDirName = Str::kebab($pluginName);
+        // キャメルケースでディレクトリ名を生成
+        $pluginDirName = Str::studly($pluginName);
+        // プラグイン保存先のパス
         $pluginDir = base_path("plugins/{$pluginDirName}");
 
         if (File::exists($pluginDir)) {
