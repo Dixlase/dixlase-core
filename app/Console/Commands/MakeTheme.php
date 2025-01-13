@@ -30,8 +30,8 @@ class MakeTheme extends Command
         // ユーザーが入力したテーマ名（スペース等を含むオリジナル）
         $originalName = $this->argument('name');
 
-        // テーマ用ディレクトリ名 (ケバブケース化)
-        $themeDirName = Str::kebab($originalName);
+        // テーマ用ディレクトリ名 (キャメルケース化)
+        $themeDirName = Str::studly($originalName);
 
         // slug化はFileGeneratorへ委譲
         $slugName = $this->fileGenerator->sanitizeName($originalName);

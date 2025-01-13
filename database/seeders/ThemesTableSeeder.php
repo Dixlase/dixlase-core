@@ -36,7 +36,7 @@ class ThemesTableSeeder extends Seeder
     {
         Theme::create([
             'name' => 'DefaultTheme',
-            'slug' => 'default-theme',
+            'slug' => 'DefaultTheme',
             'version' => '1.0.0'
         ]);
     }
