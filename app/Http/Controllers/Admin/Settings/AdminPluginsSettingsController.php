@@ -30,12 +30,15 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
 use ZipArchive;
+use App\Traits\PluginLoaderTrait;
 
 
 
 
 class AdminPluginsSettingsController extends AdminController
 {
+    use PluginLoaderTrait;
+
     public function index()
     {
 
@@ -135,11 +138,20 @@ class AdminPluginsSettingsController extends AdminController
         // シンボリックリンクを作成
         create_plugin_symlink($plugin->directory);
 
+        //プラグイン名を取得
+        $pluginName = $plugin->name;
+
+        //プラグインディレクトリ名を取得
+        $pluginDirectory = $plugin->directory;
+
         try {
-
-
             // プラグインを有効化
             $plugin->update(['status' => 1]);
+
+            //PSR-4オートロード設定
+            $this->updateComposerAutoload($pluginName, $pluginDirectory);
+            $this->runComposerDumpAutoload();
+
 
             return redirect()->route('admin.settings.plugins.index')->with('success', 'プラグインを有効化しました');
         } catch (\Exception $e) {
@@ -160,6 +172,12 @@ class AdminPluginsSettingsController extends AdminController
 
             // プラグインを無効化
             $plugin->update(['status' => 0]);
+
+            //プラグイン名を取得
+            $pluginName = $plugin->name;
+
+            //
+            $this->removeComposerAutoload($pluginName);
 
             return redirect()->route('admin.settings.plugins.index')->with('success', 'プラグインを無効化しました');
         } catch (\Exception $e) {

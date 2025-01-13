@@ -36,13 +36,18 @@ trait PluginLoaderTrait
 
         $activePlugins = Plugin::where('status', 1)->get();
 
+        // 有効化されたプラグインのみオートローダーを登録
+        //$this->loadPluginAutoloaders($activePlugins);
+
         foreach ($activePlugins as $plugin) {
             $pluginName = $plugin->name;
+            $pluginDirectory = $plugin->directory;
 
             // サービスプロバイダの登録
-            $providerClass = $this->resolvePluginServiceProvider($pluginName);
-            if ($providerClass) {
+            $providerClass = $this->resolvePluginServiceProvider($pluginName, $pluginDirectory);
 
+            // プラグインのリソースをロード
+            if ($providerClass) {
                 $this->app->register($providerClass);
             }
         }
@@ -66,26 +71,26 @@ trait PluginLoaderTrait
     /**
      * ファイルタイプごとのロード処理
      */
-    protected function loadFilesByType($type, $corePath, $customPath, $namespace)
+    protected function loadFilesByType($type, $defaultPath, $customPath, $namespace)
     {
         switch ($type) {
             case 'config':
-                $this->loadPluginConfigs($corePath, $customPath, $namespace);
+                $this->loadPluginConfigs($defaultPath, $customPath, $namespace);
                 break;
             case 'routes':
-                $this->loadPluginRoutes($customPath, $corePath);
+                $this->loadPluginRoutes($customPath, $defaultPath);
                 break;
             case 'lang':
-                $this->loadPluginTranslations($customPath, $corePath, $namespace);
+                $this->loadPluginTranslations($customPath, $defaultPath, $namespace);
                 break;
             case 'views':
-                $this->loadPluginViews($customPath, $corePath, $namespace);
+                $this->loadPluginViews($customPath, $defaultPath, $namespace);
                 break;
             case 'migrations':
-                $this->loadPluginMigrations($customPath, $corePath);
+                $this->loadPluginMigrations($customPath, $defaultPath);
                 break;
             default:
-                $this->loadCustomFiles($type, $corePath, $customPath, $namespace);
+                $this->loadCustomFiles($type, $defaultPath, $customPath, $namespace);
         }
     }
 
@@ -152,12 +157,14 @@ trait PluginLoaderTrait
     /**
      * ルートの読み込み
      */
-    protected function loadPluginRoutes($customPath, $corePath)
+    protected function loadPluginRoutes($customPath, $defaultPath)
     {
-        $paths = array_filter([$customPath, $corePath]);
+        $paths = array_filter([$customPath, $defaultPath]);
         foreach ($paths as $path) {
             if (is_dir($path)) {
+
                 foreach (glob("{$path}/*.php") as $routeFile) {
+
                     Route::middleware('web')->group($routeFile);
                 }
             }
@@ -167,14 +174,14 @@ trait PluginLoaderTrait
     /**
      * ビューの読み込み
      */
-    protected function loadPluginViews($customPath, $corePath, $namespace)
+    protected function loadPluginViews($customPath, $defaultPath, $namespace)
     {
         if (is_dir($customPath)) {
             View::addNamespace($namespace, $customPath);
         }
 
-        if (is_dir($corePath)) {
-            View::addNamespace($namespace, $corePath);
+        if (is_dir($defaultPath)) {
+            View::addNamespace($namespace, $defaultPath);
         }
     }
 
@@ -207,10 +214,11 @@ trait PluginLoaderTrait
     /**
      * プラグインのサービスプロバイダを解決する
      */
-    protected function resolvePluginServiceProvider(string $pluginName): ?string
+    protected function resolvePluginServiceProvider(string $pluginName, string $pluginDirectory): ?string
     {
-        $defaultProvider = "Plugins\\{$pluginName}\\App\\Providers\\{$pluginName}ServiceProvider";
-        $customProvider = "Custom\\Plugins\\{$pluginName}\\App\\Providers\\{$pluginName}ServiceProvider";
+        $defaultProvider = "Plugins\\{$pluginDirectory}\\App\\Providers\\{$pluginName}ServiceProvider";
+        $customProvider = "custom\\plugins\\{$pluginDirectory}\\App\\Providers\\{$pluginName}ServiceProvider";
+
 
         if (class_exists($customProvider)) {
             return $customProvider;
@@ -219,5 +227,85 @@ trait PluginLoaderTrait
         }
 
         return null;
+    }
+
+    /**
+     * composer.jsonを更新。プラグイン用のPSR-4オートロード設定を追加
+     */
+    protected function updateComposerAutoload($pluginName, $pluginPath)
+    {
+        $composerJsonPath = base_path('composer.json');
+        $composerConfig = json_decode(file_get_contents($composerJsonPath), true);
+
+        // PSR-4オートロード設定を追加
+        $namespace = "Plugins\\{$pluginName}\\App\\";
+        $relativePath = "plugins/{$pluginPath}/app/";
+
+        if (!isset($composerConfig['autoload']['psr-4'][$namespace])) {
+            $composerConfig['autoload']['psr-4'][$namespace] = $relativePath;
+
+            // composer.json を更新
+            file_put_contents(
+                $composerJsonPath,
+                json_encode($composerConfig, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+            );
+        }
+    }
+
+    /**
+     * composer.jsonを更新。プラグイン用のPSR-4オートロード設定を削除
+     */
+    protected function removeComposerAutoload($pluginName)
+    {
+        $composerJsonPath = base_path('composer.json');
+        $composerConfig = json_decode(file_get_contents($composerJsonPath), true);
+
+        // PSR-4オートロード設定を削除
+        $namespace = "Plugins\\{$pluginName}\\App\\";
+
+        if (isset($composerConfig['autoload']['psr-4'][$namespace])) {
+            unset($composerConfig['autoload']['psr-4'][$namespace]);
+
+            // composer.json を更新
+            file_put_contents(
+                $composerJsonPath,
+                json_encode($composerConfig, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+            );
+
+            // composer dump-autoload を実行して反映
+            $this->runComposerDumpAutoload();
+        }
+    }
+
+    /**
+     * プラグインのメタ情報を取得
+     */
+    protected function getPluginMetadata($pluginDirectory)
+    {
+        $composerJsonPath = $pluginDirectory . '/composer.json';
+
+        if (file_exists($composerJsonPath)) {
+            return json_decode(file_get_contents($composerJsonPath), true);
+        }
+
+        return null;
+    }
+
+    /**
+     * すべてのプラグインのメタ情報を取得
+     */
+    public function getAllPluginsMetadata()
+    {
+        $pluginDirectories = glob(base_path('plugins/*'), GLOB_ONLYDIR);
+        $metadata = [];
+
+        foreach ($pluginDirectories as $pluginDirectory) {
+            $meta = $this->getPluginMetadata($pluginDirectory);
+            if ($meta) {
+                $metadata[] = $meta;
+            }
+        }
+
+        return $metadata;
     }
 }

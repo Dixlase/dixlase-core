@@ -2,7 +2,10 @@
     "name": "laravel/laravel",
     "type": "project",
     "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "keywords": [
+        "laravel",
+        "framework"
+    ],
     "license": "MIT",
     "require": {
         "php": "^8.2",
@@ -25,6 +28,7 @@
             "Database\\Seeders\\": "database/seeders/",
             "Plugins\\": "plugins/",
             "Custom\\": "custom/",
+            "Custom\\App\\": "custom/app/",
             "Custom\\Plugins\\": "custom/plugins/",
             "Custom\\Database\\Factories\\": "custom/database/factories/",
             "Custom\\Database\\Seeders\\": "custom/database/seeders/"
