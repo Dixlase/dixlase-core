@@ -37,11 +37,9 @@ class {{ class }} extends ServiceProvider
 
     public function boot()
     {
-        $this->app->booted(function () {
-            $this->loadPluginRoutes("{$this->customPluginBasePath}/routes", "{$this->pluginBasePath}/routes");
-            $this->loadPluginViews("{$this->customPluginBasePath}/resources/views", "{$this->pluginBasePath}/resources/views", $this->pluginAlias);
-            $this->loadPluginMigrations("{$this->customPluginBasePath}/databases/migrations", "{$this->pluginBasePath}/databases/migrations");
-            $this->loadPluginTranslations("{$this->customPluginBasePath}/lang", "{$this->pluginBasePath}/lang", $this->pluginAlias);
-        });
+        $this->loadPluginRoutes("{$this->customPluginBasePath}/routes", "{$this->pluginBasePath}/routes");
+        $this->loadPluginViews("{$this->customPluginBasePath}/resources/views", "{$this->pluginBasePath}/resources/views", $this->pluginAlias);
+        $this->loadPluginMigrations("{$this->customPluginBasePath}/databases/migrations", "{$this->pluginBasePath}/databases/migrations");
+        $this->loadPluginTranslations("{$this->customPluginBasePath}/lang", "{$this->pluginBasePath}/lang", $this->pluginAlias);
     }
 }

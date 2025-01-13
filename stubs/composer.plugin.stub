@@ -7,9 +7,17 @@
     "web": "https://yourwebsite.com",
     "version": "1.0.0",
     "license": "{{ pluginLisence }}",
-    "autoload": {
-        "psr-4": {
-            "{{ namespace }}\\": "app/"
-        }
+    "require": {
+        "php": ">=8.0",
+        "some/dependency": "^1.2"
+    },
+    "extra": {
+        "keywords": ["laravel", "plugin", "custom"],
+        "category": "reservations-management"
     }
 }
+
+
+
+
+
