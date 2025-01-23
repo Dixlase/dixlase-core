@@ -16,8 +16,8 @@ class FileGenerator
         $this->files = $files;
 
         // ライセンス関連の共通パスを定義
-        $this->licenseStubPath = base_path('license.txt');
-        $this->licenseConfigPath = base_path('license-info.json');
+        $this->licenseStubPath = config('console.license_txt');
+        $this->licenseConfigPath = config('console.license_json');
     }
 
 
@@ -62,7 +62,8 @@ class FileGenerator
         }
 
         // デフォルトパスがない場合でも、プロジェクト内の stubs ディレクトリを探索
-        $fallbackPath = base_path("stubs/{$stubFileName}");
+
+        $fallbackPath = base_path("stubs/custom/{$stubFileName}");
         if ($this->files->exists($fallbackPath)) {
             return $this->files->get($fallbackPath);
         }
@@ -97,6 +98,15 @@ class FileGenerator
     }
 
     /**
+     * ライセンス名を取得
+     */
+    public function getLicenseName(): string
+    {
+        $licenseInfo = $this->getLicenseInfo();
+        return $licenseInfo['license'] ?? 'AGPL-3.0';
+    }
+
+    /**
      * ライセンス内容を取得してプレースホルダを置換
      */
     public function getLicenseContent(): string
@@ -121,6 +131,7 @@ class FileGenerator
     }
 
 
+
     /**
      * スタブにライセンス情報を埋め込む
      */
@@ -136,7 +147,9 @@ class FileGenerator
             '{software}' => $licenseInfo['software'] ?? 'UnknownSoftware',
             '{year}'     => date('Y'),
             '{company}'  => $licenseInfo['company'] ?? 'UnknownCompany',
+            '{author}'   => $licenseInfo['author'] ?? 'UnknownAuthor',
             '{website}'  => $licenseInfo['website'] ?? 'https://example.com',
+            '{license}'  => $licenseInfo['license'] ?? 'AGPL-3.0',
         ];
 
         $licenseText = $this->replacePlaceholders($licenseText, $licensePlaceholders);
@@ -190,5 +203,28 @@ class FileGenerator
         $name = preg_replace('/[^A-Za-z0-9-_]/', '', $name);
         // 小文字化
         return strtolower($name);
+    }
+
+    /**
+     * 入力されたクラス名を「サブディレクトリ」「クラス名」に分解する
+     *
+     * 例:
+     *   "Admin/AdminPagesPluginController" => [["Admin"], "AdminPagesPluginController"]
+     *   "Api/V2/MyController" => [["Api", "V2"], "MyController"]
+     *   "MyController" => [[], "MyController"]
+     */
+    public function parseClassName(string $input): array
+    {
+        // バックスラッシュもフォワードスラッシュに揃える
+        $path = str_replace('\\', '/', $input);
+
+        // "/" で分割
+        $parts = explode('/', $path);
+
+        // 最後の要素がクラス名、それ以外はサブディレクトリとみなす
+        $className = array_pop($parts);
+        $subDirs   = $parts; // 例) ["Admin"] など
+
+        return [$subDirs, $className];
     }
 }

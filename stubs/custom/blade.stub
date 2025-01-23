@@ -1,0 +1,2 @@
+{{ license }}
+<h1>Welcome to {{ themeName }}</h1>

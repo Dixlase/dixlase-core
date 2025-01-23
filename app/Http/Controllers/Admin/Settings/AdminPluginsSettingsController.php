@@ -118,6 +118,9 @@ class AdminPluginsSettingsController extends AdminController
                 ]);
             }
 
+            // artisanコマンドでPSR-4オートロードを更新
+            Artisan::call('plugin:autoload:sync', ['--cleanup' => true]);
+
             return redirect()->route('admin.settings.plugins.index')->with('success', 'プラグインが正常にインストールされました。');
         }
 
@@ -148,11 +151,6 @@ class AdminPluginsSettingsController extends AdminController
             // プラグインを有効化
             $plugin->update(['status' => 1]);
 
-            //PSR-4オートロード設定
-            $this->updateComposerAutoload($pluginName, $pluginDirectory);
-            $this->runComposerDumpAutoload();
-
-
             return redirect()->route('admin.settings.plugins.index')->with('success', 'プラグインを有効化しました');
         } catch (\Exception $e) {
             return back()->with('error', "プラグイン有効化中にエラーが発生しました: {$e->getMessage()}");
@@ -173,12 +171,6 @@ class AdminPluginsSettingsController extends AdminController
             // プラグインを無効化
             $plugin->update(['status' => 0]);
 
-            //プラグイン名を取得
-            $pluginName = $plugin->name;
-
-            //
-            $this->removeComposerAutoload($pluginName);
-
             return redirect()->route('admin.settings.plugins.index')->with('success', 'プラグインを無効化しました');
         } catch (\Exception $e) {
             return back()->with('error', "プラグイン無効化中にエラーが発生しました: {$e->getMessage()}");
@@ -191,13 +183,19 @@ class AdminPluginsSettingsController extends AdminController
         // 権限を確認
         $this->checkPermission('super_manager');
 
-        // データベースから削除
+        // プラグインを取得
         $plugin = Plugin::findOrFail($id);
-        $plugin->delete();
+        $pluginDir = $plugin->directory;
 
         // プラグインフォルダを削除
-        $pluginDir = base_path('plugins/' . $plugin->name);
-        File::deleteDirectory($pluginDir);
+        File::deleteDirectory(base_path('plugins/' . $pluginDir));
+
+        // データベースから削除
+        $plugin->delete();
+
+        // artisanコマンドでPSR-4オートロードを更新
+        Artisan::call('plugin:autoload:sync', ['--cleanup' => true]);
+
 
         return redirect()->route('admin.settings.plugins.index')->with('success', 'プラグインをアンインストールしました');
     }

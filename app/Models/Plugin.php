@@ -29,7 +29,9 @@ class Plugin extends Model
     //
     protected $fillable = [
         'name',
+        'directory',
         'namespace',
+        'version',
         'status'
     ];
 

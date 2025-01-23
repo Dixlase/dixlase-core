@@ -19,52 +19,50 @@ return [
             'icon' => 'fas fa-fw fa-tachometer-alt',
             'can' => 'viewer',
         ],
-        'contents' => [
-            'text' => 'admin.nav.contents.text',
-            'icon' => 'fas fa-fw fa-file',
-            'can' => 'editor',
+        'front' => [
+            'text' => 'admin.nav.front.text',
+            'icon' => 'fas fa-fw fa-users',
+            'can' => 'viewer',
             'children' => [
-                'pages' => [
-                    'text' => 'admin.nav.contents.pages.text',
-                    'icon' => 'fas fa-fw fa-file',
-                    'can' => 'editor',
-                    'children' => [
-                        'index' => [
-                            'text' => 'admin.nav.contents.pages.index',
-                            'route' => 'admin.contents.pages.index',
-                            'can' => 'editor',
-                            'icon' => 'fas fa-fw fa-file',
-                        ],
-                        'create' => [
-                            'text' => 'admin.nav.contents.pages.create',
-                            'route' => 'admin.contents.pages.create',
-                            'can' => 'editor',
-                            'icon' => 'fas fa-fw fa-file',
-                        ],
-                    ]
-                ],
-                'themes' => [
-                    'text' => 'admin.nav.contents.themes.text',
-                    'icon' => 'fas fa-fw fa-palette',
-                    'can' => 'manager',
-                    'children' => [
-                        'index' => [
-                            'text' => 'admin.nav.contents.themes.index',
-                            'route' => 'admin.contents.themes.index',
-                            'icon' => 'fas fa-fw fa-file',
-                            'can' => 'manager',
-                        ],
-                        'install' => [
-                            'text' => 'admin.nav.contents.themes.install',
-                            'route' => 'admin.contents.themes.install',
-                            'can' => 'super_manager',
-                            'icon' => 'fas fa-fw fa-file',
-                        ],
-                    ]
+                'index' => [
+                    'text' => 'admin.nav.front.index',
+                    'route' => 'admin.front.index',
+                    'icon' => 'fas fa-fw fa-users',
+                    'can' => 'viewer',
                 ],
             ]
         ],
-
+        'media' => [
+            'text' => 'admin.nav.media.text',
+            'icon' => 'fas fa-fw fa-users',
+            'can' => 'viewer',
+            'children' => [
+                'index' => [
+                    'text' => 'admin.nav.media.index',
+                    'route' => 'admin.media.index',
+                    'icon' => 'fas fa-fw fa-users',
+                    'can' => 'viewer',
+                ],
+                'upload' => [
+                    'text' => 'admin.nav.media.upload',
+                    'route' => 'admin.media.index',
+                    'icon' => 'fas fa-fw fa-users',
+                    'can' => 'viewer',
+                ],
+                'upload' => [
+                    'text' => 'admin.nav.media.upload',
+                    'route' => 'admin.media.index',
+                    'icon' => 'fas fa-fw fa-users',
+                    'can' => 'viewer',
+                ],
+                'upload' => [
+                    'text' => 'admin.nav.media.upload',
+                    'route' => 'admin.media.index',
+                    'icon' => 'fas fa-fw fa-users',
+                    'can' => 'viewer',
+                ],
+            ]
+        ],
         'users' => [
             'text' => 'admin.nav.users.text',
             'icon' => 'fas fa-fw fa-users',
@@ -127,19 +125,38 @@ return [
                         ]
                     ]
                 ],
+                'themes' => [
+                    'text' => 'admin.nav.settings.themes.text',
+                    'icon' => 'fas fa-fw fa-palette',
+                    'can' => 'manager',
+                    'children' => [
+                        'index' => [
+                            'text' => 'admin.nav.settings.themes.index',
+                            'route' => 'admin.settings.themes.index',
+                            'icon' => 'fas fa-fw fa-file',
+                            'can' => 'manager',
+                        ],
+                        'install' => [
+                            'text' => 'admin.nav.settings.themes.install',
+                            'route' => 'admin.settings.themes.install',
+                            'can' => 'super_manager',
+                            'icon' => 'fas fa-fw fa-file',
+                        ],
+                    ]
+                ],
                 'plugins' => [
                     'text' => 'admin.nav.settings.plugins.text',
                     'icon' => 'fas fa-fw fa-toolbox',
                     'can' => 'manager',
                     'children' => [
                         'index' => [
-                            'text' => 'admin.nav.contents.themes.index',
+                            'text' => 'admin.nav.settings.plugins.index',
                             'route' => 'admin.settings.plugins.index',
                             'icon' => 'fas fa-fw fa-file',
                             'can' => 'manager',
                         ],
                         'install' => [
-                            'text' => 'admin.nav.contents.themes.install',
+                            'text' => 'admin.nav.settings.plugins.install',
                             'route' => 'admin.settings.plugins.install',
                             'icon' => 'fas fa-fw fa-file',
                             'can' => 'super_manager',

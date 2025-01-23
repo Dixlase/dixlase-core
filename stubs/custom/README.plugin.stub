@@ -1,0 +1,20 @@
+# {{ pluginName }}
+
+{{ pluginName }} is a plugin for our custom CMS (and also composer-ready for future distribution).
+
+## Installation
+
+1. Copy to the `plugins/{{ pluginDirName }}` directory of your CMS.
+2. (Optional) Run `composer install` if needed.
+3. (Optional) Enable the plugin in the CMS admin panel.
+
+## Usage
+
+- Describe how to use this plugin here.
+
+## License
+
+{{ license }}
+
+---
+(C) {{ author }} - {{ year }}

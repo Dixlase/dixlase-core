@@ -20,7 +20,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Controllers\Admin\Contents;
+namespace App\Http\Controllers\Admin\Settings;
 
 use App\Http\Controllers\Admin\AdminController;
 use Illuminate\Http\Request;
@@ -32,7 +32,7 @@ use Illuminate\Support\Facades\Log;
 
 
 
-class AdminContentsThemesController extends AdminController
+class AdminThemesSettingsController extends AdminController
 {
     //
 

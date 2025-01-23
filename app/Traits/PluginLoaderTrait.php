@@ -28,6 +28,9 @@ use Illuminate\Support\Facades\View;
 
 trait PluginLoaderTrait
 {
+
+
+
     /**
      * 有効化されたプラグインをロードする
      */
@@ -227,54 +230,6 @@ trait PluginLoaderTrait
         }
 
         return null;
-    }
-
-    /**
-     * composer.jsonを更新。プラグイン用のPSR-4オートロード設定を追加
-     */
-    protected function updateComposerAutoload($pluginName, $pluginPath)
-    {
-        $composerJsonPath = base_path('composer.json');
-        $composerConfig = json_decode(file_get_contents($composerJsonPath), true);
-
-        // PSR-4オートロード設定を追加
-        $namespace = "Plugins\\{$pluginName}\\App\\";
-        $relativePath = "plugins/{$pluginPath}/app/";
-
-        if (!isset($composerConfig['autoload']['psr-4'][$namespace])) {
-            $composerConfig['autoload']['psr-4'][$namespace] = $relativePath;
-
-            // composer.json を更新
-            file_put_contents(
-                $composerJsonPath,
-                json_encode($composerConfig, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
-            );
-        }
-    }
-
-    /**
-     * composer.jsonを更新。プラグイン用のPSR-4オートロード設定を削除
-     */
-    protected function removeComposerAutoload($pluginName)
-    {
-        $composerJsonPath = base_path('composer.json');
-        $composerConfig = json_decode(file_get_contents($composerJsonPath), true);
-
-        // PSR-4オートロード設定を削除
-        $namespace = "Plugins\\{$pluginName}\\App\\";
-
-        if (isset($composerConfig['autoload']['psr-4'][$namespace])) {
-            unset($composerConfig['autoload']['psr-4'][$namespace]);
-
-            // composer.json を更新
-            file_put_contents(
-                $composerJsonPath,
-                json_encode($composerConfig, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
-            );
-
-            // composer dump-autoload を実行して反映
-            $this->runComposerDumpAutoload();
-        }
     }
 
     /**

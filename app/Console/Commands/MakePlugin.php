@@ -11,7 +11,20 @@ use App\Services\FileGenerator;
 
 class MakePlugin extends Command
 {
-    protected $signature = 'make:plugin {name} {--namespace=Vendor} {--install} {--enable}';
+    /**
+     * コマンドシグネチャ
+     *  - {name} : プラグイン名（人間が読む名 + ディレクトリに利用）
+     *  - --namespace : 追加したいトップレベル名前空間 (例: Vendor)
+     *  - --vendor : Composerパッケージのベンダー名 (デフォルト "plugins")
+     *  - --install, --enable : インストール＆有効化フラグ
+     */
+
+    protected $signature = 'make:plugin {name}
+                            {--namespace=Vendor}
+                            {--vendor=plugins}
+                            {--install}
+                            {--enable}';
+
     protected $description = 'Create a new plugin with a predefined structure';
 
     protected FileGenerator $fileGenerator;
@@ -25,11 +38,18 @@ class MakePlugin extends Command
 
     public function handle()
     {
-        $pluginName = $this->argument('name'); // 人間が認識する名前
-        $namespace = $this->option('namespace') . '\\' . $pluginName;
+        // 人間が認識する名前
+        $pluginName = $this->argument('name');
 
         // キャメルケースでディレクトリ名を生成
         $pluginDirName = Str::studly($pluginName);
+
+        // ベンダー名 (Composerパッケージ用)
+        $vendorName = $this->option('vendor'); // 例: "myvendor"
+
+        // プラグインの名前空間
+        $namespace = $this->option('namespace') . '\\' . $pluginDirName;
+
         // プラグイン保存先のパス
         $pluginDir = base_path("plugins/{$pluginDirName}");
 
@@ -41,8 +61,10 @@ class MakePlugin extends Command
         // Create directories and default files
         $this->createPluginDirectories($pluginDir, $pluginName, $namespace, $pluginDirName);
 
-        // Create default files using stubs
-        $this->createPluginFiles($pluginDir, $pluginName, $namespace, $pluginDirName);
+
+        // スタブファイルを使って各種ファイルを生成
+        $this->createPluginFiles($pluginDir, $pluginName, $pluginDirName, $vendorName, $namespace);
+
 
         // サービスプロバイダを生成
         $this->createServiceProvider($pluginName, $pluginDirName);
@@ -55,6 +77,9 @@ class MakePlugin extends Command
                 $this->enablePlugin($pluginName);
             }
         }
+
+        // composer.json に PSR-4 オートロード設定を更新
+        $this->call('plugin:autoload:sync');
 
         $this->info("Plugin {$pluginName} has been created successfully!");
         return Command::SUCCESS;
@@ -86,11 +111,11 @@ class MakePlugin extends Command
 
             // 言語ファイル
             "lang/en",
-            "lang/jp",
+            "lang/ja",
             // マイグレーションやファクトリなど
             "database/migrations",
             "database/factories",
-            "database/seeder",
+            "database/seeders",
 
             // アセット関連
             "resources/assets/js",
@@ -111,27 +136,46 @@ class MakePlugin extends Command
 
 
     // 以下は、createPluginDirectories()内で生成したファイルを生成するメソッド
-    protected function createPluginFiles(string $pluginDir, string $pluginName, string $namespace, string $pluginDirName)
-    {
+    protected function createPluginFiles(
+        string $pluginDir,
+        string $pluginName,
+        string $pluginDirName,
+        string $vendorName,
+        string $namespace
+    ) {
+
 
         // 初期ファイルを作成（js/css）
         File::put("{$pluginDir}/resources/src/js/app.js", "// JavaScript for {$pluginDirName}");
         File::put("{$pluginDir}/resources/src/css/style.scss", "/* SCSS for {$pluginDirName} */");
 
-        //スタブファイルのパス
-        $stubPath = [base_path('stubs')];
 
+        // 例: vendorName が null の場合や空文字の場合に 'plugins' をデフォルトとする
+        $vendorNameDefault = $vendorName ?: 'plugins';
 
-        // Common replacements
-        $licenseContent = $this->fileGenerator->getLicenseContent();
+        // vendorName を StudlyCase に
+        $vendorNameStudly = Str::studly($vendorNameDefault);
+
+        // pluginName も StudlyCase に
+        $pluginNameStudly = Str::studly($pluginName);
+
+        // ライセンスの取得（必要な場合）
+        $licenseName = $this->fileGenerator->getLicenseName();
+
         $placeholders = [
-            '{{ license }}' => $licenseContent,
-            '{{ pluginName }}' => $pluginName,
-            '{{ pluginDirName }}' => $pluginDirName,
-            '{{ namespace }}' => $namespace,
+            '{{ license }}'       => $licenseName,    // ライセンス名
+            '{{ pluginName }}'    => $pluginName,     // 例: "MyPlugin"
+            '{{ pluginDirName }}' => $pluginDirName,  // 例: "MyPlugin" (StudlyCase)
+            '{{ namespace }}'     => $namespace,      // 例: "Vendor\MyPlugin"
+            '{{ vendorName }}'    => $vendorName,     // 例: "myvendor"
+            '{{ vendorNameDefault }}' => $vendorNameDefault,  // もし vendorName が空なら "plugins"
+            '{{ vendorNameStudly }}'  => $vendorNameStudly,   // 例: "Myvendor"
+            '{{ pluginNameStudly }}'  => $pluginNameStudly,   // 例: "MyPlugin"
         ];
 
 
+        //スタブファイルのパス
+        $stubPath = [base_path('stubs')];
 
         // routes/web.php
         $stubFile = $this->fileGenerator->getStubContent(
@@ -149,6 +193,7 @@ class MakePlugin extends Command
             null,
             $stubPath
         );
+
         $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
         $this->fileGenerator->generateFile("{$pluginDir}/lang/en/messages.php", $fileContent);
 
@@ -167,8 +212,11 @@ class MakePlugin extends Command
             null,
             $stubPath
         );
+
         $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
-        $this->fileGenerator->generateFile("{$pluginDir}/config/{$pluginDirName}.php", $fileContent);
+        // プラグイン名をスネークケースに変換
+        $snakeName = Str::snake($pluginName);
+        $this->fileGenerator->generateFile("{$pluginDir}/config/{$snakeName}.php", $fileContent);
 
         // vite.config.js
         $stubFile = $this->fileGenerator->getStubContent(
@@ -187,6 +235,11 @@ class MakePlugin extends Command
         );
         $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
         $this->fileGenerator->generateFile("{$pluginDir}/composer.json", $fileContent);
+
+        // 7) README.md
+        $stubFile    = $this->fileGenerator->getStubContent('README.plugin.stub', null, $stubPath);
+        $readmeContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
+        $this->fileGenerator->generateFile("{$pluginDir}/README.md", $readmeContent);
     }
 
 
@@ -195,7 +248,7 @@ class MakePlugin extends Command
      */
     protected function createServiceProvider(string $pluginName, string $pluginDirName)
     {
-        $providerName = 'PluginServiceProvider';
+        $providerName = "{$pluginDirName}ServiceProvider";
 
         Artisan::call('plugin:make:provider', [
             'plugin' => $pluginDirName,
@@ -214,7 +267,7 @@ class MakePlugin extends Command
         // Register plugin in database
         Plugin::create([
             'name' => $pluginName,
-            'directory' => $pluginDirName, // ケバブケースのディレクトリ名を登録
+            'directory' => $pluginDirName, // キャメルケースのディレクトリ名を登録
             'namespace' => "Plugins\\$pluginDirName",
             'version' => '1.0.0',
             'status' => 0,
