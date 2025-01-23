@@ -26,12 +26,17 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/",
-            "Plugins\\": "plugins/",
-            "Custom\\": "custom/",
             "Custom\\App\\": "custom/app/",
-            "Custom\\Plugins\\": "custom/plugins/",
             "Custom\\Database\\Factories\\": "custom/database/factories/",
-            "Custom\\Database\\Seeders\\": "custom/database/seeders/"
+            "Custom\\Database\\Seeders\\": "custom/database/seeders/",
+            "Plugins\\PagesPlugin\\App\\": "plugins/PagesPlugin/app/",
+            "Plugins\\EventsPlugin\\App\\": "plugins/EventsPlugin/app",
+            "Plugins\\PagesPlugin\\Database\\Factories\\": "plugins/PagesPlugin/database/factories",
+            "Plugins\\ReservationsPlugin\\App\\": "plugins/ReservationsPlugin/app",
+            "Plugins\\PagesPlugin\\Database\\Seeders\\": "plugins/PagesPlugin/database/seeders",
+            "Plugins\\MyPlugin\\App\\": "plugins/MyPlugin/app",
+            "Plugins\\MyPlugin\\Database\\Factories\\": "plugins/MyPlugin/database/factories",
+            "Plugins\\MyPlugin\\Database\\Seeders\\": "plugins/MyPlugin/database/seeders"
         },
         "files": [
             "app/Helpers/AssetHelper.php"

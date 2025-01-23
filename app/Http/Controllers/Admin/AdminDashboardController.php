@@ -23,6 +23,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Admin\AdminController;
+use Illuminate\Support\Facades\Lang;
 
 class AdminDashboardController extends AdminController
 {
@@ -34,6 +35,12 @@ class AdminDashboardController extends AdminController
     //
     public function index()
     {
+        // 配列全体を取得
+        $translations = Lang::get('event-plugin::admin');
+
+        // 出力
+        //dd($translations);
+
         $this->viewParams['heading'] = 'admin.features.dashboard.heading';
         return view('admin::dashboard', $this->viewParams);
     }

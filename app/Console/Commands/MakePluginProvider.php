@@ -70,8 +70,8 @@ class MakePluginProvider extends Command
 
         // 使用するスタブファイルを選択
         $stubFileName = $usePluginStub ? 'provider.plugin.stub' : 'provider.stub';
-        $customStubPaths = [base_path('stubs')];
-        $defaultStubPath = base_path("vendor/laravel/framework/src/Illuminate/Console/stubs/{$stubFileName}");
+        $customStubPaths = config('console.custom_stub_paths');
+        $defaultStubPath = config('console.default_stub_directory');
 
         $stub = $this->fileGenerator->getStubContent($stubFileName, $defaultStubPath, $customStubPaths);
 

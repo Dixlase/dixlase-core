@@ -20,19 +20,16 @@ return [
 
     'nav' => [
         'dashboard' => 'ダッシュボード',
-        'contents' => [
-            'text' => 'コンテンツ管理',
-            'pages' => [
-                'text' => 'ページ管理',
-                'index' => 'ページマスター',
-                'create' => 'ページ新規作成',
-            ],
-            'themes' => [
-                'text' => 'テーマ設定',
-                'index' => '一覧',
-                'install' => 'インストール',
-            ]
+        'front' => [
+            'text' => 'フロントページ管理',
+            'index' => 'フロントページマスター',
         ],
+        'media' => [
+            'text' => 'メディア管理',
+            'index' => 'メディアマスター',
+            'upload' => 'メディアアップロード',
+        ],
+
         'users' => [
             'text' => 'ユーザー管理',
             'index' => 'ユーザーマスター',
@@ -48,6 +45,11 @@ return [
                 'create' => '新規メンバー作成',
                 'edit' => '編集',
                 'profile' => 'プロフィール設定',
+            ],
+            'themes' => [
+                'text' => 'テーマ設定',
+                'index' => '一覧',
+                'install' => 'インストール',
             ],
             'plugins' => [
                 'text' => 'プラグイン設定',
@@ -77,20 +79,7 @@ return [
                     'heading' => 'ページ編集',
                 ],
             ],
-            'themes' => [
-                'title' => 'テーマ設定',
-                'color' => 'カラー',
-                'font' => 'フォント',
-                'submit' => '更新',
-                'index' => [
-                    'heading' => 'テーマ一覧',
-                ],
-                'install' => [
-                    'heading' => 'テーマインストール',
-                    'name' => 'テーマ名',
-                    'submit' => 'インストール',
-                ],
-            ],
+
         ],
         'users' => [
             'index' => [
@@ -149,6 +138,20 @@ return [
                     'password' => 'パスワード',
                     'password_confirmation' => 'パスワード確認',
                     'submit' => '更新',
+                ],
+            ],
+            'themes' => [
+                'title' => 'テーマ設定',
+                'color' => 'カラー',
+                'font' => 'フォント',
+                'submit' => '更新',
+                'index' => [
+                    'heading' => 'テーマ一覧',
+                ],
+                'install' => [
+                    'heading' => 'テーマインストール',
+                    'name' => 'テーマ名',
+                    'submit' => 'インストール',
                 ],
             ],
             'plugins' => [

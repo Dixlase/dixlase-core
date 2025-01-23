@@ -103,16 +103,19 @@ class MakeTheme extends Command
     protected function createThemeFiles(string $themeDir, string $themeName, string $themeDirName): void
     {
         // スタブファイルを探すパス
-        $stubPath = [base_path('stubs')];
+        $stubPath = config('console.custom_stub_paths');
 
         // 外部ファイルやDBなどからライセンス情報を取得
         $licenseContent = $this->fileGenerator->getLicenseContent();
 
+        $licenseName = $this->fileGenerator->getLicenseName();
+
         // プレースホルダ定義
         $placeholders = [
-            '{{ license }}'        => $licenseContent,
-            '{{ themeName }}'      => $themeName,      // 人間向け名称
-            '{{ themeDirectory }}' => $themeDirName,   // ディレクトリ名
+            '{{ license }}'        => $licenseContent,  // ライセンス本文
+            '{{ themeName }}'      => $themeName,       // 人間向け名称
+            '{{ themeDirectory }}' => $themeDirName,    // ディレクトリ名
+            '{{ themeLicense }}'   => $licenseName,     // ライセンス名
         ];
 
         // ***** vite.config.js *****
