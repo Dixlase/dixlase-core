@@ -22,26 +22,62 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\GeneratorCommand;
+use Illuminate\Console\Command;
+use Illuminate\Support\Str;
+use App\Services\FileGenerator;
+use App\Console\Traits\MakeSeederTrait;
 
-class MakeCustomSeeder extends GeneratorCommand
+class MakeCustomSeeder extends Command
 {
-    protected $signature = 'make:custom-seeder {name}';
+    use MakeSeederTrait;
+
+    protected $signature = 'make:custom:seeder
+        {name : The name of the seeder class (e.g. "EventSeeder" or "Event")}
+        {--force : Overwrite if the seeder already exists}';
+
     protected $description = 'Create a new seeder in the custom directory';
 
-    protected function getStub()
+    protected FileGenerator $fileGenerator;
+
+    public function __construct(FileGenerator $fileGenerator)
     {
-        return base_path('/stubs/seeder.stub');  // シーダースタブ（オプション）
+        parent::__construct();
+        $this->fileGenerator = $fileGenerator;
     }
 
-    protected function getDefaultNamespace($rootNamespace)
+    public function handle()
     {
-        return $rootNamespace . '\Custom\Database\Seeders';  // custom/database/seeders に作成
+        // 1) parse subDirs + className
+        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
+
+        if (! Str::endsWith($className, 'Seeder')) {
+            $className .= 'Seeder';
+        }
+
+        // 2) --force
+        $force = (bool)$this->option('force');
+
+        // 3) makeFile
+        $this->makeFile($className, $subDirs, $force);
+
+        return 0;
     }
 
-    protected function buildClass($name)
+    protected function getSeederDirectory(array $subDirs): string
     {
-        $name = str_replace('Custom\\Database\\Seeders', '', $name);
-        return parent::buildClass($name);
+        $base = base_path('custom/database/seeders');
+        if ($subDirs) {
+            $base .= '/' . implode('/', $subDirs);
+        }
+        return $base;
+    }
+
+    protected function getSeederNamespace(array $subDirs): string
+    {
+        $base = 'Custom\\Database\\Seeders';
+        if ($subDirs) {
+            $base .= '\\' . implode('\\', $subDirs);
+        }
+        return $base;
     }
 }

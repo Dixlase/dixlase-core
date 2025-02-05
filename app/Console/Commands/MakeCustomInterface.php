@@ -1,47 +1,62 @@
 <?php
 
-/**
- * This file is part of Your Software Name.
- *
- * Copyright (C) 2024 exc-D inc.
- * Website: https://exc-d.com
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <https://www.gnu.org/licenses/>.
- */
-
 namespace App\Console\Commands;
 
-use Illuminate\Console\GeneratorCommand;
+use Illuminate\Console\Command;
+use Illuminate\Support\Str;
+use App\Services\FileGenerator;
+use App\Console\Traits\MakeInterfaceTrait;
 
-class MakeCustomInterface extends GeneratorCommand
+class MakeCustomInterface extends Command
 {
-    protected $signature = 'make:custom-interface {name}';
+    use MakeInterfaceTrait;
+
+    protected $signature = 'make:custom:interface
+        {name : The interface name (with optional subfolders, e.g. Admin/MyInterface)}
+        {--force : Overwrite if the interface already exists}';
+
     protected $description = 'Create a new interface in the custom directory';
 
-    protected function getStub()
+    protected FileGenerator $fileGenerator;
+
+    public function __construct(FileGenerator $fileGenerator)
     {
-        return base_path('/stubs/interface.stub');  // インターフェーススタブ（オプション）
+        parent::__construct();
+        $this->fileGenerator = $fileGenerator;
     }
 
-    protected function getDefaultNamespace($rootNamespace)
+    public function handle()
     {
-        return $rootNamespace . '\Custom\Contracts';  // custom/contracts に作成
+        // 1) parse subDirs + className
+        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
+
+        // 2) --force
+        $force = (bool)$this->option('force');
+
+        // 3) trait method
+        $this->makeFile($className, $subDirs, $force);
+
+        return 0;
     }
 
-    protected function buildClass($name)
+    /**
+     * getInterfaceDirectory/Namespace
+     */
+    protected function getInterfaceDirectory(array $subDirs): string
     {
-        $name = str_replace('Custom\\Contracts', '', $name);
-        return parent::buildClass($name);
+        $base = base_path('custom/contracts');
+        if ($subDirs) {
+            $base .= '/' . implode('/', $subDirs);
+        }
+        return $base;
+    }
+
+    protected function getInterfaceNamespace(array $subDirs): string
+    {
+        $base = 'Custom\\Contracts';
+        if ($subDirs) {
+            $base .= '\\' . implode('\\', $subDirs);
+        }
+        return $base;
     }
 }

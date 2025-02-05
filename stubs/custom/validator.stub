@@ -1,0 +1,20 @@
+<?php
+
+{{ license }}
+namespace {{ namespace }};
+
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Contracts\Validation\Validator as ValidatorContract;
+
+class {{ class }}
+{
+    /**
+     * Example validation logic
+     */
+    public static function validate(array $input): ValidatorContract
+    {
+        return Validator::make($input, [
+            // your rules here
+        ]);
+    }
+}

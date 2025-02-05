@@ -22,26 +22,61 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\GeneratorCommand;
+use Illuminate\Console\Command;
+use Illuminate\Support\Str;
+use App\Services\FileGenerator;
+use App\Console\Traits\MakeTraitTrait;
 
-class MakeCustomTrait extends GeneratorCommand
+class MakeCustomTrait extends Command
 {
-    protected $signature = 'make:custom-trait {name}';
-    protected $description = 'Create a new trait in the custom directory';
+    use MakeTraitTrait;
 
-    protected function getStub()
+    protected $signature = 'make:custom:trait
+        {name : The trait name (with optional subfolders, e.g. Admin/MyTrait)}
+        {--force : Overwrite if trait already exists}';
+
+    protected $description = 'Create a new trait in the custom directory.';
+
+    protected FileGenerator $fileGenerator;
+
+    public function __construct(FileGenerator $fileGenerator)
     {
-        return base_path('/stubs/trait.stub');  // トレイツタブ（オプション）
+        parent::__construct();
+        $this->fileGenerator = $fileGenerator;
     }
 
-    protected function getDefaultNamespace($rootNamespace)
+    public function handle()
     {
-        return $rootNamespace . '\Custom\Traits';  // custom/traits に作成
+        // 1) parse subDirs + className
+        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
+
+        // 2) --force
+        $force = (bool) $this->option('force');
+
+        // 3) trait method
+        $this->makeFile($className, $subDirs, $force);
+
+        return 0;
     }
 
-    protected function buildClass($name)
+    /**
+     * (B)パターン: getTraitDirectory/Namespace
+     */
+    protected function getTraitDirectory(array $subDirs): string
     {
-        $name = str_replace('Custom\\Traits', '', $name);
-        return parent::buildClass($name);
+        $base = base_path('custom/traits');
+        if ($subDirs) {
+            $base .= '/' . implode('/', $subDirs);
+        }
+        return $base;
+    }
+
+    protected function getTraitNamespace(array $subDirs): string
+    {
+        $base = 'Custom\\Traits';
+        if ($subDirs) {
+            $base .= '\\' . implode('\\', $subDirs);
+        }
+        return $base;
     }
 }

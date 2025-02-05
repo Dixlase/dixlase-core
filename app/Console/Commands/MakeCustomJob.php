@@ -22,26 +22,68 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\GeneratorCommand;
+use Illuminate\Console\Command;
+use Illuminate\Support\Str;
+use App\Services\FileGenerator;
+use App\Console\Traits\MakeJobTrait;
 
-class MakeCustomJob extends GeneratorCommand
+
+
+class MakeCustomJob extends Command
 {
-    protected $signature = 'make:custom-job {name}';
+    use MakeJobTrait;
+
+    /**
+     * コマンド署名
+     */
+    protected $signature = 'make:custom:job
+        {name : The job class name (with optional subfolders, e.g. Admin/MyJob)}
+        {--force : Overwrite if job already exists}
+        {--sync : Indicates that the job should be synchronous}';
+
     protected $description = 'Create a new job in the custom directory';
 
-    protected function getStub()
+    protected FileGenerator $fileGenerator;
+
+    public function __construct(FileGenerator $fileGenerator)
     {
-        return base_path('/stubs/job.stub');  // ジョブスタブ（オプション）
+        parent::__construct();
+        $this->fileGenerator = $fileGenerator;
     }
 
-    protected function getDefaultNamespace($rootNamespace)
+    public function handle()
     {
-        return $rootNamespace . '\Custom\Jobs';  // custom/jobs に作成
+        // 1) subDirs + className
+        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
+
+        // 2) --force, --sync
+        $force = (bool) $this->option('force');
+        $sync  = (bool) $this->option('sync');
+
+        // 3) Traitのメソッドを呼ぶ
+        $this->makeFile($className, $subDirs, $force, $sync);
+
+        return 0;
     }
 
-    protected function buildClass($name)
+    /**
+     * ディレクトリ/名前空間
+     */
+    protected function getJobDirectory(array $subDirs): string
     {
-        $name = str_replace('Custom\\Jobs', '', $name);
-        return parent::buildClass($name);
+        $base = base_path('custom/app/Jobs');
+        if ($subDirs) {
+            $base .= '/' . implode('/', $subDirs);
+        }
+        return $base;
+    }
+
+    protected function getJobNamespace(array $subDirs): string
+    {
+        $base = 'Custom\\App\\Jobs';
+        if ($subDirs) {
+            $base .= '\\' . implode('\\', $subDirs);
+        }
+        return $base;
     }
 }

@@ -23,19 +23,25 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Services\FileGenerator;
 use Illuminate\Support\Str;
+use App\Services\FileGenerator;
+use App\Console\Traits\MakeProviderTrait;
+use Illuminate\Support\ServiceProvider;
 
 class MakePluginProvider extends Command
 {
 
+    use MakeProviderTrait;
 
-    protected $signature = 'plugin:make:provider
-        {plugin : The plugin name}
-        {name : The name of the service provider}
-        {--plugin : Use the plugin-specific provider template}';
+
+    protected $signature = 'make:plugin:provider
+        {plugin : The plugin name (e.g. "MyPlugin")}
+        {name : The name of the service provider (e.g. "MyPluginServiceProvider")}
+        {--plugin : Use the plugin-specific provider template (provider.plugin.stub)}
+        {--force : Overwrite if provider already exists}';
 
     protected $description = 'Create a new service provider for the specified plugin.';
+
     protected FileGenerator $fileGenerator;
 
     public function __construct(FileGenerator $fileGenerator)
@@ -46,46 +52,72 @@ class MakePluginProvider extends Command
 
     public function handle()
     {
-        $pluginName = $this->argument('plugin');
-        $fileName = $this->argument('name');
-        $usePluginStub = $this->option('plugin'); // プラグイン固有のスタブを使用するか
+        // 1) plugin & provider
+        $pluginInput = $this->argument('plugin'); // e.g. "MyPlugin"
+        $className   = $this->argument('name');   // e.g. "MyPluginServiceProvider"
+        $pluginStub  = (bool) $this->option('plugin');
+        $force       = (bool) $this->option('force');
 
-        $namespace = $this->fileGenerator->generateNamespace($pluginName, "Plugins") . "\\App\\Providers";
-        $pluginAlias = Str::kebab($pluginName);
-        $pluginBaseName = Str::studly($pluginName);
+        // 2) parseClassName → subDirs + finalClass
+        //    もし "Admin/MyProvider" のようにsubDirsを使うなら:
+        [$subDirs, $finalClass] = $this->fileGenerator->parseClassName($className);
 
-        $targetDirectory = base_path("plugins/{$pluginName}/app/Providers");
-        $filePath = "{$targetDirectory}/{$fileName}.php";
+        // 3) Traitの makeFile
+        //    => (className, subDirs, force, pluginStub)
+        $this->makeFile($finalClass, $subDirs, $force, $pluginStub);
 
-        try {
-            // ファイルパスを準備 (ディレクトリ作成 & 存在チェック)
-            $this->fileGenerator->prepareFilePath(
-                $filePath,
-                "Service provider [{$fileName}] already exists in plugin [{$pluginName}]."
-            );
-        } catch (\RuntimeException $e) {
-            $this->error($e->getMessage());
-            return 1;
-        }
-
-        // 使用するスタブファイルを選択
-        $stubFileName = $usePluginStub ? 'provider.plugin.stub' : 'provider.stub';
-        $customStubPaths = config('console.custom_stub_paths');
-        $defaultStubPath = config('console.default_stub_directory');
-
-        $stub = $this->fileGenerator->getStubContent($stubFileName, $defaultStubPath, $customStubPaths);
-
-        $stub = $this->fileGenerator->embedLicense($stub, [
-            '{{ namespace }}' => $namespace,
-            '{{ class }}'     => $fileName,
-            '{{ pluginName }}' => $pluginBaseName,
-            '{{ pluginAlias }}' => $pluginAlias,
-        ]);
-
-        $this->fileGenerator->generateFile($filePath, $stub);
-
-        $this->info("Service provider [{$fileName}] created successfully in plugin [{$pluginName}].");
+        // 4) addProviderToBootstrapFile (Laravel 11+ オプション)
+        $this->addProviderToBootstrap($pluginInput, $subDirs, $finalClass);
 
         return 0;
+    }
+
+    /**
+     * ServiceProvider::addProviderToBootstrapFile()を使って
+     * "bootstrap/providers.php" にプロバイダを登録したい場合
+     */
+    protected function addProviderToBootstrap(
+        string $pluginName,
+        array $subDirs,
+        string $className
+    ): void {
+        // "Plugins\MyPlugin\App\Providers" + subDirs
+        $providerNamespace = $this->getProviderNamespace($subDirs);
+        $qualifiedClass = $providerNamespace . '\\' . $className;
+
+        try {
+            if (method_exists(ServiceProvider::class, 'addProviderToBootstrapFile')) {
+                // base_path('bootstrap/providers.php') 等
+                $filePath = base_path('bootstrap/providers.php');
+
+                ServiceProvider::addProviderToBootstrapFile($qualifiedClass, $filePath);
+                $this->info("Added [{$qualifiedClass}] to [{$filePath}].");
+            }
+        } catch (\Throwable $ex) {
+            $this->warn("Unable to add provider to bootstrap file: {$ex->getMessage()}");
+        }
+    }
+
+    /**
+     * (B)パターン: getProviderDirectory/Namespace
+     */
+    protected function getProviderDirectory(array $subDirs): string
+    {
+        $plugin = $this->argument('plugin');
+        $base = base_path("plugins/{$plugin}/app/Providers");
+        if ($subDirs) {
+            $base .= '/' . implode('/', $subDirs);
+        }
+        return $base;
+    }
+
+    protected function getProviderNamespace(array $subDirs): string
+    {
+        $plugin = Str::studly($this->argument('plugin'));
+        $base = "Plugins\\{$plugin}\\App\\Providers";
+        if ($subDirs) {
+            $base .= '\\' . implode('\\', $subDirs);
+        }
+        return $base;
     }
 }

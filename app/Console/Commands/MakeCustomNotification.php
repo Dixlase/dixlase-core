@@ -22,26 +22,56 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\GeneratorCommand;
+use Illuminate\Console\Command;
+use Illuminate\Support\Str;
+use App\Services\FileGenerator;
+use App\Console\Traits\MakeNotificationTrait;
 
-class MakeCustomNotification extends GeneratorCommand
+class MakeCustomNotification extends Command
 {
-    protected $signature = 'make:custom-notification {name}';
+    use MakeNotificationTrait;
+
+    protected $signature = 'make:custom:notification
+        {name : The notification class (with optional subfolders, e.g. Admin/SendUpdate)}
+        {--force : Overwrite if notification already exists}';
+
     protected $description = 'Create a new notification in the custom directory';
 
-    protected function getStub()
+    protected FileGenerator $fileGenerator;
+
+    public function __construct(FileGenerator $fileGenerator)
     {
-        return base_path('/stubs/notification.stub');  // 通知スタブ（オプション）
+        parent::__construct();
+        $this->fileGenerator = $fileGenerator;
     }
 
-    protected function getDefaultNamespace($rootNamespace)
+    public function handle()
     {
-        return $rootNamespace . '\Custom\Notifications';  // custom/notifications に作成
+        // subDirs + className
+        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
+
+        $force = (bool)$this->option('force');
+
+        $this->makeFile($className, $subDirs, $force);
+
+        return 0;
     }
 
-    protected function buildClass($name)
+    protected function getNotificationDirectory(array $subDirs): string
     {
-        $name = str_replace('Custom\\Notifications', '', $name);
-        return parent::buildClass($name);
+        $base = base_path('custom/notifications');
+        if ($subDirs) {
+            $base .= '/' . implode('/', $subDirs);
+        }
+        return $base;
+    }
+
+    protected function getNotificationNamespace(array $subDirs): string
+    {
+        $base = 'Custom\\Notifications';
+        if ($subDirs) {
+            $base .= '\\' . implode('\\', $subDirs);
+        }
+        return $base;
     }
 }

@@ -1,0 +1,9 @@
+<?php
+
+{{ license }}
+namespace {{ namespace }};
+
+interface {{ class }}
+{
+    //
+}

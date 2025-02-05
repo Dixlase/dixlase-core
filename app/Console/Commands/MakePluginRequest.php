@@ -25,13 +25,17 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use App\Services\FileGenerator;
+use App\Console\Traits\MakeRequestTrait;
+
 
 class MakePluginRequest extends Command
 {
-    protected $signature = 'plugin:make:request
-        {plugin : The plugin name}
-        {name : The name of the FormRequest (optionally with subfolders, e.g. Admin/StoreMyDataRequest)}
-    ';
+    use MakeRequestTrait;
+
+    protected $signature = 'make:plugin:request
+        {plugin : The plugin name (e.g. "MyPlugin")}
+        {name : The FormRequest class name (with optional subfolders, e.g. Admin/StoreDataRequest)}
+        {--force : Overwrite if the request already exists}';
 
     protected $description = 'Create a new FormRequest class for the specified plugin.';
 
@@ -45,63 +49,41 @@ class MakePluginRequest extends Command
 
     public function handle()
     {
-        // 1) プラグイン名を studly 変換しておく
-        $pluginNameInput  = $this->argument('plugin');
-        $studlyPluginName = Str::studly($pluginNameInput);
+        // 1) plugin名
+        $pluginName = Str::studly($this->argument('plugin'));
 
-        // 2) リクエスト名をサブディレクトリとクラス名に分割
-        [$subDirs, $className] = $this->parseClassName($this->argument('name'));
+        // 2) parse subDirs + className
+        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
 
-        // 3) ベースの namespace とフォルダ
-        $baseNamespace = "Plugins\\{$studlyPluginName}\\App\\Http\\Requests";
-        $baseFolder    = base_path("plugins/{$studlyPluginName}/app/Http/Requests");
+        // 3) --force
+        $force = (bool)$this->option('force');
 
-        // サブディレクトリ付の場合
-        $namespace       = $baseNamespace . ($subDirs ? '\\' . implode('\\', $subDirs) : '');
-        $targetDirectory = $baseFolder    . ($subDirs ? '/' . implode('/', $subDirs) : '');
+        // 4) Traitの makeFile(...) 呼び出し
+        $this->makeFile($className, $subDirs, $force);
 
-        // 4) 出力ファイルパス
-        $filePath = "{$targetDirectory}/{$className}.php";
-
-        try {
-            $this->fileGenerator->prepareFilePath(
-                $filePath,
-                "FormRequest [{$className}] already exists in plugin [{$studlyPluginName}]."
-            );
-        } catch (\RuntimeException $e) {
-            $this->error($e->getMessage());
-            return Command::FAILURE;
-        }
-
-        // 5) stub ファイル (今回は常に request.stub を使用)
-        $stubFile = 'request.stub';
-        $customStubPaths = config('console.custom_stub_paths');
-        $stub = $this->fileGenerator->getStubContent($stubFile, null, $customStubPaths);
-
-        // 6) プレースホルダ埋め込み
-        $stub = $this->fileGenerator->embedLicense($stub, [
-            '{{ namespace }}' => $namespace,
-            '{{ class }}'     => $className,
-        ]);
-
-        // 7) 出力
-        $this->fileGenerator->generateFile($filePath, $stub);
-
-        $this->info("FormRequest [{$className}] created successfully in plugin [{$studlyPluginName}].");
-        return Command::SUCCESS;
+        return 0;
     }
 
     /**
-     * "Admin/StorePageRequest" → [["Admin"], "StorePageRequest"] に分解
+     * (B)パターンで getRequestDirectory/Namespace
      */
-    protected function parseClassName(string $input): array
+    protected function getRequestDirectory(array $subDirs): string
     {
-        $path = str_replace('\\', '/', $input);
-        $parts = explode('/', $path);
+        $plugin = Str::studly($this->argument('plugin'));
+        $base = base_path("plugins/{$plugin}/app/Http/Requests");
+        if ($subDirs) {
+            $base .= '/' . implode('/', $subDirs);
+        }
+        return $base;
+    }
 
-        $className = array_pop($parts);
-        $subDirs   = $parts;
-
-        return [$subDirs, $className];
+    protected function getRequestNamespace(array $subDirs): string
+    {
+        $plugin = Str::studly($this->argument('plugin'));
+        $base = "Plugins\\{$plugin}\\App\\Http\\Requests";
+        if ($subDirs) {
+            $base .= '\\' . implode('\\', $subDirs);
+        }
+        return $base;
     }
 }

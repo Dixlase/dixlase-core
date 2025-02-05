@@ -22,26 +22,97 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\GeneratorCommand;
+use Illuminate\Console\Command;
+use Illuminate\Support\Str;
+use App\Services\FileGenerator;
+use App\Console\Traits\MakeTestTrait;
 
-class MakeCustomTest extends GeneratorCommand
+class MakeCustomTest extends Command
 {
-    protected $signature = 'make:custom-test {name}';
+    use MakeTestTrait;
+
+    protected $signature = 'make:custom:test
+        {name : The test class name (with optional subfolders, e.g. Admin/MyExampleTest)}
+        {--force : Overwrite if test already exists}
+        {--unit : Create a unit test}
+        {--pest : Create a Pest test}
+        {--phpunit : Create a PHPUnit test (disable Pest even if installed)}';
+
     protected $description = 'Create a new test in the custom directory';
 
-    protected function getStub()
+    protected FileGenerator $fileGenerator;
+
+    /**
+     * コンストラクタ
+     */
+    public function __construct(FileGenerator $fileGenerator)
     {
-        return base_path('/stubs/test.stub');  // テストスタブ（オプション）
+        parent::__construct();
+        $this->fileGenerator = $fileGenerator;
     }
 
-    protected function getDefaultNamespace($rootNamespace)
+    public function handle()
     {
-        return $rootNamespace . '\Custom\Tests\Feature';  // custom/tests/feature に作成
+        // 1) parse subDirs + className
+        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
+
+        // 2) options
+        $force   = (bool) $this->option('force');
+        $isUnit  = (bool) $this->option('unit');
+        $usingPest = $this->usingPest();
+
+        // 3) Traitの makeFile(...) 呼び出し
+        $this->makeFile($className, $subDirs, $force, $isUnit, $usingPest);
+
+        return 0;
     }
 
-    protected function buildClass($name)
+    /**
+     * Pest を使うかどうかを判定
+     *   --phpunit => false
+     *   --pest => true
+     *   それ以外 => pest がインストールされているか
+     */
+    protected function usingPest(): bool
     {
-        $name = str_replace('Custom\\Tests\\Feature', '', $name);
-        return parent::buildClass($name);
+        if ($this->option('phpunit')) {
+            return false;
+        }
+
+        if ($this->option('pest')) {
+            return true;
+        }
+
+        // pestがあるかどうか簡易チェック
+        return function_exists('\Pest\version') && file_exists(base_path('tests/Pest.php'));
+    }
+
+    /**
+     * (B)パターンで getTestDirectory/Namespace
+     */
+    protected function getTestDirectory(array $subDirs): string
+    {
+        // 例: "custom/tests/Feature"
+        // もし --unit を見て "custom/tests/Unit" に分岐させたい場合は
+        // handle() でフラグを保存して使うか、ここで $this->option('unit') 参照してもOK
+        $testType = $this->option('unit') ? 'Unit' : 'Feature';
+
+        $base = base_path("custom/tests/{$testType}");
+        if ($subDirs) {
+            $base .= '/' . implode('/', $subDirs);
+        }
+        return $base;
+    }
+
+    protected function getTestNamespace(array $subDirs): string
+    {
+        // 同様に: "Custom\Tests\Feature" or "Custom\Tests\Unit"
+        $testType = $this->option('unit') ? 'Unit' : 'Feature';
+
+        $base = "Custom\\Tests\\{$testType}";
+        if ($subDirs) {
+            $base .= '\\' . implode('\\', $subDirs);
+        }
+        return $base;
     }
 }

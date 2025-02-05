@@ -22,26 +22,62 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\GeneratorCommand;
+use Illuminate\Console\Command;
+use Illuminate\Support\Str;
+use App\Services\FileGenerator;
+use App\Console\Traits\MakeValidatorTrait;
 
-class MakeCustomValidator extends GeneratorCommand
+class MakeCustomValidator extends Command
 {
-    protected $signature = 'make:custom-validator {name}';
-    protected $description = 'Create a new custom validation rule in the custom directory';
+    use MakeValidatorTrait;
 
-    protected function getStub()
+    protected $signature = 'make:custom:validator
+        {name : The name of the validator/rule (with optional subfolders, e.g. Admin/MyCustomRule)}
+        {--force : Overwrite if validator file already exists}';
+
+    protected $description = 'Create a new custom validator (rule) in the custom directory';
+
+    protected FileGenerator $fileGenerator;
+
+    public function __construct(FileGenerator $fileGenerator)
     {
-        return base_path('/stubs/validator.stub');  // バリデータスタブ（オプション）
+        parent::__construct();
+        $this->fileGenerator = $fileGenerator;
     }
 
-    protected function getDefaultNamespace($rootNamespace)
+    public function handle()
     {
-        return $rootNamespace . '\Custom\Validation';  // custom/validation に作成
+        // 1) parse subDirs + className
+        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
+
+        // 2) --force
+        $force = (bool)$this->option('force');
+
+        // 3) trait method
+        $this->makeFile($className, $subDirs, $force);
+
+        return 0;
     }
 
-    protected function buildClass($name)
+    /**
+     * (B)パターン: getValidatorDirectory/Namespace
+     */
+    protected function getValidatorDirectory(array $subDirs): string
     {
-        $name = str_replace('Custom\\Validation', '', $name);
-        return parent::buildClass($name);
+        $base = base_path('custom/validators');
+        // "custom/validators" ディレクトリに配置する想定
+        if ($subDirs) {
+            $base .= '/' . implode('/', $subDirs);
+        }
+        return $base;
+    }
+
+    protected function getValidatorNamespace(array $subDirs): string
+    {
+        $base = 'Custom\\Validators';
+        if ($subDirs) {
+            $base .= '\\' . implode('\\', $subDirs);
+        }
+        return $base;
     }
 }
