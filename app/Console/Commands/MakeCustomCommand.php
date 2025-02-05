@@ -1,24 +1,25 @@
 <?php
 
 /**
- * This file is part of Your Software Name.
+ * This file is part of MySoftware.
  *
- * Copyright (C) 2024 exc-D inc.
+ * Copyright (C) 2025 exc-D inc.
  * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+
 
 namespace App\Console\Commands;
 
@@ -39,19 +40,44 @@ class MakeCustomCommand extends Command
 
     protected FileGenerator $fileGenerator;
 
-    protected function getStub()
+    public function __construct(FileGenerator $fileGenerator)
     {
-        return base_path('/stubs/command.stub');  // コマンドスタブ（オプション）
+        parent::__construct();
+        $this->fileGenerator = $fileGenerator;
     }
 
-    protected function getDefaultNamespace($rootNamespace)
+    public function handle()
     {
-        return $rootNamespace . '\Custom\Console\Commands';  // custom/console/commands に作成
+        // 1) parse subDirs + className
+        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
+
+        // 2) --force
+        $force = (bool) $this->option('force');
+
+        // 3) Trait method
+        $this->makeFile($className, $subDirs, $force);
+
+        return 0;
     }
 
-    protected function buildClass($name)
+    /**
+     * (B)パターン: getCommandDirectory/Namespace
+     */
+    protected function getCommandDirectory(array $subDirs): string
     {
-        $name = str_replace('Custom\\Console\\Commands', '', $name);
-        return parent::buildClass($name);
+        $base = base_path('custom/console/commands');
+        if ($subDirs) {
+            $base .= '/' . implode('/', $subDirs);
+        }
+        return $base;
+    }
+
+    protected function getCommandNamespace(array $subDirs): string
+    {
+        $base = 'Custom\\Console\\Commands';
+        if ($subDirs) {
+            $base .= '\\' . implode('\\', $subDirs);
+        }
+        return $base;
     }
 }
