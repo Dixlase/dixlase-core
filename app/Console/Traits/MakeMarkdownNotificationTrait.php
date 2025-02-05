@@ -1,0 +1,64 @@
+<?php
+
+namespace App\Console\Traits;
+
+use Illuminate\Support\Str;
+
+/**
+ * Markdown Notification を作成するための Trait.
+ * -> MakeFileTrait を use してファイル生成を共通化。
+ */
+trait MakeMarkdownNotificationTrait
+{
+    use MakeFileTrait;
+
+    /**
+     * 通知クラスを作成するメイン処理
+     *
+     * @param  string  $className
+     * @param  array   $subDirs
+     * @param  bool    $force
+     * @param  string  $view  --view=... で指定されたMarkdown Blade
+     */
+    protected function makeFile(
+        string $className,
+        array $subDirs,
+        bool $force,
+        string $view
+    ): void {
+        // 1) stubファイル => markdown-notification.stub
+        $stubFile = 'markdown-notification.stub';
+
+        // 2) options
+        $options = [
+            'force' => $force,
+        ];
+
+        // 3) 追加プレースホルダ => '{{ view }}' => $view
+        $extraPlaceholders = [
+            '{{ view }}' => $view,
+        ];
+
+        // 4) makeFiler
+        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders);
+    }
+
+    /**
+     * (B)パターン: getDirectory/getNamespace => getNotificationDirectory/Namespace
+     */
+    protected function getDirectory(array $subDirs): string
+    {
+        return $this->getMarkdownNotificationDirectory($subDirs);
+    }
+
+    protected function getNamespace(array $subDirs): string
+    {
+        return $this->getMarkdownNotificationNamespace($subDirs);
+    }
+
+    /**
+     * サブクラスで実装
+     */
+    abstract protected function getMarkdownNotificationDirectory(array $subDirs): string;
+    abstract protected function getMarkdownNotificationNamespace(array $subDirs): string;
+}

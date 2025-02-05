@@ -25,24 +25,28 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use App\Services\FileGenerator;
+use App\Console\Traits\MakeControllerTrait;
 
 class MakeCustomController extends Command
 {
+    use MakeControllerTrait;
+
     /**
      * Artisan コマンド名と引数/オプション定義
      */
-    protected $signature = 'make:custom-controller
+    protected $signature = 'make:custom:controller
         {name : The name of the controller}
-        {--resource : Generate a resource controller class}
-        {--api : Generate an API controller class}
-        {--invokable : Generate a single method, invokable controller class}
-        {--model= : Generate a resource controller for the given model}';
+        {--type=}
+        {--force}
+        {--invokable}
+        {--model=}
+        {--parent=}
+        {--resource}
+        {--requests}
+        {--api}
+        {--singleton}
+        {--creatable}';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Create a new controller in the custom directory';
 
     protected FileGenerator $fileGenerator;
@@ -55,174 +59,52 @@ class MakeCustomController extends Command
 
     public function handle()
     {
-        // 1) コントローラ名からサブディレクトリとクラス名を分割
-        [$subDirs, $className] = $this->parseControllerName($this->argument('name'));
+        $path = str_replace('\\', '/', $this->argument('name'));
+        $parts = explode('/', $path);
+        $className = array_pop($parts);
+        $subDirs   = $parts;
 
-        // 2) ベース namespace と出力先ディレクトリ
-        $baseNamespace   = 'Custom\\App\\Http\\Controllers';
-        $basePath        = base_path('custom/app/Http/Controllers');
+        // まとめたオプション
+        $options = [
+            'type'      => $this->option('type'),
+            'force'     => $this->option('force'),
+            'invokable' => $this->option('invokable'),
+            'model'     => $this->option('model'),
+            'parent'    => $this->option('parent'),
+            'resource'  => $this->option('resource'),
+            'requests'  => $this->option('requests'),
+            'api'       => $this->option('api'),
+            'singleton' => $this->option('singleton'),
+            'creatable' => $this->option('creatable'),
+        ];
 
-        // サブディレクトリがあれば結合
-        $namespace       = $baseNamespace . ($subDirs ? '\\' . implode('\\', $subDirs) : '');
-        $targetDirectory = $basePath      . ($subDirs ? '/' . implode('/', $subDirs) : '');
-
-        // 3) コントローラの PHP ファイルパス
-        $filePath = "{$targetDirectory}/{$className}.php";
-
-        try {
-            // ファイルパスを準備 (ディレクトリ作成 & 存在チェック)
-            $this->fileGenerator->prepareFilePath(
-                $filePath,
-                "Controller [{$className}] already exists in the custom directory."
-            );
-        } catch (\RuntimeException $e) {
-            $this->error($e->getMessage());
-            return 1;
-        }
-
-        // 5) Stubファイル選択
-        $stubFileName   = $this->determineStubFileName();
-        $customStubPaths = config('console.custom_stub_paths');
-        $defaultStubPath = config('console.default_stub_directory');
-
-        // スタブファイルを取得
-        $stub = $this->fileGenerator->getStubContent($stubFileName, $defaultStubPath, $customStubPaths);
-
-        // ライセンス情報とプレースホルダを埋め込む
-        $stub = $this->fileGenerator->embedLicense($stub, [
-            '{{ rootNamespace }}' => app()->getNamespace(),
-            '{{ namespace }}' => $namespace,
-            '{{ class }}'     => $className,
-            '{{ model }}'     => $this->option('model') ?: 'App\\Models\\Sample',
-        ]);
-
-        // 7) モデル・フォームリクエスト関連の置換
-        if ($this->option('model')) {
-            // モデル用の置換 (モデルがない場合は作成するか尋ねる)
-            $stub = str_replace(
-                array_keys($this->buildModelReplacements()),
-                array_values($this->buildModelReplacements()),
-                $stub
-            );
-
-            // Resource や API 指定があれば、フォームリクエスト関連を埋め込む例
-            if ($this->option('resource') || $this->option('api')) {
-                $stub = str_replace(
-                    array_keys($this->buildFormRequestReplacements()),
-                    array_values($this->buildFormRequestReplacements()),
-                    $stub
-                );
-            }
-        }
-
-        // ファイルを生成
-        $this->fileGenerator->generateFile($filePath, $stub);
-
-        $this->info("Controller [{$className}] created successfully in the custom directory.");
+        // "makeFile" (rename後) でコントローラ作成
+        $this->makeFile($className, $subDirs, $options);
 
         return 0;
     }
 
     /**
-     * コントローラ名をサブディレクトリ & クラス名に分割
-     * 例: "Admin/Sub/MyController" => [["Admin","Sub"], "MyController"]
+     * @override from MakeFileTrait
      */
-    protected function parseControllerName(string $input): array
+    protected function getDirectory(array $subDirs): string
     {
-        $path = str_replace('\\', '/', $input);
-        $parts = explode('/', $path);
-
-        $className = array_pop($parts);
-        $subDirs   = $parts;
-
-        return [$subDirs, $className];
-    }
-
-
-
-    /**
-     * 適切なスタブファイル名を判定
-     */
-    protected function determineStubFileName(): string
-    {
-        $isResource = $this->option('resource');
-        $isApi = $this->option('api');
-        $isInvokable = $this->option('invokable');
-        $model = $this->option('model');
-
-        if ($model) {
-            return $isApi ? 'controller.model.api.stub' : 'controller.model.stub';
+        $base = base_path('custom/app/Http/Controllers');
+        if ($subDirs) {
+            $base .= '/' . implode('/', $subDirs);
         }
-
-        if ($isInvokable) {
-            return 'controller.invokable.stub';
-        }
-
-        if ($isResource && $isApi) {
-            return 'controller.api.stub';
-        }
-
-        if ($isResource) {
-            return 'controller.stub';
-        }
-
-        if ($isApi) {
-            return 'controller.api.stub';
-        }
-
-        return 'controller.plain.stub';
+        return $base;
     }
 
     /**
-     * --model=指定時、モデルが存在しなければ作成を促しつつ、プレースホルダを返す
+     * @override from MakeFileTrait
      */
-    protected function buildModelReplacements(): array
+    protected function getNamespace(array $subDirs): string
     {
-        $modelOption = $this->option('model');  // 例: "Post"
-        if (Str::startsWith($modelOption, '\\')) {
-            $modelOption = Str::replaceFirst('\\', '', $modelOption);
+        $base = 'Custom\\App\\Http\\Controllers';
+        if ($subDirs) {
+            $base .= '\\' . implode('\\', $subDirs);
         }
-
-        // "Post" → "App\Models\Post" にする例 （FQCNが含まれていればそのまま）
-        $modelClass = Str::contains($modelOption, '\\')
-            ? $modelOption
-            : 'App\\Models\\' . $modelOption;
-
-        // モデルが存在しないなら、作るかどうかを尋ねる
-        if (! class_exists($modelClass)) {
-            if ($this->confirm("A [{$modelClass}] model does not exist. Do you want to generate it?", true)) {
-                // Laravel標準の make:model を呼ぶ例
-                $this->call('make:model', [
-                    'name' => $modelClass,
-                    // '--migration' => true, // ついでにマイグレーションを作成したい場合
-                ]);
-            }
-        }
-
-        // コントローラ.stub などにある "{{ namespacedModel }}" や "{{ modelVariable }}" を置換
-        return [
-            '{{ namespacedModel }}' => $modelClass,
-            '{{ modelVariable }}'   => lcfirst(class_basename($modelClass)),
-        ];
-    }
-
-    /**
-     * Resource/API対応のフォームリクエストの置換例
-     */
-    protected function buildFormRequestReplacements(): array
-    {
-        $modelOption = $this->option('model');  // 例: "Post"
-        $storeClass  = 'Store' . $modelOption . 'Request';
-        $updateClass = 'Update' . $modelOption . 'Request';
-
-        // "Custom\App\Http\Requests" のような名前空間に置くことも可能
-        // "plugins/xxx" に置きたい場合は自由に変更
-        $requestsNamespace = 'Custom\\App\\Http\\Requests';
-
-        return [
-            '{{ namespacedRequests }}' => $requestsNamespace,
-            '{{ storeRequest }}'       => $storeClass,
-            '{{ updateRequest }}'      => $updateClass,
-        ];
+        return $base;
     }
 }

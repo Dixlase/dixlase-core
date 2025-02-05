@@ -36,7 +36,13 @@
             "Plugins\\PagesPlugin\\Database\\Seeders\\": "plugins/PagesPlugin/database/seeders",
             "Plugins\\MyPlugin\\App\\": "plugins/MyPlugin/app",
             "Plugins\\MyPlugin\\Database\\Factories\\": "plugins/MyPlugin/database/factories",
-            "Plugins\\MyPlugin\\Database\\Seeders\\": "plugins/MyPlugin/database/seeders"
+            "Plugins\\MyPlugin\\Database\\Seeders\\": "plugins/MyPlugin/database/seeders",
+            "Plugins\\EventsPlugin\\Database\\Factories\\": "plugins/EventsPlugin/database/factories",
+            "Plugins\\EventsPlugin\\Database\\Seeders\\": "plugins/EventsPlugin/database/seeders",
+            "Plugins\\ReservationsPlugin\\Database\\Seeders\\": "plugins/ReservationsPlugin/database/seeders",
+            "Plugins\\UsersPlugin\\App\\": "plugins/UsersPlugin/app",
+            "Plugins\\UsersPlugin\\Database\\Factories\\": "plugins/UsersPlugin/database/factories",
+            "Plugins\\UsersPlugin\\Database\\Seeders\\": "plugins/UsersPlugin/database/seeders"
         },
         "files": [
             "app/Helpers/AssetHelper.php"

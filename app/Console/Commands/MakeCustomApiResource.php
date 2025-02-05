@@ -1,47 +1,62 @@
 <?php
 
-/**
- * This file is part of Your Software Name.
- *
- * Copyright (C) 2024 exc-D inc.
- * Website: https://exc-d.com
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <https://www.gnu.org/licenses/>.
- */
-
 namespace App\Console\Commands;
 
-use Illuminate\Console\GeneratorCommand;
+use Illuminate\Console\Command;
+use Illuminate\Support\Str;
+use App\Services\FileGenerator;
+use App\Console\Traits\MakeApiResourceTrait;
 
-class MakeCustomApiResource extends GeneratorCommand
+class MakeCustomApiResource extends Command
 {
-    protected $signature = 'make:custom-api-resource {name}';
+    use MakeApiResourceTrait;
+
+    protected $signature = 'make:custom:api-resource
+        {name : The API resource class name (with optional subfolders, e.g. Admin/MyResource)}
+        {--force : Overwrite if the file already exists}';
+
     protected $description = 'Create a new API resource in the custom directory';
 
-    protected function getStub()
+    protected FileGenerator $fileGenerator;
+
+    public function __construct(FileGenerator $fileGenerator)
     {
-        return base_path('/stubs/api-resource.stub');  // APIリソーススタブ（オプション）
+        parent::__construct();
+        $this->fileGenerator = $fileGenerator;
     }
 
-    protected function getDefaultNamespace($rootNamespace)
+    public function handle()
     {
-        return $rootNamespace . '\Custom\Http\Resources';  // custom/http/resources に作成
+        // 1) parse subDirs + className
+        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
+
+        // 2) --force
+        $force = (bool) $this->option('force');
+
+        // 3) Trait method
+        $this->makeFile($className, $subDirs, $force);
+
+        return 0;
     }
 
-    protected function buildClass($name)
+    /**
+     * (B)パターン: getApiResourceDirectory/Namespace
+     */
+    protected function getApiResourceDirectory(array $subDirs): string
     {
-        $name = str_replace('Custom\\Http\\Resources', '', $name);
-        return parent::buildClass($name);
+        $base = base_path('custom/http/resources');
+        if ($subDirs) {
+            $base .= '/' . implode('/', $subDirs);
+        }
+        return $base;
+    }
+
+    protected function getApiResourceNamespace(array $subDirs): string
+    {
+        $base = 'Custom\\Http\\Resources';
+        if ($subDirs) {
+            $base .= '\\' . implode('\\', $subDirs);
+        }
+        return $base;
     }
 }

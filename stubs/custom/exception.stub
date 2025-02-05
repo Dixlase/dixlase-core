@@ -1,0 +1,11 @@
+<?php
+
+{{ license }}
+namespace {{ namespace }};
+
+use Exception;
+
+class {{ class }} extends Exception
+{
+    //
+}

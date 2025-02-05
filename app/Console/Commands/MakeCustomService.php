@@ -23,15 +23,22 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
+use App\Services\FileGenerator;
+use App\Console\Traits\MakeServiceTrait;
 
 class MakeCustomService extends Command
 {
+    use MakeServiceTrait;
+
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'app:make-custom-service';
+    protected $signature = 'make:custom:service
+        {name : The name of the service class (with optional subfolders, e.g. Admin/MyService)}
+        {--force : Overwrite if the service class already exists}';
 
     /**
      * The console command description.
@@ -40,11 +47,49 @@ class MakeCustomService extends Command
      */
     protected $description = 'Command description';
 
+    protected FileGenerator $fileGenerator;
+
+    public function __construct(FileGenerator $fileGenerator)
+    {
+        parent::__construct();
+        $this->fileGenerator = $fileGenerator;
+    }
+
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        //
+        // 1) parse subDirs + className
+        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
+
+        // 2) --force
+        $force = (bool) $this->option('force');
+
+        // 3) Trait method
+        $this->makeFile($className, $subDirs, $force);
+
+        return 0;
+    }
+
+    /**
+     * (B)パターン: getServiceDirectory/Namespace
+     */
+    protected function getServiceDirectory(array $subDirs): string
+    {
+        $base = base_path('custom/services');
+        if ($subDirs) {
+            $base .= '/' . implode('/', $subDirs);
+        }
+        return $base;
+    }
+
+    protected function getServiceNamespace(array $subDirs): string
+    {
+        $base = 'Custom\\Services';
+        if ($subDirs) {
+            $base .= '\\' . implode('\\', $subDirs);
+        }
+        return $base;
     }
 }

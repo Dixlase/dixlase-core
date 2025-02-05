@@ -25,13 +25,25 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use App\Services\FileGenerator;
+use App\Console\Traits\MakeModelTrait;
 
 class MakePluginModel extends Command
 {
     protected $signature = 'plugin:make:model
         {plugin : The plugin name}
         {name : The name of the model (optionally with subfolders, e.g. Admin/MyModel)}
-        {--pivot : Create a pivot model}
+        {--all : Generate migration, seeder, factory, policy, resource controller, and form request classes for the model}
+        {--controller : Create a new controller for the model}
+        {--factory : Create a new factory for the model}
+        {--force : Create the class even if the model already exists}
+        {--migration : Create a new migration file for the model}
+        {--morph-pivot : Indicates if the generated model should be a custom polymorphic pivot model}
+        {--policy : Create a new policy for the model}
+        {--seed : Create a new seeder for the model}
+        {--pivot : Indicates if the generated model should be a custom intermediate table model (pivot)}
+        {--resource : Indicates if the generated controller should be a resource controller}
+        {--api : Indicates if the generated controller should be an API resource controller}
+        {--requests : Create new form request classes for the controller}
     ';
 
     protected $description = 'Create a new Eloquent model class for the specified plugin.';
@@ -46,83 +58,163 @@ class MakePluginModel extends Command
 
     public function handle()
     {
-        // 1) プラグイン名を studly 変換しておく
-        $pluginNameInput  = $this->argument('plugin');
-        $studlyPluginName = Str::studly($pluginNameInput);
+        // 1) plugin, model, pivot, morphPivot
+        $pluginNameInput = $this->argument('plugin');
+        $modelInput      = $this->argument('name');
+        $force           = (bool)$this->option('force');
+        $pivot           = (bool)$this->option('pivot');
+        $morphPivot      = (bool)$this->option('morph-pivot');
 
-        // 2) モデル名をサブディレクトリとクラス名に分割
-        [$subDirs, $className] = $this->parseClassName($this->argument('name'));
-
-        // 3) ベース名前空間とディレクトリ
-        $baseNamespace   = "Plugins\\{$studlyPluginName}\\App\\Models";
-        $baseModelFolder = base_path("plugins/{$studlyPluginName}/app/Models");
-
-        // サブディレクトリ付きなら、namespace と生成先パスに付加
-        $namespace = $baseNamespace
-            . ($subDirs ? '\\' . implode('\\', $subDirs) : '');
-        $targetDirectory = $baseModelFolder
-            . ($subDirs ? '/' . implode('/', $subDirs) : '');
-
-        // 4) pivotオプションがあれば、pivot用stubを使う
-        $isPivot  = $this->option('pivot');
-        $stubFile = $isPivot ? 'model.pivot.stub' : 'model.stub';
-
-        // 5) 実ファイルパス
-        $filePath = "{$targetDirectory}/{$className}.php";
-
-        // ファイルパス準備（既存チェック & ディレクトリ作成）
-        try {
-            $this->fileGenerator->prepareFilePath(
-                $filePath,
-                "Model [{$className}] already exists in plugin [{$studlyPluginName}]."
-            );
-        } catch (\RuntimeException $e) {
-            $this->error($e->getMessage());
-            return Command::FAILURE;
+        // 2) if --all => set other options
+        if ($this->option('all')) {
+            $this->input->setOption('factory', true);
+            $this->input->setOption('seed', true);
+            $this->input->setOption('migration', true);
+            $this->input->setOption('controller', true);
+            $this->input->setOption('policy', true);
+            $this->input->setOption('resource', true);
+            $this->input->setOption('requests', true);
         }
 
-        // 6) スタブファイル取得
-        $customStubPaths = config('console.custom_stub_paths');
-        // 既存の Laravel コアのモデルstub は vendor/laravel/framework/... にありますが、
-        // 今回は独自のstubsフォルダのみを参照
-        $stub = $this->fileGenerator->getStubContent($stubFile, null, $customStubPaths);
+        // 3) parse subDirs + className
+        [$subDirs, $className] = $this->fileGenerator->parseClassName($modelInput);
 
-        // 7) プレースホルダを埋め込む
-        //    まずはライセンス情報などを埋め込み
-        $stub = $this->fileGenerator->embedLicense($stub, [
-            '{{ namespace }}' => $namespace,
-            '{{ class }}'     => $className,
-            // その他 {{ license }} は embedLicense() の内部で置換
-        ]);
+        // 4) call trait method
+        $modelFqcn = $this->makeFile($className, $subDirs, $force, $pivot, $morphPivot);
 
-        // 追加の置換（pivotモデルでない場合に factoryImport/factory をどうするか等はプロジェクト次第）
-        $factoryImport = '';
-        $factoryCode   = '';
-        // 例: Factoryを生成したい場合などに応じてココで文字列を作る
+        // 5) after creation => additional generation
+        if ($this->option('factory')) {
+            $this->createFactory($modelFqcn);
+        }
+        if ($this->option('migration')) {
+            $this->createMigration($className, $pivot || $morphPivot);
+        }
+        if ($this->option('seed')) {
+            $this->createSeeder($className);
+        }
+        if ($this->option('controller') || $this->option('resource') || $this->option('api')) {
+            $this->createController($modelFqcn);
+        } elseif ($this->option('requests')) {
+            $this->createFormRequests($className);
+        }
+        if ($this->option('policy')) {
+            $this->createPolicy($modelFqcn);
+        }
 
-        $stub = $this->fileGenerator->replacePlaceholders($stub, [
-            '{{ factoryImport }}' => $factoryImport,
-            '{{ factory }}'       => $factoryCode,
-        ]);
-
-        // 8) ファイル生成
-        $this->fileGenerator->generateFile($filePath, $stub);
-
-        $this->info("Model [{$className}] created successfully in plugin [{$studlyPluginName}].");
-        return Command::SUCCESS;
+        return 0;
     }
 
     /**
-     * "Admin/MyModel" → [["Admin"], "MyModel"] に分解
+     * サブクラス実装: getModelDirectory($subDirs), getModelNamespace($subDirs)
      */
-    protected function parseClassName(string $input): array
+    protected function getModelDirectory(array $subDirs): string
     {
-        $path = str_replace('\\', '/', $input);
-        $parts = explode('/', $path);
+        $plugin = Str::studly($this->argument('plugin'));
+        $base = base_path("plugins/{$plugin}/app/Models");
+        if ($subDirs) {
+            $base .= '/' . implode('/', $subDirs);
+        }
+        return $base;
+    }
 
-        $className = array_pop($parts);
-        $subDirs   = $parts;
+    protected function getModelNamespace(array $subDirs): string
+    {
+        $plugin = Str::studly($this->argument('plugin'));
+        $base = "Plugins\\{$plugin}\\App\\Models";
+        if ($subDirs) {
+            $base .= '\\' . implode('\\', $subDirs);
+        }
+        return $base;
+    }
 
-        return [$subDirs, $className];
+    /**
+     * 追加生成: factory
+     */
+    protected function createFactory(string $modelFqcn)
+    {
+        $modelBase = class_basename($modelFqcn);
+        $factoryName = "{$modelBase}Factory";
+
+        $this->call('make:plugin:factory', [
+            'plugin' => $this->argument('plugin'),
+            'name'   => $factoryName,
+            '--model' => $modelFqcn,
+            '--force' => false,
+        ]);
+    }
+
+    /**
+     * 追加生成: migration
+     */
+    protected function createMigration(string $className, bool $pivot = false)
+    {
+        $table = Str::snake(Str::pluralStudly($className));
+        if ($pivot) {
+            $table = Str::singular($table);
+        }
+        $migrationName = "create_{$table}_table";
+
+        $this->call('make:plugin:migration', [
+            'plugin' => $this->argument('plugin'),
+            'name'   => $migrationName,
+            '--create' => $table,
+        ]);
+    }
+
+    /**
+     * 追加生成: seeder
+     */
+    protected function createSeeder(string $className)
+    {
+        $seeder = Str::studly($className) . 'Seeder';
+        $this->call('make:plugin:seeder', [
+            'plugin' => $this->argument('plugin'),
+            'name'  => $seeder,
+        ]);
+    }
+
+    /**
+     * 追加生成: controller
+     */
+    protected function createController(string $modelFqcn)
+    {
+        $ctrlName = class_basename($modelFqcn) . 'Controller';
+        $this->call('make:plugin:controller', array_filter([
+            'plugin' => $this->argument('plugin'),
+            'name'   => $ctrlName,
+            '--model' => ($this->option('api') || $this->option('resource')) ? $modelFqcn : null,
+            '--api'  => $this->option('api'),
+            '--requests' => $this->option('requests') || $this->option('all'),
+            '--resource' => $this->option('resource'),
+        ]));
+    }
+
+    /**
+     * 追加生成: form requests
+     */
+    protected function createFormRequests(string $className)
+    {
+        $basename = Str::studly($className);
+        $this->call('make:plugin:request', [
+            'plugin' => $this->argument('plugin'),
+            'name'   => 'Store' . $basename . 'Request',
+        ]);
+        $this->call('make:plugin:request', [
+            'plugin' => $this->argument('plugin'),
+            'name'   => 'Update' . $basename . 'Request',
+        ]);
+    }
+
+    /**
+     * 追加生成: policy
+     */
+    protected function createPolicy(string $modelFqcn)
+    {
+        $policy = class_basename($modelFqcn) . 'Policy';
+        $this->call('make:plugin:policy', [
+            'plugin' => $this->argument('plugin'),
+            'name'  => $policy,
+            '--model' => $modelFqcn,
+        ]);
     }
 }

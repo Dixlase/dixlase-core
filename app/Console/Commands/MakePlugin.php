@@ -23,7 +23,20 @@ class MakePlugin extends Command
                             {--namespace=Vendor}
                             {--vendor=plugins}
                             {--install}
-                            {--enable}';
+                            {--enable}
+                            {--controller : Create a controller for the plugin}
+                            {--model : Create a model for the plugin}
+                            {--migration : Create a migration file for the plugin}
+                            {--policy : Create a policy file for the plugin}
+                            {--listener : Create an event listener for the plugin}
+                            {--test : Create test cases for the plugin}
+                            {--command : Create a command for the plugin}
+                            {--job : Create a job for the plugin}
+                            {--notification : Create a notification for the plugin}
+                            {--resource : Create a resource for the plugin}
+                            {--factory : Create a factory for the plugin}
+                            {--seeder : Create a seeder for the plugin}
+                            {--all : Create all of the above}';
 
     protected $description = 'Create a new plugin with a predefined structure';
 
@@ -64,10 +77,6 @@ class MakePlugin extends Command
 
         // スタブファイルを使って各種ファイルを生成
         $this->createPluginFiles($pluginDir, $pluginName, $pluginDirName, $vendorName, $namespace);
-
-
-        // サービスプロバイダを生成
-        $this->createServiceProvider($pluginName, $pluginDirName);
 
         // Optionally install and enable the plugin
         if ($this->option('install')) {
@@ -163,7 +172,7 @@ class MakePlugin extends Command
         $licenseName = $this->fileGenerator->getLicenseName();
 
         $placeholders = [
-            '{{ license }}'       => $licenseName,    // ライセンス名
+            '{{ licenseName }}'   => $licenseName,    // ライセンス
             '{{ pluginName }}'    => $pluginName,     // 例: "MyPlugin"
             '{{ pluginDirName }}' => $pluginDirName,  // 例: "MyPlugin" (StudlyCase)
             '{{ namespace }}'     => $namespace,      // 例: "Vendor\MyPlugin"
@@ -194,6 +203,7 @@ class MakePlugin extends Command
             $stubPath
         );
 
+        // 言語ファイルを作成
         $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
         $this->fileGenerator->generateFile("{$pluginDir}/lang/en/messages.php", $fileContent);
 
@@ -213,10 +223,11 @@ class MakePlugin extends Command
             $stubPath
         );
 
+        // 設定ファイルを作成
         $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
         // プラグイン名をスネークケースに変換
         $snakeName = Str::snake($pluginName);
-        $this->fileGenerator->generateFile("{$pluginDir}/config/{$snakeName}.php", $fileContent);
+        $this->fileGenerator->generateFile("{$pluginDir}/config/settings.php", $fileContent);
 
         // vite.config.js
         $stubFile = $this->fileGenerator->getStubContent(
@@ -240,6 +251,72 @@ class MakePlugin extends Command
         $stubFile    = $this->fileGenerator->getStubContent('README.plugin.stub', null, $stubPath);
         $readmeContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
         $this->fileGenerator->generateFile("{$pluginDir}/README.md", $readmeContent);
+
+        // サービスプロバイダを生成
+        $this->createServiceProvider($pluginName, $pluginDirName);
+
+        // オプションに基づいて追加ファイルを作成
+        if ($this->option('all')) {
+            // オプションが指定されている場合は、全てのファイルを生成
+            $this->createController($pluginName, $pluginDirName, $namespace);
+            $this->createModel($pluginName, $pluginDirName, $namespace);
+            $this->createMigration($pluginName, $pluginDirName);
+            $this->createPolicy($pluginName, $pluginDirName, $namespace);
+            $this->createListener($pluginName, $pluginDirName, $namespace);
+            $this->createTests($pluginName, $pluginDirName);
+            $this->createCommand($pluginName, $pluginDirName, $namespace);
+            $this->createJob($pluginName, $pluginDirName, $namespace);
+            $this->createNotification($pluginName, $pluginDirName, $namespace);
+            $this->createResource($pluginName, $pluginDirName, $namespace);
+            $this->createFactory($pluginName, $pluginDirName, $namespace);
+            $this->createSeeder($pluginName, $pluginDirName);
+        } else {
+            // オプションに基づいて追加ファイルを作成
+            if ($this->option('controller')) {
+                $this->createController($pluginName, $pluginDirName, $namespace);
+            }
+
+            if ($this->option('model')) {
+                $this->createModel($pluginName, $pluginDirName, $namespace);
+            }
+
+            if ($this->option('migration')) {
+                $this->createMigration($pluginName, $pluginDirName);
+            }
+
+            if ($this->option('policy')) {
+                $this->createPolicy($pluginName, $pluginDirName, $namespace);
+            }
+
+            if ($this->option('listener')) {
+                $this->createListener($pluginName, $pluginDirName, $namespace);
+            }
+
+            if ($this->option('test')) {
+                $this->createTests($pluginName, $pluginDirName);
+            }
+
+            if ($this->option('command')) {
+                $this->createCommand($pluginName, $pluginDirName, $namespace);
+            }
+
+            if ($this->option('job')) {
+                $this->createJob($pluginName, $pluginDirName, $namespace);
+            }
+
+            if ($this->option('notification')) {
+                $this->createNotification($pluginName, $pluginDirName, $namespace);
+            }
+            if ($this->option('resource')) {
+                $this->createResource($pluginName, $pluginDirName, $namespace);
+            }
+            if ($this->option('factory')) {
+                $this->createFactory($pluginName, $pluginDirName, $namespace);
+            }
+            if ($this->option('seeder')) {
+                $this->createSeeder($pluginName, $pluginDirName);
+            }
+        }
     }
 
 
@@ -258,6 +335,191 @@ class MakePlugin extends Command
         $this->info("Service provider [{$providerName}] created for plugin [{$pluginName}].");
     }
 
+    /**
+     * コントローラを作成
+     */
+    protected function createController(string $pluginName, string $pluginDirName, string $namespace)
+    {
+        $controllerName = "{$pluginDirName}Controller";
+
+        Artisan::call('plugin:make:controller', [
+            'plugin' => $pluginDirName,
+            'name' => $controllerName,
+        ]);
+
+        $this->info("Controller [{$controllerName}] created for plugin [{$pluginName}].");
+    }
+
+    /**
+     * モデルを作成
+     */
+    protected function createModel(string $pluginName, string $pluginDirName, string $namespace)
+    {
+        $modelName = "{$pluginDirName}";
+
+        Artisan::call('plugin:make:model', [
+            'plugin' => $pluginDirName,
+            'name' => $modelName,
+        ]);
+
+        $this->info("Model [{$modelName}] created for plugin [{$pluginName}].");
+    }
+
+    /**
+     * ポリシーファイルを作成
+     */
+    protected function createPolicy(string $pluginName, string $pluginDirName, string $namespace)
+    {
+        $policyName = "{$pluginDirName}Policy";
+
+        Artisan::call('plugin:make:policy', [
+            'plugin' => $pluginDirName,
+            'name' => $policyName,
+        ]);
+
+        $this->info("Policy [{$policyName}] created for plugin [{$pluginName}].");
+    }
+
+    /**
+     * イベントリスナーを作成
+     */
+    protected function createListener(string $pluginName, string $pluginDirName, string $namespace)
+    {
+        $listenerName = "{$pluginDirName}Listener";
+
+        Artisan::call('plugin:make:listener', [
+            'plugin' => $pluginDirName,
+            'name' => $listenerName,
+        ]);
+
+        $this->info("Listener [{$listenerName}] created for plugin [{$pluginName}].");
+    }
+
+    /**
+     * テストファイルを作成
+     */
+    protected function createTests(string $pluginName, string $pluginDirName)
+    {
+        $testName = "{$pluginDirName}Test";
+
+        Artisan::call('plugin:make:test', [
+            'plugin' => $pluginDirName,
+            'name' => $testName,
+        ]);
+
+        $this->info("Test [{$testName}] created for plugin [{$pluginName}].");
+    }
+
+
+    /**
+     * マイグレーションファイルを作成
+     */
+    protected function createMigration(string $pluginName, string $pluginDirName)
+    {
+        // プラグイン名をスネークケースに変換
+        $pluginSnakeName = Str::snake($pluginDirName);
+        // 日付を取得
+        $date = now()->format('Y_m_d_His');
+        // マイグレーション名を生成
+        $migrationName = "{$date}_create_{$pluginSnakeName}_table";
+
+        Artisan::call('plugin:make:migration', [
+            'plugin' => $pluginDirName,
+            'name' => $migrationName,
+        ]);
+
+        $this->info("Migration {$migrationName} created for plugin [{$pluginName}].");
+    }
+
+    /**
+     * リソースを作成
+     */
+    protected function createResource(string $pluginName, string $pluginDirName, string $namespace)
+    {
+        $resourceName = "{$pluginDirName}Resource";
+
+        Artisan::call('plugin:make:resource', [
+            'plugin' => $pluginDirName,
+            'name' => $resourceName,
+        ]);
+
+        $this->info("Resource [{$resourceName}] created for plugin [{$pluginName}].");
+    }
+
+    /**
+     * コマンドを作成
+     */
+    protected function createCommand(string $pluginName, string $pluginDirName, string $namespace)
+    {
+        $commandName = "{$pluginDirName}Command";
+
+        Artisan::call('plugin:make:command', [
+            'plugin' => $pluginDirName,
+            'name' => $commandName,
+        ]);
+
+        $this->info("Command [{$commandName}] created for plugin [{$pluginName}].");
+    }
+
+    /**
+     * ジョブを作成
+     */
+    protected function createJob(string $pluginName, string $pluginDirName, string $namespace)
+    {
+        $jobName = "{$pluginDirName}Job";
+
+        Artisan::call('plugin:make:job', [
+            'plugin' => $pluginDirName,
+            'name' => $jobName,
+        ]);
+
+        $this->info("Job [{$jobName}] created for plugin [{$pluginName}].");
+    }
+
+    /**
+     * 通知を作成
+     */
+    protected function createNotification(string $pluginName, string $pluginDirName, string $namespace)
+    {
+        $notificationName = "{$pluginDirName}Notification";
+
+        Artisan::call('plugin:make:notification', [
+            'plugin' => $pluginDirName,
+            'name' => $notificationName,
+        ]);
+
+        $this->info("Notification [{$notificationName}] created for plugin [{$pluginName}].");
+    }
+
+    /**
+     * シーダーを作成
+     */
+    protected function createSeeder(string $pluginName, string $pluginDirName)
+    {
+        $seederName = "DatabaseSeeder";
+
+        Artisan::call('plugin:make:seeder', [
+            'plugin' => $pluginDirName,
+            'name' => $seederName,
+        ]);
+
+        $this->info("Seeder DatabaseSeeder.php created for plugin [{$pluginName}].");
+    }
+
+    /**
+     * ファクトリを作成
+     */
+    protected function createFactory(string $pluginName, string $pluginDirName, string $namespace)
+    {
+        $factoryName = "{$pluginDirName}Factory";
+
+        Artisan::call('plugin:make:factory', [
+            'plugin' => $pluginDirName,
+            'name' => $factoryName,
+        ]);
+
+        $this->info("Factory [{$factoryName}] created for plugin [{$pluginName}].");
+    }
 
     /**
      * プラグインを有効化 (DBに登録）

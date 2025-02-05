@@ -22,26 +22,81 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\GeneratorCommand;
+use Illuminate\Console\Command;
+use Illuminate\Support\Str;
+use App\Services\FileGenerator;
+use App\Console\Traits\MakeListenerTrait;
 
-class MakeCustomListener extends GeneratorCommand
+class MakeCustomListener extends Command
 {
-    protected $signature = 'make:custom-listener {name}';
-    protected $description = 'Create a new listener in the custom directory';
+    use MakeListenerTrait;
 
-    protected function getStub()
+    protected $signature = 'make:custom:listener
+        {name : The listener class (with optional subfolders, e.g. Admin/MyListener)}
+        {--force : Overwrite if listener already exists}
+        {--event= : The event class being listened for}
+        {--queued : Indicates the event listener should be queued}';
+
+    protected $description = 'Create a new event listener in the custom directory';
+
+    protected FileGenerator $fileGenerator;
+
+    public function __construct(FileGenerator $fileGenerator)
     {
-        return base_path('/stubs/listener.stub');  // リスナースタブ（オプション）
+        parent::__construct();
+        $this->fileGenerator = $fileGenerator;
     }
 
-    protected function getDefaultNamespace($rootNamespace)
+    public function handle()
     {
-        return $rootNamespace . '\Custom\Listeners';  // custom/listeners に作成
+        // 1) subDirs + className
+        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
+
+        // 2) --force, --event, --queued
+        $force    = (bool) $this->option('force');
+        $queued   = (bool) $this->option('queued');
+        $eventOpt = $this->option('event');
+
+        // イベントクラスFQCN (カスタムディレクトリの場合、FQCNをどうするかは自由)
+        $eventClass = $eventOpt ? $this->qualifyEventClass($eventOpt) : null;
+
+        $this->makeFile($className, $subDirs, $force, $queued, $eventClass);
+
+        return 0;
     }
 
-    protected function buildClass($name)
+    /**
+     * イベントクラスをFQCNに変換
+     * (カスタム用のルールがあれば適宜)
+     */
+    protected function qualifyEventClass(string $eventOption): string
     {
-        $name = str_replace('Custom\\Listeners', '', $name);
-        return parent::buildClass($name);
+        if (Str::startsWith($eventOption, '\\')) {
+            $eventOption = Str::replaceFirst('\\', '', $eventOption);
+        }
+        // 既に FQCN -> そのまま
+        if (Str::contains($eventOption, '\\')) {
+            return $eventOption;
+        }
+        // カスタムなら 'Custom\App\Events\...'? あるいは 'App\Events\...'
+        return 'App\\Events\\' . $eventOption;
+    }
+
+    protected function getListenerDirectory(array $subDirs): string
+    {
+        $base = base_path('custom/app/Listeners');
+        if ($subDirs) {
+            $base .= '/' . implode('/', $subDirs);
+        }
+        return $base;
+    }
+
+    protected function getListenerNamespace(array $subDirs): string
+    {
+        $base = 'Custom\\App\\Listeners';
+        if ($subDirs) {
+            $base .= '\\' . implode('\\', $subDirs);
+        }
+        return $base;
     }
 }

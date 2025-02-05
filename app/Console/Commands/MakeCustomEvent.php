@@ -22,26 +22,65 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\GeneratorCommand;
+use Illuminate\Console\Command;
+use Illuminate\Support\Str;
+use App\Services\FileGenerator;
+use App\Console\Traits\MakeEventTrait;
 
-class MakeCustomEvent extends GeneratorCommand
+class MakeCustomEvent extends Command
 {
-    protected $signature = 'make:custom-event {name}';
+    use MakeEventTrait;
+
+    /**
+     * コマンド名と引数・オプション定義
+     */
+    protected $signature = 'make:custom:event
+        {name : The name of the event class (with optional subfolders, e.g. Admin/MyEvent)}
+        {--force : Create the class even if the event already exists}';
+
     protected $description = 'Create a new event in the custom directory';
 
-    protected function getStub()
+    protected FileGenerator $fileGenerator;
+
+    public function __construct(FileGenerator $fileGenerator)
     {
-        return base_path('/stubs/event.stub');  // イベントスタブ（オプション）
+        parent::__construct();
+        $this->fileGenerator = $fileGenerator;
     }
 
-    protected function getDefaultNamespace($rootNamespace)
+    public function handle()
     {
-        return $rootNamespace . '\Custom\Events';  // custom/events に作成
+        // 1) parseEventName のかわりに parseClassName を呼ぶ
+        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
+
+        $force = (bool) $this->option('force');
+
+        // 2) $this->makeFile($className, $subDirs, $force) など
+        $this->makeFile($className, $subDirs, $force);
+
+        return 0;
     }
 
-    protected function buildClass($name)
+    /**
+     * (B)パターン: getDirectory(array $subDirs)/getNamespace(array $subDirs)で
+     * getEventDirectory(), getEventNamespace() を呼び出すようにしているので
+     * ここで実装する
+     */
+    protected function getEventDirectory(array $subDirs): string
     {
-        $name = str_replace('Custom\\Events', '', $name);
-        return parent::buildClass($name);
+        $basePath = base_path('custom/app/Events');
+        if ($subDirs) {
+            $basePath .= '/' . implode('/', $subDirs);
+        }
+        return $basePath;
+    }
+
+    protected function getEventNamespace(array $subDirs): string
+    {
+        $baseNs = 'Custom\\App\\Events';
+        if ($subDirs) {
+            $baseNs .= '\\' . implode('\\', $subDirs);
+        }
+        return $baseNs;
     }
 }

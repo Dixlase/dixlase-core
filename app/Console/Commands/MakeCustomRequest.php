@@ -22,26 +22,61 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\GeneratorCommand;
+use Illuminate\Console\Command;
+use Illuminate\Support\Str;
+use App\Services\FileGenerator;
+use App\Console\Traits\MakeRequestTrait;
 
-class MakeCustomRequest extends GeneratorCommand
+class MakeCustomRequest extends Command
 {
-    protected $signature = 'make:custom-request {name}';
-    protected $description = 'Create a new request in the custom directory';
+    use MakeRequestTrait;
 
-    protected function getStub()
+    protected $signature = 'make:custom:request
+        {name : The FormRequest class name (with optional subfolders, e.g. Admin/StoreDataRequest)}
+        {--force : Overwrite if the request already exists}';
+
+    protected $description = 'Create a new FormRequest in the custom directory';
+
+    protected FileGenerator $fileGenerator;
+
+    public function __construct(FileGenerator $fileGenerator)
     {
-        return base_path('/stubs/request.stub');  // リクエストスタブ（オプション）
+        parent::__construct();
+        $this->fileGenerator = $fileGenerator;
     }
 
-    protected function getDefaultNamespace($rootNamespace)
+    public function handle()
     {
-        return $rootNamespace . '\Custom\Http\Requests';  // custom/http/requests に作成
+        // 1) parse subDirs + className
+        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
+
+        // 2) --force
+        $force = (bool)$this->option('force');
+
+        // 3) Trait's makeFile(...)
+        $this->makeFile($className, $subDirs, $force);
+
+        return 0;
     }
 
-    protected function buildClass($name)
+    /**
+     * getRequestDirectory/Namespace
+     */
+    protected function getRequestDirectory(array $subDirs): string
     {
-        $name = str_replace('Custom\\Http\\Requests', '', $name);
-        return parent::buildClass($name);
+        $base = base_path('custom/http/requests');
+        if ($subDirs) {
+            $base .= '/' . implode('/', $subDirs);
+        }
+        return $base;
+    }
+
+    protected function getRequestNamespace(array $subDirs): string
+    {
+        $base = 'Custom\\Http\\Requests';
+        if ($subDirs) {
+            $base .= '\\' . implode('\\', $subDirs);
+        }
+        return $base;
     }
 }

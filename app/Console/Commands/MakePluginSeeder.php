@@ -3,20 +3,24 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use App\Services\FileGenerator;
+use App\Console\Traits\MakeSeederTrait;
 
 class MakePluginSeeder extends Command
 {
+    use MakeSeederTrait;
+
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'plugin:make:seeder
-                            {plugin : The name of the plugin (e.g. EventsPlugin)}
-                            {name : The name of the seeder class (e.g. EventSeeder or just Event)}';
+
+    protected $signature = 'make:plugin:seeder
+        {plugin : The name of the plugin (e.g. "EventsPlugin")}
+        {name : The name of the seeder class (e.g. "EventSeeder" or "Event")}
+        {--force : Overwrite if the seeder file already exists}';
 
     /**
      * The console command description.
@@ -40,80 +44,49 @@ class MakePluginSeeder extends Command
         $this->fileGenerator = $fileGenerator;
     }
 
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
-        // 引数からプラグイン名とシーダー名を取得
-        $pluginNameInput = $this->argument('plugin');
-        $seederInput = $this->argument('name');
+        // 1) plugin名
+        $pluginInput = $this->argument('plugin');
+        $studlyPluginName = Str::studly($pluginInput);
 
-        // プラグイン名は必ず StudlyCase（先頭大文字）に正規化
-        $studlyPluginName = Str::studly($pluginNameInput);
+        // 2) parse subDirs + className
+        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
 
-        // シーダー名からサブディレクトリ部分とクラス名部分に分解
-        [$subDirs, $className] = $this->fileGenerator->parseClassName($seederInput);
-
-        // ユーザが "Event" のみ入力した場合にも "EventSeeder" に補正
-        if (!Str::endsWith($className, 'Seeder')) {
+        // 3) シーダー名の末尾が "Seeder" でなければ付ける
+        if (! Str::endsWith($className, 'Seeder')) {
             $className .= 'Seeder';
         }
 
-        // ベースの namespace (Plugins\MyPlugin\Database\Seeders)
-        $baseNamespace = "Plugins\\{$studlyPluginName}\\Database\\Seeders";
+        // 4) --force
+        $force = (bool)$this->option('force');
 
-        // サブディレクトリがある場合は、namespace にも付加
-        $namespace = $baseNamespace
-            . ($subDirs ? '\\' . implode('\\', $subDirs) : '');
+        // 5) call trait method
+        $this->makeFile($className, $subDirs, $force);
 
-        // 実際に配置するディレクトリパス
-        $targetDirectory = base_path("plugins/{$studlyPluginName}/database/seeders")
-            . ($subDirs ? '/' . implode('/', $subDirs) : '');
+        return 0;
+    }
 
-        // ファイルパス
-        $filePath = "{$targetDirectory}/{$className}.php";
-
-        try {
-            // ファイルパスを準備 (ディレクトリ作成 & 存在チェック)
-            $this->fileGenerator->prepareFilePath(
-                $filePath,
-                "Seeder [{$className}] already exists in plugin [{$studlyPluginName}]."
-            );
-        } catch (\RuntimeException $e) {
-            $this->error($e->getMessage());
-            return Command::FAILURE;
+    /**
+     * getSeederDirectory/Namespace
+     */
+    protected function getSeederDirectory(array $subDirs): string
+    {
+        $plugin = Str::studly($this->argument('plugin'));
+        $base = base_path("plugins/{$plugin}/database/seeders");
+        if ($subDirs) {
+            $base .= '/' . implode('/', $subDirs);
         }
+        return $base;
+    }
 
-        // スタブファイルを取得
-        $stubFileName = 'seeder.stub';
-        $customStubPaths = [base_path('stubs/custom')]; // カスタムstubがある場合
-        // ここはお使いのLaravelバージョンや構成に合わせてパスを調整してください
-        $defaultStubPath = base_path("vendor/laravel/framework/src/Illuminate/Routing/Console/stubs/{$stubFileName}");
-
-        $stub = $this->fileGenerator->getStubContent(
-            $stubFileName,
-            $defaultStubPath,
-            $customStubPaths
-        );
-
-        // ライセンス情報埋め込み＆置換
-        $stub = $this->fileGenerator->embedLicense($stub, [
-            '{{ namespace }}' => $namespace,
-            '{{ class }}'     => $className,
-        ]);
-
-        // ファイル作成
-        try {
-            $this->fileGenerator->generateFile($filePath, $stub);
-        } catch (\Exception $e) {
-            $this->error("Failed to create seeder file: {$e->getMessage()}");
-            return Command::FAILURE;
+    protected function getSeederNamespace(array $subDirs): string
+    {
+        $plugin = Str::studly($this->argument('plugin'));
+        $base = "Plugins\\{$plugin}\\Database\\Seeders";
+        if ($subDirs) {
+            $base .= '\\' . implode('\\', $subDirs);
         }
-
-        // 完了メッセージ
-        $this->info("Seeder [{$className}] created successfully at [{$filePath}].");
-
-        return Command::SUCCESS;
+        return $base;
     }
 }

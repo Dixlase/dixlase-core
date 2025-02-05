@@ -22,33 +22,66 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\GeneratorCommand;
+use Illuminate\Console\Command;
+use Illuminate\Support\Str;
+use App\Services\FileGenerator;
+use App\Console\Traits\MakeMigrationTrait;
 
-class MakeCustomMigration extends GeneratorCommand
+class MakeCustomMigration extends Command
 {
-    protected $signature = 'make:custom-migration {name}';
+    use MakeMigrationTrait;
+
+    protected $signature = 'make:custom:migration
+        {name : The migration name (e.g. "create_custom_table")}
+        {--create= : The table to be created}
+        {--table= : The table to migrate}
+        {--path= : The location where the file should be created}
+        {--realpath : Indicate that the provided migration file paths are absolute}
+        {--fullpath : Output the full path of the migration}
+        {--force : Force the operation to run when in production}';
+
     protected $description = 'Create a new migration in the custom directory';
 
-    protected function getStub()
+    protected FileGenerator $fileGenerator;
+
+    public function __construct(FileGenerator $fileGenerator)
     {
-        return base_path('/stubs/migration.stub');  // マイグレーションのスタブ（オプション）
+        parent::__construct();
+        $this->fileGenerator = $fileGenerator;
     }
 
-    protected function getDefaultNamespace($rootNamespace)
+    public function handle()
     {
-        return $rootNamespace . '\Custom\Database\Migrations';  // custom/database/migrations に作成
+        $migrationName = $this->argument('name');
+        $createOption  = $this->option('create');
+        $tableOption   = $this->option('table');
+        $customPath    = $this->option('path');
+        $realpathOpt   = (bool)$this->option('realpath');
+        $fullpathOpt   = (bool)$this->option('fullpath');
+        $forceOpt      = (bool)$this->option('force');
+
+        $this->makeMigration(
+            $migrationName,
+            $forceOpt,
+            $createOption,
+            $tableOption,
+            $customPath,
+            $realpathOpt,
+            $fullpathOpt
+        );
+
+        return 0;
     }
 
-    protected function buildClass($name)
+    protected function getMigrationDirectory(): string
     {
-        // カスタム名前空間から不要な部分を削除
-        $name = str_replace('Custom\\Database\\Migrations', '', $name);
-        return parent::buildClass($name);
-    }
-
-    protected function getMigrationPath()
-    {
-        // マイグレーションのパスをcustomディレクトリに変更
+        // custom/database/migrations
         return base_path('custom/database/migrations');
+    }
+
+    protected function getMigrationNamespace(): string
+    {
+        // 任意の namespace
+        return 'Custom\\Database\\Migrations';
     }
 }

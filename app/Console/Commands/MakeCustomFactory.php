@@ -22,26 +22,56 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\GeneratorCommand;
+use Illuminate\Console\Command;
+use Illuminate\Support\Str;
+use App\Services\FileGenerator;
+use App\Console\Traits\MakeFactoryTrait;
 
-class MakeCustomFactory extends GeneratorCommand
+class MakeCustomFactory extends Command
 {
-    protected $signature = 'make:custom-factory {name}';
-    protected $description = 'Create a new factory in the custom directory';
+    use MakeFactoryTrait;
 
-    protected function getStub()
+    protected $signature = 'make:custom:factory
+        {name : The factory class name (e.g. UserFactory or just User)}
+        {--model= : The model class the factory applies to (FQCN or relative)}
+        {--force : Overwrite the factory if it already exists}';
+
+    protected $description = 'Create a new model factory in the custom directory (custom/database/factories).';
+
+    protected FileGenerator $fileGenerator;
+
+    public function __construct(FileGenerator $fileGenerator)
     {
-        return base_path('/stubs/factory.stub');  // ファクトリースタブ（オプション）
+        parent::__construct();
+        $this->fileGenerator = $fileGenerator;
     }
 
-    protected function getDefaultNamespace($rootNamespace)
+    public function handle()
     {
-        return $rootNamespace . '\Custom\Database\Factories';  // custom/database/factories に作成
+        $className = $this->argument('name');
+        if (! Str::endsWith($className, 'Factory')) {
+            $className .= 'Factory';
+        }
+
+        $model = $this->option('model');
+        $force = (bool) $this->option('force');
+
+        // MakeFactoryTrait::makeFile(...) を呼ぶ
+        $this->makeFile($className, $model, $force);
+
+        return 0;
     }
 
-    protected function buildClass($name)
+    /**
+     * サブクラスで実装: getFactoryDirectory(), getFactoryNamespace()
+     */
+    protected function getFactoryDirectory(): string
     {
-        $name = str_replace('Custom\\Database\\Factories', '', $name);
-        return parent::buildClass($name);
+        return base_path('custom/database/factories');
+    }
+
+    protected function getFactoryNamespace(): string
+    {
+        return 'Custom\\Database\\Factories';
     }
 }

@@ -22,12 +22,22 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\GeneratorCommand;
+use Illuminate\Console\Command;
+use Illuminate\Support\Str;
+use App\Services\FileGenerator;
+use App\Console\Traits\MakeCommandTrait;
 
-class MakeCustomCommand extends GeneratorCommand
+class MakeCustomCommand extends Command
 {
-    protected $signature = 'make:custom-command {name}';
-    protected $description = 'Create a new command in the custom directory';
+    use MakeCommandTrait;
+
+    protected $signature = 'make:custom:command
+        {name : The name of the Artisan command class (with optional subfolders, e.g. Admin/MyTaskCommand)}
+        {--force : Overwrite if the command class already exists}';
+
+    protected $description = 'Create a new Artisan command in the custom directory';
+
+    protected FileGenerator $fileGenerator;
 
     protected function getStub()
     {

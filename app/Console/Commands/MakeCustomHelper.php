@@ -22,26 +22,61 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\GeneratorCommand;
+use Illuminate\Console\Command;
+use Illuminate\Support\Str;
+use App\Services\FileGenerator;
+use App\Console\Traits\MakeHelperTrait;
 
-class MakeCustomHelper extends GeneratorCommand
+class MakeCustomHelper extends Command
 {
-    protected $signature = 'make:custom-helper {name}';
-    protected $description = 'Create a new helper function in the custom directory';
+    use MakeHelperTrait;
 
-    protected function getStub()
+    protected $signature = 'make:custom:helper
+        {name : The helper class name (with optional subfolders, e.g. Admin/MyHelper)}
+        {--force : Overwrite if the helper already exists}';
+
+    protected $description = 'Create a new helper file in the custom directory';
+
+    protected FileGenerator $fileGenerator;
+
+    public function __construct(FileGenerator $fileGenerator)
     {
-        return base_path('/stubs/helper.stub');  // ヘルパースタブ（オプション）
+        parent::__construct();
+        $this->fileGenerator = $fileGenerator;
     }
 
-    protected function getDefaultNamespace($rootNamespace)
+    public function handle()
     {
-        return $rootNamespace . '\Custom\Helpers';  // custom/helpers に作成
+        // 1) parse subDirs + className
+        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
+
+        // 2) --force
+        $force = (bool)$this->option('force');
+
+        // 3) trait method
+        $this->makeFile($className, $subDirs, $force);
+
+        return 0;
     }
 
-    protected function buildClass($name)
+    /**
+     * (B)パターン: getHelperDirectory/Namespace
+     */
+    protected function getHelperDirectory(array $subDirs): string
     {
-        $name = str_replace('Custom\\Helpers', '', $name);
-        return parent::buildClass($name);
+        $base = base_path('custom/helpers');
+        if ($subDirs) {
+            $base .= '/' . implode('/', $subDirs);
+        }
+        return $base;
+    }
+
+    protected function getHelperNamespace(array $subDirs): string
+    {
+        $base = 'Custom\\Helpers';
+        if ($subDirs) {
+            $base .= '\\' . implode('\\', $subDirs);
+        }
+        return $base;
     }
 }

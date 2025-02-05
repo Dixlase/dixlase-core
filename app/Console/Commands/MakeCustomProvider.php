@@ -1,0 +1,78 @@
+<?php
+
+namespace App\Console\Commands;
+
+use Illuminate\Console\Command;
+use Illuminate\Support\Str;
+use App\Services\FileGenerator;
+use App\Console\Traits\MakeProviderTrait;
+
+class MakeCustomProvider extends Command
+{
+    use MakeProviderTrait;
+
+    protected $signature = 'make:custom:provider
+        {name : The name of the service provider (with optional subfolders, e.g. Admin/MyServiceProvider)}
+        {--plugin : Use the plugin-specific provider template}  // plugin.stubを使うか
+        {--force : Overwrite if provider already exists}';
+
+    protected $description = 'Create a new service provider in the custom directory';
+
+    protected FileGenerator $fileGenerator;
+
+    public function __construct(FileGenerator $fileGenerator)
+    {
+        parent::__construct();
+        $this->fileGenerator = $fileGenerator;
+    }
+
+    public function handle()
+    {
+        // 1) parse subDirs + className
+        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
+
+        // 2) options
+        $pluginStub = (bool) $this->option('plugin');
+        $force      = (bool) $this->option('force');
+
+        // 3) call trait method
+        $this->makeFile($className, $subDirs, $force, $pluginStub);
+
+        // 4) もし bootstrap/providers.php に自動追加したければ
+        //    addProviderToBootstrap($className, $subDirs);
+
+        return 0;
+    }
+
+    /**
+     * 例: addProviderToBootstrap()
+     *  Laravel 11+ にある ServiceProvider::addProviderToBootstrapFile() 相当を使うならこんな形
+     */
+    protected function addProviderToBootstrap(string $className, array $subDirs): void
+    {
+        $qualifiedClass = $this->getProviderNamespace($subDirs) . '\\' . $className;
+        // e.g. serviceProvider::addProviderToBootstrapFile($qualifiedClass, base_path('bootstrap/providers.php'))
+        // ... 省略
+    }
+
+    /**
+     * (B)パターン: getProviderDirectory, getProviderNamespace
+     */
+    protected function getProviderDirectory(array $subDirs): string
+    {
+        $base = base_path('custom/app/Providers');
+        if ($subDirs) {
+            $base .= '/' . implode('/', $subDirs);
+        }
+        return $base;
+    }
+
+    protected function getProviderNamespace(array $subDirs): string
+    {
+        $base = 'Custom\\App\\Providers';
+        if ($subDirs) {
+            $base .= '\\' . implode('\\', $subDirs);
+        }
+        return $base;
+    }
+}

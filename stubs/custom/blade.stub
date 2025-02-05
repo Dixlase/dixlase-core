@@ -1,2 +1,7 @@
-{{ license }}
-<h1>Welcome to {{ themeName }}</h1>
+{{--
+  {{ license }}
+  This is a base stub for blade template.
+--}}
+
+<h1>Hello Blade!</h1>
+<p>This is an example Blade file: {{ filename }}</p>
