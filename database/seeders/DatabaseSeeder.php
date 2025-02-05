@@ -34,30 +34,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([
-            UsersTableSeeder::class,
-            MembersTableSeeder::class,
-            ApplicationsTableSeeder::class,
-            ApplicationDetailsTableSeeder::class,
-            EventsTableSeeder::class,
-            EventSortsTableSeeder::class,
-            EventTimetablesTableSeeder::class,
-            FilesTableSeeder::class,
-            OptionsTableSeeder::class,
-            OptionCategoriesTableSeeder::class,
-            PagesTableSeeder::class,
-            PluginsTableSeeder::class,
-            SettingsFrontTableSeeder::class,
-            SettingsSecurityTableSeeder::class,
-            SettingsSystemTableSeeder::class,
-            SlotsTableSeeder::class,
-            SlotCategoriesTableSeeder::class,
-            SlotEventsTableSeeder::class,
-            SlotSchedulesTableSeeder::class,
-            ThemesTableSeeder::class,
-            SettingsThemeTableSeeder::class,
-
-
-        ]);
+        if (app()->environment('production')) {
+            $this->call(\Database\Seeders\Pro\ProductionSeeder::class);
+        } else {
+            $this->call(\Database\Seeders\Dev\DevelopmentSeeder::class);
+        }
     }
 }

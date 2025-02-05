@@ -31,32 +31,16 @@ class AddCopyright extends Command
     protected $signature = 'copyright:update {--dir=app : 変更するファイルがあるディレクトリ(カンマ区切りで複数指定可)}';
     protected $description = 'PHPおよびBladeファイルの著作権表示を挿入または更新する';
 
-    // 著作権表示テンプレート
-    protected $copyrightTemplate = <<<EOT
-/**
- * This file is part of {software}.
- *
- * Copyright (C) {year} {company}
- * Website: {website}
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <https://www.gnu.org/licenses/>.
- */
-EOT;
-
     // コマンドの実行ロジック
     public function handle()
     {
+
+        // license-info.jsonからライセンス情報を取得
+        $licenseInfo = $this->getLicenseInfo();
+
+        // license.txtテンプレートを読み込む
+        $copyrightTemplate = $this->getCopyrightTemplate();
+
         // カンマ区切りで渡されたディレクトリを配列に変換
         $directories = explode(',', $this->option('dir'));
 
@@ -91,7 +75,7 @@ EOT;
                 }
 
                 // 拡張子に基づいて処理を実行
-                $this->updateCopyright($file, $extension);
+                $this->updateCopyright($file, $extension, $licenseInfo, $copyrightTemplate);
             }
         }
 
@@ -99,20 +83,43 @@ EOT;
         $this->info('著作権表示が更新されました。');
     }
 
+    // ライセンス情報をlicense-info.jsonから取得する
+    protected function getLicenseInfo()
+    {
+        $licenseFilePath = base_path('license-info.json');
+        if (!File::exists($licenseFilePath)) {
+            $this->error("license-info.json ファイルが見つかりません。");
+            return null;
+        }
+
+        return json_decode(File::get($licenseFilePath), true);
+    }
+
+
+    // license.txtテンプレートを読み込む
+    protected function getCopyrightTemplate()
+    {
+        $templateFilePath = base_path('license.txt');
+        if (!File::exists($templateFilePath)) {
+            $this->error("license.txt ファイルが見つかりません。");
+            return null;
+        }
+
+        return File::get($templateFilePath);
+    }
+
+
     // ファイルに著作権表示を挿入または更新する処理
-    protected function updateCopyright($file, $extension)
+    protected function updateCopyright($file, $extension, $licenseInfo, $copyrightTemplate)
     {
         $content = File::get($file->getPathname());
         $year = date('Y');
-        $company = 'exc-D inc.';
-        $software = 'Your Software Name';
-        $website = 'https://exc-d.com';
 
         // 新しい著作権表示
         $newCopyright = str_replace(
-            ['{year}', '{company}', '{software}', '{website}'],
-            [$year, $company, $software, $website],
-            $this->copyrightTemplate
+            ['{year}', '{author}', '{software}', '{website}', '{license}'],
+            [$year, $licenseInfo['author'], $licenseInfo['software'], $licenseInfo['website'], $licenseInfo['license']],
+            $copyrightTemplate
         );
 
         //Bladeファイルの場合の処理
