@@ -71,6 +71,7 @@ trait MakeBladeTrait
         // Blade用のライセンスコメントを追加
         $placeholders = [
             '{{ license }}' => $this->fileGenerator->getLicenseForBlade(),
+            '{{ filename }}' => str_replace('.blade.php', '', $viewName),
         ];
 
         $finalContent = $this->fileGenerator->replacePlaceholders($stubContent, $placeholders);

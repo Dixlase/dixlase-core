@@ -1,0 +1,10 @@
+{{ license }}
+
+@extends('front::partials.layout')
+
+@section('content')
+    <h1>Hello Blade!</h1>
+    <p>This is an example Blade file: {{ filename }}</p>
+@endsection
+
+
