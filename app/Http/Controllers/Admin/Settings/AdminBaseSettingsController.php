@@ -26,7 +26,7 @@ namespace App\Http\Controllers\Admin\Settings;
 
 
 use App\Http\Controllers\Admin\AdminController;
-use App\Models\SettingSystem;
+use App\Models\BaseSetting;
 use App\Http\Requests\Admin\Settings\AdminSettingsSystemRequest;
 use Illuminate\Support\Facades\Gate;
 
@@ -51,14 +51,14 @@ class AdminBaseSettingsController extends AdminController
         $this->checkPermission('super_manager');
 
         $settings = [
-            'site_name' => SettingSystem::getValue('site_name', 'My Site'),
-            'language' => SettingSystem::getValue('language', 'ja'),
-            'is_member_site' => SettingSystem::getValue('is_member_site', 'false'),
-            'allow_external_registration' => SettingSystem::getValue('allow_external_registration', 'false'),
-            'maintenance_mode' => SettingSystem::getValue('maintenance_mode', 'false'),
-            'maintenance_message' => SettingSystem::getValue('maintenance_message', '現在メンテナンス中です。しばらくお待ちください。'),
-            'allow_guest_registration' => SettingSystem::getValue('allow_guest_registration', 'false'),
-            'required_fields' => SettingSystem::getValue('required_fields', [
+            'site_name' => BaseSetting::getValue('site_name', 'My Site'),
+            'language' => BaseSetting::getValue('language', 'ja'),
+            'is_member_site' => BaseSetting::getValue('is_member_site', 'false'),
+            'allow_external_registration' => BaseSetting::getValue('allow_external_registration', 'false'),
+            'maintenance_mode' => BaseSetting::getValue('maintenance_mode', 'false'),
+            'maintenance_message' => BaseSetting::getValue('maintenance_message', '現在メンテナンス中です。しばらくお待ちください。'),
+            'allow_guest_registration' => BaseSetting::getValue('allow_guest_registration', 'false'),
+            'required_fields' => BaseSetting::getValue('required_fields', [
                 'address' => false,
                 'phone' => false,
                 'gender' => false,
@@ -96,10 +96,10 @@ class AdminBaseSettingsController extends AdminController
         // JSON形式の必須項目設定
         $requiredFields = $request->input('required_fields', []);
 
-        SettingSystem::setValue('required_fields', $requiredFields);
+        BaseSetting::setValue('required_fields', $requiredFields);
 
         foreach ($settings as $name => $value) {
-            SettingSystem::setValue($name, $value);
+            BaseSetting::setValue($name, $value);
         }
 
         return redirect()->route('admin.settings.systems')->with('success', '設定が更新されました。');

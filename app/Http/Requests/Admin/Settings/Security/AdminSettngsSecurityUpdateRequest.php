@@ -55,6 +55,7 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
+
             'admin_url' => 'required|string|max:255',
             'enable_allowed_admin_ips' => 'required|boolean',
             'allowed_admin_ips' => 'nullable|string|regex:/^(\d{1,3}\.){3}\d{1,3}(,\s*(\d{1,3}\.){3}\d{1,3})*$/',

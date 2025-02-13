@@ -42,7 +42,7 @@ return [
         'dashboard' => 'ダッシュボード',
         'front' => [
             'text' => 'フロントページ管理',
-            'index' => 'フロントページマスター',
+            'index' => 'フロントページ設定',
         ],
         'media' => [
             'text' => 'メディア管理',
@@ -82,6 +82,9 @@ return [
     'features' => [
         'dashboard' => [
             'heading' => 'ダッシュボード',
+        ],
+        'front' => [
+            'heading' => 'フロントページ設定',
         ],
         'contents' => [
             'pages' => [

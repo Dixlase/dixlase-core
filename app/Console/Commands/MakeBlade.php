@@ -32,16 +32,32 @@ class MakeBlade extends Command
 
     protected $signature = 'make:blade
         {file : The blade file name (with optional subdirectories, e.g. admin/dashboard)}
-        {--force : Overwrite if the blade file already exists}';
+        {--force : Overwrite if the blade file already exists}
+        {--type=front : The type of Blade file (front/admin)}';
 
     protected $description = 'Create a new Blade template in the core resources/views directory';
 
+    public function __construct(FileGenerator $fileGenerator)
+    {
+        parent::__construct();
+        $this->fileGenerator = $fileGenerator;
+    }
+
+
     public function handle()
     {
-        $file   = $this->argument('file');
-        $force  = (bool) $this->option('force');
+        $file  = $this->argument('file');
+        $options = [
+            'force' => (bool) $this->option('force'),
+            'type' => $this->option('type'),
+        ];
 
-        $this->makeBlade($file, $force);
+        if (!in_array($options['type'], ['front', 'admin'])) {
+            $this->error("Invalid type: '{$options['type']}'. Choose 'front' or 'admin'.");
+            return 1;
+        }
+
+        $this->makeBlade($file, $options);
 
         return 0;
     }

@@ -22,6 +22,8 @@
 
 
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\Front\AdminFrontController;
+use App\Http\Controllers\Admin\Media\AdminMediaController;
 use App\Http\Controllers\Admin\Auth\AdminAuthenticatedSessionController;
 use App\Http\Controllers\Admin\Auth\AdminConfirmablePasswordController;
 use App\Http\Controllers\Admin\Auth\AdminEmailVerificationNotificationController;
@@ -39,9 +41,10 @@ use App\Http\Controllers\Admin\Contents\AdminContentsPageController;
 use App\Http\Controllers\Admin\Settings\AdminThemesSettingsController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
-use App\Models\SettingSecurity;
+use App\Models\SecuritySetting;
 
-$adminUrl = SettingSecurity::get('admin_url', config('security.admin_url'));
+
+$adminUrl = SecuritySetting::get('admin_url', config('security.admin_url'));
 
 Route::prefix($adminUrl)->name('admin.')
     ->middleware('admin.ip') // IPアドレスフィルタ
@@ -66,23 +69,23 @@ Route::prefix($adminUrl)->name('admin.')
 
 
             //フロントページ管理
-            Route::get('/front', [AdminDashboardController::class, 'index'])->name('front.index');
+            Route::get('/front', [AdminFrontController::class, 'index'])->name('front.index');
             //フロントページ管理保存
-            Route::post('/front/store', [AdminDashboardController::class, 'index'])->name('front.store');
+            Route::post('/front/store', [AdminFrontController::class, 'index'])->name('front.store');
             //フロントページ管理削除
-            Route::delete('/front/delete/{front}', [AdminDashboardController::class, 'index'])->name('front.delete');
+            Route::delete('/front/delete/{front}', [AdminFrontController::class, 'index'])->name('front.delete');
 
             //メディア管理
-            Route::get('/media', [AdminDashboardController::class, 'index'])->name('media.index');
+            Route::get('/media', [AdminMediaController::class, 'index'])->name('media.index');
             //メディアアップロード
-            Route::get('/media/upload', [AdminDashboardController::class, 'upload'])->name('media.upload');
-            Route::post('/media/upload/', [AdminDashboardController::class, 'index'])->name('media.upload');
+            Route::get('/media/upload', [AdminMediaController::class, 'upload'])->name('media.upload');
+            Route::post('/media/upload/', [AdminMediaController::class, 'index'])->name('media.upload');
             //メディア削除
-            Route::delete('/media/delete/{media}', [AdminDashboardController::class, 'delete'])->name('media.delete');
+            Route::delete('/media/delete/{media}', [AdminMediaController::class, 'delete'])->name('media.delete');
             //メディアダウンロード
-            Route::get('/media/download/{media}', [AdminDashboardController::class, 'download'])->name('media.download');
+            Route::get('/media/download/{media}', [AdminMediaController::class, 'download'])->name('media.download');
             //メディアプレビュー
-            Route::get('/media/preview/{media}', [AdminDashboardController::class, 'preview'])->name('media.preview');
+            Route::get('/media/preview/{media}', [AdminMediaController::class, 'preview'])->name('media.preview');
 
             // ユーザー
             // ユーザーマスター

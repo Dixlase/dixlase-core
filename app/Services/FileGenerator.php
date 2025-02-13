@@ -141,13 +141,41 @@ class FileGenerator
 
         // プレースホルダを置換
         $licensePlaceholders = [
-            '{software}' => $licenseInfo['software'] ?? 'UnknownSoftware',
+            '{software}' => $licenseInfo['software'] ?? 'MySoftware',
             '{year}'     => date('Y'),
-            '{company}'  => $licenseInfo['company'] ?? 'UnknownCompany',
+            '{author}'   => $licenseInfo['author'] ?? 'MyName',
             '{website}'  => $licenseInfo['website'] ?? 'https://example.com',
         ];
 
         return $this->replacePlaceholders($licenseText, $licensePlaceholders);
+    }
+
+    /**
+     * Blade 用にライセンスコメントを整形する
+     */
+    public function getLicenseForBlade(): string
+    {
+        $licenseText = $this->getLicenseContent();
+        if (empty($licenseText)) {
+            return '';
+        }
+
+        // Bladeのコメント形式に変換
+        $lines = explode("\n", $licenseText);
+        $formattedLines = [];
+
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if ($line === '/**' || $line === '*/') {
+                continue;
+            }
+            if (str_starts_with($line, '*')) {
+                $line = ltrim($line, '* ');
+            }
+            $formattedLines[] = $line;
+        }
+
+        return "{{--\n" . implode("\n", $formattedLines) . "\n--}}";
     }
 
 

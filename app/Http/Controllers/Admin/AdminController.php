@@ -61,18 +61,18 @@ class AdminController extends Controller
         $this->member = Auth::guard('member')->user();
 
         // データベースからサイト名を取得。取得できなかった場合は.envからデフォルト値を使用
-        $this->siteName = DB::table('settings_system')->where('name', 'site_name')->value('value')
+        $this->siteName = DB::table('base_settings')->where('name', 'site_name')->value('value')
             ?? env('APP_NAME', 'EventManagementSystem');
 
         // データベースからサイト名を取得
-        $this->siteName = DB::table('settings_system')->where('name', 'site_name')->value('value')
+        $this->siteName = DB::table('base_settings')->where('name', 'site_name')->value('value')
             ?? env('APP_NAME', 'EventManagementSystem');
 
         // 外観モードを取得
         $this->appearance = $this->member->appearance ?? 0;
 
         // システム設定を取得
-        $this->settings = DB::table('settings_system')->get()->keyBy('name')->toArray();
+        $this->settings = DB::table('base_settings')->get()->keyBy('name')->toArray();
 
         // ビューパラメータに必要な値を設定
         $this->viewParams = [

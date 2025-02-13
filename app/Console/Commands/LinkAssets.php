@@ -50,7 +50,7 @@ class LinkAssets extends Command
         }
 
         // 有効化されたテーマのアセット
-        $activeThemeId = DB::table('settings_theme')->value('active_theme_id');
+        $activeThemeId = DB::table('theme_settings')->value('active_theme_id');
         $theme = Theme::find($activeThemeId);
 
         if ($theme && File::exists(base_path("themes/{$theme->directory}/assets"))) {

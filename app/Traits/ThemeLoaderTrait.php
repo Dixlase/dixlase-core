@@ -36,7 +36,7 @@ trait ThemeLoaderTrait
      */
     public function getActiveTheme(): int
     {
-        $activeTheme = DB::table('settings_theme')->first();
+        $activeTheme = DB::table('theme_settings')->first();
         return $activeTheme ? $activeTheme->active_theme_id : 1; // デフォルトIDを1とする
     }
 
@@ -47,7 +47,7 @@ trait ThemeLoaderTrait
      */
     public function getActiveThemeDirectory(): string
     {
-        $activeThemeId = DB::table('settings_theme')->value('active_theme_id');
+        $activeThemeId = DB::table('theme_settings')->value('active_theme_id');
         $theme = Theme::find($activeThemeId);
 
         return $theme ? $theme->directory : 'default-theme';
