@@ -34,6 +34,7 @@ class MakeCustomSeeder extends Command
 
     protected $signature = 'make:custom:seeder
         {name : The name of the seeder class (e.g. "EventSeeder" or "Event")}
+        {--env= : Specify the environment ("dev" or "pro")}
         {--force : Overwrite if the seeder already exists}';
 
     protected $description = 'Create a new seeder in the custom directory';
@@ -67,18 +68,34 @@ class MakeCustomSeeder extends Command
     protected function getSeederDirectory(array $subDirs): string
     {
         $base = base_path('custom/database/seeders');
+
+        // --env オプションの取得
+        $env = $this->option('env');
+        if (in_array($env, ['dev', 'pro'])) {
+            $base .= "/{$env}";
+        }
+
         if ($subDirs) {
             $base .= '/' . implode('/', $subDirs);
         }
+
         return $base;
     }
 
     protected function getSeederNamespace(array $subDirs): string
     {
         $base = 'Custom\\Database\\Seeders';
+
+        // --env オプションの取得
+        $env = $this->option('env');
+        if (in_array($env, ['dev', 'pro'])) {
+            $base .= '\\' . ucfirst($env);
+        }
+
         if ($subDirs) {
             $base .= '\\' . implode('\\', $subDirs);
         }
+
         return $base;
     }
 }

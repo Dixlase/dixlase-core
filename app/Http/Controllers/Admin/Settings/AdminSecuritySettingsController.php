@@ -25,7 +25,7 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Http\Controllers\Admin\AdminController;
 use Illuminate\Http\Request;
-use App\Models\SettingSecurity;
+use App\Models\SecuritySetting;
 use App\Http\Requests\Admin\Settings\Security\AdminSettngsSecurityUpdateRequest;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
@@ -44,12 +44,12 @@ class AdminSecuritySettingsController extends AdminController
         $this->viewParams['heading'] = 'admin.features.settings.security.heading';
 
         $settings = [
-            'admin_url' => SettingSecurity::get('admin_url', 'member'),
-            'enable_allowed_admin_ips' => SettingSecurity::get('enable_allowed_admin_ips', false),
-            'allowed_admin_ips' => SettingSecurity::get('allowed_admin_ips', ''),
-            'enable_blocked_admin_ips' => SettingSecurity::get('enable_blocked_admin_ips', false),
-            'blocked_admin_ips' => SettingSecurity::get('blocked_admin_ips', ''),
-            'force_ssl' => SettingSecurity::get('force_ssl', false),
+            'admin_url' => SecuritySetting::get('admin_url', 'member'),
+            'enable_allowed_admin_ips' => SecuritySetting::get('enable_allowed_admin_ips', false),
+            'allowed_admin_ips' => SecuritySetting::get('allowed_admin_ips', ''),
+            'enable_blocked_admin_ips' => SecuritySetting::get('enable_blocked_admin_ips', false),
+            'blocked_admin_ips' => SecuritySetting::get('blocked_admin_ips', ''),
+            'force_ssl' => SecuritySetting::get('force_ssl', false),
         ];
 
         $this->viewParams['settings'] = $settings;
@@ -65,12 +65,12 @@ class AdminSecuritySettingsController extends AdminController
         $this->checkPermission('super_manager');
 
         // 現在の管理画面URLを取得
-        $currentAdminUrl = SettingSecurity::get('admin_url', config('security.admin_url'));
+        $currentAdminUrl = SecuritySetting::get('admin_url', config('security.admin_url'));
 
-        SettingSecurity::set('admin_url', $request->input('admin_url'));
-        SettingSecurity::set('allowed_admin_ips', $request->input('allowed_admin_ips'));
-        SettingSecurity::set('blocked_admin_ips', $request->input('blocked_admin_ips'));
-        SettingSecurity::set('force_ssl', $request->boolean('force_ssl'));
+        SecuritySetting::set('admin_url', $request->input('admin_url'));
+        SecuritySetting::set('allowed_admin_ips', $request->input('allowed_admin_ips'));
+        SecuritySetting::set('blocked_admin_ips', $request->input('blocked_admin_ips'));
+        SecuritySetting::set('force_ssl', $request->boolean('force_ssl'));
 
         // 新しい管理画面URLを取得
         $newAdminUrl = $request->input('admin_url', config('security.admin_url'));

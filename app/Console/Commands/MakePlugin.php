@@ -145,6 +145,8 @@ class MakePlugin extends Command
             "database/migrations",
             "database/factories",
             "database/seeders",
+            "database/seeders/dev",
+            "database/seeders/pro",
 
             // アセット関連
             "resources/assets/js",
@@ -516,14 +518,31 @@ class MakePlugin extends Command
      */
     protected function createSeeder(string $pluginName, string $pluginDirName)
     {
-        $seederName = "DatabaseSeeder";
-
-        Artisan::call('plugin:make:seeder', [
+        // DatabaseSeeder の作成
+        Artisan::call('make:plugin:seeder', [
             'plugin' => $pluginDirName,
-            'name' => $seederName,
+            'name' => 'DatabaseSeeder',
+            '--force' => true,
         ]);
-
         $this->info("Seeder DatabaseSeeder.php created for plugin [{$pluginName}].");
+
+        // DevelopmentSeeder の作成
+        Artisan::call('make:plugin:seeder', [
+            'plugin' => $pluginDirName,
+            'name' => 'DevelopmentSeeder',
+            '--env' => 'dev',
+            '--force' => true,
+        ]);
+        $this->info("Seeder DevelopmentSeeder.php created for plugin [{$pluginName}].");
+
+        // ProductionSeeder の作成
+        Artisan::call('make:plugin:seeder', [
+            'plugin' => $pluginDirName,
+            'name' => 'ProductionSeeder',
+            '--env' => 'pro',
+            '--force' => true,
+        ]);
+        $this->info("Seeder ProductionSeeder.php created for plugin [{$pluginName}].");
     }
 
     /**

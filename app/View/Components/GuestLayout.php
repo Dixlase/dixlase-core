@@ -35,6 +35,7 @@ class GuestLayout extends Component
     protected $theme_class;
     protected $title = '';
     protected $view_params = [];
+    protected $theme = '';
 
     /**
      * Get the view / contents that represents the component.
@@ -43,11 +44,11 @@ class GuestLayout extends Component
     {
 
         // データベースからサイト名を取得。取得できなかった場合は.envからデフォルト値を使用
-        $this->siteName = DB::table('settings_system')->where('name', 'site_name')->value('value')
+        $this->site_name = DB::table('base_settings')->where('name', 'site_name')->value('value')
             ?? env('APP_NAME', 'EventManagementSystem');
 
         // データベースからテーマ情報を取得。取得できなかった場合はコンフィグからデフォルト値を使用
-        $this->theme = DB::table('settings_system')->where('name', 'admin_theme')->value('value')
+        $this->theme = DB::table('base_settings')->where('name', 'admin_theme')->value('value')
             ?? Config::get('admin.theme', 'light'); // デフォルト値を 'light' に設定
 
         //テーマクラスを設定する

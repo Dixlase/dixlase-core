@@ -27,13 +27,13 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
-use App\Models\SettingSystem;
+use App\Models\BaseSetting;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Route;
-use App\Models\SettingSecurity;
+use App\Models\SecuritySetting;
 use App\Traits\ThemeLoaderTrait;
 use App\Traits\PluginLoaderTrait;
 use App\Traits\CustomFilesLoaderTrait;
@@ -78,7 +78,8 @@ class AppServiceProvider extends ServiceProvider
         }
 
         //セキュリティ設定でSSLを矯正しているかどうかを判定
-        $forceSsl = SettingSecurity::get('force_ssl', config('security.force_ssl'));
+
+        $forceSsl = SecuritySetting::get('force_ssl', config('security.force_ssl'));
 
         if ($forceSsl) {
             $this->app['request']->server->set('HTTPS', true);
@@ -86,8 +87,9 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
+
         //言語の設定
-        $language = SettingSystem::where('name', 'language')->value('value');
+        $language = BaseSetting::where('name', 'language')->value('value');
         $lang = $language ?? config('admin.lang', 'ja');
         app()->setLocale($lang);
 
@@ -97,6 +99,7 @@ class AppServiceProvider extends ServiceProvider
         $themeDirectory = config('themes.theme_directory', 'themes'); // テーマディレクトリ
         $activeThemeDirectory = config('themes.active_theme', 'default-theme'); // アクティブなテーマ
         $defaultTheme = config('themes.default_theme', 'default-theme'); // デフォルトテーマ
+
 
         // カスタムファイルのディレクトリを追加
         $customFilesDir = base_path(config('custom.custom_files_dir', 'custom'));
@@ -126,7 +129,7 @@ class AppServiceProvider extends ServiceProvider
 
         // 現在使用中のテーマのディレクトリ名を取得
         $activeTheme = DB::table('themes')->where('id', $activeThemeId)->first();
-        $activeThemeDirectory = $activeTheme->directory ?? 'default-theme';
+        $activeThemeDirectory = $activeTheme->directory ?? 'DefaultTheme';
 
 
         // テーマファイルの読み込み、カスタムテーマの読み込みがcustom/resources/viewsのほうを優先されるように設定

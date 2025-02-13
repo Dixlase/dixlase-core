@@ -23,18 +23,18 @@
 
 namespace App\Http\Controllers\Admin\Front;
 
-use App\Http\Controllers\Controller;
-use App\Models\Front;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Admin\AdminController;
 
-class AdminFrontController extends Controller
+class AdminFrontController extends AdminController
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+
+        $this->viewParams['heading'] = 'admin.features.front.heading';
+        return view('admin::front/index', $this->viewParams);
     }
 
     /**

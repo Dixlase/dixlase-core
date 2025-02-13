@@ -125,7 +125,14 @@ if (!function_exists('load_active_assets')) {
         );
 
         // アクティブなテーマIDを取得
-        $activeThemeId = DB::table('settings_theme')->where('active_theme_id', 1)->first();
+        $activeThemeId = DB::table('theme_settings')->where('active_theme_id', 1)->first();
+
+        if ($activeThemeId) {
+            $activeThemeId = $activeThemeId->active_theme_id;
+        } else {
+            $activeThemeId = 1;
+        }
+
         // アクティブなテーマを取得
         $activeTheme = \App\Models\Theme::find($activeThemeId);
 

@@ -191,7 +191,7 @@ class MakeTheme extends Command
      */
     protected function activateTheme(int $themeId, string $themeName)
     {
-        DB::table('settings_theme')->updateOrInsert(
+        DB::table('theme_settings')->updateOrInsert(
             ['id' => 1], // 一意の設定
             ['active_theme_id' => $themeId, 'updated_at' => now()]
         );

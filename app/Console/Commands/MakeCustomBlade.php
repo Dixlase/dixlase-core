@@ -23,7 +23,9 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use App\Services\FileGenerator;
 use App\Console\Traits\MakeBladeTrait;
+
 
 class MakeCustomBlade extends Command
 {
@@ -31,18 +33,32 @@ class MakeCustomBlade extends Command
 
     protected $signature = 'make:custom:blade
         {file : The blade file name (e.g. admin/dashboard)}
-        {--force : Overwrite if the blade file already exists}';
+        {--force : Overwrite if the blade file already exists}
+        {--type=front : The type of Blade file (front/admin)}';
 
     protected $description = 'Create a new Blade template in the custom/views directory';
+
+    public function __construct(FileGenerator $fileGenerator)
+    {
+        parent::__construct();
+        $this->fileGenerator = $fileGenerator;
+    }
 
     public function handle()
     {
         $file  = $this->argument('file');
-        $force = (bool) $this->option('force');
 
-        $this->makeBlade($file, $force);
+        $options = [
+            'force' => (bool) $this->option('force'),
+            'type' => $this->option('type'),
+        ];
 
-        return 0;
+        if (!in_array($options['type'], ['front', 'admin'])) {
+            $this->error("Invalid type: '{$options['type']}'. Choose 'front' or 'admin'.");
+            return 1;
+        }
+
+        $this->makeBlade($file, $options);
     }
 
     /**

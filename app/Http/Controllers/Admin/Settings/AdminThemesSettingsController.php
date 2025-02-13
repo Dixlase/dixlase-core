@@ -46,7 +46,7 @@ class AdminThemesSettingsController extends AdminController
         $defaultTheme = Theme::where('slug', 'default')->first();
 
         // 現在有効なテーマを取得
-        $activeThemeId = DB::table('settings_theme')->value('active_theme_id');
+        $activeThemeId = DB::table('theme_settings')->value('active_theme_id');
 
         // 他のテーマを取得（デフォルトテーマ以外）
         $themes = Theme::where('slug', '!=', 'default')->paginate(10); // 1ページあたり10件表示
@@ -224,7 +224,7 @@ class AdminThemesSettingsController extends AdminController
         }
 
         // アクティブテーマを更新
-        DB::table('settings_theme')->update(['active_theme_id' => $theme->id, 'updated_at' => now()]);
+        DB::table('theme_settings')->update(['active_theme_id' => $theme->id, 'updated_at' => now()]);
 
         try {
             // シンボリックリンクを更新

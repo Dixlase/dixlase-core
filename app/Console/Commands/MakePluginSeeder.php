@@ -40,6 +40,7 @@ class MakePluginSeeder extends Command
     protected $signature = 'make:plugin:seeder
         {plugin : The name of the plugin (e.g. "EventsPlugin")}
         {name : The name of the seeder class (e.g. "EventSeeder" or "Event")}
+        {--env= : Specify the environment ("dev" or "pro")}
         {--force : Overwrite if the seeder file already exists}';
 
     /**
@@ -94,9 +95,17 @@ class MakePluginSeeder extends Command
     {
         $plugin = Str::studly($this->argument('plugin'));
         $base = base_path("plugins/{$plugin}/database/seeders");
+
+        // --env オプションの取得
+        $env = $this->option('env');
+        if (in_array($env, ['dev', 'pro'])) {
+            $base .= "/{$env}";
+        }
+
         if ($subDirs) {
             $base .= '/' . implode('/', $subDirs);
         }
+
         return $base;
     }
 
@@ -104,9 +113,16 @@ class MakePluginSeeder extends Command
     {
         $plugin = Str::studly($this->argument('plugin'));
         $base = "Plugins\\{$plugin}\\Database\\Seeders";
+        // --env オプションの取得
+        $env = $this->option('env');
+        if (in_array($env, ['dev', 'pro'])) {
+            $base .= '\\' . ucfirst($env);
+        }
+
         if ($subDirs) {
             $base .= '\\' . implode('\\', $subDirs);
         }
+
         return $base;
     }
 }

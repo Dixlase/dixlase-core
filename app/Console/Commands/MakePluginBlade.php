@@ -24,6 +24,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
+use App\Services\FileGenerator;
 use App\Console\Traits\MakeBladeTrait;
 
 class MakePluginBlade extends Command
@@ -33,19 +34,36 @@ class MakePluginBlade extends Command
     protected $signature = 'make:plugin:blade
         {plugin : The plugin name (e.g. MyPlugin)}
         {file : The blade file name (e.g. admin/dashboard)}
-        {--force : Overwrite if the blade file already exists}';
+        {--force : Overwrite if the blade file already exists}
+        {--type=front : The type of Blade file (front/admin)}';
 
     protected $description = 'Create a new Blade template in the specified plugin\'s resources/views directory';
 
+    protected string $pluginName;
+
+    public function __construct(FileGenerator $fileGenerator)
+    {
+        parent::__construct();
+        $this->fileGenerator = $fileGenerator;
+    }
+
+
     public function handle()
     {
-        $plugin = Str::studly($this->argument('plugin'));
-        $file   = $this->argument('file');
-        $force  = (bool) $this->option('force');
+        $this->pluginName = Str::studly($this->argument('plugin'));
+        $file = $this->argument('file');
 
-        $this->pluginName = $plugin; // 後で getBladeBasePath() で使用
+        $options = [
+            'force' => (bool) $this->option('force'),
+            'type' => $this->option('type'),
+        ];
 
-        $this->makeBlade($file, $force);
+        if (!in_array($options['type'], ['front', 'admin'])) {
+            $this->error("Invalid type: '{$options['type']}'. Choose 'front' or 'admin'.");
+            return 1;
+        }
+
+        $this->makeBlade($file, $options);
 
         return 0;
     }

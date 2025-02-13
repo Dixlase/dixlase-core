@@ -23,9 +23,6 @@
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-
-use App\Models\Page;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -35,6 +32,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call([
+            BaseSettingsTableSeeder::class,
+            FrontSettingsTableSeeder::class,
+            MediaTableSeeder::class,
+            SecuritySettingsTableSeeder::class,
+            ThemeSettingsTableSeeder::class,
+            ThemesTableSeeder::class,
+        ]);
+
+
         if (app()->environment('production')) {
             $this->call(\Database\Seeders\Pro\ProductionSeeder::class);
         } else {
