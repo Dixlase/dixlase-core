@@ -33,7 +33,7 @@ class MakePluginListener extends Command
      *
      * @var string
      */
-    protected $signature = 'plugin:make:listener
+    protected $signature = 'make:plugin:listener
                             {plugin : The plugin name}
                             {name : The name of the listener}
                             {--force : Create the class even if the listener already exists}

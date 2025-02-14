@@ -71,14 +71,39 @@ class MakePlugin extends Command
 
     public function handle()
     {
+        // 1) license-info.txt を探す
+        $licenseInfoPath = base_path('license-info.json');
+
+        // 2) デフォルトのソフトウェア名（万が一ファイルがない場合など）
+        $defaultSoftwareName = 'MySoftware';
+
+        if (File::exists($licenseInfoPath)) {
+            // license-info.txt が存在するなら読み込む
+            $licenseInfoJson = File::get($licenseInfoPath);
+            $licenseInfo = json_decode($licenseInfoJson, true);
+            $softwareName = $licenseInfo['software'] ?? $defaultSoftwareName;
+        } else {
+            // 存在しなければデフォルト値を採用
+            $softwareName = $defaultSoftwareName;
+        }
+
+        // 例: "MySoftware" -> "my-software"
+        $cmsNameSlug = Str::slug(Str::snake($softwareName));
+
         // 人間が認識する名前
         $pluginName = $this->argument('name');
+
+        // スラッグ化したプラグイン名
+        $pluginSlug = Str::slug(Str::snake($pluginName));
 
         // キャメルケースでディレクトリ名を生成
         $pluginDirName = Str::studly($pluginName);
 
         // ベンダー名 (Composerパッケージ用)
-        $vendorName = $this->option('vendor'); // 例: "myvendor"
+        $vendorName = $this->option('vendor') ?: 'plugins';
+
+        // このように "my-software-pages-plugin" を組み立てる
+        $packageName = "{$cmsNameSlug}-{$pluginSlug}";
 
         // プラグインの名前空間
         $namespace = $this->option('namespace') . '\\' . $pluginDirName;
@@ -96,7 +121,16 @@ class MakePlugin extends Command
 
 
         // スタブファイルを使って各種ファイルを生成
-        $this->createPluginFiles($pluginDir, $pluginName, $pluginDirName, $vendorName, $namespace);
+        $this->createPluginFiles(
+            $pluginDir,
+            $pluginName,
+            $pluginDirName,
+            $vendorName,
+            $namespace,
+            $cmsNameSlug,
+            $pluginSlug,
+            $softwareName
+        );
 
         // Optionally install and enable the plugin
         if ($this->option('install')) {
@@ -172,7 +206,10 @@ class MakePlugin extends Command
         string $pluginName,
         string $pluginDirName,
         string $vendorName,
-        string $namespace
+        string $namespace,
+        string $cmsNameSlug,
+        string $pluginSlug,
+        string $softwareName
     ) {
 
 
@@ -194,14 +231,16 @@ class MakePlugin extends Command
         $licenseName = $this->fileGenerator->getLicenseName();
 
         $placeholders = [
-            '{{ licenseName }}'   => $licenseName,    // ライセンス
-            '{{ pluginName }}'    => $pluginName,     // 例: "MyPlugin"
-            '{{ pluginDirName }}' => $pluginDirName,  // 例: "MyPlugin" (StudlyCase)
-            '{{ namespace }}'     => $namespace,      // 例: "Vendor\MyPlugin"
-            '{{ vendorName }}'    => $vendorName,     // 例: "myvendor"
-            '{{ vendorNameDefault }}' => $vendorNameDefault,  // もし vendorName が空なら "plugins"
-            '{{ vendorNameStudly }}'  => $vendorNameStudly,   // 例: "Myvendor"
-            '{{ pluginNameStudly }}'  => $pluginNameStudly,   // 例: "MyPlugin"
+            '{{ pluginName }}'        => $pluginName,     // "MyPlugin"
+            '{{ pluginNameStudly }}'  => $pluginNameStudly,
+            '{{ namespace }}'         => $namespace,
+            '{{ slug }}'              => $pluginSlug,     // "my-plugin"
+            '{{ license }}'           => $licenseName,
+            '{{ vendorName }}'        => $vendorName,     // 例: "plugins" or "exc-d"
+            '{{ vendorNameDefault }}' => $vendorNameDefault,
+            '{{ vendorNameStudly }}'  => $vendorNameStudly,
+            '{{ softwareName }}'      => $softwareName,   // "MySoftware"
+            '{{ cmsNameSlug }}'       => $cmsNameSlug,    // "my-software"
         ];
 
 
@@ -349,7 +388,7 @@ class MakePlugin extends Command
     {
         $providerName = "{$pluginDirName}ServiceProvider";
 
-        Artisan::call('plugin:make:provider', [
+        Artisan::call('make:plugin:provider', [
             'plugin' => $pluginDirName,
             'name' => $providerName,
         ]);
@@ -364,7 +403,7 @@ class MakePlugin extends Command
     {
         $controllerName = "{$pluginDirName}Controller";
 
-        Artisan::call('plugin:make:controller', [
+        Artisan::call('make:plugin:controller', [
             'plugin' => $pluginDirName,
             'name' => $controllerName,
         ]);
@@ -379,7 +418,7 @@ class MakePlugin extends Command
     {
         $modelName = "{$pluginDirName}";
 
-        Artisan::call('plugin:make:model', [
+        Artisan::call('make:plugin:model', [
             'plugin' => $pluginDirName,
             'name' => $modelName,
         ]);
@@ -394,7 +433,7 @@ class MakePlugin extends Command
     {
         $policyName = "{$pluginDirName}Policy";
 
-        Artisan::call('plugin:make:policy', [
+        Artisan::call('make:plugin:policy', [
             'plugin' => $pluginDirName,
             'name' => $policyName,
         ]);
@@ -409,7 +448,7 @@ class MakePlugin extends Command
     {
         $listenerName = "{$pluginDirName}Listener";
 
-        Artisan::call('plugin:make:listener', [
+        Artisan::call('make:plugin:listener', [
             'plugin' => $pluginDirName,
             'name' => $listenerName,
         ]);
@@ -424,7 +463,7 @@ class MakePlugin extends Command
     {
         $testName = "{$pluginDirName}Test";
 
-        Artisan::call('plugin:make:test', [
+        Artisan::call('make:plugin:test', [
             'plugin' => $pluginDirName,
             'name' => $testName,
         ]);
@@ -445,7 +484,7 @@ class MakePlugin extends Command
         // マイグレーション名を生成
         $migrationName = "{$date}_create_{$pluginSnakeName}_table";
 
-        Artisan::call('plugin:make:migration', [
+        Artisan::call('make:plugin:migration', [
             'plugin' => $pluginDirName,
             'name' => $migrationName,
         ]);
@@ -460,7 +499,7 @@ class MakePlugin extends Command
     {
         $resourceName = "{$pluginDirName}Resource";
 
-        Artisan::call('plugin:make:resource', [
+        Artisan::call('make:plugin:resource', [
             'plugin' => $pluginDirName,
             'name' => $resourceName,
         ]);
@@ -475,7 +514,7 @@ class MakePlugin extends Command
     {
         $commandName = "{$pluginDirName}Command";
 
-        Artisan::call('plugin:make:command', [
+        Artisan::call('pmake:plugin:command', [
             'plugin' => $pluginDirName,
             'name' => $commandName,
         ]);
@@ -490,7 +529,7 @@ class MakePlugin extends Command
     {
         $jobName = "{$pluginDirName}Job";
 
-        Artisan::call('plugin:make:job', [
+        Artisan::call('make:plugin:job', [
             'plugin' => $pluginDirName,
             'name' => $jobName,
         ]);
@@ -505,7 +544,7 @@ class MakePlugin extends Command
     {
         $notificationName = "{$pluginDirName}Notification";
 
-        Artisan::call('plugin:make:notification', [
+        Artisan::call('make:plugin:notification', [
             'plugin' => $pluginDirName,
             'name' => $notificationName,
         ]);
@@ -552,7 +591,7 @@ class MakePlugin extends Command
     {
         $factoryName = "{$pluginDirName}Factory";
 
-        Artisan::call('plugin:make:factory', [
+        Artisan::call('make:plugin:factory', [
             'plugin' => $pluginDirName,
             'name' => $factoryName,
         ]);
@@ -568,7 +607,7 @@ class MakePlugin extends Command
         // Register plugin in database
         Plugin::create([
             'name' => $pluginName,
-            'directory' => $pluginDirName, // キャメルケースのディレクトリ名を登録
+            'directory' => $pluginDirName,
             'namespace' => "Plugins\\$pluginDirName",
             'version' => '1.0.0',
             'status' => 0,

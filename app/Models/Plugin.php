@@ -30,10 +30,18 @@ class Plugin extends Model
     //
     protected $fillable = [
         'name',
+        'package_name',
         'directory',
         'namespace',
+        'slug',
         'version',
-        'status'
+        'author',
+        'email',
+        'web',
+        'license',
+        'description',
+        'status',
+        'installed_at',
     ];
 
     // 有効化されたプラグインを取得するスコープ

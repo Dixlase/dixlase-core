@@ -33,7 +33,7 @@ class MakePluginComponent extends Command
      *
      * @var string
      */
-    protected $signature = 'plugin:make:component
+    protected $signature = 'make:plugin:component
                             {plugin : The plugin name}
                             {name : The name of the view component}';
 

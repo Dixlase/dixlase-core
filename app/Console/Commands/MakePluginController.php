@@ -34,7 +34,7 @@ class MakePluginController extends Command
 
     /**
      * Artisan コマンド名と引数/オプション定義
-     * 例: php artisan plugin:make:controller my-plugin MyController
+     * 例: php artisan make:plugin:controller my-plugin MyController
      */
     protected $signature = 'make:plugin:controller
         {plugin : The plugin name}
