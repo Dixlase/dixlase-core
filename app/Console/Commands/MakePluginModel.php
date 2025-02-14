@@ -30,7 +30,7 @@ use App\Console\Traits\MakeModelTrait;
 
 class MakePluginModel extends Command
 {
-    protected $signature = 'plugin:make:model
+    protected $signature = 'make:plugin:model
         {plugin : The plugin name}
         {name : The name of the model (optionally with subfolders, e.g. Admin/MyModel)}
         {--all : Generate migration, seeder, factory, policy, resource controller, and form request classes for the model}

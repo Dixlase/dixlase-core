@@ -33,7 +33,7 @@ class MakePluginJob extends Command
      *
      * @var string
      */
-    protected $signature = 'plugin:make:job
+    protected $signature = 'make:plugin:job
                             {plugin : The plugin name}
                             {name : The name of the job}
                             {--force : Create the class even if the job already exists}

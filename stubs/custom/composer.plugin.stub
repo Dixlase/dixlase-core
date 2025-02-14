@@ -1,5 +1,5 @@
 {
-    "name": "{{ vendorNameDefault }}/{{ pluginName }}",
+    "name": "{{ cmsNameSlug }}/plugins-{{ slug }}",
     "description": "This is the {{ pluginName }} plugin.",
     "version": "1.0.0",
     "license": "{{ license }}",
@@ -20,8 +20,9 @@
         }
     },
     "extra": {
-        "directory": "{{ pluginDirName }}",
+        "display-name": "{{ pluginName }}",
         "keywords": ["laravel", "plugin", "custom"],
+        "slug": "{{ slug }}",
         "category": "plugin",
         "laravel": {
             "providers": [

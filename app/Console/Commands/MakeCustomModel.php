@@ -122,7 +122,7 @@ class MakeCustomModel extends Command
     }
 
     // 以下、createFactory, createMigration, createSeeder, createController, createFormRequests, createPolicy は
-    // plugin版とほぼ同じ。 "plugin:make:factory" → "make:custom:factory" などに置き換える。
+    // plugin版とほぼ同じ。 "make:plugin::factory" → "make:custom:factory" などに置き換える。
 
     protected function createFactory(string $modelFqcn)
     {
