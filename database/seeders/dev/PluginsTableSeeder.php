@@ -34,6 +34,8 @@ class PluginsTableSeeder extends Seeder
      */
     public function run(): void
     {
+
+        /*
         Plugin::insert([
             [
                 'name' => 'EventsPlugin',
@@ -72,5 +74,6 @@ class PluginsTableSeeder extends Seeder
                 'updated_at' => now()
             ],
         ]);
+        */
     }
 }
