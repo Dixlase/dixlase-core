@@ -26,6 +26,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'confirm_label' => '確認',     // 確認ボタンのテキスト
     'cancel_label' => 'キャンセル', // キャンセルボタンのテキスト
     'class' => '',               // モーダルのカスタムクラス
+    // ↓ チェックボックス用追加パラメータ
+    'checkbox' => false,          // チェックボックスを表示するかどうか
+    'checkbox_name' => 'remove_db_data', // name属性
+    'checkbox_label' => 'データベースを削除する', // チェックボックスのラベル
 ])
 
 <div id="{{ $id }}" class="mt-0 fixed inset-0 z-50 flex items-center justify-center bg-opacity-80 opacity-0 pointer-events-none transition-opacity duration-300 bg-gray-100 dark:bg-black">
@@ -42,6 +46,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div class="mt-2">
                         <p class="text-sm text-gray-900 dark:text-white">{{ $message }}</p>
                     </div>
+
+                    <!-- チェックボックスを表示したい場合 -->
+                    @if($checkbox)
+                        <div class="mt-4">
+                            <label class="inline-flex items-center">
+                                <input type="checkbox" name="{{ $checkbox_name }}" value="1" class="mr-2 rounded" />
+                                <span class="text-sm text-gray-900 dark:text-white">
+                                    {{ $checkbox_label }}
+                                </span>
+                            </label>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

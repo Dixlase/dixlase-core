@@ -21,10 +21,81 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @extends('admin::partials.layout')
 
+@php
+    /**
+     * アップロード出来るファイルサイズの上限を取得
+     * @param string $sizeStr PHPの設定値 (例: "2M")
+     * @return int バイト数
+     */
+    function parsePhpSize($sizeStr) {
+        $sizeStr = trim($sizeStr);
+        $unit = strtoupper(substr($sizeStr, -1)); // 末尾1文字 (K, M, G)
+        $value = (int) substr($sizeStr, 0, -1);
+
+        switch ($unit) {
+            case 'G':
+                $value *= 1024;
+                // no break
+            case 'M':
+                $value *= 1024;
+                // no break
+            case 'K':
+                $value *= 1024;
+                break;
+            default:
+                $value = (int)$sizeStr; // 単位なしの場合
+        }
+        return $value;
+    }
+
+    // PHPの設定から取得
+    $uploadMaxFilesize = ini_get('upload_max_filesize');  // 例: "2M"
+    $postMaxSize       = ini_get('post_max_size');        // 例: "8M"
+
+    // バイト数に変換
+    $uploadMaxBytes = parsePhpSize($uploadMaxFilesize);
+    $postMaxBytes   = parsePhpSize($postMaxSize);
+
+    // 画面表示用に "2M" 形式でそのまま表示しても良いし、
+    // あるいは数値(MB)を小数込みで表示したい場合は:
+    $uploadMaxMB = number_format($uploadMaxBytes / 1048576, 2); // 1MB = 1048576 bytes
+    $postMaxMB   = number_format($postMaxBytes / 1048576, 2);
+@endphp
+
+
 @section('content')
 <div class="container mx-auto p-6">
+
     <!-- Flash message for success or error -->
-    @include('components::flash_message')
+    @if(session('success'))
+        <div class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50">
+            {{ session('success') }}
+
+            @if(session('installed_plugin_id'))
+                <!-- 有効化フォーム -->
+                <br>プラグインを有効化する場合はから
+                <form action="{{ route('admin.settings.plugins.enable', session('installed_plugin_id')) }}"
+                    method="POST" class="inline-block ml-3">
+                    @csrf
+                    <button type="submit"
+                            class="bg-blue-500 hover:bg-blue-600 text-white py-1 px-2 rounded text-sm">
+                        こちら
+                    </button>
+                </form>
+                から有効化してください。
+            @endif
+        </div>
+    @endif
+
+    @if ($errors->any())
+        <div class="mb-4 p-4 text-red-800 bg-red-100 border border-red-200 rounded-lg">
+            <ul class="list-disc list-inside">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
     <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
         <h2 class="text-2xl font-bold mb-6 text-gray-700 dark:text-white">プラグインアップロード</h2>
@@ -75,7 +146,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             ></path>
                         </svg>
                         <p class="text-sm text-gray-500 dark:text-gray-400" x-text="fileName || 'ここにファイルをドラッグするか、クリックしてアップロード'"></p>
-                        <p class="text-xs text-gray-400 mt-1">対応形式: .zip</p>
+                        <p class="text-xs text-gray-400 mt-1">対応形式: <strong>.zip</strong></p>
+
+                        <!-- アップロード上限表示 -->
+                        <p class="text-xs text-gray-400 mt-1">アップロード可能ファイルサイズ上限:
+                            <strong>{{ $uploadMaxMB }} MB</strong>
+                        </p>
                     </div>
                 </div>
             </div>

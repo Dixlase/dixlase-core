@@ -33,6 +33,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Traits\PluginLoaderTrait;
 use Illuminate\Support\Str;
 use ZipArchive;
+use App\Services\PluginMigrator;
 
 
 
@@ -69,10 +70,19 @@ class AdminPluginsSettingsController extends AdminController
         // 権限を確認
         $this->checkPermission('super_manager');
 
-        // ファイルアップロード処理
+        // 例: ini_get('upload_max_filesize') -> "2M"
+        $uploadMaxFilesize = ini_get('upload_max_filesize');
+        $maxBytes = $this->parsePhpSize($uploadMaxFilesize); // 下記関数で "2M" -> 2097152 に変換
+
         $request->validate([
-            'plugin_file' => 'required|file|mimes:zip|max:2048',
+            'plugin_file' => [
+                'required',
+                'file',
+                'mimes:zip',
+                'max:' . floor($maxBytes / 1024), // kB単位に変換 (Laravel の max: ルールがkB単位)
+            ],
         ]);
+
 
         // ZIPファイルを一時保存
         $file = $request->file('plugin_file');
@@ -162,7 +172,7 @@ class AdminPluginsSettingsController extends AdminController
                 $namespace = "Plugins\\$pluginDir";
 
                 // DBにプラグイン情報を登録
-                Plugin::create([
+                $plugin = Plugin::create([
                     'name'        => $displayName, // “MyPlugin”
                     'package_name' => $packageName, // "my-software/plugins-my-plugin"
                     'directory'   => $pluginDir,   // 例: "MyPlugin"
@@ -177,31 +187,37 @@ class AdminPluginsSettingsController extends AdminController
                     'status'      => 0, // デフォルトで無効化
                     'installed_at' => now(), // インストール日時をセット
                 ]);
+
+                // インストールしたプラグインのID
+                $pluginId = $plugin->id;
             } else {
                 return redirect()->back()->with('error', 'composer.json が見つかりません。');
             }
 
-            // プラグインのマイグレーションディレクトリを動的に指定
-            $pluginMigrationPath = base_path("plugins/{$pluginDir}/database/migrations");
-            if (is_dir($pluginMigrationPath)) {
-                $result = Artisan::call('plugin:migrate', [
-                    'plugin'  => $pluginDir,
-                    '--force' => true,
-                ]);
-            }
+            // プラグインのマイグレーションを実行
+            // $migrated には「新しく実行された」マイグレーションファイルが入る
+            $migrated = app(PluginMigrator::class)->migrate($pluginDir, null, ['step' => false]);
 
-            $seederPath = base_path("plugins/{$pluginDir}/database/seeders");
-
-            if (is_dir($seederPath)) {
-                $result = Artisan::call('plugin:seed', [
+            if (!empty($migrated)) {
+                // 新しいマイグレーションがあったので、テーブルが新規(または更新)された
+                // ここでシーダー実行
+                Artisan::call('plugin:seed', [
                     'plugin' => $pluginDir,
                     '--force' => true,
                 ]);
+            } else {
+                // 空 → "No migrations to run" の状態
+                // テーブルが既にあるとみなしてシーダーをスキップ
             }
+
+
+
             // artisanコマンドでPSR-4オートロードを更新
             Artisan::call('plugin:autoload:sync', ['--cleanup' => true]);
 
-            return redirect()->route('admin.settings.plugins.index')->with('success', 'プラグインが正常にインストールされました。');
+            return redirect()->route('admin.settings.plugins.index')
+                ->with('success', 'プラグインが正常にインストールされました。')
+                ->with('installed_plugin_id', $pluginId);
         }
 
         // エラー処理
@@ -257,7 +273,7 @@ class AdminPluginsSettingsController extends AdminController
         }
     }
 
-    public function uninstall($id)
+    public function uninstall($id, Request $request)
     {
 
         // 権限を確認
@@ -267,12 +283,15 @@ class AdminPluginsSettingsController extends AdminController
         $plugin = Plugin::findOrFail($id);
         $pluginDir = $plugin->directory;
 
-        // 1. プラグインのマイグレーションをロールバック（= plugin_migrations レコード + down() でテーブル削除）
-        Artisan::call('plugin:migrate:rollback', [
-            'plugin' => $pluginDir,
-            '--force' => true, // 本番環境でも確認なし
-            '--step' => 9999,  // すべてのマイグレーションをロールバックするなら大きめの数字に
-        ]);
+        // ★ 1) DBデータも削除か？ → plugin:rollback 実行
+        if ($request->has('remove_db_data')) {
+            // plugin:rollback コマンドを呼ぶ (実装済みなら)
+            Artisan::call('plugin:migrate:rollback', [
+                'plugin' => $pluginDir,
+                '--force' => true,
+                '--step' => 9999, // 全部ロールバック
+            ]);
+        }
 
         // プラグインフォルダを削除
         File::deleteDirectory(base_path('plugins/' . $pluginDir));
@@ -284,6 +303,33 @@ class AdminPluginsSettingsController extends AdminController
         Artisan::call('plugin:autoload:sync', ['--cleanup' => true]);
 
 
-        return redirect()->route('admin.settings.plugins.index')->with('success', 'プラグインをアンインストールしました');
+        return redirect()->route('admin.settings.plugins.index')
+            ->with('success', 'プラグインをアンインストールしました');
+    }
+
+    // ZIPファイルのサイズをバイト数に変換
+    private function parsePhpSize($sizeStr)
+    {
+        // 大文字/小文字両対応
+        $sizeStr = trim($sizeStr);
+        $unit = strtoupper(substr($sizeStr, -1));
+        $value = (int) substr($sizeStr, 0, -1);
+
+        switch ($unit) {
+            case 'G':
+                $value *= 1024;
+                // fall-through
+            case 'M':
+                $value *= 1024;
+                // fall-through
+            case 'K':
+                $value *= 1024;
+                break;
+            default:
+                // 単位なし
+                $value = (int) $sizeStr;
+                break;
+        }
+        return $value;
     }
 }

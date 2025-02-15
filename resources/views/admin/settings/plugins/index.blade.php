@@ -74,14 +74,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 </form>
                             @endif
 
+                            <!-- 1) フォーム: uninstall.blade.php など（プラグイン一覧で繰り返し） -->
                             <form action="{{ route('admin.settings.plugins.uninstall', $plugin->id) }}" method="POST">
                                 @csrf
-                                <button
-                                    type="submit"
-                                    class="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded-md text-sm"
-                                >
-                                    アンインストール
-                                </button>
+                                @include('components::form.button', [
+                                    'type' => 'button',
+                                    'label' => 'アンインストール',
+                                    'class' => 'bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded-md text-sm',
+                                    'onclick' => "openModal('uninstallModal-{$plugin->id}')",
+                                ])
+
+                                <!-- 確認画面のモーダルを表示 -->
+                                @include('components.form.modal', [
+                                    'id' => "uninstallModal-{$plugin->id}",
+                                    'title' => 'アンインストールの確認',
+                                    'message' => "プラグイン [{$plugin->name}] をアンインストールしますか？",
+                                    'confirm_label' => 'アンインストール',
+                                    'cancel_label'  => 'キャンセル',
+                                    // チェックボックスを使いたい場合
+                                    'checkbox' => true,
+                                    'checkbox_name' => 'remove_db_data',
+                                    'checkbox_label' => 'プラグインのインストール時に作成されたデータベースのテーブルを削除する。注意！テーブル削除するとプラグインで作成したデータが失われます！',
+                                ])
                             </form>
                         </td>
                     </tr>
