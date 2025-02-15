@@ -182,16 +182,22 @@ class AdminPluginsSettingsController extends AdminController
             }
 
             // プラグインのマイグレーションディレクトリを動的に指定
-            $pluginMigrationPath = base_path("plugins/{$pluginDir}/migrations");
-
+            $pluginMigrationPath = base_path("plugins/{$pluginDir}/database/migrations");
             if (is_dir($pluginMigrationPath)) {
-                // マイグレーションを実行
-                Artisan::call('migrate', [
-                    '--path' => "plugins/{$pluginDir}/migrations",
-                    '--force' => true, // 実行確認なしで実行
+                $result = Artisan::call('plugin:migrate', [
+                    'plugin'  => $pluginDir,
+                    '--force' => true,
                 ]);
             }
 
+            $seederPath = base_path("plugins/{$pluginDir}/database/seeders");
+
+            if (is_dir($seederPath)) {
+                $result = Artisan::call('plugin:seed', [
+                    'plugin' => $pluginDir,
+                    '--force' => true,
+                ]);
+            }
             // artisanコマンドでPSR-4オートロードを更新
             Artisan::call('plugin:autoload:sync', ['--cleanup' => true]);
 
@@ -260,6 +266,13 @@ class AdminPluginsSettingsController extends AdminController
         // プラグインを取得
         $plugin = Plugin::findOrFail($id);
         $pluginDir = $plugin->directory;
+
+        // 1. プラグインのマイグレーションをロールバック（= plugin_migrations レコード + down() でテーブル削除）
+        Artisan::call('plugin:migrate:rollback', [
+            'plugin' => $pluginDir,
+            '--force' => true, // 本番環境でも確認なし
+            '--step' => 9999,  // すべてのマイグレーションをロールバックするなら大きめの数字に
+        ]);
 
         // プラグインフォルダを削除
         File::deleteDirectory(base_path('plugins/' . $pluginDir));
