@@ -60,7 +60,7 @@ trait MakeJobTrait
         ];
 
         // 4) makeFiler を呼んで基本のファイル生成フローを実行
-        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders);
+        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders, 'jobs');
     }
 
     /**

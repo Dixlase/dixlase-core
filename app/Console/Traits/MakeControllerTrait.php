@@ -52,7 +52,7 @@ trait MakeControllerTrait
 
         // 3) まず "makeFiler" を呼んで、基本的なファイル出力フローを実行
         //    （getDirectory() / getNamespace() / loadStubFile() / embedLicense() など）
-        $this->makeFiler($className, $subDirs, $options, $stubFile);
+        $this->makeFiler($className, $subDirs, $options, $stubFile, [], 'controllers');
     }
 
     /**

@@ -22,8 +22,7 @@
 
 namespace App\Console\Traits;
 
-use App\Services\FileGenerator;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 /**
  * Bladeファイルを作成するためのTrait。
@@ -32,52 +31,40 @@ use Illuminate\Support\Facades\File;
  */
 trait MakeBladeTrait
 {
-    protected FileGenerator $fileGenerator;
-
-    public function __construct(FileGenerator $fileGenerator)
-    {
-        parent::__construct();
-        $this->fileGenerator = $fileGenerator;
-    }
+    use MakeFileTrait;
 
     /**
-     * Bladeファイルを作成するメイン処理
+     * Blade ファイルを作成する
      *
-     * @param  string  $viewName   例: "admin/dashboard", "home/index" など
-     * @param  bool    $force
-     * @return void
+     * @param string $viewName 例: "admin/dashboard"
+     * @param array $options
      */
-    protected function makeBlade(string $viewName, array $options): void
+
+    protected function makeFile(string $viewName, array $subDirs, array $options): void
     {
-        if (! str_ends_with($viewName, '.blade.php')) {
-            $viewName .= '.blade.php';
+        // Bladeファイルの拡張子を追加
+        if (str_ends_with(
+            $viewName,
+            '.php'
+        )) {
+            $viewName = substr($viewName, 0, -4); // すでに .php 付きなら削除
         }
 
-        $filePath = $this->getBladeBasePath() . '/' . $viewName;
-
-        try {
-            $this->fileGenerator->prepareFilePath($filePath, "Blade file [{$viewName}] already exists. Use --force to overwrite.");
-        } catch (\RuntimeException $e) {
-            if (!($options['force'] ?? false)) {
-                $this->error($e->getMessage());
-                return;
-            }
-            File::delete($filePath);
+        if (! str_ends_with($viewName, '.blade')) {
+            $viewName .= '.blade'; // `makeFiler()` で `.php` を追加するので `.blade` だけつける
         }
 
-        $stubFile = $this->resolveStubFile($options);
-        $stubContent = $this->fileGenerator->getStubContent($stubFile);
+        // ファイル名をケバブケースに変換
+        $kebabCaseFileName = Str::kebab(str_replace('/', '-', $viewName));
 
-        // Blade用のライセンスコメントを追加
-        $placeholders = [
+        // Blade用のライセンスコメント
+        $extraPlaceholders = [
             '{{ license }}' => $this->fileGenerator->getLicenseForBlade(),
             '{{ filename }}' => str_replace('.blade.php', '', $viewName),
         ];
 
-        $finalContent = $this->fileGenerator->replacePlaceholders($stubContent, $placeholders);
-        $this->fileGenerator->generateFile($filePath, $finalContent);
-
-        $this->info("Blade file created: {$filePath}");
+        // `makeFiler()` を使用してファイルを生成
+        $this->makeFiler($kebabCaseFileName, $subDirs, $options, $this->resolveStubFile($options), $extraPlaceholders, 'views');
     }
 
     /**
@@ -87,9 +74,4 @@ trait MakeBladeTrait
     {
         return ($options['type'] ?? 'front') === 'admin' ? 'blade-admin.stub' : 'blade-front.stub';
     }
-
-    /**
-     * Bladeファイルの保存先を定義（抽象）
-     */
-    abstract protected function getBladeBasePath(): string;
 }

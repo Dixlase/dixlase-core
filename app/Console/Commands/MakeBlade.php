@@ -46,7 +46,7 @@ class MakeBlade extends Command
 
     public function handle()
     {
-        $file  = $this->argument('file');
+        $file = $this->argument('file');
         $options = [
             'force' => (bool) $this->option('force'),
             'type' => $this->option('type'),
@@ -57,16 +57,23 @@ class MakeBlade extends Command
             return 1;
         }
 
-        $this->makeBlade($file, $options);
+        // `makeFile()` を呼び出し
+        $this->makeFile($file, [], $options);
 
         return 0;
     }
 
     /**
-     * コア用 => resources/views
+     * Blade ファイルの保存先
      */
-    protected function getBladeBasePath(): string
+    protected function getDirectory(array $subDirs): string
     {
         return resource_path('views');
+    }
+
+
+    protected function getNamespace(array $subDirs): string
+    {
+        return ''; // Blade ファイルにはネームスペース不要
     }
 }

@@ -65,7 +65,7 @@ trait MakeListenerTrait
         ];
 
         // 4) makeFiler
-        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders);
+        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders, 'listeners');
     }
 
     /**
