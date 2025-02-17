@@ -1,5 +1,5 @@
 {
-    "name": "{{ cmsNameSlug }}/plugins-{{ slug }}",
+    "name": "{{ cmsNameSlug }}/plugins-{{ pluginSlug }}",
     "description": "This is the {{ pluginName }} plugin.",
     "version": "1.0.0",
     "license": "{{ licenseName }}",

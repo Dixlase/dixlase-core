@@ -231,6 +231,7 @@ class MakePlugin extends Command
         $placeholders = [
             '{{ pluginName }}'        => $pluginName,     // "MyPlugin"
             '{{ pluginNameStudly }}'  => $pluginNameStudly,
+            '{{ pluginDirName }}'     => $pluginDirName,  // "MyPlugin"
             '{{ namespace }}'         => $namespace,
             '{{ pluginSlug }}'        => $pluginSlug,     // "my-plugin"
             '{{ license }}'           => $licenseText,
@@ -240,7 +241,10 @@ class MakePlugin extends Command
             '{{ vendorNameStudly }}'  => $vendorNameStudly,
             '{{ softwareName }}'      => $softwareName,   // "MySoftware"
             '{{ cmsNameSlug }}'       => $cmsNameSlug,    // "my-software"
+
         ];
+
+
 
 
         // 初期ファイルを作成（js/css）
