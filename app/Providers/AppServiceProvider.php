@@ -66,6 +66,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
 
+
+        /*
         try {
             $this->loadActivePlugins();
         } catch (\Exception $e) {
@@ -76,6 +78,8 @@ class AppServiceProvider extends ServiceProvider
                 throw $e;
             }
         }
+        */
+
 
         //セキュリティ設定でSSLを矯正しているかどうかを判定
 
@@ -141,14 +145,13 @@ class AppServiceProvider extends ServiceProvider
 
         // カスタムファイルのディレクトリを追加
         $customFilesPath = base_path(config('custom.custom_files_dir', 'custom'));
-        $fileTypes = config('custom.custom_file_types');
+        $fileTypes = config('custom.file_types');
 
         // プラグインロード後にカスタムファイルをロード
         $this->app->booted(function () use ($customFilesPath, $fileTypes) {
 
             // プラグインのロード
             $this->loadActivePlugins();
-
             // カスタムファイルのロード
             foreach ($fileTypes as $type => $typeConfig) {
                 $this->loadCustomFilesForType($customFilesPath, $typeConfig);

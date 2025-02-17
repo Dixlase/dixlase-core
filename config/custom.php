@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of MySoftware.
  *
@@ -27,7 +28,19 @@ return [
 
 
     // カスタムファイルのディレクトリ
-    'custom_file_types' => [
+    'file_types' => [
+        'routes' => [
+            'path' => 'routes',
+            'namespace' => '', // ルートファイルにはネームスペースは不要
+        ],
+        'config' => [
+            'path' => 'config',
+            'namespace' => '', // コンフィグにはネームスペースは不要
+        ],
+        'lang' => [
+            'path' => 'lang',
+            'namespace' => '', // 言語ファイルにはネームスペースは不要
+        ],
         'controllers' => [
             'path' => 'app/Http/Controllers',
             'namespace' => 'App\\Http\\Controllers\\',
@@ -71,6 +84,14 @@ return [
         'providers' => [
             'path' => 'app/Providers',
             'namespace' => 'App\\Providers\\',
+        ],
+        'views' => [
+            'path' => 'resources/views',
+            'namespace' => '',
+        ],
+        'helpers' => [
+            'path' => 'helpers',
+            'namespace' => '',
         ],
     ],
 ];
