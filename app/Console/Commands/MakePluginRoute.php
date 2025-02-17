@@ -57,12 +57,18 @@ class MakePluginRoute extends Command
     public function handle()
     {
         $plugin = Str::studly($this->argument('plugin'));
+        $slug = Str::slug(Str::snake($plugin));
         $name = Str::studly($this->argument('name'));
 
         $directory = base_path("plugins/{$plugin}/routes");
         $namespace = "Plugins\\{$plugin}\\Routes";
 
+        // プレースホルダにプラグインスラッグを追加
+        $placeholders = [
+            '{{ pluginSlug }}' => $slug,
+        ];
+
         // ルートファイルを作成
-        $this->makeRouteFile($name, $directory, $namespace);
+        $this->makeRouteFile($name, $directory, $namespace, 'routes.plugin.stub', $placeholders);
     }
 }

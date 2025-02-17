@@ -33,9 +33,9 @@ trait MakeRouteTrait
     /**
      * ルートファイルを作成
      */
-    protected function makeRouteFile(string $name, string $directory, string $namespace)
+    protected function makeRouteFile(string $name, string $directory, string $namespace, string $stubFile, array $extraPlaceholders = [])
     {
-        $fileName = Str::studly($name) . '.php';
+        $fileName = Str::snake($name, '-') . '.php';
         $filePath = "{$directory}/{$fileName}";
 
         // 既存ファイルの確認
@@ -48,15 +48,15 @@ trait MakeRouteTrait
         $licenseText = $this->fileGenerator->getLicenseContent();
 
         // プレースホルダ
-        $placeholders = [
+        $placeholders = array_merge([
             '{{ license }}'  => $licenseText,
             '{{ namespace }}' => $namespace,
             '{{ fileName }}'  => $fileName,
-        ];
+        ], $extraPlaceholders);
 
         // スタブファイルの取得と置換
-        $stubFile = $this->fileGenerator->getStubContent('routes.stub', null, [base_path('stubs/custom')]);
-        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
+        $stubContent = $this->fileGenerator->getStubContent($stubFile, null, [base_path('stubs/custom')]);
+        $fileContent = $this->fileGenerator->replacePlaceholders($stubContent, $placeholders);
 
         // ファイルを生成
         $this->fileGenerator->generateFile($filePath, $fileContent);
