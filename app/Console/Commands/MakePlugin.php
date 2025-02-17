@@ -232,7 +232,7 @@ class MakePlugin extends Command
             '{{ pluginName }}'        => $pluginName,     // "MyPlugin"
             '{{ pluginNameStudly }}'  => $pluginNameStudly,
             '{{ namespace }}'         => $namespace,
-            '{{ slug }}'              => $pluginSlug,     // "my-plugin"
+            '{{ pluginSlug }}'        => $pluginSlug,     // "my-plugin"
             '{{ license }}'           => $licenseText,
             '{{ licenseName }}'       => $licenseName,
             '{{ vendorName }}'        => $vendorName,     // 例: "plugins" or "exc-d"
@@ -254,7 +254,7 @@ class MakePlugin extends Command
 
         // routes/web.php
         $stubFile = $this->fileGenerator->getStubContent(
-            'routes.stub',
+            'routes.plugin.stub',
             null,
             $stubPath
         );

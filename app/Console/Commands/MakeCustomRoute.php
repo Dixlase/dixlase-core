@@ -62,6 +62,6 @@ class MakeCustomRoute extends Command
         $namespace = "Custom\\Routes";
 
         // ルートファイルを作成
-        $this->makeRouteFile($name, $directory, $namespace);
+        $this->makeRouteFile($name, $directory, $namespace, 'routes.custom.stub');
     }
 }

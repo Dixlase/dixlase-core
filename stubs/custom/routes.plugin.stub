@@ -14,7 +14,8 @@ Route::middleware(['front.ip'])
 // 管理画面のルート。 front.ipミドルウェアを適用し、IPアドレスフィルターを必ず通してください。
 //　IPアドレスフィルターを通さないとセキュリティリスクが高まります。
 Route::prefix($adminUrl)->name('admin.')
-    ->middleware('admin.ip') // IPアドレスフィルタ
+    ->name('{{ pluginSlug }}::admin.')
+    ->middleware(['auth:member', 'admin.ip']) // 認証とIPアドレスフィルタ
     ->group(function () {
 
     }
