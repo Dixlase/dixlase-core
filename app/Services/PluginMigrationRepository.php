@@ -24,6 +24,7 @@ namespace App\Services;
 
 use Illuminate\Database\Migrations\DatabaseMigrationRepository;
 use Illuminate\Database\ConnectionResolverInterface;
+use Illuminate\Support\Facades\Log;
 
 class PluginMigrationRepository extends DatabaseMigrationRepository
 {
@@ -40,14 +41,12 @@ class PluginMigrationRepository extends DatabaseMigrationRepository
      */
     public function getRan($plugin = null)
     {
-        if ($plugin) {
-            return $this->table()
-                ->where('plugin', $plugin)
-                ->pluck('migration')
-                ->all();
-        }
+        $plugin = $plugin ?? $this->plugin; // null の場合はインスタンス変数を使用
 
-        return parent::getRan();
+        return $this->table()
+            ->where('plugin', $plugin)
+            ->pluck('migration')
+            ->all();
     }
 
     /**
@@ -55,10 +54,13 @@ class PluginMigrationRepository extends DatabaseMigrationRepository
      */
     public function log($file, $batch, $plugin = null)
     {
+
+        $plugin = $plugin ?? $this->plugin; // プラグインが明示的に渡されなかった場合、インスタンス変数を使用
+
         $this->table()->insert([
             'migration' => $file,
+            'plugin' => $plugin, // プラグイン識別子を追加
             'batch' => $batch,
-            'plugin' => $plugin,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

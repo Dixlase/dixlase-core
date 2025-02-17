@@ -35,7 +35,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('theme_settings', function (Blueprint $table) {
+        Schema::create($this->table, function (Blueprint $table) {
             $table->id();
             $table->integer('active_theme_id'); // アクティブなテーマのスラッグ
             $table->timestamps();
@@ -47,6 +47,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('theme_settings');
+        Schema::dropIfExists($this->table);
     }
 };

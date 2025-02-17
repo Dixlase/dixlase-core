@@ -27,14 +27,14 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    protected $table = 'theme_settings';
+    protected $table = 'plugins';
 
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('plugins', function (Blueprint $table) {
+        Schema::create($this->table, function (Blueprint $table) {
             $table->id();
             $table->string('name'); // 人間が認識する名前
             $table->string('package_name')->nullable(); // パッケージ名
@@ -58,6 +58,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('plugins');
+        Schema::dropIfExists($this->table);
     }
 };

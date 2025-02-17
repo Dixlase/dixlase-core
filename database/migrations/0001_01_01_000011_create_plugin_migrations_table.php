@@ -27,26 +27,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    protected $table = 'plugin_migrations';
+
     /**
      * Run the migrations.
      */
-
-    protected $table = 'members';
-
     public function up(): void
     {
         Schema::create($this->table, function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('description')->nullable();
-            $table->string('email')->unique();
-            $table->string('role')->default('admin');   // super_admin, admin, editor, author, contributor,
-            $table->integer('appearance')->default(0); // 0= auto, 1 = light, 2 = dark
-            $table->string('password'); // Hashed
-            $table->integer('status')->default(0);  // 0 = inactive, 1 = active
-            $table->rememberToken();
-            $table->timestamps();
-            $table->softDeletes();
+            $table->string("migration", 255); // マイグレーションファイル名
+            $table->string("plugin", 255)->nullable(); // どのプラグインのマイグレーションか識別
+            $table->integer('batch'); // バッチ番号
+            $table->timestamps(); // created_at, updated_at
         });
     }
 

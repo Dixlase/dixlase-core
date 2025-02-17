@@ -34,6 +34,9 @@ use App\Traits\PluginLoaderTrait;
 use Illuminate\Support\Str;
 use ZipArchive;
 use App\Services\PluginMigrator;
+use Illuminate\Database\ConnectionResolverInterface;
+use Illuminate\Filesystem\Filesystem;
+
 
 
 
@@ -194,9 +197,18 @@ class AdminPluginsSettingsController extends AdminController
                 return redirect()->back()->with('error', 'composer.json が見つかりません。');
             }
 
+            $migrator = new PluginMigrator(
+                app(Filesystem::class),
+                app(ConnectionResolverInterface::class),
+                'plugin_migrations',
+                $slug // ここでプラグインのスラッグを渡す
+            );
+
+
             // プラグインのマイグレーションを実行
             // $migrated には「新しく実行された」マイグレーションファイルが入る
-            $migrated = app(PluginMigrator::class)->migrate($pluginDir, null, ['step' => false]);
+            $migrated = $migrator->migrate($pluginDir, null, ['step' => false]);
+
 
             if (!empty($migrated)) {
                 // 新しいマイグレーションがあったので、テーブルが新規(または更新)された

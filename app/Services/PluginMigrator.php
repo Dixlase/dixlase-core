@@ -29,12 +29,15 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Database\ConnectionResolverInterface;
+use Illuminate\Support\Facades\Log;
+
 
 class PluginMigrator
 {
     protected Migrator $migrator;
     protected Filesystem $files;
     protected MigrationRepositoryInterface $repository;
+    protected ?string $pluginSlug;
 
     /**
      * コンストラクタ
@@ -43,12 +46,17 @@ class PluginMigrator
      * @param ConnectionResolverInterface $resolver
      * @param string $migrationTable
      */
-    public function __construct(Filesystem $files, ConnectionResolverInterface $resolver, string $migrationTable = 'plugin_migrations')
-    {
+    public function __construct(
+        Filesystem $files,
+        ConnectionResolverInterface $resolver,
+        string $migrationTable = 'plugin_migrations',
+        ?string $pluginSlug = null // null 許容
+    ) {
         $this->files = $files;
+        $this->pluginSlug = $pluginSlug;
 
         // `plugin_migrations` テーブル用のリポジトリを作成
-        $this->repository = new DatabaseMigrationRepository($resolver, $migrationTable);
+        $this->repository = new PluginMigrationRepository($resolver, $migrationTable, $pluginSlug);
 
         // リポジトリが存在しない場合は作成
         if (!$this->repository->repositoryExists()) {
@@ -94,7 +102,7 @@ class PluginMigrator
         ]);
 
         // 実行後にマイグレーションファイルを取得
-        $after = $this->repository->getRan();
+        $after = $this->repository->getRan($this->pluginSlug);
 
         // 新たに実行されたマイグレーションファイルを抽出
         $migrated = array_diff($after, $before);
