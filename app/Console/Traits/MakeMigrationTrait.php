@@ -58,7 +58,8 @@ trait MakeMigrationTrait
     ): void {
         // 1) タイムスタンプ付きファイル名
         $timestamp = date('Y_m_d_His');
-        $fileName  = $timestamp . '_' . $migrationName . '.php';
+        $snakeCaseFileName = Str::snake($migrationName);
+        $fileName  = "{$timestamp}_{$snakeCaseFileName}.php";
 
         // 2) 出力先ディレクトリ
         //    --path オプションがあれば使う。なければ getMigrationDirectory() でデフォルト
@@ -77,6 +78,7 @@ trait MakeMigrationTrait
 
         // 6) 追加プレースホルダ
         $className = Str::studly($migrationName);
+
         $extraPlaceholders = [
             '{{ class }}' => $className,
             '{{ table }}' => $createOption ?: $tableOption, // create優先
@@ -85,7 +87,7 @@ trait MakeMigrationTrait
         // 7) makeFiler
         //    ここでは "subDirs" を使わずに空配列
         //    あるいは subDirs を受け取って組み立てたいなら適宜
-        $this->makeFiler($className, [], $options, $stubFile, $extraPlaceholders, $targetDirectory, $filePath);
+        $this->makeFiler($className, [], $options, $stubFile, $extraPlaceholders, 'migrations');
 
         // 8) 出力
         if ($fullpath) {

@@ -71,7 +71,7 @@ trait MakeModelTrait
 
         // 4) makeFiler
         //    => "MakeFileTrait::makeFiler(...)"
-        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders);
+        $this->makeFiler($className, $subDirs, $options, $stubFile,  $extraPlaceholders, 'models');
 
         // 5) 最終FQCN = namespace + class
         $fqcn = $this->getNamespace($subDirs) . '\\' . $className;

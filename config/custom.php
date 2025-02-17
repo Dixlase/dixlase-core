@@ -31,67 +31,53 @@ return [
     'file_types' => [
         'routes' => [
             'path' => 'routes',
-            'namespace' => '', // ルートファイルにはネームスペースは不要
+            'namespace' => '',
+            'naming_convention' => 'snake_case', // スネークケース
         ],
         'config' => [
             'path' => 'config',
-            'namespace' => '', // コンフィグにはネームスペースは不要
-        ],
-        'lang' => [
-            'path' => 'lang',
-            'namespace' => '', // 言語ファイルにはネームスペースは不要
+            'namespace' => '',
+            'naming_convention' => 'snake_case', // スネークケース
         ],
         'controllers' => [
             'path' => 'app/Http/Controllers',
             'namespace' => 'App\\Http\\Controllers\\',
-        ],
-        'requests' => [
-            'path' => 'app/Http/Requests',
-            'namespace' => 'App\\Http\\Requests\\',
+            'naming_convention' => 'studly_case', // キャメルケース
         ],
         'models' => [
             'path' => 'app/Models',
             'namespace' => 'App\\Models\\',
+            'naming_convention' => 'studly_case', // キャメルケース
         ],
         'middleware' => [
             'path' => 'app/Http/Middleware',
             'namespace' => 'App\\Http\\Middleware\\',
+            'naming_convention' => 'studly_case', // キャメルケース
         ],
         'events' => [
             'path' => 'app/Events',
             'namespace' => 'App\\Events\\',
-        ],
-        'listeners' => [
-            'path' => 'app/Listeners',
-            'namespace' => 'App\\Listeners\\',
+            'naming_convention' => 'studly_case', // キャメルケース
         ],
         'jobs' => [
             'path' => 'app/Jobs',
             'namespace' => 'App\\Jobs\\',
+            'naming_convention' => 'studly_case', // キャメルケース
         ],
         'policies' => [
             'path' => 'app/Policies',
             'namespace' => 'App\\Policies\\',
+            'naming_convention' => 'studly_case', // キャメルケース
         ],
-        'notifications' => [
-            'path' => 'app/Notifications',
-            'namespace' => 'App\\Notifications\\',
-        ],
-        'commands' => [
-            'path' => 'app/Console/Commands',
-            'namespace' => 'App\\Console\\Commands\\',
-        ],
-        'providers' => [
-            'path' => 'app/Providers',
-            'namespace' => 'App\\Providers\\',
+        'migrations' => [
+            'path' => 'database/migrations',
+            'namespace' => '',
+            'naming_convention' => 'snake_case_with_timestamp', // スネークケース + タイムスタンプ
         ],
         'views' => [
             'path' => 'resources/views',
             'namespace' => '',
-        ],
-        'helpers' => [
-            'path' => 'helpers',
-            'namespace' => '',
+            'naming_convention' => 'kebab_case', // ケバブケース
         ],
     ],
 ];

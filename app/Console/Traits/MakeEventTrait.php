@@ -59,7 +59,7 @@ trait MakeEventTrait
 
         // 4) makeFiler を呼び出す
         //    → (クラス名, subDirs, options, stubFile, extraPlaceholders)
-        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders);
+        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders, 'events');
     }
 
     /**

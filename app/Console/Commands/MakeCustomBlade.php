@@ -58,14 +58,21 @@ class MakeCustomBlade extends Command
             return 1;
         }
 
-        $this->makeBlade($file, $options);
+        $this->makeFile($file, [], $options);
+
+        return 0;
     }
 
     /**
-     * カスタム用 => custom/views
+     * Blade ファイルの保存先
      */
-    protected function getBladeBasePath(): string
+    protected function getDirectory(array $subDirs): string
     {
-        return base_path('custom/views');
+        return base_path('custom/resources/views');
+    }
+
+    protected function getNamespace(array $subDirs): string
+    {
+        return ''; // Blade ファイルにはネームスペース不要
     }
 }

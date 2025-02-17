@@ -43,12 +43,16 @@ trait MakeFileTrait
         array $subDirs,
         array $options,
         string $stubFile,
-        array $extraPlaceholders = []
+        array $extraPlaceholders = [],
+        string $fileType = 'default'
     ): void {
         // 1) 出力先ディレクトリ / 名前空間 (サブクラスで実装)
         $namespace       = $this->getNamespace($subDirs);
         $targetDirectory = $this->getDirectory($subDirs);
-        $filePath        = "{$targetDirectory}/{$className}.php";
+
+        // ファイル名を種類ごとに適切な命名規則に変換
+        $fileName = $this->determineFileName($className, $fileType);
+        $filePath = "{$targetDirectory}/{$fileName}.php";
 
         // --force
         $force = $options['force'] ?? false;
@@ -97,6 +101,25 @@ trait MakeFileTrait
 
         return $this->fileGenerator->getStubContent($stubFile, $defaultStubPath, $customStubPaths);
     }
+
+    /**
+     * ファイルの種類ごとに適切な命名規則を適用
+     */
+    private function determineFileName(string $className, string $fileType): string
+    {
+        $timestamp = date('Y_m_d_His');
+
+        // 設定から命名規則を取得（デフォルトは StudlyCase）
+        $namingConvention = config("custom.file_types.{$fileType}.naming_convention", 'studly_case');
+
+        return match ($namingConvention) {
+            'snake_case' => Str::snake($className),
+            'snake_case_with_timestamp' => "{$timestamp}_" . Str::snake($className),
+            'kebab_case' => Str::kebab($className),
+            default => Str::studly($className), // デフォルトはキャメルケース
+        };
+    }
+
 
     protected function getRootNamespace(): string
     {
