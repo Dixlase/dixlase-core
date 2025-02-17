@@ -26,11 +26,12 @@ namespace App\Traits;
 use App\Models\Plugin;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Lang;
 
 trait PluginLoaderTrait
 {
 
-
+    use ConfigLoaderTraits;
 
     /**
      * 有効化されたプラグインをロードする
@@ -40,12 +41,11 @@ trait PluginLoaderTrait
 
         $activePlugins = Plugin::where('status', 1)->get();
 
-        // 有効化されたプラグインのみオートローダーを登録
-        //$this->loadPluginAutoloaders($activePlugins);
 
         foreach ($activePlugins as $plugin) {
             $pluginName = $plugin->name;
             $pluginDirectory = $plugin->directory;
+            $pluginSlug = $plugin->slug;
 
             // サービスプロバイダの登録
             $providerClass = $this->resolvePluginServiceProvider($pluginName, $pluginDirectory);
@@ -54,21 +54,33 @@ trait PluginLoaderTrait
             if ($providerClass) {
                 $this->app->register($providerClass);
             }
+
+            // プラグインのファイルをロードする
+            $pluginPath = base_path("plugins/{$pluginDirectory}");
+            $customPluginPath = base_path("custom/plugins/{$pluginDirectory}");
+
+            $this->loadPluginFiles($pluginName, $pluginPath, $customPluginPath, $pluginSlug);
         }
     }
 
     /**
      * プラグインのリソースをロードする
      */
-    protected function loadPluginFiles($pluginName, $pluginPath, $customPluginPath)
+    protected function loadPluginFiles($pluginName, $pluginPath, $customPluginPath, $pluginSlug = null)
     {
-        $fileTypes = config('custom.custom_file_types', []);
+        $fileTypes = config('custom.file_types', []);
 
         foreach ($fileTypes as $type => $settings) {
+
+            $namespace = $settings['namespace'];
+            if (($type === 'lang' || $type === 'views') && empty($namespace) && $pluginSlug) {
+                $namespace = $pluginSlug;
+            }
+
             $coreSubPath = "{$pluginPath}/{$settings['path']}";
             $customSubPath = "{$customPluginPath}/{$settings['path']}";
 
-            $this->loadFilesByType($type, $coreSubPath, $customSubPath, $settings['namespace']);
+            $this->loadFilesByType($type, $coreSubPath, $customSubPath, $namespace);
         }
     }
 
@@ -105,57 +117,66 @@ trait PluginLoaderTrait
     {
         $defaultMergeMode = config('custom.default_merge_mode', 'merge');
 
-        // プラグインのコンフィグをロード
+        // プラグインのデフォルト設定
         $pluginConfigs = $this->loadConfigFiles($corePath);
-
-        // カスタムのプラグインのコンフィグをロード
-        $customPluginConfigs = $this->loadConfigFiles($customPath);
+        // カスタム上書き設定
+        $customConfigs = $this->loadConfigFiles($customPath);
 
         // デフォルトとカスタムを結合または置換し、登録
-        foreach ($pluginConfigs as $key => $coreConfig) {
-            if (isset($customPluginConfigs[$key])) {
-                $customConfig = $customPluginConfigs[$key];
+        foreach ($customConfigs as $key => $customConfig) {
+            if (isset($pluginConfigs[$key])) {
+                // core + custom をマージ
                 $mergeMode = $customConfig['_merge_mode'] ?? $defaultMergeMode;
                 unset($customConfig['_merge_mode']);
 
                 if ($mergeMode === 'replace') {
-                    // カスタムコンフィグで置換
-                    config(["{$namespace}.{$key}" => $customConfig]);
-                } else { // 'merge'
-                    // デフォルトとカスタムをマージ
-                    config(["{$namespace}.{$key}" => array_merge_recursive($coreConfig, $customConfig)]);
+                    $pluginConfigs[$key] = $customConfig;
+                } else {
+                    // 再帰マージ
+                    $pluginConfigs[$key] = array_merge_recursive($pluginConfigs[$key], $customConfig);
                 }
             } else {
-                // カスタムが存在しない場合はそのまま登録
-                config(["{$namespace}.{$key}" => $coreConfig]);
+                // 新規キー
+                $pluginConfigs[$key] = $customConfig;
             }
         }
 
-        // カスタムディレクトリにのみ存在する新しいコンフィグを登録
-        foreach ($customPluginConfigs as $key => $customConfig) {
-            if (!isset($coreConfigs[$key])) {
-                unset($customConfig['_merge_mode']);
-                config(["{$namespace}.{$key}" => $customConfig]);
+        // 2) マージ後の $pluginConfigs を config() に書き込む
+        //    「namespace が空ならトップレベルに設定」「namespace があればサブキーに設定」
+
+        if ($namespace === '') {
+            // -------------------------------
+            // トップレベルにマージする場合
+            // -------------------------------
+            foreach ($pluginConfigs as $topKey => $value) {
+                // 既存の設定を取得
+                $existingValue = config($topKey, []);
+
+                // 値が配列同士なら再帰マージ
+                if (is_array($existingValue) && is_array($value)) {
+                    config([$topKey => array_merge_recursive($existingValue, $value)]);
+                } else {
+                    // 配列でない or 置き換えの場合はそのままセット
+                    config([$topKey => $value]);
+                }
+            }
+        } else {
+            // -------------------------------
+            // 従来どおりサブキーとして設定
+            // -------------------------------
+            foreach ($pluginConfigs as $key => $value) {
+                $existingValue = config("{$namespace}.{$key}", []);
+
+                if (is_array($existingValue) && is_array($value)) {
+                    config(["{$namespace}.{$key}" => array_merge_recursive($existingValue, $value)]);
+                } else {
+                    config(["{$namespace}.{$key}" => $value]);
+                }
             }
         }
-    }
 
-
-    /**
-     * コンフィグファイルを読み込む
-     */
-    private function loadConfigFiles($path)
-    {
-        $configs = [];
-
-        if (is_dir($path)) {
-            foreach (glob($path . '/*.php') as $file) {
-                $key = basename($file, '.php');
-                $configs[$key] = require $file;
-            }
-        }
-
-        return $configs;
+        // コンフィグの再配置
+        $this->reorderAllConfig();
     }
 
     /**
@@ -166,9 +187,7 @@ trait PluginLoaderTrait
         $paths = array_filter([$customPath, $defaultPath]);
         foreach ($paths as $path) {
             if (is_dir($path)) {
-
                 foreach (glob("{$path}/*.php") as $routeFile) {
-
                     Route::middleware('web')->group($routeFile);
                 }
             }
@@ -200,6 +219,8 @@ trait PluginLoaderTrait
                 $this->loadTranslationsFrom($path, $namespace);
             }
         }
+
+        $translations = Lang::getLoader()->load(app()->getLocale(), 'admin');
     }
 
     /**
