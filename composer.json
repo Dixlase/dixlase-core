@@ -62,7 +62,17 @@
             "Plugins\\PagesPlugin_\\Database\\Factories\\": "plugins/PagesPlugin_/database/factories",
             "Plugins\\PagesPlugin_\\Database\\Seeders\\": "plugins/PagesPlugin_/database/seeders",
             "Plugins\\PagesPlugin_\\Database\\Seeders\\Dev\\": "plugins/PagesPlugin_/database/seeders/dev",
-            "Plugins\\PagesPlugin_\\Database\\Seeders\\Pro\\": "plugins/PagesPlugin_/database/seeders/pro"
+            "Plugins\\PagesPlugin_\\Database\\Seeders\\Pro\\": "plugins/PagesPlugin_/database/seeders/pro",
+            "Plugins\\PagesPlugin\\App\\": "plugins/PagesPlugin/app",
+            "Plugins\\PagesPlugin\\Database\\Factories\\": "plugins/PagesPlugin/database/factories",
+            "Plugins\\PagesPlugin\\Database\\Seeders\\": "plugins/PagesPlugin/database/seeders",
+            "Plugins\\PagesPlugin\\Database\\Seeders\\Dev\\": "plugins/PagesPlugin/database/seeders/dev",
+            "Plugins\\PagesPlugin\\Database\\Seeders\\Pro\\": "plugins/PagesPlugin/database/seeders/pro",
+            "Plugins\\EventsPlugin\\App\\": "plugins/EventsPlugin/app",
+            "Plugins\\EventsPlugin\\Database\\Seeders\\": "plugins/EventsPlugin/database/seeders",
+            "Plugins\\EventsPlugin\\Database\\Seeders\\Dev\\": "plugins/EventsPlugin/database/seeders/dev",
+            "Plugins\\EventsPlugin\\Database\\Seeders\\Pro\\": "plugins/EventsPlugin/database/seeders/pro",
+            "Plugins\\EventsPlugin\\Database\\Factories\\": "plugins/EventsPlugin/database/factories"
         },
         "files": [
             "app/Helpers/AssetHelper.php"

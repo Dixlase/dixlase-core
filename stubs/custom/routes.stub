@@ -3,8 +3,19 @@
 {{ license }}
 use Illuminate\Support\Facades\Route;
 
-// routes for: {{ fileName }}
+// フロントエンドのルート。front.ipミドルウェアを適用し、IPアドレスフィルターを必ず通してください。
+//　IPアドレスフィルターを通さないとセキュリティリスクが高まります。
+Route::middleware(['front.ip'])
+    ->group(function () {
 
-Route::get('/', function () {
-    return 'Hello from the {{ fileName }}!';
-});
+    }
+);
+
+// 管理画面のルート。 front.ipミドルウェアを適用し、IPアドレスフィルターを必ず通してください。
+//　IPアドレスフィルターを通さないとセキュリティリスクが高まります。
+Route::prefix($adminUrl)->name('admin.')
+    ->middleware('admin.ip') // IPアドレスフィルタ
+    ->group(function () {
+
+    }
+);
