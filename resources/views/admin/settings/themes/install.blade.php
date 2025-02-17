@@ -31,7 +31,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- ファイルアップロードフォーム -->
     <div class="max-w-2xl mx-auto mt-10 bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
         <h2 class="text-2xl font-bold mb-4">テーマをアップロード</h2>
-        <form action="{{ route('admin.contents.themes.upload') }}" method="POST" enctype="multipart/form-data" class="flex flex-col gap-4">
+        <form action="{{ route('admin.settings.themes.upload') }}" method="POST" enctype="multipart/form-data" class="flex flex-col gap-4">
             @csrf
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2" for="theme">ファイルを選択</label>

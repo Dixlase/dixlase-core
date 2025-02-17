@@ -35,7 +35,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('themes', function (Blueprint $table) {
+        Schema::create($this->table, function (Blueprint $table) {
             $table->id();
             $table->string('name'); // テーマ名
             $table->string('slug')->unique(); // ディレクトリ名などの識別子
@@ -50,6 +50,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('themes');
+        Schema::dropIfExists($this->table);
     }
 };

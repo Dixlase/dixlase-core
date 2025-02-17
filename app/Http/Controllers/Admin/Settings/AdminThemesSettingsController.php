@@ -40,7 +40,7 @@ class AdminThemesSettingsController extends AdminController
     // テーマ一覧
     public function index()
     {
-        $this->viewParams['heading'] = 'admin.features.contents.themes.index.heading';
+        $this->viewParams['heading'] = 'admin.features.settings.themes.index.heading';
 
         // デフォルトテーマを取得
         $defaultTheme = Theme::where('slug', 'default')->first();
@@ -54,14 +54,14 @@ class AdminThemesSettingsController extends AdminController
         $this->viewParams['defaultTheme'] = $defaultTheme;
         $this->viewParams['themes'] = $themes;
         $this->viewParams['activeThemeId'] = $activeThemeId;
-        return view('admin::contents.themes.index', $this->viewParams);
+        return view('admin::settings.themes.index', $this->viewParams);
     }
 
     // テーマインストール
     public function install()
     {
-        $this->viewParams['heading'] = 'admin.features.contents.themes.install.heading';
-        return view('admin::contents.themes.install', $this->viewParams);
+        $this->viewParams['heading'] = 'admin.features.settings.themes.install.heading';
+        return view('admin::settings.themes.install', $this->viewParams);
     }
 
 
@@ -84,7 +84,7 @@ class AdminThemesSettingsController extends AdminController
         $themePath = $themeDirectory . $directoryName;
 
         if (is_dir($themePath)) {
-            return redirect()->route('admin.contents.themes.install')->with('error', "テーマディレクトリ '{$directoryName}' がすでに存在します。");
+            return redirect()->route('admin.settings.themes.install')->with('error', "テーマディレクトリ '{$directoryName}' がすでに存在します。");
         }
 
         if ($zip->open($uploadedFile->path()) === true) {
@@ -103,7 +103,7 @@ class AdminThemesSettingsController extends AdminController
                 }
 
                 if (!$extractedRootDir) {
-                    return redirect()->route('admin.contents.themes.install')
+                    return redirect()->route('admin.settings.themes.install')
                         ->with('error', 'ZIPファイルに有効なディレクトリが含まれていません。');
                 }
 
@@ -140,7 +140,7 @@ class AdminThemesSettingsController extends AdminController
                     // スラッグ名の重複チェック
                     if (Theme::where('slug', $slug)->exists()) {
                         File::deleteDirectory($themePath);
-                        return redirect()->route('admin.contents.themes.install')->with('error', "同じスラッグ名 '{$slug}' のテーマがすでに存在します。");
+                        return redirect()->route('admin.settings.themes.install')->with('error', "同じスラッグ名 '{$slug}' のテーマがすでに存在します。");
                     }
 
                     // テーマ情報をデータベースに登録
@@ -151,16 +151,16 @@ class AdminThemesSettingsController extends AdminController
                         'version' => $themeData['version'] ?? '1.0',
                     ]);
 
-                    return redirect()->route('admin.contents.themes.index')->with('success', 'テーマがインストールされました！');
+                    return redirect()->route('admin.settings.themes.index')->with('success', 'テーマがインストールされました！');
                 } else {
                     // theme.json が見つからない場合
                     File::deleteDirectory($themePath);
-                    return redirect()->route('admin.contents.themes.install')->with('error', 'theme.json が見つかりません。');
+                    return redirect()->route('admin.settings.themes.install')->with('error', 'theme.json が見つかりません。');
                 }
             } catch (\Exception $e) {
                 // 例外発生時にディレクトリを削除
                 File::deleteDirectory($themePath);
-                return redirect()->route('admin.contents.themes.install')->with('error', 'データベースへの登録中にエラーが発生しました: ' . $e->getMessage());
+                return redirect()->route('admin.settings.themes.install')->with('error', 'データベースへの登録中にエラーが発生しました: ' . $e->getMessage());
             }
         } else {
             return back()->with('error', 'テンプレートの解凍に失敗しました。');
@@ -172,12 +172,12 @@ class AdminThemesSettingsController extends AdminController
     {
         $theme = Theme::where('slug', $slug)->first();
         if (!$theme) {
-            return redirect()->route('admin.contents.themes.index')->with('error', 'テーマが見つかりません。');
+            return redirect()->route('admin.settings.themes.index')->with('error', 'テーマが見つかりません。');
         }
 
         // デフォルトテンプレートは削除禁止
         if ($theme->slug === 'default') {
-            return redirect()->route('admin.contents.themes.index')->with('error', 'デフォルトテーマは削除できません。');
+            return redirect()->route('admin.settings.themes.index')->with('error', 'デフォルトテーマは削除できません。');
         }
 
         // テーマディレクトリの確認
@@ -186,7 +186,7 @@ class AdminThemesSettingsController extends AdminController
 
         // 安全チェック: 削除対象が `themes` そのものではないことを確認
         if ($theme->directory === '' || realpath($themeDirectory) === realpath(resource_path('views/themes'))) {
-            return redirect()->route('admin.contents.themes.index')->with('error', '無効なディレクトリパスです。');
+            return redirect()->route('admin.settings.themes.index')->with('error', '無効なディレクトリパスです。');
         }
 
         // ディレクトリ削除とDBからの削除
@@ -199,16 +199,13 @@ class AdminThemesSettingsController extends AdminController
             // DBからテーマ情報を削除
             $theme->delete();
         } catch (\Exception $e) {
-            return redirect()->route('admin.contents.themes.index')->with('error', $e->getMessage());
+            return redirect()->route('admin.settings.themes.index')->with('error', $e->getMessage());
         }
 
         session()->flash('success', 'テーマが削除されました！');
         session()->save();
 
-        return redirect()->route('admin.contents.themes.index');
-
-
-        //return redirect()->route('admin.contents.themes.index')->with('success', "テーマが削除されました！");
+        return redirect()->route('admin.settings.themes.index');
     }
 
 
@@ -234,6 +231,6 @@ class AdminThemesSettingsController extends AdminController
         }
 
 
-        return redirect()->route('admin.contents.themes.index')->with('success', "テーマ '{$theme->name}' が有効化されました。");
+        return redirect()->route('admin.settings.themes.index')->with('success', "テーマ '{$theme->name}' が有効化されました。");
     }
 }

@@ -47,6 +47,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('members_password_reset_tokens');
+        Schema::dropIfExists($this->table);
     }
 };

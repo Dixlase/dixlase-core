@@ -53,7 +53,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('cache');
+        Schema::dropIfExists($this->table);
         Schema::dropIfExists('cache_locks');
     }
 };

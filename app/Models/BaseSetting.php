@@ -69,12 +69,10 @@ class BaseSetting extends Model
 
         if ($setting) {
             // 既存の設定がある場合は更新
-            Log::info("Updating existing setting: $name");
             $setting->value = is_array($value) ? json_encode($value) : $value;
             $setting->save();
         } else {
             // 設定がない場合は新規作成
-            Log::info("Creating new setting: $name");
             self::create([
                 'name' => $name,
                 'value' => is_array($value) ? json_encode($value) : $value,

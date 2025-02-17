@@ -86,24 +86,6 @@ return [
         'front' => [
             'heading' => 'フロントページ設定',
         ],
-        'contents' => [
-            'pages' => [
-                'title' => 'ページタイトル',
-                'slug' => 'スラッグ',
-                'content' => 'コンテンツ',
-                'status' => 'ステータス',
-                'index' => [
-                    'heading' => 'ページマスター',
-                ],
-                'create' => [
-                    'heading' => '新規ページ作成',
-                ],
-                'edit' => [
-                    'heading' => 'ページ編集',
-                ],
-            ],
-
-        ],
         'users' => [
             'index' => [
                 'heading' => 'ユーザーマスター',
@@ -132,7 +114,7 @@ return [
             ],
         ],
         'settings' => [
-            'admins' => [
+            'members' => [
                 'index' => [
                     'heading' => 'メンバーマスター',
                 ],
