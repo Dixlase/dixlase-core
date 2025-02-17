@@ -2,7 +2,7 @@
     "name": "{{ cmsNameSlug }}/plugins-{{ slug }}",
     "description": "This is the {{ pluginName }} plugin.",
     "version": "1.0.0",
-    "license": "{{ license }}",
+    "license": "{{ licenseName }}",
     "authors": [
         {
             "name": "Your Name or Company",

@@ -213,11 +213,6 @@ class MakePlugin extends Command
     ) {
 
 
-        // 初期ファイルを作成（js/css）
-        File::put("{$pluginDir}/resources/src/js/app.js", "// JavaScript for {$pluginDirName}");
-        File::put("{$pluginDir}/resources/src/css/style.scss", "/* SCSS for {$pluginDirName} */");
-
-
         // 例: vendorName が null の場合や空文字の場合に 'plugins' をデフォルトとする
         $vendorNameDefault = $vendorName ?: 'plugins';
 
@@ -230,12 +225,16 @@ class MakePlugin extends Command
         // ライセンスの取得（必要な場合）
         $licenseName = $this->fileGenerator->getLicenseName();
 
+        // ライセンス情報を取得
+        $licenseText = $this->fileGenerator->getLicenseContent();
+
         $placeholders = [
             '{{ pluginName }}'        => $pluginName,     // "MyPlugin"
             '{{ pluginNameStudly }}'  => $pluginNameStudly,
             '{{ namespace }}'         => $namespace,
             '{{ slug }}'              => $pluginSlug,     // "my-plugin"
-            '{{ license }}'           => $licenseName,
+            '{{ license }}'           => $licenseText,
+            '{{ licenseName }}'       => $licenseName,
             '{{ vendorName }}'        => $vendorName,     // 例: "plugins" or "exc-d"
             '{{ vendorNameDefault }}' => $vendorNameDefault,
             '{{ vendorNameStudly }}'  => $vendorNameStudly,
@@ -244,8 +243,14 @@ class MakePlugin extends Command
         ];
 
 
+        // 初期ファイルを作成（js/css）
+        File::put("{$pluginDir}/resources/src/js/app.js", "// JavaScript for {$pluginDirName}");
+        File::put("{$pluginDir}/resources/src/css/style.scss", "/* SCSS for {$pluginDirName} */");
+
+
+        // 1) プラグインのメインファイルを作成
         //スタブファイルのパス
-        $stubPath = [base_path('stubs')];
+        $stubPath = [base_path('stubs/custom')];
 
         // routes/web.php
         $stubFile = $this->fileGenerator->getStubContent(

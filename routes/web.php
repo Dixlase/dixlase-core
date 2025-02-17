@@ -26,12 +26,8 @@ use App\Http\Controllers\Front\FrontWelcomeController;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
-use App\Models\Page;
 
-
-
-
-
+use App\Traits\ThemeLoaderTrait;
 
 Route::middleware(['front.ip'])->group(
     function () {
@@ -43,12 +39,6 @@ Route::middleware(['front.ip'])->group(
             Route::get('register', [RegisterRegisteredUserController::class, 'create'])
                 ->name('register');
             Route::post('register', [RegisterRegisteredUserController::class, 'store']);
-        });
-
-        //個別ページ
-        Route::get(config('custom.pages_directory') . '/{slug}', function ($slug) {
-            $page = Page::where('slug', $slug)->firstOrFail();
-            return view('default/pages', compact('page'));
         });
 
         //テーマのアセットファイル
