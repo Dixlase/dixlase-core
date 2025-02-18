@@ -252,75 +252,24 @@ class MakePlugin extends Command
         File::put("{$pluginDir}/resources/src/css/style.scss", "/* SCSS for {$pluginDirName} */");
 
 
-        // 1) プラグインのメインファイルを作成
-        //スタブファイルのパス
-        $stubPath = [base_path('stubs/custom')];
-
-        // routes/web.php
-        $stubFile = $this->fileGenerator->getStubContent(
-            'routes.plugin.stub',
-            null,
-            $stubPath
-        );
-        // スタブ内容にプレースホルダを適用
-        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
-        $this->fileGenerator->generateFile("{$pluginDir}/routes/web.php", $fileContent);
-
-        // lang/en/messages.php
-        $stubFile = $this->fileGenerator->getStubContent(
-            'messages.en.stub',
-            null,
-            $stubPath
-        );
+        // プラグインのメインファイルを作成
+        // ルートファイルを作成
+        $this->createRoutes($pluginDir, $placeholders);
 
         // 言語ファイルを作成
-        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
-        $this->fileGenerator->generateFile("{$pluginDir}/lang/en/messages.php", $fileContent);
+        $this->createLangFiles($pluginDir, $placeholders);
 
-        // lang/ja/messages.php
-        $stubFile = $this->fileGenerator->getStubContent(
-            'messages.ja.stub',
-            null,
-            $stubPath
-        );
-        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
-        $this->fileGenerator->generateFile("{$pluginDir}/lang/ja/messages.php", $fileContent);
+        // コンフィグファイルを作成
+        $this->createConfigFile($pluginDir, $placeholders);
 
-        // config file
-        $stubFile = $this->fileGenerator->getStubContent(
-            'config.stub',
-            null,
-            $stubPath
-        );
+        // Vite 設定ファイルを作成
+        $this->createViteConfigFile($pluginDir, $placeholders);
 
-        // 設定ファイルを作成
-        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
-        // プラグイン名をスネークケースに変換
-        $snakeName = Str::snake($pluginName);
-        $this->fileGenerator->generateFile("{$pluginDir}/config/settings.php", $fileContent);
+        // composer.json を作成
+        $this->createComposerFile($pluginDir, $placeholders);
 
-        // vite.config.js
-        $stubFile = $this->fileGenerator->getStubContent(
-            'vite.config.plugin.stub',
-            null,
-            $stubPath
-        );
-        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
-        $this->fileGenerator->generateFile("{$pluginDir}/vite.config.js", $fileContent);
-
-        // composer.json
-        $stubFile = $this->fileGenerator->getStubContent(
-            'composer.plugin.stub',
-            null,
-            $stubPath
-        );
-        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
-        $this->fileGenerator->generateFile("{$pluginDir}/composer.json", $fileContent);
-
-        // 7) README.md
-        $stubFile    = $this->fileGenerator->getStubContent('README.plugin.stub', null, $stubPath);
-        $readmeContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
-        $this->fileGenerator->generateFile("{$pluginDir}/README.md", $readmeContent);
+        // README.md を作成
+        $this->createReadmeFile($pluginDir, $placeholders);
 
         // サービスプロバイダを生成
         $this->createServiceProvider($pluginName, $pluginDirName);
@@ -607,6 +556,131 @@ class MakePlugin extends Command
 
         $this->info("Factory [{$factoryName}] created for plugin [{$pluginName}].");
     }
+
+    /**
+     * ルートファイルを作成
+     */
+    protected function createRoutes(string $pluginDir, array $placeholders)
+    {
+        $stubPath = [base_path('stubs/custom')];
+
+        $stubFile = $this->fileGenerator->getStubContent(
+            'routes.plugin.stub',
+            null,
+            $stubPath
+        );
+
+        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
+        $this->fileGenerator->generateFile("{$pluginDir}/routes/web.php", $fileContent);
+
+        $this->info("Routes file created for plugin.");
+    }
+
+    /**
+     * コンフィグファイルを作成
+     */
+    protected function createConfigFile(string $pluginDir, array $placeholders)
+    {
+        $stubPath = [base_path('stubs/custom')];
+
+        $stubFile = $this->fileGenerator->getStubContent(
+            'config.stub',
+            null,
+            $stubPath
+        );
+
+        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
+        $this->fileGenerator->generateFile("{$pluginDir}/config/settings.php", $fileContent);
+
+        $this->info("Config file created for plugin.");
+    }
+
+    /**
+     * 言語ファイルを作成
+     */
+    protected function createLangFiles(string $pluginDir, array $placeholders)
+    {
+        $stubPath = [base_path('stubs/custom')];
+
+        // 英語の言語ファイル
+        $stubFileEn = $this->fileGenerator->getStubContent(
+            'messages.en.stub',
+            null,
+            $stubPath
+        );
+        $fileContentEn = $this->fileGenerator->replacePlaceholders($stubFileEn, $placeholders);
+        $this->fileGenerator->generateFile("{$pluginDir}/lang/en/messages.php", $fileContentEn);
+
+        // 日本語の言語ファイル
+        $stubFileJa = $this->fileGenerator->getStubContent(
+            'messages.ja.stub',
+            null,
+            $stubPath
+        );
+        $fileContentJa = $this->fileGenerator->replacePlaceholders($stubFileJa, $placeholders);
+        $this->fileGenerator->generateFile("{$pluginDir}/lang/ja/messages.php", $fileContentJa);
+
+        $this->info("Language files (en & ja) created for plugin.");
+    }
+
+    /**
+     * Vite 設定ファイルを作成
+     */
+    protected function createViteConfigFile(string $pluginDir, array $placeholders)
+    {
+        $stubPath = [base_path('stubs/custom')];
+
+        $stubFile = $this->fileGenerator->getStubContent(
+            'vite.config.plugin.stub',
+            null,
+            $stubPath
+        );
+
+        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
+        $this->fileGenerator->generateFile("{$pluginDir}/vite.config.js", $fileContent);
+
+        $this->info("Vite config file created for plugin.");
+    }
+
+    /**
+     * composer.json を作成
+     */
+    protected function createComposerFile(string $pluginDir, array $placeholders)
+    {
+        $stubPath = [base_path('stubs/custom')];
+
+        $stubFile = $this->fileGenerator->getStubContent(
+            'composer.plugin.stub',
+            null,
+            $stubPath
+        );
+
+        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
+        $this->fileGenerator->generateFile("{$pluginDir}/composer.json", $fileContent);
+
+        $this->info("Composer.json file created for plugin.");
+    }
+
+    /**
+     * README.md を作成
+     */
+    protected function createReadmeFile(string $pluginDir, array $placeholders)
+    {
+        $stubPath = [base_path('stubs/custom')];
+
+        $stubFile = $this->fileGenerator->getStubContent(
+            'README.plugin.stub',
+            null,
+            $stubPath
+        );
+
+        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
+        $this->fileGenerator->generateFile("{$pluginDir}/README.md", $fileContent);
+
+        $this->info("README.md created for plugin.");
+    }
+
+
 
     /**
      * プラグインを有効化 (DBに登録）
