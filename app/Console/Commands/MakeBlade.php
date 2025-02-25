@@ -37,6 +37,8 @@ class MakeBlade extends Command
 
     protected $description = 'Create a new Blade template in the core resources/views directory';
 
+    protected FileGenerator $fileGenerator;
+
     public function __construct(FileGenerator $fileGenerator)
     {
         parent::__construct();
@@ -61,19 +63,5 @@ class MakeBlade extends Command
         $this->makeFile($file, [], $options);
 
         return 0;
-    }
-
-    /**
-     * Blade ファイルの保存先
-     */
-    protected function getDirectory(array $subDirs): string
-    {
-        return resource_path('views');
-    }
-
-
-    protected function getNamespace(array $subDirs): string
-    {
-        return ''; // Blade ファイルにはネームスペース不要
     }
 }

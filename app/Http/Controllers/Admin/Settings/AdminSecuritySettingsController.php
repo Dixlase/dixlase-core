@@ -41,8 +41,6 @@ class AdminSecuritySettingsController extends AdminController
         // 権限を確認
         $this->checkPermission('super_manager');
 
-        $this->viewParams['heading'] = 'admin.features.settings.security.heading';
-
         $settings = [
             'admin_url' => SecuritySetting::get('admin_url', 'member'),
             'enable_allowed_admin_ips' => SecuritySetting::get('enable_allowed_admin_ips', false),

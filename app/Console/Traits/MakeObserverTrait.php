@@ -66,7 +66,7 @@ trait MakeObserverTrait
         $modelReplacements = $this->buildModelReplacements($modelOption);
 
         // 4) makeFiler
-        //    => ここでは embedLicense などを呼び出す際に
+        //    => ここでは embedLicensePhp などを呼び出す際に
         //       $extraPlaceholders を結合して適用する
         $this->makeFiler($className, $subDirs, $options, $stubFile, $modelReplacements);
     }

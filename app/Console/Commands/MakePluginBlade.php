@@ -39,6 +39,7 @@ class MakePluginBlade extends Command
 
     protected $description = 'Create a new Blade template in the specified plugin\'s resources/views directory';
 
+    protected FileGenerator $fileGenerator;
 
     public function __construct(FileGenerator $fileGenerator)
     {
@@ -62,8 +63,8 @@ class MakePluginBlade extends Command
             return 1;
         }
 
-        // `makeFile()` を呼び出し
-        $this->makeFile($file, [$plugin], $options);
+        // ここでMakeBladeTraitのmakeFile()を呼ぶ
+        $this->makeFile($file, [], $options);
 
         return 0;
     }
@@ -74,7 +75,11 @@ class MakePluginBlade extends Command
     protected function getDirectory(array $subDirs): string
     {
         $pluginName = Str::studly($this->argument('plugin'));
-        return base_path("plugins/{$pluginName}/resources/views");
+        $base = base_path("plugins/{$pluginName}/resources/views");
+        if (!empty($subDirs)) {
+            $base .= '/' . implode('/', $subDirs);
+        }
+        return $base;
     }
 
     /**

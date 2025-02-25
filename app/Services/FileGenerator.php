@@ -127,82 +127,86 @@ class FileGenerator
     }
 
     /**
-     * ライセンス内容を取得してプレースホルダを置換
+     * ライセンスのプレーンテキスト（placeholders差し替え済み）を取得する
      */
-    public function getLicenseContent(): string
+    public function getLicensePlain(): string
     {
-        // ライセンステンプレートを取得
+        // license.txt から読み込み
         $licenseText = $this->files->exists($this->licenseStubPath)
             ? $this->files->get($this->licenseStubPath)
             : '';
 
-        // ライセンス情報を取得
+        // {software}, {year}, {author}, {website} を差し替え
         $licenseInfo = $this->getLicenseInfo();
-
-        // プレースホルダを置換
         $licensePlaceholders = [
             '{software}' => $licenseInfo['software'] ?? 'MySoftware',
             '{year}'     => date('Y'),
             '{author}'   => $licenseInfo['author'] ?? 'MyName',
             '{website}'  => $licenseInfo['website'] ?? 'https://example.com',
         ];
-
         return $this->replacePlaceholders($licenseText, $licensePlaceholders);
     }
 
     /**
-     * Blade 用にライセンスコメントを整形する
+     * PHPファイル用のライセンスをdoc-block 形式にする
      */
-    public function getLicenseForBlade(): string
+    public function getLicenseForPhp(): string
     {
-        $licenseText = $this->getLicenseContent();
-        if (empty($licenseText)) {
+        $plain = $this->getLicensePlain();
+        if (empty($plain)) {
             return '';
         }
 
-        // Bladeのコメント形式に変換
-        $lines = explode("\n", $licenseText);
-        $formattedLines = [];
-
+        // 行ごとに先頭に '* ' を付ける
+        $lines = explode("\n", $plain);
+        $processed = [];
         foreach ($lines as $line) {
-            $line = trim($line);
-            if ($line === '/**' || $line === '*/') {
-                continue;
-            }
-            if (str_starts_with($line, '*')) {
-                $line = ltrim($line, '* ');
-            }
-            $formattedLines[] = $line;
+            $processed[] = '* ' . trim($line);
         }
 
-        return "{{--\n" . implode("\n", $formattedLines) . "\n--}}";
+        // doc-block でラップ
+        $licenseText = "/**\n" . implode("\n", $processed) . "\n*/";
+        return $licenseText;
+    }
+
+    /**
+     * Blade 用にライセンスを "{{-- ... --}}" 形式のコメントにする
+     */
+    public function getLicenseForBlade(): string
+    {
+        $plain = $this->getLicensePlain();
+        if (empty($plain)) {
+            return '';
+        }
+
+        // Blade用コメントでラップ
+        return "{{--\n" . trim($plain) . "\n--}}";
     }
 
 
+    /**
+     * PHPファイルにライセンスを埋め込む
+     * -> {{ license }} を getLicenseForPhp() で置換
+     */
+    public function embedLicensePhp(string $stub, array $placeholders): string
+    {
+        $licensePhp = $this->getLicenseForPhp(); // doc-block 形式
+        // stub 内の "{{ license }}" を置換
+        return $this->replacePlaceholders($stub, array_merge($placeholders, [
+            '{{ license }}' => $licensePhp
+        ]));
+    }
 
     /**
-     * スタブにライセンス情報を埋め込む
+     * Bladeファイルにライセンスを埋め込む
+     * -> {{ license }} を getLicenseForBlade() で置換
      */
-    public function embedLicense(string $stub, array $placeholders): string
+    public function embedLicenseBlade(string $stub, array $placeholders): string
     {
-        $licenseText = $this->files->exists($this->licenseStubPath)
-            ? $this->files->get($this->licenseStubPath)
-            : '';
-
-        $licenseInfo = $this->getLicenseInfo();
-
-        $licensePlaceholders = [
-            '{software}' => $licenseInfo['software'] ?? 'UnknownSoftware',
-            '{year}'     => date('Y'),
-            '{company}'  => $licenseInfo['company'] ?? 'UnknownCompany',
-            '{author}'   => $licenseInfo['author'] ?? 'UnknownAuthor',
-            '{website}'  => $licenseInfo['website'] ?? 'https://example.com',
-            '{license}'  => $licenseInfo['license'] ?? 'AGPL-3.0',
-        ];
-
-        $licenseText = $this->replacePlaceholders($licenseText, $licensePlaceholders);
-
-        return $this->replacePlaceholders($stub, array_merge($placeholders, ['{{ license }}' => $licenseText]));
+        $licenseBlade = $this->getLicenseForBlade(); // blade形式
+        return $this->replacePlaceholders($stub, array_merge($placeholders, [
+            '{{ license }}' => $licenseBlade
+        ]));
     }
 
     /**

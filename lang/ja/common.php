@@ -63,7 +63,4 @@ return [
     'fax' => 'FAX',
     'gender' => '性別',
     'birthday' => '誕生日',
-
-
-
 ];

@@ -22,7 +22,7 @@
     "extra": {
         "display-name": "{{ pluginName }}",
         "keywords": ["laravel", "plugin", "custom"],
-        "slug": "{{ slug }}",
+        "slug": "{{ pluginSlug }}",
         "category": "plugin",
         "laravel": {
             "providers": [

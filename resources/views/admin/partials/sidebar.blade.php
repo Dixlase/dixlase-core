@@ -30,8 +30,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <nav class="flex-1 px-4 py-4 space-y-1">
         @foreach (config('admin.nav') as $key => $item)
             @php
+                // 現在のルート名を階層ごとに分割
+                $current_route_parts = explode('.', $route_name);
+
+
+
+                // 開くべきアコーディオンを判定
                 $open_key = 'open_' . $key;
-                $is_open = preg_match('/' . preg_quote($key, '/') . '/', $route_name);
+                $is_open = isset($current_route_parts[1]) && $current_route_parts[1] === $key;
             @endphp
 
             <div x-data="{ {{ $open_key }} : {{ $is_open ? 'true' : 'false' }} }">
@@ -75,8 +81,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     @endcan
                                 @else
                                     @php
+                                        $current_child_route_parts = explode('.', $route_name);
                                         $open_child_key = 'open_' . $child_key;
-                                        $is_open_child = preg_match('/' . preg_quote($child_key, '/') . '/', $route_name);
+                                        $is_open_child = isset($current_child_route_parts[2]) && $current_child_route_parts[2] === $child_key;
                                     @endphp
 
                                     <div x-data="{ {{ $open_child_key }}: {{ $is_open_child ? 'true' : 'false' }} }">

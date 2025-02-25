@@ -28,7 +28,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <h3 class="text-lg font-semibold">管理者検索</h3>
 
     <!-- 検索フォーム -->
-    <form action="{{ route('admin.users.index') }}" method="GET" class="mb-6">
+    <form action="{{ route('admin.settings.members.index') }}" method="GET" class="mb-6">
         <div class="flex items-center">
             @csrf
             @include('components::form.text', [

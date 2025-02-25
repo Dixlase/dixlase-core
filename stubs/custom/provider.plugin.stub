@@ -11,35 +11,24 @@ class {{ class }} extends ServiceProvider
 {
     use PluginLoaderTrait;
 
-    protected $pluginName = '{{ pluginName }}';
-    protected $pluginAlias = '{{ pluginAlias }}';
-    protected $pluginBasePath = 'plugins/';
-    protected $customPluginBasePath = 'custom/plugins/';
-
     public function __construct($app)
     {
         parent::__construct($app);
-
-        $pluginsDir = base_path(config('plugins.plugins_directory', 'plugins'));
-        $customFilesDir = base_path(config('custom.custom_files_dir', 'custom'));
-
-        $this->pluginBasePath = "{$pluginsDir}/{$this->pluginName}";
-        $this->customPluginBasePath = "{$customFilesDir}/{$pluginsDir}/{$this->pluginName}";
     }
 
-    public function register()
+    /**
+     * Register services.
+     */
+    public function register(): void
     {
-        $defaultConfigDir = "{$this->pluginBasePath}/config";
-        $customConfigDir = "{$this->customPluginBasePath}/config";
-
-        $this->loadPluginConfigs($defaultConfigDir, $customConfigDir, $this->pluginAlias);
+        //
     }
 
-    public function boot()
+    /**
+     * Bootstrap services.
+     */
+    public function boot(): void
     {
-        $this->loadPluginRoutes("{$this->customPluginBasePath}/routes", "{$this->pluginBasePath}/routes");
-        $this->loadPluginViews("{$this->customPluginBasePath}/resources/views", "{$this->pluginBasePath}/resources/views", $this->pluginAlias);
-        $this->loadPluginMigrations("{$this->customPluginBasePath}/databases/migrations", "{$this->pluginBasePath}/databases/migrations");
-        $this->loadPluginTranslations("{$this->customPluginBasePath}/lang", "{$this->pluginBasePath}/lang", $this->pluginAlias);
+        //
     }
 }

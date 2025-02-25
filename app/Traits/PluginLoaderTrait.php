@@ -27,6 +27,7 @@ use App\Models\Plugin;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Lang;
+use Illuminate\Support\Facades\Schema;
 
 trait PluginLoaderTrait
 {
@@ -39,13 +40,21 @@ trait PluginLoaderTrait
     public function loadActivePlugins()
     {
 
-        $activePlugins = Plugin::where('status', 1)->get();
+        //Pluginテーブルのstatusが1のレコードを取得
+        //テーブルが存在しているか確認
+        if (Schema::hasTable('plugins')) {
+            $activePlugins = Plugin::where('status', 1)->get();
+        } else {
+            $activePlugins = [];
+        }
 
 
         foreach ($activePlugins as $plugin) {
             $pluginName = $plugin->name;
             $pluginDirectory = $plugin->directory;
             $pluginSlug = $plugin->slug;
+
+
 
             // サービスプロバイダの登録
             $providerClass = $this->resolvePluginServiceProvider($pluginName, $pluginDirectory);
@@ -69,6 +78,7 @@ trait PluginLoaderTrait
     protected function loadPluginFiles($pluginName, $pluginPath, $customPluginPath, $pluginSlug = null)
     {
         $fileTypes = config('custom.file_types', []);
+
 
         foreach ($fileTypes as $type => $settings) {
 
@@ -213,9 +223,11 @@ trait PluginLoaderTrait
      */
     protected function loadPluginTranslations($customPath, $corePath, $namespace)
     {
+
         $paths = array_filter([$customPath, $corePath]);
         foreach ($paths as $path) {
             if (is_dir($path)) {
+
                 $this->loadTranslationsFrom($path, $namespace);
             }
         }

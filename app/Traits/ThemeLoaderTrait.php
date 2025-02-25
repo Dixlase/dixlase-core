@@ -25,7 +25,7 @@ namespace App\Traits;
 
 use Illuminate\Support\Facades\DB;
 use App\Models\Theme;
-
+use Illuminate\Support\Facades\Schema;
 
 trait ThemeLoaderTrait
 {
@@ -36,8 +36,15 @@ trait ThemeLoaderTrait
      */
     public function getActiveTheme(): int
     {
-        $activeTheme = DB::table('theme_settings')->first();
-        return $activeTheme ? $activeTheme->active_theme_id : 1; // デフォルトIDを1とする
+        //themes_settingsテーブルのactive_theme_idの値を取得
+        //themes_settingsテーブルが存在しているか確認
+        if (Schema::hasTable('themes_settings')) {
+            $activeTheme = DB::table('themes_settings')->first();
+            $activeThemeId = $activeTheme->active_theme_id;
+        } else {
+            $activeThemeId = 1;
+        }
+        return $activeThemeId;
     }
 
     /**
@@ -47,10 +54,15 @@ trait ThemeLoaderTrait
      */
     public function getActiveThemeDirectory(): string
     {
-        $activeThemeId = DB::table('theme_settings')->value('active_theme_id');
-        $theme = Theme::find($activeThemeId);
 
-        return $theme ? $theme->directory : 'default-theme';
+        $activeThemeId = $this->getActiveTheme();
+        if (Schema::hasTable('themes')) {
+            $theme = Theme::find($activeThemeId);
+        } else {
+            $theme = config('themes.default_theme', env('APP_THEME', 'DefaultTheme'));
+        }
+
+        return $theme;
     }
 
     /**

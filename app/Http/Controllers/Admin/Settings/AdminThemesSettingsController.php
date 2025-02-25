@@ -40,7 +40,6 @@ class AdminThemesSettingsController extends AdminController
     // テーマ一覧
     public function index()
     {
-        $this->viewParams['heading'] = 'admin.features.settings.themes.index.heading';
 
         // デフォルトテーマを取得
         $defaultTheme = Theme::where('slug', 'default')->first();
@@ -60,7 +59,6 @@ class AdminThemesSettingsController extends AdminController
     // テーマインストール
     public function install()
     {
-        $this->viewParams['heading'] = 'admin.features.settings.themes.install.heading';
         return view('admin::settings.themes.install', $this->viewParams);
     }
 
