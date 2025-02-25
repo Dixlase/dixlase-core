@@ -18,32 +18,33 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-
 @extends('admin::partials.layout')
 
 @section('content')
-
     <!-- Flash message for success or error -->
     @include('components::flash_message')
 
-    <form action="{{ route('admin.settings.members.store') }}" method="POST" class="mt-6">
+
+    <form action="{{ route('admin.media.settings.update') }}" method="POST">
         @csrf
-        @include('admin::settings.members.partials.form',[
-            'require_password' => true,
-        ])
+        <div class="mb-4">
+            <h2 class="text-lg font-bold">許可するファイルタイプ</h2>
+            @foreach($fileExtensions as $extension)
+                <div>
+                    <label>
+                        <input type="checkbox" name="allowed_file_types[]" value="{{ $extension }}"
+                            {{ in_array($extension, $allowedFileTypes) ? 'checked' : '' }}>
+                        .{{ $extension }}
+                    </label>
+                </div>
+            @endforeach
+        </div>
 
-        <!-- 保存ボタンとモーダル -->
-        @include('components::form.save', [
-            'id' => 'confirmationModal',
-            'label' => '作成',
-            'onclick' => "openModal('confirmationModal')",
-            'title' => '作成の確認',
-            'message' => '新規管理者を作成しますか？',
-            'confirm_label' => '作成',
-            'cancel_label' => '戻る',
-        ])
 
+
+        <button type="submit" class="bg-blue-600 text-white py-2 px-4 rounded">
+            設定を保存
+        </button>
     </form>
 @endsection
-
 

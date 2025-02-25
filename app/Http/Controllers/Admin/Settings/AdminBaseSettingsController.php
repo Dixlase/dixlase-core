@@ -67,7 +67,6 @@ class AdminBaseSettingsController extends AdminController
         ];
 
         $this->viewParams['settings'] = $settings;
-        $this->viewParams['heading'] = 'admin.features.settings.systems.heading';
 
         return view(
             'admin::settings.base.index',

@@ -39,6 +39,11 @@ return [
             'namespace' => '',
             'naming_convention' => 'snake_case', // スネークケース
         ],
+        'lang' => [
+            'path' => 'lang',
+            'namespace' => '',
+            'naming_convention' => 'snake_case', // スネークケース
+        ],
         'controllers' => [
             'path' => 'app/Http/Controllers',
             'namespace' => 'App\\Http\\Controllers\\',

@@ -52,7 +52,6 @@ class AdminPluginsSettingsController extends AdminController
         $this->checkPermission('manager');
 
         $plugins = Plugin::all();
-        $this->viewParams['heading'] = config('admin.settings.plugins.index.heading');
         $this->viewParams['plugins'] = $plugins;
         return view('admin::settings.plugins.index', $this->viewParams);
     }

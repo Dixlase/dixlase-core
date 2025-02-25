@@ -106,8 +106,8 @@ return [
     |
     */
 
-    'table' => env('SESSION_TABLE', 'sessions'),
-
+    //'table' => env('SESSION_TABLE', 'sessions'),
+    'member_table' => env('MEMBER_SESSION_TABLE', 'members_sessions'),
     /*
     |--------------------------------------------------------------------------
     | Session Cache Store

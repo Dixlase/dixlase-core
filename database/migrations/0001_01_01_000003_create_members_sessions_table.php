@@ -20,40 +20,35 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Providers;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-use Illuminate\Support\ServiceProvider;
-use App\Services\PluginMigrator;
-use Illuminate\Filesystem\Filesystem;
-use Illuminate\Database\ConnectionResolverInterface;
-
-class PluginMigrationServiceProvider extends ServiceProvider
+return new class extends Migration
 {
-    /**
-     * Register services.
-     *
-     * @return void
-     */
-    public function register()
-    {
-        // PluginMigratorのシングルトンインスタンスをバインド
+    protected $table = 'members_sessions';
 
-        $this->app->singleton(PluginMigrator::class, function ($app) {
-            return new PluginMigrator(
-                new Filesystem(),
-                $app['db'], // ConnectionResolverInterface
-                'plugin_migrations' // マイグレーションテーブル名
-            );
+
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create($this->table, function (Blueprint $table) {
+            $table->string('id')->primary();
+            $table->foreignId('member_id')->nullable()->constrained('members')->onDelete('cascade'); // 管理者メンバー用
+            $table->string('ip_address', 45)->nullable();
+            $table->text('user_agent')->nullable();
+            $table->longText('payload');
+            $table->integer('last_activity')->index();
         });
     }
 
     /**
-     * Bootstrap services.
-     *
-     * @return void
+     * Reverse the migrations.
      */
-    public function boot()
+    public function down(): void
     {
-        //
+        Schema::dropIfExists($this->table);
     }
-}
+};

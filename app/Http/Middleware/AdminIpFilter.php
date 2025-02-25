@@ -27,6 +27,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use App\Models\SecuritySetting;
+use Illuminate\Support\Facades\Schema;
 
 class AdminIpFilter
 {
@@ -37,11 +38,20 @@ class AdminIpFilter
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $enableAllowedIps = SecuritySetting::get('enable_allowed_admin_ips', false);
-        $allowedIps = explode(',', SecuritySetting::get('allowed_admin_ips', ''));
+        //security_settingsテーブルの値を取得
+        //テーブルが存在しているか確認
+        if (Schema::hasTable('security_settings')) {
+            $enableAllowedIps = SecuritySetting::get('enable_allowed_admin_ips', false);
+            $allowedIps = explode(',', SecuritySetting::get('allowed_admin_ips', ''));
 
-        $enableBlockedIps = SecuritySetting::get('enable_blocked_admin_ips', false);
-        $blockedIps = explode(',', SecuritySetting::get('blocked_admin_ips', ''));
+            $enableBlockedIps = SecuritySetting::get('enable_blocked_admin_ips', false);
+            $blockedIps = explode(',', SecuritySetting::get('blocked_admin_ips', ''));
+        } else {
+            $enableAllowedIps = false;
+            $allowedIps = [];
+            $enableBlockedIps = false;
+            $blockedIps = [];
+        }
 
         if ($enableBlockedIps && in_array($request->ip(), $blockedIps)) {
             abort(403, 'Access Denied.');

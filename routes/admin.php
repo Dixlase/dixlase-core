@@ -42,14 +42,24 @@ use App\Http\Controllers\Admin\Settings\AdminThemesSettingsController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\SecuritySetting;
+use Illuminate\Support\Facades\Schema;
 
-
-$adminUrl = SecuritySetting::get('admin_url', config('security.admin_url'));
+//管理画面のURLを取得
+//security_settingsテーブルのadmin_urlの値を取得
+//テーブルが存在しているか確認
+if (Schema::hasTable('security_settings')) {
+    $adminUrl = SecuritySetting::get('admin_url', config('security.admin_url'));
+} else {
+    $adminUrl = config('security.admin_url');
+}
 
 Route::prefix($adminUrl)->name('admin.')
     ->middleware('admin.ip') // IPアドレスフィルタ
     ->group(function () {
+
+
         Route::get('/', function () {
+
             $member = Auth::guard('member')->user();
             if ($member) {
                 return redirect()->route('admin.dashboard');
@@ -58,59 +68,49 @@ Route::prefix($adminUrl)->name('admin.')
             }
         });
 
-        Route::get('/login', [AdminAuthenticatedSessionController::class, 'create'])
-            ->name('login');
 
+        Route::get('/login', [AdminAuthenticatedSessionController::class, 'create'])->name('login');
         Route::post('/login', [AdminAuthenticatedSessionController::class, 'store']);
 
-        Route::middleware('auth:member')->group(function () {
+
+        Route::middleware(['auth.member'])->group(function () {
+
             // ダッシュボード
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-
-
-            //フロントページ管理
+            //フロントページマスター
             Route::get('/front', [AdminFrontController::class, 'index'])->name('front.index');
-            //フロントページ管理保存
-            Route::post('/front/store', [AdminFrontController::class, 'index'])->name('front.store');
-            //フロントページ管理削除
-            Route::delete('/front/delete/{front}', [AdminFrontController::class, 'index'])->name('front.delete');
+            //フロントページデザイン
+            Route::get('/front/design', [AdminFrontController::class, 'design'])->name('front.design');
+            Route::post('/front/design', [AdminFrontController::class, 'design'])->name('front.design.store');
+            //フロントページ管理
+            Route::get('/front/settings', [AdminFrontController::class, 'index'])->name('front.settings');
+            Route::post('/front/settings', [AdminFrontController::class, 'index'])->name('front.settings.store');
 
             //メディア管理
             Route::get('/media', [AdminMediaController::class, 'index'])->name('media.index');
             //メディアアップロード
             Route::get('/media/upload', [AdminMediaController::class, 'upload'])->name('media.upload');
-            Route::post('/media/upload/', [AdminMediaController::class, 'index'])->name('media.upload');
+            Route::post('/media/upload/', [AdminMediaController::class, 'store'])->name('media.upload');
             //メディア削除
             Route::delete('/media/delete/{media}', [AdminMediaController::class, 'delete'])->name('media.delete');
             //メディアダウンロード
             Route::get('/media/download/{media}', [AdminMediaController::class, 'download'])->name('media.download');
             //メディアプレビュー
             Route::get('/media/preview/{media}', [AdminMediaController::class, 'preview'])->name('media.preview');
+            //メディア設定
+            Route::get('/media/settings', [AdminMediaController::class, 'settings'])->name('media.settings');
+            Route::post('/media/settings', [AdminMediaController::class, 'update'])->name('media.settings.update');
 
-            // ユーザー
-            // ユーザーマスター
-            Route::get('/users', [AdminUsersController::class, 'index'])->name('users.index');
-            // ユーザー作成
-            Route::get('/users/create', [AdminUsersController::class, 'create'])->name('users.create');
-            // ユーザー編集
-            Route::get('users/edit/{user}', [AdminUsersController::class, 'edit'])->name('users.edit');
-            // ユーザー保存
-            Route::post('/users/store', [AdminUsersController::class, 'store'])->name('users.store');
-            // ユーザー更新
-            Route::patch('users/update/{user}', [AdminUsersController::class, 'update'])->name('users.update');
-            // ユーザー削除
-            Route::delete('/users/delete/{user}', [AdminUsersController::class, 'destroy'])->name('users.destroy');
+            // 全体設定
+            // 基本設定
+            Route::get('/settings/base', [AdminBaseSettingsController::class, 'index'])->name('settings.base');
+            Route::put('/settings/update', [AdminBaseSettingsController::class, 'update'])->name('settings.base.update');
 
-            // Settings
-            // Base
-            Route::get('/settings/base', [AdminBaseSettingsController::class, 'index'])->name('settings.base.index');
-            Route::put('/settings/update', [AdminBaseSettingsController::class, 'update'])->name('settings.systems.update');
+            // セキュリティ設定
+            Route::get('/settings/security', [AdminSecuritySettingsController::class, 'index'])->name('settings.security');
+            Route::post('/settings/security', [AdminSecuritySettingsController::class, 'update'])->name('settings.security.update');
 
-            // Security
-            Route::get('/settings/security', [AdminSecuritySettingsController::class, 'index'])->name('settings.security.index');
-            Route::post('settings/security', [AdminSecuritySettingsController::class, 'update'])->name('settings.security.update');
-
-            // Members
+            // メンバー管理
             // メンバーマスター
             Route::get('/settings/members', [AdminMembersSettingsController::class, 'index'])->name('settings.members.index');
             // メンバー作成
@@ -126,20 +126,20 @@ Route::prefix($adminUrl)->name('admin.')
             // プロフィール
             Route::get('/settings/members/profile', [AdminMembersSettingsController::class, 'profile'])->name('settings.members.profile');
 
-            // Themes
+            // テーマ設定
             Route::get('/settings/themes', [AdminThemesSettingsController::class, 'index'])->name('settings.themes.index');
             Route::get('/settings/themes/install', [AdminThemesSettingsController::class, 'install'])->name('settings.themes.install');
             Route::post('/settings/themes/upload', [AdminThemesSettingsController::class, 'upload'])->name('settings.themes.upload');
             Route::post('/settings/themes/activate/{id}', [AdminThemesSettingsController::class, 'activate'])->name('settings.themes.activate');
             Route::post('/settings/themes/delete/{id}', [AdminThemesSettingsController::class, 'delete'])->name('settings.themes.delete');
 
-            // Plugins
+            // プラグイン設定
             Route::get('/settings/plugins', [AdminPluginsSettingsController::class, 'index'])->name('settings.plugins.index');
             Route::get('/settings/plugins/install', [AdminPluginsSettingsController::class, 'install'])->name('settings.plugins.install');
             Route::post('/settings/plugins/upload', [AdminPluginsSettingsController::class, 'upload'])->name('settings.plugins.upload');
-            Route::post('/enable/{id}', [AdminPluginsSettingsController::class, 'enable'])->name('settings.plugins.enable');
-            Route::post('/disable/{id}', [AdminPluginsSettingsController::class, 'disable'])->name('settings.plugins.disable');
-            Route::post('/uninstall/{id}', [AdminPluginsSettingsController::class, 'uninstall'])->name('settings.plugins.uninstall');
+            Route::post('/settings/plugins/enable/{id}', [AdminPluginsSettingsController::class, 'enable'])->name('settings.plugins.enable');
+            Route::post('/settings/plugins/disable/{id}', [AdminPluginsSettingsController::class, 'disable'])->name('settings.plugins.disable');
+            Route::post('/settings/plugins/uninstall/{id}', [AdminPluginsSettingsController::class, 'uninstall'])->name('settings.plugins.uninstall');
 
 
             // Logout

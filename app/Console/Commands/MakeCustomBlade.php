@@ -38,6 +38,8 @@ class MakeCustomBlade extends Command
 
     protected $description = 'Create a new Blade template in the custom/views directory';
 
+    protected FileGenerator $fileGenerator;
+
     public function __construct(FileGenerator $fileGenerator)
     {
         parent::__construct();
@@ -68,7 +70,11 @@ class MakeCustomBlade extends Command
      */
     protected function getDirectory(array $subDirs): string
     {
-        return base_path('custom/resources/views');
+        $base = base_path('custom/resources/views');
+        if (!empty($subDirs)) {
+            $base .= '/' . implode('/', $subDirs);
+        }
+        return $base;
     }
 
     protected function getNamespace(array $subDirs): string

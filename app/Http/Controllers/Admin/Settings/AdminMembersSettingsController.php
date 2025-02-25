@@ -42,8 +42,7 @@ class AdminMembersSettingsController extends AdminController
      */
     public function index(Request $request)
     {
-        //
-        $this->viewParams['heading'] = __('admin.features.settings.members.index.heading');
+
         $this->viewParams['members'] = Member::all();
 
         // 検索条件の取得
@@ -69,7 +68,6 @@ class AdminMembersSettingsController extends AdminController
      */
     public function create()
     {
-        $this->viewParams['heading'] = 'admin.features.settings.members.create.heading';
         return view('admin::settings.members.create', $this->viewParams);
     }
 
@@ -111,11 +109,7 @@ class AdminMembersSettingsController extends AdminController
      */
     public function edit(Member $member)
     {
-        $this->viewParams['heading'] = 'admin.features.settings.members.edit.heading';
         $this->viewParams['member'] = $member;
-
-
-
         return view('admin::settings.members.edit', $this->viewParams);
     }
 
@@ -155,7 +149,6 @@ class AdminMembersSettingsController extends AdminController
      */
     public function profile()
     {
-        $this->viewParams['heading'] = 'admin.settings.members.profile.heading';
         return view('admin.settings.members.profile', $this->viewParams);
     }
 }

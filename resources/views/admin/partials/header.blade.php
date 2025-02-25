@@ -77,7 +77,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
 
                 <x-dropdown-link :href="route('admin.settings.members.profile')">
-                    {{ __('admin.settings.members.profile') }}
+                    {{ __('admin.settings.members.profile.heading') }}
                 </x-dropdown-link>
 
                 <!-- ログアウト -->

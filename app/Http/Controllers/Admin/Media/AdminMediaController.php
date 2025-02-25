@@ -2,64 +2,147 @@
 
 namespace App\Http\Controllers\Admin\Media;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Admin\AdminController;
 use Illuminate\Http\Request;
+use App\Models\Media;
+use Illuminate\Support\Facades\Storage;
+use App\Models\MediaSetting;
+use App\Http\Requests\Admin\Media\AdminMediaStoreRequest;
+use Illuminate\Support\Facades\Log;
+use App\Models\Member;
 
-class AdminMediaController extends Controller
+class AdminMediaController extends AdminController
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        //メディアをページネーションで読み込み
+        $media = Media::paginate(config('admin.perPage'));
+        $this->viewParams['media'] = $media;
+
+        return view('admin.media.index', $this->viewParams);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function upload()
     {
-        //
+        //許可されたファイルタイプを読み込み
+        $allowedFileTypes = MediaSetting::where('name', 'allowed_file_types')->value('value');
+        $allowedFileTypes = json_decode($allowedFileTypes, true) ?? [];
+        $this->viewParams['allowedFileTypes'] = $allowedFileTypes;
+
+        return view('admin.media.upload', $this->viewParams);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(AdminMediaStoreRequest $request)
     {
-        //
+        $file = $request->file('file');
+        if (!$file) {
+            return redirect()->back()->withErrors(['file' => 'ファイルが取得できませんでした']);
+        }
+
+        //メンバーIDを取得
+        $memberId = $this->member->id;
+
+        try {
+            $path = $file->store(config('admin.mediaPath'), config('admin.storageDisk'));
+            $fileName = basename($path);
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['file' => 'ファイルの保存に失敗しました']);
+        }
+
+        Media::create([
+            'name' => $file->getClientOriginalName(),
+            'path' => $fileName,
+            'type' => $file->getMimeType(),
+            'uploaded_by' => $memberId,
+        ]);
+
+        return redirect()->route('admin.media.index')->with('success', 'ファイルが正常にアップロードされました。');
+    }
+
+
+    public function delete(Media $media)
+    {
+
+        $disk = config('admin.storageDisk', 'public');
+        $mediaPath = config('admin.mediaPath', 'media');
+        $filePath = $mediaPath . '/' . $media->path;
+
+        if (Storage::disk($disk)->exists($filePath)) {
+            Storage::disk($disk)->delete($filePath);
+        }
+
+        $media->delete();
+
+        return redirect()->route('admin.media.index')->with('success', 'File deleted successfully.');
+    }
+
+    public function download(Media $media)
+    {
+        $disk = config('admin.storageDisk', 'public');
+        $mediaPath = config('admin.mediaPath', 'media');
+        $filePath = $mediaPath . '/' . $media->path;
+
+        if (!Storage::disk($disk)->exists($filePath)) {
+            abort(404, 'ファイルが存在しません');
+        }
+
+        return Storage::disk($disk)->download($filePath, $media->name);
+    }
+
+    public function preview(Media $media)
+    {
+        $filePath = storage_path('app/' . config('admin.storageDisk') . '/' . config('admin.mediaPath') . '/' . $media->path);
+
+        if (!file_exists($filePath)) {
+            abort(404, 'ファイルが存在しません');
+        }
+
+        $this->viewParams['media'] = $media;
+        $this->viewParams['filePath'] = $filePath;
+
+        return view('admin.media.preview', $this->viewParams);
+    }
+
+
+    public function settings()
+    {
+
+        $allowedFileTypes = MediaSetting::where('name', 'allowed_file_types')->value('value');
+        $allowedFileTypes = json_decode($allowedFileTypes, true) ?? [];
+
+        $fileExtensions = config('admin.fileExtensions');
+
+        $this->viewParams['allowedFileTypes'] = $allowedFileTypes;
+        $this->viewParams['fileExtensions'] = $fileExtensions;
+
+        return view('admin.media.settings', $this->viewParams);
     }
 
     /**
-     * Display the specified resource.
+     * Show the form for creating a new resource.
      */
-    public function show(string $id)
+    public function update(Request $request)
     {
-        //
-    }
+        $fileExtensions = config('admin.fileExtensions');
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
+        $request->validate([
+            'allowed_file_types' => 'array',
+            'allowed_file_types.*' => 'in:' . implode(',', $fileExtensions),
+        ]);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+        $selectedTypes = $request->input('allowed_file_types', []);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        MediaSetting::updateOrCreate(
+            ['name' => 'allowed_file_types'],
+            ['value' => json_encode($selectedTypes)]
+        );
+
+        return redirect()->back()->with('success', 'メディア設定が更新されました。');
     }
 }

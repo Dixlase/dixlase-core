@@ -59,9 +59,11 @@ class PluginMigrator
         $this->repository = new PluginMigrationRepository($resolver, $migrationTable, $pluginSlug);
 
         // リポジトリが存在しない場合は作成
+        /*
         if (!$this->repository->repositoryExists()) {
             $this->repository->createRepository();
         }
+        */
 
         // Migratorのインスタンスを作成
         $this->migrator = new Migrator(

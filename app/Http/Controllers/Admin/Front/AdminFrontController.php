@@ -24,6 +24,7 @@
 namespace App\Http\Controllers\Admin\Front;
 
 use App\Http\Controllers\Admin\AdminController;
+use Illuminate\Http\Request;
 
 class AdminFrontController extends AdminController
 {
@@ -33,54 +34,23 @@ class AdminFrontController extends AdminController
     public function index()
     {
 
-        $this->viewParams['heading'] = 'admin.features.front.heading';
         return view('admin::front/index', $this->viewParams);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function design()
     {
-        //
+        return view('admin::front/design', $this->viewParams);
+    }
+
+    public function settings()
+    {
+        return view('admin::front/settings', $this->viewParams);
     }
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Front $front)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Front $front)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Front $front)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Front $front)
     {
         //
     }

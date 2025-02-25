@@ -349,6 +349,8 @@ class MakePlugin extends Command
         Artisan::call('make:plugin:provider', [
             'plugin' => $pluginDirName,
             'name' => $providerName,
+            '--plugin' => true,
+            '--force' => true,
         ]);
 
         $this->info("Service provider [{$providerName}] created for plugin [{$pluginName}].");

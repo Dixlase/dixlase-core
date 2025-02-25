@@ -29,7 +29,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <!-- Flash message for success or error -->
                 @include('components::flash_message')
 
-                <form action="{{ route('admin.settings.systems.update') }}" method="POST">
+                <form action="{{ route('admin.settings.base.update') }}" method="POST">
                     @csrf
                     @method('PUT')
 
@@ -62,7 +62,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     <div class="mt-4">
                         @include('components::form.label', [
-                            'text' => 'admin.pages.settings.systems.is_member_site',
+                            'text' => 'admin.pages.settings.base.is_member_site',
                         ])
                         @include('components::form.hidden', [
                             'id' => 'is_member_site',

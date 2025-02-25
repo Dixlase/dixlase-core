@@ -1,5 +1,3 @@
-<?php
-
 /**
  * This file is part of MySoftware.
  *
@@ -21,12 +19,10 @@
  */
 
 
-namespace App\Http\Controllers\Front\Pages;
+@extends('admin::partials.layout')
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+@section('content')
+    <h1>Hello Blade!</h1>
+    <p>This is an example Blade file: admin/media/upload</p>
+@endsection
 
-class FrontPagesController extends Controller
-{
-    //
-}

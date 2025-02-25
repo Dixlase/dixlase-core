@@ -33,21 +33,52 @@ return [
     |
     */
 
-    'failed' => 'These credentials do not match our records.',
-    'password' => 'The provided password is incorrect.',
-    'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
+    'common' => [
+        'search' => '検索',
+        'submit' => '更新',
+        'install' => 'インストール',
+        'roles' => 'ロール',
+        'permissions' => '権限',
+        'logout' => 'ログアウト',
+        'required' => ':attribute は必須です。',
+        'email' => ':attribute は正しいメールアドレス形式で入力してください。',
+        'unique' => ':attribute は既に存在しています。',
+        'min' => ':attribute は最低 :min 文字必要です。',
+        'confirmed' => ':attribute 確認が一致しません。',
+        'attributes' => [
+            'name' => '名前',
+            'email' => 'メールアドレス',
+            'password' => 'パスワード',
+        ],
+        'theme' => [
+            'auto' => '自動',
+            'dark' => 'ダーク',
+            'light' => 'ライト',
+        ],
+    ],
 
+    'roles' => [
+        'text' => '権限',
+        'super_manager' => '特権管理者',
+        'manager' => '管理者',
+        'editor' => '編集者',
+        'receptionist' => '受付',
+        'viewer' => '閲覧者',
+    ],
 
     'nav' => [
         'dashboard' => 'ダッシュボード',
         'front' => [
             'text' => 'フロントページ管理',
-            'index' => 'フロントページ設定',
+            'index' => 'フロントページマスター',
+            'design' => 'フロントページデザイン',
+            'settings' => 'フロントページ設定',
         ],
         'media' => [
             'text' => 'メディア管理',
             'index' => 'メディアマスター',
             'upload' => 'メディアアップロード',
+            'settings' => 'メディア設定'
         ],
 
         'users' => [
@@ -56,7 +87,7 @@ return [
             'create' => 'ユーザー新規作成',
         ],
         'settings' => [
-            'text' => '設定',
+            'text' => '全体設定',
             'base' => '基本設定',
             'security' => 'セキュリティ設定',
             'members' => [
@@ -79,13 +110,134 @@ return [
         ],
     ],
 
-    'features' => [
-        'dashboard' => [
-            'heading' => 'ダッシュボード',
+
+    // ダッシュボード
+    'dashboard' => [
+        'heading' => 'ダッシュボード',
+        'description' => 'サイトの概要を確認できます。',
+    ],
+
+    // フロントページ
+    'front' => [
+        'index' => [
+            'heading' => 'フロントページマスター',
+            'description' => 'フロントページのプレビューを確認できます。',
         ],
-        'front' => [
+        'design' => [
+            'heading' => 'フロントページデザイン',
+            'description' => 'フロントページのデザインを行います。',
+        ],
+        'settings' => [
             'heading' => 'フロントページ設定',
+            'description' => 'フロントページの設定を行います。',
         ],
+
+    ],
+
+    // メディア
+    'media' => [
+        'index' => [
+            'heading' => 'メディアマスター',
+        ],
+        'upload' => [
+            'heading' => 'メディアアップロード',
+        ],
+        'settings' => [
+            'heading' => 'メディア設定',
+        ],
+
+    ],
+
+    // 設定
+    'settings' => [
+        // 基本
+        'base' => [
+            'heading' => '基本設定',
+            'site_name' => 'サイト名',
+            'is_member_site' => '会員サイト',
+            'allow_external_registration' => '外部登録',
+            'allow_guest_registration' => 'ゲスト登録',
+            'required_fields' => '必須項目',
+            'language' => '言語',
+            'maintenance_mode' => 'メンテナンスモード',
+            'maintenance_message' => 'メンテナンスメッセージ',
+            'submit' => '更新',
+        ],
+        // セキュリティ
+        'security' => [
+            'heading' => 'セキュリティ設定',
+            'admin_url' => '管理画面URL',
+            'enable_allowed_admin_ips' => '特定のIPアドレスのみアクセスを許可',
+            'allowed_admin_ips' => '許可IPアドレス',
+            'enable_blocked_admin_ips' => '特定のIPアドレスをブロック',
+            'blocked_admin_ips' => 'ブロックIPアドレス',
+            'force_ssl' => 'SSL強制',
+            'submit' => '更新',
+        ],
+        // メンバー
+        'members' => [
+            'index' => [
+                'heading' => 'メンバーマスター',
+            ],
+            'create' => [
+                'heading' => '新規メンバー作成',
+                'name' => '名前',
+                'email' => 'メールアドレス',
+                'password' => 'パスワード',
+                'password_confirmation' => 'パスワード確認',
+                'role' => 'ロール',
+                'submit' => '登録',
+            ],
+            'edit' => [
+                'heading' => 'メンバー編集',
+                'name' => '名前',
+                'email' => 'メールアドレス',
+                'password' => 'パスワード',
+                'password_confirmation' => 'パスワード確認',
+                'role' => 'ロール',
+                'submit' => '更新',
+            ],
+            'profile' => [
+                'heading' => 'プロフィール設定',
+                'name' => '名前',
+                'email' => 'メールアドレス',
+                'password' => 'パスワード',
+                'password_confirmation' => 'パスワード確認',
+                'submit' => '更新',
+            ],
+        ],
+        // テーマ
+        'themes' => [
+            'index' => [
+                'heading' => 'テーマ設定',
+                'title' => 'テーマ設定',
+                'color' => 'カラー',
+                'font' => 'フォント',
+                'submit' => '更新',
+            ],
+            'install' => [
+                'heading' => 'テーマインストール',
+                'name' => 'テーマ名',
+                'submit' => 'インストール',
+            ],
+        ],
+        // プラグイン
+        'plugins' => [
+            'index' => [
+                'heading' => 'プラグインマスター',
+            ],
+            'install' => [
+                'heading' => 'プラグインインストール',
+                'name' => 'プラグイン名',
+                'submit' => 'インストール',
+            ],
+        ],
+    ],
+
+
+
+    'features' => [
+
         'users' => [
             'index' => [
                 'heading' => 'ユーザーマスター',
@@ -113,117 +265,6 @@ return [
                 'submit' => '更新',
             ],
         ],
-        'settings' => [
-            'members' => [
-                'index' => [
-                    'heading' => 'メンバーマスター',
-                ],
-                'create' => [
-                    'heading' => '新規メンバー作成',
-                    'name' => '名前',
-                    'email' => 'メールアドレス',
-                    'password' => 'パスワード',
-                    'password_confirmation' => 'パスワード確認',
-                    'role' => 'ロール',
-                    'submit' => '登録',
-                ],
-                'edit' => [
-                    'heading' => 'メンバー編集',
-                    'name' => '名前',
-                    'email' => 'メールアドレス',
-                    'password' => 'パスワード',
-                    'password_confirmation' => 'パスワード確認',
-                    'role' => 'ロール',
-                    'submit' => '更新',
-                ],
-                'profile' => [
-                    'heading' => 'プロフィール設定',
-                    'name' => '名前',
-                    'email' => 'メールアドレス',
-                    'password' => 'パスワード',
-                    'password_confirmation' => 'パスワード確認',
-                    'submit' => '更新',
-                ],
-            ],
-            'themes' => [
-                'title' => 'テーマ設定',
-                'color' => 'カラー',
-                'font' => 'フォント',
-                'submit' => '更新',
-                'index' => [
-                    'heading' => 'テーマ一覧',
-                ],
-                'install' => [
-                    'heading' => 'テーマインストール',
-                    'name' => 'テーマ名',
-                    'submit' => 'インストール',
-                ],
-            ],
-            'plugins' => [
-                'index' => [
-                    'heading' => 'プラグインマスター',
-                ],
-                'install' => [
-                    'heading' => 'プラグインインストール',
-                    'name' => 'プラグイン名',
-                    'submit' => 'インストール',
-                ],
-            ],
-            'security' => [
-                'heading' => 'セキュリティ設定',
-                'admin_url' => '管理画面URL',
-                'enable_allowed_admin_ips' => '特定のIPアドレスのみアクセスを許可',
-                'allowed_admin_ips' => '許可IPアドレス',
-                'enable_blocked_admin_ips' => '特定のIPアドレスをブロック',
-                'blocked_admin_ips' => 'ブロックIPアドレス',
-                'force_ssl' => 'SSL強制',
-                'submit' => '更新',
-            ],
-            'systems' => [
-                'heading' => 'システム設定',
-                'site_name' => 'サイト名',
-                'is_member_site' => '会員サイト',
-                'allow_external_registration' => '外部登録',
-                'allow_guest_registration' => 'ゲスト登録',
-                'required_fields' => '必須項目',
-                'language' => '言語',
-                'maintenance_mode' => 'メンテナンスモード',
-                'maintenance_message' => 'メンテナンスメッセージ',
-                'submit' => '更新',
-            ],
-        ],
     ],
-
-
-    'roles' => 'ロール',
-    'permissions' => '権限',
-    'logout' => 'ログアウト',
-
-    'required' => ':attribute は必須です。',
-    'email' => ':attribute は正しいメールアドレス形式で入力してください。',
-    'unique' => ':attribute は既に存在しています。',
-    'min' => ':attribute は最低 :min 文字必要です。',
-    'confirmed' => ':attribute 確認が一致しません。',
-    'attributes' => [
-        'name' => '名前',
-        'email' => 'メールアドレス',
-        'password' => 'パスワード',
-    ],
-
-    'roles' => [
-        'text' => '権限',
-        'super_manager' => '特権管理者',
-        'manager' => '管理者',
-        'editor' => '編集者',
-        'receptionist' => '受付',
-        'viewer' => '閲覧者',
-    ],
-
-    'theme' => [
-        'auto' => '自動',
-        'dark' => 'ダーク',
-        'light' => 'ライト',
-    ],
-
 
 ];

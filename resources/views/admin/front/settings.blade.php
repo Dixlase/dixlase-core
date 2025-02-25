@@ -18,32 +18,10 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-
 @extends('admin::partials.layout')
 
 @section('content')
-
-    <!-- Flash message for success or error -->
-    @include('components::flash_message')
-
-    <form action="{{ route('admin.settings.members.store') }}" method="POST" class="mt-6">
-        @csrf
-        @include('admin::settings.members.partials.form',[
-            'require_password' => true,
-        ])
-
-        <!-- 保存ボタンとモーダル -->
-        @include('components::form.save', [
-            'id' => 'confirmationModal',
-            'label' => '作成',
-            'onclick' => "openModal('confirmationModal')",
-            'title' => '作成の確認',
-            'message' => '新規管理者を作成しますか？',
-            'confirm_label' => '作成',
-            'cancel_label' => '戻る',
-        ])
-
-    </form>
+    <h1>Hello Blade!</h1>
+    <p>This is an example Blade file: admin/front/settings</p>
 @endsection
-
 

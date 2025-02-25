@@ -39,6 +39,7 @@ use App\Traits\PluginLoaderTrait;
 use App\Traits\CustomFilesLoaderTrait;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Facades\Schema;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -66,24 +67,14 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
 
-
-        /*
-        try {
-            $this->loadActivePlugins();
-        } catch (\Exception $e) {
-            // エラーを無視（開発時のみ）
-            if (app()->environment('local')) {
-                report($e);
-            } else {
-                throw $e;
-            }
-        }
-        */
-
-
         //セキュリティ設定でSSLを矯正しているかどうかを判定
-
-        $forceSsl = SecuritySetting::get('force_ssl', config('security.force_ssl'));
+        //security_settingsテーブルのforce_sslの値を取得
+        //テーブルが存在しているか確認
+        if (Schema::hasTable('security_settings')) {
+            $forceSsl = SecuritySetting::get('force_ssl', config('security.force_ssl'));
+        } else {
+            $forceSsl = config('security.force_ssl');
+        }
 
         if ($forceSsl) {
             $this->app['request']->server->set('HTTPS', true);
@@ -93,9 +84,14 @@ class AppServiceProvider extends ServiceProvider
 
 
         //言語の設定
-        $language = BaseSetting::where('name', 'language')->value('value');
-        $lang = $language ?? config('admin.lang', 'ja');
-        app()->setLocale($lang);
+        //base_settingsテーブルのlanguageの値を取得
+        //テーブルが存在しているか確認
+        if (Schema::hasTable('base_settings')) {
+            $language = BaseSetting::where('name', 'language')->value('value');
+        } else {
+            $language = config('admin.lang', 'ja');
+        }
+        app()->setLocale($language);
 
 
         // テーマの設定を読み込む
@@ -129,12 +125,7 @@ class AppServiceProvider extends ServiceProvider
 
 
         // 現在有効化されているテーマを取得
-        $activeThemeId = $this->getActiveTheme();
-
-        // 現在使用中のテーマのディレクトリ名を取得
-        $activeTheme = DB::table('themes')->where('id', $activeThemeId)->first();
-        $activeThemeDirectory = $activeTheme->directory ?? 'DefaultTheme';
-
+        $activeThemeDirectory = $this->getActiveThemeDirectory();
 
         // テーマファイルの読み込み、カスタムテーマの読み込みがcustom/resources/viewsのほうを優先されるように設定
         View::addNamespace('themes', [

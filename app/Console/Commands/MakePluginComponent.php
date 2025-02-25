@@ -80,7 +80,7 @@ class MakePluginComponent extends Command
             [base_path('stubs/custom')]
         );
 
-        $content = $this->fileGenerator->embedLicense($stub, [
+        $content = $this->fileGenerator->embedLicensePhp($stub, [
             '{{ namespace }}' => $namespace,
             '{{ class }}'     => $componentName,
         ]);

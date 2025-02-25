@@ -25,14 +25,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Member;
 
 class Media extends Model
 {
     use SoftDeletes;
-    protected $table = 'files';
+    protected $table = 'media';
     protected $fillable = [
-        'file_name',
-        'file_type',
+        'name',
+        'path',
+        'type',
         'uploaded_by',
     ];
+
+    public function member()
+    {
+        return $this->belongsTo(Member::class, 'uploaded_by');
+    }
 }

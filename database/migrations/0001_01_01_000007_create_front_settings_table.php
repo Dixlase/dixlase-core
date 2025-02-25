@@ -33,17 +33,14 @@ return new class extends Migration
      * @return void
      */
 
-    protected $table = 'media';
+    protected $table = 'settings';
 
     public function up()
     {
         Schema::create($this->table, function (Blueprint $table) {
-            $table->id();
-            $table->string('title');
-            $table->string('file_name');
-            $table->string('description')->nullable();
-            $table->string('file_type')->nullable();
-            $table->integer("uploaded_by")->nullable();
+            $table->bigIncrements('id');
+            $table->string("name", 255);
+            $table->text("value");
             $table->timestamps();
             $table->softDeletes();
         });

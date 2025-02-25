@@ -33,14 +33,16 @@ return new class extends Migration
      * @return void
      */
 
-    protected $table = 'front_settings';
+    protected $table = 'media';
 
     public function up()
     {
         Schema::create($this->table, function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->string("name", 255);
-            $table->text("value");
+            $table->id();
+            $table->string('name');
+            $table->string('path');
+            $table->string('type');
+            $table->foreignId('uploaded_by')->nullable()->constrained('members')->onDelete('set null');
             $table->timestamps();
             $table->softDeletes();
         });

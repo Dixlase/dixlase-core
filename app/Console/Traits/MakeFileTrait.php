@@ -76,7 +76,7 @@ trait MakeFileTrait
 
         $allPlaceholders = array_merge($basePlaceholders, $extraPlaceholders);
 
-        $finalContent = $this->fileGenerator->embedLicense($stubContent, $allPlaceholders);
+        $finalContent = $this->fileGenerator->embedLicensePhp($stubContent, $allPlaceholders);
 
         $this->fileGenerator->generateFile(
             $filePath,

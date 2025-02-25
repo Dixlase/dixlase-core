@@ -62,9 +62,6 @@ Route::middleware(['front.ip'])->group(
         //マイページ用のルーティング
         require __DIR__ . '/mypage.php';
     }
-
-
-
 );
 
 //管理者用のルーティング

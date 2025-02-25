@@ -51,6 +51,18 @@ return [
                     'icon' => 'fas fa-fw fa-users',
                     'can' => 'viewer',
                 ],
+                'design' => [
+                    'text' => 'admin.nav.front.design',
+                    'route' => 'admin.front.design',
+                    'icon' => 'fas fa-fw fa-users',
+                    'can' => 'viewer',
+                ],
+                'settings' => [
+                    'text' => 'admin.nav.front.settings',
+                    'route' => 'admin.front.settings',
+                    'icon' => 'fas fa-fw fa-users',
+                    'can' => 'viewer',
+                ],
             ]
         ],
         'media' => [
@@ -66,19 +78,13 @@ return [
                 ],
                 'upload' => [
                     'text' => 'admin.nav.media.upload',
-                    'route' => 'admin.media.index',
+                    'route' => 'admin.media.upload',
                     'icon' => 'fas fa-fw fa-users',
                     'can' => 'viewer',
                 ],
-                'upload' => [
-                    'text' => 'admin.nav.media.upload',
-                    'route' => 'admin.media.index',
-                    'icon' => 'fas fa-fw fa-users',
-                    'can' => 'viewer',
-                ],
-                'upload' => [
-                    'text' => 'admin.nav.media.upload',
-                    'route' => 'admin.media.index',
+                'settings' => [
+                    'text' => 'admin.nav.media.settings',
+                    'route' => 'admin.media.settings',
                     'icon' => 'fas fa-fw fa-users',
                     'can' => 'viewer',
                 ],
@@ -91,13 +97,13 @@ return [
             'children' => [
                 'base' => [
                     'text' => 'admin.nav.settings.base',
-                    'route' => 'admin.settings.base.index',
+                    'route' => 'admin.settings.base',
                     'icon' => 'fas fa-fw fa-gear',
                     'can' => 'super_manager',
                 ],
                 'security' => [
                     'text' => 'admin.nav.settings.security',
-                    'route' => 'admin.settings.security.index',
+                    'route' => 'admin.settings.security',
                     'icon' => 'fas fa-fw fa-bandage',
                     'can' => 'super_manager',
                 ],
@@ -329,5 +335,29 @@ return [
             '1' => '有効',
             '0' => '無効',
         ],
-    ]
+    ],
+
+    'fileExtensions' => [
+        'jpg',
+        'png',
+        'gif',
+        'mp4',
+        'pdf',
+        'docx',
+        'zip',
+        'txt'
+    ],
+    'allowedFileTypes' => [
+        'jpg',
+        'png',
+        'gif',
+        'mp4',
+        'pdf',
+    ],
+    'maxFileSize' => 2048,
+    'storageDisk' => 'public',
+    'generateThumbnails' => true,
+    'perPage' => 10,
+    'mediaPath' => 'media',
+
 ];

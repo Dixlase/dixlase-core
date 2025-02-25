@@ -31,47 +31,113 @@ use Illuminate\Support\Str;
  */
 trait MakeBladeTrait
 {
-    use MakeFileTrait;
-
-    /**
-     * Blade ファイルを作成する
-     *
-     * @param string $viewName 例: "admin/dashboard"
-     * @param array $options
-     */
-
+    // Bladeファイルを作成
     protected function makeFile(string $viewName, array $subDirs, array $options): void
     {
-        // Bladeファイルの拡張子を追加
-        if (str_ends_with(
-            $viewName,
-            '.php'
-        )) {
-            $viewName = substr($viewName, 0, -4); // すでに .php 付きなら削除
+        // 1) 余分な拡張子を取り除く
+        if (str_ends_with($viewName, '.php')) {
+            $viewName = substr($viewName, 0, -4);
+        }
+        if (str_ends_with($viewName, '.blade')) {
+            // 例: "upload.blade" -> "upload"
+            $viewName = substr($viewName, 0, -6);
         }
 
-        if (! str_ends_with($viewName, '.blade')) {
-            $viewName .= '.blade'; // `makeFiler()` で `.php` を追加するので `.blade` だけつける
-        }
+        // 2) サブディレクトリとファイル名を切り分ける
+        //    例: "admin/media/upload" -> ["admin","media","upload"]
+        $parts = explode('/', $viewName);
+        $fileName = array_pop($parts);       // "upload"
+        $subDirs = $parts;                  // ["admin","media"]
 
-        // ファイル名をケバブケースに変換
-        $kebabCaseFileName = Str::kebab(str_replace('/', '-', $viewName));
+        // 3) ファイル名をケバブケース化
+        //    ex: "upload.blade" はほぼ変化なし ("upload.blade")
+        //        "SomePage.blade" → "some-page.blade"
+        $fileName = Str::kebab($fileName) . '.blade.php';
 
-        // Blade用のライセンスコメント
+        // Blade用ライセンスコメントなど
         $extraPlaceholders = [
-            '{{ license }}' => $this->fileGenerator->getLicenseForBlade(),
-            '{{ filename }}' => str_replace('.blade.php', '', $viewName),
+            '{{ license }}'  => $this->fileGenerator->getLicenseForBlade(),
+            '{{ filename }}' => $viewName,  // 例: "admin/media/upload"
         ];
 
-        // `makeFiler()` を使用してファイルを生成
-        $this->makeFiler($kebabCaseFileName, $subDirs, $options, $this->resolveStubFile($options), $extraPlaceholders, 'views');
+        // 5) Blade専用ロジックでファイル作成
+        $this->makeFilerBlade($fileName, $subDirs, $options, $this->resolveStubFile($options), $extraPlaceholders);
     }
 
     /**
-     * フロント用・管理画面用のBladeテンプレートを選択
+     * Blade専用に実際のファイルを作成
+     */
+    /**
+     * Blade専用に実際のファイルを作成
+     */
+    protected function makeFilerBlade(
+        string $fileName,
+        array $subDirs,
+        array $options,
+        string $stubFile,
+        array $extraPlaceholders
+    ): void {
+        // (A) サブディレクトリを /resources/views/admin/media のように組み立て
+        $targetDirectory = $this->getDirectory($subDirs);
+        if (! is_dir($targetDirectory)) {
+            mkdir($targetDirectory, 0755, true);
+        }
+
+        // (B) 最終的なファイルパス
+        $filePath = rtrim($targetDirectory, '/') . '/' . $fileName;
+
+        // (C) --force オプション
+        $force = $options['force'] ?? false;
+        if (! $force) {
+            $this->fileGenerator->prepareFilePath($filePath, "[{$fileName}] already exists.");
+        } else {
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+        }
+
+        // (D) スタブ読み込み
+        $stubContent = $this->loadStubFile($stubFile);
+
+        // (E) ライセンスなどを埋め込み
+        $finalContent = $this->fileGenerator->embedLicenseBlade($stubContent, $extraPlaceholders);
+
+        // (F) 実ファイル作成
+        $this->fileGenerator->generateFile($filePath, $finalContent);
+
+        $this->info("Blade file [{$filePath}] created successfully.");
+    }
+
+    /**
+     * Blade用: サブディレクトリを結合したディレクトリパスを返す
+     */
+    protected function getDirectory(array $subDirs): string
+    {
+        $basePath = resource_path('views');
+        if (! empty($subDirs)) {
+            $basePath .= '/' . implode('/', $subDirs);
+        }
+        return $basePath;
+    }
+
+    /**
+     * フロント or 管理画面 用のスタブを切り替え
      */
     protected function resolveStubFile(array $options): string
     {
-        return ($options['type'] ?? 'front') === 'admin' ? 'blade-admin.stub' : 'blade-front.stub';
+        return ($options['type'] ?? 'front') === 'admin'
+            ? 'blade-admin.stub'
+            : 'blade-front.stub';
+    }
+
+    /**
+     * スタブファイルを読み込み (親 trait のメソッドを独自に定義・上書き)
+     */
+    protected function loadStubFile(string $stubFile): string
+    {
+        $customStubPaths = [base_path('stubs/custom')];
+        $defaultStubPath = base_path("vendor/laravel/framework/src/Illuminate/Routing/Console/stubs/{$stubFile}");
+
+        return $this->fileGenerator->getStubContent($stubFile, $defaultStubPath, $customStubPaths);
     }
 }
