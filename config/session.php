@@ -21,6 +21,7 @@
  */
 
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Schema;
 
 return [
 
@@ -107,7 +108,8 @@ return [
     */
 
     //'table' => env('SESSION_TABLE', 'sessions'),
-    'member_table' => env('MEMBER_SESSION_TABLE', 'members_sessions'),
+    'table' => 'sessions',
+    //'member_table' => env('MEMBER_SESSION_TABLE', 'members_sessions'),
     /*
     |--------------------------------------------------------------------------
     | Session Cache Store
@@ -233,5 +235,9 @@ return [
     */
 
     'partitioned' => env('SESSION_PARTITIONED_COOKIE', false),
+
+
+
+
 
 ];

@@ -41,7 +41,6 @@ class AdminController extends Controller
     protected $viewParams = [];
     protected $routeName = '';
     protected $settings = [];
-    protected $member = null;
 
     //トレイトを使用する
     use AuthorizesRequests;
@@ -50,7 +49,6 @@ class AdminController extends Controller
     //初期設定を行う
     public function __construct()
     {
-        $this->middleware('auth:member');
         $this->initialize();
     }
 
@@ -59,10 +57,6 @@ class AdminController extends Controller
      */
     public function initialize()
     {
-
-        // ログイン中の管理者情報を取得
-        $this->setMember();
-
         // データベースからサイト名を取得。取得できなかった場合は.envからデフォルト値を使用
         $this->setSiteName();
 
@@ -80,40 +74,6 @@ class AdminController extends Controller
     }
 
 
-
-    //ログイン中の管理者情報を取得
-    protected function setMember()
-    {
-
-        $email = 'test@test.com';
-        //$password = bcrypt('kassy3821');
-        $password = 'kassy3821';
-
-        //dump(Auth::guard('member')->attempt(['email' => $email, 'password' => $password]));
-        //dump($this->member);
-
-        Auth::guard('member')->attempt([
-            'email' => $email,
-            'password' => $password // ここではプレーンテキストでOK
-        ]);
-
-        dump($this->member);
-
-
-        $this->member = Auth::guard('member')->user();
-
-
-
-        if (!$this->member) {
-            Log::error('ログイン中のメンバーが取得できませんでした');
-            return redirect()->route('admin.login')->withErrors(['error' => 'ログインしてください。']);
-        }
-
-        $this->member = Auth::guard('member')->user();
-
-        dump('ログイン中のメンバー: ' . $this->member->name);
-        $this->viewParams['member'] = $this->member;
-    }
 
     //データベースからサイト名を取得。取得できなかった場合は.envからデフォルト値を使用
     protected function setSiteName()

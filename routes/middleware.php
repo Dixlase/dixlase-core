@@ -21,26 +21,19 @@
  */
 
 
-namespace App\Http\Controllers\Admin;
+use App\Http\Middleware\Authenticate;
 
-use App\Http\Controllers\Admin\AdminLoggedinController;
-use Illuminate\Support\Facades\Lang;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
-class AdminDashboardController extends AdminLoggedinController
-{
-    //初期設定を行う
-    public function __construct()
-    {
-        parent::__construct();
-    }
-    //
-    public function index()
-    {
-        Log::info('AdminDashboardController: guard=member, id=' . Auth::guard('member')->id() . ', check=' . (Auth::guard('member')->check() ? 'true' : 'false'));
-
-        $member = Auth::guard('member')->check();
-        return view('admin::dashboard', $this->viewParams);
-    }
-}
+return [
+    'api' => [
+        Authenticate::class . ':api',
+    ],
+    /*
+    'web' => [
+        Authenticate::class . ':web',
+    ],
+    */
+    'admin' => [
+        Authenticate::class . ':member',
+    ],
+];

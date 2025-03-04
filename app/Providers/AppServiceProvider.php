@@ -52,13 +52,7 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Register any application services.
      */
-    public function register(): void
-    {
-
-        // カスタムディレクトリ全体をスキャン。ファイルが存在する場合、それを優先してバインド
-        $customFilesPath = base_path(config('app.custom_files_dir', 'custom'));
-        Config::set('custom_files_dir', $customFilesPath);
-    }
+    public function register(): void {}
 
     /**
      * Bootstrap any application services.
@@ -67,9 +61,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
 
+
+
         //セキュリティ設定でSSLを矯正しているかどうかを判定
         //security_settingsテーブルのforce_sslの値を取得
         //テーブルが存在しているか確認
+
         if (Schema::hasTable('security_settings')) {
             $forceSsl = SecuritySetting::get('force_ssl', config('security.force_ssl'));
         } else {
@@ -81,6 +78,14 @@ class AppServiceProvider extends ServiceProvider
             URL::forceRootUrl(Config::get('app.url')); // ルートURLを設定
             URL::forceScheme('https');
         }
+
+        //セッションテーブルが存在しない場合はmembers_sessionsを使用
+
+        /*
+        if (!Schema::hasTable('sessions')) {
+            Config::set('session.table', 'members_sessions');
+        }
+        */
 
 
         //言語の設定

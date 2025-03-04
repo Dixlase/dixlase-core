@@ -23,8 +23,9 @@
 
 namespace App\Http\Controllers\Front;
 
-
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+
 
 
 class FrontWelcomeController extends FrontController
@@ -38,6 +39,9 @@ class FrontWelcomeController extends FrontController
 
     public function index()
     {
+
+        dump(session()->getId());
+        dump('CSRF Token: ' . session()->token());
 
         return view('themes::index', $this->viewParams);
     }

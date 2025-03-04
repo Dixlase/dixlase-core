@@ -38,6 +38,7 @@ class Member extends Authenticatable
      * テーブル名の定義
      */
     protected $table = 'members';
+    protected $primaryKey = 'id';
 
 
     /**

@@ -55,7 +55,7 @@ class AdminAuthenticatedSessionController extends AdminController
     {
         $request->authenticate('member');
 
-        $request->session()->regenerate();
+        //$request->session()->regenerate();
 
         return redirect()->intended(route('admin.dashboard', absolute: false));
     }
@@ -65,6 +65,7 @@ class AdminAuthenticatedSessionController extends AdminController
      */
     public function destroy(Request $request): RedirectResponse
     {
+
         Auth::guard('member')->logout();
 
         $request->session()->invalidate();

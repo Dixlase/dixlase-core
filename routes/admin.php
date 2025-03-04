@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\Front\AdminFrontController;
 use App\Http\Controllers\Admin\Media\AdminMediaController;
 use App\Http\Controllers\Admin\Auth\AdminAuthenticatedSessionController;
+use App\Http\Controllers\Admin\AdminLoginController;
 use App\Http\Controllers\Admin\Auth\AdminConfirmablePasswordController;
 use App\Http\Controllers\Admin\Auth\AdminEmailVerificationNotificationController;
 use App\Http\Controllers\Admin\Auth\AdminEmailVerificationPromptController;
@@ -43,15 +44,57 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\SecuritySetting;
 use Illuminate\Support\Facades\Schema;
-
+use Illuminate\Support\Facades\Log;
 //管理画面のURLを取得
 //security_settingsテーブルのadmin_urlの値を取得
 //テーブルが存在しているか確認
+
+
 if (Schema::hasTable('security_settings')) {
     $adminUrl = SecuritySetting::get('admin_url', config('security.admin_url'));
 } else {
     $adminUrl = config('security.admin_url');
 }
+
+
+//$adminUrl = config('security.admin_url');
+
+
+/*
+
+
+Route::get('admin/debug-session', function () {
+
+    dump('セッションデバッグ');
+    dump(config('session.table'));  // 現在のセッションテーブル
+    dump(session()->getId());       // 現在のセッションID
+    dump(session()->all());         // セッションデータ
+    dump(Auth::guard('member')->user()); // メンバー情報
+
+    // セッションからユーザー情報を明示的に復元
+    if (!Auth::guard('member')->check() && session()->has('auth_member')) {
+        Auth::guard('member')->setUser(session()->get('auth_member'));
+        dump('手動復元:', Auth::guard('member')->user());
+    }
+});
+Route::get('debug-session', function () {
+
+    dump('セッションデバッグ');
+    dump(config('session.table'));  // 現在のセッションテーブル
+    dump(session()->getId());       // 現在のセッションID
+    dump(session()->all());         // セッションデータ
+    dump(Auth::guard('member')->user()); // メンバー情報
+
+    // セッションからユーザー情報を明示的に復元
+    if (!Auth::guard('member')->check() && session()->has('auth_member')) {
+        Auth::guard('member')->setUser(session()->get('auth_member'));
+        dump('手動復元:', Auth::guard('member')->user());
+    }
+});
+
+*/
+
+
 
 Route::prefix($adminUrl)->name('admin.')
     ->middleware('admin.ip') // IPアドレスフィルタ
@@ -59,7 +102,6 @@ Route::prefix($adminUrl)->name('admin.')
 
 
         Route::get('/', function () {
-
             $member = Auth::guard('member')->user();
             if ($member) {
                 return redirect()->route('admin.dashboard');
@@ -69,11 +111,13 @@ Route::prefix($adminUrl)->name('admin.')
         });
 
 
-        Route::get('/login', [AdminAuthenticatedSessionController::class, 'create'])->name('login');
-        Route::post('/login', [AdminAuthenticatedSessionController::class, 'store']);
+
+        Route::get('/login', [AdminLoginController::class, 'create'])->name('login');
+        //Route::get('/login', [AdminLoginController::class, 'test'])->name('login');
+        Route::post('/login', [AdminLoginController::class, 'store'])->name('login.store');
 
 
-        Route::middleware(['auth.member'])->group(function () {
+        Route::middleware('auth:member')->group(function () {
 
             // ダッシュボード
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');

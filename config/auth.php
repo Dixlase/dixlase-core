@@ -34,8 +34,8 @@ return [
     */
 
     'defaults' => [
-        'guard' => env('AUTH_GUARD', 'web'),
-        'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
+        'guard' => env('AUTH_GUARD', 'member'),
+        'passwords' => env('AUTH_PASSWORD_BROKER', 'member'),
     ],
 
     /*
@@ -63,7 +63,7 @@ return [
         'member' => [
             'driver' => 'session',
             'provider' => 'members',
-            'redirect' => '/admin/login',
+            //'redirect' => 'admin.login',
         ],
     ],
 
@@ -85,13 +85,15 @@ return [
     */
 
     'providers' => [
+        /*
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL_WEB', App\Models\User::class),
         ],
+        */
         'members' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL_MEMBER', App\Models\Member::class),
+            'model' => App\Models\Member::class,
         ],
     ],
 
@@ -115,12 +117,14 @@ return [
     */
 
     'passwords' => [
+        /*
         'users' => [
             'provider' => 'users',
             'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
             'expire' => 60,
             'throttle' => 60,
         ],
+        */
         'members' => [
             'provider' => 'members',
             'table' => 'members_user_password_reset_tokens',
