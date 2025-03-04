@@ -116,6 +116,7 @@ Route::prefix($adminUrl)->name('admin.')
         //Route::get('/login', [AdminLoginController::class, 'test'])->name('login');
         Route::post('/login', [AdminLoginController::class, 'store'])->name('login.store');
 
+        config(['session.table' => 'members_sessions']);
 
         Route::middleware('auth:member')->group(function () {
 

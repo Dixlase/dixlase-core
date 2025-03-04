@@ -75,6 +75,7 @@ class AdminLoginController extends AdminController
 
         // 2. メンバーが存在し、パスワードが一致するか確認
         if ($member && \Illuminate\Support\Facades\Hash::check($request->password, $member->password)) {
+
             // 3. メンバーを認証
             Auth::guard('member')->login($member);
 
@@ -85,6 +86,7 @@ class AdminLoginController extends AdminController
             $request->session()->regenerate(true);
 
             // 6. デバッグログ（セッションの中身を確認）
+            Log::info('セッションテーブル: ' . config('session.table'));
             Log::info('ログイン成功: ', session()->all());
             Log::info('ログイン後のセッションID: ' . session()->getId());
 

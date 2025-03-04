@@ -18,14 +18,10 @@ class SessionServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //Log::info('セッション1 - register開始');
-
-        // Laravel のデフォルトの session handler を拡張
-
-        /*
 
         Session::extend('database', function ($app) {
-            //Log::info('セッション2 - Session拡張開始');
+            Log::info('セッション2 - Session拡張開始');
+            Log::info('セッションテーブル' . config('session.table'),);
             $connection = $app->make('db')->connection(config('session.connection'));
 
             return new DatabaseSessionHandler(
@@ -35,11 +31,6 @@ class SessionServiceProvider extends ServiceProvider
                 $app
             );
         });
-        */
-
-
-
-        //Log::info('セッション3 - register完了');
     }
 
     /**
@@ -52,5 +43,23 @@ class SessionServiceProvider extends ServiceProvider
 
         // 管理画面のURLを取得
         //$adminUrl = SecuritySetting::get('admin_url', config('security.admin_url'));
+
+        // **セッションが開始されているかチェック**
+        /*
+        if (!session()->isStarted()) {
+            return;
+        }
+
+        // **ログインしているかチェック**
+        if (Auth::guard('member')->check()) {
+            // **members_sessions を使用**
+            config(['session.table' => 'members_sessions']);
+            Log::info('Session switched to members_sessions');
+        } else {
+            // **未ログイン時は通常の sessions を使用**
+            config(['session.table' => 'sessions']);
+            Log::info('Session switched to sessions');
+        }
+        */
     }
 }
