@@ -47,7 +47,7 @@ class MypageAuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
-        $request->session()->regenerate();
+        //$request->session()->regenerate();
 
         return redirect()->intended(route('mypage.dashboard', absolute: false));
     }
@@ -57,11 +57,13 @@ class MypageAuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
+
 
         return redirect('/');
     }

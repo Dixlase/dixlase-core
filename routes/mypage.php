@@ -48,11 +48,11 @@ Route::prefix('mypage')->name('mypage.')->group(function () {
     //
     Route::get('/dashboard', [MypageDashboardController::class, 'index'])->name('dashboard');
 
-    Route::middleware('auth')->group(function () {
-        Route::get('/profile', [MypageProfileController::class, 'edit'])->name('profile.edit');
-        Route::patch('/profile', [MypageProfileController::class, 'update'])->name('profile.update');
-        Route::delete('/profile', [MypageProfileController::class, 'destroy'])->name('profile.destroy');
-    });
+    //Route::middleware('auth')->group(function () {
+    Route::get('/profile', [MypageProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [MypageProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [MypageProfileController::class, 'destroy'])->name('profile.destroy');
+    //});
 
     Route::middleware('guest')->group(function () {
 
@@ -74,26 +74,27 @@ Route::prefix('mypage')->name('mypage.')->group(function () {
             ->name('password.store');
     });
 
-    Route::middleware('auth:web')->group(function () {
-        Route::get('verify-email', MypageEmailVerificationPromptController::class)
-            ->name('verification.notice');
 
-        Route::get('verify-email/{id}/{hash}', MypageVerifyEmailController::class)
-            ->middleware(['signed', 'throttle:6,1'])
-            ->name('verification.verify');
+    //Route::middleware('auth:web')->group(function () {
+    Route::get('verify-email', MypageEmailVerificationPromptController::class)
+        ->name('verification.notice');
 
-        Route::post('email/verification-notification', [MypageEmailVerificationNotificationController::class, 'store'])
-            ->middleware('throttle:6,1')
-            ->name('verification.send');
+    Route::get('verify-email/{id}/{hash}', MypageVerifyEmailController::class)
+        ->middleware(['signed', 'throttle:6,1'])
+        ->name('verification.verify');
 
-        Route::get('confirm-password', [MypageConfirmablePasswordController::class, 'show'])
-            ->name('password.confirm');
+    Route::post('email/verification-notification', [MypageEmailVerificationNotificationController::class, 'store'])
+        ->middleware('throttle:6,1')
+        ->name('verification.send');
 
-        Route::post('confirm-password', [MypageConfirmablePasswordController::class, 'store']);
+    Route::get('confirm-password', [MypageConfirmablePasswordController::class, 'show'])
+        ->name('password.confirm');
 
-        Route::put('password', [MypagePasswordController::class, 'update'])->name('password.update');
+    Route::post('confirm-password', [MypageConfirmablePasswordController::class, 'store']);
 
-        Route::post('logout', [MypageAuthenticatedSessionController::class, 'destroy'])
-            ->name('logout');
-    });
+    Route::put('password', [MypagePasswordController::class, 'update'])->name('password.update');
+
+    Route::post('logout', [MypageAuthenticatedSessionController::class, 'destroy'])
+        ->name('logout');
+    //});
 });

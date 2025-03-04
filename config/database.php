@@ -21,6 +21,7 @@
  */
 
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Schema;
 
 return [
 
@@ -167,7 +168,7 @@ return [
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
+            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_') . '_database_'),
         ],
 
         'default' => [
@@ -189,5 +190,16 @@ return [
         ],
 
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Session Table
+    |--------------------------------------------------------------------------
+    |
+    | This option allows you to specify the table to use for sessions.
+    |
+    */
+    //'table' => env('SESSION_TABLE', 'sessions')
+
 
 ];
