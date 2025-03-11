@@ -278,6 +278,36 @@ trait PluginLoaderTrait
     }
 
     /**
+     * 管理画面のナビゲーション (`admin.nav`) をマージする
+     *
+     * @param string $configFile プラグインのナビゲーション設定ファイル
+     */
+    public function mergeAdminNavConfig($configFile)
+    {
+        if (!file_exists($configFile)) {
+            return; // 設定ファイルが存在しない場合はスキップ
+        }
+
+        $pluginConfig = require $configFile;
+
+        if (!isset($pluginConfig['nav']) || !is_array($pluginConfig['nav'])) {
+            return; // 無効な設定ファイルの場合はスキップ
+        }
+
+        foreach ($pluginConfig['nav'] as $key => $value) {
+            if (isset($value['_insert_before'])) {
+                $this->insertOrderedConfig('admin.nav', $key, $value, $value['_insert_before'], 'before');
+            } elseif (isset($value['_insert_after'])) {
+                $this->insertOrderedConfig('admin.nav', $key, $value, $value['_insert_after'], 'after');
+            } else {
+                // 直接追加
+                config(["admin.nav.{$key}" => $value]);
+            }
+        }
+    }
+
+
+    /**
      * 配列を再帰的にマージする（同じキーがある場合は上書き）
      *
      * @param array $base 元の設定
@@ -299,7 +329,7 @@ trait PluginLoaderTrait
     }
 
     /**
-     * 指定されたキーの前後に要素を挿入する
+     * 指定されたキーの前後に要素を挿入する（ナビゲーション専用）
      *
      * @param string $configKey config() に格納するキー
      * @param string $insertKey 挿入するキー
