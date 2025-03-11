@@ -27,20 +27,6 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use App\Traits\ThemeLoaderTrait;
-
-//セッションがスタートしていなかったらスタートする
-/*
-if (!session()->isStarted()) {
-    session()->start();
-    dump('セッションスタート');
-}
-*/
-
-Route::middleware('web')->get('/debug-session', function () {
-    return 'Debug';
-});
-
 
 Route::middleware(['front.ip'])->group(
     function () {
@@ -60,14 +46,6 @@ Route::middleware(['front.ip'])->group(
         });
         */
 
-
-        //アカウント登録
-        Route::middleware('guest')->group(function () {
-            Route::get('register', [RegisterRegisteredUserController::class, 'create'])
-                ->name('register');
-            Route::post('register', [RegisterRegisteredUserController::class, 'store']);
-        });
-
         //テーマのアセットファイル
         Route::get('assets/{type}/{file}', function ($type, $file) {
             $basePath = match ($type) {
@@ -84,9 +62,5 @@ Route::middleware(['front.ip'])->group(
 
             return response()->file($filePath);
         })->where('file', '.*');
-
-
-        //マイページ用のルーティング
-        require __DIR__ . '/mypage.php';
     }
 );

@@ -2,16 +2,14 @@
 
 namespace App\Http\Controllers\Admin\Media;
 
-use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\AdminLoggedInController;
 use Illuminate\Http\Request;
 use App\Models\Media;
 use Illuminate\Support\Facades\Storage;
 use App\Models\MediaSetting;
 use App\Http\Requests\Admin\Media\AdminMediaStoreRequest;
-use Illuminate\Support\Facades\Log;
-use App\Models\Member;
 
-class AdminMediaController extends AdminController
+class AdminMediaController extends AdminLoggedInController
 {
     /**
      * Display a listing of the resource.

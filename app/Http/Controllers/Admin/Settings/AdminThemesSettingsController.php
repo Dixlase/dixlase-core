@@ -23,7 +23,7 @@
 
 namespace App\Http\Controllers\Admin\Settings;
 
-use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\AdminLoggedInController;
 use Illuminate\Http\Request;
 use App\Models\Theme;
 use Illuminate\Support\Facades\File;
@@ -33,7 +33,7 @@ use Illuminate\Support\Facades\Log;
 
 
 
-class AdminThemesSettingsController extends AdminController
+class AdminThemesSettingsController extends AdminLoggedInController
 {
     //
 

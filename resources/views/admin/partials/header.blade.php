@@ -134,9 +134,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
 
             <div class="mt-3 space-y-1">
+                {{--
                 <x-responsive-nav-link :href="route('mypage.profile.edit')">
                     {{ __('Profile') }}
                 </x-responsive-nav-link>
+
 
                 <!-- ログアウト -->
                 <form method="POST" action="{{ route('mypage.logout') }}">
@@ -147,6 +149,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         {{ __('Log Out') }}
                     </x-responsive-nav-link>
                 </form>
+                --}}
+
             </div>
         </div>
     </div>

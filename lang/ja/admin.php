@@ -80,12 +80,6 @@ return [
             'upload' => 'メディアアップロード',
             'settings' => 'メディア設定'
         ],
-
-        'users' => [
-            'text' => 'ユーザー管理',
-            'index' => 'ユーザーマスター',
-            'create' => 'ユーザー新規作成',
-        ],
         'settings' => [
             'text' => '全体設定',
             'base' => '基本設定',
@@ -230,39 +224,6 @@ return [
                 'heading' => 'プラグインインストール',
                 'name' => 'プラグイン名',
                 'submit' => 'インストール',
-            ],
-        ],
-    ],
-
-
-
-    'features' => [
-
-        'users' => [
-            'index' => [
-                'heading' => 'ユーザーマスター',
-                'name' => '名前',
-                'email' => 'メールアドレス',
-                'role' => 'ロール',
-
-            ],
-            'create' => [
-                'heading' => '新規ユーザー作成',
-                'name' => '名前',
-                'email' => 'メールアドレス',
-                'password' => 'パスワード',
-                'password_confirmation' => 'パスワード確認',
-                'role' => 'ロール',
-                'submit' => '登録',
-            ],
-            'edit' => [
-                'heading' => 'ユーザー編集',
-                'name' => '名前',
-                'email' => 'メールアドレス',
-                'password' => 'パスワード',
-                'password_confirmation' => 'パスワード確認',
-                'role' => 'ロール',
-                'submit' => '更新',
             ],
         ],
     ],

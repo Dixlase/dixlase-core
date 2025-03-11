@@ -23,12 +23,12 @@
 
 namespace App\Http\Controllers\Admin\Settings;
 
-use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\Member;
 use App\Http\Requests\Admin\Settings\Member\AdminSettingsMemberStoreRequest;
 use Illuminate\Http\Request;
 
-class AdminMembersSettingsController extends AdminController
+class AdminMembersSettingsController extends AdminLoggedInController
 {
 
     //初期設定を行う

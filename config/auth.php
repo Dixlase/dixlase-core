@@ -56,10 +56,16 @@ return [
     */
 
     'guards' => [
-        'web' => [
+
+
+        /*
+        'user' => [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        */
+
+
         'member' => [
             'driver' => 'session',
             'provider' => 'members',
@@ -85,12 +91,16 @@ return [
     */
 
     'providers' => [
+
         /*
+
         'users' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL_WEB', App\Models\User::class),
+            'model' => env('AUTH_MODEL_WEB', Plugins\UsersPlugin\App\Models\User::class),
         ],
         */
+
+
         'members' => [
             'driver' => 'eloquent',
             'model' => App\Models\Member::class,
@@ -117,6 +127,8 @@ return [
     */
 
     'passwords' => [
+
+
         /*
         'users' => [
             'provider' => 'users',
@@ -125,6 +137,8 @@ return [
             'throttle' => 60,
         ],
         */
+
+
         'members' => [
             'provider' => 'members',
             'table' => 'members_user_password_reset_tokens',

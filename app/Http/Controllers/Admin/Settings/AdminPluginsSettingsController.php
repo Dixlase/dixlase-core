@@ -23,7 +23,7 @@
 
 namespace App\Http\Controllers\Admin\Settings;
 
-use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Plugin;
@@ -36,12 +36,9 @@ use ZipArchive;
 use App\Services\PluginMigrator;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Facades\Log;
 
-
-
-
-
-class AdminPluginsSettingsController extends AdminController
+class AdminPluginsSettingsController extends AdminLoggedInController
 {
     use PluginLoaderTrait;
 
@@ -72,9 +69,14 @@ class AdminPluginsSettingsController extends AdminController
         // 権限を確認
         $this->checkPermission('super_manager');
 
+        Log::info('upload開始');
+
         // 例: ini_get('upload_max_filesize') -> "2M"
         $uploadMaxFilesize = ini_get('upload_max_filesize');
         $maxBytes = $this->parsePhpSize($uploadMaxFilesize); // 下記関数で "2M" -> 2097152 に変換
+
+        Log::info('uploadMaxFilesize: ' . $uploadMaxFilesize);
+        Log::info('maxBytes: ' . $maxBytes);
 
         $request->validate([
             'plugin_file' => [
@@ -85,17 +87,25 @@ class AdminPluginsSettingsController extends AdminController
             ],
         ]);
 
+        Log::info('validate完了');
+
 
         // ZIPファイルを一時保存
         $file = $request->file('plugin_file');
         $fileName = $file->getClientOriginalName();
         $tempPath = storage_path('app/temp/plugins/' . $fileName);
 
+        Log::info('tempPath: ' . $tempPath);
+
         $file->move(storage_path('app/temp/plugins'), $fileName);
+
+        Log::info('move完了');
 
         // ZIP展開
         $zip = new ZipArchive();
         if ($zip->open($tempPath) === true) {
+
+            Log::info('zip->open完了');
 
             // プラグインフォルダ名取得 (ZIP内の最初のディレクトリ)
             $pluginDir = null;
@@ -115,6 +125,8 @@ class AdminPluginsSettingsController extends AdminController
                 }
             }
 
+            Log::info('dirs: ' . json_encode($dirs));
+
             // 最も上位のディレクトリ名を取得（重複削除）
             $dirs = array_unique($dirs);
             $pluginDir = reset($dirs); // 配列の最初の要素を取得
@@ -122,6 +134,8 @@ class AdminPluginsSettingsController extends AdminController
             if (!$pluginDir) {
                 return redirect()->back()->with('error', 'ZIP 内に有効なプラグインディレクトリが見つかりません。');
             }
+
+            Log::info('pluginDir: ' . $pluginDir);
 
             $destinationPath = base_path('plugins/' . $pluginDir);
 
@@ -196,6 +210,8 @@ class AdminPluginsSettingsController extends AdminController
                 return redirect()->back()->with('error', 'composer.json が見つかりません。');
             }
 
+            Log::info('composer.json完了');
+
             $migrator = new PluginMigrator(
                 app(Filesystem::class),
                 app(ConnectionResolverInterface::class),
@@ -203,12 +219,14 @@ class AdminPluginsSettingsController extends AdminController
                 $slug // ここでプラグインのスラッグを渡す
             );
 
+            Log::info('migrator完了');
+
 
             // プラグインのマイグレーションを実行
             // $migrated には「新しく実行された」マイグレーションファイルが入る
             $migrated = $migrator->migrate($pluginDir, null, ['step' => false]);
 
-
+            Log::info('migrated完了');
             if (!empty($migrated)) {
                 // 新しいマイグレーションがあったので、テーブルが新規(または更新)された
                 // ここでシーダー実行

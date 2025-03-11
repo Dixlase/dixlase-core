@@ -23,10 +23,10 @@
 
 namespace App\Http\Controllers\Admin\Front;
 
-use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\AdminLoggedInController;
 use Illuminate\Http\Request;
 
-class AdminFrontController extends AdminController
+class AdminFrontController extends AdminLoggedinController
 {
     /**
      * Display a listing of the resource.

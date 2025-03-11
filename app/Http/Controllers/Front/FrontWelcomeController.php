@@ -40,9 +40,6 @@ class FrontWelcomeController extends FrontController
     public function index()
     {
 
-        dump(session()->getId());
-        dump('CSRF Token: ' . session()->token());
-
         return view('themes::index', $this->viewParams);
     }
 }
