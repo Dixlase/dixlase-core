@@ -23,12 +23,12 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Admin\AdminLoggedinController;
+use App\Http\Controllers\Admin\AdminLoggedInController;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
-class AdminDashboardController extends AdminLoggedinController
+class AdminDashboardController extends AdminLoggedInController
 {
     //初期設定を行う
     public function __construct()
@@ -38,9 +38,15 @@ class AdminDashboardController extends AdminLoggedinController
     //
     public function index()
     {
-        Log::info('AdminDashboardController: guard=member, id=' . Auth::guard('member')->id() . ', check=' . (Auth::guard('member')->check() ? 'true' : 'false'));
+        Log::info('管理者情報:', [
+            'ID' => $this->member->id,
+            '名前' => $this->member->name,
+            'メール' => $this->member->email,
+            '役割' => $this->member->role,
+            '外観設定' => $this->member->appearance,
+            'ステータス' => $this->member->status,
+        ]);
 
-        $member = Auth::guard('member')->check();
         return view('admin::dashboard', $this->viewParams);
     }
 }

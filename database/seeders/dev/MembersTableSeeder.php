@@ -36,14 +36,16 @@ class MembersTableSeeder extends Seeder
      */
     public function run(): void
     {
-        Member::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => Hash::make('password'),
-            'role' => 'super_manager',
-            'appearance' => 0,
-            'status' => 1,
-        ]);
+        if (!Member::where('email', 'test@example.com')->exists()) {
+            Member::factory()->create([
+                'name' => 'Test User',
+                'email' => 'test@example.com',
+                'password' => Hash::make('password'),
+                'role' => 'super_manager',
+                'appearance' => 0,
+                'status' => 1,
+            ]);
+        }
 
         Member::factory()->count(50)->create();
     }

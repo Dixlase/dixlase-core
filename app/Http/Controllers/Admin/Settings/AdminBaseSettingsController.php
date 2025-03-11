@@ -23,14 +23,12 @@
 
 namespace App\Http\Controllers\Admin\Settings;
 
-
-
-use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\BaseSetting;
 use App\Http\Requests\Admin\Settings\AdminSettingsSystemRequest;
 use Illuminate\Support\Facades\Gate;
 
-class AdminBaseSettingsController extends AdminController
+class AdminBaseSettingsController extends AdminLoggedInController
 {
 
     //初期設定を行う

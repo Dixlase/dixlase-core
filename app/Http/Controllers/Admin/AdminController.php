@@ -58,13 +58,13 @@ class AdminController extends Controller
     public function initialize()
     {
         // データベースからサイト名を取得。取得できなかった場合は.envからデフォルト値を使用
-        $this->setSiteName();
+        $this->getSiteName();
 
         // 外観モードを取得
-        $this->setAppearance();
+        $this->getAppearance();
 
         // 基本設定を取得
-        $this->setBaseSettings();
+        $this->getBaseSettings();
 
         // ルート名を取得
         $this->setRouteName();
@@ -76,7 +76,7 @@ class AdminController extends Controller
 
 
     //データベースからサイト名を取得。取得できなかった場合は.envからデフォルト値を使用
-    protected function setSiteName()
+    protected function getSiteName()
     {
         $this->siteName = DB::table('base_settings')->where('name', 'site_name')->value('value')
             ?? env('APP_NAME', 'EventManagementSystem');
@@ -84,14 +84,14 @@ class AdminController extends Controller
     }
 
     //外観モードを取得
-    protected function setAppearance()
+    protected function getAppearance()
     {
         $this->appearance = $this->viewParams['member']['appearance'] ?? 0;
         $this->viewParams['appearance'] = $this->appearance;
     }
 
     //システム設定を取得
-    protected function setBaseSettings()
+    protected function getBaseSettings()
     {
         $this->settings = DB::table('base_settings')->get()->keyBy('name')->toArray();
         $this->viewParams['settings'] = $this->settings;

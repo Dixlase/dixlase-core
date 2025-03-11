@@ -23,17 +23,15 @@
 
 namespace App\Http\Controllers\Admin\Settings;
 
-use App\Http\Controllers\Admin\AdminController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\SecuritySetting;
 use App\Http\Requests\Admin\Settings\Security\AdminSettngsSecurityUpdateRequest;
-use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
 
 
 
-class AdminSecuritySettingsController extends AdminController
+class AdminSecuritySettingsController extends AdminLoggedInController
 {
     public function index()
     {

@@ -54,21 +54,21 @@ trait PluginLoaderTrait
             $pluginDirectory = $plugin->directory;
             $pluginSlug = $plugin->slug;
 
-
-
-            // サービスプロバイダの登録
-            $providerClass = $this->resolvePluginServiceProvider($pluginName, $pluginDirectory);
-
-            // プラグインのリソースをロード
-            if ($providerClass) {
-                $this->app->register($providerClass);
-            }
-
-            // プラグインのファイルをロードする
+            // プラグインのファイルを先にロード
             $pluginPath = base_path("plugins/{$pluginDirectory}");
             $customPluginPath = base_path("custom/plugins/{$pluginDirectory}");
 
             $this->loadPluginFiles($pluginName, $pluginPath, $customPluginPath, $pluginSlug);
+
+            // 設定が正しく読み込まれたか確認
+            //dump(config('users-plugin.auth'));
+
+            // サービスプロバイダの登録 (プラグインのファイルをロードした後)
+            $providerClass = $this->resolvePluginServiceProvider($pluginName, $pluginDirectory);
+
+            if ($providerClass) {
+                $this->app->register($providerClass);
+            }
         }
     }
 
@@ -77,116 +77,68 @@ trait PluginLoaderTrait
      */
     protected function loadPluginFiles($pluginName, $pluginPath, $customPluginPath, $pluginSlug = null)
     {
+
         $fileTypes = config('custom.file_types', []);
 
 
         foreach ($fileTypes as $type => $settings) {
 
-            $namespace = $settings['namespace'];
-            if (($type === 'lang' || $type === 'views') && empty($namespace) && $pluginSlug) {
-                $namespace = $pluginSlug;
-            }
-
             $coreSubPath = "{$pluginPath}/{$settings['path']}";
             $customSubPath = "{$customPluginPath}/{$settings['path']}";
 
-            $this->loadFilesByType($type, $coreSubPath, $customSubPath, $namespace);
+            $this->loadFilesByType($type, $coreSubPath, $customSubPath, $pluginSlug);
         }
     }
 
     /**
      * ファイルタイプごとのロード処理
      */
-    protected function loadFilesByType($type, $defaultPath, $customPath, $namespace)
+    protected function loadFilesByType($type, $defaultPath, $customPath, $pluginSlug)
     {
+
         switch ($type) {
             case 'config':
-                $this->loadPluginConfigs($defaultPath, $customPath, $namespace);
+                $this->loadPluginConfigs($defaultPath, $customPath, $pluginSlug);
                 break;
             case 'routes':
                 $this->loadPluginRoutes($customPath, $defaultPath);
                 break;
             case 'lang':
-                $this->loadPluginTranslations($customPath, $defaultPath, $namespace);
+                $this->loadPluginTranslations($customPath, $defaultPath, $pluginSlug);
                 break;
             case 'views':
-                $this->loadPluginViews($customPath, $defaultPath, $namespace);
+                $this->loadPluginViews($customPath, $defaultPath, $pluginSlug);
                 break;
             case 'migrations':
                 $this->loadPluginMigrations($customPath, $defaultPath);
                 break;
             default:
-                $this->loadCustomFiles($type, $defaultPath, $customPath, $namespace);
+                $this->loadCustomFiles($type, $defaultPath, $customPath, $pluginSlug);
         }
     }
 
     /**
      * コンフィグの読み込み
      */
-    protected function loadPluginConfigs($corePath, $customPath, $namespace)
+    protected function loadPluginConfigs($corePath, $customPath, $pluginSlug)
     {
-        $defaultMergeMode = config('custom.default_merge_mode', 'merge');
 
-        // プラグインのデフォルト設定
+        // プラグインの設定を個別の名前空間に格納
         $pluginConfigs = $this->loadConfigFiles($corePath);
-        // カスタム上書き設定
         $customConfigs = $this->loadConfigFiles($customPath);
 
-        // デフォルトとカスタムを結合または置換し、登録
         foreach ($customConfigs as $key => $customConfig) {
             if (isset($pluginConfigs[$key])) {
-                // core + custom をマージ
-                $mergeMode = $customConfig['_merge_mode'] ?? $defaultMergeMode;
-                unset($customConfig['_merge_mode']);
-
-                if ($mergeMode === 'replace') {
-                    $pluginConfigs[$key] = $customConfig;
-                } else {
-                    // 再帰マージ
-                    $pluginConfigs[$key] = array_merge_recursive($pluginConfigs[$key], $customConfig);
-                }
+                $pluginConfigs[$key] = array_merge_recursive($pluginConfigs[$key], $customConfig);
             } else {
-                // 新規キー
                 $pluginConfigs[$key] = $customConfig;
             }
         }
 
-        // 2) マージ後の $pluginConfigs を config() に書き込む
-        //    「namespace が空ならトップレベルに設定」「namespace があればサブキーに設定」
-
-        if ($namespace === '') {
-            // -------------------------------
-            // トップレベルにマージする場合
-            // -------------------------------
-            foreach ($pluginConfigs as $topKey => $value) {
-                // 既存の設定を取得
-                $existingValue = config($topKey, []);
-
-                // 値が配列同士なら再帰マージ
-                if (is_array($existingValue) && is_array($value)) {
-                    config([$topKey => array_merge_recursive($existingValue, $value)]);
-                } else {
-                    // 配列でない or 置き換えの場合はそのままセット
-                    config([$topKey => $value]);
-                }
-            }
-        } else {
-            // -------------------------------
-            // 従来どおりサブキーとして設定
-            // -------------------------------
-            foreach ($pluginConfigs as $key => $value) {
-                $existingValue = config("{$namespace}.{$key}", []);
-
-                if (is_array($existingValue) && is_array($value)) {
-                    config(["{$namespace}.{$key}" => array_merge_recursive($existingValue, $value)]);
-                } else {
-                    config(["{$namespace}.{$key}" => $value]);
-                }
-            }
+        // `users-plugin.auth` のようにプレフィックス付きで登録
+        foreach ($pluginConfigs as $key => $value) {
+            config(["{$pluginSlug}.{$key}" => $value]);
         }
-
-        // コンフィグの再配置
-        $this->reorderAllConfig();
     }
 
     /**
@@ -232,7 +184,7 @@ trait PluginLoaderTrait
             }
         }
 
-        $translations = Lang::getLoader()->load(app()->getLocale(), 'admin');
+        //$translations = Lang::getLoader()->load(app()->getLocale(), 'admin');
     }
 
     /**
@@ -253,9 +205,8 @@ trait PluginLoaderTrait
      */
     protected function resolvePluginServiceProvider(string $pluginName, string $pluginDirectory): ?string
     {
-        $defaultProvider = "Plugins\\{$pluginDirectory}\\App\\Providers\\{$pluginName}ServiceProvider";
-        $customProvider = "custom\\plugins\\{$pluginDirectory}\\App\\Providers\\{$pluginName}ServiceProvider";
-
+        $defaultProvider = "Plugins\\{$pluginDirectory}\\App\\Providers\\{$pluginDirectory}ServiceProvider";
+        $customProvider = "custom\\plugins\\{$pluginDirectory}\\App\\Providers\\{$pluginDirectory}ServiceProvider";
 
         if (class_exists($customProvider)) {
             return $customProvider;
@@ -296,5 +247,97 @@ trait PluginLoaderTrait
         }
 
         return $metadata;
+    }
+
+    /**
+     * 任意のプラグイン設定をマージする
+     *
+     * @param string $configFile プラグインの config ファイルのパス
+     * @param string $configKey config() に格納するキー (例: 'auth', 'admin.nav')
+     */
+    public function mergePluginConfig($configFile, $configKey)
+    {
+        if (!file_exists($configFile)) {
+            return; // 設定ファイルが存在しない場合はスキップ
+        }
+
+        $pluginConfig = require $configFile;
+
+        if (!is_array($pluginConfig)) {
+            return; // 無効な設定ファイルの場合はスキップ
+        }
+
+        // 既存の設定を取得
+        $existingConfig = config($configKey, []);
+
+        // カスタムの再帰マージ関数を使って統合
+        $mergedConfig = $this->recursiveArrayMergeOverwrite($existingConfig, $pluginConfig);
+
+        // マージした設定を適用
+        config([$configKey => $mergedConfig]);
+    }
+
+    /**
+     * 配列を再帰的にマージする（同じキーがある場合は上書き）
+     *
+     * @param array $base 元の設定
+     * @param array $override 追加の設定
+     * @return array マージ後の配列
+     */
+    protected function recursiveArrayMergeOverwrite(array $base, array $override): array
+    {
+        foreach ($override as $key => $value) {
+            if (is_array($value) && isset($base[$key]) && is_array($base[$key])) {
+                // 配列同士なら再帰的にマージ
+                $base[$key] = $this->recursiveArrayMergeOverwrite($base[$key], $value);
+            } else {
+                // 配列でない場合は上書き
+                $base[$key] = $value;
+            }
+        }
+        return $base;
+    }
+
+    /**
+     * 指定されたキーの前後に要素を挿入する
+     *
+     * @param string $configKey config() に格納するキー
+     * @param string $insertKey 挿入するキー
+     * @param array $insertValue 挿入するデータ
+     * @param string $targetKey どのキーの前後に挿入するか
+     * @param string $position 'before' or 'after'
+     */
+    protected function insertOrderedConfig($configKey, $insertKey, $insertValue, $targetKey, $position = 'before')
+    {
+        unset($insertValue['_insert_before'], $insertValue['_insert_after']); // `_insert_before` や `_insert_after` を削除
+
+        $existingConfig = config($configKey, []);
+
+        // 新しい配列を作成し、適切な位置に要素を挿入
+        $newConfig = [];
+        $inserted = false;
+
+        foreach ($existingConfig as $key => $value) {
+            if ($position === 'before' && $key === $targetKey) {
+                // 指定されたキーの前に挿入
+                $newConfig[$insertKey] = $insertValue;
+                $inserted = true;
+            }
+
+            $newConfig[$key] = $value;
+
+            if ($position === 'after' && $key === $targetKey) {
+                // 指定されたキーの後に挿入
+                $newConfig[$insertKey] = $insertValue;
+                $inserted = true;
+            }
+        }
+
+        // `_insert_before` や `_insert_after` に該当するキーがない場合は最後に追加
+        if (!$inserted) {
+            $newConfig[$insertKey] = $insertValue;
+        }
+
+        config([$configKey => $newConfig]);
     }
 }
