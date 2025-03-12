@@ -4,7 +4,7 @@
  * This file is part of MySoftware.
  *
  * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -19,7 +19,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
 
 namespace App\Console\Commands;
 
@@ -39,7 +38,8 @@ class MakePluginProvider extends Command
         {plugin : The plugin name (e.g. "MyPlugin")}
         {name : The name of the service provider (e.g. "MyPluginServiceProvider")}
         {--plugin : Use the plugin-specific provider template (provider.plugin.stub)}
-        {--force : Overwrite if provider already exists}';
+        {--force : Overwrite if provider already exists}
+        {--license-info= : License information as JSON string}';
 
     protected $description = 'Create a new service provider for the specified plugin.';
 
@@ -59,13 +59,30 @@ class MakePluginProvider extends Command
         $pluginStub  = (bool) $this->option('plugin');
         $force       = (bool) $this->option('force');
 
+        // ライセンス情報を取得
+        // ライセンス情報を取得
+        $licenseInfo = $this->option('license-info');
+
+        // JSONデコードしてエラー処理を行う
+        if ($licenseInfo) {
+            $licenseInfo = json_decode($licenseInfo, true);
+            if (json_last_error() !== JSON_ERROR_NONE || !is_array($licenseInfo)) {
+                $this->warn("Invalid license information received. Using default empty array.");
+                $licenseInfo = [];
+            }
+        } else {
+            $licenseInfo = [];
+        }
+
+
+
         // 2) parseClassName → subDirs + finalClass
         //    もし "Admin/MyProvider" のようにsubDirsを使うなら:
         [$subDirs, $finalClass] = $this->fileGenerator->parseClassName($className);
 
         // 3) Traitの makeFile
         //    => (className, subDirs, force, pluginStub)
-        $this->makeFile($finalClass, $subDirs, $force, $pluginStub);
+        $this->makeFile($finalClass, $subDirs, $force, $pluginStub, $licenseInfo);
 
         // 4) addProviderToBootstrapFile (Laravel 11+ オプション)
         $this->addProviderToBootstrap($pluginInput, $subDirs, $finalClass);

@@ -1,6 +1,7 @@
 <?php
 
 {{ license }}
+
 namespace {{ namespace }};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;

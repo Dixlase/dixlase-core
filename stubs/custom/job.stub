@@ -1,6 +1,7 @@
 <?php
 
 {{ license }}
+
 namespace {{ namespace }};
 use Illuminate\Foundation\Bus\Dispatchable;
 

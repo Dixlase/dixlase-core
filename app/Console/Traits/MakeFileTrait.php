@@ -4,7 +4,7 @@
  * This file is part of MySoftware.
  *
  * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -44,6 +44,7 @@ trait MakeFileTrait
         array $options,
         string $stubFile,
         array $extraPlaceholders = [],
+        array $licenseInfo = [],
         string $fileType = 'default'
     ): void {
         // 1) 出力先ディレクトリ / 名前空間 (サブクラスで実装)
@@ -64,9 +65,9 @@ trait MakeFileTrait
             }
         }
 
-        // 2) スタブファイル読み込み
-        $stubContent = $this->loadStubFile($stubFile);
 
+        // 2) スタブファイル読み込み
+        $stubContent = $this->loadStubFile($stubFile, $licenseInfo);
         // base placeholders
         $basePlaceholders = [
             '{{ rootNamespace }}' => $this->getRootNamespace(),
@@ -76,7 +77,7 @@ trait MakeFileTrait
 
         $allPlaceholders = array_merge($basePlaceholders, $extraPlaceholders);
 
-        $finalContent = $this->fileGenerator->embedLicensePhp($stubContent, $allPlaceholders);
+        $finalContent = $this->fileGenerator->embedLicensePhp($stubContent, $allPlaceholders, $licenseInfo);
 
         $this->fileGenerator->generateFile(
             $filePath,
@@ -91,7 +92,7 @@ trait MakeFileTrait
      * @param  string  $stubFile
      * @return string
      */
-    protected function loadStubFile(string $stubFile): string
+    protected function loadStubFile(string $stubFile, array $licenseInfo): string
     {
         $customStubPaths = [base_path('stubs/custom')];
 
@@ -99,7 +100,7 @@ trait MakeFileTrait
         // ここはファイルの種類によって変わるのでサブクラスや呼び出し側で固定してもOK
         $defaultStubPath = base_path("vendor/laravel/framework/src/Illuminate/Routing/Console/stubs/{$stubFile}");
 
-        return $this->fileGenerator->getStubContent($stubFile, $defaultStubPath, $customStubPaths);
+        return $this->fileGenerator->getStubContent($stubFile, $defaultStubPath, $customStubPaths, $licenseInfo);
     }
 
     /**

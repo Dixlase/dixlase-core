@@ -4,7 +4,7 @@
  * This file is part of MySoftware.
  *
  * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -66,26 +66,21 @@ class FileGenerator
     /**
      * スタブファイルを取得
      */
-    public function getStubContent(string $stubFileName, ?string $defaultPath = null, array $customPaths = []): string
+    public function getStubContent(string $stubFileName, ?string $defaultPath = null, array $customPaths = [], array $licenseInfo = []): string
     {
         // カスタムパスを優先してスタブを検索
         foreach ($customPaths as $customPath) {
             $fullPath = "{$customPath}/{$stubFileName}";
             if ($this->files->exists($fullPath)) {
-                return $this->files->get($fullPath);
+                $stub = $this->files->get($fullPath);
+                return $this->embedLicensePhp($stub, [], $licenseInfo); // ← ここでライセンスを埋め込む
             }
         }
 
-        // デフォルトパスが指定されている場合はそこから取得
-        if ($defaultPath && $this->files->exists($defaultPath)) {
-            return $this->files->get($defaultPath);
-        }
-
-        // デフォルトパスがない場合でも、プロジェクト内の stubs ディレクトリを探索
-
         $fallbackPath = base_path("stubs/custom/{$stubFileName}");
         if ($this->files->exists($fallbackPath)) {
-            return $this->files->get($fallbackPath);
+            $stub = $this->files->get($fallbackPath);
+            return $this->embedLicensePhp($stub, [], $licenseInfo); // ← ここでライセンスを埋め込む
         }
 
         // どのパスからもスタブが見つからない場合は例外をスロー
@@ -129,15 +124,19 @@ class FileGenerator
     /**
      * ライセンスのプレーンテキスト（placeholders差し替え済み）を取得する
      */
-    public function getLicensePlain(): string
+    public function getLicensePlain(array $licenseInfo): string
     {
-        // license.txt から読み込み
-        $licenseText = $this->files->exists($this->licenseStubPath)
-            ? $this->files->get($this->licenseStubPath)
-            : '';
+        // licenseInfo から読み込み
+
+
+        $licensePath = base_path($licenseInfo['template']);
+
+        if (!$this->files->exists($licensePath)) {
+            return '';
+        }
 
         // {software}, {year}, {author}, {website} を差し替え
-        $licenseInfo = $this->getLicenseInfo();
+        $licenseText = $this->files->get($licensePath);
         $licensePlaceholders = [
             '{software}' => $licenseInfo['software'] ?? 'MySoftware',
             '{year}'     => date('Y'),
@@ -150,31 +149,31 @@ class FileGenerator
     /**
      * PHPファイル用のライセンスをdoc-block 形式にする
      */
-    public function getLicenseForPhp(): string
+    public function getLicenseForPhp(array $licenseInfo): string
     {
-        $plain = $this->getLicensePlain();
+
+
+        $plain = $this->getLicensePlain($licenseInfo);
         if (empty($plain)) {
             return '';
         }
 
-        // 行ごとに先頭に '* ' を付ける
-        $lines = explode("\n", $plain);
-        $processed = [];
+        $lines = explode("\n", trim($plain));
+        $formatted = "/**\n";
         foreach ($lines as $line) {
-            $processed[] = '* ' . trim($line);
+            $formatted .= trim($line) === '' ? " *\n" : " * " . rtrim($line) . "\n";
         }
+        $formatted .= " */";
 
-        // doc-block でラップ
-        $licenseText = "/**\n" . implode("\n", $processed) . "\n*/";
-        return $licenseText;
+        return $formatted;
     }
 
     /**
      * Blade 用にライセンスを "{{-- ... --}}" 形式のコメントにする
      */
-    public function getLicenseForBlade(): string
+    public function getLicenseForBlade(array $licenseInfo): string
     {
-        $plain = $this->getLicensePlain();
+        $plain = $this->getLicensePlain($licenseInfo);
         if (empty($plain)) {
             return '';
         }
@@ -188,9 +187,9 @@ class FileGenerator
      * PHPファイルにライセンスを埋め込む
      * -> {{ license }} を getLicenseForPhp() で置換
      */
-    public function embedLicensePhp(string $stub, array $placeholders): string
+    public function embedLicensePhp(string $stub, array $placeholders, array $licenseInfo): string
     {
-        $licensePhp = $this->getLicenseForPhp(); // doc-block 形式
+        $licensePhp = $this->getLicenseForPhp($licenseInfo); // doc-block 形式
         // stub 内の "{{ license }}" を置換
         return $this->replacePlaceholders($stub, array_merge($placeholders, [
             '{{ license }}' => $licensePhp

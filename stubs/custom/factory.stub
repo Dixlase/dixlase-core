@@ -1,6 +1,7 @@
 <?php
 
 {{ license }}
+
 namespace {{ factoryNamespace }};
 
 use Illuminate\Database\Eloquent\Factories\Factory;

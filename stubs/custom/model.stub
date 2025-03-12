@@ -1,6 +1,7 @@
 <?php
 
 {{ license }}
+
 namespace {{ namespace }};
 {{ factoryImport }}
 use Illuminate\Database\Eloquent\Model;

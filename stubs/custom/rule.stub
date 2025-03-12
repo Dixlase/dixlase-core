@@ -1,6 +1,7 @@
 <?php
 
 {{ license }}
+
 namespace {{ namespace }};
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
