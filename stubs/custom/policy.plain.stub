@@ -1,6 +1,7 @@
 <?php
 
 {{ license }}
+
 namespace {{ namespace }};
 use {{ namespacedUserModel }};
 

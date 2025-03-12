@@ -2,7 +2,7 @@
 This file is part of MySoftware.
 
 Copyright (C) 2025 exc-D inc.
-Website: https://exc-d.com
+https://exc-d.com
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
@@ -70,4 +70,3 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
 @endsection
-

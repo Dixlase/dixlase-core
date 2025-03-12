@@ -2,7 +2,7 @@
 This file is part of MySoftware.
 
 Copyright (C) 2025 exc-D inc.
-Website: https://exc-d.com
+https://exc-d.com
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
@@ -17,7 +17,6 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
-
 
 @if (session('success'))
     <div class="mb-4 p-4 text-green-800 bg-green-100 border border-green-200 rounded-lg">

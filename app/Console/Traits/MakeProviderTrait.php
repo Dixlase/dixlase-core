@@ -4,7 +4,7 @@
  * This file is part of MySoftware.
  *
  * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -38,24 +38,24 @@ trait MakeProviderTrait
      * @param  bool    $force
      * @param  bool    $pluginStub  // plugin固有のスタブを使うかどうか (例: provider.plugin.stub)
      */
-    protected function makeFile(string $className, array $subDirs, bool $force, bool $pluginStub = false): void
-    {
+    protected function makeFile(
+        string $className,
+        array $subDirs,
+        bool $force,
+        bool $pluginStub = false,
+        array $licenseInfo = []
+    ): void {
         // 1) stubファイルを決定
         //    provider.stub or provider.plugin.stub
         $stubFile = $pluginStub ? 'provider.plugin.stub' : 'provider.stub';
 
-        // 2) options
-        $options = [
-            'force' => $force,
-        ];
-
-        // 3) プロバイダ固有の追加プレースホルダ (なければ空)
+        //プロバイダ固有の追加プレースホルダ (なければ空)
         $extraPlaceholders = [
-            // e.g. '{{ pluginName }}' => ...
+            '{{ license }}' => $this->fileGenerator->getLicenseForPhp($licenseInfo),
         ];
 
         // 4) makeFiler
-        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders);
+        $this->makeFiler($className, $subDirs, ['force' => $force], $stubFile, $extraPlaceholders, $licenseInfo);
     }
 
     /**

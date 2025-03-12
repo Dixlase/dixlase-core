@@ -1,6 +1,7 @@
 <?php
 
 {{ license }}
+
 use Illuminate\Support\Facades\Route;
 
 // フロントエンドのルート。front.ipミドルウェアを適用し、IPアドレスフィルターを必ず通してください。

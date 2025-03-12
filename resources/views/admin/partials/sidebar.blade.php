@@ -2,7 +2,7 @@
 This file is part of MySoftware.
 
 Copyright (C) 2025 exc-D inc.
-Website: https://exc-d.com
+https://exc-d.com
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
@@ -18,12 +18,10 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-
 @props([
     'button_class' => 'flex items-center px-4 py-2 text-sm font-medium rounded-md focus:outline-none w-full',
     'arrow_class' => 'w-4 h-4 ml-auto transform'
 ])
-
 
 {{--$route_name--}}
 <div class="flex flex-col w-64 h-full">

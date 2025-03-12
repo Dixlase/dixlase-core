@@ -35,12 +35,6 @@ class AddCopyright extends Command
     public function handle()
     {
 
-        // license-info.jsonからライセンス情報を取得
-        $licenseInfo = $this->getLicenseInfo();
-
-        // license.txtテンプレートを読み込む
-        $copyrightTemplate = $this->getCopyrightTemplate();
-
         // カンマ区切りで渡されたディレクトリを配列に変換
         $directories = explode(',', $this->option('dir'));
 
@@ -51,7 +45,7 @@ class AddCopyright extends Command
             // ディレクトリが存在するか確認
             if (!File::exists(base_path($directory))) {
                 $this->error("ディレクトリ '{$directory}' が見つかりません。");
-                continue; // ディレクトリが存在しない場合はスキップ
+                exit(1);
             }
 
             // 対象となるすべてのPHPおよびBladeファイルを取得
@@ -59,6 +53,19 @@ class AddCopyright extends Command
 
             // ループして各ファイルを処理
             foreach ($files as $file) {
+
+                if ($file->getFilename() === 'license-info.json') continue;
+
+                $dirPath = dirname($file->getPathname());
+                $licenseInfo = $this->getLicenseInfo($dirPath);
+                // もし null または不正なデータなら、ルートの license-info.json を読み込む
+                if (!$licenseInfo) {
+                    $this->error("エラー: 有効なライセンス情報を取得できませんでした。");
+                    exit(1);
+                }
+
+                $copyrightTemplate = $this->getCopyrightTemplate($licenseInfo);
+
                 // 自身のファイルを除外
                 if ($file->getPathname() === base_path('app/Console/Commands/AddCopyright.php')) {
                     continue;
@@ -83,26 +90,39 @@ class AddCopyright extends Command
         $this->info('著作権表示が更新されました。');
     }
 
-    // ライセンス情報をlicense-info.jsonから取得する
-    protected function getLicenseInfo()
+    // ライセンス情報を取得する
+    protected function getLicenseInfo($dirPath)
     {
-        $licenseFilePath = base_path('license-info.json');
+        $licenseFilePath = $dirPath . '/license-info.json';
         if (!File::exists($licenseFilePath)) {
-            $this->error("license-info.json ファイルが見つかりません。");
-            return null;
+            $licenseFilePath = base_path('license-info.json');
         }
 
-        return json_decode(File::get($licenseFilePath), true);
+        // ライセンス情報が存在しない場合は即時終了
+        if (!File::exists($licenseFilePath)) {
+            $this->error("エラー: ライセンス情報ファイル '{$licenseFilePath}' が見つかりません。");
+            exit(1);
+        }
+
+        $licenseInfo = json_decode(File::get($licenseFilePath), true);
+
+        if (!$licenseInfo) {
+            $this->error("エラー: ライセンス情報が無効です。JSONの構造を確認してください。");
+            exit(1);
+        }
+
+        return $licenseInfo;
     }
 
 
-    // license.txtテンプレートを読み込む
-    protected function getCopyrightTemplate()
+    // ライセンステンプレートを読み込む
+    protected function getCopyrightTemplate($licenseInfo)
     {
-        $templateFilePath = base_path('license.txt');
+        $templateFilePath = base_path('license-templates/' . $licenseInfo['template']);
+
         if (!File::exists($templateFilePath)) {
-            $this->error("license.txt ファイルが見つかりません。");
-            return null;
+            $this->error("エラー: テンプレートファイル '{$templateFilePath}' が見つかりません。");
+            exit(1);
         }
 
         return File::get($templateFilePath);
@@ -122,27 +142,27 @@ class AddCopyright extends Command
             $copyrightTemplate
         );
 
-        //Bladeファイルの場合の処理
+        // Bladeファイルの場合の処理
         if ($extension == 'blade.php') {
-            //Bladeのコメント形式に変換
-            $newCopyright = str_replace(
-                ['/**', ' */'],
-                ['{{--', '--}}'],
-                $newCopyright
-            );
-            // 各行の先頭の*を削除
-            $newCopyright = preg_replace('/ \* ?/', '', $newCopyright);
+            // Bladeコメント形式に変換
+            $newCopyright = "\n{{--\n" . $newCopyright . "\n--}}\n";
+        } else {
+            // PHPコメント形式に変換（各行の前に `*` を追加）
+            $newCopyrightLines = explode("\n", $newCopyright);
+            $formattedCopyright = "/**\n";
 
-            $newCopyright = preg_replace(
-                ['/ \*\ /', '/ \*/'],
-                ['', ''],
-                $newCopyright
-            );
+            foreach ($newCopyrightLines as $line) {
+                // 空白行は `*` のみ、それ以外は `* ` を付ける
+                $formattedCopyright .= (trim($line) === '') ? " *\n" : " * " . rtrim($line) . "\n";
+            }
+
+            $formattedCopyright .= " */";
+            $newCopyright = $formattedCopyright;
         }
 
-        // Bladeファイルの場合の正規表現修正
+        // Bladeファイルの正規表現（既存のライセンスを置換）
         $bladeRegex = '/\{\{\-\-.*?Copyright.*?\-\-\}\}/s';
-        // PHPファイルの場合の正規表現修正
+        // PHPファイルの正規表現（既存のライセンスを置換）
         $phpRegex = '/\/\*\*.*?Copyright.*?\*\//s';
 
         // すでに著作権表示があるかどうか確認
@@ -153,6 +173,9 @@ class AddCopyright extends Command
             // 既存の著作権表示を新しいものに置き換える（PHPファイル）
             $content = preg_replace($phpRegex, $newCopyright, $content);
         } else {
+            // 余分な改行を削除
+            $content = ltrim($content, "\n");
+
             // 新しい著作権表示を挿入
             switch ($extension) {
                 case 'blade.php':  // Bladeファイル
@@ -179,6 +202,9 @@ class AddCopyright extends Command
                     break;
             }
         }
+
+        // 最後の余分な空白行を削除
+        $content = rtrim($content) . "\n";
 
         // ファイルに変更を保存
         File::put($file->getPathname(), $content);
