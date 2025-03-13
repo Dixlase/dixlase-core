@@ -21,30 +21,15 @@
  */
 
 
-use App\Http\Controllers\Register\RegisterRegisteredUserController;
 use App\Http\Controllers\Front\FrontWelcomeController;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 
-Route::middleware(['front.ip'])->group(
+
+// インストール済みの場合にアクセス可能なルート
+Route::middleware(['web', 'front.ip'])->group(
     function () {
-        //トップページ
         Route::get('/', [FrontWelcomeController::class, 'index'])->name('welcome');
-
-        /*
-        Route::get('/', function () {
-            // ここは“リクエスト時”に実行されるため、セッションが開始済み
-
-            $member = Auth::guard('member')->user();
-            if ($member) {
-                //dump($member);
-            } else {
-                dump('メンバーがいません');
-            }
-        });
-        */
 
         //テーマのアセットファイル
         Route::get('assets/{type}/{file}', function ($type, $file) {

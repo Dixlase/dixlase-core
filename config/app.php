@@ -143,27 +143,17 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
-
-
-
     /*
     |--------------------------------------------------------------------------
-    | Application Theme
-    |--------------------------------------------------------------------------
+    | Installed
+    |-------------------------------------------------------------------------
     |
-    | This value is the name of your application theme, which will be used when the
-    | framework needs to place the application's theme in a notification or
-    | other UI elements where an application theme needs to be displayed.
+    | This value determines whether the application has been installed or not.
+    | This is used to prevent the installer from being accessed after the
+    | application has been installed.
     |
     */
 
-
-
-
-
-
-
-
-    //ここまでカスタムの設定
+    'installed' => env('INSTALLED', false),
 
 ];

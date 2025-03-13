@@ -58,8 +58,6 @@ if (Schema::hasTable('security_settings')) {
 Route::prefix($adminUrl)->name('admin.')
     ->middleware('admin.ip') // IPアドレスフィルタ
     ->group(function () {
-
-
         Route::get('/', function () {
             $member = Auth::guard('member')->user();
             if ($member) {
