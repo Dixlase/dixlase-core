@@ -26,7 +26,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use ZipArchive;
 
-class CompressPlugin extends Command
+class PluginCompress extends Command
 {
     /**
      * The name and signature of the console command.

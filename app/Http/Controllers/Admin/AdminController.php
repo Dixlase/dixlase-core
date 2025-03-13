@@ -26,10 +26,9 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Support\Facades\Auth;
 use App\Traits\RoleCheckTrait;
 use Illuminate\Support\Facades\Lang;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class AdminController extends Controller
 {
@@ -56,6 +55,12 @@ class AdminController extends Controller
      */
     public function initialize()
     {
+        // `base_settings` テーブルが存在するかチェック
+        if (!Schema::hasTable('base_settings')) {
+            // テーブルがない場合は初期化をスキップ
+            return;
+        }
+
         // データベースからサイト名を取得。取得できなかった場合は.envからデフォルト値を使用
         $this->getSiteName();
 

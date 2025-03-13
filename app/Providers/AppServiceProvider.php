@@ -78,15 +78,6 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
-        //セッションテーブルが存在しない場合はmembers_sessionsを使用
-
-        /*
-        if (!Schema::hasTable('sessions')) {
-            Config::set('session.table', 'members_sessions');
-        }
-        */
-
-
         //言語の設定
         //base_settingsテーブルのlanguageの値を取得
         //テーブルが存在しているか確認

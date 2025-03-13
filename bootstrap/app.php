@@ -7,7 +7,8 @@ use Illuminate\Foundation\Configuration\Middleware;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: [
-            __DIR__ . '/../routes/web.php',
+            __DIR__ . '/../routes/front.php',
+            __DIR__ . '/../routes/install.php',
             __DIR__ . '/../routes/admin.php'
         ],
         commands: __DIR__ . '/../routes/console.php',
@@ -15,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
+            //'check.installation' => \App\Http\Middleware\CheckInstallation::class, // インストールチェック
             'auth' => \App\Http\Middleware\Authenticate::class, //認証
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class, // メール認証
             'admin.ip' => \App\Http\Middleware\AdminIpFilter::class, // IPアドレスフィルタ
@@ -28,9 +30,23 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ]);
+
+        // CheckInstallationミドルウェアをグローバルに追加
+        $middleware->prepend(\App\Http\Middleware\CheckInstallation::class);
     })
 
 
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // エラー処理を追加する場合
+        /*
+        $exceptions->renderable(fn (\Exception $e) => response()->json(['error' => $e->getMessage()], 500));
+
+        $exceptions->renderable(function (\Illuminate\Database\Eloquent\ModelNotFoundException $e, $request) {
+            return response()->json(['error' => 'Resource not found'], 404);
+        });
+
+        $exceptions->renderable(function (\Illuminate\Auth\AuthenticationException $e, $request) {
+            return redirect('/login');
+        });
+        */
     })->create();
