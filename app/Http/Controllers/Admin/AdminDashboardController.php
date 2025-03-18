@@ -37,6 +37,7 @@ class AdminDashboardController extends AdminLoggedInController
     //
     public function index()
     {
+        /*
         Log::info('管理者情報:', [
             'ID' => $this->member->id,
             '名前' => $this->member->name,
@@ -45,6 +46,7 @@ class AdminDashboardController extends AdminLoggedInController
             '外観設定' => $this->member->appearance,
             'ステータス' => $this->member->status,
         ]);
+        */
 
         return view('admin::dashboard', $this->viewParams);
     }

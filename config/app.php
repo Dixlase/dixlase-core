@@ -98,7 +98,7 @@ return [
     |
     */
 
-    'locale' => env('APP_LOCALE', 'en'),
+    'locale' => env('APP_LOCALE', 'ja'),
 
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
 
@@ -155,5 +155,16 @@ return [
     */
 
     'installed' => env('INSTALLED', false),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Force SSL
+    |--------------------------------------------------------------------------
+    |
+    | This value determines whether the application should force SSL connections.
+    | This is used to ensure that all connections are secure.
+    |
+    */
+    'force_ssl' => env('FORCE_SSL', false), // `.env` から取得
 
 ];

@@ -34,6 +34,7 @@ class SecuritySettingsTableSeeder extends Seeder
     public function run(): void
     {
         $defaultSettings = [
+            /*
             ['name' => 'admin_url', 'value' => 'admin'],
             ['name' => 'enable_allowed_admin_ips', 'value' => '0'], // 特定のIPアドレスのみ管理画面へのアクセス許可
             ['name' => 'allowed_admin_ips', 'value' => '127.0.0.1'], // 初期はローカルホストのみ
@@ -43,9 +44,8 @@ class SecuritySettingsTableSeeder extends Seeder
             ['name' => 'allowed_front_ips', 'value' => ''], // 初期は空
             ['name' => 'enable_blocked_front_ips', 'value' => 'false'], // 特定のIPアドレスをフロントへのアクセス禁止
             ['name' => 'blocked_front_ips', 'value' => ''],
-            ['name' => 'force_ssl', 'value' => '0'],
-
-        ];
+            //['name' => 'force_ssl', 'value' => '0'],
+            */];
 
         foreach ($defaultSettings as $setting) {
             SecuritySetting::updateOrCreate(['name' => $setting['name']], ['value' => $setting['value']]);

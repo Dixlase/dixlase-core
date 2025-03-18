@@ -176,15 +176,10 @@ if (!function_exists('update_theme_symlink')) {
 
         // 新しいシンボリックリンクを作成
         if (file_exists($target) && is_dir($target)) {
-            // assetsフォルダがある場合はシンボリックリンクを作成
             symlink($target, $link);
         } else {
-            // assetsフォルダがない場合はシンボリックリンクを作成しない
-            //$this->info("Assets directory does not exist for theme: {$target}");
-            //throw new \Exception("Assets directory does not exist for theme: {$target}");
+            throw new \Exception("テーマのアセットディレクトリが存在しません: {$target}");
         }
-
-        symlink($target, $link);
     }
 }
 

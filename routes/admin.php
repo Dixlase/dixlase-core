@@ -46,14 +46,10 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Log;
 
 
+
+
 //管理画面のURLを取得
-//security_settingsテーブルのadmin_urlの値を取得
-//テーブルが存在しているか確認
-if (Schema::hasTable('security_settings')) {
-    $adminUrl = SecuritySetting::get('admin_url', config('security.admin_url'));
-} else {
-    $adminUrl = config('security.admin_url');
-}
+$adminUrl = getAdminUrl();
 
 Route::prefix($adminUrl)->name('admin.')
     ->middleware('admin.ip') // IPアドレスフィルタ

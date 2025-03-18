@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
 
 class AdminLoginRequest extends FormRequest
 {
@@ -62,6 +63,7 @@ class AdminLoginRequest extends FormRequest
         $this->ensureIsNotRateLimited();
 
         if (! Auth::guard($guard)->attempt($this->only('email', 'password'))) {
+
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
