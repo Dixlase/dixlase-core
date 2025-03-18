@@ -57,6 +57,8 @@ class AdminLoginController extends AdminController
     public function store(AdminLoginRequest $request)
     {
         $request->authenticate('member');
+
+        Log::info('Admin login success.', ['email' => $request->email]);
         //セッションの再生成（旧セッション破棄 & 新ID発行）
         $request->session()->regenerate(true);
         return redirect()->intended(route('admin.dashboard'));

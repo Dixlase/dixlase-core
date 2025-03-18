@@ -22,15 +22,40 @@
 
 use App\Http\Controllers\Install\InstallController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 
 Route::prefix('install')->name('install.')->group(
     function () {
         Route::get('/', [InstallController::class, 'index'])->name('index');
+
+        //基本設定
         Route::get('/settings', [InstallController::class, 'create'])->name('settings');
-        Route::post('/settings', [InstallController::class, 'store'])->name('settings.store');
+        Route::post('/settings', [InstallController::class, 'storeSettings'])->name('settings.store');
+
+        //環境設定
+        Route::get('/environment', [InstallController::class, 'environment'])->name('environment');
+        Route::post('/environment', [InstallController::class, 'storeEnvironment'])->name('environment.store');
+
+        //セキュリティ設定
+        Route::get('/security', [InstallController::class, 'security'])->name('security');
+        Route::post('/security', [InstallController::class, 'storeSecurity'])->name('security.store');
+
+        //データベース設定
+        Route::get('/database', [InstallController::class, 'database'])->name('database');
+        Route::post('/database', [InstallController::class, 'storeDatabase'])->name('database.store');
+
+        //確認画面
         Route::get('/confirm', [InstallController::class, 'confirm'])->name('confirm');
         Route::post('/confirm', [InstallController::class, 'confirmStore'])->name('confirm.store');
+
+        //インストール完了
+        Route::post('/finalize', [InstallController::class, 'finalizeInstall'])->name('finalize');
+        //インストール完了画面
         Route::get('/complete', [InstallController::class, 'complete'])->name('complete');
+
+        //データベース接続テスト
+        Route::post('/test-db', [InstallController::class, 'testDatabaseConnection'])->name('install.test-db');
     }
 );

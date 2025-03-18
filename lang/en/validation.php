@@ -210,6 +210,23 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+        'site_name' => 'Site Name',
+        'admin_email' => 'Administrator Email Address',
+        'admin_password' => 'Administrator Password',
+        'admin_password_confirmation' => 'Administrator Password Confirmation',
+        'admin_url' => 'Admin Panel URL',
+        'force_ssl' => 'Force SSL',
+        'allowed_admin_ips' => 'Allowed IP Addresses for Admin Panel',
+        'blocked_admin_ips' => 'Blocked IP Addresses for Admin Panel',
+        'allowed_front_ips' => 'Allowed IP Addresses for Front Page',
+        'blocked_front_ips' => 'Blocked IP Addresses for Front Page',
+        'db_connection' => 'Database Connection',
+        'db_host' => 'Database Host',
+        'db_port' => 'Database Port',
+        'db_database' => 'Database Name',
+        'db_username' => 'Database Username',
+        'db_password' => 'Database Password',
+    ],
 
 ];

@@ -4,7 +4,7 @@
  * This file is part of MySoftware.
  *
  * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -20,27 +20,20 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use App\Models\Theme;
+//管理画面のURLを取得
+//security_settingsテーブルのadmin_urlの値を取得
+//テーブルが存在しているか確認
 
-class ThemesTableSeeder extends Seeder
+use App\Models\SecuritySetting;
+use Illuminate\Support\Facades\Schema;
+
+function getAdminUrl()
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
-    {
-        Theme::create([
-            'name' => 'DefaultTheme',
-            'slug' => 'DefaultTheme',
-            'directory' => 'DefaultTheme',
-            'version' => '1.0.0',
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
+    if (Schema::hasTable('security_settings')) {
+        $adminUrl = SecuritySetting::get('admin_url', config('security.admin_url'));
+    } else {
+        $adminUrl = config('security.admin_url');
     }
+    return $adminUrl;
 }

@@ -23,20 +23,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'arrow_class' => 'w-4 h-4 ml-auto transform'
 ])
 
-{{--$route_name--}}
 <div class="flex flex-col w-64 h-full">
     <nav class="flex-1 px-4 py-4 space-y-1">
+
+
         @foreach (config('admin.nav') as $key => $item)
             @php
                 // 現在のルート名を階層ごとに分割
                 $current_route_parts = explode('.', $route_name);
-
-
-
                 // 開くべきアコーディオンを判定
                 $open_key = 'open_' . $key;
                 $is_open = isset($current_route_parts[1]) && $current_route_parts[1] === $key;
             @endphp
+
 
             <div x-data="{ {{ $open_key }} : {{ $is_open ? 'true' : 'false' }} }">
                     @if (isset($item['route']) && is_string($item['route']))

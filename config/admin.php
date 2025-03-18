@@ -359,5 +359,5 @@ return [
     'generateThumbnails' => true,
     'perPage' => 10,
     'mediaPath' => 'media',
-
+    'admin_url' => 'admin',
 ];

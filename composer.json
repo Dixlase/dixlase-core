@@ -9,7 +9,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "laravel/framework": "^11.9",
+        "laravel/framework": "^12.0",
         "laravel/tinker": "^2.9"
     },
     "require-dev": {
@@ -43,26 +43,11 @@
             "Plugins\\UsersPlugin\\Database\\Seeders\\": "plugins/UsersPlugin/database/seeders",
             "Plugins\\UsersPlugin\\Database\\Seeders\\Dev\\": "plugins/UsersPlugin/database/seeders/dev",
             "Plugins\\UsersPlugin\\Database\\Seeders\\Pro\\": "plugins/UsersPlugin/database/seeders/pro",
-            "Plugins\\MyPlugin\\App\\": "plugins/MyPlugin/app",
-            "Plugins\\MyPlugin\\Database\\Factories\\": "plugins/MyPlugin/database/factories",
-            "Plugins\\MyPlugin\\Database\\Seeders\\": "plugins/MyPlugin/database/seeders",
-            "Plugins\\MyPlugin\\Database\\Seeders\\Dev\\": "plugins/MyPlugin/database/seeders/dev",
-            "Plugins\\MyPlugin\\Database\\Seeders\\Pro\\": "plugins/MyPlugin/database/seeders/pro",
             "Plugins\\EventsPlugin copy\\App\\": "plugins/EventsPlugin copy/app",
             "Plugins\\EventsPlugin copy\\Database\\Factories\\": "plugins/EventsPlugin copy/database/factories",
             "Plugins\\EventsPlugin copy\\Database\\Seeders\\": "plugins/EventsPlugin copy/database/seeders",
             "Plugins\\EventsPlugin copy\\Database\\Seeders\\Dev\\": "plugins/EventsPlugin copy/database/seeders/dev",
             "Plugins\\EventsPlugin copy\\Database\\Seeders\\Pro\\": "plugins/EventsPlugin copy/database/seeders/pro",
-            "Plugins\\EventsPlugin_\\App\\": "plugins/EventsPlugin_/app",
-            "Plugins\\EventsPlugin_\\Database\\Factories\\": "plugins/EventsPlugin_/database/factories",
-            "Plugins\\EventsPlugin_\\Database\\Seeders\\": "plugins/EventsPlugin_/database/seeders",
-            "Plugins\\EventsPlugin_\\Database\\Seeders\\Dev\\": "plugins/EventsPlugin_/database/seeders/dev",
-            "Plugins\\EventsPlugin_\\Database\\Seeders\\Pro\\": "plugins/EventsPlugin_/database/seeders/pro",
-            "Plugins\\PagesPlugin_\\App\\": "plugins/PagesPlugin_/app",
-            "Plugins\\PagesPlugin_\\Database\\Factories\\": "plugins/PagesPlugin_/database/factories",
-            "Plugins\\PagesPlugin_\\Database\\Seeders\\": "plugins/PagesPlugin_/database/seeders",
-            "Plugins\\PagesPlugin_\\Database\\Seeders\\Dev\\": "plugins/PagesPlugin_/database/seeders/dev",
-            "Plugins\\PagesPlugin_\\Database\\Seeders\\Pro\\": "plugins/PagesPlugin_/database/seeders/pro",
             "Plugins\\PagesPlugin\\App\\": "plugins/PagesPlugin/app",
             "Plugins\\PagesPlugin\\Database\\Factories\\": "plugins/PagesPlugin/database/factories",
             "Plugins\\PagesPlugin\\Database\\Seeders\\": "plugins/PagesPlugin/database/seeders",
@@ -72,10 +57,16 @@
             "Plugins\\EventsPlugin\\Database\\Seeders\\": "plugins/EventsPlugin/database/seeders",
             "Plugins\\EventsPlugin\\Database\\Seeders\\Dev\\": "plugins/EventsPlugin/database/seeders/dev",
             "Plugins\\EventsPlugin\\Database\\Seeders\\Pro\\": "plugins/EventsPlugin/database/seeders/pro",
-            "Plugins\\EventsPlugin\\Database\\Factories\\": "plugins/EventsPlugin/database/factories"
+            "Plugins\\EventsPlugin\\Database\\Factories\\": "plugins/EventsPlugin/database/factories",
+            "Plugins\\BlogPlugin\\App\\": "plugins/BlogPlugin/app",
+            "Plugins\\BlogPlugin\\Database\\Factories\\": "plugins/BlogPlugin/database/factories",
+            "Plugins\\BlogPlugin\\Database\\Seeders\\": "plugins/BlogPlugin/database/seeders",
+            "Plugins\\BlogPlugin\\Database\\Seeders\\Dev\\": "plugins/BlogPlugin/database/seeders/dev",
+            "Plugins\\BlogPlugin\\Database\\Seeders\\Pro\\": "plugins/BlogPlugin/database/seeders/pro"
         },
         "files": [
-            "app/Helpers/AssetHelper.php"
+            "app/Helpers/AssetHelper.php",
+            "app/Helpers/AdminHelper.php"
         ]
     },
     "autoload-dev": {

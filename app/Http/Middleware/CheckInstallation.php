@@ -34,17 +34,33 @@ class CheckInstallation
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
+
+
     public function handle(Request $request, Closure $next): Response
     {
+
+        // `.env` ファイルのパスを取得
+        $envPath = base_path('.env');
+
         // インストール済みであるかどうかを確認
-        if (env('INSTALLED') !== true) {
+        if (config('app.installed') !== true) {
+
+            // ✅ `/install/finalize` だけはスルー（サイトへ移動時の処理）
+            if ($request->is('install/finalize')) {
+                return $next($request);
+            }
+
             // .envファイルが存在しない場合、.env.example からコピーして生成
             if (!file_exists(base_path('.env'))) {
                 copy(base_path('.env.example'), base_path('.env'));
             }
 
-            // 仮のAPP_KEYが設定されていない場合、生成して追加
-            if (empty(env('APP_KEY'))) {
+            // ✅ `.env` ファイルの内容を直接取得
+            $envContent = file_get_contents($envPath);
+            $appKeyExists = preg_match('/^APP_KEY=(.+)$/m', $envContent, $matches);
+
+            // ✅ `APP_KEY` の設定がない、または空の場合のみ新規生成
+            if (!$appKeyExists || empty(trim($matches[1]))) {
                 $newKey = 'base64:' . base64_encode(random_bytes(32));
                 $this->updateAppKey($newKey);
             }

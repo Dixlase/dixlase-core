@@ -199,5 +199,22 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+        'site_name' => 'サイト名',
+        'admin_email' => '管理者メールアドレス',
+        'admin_password' => '管理者パスワード',
+        'admin_password_confirmation' => '管理者パスワード確認',
+        'admin_url' => '管理画面URL',
+        'force_ssl' => 'SSLの強制',
+        'allowed_admin_ips' => '管理画面で許可するIPアドレス',
+        'blocked_admin_ips' => '管理画面でブロックするIPアドレス',
+        'allowed_front_ips' => 'フロントページで許可するIPアドレス',
+        'blocked_front_ips' => 'フロントページでブロックするIPアドレス',
+        'db_connection' => 'データベース接続',
+        'db_host' => 'データベースホスト',
+        'db_port' => 'データベースポート',
+        'db_database' => 'データベース名',
+        'db_username' => 'データベースユーザー名',
+        'db_password' => 'データベースパスワード',
+    ],
 ];

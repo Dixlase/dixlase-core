@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of MySoftware.
  *
@@ -18,7 +19,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-// app/Http/Middleware/EnsureSessionStarted.php
+
 namespace App\Http\Middleware;
 
 use Closure;

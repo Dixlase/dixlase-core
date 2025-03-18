@@ -53,8 +53,19 @@ export default defineConfig({
         },
     },
     server: {
-        host: '0.0.0.0',
-        open:false,
+        host: '0.0.0.0',        // Docker コンテナ内で全てのインターフェースをバインド
+        port: 5173,
+        strictPort: true,       // ポートが使用中なら失敗する
+        watch: {
+        usePolling: true,     // ポーリングでファイル変更を検知
+        interval: 100,        // ポーリングの間隔（お好みで調整）
+        },
+        // HMRの設定
+        hmr: {
+        host: 'localhost',    // ブラウザがアクセスするホスト(ホストOSから見た名前)
+        port: 5173,
+        // protocol: 'wss',    // HTTPS/WSS を使いたい場合は有効化
+        },
     },
     resolve: {
         alias: {
