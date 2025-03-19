@@ -380,7 +380,7 @@ class InstallController extends Controller
         DB::table('members')->insert([
             'name' => $data['admin_name'],
             'email' => $data['admin_email'],
-            'role' => 'super_manager',
+            'role' => 'super_admin',
             'password' => Hash::make($adminPassword),
             'status' => 1, // active
             'created_at' => now(),

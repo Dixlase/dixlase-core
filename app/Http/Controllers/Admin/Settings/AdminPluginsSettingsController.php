@@ -45,7 +45,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     {
 
         // 権限を確認
-        $this->checkPermission('manager');
+        $this->checkPermission('admin');
 
         $plugins = Plugin::all();
         $this->viewParams['plugins'] = $plugins;
@@ -56,7 +56,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     {
 
         // 権限を確認
-        $this->checkPermission('super_manager');
+        $this->checkPermission('super_admin');
 
         $this->viewParams['heading'] = 'プラグインインストール';
         return view('admin::settings.plugins.install', $this->viewParams);
@@ -66,7 +66,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     {
 
         // 権限を確認
-        $this->checkPermission('super_manager');
+        $this->checkPermission('super_admin');
 
         Log::info('upload開始');
 
@@ -123,8 +123,6 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                     }
                 }
             }
-
-            Log::info('dirs: ' . json_encode($dirs));
 
             // 最も上位のディレクトリ名を取得（重複削除）
             $dirs = array_unique($dirs);
@@ -209,8 +207,6 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 return redirect()->back()->with('error', 'composer.json が見つかりません。');
             }
 
-            Log::info('composer.json完了');
-
             $migrator = new PluginMigrator(
                 app(Filesystem::class),
                 app(ConnectionResolverInterface::class),
@@ -218,14 +214,12 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 $slug // ここでプラグインのスラッグを渡す
             );
 
-            Log::info('migrator完了');
 
 
             // プラグインのマイグレーションを実行
             // $migrated には「新しく実行された」マイグレーションファイルが入る
             $migrated = $migrator->migrate($pluginDir, null, ['step' => false]);
 
-            Log::info('migrated完了');
             if (!empty($migrated)) {
                 // 新しいマイグレーションがあったので、テーブルが新規(または更新)された
                 // ここでシーダー実行
@@ -258,7 +252,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     {
 
         // 権限を確認
-        $this->checkPermission('super_manager');
+        $this->checkPermission('super_admin');
 
         $plugin = Plugin::findOrFail($id);
 
@@ -285,7 +279,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     {
 
         // 権限を確認
-        $this->checkPermission('super_manager');
+        $this->checkPermission('super_admin');
 
         $plugin = Plugin::findOrFail($id);
         try {
@@ -305,7 +299,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     {
 
         // 権限を確認
-        $this->checkPermission('super_manager');
+        $this->checkPermission('super_admin');
 
         // プラグインを取得
         $plugin = Plugin::findOrFail($id);

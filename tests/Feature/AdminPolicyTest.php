@@ -34,10 +34,10 @@ class AdminPolicyTest extends TestCase
     use RefreshDatabase;
 
     /** @test */
-    public function super_manager_can_access_viewer()
+    public function super_admin_can_access_viewer()
     {
         // 特権管理者を作成
-        $member = Member::factory()->create(['role' => 'super_manager']);
+        $member = Member::factory()->create(['role' => 'super_admin']);
         $policy = new AdminPolicy();
 
         // 特権管理者は viewer の権限を持つ
