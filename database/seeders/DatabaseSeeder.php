@@ -41,13 +41,5 @@ class DatabaseSeeder extends Seeder
             ThemeSettingsTableSeeder::class,
             ThemesTableSeeder::class,
         ]);
-
-        /*
-        if (app()->environment('production')) {
-            $this->call(\Database\Seeders\Pro\ProductionSeeder::class);
-        } else {
-            $this->call(\Database\Seeders\Dev\DevelopmentSeeder::class);
-        }
-        */
     }
 }

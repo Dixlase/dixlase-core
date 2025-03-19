@@ -45,7 +45,7 @@ class AdminBaseSettingsController extends AdminLoggedInController
     {
 
         // 権限を確認
-        $this->checkPermission('super_manager');
+        $this->checkPermission('super_admin');
 
         $settings = [
             'site_name' => BaseSetting::getValue('site_name', 'My Site'),
@@ -77,7 +77,7 @@ class AdminBaseSettingsController extends AdminLoggedInController
     public function update(AdminSettingsSystemRequest $request)
     {
         // 権限を確認
-        $this->authorize('super_manager');
+        $this->authorize('super_admin');
 
         $settings = $request->only([
             'site_name',

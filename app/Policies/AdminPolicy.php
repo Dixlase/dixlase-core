@@ -42,14 +42,14 @@ class AdminPolicy
     }
 
 
-    public function viewer(Member $member)
+    public function contributor(Member $member)
     {
-        return $this->hasPermission($member, 'viewer');
+        return $this->hasPermission($member, 'contributor');
     }
 
-    public function receptionist(Member $member)
+    public function author(Member $member)
     {
-        return $this->hasPermission($member, 'receptionist');
+        return $this->hasPermission($member, 'author');
     }
 
     public function editor(Member $member)
@@ -57,13 +57,13 @@ class AdminPolicy
         return $this->hasPermission($member, 'editor');
     }
 
-    public function manager(Member $member)
+    public function admin(Member $member)
     {
-        return $this->hasPermission($member, 'manager');
+        return $this->hasPermission($member, 'admin');
     }
 
-    public function superManager(Member $member)
+    public function superAdmin(Member $member)
     {
-        return $this->hasPermission($member, 'super_manager');
+        return $this->hasPermission($member, 'super_admin');
     }
 }

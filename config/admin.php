@@ -38,115 +38,115 @@ return [
             'text' =>  'admin.nav.dashboard',
             'route' => 'admin.dashboard',
             'icon' => 'fas fa-fw fa-tachometer-alt',
-            'can' => 'viewer',
+            'can' => 'contributor',
         ],
         'front' => [
             'text' => 'admin.nav.front.text',
             'icon' => 'fas fa-fw fa-users',
-            'can' => 'viewer',
+            'can' => 'contributor',
             'children' => [
                 'index' => [
                     'text' => 'admin.nav.front.index',
                     'route' => 'admin.front.index',
                     'icon' => 'fas fa-fw fa-users',
-                    'can' => 'viewer',
+                    'can' => 'contributor',
                 ],
                 'design' => [
                     'text' => 'admin.nav.front.design',
                     'route' => 'admin.front.design',
                     'icon' => 'fas fa-fw fa-users',
-                    'can' => 'viewer',
+                    'can' => 'contributor',
                 ],
                 'settings' => [
                     'text' => 'admin.nav.front.settings',
                     'route' => 'admin.front.settings',
                     'icon' => 'fas fa-fw fa-users',
-                    'can' => 'viewer',
+                    'can' => 'contributor',
                 ],
             ]
         ],
         'media' => [
             'text' => 'admin.nav.media.text',
             'icon' => 'fas fa-fw fa-users',
-            'can' => 'viewer',
+            'can' => 'contributor',
             'children' => [
                 'index' => [
                     'text' => 'admin.nav.media.index',
                     'route' => 'admin.media.index',
                     'icon' => 'fas fa-fw fa-users',
-                    'can' => 'viewer',
+                    'can' => 'contributor',
                 ],
                 'upload' => [
                     'text' => 'admin.nav.media.upload',
                     'route' => 'admin.media.upload',
                     'icon' => 'fas fa-fw fa-users',
-                    'can' => 'viewer',
+                    'can' => 'contributor',
                 ],
                 'settings' => [
                     'text' => 'admin.nav.media.settings',
                     'route' => 'admin.media.settings',
                     'icon' => 'fas fa-fw fa-users',
-                    'can' => 'viewer',
+                    'can' => 'contributor',
                 ],
             ]
         ],
         'settings' => [
             'text' => 'admin.nav.settings.text',
             'icon' => 'fas fa-fw fa-cogs',
-            'can' => 'viewer',
+            'can' => 'contributor',
             'children' => [
                 'base' => [
                     'text' => 'admin.nav.settings.base',
                     'route' => 'admin.settings.base',
                     'icon' => 'fas fa-fw fa-gear',
-                    'can' => 'super_manager',
+                    'can' => 'super_admin',
                 ],
                 'security' => [
                     'text' => 'admin.nav.settings.security',
                     'route' => 'admin.settings.security',
                     'icon' => 'fas fa-fw fa-bandage',
-                    'can' => 'super_manager',
+                    'can' => 'super_admin',
                 ],
                 'members' => [
                     'text' => 'admin.nav.settings.members.text',
                     'icon' => 'fas fa-fw fa-users-gear',
-                    'can' => 'viewer',
+                    'can' => 'contributor',
                     'children' => [
                         'index' => [
                             'text' => 'admin.nav.settings.members.index',
                             'route' => 'admin.settings.members.index',
                             'icon' => 'fas fa-fw fa-users',
-                            'can' => 'manager',
+                            'can' => 'admin',
                         ],
                         'create' => [
                             'text' => 'admin.nav.settings.members.create',
                             'route' => 'admin.settings.members.create',
                             'icon' => 'fas fa-fw fa-users',
-                            'can' => 'manager',
+                            'can' => 'admin',
                         ],
                         'profile' => [
                             'text' => 'admin.nav.settings.members.profile',
                             'route' => 'admin.settings.members.profile',
                             'icon' => 'fas fa-fw fa-users',
-                            'can' => 'viewer',
+                            'can' => 'contributor',
                         ]
                     ]
                 ],
                 'themes' => [
                     'text' => 'admin.nav.settings.themes.text',
                     'icon' => 'fas fa-fw fa-palette',
-                    'can' => 'manager',
+                    'can' => 'admin',
                     'children' => [
                         'index' => [
                             'text' => 'admin.nav.settings.themes.index',
                             'route' => 'admin.settings.themes.index',
                             'icon' => 'fas fa-fw fa-file',
-                            'can' => 'manager',
+                            'can' => 'admin',
                         ],
                         'install' => [
                             'text' => 'admin.nav.settings.themes.install',
                             'route' => 'admin.settings.themes.install',
-                            'can' => 'super_manager',
+                            'can' => 'super_admin',
                             'icon' => 'fas fa-fw fa-file',
                         ],
                     ]
@@ -154,19 +154,19 @@ return [
                 'plugins' => [
                     'text' => 'admin.nav.settings.plugins.text',
                     'icon' => 'fas fa-fw fa-toolbox',
-                    'can' => 'manager',
+                    'can' => 'admin',
                     'children' => [
                         'index' => [
                             'text' => 'admin.nav.settings.plugins.index',
                             'route' => 'admin.settings.plugins.index',
                             'icon' => 'fas fa-fw fa-file',
-                            'can' => 'manager',
+                            'can' => 'admin',
                         ],
                         'install' => [
                             'text' => 'admin.nav.settings.plugins.install',
                             'route' => 'admin.settings.plugins.install',
                             'icon' => 'fas fa-fw fa-file',
-                            'can' => 'super_manager',
+                            'can' => 'super_admin',
                         ],
                     ]
                 ],
@@ -254,24 +254,24 @@ return [
 
     'roles' => [
         // 特権管理者
-        'super_manager' => 'admin.roles.super_manager',
+        'super_admin' => 'admin.roles.super_admin',
         // 管理者
-        'manager' => 'admin.roles.manager',
+        'admin' => 'admin.roles.admin',
         // 編集者
         'editor' => 'admin.roles.editor',
         // 受付
-        'receptionist' => 'admin.roles.receptionist',
+        'author' => 'admin.roles.author',
         // 閲覧者
-        'viewer' => 'admin.roles.viewer',
+        'contributor' => 'admin.roles.contributor',
     ],
 
     // 権限の階層
     'roles_hierarchy' => [
-        'super_manager' => ['super_manager'],
-        'manager' => ['super_manager', 'manager'],
-        'editor' => ['super_manager', 'manager', 'editor'],
-        'receptionist' => ['super_manager', 'manager', 'editor', 'receptionist'],
-        'viewer' => ['super_manager', 'manager', 'editor', 'receptionist', 'viewer'],
+        'super_admin' => ['super_admin'],
+        'admin' => ['super_admin', 'admin'],
+        'editor' => ['super_admin', 'admin', 'editor'],
+        'author' => ['super_admin', 'admin', 'editor', 'author'],
+        'contributor' => ['super_admin', 'admin', 'editor', 'author', 'contributor'],
     ],
 
 

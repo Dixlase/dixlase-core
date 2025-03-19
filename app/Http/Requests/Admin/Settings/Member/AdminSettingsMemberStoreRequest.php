@@ -48,7 +48,7 @@ class AdminSettingsMemberStoreRequest extends FormRequest
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:members,email,' . ($isUpdate ? $this->route('member')->id : 'NULL'),
             'password' => $isUpdate ? 'nullable|string|min:8' : 'required|string|min:8', // 作成時は必須、編集時は任意
-            'role' => 'required||in:admin,super_admin,editor,author,receptionist',
+            'role' => 'required||in:admin,super_admin,editor,author',
             'appearance' => 'required|numeric|in:0,1,2',
             'status' => 'required|numeric|in:0,1',
         ];

@@ -163,11 +163,11 @@ return [
 
     'roles' => [
         'text' => 'Roles',
-        'super_manager' => 'Super Administator',
-        'manager' => 'Administator',
+        'super_admin' => 'Super Administator',
+        'admin' => 'Administator',
         'editor' => 'Editor',
-        'receptionist' => 'Reception',
-        'viewer' => 'Viewer',
+        'author' => 'Author',
+        'contributor' => 'Contributor',
     ],
 
     'theme' => [
