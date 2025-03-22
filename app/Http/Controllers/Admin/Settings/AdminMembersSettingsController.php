@@ -150,4 +150,11 @@ class AdminMembersSettingsController extends AdminLoggedInController
     {
         return view('admin.settings.members.profile', $this->viewParams);
     }
+
+    public function settings()
+    {
+        return view('admin.settings.members.settings', $this->viewParams);
+    }
+
+    public function updateSettings() {}
 }

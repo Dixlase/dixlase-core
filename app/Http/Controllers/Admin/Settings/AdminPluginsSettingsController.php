@@ -104,7 +104,6 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         $zip = new ZipArchive();
         if ($zip->open($tempPath) === true) {
 
-            Log::info('zip->open完了');
 
             // プラグインフォルダ名取得 (ZIP内の最初のディレクトリ)
             $pluginDir = null;
@@ -132,7 +131,6 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 return redirect()->back()->with('error', 'ZIP 内に有効なプラグインディレクトリが見つかりません。');
             }
 
-            Log::info('pluginDir: ' . $pluginDir);
 
             $destinationPath = base_path('plugins/' . $pluginDir);
 
@@ -214,8 +212,6 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 $slug // ここでプラグインのスラッグを渡す
             );
 
-
-
             // プラグインのマイグレーションを実行
             // $migrated には「新しく実行された」マイグレーションファイルが入る
             $migrated = $migrator->migrate($pluginDir, null, ['step' => false]);
@@ -231,8 +227,6 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 // 空 → "No migrations to run" の状態
                 // テーブルが既にあるとみなしてシーダーをスキップ
             }
-
-
 
             // artisanコマンドでPSR-4オートロードを更新
             Artisan::call('plugin:autoload:sync', ['--cleanup' => true]);

@@ -50,17 +50,19 @@ class AdminBaseSettingsController extends AdminLoggedInController
         $settings = [
             'site_name' => BaseSetting::getValue('site_name', 'My Site'),
             'language' => BaseSetting::getValue('language', 'ja'),
-            'is_member_site' => BaseSetting::getValue('is_member_site', 'false'),
-            'allow_external_registration' => BaseSetting::getValue('allow_external_registration', 'false'),
+            //'is_member_site' => BaseSetting::getValue('is_member_site', 'false'),
+            //'allow_external_registration' => BaseSetting::getValue('allow_external_registration', 'false'),
             'maintenance_mode' => BaseSetting::getValue('maintenance_mode', 'false'),
             'maintenance_message' => BaseSetting::getValue('maintenance_message', '現在メンテナンス中です。しばらくお待ちください。'),
-            'allow_guest_registration' => BaseSetting::getValue('allow_guest_registration', 'false'),
+            //'allow_guest_registration' => BaseSetting::getValue('allow_guest_registration', 'false'),
+            /*
             'required_fields' => BaseSetting::getValue('required_fields', [
                 'address' => false,
                 'phone' => false,
                 'gender' => false,
                 'birthday' => false,
             ]),
+            */
         ];
 
         $this->viewParams['settings'] = $settings;
@@ -98,6 +100,6 @@ class AdminBaseSettingsController extends AdminLoggedInController
             BaseSetting::setValue($name, $value);
         }
 
-        return redirect()->route('admin.settings.systems')->with('success', '設定が更新されました。');
+        return redirect()->route('admin.settings.base')->with('success', '設定が更新されました。');
     }
 }

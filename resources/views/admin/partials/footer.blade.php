@@ -18,11 +18,11 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-@props([
-    'site_name' => '',
-    'class' => '',
-    ])
-
-<div class="block h-9 w-9 fill-current {{ $class }}">
-    <img src="{{ asset('assets/common/images/logo.svg') }}" alt="{{ $site_name }}" class="h-auto mx-auto mb-4">
-</div>
+<footer class="border-t py-4 text-center text-xs bg-gray-100 text-gray-500 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700">
+    <span class="font-semibold">{{ config('app.name', 'MySoftware') }}</span>
+    v{{ config('app.version', '1.0.0') }} &middot;
+    &copy; {{ date('Y') }} exc-D inc. &middot;
+    <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" class="underline hover:text-gray-700 dark:hover:text-gray-300">
+        AGPLv3
+    </a>
+</footer>

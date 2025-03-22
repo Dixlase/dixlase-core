@@ -18,88 +18,94 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-<header x-data="{ openSidebar: false, openUserMenu: false}" class="fixed top-0 z-50 w-full flex border-b {{ config('admin.appearance_class.layout.header') }}">
+<header x-cloak x-data="{ openSidebar: false, openUserMenu: false}" class="fixed top-0 z-50 w-full flex border-b {{ config('admin.appearance_class.layout.header') }}">
     <!-- プライマリーナビゲーションメニュー -->
-    <div class="w-full mx-4 sm:mx-0 sm:px-6 lg:px-8 flex items-center h-16 justify-between sm:justify-start">
-        <!-- ロゴ -->
-        <div class="flex items-center order-2 sm:order-1">
-            <a href="{{ route('admin.dashboard') }}">
+    <div class="w-full mx-4 sm:mx-0 lg:px-4 flex items-center h-16">
+
+        <!-- 左：サイドメニュー（スマホ用のみ） -->
+        <div class="w-1/3 flex items-center sm:hidden">
+            <button @click="openSidebar = true"
+                    class="inline-flex items-center justify-start p-2 rounded-md {{ config('admin.appearance_class.' . $appearance . '.button_hamburger') }} focus:outline-none transition duration-150 ease-in-out">
+                <i class="fa-solid fa-bars text-xl"></i>
+            </button>
+        </div>
+
+        <!-- 中央：ロゴ（スマホでは中央配置, PCでは左寄せ） -->
+        <div class="w-1/3 flex justify-center sm:flex-1 sm:justify-start">
+            <a href="{{ route('admin.dashboard') }}" class="flex items-center">
                 @include('components::application-logo' ,[
                     'class' => config('admin.appearance_class.layout.logo'),
                     'site_name' => $site_name
                 ])
             </a>
-        </div>
 
-        <!-- サイト名 (PCレイアウトのみ表示) -->
-        <div class="hidden space-x-8 sm:-my-px sm:ms-6 sm:flex items-center sm:order-2">
-            <a href="{{ route('admin.dashboard') }}">
+            <!-- サイト名（PCのみ表示） -->
+            <a href="{{ route('admin.dashboard') }}" class="hidden sm:flex items-center ml-4 text-white font-semibold">
                 {{ $site_name ?? env('APP_NAME') }}
             </a>
         </div>
 
-        <!-- サイドメニューのハンバーガー (スマホ用) -->
-        <button @click="openSidebar = true, openMenu= true" class="sm:hidden inline-flex items-center justify-center p-2 rounded-md order-1 {{ config('admin.appearance_class.' . $appearance . '.button_hamburger') }} focus:outline-none transition duration-150 ease-in-out">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path :class="{'hidden': openSidebar, 'inline-flex': ! openSidebar }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                <path :class="{'hidden': ! openSidebar, 'inline-flex': openSidebar }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        </button>
+        <!-- 右：プレビューボタン & ユーザーメニュー -->
+        <div class="w-1/3 flex items-center justify-end gap-2">
+            <!-- プレビュー（スマホはアイコンのみ） -->
+            <a href="{{ url('/') }}" target="_blank"
+            class="inline-flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                <i class="fa-solid fa-eye text-lg sm:me-2"></i>
+                <span class="hidden sm:inline">{{ __('common.preview') }}</span>
+            </a>
 
-        <!-- ユーザーメニューのハンバーガー (スマホ用) -->
-        <button @click="openUserMenu = true, openMenu= true" class="inline-flex items-center justify-center rounded-md order-2 sm:hidden {{ config('admin.appearance_class.' . $appearance . '.button_hamburger') }} focus:outline-none transition duration-150 ease-in-out">
-            <svg class="h-8 w-8" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18c0-2.21 1.79-4 4-4h4c2.21 0 4 1.79 4 4v1H6v-1z" />
-            </svg>
-        </button>
-    </div>
+            <!-- ユーザーメニュー（スマホ用） -->
+            <button @click="openUserMenu = true"
+                    class="inline-flex items-center justify-center rounded-md sm:hidden {{ config('admin.appearance_class.' . $appearance . '.button_hamburger') }} focus:outline-none transition duration-150 ease-in-out">
+                <i class="fa-solid fa-user-circle text-3xl text-gray-600 dark:text-gray-300"></i>
+            </button>
 
-    <!-- ユーザードロップダウンメニュー -->
-    <div class="hidden w-36 sm:flex sm:items-center sm:ms-6">
-        <x-dropdown align="right" width="48">
-            <x-slot name="trigger">
-                <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md focus:outline-none transition ease-in-out duration-150 {{ config('admin.layout.button_admin_user')}}">
-                    <div>{{-- $member->name --}}</div>
-                    <div class="ms-1">
-                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                        </svg>
-                    </div>
+            <!-- ユーザーメニュー（PC用） -->
+            <div class="hidden sm:flex sm:items-center relative" x-data="{ open: false }">
+                <button
+                    @click="open = !open"
+                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md focus:outline-none transition ease-in-out duration-150 {{ config('admin.layout.button_admin_user') }}">
+                    <i class="fa-solid fa-user-circle text-3xl text-gray-600 dark:text-gray-300"></i>
+                    <div class="ml-2">{{ Auth::user()->name }}</div>
+                    <i class="fa-solid fa-chevron-down ms-2 text-xs"></i>
                 </button>
-            </x-slot>
 
-            <x-slot name="content">
-                <div class="px-4">
-                    <div class="font-medium text-base {{ config('admin.layout.option_2') }}">{{-- Auth::user()->name --}}</div>
-                    <div class="font-medium text-sm {{ config('admin.layout.option_3') }}">{{-- Auth::user()->email --}}</div>
+                <!-- ユーザードロップダウンメニュー -->
+                <div
+                    x-show="open"
+                    @click.away="open = false"
+                    x-transition
+                    class="absolute right-[-1rem] top-full mt-2 w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg py-2 z-50">
+                    <div class="px-4 flex items-center space-x-3">
+                        <i class="fa-solid fa-user-circle text-3xl text-gray-600 dark:text-gray-300"></i>
+                        <div>
+                            <div class="font-medium text-base text-gray-900 dark:text-gray-100">{{ Auth::user()->name }}</div>
+                            <div class="font-medium text-sm text-gray-600 dark:text-gray-400">{{ Auth::user()->email }}</div>
+                        </div>
+                    </div>
+                    <a href="{{ route('admin.settings.members.profile') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 transition">
+                        {{ __('admin.settings.members.profile.heading') }}
+                    </a>
+                    <form method="POST" action="{{ route('admin.logout') }}">
+                        @csrf
+                        <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 transition">
+                            {{ __('common.logout') }}
+                        </button>
+                    </form>
                 </div>
-
-                <x-dropdown-link :href="route('admin.settings.members.profile')">
-                    {{ __('admin.settings.members.profile.heading') }}
-                </x-dropdown-link>
-
-                <!-- ログアウト -->
-                <form method="POST" action="{{ route('admin.logout') }}">
-                    @csrf
-
-                    <x-dropdown-link :href="route('admin.logout')"
-                            onclick="event.preventDefault();
-                                        this.closest('form').submit();">
-                        {{ __('common.Logout') }}
-                    </x-dropdown-link>
-                </form>
-            </x-slot>
-        </x-dropdown>
+            </div>
+        </div>
     </div>
+
 
     <!-- スライドメニューのバックグラウンド -->
     <div x-show="openSidebar || openUserMenu" @click="openSidebar = !true; openUserMenu = false" class="fixed inset-0 bg-transparent z-10 w-full h-full"></div>
 
     <!-- 左側スライドインメニュー -->
-    <div class="fixed inset-y-0 w-64 shadow-lg transform transition-transform duration-300 ease-in-out translate-x-minus-full z-20 text-gray-700 bg-gray-200 dark:text-gray-300 dark:bg-gray-900"
+    <div x-cloak class="fixed inset-y-0 w-64 shadow-lg transform transition-transform duration-300 ease-in-out x-minus-full translate-x-minus-full z-20 text-gray-700 bg-gray-200 dark:text-gray-300 dark:bg-gray-900"
     :class="{ 'translate-x-minus-full': !openSidebar, 'translate-x-0': openSidebar }">
-        <button @click="openSidebar = !openSidebar" class="p-4 text-gray-700 dark:text-gray-300">
+
+    <button @click="openSidebar = !openSidebar" class="p-4 text-gray-700 dark:text-gray-300">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -115,7 +121,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
     <!-- 右側スライドインメニュー -->
-    <div class="sm:hidden fixed w-64 h-full shadow-lg transform transition-transform duration-300 ease-in-out z-20 translate-x-100vw text-gray-300 dark:text-gray-700 bg-gray-900 dark:bg-gray-200' }}"
+    <div x-cloak class="sm:hidden fixed w-64 h-full shadow-lg transform transition-transform duration-300 ease-in-out z-20 translate-x-100vw text-gray-300 dark:text-gray-700 bg-gray-900 dark:bg-gray-200' }}"
     :class="{ 'translate-x-100vw': !openUserMenu, 'translate-x-100vw-16': openUserMenu,'sm:block': openUserMenu, 'sm:hidden': ! openUserMenu }">
 
         <!-- 閉じるボタン -->
@@ -126,30 +132,32 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </button>
 
         <!-- ユーザーメニュー(スマホ用) -->
-        <div class="pt-4 pb-1 border-t {{ config('admin.layout.option_1') }}">
-            <div class="px-4">
-                <div class="font-medium text-base {{ config('admin.appearance_class.option_2') }}">{{-- Auth::user()->name --}}</div>
-                <div class="font-medium text-sm {{ config('admin.appearance_class.option_3') }}">{{-- Auth::user()->email --}}</div>
+        <div class="pt-4 pb-2 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+            <div class="px-4 flex items-center space-x-3">
+                <i class="fa-solid fa-user-circle text-3xl text-gray-600 dark:text-gray-300"></i>
+                <div>
+                    <div class="font-medium text-base text-gray-900 dark:text-gray-100">{{ Auth::user()->name }}</div>
+                    <div class="font-medium text-sm text-gray-600 dark:text-gray-400">{{ Auth::user()->email }}</div>
+                </div>
             </div>
 
             <div class="mt-3 space-y-1">
-                {{--
-                <x-responsive-nav-link :href="route('mypage.profile.edit')">
-                    {{ __('Profile') }}
-                </x-responsive-nav-link>
-
+                <a href="{{ route('admin.settings.members.profile') }}"
+                class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                    <i class="fa-solid fa-user me-2"></i> {{ __('admin.settings.members.profile.heading') }}
+                </a>
 
                 <!-- ログアウト -->
-                <form method="POST" action="{{ route('mypage.logout') }}">
+                <form method="POST" action="{{ route('admin.logout') }}">
                     @csrf
-                    <x-responsive-nav-link :href="route('mypage.logout')"
-                            onclick="event.preventDefault();
-                                        this.closest('form').submit();">
-                        {{ __('Log Out') }}
-                    </x-responsive-nav-link>
+                    <button type="submit"
+                            class="w-full flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                        <i class="fa-solid fa-sign-out-alt me-2"></i> {{ __('common.logout') }}
+                    </button>
                 </form>
-                --}}
             </div>
         </div>
     </div>
+
+
 </header>

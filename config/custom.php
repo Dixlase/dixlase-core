@@ -85,4 +85,9 @@ return [
             'naming_convention' => 'kebab_case', // ケバブケース
         ],
     ],
+    //
+    'custom' => [
+        'default_license' =>  'agpl',
+    ],
+
 ];

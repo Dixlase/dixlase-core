@@ -20,13 +20,15 @@
 
 
  // Your custom styles here
- @use 'admin';
- @use 'tailwind-custom';
- @use "@fortawesome/fontawesome-free/css/all.min.css";
+
+@use "@fortawesome/fontawesome-free/css/all.min.css";
+@use 'tailwind-custom';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
 
 
 

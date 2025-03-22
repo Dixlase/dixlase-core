@@ -85,11 +85,12 @@ return [
             'base' => '基本設定',
             'security' => 'セキュリティ設定',
             'members' => [
-                'text' => 'メンバー設定',
+                'text' => 'メンバー管理',
                 'index' => 'メンバーマスター',
                 'create' => '新規メンバー作成',
                 'edit' => '編集',
                 'profile' => 'プロフィール設定',
+                'settings' => 'メンバー設定',
             ],
             'themes' => [
                 'text' => 'テーマ設定',

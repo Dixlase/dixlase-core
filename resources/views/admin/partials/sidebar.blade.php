@@ -23,10 +23,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'arrow_class' => 'w-4 h-4 ml-auto transform'
 ])
 
+
+
 <div class="flex flex-col w-64 h-full">
     <nav class="flex-1 px-4 py-4 space-y-1">
-
-
         @foreach (config('admin.nav') as $key => $item)
             @php
                 // 現在のルート名を階層ごとに分割
@@ -37,7 +37,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endphp
 
 
-            <div x-data="{ {{ $open_key }} : {{ $is_open ? 'true' : 'false' }} }">
+            <div x-cloak x-data="{ {{ $open_key }} : {{ $is_open ? 'true' : 'false' }} }">
                     @if (isset($item['route']) && is_string($item['route']))
                         @can($item['can'])
                             <a href="{{ route($item['route']) }}"
@@ -59,14 +59,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @endif
 
                 @if (isset($item['children']) && is_array($item['children']))
-                    <div x-show="{{ $open_key }}"
-                        x-transition:enter="transition ease-out duration-300 h-0"
-                        x-transition:enter-start="opacity-0 transform -translate-y-2 h-0"
-                        x-transition:enter-end="opacity-100 transform translate-y-0 h-auto"
-                        x-transition:leave="transition ease-in duration-200 h-auto"
-                        x-transition:leave-start="opacity-100 transform translate-y-0 h-auto"
-                        x-transition:leave-end="opacity-0 transform -translate-y-2 h-0"
-                        class="ml-4 space-y-1">
+                    <div x-show="{{ $open_key }}" x-collapse class="ml-2 space-y-1">
                         @foreach ($item['children'] as $child_key => $child_item)
 
                                 @if (isset($child_item['route']) && is_string($child_item['route']))
@@ -96,14 +89,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
                                         @if (isset($item['children']) && is_array($item['children']))
-                                            <div x-show="{{ $open_child_key }}"
-                                                x-transition:enter="transition ease-out duration-300"
-                                                x-transition:enter-start="opacity-0 transform -translate-y-2"
-                                                x-transition:enter-end="opacity-100 transform translate-y-0"
-                                                x-transition:leave="transition ease-in duration-200 to"
-                                                x-transition:leave-start="opacity-100 transform translate-y-0"
-                                                x-transition:leave-end="opacity-0 transform -translate-y-2"
-                                                class="ml-4 space-y-1">
+                                            <div x-show="{{ $open_child_key }}" x-collapse class="ml-2 space-y-1">
                                                 @foreach ($child_item['children'] as $grand_child_key => $grand_child_item)
                                                     @can($grand_child_item['can'])
                                                         <a href="{{ route($grand_child_item['route']) }}"

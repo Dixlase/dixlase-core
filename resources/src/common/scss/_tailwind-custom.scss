@@ -2,13 +2,13 @@
     transform: translateX(-100%) !important;
 }
 
+
 .translate-x-150per {
     transform: translateX(150%) !important;
-    ;
 }
 
 .translate-x-minus-64{
-transform: translateX(-16rem) !important;
+    transform: translateX(-16rem) !important;
 }
 
 .translate-x-100vw-16 {
@@ -20,6 +20,16 @@ transform: translateX(-16rem) !important;
 }
 
 .translate-x-100vw {
+
     transform: translateX(calc(100vw)) !important;
 }
 
+
+[x-cloak] {
+    display: none !important;
+}
+@layer base {
+    [x-cloak] {
+        display: none !important;
+    }
+}

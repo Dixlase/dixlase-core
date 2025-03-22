@@ -59,77 +59,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             'required' => true,
                         ])
 
-                    <div class="mt-4">
-                        @include('components::form.label', [
-                            'text' => 'admin.pages.settings.base.is_member_site',
-                        ])
-                        @include('components::form.hidden', [
-                            'id' => 'is_member_site',
-                            'name' => 'is_member_site',
-                            'value' => '0'
-                        ])
-                        @include('components::form.radio-group', [
-                            'name' => 'is_member_site',
-                            'options' => [
-                                1 => 'common.yes',
-                                0 => 'common.no'
-                            ],
-                            'value' => $settings['is_member_site'],
-                        ])
-                    </div>
-
-                    <div class="mt-4">
-                        @include('components::form.label', [
-                            'text' => 'ゲスト申し込みを許可する',
-                        ])
-                        @include('components::form.hidden', [
-                            'id' => 'allow_guest_registration',
-                            'name' => 'allow_guest_registration',
-                            'value' => '0'
-                        ])
-                        @include('components::form.radio-group', [
-                            'name' => 'allow_guest_registration',
-                            'options' => [
-                                1 => 'common.yes',
-                                0 => 'common.no'
-                            ],
-                            'value' => $settings['allow_guest_registration'],
-                        ])
-                    </div>
-
-                    <div class="mt-4">
-                        @include('components::form.label', [
-                            'text' => '外部からユーザー登録を可能にする',
-                        ])
-                        @include('components::form.hidden', [
-                            'id' => 'allow_external_registration',
-                            'name' => 'allow_external_registration',
-                            'value' => '0'
-                        ])
-                        @include('components::form.radio-group', [
-                            'name' => 'allow_external_registration',
-                            'options' => [
-                                1 => 'common.yes',
-                                0 => 'common.no'
-                            ],
-                            'value' => $settings['allow_external_registration'],
-                        ])
-                    </div>
-
-                    <div class="mt-4">
-                        @include('components::form.label', [
-                            'text' => '必須項目の設定',
-                        ])
-                        @include('components::form.checkbox-group', [
-                            'name' => 'required_fields',
-                            'options' => [
-                                'address' => 'common.address',
-                                'phone' => 'common.phone',
-                                'gender' => 'common.gender',
-                                'birthday' => 'common.birthday',
-                            ],
-                            'values' => old('required_fields', $settings['required_fields'] ?? []),
-                        ])
                     </div>
 
                     <div class="mt-4">
@@ -152,14 +81,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
 
                     <!-- 保存ボタンとモーダル -->
-                    @include('components::form.save', [
-                        'id' => 'confirmationModal',
-                        'onclick' => "openModal('confirmationModal')",
-                        'title' => '保存の確認',
-                        'message' => '変更内容を保存しますか？',
-                        'confirm_label' => '保存',
-                        'cancel_label' => '戻る',
-                    ])
+                    <div class="mt-4">
+                        @include('components::form.save', [
+                            'id' => 'confirmationModal',
+                            'onclick' => "openModal('confirmationModal')",
+                            'title' => '保存の確認',
+                            'message' => '変更内容を保存しますか？',
+                            'confirm_label' => '保存',
+                            'cancel_label' => '戻る',
+                        ])
+                        </div>
 
                 </form>
             </div>
