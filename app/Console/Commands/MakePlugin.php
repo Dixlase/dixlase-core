@@ -91,14 +91,28 @@ class MakePlugin extends Command
         // ライセンスの選択
         $licenseOption = $this->choice(
             'ライセンスを選択してください',
-            ['gpl' => 'GPL-3.0', 'agpl' => 'AGPL-3.0', 'commercial' => 'Commercial'],
+            [
+                'gpl' => 'GPL-3.0',
+                'agpl' => 'AGPL-3.0',
+                'mit' => 'MIT',
+                'apache' => 'Apache-2.0',
+                'bsd3' => 'BSD-3-Clause',
+                'lgpl' => 'LGPL-3.0',
+                'commercial' => 'Commercial',
+                'custom' => '独自ライセンス'
+            ],
             'gpl'
         );
 
         $licenseMap = [
             'gpl' => ['name' => 'GPL-3.0', 'file' => 'license-gpl.txt'],
             'agpl' => ['name' => 'AGPL-3.0', 'file' => 'license-agpl.txt'],
+            'mit' => ['name' => 'MIT', 'file' => 'license-mit.txt'],
+            'apache' => ['name' => 'Apache-2.0', 'file' => 'license-apache.txt'],
+            'bsd3' => ['name' => 'BSD-3-Clause', 'file' => 'license-bsd3.txt'],
+            'lgpl' => ['name' => 'LGPL-3.0', 'file' => 'license-lgpl.txt'],
             'commercial' => ['name' => 'Commercial', 'file' => 'license-commercial.txt'],
+            'custom' => ['name' => 'Custom License', 'file' => 'license-custom.txt'],
         ];
 
         if (File::exists($pluginDir)) {

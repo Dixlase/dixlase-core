@@ -39,6 +39,7 @@ class MakeCustomConfig extends Command
      */
     protected $signature = 'make:custom:config
         {name : The name of the config file}
+        {--license= : Specify a license (e.g. gpl, mit, apache)}
         {--force}';
     /**
      * The console command description.
@@ -60,15 +61,23 @@ class MakeCustomConfig extends Command
      */
     public function handle()
     {
-        $className = Str::snake($this->argument('name'));
+        $configName = Str::snake($this->argument('name'));
+        $licenseKey = $this->option('license') ?? 'gpl';
+
+        // ルートのライセンス情報を取得
+        $licenseInfo = $this->getLicenseInfo($licenseKey);
+        if (!$licenseInfo) {
+            return Command::FAILURE;
+        }
 
         $options = [
             'force' => $this->option('force'),
         ];
 
-        $this->makeFile($className, [], $options);
+        $this->makeFile($className, [], $options, $licenseInfo);
 
-        return 0;
+        $this->info("カスタムディレクトリのコンフィグファイル [{$configName}] を作成しました。");
+        return Command::SUCCESS;
     }
 
     /**

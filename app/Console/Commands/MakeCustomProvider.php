@@ -26,15 +26,19 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use App\Services\FileGenerator;
 use App\Console\Traits\MakeProviderTrait;
+use App\Console\Traits\ChoiceLicenseTrait;
 
 class MakeCustomProvider extends Command
 {
     use MakeProviderTrait;
+    use ChoiceLicenseTrait;
+
 
     protected $signature = 'make:custom:provider
         {name : The name of the service provider (with optional subfolders, e.g. Admin/MyServiceProvider)}
-        {--plugin : Use the plugin-specific provider template}  // plugin.stubを使うか
+        {--license= : Specify the license (e.g. gpl, mit, apache)}
         {--force : Overwrite if provider already exists}';
+
 
     protected $description = 'Create a new service provider in the custom directory';
 
@@ -48,18 +52,22 @@ class MakeCustomProvider extends Command
 
     public function handle()
     {
-        // 1) parse subDirs + className
+        // クラス名とサブディレクトリを取得
         [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
 
-        // 2) options
-        $pluginStub = (bool) $this->option('plugin');
-        $force      = (bool) $this->option('force');
+        // 2) オプションの取得
+        $force              = (bool) $this->option('force');
+        $licenseOption      = $this->option('license') ?? 'gpl'; // デフォルトは GPL-3.0
 
-        // 3) call trait method
-        $this->makeFile($className, $subDirs, $force, $pluginStub);
+        // ライセンス情報の取得
+        $licenseInfo = $this->getLicenseInfo($licenseOption);
+        if (!$licenseInfo) {
+            $this->error("ライセンス情報が取得できませんでした。処理を中止します。");
+            return Command::FAILURE;
+        }
 
-        // 4) もし bootstrap/providers.php に自動追加したければ
-        //    addProviderToBootstrap($className, $subDirs);
+        // `MakeProviderTrait` を使用してファイル作成
+        $this->makeFile($className, $subDirs, $force, false, $licenseInfo);
 
         return 0;
     }

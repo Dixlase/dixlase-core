@@ -25,9 +25,13 @@ namespace App\Console\Commands;
 use App\Services\PluginMigrator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Console\Command;
+use App\Console\Traits\PluginManagementTrait;
 
-class PluginMigrate extends PluginMigrationCommand
+class PluginMigrate extends Command
 {
+
+    use PluginManagementTrait;
+
     /**
      * The name and signature of the console command.
      *
@@ -35,7 +39,6 @@ class PluginMigrate extends PluginMigrationCommand
      */
     protected $signature = 'plugin:migrate
                             {plugin : The name of the plugin (e.g. EventsPlugin)}
-                            {--force : Force the operation to run when in production}
                             {--pretend : Dump the SQL queries that would be run}
                             {--step= : Number of migrations to run}';
 
@@ -65,7 +68,7 @@ class PluginMigrate extends PluginMigrationCommand
         // オプションの処理
         $options = [
             'pretend' => $this->option('pretend'),
-            'step' => $this->option('step'),
+            'step' => $this->option('step') ? (int) $this->option('step') : 1, // デフォルト値を 1 に設定
         ];
 
         // プロセスオプションの共通処理
@@ -83,29 +86,25 @@ class PluginMigrate extends PluginMigrationCommand
             return Command::FAILURE;
         }
 
-        // 本番環境での実行確認
-        if ($force || $this->confirmProduction('migrate')) {
-            $success = $this->executeOperation(function () use ($plugin, $options) {
-                $migrated = $this->pluginMigrator->migrate($plugin, null, $options);
+        // マイグレーション実行
+        $this->info("Running migrations for plugin [{$plugin}]...");
 
-                if (empty($migrated)) {
-                    $this->info("No migrations to run for plugin [{$plugin}].");
-                } else {
-                    foreach ($migrated as $migration => $note) {
-                        $this->info($note);
-                    }
-                    $this->info("Migrations for plugin [{$plugin}] completed successfully.");
+        try {
+            $migrated = $this->pluginMigrator->migrate($plugin, null, $options);
+
+            if (empty($migrated)) {
+                $this->info("No migrations to run for plugin [{$plugin}].");
+            } else {
+                foreach ($migrated as $file) {
+                    $this->info("Migrated: " . $file);
                 }
-            });
-
-            if ($success) {
-                return Command::SUCCESS;
+                $this->info("Migrations for plugin [{$plugin}] completed successfully.");
             }
 
+            return Command::SUCCESS;
+        } catch (\Exception $e) {
+            $this->error("Error during migration: " . $e->getMessage());
             return Command::FAILURE;
         }
-
-        $this->info('Migration cancelled.');
-        return Command::FAILURE;
     }
 }

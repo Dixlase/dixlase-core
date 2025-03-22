@@ -24,9 +24,13 @@ namespace App\Console\Commands;
 
 use App\Services\PluginMigrator;
 use Illuminate\Console\Command;
+use App\Console\Traits\PluginManagementTrait;
 
-class PluginFactory extends PluginMigrationCommand
+
+class PluginFactory extends Command
 {
+    use PluginManagementTrait;
+
     /**
      * The name and signature of the console command.
      *
@@ -38,13 +42,11 @@ class PluginFactory extends PluginMigrationCommand
      * {plugin} : プラグイン名
      * {model} : モデル名 (例: Page)
      * --count= : 生成するレコード数 (デフォルト: 10)
-     * --force : 本番環境でも実行確認なし
      */
     protected $signature = 'plugin:factory
                             {plugin : The name of the plugin (e.g. PagesPlugin)}
                             {model : The model name (e.g. Page)}
-                            {--count=10 : Number of records to create}
-                            {--force : Force the operation to run when in production}';
+                            {--count=10 : Number of records to create}';
 
     /**
      * The console command description.
@@ -72,12 +74,6 @@ class PluginFactory extends PluginMigrationCommand
             return Command::FAILURE;
         }
 
-        // 2. 本番環境での確認
-        if (! $force && ! $this->confirmProduction('factory')) {
-            $this->info('Operation cancelled.');
-            return Command::FAILURE;
-        }
-
         // 3. モデルクラスを組み立て
         //    例: "Plugins\PagesPlugin\App\Models\Page"
         $modelClass = "Plugins\\{$plugin}\\App\\Models\\{$model}";
@@ -87,13 +83,8 @@ class PluginFactory extends PluginMigrationCommand
             return Command::FAILURE;
         }
 
-        // 4. ファクトリが存在するかどうか (Laravel 9 以降は「モデルファクトリ」推奨)
-        //    例: "Plugins\PagesPlugin\App\Models\PageFactory"
-        //    ただし、実際にはモデルと同じ場所に「 PageFactory 」があるかどうかは
-        //    名前の規約次第なので、厳格にチェックしたいならここで class_exists() してもOK
-
+        // ファクトリを実行
         try {
-            // 5. ファクトリを呼び出してレコード作成
             $this->info("Creating [{$count}] records for plugin model [{$modelClass}]...");
 
             $modelClass::factory()->count($count)->create();

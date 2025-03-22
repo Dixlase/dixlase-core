@@ -26,20 +26,23 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use App\Services\FileGenerator;
 use App\Console\Traits\MakeProviderTrait;
+use App\Console\Traits\PluginManagementTrait;
+use App\Console\Traits\ChoiceLicenseTrait;
 use Illuminate\Support\ServiceProvider;
 
 class MakePluginProvider extends Command
 {
 
     use MakeProviderTrait;
+    use PluginManagementTrait;
+    use ChoiceLicenseTrait;
 
 
     protected $signature = 'make:plugin:provider
         {plugin : The plugin name (e.g. "MyPlugin")}
         {name : The name of the service provider (e.g. "MyPluginServiceProvider")}
         {--plugin : Use the plugin-specific provider template (provider.plugin.stub)}
-        {--force : Overwrite if provider already exists}
-        {--license-info= : License information as JSON string}';
+        {--force : Overwrite if provider already exists}';
 
     protected $description = 'Create a new service provider for the specified plugin.';
 
@@ -54,26 +57,15 @@ class MakePluginProvider extends Command
     public function handle()
     {
         // 1) plugin & provider
-        $pluginInput = $this->argument('plugin'); // e.g. "MyPlugin"
+        $pluginName = $this->argument('plugin'); // e.g. "MyPlugin"
         $className   = $this->argument('name');   // e.g. "MyPluginServiceProvider"
-        $pluginStub  = (bool) $this->option('plugin');
         $force       = (bool) $this->option('force');
 
-        // ライセンス情報を取得
-        // ライセンス情報を取得
-        $licenseInfo = $this->option('license-info');
-
-        // JSONデコードしてエラー処理を行う
-        if ($licenseInfo) {
-            $licenseInfo = json_decode($licenseInfo, true);
-            if (json_last_error() !== JSON_ERROR_NONE || !is_array($licenseInfo)) {
-                $this->warn("Invalid license information received. Using default empty array.");
-                $licenseInfo = [];
-            }
-        } else {
-            $licenseInfo = [];
+        // ✅ `PluginLicenseTrait` を使ってライセンス情報を取得
+        $licenseInfo = $this->getPluginLicenseInfo($pluginName);
+        if (!$licenseInfo) {
+            return Command::FAILURE; // ライセンスが取得できなかったら処理を中止
         }
-
 
 
         // 2) parseClassName → subDirs + finalClass
@@ -82,10 +74,10 @@ class MakePluginProvider extends Command
 
         // 3) Traitの makeFile
         //    => (className, subDirs, force, pluginStub)
-        $this->makeFile($finalClass, $subDirs, $force, $pluginStub, $licenseInfo);
+        $this->makeFile($finalClass, $subDirs, $force, true, $licenseInfo);
 
         // 4) addProviderToBootstrapFile (Laravel 11+ オプション)
-        $this->addProviderToBootstrap($pluginInput, $subDirs, $finalClass);
+        $this->addProviderToBootstrap($pluginName, $subDirs, $finalClass);
 
         return 0;
     }

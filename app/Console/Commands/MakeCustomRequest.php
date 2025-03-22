@@ -33,6 +33,7 @@ class MakeCustomRequest extends Command
 
     protected $signature = 'make:custom:request
         {name : The FormRequest class name (with optional subfolders, e.g. Admin/StoreDataRequest)}
+        {--license= : Specify a license (e.g. gpl, mit, apache)}
         {--force : Overwrite if the request already exists}';
 
     protected $description = 'Create a new FormRequest in the custom directory';
@@ -53,10 +54,19 @@ class MakeCustomRequest extends Command
         // 2) --force
         $force = (bool)$this->option('force');
 
-        // 3) Trait's makeFile(...)
-        $this->makeFile($className, $subDirs, $force);
+        $licenseKey = $this->option('license') ?? 'gpl';
 
-        return 0;
+        // ルートのライセンス情報を取得
+        $licenseInfo = $this->getLicenseInfo($licenseKey);
+        if (!$licenseInfo) {
+            return Command::FAILURE;
+        }
+
+        // ファイルの生成
+        $this->makeFile($className, $subDirs, $force, $licenseInfo);
+
+        $this->info("カスタムディレクトリのリクエストファイル [{$className}] を作成しました。");
+        return Command::SUCCESS;
     }
 
     /**

@@ -42,17 +42,19 @@ trait MakeControllerTrait
      * @param  array   $options
      * @return void
      */
-    protected function makeFile(string $className, array $subDirs, array $options): void
+    protected function makeFile(string $className, array $subDirs, array $options, array $licenseInfo = []): void
     {
         // 1) コントローラ特有の stubファイルを決定
         $stubFile = $this->resolveStubFile($options);
 
-        // 2) コントローラ固有の追加置換ロジックが必要なら、ここでフックを作ってもいいが
-        //    今回は "makeFiler" の中で最終的に埋め込み実行する形でもOK
+        // 2) ライセンス情報が空なら `license-info.json` から取得
+        if (empty($licenseInfo)) {
+            $plugin = $this->getPluginNameFromSubDirs($subDirs);
+            $licenseInfo = $this->getPluginLicenseInfo($plugin);
+        }
 
-        // 3) まず "makeFiler" を呼んで、基本的なファイル出力フローを実行
-        //    （getDirectory() / getNamespace() / loadStubFile() / embedLicense() など）
-        $this->makeFiler($className, $subDirs, $options, $stubFile, [], 'controllers');
+        // 3) `makeFiler` を実行して、コントローラを生成
+        $this->makeFiler($className, $subDirs, $options, $stubFile, [], $licenseInfo, 'controllers');
     }
 
     /**

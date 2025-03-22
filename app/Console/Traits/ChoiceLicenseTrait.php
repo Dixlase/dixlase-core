@@ -1,0 +1,153 @@
+<?php
+
+namespace App\Console\Traits;
+
+use Illuminate\Support\Facades\File;
+
+trait ChoiceLicenseTrait
+{
+
+    /**
+     * コマンドのオプションを取得して統一する
+     *
+     * @return array
+     */
+    protected function getLicenseOptions(): array
+    {
+        return [
+            'gpl'        => 'GPL-3.0',
+            'agpl'       => 'AGPL-3.0',
+            'mit'        => 'MIT',
+            'apache'     => 'Apache-2.0',
+            'bsd3'       => 'BSD-3-Clause',
+            'lgpl'       => 'LGPL-3.0',
+            'commercial' => 'Commercial',
+            'custom'     => '独自ライセンス',
+        ];
+    }
+
+    /**
+     * ライセンスのテンプレートファイルパスを取得
+     *
+     * @return array
+     */
+    protected function getLicenseTemplates(): array
+    {
+        return [
+            'gpl'        => 'license-templates/license-gpl.txt',
+            'agpl'       => 'license-templates/license-agpl.txt',
+            'mit'        => 'license-templates/license-mit.txt',
+            'apache'     => 'license-templates/license-apache.txt',
+            'bsd3'       => 'license-templates/license-bsd3.txt',
+            'lgpl'       => 'license-templates/license-lgpl.txt',
+            'commercial' => 'license-templates/license-commercial.txt',
+            'custom'     => 'license-templates/license-custom.txt', // ユーザー指定
+        ];
+    }
+
+    /**
+     * ルートディレクトリの `license-info.json` を取得
+     * 存在しない場合は `license-info.sample.json` をコピーして作成を促す
+     *
+     * @return array|null
+     */
+    protected function getRootLicenseInfo(): ?array
+    {
+        $licenseFilePath = base_path('license-info.json');
+        $sampleFilePath  = base_path('license-info.sample.json');
+
+        if (!File::exists($licenseFilePath)) {
+            if (File::exists($sampleFilePath)) {
+                File::copy($sampleFilePath, $licenseFilePath);
+                $this->error("エラー: `license-info.json` が存在しません。`license-info.sample.json` を `license-info.json` にリネームして編集してください。");
+            } else {
+                $this->error("エラー: `license-info.json` が見つかりません。`license-info.sample.json` も存在しません。処理を中止します。");
+            }
+            return null;
+        }
+
+        $content = File::get($licenseFilePath);
+        $licenseInfo = json_decode($content, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $this->error("エラー: `license-info.json` の形式が無効です。修正してください。");
+            return null;
+        }
+
+        return $licenseInfo;
+    }
+
+    /**
+     * カスタムディレクトリ用のライセンス情報を取得
+     *
+     * @param string $licenseKey (例: 'gpl', 'agpl', 'custom')
+     * @return array|null
+     */
+    protected function getLicenseInfo(string $licenseKey): ?array
+    {
+        $licenseKey = strtolower($licenseKey); // オプション名は小文字に統一
+        $licenseMap = $this->getLicenseTemplates();
+
+        if (!isset($licenseMap[$licenseKey])) {
+            $this->error("エラー: 無効なライセンス [{$licenseKey}] が選択されました。処理を中止します。");
+            return null;
+        }
+
+        $licenseFile = $licenseMap[$licenseKey];
+        $licensePath = base_path($licenseFile);
+
+        if (!File::exists($licensePath)) {
+            $this->error("エラー: ライセンステンプレートファイルが見つかりません [{$licenseFile}]。処理を中止します。");
+            return null;
+        }
+
+        $rootLicenseInfo = $this->getRootLicenseInfo();
+        if (!$rootLicenseInfo) {
+            return null; // ルートのライセンス情報がない場合、中止
+        }
+
+        return [
+            'software' => $rootLicenseInfo['software'] ?? 'MySoftware',
+            'author'   => $rootLicenseInfo['author'] ?? 'Unknown Author',
+            'website'  => $rootLicenseInfo['website'] ?? 'https://example.com',
+            'license'  => $this->getLicenseOptions()[$licenseKey] ?? 'GPL-3.0',
+            'template' => $licenseFile,
+            'text'     => File::get($licensePath),
+        ];
+    }
+
+    /**
+     * 指定されたプラグインの `license-info.json` を取得
+     *
+     * @param string $pluginName プラグイン名
+     * @return array|null
+     */
+    protected function getPluginLicenseInfo(string $pluginName): ?array
+    {
+        $licenseFile = base_path("plugins/{$pluginName}/license-info.json");
+
+        if (!File::exists($licenseFile)) {
+            $this->error("エラー: プラグイン [{$pluginName}] のライセンス情報が見つかりません。処理を中止します。");
+            return null;
+        }
+
+        $content = File::get($licenseFile);
+        $licenseInfo = json_decode($content, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE || !isset($licenseInfo['template'])) {
+            $this->error("エラー: プラグイン [{$pluginName}] の `license-info.json` が無効です。処理を中止します。");
+            return null;
+        }
+
+        $licensePath = base_path($licenseInfo['template']);
+
+        if (!File::exists($licensePath)) {
+            $this->error("エラー: プラグイン [{$pluginName}] のライセンステンプレートファイルが見つかりません [{$licenseInfo['template']}]。処理を中止します。");
+            return null;
+        }
+
+        return array_merge($licenseInfo, [
+            'text' => File::get($licensePath),
+        ]);
+    }
+}
