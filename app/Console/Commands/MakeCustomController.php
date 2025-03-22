@@ -26,16 +26,19 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use App\Services\FileGenerator;
 use App\Console\Traits\MakeControllerTrait;
+use App\Console\Traits\ChoiceLicenseTrait;
 
 class MakeCustomController extends Command
 {
     use MakeControllerTrait;
+    use ChoiceLicenseTrait;
 
     /**
      * Artisan コマンド名と引数/オプション定義
      */
     protected $signature = 'make:custom:controller
         {name : The name of the controller}
+        {--license= : Specify a license (e.g. gpl, mit, apache)}
         {--type=}
         {--force}
         {--invokable}
@@ -45,7 +48,8 @@ class MakeCustomController extends Command
         {--requests}
         {--api}
         {--singleton}
-        {--creatable}';
+        {--creatable}
+        {--license= : Specify a license for this file}';
 
     protected $description = 'Create a new controller in the custom directory';
 
@@ -76,10 +80,19 @@ class MakeCustomController extends Command
             'api'       => $this->option('api'),
             'singleton' => $this->option('singleton'),
             'creatable' => $this->option('creatable'),
+            'license'   => $this->option('license') ?? 'gpl',
         ];
 
+
+        // ライセンス情報の取得
+        $licenseInfo = $this->getLicenseInfo($options['license']);
+        if (!$licenseInfo) {
+            $this->error("ライセンス情報が取得できませんでした。処理を中止します。");
+            return Command::FAILURE;
+        }
+
         // "makeFile" (rename後) でコントローラ作成
-        $this->makeFile($className, $subDirs, $options);
+        $this->makeFile($className, $subDirs, $options, $licenseInfo);
 
         return 0;
     }

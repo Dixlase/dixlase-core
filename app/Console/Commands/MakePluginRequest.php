@@ -26,6 +26,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use App\Services\FileGenerator;
 use App\Console\Traits\MakeRequestTrait;
+use App\Console\Traits\ChoiceLicenseTrait;
 
 
 class MakePluginRequest extends Command
@@ -58,10 +59,17 @@ class MakePluginRequest extends Command
         // 3) --force
         $force = (bool)$this->option('force');
 
-        // 4) Traitの makeFile(...) 呼び出し
-        $this->makeFile($className, $subDirs, $force);
+        // プラグインのライセンス情報を取得
+        $licenseInfo = $this->getPluginLicenseInfo($pluginName);
+        if (!$licenseInfo) {
+            return Command::FAILURE;
+        }
 
-        return 0;
+        // 4) Traitの makeFile(...) 呼び出し
+        $this->makeFile($className, $subDirs, $force, $licenseInfo);
+
+        $this->info("プラグイン [{$pluginName}] のリクエストファイル [{$className}] を作成しました。");
+        return Command::SUCCESS;
     }
 
     /**

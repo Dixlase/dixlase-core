@@ -22,14 +22,14 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
+use App\Console\Traits\PluginManagementTrait;
 use App\Services\PluginMigrator;
-use Illuminate\Filesystem\Filesystem;
-use Illuminate\Database\ConnectionResolverInterface;
-use App\Services\PluginMigrationRepository;
+use Illuminate\Console\Command;
 
-class PluginMigrateRollback extends PluginMigrationCommand
+class PluginMigrateRollback extends Command
 {
+    use PluginManagementTrait;
+
     /**
      * The name and signature of the console command.
      *
@@ -64,7 +64,7 @@ class PluginMigrateRollback extends PluginMigrationCommand
         $plugin = $this->argument('plugin');
         $force = $this->option('force');
         $options = [
-            'step' => $this->option('step'),
+            'step' => $this->option('step') ? (int) $this->option('step') : 1, // デフォルト値を設定
         ];
 
         // プロセスオプションの共通処理
@@ -81,29 +81,25 @@ class PluginMigrateRollback extends PluginMigrationCommand
             return Command::FAILURE;
         }
 
-        // 本番環境での実行確認
-        if ($force || $this->confirmProduction('rollback')) {
-            $success = $this->executeOperation(function () use ($plugin, $options) {
-                $notes = $this->pluginMigrator->rollback($plugin, $options);
+        // マイグレーションのロールバック処理
+        $this->info("Rolling back migrations for plugin [{$plugin}]...");
 
-                if (empty($notes)) {
-                    $this->info("No migrations to rollback for plugin [{$plugin}].");
-                } else {
-                    foreach ($notes as $note) {
-                        $this->info($note);
-                    }
-                    $this->info("Rollback for plugin [{$plugin}] completed successfully.");
+        try {
+            $rolledBack = $this->pluginMigrator->rollback($plugin, $options);
+
+            if (empty($rolledBack)) {
+                $this->info("No migrations to rollback for plugin [{$plugin}].");
+            } else {
+                foreach ($rolledBack as $file) {
+                    $this->info("Rolled back: " . $file);
                 }
-            });
-
-            if ($success) {
-                return Command::SUCCESS;
+                $this->info("Rollback for plugin [{$plugin}] completed successfully.");
             }
 
+            return Command::SUCCESS;
+        } catch (\Exception $e) {
+            $this->error("Error during rollback: " . $e->getMessage());
             return Command::FAILURE;
         }
-
-        $this->info('Rollback cancelled.');
-        return Command::FAILURE;
     }
 }

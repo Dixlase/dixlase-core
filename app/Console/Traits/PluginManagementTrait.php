@@ -20,13 +20,19 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Console\Commands;
+namespace App\Console\Traits;
 
-use Illuminate\Console\Command;
 use Exception;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 
-abstract class PluginMigrationCommand extends Command
+/**
+ * カスタムバリデーター（または独自バリデーションルール）を作るための追加ロジック。
+ * -> MakeFileTrait を use してファイル生成を共通化。
+ */
+trait PluginManagementTrait
 {
+
     /**
      * 現在の環境が本番環境かどうかを判定
      *
@@ -64,6 +70,41 @@ abstract class PluginMigrationCommand extends Command
     }
 
     /**
+     * プラグインデータを取得
+     *
+     * @param string $pluginName
+     * @return object|null
+     */
+    protected function getPluginData(string $pluginName)
+    {
+        return DB::table('plugins')->where('name', $pluginName)->first();
+    }
+
+    /**
+     * プラグインを有効化
+     *
+     * @param string $pluginName
+     * @return void
+     */
+    protected function enablePlugin(string $pluginName): void
+    {
+        DB::table('plugins')->where('name', $pluginName)->update(['status' => 1]);
+        $this->info("プラグイン '{$pluginName}' を有効化しました。");
+    }
+
+    /**
+     * プラグインを無効化
+     *
+     * @param string $pluginName
+     * @return void
+     */
+    protected function disablePlugin(string $pluginName): void
+    {
+        DB::table('plugins')->where('name', $pluginName)->update(['status' => 0]);
+        $this->info("プラグイン '{$pluginName}' を無効化しました。");
+    }
+
+    /**
      * マイグレーションディレクトリの存在確認
      *
      * @param string $plugin プラグイン名
@@ -82,16 +123,14 @@ abstract class PluginMigrationCommand extends Command
      */
     protected function processOptions(array $options): array
     {
-        // 例: 'step' オプションのデフォルト値設定
+        // 'step' オプションのデフォルト値設定
         $options['step'] = $options['step'] ?? null;
 
         // 必要に応じて他のオプションも処理
-        // 例: 'pretend' オプションを boolean に変換
         $options['pretend'] = filter_var($options['pretend'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
         return $options;
     }
-
 
     /**
      * マイグレーション操作を安全に実行するラッパーメソッド
@@ -108,5 +147,16 @@ abstract class PluginMigrationCommand extends Command
             $this->error($e->getMessage());
             return false;
         }
+    }
+
+    /**
+     * オートロードを更新
+     *
+     * @return void
+     */
+    protected function updateAutoload(): void
+    {
+        $this->info('オートロードを更新中...');
+        $this->call('plugin:autoload:sync');
     }
 }

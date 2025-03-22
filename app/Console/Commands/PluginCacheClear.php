@@ -24,7 +24,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 
-class PluginCacheClearCommand extends Command
+class PluginCacheClear extends Command
 {
     /**
      * The name and signature of the console command.

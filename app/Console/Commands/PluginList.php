@@ -23,16 +23,17 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\File;
+use App\Models\Plugin;
 
-class PluginDeleteCommand extends Command
+
+class PluginList extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'plugin:delete {name}';
+    protected $signature = 'plugin:list';
 
     /**
      * The console command description.
@@ -46,16 +47,7 @@ class PluginDeleteCommand extends Command
      */
     public function handle()
     {
-        $pluginName = $this->argument('name');
-        $pluginDir = base_path("plugins/{$pluginName}");
-
-        if (!File::exists($pluginDir)) {
-            $this->error("Plugin '{$pluginName}' does not exist.");
-            return Command::FAILURE;
-        }
-
-        File::deleteDirectory($pluginDir);
-        $this->info("Plugin '{$pluginName}' deleted successfully.");
-        return Command::SUCCESS;
+        $plugins = Plugin::all();
+        $this->table(['ID', 'Name', 'Status'], $plugins->toArray());
     }
 }

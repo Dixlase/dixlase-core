@@ -61,16 +61,23 @@ class MakePluginConfig extends Command
      */
     public function handle()
     {
-        $plugin    = Str::studly($this->argument('plugin'));
+        $pluginName    = Str::studly($this->argument('plugin'));
         $className = Str::snake($this->argument('name'));
+
+        // プラグインのライセンス情報を取得
+        $licenseInfo = $this->getPluginLicenseInfo($pluginName);
+        if (!$licenseInfo) {
+            return Command::FAILURE;
+        }
 
         $options = [
             'force' => $this->option('force'),
         ];
 
-        $this->makeFile($className, [], $options);
+        $this->makeFile($className, [], $options, $licenseInfo);
 
-        return 0;
+        $this->info("プラグイン [{$pluginName}] のコンフィグファイル [{$configName}] を作成しました。");
+        return Command::SUCCESS;
     }
 
     /**

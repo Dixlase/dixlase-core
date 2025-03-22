@@ -26,13 +26,16 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use App\Services\FileGenerator;
 use App\Console\Traits\MakeModelTrait;
+use App\Console\Traits\ChoiceLicenseTrait;
 
 class MakeCustomModel extends Command
 {
     use MakeModelTrait;
+    use ChoiceLicenseTrait;
 
     protected $signature = 'make:custom:model
         {name : Model name (e.g. Admin/MyModel)}
+        {--license= : Specify a license (e.g. gpl, mit, apache)}
         {--all : Generate migration, factory, seeder, etc.}
         {--factory : ...}
         {--force : ...}
@@ -68,14 +71,24 @@ class MakeCustomModel extends Command
             $this->input->setOption('requests', true);
         }
 
-        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
 
+
+        $modelInput  = $this->argument('name');
         $force      = (bool)$this->option('force');
         $pivot      = (bool)$this->option('pivot');
         $morphPivot = (bool)$this->option('morph-pivot');
+        $licenseKey  = $this->option('license') ?? 'gpl';
 
-        // makeFile => trait
-        $modelFqcn = $this->makeFile($className, $subDirs, $force, $pivot, $morphPivot);
+        // ルートのライセンス情報を取得
+        $licenseInfo = $this->getLicenseInfo($licenseKey);
+        if (!$licenseInfo) {
+            return Command::FAILURE;
+        }
+
+        [$subDirs, $className] = $this->fileGenerator->parseClassName($modelInput);
+
+        // モデル作成
+        $modelFqcn = $this->makeFile($className, $subDirs, $force, $pivot, $morphPivot, $licenseInfo);
 
         // 追加生成
         if ($this->option('factory')) {
@@ -96,7 +109,8 @@ class MakeCustomModel extends Command
             $this->createPolicy($modelFqcn);
         }
 
-        return 0;
+        $this->info("モデル [{$className}] を作成しました。");
+        return Command::SUCCESS;
     }
 
     /**

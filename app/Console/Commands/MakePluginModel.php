@@ -26,9 +26,16 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use App\Services\FileGenerator;
 use App\Console\Traits\MakeModelTrait;
+use App\Console\Traits\PluginManagementTrait;
+use App\Console\Traits\ChoiceLicenseTrait;
+
 
 class MakePluginModel extends Command
 {
+    use MakeModelTrait;
+    use PluginManagementTrait;
+    use ChoiceLicenseTrait;
+
     protected $signature = 'make:plugin:model
         {plugin : The plugin name}
         {name : The name of the model (optionally with subfolders, e.g. Admin/MyModel)}
@@ -59,7 +66,7 @@ class MakePluginModel extends Command
     public function handle()
     {
         // 1) plugin, model, pivot, morphPivot
-        $pluginNameInput = $this->argument('plugin');
+        $pluginName = $this->argument('plugin');
         $modelInput      = $this->argument('name');
         $force           = (bool)$this->option('force');
         $pivot           = (bool)$this->option('pivot');
@@ -76,11 +83,17 @@ class MakePluginModel extends Command
             $this->input->setOption('requests', true);
         }
 
+        // プラグインのライセンス情報を取得
+        $licenseInfo = $this->getPluginLicenseInfo($pluginName);
+        if (!$licenseInfo) {
+            return Command::FAILURE;
+        }
+
         // 3) parse subDirs + className
         [$subDirs, $className] = $this->fileGenerator->parseClassName($modelInput);
 
         // 4) call trait method
-        $modelFqcn = $this->makeFile($className, $subDirs, $force, $pivot, $morphPivot);
+        $modelFqcn = $this->makeFile($className, $subDirs, $force, $pivot, $morphPivot, $licenseInfo);
 
         // 5) after creation => additional generation
         if ($this->option('factory')) {
@@ -101,7 +114,8 @@ class MakePluginModel extends Command
             $this->createPolicy($modelFqcn);
         }
 
-        return 0;
+        $this->info("モデル [{$className}] を作成しました。");
+        return Command::SUCCESS;
     }
 
     /**

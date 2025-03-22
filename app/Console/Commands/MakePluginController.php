@@ -26,10 +26,16 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use App\Services\FileGenerator;
 use App\Console\Traits\MakeControllerTrait;
+use App\Console\Traits\PluginManagementTrait;
+use App\Console\Traits\ChoiceLicenseTrait;
+
 
 class MakePluginController extends Command
 {
     use MakeControllerTrait;
+    use PluginManagementTrait;
+    use ChoiceLicenseTrait;
+
 
     /**
      * Artisan コマンド名と引数/オプション定義
@@ -61,11 +67,17 @@ class MakePluginController extends Command
 
     public function handle()
     {
-        $plugin    = Str::studly($this->argument('plugin'));
+        $pluginName    = Str::studly($this->argument('plugin'));
         $path      = str_replace('\\', '/', $this->argument('name'));
         $parts     = explode('/', $path);
         $className = array_pop($parts);
         $subDirs   = $parts;
+
+        // ✅ `PluginLicenseTrait` を使ってライセンス情報を取得
+        $licenseInfo = $this->getPluginLicenseInfo($pluginName);
+        if (!$licenseInfo) {
+            return Command::FAILURE; // ライセンスが取得できなかったら処理を中止
+        }
 
         $options = [
             'force'     => $this->option('force'),
@@ -81,7 +93,7 @@ class MakePluginController extends Command
         ];
 
         // use "makeFile" for the final call
-        $this->makeFile($className, $subDirs, $options);
+        $this->makeFile($className, $subDirs, $options, $licenseInfo);
 
         return 0;
     }
