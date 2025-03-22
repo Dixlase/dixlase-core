@@ -35,8 +35,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {!! load_active_assets() !!}
 
     </head>
-    <body class="font-sans antialiased {{ config('admin.appearance_class.layout.body') }}">
-        <div class="min-h-screen">
+    <body  class="font-sans antialiased {{ config('admin.appearance_class.layout.body') }}">
+        <div  class="min-h-screen">
             <!-- Header -->
             @include('admin.partials.header', [
                 'site_name' => $site_name,
@@ -66,12 +66,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
 
                 </main>
+
+
             </div>
+            <!-- Footer -->
+            @include('admin.partials.footer')
         </div>
 
         <script>
 
-            // テーマの設定
+            // アピアランスの設定
             const current_appearance_class = '{{ $appearance }}';
             if (current_appearance_class === '0') { // 0: auto
                 const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;

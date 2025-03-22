@@ -44,6 +44,19 @@ if (!function_exists('load_assets')) {
             // ローカル環境: Viteを使用
             $viteFiles = array_map(fn($file) => "{$basePath}/{$file}", $files);
             $output .= \Illuminate\Support\Facades\Blade::render('@vite(' . implode(', ', array_map(fn($file) => "'{$file}'", $viteFiles)) . ')');
+            // （Bladeのstyleタグでx-cloakを追加）
+            $output .= '<style>[x-cloak]{display:none!important;}</style>';
+            // FOUCを防ぐためのスタイル（bodyを一瞬非表示）
+            $output .= '<style>body{opacity:0;visibility:hidden;}</style>';
+            // CSSがロードされたらbodyを表示させるスクリプト
+            $output .= <<<HTML
+<script>
+    window.addEventListener('load', () => {
+        document.body.style.visibility = 'visible';
+        document.body.style.opacity = '1';
+    });
+</script>
+HTML;
         } else {
             // 本番環境: manifest.jsonを解析
             $manifestPath = match ($type) {
@@ -119,8 +132,9 @@ if (!function_exists('load_active_assets')) {
             'admin',
             null,
             [
-                'js/admin.js',
-                'scss/admin.scss',
+                'js/app.js',
+
+                'scss/app.scss',
             ]
         );
 

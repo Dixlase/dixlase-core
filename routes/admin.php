@@ -119,6 +119,9 @@ Route::prefix($adminUrl)->name('admin.')
             Route::delete('/settings/members/destroy/{member}', [AdminMembersSettingsController::class, 'destroy'])->name('settings.members.destroy');
             // プロフィール
             Route::get('/settings/members/profile', [AdminMembersSettingsController::class, 'profile'])->name('settings.members.profile');
+            // メンバー設定
+            Route::get('/settings/members/settings', [AdminMembersSettingsController::class, 'settings'])->name('settings.members.settings');
+            Route::post('/settings/members/settings', [AdminMembersSettingsController::class, 'updateSettings'])->name('settings.members.settings.update');
 
             // テーマ設定
             Route::get('/settings/themes', [AdminThemesSettingsController::class, 'index'])->name('settings.themes.index');

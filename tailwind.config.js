@@ -17,6 +17,7 @@ export default {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
+            display: ['group-hover', 'x-cloak'],
         },
     },
     safelist: [
@@ -45,12 +46,16 @@ export default {
         'dark:bg-black',
         'odd:dark:bg-gray-900',
         'even:bg-gray-50',
-        'even:dark:bg-gray-800'
+        'even:dark:bg-gray-800',
+        'x-cloak'
     ],
-    theme: {
-        extend: {},
-    },
 
-
-    plugins: [forms],
+    plugins: [
+        forms,
+        function({ addBase }) {
+            addBase({
+                '[x-cloak]': { display: 'none !important' },
+            })
+        }
+    ],
 };

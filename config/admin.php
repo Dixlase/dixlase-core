@@ -35,57 +35,57 @@ return [
 
     'nav' => [
         'dashboard' => [
-            'text' =>  'admin.nav.dashboard',
+            'text' => 'admin.nav.dashboard',
             'route' => 'admin.dashboard',
             'icon' => 'fas fa-fw fa-tachometer-alt',
             'can' => 'contributor',
         ],
         'front' => [
             'text' => 'admin.nav.front.text',
-            'icon' => 'fas fa-fw fa-users',
+            'icon' => 'fas fa-fw fa-desktop',
             'can' => 'contributor',
             'children' => [
                 'index' => [
                     'text' => 'admin.nav.front.index',
                     'route' => 'admin.front.index',
-                    'icon' => 'fas fa-fw fa-users',
+                    'icon' => 'fas fa-fw fa-home',
                     'can' => 'contributor',
                 ],
                 'design' => [
                     'text' => 'admin.nav.front.design',
                     'route' => 'admin.front.design',
-                    'icon' => 'fas fa-fw fa-users',
+                    'icon' => 'fas fa-fw fa-paint-brush',
                     'can' => 'contributor',
                 ],
                 'settings' => [
                     'text' => 'admin.nav.front.settings',
                     'route' => 'admin.front.settings',
-                    'icon' => 'fas fa-fw fa-users',
+                    'icon' => 'fas fa-fw fa-sliders-h',
                     'can' => 'contributor',
                 ],
             ]
         ],
         'media' => [
             'text' => 'admin.nav.media.text',
-            'icon' => 'fas fa-fw fa-users',
+            'icon' => 'fas fa-fw fa-photo-video',
             'can' => 'contributor',
             'children' => [
                 'index' => [
                     'text' => 'admin.nav.media.index',
                     'route' => 'admin.media.index',
-                    'icon' => 'fas fa-fw fa-users',
+                    'icon' => 'fas fa-fw fa-images',
                     'can' => 'contributor',
                 ],
                 'upload' => [
                     'text' => 'admin.nav.media.upload',
                     'route' => 'admin.media.upload',
-                    'icon' => 'fas fa-fw fa-users',
+                    'icon' => 'fas fa-fw fa-upload',
                     'can' => 'contributor',
                 ],
                 'settings' => [
                     'text' => 'admin.nav.media.settings',
                     'route' => 'admin.media.settings',
-                    'icon' => 'fas fa-fw fa-users',
+                    'icon' => 'fas fa-fw fa-cogs',
                     'can' => 'contributor',
                 ],
             ]
@@ -104,12 +104,12 @@ return [
                 'security' => [
                     'text' => 'admin.nav.settings.security',
                     'route' => 'admin.settings.security',
-                    'icon' => 'fas fa-fw fa-bandage',
+                    'icon' => 'fas fa-fw fa-shield-alt',
                     'can' => 'super_admin',
                 ],
                 'members' => [
                     'text' => 'admin.nav.settings.members.text',
-                    'icon' => 'fas fa-fw fa-users-gear',
+                    'icon' => 'fas fa-fw fa-users-cog',
                     'can' => 'contributor',
                     'children' => [
                         'index' => [
@@ -121,14 +121,20 @@ return [
                         'create' => [
                             'text' => 'admin.nav.settings.members.create',
                             'route' => 'admin.settings.members.create',
-                            'icon' => 'fas fa-fw fa-users',
+                            'icon' => 'fas fa-fw fa-user-plus',
                             'can' => 'admin',
                         ],
                         'profile' => [
                             'text' => 'admin.nav.settings.members.profile',
                             'route' => 'admin.settings.members.profile',
-                            'icon' => 'fas fa-fw fa-users',
+                            'icon' => 'fas fa-fw fa-id-badge',
                             'can' => 'contributor',
+                        ],
+                        'settings' => [
+                            'text' => 'admin.nav.settings.members.settings',
+                            'route' => 'admin.settings.members.settings',
+                            'icon' => 'fas fa-fw fa-user-cog',
+                            'can' => 'super_admin',
                         ]
                     ]
                 ],
@@ -140,32 +146,32 @@ return [
                         'index' => [
                             'text' => 'admin.nav.settings.themes.index',
                             'route' => 'admin.settings.themes.index',
-                            'icon' => 'fas fa-fw fa-file',
+                            'icon' => 'fas fa-fw fa-brush',
                             'can' => 'admin',
                         ],
                         'install' => [
                             'text' => 'admin.nav.settings.themes.install',
                             'route' => 'admin.settings.themes.install',
                             'can' => 'super_admin',
-                            'icon' => 'fas fa-fw fa-file',
+                            'icon' => 'fas fa-fw fa-download',
                         ],
                     ]
                 ],
                 'plugins' => [
                     'text' => 'admin.nav.settings.plugins.text',
-                    'icon' => 'fas fa-fw fa-toolbox',
+                    'icon' => 'fas fa-fw fa-puzzle-piece',
                     'can' => 'admin',
                     'children' => [
                         'index' => [
                             'text' => 'admin.nav.settings.plugins.index',
                             'route' => 'admin.settings.plugins.index',
-                            'icon' => 'fas fa-fw fa-file',
+                            'icon' => 'fas fa-fw fa-puzzle-piece',
                             'can' => 'admin',
                         ],
                         'install' => [
                             'text' => 'admin.nav.settings.plugins.install',
                             'route' => 'admin.settings.plugins.install',
-                            'icon' => 'fas fa-fw fa-file',
+                            'icon' => 'fas fa-fw fa-download',
                             'can' => 'super_admin',
                         ],
                     ]
