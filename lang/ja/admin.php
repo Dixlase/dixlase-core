@@ -102,6 +102,11 @@ return [
                 'index' => 'プラグインマスター',
                 'install'  => 'インストール',
             ],
+            'systems' => [
+                'text' => 'システム',
+                'logs' => 'ログ',
+                'info'  => 'システム情報',
+            ],
         ],
     ],
 
@@ -225,6 +230,21 @@ return [
                 'heading' => 'プラグインインストール',
                 'name' => 'プラグイン名',
                 'submit' => 'インストール',
+            ],
+        ],
+
+        //システム情報
+        'systems' => [
+            'logs' => [
+                'heading' => 'ログ情報',
+                'activity' => '管理アクティビティ',
+                'error' => 'エラー',
+                'login' => 'ログイン',
+                'laravel' => 'Laravel',
+
+            ],
+            'info' => [
+                'heading' => 'システム情報',
             ],
         ],
     ],

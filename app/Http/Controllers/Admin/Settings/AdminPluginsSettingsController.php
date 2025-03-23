@@ -41,6 +41,11 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 {
     use PluginLoaderTrait;
 
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
     public function index()
     {
 
@@ -49,6 +54,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
         $plugins = Plugin::all();
         $this->viewParams['plugins'] = $plugins;
+        $this->viewParams['heading'] = 'プラグインマスター';
         return view('admin::settings.plugins.index', $this->viewParams);
     }
 

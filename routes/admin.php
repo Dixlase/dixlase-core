@@ -36,9 +36,8 @@ use App\Http\Controllers\Admin\Settings\AdminBaseSettingsController;
 use App\Http\Controllers\Admin\Settings\AdminPluginsSettingsController;
 use App\Http\Controllers\Admin\Settings\AdminSecuritySettingsController;
 use App\Http\Controllers\Admin\Settings\AdminMembersSettingsController;
-use App\Http\Controllers\Admin\Users\AdminUsersController;
-use App\Http\Controllers\Admin\Contents\AdminContentsPageController;
 use App\Http\Controllers\Admin\Settings\AdminThemesSettingsController;
+use App\Http\Controllers\Admin\Settings\AdminSystemsController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\SecuritySetting;
@@ -67,7 +66,7 @@ Route::prefix($adminUrl)->name('admin.')
         Route::post('/login', [AdminLoginController::class, 'store'])->name('login.store');
 
 
-        Route::middleware('auth:member')->group(function () {
+        Route::middleware(['auth:member', 'log.admin.activity'])->group(function () {
 
             // ダッシュボード
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
@@ -138,9 +137,12 @@ Route::prefix($adminUrl)->name('admin.')
             Route::post('/settings/plugins/disable/{id}', [AdminPluginsSettingsController::class, 'disable'])->name('settings.plugins.disable');
             Route::post('/settings/plugins/uninstall/{id}', [AdminPluginsSettingsController::class, 'uninstall'])->name('settings.plugins.uninstall');
 
+            //ログ情報
+            Route::get('/settings/system/logs/{type?}', [AdminSystemsController::class, 'logs'])->name('settings.systems.logs');
+            //システム情報
+            Route::get('/settings/systems/info', [AdminSystemsController::class, 'info'])->name('settings.systems.info');
 
-            // Logout
-            Route::post('/logout', [AdminLoginController::class, 'destroy'])
-                ->name('logout');
+            // ログアウト
+            Route::post('/logout', [AdminLoginController::class, 'destroy'])->name('logout');
         });
     });

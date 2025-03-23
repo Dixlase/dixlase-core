@@ -16,11 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            //'check.installation' => \App\Http\Middleware\CheckInstallation::class, // インストールチェック
             'auth' => \App\Http\Middleware\Authenticate::class, //認証
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class, // メール認証
             'admin.ip' => \App\Http\Middleware\AdminIpFilter::class, // IPアドレスフィルタ
             'front.ip' => \App\Http\Middleware\FrontIpFilter::class, // フロントIPフィルタ
+            'log.admin.activity' => \App\Http\Middleware\LogAdminActivity::class, // 管理画面操作ログ
         ]);
 
 

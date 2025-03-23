@@ -32,6 +32,13 @@ use Illuminate\Support\Facades\Auth;
 
 class AdminSecuritySettingsController extends AdminLoggedInController
 {
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->viewParams['heading'] = 'プラグイン設定';
+    }
+
     public function index()
     {
 
