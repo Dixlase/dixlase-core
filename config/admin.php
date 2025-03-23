@@ -176,6 +176,25 @@ return [
                         ],
                     ]
                 ],
+                'systems' => [
+                    'text' => 'admin.nav.settings.systems.text',
+                    'icon' => 'fas fa-fw fa-server',
+                    'can' => 'super_admin',
+                    'children' => [
+                        'logs' => [
+                            'text' => 'admin.nav.settings.systems.logs',
+                            'route' => 'admin.settings.systems.logs',
+                            'icon' => 'fas fa-fw fa-file-alt',
+                            'can' => 'super_admin',
+                        ],
+                        'info' => [
+                            'text' => 'admin.nav.settings.systems.info',
+                            'route' => 'admin.settings.systems.info',
+                            'icon' => 'fas fa-fw fa-info-circle',
+                            'can' => 'admin',
+                        ],
+                    ]
+                ]
             ],
         ]
     ],
@@ -244,7 +263,7 @@ return [
             'textarea' => 'bg-white text-gray-700 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-900 dark:text-white dark:border-gray-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-500',
             'modal' => 'bg-white dark:bg-gray-900',
             'radio' => 'text-gray-600 dark:text-gray-600'
-        ]
+        ],
     ],
 
 

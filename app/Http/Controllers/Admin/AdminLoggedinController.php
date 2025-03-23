@@ -25,6 +25,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Admin\AdminController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Route;
+
+
 
 class AdminLoggedInController extends AdminController
 {
@@ -34,9 +37,27 @@ class AdminLoggedInController extends AdminController
     {
         parent::__construct();
 
-        // ミドルウェアが適用された後に `setMember()` を実行
+        // ミドルウェア
         $this->middleware(function ($request, $next) {
+            // ログインユーザー情報を取得
             $this->setMember();
+
+            // 管理画面アクセスログ
+            /*
+            if (Auth::check() && Auth::user()->is_admin) {
+                Log::channel('admin_activity')->info('管理画面アクセス', [
+                    'id' => Auth::id(),
+                    'name' => Auth::user()->name,
+                    'method' => $request->method(),
+                    'route' => Route::currentRouteName(),
+                    'controller' => Route::currentRouteAction(),
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'time' => now()->toDateTimeString(),
+                ]);
+            }
+            */
+
             return $next($request);
         });
     }

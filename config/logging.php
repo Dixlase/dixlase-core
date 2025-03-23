@@ -109,7 +109,7 @@ return [
             'handler_with' => [
                 'host' => env('PAPERTRAIL_URL'),
                 'port' => env('PAPERTRAIL_PORT'),
-                'connectionString' => 'tls://'.env('PAPERTRAIL_URL').':'.env('PAPERTRAIL_PORT'),
+                'connectionString' => 'tls://' . env('PAPERTRAIL_URL') . ':' . env('PAPERTRAIL_PORT'),
             ],
             'processors' => [PsrLogMessageProcessor::class],
         ],
@@ -146,6 +146,33 @@ return [
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
         ],
+
+        //管理画面のアクティビティ
+        'admin_activity' => [
+            'driver' => 'single',
+            'formatter' => env('LOG_STDERR_FORMATTER'),
+            'path' => storage_path('logs/admin_activity.log'),
+            'level' => 'info',
+            'days' => env('LOG_DAILY_DAYS', 14),
+        ],
+
+        //管理画面のエラー
+        'admin_error' => [
+            'driver' => 'single',
+            'formatter' => env('LOG_STDERR_FORMATTER'),
+            'path' => storage_path('logs/admin_error.log'),
+            'level' => 'error',
+            'days' => env('LOG_DAILY_DAYS', 14),
+        ],
+
+        //管理メンバーのログイン・ログアウト
+        'admin_login' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/admin_login.log'),
+            'level' => 'info',
+            'days' => env('LOG_DAILY_DAYS', 14),
+        ],
+
 
     ],
 
