@@ -22,13 +22,13 @@ export default defineConfig({
     ],
     build: {
         manifest: 'manifest.json', // マニフェストファイルの出力先
-		outDir: 'public/assets/common', // 出力先ディレクトリ
+		outDir: 'public/assets/build', // 出力先ディレクトリ
         rollupOptions: {
             input: {
-                adminJs: path.resolve(__dirname, 'resources/src/admin/js/app.js'),
-                adminScss: path.resolve(__dirname, 'resources/src/admin/scss/app.scss'),
-                common: path.resolve(__dirname, 'resources/src/common/js/app.js'),
-                commonScss: path.resolve(__dirname, 'resources/src/common/scss/app.scss'),
+                admin_js: path.resolve(__dirname, 'resources/src/admin/js/app.js'),
+                admin_css: path.resolve(__dirname, 'resources/src/admin/scss/app.scss'),
+                common_js: path.resolve(__dirname, 'resources/src/common/js/app.js'),
+                common_css: path.resolve(__dirname, 'resources/src/common/scss/app.scss'),
             },
             output: {
                 // JavaScriptファイルの名前を指定

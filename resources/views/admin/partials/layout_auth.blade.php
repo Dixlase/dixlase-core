@@ -23,7 +23,7 @@
     <div class="flex flex-col items-center w-full max-w-md min-w-[400px]">
 
         <!-- ロゴ -->
-        <img src="{{ asset('assets/common/images/logo.svg') }}" alt="{{ config('app.name') }}" class="w-32 h-auto mx-auto mb-4">
+        <img src="{{ asset('assets/images/logo.svg') }}" alt="{{ config('app.name') }}" class="w-32 h-auto mx-auto mb-4">
 
         <div class="bg-white shadow-lg rounded-lg p-8 max-w-md w-full">
             <h1 class="text-2xl font-bold text-gray-800 mb-4 text-center">@yield('header')</h1>

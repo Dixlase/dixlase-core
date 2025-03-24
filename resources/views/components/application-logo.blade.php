@@ -24,5 +24,5 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     ])
 
 <div class="block h-9 w-9 fill-current {{ $class }}">
-    <img src="{{ asset('assets/common/images/logo.svg') }}" alt="{{ $site_name }}" class="h-auto mx-auto mb-4">
+    <img src="{{ asset('assets/images/logo.svg') }}" alt="{{ $site_name }}" class="h-auto mx-auto mb-4">
 </div>

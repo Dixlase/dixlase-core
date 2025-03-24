@@ -31,7 +31,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <table class="min-w-full text-sm text-left border-collapse">
                         <tbody>
                             @foreach ($items as $key => $value)
-                                <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                                <tr class="border-b border-gray-200 dark:border-gray-700 transition">
                                     <th class="w-1/3 px-4 py-2 font-medium text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800">
                                         {{ $key }}
                                     </th>
