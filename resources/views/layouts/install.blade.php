@@ -24,7 +24,7 @@
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
     <div class="flex flex-col items-center w-full max-w-xl min-w-[400px]">
 
-        <img src="{{ asset('assets/common/images/logo.svg') }}" alt="{{ env('APP_NAME') }}" class="w-32 h-auto mx-auto mb-4">
+        <img src="{{ asset('assets/images/logo.svg') }}" alt="{{ env('APP_NAME') }}" class="w-32 h-auto mx-auto mb-4">
 
         <div class="bg-white shadow-lg rounded-lg p-8 max-w-xl w-full">
             <h1 class="text-2xl font-bold text-gray-800 mb-4 text-center">@yield('header')</h1>
