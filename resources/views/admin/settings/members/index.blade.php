@@ -21,8 +21,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('admin::partials.layout')
 
 @section('content')
-    <!-- Flash message for success or error -->
-    @include('components::flash_message')
 
     <h3 class="text-lg font-semibold">管理者検索</h3>
 

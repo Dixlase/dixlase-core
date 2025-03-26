@@ -21,80 +21,68 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('admin::partials.layout')
 
 @section('content')
-<div class="w-full min-h-screen">
-    <div class="max-w-4xl mx-auto">
-        <div class="max-w-4xl mx-auto rounded-lg">
-            <div class="p-6">
-                <!-- Flash message for success or error -->
-                @include('components::flash_message')
+<form action="{{ route('admin.settings.base.update') }}" method="POST">
+    @csrf
+    @method('PUT')
 
-                <form action="{{ route('admin.settings.base.update') }}" method="POST">
-                    @csrf
-                    @method('PUT')
-
-                    <div>
-                        @include('components::form.label', [
-                            'for' => 'site_name',
-                            'text' => 'common.site_name',
-                        ])
-                        @include('components::form.text', [
-                            'id' => 'site_name',
-                            'name' => 'site_name',
-                            'value' => old('site_name', $settings['site_name']),
-                            'required' => true,
-                        ])
-                    </div>
-
-                    <div class="mt-4">
-                        @include('components::form.label', [
-                            'for' => 'language',
-                            'text' => 'common.language',
-                        ])
-
-                        @include('components::form.select', [
-                            'id' => 'language',
-                            'name' => 'language',
-                            'options' => config('admin.languages.available'),
-                            'value' => $settings['language'],
-                            'required' => true,
-                        ])
-
-                    </div>
-
-                    <div class="mt-4">
-                        @include('components::form.label', [
-                            'text' => 'メンテナンスモード',
-                        ])
-                        @include('components::form.hidden', [
-                            'id' => 'maintenance_mode',
-                            'name' => 'maintenance_mode',
-                            'value' => '0'
-                        ])
-                        @include('components::form.radio-group', [
-                            'name' => 'maintenance_mode',
-                            'options' => [
-                                1 => 'はい',
-                                0 => 'いいえ'
-                            ],
-                            'value' => $settings['maintenance_mode'],
-                        ])
-                    </div>
-
-                    <!-- 保存ボタンとモーダル -->
-                    <div class="mt-4">
-                        @include('components::form.save', [
-                            'id' => 'confirmationModal',
-                            'onclick' => "openModal('confirmationModal')",
-                            'title' => '保存の確認',
-                            'message' => '変更内容を保存しますか？',
-                            'confirm_label' => '保存',
-                            'cancel_label' => '戻る',
-                        ])
-                        </div>
-
-                </form>
-            </div>
-        </div>
+    <div>
+        @include('components::form.label', [
+            'for' => 'site_name',
+            'text' => 'common.site_name',
+        ])
+        @include('components::form.text', [
+            'id' => 'site_name',
+            'name' => 'site_name',
+            'value' => old('site_name', $settings['site_name']),
+            'required' => true,
+        ])
     </div>
-</div>
+
+    <div class="mt-4">
+        @include('components::form.label', [
+            'for' => 'language',
+            'text' => 'common.language',
+        ])
+
+        @include('components::form.select', [
+            'id' => 'language',
+            'name' => 'language',
+            'options' => config('admin.languages.available'),
+            'value' => $settings['language'],
+            'required' => true,
+        ])
+
+    </div>
+
+    <div class="mt-4">
+        @include('components::form.label', [
+            'text' => 'メンテナンスモード',
+        ])
+        @include('components::form.hidden', [
+            'id' => 'maintenance_mode',
+            'name' => 'maintenance_mode',
+            'value' => '0'
+        ])
+        @include('components::form.radio-group', [
+            'name' => 'maintenance_mode',
+            'options' => [
+                1 => 'はい',
+                0 => 'いいえ'
+            ],
+            'value' => $settings['maintenance_mode'],
+        ])
+    </div>
+
+    <!-- 保存ボタンとモーダル -->
+    <div class="mt-4">
+        @include('components::form.save', [
+            'id' => 'confirmationModal',
+            'onclick' => "openModal('confirmationModal')",
+            'title' => '保存の確認',
+            'message' => '変更内容を保存しますか？',
+            'confirm_label' => '保存',
+            'cancel_label' => '戻る',
+        ])
+    </div>
+</form>
 @endsection

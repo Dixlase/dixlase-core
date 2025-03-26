@@ -21,10 +21,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('admin::partials.layout')
 
 @section('content')
-
-    <!-- Flash Message -->
-    @include('components::flash_message')
-
     <!-- テーマ一覧 -->
     <div class="max-w-4xl mx-auto mt-12">
         <h2 class="text-2xl font-bold mb-4">利用可能なテーマ</h2>

@@ -22,12 +22,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 
-<!-- Flash message for success or error -->
-@include('components::flash_message')
-
 <a href="{{ route('admin.media.upload') }}" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition duration-300">新しいファイルをアップロード</a>
-
-
 
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
     @foreach($media as $file)

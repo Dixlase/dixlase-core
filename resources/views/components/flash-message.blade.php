@@ -18,6 +18,12 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
+@if (session('status'))
+    <div class="mb-4 p-4 text-blue-800 bg-blue-100 border border-blue-200 rounded-lg">
+        {{ session('status') }}
+    </div>
+@endif
+
 @if (session('success'))
     <div class="mb-4 p-4 text-green-800 bg-green-100 border border-green-200 rounded-lg">
         {{ session('success') }}

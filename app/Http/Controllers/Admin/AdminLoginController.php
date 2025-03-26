@@ -23,12 +23,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Admin\AdminController;
+use Laravel\Fortify\Contracts\TwoFactorAuthenticationProvider;
 use App\Http\Requests\Admin\AdminLoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\View\View;
+use App\Models\Member;
+use Illuminate\Support\Facades\Hash;
+use App\Services\MembersTwoFactorService;
 use Illuminate\Support\Facades\Log;
+
+
 
 class AdminLoginController extends AdminController
 {
@@ -56,12 +61,35 @@ class AdminLoginController extends AdminController
      */
     public function store(AdminLoginRequest $request)
     {
-        $request->authenticate('member');
+        $member = Member::where('email', $request->email)->first();
 
-        Log::info('Admin login success.', ['email' => $request->email]);
-        //セッションの再生成（旧セッション破棄 & 新ID発行）
-        $request->session()->regenerate(true);
-        return redirect()->intended(route('admin.dashboard'));
+        if (!$member || !Hash::check($request->password, $member->password)) {
+            return back()->withErrors([
+                'email' => __('auth.failed'),
+            ]);
+        }
+        // 2FA 判定（有効な場合だけ進める）
+        $twoFactor = app(MembersTwoFactorService::class);
+        if ($twoFactor->has($member)) {
+            session([
+                'login.id' => $member->getAuthIdentifier(),
+                'login.remember' => $request->boolean('remember'),
+            ]);
+
+            $twoFactor->generate($member); // ← ここでコード生成 + メール送信
+
+            return redirect()->route('admin.two-factor.login'); // ← 入力画面へ遷移
+        } else {
+            // ログイン環境を記録
+            $member->last_login_ip = $request->ip();
+            $member->last_login_ua = $request->userAgent();
+            $member->save();
+
+            // 2FA不要なら即ログイン
+            Auth::guard('member')->login($member, $request->boolean('remember'));
+            $request->session()->regenerate(true);
+            return redirect()->intended(route('admin.dashboard'));
+        }
     }
 
     /**
@@ -73,5 +101,63 @@ class AdminLoginController extends AdminController
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return to_route('admin.login');
+    }
+
+    public function showTwoFactorForm()
+    {
+        if (!session()->has('login.id')) {
+            return redirect()->route('admin.login');
+        }
+
+        return view('admin::two-factor-challenge');
+    }
+
+    public function confirmTwoFactor(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string',
+        ]);
+
+        $memberId = session('login.id');
+        $member = Member::find($memberId);
+
+        if (!$member) {
+            return redirect()->route('admin.login');
+        }
+
+
+        $twoFactor = app(MembersTwoFactorService::class);
+        if (!$twoFactor->validate($member, $request->code)) {
+            return back()->withErrors(['code' => __('auth.two_factor.invalid')]);
+        }
+
+        // ログイン環境を記録
+        $member->last_login_ip = $request->ip();
+        $member->last_login_ua = $request->userAgent();
+        $member->save();
+
+        Auth::guard('member')->login($member, session('login.remember', false));
+        session()->forget(['login.id', 'login.remember']);
+        $request->session()->regenerate(true);
+
+        return redirect()->intended(route('admin.dashboard'));
+    }
+
+    public function resendTwoFactorCode(Request $request)
+    {
+        if (!session()->has('login.id')) {
+            return redirect()->route('admin.login');
+        }
+
+        $member = Member::find(session('login.id'));
+
+        if (!$member) {
+            return redirect()->route('admin.login');
+        }
+
+        $twoFactor = app(MembersTwoFactorService::class);
+        $twoFactor->generate($member); // ← DB保存 & メール送信
+
+        return back()->with('status', __('auth.two_factor.resend_success'));
     }
 }

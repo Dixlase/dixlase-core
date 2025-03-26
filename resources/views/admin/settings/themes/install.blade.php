@@ -22,9 +22,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 
-    <!-- Flash Message -->
-    @include('components::flash_message')
-
     <!-- ファイルアップロードフォーム -->
     <div class="max-w-2xl mx-auto mt-10 bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
         <h2 class="text-2xl font-bold mb-4">テーマをアップロード</h2>
@@ -39,6 +36,4 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </button>
         </form>
     </div>
-
-
 @endsection

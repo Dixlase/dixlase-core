@@ -23,9 +23,24 @@
 namespace App\Http\Controllers\Admin\Settings;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
-use App\Models\Member;
-use App\Http\Requests\Admin\Settings\Member\AdminSettingsMemberStoreRequest;
 use Illuminate\Http\Request;
+use App\Http\Requests\Admin\Settings\Member\AdminSettingsMemberStoreRequest;
+use App\Models\Member;
+use App\Models\MemberSetting;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rules\Enum;
+use App\Enums\MembersTwoFactorMode;
+use App\Enums\GlobalTwoFactorMode;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
+use PragmaRX\Google2FA\Google2FA;
+use Illuminate\Support\Facades\Mail;
+
+
+
+
+
+
 
 class AdminMembersSettingsController extends AdminLoggedInController
 {
@@ -148,13 +163,77 @@ class AdminMembersSettingsController extends AdminLoggedInController
      */
     public function profile()
     {
+        $force2fa = (int) MemberSetting::getValue('force_2fa', MembersTwoFactorMode::Disabled->value);
+
+        $twoFactorOptions = collect(MembersTwoFactorMode::cases())->mapWithKeys(function ($case) {
+            return [$case->value => $case->label()];
+        })->toArray();
+
+        $this->viewParams['force2fa'] = $force2fa;
+        $this->viewParams['twoFactorOptions'] = $twoFactorOptions;
+
         return view('admin.settings.members.profile', $this->viewParams);
     }
 
+    public function updateProfile(Request $request)
+    {
+        $member = Auth::guard('member')->user();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+            'email' => 'required|email|unique:members,email,' . $member->id,
+            'password' => 'nullable|min:8|confirmed',
+            'two_factor_mode' => ['nullable', new Enum(MembersTwoFactorMode::class)],
+        ]);
+
+        $member->fill([
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? '',
+            'email' => $validated['email'],
+        ]);
+
+        if (!empty($validated['password'])) {
+            $member->password = bcrypt($validated['password']);
+        }
+
+        $force2fa = (int) MemberSetting::getValue('force_2fa', MembersTwoFactorMode::Disabled->value);
+
+        if ($force2fa === MembersTwoFactorMode::Disabled->value) {
+            // バリデーションで Enum が保証されているのでキャストしてOK
+            $member->two_factor_mode = (int) $validated['two_factor_mode'] ?? MembersTwoFactorMode::Disabled->value;
+        }
+
+        $member->save();
+
+        return redirect()->route('admin.settings.members.profile')
+            ->with('status', __('admin.settings.members.profile.updated'));
+    }
+
+
     public function settings()
     {
+        $force2fa = (int) MemberSetting::getValue('force_2fa', MembersTwoFactorMode::Disabled->value);
+        $twoFactorOptions = collect(MembersTwoFactorMode::cases())->mapWithKeys(function ($case) {
+            return [$case->value => $case->label()];
+        })->toArray();
+
+        $this->viewParams['force2fa'] = $force2fa;
+        $this->viewParams['twoFactorOptions'] = $twoFactorOptions;
+
         return view('admin.settings.members.settings', $this->viewParams);
     }
 
-    public function updateSettings() {}
+    public function updateSettings(Request $request)
+    {
+        $request->validate([
+            'force_2fa' => ['required', new Enum(GlobalTwoFactorMode::class)],
+        ]);
+
+        MemberSetting::setValue('force_2fa', (int) $request->input('force_2fa'));
+
+
+        return redirect()->route('admin.settings.members.settings')
+            ->with('success', __('admin.settings.members.settings.updated'));
+    }
 }

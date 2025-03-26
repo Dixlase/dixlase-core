@@ -27,10 +27,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Fortify\TwoFactorAuthenticatable;
+use App\Enums\MembersTwoFactorMode;
 
 class Member extends Authenticatable
 {
-    use HasFactory, Notifiable, SoftDeletes; // MustVerifyEmailを追加
+    use HasFactory, Notifiable, SoftDeletes, TwoFactorAuthenticatable;
 
 
     /**
@@ -38,6 +40,9 @@ class Member extends Authenticatable
      */
     protected $table = 'members';
     protected $primaryKey = 'id';
+    protected $casts = [
+        'two_factor_mode' => MembersTwoFactorMode::class,
+    ];
 
 
     /**

@@ -61,6 +61,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
 
                     <div class="px-4 sm:px-6 lg:px-8">
+                        @include('components::flash-message')
                         <!-- Page Content -->
                         @yield('content')
                     </div>
