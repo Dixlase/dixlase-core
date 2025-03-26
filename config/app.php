@@ -85,7 +85,8 @@ return [
     |
     */
 
-    'timezone' => env('APP_TIMEZONE', 'UTC'),
+    //'timezone' => env('APP_TIMEZONE', 'UTC'),
+    'timezone' => 'Asia/Tokyo', // ← これが理想
 
     /*
     |--------------------------------------------------------------------------
@@ -166,5 +167,18 @@ return [
     |
     */
     'force_ssl' => env('FORCE_SSL', false), // `.env` から取得
+
+    /*
+    |--------------------------------------------------------------------------
+    | Two Factor
+    |--------------------------------------------------------------------------
+    |
+    | This value determines the configuration of two-factor authentication.
+    |
+    */
+
+    'two_factor' => [
+        'email_code_expire' => env('TWO_FACTOR_EMAIL_EXPIRE', 5), // 分
+    ],
 
 ];

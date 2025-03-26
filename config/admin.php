@@ -299,6 +299,9 @@ return [
         'contributor' => ['super_admin', 'admin', 'editor', 'author', 'contributor'],
     ],
 
+    //二段階認証の設定
+    'global_two_factor_mode' => [0, 1, 2, 3], // 0: メンバーのプロフィール設定を反映, 1: 無効, 2: 常に有効, 3: 異なる端末/IP時のみ有効
+    'members_two_factor_mode' => [0, 1, 2], // 0: 2段階認証なし, 1: 常に有効, 2: 異なる端末/IP時のみ有効
 
     /*
     |--------------------------------------------------------------------------
@@ -385,4 +388,7 @@ return [
     'perPage' => 10,
     'mediaPath' => 'media',
     'admin_url' => 'admin',
+
+
+
 ];

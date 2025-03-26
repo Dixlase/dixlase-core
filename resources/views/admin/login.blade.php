@@ -18,7 +18,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-@extends('admin::partials.layout_auth')
+@extends('admin::partials.layout-auth')
 @section('title', '管理画面ログイン')
 @section('header', '管理画面ログイン')
 @section('description', '管理画面にアクセスするにはログインしてください。')

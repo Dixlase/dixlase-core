@@ -21,9 +21,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('admin::partials.layout')
 
 @section('content')
-    <!-- Flash message for success or error -->
-    @include('components::flash_message')
-
     <form action="{{ route('admin.media.settings.update') }}" method="POST" class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
         @csrf
         <div class="mb-6">

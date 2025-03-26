@@ -22,10 +22,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="container mx-auto p-6">
-    <!-- Flash message for success or error -->
-    @include('components::flash_message')
-
-
     <!-- プラグイン一覧テーブル -->
     <div class="overflow-x-auto">
         <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">

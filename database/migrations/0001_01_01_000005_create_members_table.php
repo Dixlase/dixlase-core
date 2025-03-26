@@ -43,8 +43,12 @@ return new class extends Migration
             $table->string('role')->default('admin');   // super_admin, admin, editor, author, contributor,
             $table->integer('appearance')->default(0); // 0= auto, 1 = light, 2 = dark
             $table->string('password'); // Hashed
+            $table->integer('two_factor_mode')->default(0); // 0= Disabled, 1 = Always, 2 = Smart
+            $table->string('last_login_ip')->nullable();
+            $table->text('last_login_ua')->nullable();
             $table->integer('status')->default(0);  // 0 = inactive, 1 = active
             $table->rememberToken();
+
             $table->timestamps();
             $table->softDeletes();
         });

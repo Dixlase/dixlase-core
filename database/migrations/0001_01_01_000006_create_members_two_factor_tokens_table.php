@@ -6,13 +6,18 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    protected $table = 'members_two_factor_tokens';
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('member_settings_migrations', function (Blueprint $table) {
+        // migration
+        Schema::create($this->table, function (Blueprint $table) {
             $table->id();
+            $table->foreignId('member_id')->constrained()->onDelete('cascade');
+            $table->string('code'); // hashed
+            $table->timestamp('expires_at');
             $table->timestamps();
         });
     }
@@ -22,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('member_settings_migrations');
+        Schema::dropIfExists($this->table);
     }
 };

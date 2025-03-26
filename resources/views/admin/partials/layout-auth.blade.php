@@ -29,21 +29,7 @@
             <h1 class="text-2xl font-bold text-gray-800 mb-4 text-center">@yield('header')</h1>
             <p class="text-gray-600 mb-6 text-center">@yield('description')</p>
 
-            @if(session('error'))
-                <div class="bg-red-100 text-red-600 p-3 mb-4 rounded-lg">
-                    {{ session('error') }}
-                </div>
-            @endif
-
-            @if(isset($errors) && $errors->any())
-                <div class="bg-red-100 text-red-600 p-3 mb-4 rounded-lg">
-                    <ul class="list-disc list-inside">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+            @include('components::flash-message')
 
             @yield('content')
         </div>

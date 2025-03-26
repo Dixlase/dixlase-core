@@ -62,8 +62,14 @@ Route::prefix($adminUrl)->name('admin.')
             }
         });
 
+        // ログイン
         Route::get('/login', [AdminLoginController::class, 'create'])->name('login');
         Route::post('/login', [AdminLoginController::class, 'store'])->name('login.store');
+
+        // 二段階認証
+        Route::get('/two-factor-challenge', [AdminLoginController::class, 'showTwoFactorForm'])->name('two-factor.login');
+        Route::post('/two-factor-challenge', [AdminLoginController::class, 'confirmTwoFactor'])->name('two-factor.confirm');
+        Route::post('/two-factor-resend', [AdminLoginController::class, 'resendTwoFactorCode'])->name('two-factor.resend');
 
 
         Route::middleware(['auth:member', 'log.admin.activity'])->group(function () {
@@ -118,6 +124,10 @@ Route::prefix($adminUrl)->name('admin.')
             Route::delete('/settings/members/destroy/{member}', [AdminMembersSettingsController::class, 'destroy'])->name('settings.members.destroy');
             // プロフィール
             Route::get('/settings/members/profile', [AdminMembersSettingsController::class, 'profile'])->name('settings.members.profile');
+            Route::post('/settings/members/profile', [AdminMembersSettingsController::class, 'updateProfile'])->name('settings.members.profile.update');
+
+
+
             // メンバー設定
             Route::get('/settings/members/settings', [AdminMembersSettingsController::class, 'settings'])->name('settings.members.settings');
             Route::post('/settings/members/settings', [AdminMembersSettingsController::class, 'updateSettings'])->name('settings.members.settings.update');

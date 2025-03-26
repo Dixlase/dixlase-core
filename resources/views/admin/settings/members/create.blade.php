@@ -22,9 +22,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 
-    <!-- Flash message for success or error -->
-    @include('components::flash_message')
-
     <form action="{{ route('admin.settings.members.store') }}" method="POST" class="mt-6">
         @csrf
         @include('admin::settings.members.partials.form',[
@@ -41,6 +38,5 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'confirm_label' => '作成',
             'cancel_label' => '戻る',
         ])
-
     </form>
 @endsection

@@ -21,10 +21,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('admin::partials.layout')
 
 @section('content')
-
-    <!-- Flash message for success or error -->
-    @include('components::flash_message')
-
     <form action="{{ route('admin.settings.members.update', ['member' => $member->id]) }}" method="POST">
         @csrf
         @method('PATCH')

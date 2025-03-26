@@ -21,9 +21,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('admin::partials.layout')
 
 @section('content')
-    <!-- Flash message for success or error -->
-    @include('components::flash_message')
-
     <div class="bg-white shadow-md rounded-lg p-6 dark:bg-gray-800">
         <form action="{{ route('admin.media.upload') }}" method="POST" enctype="multipart/form-data" class="space-y-6" x-data="{ fileName: '' }">
             @csrf

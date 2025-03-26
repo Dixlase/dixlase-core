@@ -190,10 +190,9 @@ class AppUninstall extends Command
         try {
             Artisan::call('config:clear');
             Artisan::call('cache:clear');
+            Artisan::call('config:cache');
             Artisan::call('view:clear');
             Artisan::call('route:clear');
-            Artisan::call('config:cache');
-
             $this->info('✔️ キャッシュをクリアしました。');
         } catch (\Exception $e) {
             $this->error('キャッシュのクリア中にエラーが発生しました: ' . $e->getMessage());
