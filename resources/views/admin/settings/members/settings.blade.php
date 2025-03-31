@@ -25,6 +25,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <form method="POST" action="{{ route('admin.settings.members.settings.update') }}">
         @csrf
 
+        <!-- ログイン通知設定 -->
+        <div class="mb-6 mt-8">
+            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
+                ログイン通知メールの全体設定
+            </label>
+
+            @php
+                $loginNotificationOptions = collect(config('admin.global_login_notification_mail_mode'))
+                    ->mapWithKeys(fn ($value) => [$value => __('admin.settings.members.login_notification_mode.options.' . $value)])
+                    ->toArray();
+            @endphp
+
+            @include('components.form.radio-group', [
+                'name' => 'login_notification_mode',
+                'options' => $loginNotificationOptions,
+                'value' => old('login_notification_mode', (string) $loginNotification),
+            ])
+        </div>
+
+
         <div class="mb-6">
             <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
                 {{ __('admin.settings.members.two_factor_mode.label') }}
@@ -32,7 +52,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             @php
                 $twoFactorOptions = collect(config('admin.global_two_factor_mode'))
-                    ->mapWithKeys(fn ($value) => [$value => __('admin.settings.members.two_factor_mode.options_global.' . $value)])
+                    ->mapWithKeys(fn ($value) => [$value => __('admin.settings.members.two_factor_mode.options.' . $value)])
                     ->toArray();
             @endphp
 

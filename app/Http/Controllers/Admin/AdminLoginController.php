@@ -31,6 +31,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Member;
 use Illuminate\Support\Facades\Hash;
 use App\Services\MembersTwoFactorService;
+use App\Services\MembersLoginNotificationService;
 use Illuminate\Support\Facades\Log;
 
 
@@ -80,10 +81,9 @@ class AdminLoginController extends AdminController
 
             return redirect()->route('admin.two-factor.login'); // ← 入力画面へ遷移
         } else {
-            // ログイン環境を記録
-            $member->last_login_ip = $request->ip();
-            $member->last_login_ua = $request->userAgent();
-            $member->save();
+
+            // ログイン環境を記録、通知
+            app(MembersLoginNotificationService::class)->handle($member, $request);
 
             // 2FA不要なら即ログイン
             Auth::guard('member')->login($member, $request->boolean('remember'));
@@ -131,10 +131,8 @@ class AdminLoginController extends AdminController
             return back()->withErrors(['code' => __('auth.two_factor.invalid')]);
         }
 
-        // ログイン環境を記録
-        $member->last_login_ip = $request->ip();
-        $member->last_login_ua = $request->userAgent();
-        $member->save();
+        // ログイン環境を記録、通知
+        app(MembersLoginNotificationService::class)->handle($member, $request);
 
         Auth::guard('member')->login($member, session('login.remember', false));
         session()->forget(['login.id', 'login.remember']);
