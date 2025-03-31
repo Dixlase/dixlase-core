@@ -24,8 +24,10 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\BaseSetting;
-use App\Http\Requests\Admin\Settings\AdminSettingsSystemRequest;
-use Illuminate\Support\Facades\Gate;
+use App\Http\Requests\Admin\Settings\AdminBaseSettingsRequest;
+use App\Helpers\EnvHelper;
+use App\Helpers\TimezoneHelper;
+use App\Facades\BaseSettings;
 
 class AdminBaseSettingsController extends AdminLoggedInController
 {
@@ -47,25 +49,33 @@ class AdminBaseSettingsController extends AdminLoggedInController
         // 権限を確認
         $this->checkPermission('super_admin');
 
+
         $settings = [
-            'site_name' => BaseSetting::getValue('site_name', 'My Site'),
-            'language' => BaseSetting::getValue('language', 'ja'),
-            //'is_member_site' => BaseSetting::getValue('is_member_site', 'false'),
-            //'allow_external_registration' => BaseSetting::getValue('allow_external_registration', 'false'),
+            'app_name' => BaseSettings::get('app_name', 'MySoftware'),
+            'locale' => BaseSettings::get('locale', 'ja_JA'),
+            'timezone' => BaseSettings::get('timezone', 'Asia/Tokyo'),
+
+            'mail_mailer' => BaseSettings::get('mail_mailer', 'smtp'),
+            'mail_host' => BaseSettings::get('mail_host', 'smtp.example.com'),
+            'mail_port' => BaseSettings::get('mail_port', '587'),
+            'mail_username' => BaseSettings::get('mail_username', ''),
+            'mail_password' => BaseSettings::get('mail_password', ''),
+            'mail_encryption' => BaseSettings::get('mail_encryption', 'tls'),
+            'mail_from_address' => BaseSettings::get('MAIL_FROM_ADDRESS', 'no-reply@example.com'),
+
             'maintenance_mode' => BaseSetting::getValue('maintenance_mode', 'false'),
             'maintenance_message' => BaseSetting::getValue('maintenance_message', '現在メンテナンス中です。しばらくお待ちください。'),
-            //'allow_guest_registration' => BaseSetting::getValue('allow_guest_registration', 'false'),
-            /*
-            'required_fields' => BaseSetting::getValue('required_fields', [
-                'address' => false,
-                'phone' => false,
-                'gender' => false,
-                'birthday' => false,
-            ]),
-            */
         ];
 
-        $this->viewParams['settings'] = $settings;
+        $timezones = TimezoneHelper::getTimezonesWithUtcOffset();
+
+        $locales =
+
+            $this->viewParams['settings'] = $settings;
+        $this->viewParams['timezones'] = $timezones;
+        $this->viewParams['locales'] = trans('admin.locales');
+        $this->viewParams['mailers'] = trans('mail.mailers');
+        $this->viewParams['encryptions'] = trans('mail.encryptions');
 
         return view(
             'admin::settings.base.index',
@@ -76,30 +86,55 @@ class AdminBaseSettingsController extends AdminLoggedInController
     /**
      * 設定の更新
      */
-    public function update(AdminSettingsSystemRequest $request)
+    public function update(AdminBaseSettingsRequest $request)
     {
         // 権限を確認
         $this->authorize('super_admin');
 
         $settings = $request->only([
-            'site_name',
-            'language',
-            'is_member_site',
-            'allow_external_registration',
             'maintenance_mode',
             'maintenance_message',
-            'allow_guest_registration',
         ]);
 
-        // JSON形式の必須項目設定
-        $requiredFields = $request->input('required_fields', []);
+        $envData = $request->only([
+            'app_name',
+            'locale',
+            'timezone',
+            'mail_mailer',
+            'mail_host',
+            'mail_port',
+            'mail_username',
+            'mail_password',
+            'mail_encryption',
+            'mail_from_address',
+        ]);
 
-        BaseSetting::setValue('required_fields', $requiredFields);
-
-        foreach ($settings as $name => $value) {
-            BaseSetting::setValue($name, $value);
-        }
+        // DBに保存するもの(メンテナンスモードの設定)
+        BaseSetting::setMany($settings);
+        // .env に保存するもの
+        EnvHelper::update($envData);
 
         return redirect()->route('admin.settings.base')->with('success', '設定が更新されました。');
+    }
+
+
+    private function getTimezonesWithUtcOffset(): array
+    {
+        $timezones = [];
+        $now = new DateTime('now');
+        $translations = trans('timezones');
+
+        foreach (DateTimeZone::listIdentifiers() as $timezone) {
+            $tz = new DateTimeZone($timezone);
+            $offset = $tz->getOffset($now);
+            $sign = $offset < 0 ? '-' : '+';
+            $hours = str_pad(abs($offset) / 3600, 2, '0', STR_PAD_LEFT);
+            $minutes = str_pad(abs($offset) % 3600 / 60, 2, '0', STR_PAD_LEFT);
+            $formattedOffset = "UTC{$sign}{$hours}:{$minutes}";
+            $label = $translations[$timezone] ?? $timezone;
+            $timezones[$timezone] = "（{$formattedOffset}）{$label}";
+        }
+
+        return $timezones;
     }
 }

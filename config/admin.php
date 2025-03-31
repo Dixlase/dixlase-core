@@ -346,28 +346,12 @@ return [
     |
     */
 
-    'languages' => [
+    'locale' => [
         'default' => 'ja',
-        'available' => [
-            'ja' => '日本語',
-            'en' => 'English',
-        ],
+        'available' => ['ja_JA', 'en_EN'],
     ],
 
-    'status' => [
-        'pages' => [
-            '1' => '公開',
-            '0' => '下書き',
-        ],
-        'users' => [
-            '1' => '有効',
-            '0' => '無効',
-        ],
-        'admins' => [
-            '1' => '有効',
-            '0' => '無効',
-        ],
-    ],
+
 
     'fileExtensions' => [
         'jpg',

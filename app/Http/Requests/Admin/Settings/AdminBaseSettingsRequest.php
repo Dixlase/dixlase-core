@@ -23,8 +23,9 @@
 namespace App\Http\Requests\Admin\Settings;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class AdminSettingsSystemRequest extends FormRequest
+class AdminBaseSettingsRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -40,18 +41,18 @@ class AdminSettingsSystemRequest extends FormRequest
     public function rules()
     {
         return [
-            'site_name' => 'required|string|max:255',
-            'language' => 'required|in:ja,en',
-            'is_member_site' => 'required|boolean',
-            'allow_external_registration' => 'required|boolean',
+            'app_name' => 'required|string|max:255',
+            'locale' => 'required|in:ja_JA,en_EN',
+            'timezone' => 'required|timezone',
+            'mail_mailer' => ['required', Rule::in(array_keys(trans('mail.mailers')))],
+            'mail_host' => 'required|string',
+            'mail_port' => 'required|numeric',
+            'mail_username' => 'nullable|string',
+            'mail_password' => 'nullable|string',
+            'mail_encryption' => ['nullable', Rule::in(array_keys(trans('mail.encryptions')))],
+            'mail_from_name' => 'nullable|string|max:255',
             'maintenance_mode' => 'required|boolean',
             'maintenance_message' => 'nullable|string',
-            'allow_guest_registration' => 'required|boolean',
-            'required_fields' => 'nullable|array',
-            'required_fields.address' => 'boolean',
-            'required_fields.phone' => 'boolean',
-            'required_fields.gender' => 'boolean',
-            'required_fields.birthday' => 'boolean',
         ];
     }
 
@@ -62,11 +63,8 @@ class AdminSettingsSystemRequest extends FormRequest
     {
         return [
             'site_name.required' => 'サイト名は必須です。',
-            'language.required' => '言語を選択してください。',
-            'is_member_site.required' => '会員サイトの設定は必須です。',
-            'allow_external_registration.required' => '外部ユーザー登録の設定は必須です。',
-            'maintenance_mode.required' => 'メンテナンスモードの設定は必須です。',
-            'allow_guest_registration.required' => 'ゲスト申し込みの設定は必須です。',
+            'locale.required' => '言語を選択してください。',
+            'timezone.timezone' => '有効なタイムゾーンを選択してください。',
             'required_fields.required' => '必須項目の設定を行ってください。',
         ];
     }
