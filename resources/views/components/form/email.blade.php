@@ -22,24 +22,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'id' => null,
     'name' => null,
     'value' => '',
-    'rows' => 10,
-    'placeholder' => '',
-    'required' => false,
-    'readonly' => false,
+    'disabled' => false,
     'class' => '',
-    'xBindReadonly' => null,  // Alpine.jsのx-bind:readonly
-    'xBindClass' => null,     // Alpine.jsのx-bind:class
+    'required' => false,
 ])
 
-<textarea
-    name="{{ $name }}"
+<input type="email"
     id="{{ $id }}"
-    rows="{{ $rows }}"
-    placeholder="{{ $placeholder }}"
-    class="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline {{ config('admin.appearance_class.form.textarea') }} {{ $class }}"
-
-
-    {{ $xBindReadonly ? "x-bind:readonly=$xBindReadonly" : '' }}
-    {{ $xBindClass ? "x-bind:class=$xBindClass" : '' }}
->{{ old($name, $value) }}
-</textarea>
+    name="{{ $name }}"
+    value="{{ old($name, $value) }}"
+    @if ($disabled) disabled @endif
+    @if ($required) required @endif
+    class="mt-1 block w-full rounded-md shadow-sm text-lg {{ config('admin.appearance_class.form.text') }} {{ $class }}"
+>

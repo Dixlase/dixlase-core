@@ -57,6 +57,11 @@ return [
         ],
     ],
 
+    'locales' => [
+        'ja_JA' => '日本語',
+        'en_EN' => 'English',
+    ],
+
     'roles' => [
         'text' => '権限',
         'super_admin' => '特権管理者',
@@ -148,6 +153,9 @@ return [
 
     ],
 
+
+
+
     // 設定
     'settings' => [
         // 基本
@@ -238,6 +246,19 @@ return [
             ],
             'force_setting_1' => 'メンバー全体設定で',
             'force_setting_2' => 'が選択されているため、個別設定は変更できません。',
+            'status' => 'ステータス',
+            'status_options' => [
+                1 => '有効',
+                0 => '無効',
+            ],
+            'role' => 'ロール',
+            'role_options' => [
+                'super_admin' => '特権管理者',
+                'admin' => '管理者',
+                'editor' => '編集者',
+                'author' => '投稿者',
+                'contributor' => '寄稿者',
+            ],
         ],
         // テーマ
         'themes' => [

@@ -78,4 +78,11 @@ class BaseSetting extends Model
             ]);
         }
     }
+
+    public static function setMany(array $settings): void
+    {
+        foreach ($settings as $key => $value) {
+            self::setValue($key, $value);
+        }
+    }
 }
