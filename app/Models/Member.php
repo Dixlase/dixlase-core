@@ -28,7 +28,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Fortify\TwoFactorAuthenticatable;
-use App\Enums\MembersTwoFactorMode;
+use App\Enums\TwoFactorModeMember;
 
 class Member extends Authenticatable
 {
@@ -41,7 +41,7 @@ class Member extends Authenticatable
     protected $table = 'members';
     protected $primaryKey = 'id';
     protected $casts = [
-        'two_factor_mode' => MembersTwoFactorMode::class,
+        'two_factor_mode' => TwoFactorModeMember::class,
     ];
 
 

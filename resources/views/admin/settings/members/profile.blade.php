@@ -69,11 +69,46 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @enderror
         </div>
 
+
+
         <!-- パスワード確認 -->
         <div class="mb-6">
             <label class="block font-medium text-sm text-gray-700 dark:text-gray-300">パスワード確認</label>
             <input type="password" name="password_confirmation"
                    class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded px-3 py-2">
+        </div>
+
+        <!-- ログイン通知の設定 -->
+        <div class="mb-6">
+            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
+                ログイン通知メールの設定
+            </label>
+
+
+            @php
+                // ログイン通知モードの表示用の value を決定
+                //全体設定で0以外に場合は、全体設定を優先。ラジオボタンの表示もそれを反映させる
+                $loginNotificationDisplayValue = in_array((int) $loginNoticeGlobal, [1, 2, 3])
+                    ? (string) $loginNoticeGlobal
+                    : (string) old('login_notification_mode', (string) $member->login_notification_mode ?? '1');
+            @endphp
+
+
+            @include('components.form.radio-group', [
+                'name' => 'login_notification_mode',
+                'options' => $loginNotificationOptions,
+                'value' => $loginNotificationDisplayValue,
+                'disabled' => in_array((int) $loginNoticeGlobal, [1, 2, 3]),
+            ])
+
+            @if ($loginNoticeGlobal !== 0)
+                @php
+                    $forceLoginNoticeName = __('admin.settings.members.login_notification_mode.options.' . $loginNoticeGlobal);
+                @endphp
+                <p class="text-sm mt-3 text-gray-600 dark:text-gray-400">
+                    {{ __('admin.settings.members.force_setting_1') }}「{{ $forceLoginNoticeName }}」{{ __('admin.settings.members.force_setting_2') }}
+                </p>
+            @endif
         </div>
 
         <!-- 2段階認証の設定 -->
@@ -83,24 +118,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </label>
 
             @php
-                $twoFactorOptions = collect(config('admin.members_two_factor_mode'))
-                    ->mapWithKeys(fn ($value) => [$value => __('admin.settings.members.two_factor_mode.options_members.' . $value)])
-                    ->toArray();
+                // 2FA 表示用 value を決定
+                //全体設定で0以外に場合は、全体設定を優先。ラジオボタンの表示もそれを反映させる
+                $twoFactorDisplayValue = in_array((int) $force2fa, [1, 2, 3])
+                    ? (string) $force2fa
+                    : (string) old('two_factor_mode', $member->login_notification_mode ?? 1); // fallback: Disabled
             @endphp
+
 
             @include('components.form.radio-group', [
                 'name' => 'two_factor_mode',
                 'options' => $twoFactorOptions,
-                'value' => old('two_factor_mode', (string) optional($member->two_factor_mode)->value ?? '0'),
-                'disabled' => in_array((int) $force2fa, [1, 2]), // ←ここで無効化
+                'value' => $twoFactorDisplayValue,
+                'disabled' => in_array((int) $force2fa, [1, 2, 3]),
             ])
 
+
             @php
-                $force2fa_name = __('admin.settings.members.two_factor_mode.options_global.' . $force2fa);
+                $force2fa_name = __('admin.settings.members.two_factor_mode.options.' . $force2fa);
             @endphp
+
             @if ((int) $force2fa !== 0)
                 <p class="text-sm mt-3 text-gray-600 dark:text-gray-400">
-                    {{__('admin.settings.members.two_factor_mode.force_setting_1')}} {{ $force2fa_name }}」{{__('admin.settings.members.two_factor_mode.force_setting_2')}}
+                    {{__('admin.settings.members.force_setting_1')}} {{ $force2fa_name }}」{{__('admin.settings.members.force_setting_2')}}
                 </p>
             @endif
 

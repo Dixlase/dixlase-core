@@ -11,8 +11,8 @@ use Illuminate\Support\Carbon;
 use App\Models\MembersTwoFactorToken;
 use Illuminate\Support\Facades\Hash;
 use App\Models\MemberSetting;
-use App\Enums\MembersTwoFactorMode;
-use App\Enums\GlobalTwoFactorMode;
+use App\Enums\TwoFactorModeMember;
+use App\Enums\TwoFactorModeGlobal;
 
 class MembersTwoFactorService
 {
@@ -53,16 +53,30 @@ class MembersTwoFactorService
         $force = (int) MemberSetting::getValue('force_2fa', 0);
 
         return match ($force) {
-            GlobalTwoFactorMode::Disabled->value => false,
-            GlobalTwoFactorMode::Always->value => true,
-            GlobalTwoFactorMode::Smart->value => $this->isDifferentEnvironment($member),
-            default => match ($member->two_factor_mode) {
-                MembersTwoFactorMode::Always->value => true,
-                MembersTwoFactorMode::Smart->value => $this->isDifferentEnvironment($member),
-                default => false,
-            }
+            TwoFactorModeGlobal::Disabled->value => false,
+            TwoFactorModeGlobal::Always->value => true,
+            TwoFactorModeGlobal::OnlyNewDevice->value => $this->isDifferentEnvironment($member),
+            TwoFactorModeGlobal::UseProfileSetting->value => $this->checkMemberSetting($member),
+            default => false,
         };
     }
+
+    private function checkMemberSetting($member): bool
+    {
+        $raw = $member->two_factor_mode;
+
+        // すでに Enum ならそのまま、そうでなければ tryFrom で変換
+        $mode = $raw instanceof TwoFactorModeMember
+            ? $raw
+            : TwoFactorModeMember::tryFrom((int) $raw);
+
+        return match ($mode) {
+            TwoFactorModeMember::Always => true,
+            TwoFactorModeMember::OnlyNewDevice => $this->isDifferentEnvironment($member),
+            default => false,
+        };
+    }
+
 
     public function isDifferentEnvironment($member): bool
     {
