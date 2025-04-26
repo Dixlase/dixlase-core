@@ -34,7 +34,6 @@ class AdminController extends Controller
 {
     //変数を宣言する
     protected $siteName;
-    protected $appearance = 'light';
     protected $heading = '';
     protected $viewParams = [];
     protected $routeName = '';

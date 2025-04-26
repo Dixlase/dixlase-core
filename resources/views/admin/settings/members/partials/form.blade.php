@@ -62,11 +62,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'for' => 'password',
         'text' => 'パスワード',
     ])
-    @include('components::form.text', [
-        'type' => 'password',
+    @include('components::form.password-tools', [
         'id' => 'password',
         'name' => 'password',
-        'required' => $require_password,
+        'required' => $requirePassword,
     ])
     @include('components::form.error', [
         'messages' => $errors->get('password')
@@ -77,14 +76,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <div class="mb-4">
     @include('components::form.label', [
         'for' => 'role',
-        'text' => '権限',
+        'text' => config('admin.role'),
 
     ])
+
+
     @include('components::form.select', [
         'id' => 'role',
         'name' => 'role',
-        'options' => config('admin.roles'),
-        'value' => old('role', $member->role ?? ''),
+        'options' => $roleOptions,
+        'value' => $roleValue,
         'required' => true,
     ])
 </div>
@@ -113,8 +114,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @include('components::form.select', [
         'id' => 'status',
         'name' => 'status',
-        'options' => config('admin.status.admins'),
-        'value' => old('status', $admin->status ?? ''),
+        'options' => $statusOptions,
+        'value' => $statusValue,
         'required' => true,
     ])
 </div>

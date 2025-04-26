@@ -61,16 +61,18 @@ return [
         'ja_JA' => '日本語',
         'en_EN' => 'English',
     ],
-
+    'role' => '権限',
     'roles' => [
-        'text' => '権限',
-        'super_admin' => '特権管理者',
-        'admin' => '管理者',
-        'editor' => '編集者',
-        'author' => '投稿者',
-        'contributor' => '寄稿者',
+        'SUPER_ADMIN' => '特権管理者',
+        'ADMIN' => '管理者',
+        'EDITOR' => '編集者',
+        'AUTHOR' => '投稿者',
+        'CONTRIBUTOR' => '寄稿者',
     ],
-
+    'status' => [
+        'Inactive' => '無効',
+        'Active' => '有効',
+    ],
     'nav' => [
         'dashboard' => 'ダッシュボード',
         'front' => [
@@ -217,13 +219,33 @@ return [
             ],
             'settings' => [
                 'heading' => 'メンバー全体設定',
-                'name' => '名前',
-                'email' => 'メールアドレス',
+                'password_conditions' => 'パスワードの条件',
                 'password' => 'パスワード',
                 'password_confirmation' => 'パスワード確認',
                 'role' => 'ロール',
                 'submit' => '更新',
+                'confirm_title' => '設定の更新',
+                'confirm_message' => 'この内容で設定を更新しますか？',
+                'confirm_label' => '更新',
+                'cancel_label' => '戻る',
                 'updated' => 'メンバー全体設定が更新されました。',
+                'password_min_length' => 'パスワードの最小文字数',
+                'password_min_length_options' => [
+                    8 => '8文字以上',
+                    12 => '12文字以上',
+                    16 => '16文字以上',
+                ],
+                'password_require_uppercase' => '大文字を含める',
+                'password_require_uppercase_options' => [
+                    1 => '含める',
+                    0 => '含めない',
+                ],
+                'password_require_symbol' => '記号を含める',
+                'password_require_symbol_options' => [
+                    1 => '含める',
+                    0 => '含めない',
+                ],
+
             ],
             'login_notification_mode' => [
                 'label' => 'ログイン通知の設定',

@@ -72,4 +72,28 @@ return [
     'fax' => 'FAX',
     'gender' => '性別',
     'birthday' => '誕生日',
+
+    'password_messages' => [
+        'strength' => [
+            'error' => 'パスワードが条件を満たしていません',
+            'normal' => '普通の強度',
+            'strong' => '強いパスワード',
+        ],
+        'tooltip' => [
+            'generate' => '自動生成',
+            'copy' => 'コピー',
+            'toggle' => '表示切替',
+        ],
+        'copied' => 'パスワードがコピーされました！',
+
+        'requirements' => [
+            'length' => '8文字以上',
+            'uppercase' => '大文字を1文字以上含む',
+            'lowercase' => '小文字を1文字以上含む',
+            'number' => '数字を1文字以上含む',
+            'symbol' => '記号（!@#$%^&* など）を含むと強度UP(任意)',
+        ],
+        'error' => 'パスワードが条件を満たしていません。すべての条件を満たすパスワードを入力してください。',
+
+    ],
 ];

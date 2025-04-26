@@ -24,14 +24,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Admin\AdminController;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Route;
+use App\Enums\AppearanceMode;
 
 
 
 class AdminLoggedInController extends AdminController
 {
     protected $member;
+    protected $appearance;
 
     public function __construct()
     {
@@ -42,21 +42,9 @@ class AdminLoggedInController extends AdminController
             // ログインユーザー情報を取得
             $this->setMember();
 
-            // 管理画面アクセスログ
-            /*
-            if (Auth::check() && Auth::user()->is_admin) {
-                Log::channel('admin_activity')->info('管理画面アクセス', [
-                    'id' => Auth::id(),
-                    'name' => Auth::user()->name,
-                    'method' => $request->method(),
-                    'route' => Route::currentRouteName(),
-                    'controller' => Route::currentRouteAction(),
-                    'ip' => $request->ip(),
-                    'user_agent' => $request->userAgent(),
-                    'time' => now()->toDateTimeString(),
-                ]);
-            }
-            */
+            $transition = config('admin.transition_class');
+            $this->viewParams['transition'] = $transition;
+
 
             return $next($request);
         });
@@ -67,5 +55,9 @@ class AdminLoggedInController extends AdminController
     {
         $this->member = Auth::guard('member')->user();
         $this->viewParams['member'] = $this->member;
+
+        //メンバーの外観モードを取得
+        $this->appearance = $this->member->appearance?->value ?? AppearanceMode::Auto->value;
+        $this->viewParams['appearance'] = $this->appearance;
     }
 }

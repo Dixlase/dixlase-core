@@ -64,7 +64,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <td class="border px-4 py-2">{{ $member->id }}</td>
                             <td class="border px-4 py-2">{{ $member->name }}</td>
                             <td class="border px-4 py-2">{{ $member->email }}</td>
-                            <td class="border px-4 py-2">{{__('admin.roles.' . $member->role)}}</td>
+                            <td class="border px-4 py-2">{{ $member->role->label() }}</td>
                             <td class="border px-4 py-2">
                                 <a href="{{ route('admin.settings.members.edit', ['member' => $member->id]) }}"
                                     class="{{ config('admin.appearance_class.link') }}">
@@ -84,7 +84,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <p><strong>ID:</strong> {{ $member->id }}</p>
                     <p><strong>名前:</strong> {{ $member->name }}</p>
                     <p><strong>メールアドレス:</strong> {{ $member->email }}</p>
-                    <p><strong>権限:</strong>{{ __('admin.roles.' . $member->role) }}</p>
+                    <p><strong>権限:</strong>{{ $member->role->label() }}</p>
                     <div class="mt-2">
                         <a href="{{ route('admin.settings.members.edit', ['member' => $member->id]) }}"
                             class="text-blue-600 hover:text-blue-800">

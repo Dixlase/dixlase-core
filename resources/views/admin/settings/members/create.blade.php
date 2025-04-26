@@ -20,23 +20,30 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @extends('admin::partials.layout')
 
+@push('scripts')
+    @include('components.form.password-messages')
+@endpush
+
 @section('content')
 
-    <form action="{{ route('admin.settings.members.store') }}" method="POST" class="mt-6">
+    <form action="{{ route('admin.settings.members.store') }}" method="POST" class="mt-6 mb-12" id="create-form">
         @csrf
         @include('admin::settings.members.partials.form',[
             'require_password' => true,
         ])
-
-        <!-- 保存ボタンとモーダル -->
-        @include('components::form.save', [
-            'id' => 'confirmationModal',
-            'label' => '作成',
-            'onclick' => "openModal('confirmationModal')",
-            'title' => '作成の確認',
-            'message' => '新規管理者を作成しますか？',
-            'confirm_label' => '作成',
-            'cancel_label' => '戻る',
-        ])
     </form>
+@endsection
+
+@section('save')
+    <!-- 保存ボタンとモーダル -->
+    @include('components::form.save', [
+        'id' => 'confirmationModal',
+        'label' => '作成',
+        'onclick' => "openModal('confirmationModal')",
+        'title' => '作成の確認',
+        'message' => '新規管理者を作成しますか？',
+        'confirm_label' => '作成',
+        'cancel_label' => '戻る',
+        'form' => 'create-form', // 🔁 保存ボタンに form 属性を渡す（必要なら）
+    ])
 @endsection

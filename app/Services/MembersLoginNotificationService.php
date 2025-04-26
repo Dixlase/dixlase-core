@@ -8,7 +8,7 @@ use App\Mail\MembersLoginNotificationMail;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use App\Enums\LoginNotificationModeGlobal;
-use App\Enums\LoginNotificationModeMember;
+use App\Enums\LoginNotificationMode;
 
 class MembersLoginNotificationService
 {
@@ -36,16 +36,16 @@ class MembersLoginNotificationService
     private function shouldSend(Member $member, string $ip, string $ua): bool
     {
         $globalSetting = MemberSetting::getValue('login_notification_mode');
-        $globalMode = LoginNotificationModeGlobal::tryFrom((int) $globalSetting);
+        $globalMode = LoginNotificationMode::tryFrom((int) $globalSetting);
 
         return match ($globalMode) {
-            LoginNotificationModeGlobal::Disabled => false,
-            LoginNotificationModeGlobal::Always => true,
-            LoginNotificationModeGlobal::OnlyNewDevice => $ip !== $member->last_login_ip || $ua !== $member->last_login_ua,
-            LoginNotificationModeGlobal::UseProfileSetting => match (LoginNotificationModeMember::tryFrom($member->login_notification_mode)) {
-                LoginNotificationModeMember::Disabled => false,
-                LoginNotificationModeMember::Always => true,
-                LoginNotificationModeMember::OnlyNewDevice => $ip !== $member->last_login_ip || $ua !== $member->last_login_ua,
+            LoginNotificationMode::Disabled => false,
+            LoginNotificationMode::Always => true,
+            LoginNotificationMode::OnlyNewDevice => $ip !== $member->last_login_ip || $ua !== $member->last_login_ua,
+            LoginNotificationMode::UseProfileSetting => match (LoginNotificationMode::tryFrom($member->login_notification_mode)) {
+                LoginNotificationMode::Disabled => false,
+                LoginNotificationMode::Always => true,
+                LoginNotificationMode::OnlyNewDevice => $ip !== $member->last_login_ip || $ua !== $member->last_login_ua,
                 default => false,
             },
             default => false,

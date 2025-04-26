@@ -24,10 +24,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'label' => 'Button',     // ボタンのテキスト
     'onclick' => null,       // onclick属性を追加
     'disabled' => false,     // ボタンを無効にする
+    'form' => null,          // フォームのID
 ])
 
 <button type="{{ $type }}"
     @if ($onclick) onclick="{{ $onclick }}" @endif
+    @if ($form) form="{{ $form }}" @endif
     class="py-2 px-4 rounded-md shadow-sm {{ config('admin.appearance_class.form.button') }} {{ $class }}"
     @if ($disabled) disabled @endif
     >

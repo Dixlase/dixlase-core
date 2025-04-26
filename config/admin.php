@@ -212,17 +212,19 @@ return [
     //外観モードの設定
     'appearance' => [
         0 => 'admin.theme.auto',
-        1 => 'admin.theme.light',
-        2 => 'admin.theme.dark',
+        1 => 'admin.theme.dark',
+        2 => 'admin.theme.light',
     ],
 
     //外観モードのクラス
+    'transition_class' => 'transition-colors duration-1000',
+
     'appearance_class' => [
         'layout' => [
-            'body' => 'bg-white text-gray-900 dark:bg-gray-950 dark:text-white',
+            'body' => 'bg-white text-gray-900 dark:bg-gray-950 dark:text-white transition-colors duration-300',
             'header' => 'bg-gray-200 dark:bg-gray-800 border-gray-300 dark:border-gray-700',
             'logo' => 'text-gray-900 dark:text-white',
-            'aside' => 'bg-gray-100 dark:bg-gray-800 text-gray-900 border-r border-gray-300  dark:text-white dark:border-r dark:border-gray-700',
+            'aside' => 'bg-gray-100 dark:bg-gray-800 text-gray-900 border-r border-gray-300  dark:text-white dark:border-r dark:border-gray-700 ' . config('admin.transition_class'),
             'main' => 'bg-white text-gray-900 dark:bg-black dark:text-white',
             'title' => 'bg-gray-100 text-gray-800 border-b border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white',
             'heading' => 'text-gray-800 dark:text-white',
@@ -292,11 +294,11 @@ return [
 
     // 権限の階層
     'roles_hierarchy' => [
-        'super_admin' => ['super_admin'],
-        'admin' => ['super_admin', 'admin'],
-        'editor' => ['super_admin', 'admin', 'editor'],
-        'author' => ['super_admin', 'admin', 'editor', 'author'],
-        'contributor' => ['super_admin', 'admin', 'editor', 'author', 'contributor'],
+        '1' => ['1'],
+        '2' => ['1', '2'],
+        '3' => ['1', '2', '3'],
+        '4' => ['1', '2', '3', '4'],
+        '5' => ['1', '2', '3', '4', '5'],
     ],
 
     //ログイン時のメール通知設定

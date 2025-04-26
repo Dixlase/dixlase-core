@@ -18,14 +18,17 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-<header x-cloak x-data="{ openSidebar: false, openUserMenu: false}" class="fixed top-0 z-50 w-full flex border-b {{ config('admin.appearance_class.layout.header') }}">
+<header
+    x-cloak
+    x-data="{ openSidebar: false, openUserMenu: false }"
+    class="fixed top-0 z-50 w-full flex items-center h-16 border-b {{ config('admin.appearance_class.layout.header') }}">
     <!-- プライマリーナビゲーションメニュー -->
     <div class="w-full mx-4 sm:mx-0 lg:px-4 flex items-center h-16">
 
         <!-- 左：サイドメニュー（スマホ用のみ） -->
         <div class="w-1/3 flex items-center sm:hidden">
             <button @click="openSidebar = true"
-                    class="inline-flex items-center justify-start p-2 rounded-md {{ config('admin.appearance_class.' . $appearance . '.button_hamburger') }} focus:outline-none transition duration-150 ease-in-out">
+                    class="inline-flex items-center justify-start p-2 rounded-md {{ config('admin.appearance_class.layout.button_hamburger') }} focus:outline-none transition duration-150 ease-in-out">
                 <i class="fa-solid fa-bars text-xl"></i>
             </button>
         </div>
@@ -40,7 +43,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </a>
 
             <!-- サイト名（PCのみ表示） -->
-            <a href="{{ route('admin.dashboard') }}" class="hidden sm:flex items-center ml-4 text-white font-semibold">
+            <a href="{{ route('admin.dashboard') }}" class="hidden sm:flex items-center ml-4 text-gray-800 dark:text-white font-semibold">
                 {{ $site_name ?? env('APP_NAME') }}
             </a>
         </div>
@@ -49,14 +52,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="w-1/3 flex items-center justify-end gap-2">
             <!-- プレビュー（スマホはアイコンのみ） -->
             <a href="{{ url('/') }}" target="_blank"
-            class="inline-flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+            class="inline-flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 {{ $transition }}">
                 <i class="fa-solid fa-eye text-lg sm:me-2"></i>
                 <span class="hidden sm:inline">{{ __('common.preview') }}</span>
             </a>
 
             <!-- ユーザーメニュー（スマホ用） -->
             <button @click="openUserMenu = true"
-                    class="inline-flex items-center justify-center rounded-md sm:hidden {{ config('admin.appearance_class.' . $appearance . '.button_hamburger') }} focus:outline-none transition duration-150 ease-in-out">
+                    class="inline-flex items-center justify-center rounded-md sm:hidden {{ config('admin.appearance_class.layout.button_hamburger') }} focus:outline-none transition duration-150 ease-in-out">
                 <i class="fa-solid fa-user-circle text-3xl text-gray-600 dark:text-gray-300"></i>
             </button>
 

@@ -50,6 +50,7 @@ class AdminServiceProvider extends ServiceProvider
     {
 
         // Super Admin権限
+
         Gate::define('super_admin', [AdminPolicy::class, 'superAdmin']);
 
         //  Admin権限

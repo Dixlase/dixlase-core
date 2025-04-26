@@ -1,7 +1,9 @@
+.disable-transition * {
+    transition: none !important;
+}
 
 .sidebar_sp{
     transform: translateX(-100%);
     z-index: 1000
 }
-
 
