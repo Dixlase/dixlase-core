@@ -24,15 +24,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
     {{-- プロフィール編集フォーム --}}
-    <form method="POST" action="{{ route('admin.settings.members.profile.update') }}"
-          class="bg-white dark:bg-gray-800 p-6 rounded shadow">
+    <form method="POST" action="{{ route('admin.settings.members.profile.update') }}" id="profile-form" class="mb-8">
         @csrf
 
         <!-- 名前 -->
         <div class="mb-4">
             <label class="block font-medium text-sm text-gray-700 dark:text-gray-300">名前</label>
             <input type="text" name="name" value="{{ old('name', $member->name) }}"
-                   class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded px-3 py-2">
+                class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded px-3 py-2">
             @error('name')
                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
             @enderror
@@ -42,8 +41,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="mb-4">
             <label class="block font-medium text-sm text-gray-700 dark:text-gray-300">説明</label>
             <textarea name="description"
-                      class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded px-3 py-2"
-                      rows="3">{{ old('description', $member->description) }}</textarea>
+                class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded px-3 py-2"
+                rows="3">{{ old('description', $member->description) }}</textarea>
             @error('description')
                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
             @enderror
@@ -53,7 +52,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="mb-4">
             <label class="block font-medium text-sm text-gray-700 dark:text-gray-300">メールアドレス</label>
             <input type="email" name="email" value="{{ old('email', $member->email) }}"
-                   class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded px-3 py-2">
+                class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded px-3 py-2">
             @error('email')
                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
             @enderror
@@ -61,22 +60,44 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- パスワード -->
         <div class="mb-4">
-            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300">パスワード（変更する場合のみ）</label>
-            <input type="password" name="password"
-                   class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded px-3 py-2">
-            @error('password')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-            @enderror
+            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">パスワード(変更する場合のみ)</label>
+            @include('components.form.password-tools', [
+                'name' => 'password',
+                'id' => 'profile_password',
+                'required' => false,
+                'minLength' => $passwordMinLength,
+                'requireUppercase' => $passwordRequireUppercase,
+                'requireLowercase' => true,
+                'requireNumber' => true,
+                'requireSymbol' => $passwordRequireSymbol,
+                'showConfirmation' => true
+            ])
         </div>
 
+        <!-- 外観モードの設定 -->
+        @php
+            $appearanceValue = old('appearance', (string) ($member->appearance->value ?? 0));
+        @endphp
 
+        <div x-data x-init="$watch('themeStore.theme', value => themeStore.applyTheme())" class="mb-6">
+            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">外観モード</label>
 
-        <!-- パスワード確認 -->
-        <div class="mb-6">
-            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300">パスワード確認</label>
-            <input type="password" name="password_confirmation"
-                   class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded px-3 py-2">
+            <div class="flex gap-4">
+                <label class="inline-flex items-center">
+                    <input type="radio" name="appearance" value="0" x-model="theme" class="form-radio text-indigo-600">
+                    <span class="ml-2">自動</span>
+                </label>
+                <label class="inline-flex items-center">
+                    <input type="radio" name="appearance" value="1" x-model="theme" class="form-radio text-indigo-600">
+                    <span class="ml-2">ライト</span>
+                </label>
+                <label class="inline-flex items-center">
+                    <input type="radio" name="appearance" value="2" x-model="theme" class="form-radio text-indigo-600">
+                    <span class="ml-2">ダーク</span>
+                </label>
+            </div>
         </div>
+
 
         <!-- ログイン通知の設定 -->
         <div class="mb-6">
@@ -143,21 +164,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     {{__('admin.settings.members.force_setting_1')}} {{ $force2fa_name }}」{{__('admin.settings.members.force_setting_2')}}
                 </p>
             @endif
-
-
-        </div>
-
-        <div>
-            <button type="submit"
-                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">
-                プロフィールを更新
-            </button>
         </div>
     </form>
-
-    <hr class="my-8 border-gray-300 dark:border-gray-600">
-
 
 
 
 @endsection
+
+@section('save')
+    <!-- 更新ボタンとモーダル-->
+    @include('components::form.save', [
+        'id' => 'confirmationModal',
+        'label' => '更新',
+        'onclick' => "openModal('confirmProfileModal')",
+        'title' => __('admin.settings.members.profile.confirm_title'),
+        'message' => __('admin.settings.members.profile.confirm_message'),
+        'confirm_label' => __('admin.settings.members.profile.confirm_label'),
+        'cancel_label' => __('admin.settings.members.profile.cancel_label'),
+        'form' => 'profile-form',
+    ])
+@endsection
+

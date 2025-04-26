@@ -22,8 +22,70 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 
-    <form method="POST" action="{{ route('admin.settings.members.settings.update') }}">
+    <form method="POST" action="{{ route('admin.settings.members.settings.update') }}" id="member-settings-form">
         @csrf
+
+        <!-- パスワードの最小文字数 -->
+        <h3>
+            {{ __('admin.settings.members.settings.password_conditions') }}
+        </h3>
+        <div class="mb-6 mt-8">
+            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
+                {{ __('admin.settings.members.settings.password_min_length') }}
+            </label>
+
+            @php
+                $minLengthOptions = collect(__('admin.settings.members.settings.password_min_length_options'))
+                    ->mapWithKeys(fn($label, $key) => [$key => $label])
+                    ->toArray();
+
+            @endphp
+
+            @include('components.form.radio-group', [
+                'name' => 'password_min_length',
+                'options' => $minLengthOptions,
+                'value' => old('password_min_length', (string) $passwordMinLength),
+            ])
+        </div>
+
+        <!-- 大文字 -->
+        <div class="mb-6">
+            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
+                {{ __('admin.settings.members.settings.password_require_uppercase') }}
+            </label>
+
+            @php
+                $uppercaseOptions = collect(__('admin.settings.members.settings.password_require_uppercase_options'))
+                    ->mapWithKeys(fn($label, $key) => [$key => $label])
+                    ->toArray();
+            @endphp
+
+            @include('components.form.radio-group', [
+                'name' => 'password_require_uppercase',
+                'options' => $uppercaseOptions,
+                'value' => old('password_require_uppercase', (string) (int) $passwordRequireUppercase),
+            ])
+        </div>
+
+        <!-- 記号 -->
+        <div class="mb-6">
+            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
+                {{ __('admin.settings.members.settings.password_require_symbol') }}
+            </label>
+
+            @php
+                $symbolOptions = collect(__('admin.settings.members.settings.password_require_symbol_options'))
+                    ->mapWithKeys(fn($label, $key) => [$key => $label])
+                    ->toArray();
+            @endphp
+
+            @include('components.form.radio-group', [
+                'name' => 'password_require_symbol',
+                'options' => $symbolOptions,
+                'value' => old('password_require_symbol', (string) (int) $passwordRequireSymbol),
+            ])
+        </div>
+
 
         <!-- ログイン通知設定 -->
         <div class="mb-6 mt-8">
@@ -64,12 +126,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             ])
 
         </div>
-
-        <div>
-            <button type="submit"
-                    class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
-                {{ __('admin.settings.members.settings.submit') }}
-            </button>
-        </div>
     </form>
+
 @endsection
+
+@section('save')
+    <!-- 更新ボタンとモーダル-->
+    @include('components::form.save', [
+        'id' => 'confirmationModal',
+        'label' => '更新',
+        'onclick' => "openModal('confirmationModal')",
+        'title' => __('admin.settings.members.settings.confirm_title'),
+        'message' => __('admin.settings.members.settings.confirm_message'),
+        'confirm_label' => __('admin.settings.members.settings.confirm_label'),
+        'cancel_label' => __('admin.settings.members.settings.cancel_label'),
+        'form' => 'member-settings-form',
+    ])
+@endsection
+
+

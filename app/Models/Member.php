@@ -28,7 +28,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Fortify\TwoFactorAuthenticatable;
-use App\Enums\TwoFactorModeMember;
+use App\Enums\TwoFactorMode;
+use App\Enums\AppearanceMode;
+use App\Enums\MemberRole;
+use App\Enums\MemberStatus;
+
 
 class Member extends Authenticatable
 {
@@ -41,7 +45,12 @@ class Member extends Authenticatable
     protected $table = 'members';
     protected $primaryKey = 'id';
     protected $casts = [
-        'two_factor_mode' => TwoFactorModeMember::class,
+        'password' => 'hashed',
+        'role' => MemberRole::class,
+        'status' => MemberStatus::class,
+        'two_factor_mode' => TwoFactorMode::class,
+        'appearance' => AppearanceMode::class,
+
     ];
 
 
@@ -69,17 +78,4 @@ class Member extends Authenticatable
         'password',
         'remember_token',
     ];
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            //'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
 }

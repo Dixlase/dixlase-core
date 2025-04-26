@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum LoginNotificationModeGlobal: int
+enum TwoFactorMode: int
 {
     case UseProfileSetting = 0; // ← 全体設定専用
     case Disabled = 1;
@@ -17,5 +17,10 @@ enum LoginNotificationModeGlobal: int
             self::Always => '常に有効',
             self::OnlyNewDevice => '異なる端末・IPのみ有効',
         };
+    }
+
+    public static function forProfile(): array
+    {
+        return array_filter(self::cases(), fn(self $case) => $case !== self::UseProfileSetting);
     }
 }

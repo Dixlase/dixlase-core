@@ -20,9 +20,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Requests\Admin\Settings\Member;
+namespace App\Http\Requests\Admin\Settings\Members;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use App\Enums\MemberRole;
 
 class AdminSettingsMemberStoreRequest extends FormRequest
 {
@@ -42,13 +44,17 @@ class AdminSettingsMemberStoreRequest extends FormRequest
     public function rules(): array
     {
         // 管理者IDがリクエストされているかで判断
-        $isUpdate = $this->route('admin') !== null;
+        $isUpdate = $this->route('member') !== null;
 
         return [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:members,email,' . ($isUpdate ? $this->route('member')->id : 'NULL'),
-            'password' => $isUpdate ? 'nullable|string|min:8' : 'required|string|min:8', // 作成時は必須、編集時は任意
-            'role' => 'required||in:admin,super_admin,editor,author',
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('members', 'email')->ignore($this->route('member')),
+            ],
+            'password' => $isUpdate ? 'nullable|string|min:8' : 'required|string|min:8',
+            'role' => ['required', Rule::in(array_column(MemberRole::cases(), 'value'))],
             'appearance' => 'required|numeric|in:0,1,2',
             'status' => 'required|numeric|in:0,1',
         ];

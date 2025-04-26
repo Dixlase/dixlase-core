@@ -19,7 +19,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="{{ $appearance === 2 ? 'dark' : ($appearance === 1 ? 'light' : 'auto') }}">
+<html
+    lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+    class="{{ $htmlClass ?? '' }} {{ empty($transitionEnabled) ? 'disable-transition' : '' }}"
+    x-data="appearanceTheme('{{ $appearance }}')"
+    @if(empty($transitionEnabled))
+        x-init="applyTheme(true)"
+    @else
+        x-init="init()"
+    @endif
+    :class="{ 'dark': isDark, 'light': !isDark }"
+>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -35,8 +45,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {!! load_active_assets() !!}
 
     </head>
-    <body  class="font-sans antialiased {{ config('admin.appearance_class.layout.body') }}">
-        <div  class="min-h-screen">
+    <body  class="font-sans antialiased transition-colors duration-300 {{ config('admin.appearance_class.layout.body') }}">
+        <div class="min-h-screen">
             <!-- Header -->
             @include('admin.partials.header', [
                 'site_name' => $site_name,
@@ -50,10 +60,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </aside>
 
                 <!-- Main -->
-                <main class="flex-1 pb-10 {{ config('admin.appearance_class.layout.main') }}">
+                <main class="flex-1 {{ config('admin.appearance_class.layout.main') }}">
 
                     <!-- Page Heading -->
-                    <div class="{{ config('admin.appearance_class.layout.title') }} mx-auto py-6 px-4 sm:px-6 lg:px-8 mb-10">
+                    <div class="mx-auto py-6 px-4 sm:px-6 lg:px-8 mb-10 {{ config('admin.appearance_class.layout.title') }}">
                         <h2 class="font-semibold text-xl leading-tight {{ config('admin.appearance_class.layout.heading') }}">
                             <!-- ここにページタイトルを表示 -->
                             {{__($heading)}}
@@ -66,30 +76,65 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         @yield('content')
                     </div>
 
+                    @hasSection('save')
+                        <div class="sticky bottom-0 z-30 backdrop-blur-sm bg-white/50 bg-white dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700 px-4 sm:px-6 lg:px-8 py-3">
+                            <div class="max-w-7xl mx-auto">
+                                @yield('save')
+                            </div>
+                        </div>
+                    @endif
+
                 </main>
 
 
             </div>
+            @stack('scripts')
             <!-- Footer -->
             @include('admin.partials.footer')
         </div>
 
         <script>
 
-            // アピアランスの設定
-            const current_appearance_class = '{{ $appearance }}';
-            if (current_appearance_class === '0') { // 0: auto
-                const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                document.documentElement.classList.toggle('dark', isDarkMode);
-                document.documentElement.classList.toggle('light', !isDarkMode);
-            } else if (current_appearance_class === '2') { // 2: dark
-                document.documentElement.classList.add('dark');
-                document.documentElement.classList.remove('light');
-            } else { // 1: light
-                document.documentElement.classList.add('light');
-                document.documentElement.classList.remove('dark');
+            window.themeStore = {
+                theme: localStorage.getItem('appearance') ?? '{{ $appearance }}',
+                isDark: false,
+                applyTheme() {
+                    this.isDark = this.theme === '2' || (this.theme === '0' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                    localStorage.setItem('appearance', this.theme);
+                    document.documentElement.classList.toggle('dark', this.isDark);
+                    document.documentElement.classList.toggle('light', !this.isDark);
+                }
+            };
+
+            function appearanceTheme(defaultValue) {
+                return {
+                    theme: localStorage.getItem('appearance') ?? defaultValue,
+                    isDark: false,
+
+                    applyTheme(skipApply = false) {
+                        this.isDark = this.theme === '2' || (this.theme === '0' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                        localStorage.setItem('appearance', this.theme);
+                        if (!skipApply) {
+                            document.documentElement.classList.toggle('dark', this.isDark);
+                            document.documentElement.classList.toggle('light', !this.isDark);
+                        }
+                    },
+
+                    init() {
+                        this.applyTheme(false);
+                        document.documentElement.classList.remove('disable-transition');
+
+                        document.querySelectorAll('input[name="appearance"]').forEach((el) => {
+                            el.addEventListener('change', (e) => {
+                                this.theme = e.target.value;
+                                this.applyTheme(false); // ← ここも保存しない
+                            });
+                        });
+                    }
+                }
             }
 
         </script>
+        @stack('modals')
     </body>
 </html>

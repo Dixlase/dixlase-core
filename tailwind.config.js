@@ -18,6 +18,12 @@ export default {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
             display: ['group-hover', 'x-cloak'],
+            transitionProperty: {
+                'colors': 'background-color, border-color, color, fill, stroke',
+            },
+            transitionDuration: {
+                'standard': '300ms',
+            },
         },
     },
     safelist: [
@@ -31,6 +37,7 @@ export default {
         'transform',
         'transition-transform',
         'duration-300',
+        'duration-1000',
         'translate-x-full',
         'translate-x-0',
         'bg-indigo-600',
@@ -55,6 +62,9 @@ export default {
         function({ addBase }) {
             addBase({
                 '[x-cloak]': { display: 'none !important' },
+                '.disable-transition *': {
+                    transition: 'none !important',
+                }
             })
         }
     ],

@@ -26,3 +26,8 @@ import collapse from '@alpinejs/collapse'
 Alpine.plugin(collapse)
 window.Alpine = Alpine;
 Alpine.start();
+
+
+// Import PasswordTools from './password-tools';
+import * as PasswordTools from './password-tools';
+window.PasswordTools = PasswordTools; // グローバルで使いたい場合

@@ -21,7 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('admin::partials.layout')
 
 @section('content')
-    <form action="{{ route('admin.settings.members.update', ['member' => $member->id]) }}" method="POST">
+    <form id="update-form" action="{{ route('admin.settings.members.update', ['member' => $member->id]) }}" method="POST" class="mb-48">
         @csrf
         @method('PATCH')
         @include('components::form.hidden', [
@@ -29,46 +29,71 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'value' => $member->id,
         ])
 
-
         <!-- フォーム -->
         @include('admin::settings.members.partials.form',[
             'require_password' => false,
         ])
-
-        <!-- 保存ボタンとモーダル -->
-        @include('components::form.save', [
-            'id' => 'confirmationModal',
-            'onclick' => "openModal('confirmationModal')",
-            'title' => '更新の確認',
-            'label' => '管理者を更新',
-            'message' => 'この内容で管理者情報を更新しますか？',
-            'confirm_label' => '更新',
-            'cancel_label' => '戻る',
-        ])
-
     </form>
 
-
-    <form action="{{ route('admin.settings.members.destroy', ['member' => $member->id]) }}" method="POST">
+        <!-- 削除用フォーム（ボタンは下部バーに出す） -->
+    <form id="delete-form" action="{{ route('admin.settings.members.destroy', ['member' => $member->id]) }}" method="POST">
         @csrf
         @method('DELETE')
+    </form>
+@endsection
+
+@section('save')
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+        <!-- 保存ボタン -->
+        @include('components::form.button', [
+            'type' => 'button',
+            'label' => '更新',
+            'class' => '',
+            'onclick' => "openModal('confirmationModal')"
+        ])
+
         <!-- 削除ボタン -->
         @include('components::form.button', [
             'type' => 'button',
-            'label' => '管理者を削除',
-            'class' => 'text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900',
-            'onclick' => "openModal('deleteModal')",
+            'label' => 'メンバーを削除',
+            'class' => 'bg-red-700 hover:bg-red-800 text-white dark:bg-red-600 dark:hover:bg-red-700',
+            'onclick' => "openModal('deleteModal')"
         ])
+    </div>
 
-        <!-- 削除モーダル -->
-        @include('components::form.modal', [
-            'id' => 'deleteModal',
-            'title' => '削除の確認',
-            'message' => 'このユーザーを削除しますか？',
-            'confirm_label' => '削除',
-            'cancel_label' => 'キャンセル',
-        ])
+    <!-- 保存モーダル -->
+    @include('components::form.modal', [
+        'id' => 'confirmationModal',
+        'title' => '更新の確認',
+        'message' => 'この内容でメンバー情報を更新しますか？',
+        'confirm_label' => '更新',
+        'cancel_label' => 'キャンセル',
+        'form' => 'update-form',
+    ])
 
-    </form>
+    <!-- 削除モーダル -->
+    @include('components::form.modal', [
+        'id' => 'deleteModal',
+        'title' => '削除の確認',
+        'message' => 'このユーザーを削除しますか？',
+        'confirm_label' => '削除',
+        'cancel_label' => 'キャンセル',
+        'form' => 'delete-form',
+    ])
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const saveModal = document.getElementById('confirmationModal');
+            const deleteModal = document.getElementById('deleteModal');
+
+            saveModal.querySelector('button[type="submit"]').addEventListener('click', () => {
+                document.getElementById('update-form').submit();
+            });
+
+            deleteModal.querySelector('button[type="submit"]').addEventListener('click', () => {
+                document.getElementById('delete-form').submit();
+            });
+        });
+    </script>
 @endsection
+
