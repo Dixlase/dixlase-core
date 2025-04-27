@@ -49,8 +49,6 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     public function index()
     {
 
-        // 権限を確認
-        $this->checkPermission('admin');
 
         $plugins = Plugin::all();
         $this->viewParams['plugins'] = $plugins;
@@ -61,8 +59,6 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     public function install()
     {
 
-        // 権限を確認
-        $this->checkPermission('super_admin');
 
         $this->viewParams['heading'] = 'プラグインインストール';
         return view('admin::settings.plugins.install', $this->viewParams);
@@ -71,10 +67,6 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     public function upload(Request $request)
     {
 
-        // 権限を確認
-        $this->checkPermission('super_admin');
-
-        Log::info('upload開始');
 
         // 例: ini_get('upload_max_filesize') -> "2M"
         $uploadMaxFilesize = ini_get('upload_max_filesize');
@@ -251,8 +243,6 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     public function enable($id)
     {
 
-        // 権限を確認
-        $this->checkPermission('super_admin');
 
         $plugin = Plugin::findOrFail($id);
 
@@ -278,8 +268,6 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     public function disable($id)
     {
 
-        // 権限を確認
-        $this->checkPermission('super_admin');
 
         $plugin = Plugin::findOrFail($id);
         try {
@@ -297,9 +285,6 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
     public function uninstall($id, Request $request)
     {
-
-        // 権限を確認
-        $this->checkPermission('super_admin');
 
         // プラグインを取得
         $plugin = Plugin::findOrFail($id);

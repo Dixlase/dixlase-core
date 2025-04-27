@@ -31,7 +31,7 @@ use Illuminate\Support\Facades\Schema;
 trait PluginLoaderTrait
 {
 
-    use ConfigLoaderTraits;
+    use ConfigLoaderTrait;
 
     /**
      * 有効化されたプラグインをロードする

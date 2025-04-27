@@ -23,41 +23,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Admin\AdminController;
-use Illuminate\Support\Facades\Auth;
-use App\Enums\AppearanceMode;
-
-
+use App\Traits\AdminLoggedInTrait;
 
 class AdminLoggedInController extends AdminController
 {
-    protected $member;
-    protected $appearance;
+
+    use AdminLoggedInTrait;
 
     public function __construct()
     {
         parent::__construct();
-
-        // ミドルウェア
-        $this->middleware(function ($request, $next) {
-            // ログインユーザー情報を取得
-            $this->setMember();
-
-            $transition = config('admin.transition_class');
-            $this->viewParams['transition'] = $transition;
-
-
-            return $next($request);
-        });
-    }
-
-    //管理者情報を取得
-    protected function setMember()
-    {
-        $this->member = Auth::guard('member')->user();
-        $this->viewParams['member'] = $this->member;
-
-        //メンバーの外観モードを取得
-        $this->appearance = $this->member->appearance?->value ?? AppearanceMode::Auto->value;
-        $this->viewParams['appearance'] = $this->appearance;
+        $this->initializeAfterLogin();
     }
 }

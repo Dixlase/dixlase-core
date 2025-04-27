@@ -41,8 +41,6 @@ class AdminSecuritySettingsController extends AdminLoggedInController
     public function index()
     {
 
-        // 権限を確認
-        $this->checkPermission('super_admin');
 
         $settings = [
             'admin_url' => SecuritySetting::get('admin_url', 'member'),
@@ -61,9 +59,6 @@ class AdminSecuritySettingsController extends AdminLoggedInController
     public function update(AdminSettngsSecurityUpdateRequest $request)
     {
 
-
-        // 権限を確認
-        $this->checkPermission('super_admin');
 
         // 現在の管理画面URLを取得
         $currentAdminUrl = SecuritySetting::get('admin_url', config('security.admin_url'));

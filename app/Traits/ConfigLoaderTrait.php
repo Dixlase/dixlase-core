@@ -22,7 +22,7 @@
 
 namespace App\Traits;
 
-trait ConfigLoaderTraits
+trait ConfigLoaderTrait
 {
 
     /**

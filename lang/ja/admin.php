@@ -97,6 +97,7 @@ return [
                 'create' => '新規メンバー作成',
                 'edit' => '編集',
                 'profile' => 'プロフィール設定',
+                'roles' => '権限設定',
                 'settings' => 'メンバー全体設定',
             ],
             'themes' => [

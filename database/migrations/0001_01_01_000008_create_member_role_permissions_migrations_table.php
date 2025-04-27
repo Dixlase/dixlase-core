@@ -6,15 +6,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+
+    protected $table = 'member_role_permissions';
+
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('member_settings', function (Blueprint $table) {
+        Schema::create($this->table, function (Blueprint $table) {
             $table->id();
-            $table->string('key')->unique();
-            $table->text('value')->nullable();
+            $table->string('menu_key')->unique(); // 例：settings.base
+            $table->string('access_roles', 255)->nullable();
+            $table->string('view_roles', 255)->nullable();
             $table->timestamps();
         });
     }
@@ -24,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('member_settings');
+        Schema::dropIfExists($this->table);
     }
 };
