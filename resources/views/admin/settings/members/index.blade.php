@@ -84,7 +84,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <p><strong>ID:</strong> {{ $member->id }}</p>
                     <p><strong>名前:</strong> {{ $member->name }}</p>
                     <p><strong>メールアドレス:</strong> {{ $member->email }}</p>
-                    <p><strong>権限:</strong>{{ $member->role->label() }}</p>
+
+                    <p><strong>権限:</strong>{{ ($member->role instanceof \App\Enums\MemberRole ? $member->role : \App\Enums\MemberRole::tryFrom($member->role))?->label() ?? '不明' }}</p>
                     <div class="mt-2">
                         <a href="{{ route('admin.settings.members.edit', ['member' => $member->id]) }}"
                             class="text-blue-600 hover:text-blue-800">

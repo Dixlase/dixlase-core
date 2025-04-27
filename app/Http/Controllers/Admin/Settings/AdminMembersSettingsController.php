@@ -27,6 +27,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests\Admin\Settings\Members\AdminSettingsMemberStoreRequest;
 use App\Http\Requests\Admin\Settings\Members\AdminSettingsMemberSettingsRequest;
 use App\Models\Member;
+use App\Models\MemberRolePermission;
 use App\Models\MemberSetting;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Enum;
@@ -36,6 +37,8 @@ use App\Enums\AppearanceMode;
 use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
 use Illuminate\Support\Facades\Hash;
+use App\Helpers\AdminHelper;
+
 
 
 
@@ -349,6 +352,46 @@ class AdminMembersSettingsController extends AdminLoggedInController
 
         return redirect()->route('admin.settings.members.profile')
             ->with('success', __('admin.settings.members.profile.updated'));
+    }
+
+    public function roles()
+    {
+        $permissions = MemberRolePermission::all()->keyBy('menu_key');
+        $roles = MemberRole::cases(); // Enumの一覧を取得
+        $menuList = config('admin.nav'); // メニューリスト
+
+        $this->viewParams['permissions'] = $permissions;
+        $this->viewParams['roles'] = $roles;
+        $this->viewParams['menuList'] = $menuList;
+
+        return view('admin.settings.members.roles', $this->viewParams);
+    }
+
+    public function updateRoles(Request $request)
+    {
+
+        $this->authorizeEdit('settings.members.roles');
+
+        $data = $request->input('permissions', []);
+
+        foreach ($data as $menuKey => $values) {
+            MemberRolePermission::updateOrCreate(
+                ['menu_key' => $menuKey],
+                [
+                    'access_roles' => isset($values['access_roles']) ? implode(',', $values['access_roles']) : '',
+                    'view_roles' => isset($values['view_roles']) ? implode(',', $values['view_roles']) : '',
+                ]
+            );
+        }
+
+        return redirect()->back()->with('success', '権限設定を保存しました');
+    }
+
+    protected function authorizeEdit(string $menuKey)
+    {
+        if (!canEditMenu($menuKey)) {
+            abort(403, 'この操作を行う権限がありません');
+        }
     }
 
 

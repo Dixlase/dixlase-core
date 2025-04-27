@@ -23,101 +23,19 @@
 namespace App\Http\Controllers\Admin;
 
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use App\Traits\RoleCheckTrait;
-use Illuminate\Support\Facades\Lang;
-use Illuminate\Support\Facades\Schema;
+use App\Traits\AdminInterfaceTrait;
 
 class AdminController extends Controller
 {
-    //変数を宣言する
-    protected $siteName;
-    protected $heading = '';
-    protected $viewParams = [];
-    protected $routeName = '';
-    protected $settings = [];
 
-    //トレイトを使用する
+    // トレイト
     use AuthorizesRequests;
-    use RoleCheckTrait;
+    use AdminInterfaceTrait;
 
     //初期設定を行う
     public function __construct()
     {
         $this->initialize();
-    }
-
-    /**
-     * 初期化処理
-     */
-    public function initialize()
-    {
-        // `base_settings` テーブルが存在するかチェック
-        if (!Schema::hasTable('base_settings')) {
-            // テーブルがない場合は初期化をスキップ
-            return;
-        }
-
-        // データベースからサイト名を取得。取得できなかった場合は.envからデフォルト値を使用
-        $this->getSiteName();
-
-        // 外観モードを取得
-        $this->getAppearance();
-
-        // 基本設定を取得
-        $this->getBaseSettings();
-
-        // ルート名を取得
-        $this->setRouteName();
-
-        // ヘッダーを設定
-        $this->setHeading();
-    }
-
-
-
-    //データベースからサイト名を取得。取得できなかった場合は.envからデフォルト値を使用
-    protected function getSiteName()
-    {
-        $this->siteName = DB::table('base_settings')->where('name', 'site_name')->value('value')
-            ?? env('APP_NAME', 'EventManagementSystem');
-        $this->viewParams['site_name'] = $this->siteName;
-    }
-
-    //外観モードを取得
-    protected function getAppearance()
-    {
-        $this->appearance = $this->viewParams['member']['appearance'] ?? 0;
-        $this->viewParams['appearance'] = $this->appearance;
-    }
-
-    //システム設定を取得
-    protected function getBaseSettings()
-    {
-        $this->settings = DB::table('base_settings')->get()->keyBy('name')->toArray();
-        $this->viewParams['settings'] = $this->settings;
-    }
-
-    //　ルート名を取得
-    protected function setRouteName()
-    {
-        $this->routeName = Route::currentRouteName();
-        $this->viewParams['route_name'] = $this->routeName;
-    }
-
-    //ヘッダーを設定する
-    protected function setHeading()
-    {
-        $routeName = Route::currentRouteName();
-        $keys = explode('.', $routeName); // 例: ['admin', 'media', 'index']
-        array_shift($keys); // 'admin'部分を削除
-
-        $headingKey = implode('.', $keys) . '.heading';
-        $heading = Lang::get('admin.' . $headingKey);
-
-        $this->heading = $heading ?: 'No Heading';
-        $this->viewParams['heading'] = $this->heading;
     }
 }

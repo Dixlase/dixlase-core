@@ -20,20 +20,66 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+namespace App\Helpers;
 
-//管理画面のURLを取得
-//security_settingsテーブルのadmin_urlの値を取得
-//テーブルが存在しているか確認
 
-use App\Models\SecuritySetting;
+use App\Enums\MemberRole;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
+use App\Models\SecuritySetting;
+use App\Models\MemberRolePermission;
 
-function getAdminUrl()
+
+class AdminHelper
 {
-    if (Schema::hasTable('security_settings')) {
-        $adminUrl = SecuritySetting::get('admin_url', config('security.admin_url'));
-    } else {
-        $adminUrl = config('security.admin_url');
+
+    public static function getAdminUrl()
+    {
+        if (Schema::hasTable('security_settings')) {
+            $adminUrl = SecuritySetting::get('admin_url', config('security.admin_url'));
+        } else {
+            $adminUrl = config('security.admin_url');
+        }
+        return $adminUrl;
     }
-    return $adminUrl;
+
+
+    public static function canAccessMenu(string $menuKey): bool
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return false;
+        }
+
+        if ($user->role->value === MemberRole::SUPER_ADMIN->value) {
+            return true;
+        }
+
+        $permission = MemberRolePermission::where('menu_key', $menuKey)->first();
+        if (!$permission) {
+            return false;
+        }
+
+        return in_array($user->role->value, explode(',', $permission->access_roles))
+            || in_array($user->role->value, explode(',', $permission->view_roles));
+    }
+
+    public static function canEditMenu(string $menuKey): bool
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return false;
+        }
+
+        if ($user->role->value === MemberRole::SUPER_ADMIN->value) {
+            return true;
+        }
+
+        $permission = MemberRolePermission::where('menu_key', $menuKey)->first();
+        if (!$permission) {
+            return false;
+        }
+
+        return in_array($user->role->value, explode(',', $permission->access_roles));
+    }
 }

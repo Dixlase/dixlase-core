@@ -43,15 +43,14 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\SecuritySetting;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Log;
-
-
+use App\Helpers\AdminHelper;
 
 
 //管理画面のURLを取得
-$adminUrl = getAdminUrl();
+$adminUrl = AdminHelper::getAdminUrl();
 
 Route::prefix($adminUrl)->name('admin.')
-    ->middleware('admin.ip') // IPアドレスフィルタ
+    ->middleware(['admin.ip', 'check.menu.access:menu_key', 'check.menu.edit:menu_key']) // IPアドレスフィルタ、メニューアクセス権限、メニュー編集権限
     ->group(function () {
         Route::get('/', function () {
             $member = Auth::guard('member')->user();
@@ -126,7 +125,9 @@ Route::prefix($adminUrl)->name('admin.')
             Route::get('/settings/members/profile', [AdminMembersSettingsController::class, 'profile'])->name('settings.members.profile');
             Route::post('/settings/members/profile', [AdminMembersSettingsController::class, 'updateProfile'])->name('settings.members.profile.update');
 
-
+            // 権限設定
+            Route::get('/settings/members/roles/', [AdminMembersSettingsController::class, 'roles'])->name('settings.members.roles');
+            Route::post('/settings/members/roles/', [AdminMembersSettingsController::class, 'updateRoles'])->name('settings.members.roles.update');
 
             // メンバー設定
             Route::get('/settings/members/settings', [AdminMembersSettingsController::class, 'settings'])->name('settings.members.settings');

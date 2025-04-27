@@ -38,121 +38,106 @@ return [
             'text' => 'admin.nav.dashboard',
             'route' => 'admin.dashboard',
             'icon' => 'fas fa-fw fa-tachometer-alt',
-            'can' => 'contributor',
         ],
         'front' => [
             'text' => 'admin.nav.front.text',
             'icon' => 'fas fa-fw fa-desktop',
-            'can' => 'contributor',
             'children' => [
                 'index' => [
                     'text' => 'admin.nav.front.index',
                     'route' => 'admin.front.index',
                     'icon' => 'fas fa-fw fa-home',
-                    'can' => 'contributor',
                 ],
                 'design' => [
                     'text' => 'admin.nav.front.design',
                     'route' => 'admin.front.design',
                     'icon' => 'fas fa-fw fa-paint-brush',
-                    'can' => 'contributor',
                 ],
                 'settings' => [
                     'text' => 'admin.nav.front.settings',
                     'route' => 'admin.front.settings',
                     'icon' => 'fas fa-fw fa-sliders-h',
-                    'can' => 'contributor',
                 ],
             ]
         ],
         'media' => [
             'text' => 'admin.nav.media.text',
             'icon' => 'fas fa-fw fa-photo-video',
-            'can' => 'contributor',
             'children' => [
                 'index' => [
                     'text' => 'admin.nav.media.index',
                     'route' => 'admin.media.index',
                     'icon' => 'fas fa-fw fa-images',
-                    'can' => 'contributor',
                 ],
                 'upload' => [
                     'text' => 'admin.nav.media.upload',
                     'route' => 'admin.media.upload',
                     'icon' => 'fas fa-fw fa-upload',
-                    'can' => 'contributor',
                 ],
                 'settings' => [
                     'text' => 'admin.nav.media.settings',
                     'route' => 'admin.media.settings',
                     'icon' => 'fas fa-fw fa-cogs',
-                    'can' => 'contributor',
                 ],
             ]
         ],
         'settings' => [
             'text' => 'admin.nav.settings.text',
             'icon' => 'fas fa-fw fa-cogs',
-            'can' => 'contributor',
             'children' => [
                 'base' => [
                     'text' => 'admin.nav.settings.base',
                     'route' => 'admin.settings.base',
                     'icon' => 'fas fa-fw fa-gear',
-                    'can' => 'super_admin',
                 ],
                 'security' => [
                     'text' => 'admin.nav.settings.security',
                     'route' => 'admin.settings.security',
                     'icon' => 'fas fa-fw fa-shield-alt',
-                    'can' => 'super_admin',
                 ],
                 'members' => [
                     'text' => 'admin.nav.settings.members.text',
                     'icon' => 'fas fa-fw fa-users-cog',
-                    'can' => 'contributor',
                     'children' => [
                         'index' => [
                             'text' => 'admin.nav.settings.members.index',
                             'route' => 'admin.settings.members.index',
                             'icon' => 'fas fa-fw fa-users',
-                            'can' => 'admin',
                         ],
                         'create' => [
                             'text' => 'admin.nav.settings.members.create',
                             'route' => 'admin.settings.members.create',
                             'icon' => 'fas fa-fw fa-user-plus',
-                            'can' => 'admin',
                         ],
                         'profile' => [
                             'text' => 'admin.nav.settings.members.profile',
                             'route' => 'admin.settings.members.profile',
                             'icon' => 'fas fa-fw fa-id-badge',
-                            'can' => 'contributor',
+                        ],
+                        'roles' => [
+                            'text' => 'admin.nav.settings.members.roles',
+                            'route' => 'admin.settings.members.roles',
+                            'icon' => 'fas fa-fw fa-user-cog',
                         ],
                         'settings' => [
                             'text' => 'admin.nav.settings.members.settings',
                             'route' => 'admin.settings.members.settings',
                             'icon' => 'fas fa-fw fa-user-cog',
-                            'can' => 'super_admin',
                         ]
                     ]
                 ],
                 'themes' => [
                     'text' => 'admin.nav.settings.themes.text',
                     'icon' => 'fas fa-fw fa-palette',
-                    'can' => 'admin',
                     'children' => [
                         'index' => [
                             'text' => 'admin.nav.settings.themes.index',
                             'route' => 'admin.settings.themes.index',
                             'icon' => 'fas fa-fw fa-brush',
-                            'can' => 'admin',
                         ],
                         'install' => [
                             'text' => 'admin.nav.settings.themes.install',
                             'route' => 'admin.settings.themes.install',
-                            'can' => 'super_admin',
                             'icon' => 'fas fa-fw fa-download',
                         ],
                     ]
@@ -160,38 +145,32 @@ return [
                 'plugins' => [
                     'text' => 'admin.nav.settings.plugins.text',
                     'icon' => 'fas fa-fw fa-puzzle-piece',
-                    'can' => 'admin',
                     'children' => [
                         'index' => [
                             'text' => 'admin.nav.settings.plugins.index',
                             'route' => 'admin.settings.plugins.index',
                             'icon' => 'fas fa-fw fa-puzzle-piece',
-                            'can' => 'admin',
                         ],
                         'install' => [
                             'text' => 'admin.nav.settings.plugins.install',
                             'route' => 'admin.settings.plugins.install',
                             'icon' => 'fas fa-fw fa-download',
-                            'can' => 'super_admin',
                         ],
                     ]
                 ],
                 'systems' => [
                     'text' => 'admin.nav.settings.systems.text',
                     'icon' => 'fas fa-fw fa-server',
-                    'can' => 'super_admin',
                     'children' => [
                         'logs' => [
                             'text' => 'admin.nav.settings.systems.logs',
                             'route' => 'admin.settings.systems.logs',
                             'icon' => 'fas fa-fw fa-file-alt',
-                            'can' => 'super_admin',
                         ],
                         'info' => [
                             'text' => 'admin.nav.settings.systems.info',
                             'route' => 'admin.settings.systems.info',
                             'icon' => 'fas fa-fw fa-info-circle',
-                            'can' => 'admin',
                         ],
                     ]
                 ]
@@ -286,19 +265,26 @@ return [
         'admin' => 'admin.roles.admin',
         // 編集者
         'editor' => 'admin.roles.editor',
-        // 受付
+        // 投稿者
         'author' => 'admin.roles.author',
-        // 閲覧者
+        // 寄稿者
         'contributor' => 'admin.roles.contributor',
+        // 受付
+        'receptionist' => 'admin.roles.receptionist',
+        // ゲスト
+        'guest' => 'admin.roles.guest',
+
     ],
 
     // 権限の階層
     'roles_hierarchy' => [
-        '1' => ['1'],
-        '2' => ['1', '2'],
-        '3' => ['1', '2', '3'],
-        '4' => ['1', '2', '3', '4'],
-        '5' => ['1', '2', '3', '4', '5'],
+        '1' => ['1'],                   // super_admin
+        '2' => ['1', '2'],               // admin
+        '3' => ['1', '2', '3'],          // editor
+        '4' => ['1', '2', '3', '4'],     // author
+        '5' => ['1', '2', '3', '4', '5'], // contributor
+        '6' => ['1', '2', '3', '4', '5', '6'], // receptionist
+        '7' => ['1', '2', '3', '4', '5', '6', '7'], // guest
     ],
 
     //ログイン時のメール通知設定

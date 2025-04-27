@@ -23,48 +23,53 @@
 namespace App\Policies;
 
 use App\Models\Member;
+use App\Enums\MemberRole;
 
 class AdminPolicy
 {
-    /**
-     * Create a new policy instance.
-     */
-    public function __construct()
+
+
+    public function hasPermission(Member $member, MemberRole $requiredRole)
     {
-        //
-    }
+        $memberRole = $member->role instanceof MemberRole
+            ? $member->role
+            : MemberRole::from($member->role);
 
-
-    public function hasPermission(Member $member, string $requiredRole)
-    {
-        $rolesHierarchy = config('admin.roles_hierarchy');
-        return true;
-        //return in_array($member->role, $rolesHierarchy[$requiredRole]);
-    }
-
-
-    public function contributor(Member $member)
-    {
-        return $this->hasPermission($member, 'contributor');
-    }
-
-    public function author(Member $member)
-    {
-        return $this->hasPermission($member, 'author');
-    }
-
-    public function editor(Member $member)
-    {
-        return $this->hasPermission($member, 'editor');
-    }
-
-    public function admin(Member $member)
-    {
-        return $this->hasPermission($member, 'admin');
+        return $memberRole->canAccess($requiredRole);
     }
 
     public function superAdmin(Member $member)
     {
-        return $this->hasPermission($member, 'super_admin');
+        return $this->hasPermission($member, MemberRole::SUPER_ADMIN);
+    }
+
+    public function admin(Member $member)
+    {
+        return $this->hasPermission($member, MemberRole::ADMIN);
+    }
+
+    public function editor(Member $member)
+    {
+        return $this->hasPermission($member, MemberRole::EDITOR);
+    }
+
+    public function author(Member $member)
+    {
+        return $this->hasPermission($member, MemberRole::AUTHOR);
+    }
+
+    public function contributor(Member $member)
+    {
+        return $this->hasPermission($member, MemberRole::CONTRIBUTOR);
+    }
+
+    public function receptionist(Member $member)
+    {
+        return $this->hasPermission($member, MemberRole::RECEPTIONIST);
+    }
+
+    public function guest(Member $member)
+    {
+        return $this->hasPermission($member, MemberRole::GUEST);
     }
 }

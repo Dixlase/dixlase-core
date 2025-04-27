@@ -28,6 +28,8 @@ use App\Http\Requests\Admin\Settings\AdminBaseSettingsRequest;
 use App\Helpers\EnvHelper;
 use App\Helpers\TimezoneHelper;
 use App\Facades\BaseSettings;
+use DateTime;
+use DateTimeZone;
 
 class AdminBaseSettingsController extends AdminLoggedInController
 {
@@ -45,11 +47,6 @@ class AdminBaseSettingsController extends AdminLoggedInController
 
     public function index()
     {
-
-        // 権限を確認
-        $this->checkPermission('super_admin');
-
-
         $settings = [
             'app_name' => BaseSettings::get('app_name', 'MySoftware'),
             'locale' => BaseSettings::get('locale', 'ja_JA'),
@@ -69,9 +66,8 @@ class AdminBaseSettingsController extends AdminLoggedInController
 
         $timezones = TimezoneHelper::getTimezonesWithUtcOffset();
 
-        $locales =
 
-            $this->viewParams['settings'] = $settings;
+        $this->viewParams['settings'] = $settings;
         $this->viewParams['timezones'] = $timezones;
         $this->viewParams['locales'] = trans('admin.locales');
         $this->viewParams['mailers'] = trans('mail.mailers');
@@ -88,8 +84,7 @@ class AdminBaseSettingsController extends AdminLoggedInController
      */
     public function update(AdminBaseSettingsRequest $request)
     {
-        // 権限を確認
-        $this->authorize('super_admin');
+
 
         $settings = $request->only([
             'maintenance_mode',

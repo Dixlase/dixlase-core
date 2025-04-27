@@ -21,6 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin.ip' => \App\Http\Middleware\AdminIpFilter::class, // IPアドレスフィルタ
             'front.ip' => \App\Http\Middleware\FrontIpFilter::class, // フロントIPフィルタ
             'log.admin.activity' => \App\Http\Middleware\LogAdminActivity::class, // 管理画面操作ログ
+            'check.menu.access' => \App\Http\Middleware\CheckMenuAccess::class, // 管理画面メニューアクセス権限
+            'check.menu.edit' => \App\Http\Middleware\CheckMenuEdit::class, // 管理画面メニュー編集権限
         ]);
 
 
