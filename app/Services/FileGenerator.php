@@ -66,26 +66,46 @@ class FileGenerator
     /**
      * スタブファイルを取得
      */
-    public function getStubContent(string $stubFileName, ?string $defaultPath = null, array $customPaths = [], array $licenseInfo = []): string
+    public function getStubContent(string $stubTemplate, array $placeholders = []): string
     {
-        // カスタムパスを優先してスタブを検索
-        foreach ($customPaths as $customPath) {
-            $fullPath = "{$customPath}/{$stubFileName}";
-            if ($this->files->exists($fullPath)) {
-                $stub = $this->files->get($fullPath);
-                return $this->embedLicensePhp($stub, [], $licenseInfo); // ← ここでライセンスを埋め込む
-            }
-        }
 
-        $fallbackPath = base_path("stubs/custom/{$stubFileName}");
-        if ($this->files->exists($fallbackPath)) {
-            $stub = $this->files->get($fallbackPath);
-            return $this->embedLicensePhp($stub, [], $licenseInfo); // ← ここでライセンスを埋め込む
-        }
+        //dump($placeholders['license']); // ← ここで内容を確認
 
-        // どのパスからもスタブが見つからない場合は例外をスロー
-        throw new \RuntimeException("Stub file not found: {$stubFileName}");
+
+        $content = $this->replacePlaceholders($stubTemplate, $placeholders);
+        return $content;
     }
+
+
+    /**
+     * ライセンスのプレースホルダーを整形する
+     */
+    protected function formatLicenseTemplate(array $license): string
+    {
+        if (empty($license) || !isset($license['template'])) {
+            return '';
+        }
+
+        /*
+        $templatePath = base_path('resources/licenses/' . $licenseInfo['text']);
+        if (!file_exists($templatePath)) {
+            return '';
+        }
+
+        $text = file_get_contents($templatePath);
+        */
+
+        $replacements = [
+            '{software}' => $licenseInfo['software'] ?? '',
+            '{author}'   => $licenseInfo['author'] ?? '',
+            '{website}'  => $licenseInfo['website'] ?? '',
+            '{year}'     => date('Y'),
+        ];
+
+        return str_replace(array_keys($replacements), array_values($replacements), $license['template']);
+    }
+
+
 
     /**
      * プレースホルダを置換
@@ -93,120 +113,15 @@ class FileGenerator
     public function replacePlaceholders(string $stub, array $placeholders): string
     {
         foreach ($placeholders as $search => $replace) {
-            $stub = str_replace($search, $replace, $stub);
+            $stub = str_replace('{{ ' . $search . ' }}', $replace, $stub);
         }
         return $stub;
     }
 
 
-    /**
-     * ライセンス情報を取得
-     */
-    public function getLicenseInfo(): array
-    {
-        if ($this->files->exists($this->licenseConfigPath)) {
-            $content = $this->files->get($this->licenseConfigPath);
-            return json_decode($content, true) ?: [];
-        }
-
-        return [];
-    }
-
-    /**
-     * ライセンス名を取得
-     */
-    public function getLicenseName(): string
-    {
-        $licenseInfo = $this->getLicenseInfo();
-        return $licenseInfo['license'] ?? 'AGPL-3.0';
-    }
-
-    /**
-     * ライセンスのプレーンテキスト（placeholders差し替え済み）を取得する
-     */
-    public function getLicensePlain(array $licenseInfo): string
-    {
-        // licenseInfo から読み込み
 
 
-        $licensePath = base_path($licenseInfo['template']);
 
-        if (!$this->files->exists($licensePath)) {
-            return '';
-        }
-
-        // {software}, {year}, {author}, {website} を差し替え
-        $licenseText = $this->files->get($licensePath);
-        $licensePlaceholders = [
-            '{software}' => $licenseInfo['software'] ?? 'MySoftware',
-            '{year}'     => date('Y'),
-            '{author}'   => $licenseInfo['author'] ?? 'MyName',
-            '{website}'  => $licenseInfo['website'] ?? 'https://example.com',
-        ];
-        return $this->replacePlaceholders($licenseText, $licensePlaceholders);
-    }
-
-    /**
-     * PHPファイル用のライセンスをdoc-block 形式にする
-     */
-    public function getLicenseForPhp(array $licenseInfo): string
-    {
-
-
-        $plain = $this->getLicensePlain($licenseInfo);
-        if (empty($plain)) {
-            return '';
-        }
-
-        $lines = explode("\n", trim($plain));
-        $formatted = "/**\n";
-        foreach ($lines as $line) {
-            $formatted .= trim($line) === '' ? " *\n" : " * " . rtrim($line) . "\n";
-        }
-        $formatted .= " */";
-
-        return $formatted;
-    }
-
-    /**
-     * Blade 用にライセンスを "{{-- ... --}}" 形式のコメントにする
-     */
-    public function getLicenseForBlade(array $licenseInfo): string
-    {
-        $plain = $this->getLicensePlain($licenseInfo);
-        if (empty($plain)) {
-            return '';
-        }
-
-        // Blade用コメントでラップ
-        return "{{--\n" . trim($plain) . "\n--}}";
-    }
-
-
-    /**
-     * PHPファイルにライセンスを埋め込む
-     * -> {{ license }} を getLicenseForPhp() で置換
-     */
-    public function embedLicensePhp(string $stub, array $placeholders, array $licenseInfo): string
-    {
-        $licensePhp = $this->getLicenseForPhp($licenseInfo); // doc-block 形式
-        // stub 内の "{{ license }}" を置換
-        return $this->replacePlaceholders($stub, array_merge($placeholders, [
-            '{{ license }}' => $licensePhp
-        ]));
-    }
-
-    /**
-     * Bladeファイルにライセンスを埋め込む
-     * -> {{ license }} を getLicenseForBlade() で置換
-     */
-    public function embedLicenseBlade(string $stub, array $placeholders): string
-    {
-        $licenseBlade = $this->getLicenseForBlade(); // blade形式
-        return $this->replacePlaceholders($stub, array_merge($placeholders, [
-            '{{ license }}' => $licenseBlade
-        ]));
-    }
 
     /**
      * ファイルを生成

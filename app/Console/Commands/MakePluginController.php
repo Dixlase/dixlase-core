@@ -27,14 +27,14 @@ use Illuminate\Support\Str;
 use App\Services\FileGenerator;
 use App\Console\Traits\MakeControllerTrait;
 use App\Console\Traits\PluginManagementTrait;
-use App\Console\Traits\ChoiceLicenseTrait;
-
+use App\Console\Traits\MakeLicenseTrait;
 
 class MakePluginController extends Command
 {
     use MakeControllerTrait;
     use PluginManagementTrait;
-    use ChoiceLicenseTrait;
+    use MakeLicenseTrait;
+
 
 
     /**
@@ -44,6 +44,7 @@ class MakePluginController extends Command
     protected $signature = 'make:plugin:controller
         {plugin : The plugin name}
         {name : The controller name}
+        {--scope=plain}
         {--force}
         {--invokable}
         {--model=}
@@ -57,6 +58,8 @@ class MakePluginController extends Command
 
     protected $description = 'Create a new controller for the specified plugin';
 
+    protected string $controllerRootType = 'Plugins';
+
     protected FileGenerator $fileGenerator;
 
     public function __construct(FileGenerator $fileGenerator)
@@ -67,19 +70,24 @@ class MakePluginController extends Command
 
     public function handle()
     {
-        $pluginName    = Str::studly($this->argument('plugin'));
         $path      = str_replace('\\', '/', $this->argument('name'));
         $parts     = explode('/', $path);
         $className = array_pop($parts);
-        $subDirs   = $parts;
+        $subDirs   = $this->applyScopeToSubDirs($parts);
+        $pluginName = Str::studly($this->argument('plugin'));
 
         // ✅ `PluginLicenseTrait` を使ってライセンス情報を取得
         $licenseInfo = $this->getPluginLicenseInfo($pluginName);
-        if (!$licenseInfo) {
-            return Command::FAILURE; // ライセンスが取得できなかったら処理を中止
+
+
+
+        if (empty($licenseInfo)) {
+            $this->error('Plugin license information not found.');
+            return 1;
         }
 
         $options = [
+            'scope'     => $this->option('scope'),
             'force'     => $this->option('force'),
             'invokable' => $this->option('invokable'),
             'model'     => $this->option('model'),
@@ -92,35 +100,13 @@ class MakePluginController extends Command
             'type'      => $this->option('type'),
         ];
 
-        // use "makeFile" for the final call
-        $this->makeFile($className, $subDirs, $options, $licenseInfo);
+        $this->makeFile($className, $subDirs, $options, 'Plugins', $pluginName, $licenseInfo);
 
         return 0;
     }
 
-    /**
-     * @override
-     */
-    protected function getDirectory(array $subDirs): string
+    protected function getControllerRootName(): string
     {
-        $pluginName = Str::studly($this->argument('plugin'));
-        $base   = base_path("plugins/{$pluginName}/app/Http/Controllers");
-        if ($subDirs) {
-            $base .= '/' . implode('/', $subDirs);
-        }
-        return $base;
-    }
-
-    /**
-     * @override
-     */
-    protected function getNamespace(array $subDirs): string
-    {
-        $pluginName = Str::studly($this->argument('plugin'));
-        $base   = "Plugins\\{$pluginName}\\App\\Http\\Controllers";
-        if ($subDirs) {
-            $base .= '\\' . implode('\\', $subDirs);
-        }
-        return $base;
+        return Str::studly($this->argument('plugin'));
     }
 }

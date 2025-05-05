@@ -4,7 +4,7 @@ namespace App\Console\Traits;
 
 use Illuminate\Support\Facades\File;
 
-trait ChoiceLicenseTrait
+trait MakeLicenseTrait
 {
 
     /**
@@ -124,30 +124,153 @@ trait ChoiceLicenseTrait
      */
     protected function getPluginLicenseInfo(string $pluginName): ?array
     {
-        $licenseFile = base_path("plugins/{$pluginName}/license-info.json");
+        $licenseInfoFile = base_path("plugins/{$pluginName}/license-info.json");
 
-        if (!File::exists($licenseFile)) {
+        if (!File::exists($licenseInfoFile)) {
             $this->error("エラー: プラグイン [{$pluginName}] のライセンス情報が見つかりません。処理を中止します。");
             return null;
         }
 
-        $content = File::get($licenseFile);
-        $licenseInfo = json_decode($content, true);
+        $content = File::get($licenseInfoFile);
+        $licenseInfo['info'] = json_decode($content, true);
 
-        if (json_last_error() !== JSON_ERROR_NONE || !isset($licenseInfo['template'])) {
+        //作成する年をライセンス情報に追加
+        $licenseInfo['info']['year'] = date('Y');
+
+        if (json_last_error() !== JSON_ERROR_NONE || !isset($licenseInfo['info']['template'])) {
             $this->error("エラー: プラグイン [{$pluginName}] の `license-info.json` が無効です。処理を中止します。");
             return null;
         }
 
-        $licensePath = base_path($licenseInfo['template']);
+        $licensePath = base_path($licenseInfo['info']['template']);
+
+
+
+        //$this->info(print_r($licenseInfo, true));
 
         if (!File::exists($licensePath)) {
-            $this->error("エラー: プラグイン [{$pluginName}] のライセンステンプレートファイルが見つかりません [{$licenseInfo['template']}]。処理を中止します。");
+            $this->error("エラー: プラグイン [{$pluginName}] のライセンステンプレートファイルが見つかりません [{$licenseInfo['info']['template']}]。処理を中止します。");
             return null;
+        } else {
+            $licenseInfo['template'] = File::get($licensePath);
         }
 
-        return array_merge($licenseInfo, [
-            'text' => File::get($licensePath),
-        ]);
+        return $licenseInfo;
+    }
+
+    /**
+     * ライセンス情報を取得
+     */
+    /*
+    public function getLicenseInfo(): array
+    {
+        if ($this->files->exists($this->licenseConfigPath)) {
+            $content = $this->files->get($this->licenseConfigPath);
+            return json_decode($content, true) ?: [];
+        }
+
+        return [];
+    }
+    */
+
+    /**
+     * ライセンス名を取得
+     */
+    public function getLicenseName(): string
+    {
+        $licenseInfo = $this->getLicenseInfo();
+        return $licenseInfo['license'] ?? 'AGPL-3.0';
+    }
+
+    /**
+     * ライセンスのプレーンテキスト（placeholders差し替え済み）を取得する
+     */
+    public function getLicensePlain(string $licenseInfo): string
+    {
+        // licenseInfo から読み込み
+
+
+        $licensePath = base_path($licenseInfo['template']);
+
+        if (!$this->files->exists($licensePath)) {
+            return '';
+        }
+
+        // {software}, {year}, {author}, {website} を差し替え
+        $licenseText = $this->files->get($licensePath);
+        $licensePlaceholders = [
+            '{software}' => $licenseInfo['software'] ?? 'MySoftware',
+            '{year}'     => date('Y'),
+            '{author}'   => $licenseInfo['author'] ?? 'MyName',
+            '{website}'  => $licenseInfo['website'] ?? 'https://example.com',
+        ];
+        return $this->replacePlaceholders($licenseText, $licensePlaceholders);
+    }
+
+    /**
+     * PHPファイル用のライセンスをdoc-block 形式にする
+     */
+    public function embedLicenseForPhp(string $license): string
+    {
+
+        /*
+        $plain = $this->getLicensePlain($licenseInfo);
+        if (empty($plain)) {
+            return '';
+        }
+        */
+
+
+
+        $lines = explode("\n", trim($license));
+        $formatted = "/**\n";
+        foreach ($lines as $line) {
+            $formatted .= trim($line) === '' ? " *\n" : " * " . rtrim($line) . "\n";
+        }
+        $formatted .= " */";
+
+        return $formatted;
+    }
+
+    /**
+     * Blade 用にライセンスを "{{-- ... --}}" 形式のコメントにする
+     */
+    public function getLicenseForBlade(array $licenseInfo): string
+    {
+        $plain = $this->getLicensePlain($licenseInfo);
+        if (empty($plain)) {
+            return '';
+        }
+
+        // Blade用コメントでラップ
+        return "{{--\n" . trim($plain) . "\n--}}";
+    }
+
+
+    /**
+     * PHPファイルにライセンスを埋め込む
+     * -> {{ license }} を getLicenseForPhp() で置換
+     */
+    /*
+    public function embedLicensePhp(string $stub, array $placeholders, string $licenseInfo): string
+    {
+        $licensePhp = $this->getLicenseForPhp($licenseInfo); // doc-block 形式
+        // stub 内の "{{ license }}" を置換
+        return $this->replacePlaceholders($stub, array_merge($placeholders, [
+            '{{ license }}' => $licensePhp
+        ]));
+    }
+    */
+
+    /**
+     * Bladeファイルにライセンスを埋め込む
+     * -> {{ license }} を getLicenseForBlade() で置換
+     */
+    public function embedLicenseBlade(string $stub, array $placeholders): string
+    {
+        $licenseBlade = $this->getLicenseForBlade(); // blade形式
+        return $this->replacePlaceholders($stub, array_merge($placeholders, [
+            '{{ license }}' => $licenseBlade
+        ]));
     }
 }
