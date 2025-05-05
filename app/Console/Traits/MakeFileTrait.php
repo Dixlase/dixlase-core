@@ -23,12 +23,22 @@
 namespace App\Console\Traits;
 
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
+use App\Console\Traits\MakeLicenseTrait;
+
+use function Ramsey\Uuid\v1;
 
 /**
  * どんな「ファイル作成」コマンドにも共通する基礎ロジックをまとめる Trait
  */
 trait MakeFileTrait
 {
+
+    use MakeLicenseTrait;
+
+    protected $namespace = '';
+    protected $path = '';
+
     /**
      * 実際にファイルを作成するメイン処理。
      *
@@ -38,74 +48,115 @@ trait MakeFileTrait
      * @param  string  $stubFile    選択されたスタブファイル名
      * @return void
      */
+
+
+
     protected function makeFiler(
         string $className,
         array $subDirs,
         array $options,
-        string $stubFile,
-        array $extraPlaceholders = [],
+        string $type,
+        string $name,
+        string $stub,
+        string $category,
+        array $placeholders = [],
         array $licenseInfo = [],
-        string $fileType = 'default'
     ): void {
-        // 1) 出力先ディレクトリ / 名前空間 (サブクラスで実装)
-        $namespace       = $this->getNamespace($subDirs);
-        $targetDirectory = $this->getDirectory($subDirs);
 
-        // ファイル名を種類ごとに適切な命名規則に変換
-        $fileName = $this->determineFileName($className, $fileType);
-        $filePath = "{$targetDirectory}/{$fileName}.php";
 
-        // --force
-        $force = $options['force'] ?? false;
-        if (! $force) {
-            $this->fileGenerator->prepareFilePath($filePath, "[{$className}] already exists.");
-        } else {
-            if (file_exists($filePath)) {
-                unlink($filePath);
-            }
+        // 1. 名前空間とパスの生成
+        [$this->namespace, $this->path] = $this->getBaseNamespaceAndPath($type, $name, $category, $subDirs);
+
+        //ライセンスの整形
+        //$this->info(print_r($licenseInfo, true));
+
+
+
+
+        $license = $this->replacePlaceholders($licenseInfo['template'], $licenseInfo['info']);
+
+
+        if ($category == 'Blade') { //BladeファイルならBlade用の整形
+        } else { //PHPならPHP用の整形
+            $license = $this->embedLicenseForPhp($license);
         }
 
 
-        // 2) スタブファイル読み込み
-        $stubContent = $this->loadStubFile($stubFile, $licenseInfo);
-        // base placeholders
-        $basePlaceholders = [
-            '{{ rootNamespace }}' => $this->getRootNamespace(),
-            '{{ namespace }}'     => $namespace,
-            '{{ class }}'         => $className,
+        // 2. プレースホルダの生成
+        $defaultPlaceholders = [
+            'namespacePath'     => $this->namespace,
+            'className'         => $className,
+            'rootNamespace'     => app()->getNamespace(),
+            'license'           => $license,
         ];
 
-        $allPlaceholders = array_merge($basePlaceholders, $extraPlaceholders);
+        // 追加の置換をマージ
+        $finalPlaceholders = array_merge($defaultPlaceholders, $placeholders);
 
-        $finalContent = $this->fileGenerator->embedLicensePhp($stubContent, $allPlaceholders, $licenseInfo);
+        //$this->info(print_r($finalPlaceholders, true));
 
-        $this->fileGenerator->generateFile(
-            $filePath,
-            $finalContent
-        );
-        $this->info("File [{$className}] created at [{$filePath}].");
+        // 3. ファイル内容生成
+        $content = $this->fileGenerator->getStubContent($stub, $finalPlaceholders);
+
+        // 4. パスとファイル名の生成
+        $fullPath = $this->path . '/' . $className . '.php';
+
+        // 5. 上書き確認
+        if (File::exists($fullPath) && empty($options['force'])) {
+            $this->warn("File already exists: {$fullPath}");
+            return;
+        }
+
+        // 6. ディレクトリ作成
+        if (!File::isDirectory($this->path)) {
+            File::makeDirectory($this->path, 0755, true);
+        }
+
+        // 7. ファイル生成
+        File::put($fullPath, $content);
+        $this->info("Controller created: {$fullPath}");
+    }
+
+    protected function getBaseNamespaceAndPath(string $type, string $name, string $category, array $subDirs): array
+    {
+        $nameStudly = \Illuminate\Support\Str::studly($name);
+        $categoryStudly = \Illuminate\Support\Str::studly($category);
+
+        $namespaceSubDir = implode('\\', $subDirs);
+        $pathSubDir = implode('/', $subDirs);
+
+        $namespace = "{$type}\\{$nameStudly}\\App\\Http\\{$categoryStudly}" . ($namespaceSubDir ? "\\{$namespaceSubDir}" : '');
+        $path = base_path(strtolower($type) . "/{$nameStudly}/app/Http/{$categoryStudly}" . ($pathSubDir ? "/{$pathSubDir}" : ''));
+
+        return [$namespace, $path];
+    }
+
+    protected function makeDirectory(string $path): void
+    {
+        $dir = dirname($path);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
     }
 
     /**
-     * スタブファイルを読み込み (stubs/custom 優先 → デフォルト)
-     *
-     * @param  string  $stubFile
-     * @return string
+     * プレースホルダを置換
      */
-    protected function loadStubFile(string $stubFile, array $licenseInfo): string
+    public function replacePlaceholders(string $stub, array $placeholders): string
     {
-        $customStubPaths = [base_path('stubs/custom')];
-
-        // 例: "vendor/laravel/framework/src/Illuminate/Routing/Console/stubs/{$stubFile}" 等
-        // ここはファイルの種類によって変わるのでサブクラスや呼び出し側で固定してもOK
-        $defaultStubPath = base_path("vendor/laravel/framework/src/Illuminate/Routing/Console/stubs/{$stubFile}");
-
-        return $this->fileGenerator->getStubContent($stubFile, $defaultStubPath, $customStubPaths, $licenseInfo);
+        foreach ($placeholders as $search => $replace) {
+            $stub = str_replace('{{ ' . $search . ' }}', $replace, $stub);
+        }
+        return $stub;
     }
+
+
 
     /**
      * ファイルの種類ごとに適切な命名規則を適用
      */
+
+    /*
     private function determineFileName(string $className, string $fileType): string
     {
         $timestamp = date('Y_m_d_His');
@@ -126,15 +177,5 @@ trait MakeFileTrait
     {
         return app()->getNamespace();
     }
-
-
-    /**
-     * 出力先ディレクトリ (抽象)
-     */
-    abstract protected function getDirectory(array $subDirs): string;
-
-    /**
-     * 名前空間 (抽象)
-     */
-    abstract protected function getNamespace(array $subDirs): string;
+    */
 }

@@ -27,7 +27,7 @@ use Illuminate\Support\Str;
 use App\Services\FileGenerator;
 use App\Console\Traits\MakeProviderTrait;
 use App\Console\Traits\PluginManagementTrait;
-use App\Console\Traits\ChoiceLicenseTrait;
+use App\Console\Traits\MakeLicenseTrait;
 use Illuminate\Support\ServiceProvider;
 
 class MakePluginProvider extends Command
@@ -35,7 +35,7 @@ class MakePluginProvider extends Command
 
     use MakeProviderTrait;
     use PluginManagementTrait;
-    use ChoiceLicenseTrait;
+    use MakeLicenseTrait;
 
 
     protected $signature = 'make:plugin:provider

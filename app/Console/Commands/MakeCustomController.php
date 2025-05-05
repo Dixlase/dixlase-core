@@ -26,12 +26,12 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use App\Services\FileGenerator;
 use App\Console\Traits\MakeControllerTrait;
-use App\Console\Traits\ChoiceLicenseTrait;
+use App\Console\Traits\MakeLicenseTrait;
 
 class MakeCustomController extends Command
 {
     use MakeControllerTrait;
-    use ChoiceLicenseTrait;
+    use MakeLicenseTrait;
 
     /**
      * Artisan コマンド名と引数/オプション定義
@@ -52,6 +52,8 @@ class MakeCustomController extends Command
         {--license= : Specify a license for this file}';
 
     protected $description = 'Create a new controller in the custom directory';
+
+    protected string $controllerRootType = 'Custom';
 
     protected FileGenerator $fileGenerator;
 
@@ -114,10 +116,23 @@ class MakeCustomController extends Command
      */
     protected function getNamespace(array $subDirs): string
     {
-        $base = 'Custom\\App\\Http\\Controllers';
-        if ($subDirs) {
-            $base .= '\\' . implode('\\', $subDirs);
-        }
-        return $base;
+        $custom = Str::studly($this->argument('custom'));
+        $base = "Custom\\{$custom}\\App\\Http\\Controllers";
+        return $this->buildNamespace($base, $subDirs);
+    }
+
+    /**
+     * @override from MakeFileTrait
+     */
+    protected function getPath(string $className, array $subDirs): string
+    {
+        $custom = Str::studly($this->argument('custom'));
+        $base = base_path("custom/{$custom}/App/Http/Controllers");
+        return $this->buildPath($base, $className, $subDirs);
+    }
+
+    protected function getControllerRootName(): string
+    {
+        return Str::studly($this->argument('custom'));
     }
 }

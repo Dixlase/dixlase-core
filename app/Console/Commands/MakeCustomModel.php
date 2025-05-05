@@ -26,12 +26,12 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use App\Services\FileGenerator;
 use App\Console\Traits\MakeModelTrait;
-use App\Console\Traits\ChoiceLicenseTrait;
+use App\Console\Traits\MakeLicenseTrait;
 
 class MakeCustomModel extends Command
 {
     use MakeModelTrait;
-    use ChoiceLicenseTrait;
+    use MakeLicenseTrait;
 
     protected $signature = 'make:custom:model
         {name : Model name (e.g. Admin/MyModel)}

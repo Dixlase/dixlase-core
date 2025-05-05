@@ -26,12 +26,12 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use App\Services\FileGenerator;
 use App\Console\Traits\MakeProviderTrait;
-use App\Console\Traits\ChoiceLicenseTrait;
+use App\Console\Traits\MakeLicenseTrait;
 
 class MakeCustomProvider extends Command
 {
     use MakeProviderTrait;
-    use ChoiceLicenseTrait;
+    use MakeLicenseTrait;
 
 
     protected $signature = 'make:custom:provider

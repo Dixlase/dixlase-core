@@ -27,14 +27,14 @@ use Illuminate\Support\Str;
 use App\Services\FileGenerator;
 use App\Console\Traits\MakeModelTrait;
 use App\Console\Traits\PluginManagementTrait;
-use App\Console\Traits\ChoiceLicenseTrait;
+use App\Console\Traits\MakeLicenseTrait;
 
 
 class MakePluginModel extends Command
 {
     use MakeModelTrait;
     use PluginManagementTrait;
-    use ChoiceLicenseTrait;
+    use MakeLicenseTrait;
 
     protected $signature = 'make:plugin:model
         {plugin : The plugin name}
