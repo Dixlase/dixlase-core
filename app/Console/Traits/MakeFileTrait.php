@@ -26,7 +26,6 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
 use App\Console\Traits\MakeLicenseTrait;
 
-use function Ramsey\Uuid\v1;
 
 /**
  * どんな「ファイル作成」コマンドにも共通する基礎ロジックをまとめる Trait
@@ -52,35 +51,29 @@ trait MakeFileTrait
 
 
     protected function makeFiler(
-        string $className,
-        array $subDirs,
-        array $options,
-        string $type,
-        string $name,
-        string $stub,
-        string $category,
+        string $className,  //クラス名
+        array $subDirs, //サブディレクトリ
+        array $options, //オプション
+        string $fileType, //プラグイン用かカスタムファイル用か
+        string $name, //ファイル名
+        string $stub, //スタブファイルの内容
+        string $fileCategory, //ファイルの種類（コントローラ、リポジトリ、サービスなど）
         array $placeholders = [],
         array $licenseInfo = [],
     ): void {
 
 
         // 1. 名前空間とパスの生成
-        [$this->namespace, $this->path] = $this->getBaseNamespaceAndPath($type, $name, $category, $subDirs);
+        [$this->namespace, $this->path] = $this->getBaseNamespaceAndPath($fileType, $name, $fileCategory, $subDirs);
 
-        //ライセンスの整形
-        //$this->info(print_r($licenseInfo, true));
-
-
-
-
+        //ライセンス情報を生成
         $license = $this->replacePlaceholders($licenseInfo['template'], $licenseInfo['info']);
 
-
-        if ($category == 'Blade') { //BladeファイルならBlade用の整形
+        //ライセンス情報をファイルフォーマットによって整形
+        if ($fileCategory == 'blade') { //BladeファイルならBlade用の整形
         } else { //PHPならPHP用の整形
             $license = $this->embedLicenseForPhp($license);
         }
-
 
         // 2. プレースホルダの生成
         $defaultPlaceholders = [
@@ -93,10 +86,8 @@ trait MakeFileTrait
         // 追加の置換をマージ
         $finalPlaceholders = array_merge($defaultPlaceholders, $placeholders);
 
-        //$this->info(print_r($finalPlaceholders, true));
-
         // 3. ファイル内容生成
-        $content = $this->fileGenerator->getStubContent($stub, $finalPlaceholders);
+        $content = $this->getStubContent($stub, $finalPlaceholders);
 
         // 4. パスとファイル名の生成
         $fullPath = $this->path . '/' . $className . '.php';
@@ -153,10 +144,36 @@ trait MakeFileTrait
 
 
     /**
+     * テキストの無駄な空白を削除
+     */
+    protected function trimAndIndent(string $text, int $indentLevel = 1): string
+    {
+        $text = trim($text);
+        if ($text === '') return '';
+
+        return collect(preg_split('/\R/u', $text)) // 改行コードに対応
+            ->map(function ($line) {
+                // 空白（スペース・タブ）のみの行は空行へ
+                return trim($line) === '' ? '' : $line;
+            })
+            ->implode("\n");
+    }
+
+    /**
+     * スタブファイルを取得
+     */
+    public function getStubContent(string $stub, array $placeholders = []): string
+    {
+
+        $content = $this->replacePlaceholders($stub, $placeholders);
+        return $content;
+    }
+
+    /**
      * ファイルの種類ごとに適切な命名規則を適用
      */
 
-    /*
+
     private function determineFileName(string $className, string $fileType): string
     {
         $timestamp = date('Y_m_d_His');
@@ -177,5 +194,4 @@ trait MakeFileTrait
     {
         return app()->getNamespace();
     }
-    */
 }

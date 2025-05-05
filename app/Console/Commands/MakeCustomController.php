@@ -24,7 +24,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
-use App\Services\FileGenerator;
 use App\Console\Traits\MakeControllerTrait;
 use App\Console\Traits\MakeLicenseTrait;
 
@@ -38,8 +37,8 @@ class MakeCustomController extends Command
      */
     protected $signature = 'make:custom:controller
         {name : The name of the controller}
+        {--scope=plain : The scope of the controller (admin, front, plain)}
         {--license= : Specify a license (e.g. gpl, mit, apache)}
-        {--type=}
         {--force}
         {--invokable}
         {--model=}
@@ -51,20 +50,27 @@ class MakeCustomController extends Command
         {--creatable}
         {--license= : Specify a license for this file}';
 
+
     protected $description = 'Create a new controller in the custom directory';
 
     protected string $controllerRootType = 'Custom';
 
-    protected FileGenerator $fileGenerator;
 
-    public function __construct(FileGenerator $fileGenerator)
+    public function __construct()
     {
         parent::__construct();
-        $this->fileGenerator = $fileGenerator;
     }
 
     public function handle()
     {
+
+        $scope = $this->choice(
+            'コントローラのスコープを選択してください',
+            ['admin' => '管理画面用', 'front' => 'フロント用', 'plain' => 'プレーン（共通）'],
+            'plain'
+        );
+
+
         $path = str_replace('\\', '/', $this->argument('name'));
         $parts = explode('/', $path);
         $className = array_pop($parts);
@@ -72,7 +78,7 @@ class MakeCustomController extends Command
 
         // まとめたオプション
         $options = [
-            'type'      => $this->option('type'),
+            'scope'     => $scope,
             'force'     => $this->option('force'),
             'invokable' => $this->option('invokable'),
             'model'     => $this->option('model'),
@@ -86,53 +92,15 @@ class MakeCustomController extends Command
         ];
 
 
-        // ライセンス情報の取得
-        $licenseInfo = $this->getLicenseInfo($options['license']);
-        if (!$licenseInfo) {
-            $this->error("ライセンス情報が取得できませんでした。処理を中止します。");
-            return Command::FAILURE;
-        }
+        $this->makeFile(
+            $className,
+            $subDirs,
+            $options,
+            'Custom',
+            'Custom',
+            []
+        );
 
-        // "makeFile" (rename後) でコントローラ作成
-        $this->makeFile($className, $subDirs, $options, $licenseInfo);
-
-        return 0;
-    }
-
-    /**
-     * @override from MakeFileTrait
-     */
-    protected function getDirectory(array $subDirs): string
-    {
-        $base = base_path('custom/app/Http/Controllers');
-        if ($subDirs) {
-            $base .= '/' . implode('/', $subDirs);
-        }
-        return $base;
-    }
-
-    /**
-     * @override from MakeFileTrait
-     */
-    protected function getNamespace(array $subDirs): string
-    {
-        $custom = Str::studly($this->argument('custom'));
-        $base = "Custom\\{$custom}\\App\\Http\\Controllers";
-        return $this->buildNamespace($base, $subDirs);
-    }
-
-    /**
-     * @override from MakeFileTrait
-     */
-    protected function getPath(string $className, array $subDirs): string
-    {
-        $custom = Str::studly($this->argument('custom'));
-        $base = base_path("custom/{$custom}/App/Http/Controllers");
-        return $this->buildPath($base, $className, $subDirs);
-    }
-
-    protected function getControllerRootName(): string
-    {
-        return Str::studly($this->argument('custom'));
+        return Command::SUCCESS;
     }
 }

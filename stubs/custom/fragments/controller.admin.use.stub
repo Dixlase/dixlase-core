@@ -1,2 +1,2 @@
-    use AdminInterfaceTrait;
+use AdminInterfaceTrait;
     use AdminLoggedInTrait;

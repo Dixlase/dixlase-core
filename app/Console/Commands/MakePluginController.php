@@ -44,7 +44,7 @@ class MakePluginController extends Command
     protected $signature = 'make:plugin:controller
         {plugin : The plugin name}
         {name : The controller name}
-        {--scope=plain}
+        {--scope=plain : The scope of the controller (admin, front, plain)}
         {--force}
         {--invokable}
         {--model=}
@@ -53,41 +53,44 @@ class MakePluginController extends Command
         {--requests}
         {--api}
         {--singleton}
-        {--creatable}
-        {--type=}';
+        {--creatable}';
 
     protected $description = 'Create a new controller for the specified plugin';
 
     protected string $controllerRootType = 'Plugins';
 
-    protected FileGenerator $fileGenerator;
 
-    public function __construct(FileGenerator $fileGenerator)
+    public function __construct()
     {
         parent::__construct();
-        $this->fileGenerator = $fileGenerator;
     }
 
     public function handle()
     {
+        $scope = $this->choice(
+            'コントローラのスコープを選択してください',
+            ['admin' => '管理画面用', 'front' => 'フロント用', 'plain' => 'プレーン（共通）'],
+            'plain'
+        );
+
         $path      = str_replace('\\', '/', $this->argument('name'));
         $parts     = explode('/', $path);
         $className = array_pop($parts);
         $subDirs   = $this->applyScopeToSubDirs($parts);
         $pluginName = Str::studly($this->argument('plugin'));
 
-        // ✅ `PluginLicenseTrait` を使ってライセンス情報を取得
+        // ✅ `PluginLicenseTrait` を使ってプラグインのライセンス情報を取得
         $licenseInfo = $this->getPluginLicenseInfo($pluginName);
-
-
 
         if (empty($licenseInfo)) {
             $this->error('Plugin license information not found.');
             return 1;
         }
 
+
+
         $options = [
-            'scope'     => $this->option('scope'),
+            'scope'     => $scope,
             'force'     => $this->option('force'),
             'invokable' => $this->option('invokable'),
             'model'     => $this->option('model'),
@@ -97,16 +100,10 @@ class MakePluginController extends Command
             'api'       => $this->option('api'),
             'singleton' => $this->option('singleton'),
             'creatable' => $this->option('creatable'),
-            'type'      => $this->option('type'),
         ];
 
         $this->makeFile($className, $subDirs, $options, 'Plugins', $pluginName, $licenseInfo);
 
-        return 0;
-    }
-
-    protected function getControllerRootName(): string
-    {
-        return Str::studly($this->argument('plugin'));
+        return Command::SUCCESS;
     }
 }

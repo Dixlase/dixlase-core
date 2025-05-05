@@ -10,9 +10,8 @@ use Illuminate\Http\Request;
 
 class {{ className }} extends Controller
 {
+
     {{ use }}
-
     {{ construct }}
-
     {{ body }}
 }
