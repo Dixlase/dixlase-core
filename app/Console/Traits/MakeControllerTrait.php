@@ -49,9 +49,6 @@ trait MakeControllerTrait
      * @return void
      */
 
-
-
-
     protected function makeFile(
         string $className,
         array $subDirs,
@@ -61,12 +58,13 @@ trait MakeControllerTrait
         array $licenseInfo = [],
     ): void {
 
-        // 1. コントローラのコードを生成
+        $this->options = $options;
+
+        // コントローラのスタブファイルを生成
         $stub = $this->renderStub();
 
-
-        // 3) `makeFiler` を実行して、コントローラを生成
-        $this->makeFiler($className, $subDirs, $options, $type, $name, $stub, 'Controllers', [], $licenseInfo);
+        // `makeFiler` を実行して、コントローラを生成
+        $this->makeFiler($className, $subDirs, $options, $type, $name, $stub, 'controller', [], $licenseInfo);
     }
 
 
@@ -74,9 +72,12 @@ trait MakeControllerTrait
 
     protected function renderStub()
     {
-        $scope = $this->getScope(); // admin, front, plain
+
+
+        $scope = $this->options['scope']; // admin, front, plain
         $type = $this->options['type'] ?? 'default'; // model, api など
         $base = file_get_contents(base_path('stubs/custom/fragments/controller.base.stub'));
+
 
         // scope に応じて head / construct / use を読み込み（plainは除外）
         $scopeHead = $scopeConstruct = $scopeUse = '';
@@ -98,27 +99,20 @@ trait MakeControllerTrait
             ?? '';
 
         // headを結合（type.head → scope.head の順で上に並ぶ）
-        $head = $typeHead . $scopeHead;
-
-        return $this->renderStubWithPlaceholders($base, [
-            'head'      => trim($head),
-            'use'       => trim($scopeUse),
-            'construct' => trim($scopeConstruct),
-            'body'      => trim($body),
+        $head = trim($typeHead . "\n" . $scopeHead);
+        // 置換
+        $base = $this->renderStubWithPlaceholders($base, [
+            'head'      => $head,
+            'use'       => $scopeUse,
+            'construct' => $scopeConstruct,
+            'body'      => $body,
             'namespace' => $this->namespace ?? '',
         ]);
+
+
+        return $this->trimAndIndent($base);
     }
 
-    /**
-     * コントローラのスコープを取得
-     * --scope オプションが指定されていない場合は、ユーザに選択させる
-     *
-     * @return string
-     */
-    protected function getScope(): string
-    {
-        return $this->option('scope') ?? 'plain';
-    }
 
 
     protected function getFragment(string $key): ?string

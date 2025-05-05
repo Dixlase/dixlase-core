@@ -144,10 +144,6 @@ trait MakeLicenseTrait
 
         $licensePath = base_path($licenseInfo['info']['template']);
 
-
-
-        //$this->info(print_r($licenseInfo, true));
-
         if (!File::exists($licensePath)) {
             $this->error("エラー: プラグイン [{$pluginName}] のライセンステンプレートファイルが見つかりません [{$licenseInfo['info']['template']}]。処理を中止します。");
             return null;
@@ -158,20 +154,6 @@ trait MakeLicenseTrait
         return $licenseInfo;
     }
 
-    /**
-     * ライセンス情報を取得
-     */
-    /*
-    public function getLicenseInfo(): array
-    {
-        if ($this->files->exists($this->licenseConfigPath)) {
-            $content = $this->files->get($this->licenseConfigPath);
-            return json_decode($content, true) ?: [];
-        }
-
-        return [];
-    }
-    */
 
     /**
      * ライセンス名を取得
@@ -188,8 +170,6 @@ trait MakeLicenseTrait
     public function getLicensePlain(string $licenseInfo): string
     {
         // licenseInfo から読み込み
-
-
         $licensePath = base_path($licenseInfo['template']);
 
         if (!$this->files->exists($licensePath)) {
@@ -213,15 +193,6 @@ trait MakeLicenseTrait
     public function embedLicenseForPhp(string $license): string
     {
 
-        /*
-        $plain = $this->getLicensePlain($licenseInfo);
-        if (empty($plain)) {
-            return '';
-        }
-        */
-
-
-
         $lines = explode("\n", trim($license));
         $formatted = "/**\n";
         foreach ($lines as $line) {
@@ -235,42 +206,14 @@ trait MakeLicenseTrait
     /**
      * Blade 用にライセンスを "{{-- ... --}}" 形式のコメントにする
      */
-    public function getLicenseForBlade(array $licenseInfo): string
+    public function embedLicenseForBlade(string $license): string
     {
-        $plain = $this->getLicensePlain($licenseInfo);
+        $plain = $this->getLicensePlain($license);
         if (empty($plain)) {
             return '';
         }
 
         // Blade用コメントでラップ
         return "{{--\n" . trim($plain) . "\n--}}";
-    }
-
-
-    /**
-     * PHPファイルにライセンスを埋め込む
-     * -> {{ license }} を getLicenseForPhp() で置換
-     */
-    /*
-    public function embedLicensePhp(string $stub, array $placeholders, string $licenseInfo): string
-    {
-        $licensePhp = $this->getLicenseForPhp($licenseInfo); // doc-block 形式
-        // stub 内の "{{ license }}" を置換
-        return $this->replacePlaceholders($stub, array_merge($placeholders, [
-            '{{ license }}' => $licensePhp
-        ]));
-    }
-    */
-
-    /**
-     * Bladeファイルにライセンスを埋め込む
-     * -> {{ license }} を getLicenseForBlade() で置換
-     */
-    public function embedLicenseBlade(string $stub, array $placeholders): string
-    {
-        $licenseBlade = $this->getLicenseForBlade(); // blade形式
-        return $this->replacePlaceholders($stub, array_merge($placeholders, [
-            '{{ license }}' => $licenseBlade
-        ]));
     }
 }
