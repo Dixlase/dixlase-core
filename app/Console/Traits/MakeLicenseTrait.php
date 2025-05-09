@@ -7,6 +7,47 @@ use Illuminate\Support\Facades\File;
 trait MakeLicenseTrait
 {
 
+    protected function getCoreLicenseInfo(): array
+    {
+        $licenseChoices = $this->getLicenseOptions();
+        $licenseTemplates = $this->getLicenseTemplates();
+        $LicenseMaps = $this->getLicenseMap();
+
+        $key = $this->choice('コアファイルのライセンス種別を選んでください', $licenseChoices);
+
+        if ($key === 'ライセンス表記なし') {
+            $this->warn("⚠ ライセンス表記なしで生成します。");
+            return null;
+        }
+
+        $licenseMap = $LicenseMaps[$key];
+
+        $this->info($LicenseMaps[$key]);
+
+        $lisenceTemplate = $licenseTemplates[$licenseMap];
+
+        if (!File::exists(base_path($licenseMap[$key]))) {
+            $this->warn("⚠ ライセンスのテンプレートが見つかりません。ライセンス表記なしで生成します。: {$lisenceTemplate}");
+            return null;
+        }
+
+        return [
+            'info' => [
+                'software' => 'MySoftware',
+                'author' => 'MyName',
+                'website' => 'https://example.com',
+                'license' => $key,
+                'year' => date('Y'),
+                'template' => $licenseMap[$key],
+            ],
+            'template' => File::get(base_path($licenseMap[$key])),
+        ];
+    }
+
+
+
+
+
     /**
      * コマンドのオプションを取得して統一する
      *
@@ -15,16 +56,33 @@ trait MakeLicenseTrait
     protected function getLicenseOptions(): array
     {
         return [
-            'gpl'        => 'GPL-3.0',
-            'agpl'       => 'AGPL-3.0',
-            'mit'        => 'MIT',
-            'apache'     => 'Apache-2.0',
-            'bsd3'       => 'BSD-3-Clause',
-            'lgpl'       => 'LGPL-3.0',
-            'commercial' => 'Commercial',
-            'custom'     => '独自ライセンス',
+            '1' => 'GPL-3.0',
+            '2' => 'AGPL-3.0',
+            '3' => 'MIT',
+            '4' => 'Apache-2.0',
+            '5' => 'BSD-3-Clause',
+            '6' => 'LGPL-3.0',
+            '7' => '商用ライセンス',
+            '8' => '独自ライセンス',
+            '9' => 'ライセンス表記なし',
         ];
     }
+    protected function getLicenseMap(): array
+    {
+        return [
+            'GPL-3.0' => 'gpl',
+            'AGPL-3.0' => 'agpl',
+            'MIT' => 'mit',
+            'Apache-2.0' => 'apache',
+            'BSD-3-Clause' => 'bsd3',
+            'LGPL-3.0' => 'lgpl',
+            '商用ライセンス' => 'commercial',
+            '独自ライセンス' => 'custom',
+            'ライセンス表記なし' => '',
+        ];
+    }
+
+
 
     /**
      * ライセンスのテンプレートファイルパスを取得
@@ -34,14 +92,15 @@ trait MakeLicenseTrait
     protected function getLicenseTemplates(): array
     {
         return [
-            'gpl'        => 'license-templates/license-gpl.txt',
-            'agpl'       => 'license-templates/license-agpl.txt',
-            'mit'        => 'license-templates/license-mit.txt',
-            'apache'     => 'license-templates/license-apache.txt',
-            'bsd3'       => 'license-templates/license-bsd3.txt',
-            'lgpl'       => 'license-templates/license-lgpl.txt',
-            'commercial' => 'license-templates/license-commercial.txt',
-            'custom'     => 'license-templates/license-custom.txt', // ユーザー指定
+            'GPL-3.0' => 'license-templates/license-gpl.txt',
+            'AGPL-3.0' => 'license-templates/license-agpl.txt',
+            'MIT' => 'license-templates/license-mit.txt',
+            'Apache-2.0' => 'license-templates/license-apache.txt',
+            'BSD-3-Clause' => 'license-templates/license-bsd3.txt',
+            'LGPL-3.0' => 'license-templates/license-lgpl.txt',
+            '商用ライセンス' => 'license-templates/license-commercial.txt',
+            '独自ライセンス' => 'license-templates/license-custom.txt',
+            'ライセンス表記なし' => '',
         ];
     }
 
@@ -127,31 +186,40 @@ trait MakeLicenseTrait
         $licenseInfoFile = base_path("plugins/{$pluginName}/license-info.json");
 
         if (!File::exists($licenseInfoFile)) {
-            $this->error("エラー: プラグイン [{$pluginName}] のライセンス情報が見つかりません。処理を中止します。");
-            return null;
+            $this->warn("⚠ プラグイン [{$pluginName}] のライセンス情報が見つかりません。ライセンス表記なしで生成します。");
+            return [
+                'template' => '',
+                'info' => [],
+            ];
         }
 
         $content = File::get($licenseInfoFile);
-        $licenseInfo['info'] = json_decode($content, true);
+        $decoded = json_decode($content, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE || !isset($decoded['template'])) {
+            $this->warn("⚠ プラグイン [{$pluginName}] の `license-info.json` が無効です。ライセンス表記なしで生成します。");
+            return [
+                'template' => '',
+                'info' => [],
+            ];
+        }
+
+        $licensePath = base_path($decoded['template']);
+        if (!File::exists($licensePath)) {
+            $this->warn("⚠ プラグイン [{$pluginName}] のライセンステンプレートが見つかりません。ライセンス表記なしで生成します。");
+            return [
+                'template' => '',
+                'info' => [],
+            ];
+        }
 
         //作成する年をライセンス情報に追加
-        $licenseInfo['info']['year'] = date('Y');
+        $decoded['year'] = date('Y');
 
-        if (json_last_error() !== JSON_ERROR_NONE || !isset($licenseInfo['info']['template'])) {
-            $this->error("エラー: プラグイン [{$pluginName}] の `license-info.json` が無効です。処理を中止します。");
-            return null;
-        }
-
-        $licensePath = base_path($licenseInfo['info']['template']);
-
-        if (!File::exists($licensePath)) {
-            $this->error("エラー: プラグイン [{$pluginName}] のライセンステンプレートファイルが見つかりません [{$licenseInfo['info']['template']}]。処理を中止します。");
-            return null;
-        } else {
-            $licenseInfo['template'] = File::get($licensePath);
-        }
-
-        return $licenseInfo;
+        return [
+            'template' => File::get($licensePath),
+            'info' => $decoded,
+        ];
     }
 
 

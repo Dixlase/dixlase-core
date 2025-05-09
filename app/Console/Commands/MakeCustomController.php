@@ -24,6 +24,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 use App\Console\Traits\MakeControllerTrait;
 use App\Console\Traits\MakeLicenseTrait;
 
@@ -36,9 +37,7 @@ class MakeCustomController extends Command
      * Artisan コマンド名と引数/オプション定義
      */
     protected $signature = 'make:custom:controller
-        {name : The name of the controller}
-        {--scope=plain : The scope of the controller (admin, front, plain)}
-        {--license= : Specify a license (e.g. gpl, mit, apache)}
+        {className : The controller name}
         {--force}
         {--invokable}
         {--model=}
@@ -47,8 +46,7 @@ class MakeCustomController extends Command
         {--requests}
         {--api}
         {--singleton}
-        {--creatable}
-        {--license= : Specify a license for this file}';
+        {--creatable}';
 
 
     protected $description = 'Create a new controller in the custom directory';
@@ -64,17 +62,70 @@ class MakeCustomController extends Command
     public function handle()
     {
 
-        $scope = $this->choice(
-            'コントローラのスコープを選択してください',
-            ['admin' => '管理画面用', 'front' => 'フロント用', 'plain' => 'プレーン（共通）'],
-            'plain'
-        );
+        // クラス名を取得
+        $className = Str::studly($this->argument('className'));
+
+        // ファイルタイプ選択
+        $fileTypeMap = [
+            'コアファイル（core）' => 'core',
+            'プラグインファイル（plugin）' => 'plugin',
+        ];
+        $fileTypeKey = $this->choice('ファイルの種類を選択してください', [
+            '1' => 'コアファイル（core）',
+            '2' => 'プラグインファイル（plugin）',
+        ]);
+        $fileType = $fileTypeMap[$fileTypeKey];
 
 
-        $path = str_replace('\\', '/', $this->argument('name'));
-        $parts = explode('/', $path);
+        $this->info($fileType);
+
+        // プラグイン名取得（plugin の場合）
+        $pluginName = 'Core';
+        if ($fileType === 'plugin') {
+            $pluginDirs = collect(File::directories(base_path('plugins')))
+                ->map(fn($dir) => basename($dir))
+                ->filter()
+                ->values()
+                ->all();
+
+            if (empty($pluginDirs)) {
+                $this->error('プラグインが見つかりません。plugins ディレクトリに少なくとも1つのプラグインが必要です。');
+                return Command::FAILURE;
+            }
+
+            $pluginName = $this->choice('プラグインを選択してください', $pluginDirs);
+        }
+
+
+        // スコープ選択
+        $scopes = [
+            '1' => 'スコープなし（plain）',
+            '2' => 'フロント用（front）',
+            '3' => '管理画面用（admin）',
+        ];
+        $scopeMap = [
+            'スコープなし（plain）' => 'plain',
+            'フロント用（front）' => 'front',
+            '管理画面用（admin）' => 'admin',
+        ];
+        $scopeKey = $this->choice('スコープを選択してください', $scopes);
+        $scope = $scopeMap[$scopeKey] ?? 'plain';
+
+        // ライセンス情報
+        $licenseInfo = null;
+        if ($fileType === 'plugin') {
+            $licenseInfo = $this->getPluginLicenseInfo($pluginName);
+        } else {
+            $licenseInfo = $this->getCoreLicenseInfo();
+        }
+
+        // スコープを適用したサブディレクトリを取得
+        $scope = $scopeMap[$scopeKey] ?? 'plain';
+        $path      = str_replace('\\', '/', $this->argument('className'));
+        $parts     = explode('/', $path);
         $className = array_pop($parts);
         $subDirs   = $parts;
+        $pluginName = Str::studly($pluginName);
 
         // まとめたオプション
         $options = [
@@ -88,17 +139,15 @@ class MakeCustomController extends Command
             'api'       => $this->option('api'),
             'singleton' => $this->option('singleton'),
             'creatable' => $this->option('creatable'),
-            'license'   => $this->option('license') ?? 'gpl',
         ];
 
-
         $this->makeFile(
-            $className,
-            $subDirs,
-            $options,
-            'Custom',
-            'Custom',
-            []
+            className: $className,
+            fileType: 'custom/' . ($fileType === 'plugin' ? 'plugins' : 'core'),
+            options: $options,
+            subDirs: $subDirs,
+            pluginName: $pluginName,
+            licenseInfo: $licenseInfo
         );
 
         return Command::SUCCESS;
