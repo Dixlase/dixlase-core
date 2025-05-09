@@ -24,6 +24,7 @@ namespace App\Console\Traits;
 
 use Illuminate\Support\Str;
 use App\Console\Traits\MakeLicenseTrait;
+use App\Console\Traits\MakeFileTrait;
 
 
 /**
@@ -50,37 +51,32 @@ trait MakeControllerTrait
      */
 
     protected function makeFile(
-        string $className,
-        array $subDirs,
-        array $options,
-        string $type,
-        string $name,
-        array $licenseInfo = [],
+        string $className, //クラス名
+        string $fileType, //プラグイン用かカスタムファイル用か
+        array $options, //オプション
+        array $subDirs, //サブディレクトリ
+        string $pluginName = '', //プラグイン名
+        array $licenseInfo = [], //ライセンス情報
     ): void {
 
         $this->options = $options;
 
         // コントローラのスタブファイルを生成
-        $stub = $this->renderStub();
-
+        $stub = $this->renderStub($options['scope'] ?? 'plain', $options);
         // `makeFiler` を実行して、コントローラを生成
-        $this->makeFiler($className, $subDirs, $options, $type, $name, $stub, 'controller', [], $licenseInfo);
+        $this->makeFiler($className, $fileType, 'Controllers', $options, $subDirs, $stub, $pluginName, [], $licenseInfo);
     }
 
 
-
-
-    protected function renderStub()
+    protected function renderStub(string $scope = 'plain', array $options = []): string
     {
 
-
-        $scope = $this->options['scope']; // admin, front, plain
-        $type = $this->options['type'] ?? 'default'; // model, api など
+        // コントローラのベースとなるスタブを取得
         $base = file_get_contents(base_path('stubs/custom/fragments/controller.base.stub'));
 
-
-        // scope に応じて head / construct / use を読み込み（plainは除外）
-        $scopeHead = $scopeConstruct = $scopeUse = '';
+        $headParts = [];
+        $useParts = [];
+        $bodyParts = [];
 
         if (in_array($scope, ['admin', 'front'])) {
             $scopeHead = $this->getFragment("{$scope}.head") ?? '';
@@ -88,109 +84,32 @@ trait MakeControllerTrait
             $scopeConstruct = $this->getFragment("{$scope}.construct") ?? '';
         }
 
-
-        // typeによる head/body
-        $typeHead = '';
-        if (!empty($type) && $type !== 'default') {
-            $typeHead = $this->getFragment("controller.{$type}.head") ?? '';
+        // オプションに応じてフラグメントを追加
+        foreach (['model', 'parent', 'resource', 'requests', 'api', 'singleton', 'creatable', 'invokable'] as $opt) {
+            if (!empty($options[$opt])) {
+                $headParts[] = $this->getFragment("{$opt}.head") ?? '';
+                $useParts[] = $this->getFragment("{$opt}.use") ?? '';
+                $bodyParts[] = $this->getFragment("{$opt}.body") ?? '';
+            }
         }
-        $body = $this->getFragment("{$type}.body")
-            ?? $this->getFragment("default.body")
-            ?? '';
 
-        // headを結合（type.head → scope.head の順で上に並ぶ）
-        $head = trim($typeHead . "\n" . $scopeHead);
+        $head = trim($scopeHead . "\n" . implode("\n", $headParts));
+        $use = trim($scopeUse . "\n" . implode("\n", $useParts));
+        $body = trim(implode("\n", $bodyParts));
+
         // 置換
-        $base = $this->renderStubWithPlaceholders($base, [
+        return $this->replacePlaceholders($base, [
             'head'      => $head,
-            'use'       => $scopeUse,
+            'use'       => $use,
             'construct' => $scopeConstruct,
             'body'      => $body,
             'namespace' => $this->namespace ?? '',
         ]);
-
-
-        return $this->trimAndIndent($base);
     }
-
-
 
     protected function getFragment(string $key): ?string
     {
         $path = base_path("stubs/custom/fragments/controller.{$key}.stub");
         return file_exists($path) ? file_get_contents($path) : null;
     }
-
-    protected function renderStubWithPlaceholders(string $template, array $replacements): string
-    {
-        foreach ($replacements as $key => $value) {
-            $template = str_replace('{{ ' . $key . ' }}', $value, $template);
-        }
-        return $template;
-    }
-
-
-
-    protected function buildPath(string $basePath, string $className, array $subDirs): string
-    {
-        $scopedSubDirs = $this->applyScopeToSubDirs($subDirs); // Admin / Front を先頭に付加
-        $path = $basePath;
-
-        if (!empty($scopedSubDirs)) {
-            $path .= '/' . implode('/', $scopedSubDirs);
-        }
-
-        return $path . '/' . $className . '.php';
-    }
-
-
-
-
-    protected function applyScopeToSubDirs(array $subDirs): array
-    {
-        $scope = $this->option('scope') ?? 'plain';
-
-        return match ($scope) {
-            'admin' => array_merge(['Admin'], $subDirs),
-            'front' => array_merge(['Front'], $subDirs),
-            default => $subDirs,
-        };
-    }
-
-
-
-    protected function getClassName(): string
-    {
-        $path = str_replace('\\', '/', $this->argument('name'));
-        $parts = explode('/', $path);
-        return Str::studly(array_pop($parts));
-    }
-
-
-
-
-    /*
-
-    protected function getControllerNamespace(string $vendorType, string $name, array $subDirs): string
-    {
-        $nameStudly = Str::studly($name);
-        $base = "{$vendorType}\\{$nameStudly}\\App\\Http\\Controllers";
-        return $this->buildNamespace($base, $subDirs);
-    }
-
-
-
-    protected function getPath(string $className, array $subDirs): string
-    {
-        $plugin = Str::studly($this->argument('plugin'));
-        $base = base_path("plugins/{$plugin}/app/Http/Controllers");
-        return $this->buildPath($base, $className, $subDirs);
-    }
-
-
-
-
-
-
-    */
 }

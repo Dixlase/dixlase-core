@@ -24,27 +24,25 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
-use App\Services\FileGenerator;
+use Illuminate\Support\Facades\File;
 use App\Console\Traits\MakeControllerTrait;
 use App\Console\Traits\PluginManagementTrait;
 use App\Console\Traits\MakeLicenseTrait;
+use App\Console\Traits\MakeFileTrait;
 
 class MakePluginController extends Command
 {
     use MakeControllerTrait;
     use PluginManagementTrait;
     use MakeLicenseTrait;
-
-
+    use MakeFileTrait;
 
     /**
      * Artisan コマンド名と引数/オプション定義
      * 例: php artisan make:plugin:controller my-plugin MyController
      */
     protected $signature = 'make:plugin:controller
-        {plugin : The plugin name}
-        {name : The controller name}
-        {--scope=plain : The scope of the controller (admin, front, plain)}
+        {className : The controller name}
         {--force}
         {--invokable}
         {--model=}
@@ -67,27 +65,51 @@ class MakePluginController extends Command
 
     public function handle()
     {
-        $scope = $this->choice(
-            'コントローラのスコープを選択してください',
-            ['admin' => '管理画面用', 'front' => 'フロント用', 'plain' => 'プレーン（共通）'],
-            'plain'
-        );
 
-        $path      = str_replace('\\', '/', $this->argument('name'));
-        $parts     = explode('/', $path);
-        $className = array_pop($parts);
-        $subDirs   = $this->applyScopeToSubDirs($parts);
-        $pluginName = Str::studly($this->argument('plugin'));
+        $className = Str::studly($this->argument('className'));
 
-        // ✅ `PluginLicenseTrait` を使ってプラグインのライセンス情報を取得
-        $licenseInfo = $this->getPluginLicenseInfo($pluginName);
+        // 🔽 pluginsディレクトリ内の一覧を取得
+        $pluginDirs = collect(File::directories(base_path('plugins')))
+            ->map(fn($dir) => basename($dir))
+            ->filter()
+            ->values()
+            ->all();
 
-        if (empty($licenseInfo)) {
-            $this->error('Plugin license information not found.');
+        if (empty($pluginDirs)) {
+            $this->error('プラグインが見つかりません。plugins ディレクトリに少なくとも1つのプラグインが必要です。');
             return 1;
         }
 
+        // 🔽 選択式でプラグイン名を指定
+        $pluginName = $this->choice('プラグインを選択してください', $pluginDirs);
 
+        // 🔽 選択式でスコープを指定
+        $scopes = [
+            '1' => 'スコープなし',
+            '2' => 'フロント用',
+            '3' => '管理画面用',
+        ];
+
+        $scopeMap = [
+            'スコープなし' => 'plain',
+            'フロント用' => 'front',
+            '管理画面用' => 'admin',
+        ];
+
+        $scopeKey = $this->choice('スコープを選択してください', $scopes);
+
+        $this->info("選択されたスコープ: {$scopeKey}");
+
+        // 数字を key にしてマップ
+        $scope = $scopeMap[$scopeKey] ?? 'plain';
+        $path      = str_replace('\\', '/', $this->argument('className'));
+        $parts     = explode('/', $path);
+        $className = array_pop($parts);
+        $subDirs   = $parts;
+        $pluginName = Str::studly($pluginName);
+
+        // MakeLicenseTraitを使ってプラグインのライセンス情報を取得
+        $licenseInfo = $this->getPluginLicenseInfo($pluginName);
 
         $options = [
             'scope'     => $scope,
@@ -102,7 +124,14 @@ class MakePluginController extends Command
             'creatable' => $this->option('creatable'),
         ];
 
-        $this->makeFile($className, $subDirs, $options, 'Plugins', $pluginName, $licenseInfo);
+        $this->makeFile(
+            className: $className,
+            fileType: 'plugins',
+            options: $options,
+            subDirs: $subDirs,
+            pluginName: $pluginName,
+            licenseInfo: $licenseInfo
+        );
 
         return Command::SUCCESS;
     }

@@ -52,27 +52,33 @@ trait MakeFileTrait
 
     protected function makeFiler(
         string $className,  //クラス名
-        array $subDirs, //サブディレクトリ
-        array $options, //オプション
         string $fileType, //プラグイン用かカスタムファイル用か
-        string $name, //ファイル名
-        string $stub, //スタブファイルの内容
         string $fileCategory, //ファイルの種類（コントローラ、リポジトリ、サービスなど）
+        array $options, //オプション
+        array $subDirs, //サブディレクトリ
+        string $stub, //スタブファイルの内容
+        string $pluginName = '', //プラグイン名
         array $placeholders = [],
         array $licenseInfo = [],
     ): void {
 
+        $scope = $options['scope'] ?? 'plain'; // スコープの取得（例: admin, front, plain）
 
         // 1. 名前空間とパスの生成
-        [$this->namespace, $this->path] = $this->getBaseNamespaceAndPath($fileType, $name, $fileCategory, $subDirs);
+        [$this->namespace, $this->path] = $this->getBaseNamespaceAndPath($fileType, $pluginName, $fileCategory, $scope, $subDirs);
 
         //ライセンス情報を生成
-        $license = $this->replacePlaceholders($licenseInfo['template'], $licenseInfo['info']);
+        if (!empty($licenseInfo['template']) || !empty($licenseInfo['info'])) {
+            $license = $this->replacePlaceholders($licenseInfo['template'], $licenseInfo['info']);
 
-        //ライセンス情報をファイルフォーマットによって整形
-        if ($fileCategory == 'blade') { //BladeファイルならBlade用の整形
-        } else { //PHPならPHP用の整形
-            $license = $this->embedLicenseForPhp($license);
+            //ライセンス情報をファイルフォーマットによって整形
+            if ($fileCategory == 'blade') { //BladeファイルならBlade用の整形
+            } else { //PHPならPHP用の整形
+                $license = $this->embedLicenseForPhp($license);
+            }
+        } else {
+            // 空のままにしておく
+            $license = '';
         }
 
         // 2. プレースホルダの生成
@@ -108,16 +114,24 @@ trait MakeFileTrait
         $this->info("Controller created: {$fullPath}");
     }
 
-    protected function getBaseNamespaceAndPath(string $type, string $name, string $category, array $subDirs): array
+    protected function getBaseNamespaceAndPath(string $fileType, string $pluginName, string $fileCategory, string $scope, array $subDirs): array
     {
-        $nameStudly = \Illuminate\Support\Str::studly($name);
-        $categoryStudly = \Illuminate\Support\Str::studly($category);
+        $nameStudly = \Illuminate\Support\Str::studly($pluginName);
+        $categoryStudly = \Illuminate\Support\Str::studly($fileCategory);
+
+        // スコープを取得（例: admin, front, plain）
+        $scopeStudly = $scope !== 'plain' ? ucfirst($scope) : '';
+
+        // スコープをサブディレクトリに追加（plain の場合は除外）
+        if ($scopeStudly) {
+            array_unshift($subDirs, $scopeStudly);
+        }
 
         $namespaceSubDir = implode('\\', $subDirs);
         $pathSubDir = implode('/', $subDirs);
 
-        $namespace = "{$type}\\{$nameStudly}\\App\\Http\\{$categoryStudly}" . ($namespaceSubDir ? "\\{$namespaceSubDir}" : '');
-        $path = base_path(strtolower($type) . "/{$nameStudly}/app/Http/{$categoryStudly}" . ($pathSubDir ? "/{$pathSubDir}" : ''));
+        $namespace = "{$fileType}\\{$nameStudly}\\App\\Http\\{$categoryStudly}" . ($namespaceSubDir ? "\\{$namespaceSubDir}" : '');
+        $path = base_path(strtolower($fileType) . "/{$nameStudly}/app/Http/{$categoryStudly}" . ($pathSubDir ? "/{$pathSubDir}" : ''));
 
         return [$namespace, $path];
     }
@@ -133,14 +147,13 @@ trait MakeFileTrait
     /**
      * プレースホルダを置換
      */
-    public function replacePlaceholders(string $stub, array $placeholders): string
+    public function replacePlaceholders(string $template, array $placeholders): string
     {
         foreach ($placeholders as $search => $replace) {
-            $stub = str_replace('{{ ' . $search . ' }}', $replace, $stub);
+            $stub = str_replace('{{ ' . $search . ' }}', $replace, $template);
         }
         return $stub;
     }
-
 
 
     /**
@@ -151,12 +164,27 @@ trait MakeFileTrait
         $text = trim($text);
         if ($text === '') return '';
 
-        return collect(preg_split('/\R/u', $text)) // 改行コードに対応
-            ->map(function ($line) {
-                // 空白（スペース・タブ）のみの行は空行へ
-                return trim($line) === '' ? '' : $line;
-            })
-            ->implode("\n");
+        // 空白のみの行を空行に変換し、すべての行を取得
+        $lines = collect(preg_split('/\R/u', $text))
+            ->map(fn($line) => trim($line) === '' ? '' : $line);
+
+        // 空行が2回以上続くのを防ぐ（1回だけ許可）
+        $result = [];
+        $blankStreak = 0;
+
+        foreach ($lines as $line) {
+            if ($line === '') {
+                $blankStreak++;
+                if ($blankStreak > 1) {
+                    continue; // 2回目以降の空行は無視
+                }
+            } else {
+                $blankStreak = 0;
+            }
+            $result[] = $line;
+        }
+
+        return implode("\n", $result);
     }
 
     /**
@@ -166,13 +194,12 @@ trait MakeFileTrait
     {
 
         $content = $this->replacePlaceholders($stub, $placeholders);
-        return $content;
+        return $this->trimAndIndent($content);
     }
 
     /**
      * ファイルの種類ごとに適切な命名規則を適用
      */
-
 
     private function determineFileName(string $className, string $fileType): string
     {
@@ -189,9 +216,29 @@ trait MakeFileTrait
         };
     }
 
+    /**
+     * プラグインの一覧を取得
+     */
 
-    protected function getRootNamespace(): string
+    protected function getAvailablePluginNames(): array
     {
-        return app()->getNamespace();
+        return collect(File::directories(base_path('plugins')))
+            ->map(fn($dir) => basename($dir))
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * スコープを選択
+     */
+
+    protected function chooseScope(): string
+    {
+        $labels = __('choices.scope.labels'); // 日本語 or 英語
+        $map    = __('choices.scope.map');    // 'plain' => 'スコープなし' など
+
+        $key = $this->choice(__('choices.scope.prompt'), array_values($labels));
+        return array_search($key, $labels); // reverse map
     }
 }
