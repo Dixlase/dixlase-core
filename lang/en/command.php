@@ -69,6 +69,8 @@ return [
 
     'license' => [
         'prompt' => 'Please select a license (press Enter without input to select no license)',
+        'using_custom_license' => 'Using custom license: :license',
+        'failed_to_read_license' => 'Failed to read custom license file: :error',
         'warnings' => [
             'plugin_missing' => '⚠️ License info for plugin [:plugin] not found. License header will be skipped.',
             'template_not_specified' => '⚠️ License info does not contain a template path.',

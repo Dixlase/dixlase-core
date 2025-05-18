@@ -69,6 +69,8 @@ return [
     ],
     'license' => [
         'prompt' => 'ライセンスを選択してください（未入力の場合はライセンス表記なしが選択されます）',
+        'using_custom_license' => 'カスタムライセンスを使用します: :license',
+        'failed_to_read_license' => 'カスタムライセンスファイルの読み込みに失敗しました: :error',
         'warnings' => [
             'plugin_missing' => '⚠️ プラグイン [:plugin] のライセンス情報が見つかりません。ライセンス表記はスキップされます。',
             'template_not_specified' => '⚠️ ライセンス情報にテンプレートパスが指定されていません。',
