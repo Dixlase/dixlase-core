@@ -23,6 +23,7 @@
 namespace App\Console\Traits;
 
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 
 /**
  * モデル作成用トレイト。
@@ -31,7 +32,27 @@ use Illuminate\Support\Str;
 trait MakeModelTrait
 {
     use MakeFileTrait;
+    
+    /**
+     * モデル固有のオプション定義を取得
+     * 
+     * @return array
+     */
+    protected function getAdditionalOptions(): array
+    {
+        return [
+            '{--all : ' . __("command.make.options.all") . '}',
+            '{--controller : ' . __("command.make.options.controller") . '}',
+            '{--factory : ' . __("command.make.options.factory") . '}',
+            '{--migration : ' . __("command.make.options.migration") . '}',
+            '{--policy : ' . __("command.make.options.policy") . '}',
+            '{--seed : ' . __("command.make.options.seed") . '}',
+            '{--api : ' . __("command.make.options.api") . '}',
+            '{--requests : ' . __("command.make.options.requests") . '}',
+        ];
+    }
 
+    
     /**
      * モデルを作成するメイン処理。
      *
@@ -40,61 +61,125 @@ trait MakeModelTrait
      * @param  bool    $force         --force
      * @param  bool    $pivot         --pivot
      * @param  bool    $morphPivot    --morph-pivot
-     * @return string  $qualifiedFqcn 実際のモデルのFQCNを返して後続処理に使える
+     * @return void
      */
     protected function makeFile(
         string $className,
+        string $fileType,
+        array $options,
         array $subDirs,
-        bool $force,
-        bool $pivot = false,
-        bool $morphPivot = false
-    ): string {
-        // 1) モデル用 stub判定
-        //   model.stub, model.pivot.stub, model.morph-pivot.stub
-        $stubFile = 'model.stub';
-        if ($morphPivot) {
-            $stubFile = 'model.morph-pivot.stub';
-        } elseif ($pivot) {
-            $stubFile = 'model.pivot.stub';
+        string $pluginName = '',
+        array $licenseInfo = []
+    ): void {
+        // モデル用 stubの選択
+        $stubFile = $this->renderStub($options['scope'] ?? 'plain', $options);
+
+        // ファイル生成
+        $this->makeFiler(
+            $className,
+            $fileType,
+            'models',
+            $options,
+            $subDirs,
+            $stubFile,
+            $pluginName,
+            [],  // プレースホルダー
+            $licenseInfo
+        );
+    }
+
+
+    /**
+     * モデル用のスタブを選択して取得
+     *
+     * @param  string  $scope
+     * @param  array   $options
+     * @return string
+     */
+    protected function renderStub(string $scope = 'plain', array $options = []): string
+    {
+        // モデル用のスタブを選択
+        $stubName = 'model.stub';
+        if ($options['pivot'] ?? false) {
+            $stubName = 'model.pivot.stub';
+        } elseif ($options['morphPivot'] ?? false) {
+            $stubName = 'model.morph-pivot.stub';
         }
 
-        // 2) options
-        $options = [
-            'force' => $force,
-        ];
+        // スタブファイルのパスを取得
+        $stubPath = config('command.custom_stub_directory') . '/' . $stubName;
 
-        // 3) モデル固有プレースホルダ (たとえば factory 用)
-        //    まずは空配列にし、必要に応じて buildFactoryReplacements(...) などで追加
-        $extraPlaceholders = [
-            // e.g. '{{ factory }}' => 'some code',
-        ];
-
-        // 4) makeFiler
-        //    => "MakeFileTrait::makeFiler(...)"
-        $this->makeFiler($className, $subDirs, $options, $stubFile,  $extraPlaceholders, 'models');
-
-        // 5) 最終FQCN = namespace + class
-        $fqcn = $this->getNamespace($subDirs) . '\\' . $className;
-        return $fqcn;
+        // スタブファイルの内容を取得
+        return File::get($stubPath);
     }
 
-    /**
-     * モデル用ディレクトリ/名前空間。
-     * (B)パターン: getDirectory/getNamespace => getModelDirectory/getModelNamespace
-     */
-    protected function getDirectory(array $subDirs): string
+    // 以下、createFactory, createMigration, createSeeder, createController, createFormRequests, createPolicy は
+    // plugin版とほぼ同じ。 "make:plugin::factory" → "make:custom:factory" などに置き換える。
+
+    protected function createFactory(string $modelFqcn)
     {
-        return $this->getModelDirectory($subDirs);
+        $modelBase = class_basename($modelFqcn);
+        $factoryName = "{$modelBase}Factory";
+
+        $this->call('make:custom:factory', [
+            'name'   => $factoryName,
+            '--model' => $modelFqcn,
+            '--force' => false,
+        ]);
     }
 
-    protected function getNamespace(array $subDirs): string
+    protected function createMigration(string $className, bool $isPivot = false)
     {
-        return $this->getModelNamespace($subDirs);
+        $table = Str::snake(Str::pluralStudly($className));
+        if ($isPivot) {
+            $table = Str::singular($table);
+        }
+        $migrationName = "create_{$table}_table";
+
+        $this->call('make:custom:migration', [
+            'name'   => $migrationName,
+            '--create' => $table,
+        ]);
     }
 
-    /**
-     * サブクラスに実装させる抽象メソッド
-     */
-    abstract protected function getModelDirectory(array $subDirs): string;
-    abstract protected function getModelNamespace(array $subDirs): string;
+    protected function createSeeder(string $className)
+    {
+        $seeder = Str::studly($className) . 'Seeder';
+        $this->call('make:custom:seeder', [
+            'name'  => $seeder,
+        ]);
+    }
+
+    protected function createController(string $modelFqcn)
+    {
+        $ctrlName = class_basename($modelFqcn) . 'Controller';
+        $this->call('make:custom:controller', array_filter([
+            'name'   => $ctrlName,
+            '--model' => ($this->option('api') || $this->option('resource')) ? $modelFqcn : null,
+            '--api'  => $this->option('api'),
+            '--requests' => $this->option('requests') || $this->option('all'),
+            '--resource' => $this->option('resource'),
+        ]));
+    }
+
+    protected function createFormRequests(string $className)
+    {
+        $basename = Str::studly($className);
+        $this->call('make:custom:request', [
+            'name'   => 'Store' . $basename . 'Request',
+        ]);
+        $this->call('make:custom:request', [
+            'name'   => 'Update' . $basename . 'Request',
+        ]);
+    }
+
+    protected function createPolicy(string $modelFqcn)
+    {
+        $policy = class_basename($modelFqcn) . 'Policy';
+        $this->call('make:custom:policy', [
+            'name'  => $policy,
+            '--model' => $modelFqcn,
+        ]);
+    }
+    
 }

@@ -24,19 +24,78 @@ namespace App\Console\Traits;
 
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
+use Illuminate\Console\Command;
 use App\Console\Traits\MakeLicenseTrait;
-
 
 /**
  * どんな「ファイル作成」コマンドにも共通する基礎ロジックをまとめる Trait
  */
 trait MakeFileTrait
 {
-
+    
     use MakeLicenseTrait;
 
-    protected $namespace = '';
-    protected $path = '';
+    /**
+     * 共通のコマンドオプションを取得
+     * 
+     * @return array
+     */
+    protected function getCommonOptions(): array
+    {
+        return [
+            '{className : ' . __('command.make.common.class_name') . '}',
+            '{--force : ' . __('command.make.common.force') . '}',
+        ];
+    }
+    
+    /**
+     * コマンドのシグネチャを生成
+     *
+     * @param string $command コマンド名 (e.g., 'make:custom:model')
+     * @param array $options オプションの配列
+     * @return string
+     */
+    protected function makeSignature(string $command, array $options): string
+    {
+        // 共通オプションとマージする前に、重複するオプションを除外
+        $uniqueOptions = [];
+        $optionNames = [];
+        
+        // 共通オプションを追加
+        foreach ($this->getCommonOptions() as $option) {
+            $name = static::getOptionName($option);
+            $optionNames[] = $name;
+            $uniqueOptions[] = $option;
+        }
+        
+        // 追加オプションを追加（重複していないもののみ）
+        foreach ($options as $option) {
+            $name = static::getOptionName($option);
+            if (!in_array($name, $optionNames)) {
+                $optionNames[] = $name;
+                $uniqueOptions[] = $option;
+            }
+        }
+        
+        return $command . "\n        " . implode("\n        ", $uniqueOptions);
+    }
+
+    
+    /**
+     * オプション文字列からオプション名を抽出
+     */
+    protected static function getOptionName(string $option): string
+    {
+        // 引数の場合 (例: {name} または {name : description})
+        if (preg_match('/^\{([^\s:]+)/', $option, $matches)) {
+            return $matches[1];
+        }
+        // オプションの場合 (例: --option または --option= または --option=*)
+        if (preg_match('/^\-\-([^\s=]+)/', $option, $matches)) {
+            return $matches[1];
+        }
+        return $option; // マッチしない場合はそのまま返す
+    }
 
     /**
      * 実際にファイルを作成するメイン処理。
@@ -47,9 +106,6 @@ trait MakeFileTrait
      * @param  string  $stubFile    選択されたスタブファイル名
      * @return void
      */
-
-
-
     protected function makeFiler(
         string $className,  //クラス名
         string $fileType, //プラグイン用かカスタムファイル用か
@@ -100,7 +156,7 @@ trait MakeFileTrait
 
         // 5. 上書き確認
         if (File::exists($fullPath) && empty($options['force'])) {
-            $this->warn("File already exists: {$fullPath}");
+            $this->warn(__('command.file.already_exists', ['path' => $fullPath]));
             return;
         }
 
@@ -111,30 +167,14 @@ trait MakeFileTrait
 
         // 7. ファイル生成
         File::put($fullPath, $content);
-        $this->info("Controller created: {$fullPath}");
+        $this->info(__('command.file.created', ['path' => $fullPath]));
     }
 
-    protected function getBaseNamespaceAndPath(string $fileType, string $pluginName, string $fileCategory, string $scope, array $subDirs): array
-    {
-        $nameStudly = \Illuminate\Support\Str::studly($pluginName);
-        $categoryStudly = \Illuminate\Support\Str::studly($fileCategory);
 
-        // スコープを取得（例: admin, front, plain）
-        $scopeStudly = $scope !== 'plain' ? ucfirst($scope) : '';
 
-        // スコープをサブディレクトリに追加（plain の場合は除外）
-        if ($scopeStudly) {
-            array_unshift($subDirs, $scopeStudly);
-        }
-
-        $namespaceSubDir = implode('\\', $subDirs);
-        $pathSubDir = implode('/', $subDirs);
-
-        $namespace = "{$fileType}\\{$nameStudly}\\App\\Http\\{$categoryStudly}" . ($namespaceSubDir ? "\\{$namespaceSubDir}" : '');
-        $path = base_path(strtolower($fileType) . "/{$nameStudly}/app/Http/{$categoryStudly}" . ($pathSubDir ? "/{$pathSubDir}" : ''));
-
-        return [$namespace, $path];
-    }
+    /**
+     * ディレクトリを作成
+     */
 
     protected function makeDirectory(string $path): void
     {
@@ -145,12 +185,25 @@ trait MakeFileTrait
     }
 
     /**
+     * ファイル作成後の通知
+     */
+
+    protected function notifyFileCreated(string $fileCategory, string $fullPath): void
+    {
+        // ファイルの種類に応じたラベルを取得
+        $label = __('command.files.category.' . strtolower($fileCategory));
+        $label .= __('command.files.created');
+        $this->info("{$label}: {$fullPath}");
+    }
+
+
+    /**
      * プレースホルダを置換
      */
-    public function replacePlaceholders(string $template, array $placeholders): string
+    protected function replacePlaceholders(string $stub, array $placeholders): string
     {
-        foreach ($placeholders as $search => $replace) {
-            $stub = str_replace('{{ ' . $search . ' }}', $replace, $template);
+        foreach ($placeholders as $key => $value) {
+            $stub = str_replace("{{ {$key} }}", $value, $stub);
         }
         return $stub;
     }
@@ -217,9 +270,48 @@ trait MakeFileTrait
     }
 
     /**
-     * プラグインの一覧を取得
+     * ファイルの種類を選択
      */
 
+    protected function chooseFileType(): array
+    {
+        $labels = __('command.file_type.labels');
+        $prompt = __('command.file_type.prompt');
+
+        $selectedLabel = $this->choice($prompt, array_values($labels));
+        $fileType = array_search($selectedLabel, $labels) ?: 'core';
+
+        $pluginName = '';
+        if ($fileType === 'plugin') {
+            $pluginName = $this->choosePlugin();
+            if (!$pluginName) {
+                return [null, null];
+            }
+        }
+
+        return [$fileType, $pluginName];
+    }
+
+
+    /**
+     * プラグイン名を選択
+     */
+
+    protected function choosePlugin(): ?string
+    {
+        $pluginDirs = $this->getAvailablePluginNames();
+
+        if (empty($pluginDirs)) {
+            $this->error(__('command.plugin.not_found'));
+            return null;
+        }
+
+        return $this->choice(__('command.plugin.prompt'), $pluginDirs);
+    }
+
+    /**
+     * プラグインの一覧を取得
+     */
     protected function getAvailablePluginNames(): array
     {
         return collect(File::directories(base_path('plugins')))
@@ -229,16 +321,134 @@ trait MakeFileTrait
             ->all();
     }
 
+
     /**
      * スコープを選択
      */
-
     protected function chooseScope(): string
     {
-        $labels = __('choices.scope.labels'); // 日本語 or 英語
-        $map    = __('choices.scope.map');    // 'plain' => 'スコープなし' など
+        $labels = __('command.scope.labels'); // 日本語 or 英語
+        $map    = __('command.scope.map');    // 'plain' => 'スコープなし' など
 
-        $key = $this->choice(__('choices.scope.prompt'), array_values($labels));
+        $key = $this->choice(__('command.scope.prompt'), array_values($labels));
         return array_search($key, $labels); // reverse map
     }
+
+    /**
+     * クラス名のパス情報を分解
+     *
+     * @param string $classPath クラスパス（例: 'Admin/User/Controller'）
+     * @param string $scope スコープ（例: 'Admin'）
+     * @return array [className, subDirs]
+     */
+    protected function parseClassPath(string $classPath, string $scope): array
+    {
+        $path = str_replace('\\', '/', $classPath);
+        $parts = explode('/', $path);
+        $className = array_pop($parts);
+        $subDirs = $this->applyScopeToSubDirs($parts, $scope);
+
+        return [$className, $subDirs];
+    }
+
+    /**
+     * スコープをサブディレクトリに適用
+     */
+
+    protected function applyScopeToSubDirs(array $subDirs, string $scope): array
+    {
+        return match ($scope) {
+            'front' => ['Front', ...$subDirs],
+            'admin' => ['Admin', ...$subDirs],
+            default => $subDirs,
+        };
+    }
+
+    /**
+     * スコープを適用したネームスペース、パスを取得
+     */
+    protected function getBaseNamespaceAndPath(string $fileType, string $pluginName, string $fileCategory, string $scope, array $subDirs): array
+    {
+        $nameStudly = \Illuminate\Support\Str::studly($pluginName);
+
+        // スコープを取得（例: admin, front, plain）
+        $scopeStudly = $scope !== 'plain' ? ucfirst($scope) : '';
+
+        // スコープをサブディレクトリに追加（plain の場合は除外）
+        if ($scopeStudly) {
+            array_unshift($subDirs, $scopeStudly);
+        }
+
+        $namespaceSubDir = implode('\\', $subDirs);
+        $pathSubDir = implode('/', $subDirs);
+
+        // 設定からカテゴリごとのパスとネームスペースを取得
+        [$categoryPath, $categoryNamespace] = config('command.category_paths')[$fileCategory] ?? ['', ''];
+
+        $pluginStudly = Str::studly($pluginName);
+
+        // ファイルタイプに応じてパスを生成
+        switch ($fileType) {
+            case 'plugin':
+                // プラグイン用ファイル
+                $basePath = "plugins/{$pluginStudly}/app";
+                $baseNamespace = "Plugins\\{$pluginStudly}\\App";
+                break;
+
+            case 'custom_core':
+                // コア用カスタムファイル
+                $basePath = 'custom/app';
+                $baseNamespace = 'Custom\\App';
+                break;
+
+            case 'custom_plugin':
+                // プラグイン用カスタムファイル
+                $basePath = "custom/plugins/{$pluginStudly}/app";
+                $baseNamespace = "Plugins\\{$pluginStudly}\\App";
+                break;
+
+            default:
+                throw new \InvalidArgumentException("Unknown file type: {$fileType}");
+        }
+
+        // カテゴリーパスとサブディレクトリを結合
+        $pathParts = array_filter([$categoryPath, $pathSubDir]);
+        $namespaceParts = array_map(function($part) {
+            return str_replace('/', '\\', $part);
+        }, array_filter([$categoryNamespace, $namespaceSubDir]));
+
+        // 最終的なパスとネームスベースを生成
+        $path = base_path(rtrim($basePath . '/' . implode('/', $pathParts), '/'));
+        $namespace = rtrim($baseNamespace . '\\' . implode('\\', $namespaceParts), '\\');
+
+        return [$namespace, $path];
+    }
+
+
+
+
+    /**
+     * 関連ファイルの生成
+     *
+     * @param string $className クラス名
+     * @param string $fileType ファイルタイプ
+     * @param array $subDirs サブディレクトリ
+     * @param string $pluginName プラグイン名
+     */
+    protected function createRelatedFiles(string $className, string $fileType, array $subDirs, string $pluginName): void
+    {
+        if ($this->hasOption('factory') && $this->option('factory')) {
+            $this->createFactory($className, $fileType, $subDirs, $pluginName);
+        }
+
+        if ($this->hasOption('migration') && $this->option('migration')) {
+            $this->createMigration($className, $fileType, $pluginName);
+        }
+
+        if ($this->hasOption('controller') && $this->option('controller')) {
+            $this->createController($className, $fileType, $subDirs, $pluginName);
+        }
+    }
+
+
 }

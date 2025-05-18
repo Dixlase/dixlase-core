@@ -26,113 +26,39 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
 use App\Console\Traits\MakeControllerTrait;
-use App\Console\Traits\PluginManagementTrait;
-use App\Console\Traits\MakeLicenseTrait;
-use App\Console\Traits\MakeFileTrait;
+use App\Console\Traits\MakePluginCommandTrait;
 
 class MakePluginController extends Command
 {
     use MakeControllerTrait;
-    use PluginManagementTrait;
-    use MakeLicenseTrait;
-    use MakeFileTrait;
+    use MakePluginCommandTrait;
 
-    /**
-     * Artisan コマンド名と引数/オプション定義
-     * 例: php artisan make:plugin:controller my-plugin MyController
-     */
-    protected $signature = 'make:plugin:controller
-        {className : The controller name}
-        {--force}
-        {--invokable}
-        {--model=}
-        {--parent=}
-        {--resource}
-        {--requests}
-        {--api}
-        {--singleton}
-        {--creatable}';
+    protected $signature;
 
     protected $description = 'Create a new controller for the specified plugin';
 
     protected string $controllerRootType = 'Plugins';
 
-
     public function __construct()
     {
+        $this->signature = $this->makeSignature('make:plugin:controller', $this->getAdditionalOptions());
         parent::__construct();
     }
 
     public function handle()
     {
-
-        $className = Str::studly($this->argument('className'));
-
-        // 🔽 pluginsディレクトリ内の一覧を取得
-        $pluginDirs = collect(File::directories(base_path('plugins')))
-            ->map(fn($dir) => basename($dir))
-            ->filter()
-            ->values()
-            ->all();
-
-        if (empty($pluginDirs)) {
-            $this->error('プラグインが見つかりません。plugins ディレクトリに少なくとも1つのプラグインが必要です。');
-            return 1;
+        // 共通の初期化処理
+        $commonInit = $this->initializePluginCommand($this->argument('className'));
+        if (!$commonInit) {
+            return Command::FAILURE;
         }
 
-        // 🔽 選択式でプラグイン名を指定
-        $pluginName = $this->choice('プラグインを選択してください', $pluginDirs);
+        // オプションの収集
+        $options = $this->collectOptions();
 
-        // 🔽 選択式でスコープを指定
-        $scopes = [
-            '1' => 'スコープなし',
-            '2' => 'フロント用',
-            '3' => '管理画面用',
-        ];
-
-        $scopeMap = [
-            'スコープなし' => 'plain',
-            'フロント用' => 'front',
-            '管理画面用' => 'admin',
-        ];
-
-        $scopeKey = $this->choice('スコープを選択してください', $scopes);
-
-        $this->info("選択されたスコープ: {$scopeKey}");
-
-        // 数字を key にしてマップ
-        $scope = $scopeMap[$scopeKey] ?? 'plain';
-        $path      = str_replace('\\', '/', $this->argument('className'));
-        $parts     = explode('/', $path);
-        $className = array_pop($parts);
-        $subDirs   = $parts;
-        $pluginName = Str::studly($pluginName);
-
-        // MakeLicenseTraitを使ってプラグインのライセンス情報を取得
-        $licenseInfo = $this->getPluginLicenseInfo($pluginName);
-
-        $options = [
-            'scope'     => $scope,
-            'force'     => $this->option('force'),
-            'invokable' => $this->option('invokable'),
-            'model'     => $this->option('model'),
-            'parent'    => $this->option('parent'),
-            'resource'  => $this->option('resource'),
-            'requests'  => $this->option('requests'),
-            'api'       => $this->option('api'),
-            'singleton' => $this->option('singleton'),
-            'creatable' => $this->option('creatable'),
-        ];
-
-        $this->makeFile(
-            className: $className,
-            fileType: 'plugins',
-            options: $options,
-            subDirs: $subDirs,
-            pluginName: $pluginName,
-            licenseInfo: $licenseInfo
-        );
-
-        return Command::SUCCESS;
+        // ファイル生成
+        return $this->makePluginFile($commonInit, $options)
+            ? Command::SUCCESS
+            : Command::FAILURE;
     }
 }
