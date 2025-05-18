@@ -92,7 +92,7 @@ class MakePlugin extends Command
             return Command::FAILURE;
         }
 
-        // ライセンス情報を取得（プラグイン用なので警告メッセージは表示しない）
+        // 新規ライセンス情報を取得
         $selectedLicense = $this->getNewLicenseInfo(false);
 
         // 開発者情報の取得
