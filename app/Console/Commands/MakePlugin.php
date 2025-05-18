@@ -27,10 +27,13 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Str;
 use App\Models\Plugin;
-use App\Services\FileGenerator;
+use App\Console\Traits\MakeLicenseTrait;
+use App\Console\Traits\MakeFileTrait;
 
 class MakePlugin extends Command
 {
+    use MakeLicenseTrait, MakeFileTrait;
+
     /**
      * コマンドシグネチャ
      *  - {name} : プラグイン名（人間が読む名 + ディレクトリに利用）
@@ -56,13 +59,9 @@ class MakePlugin extends Command
 
     protected $description = 'Create a new plugin with a predefined structure';
 
-    protected FileGenerator $fileGenerator;
-
-
-    public function __construct(FileGenerator $fileGenerator)
+    public function __construct()
     {
         parent::__construct();
-        $this->fileGenerator = $fileGenerator;
     }
 
     public function handle()
@@ -73,7 +72,7 @@ class MakePlugin extends Command
         // ソフトウェア名をスネークケースに変換
         $cmsNameSlug = Str::slug(Str::snake($softwareName));
         // プラグイン名
-        $pluginName = $this->ask('プラグイン名を入力してください');
+        $pluginName = $this->ask(__('command.make_plugin.enter_plugin_name'));
         // スラッグ名。プラグイン名をスネークケースに変換
         $pluginSlug = Str::slug(Str::snake($pluginName));
         // プラグインディレクトリ名。プラグイン名をキャメルケースに変換
@@ -88,56 +87,21 @@ class MakePlugin extends Command
         $packageName = "{$cmsNameSlug}-{$pluginSlug}";
 
 
-        // ライセンスの選択
-        $licenseOption = $this->choice(
-            'ライセンスを選択してください',
-            [
-                'gpl' => 'GPL-3.0',
-                'agpl' => 'AGPL-3.0',
-                'mit' => 'MIT',
-                'apache' => 'Apache-2.0',
-                'bsd3' => 'BSD-3-Clause',
-                'lgpl' => 'LGPL-3.0',
-                'commercial' => 'Commercial',
-                'custom' => '独自ライセンス'
-            ],
-            'gpl'
-        );
-
-        $licenseMap = [
-            'gpl' => ['name' => 'GPL-3.0', 'file' => 'license-gpl.txt'],
-            'agpl' => ['name' => 'AGPL-3.0', 'file' => 'license-agpl.txt'],
-            'mit' => ['name' => 'MIT', 'file' => 'license-mit.txt'],
-            'apache' => ['name' => 'Apache-2.0', 'file' => 'license-apache.txt'],
-            'bsd3' => ['name' => 'BSD-3-Clause', 'file' => 'license-bsd3.txt'],
-            'lgpl' => ['name' => 'LGPL-3.0', 'file' => 'license-lgpl.txt'],
-            'commercial' => ['name' => 'Commercial', 'file' => 'license-commercial.txt'],
-            'custom' => ['name' => 'Custom License', 'file' => 'license-custom.txt'],
-        ];
-
         if (File::exists($pluginDir)) {
-            $this->error("The plugin '{$pluginName}' already exists.");
+            $this->error(__('command.make_plugin.already_exists', ['name' => $pluginName]));
             return Command::FAILURE;
         }
 
-        $licenseType = $licenseMap[$licenseOption]['name'];
-        $licenseTemplate = "license-templates/{$licenseMap[$licenseOption]['file']}";
-
+        // ライセンス情報を取得（プラグイン用なので警告メッセージは表示しない）
+        $selectedLicense = $this->getNewLicenseInfo(false);
 
         // 開発者情報の取得
-        $author = $this->ask('開発者名を入力してください');
+        $author = $this->ask(__('command.make_plugin.enter_author_name'));
 
         // URL入力を補完（https://を自動追加）
-        $website = $this->ask('開発者のWebサイトURLを入力してください（https://の後の部分のみ入力）');
+        $website = $this->ask(__('command.make_plugin.enter_website_url'));
         if (!Str::startsWith($website, 'https://')) {
             $website = 'https://' . ltrim($website, '/');
-        }
-
-
-
-        if (File::exists($pluginDir)) {
-            $this->error("The plugin '{$pluginName}' already exists.");
-            return Command::FAILURE;
         }
 
         // ライセンス情報を構築
@@ -145,8 +109,9 @@ class MakePlugin extends Command
             'software' => $pluginName,
             'author' => $author,
             'website' => $website,
-            'license' => $licenseType,
-            'template' => $licenseTemplate,
+            'license' => $selectedLicense['name'] ?? '',
+            'template' => $selectedLicense['template'] ?? '',
+            'text' => $selectedLicense['text'] ?? '',
         ];
 
         // プラグインディレクトリを作成
@@ -165,14 +130,23 @@ class MakePlugin extends Command
             $cmsNameSlug,
             $pluginSlug,
             $softwareName,
-            $licenseInfo
+            [
+                'license' => $selectedLicense['name'] ?? '',
+                'licenseName' => $selectedLicense['name'] ?? '',
+                'licenseText' => $selectedLicense['text'] ?? '',
+                'text' => $selectedLicense['text'] ?? '', // 後方互換性のため
+                'template' => $selectedLicense['template'] ?? '',
+                'author' => $author,
+                'website' => $website,
+                'software' => $pluginName
+            ]
         );
 
         // Optionally install and enable the plugin
-        if ($this->confirm('プラグインをインストールしますか？', true)) {
+        if ($this->confirm(__('command.make_plugin.confirm_install'), true)) {
             $this->installPlugin($pluginName, $pluginDirName);
 
-            if ($this->confirm('プラグインを有効化しますか？', true)) {
+            if ($this->confirm(__('command.make_plugin.confirm_enable'), true)) {
                 $this->enablePlugin($pluginName);
             }
         }
@@ -180,28 +154,8 @@ class MakePlugin extends Command
         // composer.json に PSR-4 オートロード設定を更新
         $this->call('plugin:autoload:sync');
 
-        $this->info("Plugin {$pluginName} has been created successfully!");
+        $this->info(__('command.make_plugin.success', ['name' => $pluginName]));
         return Command::SUCCESS;
-    }
-
-    protected function getLicenseInfo(): array
-    {
-        $defaultLicenseInfo = [
-            'software' => 'MySoftware',
-            'author' => 'Your Name',
-            'website' => 'https://example.com',
-            'license' => 'GPL-3.0',
-            'template' => 'license-templates/license-agpl.txt',
-        ];
-
-        $licenseInfoPath = base_path('license-info.json');
-
-        if (File::exists($licenseInfoPath)) {
-            $licenseData = json_decode(File::get($licenseInfoPath), true);
-            return array_merge($defaultLicenseInfo, $licenseData);
-        }
-
-        return $defaultLicenseInfo;
     }
 
     protected function createPluginDirectories(string $pluginDir, string $pluginName, string $namespace, string $pluginDirName)
@@ -277,11 +231,9 @@ class MakePlugin extends Command
         // pluginName も StudlyCase に
         $pluginNameStudly = Str::studly($pluginName);
 
-        // ライセンスの取得（必要な場合）
-        $licenseName = $this->fileGenerator->getLicenseName();
-
         // ライセンス情報を取得
-        $licenseText = $this->fileGenerator->getLicenseForPhp($licenseInfo);
+        $licenseText = $licenseInfo['licenseText'] ?? '';
+        $licenseName = $licenseInfo['licenseName'] ?? '';
 
         $placeholders = [
             '{{ pluginName }}'        => $pluginName,     // "MyPlugin"
@@ -407,7 +359,7 @@ class MakePlugin extends Command
         ]);
 
 
-        $this->info("Service provider [{$providerName}] created for plugin [{$pluginName}].");
+        $this->info(__('command.make_plugin.files.service_provider', ['name' => $providerName, 'plugin' => $pluginName]));
     }
 
     /**
@@ -422,7 +374,7 @@ class MakePlugin extends Command
             'name' => $controllerName,
         ]);
 
-        $this->info("Controller [{$controllerName}] created for plugin [{$pluginName}].");
+        $this->info(__('command.make_plugin.files.controller', ['name' => $controllerName, 'plugin' => $pluginName]));
     }
 
     /**
@@ -437,7 +389,7 @@ class MakePlugin extends Command
             'name' => $modelName,
         ]);
 
-        $this->info("Model [{$modelName}] created for plugin [{$pluginName}].");
+        $this->info(__('command.make_plugin.files.model', ['name' => $modelName, 'plugin' => $pluginName]));
     }
 
     /**
@@ -452,7 +404,7 @@ class MakePlugin extends Command
             'name' => $policyName,
         ]);
 
-        $this->info("Policy [{$policyName}] created for plugin [{$pluginName}].");
+        $this->info(__('command.make_plugin.files.policy', ['name' => $policyName, 'plugin' => $pluginName]));
     }
 
     /**
@@ -467,7 +419,7 @@ class MakePlugin extends Command
             'name' => $listenerName,
         ]);
 
-        $this->info("Listener [{$listenerName}] created for plugin [{$pluginName}].");
+        $this->info(__('command.make_plugin.files.listener', ['name' => $listenerName, 'plugin' => $pluginName]));
     }
 
     /**
@@ -482,7 +434,7 @@ class MakePlugin extends Command
             'name' => $testName,
         ]);
 
-        $this->info("Test [{$testName}] created for plugin [{$pluginName}].");
+        $this->info(__('command.make_plugin.files.test', ['name' => $testName, 'plugin' => $pluginName]));
     }
 
 
@@ -503,7 +455,7 @@ class MakePlugin extends Command
             'name' => $migrationName,
         ]);
 
-        $this->info("Migration {$migrationName} created for plugin [{$pluginName}].");
+        $this->info(__('command.make_plugin.files.migration', ['name' => $migrationName, 'plugin' => $pluginName]));
     }
 
     /**
@@ -518,7 +470,7 @@ class MakePlugin extends Command
             'name' => $resourceName,
         ]);
 
-        $this->info("Resource [{$resourceName}] created for plugin [{$pluginName}].");
+        $this->info(__('command.make_plugin.files.resource', ['name' => $resourceName, 'plugin' => $pluginName]));
     }
 
     /**
@@ -533,7 +485,7 @@ class MakePlugin extends Command
             'name' => $commandName,
         ]);
 
-        $this->info("Command [{$commandName}] created for plugin [{$pluginName}].");
+        $this->info(__('command.make_plugin.files.command', ['name' => $commandName, 'plugin' => $pluginName]));
     }
 
     /**
@@ -548,7 +500,7 @@ class MakePlugin extends Command
             'name' => $jobName,
         ]);
 
-        $this->info("Job [{$jobName}] created for plugin [{$pluginName}].");
+        $this->info(__('command.make_plugin.files.job', ['name' => $jobName, 'plugin' => $pluginName]));
     }
 
     /**
@@ -563,7 +515,7 @@ class MakePlugin extends Command
             'name' => $notificationName,
         ]);
 
-        $this->info("Notification [{$notificationName}] created for plugin [{$pluginName}].");
+        $this->info(__('command.make_plugin.files.notification', ['name' => $notificationName, 'plugin' => $pluginName]));
     }
 
     /**
@@ -610,7 +562,7 @@ class MakePlugin extends Command
             'name' => $factoryName,
         ]);
 
-        $this->info("Factory [{$factoryName}] created for plugin [{$pluginName}].");
+        $this->info(__('command.make_plugin.files.factory', ['name' => $factoryName, 'plugin' => $pluginName]));
     }
 
     /**
@@ -618,19 +570,17 @@ class MakePlugin extends Command
      */
     protected function createRoutes(string $pluginDir, array $placeholders, array $licenseInfo)
     {
-        $stubPath = [base_path('stubs/custom')];
+        // スタブファイルの内容を取得
+        $stubContent = $this->getStubContent('routes.plugin.stub', $placeholders);
 
-        $stubFile = $this->fileGenerator->getStubContent(
-            'routes.plugin.stub',
-            null,
-            $stubPath,
-            $licenseInfo
-        );
+        // ファイルを生成
+        $routesPath = "{$pluginDir}/routes/web.php";
+        if (!file_exists(dirname($routesPath))) {
+            mkdir(dirname($routesPath), 0755, true);
+        }
+        file_put_contents($routesPath, $stubContent);
 
-        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
-        $this->fileGenerator->generateFile("{$pluginDir}/routes/web.php", $fileContent);
-
-        $this->info("Routes file created for plugin.");
+        $this->info(__('command.make_plugin.files.routes'));
     }
 
     /**
@@ -638,19 +588,17 @@ class MakePlugin extends Command
      */
     protected function createConfigFile(string $pluginDir, array $placeholders, array $licenseInfo)
     {
-        $stubPath = [base_path('stubs/custom')];
+        // コンフィグディレクトリを作成
+        $configPath = "{$pluginDir}/config";
+        if (!file_exists($configPath)) {
+            mkdir($configPath, 0755, true);
+        }
 
-        $stubFile = $this->fileGenerator->getStubContent(
-            'config.stub',
-            null,
-            $stubPath,
-            $licenseInfo
-        );
+        // スタブファイルの内容を取得してファイルを生成
+        $content = $this->getStubContent('config.stub', $placeholders);
+        file_put_contents("{$configPath}/settings.php", $content);
 
-        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
-        $this->fileGenerator->generateFile("{$pluginDir}/config/settings.php", $fileContent);
-
-        $this->info("Config file created for plugin.");
+        $this->info(__('command.make_plugin.files.config'));
     }
 
     /**
@@ -658,50 +606,35 @@ class MakePlugin extends Command
      */
     protected function createLangFiles(string $pluginDir, array $placeholders, array $licenseInfo)
     {
-        $stubPath = [base_path('stubs/custom')];
+        // 言語ファイルのディレクトリを作成
+        $langDir = "{$pluginDir}/lang";
+        foreach (['en', 'ja'] as $locale) {
+            if (!file_exists("{$langDir}/{$locale}")) {
+                mkdir("{$langDir}/{$locale}", 0755, true);
+            }
+        }
 
         // 英語の言語ファイル
-        $stubFileEn = $this->fileGenerator->getStubContent(
-            'messages.en.stub',
-            null,
-            $stubPath,
-            $licenseInfo
-        );
-
-        $fileContentEn = $this->fileGenerator->replacePlaceholders($stubFileEn, $placeholders);
-        $this->fileGenerator->generateFile("{$pluginDir}/lang/en/messages.php", $fileContentEn);
+        $contentEn = $this->getStubContent('messages.en.stub', $placeholders);
+        file_put_contents("{$langDir}/en/messages.php", $contentEn);
 
         // 日本語の言語ファイル
-        $stubFileJa = $this->fileGenerator->getStubContent(
-            'messages.ja.stub',
-            null,
-            $stubPath,
-            $licenseInfo
-        );
-        $fileContentJa = $this->fileGenerator->replacePlaceholders($stubFileJa, $placeholders);
-        $this->fileGenerator->generateFile("{$pluginDir}/lang/ja/messages.php", $fileContentJa);
+        $contentJa = $this->getStubContent('messages.ja.stub', $placeholders);
+        file_put_contents("{$langDir}/ja/messages.php", $contentJa);
 
-        $this->info("Language files (en & ja) created for plugin.");
+        $this->info(__('command.make_plugin.files.lang'));
     }
 
     /**
-     * Vite 設定ファイルを作成
+     * Viteの設定ファイルを作成
      */
     protected function createViteConfigFile(string $pluginDir, array $placeholders, array $licenseInfo)
     {
-        $stubPath = [base_path('stubs/custom')];
+        // スタブファイルの内容を取得してファイルを生成
+        $content = $this->getStubContent('vite.config.stub', $placeholders);
+        file_put_contents("{$pluginDir}/vite.config.js", $content);
 
-        $stubFile = $this->fileGenerator->getStubContent(
-            'vite.config.plugin.stub',
-            null,
-            $stubPath,
-            $licenseInfo
-        );
-
-        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
-        $this->fileGenerator->generateFile("{$pluginDir}/vite.config.js", $fileContent);
-
-        $this->info("Vite config file created for plugin.");
+        $this->info(__('command.make_plugin.files.vite'));
     }
 
     /**
@@ -709,19 +642,11 @@ class MakePlugin extends Command
      */
     protected function createComposerFile(string $pluginDir, array $placeholders, array $licenseInfo)
     {
-        $stubPath = [base_path('stubs/custom')];
+        // スタブファイルの内容を取得してファイルを生成
+        $content = $this->getStubContent('composer.plugin.stub', $placeholders);
+        file_put_contents("{$pluginDir}/composer.json", $content);
 
-        $stubFile = $this->fileGenerator->getStubContent(
-            'composer.plugin.stub',
-            null,
-            $stubPath,
-            $licenseInfo
-        );
-
-        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
-        $this->fileGenerator->generateFile("{$pluginDir}/composer.json", $fileContent);
-
-        $this->info("Composer.json file created for plugin.");
+        $this->info(__('command.make_plugin.files.composer'));
     }
 
     /**
@@ -729,19 +654,11 @@ class MakePlugin extends Command
      */
     protected function createReadmeFile(string $pluginDir, array $placeholders, array $licenseInfo)
     {
-        $stubPath = [base_path('stubs/custom')];
+        // スタブファイルの内容を取得してファイルを生成
+        $content = $this->getStubContent('readme.plugin.stub', $placeholders);
+        file_put_contents("{$pluginDir}/README.md", $content);
 
-        $stubFile = $this->fileGenerator->getStubContent(
-            'README.plugin.stub',
-            null,
-            $stubPath,
-            $licenseInfo
-        );
-
-        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
-        $this->fileGenerator->generateFile("{$pluginDir}/README.md", $fileContent);
-
-        $this->info("README.md created for plugin.");
+        $this->info(__('command.make_plugin.files.readme'));
     }
 
 
@@ -769,7 +686,7 @@ class MakePlugin extends Command
             ]);
         }
 
-        $this->info("Plugin {$pluginName} has been installed.");
+        $this->info(__('command.make_plugin.installed', ['name' => $pluginName]));
     }
 
     /**
@@ -783,9 +700,9 @@ class MakePlugin extends Command
         if ($plugin) {
             $plugin->update(['status' => 1]);
             $this->createPluginSymlink($plugin->directory);
-            $this->info("Plugin '{$pluginName}' has been enabled.");
+            $this->info(__('command.make_plugin.enabled', ['name' => $pluginName]));
         } else {
-            $this->error("Plugin '{$pluginName}' not found in the database.");
+            $this->error(__('command.make_plugin.not_found', ['name' => $pluginName]));
         }
     }
 
@@ -804,7 +721,7 @@ class MakePlugin extends Command
             }
             symlink($target, $link);
         } else {
-            $this->warn("No assets directory found for plugin '{$pluginDirName}'.");
+            $this->warn(__('command.make_plugin.no_assets', ['name' => $pluginDirName]));
         }
     }
 }

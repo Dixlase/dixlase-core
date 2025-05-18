@@ -26,72 +26,131 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use App\Services\FileGenerator;
 use App\Console\Traits\MakeProviderTrait;
-use App\Console\Traits\PluginManagementTrait;
+use App\Console\Traits\MakePluginCommandTrait;
 use App\Console\Traits\MakeLicenseTrait;
 use Illuminate\Support\ServiceProvider;
 
 class MakePluginProvider extends Command
 {
-
     use MakeProviderTrait;
-    use PluginManagementTrait;
+    use MakePluginCommandTrait;
     use MakeLicenseTrait;
 
+    /**
+     * コンソールコマンドのシグネチャ
+     *
+     * @var string
+     */
+    protected $signature;
 
-    protected $signature = 'make:plugin:provider
-        {plugin : The plugin name (e.g. "MyPlugin")}
-        {name : The name of the service provider (e.g. "MyPluginServiceProvider")}
-        {--plugin : Use the plugin-specific provider template (provider.plugin.stub)}
-        {--force : Overwrite if provider already exists}';
+    /**
+     * コンソールコマンドの名前
+     *
+     * @var string
+     */
+    protected $name = 'make:plugin:provider';
 
-    protected $description = 'Create a new service provider for the specified plugin.';
+    /**
+     * コンソールコマンドの説明
+     *
+     * @var string
+     */
+    protected $description = 'プラグイン用の新しいサービスプロバイダを作成します';
 
-    protected FileGenerator $fileGenerator;
+    /**
+     * 生成するクラスのタイプ
+     *
+     * @var string
+     */
+    protected $type = 'Provider';
 
-    public function __construct(FileGenerator $fileGenerator)
+    /**
+     * Create a new command instance.
+     *
+     * @return void
+     */
+    public function __construct()
     {
+
+        $this->signature = $this->makeSignature($this->name, $this->getAdditionalOptions());
         parent::__construct();
-        $this->fileGenerator = $fileGenerator;
-    }
-
-    public function handle()
-    {
-        // 1) plugin & provider
-        $pluginName = $this->argument('plugin'); // e.g. "MyPlugin"
-        $className   = $this->argument('name');   // e.g. "MyPluginServiceProvider"
-        $force       = (bool) $this->option('force');
-
-        // ✅ `PluginLicenseTrait` を使ってライセンス情報を取得
-        $licenseInfo = $this->getPluginLicenseInfo($pluginName);
-        if (!$licenseInfo) {
-            return Command::FAILURE; // ライセンスが取得できなかったら処理を中止
-        }
-
-
-        // 2) parseClassName → subDirs + finalClass
-        //    もし "Admin/MyProvider" のようにsubDirsを使うなら:
-        [$subDirs, $finalClass] = $this->fileGenerator->parseClassName($className);
-
-        // 3) Traitの makeFile
-        //    => (className, subDirs, force, pluginStub)
-        $this->makeFile($finalClass, $subDirs, $force, true, $licenseInfo);
-
-        // 4) addProviderToBootstrapFile (Laravel 11+ オプション)
-        $this->addProviderToBootstrap($pluginName, $subDirs, $finalClass);
-
-        return 0;
     }
 
     /**
-     * ServiceProvider::addProviderToBootstrapFile()を使って
-     * "bootstrap/providers.php" にプロバイダを登録したい場合
+     * コンソールコマンドを実行します。
+     *
+     * @return int
      */
-    protected function addProviderToBootstrap(
-        string $pluginName,
-        array $subDirs,
-        string $className
-    ): void {
-        // "Plugins\MyPlugin\App\Providers" + subDirs
+    public function handle()
+    {
+        // 共通の初期化処理を実行
+        $commonInit = $this->initializePluginCommand($this->argument('className'));
+        if (!$commonInit) {
+            return Command::FAILURE;
+        }
+
+        // ファイルを生成
+        return $this->makePluginFile($commonInit, $this->collectOptions())
+            ? Command::SUCCESS
+            : Command::FAILURE;
+    }
+
+
+    /**
+     * Get the default namespace for the class.
+     *
+     * @param  string  $rootNamespace
+     * @return string
+     */
+    protected function getDefaultNamespace($rootNamespace)
+    {
+        return $rootNamespace . '\\App\\Providers';
+    }
+
+    /**
+     * Get the destination class path.
+     *
+     * @param  string  $name
+     * @return string
+     */
+    protected function getPath($name)
+    {
+        $name = Str::replaceFirst($this->rootNamespace(), '', $name);
+        return $this->laravel['path'] . '/' . str_replace('\\', '/', $name) . '.php';
+    }
+
+    /**
+     * プロバイダーのディレクトリパスを取得します。
+     *
+     * @param  array  $subDirs サブディレクトリの配列
+     * @return string ディレクトリパス
+     */
+    protected function getProviderDirectory(array $subDirs): string
+    {
+        return $this->getDirectory($subDirs);
+    }
+
+    /**
+     * プロバイダーの名前空間を取得します。
+     *
+     * @param  array  $subDirs サブディレクトリの配列
+     * @return string 名前空間
+     */
+    protected function getProviderNamespace(array $subDirs): string
+    {
+        return $this->getNamespace($subDirs);
+    }
+
+    /**
+     * プロバイダーをブートストラップファイルに追加します。
+     *
+     * @param  string  $pluginName プラグイン名
+     * @param  array   $subDirs    サブディレクトリの配列
+     * @param  string  $className  クラス名
+     * @return void
+     */
+    protected function addProviderToBootstrap(string $pluginName, array $subDirs, string $className): void
+    {
         $providerNamespace = $this->getProviderNamespace($subDirs);
         $qualifiedClass = $providerNamespace . '\\' . $className;
 
@@ -111,6 +170,8 @@ class MakePluginProvider extends Command
     /**
      * (B)パターン: getProviderDirectory/Namespace
      */
+
+     /*
     protected function getProviderDirectory(array $subDirs): string
     {
         $plugin = $this->argument('plugin');
@@ -120,6 +181,7 @@ class MakePluginProvider extends Command
         }
         return $base;
     }
+        
 
     protected function getProviderNamespace(array $subDirs): string
     {
@@ -130,4 +192,5 @@ class MakePluginProvider extends Command
         }
         return $base;
     }
+        */
 }

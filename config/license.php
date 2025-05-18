@@ -36,4 +36,9 @@ return [
         'custom' => 'license-templates/license-custom.txt',
         'none' => '',
     ],
+    'defaults' => [
+        'software' => 'Dixlase',
+        'author' => 'MyNameOrCompany',
+        'website' => 'https://companyname.com',
+    ],
 ];

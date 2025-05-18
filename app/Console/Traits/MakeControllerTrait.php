@@ -36,8 +36,24 @@ trait MakeControllerTrait
     use MakeFileTrait;
     use MakeLicenseTrait;
 
-    protected $options = [];
-    protected $namespace = '';
+    /**
+     * コントローラーコマンドの共通オプション定義
+     *
+     * @return array
+     */
+    protected function getAdditionalOptions(): array
+    {
+        return [
+            '{--invokable} ' . __('commands.make.options.invokable'),
+            '{--model=} ' . __('commands.make.options.model'),
+            '{--parent=} ' . __('commands.make.options.parent'),
+            '{--resource} ' . __('commands.make.options.resource'),
+            '{--requests} ' . __('commands.make.options.requests'),
+            '{--api} ' . __('commands.make.options.api'),
+            '{--singleton} ' . __('commands.make.options.singleton'),
+            '{--creatable} ' . __('commands.make.options.creatable'),
+        ];
+    }
 
     /**
      * コントローラを作成するメイン処理。
@@ -58,31 +74,36 @@ trait MakeControllerTrait
         string $pluginName = '', //プラグイン名
         array $licenseInfo = [], //ライセンス情報
     ): void {
-
         $this->options = $options;
 
         // コントローラのスタブファイルを生成
         $stub = $this->renderStub($options['scope'] ?? 'plain', $options);
+        
         // `makeFiler` を実行して、コントローラを生成
-        $this->makeFiler($className, $fileType, 'Controllers', $options, $subDirs, $stub, $pluginName, [], $licenseInfo);
+        $this->makeFiler($className, $fileType, 'controllers', $options, $subDirs, $stub, $pluginName, [], $licenseInfo);
     }
 
 
     protected function renderStub(string $scope = 'plain', array $options = []): string
     {
-
         // コントローラのベースとなるスタブを取得
         $base = file_get_contents(base_path('stubs/custom/fragments/controller.base.stub'));
 
-        $headParts = [];
-        $useParts = [];
-        $bodyParts = [];
+        $scopeHead = '';
+        $scopeUse = '';
+        $scopeConstruct = '';
 
         if (in_array($scope, ['admin', 'front'])) {
             $scopeHead = $this->getFragment("{$scope}.head") ?? '';
             $scopeUse = $this->getFragment("{$scope}.use") ?? '';
             $scopeConstruct = $this->getFragment("{$scope}.construct") ?? '';
         }
+
+
+        $headParts = [];
+        $useParts = [];
+        $bodyParts = [];
+
 
         // オプションに応じてフラグメントを追加
         foreach (['model', 'parent', 'resource', 'requests', 'api', 'singleton', 'creatable', 'invokable'] as $opt) {

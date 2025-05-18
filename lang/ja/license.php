@@ -1,7 +1,6 @@
 <?php
 
 return [
-    'prompt' => 'ライセンスを選択してください',
     'labels' => [
         'GPL-3.0'        => 'GPL-3.0',
         'AGPL-3.0'       => 'AGPL-3.0',

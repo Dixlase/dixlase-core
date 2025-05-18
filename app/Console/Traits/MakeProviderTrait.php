@@ -22,58 +22,149 @@
 
 namespace App\Console\Traits;
 
+use Illuminate\Support\Facades\Artisan;
+
 /**
- * サービスプロバイダ作成用の追加ロジック。
- * -> MakeFileTrait を use してファイル生成を共通化。
+ * プロバイダー作成用トレイト
+ * MakeModelTrait と同じパターンに従う
  */
 trait MakeProviderTrait
 {
     use MakeFileTrait;
 
     /**
-     * プロバイダを作成するメイン処理。
-     *
-     * @param  string  $className
-     * @param  array   $subDirs
-     * @param  bool    $force
-     * @param  bool    $pluginStub  // plugin固有のスタブを使うかどうか (例: provider.plugin.stub)
+     * プロバイダー固有のオプション定義
      */
-    protected function makeFile(
-        string $className,
-        array $subDirs,
-        bool $force,
-        bool $pluginStub = false,
-        array $licenseInfo = []
-    ): void {
-        // 1) stubファイルを決定
-        //    provider.stub or provider.plugin.stub
-        $stubFile = $pluginStub ? 'provider.plugin.stub' : 'provider.stub';
+    protected $providerSpecificOptions = [
+        '{--plugin : プラグイン用のテンプレートを使用します}',
+        '{--scope= : プロバイダーのスコープ（例: plain, auth, event）}',
+    ];
 
-        //プロバイダ固有の追加プレースホルダ (なければ空)
-        $extraPlaceholders = [
-            '{{ license }}' => $this->fileGenerator->getLicenseForPhp($licenseInfo),
-        ];
+    protected $providerOptions;
 
-        // 4) makeFiler
-        $this->makeFiler($className, $subDirs, ['force' => $force], $stubFile, $extraPlaceholders, $licenseInfo);
+    public static function bootMakeProviderTrait()
+    {
+        $providerOptions = array_merge(
+            ['{className : サービスプロバイダの名前（例: MyPluginServiceProvider）}'],
+            static::$commonOptions,
+            static::$providerSpecificOptions
+        );
     }
 
     /**
-     * (B)パターン: getDirectory(), getNamespace() => getProviderDirectory/Namespace
+     * 新しいサービスプロバイダーを作成します。
+     *
+     * @param  string  $className  クラス名
+     * @param  string  $fileType   ファイルタイプ
+     * @param  array   $options    オプション配列
+     * @param  array   $subDirs    サブディレクトリ配列
+     * @param  string  $pluginName プラグイン名
+     * @param  array   $licenseInfo ライセンス情報
+     * @return void
+     */
+    protected function makeFile(
+        string $className,
+        string $fileType,
+        array $options,
+        array $subDirs,
+        string $pluginName = '',
+        array $licenseInfo = []
+    ): void {
+        // 1) スタブファイルを決定
+        $stubFile = $this->renderStub($options);
+
+        // 2) プレースホルダーを準備
+        $extraPlaceholders = $this->prepareProviderPlaceholders($licenseInfo);
+
+        // 3) ファイルを生成
+        $this->makeFiler(
+            $className,
+            $fileType,
+            'providers',
+            $options,
+            $subDirs,
+            $stubFile,
+            $pluginName,
+            $extraPlaceholders,
+            $licenseInfo
+        );
+    }
+
+    /**
+     * オプションに基づいて適切なスタブファイルを取得します。
+     *
+     * @param  array  $options オプション配列
+     * @return string スタブファイル名
+     */
+    protected function renderStub(array $options): string
+    {
+        return $options['plugin'] ?? false 
+            ? 'provider.plugin.stub' 
+            : 'provider.stub';
+    }
+    /**
+     * プロバイダー用のプレースホルダーを準備します。
+     *
+     * @param  array  $licenseInfo ライセンス情報
+     * @return array プレースホルダー配列
+     */
+    protected function prepareProviderPlaceholders(array $licenseInfo = []): array
+    {
+        return [
+            '{{ license }}' => isset($this->fileGenerator) 
+                ? $this->fileGenerator->getLicenseForPhp($licenseInfo) 
+                : ''
+        ];
+    }
+
+    /**
+     * プロバイダー固有の追加オプションを取得
+     *
+     * @return array
+     */
+    protected function getAdditionalOptions(): array
+    {
+        return [
+            'plugin' => true, // プラグインプロバイダーの場合は常に true
+            //'scope' => $this->option('scope', 'plain'),
+        ];
+    }
+
+    /**
+     * プロバイダーのディレクトリパスを取得します。
+     * 
+     * @param  array  $subDirs サブディレクトリ配列
+     * @return string ディレクトリパス
      */
     protected function getDirectory(array $subDirs): string
     {
         return $this->getProviderDirectory($subDirs);
     }
 
+    /**
+     * プロバイダーの名前空間を取得します。
+     * 
+     * @param  array  $subDirs サブディレクトリ配列
+     * @return string 名前空間
+     */
     protected function getNamespace(array $subDirs): string
     {
         return $this->getProviderNamespace($subDirs);
     }
 
     /**
-     * サブクラスで実装
+     * プロバイダーのディレクトリパスを取得します（このトレイトを使用するクラスで実装が必要）
+     * 
+     * @param  array  $subDirs サブディレクトリ配列
+     * @return string ディレクトリパス
      */
     abstract protected function getProviderDirectory(array $subDirs): string;
+    
+    /**
+     * プロバイダーの名前空間を取得します（このトレイトを使用するクラスで実装が必要）
+     * 
+     * @param  array  $subDirs サブディレクトリ配列
+     * @return string 名前空間
+     */
     abstract protected function getProviderNamespace(array $subDirs): string;
 }

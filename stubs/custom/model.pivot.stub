@@ -3,6 +3,7 @@
 {{ license }}
 
 namespace {{ namespace }};
+
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class {{ class }} extends Pivot
