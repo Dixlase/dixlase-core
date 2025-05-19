@@ -374,8 +374,8 @@ trait MakeFileTrait
         // スコープを取得（例: admin, front, plain）
         $scopeStudly = $scope !== 'plain' ? ucfirst($scope) : '';
 
-        // スコープをサブディレクトリに追加（plain の場合は除外）
-        if ($scopeStudly) {
+        // スコープをサブディレクトリに追加（plain の場合は除外、かつまだ追加されていない場合のみ）
+        if ($scopeStudly && (empty($subDirs) || $subDirs[0] !== $scopeStudly)) {
             array_unshift($subDirs, $scopeStudly);
         }
 

@@ -53,11 +53,25 @@ class MakeCustomModel extends Command
             return Command::FAILURE;
         }
 
-        // ファイル生成        
+
+
+        // 関連ファイルの作成
+        $success = $this->handleModelOptions(
+            $this->argument('className'),
+            $this->options(),
+            $commonInit['fileType'],
+            $commonInit['subDirs'],
+            $commonInit['pluginName'] ?? ''
+        );
+
+
+        if (!$success) {
+            return Command::FAILURE;
+        }
+
+        // モデルのファイル生成
         return $this->makeCustomFile($commonInit, $this->option())
             ? Command::SUCCESS
             : Command::FAILURE;
     }
-
-    
 }

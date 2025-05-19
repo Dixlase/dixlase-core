@@ -60,7 +60,14 @@ trait MakePluginCommandTrait
         $licenseInfo = $this->getPluginLicenseInfo($pluginName) ?? [];
 
         // fileTypeは常に'plugin'
-        return ['plugin', $pluginName, $scope, $className, $subDirs, $licenseInfo];
+        return [
+            'fileType' => 'plugin',
+            'pluginName' => $pluginName,
+            'scope' => $scope,
+            'className' => $className,
+            'subDirs' => $subDirs,
+            'licenseInfo' => $licenseInfo
+        ];
     }
 
     /**
@@ -72,7 +79,13 @@ trait MakePluginCommandTrait
      */
     protected function makePluginFile(array $commonInit, array $options): bool
     {
-        [$fileType, $pluginName, $scope, $className, $subDirs, $licenseInfo] = $commonInit;
+        // 連想配列から値を取得
+        $fileType = $commonInit['fileType'];
+        $pluginName = $commonInit['pluginName'];
+        $scope = $commonInit['scope'];
+        $className = $commonInit['className'];
+        $subDirs = $commonInit['subDirs'];
+        $licenseInfo = $commonInit['licenseInfo'];
 
         // オプションにスコープを追加
         $options = array_merge($options, ['scope' => $scope]);
@@ -80,7 +93,7 @@ trait MakePluginCommandTrait
         // ファイル生成
         $this->makeFile(
             $className,
-            'plugin', // プラグイン用のファイルタイプ
+            $fileType, // プラグイン用のファイルタイプ
             $options,
             $subDirs,
             $pluginName,
