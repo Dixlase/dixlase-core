@@ -45,8 +45,11 @@ trait MakeModelTrait
             '{--controller : ' . __("command.make.options.controller") . '}',
             '{--factory : ' . __("command.make.options.factory") . '}',
             '{--migration : ' . __("command.make.options.migration") . '}',
+            '{--morph-pivot : ' . __("command.make.options.morph-pivot") . '}',
             '{--policy : ' . __("command.make.options.policy") . '}',
             '{--seed : ' . __("command.make.options.seed") . '}',
+            '{--pivot : ' . __("command.make.options.pivot") . '}',
+            '{--resource : ' . __("command.make.options.resource") . '}',
             '{--api : ' . __("command.make.options.api") . '}',
             '{--requests : ' . __("command.make.options.requests") . '}',
         ];
@@ -63,28 +66,28 @@ trait MakeModelTrait
      * @param  bool    $morphPivot    --morph-pivot
      * @return void
      */
-    protected function makeFile(
-        string $className,
-        string $fileType,
-        array $options,
-        array $subDirs,
-        string $pluginName = '',
-        array $licenseInfo = []
-    ): void {
-        // モデル用 stubの選択
-        $stubFile = $this->renderStub($options['scope'] ?? 'plain', $options);
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '')
+    {
+        // スタブの取得
+        $stubPath = $this->getStub();
+        $stub = file_exists($stubPath) ? file_get_contents($stubPath) : $this->renderStub('model', $options);
+        
+        // ファクトリー関連の置換を追加
+        $factoryReplacements = $this->buildFactoryReplacements($className, $fileType, $subDirs, $pluginName);
+        
+        $this->info(print_r($subDirs));
 
         // ファイル生成
-        $this->makeFiler(
+        return $this->makeFiler(
             $className,
             $fileType,
             'models',
             $options,
             $subDirs,
-            $stubFile,
+            $stub,
             $pluginName,
-            [],  // プレースホルダー
-            $licenseInfo
+            $factoryReplacements,
+            $this->getFileTypeLicenseInfo($fileType, $pluginName)
         );
     }
 
@@ -113,73 +116,185 @@ trait MakeModelTrait
         return File::get($stubPath);
     }
 
-    // 以下、createFactory, createMigration, createSeeder, createController, createFormRequests, createPolicy は
-    // plugin版とほぼ同じ。 "make:plugin::factory" → "make:custom:factory" などに置き換える。
-
-    protected function createFactory(string $modelFqcn)
+    
+    /**
+     * Handle model creation and related files
+     *
+     * @param string $className
+     * @param array $options
+     * @param string $fileType
+     * @param array $subDirs
+     * @param string $pluginName
+     * @return bool
+     */
+    protected function handleModelOptions($className, $options, $fileType, $subDirs = [], $pluginName = '')
     {
-        $modelBase = class_basename($modelFqcn);
-        $factoryName = "{$modelBase}Factory";
+        // Handle related files based on options
+        if ($this->option('all')) {
+            $this->input->setOption('factory', true);
+            $this->input->setOption('seed', true);
+            $this->input->setOption('migration', true);
+            $this->input->setOption('controller', true);
+            $this->input->setOption('policy', true);
+            $this->input->setOption('resource', true);
+        }
 
+        if ($this->option('factory')) {
+            $this->createFactory($className, $fileType, $subDirs, $pluginName);
+        }
+
+        if ($this->option('migration')) {
+            $this->createMigration($className, $fileType, $subDirs, $pluginName);
+        }
+
+        if ($this->option('seed')) {
+            $this->createSeeder($className, $fileType, $subDirs, $pluginName);
+        }
+
+        if ($this->option('controller') || $this->option('resource') || $this->option('api')) {
+            $this->createController($className, $fileType, $subDirs, $pluginName);
+        } elseif ($this->option('requests')) {
+            $this->createFormRequests($className, $fileType, $subDirs, $pluginName);
+        }
+
+        if ($this->option('policy')) {
+            $this->createPolicy($className, $fileType, $subDirs, $pluginName);
+        }
+
+        return true;
+    }
+
+    /**
+     * Create a factory for the model
+     */
+    protected function createFactory($className, $fileType, $subDirs, $pluginName = '')
+    {
+        $factoryName = $className . 'Factory';
         $this->call('make:custom:factory', [
-            'name'   => $factoryName,
-            '--model' => $modelFqcn,
-            '--force' => false,
+            'name' => $factoryName,
+            '--model' => $this->qualifyModel($className, $fileType, $subDirs, $pluginName),
         ]);
     }
 
-    protected function createMigration(string $className, bool $isPivot = false)
+    /**
+     * Create a migration for the model
+     */
+    protected function createMigration($className, $fileType, $subDirs, $pluginName = '')
     {
-        $table = Str::snake(Str::pluralStudly($className));
-        if ($isPivot) {
+        $table = Str::snake(Str::pluralStudly(class_basename($className)));
+
+        if ($this->option('pivot')) {
             $table = Str::singular($table);
         }
-        $migrationName = "create_{$table}_table";
 
         $this->call('make:custom:migration', [
-            'name'   => $migrationName,
+            'name' => "create_{$table}_table",
             '--create' => $table,
         ]);
     }
 
-    protected function createSeeder(string $className)
+    /**
+     * Create a seeder for the model
+     */
+    protected function createSeeder($className, $fileType, $subDirs, $pluginName = '')
     {
-        $seeder = Str::studly($className) . 'Seeder';
+        $seeder = class_basename($className) . 'Seeder';
         $this->call('make:custom:seeder', [
-            'name'  => $seeder,
+            'name' => $seeder,
         ]);
     }
 
-    protected function createController(string $modelFqcn)
+    /**
+     * Create a controller for the model
+     */
+    protected function createController($className, $fileType, $subDirs, $pluginName = '')
     {
-        $ctrlName = class_basename($modelFqcn) . 'Controller';
+        $controllerName = class_basename($className) . 'Controller';
+        $modelName = $this->qualifyModel($className, $fileType, $subDirs, $pluginName);
+
         $this->call('make:custom:controller', array_filter([
-            'name'   => $ctrlName,
-            '--model' => ($this->option('api') || $this->option('resource')) ? $modelFqcn : null,
-            '--api'  => $this->option('api'),
+            'name' => $controllerName,
+            '--model' => $this->option('resource') || $this->option('api') ? $modelName : null,
+            '--api' => $this->option('api'),
             '--requests' => $this->option('requests') || $this->option('all'),
             '--resource' => $this->option('resource'),
         ]));
     }
 
-    protected function createFormRequests(string $className)
+    /**
+     * Create form request classes for the model
+     */
+    protected function createFormRequests($className, $fileType, $subDirs, $pluginName = '')
     {
-        $basename = Str::studly($className);
+        $requestName = class_basename($className) . 'Request';
         $this->call('make:custom:request', [
-            'name'   => 'Store' . $basename . 'Request',
+            'name' => 'Store' . $requestName,
         ]);
         $this->call('make:custom:request', [
-            'name'   => 'Update' . $basename . 'Request',
+            'name' => 'Update' . $requestName,
         ]);
     }
 
-    protected function createPolicy(string $modelFqcn)
+    /**
+     * Create a policy for the model
+     */
+    protected function createPolicy($className, $fileType, $subDirs, $pluginName = '')
     {
-        $policy = class_basename($modelFqcn) . 'Policy';
+        $policyName = class_basename($className) . 'Policy';
         $this->call('make:custom:policy', [
-            'name'  => $policy,
-            '--model' => $modelFqcn,
+            'name' => $policyName,
+            '--model' => $this->qualifyModel($className, $fileType, $subDirs, $pluginName),
         ]);
     }
-    
+
+    /**
+     * Get the stub file for the model
+     */
+    protected function getStub($options = [])
+    {
+        if ($this->option('pivot')) {
+            return __DIR__ . '/stubs/model.pivot.stub';
+        }
+
+        if ($this->option('morph-pivot')) {
+            return __DIR__ . '/stubs/model.morph-pivot.stub';
+        }
+
+        return __DIR__ . '/stubs/model.stub';
+    }
+
+    /**
+     * Build the replacements for a factory
+     */
+    protected function buildFactoryReplacements($className, $fileType, $subDirs, $pluginName = '')
+    {
+        $replacements = [];
+
+        if ($this->option('factory') || $this->option('all')) {
+            $modelPath = $this->qualifyModel($className, $fileType, $subDirs, $pluginName);
+            $factoryNamespace = 'Database\\Factories\\' . class_basename($className) . 'Factory';
+
+            $factoryCode = <<<EOT
+            /** @use HasFactory<{$factoryNamespace}> */
+                use HasFactory;
+            EOT;
+
+            $replacements['factory'] = $factoryCode;
+            $replacements['factoryImport'] = 'use Illuminate\\Database\\Eloquent\\Factories\\HasFactory;';
+        } else {
+            $replacements['factory'] = '//';
+            $replacements['factoryImport'] = '';
+        }
+
+        return $replacements;
+    }
+
+    /**
+     * Qualify the given model class base name
+     */
+    protected function qualifyModel($className, $fileType, $subDirs, $pluginName = '')
+    {
+        $namespace = $this->getNamespace($fileType, $pluginName, 'model', $subDirs);
+        return $namespace . '\\' . $className;
+    }
 }

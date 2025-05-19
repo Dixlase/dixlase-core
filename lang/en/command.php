@@ -69,7 +69,7 @@ return [
 
     'license' => [
         'prompt' => 'Please select a license (press Enter without input to select no license)',
-        'using_custom_license' => 'Using custom license: :license',
+        'using_custom_license' => 'Using license for custom directory : :license',
         'failed_to_read_license' => 'Failed to read custom license file: :error',
         'warnings' => [
             'plugin_missing' => '⚠️ License info for plugin [:plugin] not found. License header will be skipped.',

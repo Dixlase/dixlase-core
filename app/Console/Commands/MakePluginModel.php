@@ -56,9 +56,33 @@ class MakePluginModel extends Command
             return Command::FAILURE;
         }
 
-        // ファイル生成
-        return $this->makePluginFile($commonInit, $this->option())
+        // 関連ファイルの作成
+        $success = $this->handleModelOptions(
+            $commonInit['className'],
+            $this->options(),
+            'plugin',
+            $commonInit['subDirs'],
+            $commonInit['pluginName']
+        );
+
+        // モデルファイルの生成
+        return $this->makePluginFile($commonInit, $this->options())
             ? Command::SUCCESS
             : Command::FAILURE;
+
+
+        // ファイル生成
+        /*
+        return $this->makeFile(
+            $commonInit['className'],
+            'plugin',
+            $this->options(),
+            $commonInit['subDirs'],
+            $commonInit['pluginName'],
+            $this->getFileTypeLicenseInfo('plugin', $commonInit['pluginName'])
+        )
+        ? Command::SUCCESS
+        : Command::FAILURE;
+        */
     }
 }

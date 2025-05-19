@@ -55,7 +55,14 @@ trait MakeCustomCommandTrait
         // ライセンス取得
         $licenseInfo = $this->getFileTypeLicenseInfo($fileType, $pluginName);
 
-        return [$fileType, $pluginName, $scope, $className, $subDirs, $licenseInfo];
+        return [
+            'fileType' => $fileType,
+            'pluginName' => $pluginName,
+            'scope' => $scope,
+            'className' => $className,
+            'subDirs' => $subDirs,
+            'licenseInfo' => $licenseInfo
+        ];
     }
 
     /**
@@ -63,11 +70,17 @@ trait MakeCustomCommandTrait
      *
      * @param array $commonInit initializeCustomCommandの結果
      * @param array $options オプション
-     * @return bool 成功したかどうか
+     * @return int 成功したかどうか
      */
-    protected function makeCustomFile(array $commonInit, array $options): bool
+    protected function makeCustomFile(array $commonInit, array $options): int
     {
-        [$fileType, $pluginName, $scope, $className, $subDirs, $licenseInfo] = $commonInit;
+        // 連想配列から値を取得
+        $fileType = $commonInit['fileType'];
+        $pluginName = $commonInit['pluginName'];
+        $scope = $commonInit['scope'];
+        $className = $commonInit['className'];
+        $subDirs = $commonInit['subDirs'];
+        $licenseInfo = $commonInit['licenseInfo'];
 
         // オプションにスコープを追加
         $options = array_merge($options, ['scope' => $scope]);
