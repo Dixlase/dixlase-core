@@ -40,17 +40,24 @@ trait MakePluginCommandTrait
      * @param string $classPath クラスパス
      * @return array|false [$fileType, $pluginName, $scope, $className, $subDirs, $licenseInfo] または false
      */
-    protected function initializePluginCommand(string $classPath)
+    protected function initializePluginCommand(string $classPath, string $pluginName = null, $scope = null)
     {
         // プラグイン選択
-        $pluginName = $this->choosePlugin();
+        if(!$pluginName){
+            $pluginName = $this->choosePlugin();
+        }
+
         if (!$pluginName) {
             $this->error(__('command.plugin.not_found'));
             return false;
         }
 
-        // スコープの選択
-        $scope = $this->chooseScope();
+        // コントローラ作成時のみスコープの選択を行う
+        if (!$scope && $this instanceof \App\Console\Commands\MakePluginController) {
+            $scope = $this->chooseScope();
+        }
+
+        
 
         // パス情報の分解
         [$className, $subDirs] = $this->parseClassPath($classPath, $scope);
@@ -77,18 +84,22 @@ trait MakePluginCommandTrait
      * @param array $options オプション
      * @return bool 成功したかどうか
      */
-    protected function makePluginFile(array $commonInit, array $options): bool
+    protected function makePluginFile(array $common, array $options): bool
     {
         // 連想配列から値を取得
-        $fileType = $commonInit['fileType'];
-        $pluginName = $commonInit['pluginName'];
-        $scope = $commonInit['scope'];
-        $className = $commonInit['className'];
-        $subDirs = $commonInit['subDirs'];
-        $licenseInfo = $commonInit['licenseInfo'];
-
-        // オプションにスコープを追加
-        $options = array_merge($options, ['scope' => $scope]);
+        $fileType = $common['fileType'];
+        $pluginName = $common['pluginName'];
+        $className = $common['className'];
+        $subDirs = $common['subDirs'];
+        $licenseInfo = $common['licenseInfo'];
+        $category = $common['category'] ?? 'default';
+        
+        // カテゴリに基づいて適切なオプションを追加
+        if ($category === 'route' && isset($common['routeType'])) {
+            $options = array_merge($options, ['routeType' => $common['routeType']]);
+        } elseif (isset($common['scope'])) {
+            $options = array_merge($options, ['scope' => $common['scope']]);
+        }
 
         // ファイル生成
         $this->makeFile(

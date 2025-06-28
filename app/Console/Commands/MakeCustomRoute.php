@@ -23,45 +23,54 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
 use App\Console\Traits\MakeRouteTrait;
-use App\Services\FileGenerator;
+use App\Console\Traits\MakeCustomCommandTrait;
+
 
 class MakeCustomRoute extends Command
 {
     use MakeRouteTrait;
+    use MakeCustomCommandTrait;
 
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'make:custom:route {name}';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
+    protected $signature;
+
     protected $description = 'Create a new route file in the custom directory';
 
-    public function __construct(FileGenerator $fileGenerator)
+    public function __construct()
     {
+        $this->signature = $this->makeSignature('make:custom:route', $this->getAdditionalOptions());
         parent::__construct();
-        $this->fileGenerator = $fileGenerator;
     }
 
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
-        $name = Str::studly($this->argument('name'));
+        // ルートファイル用の初期化処理
+        $common = $this->initializeRouteCommand($this->argument('className'));
+        if (!$common) {
+            return Command::FAILURE;
+        }
 
-        $directory = base_path("custom/routes");
-        $namespace = "Custom\\Routes";
+        // オプションを取得
+        $options = $this->options();
 
-        // ルートファイルを作成
-        $this->makeRouteFile($name, $directory, $namespace, 'routes.custom.stub');
+        // 関連ファイルの作成
+        $handleOptions = $this->handleOptions(
+            $this->argument('className'),
+            $options,
+            $common['fileType'],
+            $common['subDirs'],
+            $common['pluginName'] ?? ''
+        );
+
+        // 関連ファイルの作成に失敗した場合は、コマンドを終了
+        if (!$handleOptions) {
+            return Command::FAILURE;
+        }
+
+        // ルートファイルの生成
+        return $this->makeCustomFile($common, $options)
+            ? Command::SUCCESS
+            : Command::FAILURE;
     }
 }

@@ -75,8 +75,6 @@ trait MakeModelTrait
         // ファクトリー関連の置換を追加
         $factoryReplacements = $this->buildFactoryReplacements($className, $fileType, $subDirs, $pluginName);
         
-        $this->info(print_r($subDirs));
-
         // ファイル生成
         return $this->makeFiler(
             $className,
@@ -127,7 +125,7 @@ trait MakeModelTrait
      * @param string $pluginName
      * @return bool
      */
-    protected function handleModelOptions($className, $options, $fileType, $subDirs = [], $pluginName = '')
+    protected function handleOptions($className, $options, $fileType, $subDirs = [], $pluginName = '')
     {
         // Handle related files based on options
         if ($this->option('all')) {

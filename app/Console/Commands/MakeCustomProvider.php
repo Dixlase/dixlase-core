@@ -27,80 +27,66 @@ use Illuminate\Support\Str;
 use App\Services\FileGenerator;
 use App\Console\Traits\MakeProviderTrait;
 use App\Console\Traits\MakeLicenseTrait;
+use App\Console\Traits\MakeCustomCommandTrait;
 
 class MakeCustomProvider extends Command
 {
     use MakeProviderTrait;
     use MakeLicenseTrait;
+    use MakeCustomCommandTrait;
 
-
-    protected $signature = 'make:custom:provider
-        {name : The name of the service provider (with optional subfolders, e.g. Admin/MyServiceProvider)}
-        {--license= : Specify the license (e.g. gpl, mit, apache)}
-        {--force : Overwrite if provider already exists}';
-
+    protected $signature;
 
     protected $description = 'Create a new service provider in the custom directory';
 
-    protected FileGenerator $fileGenerator;
-
-    public function __construct(FileGenerator $fileGenerator)
+    public function __construct()
     {
+        $this->signature = $this->makeSignature('make:custom:provider', $this->getAdditionalOptions());
         parent::__construct();
-        $this->fileGenerator = $fileGenerator;
     }
 
     public function handle()
     {
-        // クラス名とサブディレクトリを取得
-        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
-
-        // 2) オプションの取得
-        $force              = (bool) $this->option('force');
-        $licenseOption      = $this->option('license') ?? 'gpl'; // デフォルトは GPL-3.0
-
-        // ライセンス情報の取得
-        $licenseInfo = $this->getLicenseInfo($licenseOption);
-        if (!$licenseInfo) {
-            $this->error("ライセンス情報が取得できませんでした。処理を中止します。");
+        // クラス名を取得
+        $className = $this->argument('name');
+        
+        // 共通の初期化処理を実行
+        $common = $this->initializeCustomCommand($className);
+        if (!$common) {
             return Command::FAILURE;
         }
-
-        // `MakeProviderTrait` を使用してファイル作成
-        $this->makeFile($className, $subDirs, $force, false, $licenseInfo);
-
-        return 0;
-    }
-
-    /**
-     * 例: addProviderToBootstrap()
-     *  Laravel 11+ にある ServiceProvider::addProviderToBootstrapFile() 相当を使うならこんな形
-     */
-    protected function addProviderToBootstrap(string $className, array $subDirs): void
-    {
-        $qualifiedClass = $this->getProviderNamespace($subDirs) . '\\' . $className;
-        // e.g. serviceProvider::addProviderToBootstrapFile($qualifiedClass, base_path('bootstrap/providers.php'))
-        // ... 省略
-    }
-
-    /**
-     * (B)パターン: getProviderDirectory, getProviderNamespace
-     */
-    protected function getProviderDirectory(array $subDirs): string
-    {
-        $base = base_path('custom/app/Providers');
-        if ($subDirs) {
-            $base .= '/' . implode('/', $subDirs);
+        
+        // プラグイン名を取得
+        $pluginName = $this->option('plugin');
+        
+        // プラグイン名が指定されている場合は、プラグインディレクトリに作成
+        if ($pluginName) {
+            $common['pluginName'] = $pluginName;
         }
-        return $base;
-    }
+        
+        // オプションをマージ
+        $options = array_merge($this->options(), [
+            'plugin' => $pluginName ?? false
+        ]);
 
-    protected function getProviderNamespace(array $subDirs): string
-    {
-        $base = 'Custom\\App\\Providers';
-        if ($subDirs) {
-            $base .= '\\' . implode('\\', $subDirs);
+        // 関連ファイルの作成
+        $handleOptions = $this->handleOptions(
+            $className,
+            $options,
+            $common['fileType'],
+            $common['subDirs'] ?? [],
+            $common['pluginName'] ?? ''
+        );
+
+        // プロバイダーのファイル生成
+        $result = $this->makeCustomFile($common, $options);
+        
+        if ($result) {
+            $this->info(__('command.custom.provider.created'));
+            return Command::SUCCESS;
         }
-        return $base;
+        
+        $this->error(__('command.custom.provider.failed'));
+        return Command::FAILURE;
     }
 }

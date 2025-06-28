@@ -87,7 +87,7 @@ trait MakeControllerTrait
     protected function renderStub(string $scope = 'plain', array $options = []): string
     {
         // コントローラのベースとなるスタブを取得
-        $base = file_get_contents(base_path('stubs/custom/fragments/controller.base.stub'));
+        $base = file_get_contents(base_path('stubs/custom/controller/controller.base.stub'));
 
         $scopeHead = '';
         $scopeUse = '';
@@ -124,13 +124,12 @@ trait MakeControllerTrait
             'use'       => $use,
             'construct' => $scopeConstruct,
             'body'      => $body,
-            'namespace' => $this->namespace ?? '',
         ]);
     }
 
     protected function getFragment(string $key): ?string
     {
-        $path = base_path("stubs/custom/fragments/controller.{$key}.stub");
+        $path = base_path("stubs/custom/controller/controller.{$key}.stub");
         return file_exists($path) ? file_get_contents($path) : null;
     }
 }

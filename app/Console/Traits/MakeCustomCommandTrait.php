@@ -46,47 +46,64 @@ trait MakeCustomCommandTrait
             return false;
         }
 
-        // スコープの選択
-        $scope = $this->chooseScope();
+        // パス情報の分解（スコープなしで一度パース）
+        [$className, $subDirs] = $this->parseClassPath($classPath, '');
 
-        // パス情報の分解
-        [$className, $subDirs] = $this->parseClassPath($classPath, $scope);
-
-        // ライセンス取得
-        $licenseInfo = $this->getFileTypeLicenseInfo($fileType, $pluginName);
-
-        return [
+        $common = [
             'fileType' => $fileType,
             'pluginName' => $pluginName,
-            'scope' => $scope,
             'className' => $className,
             'subDirs' => $subDirs,
-            'licenseInfo' => $licenseInfo
         ];
+
+        
+        // コントローラーの場合のみスコープを選択
+        
+        if (in_array('App\\Console\\Traits\\MakeControllerTrait', class_uses_recursive($this))) {
+            $scope = $this->chooseScope();
+            // スコープが選択されたら再度パス情報を分解
+            if ($scope) {
+                [$className, $subDirs] = $this->parseClassPath($classPath, $scope);
+                $common['className'] = $className;
+                $common['subDirs'] = $subDirs;
+                $common['scope'] = $scope;
+            }
+        }
+
+        // ライセンス取得
+        $common['licenseInfo'] = $this->getFileTypeLicenseInfo($fileType, $pluginName);
+
+        return  $common;
     }
+
 
     /**
      * カスタムファイルの生成処理
      *
-     * @param array $commonInit initializeCustomCommandの結果
+     * @param array $common initializeCustomCommandの結果
      * @param array $options オプション
-     * @return int 成功したかどうか
+     * @return bool 成功したかどうか
      */
-    protected function makeCustomFile(array $commonInit, array $options): int
+    protected function makeCustomFile(array $common, array $options): bool
     {
         // 連想配列から値を取得
-        $fileType = $commonInit['fileType'];
-        $pluginName = $commonInit['pluginName'];
-        $scope = $commonInit['scope'];
-        $className = $commonInit['className'];
-        $subDirs = $commonInit['subDirs'];
-        $licenseInfo = $commonInit['licenseInfo'];
-
-        // オプションにスコープを追加
-        $options = array_merge($options, ['scope' => $scope]);
+        $fileType = $common['fileType'];
+        $pluginName = $common['pluginName'];
+        $className = $common['className'];
+        $subDirs = $common['subDirs'] ?? [];
+        $licenseInfo = $common['licenseInfo'] ?? [];
+        $category = $common['category'] ?? 'default';
+        
+        // カテゴリに基づいて適切なオプションを追加
+        if ($category === 'route' && isset($common['routeType'])) {
+            $options = array_merge($options, ['routeType' => $common['routeType']]);
+        } elseif (isset($common['scope'])) {
+            $options = array_merge($options, ['scope' => $common['scope']]);
+        }
 
         // ファイルタイプを決定
         $targetFileType = $fileType === 'core' ? 'custom_core' : 'custom_plugin';
+
 
         // ファイル生成
         $this->makeFile(

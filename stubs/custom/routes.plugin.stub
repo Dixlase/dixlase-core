@@ -1,6 +1,8 @@
 <?php
 
-{{ license }}
+/**
+ * {{ license }}
+ */
 
 use Illuminate\Support\Facades\Route;
 use App\Models\SecuritySetting;
@@ -17,11 +19,10 @@ Route::middleware(['front.ip'])
 );
 
 // 管理画面のルート。 front.ipミドルウェアを適用し、IPアドレスフィルターを必ず通してください。
-//　IPアドレスフィルターを通さないとセキュリティリスクが高まります。
-Route::prefix($adminUrl)->name('admin.')
+// IPアドレスフィルターを通さないとセキュリティリスクが高まります。
+Route::prefix($adminUrl)
     ->name('{{ pluginSlug }}::admin.')
     ->middleware(['auth:member', 'admin.ip']) // 認証とIPアドレスフィルタ
     ->group(function () {
-
-    }
-);
+        // 管理画面のルートをここに定義
+    });

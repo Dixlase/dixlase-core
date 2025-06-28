@@ -44,19 +44,20 @@ class MakePluginModel extends Command
 
     public function __construct()
     {
-        $this->signature = $this->makeSignature('make:plugin:model', $this->getAdditionalOptions());
+        $this->signature = $this->makeSignature('make:plugin:model {className} {pluginName?}', $this->getAdditionalOptions());
         parent::__construct();
     }
 
     public function handle()
     {
         // 共通の初期化処理
-        $commonInit = $this->initializePluginCommand($this->argument('className'));
+        $commonInit = $this->initializePluginCommand($this->argument('className'), $this->argument('pluginName'));
         if (!$commonInit) {
             return Command::FAILURE;
         }
 
         // 関連ファイルの作成
+        /*
         $success = $this->handleModelOptions(
             $commonInit['className'],
             $this->options(),
@@ -64,25 +65,12 @@ class MakePluginModel extends Command
             $commonInit['subDirs'],
             $commonInit['pluginName']
         );
+        */
 
         // モデルファイルの生成
         return $this->makePluginFile($commonInit, $this->options())
             ? Command::SUCCESS
             : Command::FAILURE;
 
-
-        // ファイル生成
-        /*
-        return $this->makeFile(
-            $commonInit['className'],
-            'plugin',
-            $this->options(),
-            $commonInit['subDirs'],
-            $commonInit['pluginName'],
-            $this->getFileTypeLicenseInfo('plugin', $commonInit['pluginName'])
-        )
-        ? Command::SUCCESS
-        : Command::FAILURE;
-        */
     }
 }

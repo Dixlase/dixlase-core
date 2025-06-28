@@ -23,6 +23,9 @@
 namespace App\Console\Traits;
 
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
+
 
 /**
  * プロバイダー作成用トレイト
@@ -31,140 +34,116 @@ use Illuminate\Support\Facades\Artisan;
 trait MakeProviderTrait
 {
     use MakeFileTrait;
-
+    
     /**
-     * プロバイダー固有のオプション定義
+     * プロバイダー固有のオプション定義を取得
+     * 
+     * @return array
      */
-    protected $providerSpecificOptions = [
-        '{--plugin : プラグイン用のテンプレートを使用します}',
-        '{--scope= : プロバイダーのスコープ（例: plain, auth, event）}',
-    ];
-
-    protected $providerOptions;
-
-    public static function bootMakeProviderTrait()
+    protected function getAdditionalOptions(): array
     {
-        $providerOptions = array_merge(
-            ['{className : サービスプロバイダの名前（例: MyPluginServiceProvider）}'],
-            static::$commonOptions,
-            static::$providerSpecificOptions
-        );
+        return [
+            '{--plugin : ' . __("command.make.options.plugin") . '}',
+            '{--scope= : ' . __("command.make.options.scope") . '}',
+        ];
     }
-
+    
     /**
-     * 新しいサービスプロバイダーを作成します。
+     * プロバイダーを作成するメイン処理。
      *
      * @param  string  $className  クラス名
      * @param  string  $fileType   ファイルタイプ
      * @param  array   $options    オプション配列
      * @param  array   $subDirs    サブディレクトリ配列
      * @param  string  $pluginName プラグイン名
-     * @param  array   $licenseInfo ライセンス情報
-     * @return void
+     * @return bool
      */
-    protected function makeFile(
-        string $className,
-        string $fileType,
-        array $options,
-        array $subDirs,
-        string $pluginName = '',
-        array $licenseInfo = []
-    ): void {
-        // 1) スタブファイルを決定
-        $stubFile = $this->renderStub($options);
-
-        // 2) プレースホルダーを準備
-        $extraPlaceholders = $this->prepareProviderPlaceholders($licenseInfo);
-
-        // 3) ファイルを生成
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '')
+    {
+        // スタブの取得
+        $stubPath = $this->getStub($options);
+        $stub = file_exists($stubPath) ? file_get_contents($stubPath) : $this->renderStub('provider', $options);
+        
+        // プラグイン名が指定されていない場合は空文字列を使用
+        $pluginName = is_string($pluginName) ? $pluginName : '';
+        
+        // ファイル生成
         $this->makeFiler(
-            $className,
-            $fileType,
-            'providers',
-            $options,
-            $subDirs,
-            $stubFile,
-            $pluginName,
-            $extraPlaceholders,
-            $licenseInfo
+            className: $className,
+            fileType: $fileType,
+            fileCategory: 'providers',
+            options: $options,
+            subDirs: $subDirs,
+            stub: $stub,
+            pluginName: $pluginName,
+            placeholders: [],
+            licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
         );
+        
+        return true;
     }
-
-    /**
-     * オプションに基づいて適切なスタブファイルを取得します。
-     *
-     * @param  array  $options オプション配列
-     * @return string スタブファイル名
-     */
-    protected function renderStub(array $options): string
-    {
-        return $options['plugin'] ?? false 
-            ? 'provider.plugin.stub' 
-            : 'provider.stub';
-    }
-    /**
-     * プロバイダー用のプレースホルダーを準備します。
-     *
-     * @param  array  $licenseInfo ライセンス情報
-     * @return array プレースホルダー配列
-     */
-    protected function prepareProviderPlaceholders(array $licenseInfo = []): array
-    {
-        return [
-            '{{ license }}' => isset($this->fileGenerator) 
-                ? $this->fileGenerator->getLicenseForPhp($licenseInfo) 
-                : ''
-        ];
-    }
-
-    /**
-     * プロバイダー固有の追加オプションを取得
-     *
-     * @return array
-     */
-    protected function getAdditionalOptions(): array
-    {
-        return [
-            'plugin' => true, // プラグインプロバイダーの場合は常に true
-            //'scope' => $this->option('scope', 'plain'),
-        ];
-    }
-
-    /**
-     * プロバイダーのディレクトリパスを取得します。
-     * 
-     * @param  array  $subDirs サブディレクトリ配列
-     * @return string ディレクトリパス
-     */
-    protected function getDirectory(array $subDirs): string
-    {
-        return $this->getProviderDirectory($subDirs);
-    }
-
-    /**
-     * プロバイダーの名前空間を取得します。
-     * 
-     * @param  array  $subDirs サブディレクトリ配列
-     * @return string 名前空間
-     */
-    protected function getNamespace(array $subDirs): string
-    {
-        return $this->getProviderNamespace($subDirs);
-    }
-
-    /**
-     * プロバイダーのディレクトリパスを取得します（このトレイトを使用するクラスで実装が必要）
-     * 
-     * @param  array  $subDirs サブディレクトリ配列
-     * @return string ディレクトリパス
-     */
-    abstract protected function getProviderDirectory(array $subDirs): string;
     
     /**
-     * プロバイダーの名前空間を取得します（このトレイトを使用するクラスで実装が必要）
-     * 
-     * @param  array  $subDirs サブディレクトリ配列
-     * @return string 名前空間
+     * プロバイダー用のスタブを選択して取得
+     *
+     * @param  array  $options
+     * @return string
      */
-    abstract protected function getProviderNamespace(array $subDirs): string;
+
+     
+    protected function getStub($options = [])
+    {
+        $stub = $options['plugin'] ?? false 
+            ? 'provider.plugin.stub' 
+            : 'provider.stub';
+            
+        return $stub;
+    }
+    
+    
+    /**
+     * オプションに基づいて適切なスタブをレンダリングします。
+     *
+     * @param  string  $type
+     * @param  array  $options
+     * @return string
+     */
+    protected function renderStub(string $scope = 'plain', array $options = []): string
+    {
+        // プロバイダー用のスタブを選択
+        $stubName = 'provider.stub';
+        if ($options['plugin'] ?? false) {
+            $stubName = 'provider.plugin.stub';
+        }
+
+        // スタブファイルのパスを取得
+        $stubPath = config('command.custom_stub_directory') . '/' . $stubName;
+
+        // スタブファイルの内容を取得
+        return File::get($stubPath);
+    }
+    
+
+    /**
+     * プロバイダーオプションを処理します。
+     *
+     * @param  string  $className
+     * @param  array  $options
+     * @param  string  $fileType
+     * @param  array  $subDirs
+     * @param  string  $pluginName
+     * @return array
+     */
+    protected function handleOptions($className, $options, $fileType, $subDirs = [], $pluginName = '')
+    {
+        // プラグインオプションが有効な場合は、オプションに追加
+        if (!empty($pluginName)) {
+            $options['plugin'] = true;
+        }
+        
+        // その他のオプション処理が必要な場合はここに実装
+        
+        return $options;
+    }
+
 }

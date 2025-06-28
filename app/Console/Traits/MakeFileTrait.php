@@ -43,7 +43,7 @@ trait MakeFileTrait
     protected function getCommonOptions(): array
     {
         return [
-            '{className : ' . __('command.make.common.class_name') . '}',
+            //'{className : ' . __('command.make.common.class_name') . '}',
             '{--force : ' . __('command.make.common.force') . '}',
         ];
     }
@@ -118,10 +118,13 @@ trait MakeFileTrait
         array $licenseInfo = [],
     ): void {
 
+
         $scope = $options['scope'] ?? 'plain'; // スコープの取得（例: admin, front, plain）
 
         // 1. 名前空間とパスの生成
-        [$this->namespace, $this->path] = $this->getBaseNamespaceAndPath($fileType, $pluginName, $fileCategory, $scope, $subDirs);
+        $pathInfo = $this->getBaseNamespaceAndPath($fileType, $pluginName, $fileCategory, $scope, $subDirs);
+        $this->namespace = $pathInfo['full_namespace'];
+        $this->path = base_path($pathInfo['full_path']);
 
         //ライセンス情報を生成
         if (!empty($licenseInfo['template']) || !empty($licenseInfo['info'])) {
@@ -139,8 +142,8 @@ trait MakeFileTrait
 
         // 2. プレースホルダの生成
         $defaultPlaceholders = [
-            'namespacePath'     => $this->namespace,
-            'className'         => $className,
+            'namespace'     => $this->namespace,
+            'class'         => $className,
             'rootNamespace'     => app()->getNamespace(),
             'license'           => $license,
         ];
@@ -202,6 +205,7 @@ trait MakeFileTrait
      */
     protected function replacePlaceholders(string $stub, array $placeholders): string
     {
+
         foreach ($placeholders as $key => $value) {
             $stub = str_replace("{{ {$key} }}", $value, $stub);
         }
@@ -277,8 +281,18 @@ trait MakeFileTrait
     {
         $labels = __('command.file_type.labels');
         $prompt = __('command.file_type.prompt');
-
-        $selectedLabel = $this->choice($prompt, array_values($labels));
+        $labelValues = array_values($labels);
+        
+        // 表示用の選択肢をで作成。1から始まる連番
+        $displayChoices = [];
+        foreach ($labelValues as $index => $label) {
+            $displayChoices[$index + 1] = $label;
+        }
+        
+        // ユーザーに選択を促す（表示は1から始まる）
+        $selectedLabel = $this->choice($prompt, $displayChoices);
+        
+        // 選択されたラベルからファイルタイプを取得
         $fileType = array_search($selectedLabel, $labels) ?: 'core';
 
         $pluginName = '';
@@ -306,7 +320,14 @@ trait MakeFileTrait
             return null;
         }
 
-        return $this->choice(__('command.plugin.prompt'), $pluginDirs);
+        // 表示用の選択肢を1から始まる連番で作成
+        $displayChoices = [];
+        foreach ($pluginDirs as $index => $plugin) {
+            $displayChoices[$index + 1] = $plugin;
+        }
+
+        // ユーザーに選択を促す（表示は1から始まる）
+        return $this->choice(__('command.plugin.prompt'), $displayChoices);
     }
 
     /**
@@ -329,9 +350,19 @@ trait MakeFileTrait
     {
         $labels = __('command.scope.labels'); // 日本語 or 英語
         $map    = __('command.scope.map');    // 'plain' => 'スコープなし' など
-
-        $key = $this->choice(__('command.scope.prompt'), array_values($labels));
-        return array_search($key, $labels); // reverse map
+        $labelValues = array_values($labels);
+        
+        // 表示用の選択肢を1から始まる連番で作成
+        $displayChoices = [];
+        foreach ($labelValues as $index => $label) {
+            $displayChoices[$index + 1] = $label;
+        }
+        
+        // ユーザーに選択を促す（表示は1から始まる）
+        $selectedLabel = $this->choice(__('command.scope.prompt'), $displayChoices);
+        
+        // 選択されたラベルからスコープを取得
+        return array_search($selectedLabel, $labels) ?: 'plain';
     }
 
     /**
@@ -341,13 +372,18 @@ trait MakeFileTrait
      * @param string $scope スコープ（例: 'Admin'）
      * @return array [className, subDirs]
      */
-    protected function parseClassPath(string $classPath, string $scope): array
+    protected function parseClassPath(string $classPath, string $scope = null): array
     {
+
         $path = str_replace('\\', '/', $classPath);
         $parts = explode('/', $path);
         $className = array_pop($parts);
-        $subDirs = $this->applyScopeToSubDirs($parts, $scope);
 
+        if (!$scope) {
+            return [$className, $parts];
+        }
+ 
+        $subDirs = $this->applyScopeToSubDirs($parts, $scope);
         return [$className, $subDirs];
     }
 
@@ -382,46 +418,74 @@ trait MakeFileTrait
         $namespaceSubDir = implode('\\', $subDirs);
         $pathSubDir = implode('/', $subDirs);
 
-        // 設定からカテゴリごとのパスとネームスペースを取得
-        [$categoryPath, $categoryNamespace] = config('command.category_paths')[$fileCategory] ?? ['', ''];
+        // 設定からカテゴリごとの設定を取得 [path, namespace]
+        $categoryConfig = config('command.category_paths')[$fileCategory] ?? ['', ''];
+        [$basePath, $baseNamespace] = array_pad($categoryConfig, 2, '');
 
         $pluginStudly = Str::studly($pluginName);
 
-        // ファイルタイプに応じてパスを生成
+        // ファイルタイプに応じてベースパスとネームスペースを設定
         switch ($fileType) {
             case 'plugin':
                 // プラグイン用ファイル
-                $basePath = "plugins/{$pluginStudly}/app";
-                $baseNamespace = "Plugins\\{$pluginStudly}\\App";
+                $pluginStudly = Str::studly($pluginName);
+                if (empty($pluginStudly)) {
+                    throw new \RuntimeException('Plugin name is required');
+                }
+                
+                if ($fileCategory === 'providers') {
+                    // プロバイダーはプラグインのルートのapp/Providersに配置
+                    $basePath = "plugins/{$pluginStudly}/app/Providers";
+                    $baseNamespace = "Plugins\\{$pluginStudly}\\Providers";
+                } else {
+                    $basePath = "plugins/{$pluginStudly}/{$basePath}";
+                    $baseNamespace = $baseNamespace 
+                        ? "Plugins\\{$pluginStudly}\\{$baseNamespace}" 
+                        : "Plugins\\{$pluginStudly}";
+                }
                 break;
 
             case 'custom_core':
                 // コア用カスタムファイル
-                $basePath = 'custom/app';
-                $baseNamespace = 'Custom\\App';
+                $basePath = 'custom/' . $basePath;
+                $baseNamespace = $baseNamespace 
+                    ? 'Custom\\' . $baseNamespace 
+                    : 'Custom';
                 break;
 
             case 'custom_plugin':
                 // プラグイン用カスタムファイル
-                $basePath = "custom/plugins/{$pluginStudly}/app";
-                $baseNamespace = "Plugins\\{$pluginStudly}\\App";
+                $basePath = "custom/plugins/{$pluginStudly}/{$basePath}";
+                $baseNamespace = $baseNamespace 
+                    ? "Custom\\Plugins\\{$pluginStudly}\\{$baseNamespace}" 
+                    : "Custom\\Plugins\\{$pluginStudly}";
                 break;
 
             default:
-                throw new \InvalidArgumentException("Unknown file type: {$fileType}");
+                $basePath = $basePath ?: 'app';
+                $baseNamespace = $baseNamespace ?: 'App';
         }
 
-        // カテゴリーパスとサブディレクトリを結合
-        $pathParts = array_filter([$categoryPath, $pathSubDir]);
-        $namespaceParts = array_map(function($part) {
-            return str_replace('/', '\\', $part);
-        }, array_filter([$categoryNamespace, $namespaceSubDir]));
+        // サブディレクトリを追加
+        if ($pathSubDir) {
+            $basePath = rtrim($basePath, '/') . '/' . $pathSubDir;
+        }
+        if ($namespaceSubDir) {
+            $baseNamespace = rtrim($baseNamespace, '\\') . '\\' . $namespaceSubDir;
+        }
 
-        // 最終的なパスとネームスベースを生成
-        $path = base_path(rtrim($basePath . '/' . implode('/', $pathParts), '/'));
-        $namespace = rtrim($baseNamespace . '\\' . implode('\\', $namespaceParts), '\\');
+        // 先頭のバックスラッシュを削除
+        $baseNamespace = ltrim($baseNamespace, '\\');
 
-        return [$namespace, $path];
+        return [
+            'full_path' => $basePath,
+            'full_namespace' => $baseNamespace,
+            'base_path' => dirname($basePath) === '.' ? '' : dirname($basePath),
+            'base_namespace' => $baseNamespace ? '\\' . $baseNamespace : '',
+            'sub_dir' => $pathSubDir,
+            'sub_namespace' => $namespaceSubDir,
+            'file_category' => $fileCategory,
+        ];
     }
 
 

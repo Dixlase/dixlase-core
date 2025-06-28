@@ -2,13 +2,13 @@
 
 {{ license }}
 
-namespace {{ namespacePath }};
+namespace {{ namespace }};
 
 {{ factoryImport }}
 
 use Illuminate\Database\Eloquent\Model;
 
-class {{ className }} extends Model
+class {{ class }} extends Model
 {
     {{ factory }}
 }
