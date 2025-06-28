@@ -2,13 +2,13 @@
 
 {{ license }}
 
-namespace {{ namespacePath }};
+namespace {{ namespace }};
 
 use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
 {{ head }}
 
-class {{ className }} extends Controller
+class {{ class }} extends Controller
 {
 
     {{ use }}

@@ -23,52 +23,54 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
 use App\Console\Traits\MakeRouteTrait;
-use App\Services\FileGenerator;
+use App\Console\Traits\MakeFileTrait;
+use App\Console\Traits\MakePluginCommandTrait;
 
 class MakePluginRoute extends Command
 {
     use MakeRouteTrait;
+    use MakeFileTrait;
+    use MakePluginCommandTrait;
 
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'make:plugin:route {plugin} {name}';
+    protected $signature;
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Create a new route file for a plugin';
 
-    public function __construct(FileGenerator $fileGenerator)
+    public function __construct()
     {
+        $this->signature = $this->makeSignature('make:plugin:route {className} {pluginName?}', $this->getAdditionalOptions());
         parent::__construct();
-        $this->fileGenerator = $fileGenerator;
     }
 
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
-        $plugin = Str::studly($this->argument('plugin'));
-        $slug = Str::slug(Str::snake($plugin));
-        $name = Str::studly($this->argument('name'));
+        // ルートファイル用の初期化処理
+        $common = $this->initializeRouteCommand($this->argument('className'));
+        if (!$common) {
+            return Command::FAILURE;
+        }
 
-        $directory = base_path("plugins/{$plugin}/routes");
-        $namespace = "Plugins\\{$plugin}\\Routes";
+        // オプションを取得
+        $options = $this->options();
 
-        // プレースホルダにプラグインスラッグを追加
-        $placeholders = [
-            '{{ pluginSlug }}' => $slug,
-        ];
+        // 関連ファイルの作成
+        $handleOptions = $this->handleOptions(
+            $this->argument('className'),
+            $options,
+            $common['fileType'],
+            $common['subDirs'],
+            $common['pluginName'] ?? ''
+        );
 
-        // ルートファイルを作成
-        $this->makeRouteFile($name, $directory, $namespace, 'routes.plugin.stub', $placeholders);
+        // 関連ファイルの作成に失敗した場合は、コマンドを終了
+        if (!$handleOptions) {
+            return Command::FAILURE;
+        }
+
+        // ルートファイルの生成
+        return $this->makePluginFile($common, $options)
+            ? Command::SUCCESS
+            : Command::FAILURE;
     }
 }

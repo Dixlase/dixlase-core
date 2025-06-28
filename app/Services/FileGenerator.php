@@ -36,8 +36,8 @@ class FileGenerator
         $this->files = $files;
 
         // ライセンス関連の共通パスを定義
-        $this->licenseStubPath = config('console.license_txt');
-        $this->licenseConfigPath = config('console.license_json');
+        $this->licenseStubPath = config('command.license_txt');
+        $this->licenseConfigPath = config('command.license_json');
     }
 
 
@@ -110,6 +110,7 @@ class FileGenerator
     /**
      * プレースホルダを置換
      */
+    /*
     public function replacePlaceholders(string $stub, array $placeholders): string
     {
         foreach ($placeholders as $search => $replace) {
@@ -117,6 +118,7 @@ class FileGenerator
         }
         return $stub;
     }
+        */
 
 
 

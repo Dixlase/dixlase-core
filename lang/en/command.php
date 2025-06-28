@@ -102,6 +102,16 @@ EOT,
         'created' => 'created!',
     ],
     'make' => [
+        'select_route_type' => 'Select route type (1-3):',
+        'enter_route_type' => 'Enter route type (1=Web, 2=Admin, 3=API) [1]:',
+        'route_types' => [
+            'web' => 'Web',
+            'web_description' => 'For regular web pages',
+            'admin' => 'Admin',
+            'admin_description' => 'For admin panel routes',
+            'api' => 'API',
+            'api_description' => 'For API endpoints',
+        ],
         'options' => [
             'all' => 'Generate a migration, seeder, factory, policy, resource controller and form requests',
             'controller' => 'Create a new controller for the model',

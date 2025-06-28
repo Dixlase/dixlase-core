@@ -37,20 +37,6 @@ class MakePluginProvider extends Command
     use MakeLicenseTrait;
 
     /**
-     * コンソールコマンドのシグネチャ
-     *
-     * @var string
-     */
-    protected $signature;
-
-    /**
-     * コンソールコマンドの名前
-     *
-     * @var string
-     */
-    protected $name = 'make:plugin:provider';
-
-    /**
      * コンソールコマンドの説明
      *
      * @var string
@@ -63,7 +49,28 @@ class MakePluginProvider extends Command
      * @var string
      */
     protected $type = 'Provider';
-
+    
+    /**
+     * ファイルタイプ
+     *
+     * @var string
+     */
+    protected $fileType = 'provider';
+    
+    /**
+     * プラグイン名
+     *
+     * @var string
+     */
+    protected $pluginName;
+    
+    /**
+     * コマンドのシグネチャ
+     *
+     * @var string
+     */
+    protected $signature;
+    
     /**
      * Create a new command instance.
      *
@@ -71,8 +78,8 @@ class MakePluginProvider extends Command
      */
     public function __construct()
     {
-
-        $this->signature = $this->makeSignature($this->name, $this->getAdditionalOptions());
+        // 追加オプションを取得してシグネチャを構築
+        $this->signature = $this->makeSignature('make:plugin:provider {className} {pluginName?}', $this->getAdditionalOptions());
         parent::__construct();
     }
 
@@ -83,64 +90,52 @@ class MakePluginProvider extends Command
      */
     public function handle()
     {
-        // 共通の初期化処理を実行
-        $commonInit = $this->initializePluginCommand($this->argument('className'));
-        if (!$commonInit) {
+        // クラス名を取得
+        $className = $this->argument('className');
+        
+        // プラグイン名を取得（引数から）
+        $pluginName = $this->argument('pluginName');
+        
+        // 共通の初期化処理を実行（プラグイン名が指定されていない場合は選択肢から選ばせる）
+        $common = $this->initializePluginCommand($className, $pluginName);
+        if (!$common) {
             return Command::FAILURE;
         }
-
-        // ファイルを生成
-        return $this->makePluginFile($commonInit, $this->collectOptions())
-            ? Command::SUCCESS
-            : Command::FAILURE;
+        
+        // プラグイン名をプロパティに設定（引数・オプションの値があれば優先、なければ共通処理で取得した値を使用）
+        //$this->pluginName = $pluginName ?? $common['pluginName'];
+        
+        // プラグイン名が空の場合はプロンプトで入力を求める
+        if (empty($pluginName)) {
+            $this->pluginName = $this->ask('プラグイン名を入力してください');
+            
+            if (empty($this->pluginName)) {
+                $this->error('プラグイン名は必須です。');
+                return Command::FAILURE;
+            }
+        }else{
+            $this->pluginName = $pluginName;
+        }
+        
+        // 共通処理で取得したプラグイン名を上書き
+        $common['pluginName'] = $this->pluginName;
+        
+        // プロバイダーのファイル生成
+        $result = $this->makePluginFile($common, array_merge($this->options(), [
+            'pluginName' => $this->pluginName
+        ]));
+        
+        if ($result) {
+            $this->info(__('command.plugin.provider.created'));
+            return Command::SUCCESS;
+        }
+        
+        $this->error(__('command.plugin.provider.failed'));
+        return Command::FAILURE;
     }
 
-
-    /**
-     * Get the default namespace for the class.
-     *
-     * @param  string  $rootNamespace
-     * @return string
-     */
-    protected function getDefaultNamespace($rootNamespace)
-    {
-        return $rootNamespace . '\\App\\Providers';
-    }
-
-    /**
-     * Get the destination class path.
-     *
-     * @param  string  $name
-     * @return string
-     */
-    protected function getPath($name)
-    {
-        $name = Str::replaceFirst($this->rootNamespace(), '', $name);
-        return $this->laravel['path'] . '/' . str_replace('\\', '/', $name) . '.php';
-    }
-
-    /**
-     * プロバイダーのディレクトリパスを取得します。
-     *
-     * @param  array  $subDirs サブディレクトリの配列
-     * @return string ディレクトリパス
-     */
-    protected function getProviderDirectory(array $subDirs): string
-    {
-        return $this->getDirectory($subDirs);
-    }
-
-    /**
-     * プロバイダーの名前空間を取得します。
-     *
-     * @param  array  $subDirs サブディレクトリの配列
-     * @return string 名前空間
-     */
-    protected function getProviderNamespace(array $subDirs): string
-    {
-        return $this->getNamespace($subDirs);
-    }
-
+    
+    
     /**
      * プロバイダーをブートストラップファイルに追加します。
      *
@@ -167,30 +162,4 @@ class MakePluginProvider extends Command
         }
     }
 
-    /**
-     * (B)パターン: getProviderDirectory/Namespace
-     */
-
-     /*
-    protected function getProviderDirectory(array $subDirs): string
-    {
-        $plugin = $this->argument('plugin');
-        $base = base_path("plugins/{$plugin}/app/Providers");
-        if ($subDirs) {
-            $base .= '/' . implode('/', $subDirs);
-        }
-        return $base;
-    }
-        
-
-    protected function getProviderNamespace(array $subDirs): string
-    {
-        $plugin = Str::studly($this->argument('plugin'));
-        $base = "Plugins\\{$plugin}\\App\\Providers";
-        if ($subDirs) {
-            $base .= '\\' . implode('\\', $subDirs);
-        }
-        return $base;
-    }
-        */
 }

@@ -30,14 +30,27 @@ return [
     'license_txt' => base_path('license.txt'),
     'license_json' => base_path('license-info.json'),
 
-    // ファイルカテゴリごとのパスとネームスペース設定
+    // ファイルカテゴリごとのベースディレクトリと名前空間設定
+    // 形式: 'category' => [path, namespace]
     'category_paths' => [
-        'controllers' => ['Http/Controllers', 'Http/Controllers'],
-        'models' => ['Models', 'Models'],
-        'requests' => ['Http/Requests', 'Http/Requests'],
-        'policies' => ['Policies', 'Policies'],
-        'factories' => ['Database/Factories', 'Database/Factories'],
-        'seeders' => ['Database/Seeders', 'Database/Seeders'],
-        'migrations' => ['Database/Migrations', 'Database/Migrations'],
+        // App directory files
+        'controllers' => ['app/Http/Controllers', 'App\\Http\\Controllers'],
+        'models' => ['app/Models', 'App\\Models'],
+        'requests' => ['app/Http/Requests', 'App\\Http\\Requests'],
+        'providers' => ['app/Providers', 'App\\Providers'],
+        'policies' => ['app/Policies', 'App\\Policies'],
+        'listeners' => ['app/Listeners', 'App\\Listeners'],
+        'observers' => ['app/Observers', 'App\\Observers'],
+        'jobs' => ['app/Jobs', 'App\\Jobs'],
+        'middleware' => ['app/Http/Middleware', 'App\\Http\\Middleware'],
+        'services' => ['app/Services', 'App\\Services'],
+        'repositories' => ['app/Repositories', 'App\\Repositories'],
+        'traits' => ['app/Traits', 'App\\Traits'],
+        'views' => ['resources/views', ''],
+        'routes' => ['routes', ''],
+        'lang' => ['lang', ''],
+        'migrations' => ['database/migrations', 'Database\\Migrations'],
+        'seeders' => ['database/seeders', 'Database\\Seeders'],
+        'factories' => ['database/factories', 'Database\\Factories'],
     ],
 ];

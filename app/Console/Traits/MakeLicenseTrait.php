@@ -43,8 +43,19 @@ trait MakeLicenseTrait
                 try {
                     $licenseInfo = json_decode(File::get($customLicensePath), true);
                     if (json_last_error() === JSON_ERROR_NONE) {
-                        $templatePath = 'license-templates/' . ($licenseInfo['template'] ?? 'license.txt');
-                        $licenseKey = $licenseInfo['license'] ?? 'GPL';
+                        // ライセンスキーが存在しないか空の場合はスキップ
+                        if (empty($licenseInfo['license'])) {
+                            $this->warn(__('command.license.warnings.license_key_missing_or_empty'));
+                            return [];
+                        }
+                        
+                        $licenseKey = $licenseInfo['license'];
+                        $templatePath = config('license.templates.' . $licenseKey);
+                        
+                        if (empty($templatePath)) {
+                            $this->warn(__('command.license.warnings.invalid_license_key', ['license' => $licenseKey]));
+                            return [];
+                        }
                         
                         $this->info(__('command.license.using_custom_license', ['license' => $licenseKey]));
                         
@@ -128,33 +139,29 @@ trait MakeLicenseTrait
         $info = json_decode(File::get($licenseInfoFile), true);
         $info['year'] = date('Y');
 
-
-        if (!isset($info['template'])) {
-            $this->warn(__('command.license.warnings.template_not_specified'));
-            return null;
+        // ライセンスキーが存在しないか空の場合はスキップ
+        if (empty($info['license'])) {
+            $this->warn(__('command.license.warnings.license_key_missing_or_empty'));
+            return [];
         }
 
-        // テンプレートが空でないかチェック
-        if (empty($info['template'])) {
-            $this->warn(__('command.license.warnings.template_not_specified'));
-            return null;
-        }
-
-        // テンプレートがファイルパスとして有効かチェック
-        $templateContent = $info['template'];
+        // コンフィグからテンプレートパスを取得
+        $templatePath = config('license.templates.' . $info['license']);
         
-        // テンプレートがファイルパスとして解釈できるか確認
-        if (strpos(trim($templateContent), '\n') === false && strlen(trim($templateContent)) < 255) {
-            // 改行が含まれておらず、255文字未満の場合はファイルパスとみなす
-            $templatePath = base_path($templateContent);
-            $this->info("Checking template path: " . $templatePath);
+        if (empty($templatePath)) {
+            $this->warn(__('command.license.warnings.invalid_license_key', ['license' => $info['license']]));
+            return [];
+        }
+        
+        // フルパスに変換
+        $templatePath = base_path($templatePath);
+        $this->info("Using license template: " . $templatePath);
             
-            if (File::exists($templatePath)) {
-                $templateContent = File::get($templatePath);
-            } else {
-                $this->warn(__('command.license.warnings.template_not_found', ['path' => $templatePath]));
-                return null;
-            }
+        if (File::exists($templatePath)) {
+            $templateContent = File::get($templatePath);
+        } else {
+            $this->warn(__('command.license.warnings.template_not_found', ['path' => $templatePath]));
+            return [];
         }
 
         return [

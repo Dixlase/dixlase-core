@@ -48,29 +48,30 @@ class MakeCustomModel extends Command
     public function handle()
     {
         // 共通の初期化処理
-        $commonInit = $this->initializeCustomCommand($this->argument('className'));
-        if (!$commonInit) {
+        $common = $this->initializeCustomCommand($this->argument('className'));
+        if (!$common) {
             return Command::FAILURE;
         }
 
-
+        // オプションを取得
+        $options = $this->options();
 
         // 関連ファイルの作成
-        $success = $this->handleModelOptions(
+        $handleOptions = $this->handleOptions(
             $this->argument('className'),
-            $this->options(),
-            $commonInit['fileType'],
-            $commonInit['subDirs'],
-            $commonInit['pluginName'] ?? ''
+            $options,
+            $common['fileType'],
+            $common['subDirs'],
+            $common['pluginName'] ?? ''
         );
 
-
-        if (!$success) {
+        // 関連ファイルの作成に失敗した場合は、コマンドを終了
+        if (!$handleOptions) {
             return Command::FAILURE;
         }
 
         // モデルのファイル生成
-        return $this->makeCustomFile($commonInit, $this->option())
+        return $this->makeCustomFile($common, $options)
             ? Command::SUCCESS
             : Command::FAILURE;
     }

@@ -46,13 +46,15 @@ class MakeCustomController extends Command
     public function handle()
     {
         // 共通の初期化処理
-        $commonInit = $this->initializeCustomCommand($this->argument('className'));
-        if (!$commonInit) {
+        $common = $this->initializeCustomCommand($this->argument('className'));
+        if (!$common) {
             return Command::FAILURE;
         }
 
+        
+
         // ファイル生成
-        return $this->makeCustomFile($commonInit, $this->option())
+        return $this->makeCustomFile($common, $this->option())
             ? Command::SUCCESS
             : Command::FAILURE;
     }
