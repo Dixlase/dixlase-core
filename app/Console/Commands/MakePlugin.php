@@ -94,26 +94,14 @@ class MakePlugin extends Command
 
         // 新規ライセンス情報を取得
         $selectedLicense = $this->getNewLicenseInfo(false);
-        
+
         // デフォルトのライセンス情報を設定
         $licenseInfo = [
             'software' => $pluginName,
             'author' => '',
             'website' => '',
-            'license' => 'GPL-3.0',
-            'template' => 'license-gpl.txt',
-            'text' => ''
         ];
         
-        // 選択されたライセンス情報をマージ
-        if (!empty($selectedLicense['info'])) {
-            $licenseInfo = array_merge($licenseInfo, [
-                'license' => $selectedLicense['info']['license'] ?? $licenseInfo['license'],
-                'template' => $selectedLicense['info']['template'] ?? $licenseInfo['template'],
-                'text' => $selectedLicense['template'] ?? $licenseInfo['text']
-            ]);
-        }
-
         // 開発者情報の取得
         $author = $this->ask(__('command.make_plugin.enter_author_name'));
         $licenseInfo['author'] = $author;
@@ -128,6 +116,11 @@ class MakePlugin extends Command
 
         $licenseInfo['website'] = $website;
 
+        // 選択されたライセンス情報をマージ
+        if (!empty($selectedLicense['info'])) {
+            $licenseInfo = array_merge($selectedLicense['info'], $licenseInfo);
+        }
+
         // プラグインディレクトリを作成
         $this->createPluginDirectories($pluginName, $pluginDir, $namespace, $pluginDirName);
 
@@ -141,16 +134,7 @@ class MakePlugin extends Command
             $cmsNameSlug,
             $pluginSlug,
             $softwareName,
-            [
-                'license' => $selectedLicense['name'] ?? '',
-                'licenseName' => $selectedLicense['name'] ?? '',
-                'licenseText' => $selectedLicense['text'] ?? '',
-                'text' => $selectedLicense['text'] ?? '', // 後方互換性のため
-                'template' => $selectedLicense['template'] ?? '',
-                'author' => $author,
-                'website' => $website,
-                'software' => $pluginName
-            ]
+            $licenseInfo
         );
 
         // Optionally install and enable the plugin
@@ -268,7 +252,7 @@ class MakePlugin extends Command
 
 
         // プラグインのメインファイルを作成
-
+        
         // プラグイン専用の license-info.json を作成
         $this->createLicenseInfoFile($pluginName, $pluginDir, $licenseInfo);
 
@@ -369,18 +353,21 @@ class MakePlugin extends Command
      */
     protected function createLicenseInfoFile(string $pluginName, string $pluginDir, array $licenseInfo)
     {
+        // ライセンス名とテンプレートを適切に設定
+        $licenseName = $licenseInfo['license'] ?? 'GPL-3.0';
+        
         // テンプレートがフルパスやテキストを含む場合、ファイル名のみを抽出
-        $template = $licenseInfo['template'] ?? 'license-gpl.txt';
+        $template = $licenseInfo['template'] ?? 'license-' . strtolower(str_replace([' ', '.'], ['-', ''], $licenseName)) . '.txt';
         if (str_contains($template, DIRECTORY_SEPARATOR)) {
             $template = basename($template);
         }
         
         // ライセンスデータを構築
         $licenseData = [
-            'software' => $licenseInfo['software'] ?? '',
+            'software' => $pluginName,
             'author' => $licenseInfo['author'] ?? 'My Company',
             'website' => $licenseInfo['website'] ?? 'https://example.com',
-            'license' => $licenseInfo['license'] ?? 'GPL-3.0',
+            'license' => $licenseName,
             'template' => $template
         ];
 

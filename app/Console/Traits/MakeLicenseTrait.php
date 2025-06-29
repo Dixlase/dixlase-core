@@ -146,7 +146,7 @@ trait MakeLicenseTrait
         }
 
         // コンフィグからテンプレートパスを取得
-        $templatePath = config('license.templates.' . $info['license']);
+        $templatePath = config('license.templatesPath') . '/' . config('license.templates.' . $info['license']);
         
         if (empty($templatePath)) {
             $this->warn(__('command.license.warnings.invalid_license_key', ['license' => $info['license']]));
@@ -203,7 +203,8 @@ trait MakeLicenseTrait
             return []; // ライセンスなし
         }
 
-        $templatePath = config('license.templates')[$selectedKey] ?? null;
+        $templateFile = config('license.templates')[$selectedKey];
+        $templatePath = config('license.templatesPath') . '/' . $templateFile;
         if (!$templatePath || !File::exists(base_path($templatePath))) {
             $this->warn(__('command.license.template_missing_core', ['path' => $templatePath]));
             return [];
@@ -216,7 +217,7 @@ trait MakeLicenseTrait
                 'website' => config('license.defaults.website'),
                 'license' => $selectedKey,
                 'year' => date('Y'),
-                'template' => $templatePath,
+                'template' => $templateFile,
             ],
             'template' => File::get(base_path($templatePath)),
         ];

@@ -57,8 +57,6 @@ trait MakePluginCommandTrait
             $scope = $this->chooseScope();
         }
 
-        
-
         // パス情報の分解
         [$className, $subDirs] = $this->parseClassPath($classPath, $scope);
         $pluginName = Str::studly($pluginName);
