@@ -97,14 +97,12 @@ class MakePluginProvider extends Command
         $pluginName = $this->argument('pluginName');
         
         // 共通の初期化処理を実行（プラグイン名が指定されていない場合は選択肢から選ばせる）
-        $common = $this->initializePluginCommand($className, $pluginName);
+        $common = $this->initializePluginCommand($this->argument('className'), $this->argument('pluginName'));
         if (!$common) {
             return Command::FAILURE;
         }
         
-        // プラグイン名をプロパティに設定（引数・オプションの値があれば優先、なければ共通処理で取得した値を使用）
-        //$this->pluginName = $pluginName ?? $common['pluginName'];
-        
+        /*
         // プラグイン名が空の場合はプロンプトで入力を求める
         if (empty($pluginName)) {
             $this->pluginName = $this->ask('プラグイン名を入力してください');
@@ -119,19 +117,13 @@ class MakePluginProvider extends Command
         
         // 共通処理で取得したプラグイン名を上書き
         $common['pluginName'] = $this->pluginName;
+        */
         
         // プロバイダーのファイル生成
-        $result = $this->makePluginFile($common, array_merge($this->options(), [
-            'pluginName' => $this->pluginName
-        ]));
-        
-        if ($result) {
-            $this->info(__('command.plugin.provider.created'));
-            return Command::SUCCESS;
-        }
-        
-        $this->error(__('command.plugin.provider.failed'));
-        return Command::FAILURE;
+        return $this->makePluginFile($common, $this->options())
+            ? Command::SUCCESS
+            : Command::FAILURE;
+
     }
 
     
