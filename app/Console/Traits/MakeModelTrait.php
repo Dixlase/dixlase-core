@@ -69,11 +69,11 @@ trait MakeModelTrait
     protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '')
     {
         // スタブの取得
-        $stubPath = $this->getStub();
-        $stub = file_exists($stubPath) ? file_get_contents($stubPath) : $this->renderStub('model', $options);
+       // $stubPath = $this->getStub();
+        $stub = $this->renderStub($options);
         
         // ファクトリー関連の置換を追加
-        $factoryReplacements = $this->buildFactoryReplacements($className, $fileType, $subDirs, $pluginName);
+        //$factoryReplacements = $this->buildFactoryReplacements($className, $fileType, $subDirs, $pluginName);
         
         // ファイル生成
         return $this->makeFiler(
@@ -84,11 +84,10 @@ trait MakeModelTrait
             $subDirs,
             $stub,
             $pluginName,
-            $factoryReplacements,
+            //$factoryReplacements,
             $this->getFileTypeLicenseInfo($fileType, $pluginName)
         );
     }
-
 
     /**
      * モデル用のスタブを選択して取得
@@ -97,7 +96,7 @@ trait MakeModelTrait
      * @param  array   $options
      * @return string
      */
-    protected function renderStub(string $scope = 'plain', array $options = []): string
+    protected function renderStub(array $options = []): string
     {
         // モデル用のスタブを選択
         $stubName = 'model.stub';
@@ -245,21 +244,6 @@ trait MakeModelTrait
         ]);
     }
 
-    /**
-     * Get the stub file for the model
-     */
-    protected function getStub($options = [])
-    {
-        if ($this->option('pivot')) {
-            return __DIR__ . '/stubs/model.pivot.stub';
-        }
-
-        if ($this->option('morph-pivot')) {
-            return __DIR__ . '/stubs/model.morph-pivot.stub';
-        }
-
-        return __DIR__ . '/stubs/model.stub';
-    }
 
     /**
      * Build the replacements for a factory

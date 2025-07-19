@@ -48,13 +48,13 @@ class MakePluginController extends Command
     public function handle()
     {
         // 共通の初期化処理
-        $common = $this->initializePluginCommand($this->argument('className'), $this->argument('pluginName'), $this->argument('scope'));
+        $common = $this->initializeControllerCommand('plugin', $this->argument('className'), $this->argument('pluginName'), $this->argument('scope'));
         if (!$common) {
             return Command::FAILURE;
         }
 
         // ファイル生成
-        return $this->makePluginFile($common, $this->options())
+        return $this->makeControllerFile($common, $this->options())
             ? Command::SUCCESS
             : Command::FAILURE;
     }

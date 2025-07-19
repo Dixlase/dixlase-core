@@ -40,25 +40,21 @@ trait MakePluginCommandTrait
      * @param string $classPath クラスパス
      * @return array|false [$fileType, $pluginName, $scope, $className, $subDirs, $licenseInfo] または false
      */
-    protected function initializePluginCommand(string $classPath, string $pluginName = null, $scope = null)
+    protected function initializePluginCommand(string $classPath, string $pluginName = null)
     {
+
         // プラグイン選択
         if(!$pluginName){
             $pluginName = $this->choosePlugin();
         }
-
-        if (!$pluginName) {
+            
+        if (!$pluginName) { 
             $this->error(__('command.plugin.not_found'));
             return false;
         }
-
-        // コントローラ作成時のみスコープの選択を行う
-        if (!$scope && $this instanceof \App\Console\Commands\MakePluginController) {
-            $scope = $this->chooseScope();
-        }
-
+        
         // パス情報の分解
-        [$className, $subDirs] = $this->parseClassPath($classPath, $scope);
+        [$className, $subDirs] = $this->parseClassPath($classPath);
         $pluginName = Str::studly($pluginName);
 
         // ライセンス情報の取得
@@ -67,9 +63,8 @@ trait MakePluginCommandTrait
         // fileTypeは常に'plugin'
         return [
             'fileType' => 'plugin',
-            'pluginName' => $pluginName,
-            'scope' => $scope,
             'className' => $className,
+            'pluginName' => $pluginName,
             'subDirs' => $subDirs,
             'licenseInfo' => $licenseInfo
         ];
@@ -91,23 +86,37 @@ trait MakePluginCommandTrait
         $subDirs = $common['subDirs'];
         $licenseInfo = $common['licenseInfo'];
         $category = $common['category'] ?? 'default';
+
         
         // カテゴリに基づいて適切なオプションを追加
         if ($category === 'route' && isset($common['routeType'])) {
+            // ルートファイルの場合はルートタイプをマージ
             $options = array_merge($options, ['routeType' => $common['routeType']]);
+        } elseif ($category === 'lang' && isset($common['lang'])) {
+            // 言語ファイルの場合は言語をマージ
+            $options = array_merge($options, ['lang' => $common['lang']]);
+        } elseif ($category === 'config') {
+            // コンフィグファイルの場合はスコープを'plain'に設定
+            $options = array_merge($options, ['scope' => 'plain']);
+        } elseif ($category === 'provider') {
+            // プロバイダーファイルの場合はスコープを'plain'に設定
+            $options = array_merge($options, ['scope' => 'plain']);
         } elseif (isset($common['scope'])) {
+            // その他の場合はスコープをマージ
             $options = array_merge($options, ['scope' => $common['scope']]);
         }
 
         // ファイル生成
         $this->makeFile(
             $className,
-            $fileType, // プラグイン用のファイルタイプ
+            $fileType,
             $options,
             $subDirs,
             $pluginName,
             $licenseInfo
         );
+
+        
 
         return true;
     }

@@ -26,21 +26,23 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use App\Services\FileGenerator;
 use App\Console\Traits\MakeLanguageTrait;
+use App\Console\Traits\MakeFileTrait;
+use App\Console\Traits\MakeLicenseTrait;
+use App\Console\Traits\MakePluginCommandTrait;
 
 class MakePluginLanguage extends Command
 {
+    use MakeFileTrait;
+    use MakeLicenseTrait;
     use MakeLanguageTrait;
+    use MakePluginCommandTrait;
 
-    /**
+        /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'make:plugin:lang
-        {plugin : The plugin name (e.g. MyPlugin)}
-        {lang : The language code (e.g. en, ja)}
-        {file : The language file name (e.g. messages)}
-        {--force : Overwrite if the file already exists}';
+    protected $signature;
 
     /**
      * The console command description.
@@ -49,10 +51,14 @@ class MakePluginLanguage extends Command
      */
     protected $description = 'Create a new language file in the specified plugin\'s lang directory';
 
-    public function __construct(FileGenerator $fileGenerator)
+    public function __construct()
     {
+        $this->signature = $this->makeSignature('make:plugin:lang
+            {className : The class name (e.g. messages)}
+            {pluginName? : The plugin name (e.g. MyPlugin)}
+            {lang? : The language code (e.g. en, ja)}',
+        $this->getAdditionalOptions());
         parent::__construct();
-        $this->fileGenerator = $fileGenerator;
     }
 
     /**
@@ -60,14 +66,17 @@ class MakePluginLanguage extends Command
      */
     public function handle()
     {
-        $plugin = Str::studly($this->argument('plugin'));
-        $langCode = strtolower($this->argument('lang'));
-        $fileName = $this->argument('file');
-        $options = ['force' => (bool) $this->option('force')];
+        // プラグイン用 => "plugins/{Plugin}/lang"
+        $common = $this->initializeLanguageCommand($this->argument('className'), $this->argument('pluginName'), $this->argument('lang'));
+        if (!$common) {
+            return Command::FAILURE;
+        }
+        
 
-        $this->makeLanguageFile($langCode, $fileName, $options);
-
-        return 0;
+        // プラグイン用 => "plugins/{Plugin}/lang"
+        return $this->makePluginFile($common, $this->options())
+            ? Command::SUCCESS
+            : Command::FAILURE;
     }
 
     /**

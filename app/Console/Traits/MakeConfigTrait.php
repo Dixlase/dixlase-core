@@ -23,6 +23,8 @@
 namespace App\Console\Traits;
 
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
+
 
 /**
  * コンフィグファイル作成の共通ロジック
@@ -30,6 +32,21 @@ use Illuminate\Support\Str;
 trait MakeConfigTrait
 {
     use MakeFileTrait;
+    use MakeLicenseTrait;
+
+    /**
+     * コンフィグファイル作成の共通オプション定義
+     *
+     * @return array
+     */
+    protected function getAdditionalOptions(): array
+    {
+        return [
+
+        ];
+    }
+
+    
 
     /**
      * コンフィグファイルを作成する
@@ -38,15 +55,48 @@ trait MakeConfigTrait
      * @param array $subDirs
      * @param array $options
      */
-    protected function makeFile(string $className, array $subDirs, array $options): void
+    //protected function makeFile(string $className, array $subDirs, array $options): void
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = null)
     {
-        // コンフィグファイルは "config.stub" を使用
-        $stubFile = 'config.stub';
-
+        //スタブファイルを取得
+        $stub = $this->renderStub();
+    
         // ファイル名をスネークケースに変換
         $snakeCaseFileName = Str::snake($className);
 
-        // コンフィグファイルの命名規則を `fileType=config` に指定
-        $this->makeFiler($snakeCaseFileName, $subDirs, $options, $stubFile, [], 'config');
+
+        $this->info($stub);
+
+        
+        // ファイル生成
+        return $this->makeFiler(
+            $snakeCaseFileName,
+            $fileType,
+            'config',
+            $options,
+            $subDirs,
+            $stub,
+            $pluginName,
+            [],
+            $this->getFileTypeLicenseInfo($fileType, $pluginName)
+        );
+        
     }
+    /**
+     * コンフィグ用のスタブを選択して取得
+     *
+     * @param  string   $lang
+     * @return string
+     */
+    protected function renderStub(): string
+    {
+        // 言語用のスタブを選択
+        $stubName = 'config.stub';
+        // スタブファイルのパスを取得
+        $stubPath = config('command.custom_stub_directory') . '/' . $stubName;
+
+        // スタブファイルの内容を取得
+        return File::get($stubPath);
+    }
+
 }

@@ -90,17 +90,13 @@ class MakePluginProvider extends Command
      */
     public function handle()
     {
-        // クラス名を取得
-        $className = $this->argument('className');
-        
-        // プラグイン名を取得（引数から）
-        $pluginName = $this->argument('pluginName');
         
         // 共通の初期化処理を実行（プラグイン名が指定されていない場合は選択肢から選ばせる）
         $common = $this->initializePluginCommand($this->argument('className'), $this->argument('pluginName'));
         if (!$common) {
             return Command::FAILURE;
         }
+        $common['category'] = 'provider';
         
         /*
         // プラグイン名が空の場合はプロンプトで入力を求める

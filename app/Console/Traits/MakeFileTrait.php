@@ -128,6 +128,7 @@ trait MakeFileTrait
 
         //ライセンス情報を生成
         if (!empty($licenseInfo['template']) || !empty($licenseInfo['info'])) {
+           
             $license = $this->replacePlaceholders($licenseInfo['template'], $licenseInfo['info']);
 
             //ライセンス情報をファイルフォーマットによって整形
@@ -249,7 +250,6 @@ trait MakeFileTrait
      */
     public function getStubContent(string $stub, array $placeholders = []): string
     {
-
         $content = $this->replacePlaceholders($stub, $placeholders);
         return $this->trimAndIndent($content);
     }

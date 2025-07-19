@@ -50,25 +50,21 @@ trait MakeRouteTrait
      * @param string $classPath
      * @return array|false
      */
-    protected function initializeRouteCommand(string $classPath)
+    protected function initializeRouteCommand(string $classPath, string $pluginName = null, string $routeType = null)
     {
-        
-
         // プラグインルートの場合はファイルタイプ選択をスキップ
-        $isPlugin = $this->getName() === 'make:plugin:route';
-        
-        if ($isPlugin) {
+        $commandName = $this->getName();
+
+        if($commandName === 'make:plugin:route'){
             $fileType = 'plugin';
-            $pluginName = $this->choosePlugin();
-            if (!$pluginName) {
-                $this->error(__('command.plugin.not_found'));
-                return false;
-            }
-        } else {
-            // ファイルタイプの選択（カスタム or プラグイン）
-            [$fileType, $pluginName] = $this->chooseFileType();
-            if (!$fileType) {
-                return false;
+        }elseif($commandName === 'make:custom:route'){
+            $fileType = 'custom';
+        }
+
+
+        if ($fileType == 'plugin') {
+            if(!$pluginName){
+                $pluginName = $this->choosePlugin();
             }
         }
 
@@ -102,10 +98,12 @@ trait MakeRouteTrait
             ));
         }
 
+        if(!$routeType){
+            // 選択を取得
+            $selected = (int)$this->ask(__('command.make.enter_route_type'), 1);
+            $routeType = isset($routeTypes[$selected]['key']) ? $routeTypes[$selected]['key'] : 'web';
+        }
 
-        // 選択を取得
-        $selected = (int)$this->ask(__('command.make.enter_route_type'), 1);
-        $routeType = isset($routeTypes[$selected]['key']) ? $routeTypes[$selected]['key'] : 'web';
 
         // パス情報の分解（スコープは使用しない）
         $className = $this->parseRoutePath($classPath);
