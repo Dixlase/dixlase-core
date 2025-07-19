@@ -56,8 +56,8 @@ class MakePluginModel extends Command
     public function handle()
     {
         // 共通の初期化処理
-        $commonInit = $this->initializePluginCommand($this->argument('className'), $this->argument('pluginName'));
-        if (!$commonInit) {
+        $common = $this->initializePluginCommand($this->argument('className'), $this->argument('pluginName'));
+        if (!$common) {
             return Command::FAILURE;
         }
 
@@ -73,7 +73,7 @@ class MakePluginModel extends Command
         */
 
         // モデルファイルの生成
-        return $this->makePluginFile($commonInit, $this->options())
+        return $this->makePluginFile($common, $this->options())
             ? Command::SUCCESS
             : Command::FAILURE;
 

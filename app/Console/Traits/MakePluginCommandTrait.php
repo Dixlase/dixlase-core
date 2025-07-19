@@ -86,25 +86,9 @@ trait MakePluginCommandTrait
         $subDirs = $common['subDirs'];
         $licenseInfo = $common['licenseInfo'];
         $category = $common['category'] ?? 'default';
-
         
-        // カテゴリに基づいて適切なオプションを追加
-        if ($category === 'route' && isset($common['routeType'])) {
-            // ルートファイルの場合はルートタイプをマージ
-            $options = array_merge($options, ['routeType' => $common['routeType']]);
-        } elseif ($category === 'lang' && isset($common['lang'])) {
-            // 言語ファイルの場合は言語をマージ
-            $options = array_merge($options, ['lang' => $common['lang']]);
-        } elseif ($category === 'config') {
-            // コンフィグファイルの場合はスコープを'plain'に設定
-            $options = array_merge($options, ['scope' => 'plain']);
-        } elseif ($category === 'provider') {
-            // プロバイダーファイルの場合はスコープを'plain'に設定
-            $options = array_merge($options, ['scope' => 'plain']);
-        } elseif (isset($common['scope'])) {
-            // その他の場合はスコープをマージ
-            $options = array_merge($options, ['scope' => $common['scope']]);
-        }
+        // カテゴリに基づいてオプションをマージ
+        $options = $this->mergeCategoryOptions($category, $common, $options);
 
         // ファイル生成
         $this->makeFile(

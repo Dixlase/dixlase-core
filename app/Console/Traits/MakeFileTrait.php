@@ -388,6 +388,40 @@ trait MakeFileTrait
     }
 
     /**
+     * カテゴリに基づいてオプションをマージ
+     *
+     * @param string $category カテゴリ名
+     * @param array $common 共通オプション配列
+     * @param array $options 現在のオプション配列
+     * @return array マージされたオプション配列
+     */
+    protected function mergeCategoryOptions(string $category, array $common, array $options): array
+    {
+        // カテゴリに基づいて適切なオプションを追加
+        if ($category === 'route' && isset($common['routeType'])) {
+            // ルートファイルの場合はルートタイプをマージ
+            $options = array_merge($options, ['routeType' => $common['routeType']]);
+        } elseif ($category === 'lang' && isset($common['lang'])) {
+            // 言語ファイルの場合は言語をマージ
+            $options = array_merge($options, ['lang' => $common['lang']]);
+        } elseif ($category === 'config') {
+            // コンフィグファイルの場合はスコープを'plain'に設定
+            $options = array_merge($options, ['scope' => 'plain']);
+        } elseif ($category === 'provider') {
+            // プロバイダーファイルの場合はスコープを'plain'に設定
+            $options = array_merge($options, ['scope' => 'plain']);
+        } elseif ($category === 'controller' && isset($common['scope'])) {
+            // コントローラーファイルの場合はスコープをマージ
+            $options = array_merge($options, ['scope' => $common['scope']]);
+        } elseif (isset($common['scope'])) {
+            // その他の場合はスコープをマージ
+            $options = array_merge($options, ['scope' => $common['scope']]);
+        }
+
+        return $options;
+    }
+
+    /**
      * スコープをサブディレクトリに適用
      */
 
