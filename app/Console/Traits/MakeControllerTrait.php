@@ -69,7 +69,7 @@ trait MakeControllerTrait
         }
 
         // パス情報の分解
-        [$className, $subDirs] = $this->parseClassPath($classPath, $scope);
+        [$className, $subDirs] = $this->parseClassPath($className, $scope);
         $pluginName = Str::studly($pluginName);
 
         // ライセンス情報の取得
@@ -96,17 +96,40 @@ trait MakeControllerTrait
      */
     protected function initializePluginControllerCommand(string $className, string $pluginName = null, $scope = null)
     {
-        // プラグイン選択
+
+    
+             // プラグイン選択
         if(!$pluginName){
             $pluginName = $this->choosePlugin();
         }
-
-        if (!$pluginName) {
+            
+        if (!$pluginName) { 
             $this->error(__('command.plugin.not_found'));
             return false;
         }
 
-        return $pluginName;
+        //Scopeの選択
+        if(!$scope){
+            $scope = $this->chooseScope();
+        }
+
+        
+        // パス情報の分解
+        [$className, $subDirs] = $this->parseClassPath($className);
+        $pluginName = Str::studly($pluginName);
+
+        // ライセンス情報の取得
+        $licenseInfo = $this->getPluginLicenseInfo($pluginName) ?? [];
+
+        // fileTypeは常に'plugin'
+        return [
+            'fileType' => 'plugin',
+            'className' => $className,
+            'pluginName' => $pluginName,
+            'subDirs' => $subDirs,
+            'scope' => $scope,
+            'licenseInfo' => $licenseInfo
+        ];
     }
 
 
@@ -121,19 +144,40 @@ trait MakeControllerTrait
      * @return void
      */
 
-    protected function makeControllerFile(
-        string $className, //クラス名
-        string $fileType, //プラグイン用かカスタムファイル用か
-        array $options, //オプション
-        array $subDirs, //サブディレクトリ
-        string $pluginName = '', //プラグイン名
-        array $licenseInfo = [], //ライセンス情報
-    ): void {
-        $this->options = $options;
+    protected function makeControllerFile(array $common, array $options): bool
+    {
+        // 連想配列から値を取得
+        $fileType = $common['fileType'];
+        $pluginName = $common['pluginName'];
+        $className = $common['className'];
+        $subDirs = $common['subDirs'];
+        $licenseInfo = $common['licenseInfo'];
+        $category = 'controller';
+        $scope = $common['scope'];
 
-        // コントローラのスタブファイルを生成
-        $stub = $this->renderStub($options['scope'] ?? 'plain', $options);
+        // カテゴリに基づいてオプションをマージ
+        $options = $this->mergeCategoryOptions($category, $common, $options);
+
+        // スタブの取得
+        $stub = $this->renderStub($options, $scope);
         
+        // ファイル生成
+        $this->makeFiler(
+            $className,
+            $fileType,
+            'controllers',
+            $options,
+            $subDirs,
+            $stub,
+            $pluginName,
+            [],
+            $licenseInfo
+        );
+
+        return true;
+
+        
+        /*
         // `makeFiler` を実行して、コントローラを生成
         $this->makeFiler(
             $className,
@@ -146,10 +190,11 @@ trait MakeControllerTrait
             [],
             $licenseInfo
         );
+        */
     }
 
 
-    protected function renderStub(string $scope = 'plain', array $options = []): string
+    protected function renderStub(array $options = [], string $scope = 'plain'): string
     {
         // コントローラのベースとなるスタブを取得
         $base = file_get_contents(base_path('stubs/custom/controller/controller.base.stub'));
@@ -163,7 +208,6 @@ trait MakeControllerTrait
             $scopeUse = $this->getFragment("{$scope}.use") ?? '';
             $scopeConstruct = $this->getFragment("{$scope}.construct") ?? '';
         }
-
 
         $headParts = [];
         $useParts = [];
