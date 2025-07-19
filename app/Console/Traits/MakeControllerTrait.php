@@ -55,6 +55,61 @@ trait MakeControllerTrait
         ];
     }
 
+    protected function initializeControllerCommand(string $fileType, string $className, string $pluginName = null, $scope = null)
+    {
+        if($fileType == 'plugin'){
+            if(!$pluginName){
+                $pluginName = $this->choosePlugin();
+            }
+        }
+
+        // コントローラ作成時のみスコープの選択を行う
+        if (!$scope) {
+            $scope = $this->chooseScope();
+        }
+
+        // パス情報の分解
+        [$className, $subDirs] = $this->parseClassPath($classPath, $scope);
+        $pluginName = Str::studly($pluginName);
+
+        // ライセンス情報の取得
+        $licenseInfo = $this->getPluginLicenseInfo($pluginName) ?? [];
+
+        // fileTypeは常に'plugin'
+        return [
+            'fileType' => $fileType,
+            'pluginName' => $pluginName,
+            'scope' => $scope,
+            'className' => $className,
+            'subDirs' => $subDirs,
+            'licenseInfo' => $licenseInfo
+        ];
+
+
+    }
+
+    /**
+     * プラグインコントローラーコマンドの共通初期化処理
+     *
+     * @param string $classPath クラスパス
+     * @return array|false [$fileType, $pluginName, $scope, $className, $subDirs, $licenseInfo] または false
+     */
+    protected function initializePluginControllerCommand(string $className, string $pluginName = null, $scope = null)
+    {
+        // プラグイン選択
+        if(!$pluginName){
+            $pluginName = $this->choosePlugin();
+        }
+
+        if (!$pluginName) {
+            $this->error(__('command.plugin.not_found'));
+            return false;
+        }
+
+        return $pluginName;
+    }
+
+
     /**
      * コントローラを作成するメイン処理。
      * MakeFileTrait::makeFiler() を呼ぶ前後で、
@@ -66,7 +121,7 @@ trait MakeControllerTrait
      * @return void
      */
 
-    protected function makeFile(
+    protected function makeControllerFile(
         string $className, //クラス名
         string $fileType, //プラグイン用かカスタムファイル用か
         array $options, //オプション
@@ -80,7 +135,17 @@ trait MakeControllerTrait
         $stub = $this->renderStub($options['scope'] ?? 'plain', $options);
         
         // `makeFiler` を実行して、コントローラを生成
-        $this->makeFiler($className, $fileType, 'controllers', $options, $subDirs, $stub, $pluginName, [], $licenseInfo);
+        $this->makeFiler(
+            $className,
+            $fileType,
+            'controllers',
+            $options,
+            $subDirs,
+            $stub,
+            $pluginName,
+            [],
+            $licenseInfo
+        );
     }
 
 

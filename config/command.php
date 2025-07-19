@@ -49,6 +49,7 @@ return [
         'views' => ['resources/views', ''],
         'routes' => ['routes', ''],
         'lang' => ['lang', ''],
+        'config' => ['config', ''],
         'migrations' => ['database/migrations', 'Database\\Migrations'],
         'seeders' => ['database/seeders', 'Database\\Seeders'],
         'factories' => ['database/factories', 'Database\\Factories'],

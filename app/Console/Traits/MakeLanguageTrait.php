@@ -22,22 +22,149 @@
 
 namespace App\Console\Traits;
 
-use App\Services\FileGenerator;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
+
+
 
 /**
  * 言語ファイルを作成する共通ロジック
  */
 trait MakeLanguageTrait
 {
-    protected FileGenerator $fileGenerator;
 
-    public function __construct(FileGenerator $fileGenerator)
+    use MakeFileTrait;
+    use MakeLicenseTrait;
+
+    /**
+     * 言語ファイル作成の共通オプション定義
+     *
+     * @return array
+     */
+    protected function getAdditionalOptions(): array
+    {
+        return [
+
+        ];
+    }
+
+    public function __construct()
     {
         parent::__construct();
-        $this->fileGenerator = $fileGenerator;
     }
+    public function initializeLanguageCommand(string $classPath, string $pluginName = null, string $lang = null)
+    {
+        // プラグインルートの場合はファイルタイプ選択をスキップ
+        $commandName = $this->getName();
+
+        if($commandName === 'make:plugin:lang'){
+            $fileType = 'plugin';
+        }elseif($commandName === 'make:custom:lang'){
+            $fileType = 'custom';
+        }
+
+        // プラグイン名
+        if($fileType === 'plugin'){
+            if(!$pluginName){
+                $pluginName = $this->choosePlugin();
+            }
+        }
+
+        // 言語コードの選択
+        if(!$lang){
+            $lang = $this->chooseLanguage();
+        }
+
+        // パス情報の分解
+        [$className, $subDirs] = $this->parseClassPath($classPath);
+        //サブディレクトリに言語のパスを追加
+        array_unshift($subDirs, $lang);
+        $pluginName = Str::studly($pluginName);
+
+    
+        // ライセンス情報の取得
+        $licenseInfo = $this->getPluginLicenseInfo($pluginName) ?? [];
+
+
+        return [
+            'fileType' => $fileType,
+            'className' => $className,
+            'pluginName' => $pluginName,
+            'subDirs' => $subDirs,
+            'licenseInfo' => $licenseInfo,
+            'lang' => $lang,
+            'category' => 'lang'
+        ];
+        
+    }
+
+    protected function chooseLanguage(): string
+    {
+        $languages = config('language.languages');
+        $defaultLanguage = config('language.default');
+        $languageCodes = array_keys($languages);
+        $languageNames = array_values($languages);
+        
+        // Create 1-based indexed choices
+        $choices = [];
+        foreach ($languageNames as $index => $name) {
+            $choices[$index + 1] = $name;
+        }
+        
+        // Get default choice index (1-based)
+        $defaultChoice = array_search($defaultLanguage, $languageCodes) + 1;
+        
+        // Show choices with 1-based indexing
+        $choice = $this->choice(
+            'Select a language:',
+            $choices,
+            $defaultChoice
+        );
+        
+        // Map the selected name back to language code
+        $selectedIndex = array_search($choice, $choices);
+        return $languageCodes[$selectedIndex - 1];
+    }
+
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = null)
+    {
+
+        // スタブの取得
+        $stub = $this->renderStub($options['lang']);
+        
+        // ファイル生成
+        return $this->makeFiler(
+            $className,
+            $fileType,
+            'lang',
+            $options,
+            $subDirs,
+            $stub,
+            $pluginName,
+            [],
+            $this->getFileTypeLicenseInfo($fileType, $pluginName)
+        );
+
+    }
+
+    /**
+     * 言語用のスタブを選択して取得
+     *
+     * @param  string   $lang
+     * @return string
+     */
+    protected function renderStub(string $lang): string
+    {
+        // 言語用のスタブを選択
+        $stubName = 'language.' . $lang  . '.stub';
+        // スタブファイルのパスを取得
+        $stubPath = config('command.custom_stub_directory') . '/' . $stubName;
+
+        // スタブファイルの内容を取得
+        return File::get($stubPath);
+    }
+
+
 
     /**
      * 言語ファイルを作成する

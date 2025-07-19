@@ -155,7 +155,6 @@ trait MakeLicenseTrait
         
         // フルパスに変換
         $templatePath = base_path($templatePath);
-        $this->info("Using license template: " . $templatePath);
             
         if (File::exists($templatePath)) {
             $templateContent = File::get($templatePath);

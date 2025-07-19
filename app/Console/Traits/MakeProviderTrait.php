@@ -43,8 +43,7 @@ trait MakeProviderTrait
     protected function getAdditionalOptions(): array
     {
         return [
-            '{--plugin : ' . __("command.make.options.plugin") . '}',
-            '{--scope= : ' . __("command.make.options.scope") . '}',
+
         ];
     }
     
@@ -61,8 +60,7 @@ trait MakeProviderTrait
     protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '')
     {
         // スタブの取得
-        $stubPath = $this->getStub($options);
-        $stub = file_exists($stubPath) ? file_get_contents($stubPath) : $this->renderStub('provider', $options);
+        $stub = $this->renderStub('provider', $options);
         
         // プラグイン名が指定されていない場合は空文字列を使用
         $pluginName = is_string($pluginName) ? $pluginName : '';
@@ -82,25 +80,7 @@ trait MakeProviderTrait
         
         return true;
     }
-    
-    /**
-     * プロバイダー用のスタブを選択して取得
-     *
-     * @param  array  $options
-     * @return string
-     */
 
-     
-    protected function getStub($options = [])
-    {
-        $stub = $options['plugin'] ?? false 
-            ? 'provider.plugin.stub' 
-            : 'provider.stub';
-            
-        return $stub;
-    }
-    
-    
     /**
      * オプションに基づいて適切なスタブをレンダリングします。
      *

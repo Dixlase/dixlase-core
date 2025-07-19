@@ -24,22 +24,26 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
-use App\Services\FileGenerator;
+use App\Console\Traits\MakeFileTrait;
+use App\Console\Traits\MakeLicenseTrait;
+use App\Console\Traits\MakePluginCommandTrait;
 use App\Console\Traits\MakeConfigTrait;
+
 
 class MakePluginConfig extends Command
 {
+    use MakeFileTrait;
+    use MakeLicenseTrait;
+    use MakePluginCommandTrait;
     use MakeConfigTrait;
+
 
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'make:plugin:config
-        {plugin : The plugin name}
-        {name : The name of the config file}
-        {--force}';
+    protected $signature;
 
     /**
      * The console command description.
@@ -47,23 +51,51 @@ class MakePluginConfig extends Command
      * @var string
      */
     protected $description = 'Create a new configuration file for a plugin';
-
-    protected FileGenerator $fileGenerator;
-
-    public function __construct(FileGenerator $fileGenerator)
+    
+    public function __construct()
     {
+        //$this->signature = $this->makeSignature('make:plugin:config {className} {pluginName?} ', $this->getAdditionalOptions());
+
+        $this->signature = $this->makeSignature('make:plugin:config
+            {className : The class name (e.g. app)}
+            {pluginName? : The plugin name (e.g. MyPlugin)}',
+            $this->getAdditionalOptions()
+        );
         parent::__construct();
-        $this->fileGenerator = $fileGenerator;
     }
+
+    
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        $pluginName    = Str::studly($this->argument('plugin'));
-        $className = Str::snake($this->argument('name'));
 
+
+        // コンフィグファイル用の初期化処理
+        /*
+        $common = $this->initializePluginCommand($this->argument('className'), $this->argument('pluginName'));
+        if (!$common) {
+            return Command::FAILURE;
+        }
+        */
+
+
+
+        $common = $this->initializePluginCommand($this->argument('className'), $this->argument('pluginName'));
+        if (!$common) {
+            return Command::FAILURE;
+        }
+        $common['category'] = 'config';
+
+        
+
+        
+
+
+
+        /*
         // プラグインのライセンス情報を取得
         $licenseInfo = $this->getPluginLicenseInfo($pluginName);
         if (!$licenseInfo) {
@@ -78,22 +110,33 @@ class MakePluginConfig extends Command
 
         $this->info("プラグイン [{$pluginName}] のコンフィグファイル [{$configName}] を作成しました。");
         return Command::SUCCESS;
+        */
+
+        // コンフィグファイルの生成
+        return $this->makePluginFile($common, $this->options())
+            ? Command::SUCCESS
+            : Command::FAILURE;
+
     }
 
     /**
      * @override from MakeFileTrait
      */
+    /*
     protected function getDirectory(array $subDirs): string
     {
         $pluginName = Str::studly($this->argument('plugin'));
         return base_path("plugins/{$pluginName}/config");
     }
+    */
 
     /**
      * @override from MakeFileTrait
      */
+    /*
     protected function getNamespace(array $subDirs): string
     {
         return ''; // コンフィグにはネームスペースは不要
     }
+    */
 }
