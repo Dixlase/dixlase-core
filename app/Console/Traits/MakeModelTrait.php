@@ -77,15 +77,15 @@ trait MakeModelTrait
         
         // ファイル生成
         return $this->makeFiler(
-            $className,
-            $fileType,
-            'models',
-            $options,
-            $subDirs,
-            $stub,
-            $pluginName,
-            //$factoryReplacements,
-            $this->getFileTypeLicenseInfo($fileType, $pluginName)
+            className: $className,
+            fileType: $fileType,
+            fileCategory: 'models',
+            options: $options,
+            subDirs: $subDirs,
+            stub: $stub,
+            pluginName: $pluginName,
+            placeholders: [],
+            licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
         );
     }
 

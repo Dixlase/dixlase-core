@@ -43,7 +43,6 @@ trait MakeFileTrait
     protected function getCommonOptions(): array
     {
         return [
-            //'{className : ' . __('command.make.common.class_name') . '}',
             '{--force : ' . __('command.make.common.force') . '}',
         ];
     }
@@ -107,13 +106,13 @@ trait MakeFileTrait
      * @return void
      */
     protected function makeFiler(
-        string $className,  //クラス名
-        string $fileType, //プラグイン用かカスタムファイル用か
-        string $fileCategory, //ファイルの種類（コントローラ、リポジトリ、サービスなど）
-        array $options, //オプション
-        array $subDirs, //サブディレクトリ
-        string $stub, //スタブファイルの内容
-        string $pluginName = '', //プラグイン名
+        string $className,      //クラス名
+        string $fileType,       //プラグイン用かカスタムファイル用か
+        string $fileCategory,   //ファイルの種類（コントローラ、リポジトリ、サービスなど）
+        array $options,         //オプション
+        array $subDirs,         //サブディレクトリ
+        string $stub,           //スタブファイルの内容
+        string $pluginName = '',//プラグイン名
         array $placeholders = [],
         array $licenseInfo = [],
     ): void {
@@ -413,6 +412,12 @@ trait MakeFileTrait
         } elseif ($category === 'controller' && isset($common['scope'])) {
             // コントローラーファイルの場合はスコープをマージ
             $options = array_merge($options, ['scope' => $common['scope']]);
+        } elseif ($category === 'models') {
+            // モデルファイルの場合はapp/Modelsディレクトリに作成するように設定
+            //$options = array_merge($options, ['target_directory' => 'Models']);
+            //if (isset($common['scope'])) {
+            //    $options = array_merge($options, ['scope' => $common['scope']]);
+            //}
         } elseif (isset($common['scope'])) {
             // その他の場合はスコープをマージ
             $options = array_merge($options, ['scope' => $common['scope']]);

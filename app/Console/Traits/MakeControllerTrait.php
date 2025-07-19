@@ -176,21 +176,6 @@ trait MakeControllerTrait
 
         return true;
 
-        
-        /*
-        // `makeFiler` を実行して、コントローラを生成
-        $this->makeFiler(
-            $className,
-            $fileType,
-            'controllers',
-            $options,
-            $subDirs,
-            $stub,
-            $pluginName,
-            [],
-            $licenseInfo
-        );
-        */
     }
 
 
