@@ -72,45 +72,11 @@ class MakePluginConfig extends Command
     public function handle()
     {
 
-
-        // コンフィグファイル用の初期化処理
-        /*
-        $common = $this->initializePluginCommand($this->argument('className'), $this->argument('pluginName'));
-        if (!$common) {
-            return Command::FAILURE;
-        }
-        */
-
-
-
         $common = $this->initializePluginCommand($this->argument('className'), $this->argument('pluginName'));
         if (!$common) {
             return Command::FAILURE;
         }
         $common['category'] = 'config';
-
-        
-
-        
-
-
-
-        /*
-        // プラグインのライセンス情報を取得
-        $licenseInfo = $this->getPluginLicenseInfo($pluginName);
-        if (!$licenseInfo) {
-            return Command::FAILURE;
-        }
-
-        $options = [
-            'force' => $this->option('force'),
-        ];
-
-        $this->makeFile($className, [], $options, $licenseInfo);
-
-        $this->info("プラグイン [{$pluginName}] のコンフィグファイル [{$configName}] を作成しました。");
-        return Command::SUCCESS;
-        */
 
         // コンフィグファイルの生成
         return $this->makePluginFile($common, $this->options())
@@ -118,25 +84,4 @@ class MakePluginConfig extends Command
             : Command::FAILURE;
 
     }
-
-    /**
-     * @override from MakeFileTrait
-     */
-    /*
-    protected function getDirectory(array $subDirs): string
-    {
-        $pluginName = Str::studly($this->argument('plugin'));
-        return base_path("plugins/{$pluginName}/config");
-    }
-    */
-
-    /**
-     * @override from MakeFileTrait
-     */
-    /*
-    protected function getNamespace(array $subDirs): string
-    {
-        return ''; // コンフィグにはネームスペースは不要
-    }
-    */
 }

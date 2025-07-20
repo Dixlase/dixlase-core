@@ -96,8 +96,6 @@ class MakePlugin extends Command
         $selectedLicense = $this->getNewLicenseInfo(false);
 
 
-        //$this->info(print_r($selectedLicense));
-
         // デフォルトのライセンス情報を設定
         $licenseInfo = [
             'software' => $pluginName,

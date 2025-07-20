@@ -96,25 +96,8 @@ class MakePluginProvider extends Command
         if (!$common) {
             return Command::FAILURE;
         }
-        $common['category'] = 'provider';
-        
-        /*
-        // プラグイン名が空の場合はプロンプトで入力を求める
-        if (empty($pluginName)) {
-            $this->pluginName = $this->ask('プラグイン名を入力してください');
-            
-            if (empty($this->pluginName)) {
-                $this->error('プラグイン名は必須です。');
-                return Command::FAILURE;
-            }
-        }else{
-            $this->pluginName = $pluginName;
-        }
-        
-        // 共通処理で取得したプラグイン名を上書き
-        $common['pluginName'] = $this->pluginName;
-        */
-        
+        $common['category'] = 'providers';
+
         // プロバイダーのファイル生成
         return $this->makePluginFile($common, $this->options())
             ? Command::SUCCESS
