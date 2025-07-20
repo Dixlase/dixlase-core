@@ -79,7 +79,7 @@ class MakePluginProvider extends Command
     public function __construct()
     {
         // 追加オプションを取得してシグネチャを構築
-        $this->signature = $this->makeSignature('make:plugin:provider {className} {pluginName?}', $this->getAdditionalOptions());
+        $this->signature = $this->makeSignature('make:plugin:provider {className?} {pluginName?}', $this->getAdditionalOptions());
         parent::__construct();
     }
 
@@ -90,9 +90,12 @@ class MakePluginProvider extends Command
      */
     public function handle()
     {
+        // 共通の初期化処理を実行（クラス名とプラグイン名が指定されていない場合は入力を求める）
+        $common = $this->initializePluginCommand(
+            $this->argument('className'),
+            $this->argument('pluginName')
+        );
         
-        // 共通の初期化処理を実行（プラグイン名が指定されていない場合は選択肢から選ばせる）
-        $common = $this->initializePluginCommand($this->argument('className'), $this->argument('pluginName'));
         if (!$common) {
             return Command::FAILURE;
         }

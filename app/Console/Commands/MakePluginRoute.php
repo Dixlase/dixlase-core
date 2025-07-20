@@ -39,15 +39,20 @@ class MakePluginRoute extends Command
 
     public function __construct()
     {
-        $this->signature = $this->makeSignature('make:plugin:route {className} {pluginName?} {routeType?}', $this->getAdditionalOptions());
+        $this->signature = $this->makeSignature('make:plugin:route {className?} {pluginName?} {routeType?}', $this->getAdditionalOptions());
         parent::__construct();
+        $this->setDescription(__('command.make_plugin.route.description'));
     }
 
     public function handle()
     {
-
         // ルートファイル用の初期化処理
-        $common = $this->initializeRouteCommand($this->argument('className'), $this->argument('pluginName'), $this->argument('routeType'));
+        $common = $this->initializeRouteCommand(
+            $this->argument('className'), 
+            $this->argument('pluginName'), 
+            $this->argument('routeType')
+        );
+        
         if (!$common) {
             return Command::FAILURE;
         }

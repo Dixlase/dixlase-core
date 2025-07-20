@@ -54,7 +54,7 @@ class MakePluginLanguage extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature('make:plugin:lang
-            {className : The class name (e.g. messages)}
+            {className? : The class name (e.g. messages)}
             {pluginName? : The plugin name (e.g. MyPlugin)}
             {lang? : The language code (e.g. en, ja)}',
         $this->getAdditionalOptions());
@@ -66,14 +66,18 @@ class MakePluginLanguage extends Command
      */
     public function handle()
     {
-        // プラグイン用 => "plugins/{Plugin}/lang"
-        $common = $this->initializeLanguageCommand($this->argument('className'), $this->argument('pluginName'), $this->argument('lang'));
+        // Initialize language command (class name prompt is now handled in the trait)
+        $common = $this->initializeLanguageCommand(
+            $this->argument('className'),
+            $this->argument('pluginName'),
+            $this->argument('lang')
+        );
+
         if (!$common) {
             return Command::FAILURE;
         }
-        
 
-        // プラグイン用 => "plugins/{Plugin}/lang"
+        // Create the language file
         return $this->makePluginFile($common, $this->options())
             ? Command::SUCCESS
             : Command::FAILURE;

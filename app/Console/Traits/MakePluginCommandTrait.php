@@ -37,18 +37,29 @@ trait MakePluginCommandTrait
     /**
      * プラグインコマンドの共通初期化処理
      *
-     * @param string $classPath クラスパス
-     * @return array|false [$fileType, $pluginName, $scope, $className, $subDirs, $licenseInfo] または false
+     * @param string|null $classPath クラスパス（オプション）
+     * @param string|null $pluginName プラグイン名（オプション）
+     * @return array|false [fileType, className, pluginName, subDirs, licenseInfo] または false
      */
-    protected function initializePluginCommand(string $classPath, string $pluginName = null)
-    {
+    protected function initializePluginCommand(
+        ?string $classPath = null, 
+        ?string $pluginName = null
+    ) {
+        // クラス名が指定されていない場合は入力を求める
+        if (empty($classPath)) {
+            $classPath = $this->ask(__('command.class.enter_class_name'));
+            if (empty($classPath)) {
+                $this->error(__('command.class.class_name_required'));
+                return false;
+            }
+        }
 
         // プラグイン選択
-        if(!$pluginName){
+        if (empty($pluginName)) {
             $pluginName = $this->choosePlugin();
         }
             
-        if (!$pluginName) { 
+        if (empty($pluginName)) { 
             $this->error(__('command.plugin.not_found'));
             return false;
         }

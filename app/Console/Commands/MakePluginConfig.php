@@ -57,10 +57,13 @@ class MakePluginConfig extends Command
         //$this->signature = $this->makeSignature('make:plugin:config {className} {pluginName?} ', $this->getAdditionalOptions());
 
         $this->signature = $this->makeSignature('make:plugin:config
-            {className : The class name (e.g. app)}
+            {className? : The class name (e.g. app)}
             {pluginName? : The plugin name (e.g. MyPlugin)}',
             $this->getAdditionalOptions()
         );
+        
+        // デフォルトのプロンプトメッセージを設定
+        $this->description = __('command.make_plugin.config.description');
         parent::__construct();
     }
 

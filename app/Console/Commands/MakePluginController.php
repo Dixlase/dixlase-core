@@ -41,14 +41,19 @@ class MakePluginController extends Command
 
     public function __construct()
     {
-        $this->signature = $this->makeSignature('make:plugin:controller {className} {pluginName?} {scope?}', $this->getAdditionalOptions());
+        $this->signature = $this->makeSignature('make:plugin:controller
+            {className? : The name of the controller class (e.g., UserController)}
+            {pluginName? : The name of the plugin}
+            {scope? : The scope of the controller (e.g., admin, api)}', 
+            $this->getAdditionalOptions()
+        );
         parent::__construct();
     }
 
     public function handle()
     {
         // 共通の初期化処理
-        $common = $this->initializePluginControllerCommand($this->argument('className'), $this->argument('pluginName'));
+        $common = $this->initializeControllerCommand('plugin', $this->argument('className'), $this->argument('pluginName'), $this->argument('scope'));
         if (!$common) {
             return Command::FAILURE;
         }

@@ -52,31 +52,62 @@ trait MakeLanguageTrait
     {
         parent::__construct();
     }
-    public function initializeLanguageCommand(string $classPath, string $pluginName = null, string $lang = null)
+    /**
+     * Initialize language command with optional prompts for missing parameters
+     *
+     * @param string|null $classPath The class path (can be null for prompting)
+     * @param string|null $pluginName The plugin name (optional)
+     * @param string|null $lang The language code (optional)
+     * @return array|false Returns command data array or false on failure
+     */
+    public function initializeLanguageCommand(?string $classPath = null, ?string $pluginName = null, ?string $lang = null)
     {
         // プラグインルートの場合はファイルタイプ選択をスキップ
         $commandName = $this->getName();
 
-        if($commandName === 'make:plugin:lang'){
+        if ($commandName === 'make:plugin:lang') {
             $fileType = 'plugin';
-        }elseif($commandName === 'make:custom:lang'){
+        } elseif ($commandName === 'make:custom:lang') {
             $fileType = 'custom';
+        } else {
+            $this->error('Unsupported command for language file creation');
+            return false;
+        }
+
+        // Prompt for class name if not provided
+        if (empty($classPath)) {
+            $classPath = $this->ask(__('class.enter_class_name'));
+            if (empty($classPath)) {
+                $this->error(__('class.class_name_required'));
+                return false;
+            }
         }
 
         // プラグイン名
-        if($fileType === 'plugin'){
-            if(!$pluginName){
+        if ($fileType === 'plugin') {
+            if (!$pluginName) {
                 $pluginName = $this->choosePlugin();
+                if (!$pluginName) {
+                    return false;
+                }
             }
         }
 
         // 言語コードの選択
-        if(!$lang){
+        if (!$lang) {
             $lang = $this->chooseLanguage();
+            if (!$lang) {
+                return false;
+            }
         }
 
         // パス情報の分解
-        [$className, $subDirs] = $this->parseClassPath($classPath);
+        try {
+            [$className, $subDirs] = $this->parseClassPath($classPath);
+        } catch (\Exception $e) {
+            $this->error('Invalid class path: ' . $e->getMessage());
+            return false;
+        }
         //サブディレクトリに言語のパスを追加
         array_unshift($subDirs, $lang);
         $pluginName = Str::studly($pluginName);

@@ -55,80 +55,65 @@ trait MakeControllerTrait
         ];
     }
 
-    protected function initializeControllerCommand(string $fileType, string $className, string $pluginName = null, $scope = null)
+    /**
+     * Initialize controller command with optional prompts for missing parameters
+     *
+     * @param string $fileType The type of file (plugin/custom)
+     * @param string|null $className The controller class name (optional)
+     * @param string|null $pluginName The plugin name (optional for plugin type)
+     * @param string|null $scope The scope of the controller (optional)
+     * @return array|false Returns command data array or false on failure
+     */
+    protected function initializeControllerCommand(string $fileType, ?string $className = null, ?string $pluginName = null, ?string $scope = null)
     {
-        if($fileType == 'plugin'){
-            if(!$pluginName){
+        // Validate file type
+        if (!in_array($fileType, ['plugin', 'custom'])) {
+            $this->error('Invalid file type. Must be either "plugin" or "custom".');
+            return false;
+        }
+
+        // Prompt for class name if not provided
+        if (empty($className)) {
+            $className = $this->ask(__('class.enter_class_name'));
+            if (empty($className)) {
+                $this->error(__('class.class_name_required'));
+                return false;
+            }
+        }
+
+        // For plugin type, handle plugin name
+        if ($fileType === 'plugin') {
+            if (!$pluginName) {
                 $pluginName = $this->choosePlugin();
+                if (!$pluginName) {
+                    return false;
+                }
             }
         }
 
         // コントローラ作成時のみスコープの選択を行う
         if (!$scope) {
             $scope = $this->chooseScope();
+            if (!$scope) {
+                return false;
+            }
         }
 
         // パス情報の分解
         [$className, $subDirs] = $this->parseClassPath($className, $scope);
-        $pluginName = Str::studly($pluginName);
+        $pluginName = $pluginName ? Str::studly($pluginName) : null;
 
-        // ライセンス情報の取得
-        $licenseInfo = $this->getPluginLicenseInfo($pluginName) ?? [];
+        // Get license info for plugins
+        $licenseInfo = $pluginName ? ($this->getPluginLicenseInfo($pluginName) ?? []) : [];
 
-        // fileTypeは常に'plugin'
         return [
             'fileType' => $fileType,
             'pluginName' => $pluginName,
             'scope' => $scope,
             'className' => $className,
             'subDirs' => $subDirs,
-            'licenseInfo' => $licenseInfo
-        ];
-
-
-    }
-
-    /**
-     * プラグインコントローラーコマンドの共通初期化処理
-     *
-     * @param string $classPath クラスパス
-     * @return array|false [$fileType, $pluginName, $scope, $className, $subDirs, $licenseInfo] または false
-     */
-    protected function initializePluginControllerCommand(string $className, string $pluginName = null, $scope = null)
-    {
-
-    
-             // プラグイン選択
-        if(!$pluginName){
-            $pluginName = $this->choosePlugin();
-        }
-            
-        if (!$pluginName) { 
-            $this->error(__('command.plugin.not_found'));
-            return false;
-        }
-
-        //Scopeの選択
-        if(!$scope){
-            $scope = $this->chooseScope();
-        }
-
-        
-        // パス情報の分解
-        [$className, $subDirs] = $this->parseClassPath($className);
-        $pluginName = Str::studly($pluginName);
-
-        // ライセンス情報の取得
-        $licenseInfo = $this->getPluginLicenseInfo($pluginName) ?? [];
-
-        // fileTypeは常に'plugin'
-        return [
-            'fileType' => 'plugin',
-            'className' => $className,
-            'pluginName' => $pluginName,
-            'subDirs' => $subDirs,
-            'scope' => $scope,
-            'licenseInfo' => $licenseInfo
+            'licenseInfo' => $licenseInfo,
+            'category' => 'controller'
         ];
     }
 
