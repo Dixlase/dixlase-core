@@ -51,26 +51,9 @@ class MakePluginRoute extends Command
         if (!$common) {
             return Command::FAILURE;
         }
-
         
         // オプションを取得
         $options = $this->options();
-
-        /*
-        // 関連ファイルの作成
-        $handleOptions = $this->handleOptions(
-            $this->argument('className'),
-            $options,
-            $common['fileType'],
-            $common['subDirs'],
-            $common['pluginName'] ?? ''
-        );
-
-        // 関連ファイルの作成に失敗した場合は、コマンドを終了
-        if (!$handleOptions) {
-            return Command::FAILURE;
-        }
-        */
 
         // ルートファイルの生成
         return $this->makePluginFile($common, $options)
