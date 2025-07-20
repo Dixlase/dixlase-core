@@ -475,7 +475,7 @@ trait MakeFileTrait
                 if ($fileCategory === 'providers') {
                     // プロバイダーはプラグインのルートのapp/Providersに配置
                     $basePath = "plugins/{$pluginStudly}/app/Providers";
-                    $baseNamespace = "Plugins\\{$pluginStudly}\\Providers";
+                    $baseNamespace = "Plugins\\{$pluginStudly}\\App\\Providers";
                 } else {
                     $basePath = "plugins/{$pluginStudly}/{$basePath}";
                     $baseNamespace = $baseNamespace 

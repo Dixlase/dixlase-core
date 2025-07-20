@@ -174,9 +174,10 @@ trait MakeLicenseTrait
      * 新規ファイル作成時のライセンス情報を取得
      *
      * @param bool $showNotice 警告メッセージを表示するかどうか
+     * @param string|null $licenseKey 指定されたライセンスキー（オプション）
      * @return array
      */
-    protected function getNewLicenseInfo(bool $showNotice = false): array
+    protected function getNewLicenseInfo(bool $showNotice = false, ?string $licenseKey = null): array
     {
         $licenseKeys = config('license.keys', []);
         if (empty($licenseKeys)) {
@@ -184,19 +185,52 @@ trait MakeLicenseTrait
             return [];
         }
 
+        $licenseMap = array_change_key_case(config('license.map', []), CASE_UPPER);
         $licenseLabels = [];
+        
         foreach ($licenseKeys as $key) {
             $label = trans("license.labels.{$key}");
             $licenseLabels[$key] = $label !== "license.labels.{$key}" ? $label : $key;
         }
+        
         // 警告メッセージは必要な場合のみ表示
         if ($showNotice) {
             $this->warn(__('command.license.warnings.notice'));
         }
 
-        $values = array_values($licenseLabels);
-        $selectedLabel = $this->choice(__('command.license.prompt'), $values);
-        $selectedKey = array_search($selectedLabel, $licenseLabels);
+        // ライセンスキーが指定されている場合
+        if ($licenseKey !== null) {
+            $lowerLicenseKey = strtolower($licenseKey);
+            $upperLicenseKey = strtoupper($licenseKey);
+            
+            // マップの値と完全一致するか確認 (gpl, mit, など)
+            $mappedKey = array_search($lowerLicenseKey, array_map('strtolower', $licenseMap));
+            
+            if ($mappedKey !== false) {
+                // マップの値で指定された場合 (例: --license=gpl)
+                $selectedKey = $mappedKey; // 元のキー（GPL, MITなど）を使用
+            }
+            // マップのキーと完全一致するか確認 (GPL, MIT, など)
+            elseif (isset($licenseMap[$upperLicenseKey])) {
+                $selectedKey = $upperLicenseKey; // 元のキーを使用
+            }
+            // 直接キーが指定されている場合
+            elseif (in_array($lowerLicenseKey, array_map('strtolower', $licenseKeys), true)) {
+                // 元のケースに合わせる
+                $selectedKey = $licenseKeys[array_search($lowerLicenseKey, array_map('strtolower', $licenseKeys))];
+            }
+            // 無効なライセンスキーの場合
+            else {
+                $this->warn(__('command.license.invalid_license', ['license' => $licenseKey]));
+                $selectedKey = null;
+            }
+        } 
+        // ライセンスキーが指定されていない場合は選択を求める
+        else {
+            $values = array_values($licenseLabels);
+            $selectedLabel = $this->choice(__('command.license.prompt'), $values);
+            $selectedKey = array_search($selectedLabel, $licenseLabels);
+        }
 
         if ($selectedKey === 'none') {
             return []; // ライセンスなし

@@ -43,6 +43,10 @@ class MakePlugin extends Command
      */
 
     protected $signature = 'make:plugin
+                            {name? : The name of the plugin}
+                            {--author= : The author of the plugin}
+                            {--website= : The website URL for the plugin}
+                            {--license= : The license type (GPL, AGPL, MIT, Apache, BSD, LGPL, commercial, custom, none)}
                             {--controller : Create a controller for the plugin}
                             {--model : Create a model for the plugin}
                             {--migration : Create a migration file for the plugin}
@@ -64,6 +68,24 @@ class MakePlugin extends Command
         parent::__construct();
     }
 
+    /**
+     * Ensure the URL has a proper scheme (adds https:// if missing)
+     *
+     * @param string $url
+     * @return string
+     */
+    protected function ensureUrlHasScheme(string $url): string
+    {
+        if (empty($url)) {
+            return $url;
+        }
+
+        // Remove any existing scheme
+        $url = preg_replace('#^https?://#', '', $url);
+        
+        return 'https://' . ltrim($url, '/');
+    }
+
     public function handle()
     {
 
@@ -71,8 +93,8 @@ class MakePlugin extends Command
         $softwareName = config('app.name');
         // ソフトウェア名をスネークケースに変換
         $cmsNameSlug = Str::slug(Str::snake($softwareName));
-        // プラグイン名
-        $pluginName = $this->ask(__('command.make_plugin.enter_plugin_name'));
+        // プラグイン名を取得（引数がなければ入力を求める）
+        $pluginName = $this->argument('name') ?: $this->ask(__('command.make_plugin.enter_plugin_name'));
         // スラッグ名。プラグイン名をスネークケースに変換
         $pluginSlug = Str::slug(Str::snake($pluginName));
         // プラグインディレクトリ名。プラグイン名をキャメルケースに変換
@@ -92,8 +114,26 @@ class MakePlugin extends Command
             return Command::FAILURE;
         }
 
-        // 新規ライセンス情報を取得
-        $selectedLicense = $this->getNewLicenseInfo(false);
+                // 開発者情報の取得
+        $author = $this->option('author') ?: $this->ask(__('command.make_plugin.enter_author_name'));
+        $licenseInfo['author'] = $author;
+
+        // URL入力を補完（https://を自動追加）
+        $defaultWebsite = 'example.com';
+        $websitePrompt = $this->option('website') ?: $this->ask(__('command.make_plugin.enter_website_url') . ' [' . $defaultWebsite . ']');
+        $website = $websitePrompt === $defaultWebsite ? $websitePrompt : $this->ensureUrlHasScheme($websitePrompt);
+
+
+        // ライセンス情報を取得（オプションで指定されていればそれを使用、なければ選択を求める）
+        $licenseKey = $this->option('license');
+        $selectedLicense = $this->getNewLicenseInfo(false, $licenseKey);
+        
+        // ライセンス情報が空でない場合は、アプリケーション名や著者情報を更新
+        if (!empty($selectedLicense)) {
+            $selectedLicense['info']['software'] = $pluginName;
+            $selectedLicense['info']['author'] = $author;
+            $selectedLicense['info']['website'] = $website;
+        }
 
 
         // デフォルトのライセンス情報を設定
@@ -103,13 +143,7 @@ class MakePlugin extends Command
             'website' => '',
         ];
         
-        // 開発者情報の取得
-        $author = $this->ask(__('command.make_plugin.enter_author_name'));
-        $licenseInfo['author'] = $author;
 
-        // URL入力を補完（https://を自動追加）
-        $defaultWebsite = 'example.com';
-        $website = $this->ask(__('command.make_plugin.enter_website_url') . ' [' . $defaultWebsite . ']');
         
         if (!Str::startsWith($website, 'https://')) {
             $website = 'https://' . ltrim($website, '/');
@@ -446,23 +480,6 @@ class MakePlugin extends Command
      */
     protected function createLangFiles(string $pluginName, string $pluginDir, array $placeholders, array $licenseInfo)
     {
-        /*
-        // 言語ファイルのディレクトリを作成
-        $langDir = "{$pluginDir}/lang";
-        foreach (['en', 'ja'] as $locale) {
-            if (!file_exists("{$langDir}/{$locale}")) {
-                mkdir("{$langDir}/{$locale}", 0755, true);
-            }
-        }
-
-        // 英語の言語ファイル
-        $contentEn = $this->getStubContent('messages.en.stub', $placeholders);
-        file_put_contents("{$langDir}/en/messages.php", $contentEn);
-
-        // 日本語の言語ファイル
-        $contentJa = $this->getStubContent('messages.ja.stub', $placeholders);
-        file_put_contents("{$langDir}/ja/messages.php", $contentJa);
-        */
 
         //英語の言語ファイルを作成        
         Artisan::call('make:plugin:lang', [

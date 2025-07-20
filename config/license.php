@@ -9,9 +9,9 @@ return [
         'Apache',
         'BSD',
         'LGPL',
-        'commercial',
-        'custom',
-        'none',
+        'COMMERCIAL',
+        'CUSTOM',
+        'NONE',
     ],
 
     'map' => [
@@ -21,9 +21,9 @@ return [
         'Apache' => 'apache',
         'BSD' => 'bsd',
         'LGPL' => 'lgpl',
-        'commercial' => 'commercial',
-        'custom' => 'custom',
-        'none' => '',
+        'COMMERCIAL' => 'commercial',
+        'CUSTOM' => 'custom',
+        'NONE' => '',
     ],
 
     'templates' => [
@@ -33,9 +33,9 @@ return [
         'Apache' => 'license-apache.txt',
         'BSD' => 'license-bsd.txt',
         'LGPL' => 'license-lgpl.txt',
-        'commercial' => 'license-commercial.txt',
-        'custom' => 'license-custom.txt',
-        'none' => '',
+        'COMMERCIAL' => 'license-commercial.txt',
+        'CUSTOM' => 'license-custom.txt',
+        'NONE' => '',
     ],
     'defaults' => [
         'software' => 'Dixlase',

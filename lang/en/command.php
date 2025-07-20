@@ -1,50 +1,54 @@
 <?php
 
 return [
-    "make_plugin" => [
-        "enter_plugin_name" => "Please enter the plugin name",
-        "enter_author_name" => "Please enter the developer name",
-        "enter_website_url" => "Please enter the developer's website URL (only the part after https://)",
-        "select_license" => "Available licenses:",
-        "enter_license_number" => "Enter license number (default: none):",
-        "confirm_install" => "Do you want to install the plugin?",
-        "confirm_enable" => "Do you want to enable the plugin?",
-        "success" => "Plugin :name has been created successfully!",
-        "already_exists" => "The plugin ':name' already exists.",
-        "installed" => "Plugin :name has been installed.",
-        "enabled" => "Plugin ':name' has been enabled.",
-        "not_found" => "Plugin ':name' not found in the database.",
-        "no_assets" => "No assets directory found for plugin ':name'.",
-        "files" => [
-            "service_provider" => "Service provider [:name] created for plugin [:plugin].",
-            "controller" => "Controller [:name] created for plugin [:plugin].",
-            "model" => "Model [:name] created for plugin [:plugin].",
-            "policy" => "Policy [:name] created for plugin [:plugin].",
-            "listener" => "Listener [:name] created for plugin [:plugin].",
-            "test" => "Test [:name] created for plugin [:plugin].",
-            "migration" => "Migration :name created for plugin [:plugin].",
-            "resource" => "Resource [:name] created for plugin [:plugin].",
-            "command" => "Command [:name] created for plugin [:plugin].",
-            "job" => "Job [:name] created for plugin [:plugin].",
-            "notification" => "Notification [:name] created for plugin [:plugin].",
-            "seeder" => "Seeder :name created for plugin [:plugin].",
-            "factory" => "Factory [:name] created for plugin [:plugin].",
-            "routes" => "Routes file created for plugin.",
-            "config" => "Config file created for plugin.",
-            "lang" => "Language files (en & ja) created for plugin.",
-            "vite" => "Vite config file created for plugin.",
-            "composer" => "Composer.json file created for plugin.",
-            "readme" => "README.md created for plugin."
+    'make_plugin' => [
+        'enter_plugin_name' => 'Please enter the plugin name',
+        'enter_author_name' => 'Please enter the developer name',
+        'enter_website_url' => 'Please enter the developer\'s website URL (only the part after https://)',
+        'select_license' => 'Available licenses:',
+        'enter_license_number' => 'Enter license number (default: none):',
+        'confirm_install' => 'Do you want to install the plugin?',
+        'confirm_enable' => 'Do you want to enable the plugin?',
+        'success' => 'Plugin :pluginName has been created successfully!',
+        'already_exists' => 'The plugin \':pluginName\' already exists.',
+        'installed' => 'Plugin :pluginName has been installed.',
+        'enabled' => 'Plugin \':pluginName\' has been enabled.',
+        'not_found' => 'Plugin \':pluginName\' not found in the database.',
+        'no_assets' => 'No assets directory found for plugin \':pluginName\'.',
+        'files' => [
+            'service_provider' => 'Service provider [:className] created for plugin [:pluginName].',
+            'controller' => 'Controller [:className] created for plugin [:pluginName].',
+            'model' => 'Model [:className] created for plugin [:pluginName].',
+            'policy' => 'Policy [:className] created for plugin [:pluginName].',
+            'listener' => 'Listener [:className] created for plugin [:pluginName].',
+            'test' => 'Test [:className] created for plugin [:pluginName].',
+            'migration' => 'Migration :className created for plugin [:pluginName].',
+            'resource' => 'Resource [:className] created for plugin [:pluginName].',
+            'command' => 'Command [:className] created for plugin [:pluginName].',
+            'job' => 'Job [:className] created for plugin [:pluginName].',
+            'notification' => 'Notification [:className] created for plugin [:pluginName].',
+            'seeder' => 'Seeder :className created for plugin [:pluginName].',
+            'factory' => 'Factory [:className] created for plugin [:pluginName].',
+            'routes' => 'Routes file created for plugin [:pluginName].',
+            'config' => 'Config file created for plugin [:pluginName].',
+            'lang' => 'Language files (en & ja) created for plugin [:pluginName].',
+            'vite' => 'Vite config file created for plugin [:pluginName].',
+            'composer' => 'Composer.json file created for plugin [:pluginName].',
+            'readme' => 'README.md created for plugin [:pluginName].',
+            'license_info' => 'License info file created for plugin [:pluginName].',
         ],
-        "license_options" => [
-            "gpl" => "GPL-3.0",
-            "agpl" => "AGPL-3.0",
-            "mit" => "MIT",
-            "apache" => "Apache-2.0",
-            "bsd3" => "BSD-3-Clause",
-            "lgpl" => "LGPL-3.0",
-            "commercial" => "Commercial",
-            "custom" => "Custom License"
+        'license_options' => [
+            'gpl' => 'GPL-3.0',
+            'agpl' => 'AGPL-3.0',
+            'mit' => 'MIT',
+            'apache' => 'Apache-2.0',
+            'bsd3' => 'BSD-3-Clause',
+            'lgpl' => 'LGPL-3.0',
+            'commercial' => 'Commercial',
+            'custom' => 'Custom License'
+        ],
+        'config' => [
+            'description' => 'Create a new configuration file for a plugin',
         ]
     ],
     'file_type' => [
@@ -66,31 +70,32 @@ return [
         'prompt' => 'Please select a plugin',
         'not_found' => 'No plugins found. At least one plugin directory must exist under plugins.',
     ],
-
+    'class' => [
+        'enter_class_name' => 'Enter the class name',
+        'class_name_required' => 'Class name is required',
+        'enter_provider_class_name' => 'Enter the provider class name (e.g., MyServiceProvider)',
+        'provider_class_required' => 'Provider class name is required',
+        'enter_route_name' => 'Enter the route file name (e.g., web, admin, api)',
+        'route_name_required' => 'Route file name is required',
+    ],
     'license' => [
         'prompt' => 'Please select a license (press Enter without input to select no license)',
         'using_custom_license' => 'Using license for custom directory : :license',
         'failed_to_read_license' => 'Failed to read custom license file: :error',
         'warnings' => [
-            'plugin_missing' => '⚠️ License info for plugin [:plugin] not found. License header will be skipped.',
+            'plugin_missing' => '⚠️ License info for plugin [:pluginName] not found. License header will be skipped.',
             'template_not_specified' => '⚠️ License info does not contain a template path.',
             'template_not_found' => '⚠️ Template file not found: :path',
             'template_missing_core' => 'Template not found: :path',
-            'notice' => <<<EOT
-[!] Note: While you can choose any license for newly created files, please be aware of the following:
-・Files that extend core classes, use core traits, implement core interfaces, or directly utilize core code will be subject to the core's AGPL license terms.
+            'notice' => '[!] Note: While you can choose any license for newly created files, please be aware of the following:
+・Files that extend core classes, use core traits, implement core interfaces, or directly utilize core code will be subject to the core\'s AGPL license terms.
 ・However, if you place your code in a completely separate custom directory and maintain loose coupling with the core (e.g., through event listeners), you can choose your own license.
 ・If you choose AGPL and implement features that allow data input from general users (e.g., forms), source code disclosure will be required. In such cases, we recommend using alternative licenses like GPL or MIT.
 ・For client-specific deliverables intended for internal use and not public access, no license notice is required.
-・Please carefully review the license terms if redistribution or SaaS deployment is planned.
-EOT,
+・Please carefully review the license terms if redistribution or SaaS deployment is planned.',
         ],
     ],
-    'plugin' => [
-        'prompt' => 'Please select a plugin',
-        'not_found' => 'No plugins found. At least one plugin directory must exist under plugins.',
-    ],
-        'files' => [
+    'files' => [
         'category' => [
             'controllers' => 'Controller',
             'requests'    => 'Request',

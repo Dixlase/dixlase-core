@@ -50,7 +50,7 @@ trait MakeRouteTrait
      * @param string $classPath
      * @return array|false
      */
-    protected function initializeRouteCommand(string $classPath, string $pluginName = null, string $routeType = null)
+    protected function initializeRouteCommand(?string $classPath = null, string $pluginName = null, string $routeType = null)
     {
         // プラグインルートの場合はファイルタイプ選択をスキップ
         $commandName = $this->getName();
@@ -59,6 +59,15 @@ trait MakeRouteTrait
             $fileType = 'plugin';
         }elseif($commandName === 'make:custom:route'){
             $fileType = 'custom';
+        }
+
+        // クラス名が指定されていない場合は入力を求める
+        if (empty($classPath)) {
+            $classPath = $this->ask(__('class.enter_route_name'));
+            if (empty($classPath)) {
+                $this->error(__('class.route_name_required'));
+                return false;
+            }
         }
 
 
