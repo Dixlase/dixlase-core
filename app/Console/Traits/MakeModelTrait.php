@@ -69,17 +69,13 @@ trait MakeModelTrait
     protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '')
     {
         // スタブの取得
-       // $stubPath = $this->getStub();
         $stub = $this->renderStub($options);
-        
-        // ファクトリー関連の置換を追加
-        //$factoryReplacements = $this->buildFactoryReplacements($className, $fileType, $subDirs, $pluginName);
         
         // ファイル生成
         return $this->makeFiler(
             className: $className,
             fileType: $fileType,
-            fileCategory: 'models',
+            fileCategory: 'model',
             options: $options,
             subDirs: $subDirs,
             stub: $stub,
@@ -90,9 +86,8 @@ trait MakeModelTrait
     }
 
     /**
-     * モデル用のスタブを選択して取得
+     * モデル用のスタブを選択して取得し、必要な置換を行う
      *
-     * @param  string  $scope
      * @param  array   $options
      * @return string
      */
@@ -110,7 +105,24 @@ trait MakeModelTrait
         $stubPath = config('command.custom_stub_directory') . '/' . $stubName;
 
         // スタブファイルの内容を取得
-        return File::get($stubPath);
+        $stub = File::get($stubPath);
+
+        // ファクトリー関連の置換
+        if (($this->option('factory') || $this->option('all')) && isset($options['className'])) {
+            $factoryName = class_basename($options['className']) . 'Factory';
+            $factoryPath = 'Plugins\\' . ($options['pluginName'] ?? '') . '\\databases\\factories\\' . $factoryName;
+            
+            $stub = str_replace(
+                ['{{ factoryImport }}', '{{ factory }}'],
+                ['use ' . $factoryPath . ';', 'use ' . $factoryName . ';'],
+                $stub
+            );
+        } else {
+            // ファクトリーが指定されていない場合はプレースホルダーを削除
+            $stub = str_replace(["{{ factoryImport }}\n\n", '{{ factory }}'], ['', ''], $stub);
+        }
+
+        return $stub;
     }
 
     
@@ -245,31 +257,7 @@ trait MakeModelTrait
     }
 
 
-    /**
-     * Build the replacements for a factory
-     */
-    protected function buildFactoryReplacements($className, $fileType, $subDirs, $pluginName = '')
-    {
-        $replacements = [];
 
-        if ($this->option('factory') || $this->option('all')) {
-            $modelPath = $this->qualifyModel($className, $fileType, $subDirs, $pluginName);
-            $factoryNamespace = 'Database\\Factories\\' . class_basename($className) . 'Factory';
-
-            $factoryCode = <<<EOT
-            /** @use HasFactory<{$factoryNamespace}> */
-                use HasFactory;
-            EOT;
-
-            $replacements['factory'] = $factoryCode;
-            $replacements['factoryImport'] = 'use Illuminate\\Database\\Eloquent\\Factories\\HasFactory;';
-        } else {
-            $replacements['factory'] = '//';
-            $replacements['factoryImport'] = '';
-        }
-
-        return $replacements;
-    }
 
     /**
      * Qualify the given model class base name

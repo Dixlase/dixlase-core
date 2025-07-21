@@ -37,8 +37,6 @@ class MakePluginController extends Command
 
     protected $description = 'Create a new controller for the specified plugin';
 
-    protected string $controllerRootType = 'Plugins';
-
     public function __construct()
     {
         $this->signature = $this->makeSignature('make:plugin:controller
@@ -52,15 +50,13 @@ class MakePluginController extends Command
 
     public function handle()
     {
-        // 共通の初期化処理
-        $common = $this->initializeControllerCommand('plugin', $this->argument('className'), $this->argument('pluginName'), $this->argument('scope'));
-        if (!$common) {
-            return Command::FAILURE;
-        }
-
-        // コントローラファイルの生成
-        return $this->makeControllerFile($common, $this->options())
-            ? Command::SUCCESS
-            : Command::FAILURE;
+        return $this->generatePluginFile(
+            $this->argument('className'),
+            $this->argument('pluginName'),
+            'controller',
+            $this->options(),
+            true,
+            $this->argument('scope')
+        );
     }
 }

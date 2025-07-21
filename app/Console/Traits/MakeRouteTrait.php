@@ -149,8 +149,50 @@ trait MakeRouteTrait
      */
     protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '', $licenseInfo = [])
     {
+
+        // ルートタイプの選択肢を定義
+        $routeTypes = [
+            1 => [
+                'key' => 'web',
+                'name' => __('command.make.route_types.web'),
+                'description' => __('command.make.route_types.web_description')
+            ],
+            2 => [
+                'key' => 'admin',
+                'name' => __('command.make.route_types.admin'),
+                'description' => __('command.make.route_types.admin_description')
+            ],
+            3 => [
+                'key' => 'api',
+                'name' => __('command.make.route_types.api'),
+                'description' => __('command.make.route_types.api_description')
+            ]
+        ];
+
+        // 選択肢を表示
+        $this->info(__('command.make.select_route_type'));
+        foreach ($routeTypes as $number => $type) {
+            $this->line(sprintf(
+                "  [%d] %s - %s",
+                $number,
+                str_pad($type['name'], 10, ' ', STR_PAD_RIGHT),
+                $type['description']
+            ));
+        }
+        
+        $routeType = null;
+        if(isset($options['routeType']) && $options['routeType']){
+            $routeType = $options['routeType'];
+        }
+
+        if(!$routeType){
+            // 選択を取得
+            $selected = (int)$this->ask(__('command.make.enter_route_type'), 1);
+            $routeType = isset($routeTypes[$selected]['key']) ? $routeTypes[$selected]['key'] : 'web';
+        }
+
         // スタブファイルのパスを取得（ルートタイプを使用）
-        $stubPath = $this->getStubPath($options['routeType'] ?? 'web', $options);
+        $stubPath = $this->getStubPath($routeType ?? 'web', $options);
         if (!$stubPath) {
             return false;
         }
@@ -162,7 +204,7 @@ trait MakeRouteTrait
         return $this->makeFiler(
             $className,
             $fileType,
-            'routes',
+            'route',
             $options,
             $subDirs,
             $stub,
@@ -194,10 +236,8 @@ trait MakeRouteTrait
     /**
      * スタブファイルのパスを取得
      */
-    protected function getStubPath($fileType, $options)
+    protected function getStubPath($routeType, $options)
     {
-        $stubPath = '';
-        $routeType = $options['routeType'] ?? 'web';
 
         // カスタムスタブディレクトリを確認
         $customStubDir = config('command.custom_stub_directory');

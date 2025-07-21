@@ -46,6 +46,19 @@ class MakePluginRoute extends Command
 
     public function handle()
     {
+
+        $options = $this->options();
+        $options['routeType'] = $this->argument('routeType');
+
+        $this->generatePluginFile(
+            $this->argument('className'),
+            $this->argument('pluginName'),
+            'route',
+            $options
+        );
+
+
+        /*
         // ルートファイル用の初期化処理
         $common = $this->initializeRouteCommand(
             $this->argument('className'), 
@@ -64,5 +77,7 @@ class MakePluginRoute extends Command
         return $this->makePluginFile($common, $options)
             ? Command::SUCCESS
             : Command::FAILURE;
+        */
     }
+    
 }

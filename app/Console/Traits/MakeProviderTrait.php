@@ -60,16 +60,13 @@ trait MakeProviderTrait
     protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '')
     {
         // スタブの取得
-        $stub = $this->renderStub('provider', $options);
-        
-        // プラグイン名が指定されていない場合は空文字列を使用
-        $pluginName = is_string($pluginName) ? $pluginName : '';
-        
+        $stub = $this->renderStub($options);
+                
         // ファイル生成
         $this->makeFiler(
             className: $className,
             fileType: $fileType,
-            fileCategory: 'providers',
+            fileCategory: 'provider',
             options: $options,
             subDirs: $subDirs,
             stub: $stub,
@@ -88,7 +85,7 @@ trait MakeProviderTrait
      * @param  array  $options
      * @return string
      */
-    protected function renderStub(string $scope = 'plain', array $options = []): string
+    protected function renderStub(array $options = []): string
     {
         // プロバイダー用のスタブを選択
         $stubName = 'provider.stub';

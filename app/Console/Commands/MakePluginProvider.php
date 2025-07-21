@@ -90,22 +90,12 @@ class MakePluginProvider extends Command
      */
     public function handle()
     {
-        // 共通の初期化処理を実行（クラス名とプラグイン名が指定されていない場合は入力を求める）
-        $common = $this->initializePluginCommand(
+        return $this->generatePluginFile(
             $this->argument('className'),
-            $this->argument('pluginName')
+            $this->argument('pluginName'),
+            'provider',
+            $this->options()
         );
-        
-        if (!$common) {
-            return Command::FAILURE;
-        }
-        $common['category'] = 'providers';
-
-        // プロバイダーのファイル生成
-        return $this->makePluginFile($common, $this->options())
-            ? Command::SUCCESS
-            : Command::FAILURE;
-
     }
 
     

@@ -159,9 +159,29 @@ trait MakeLanguageTrait
 
     protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = null)
     {
+        //言語コードの取得
+        $lang = null;
+        if(isset($options['lang']) && $options['lang']){
+            $lang = $options['lang'];
+        }
+
+        // 言語コードの選択
+        if (!$lang) {
+            $lang = $this->chooseLanguage();
+            if (!$lang) {
+                return false;
+            }
+        }
+
+        // 言語コードに基づいてサブディレクトリを追加
+        $translations = config('language.translations', []);
+        $langDir = $translations[strtolower($lang)] ?? strtolower($lang);
+
+        // 言語ディレクトリをサブディレクトリの先頭に追加
+        array_unshift($subDirs, $langDir);
 
         // スタブの取得
-        $stub = $this->renderStub($options['lang']);
+        $stub = $this->renderStub($lang);
         
         // ファイル生成
         return $this->makeFiler(

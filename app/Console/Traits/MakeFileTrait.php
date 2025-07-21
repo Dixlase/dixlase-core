@@ -46,6 +46,27 @@ trait MakeFileTrait
             '{--force : ' . __('command.make.common.force') . '}',
         ];
     }
+
+    /**
+     * クラス名の入力を求める
+     *
+     * @param string $prompt プロンプトメッセージ
+     * @param string $error エラーメッセージ
+     * @return string|false 入力されたクラス名、またはエラー時はfalse
+     */
+    protected function askForClassName(string $prompt = null, string $error = null)
+    {
+        $prompt = $prompt ?? __('command.class.enter_class_name');
+        $error = $error ?? __('command.class.class_name_required');
+
+        $className = $this->ask($prompt);
+        if (empty($className)) {
+            $this->error($error);
+            return false;
+        }
+
+        return $className;
+    }
     
     /**
      * コマンドのシグネチャを生成
@@ -367,22 +388,32 @@ trait MakeFileTrait
     /**
      * クラス名のパス情報を分解
      *
+     * @param string $category ファイルカテゴリ（'controller', 'model', 'blade' など）
      * @param string $classPath クラスパス（例: 'Admin/User/Controller'）
      * @param string $scope スコープ（例: 'Admin'）
      * @return array [className, subDirs]
      */
-    protected function parseClassPath(string $classPath, string $scope = null): array
+    protected function parseClassPath(string $category, string $classPath, string $scope = null): array
     {
-
         $path = str_replace('\\', '/', $classPath);
         $parts = explode('/', $path);
         $className = array_pop($parts);
+        
+        // カテゴリに基づいてディレクトリ名のケースを調整
+        $subDirs = array_map(function($part) use ($category) {
+            // 設定で指定されたカテゴリはStudlyCase、それ以外は小文字
+            if (in_array($category, config('command.studly_case_categories', []))) {
+                return Str::studly($part);
+            }
+            // それ以外（blade, migration, factory, seeder, config, route, langなど）はすべて小文字
+            return strtolower($part);
+        }, $parts);
 
-        if (!$scope) {
-            return [$className, $parts];
+        // スコープが指定されている場合は適用
+        if ($scope) {
+            $subDirs = $this->applyScopeToSubDirs($subDirs, $scope, $category);
         }
- 
-        $subDirs = $this->applyScopeToSubDirs($parts, $scope);
+        
         return [$className, $subDirs];
     }
 
@@ -412,7 +443,7 @@ trait MakeFileTrait
         } elseif ($category === 'controller' && isset($common['scope'])) {
             // コントローラーファイルの場合はスコープをマージ
             $options = array_merge($options, ['scope' => $common['scope']]);
-        } elseif ($category === 'models') {
+        } elseif ($category === 'model') {
             // モデルファイルの場合はapp/Modelsディレクトリに作成するように設定
             //$options = array_merge($options, ['target_directory' => 'Models']);
             //if (isset($common['scope'])) {
@@ -428,15 +459,57 @@ trait MakeFileTrait
 
     /**
      * スコープをサブディレクトリに適用
+     *
+     * @param array $subDirs サブディレクトリの配列
+     * @param string $scope 適用するスコープ
+     * @param string $fileCategory ファイルカテゴリ（オプション）
+     * @return array スコープが適用されたサブディレクトリの配列
      */
-
-    protected function applyScopeToSubDirs(array $subDirs, string $scope): array
+    protected function applyScopeToSubDirs(array $subDirs, string $scope, string $fileCategory = ''): array
     {
-        return match ($scope) {
-            'front' => ['Front', ...$subDirs],
-            'admin' => ['Admin', ...$subDirs],
-            default => $subDirs,
-        };
+        // スコープが'plain'の場合は何も追加しない
+        if ($scope === 'plain') {
+            return $subDirs;
+        }
+        
+        // スコープを適切なケースに変換
+        $formattedScope = $this->formatScopeForCategory($scope, $fileCategory);
+        
+        // 既に先頭が同じスコープの場合は何もしない
+        if (!empty($subDirs) && $subDirs[0] === $formattedScope) {
+            return $subDirs;
+        }
+        
+        // 先頭にスコープを追加
+        return [$formattedScope, ...$subDirs];
+    }
+    
+    /**
+     * ファイルカテゴリに基づいてスコープを適切なケースに変換
+     *
+     * @param string $scope スコープ名
+     * @param string $fileCategory ファイルカテゴリ
+     * @return string フォーマットされたスコープ名
+     */
+    protected function formatScopeForCategory(string $scope, string $fileCategory = ''): string
+    {
+        // スコープが'plain'の場合は空文字を返す
+        if ($scope === 'plain') {
+            return '';
+        }
+        
+        // Bladeファイルの場合はすべて小文字
+        if ($fileCategory === 'blade') {
+            return strtolower($scope);
+        }
+        
+        // 設定で指定されたカテゴリはStudlyCase
+        if (in_array($fileCategory, config('command.studly_case_categories', []))) {
+            return Str::studly($scope);
+        }
+        
+        // それ以外は頭文字を大文字に
+        return ucfirst($scope);
     }
 
     /**
@@ -446,13 +519,8 @@ trait MakeFileTrait
     {
         $nameStudly = \Illuminate\Support\Str::studly($pluginName);
 
-        // スコープを取得（例: admin, front, plain）
-        $scopeStudly = $scope !== 'plain' ? ucfirst($scope) : '';
-
-        // スコープをサブディレクトリに追加（plain の場合は除外、かつまだ追加されていない場合のみ）
-        if ($scopeStudly && (empty($subDirs) || $subDirs[0] !== $scopeStudly)) {
-            array_unshift($subDirs, $scopeStudly);
-        }
+        // スコープを適切な形式に変換
+        $scopeStudly = $this->formatScopeForCategory($scope, $fileCategory);
 
         $namespaceSubDir = implode('\\', $subDirs);
         $pathSubDir = implode('/', $subDirs);
@@ -472,7 +540,7 @@ trait MakeFileTrait
                     throw new \RuntimeException('Plugin name is required');
                 }
                 
-                if ($fileCategory === 'providers') {
+                if ($fileCategory === 'provider') {
                     // プロバイダーはプラグインのルートのapp/Providersに配置
                     $basePath = "plugins/{$pluginStudly}/app/Providers";
                     $baseNamespace = "Plugins\\{$pluginStudly}\\App\\Providers";
