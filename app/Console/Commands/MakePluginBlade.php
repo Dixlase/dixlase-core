@@ -74,7 +74,6 @@ class MakePluginBlade extends Command
             $this->argument('scope')
         );
 
-       
     }
 
     /**

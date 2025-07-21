@@ -37,8 +37,6 @@ class MakePluginModel extends Command
     use MakeModelTrait;
     use MakePluginCommandTrait;
 
-    protected $signature;
-
     protected $description = 'Create a new model in a plugin';
 
     public function __construct()
@@ -61,32 +59,5 @@ class MakePluginModel extends Command
             'model',
             $this->options()
         );
-
-
-        /*
-        // 共通の初期化処理
-        $common = $this->initializePluginCommand($this->argument('className'), $this->argument('pluginName'));
-        if (!$common) {
-            return Command::FAILURE;
-        }
-
-        $common['category'] = 'models';
-
-        // 関連ファイルの作成
-        $success = $this->handleOptions(
-            $common['className'],
-            $this->options(),
-            'plugin',
-            $common['subDirs'],
-            $common['pluginName']
-        );
-
-        // モデルファイルの生成
-        return $this->makePluginFile($common, $this->options())
-            ? Command::SUCCESS
-            : Command::FAILURE;
-        */
-
-
     }
 }

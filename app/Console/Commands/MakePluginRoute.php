@@ -35,13 +35,12 @@ class MakePluginRoute extends Command
 
     protected $signature;
 
-    protected $description = 'Create a new route file for a plugin';
-
     public function __construct()
     {
         $this->signature = $this->makeSignature('make:plugin:route {className?} {pluginName?} {routeType?}', $this->getAdditionalOptions());
-        parent::__construct();
         $this->setDescription(__('command.make_plugin.route.description'));
+        parent::__construct();
+
     }
 
     public function handle()
@@ -56,28 +55,6 @@ class MakePluginRoute extends Command
             'route',
             $options
         );
-
-
-        /*
-        // ルートファイル用の初期化処理
-        $common = $this->initializeRouteCommand(
-            $this->argument('className'), 
-            $this->argument('pluginName'), 
-            $this->argument('routeType')
-        );
-        
-        if (!$common) {
-            return Command::FAILURE;
-        }
-        
-        // オプションを取得
-        $options = $this->options();
-
-        // ルートファイルの生成
-        return $this->makePluginFile($common, $options)
-            ? Command::SUCCESS
-            : Command::FAILURE;
-        */
     }
     
 }

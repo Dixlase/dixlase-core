@@ -1,6 +1,6 @@
 # {{ pluginName }}
 
-{{ pluginName }} is a plugin for our custom CMS (and also composer-ready for future distribution).
+{{ pluginName }} is a plugin for Dixlase (and also composer-ready for future distribution).
 
 ## Installation
 

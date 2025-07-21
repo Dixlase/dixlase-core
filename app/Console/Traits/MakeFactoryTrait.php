@@ -23,118 +23,100 @@
 namespace App\Console\Traits;
 
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 
+/**
+ * ファクトリー作成用のトレイト
+ */
 trait MakeFactoryTrait
 {
     use MakeFileTrait;
 
     /**
-     * ファクトリを作成するメイン処理。
-     * MakeFileTrait::makeFiler() を呼ぶ前後で、
-     * ファクトリ固有の stub選択 / 追加置換を加える。
-     *
-     * @param  string       $className
-     * @param  bool|string  $modelOption   モデル指定（null/falseの場合なし）
-     * @param  bool         $force
-     * @return void
+     * ファクトリー固有のオプション定義を取得
+     * 
+     * @return array
      */
-    protected function makeFile(string $className, ?string $modelOption, bool $force): void
+    protected function getAdditionalOptions(): array
     {
-        // 1) ファクトリ用 stubファイルを決定
-        $stubFile = $this->resolveStubFile();
+        return [
+            '--model' => 'The name of the model',
+        ];
+    }
 
-        // 2) ファクトリ固有の追加プレースホルダを組み立て
-        //    例: モデルFQCN, クラス名から "FooFactory" → "Foo"
-        $modelFqcn  = $this->determineModelFqcn($modelOption, $className);
-        $modelClass = class_basename($modelFqcn);
-        $justName   = Str::replaceLast('Factory', '', $className);
+    /**
+     * ファクトリーファイルを作成する
+     *
+     * @param string $className
+     * @param string $fileType
+     * @param array $options
+     * @param array $subDirs
+     * @param string $pluginName
+     * @return bool
+     */
+    protected function makeFile(
+        string $className,
+        string $fileType,
+        array $options,
+        array $subDirs,
+        string $pluginName
+    ): bool {
+        $className = Str::studly($className);
 
-        $extraPlaceholders = [
-            '{{ factory }}'          => $justName,
-            '{{ namespacedModel }}'  => $modelFqcn,
-            'DummyModel'             => $modelClass,
-            '{{ model }}'            => $modelClass,
-            '{{ factoryNamespace }}' => $this->getFactoryNamespace(),
+        // Get the stub content
+        $stub = $this->renderStub($options);
+
+        // Prepare placeholders
+        $placeholders = [
+            'class' => $className,
+            'model' => $this->getModelName($className, $options['model'] ?? null),
         ];
 
-        // 3) $options をまとめる
-        //    → MakeFileTrait::makeFiler() で使う連想配列
-        $options = [
-            'force' => $force,
-        ];
-
-        // 4) "makeFiler" を呼び出し
-        //    - 第2引数で subDirs を空配列 or 実装に応じて
-        //    - 追加プレースホルダを第5引数 (array $extraPlaceholders) などに渡す
+        // ファイル生成
         $this->makeFiler(
-            $className,
-            [],         // subDirs
-            $options,
-            $stubFile,
-            $extraPlaceholders
+            className: $className,
+            fileType: $fileType,
+            fileCategory: 'factory',
+            options: $options,
+            subDirs: $subDirs,
+            stub: $stub,
+            pluginName: $pluginName,
+            placeholders: $placeholders,
+            licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
         );
+
+        return true;
     }
 
     /**
-     * ファクトリ用 stubファイルを決定
-     * （ここでは単純に "factory.stub" で固定 or 拡張対応）
+     * モデル名を取得する
      */
-    protected function resolveStubFile(): string
-    {
-        // 現状は固定 "factory.stub"
-        // もし --type=xxx に対応したいなら追加ロジック
-        return 'factory.stub';
-    }
-
-    /**
-     * モデルのFQCNを決定
-     *
-     * @param string|null $modelOption
-     * @param string      $factoryClassName
-     * @return string
-     */
-    protected function determineModelFqcn(?string $modelOption, string $factoryClassName): string
+    protected function getModelName(string $className, ?string $modelOption): string
     {
         if ($modelOption) {
-            if (Str::startsWith($modelOption, '\\')) {
-                $modelOption = Str::replaceFirst('\\', '', $modelOption);
-            }
-            if (Str::contains($modelOption, '\\')) {
-                return $modelOption; // FQCN
-            }
-            // デフォルト "App\Models\..."
-            return 'App\\Models\\' . $modelOption;
+            return '\\' . ltrim($modelOption, '\\');
         }
 
-        // 工場名から推測: e.g. "UserFactory" => "User"
-        $modelName = Str::replaceLast('Factory', '', $factoryClassName);
-        $guess     = 'App\\Models\\' . $modelName;
-
-        // クラスがあればそれを使う、なければ fallback
-        if (class_exists($guess)) {
-            return $guess;
-        }
-        return 'App\\Models\\Model';
+        // Remove Factory suffix and convert to model name
+        $modelName = Str::replaceLast('Factory', '', $className);
+        return '\\App\\Models\\' . $modelName;
     }
 
     /**
-     * MakeFileTrait が要求する抽象メソッド: getDirectory(array $subDirs), getNamespace(array $subDirs)
-     * ここでラップし、それぞれ getFactoryDirectory(), getFactoryNamespace() を呼ぶ
+     * スタブをレンダリングする
+     *
+     * @param array $options
+     * @return string
      */
-    protected function getDirectory(array $subDirs): string
+    protected function renderStub(array $options): string
     {
-        // subDirs を使いたい場合は実装を工夫
-        return $this->getFactoryDirectory();
-    }
+        $stubPath = config('command.custom_stub_directory') . '/factory.stub';
+            
+        if (!File::exists($stubPath)) {
+            $this->error("Stub file not found: {$stubPath}");
+            return '';
+        }
 
-    protected function getNamespace(array $subDirs): string
-    {
-        return $this->getFactoryNamespace();
+        return File::get($stubPath);
     }
-
-    /**
-     * サブクラスで実装する抽象メソッド (独自命名を維持)
-     */
-    abstract protected function getFactoryDirectory(): string;
-    abstract protected function getFactoryNamespace(): string;
 }

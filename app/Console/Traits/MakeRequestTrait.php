@@ -23,64 +23,82 @@
 namespace App\Console\Traits;
 
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 
 /**
- * FormRequest を作るための追加ロジック。
- * -> MakeFileTrait を use してファイル生成を共通化。
+ * FormRequest 作成用トレイト
  */
 trait MakeRequestTrait
 {
     use MakeFileTrait;
-
+    
+    /**
+     * リクエスト固有のオプション定義を取得
+     * 
+     * @return array
+     */
+    protected function getAdditionalOptions(): array
+    {
+        return [];
+    }
+    
     /**
      * リクエストクラスを作成するメイン処理。
      *
-     * @param  string  $className
-     * @param  array   $subDirs
-     * @param  bool    $force
-     * @return void
+     * @param  string  $className  クラス名
+     * @param  string  $fileType   ファイルタイプ
+     * @param  array   $options    オプション配列
+     * @param  array   $subDirs    サブディレクトリ配列
+     * @param  string  $pluginName プラグイン名
+     * @return bool
      */
-    protected function makeFile(string $className, array $subDirs, bool $force): void
-    {
-        // 1) リクエスト用 stubファイル (request.stub)
-        $stubFile = $this->resolveStubFile();
-
-        // 2) options
-        $options = [
-            'force' => $force,
+    protected function makeFile(
+        string $className,
+        string $fileType,
+        array $options,
+        array $subDirs,
+        string $pluginName
+    ): bool {
+        // スタブの取得
+        $stub = $this->renderStub($options);
+        
+        // プレースホルダーの準備
+        $placeholders = [
+            'class' => $className,
         ];
-
-        // 3) リクエスト固有のプレースホルダ (無いなら空でOK)
-        $extraPlaceholders = [];
-
-        // 4) makeFiler
-        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders);
+                
+        // ファイル生成
+        $this->makeFiler(
+            className: $className,
+            fileType: $fileType,
+            fileCategory: 'request',
+            options: $options,
+            subDirs: $subDirs,
+            stub: $stub,
+            pluginName: $pluginName,
+            placeholders: $placeholders,
+            licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
+        );
+        
+        return true;
     }
 
     /**
-     * request.stub 固定 (将来的に --api とかで切り替えたいならここで拡張可)
+     * リクエスト用のスタブをレンダリングします。
+     *
+     * @param  array  $options
+     * @return string
      */
-    protected function resolveStubFile(): string
+    protected function renderStub(array $options = []): string
     {
-        return 'request.stub';
-    }
+        // スタブファイルのパスを取得
+        $stubPath = config('command.custom_stub_directory') . '/request.stub';
 
-    /**
-     * (B)パターン: getDirectory/getNamespace => getRequestDirectory/Namespace
-     */
-    protected function getDirectory(array $subDirs): string
-    {
-        return $this->getRequestDirectory($subDirs);
-    }
+        if (!File::exists($stubPath)) {
+            $this->error("Stub file not found: {$stubPath}");
+            return '';
+        }
 
-    protected function getNamespace(array $subDirs): string
-    {
-        return $this->getRequestNamespace($subDirs);
+        return File::get($stubPath);
     }
-
-    /**
-     * サブクラスが実装
-     */
-    abstract protected function getRequestDirectory(array $subDirs): string;
-    abstract protected function getRequestNamespace(array $subDirs): string;
 }

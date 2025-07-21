@@ -26,23 +26,13 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use App\Services\FileGenerator;
 use App\Console\Traits\MakeSeederTrait;
+use App\Console\Traits\MakePluginCommandTrait;
 
 class MakePluginSeeder extends Command
 {
     use MakeSeederTrait;
-
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-
-    protected $signature = 'make:plugin:seeder
-        {plugin : The name of the plugin (e.g. "EventsPlugin")}
-        {name : The name of the seeder class (e.g. "EventSeeder" or "Event")}
-        {--env= : Specify the environment ("dev" or "pro")}
-        {--force : Overwrite if the seeder file already exists}';
-
+    use MakePluginCommandTrait;
+    
     /**
      * The console command description.
      *
@@ -50,79 +40,34 @@ class MakePluginSeeder extends Command
      */
     protected $description = 'Create a new database seeder in the specified plugin directory';
 
-    /**
-     * ファイル操作用のインスタンス
-     */
-    protected FileGenerator $fileGenerator;
-
 
     /**
-     * コンストラクタ（FilesystemのDIなどに利用）
+     * Constructor
      */
-    public function __construct(FileGenerator $fileGenerator)
+    public function __construct()
     {
-        parent::__construct();
-        $this->fileGenerator = $fileGenerator;
+        $this->signature = $this->makeSignature('make:plugin:seeder
+            {className? : The name of the seeder class (e.g. "EventSeeder" or "Event")}
+            {pluginName? : The name of the plugin (e.g. "EventsPlugin")}',
+            $this->getAdditionalOptions()
+        );
+        parent::__construct($this->signature);
     }
 
+    /**
+     * Execute the console command.
+     */
     public function handle()
     {
-        // 1) plugin名
-        $pluginInput = $this->argument('plugin');
-        $studlyPluginName = Str::studly($pluginInput);
+        // Prepare options
+        $options = $this->options();
 
-        // 2) parse subDirs + className
-        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
-
-        // 3) シーダー名の末尾が "Seeder" でなければ付ける
-        if (! Str::endsWith($className, 'Seeder')) {
-            $className .= 'Seeder';
-        }
-
-        // 4) --force
-        $force = (bool)$this->option('force');
-
-        // 5) call trait method
-        $this->makeFile($className, $subDirs, $force);
-
-        return 0;
-    }
-
-    /**
-     * getSeederDirectory/Namespace
-     */
-    protected function getSeederDirectory(array $subDirs): string
-    {
-        $plugin = Str::studly($this->argument('plugin'));
-        $base = base_path("plugins/{$plugin}/database/seeders");
-
-        // --env オプションの取得
-        $env = $this->option('env');
-        if (in_array($env, ['dev', 'pro'])) {
-            $base .= "/{$env}";
-        }
-
-        if ($subDirs) {
-            $base .= '/' . implode('/', $subDirs);
-        }
-
-        return $base;
-    }
-
-    protected function getSeederNamespace(array $subDirs): string
-    {
-        $plugin = Str::studly($this->argument('plugin'));
-        $base = "Plugins\\{$plugin}\\Database\\Seeders";
-        // --env オプションの取得
-        $env = $this->option('env');
-        if (in_array($env, ['dev', 'pro'])) {
-            $base .= '\\' . ucfirst($env);
-        }
-
-        if ($subDirs) {
-            $base .= '\\' . implode('\\', $subDirs);
-        }
-
-        return $base;
+        // Call the trait's makeFile method
+        return $this->generatePluginFile(
+            $this->argument('className'),
+            $this->argument('pluginName'),
+            'seeder',
+            $options
+        );
     }
 }

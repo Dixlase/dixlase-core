@@ -267,10 +267,29 @@ trait MakeFileTrait
 
     /**
      * スタブファイルを取得
+     * 
+     * @param string $stub スタブファイル名（拡張子付き）
+     * @param array $placeholders 置換用のプレースホルダ
+     * @return string 処理済みのスタブコンテンツ
      */
     public function getStubContent(string $stub, array $placeholders = []): string
     {
-        $content = $this->replacePlaceholders($stub, $placeholders);
+        // スタブファイルのパスを構築
+        $stubPath = config('command.custom_stub_directory') . '/' . $stub;
+        
+        // ファイルが存在するか確認
+        if (!file_exists($stubPath)) {
+            $this->error("Stub file not found: {$stubPath}");
+            return '';
+        }
+        
+        // ファイルの内容を読み込む
+        $content = file_get_contents($stubPath);
+        
+        // プレースホルダを置換
+        $content = $this->replacePlaceholders($content, $placeholders);
+        
+        // インデントを整えて返す
         return $this->trimAndIndent($content);
     }
 
