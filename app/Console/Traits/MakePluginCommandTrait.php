@@ -90,9 +90,6 @@ trait MakePluginCommandTrait
             $needsScope ? $scope : null
         );
 
-        $this->info(print_r($subDirs));
-
-        
         // 共通パラメータを準備
         $common = [
             'fileType' => $fileType,
@@ -123,33 +120,5 @@ trait MakePluginCommandTrait
         );
 
         return true;
-    }
-    
-    /**
-     * @deprecated 後方互換性のため残しています。代わりに generatePluginFile() を使用してください。
-     */
-    protected function initializePluginCommand(
-        ?string $classPath = null,
-        ?string $pluginName = null,
-        string $fileType = 'plugin',
-        bool $needsScope = false,
-        ?string $scope = null
-    ) {
-        return $this->generatePluginFile($classPath, $pluginName, $fileType, $needsScope, $scope, []);
-    }
-    
-    /**
-     * @deprecated 後方互換性のため残しています。代わりに generatePluginFile() を使用してください。
-     */
-    protected function makePluginFile(array $common, array $options): bool
-    {
-        return $this->generatePluginFile(
-            $common['className'],
-            $common['pluginName'],
-            $common['fileType'],
-            !empty($common['scope']),
-            $common['scope'] ?? null,
-            $options
-        );
     }
 }

@@ -24,23 +24,14 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
-use App\Services\FileGenerator;
 use App\Console\Traits\MakeFactoryTrait;
+use App\Console\Traits\MakePluginCommandTrait;
 
 class MakePluginFactory extends Command
 {
     use MakeFactoryTrait;
-
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'make:plugin:factory
-                            {plugin : The name of the plugin (e.g. "EventsPlugin")}
-                            {name : The name of the factory class (e.g. "EventFactory" or just "Event")}
-                            {--model= : The name of the model (FQCN or relative) for this factory}
-                            {--force : Overwrite the factory if it already exists}';
+    use MakePluginCommandTrait;
+    
     /**
      * The console command description.
      *
@@ -49,48 +40,32 @@ class MakePluginFactory extends Command
     protected $description = 'Create a new model factory in the specified plugin directory';
 
     /**
-     * ファイル操作用のインスタンス
+     * Constructor
      */
-    protected FileGenerator $fileGenerator;
-
-    /**
-     * コンストラクタ（FilesystemのDIなどに利用）
-     */
-    public function __construct(FileGenerator $fileGenerator)
+    public function __construct()
     {
-        parent::__construct();
-        $this->fileGenerator = $fileGenerator;
+        $this->signature = $this->makeSignature('make:plugin:factory
+            {className? : The name of the factory class (e.g. "EventFactory" or "Event")}
+            {pluginName? : The name of the plugin (e.g. "EventsPlugin")}',
+            $this->getAdditionalOptions()
+        );
+        parent::__construct($this->signature);
     }
 
+    /**
+     * Execute the console command.
+     */
     public function handle()
     {
-        $plugin    = Str::studly($this->argument('plugin'));
-        $className = $this->argument('name');
-        if (! Str::endsWith($className, 'Factory')) {
-            $className .= 'Factory';
-        }
+        // Prepare options
+        $options = $this->options();
 
-        $model = $this->option('model');
-        $force = (bool) $this->option('force');
-
-        // ファクトリ作成
-        $this->makeFile($className, $model, $force);
-
-        return 0;
-    }
-
-    /**
-     * サブクラスで実装: getFactoryDirectory(), getFactoryNamespace()
-     */
-    protected function getFactoryDirectory(): string
-    {
-        $pluginName = Str::studly($this->argument('plugin'));
-        return base_path("plugins/{$pluginName}/database/factories");
-    }
-
-    protected function getFactoryNamespace(): string
-    {
-        $pluginName = Str::studly($this->argument('plugin'));
-        return "Plugins\\{$pluginName}\\Database\\Factories";
+        // Call the trait's makeFile method
+        return $this->generatePluginFile(
+            $this->argument('className'),
+            $this->argument('pluginName'),
+            'factory',
+            $options
+        );
     }
 }

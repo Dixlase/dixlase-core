@@ -24,74 +24,52 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
-use App\Services\FileGenerator;
 use App\Console\Traits\MakeRequestTrait;
+use App\Console\Traits\MakePluginCommandTrait;
 use App\Console\Traits\MakeLicenseTrait;
-
 
 class MakePluginRequest extends Command
 {
     use MakeRequestTrait;
+    use MakePluginCommandTrait;
+    use MakeLicenseTrait;
 
-    protected $signature = 'make:plugin:request
-        {plugin : The plugin name (e.g. "MyPlugin")}
-        {name : The FormRequest class name (with optional subfolders, e.g. Admin/StoreDataRequest)}
-        {--force : Overwrite if the request already exists}';
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Create a new FormRequest class for the specified plugin';
 
-    protected $description = 'Create a new FormRequest class for the specified plugin.';
-
-    protected FileGenerator $fileGenerator;
-
-    public function __construct(FileGenerator $fileGenerator)
+    /**
+     * Create a new command instance.
+     *
+     * @return void
+     */
+    public function __construct()
     {
-        parent::__construct();
-        $this->fileGenerator = $fileGenerator;
-    }
-
-    public function handle()
-    {
-        // 1) plugin名
-        $pluginName = Str::studly($this->argument('plugin'));
-
-        // 2) parse subDirs + className
-        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
-
-        // 3) --force
-        $force = (bool)$this->option('force');
-
-        // プラグインのライセンス情報を取得
-        $licenseInfo = $this->getPluginLicenseInfo($pluginName);
-        if (!$licenseInfo) {
-            return Command::FAILURE;
-        }
-
-        // 4) Traitの makeFile(...) 呼び出し
-        $this->makeFile($className, $subDirs, $force, $licenseInfo);
-
-        $this->info("プラグイン [{$pluginName}] のリクエストファイル [{$className}] を作成しました。");
-        return Command::SUCCESS;
+        $this->signature = $this->makeSignature(
+            'make:plugin:request
+            {className?}
+            {pluginName?}',
+            $this->getAdditionalOptions()
+        );
+        
+        parent::__construct($this->signature);
     }
 
     /**
-     * (B)パターンで getRequestDirectory/Namespace
+     * Execute the console command.
+     *
+     * @return int
      */
-    protected function getRequestDirectory(array $subDirs): string
+    public function handle()
     {
-        $plugin = Str::studly($this->argument('plugin'));
-        $base = base_path("plugins/{$plugin}/app/Http/Requests");
-        if ($subDirs) {
-            $base .= '/' . implode('/', $subDirs);
-        }
-        return $base;
-    }
-
-    protected function getRequestNamespace(array $subDirs): string
-    {
-        $plugin = Str::studly($this->argument('plugin'));
-        $base = "Plugins\\{$plugin}\\App\\Http\\Requests";
-        if ($subDirs) {
-            $base .= '\\' . implode('\\', $subDirs);
-        }
-        return $base;
+        return $this->generatePluginFile(
+            $this->argument('className'),
+            $this->argument('pluginName'),
+            'request',
+            $this->options()
+        );
     }
 }

@@ -23,64 +23,80 @@
 namespace App\Console\Traits;
 
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 
 /**
- * シーダーを作るための追加ロジック。
- * -> MakeFileTrait を use してファイル生成を共通化。
+ * シーダーを作成するためのトレイト
  */
 trait MakeSeederTrait
 {
     use MakeFileTrait;
 
     /**
-     * シーダーを作成するメイン処理
-     *
-     * @param  string  $className
-     * @param  array   $subDirs
-     * @param  bool    $force
-     * @return void
+     * シーダー固有のオプション定義を取得
+     * 
+     * @return array
      */
-    protected function makeFile(string $className, array $subDirs, bool $force): void
+    protected function getAdditionalOptions(): array
     {
-        // 1) シーダー用 stubファイル (seeder.stub)
-        $stubFile = $this->resolveStubFile();
-
-        // 2) options
-        $options = [
-            'force' => $force,
+        return [
+            
         ];
-
-        // 3) シーダー固有の追加プレースホルダ (なければ空配列)
-        $extraPlaceholders = [];
-
-        // 4) makeFiler
-        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders);
     }
 
     /**
-     * seeder.stub を返す (将来拡張したい場合はここに分岐可)
+     * シーダーファイルを作成する
+     *
+     * @param string $className
+     * @param string $fileType
+     * @param array $options
+     * @param array $subDirs
+     * @param string $pluginName
+     * @return bool
      */
-    protected function resolveStubFile(): string
-    {
-        return 'seeder.stub';
+    protected function makeFile(
+        string $className,
+        string $fileType,
+        array $options,
+        array $subDirs,
+        string $pluginName
+    ): bool {
+        // Get the stub content
+        $stub = $this->renderStub($options);
+
+        // ファイル生成
+        $this->makeFiler(
+            className: $className,
+            fileType: $fileType,
+            fileCategory: 'seeder',
+            options: $options,
+            subDirs: $subDirs,
+            stub: $stub,
+            pluginName: $pluginName,
+            placeholders: [],
+            licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
+        );
+
+        return true;
+
     }
 
     /**
-     * (B)パターン: getDirectory/getNamespace => getSeederDirectory/Namespace
+     * スタブをレンダリングする
+     *
+     * @param array $options
+     * @return string
      */
-    protected function getDirectory(array $subDirs): string
+    protected function renderStub(array $options): string
     {
-        return $this->getSeederDirectory($subDirs);
-    }
+        // スタブファイルのパスを取得
+        $stubPath = config('command.custom_stub_directory') . '/seeder.stub';
 
-    protected function getNamespace(array $subDirs): string
-    {
-        return $this->getSeederNamespace($subDirs);
-    }
+        if (!File::exists($stubPath)) {
+            $this->error("Stub file not found: {$stubPath}");
+            return '';
+        }
 
-    /**
-     * サブクラスで実装
-     */
-    abstract protected function getSeederDirectory(array $subDirs): string;
-    abstract protected function getSeederNamespace(array $subDirs): string;
+        return File::get($stubPath);
+    }
 }

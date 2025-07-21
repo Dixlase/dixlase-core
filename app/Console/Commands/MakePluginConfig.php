@@ -86,20 +86,5 @@ class MakePluginConfig extends Command
             $options
         );
 
-
-
-        /*
-        $common = $this->initializePluginCommand($this->argument('className'), $this->argument('pluginName'));
-        if (!$common) {
-            return Command::FAILURE;
-        }
-        $common['category'] = 'config';
-
-        // コンフィグファイルの生成
-        return $this->makePluginFile($common, $this->options())
-            ? Command::SUCCESS
-            : Command::FAILURE;
-        */
-
     }
 }

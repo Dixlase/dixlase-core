@@ -75,24 +75,6 @@ class MakePluginLanguage extends Command
             'lang',
             $options
         );
-
-        /*
-        // Initialize language command (class name prompt is now handled in the trait)
-        $common = $this->initializeLanguageCommand(
-            $this->argument('className'),
-            $this->argument('pluginName'),
-            $this->argument('lang')
-        );
-
-        if (!$common) {
-            return Command::FAILURE;
-        }
-
-        // Create the language file
-        return $this->makePluginFile($common, $this->options())
-            ? Command::SUCCESS
-            : Command::FAILURE;
-        */
     }
 
     /**

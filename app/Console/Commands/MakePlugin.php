@@ -46,20 +46,7 @@ class MakePlugin extends Command
                             {pluginName? : The name of the plugin}
                             {--author= : The author of the plugin}
                             {--website= : The website URL for the plugin}
-                            {--license= : The license type (GPL, AGPL, MIT, Apache, BSD, LGPL, commercial, custom, none)}
-                            {--controller : Create a controller for the plugin}
-                            {--model : Create a model for the plugin}
-                            {--migration : Create a migration file for the plugin}
-                            {--policy : Create a policy file for the plugin}
-                            {--listener : Create an event listener for the plugin}
-                            {--test : Create test cases for the plugin}
-                            {--command : Create a command for the plugin}
-                            {--job : Create a job for the plugin}
-                            {--notification : Create a notification for the plugin}
-                            {--resource : Create a resource for the plugin}
-                            {--factory : Create a factory for the plugin}
-                            {--seeder : Create a seeder for the plugin}
-                            {--all : Create all of the above}';
+                            {--license= : The license type (GPL, AGPL, MIT, Apache, BSD, LGPL, commercial, custom, none)}';
 
     protected $description = 'Create a new plugin with a predefined structure';
 
@@ -139,11 +126,10 @@ class MakePlugin extends Command
         // デフォルトのライセンス情報を設定
         $licenseInfo = [
             'software' => $pluginName,
-            'author' => '',
-            'website' => '',
+            'author' => $author,
+            'website' => $website,
         ];
-        
-
+    
         
         if (!Str::startsWith($website, 'https://')) {
             $website = 'https://' . ltrim($website, '/');
@@ -159,7 +145,6 @@ class MakePlugin extends Command
         $licenseInfo['licenseText'] = $this->replacePlaceholders($selectedLicense['template'], $licenseInfo);
         
 
-        //$this->info(print_r($licenseInfo));
 
         // プラグインディレクトリを作成
         $this->createPluginDirectories($pluginName, $pluginDir, $namespace, $pluginDirName);
@@ -174,6 +159,8 @@ class MakePlugin extends Command
             $cmsNameSlug,
             $pluginSlug,
             $softwareName,
+            $author,
+            $website,
             $licenseInfo
         );
 
@@ -253,6 +240,8 @@ class MakePlugin extends Command
         string $cmsNameSlug,
         string $pluginSlug,
         string $softwareName,
+        string $author,
+        string $website,
         array $licenseInfo
     ) {
 
@@ -285,6 +274,8 @@ class MakePlugin extends Command
             'vendorNameStudly'  => $vendorNameStudly,
             'softwareName'      => $softwareName,
             'cmsNameSlug'       => $cmsNameSlug,
+            'author'            => $author,
+            'website'           => $website,
         ];
 
 
@@ -321,6 +312,8 @@ class MakePlugin extends Command
 
         
         // オプションに基づいて追加ファイルを作成
+
+        /*
         if ($this->option('all')) {
             // オプションが指定されている場合は、全てのファイルを生成
             $this->createController($pluginName, $pluginDirName, $namespace);
@@ -382,6 +375,7 @@ class MakePlugin extends Command
                 $this->createSeeder($pluginName, $pluginDirName);
             }
         }
+        */
         
     }
 
@@ -425,8 +419,6 @@ class MakePlugin extends Command
      */
     protected function createRoutes(string $pluginName, string $pluginDir, array $placeholders, array $licenseInfo)
     {
-
-
         //フロント用のルートファイルを作成        
         Artisan::call('make:plugin:route', [
             'className' => "web",
@@ -493,9 +485,8 @@ class MakePlugin extends Command
     protected function createViteConfigFile(string $pluginName, string $pluginDir, array $placeholders, array $licenseInfo)
     {
 
-        
         // スタブファイルの内容を取得してファイルを生成
-        $content = $this->getStubContent('vite.config.stub', $placeholders);
+        $content = $this->getStubContent('vite.config.plugin.stub', $placeholders);
         file_put_contents("{$pluginDir}/vite.config.js", $content);
 
         $this->info(__('command.make_plugin.files.vite', ['pluginName' => $pluginName]));
@@ -518,6 +509,8 @@ class MakePlugin extends Command
      */
     protected function createReadmeFile(string $pluginName, string $pluginDir, array $placeholders, array $licenseInfo)
     {
+        //現在の年を取得
+        $placeholders['year'] = date('Y');
         // スタブファイルの内容を取得してファイルを生成
         $content = $this->getStubContent('readme.plugin.stub', $placeholders);
         file_put_contents("{$pluginDir}/README.md", $content);
