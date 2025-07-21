@@ -23,6 +23,8 @@
 namespace App\Console\Traits;
 
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
+
 
 /**
  * Bladeファイルを作成するためのTrait。
@@ -31,37 +33,173 @@ use Illuminate\Support\Str;
  */
 trait MakeBladeTrait
 {
-    // Bladeファイルを作成
-    protected function makeFile(string $viewName, array $subDirs, array $options): void
+    /**
+     * Bladeファイルを作成
+     *
+     * @param array $common 共通初期化パラメータ
+     * @param array $options オプション
+     * @return bool 成功したかどうか
+     */
+
+
+    /**
+     * Bladeファイルを作成するメイン処理。
+     *
+     * @param  string  $className  クラス名
+     * @param  string  $fileType   ファイルタイプ
+     * @param  array   $options    オプション配列
+     * @param  array   $subDirs    サブディレクトリ配列
+     * @param  string  $pluginName プラグイン名
+     * @param  array   $licenseInfo ライセンス情報
+     * @return bool
+     */
+
+
+    protected function makeFile(
+        string $className,
+        string $fileType,
+        array $options,
+        array $subDirs,
+        string $pluginName
+    ){
+
+
+
+        $scope = $options['scope'] ?? 'plain'; // スコープの取得（例: admin, front, plain）
+        
+        // スタブの取得（スコープを考慮）
+        $stub = $this->renderStub($options, $scope);
+
+        // Bladeファイルの場合はサブディレクトリをすべて小文字に変換
+        $subDirs = array_map('strtolower', $subDirs);
+
+
+        $this->info(print_r($subDirs));
+        
+
+        // ファイル生成
+        $this->makeFiler(
+            className: $className,
+            fileType: $fileType,
+            fileCategory: 'blade',
+            options: $options,
+            subDirs: $subDirs,
+            stub: $stub,
+            pluginName: $pluginName,
+            placeholders: [],
+            licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
+        );
+        
+        return true;
+
+
+    
+
+        /*
+        // 1) スコープを処理
+        $scope = $this->handleScopeSelection($options);
+        if ($scope === false) {
+            return false;
+        }
+        
+        // 2) スコープに基づいてサブディレクトリを設定
+        if ($scope !== 'plain') {
+            $subDirs[] = $scope;
+        }
+
+        // 3) 余分な拡張子を取り除く
+        $viewName = $this->normalizeViewName($className);
+
+        // 4) サブディレクトリとファイル名を切り分ける
+        $parts = $this->splitViewPath($viewName);
+        $fileName = $this->formatFileName(array_pop($parts));
+        
+        // 5) サブディレクトリをマージ（オプションで指定されたものを優先）
+        $subDirs = array_merge($subDirs, $parts);
+
+        // 6) スタブファイルを解決
+        $stubFile = $this->resolveStubFile(['scope' => $scope] + $options);
+        
+        // 7) プレースホルダーを準備
+        $extraPlaceholders = $this->preparePlaceholders($viewName, ['scope' => $scope] + $options);
+
+        // 8) Bladeファイルを作成
+        $this->makeFilerBlade($fileName, $subDirs, ['scope' => $scope] + $options, $stubFile, $extraPlaceholders);
+        
+        return true;
+        */
+    }
+    
+    /**
+     * スコープの選択を処理する
+     *
+     * @param array $options コマンドオプション
+     * @return string|false 選択されたスコープ、またはエラー時はfalse
+     */
+    protected function handleScopeSelection(array $options)
     {
-        // 1) 余分な拡張子を取り除く
+        $scope = $options['scope'] ?? null;
+        
+        // スコープが指定されていない場合は選択を求める
+        if (empty($scope)) {
+            $scope = $this->choice(
+                'Select the scope for the blade file',
+                ['plain', 'front', 'admin'],
+                0
+            );
+        }
+        
+        // 有効なスコープか検証
+        if (!in_array($scope, ['plain', 'front', 'admin'])) {
+            $this->error("Invalid scope: '{$scope}'. Choose 'plain', 'front' or 'admin'.");
+            return false;
+        }
+        
+        return $scope;
+    }
+    
+    /**
+     * ビュー名を正規化する
+     */
+    protected function normalizeViewName(string $viewName): string
+    {
+        // 余分な拡張子を取り除く
         if (str_ends_with($viewName, '.php')) {
             $viewName = substr($viewName, 0, -4);
         }
         if (str_ends_with($viewName, '.blade')) {
-            // 例: "upload.blade" -> "upload"
             $viewName = substr($viewName, 0, -6);
         }
-
-        // 2) サブディレクトリとファイル名を切り分ける
-        //    例: "admin/media/upload" -> ["admin","media","upload"]
-        $parts = explode('/', $viewName);
-        $fileName = array_pop($parts);       // "upload"
-        $subDirs = $parts;                  // ["admin","media"]
-
-        // 3) ファイル名をケバブケース化
-        //    ex: "upload.blade" はほぼ変化なし ("upload.blade")
-        //        "SomePage.blade" → "some-page.blade"
-        $fileName = Str::kebab($fileName) . '.blade.php';
-
-        // Blade用ライセンスコメントなど
-        $extraPlaceholders = [
+        
+        return $viewName;
+    }
+    
+    /**
+     * ビューパスを分割する
+     */
+    protected function splitViewPath(string $viewPath): array
+    {
+        return array_filter(explode('/', $viewPath), 'strlen');
+    }
+    
+    /**
+     * ファイル名をフォーマットする
+     */
+    protected function formatFileName(string $name): string
+    {
+        return Str::kebab($name) . '.blade.php';
+    }
+    
+    /**
+     * プレースホルダーを準備する
+     */
+    protected function preparePlaceholders(string $viewName, array $options): array
+    {
+        return [
             '{{ license }}'  => $this->fileGenerator->getLicenseForBlade(),
-            '{{ filename }}' => $viewName,  // 例: "admin/media/upload"
+            '{{ filename }}' => $viewName,
+            '{{ scope }}'    => $options['scope'] ?? 'plain',
         ];
-
-        // 5) Blade専用ロジックでファイル作成
-        $this->makeFilerBlade($fileName, $subDirs, $options, $this->resolveStubFile($options), $extraPlaceholders);
     }
 
     /**
@@ -121,13 +259,28 @@ trait MakeBladeTrait
     }
 
     /**
-     * フロント or 管理画面 用のスタブを切り替え
+     * スコープに基づいて適切なスタブファイルをレンダリングする
+     * 
+     * @param array $options オプション
+     * @return string スタブファイルの内容
      */
-    protected function resolveStubFile(array $options): string
+    protected function renderStub(array $options = []): string
     {
-        return ($options['type'] ?? 'front') === 'admin'
-            ? 'blade-admin.stub'
-            : 'blade-front.stub';
+        $scope = $options['scope'] ?? 'plain';
+        
+        // スコープに応じたスタブファイル名を設定
+        $stubName = 'blade.stub';
+        if ($scope === 'admin') {
+            $stubName = 'blade-admin.stub';
+        } elseif ($scope === 'front') {
+            $stubName = 'blade-front.stub';
+        }
+
+        // スタブファイルのパスを取得
+        $stubPath = config('command.custom_stub_directory') . '/' . $stubName;
+
+        // スタブファイルの内容を取得
+        return File::get($stubPath);
     }
 
     /**

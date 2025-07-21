@@ -55,112 +55,41 @@ trait MakeControllerTrait
         ];
     }
 
-    /**
-     * Initialize controller command with optional prompts for missing parameters
-     *
-     * @param string $fileType The type of file (plugin/custom)
-     * @param string|null $className The controller class name (optional)
-     * @param string|null $pluginName The plugin name (optional for plugin type)
-     * @param string|null $scope The scope of the controller (optional)
-     * @return array|false Returns command data array or false on failure
-     */
-    protected function initializeControllerCommand(string $fileType, ?string $className = null, ?string $pluginName = null, ?string $scope = null)
-    {
-        // Validate file type
-        if (!in_array($fileType, ['plugin', 'custom'])) {
-            $this->error('Invalid file type. Must be either "plugin" or "custom".');
-            return false;
-        }
-
-        // Prompt for class name if not provided
-        if (empty($className)) {
-            $className = $this->ask(__('class.enter_class_name'));
-            if (empty($className)) {
-                $this->error(__('class.class_name_required'));
-                return false;
-            }
-        }
-
-        // For plugin type, handle plugin name
-        if ($fileType === 'plugin') {
-            if (!$pluginName) {
-                $pluginName = $this->choosePlugin();
-                if (!$pluginName) {
-                    return false;
-                }
-            }
-        }
-
-        // コントローラ作成時のみスコープの選択を行う
-        if (!$scope) {
-            $scope = $this->chooseScope();
-            if (!$scope) {
-                return false;
-            }
-        }
-
-        // パス情報の分解
-        [$className, $subDirs] = $this->parseClassPath($className, $scope);
-        $pluginName = $pluginName ? Str::studly($pluginName) : null;
-
-        // Get license info for plugins
-        $licenseInfo = $pluginName ? ($this->getPluginLicenseInfo($pluginName) ?? []) : [];
-
-        return [
-            'fileType' => $fileType,
-            'pluginName' => $pluginName,
-            'scope' => $scope,
-            'className' => $className,
-            'subDirs' => $subDirs,
-            'licenseInfo' => $licenseInfo,
-            'category' => 'controller'
-        ];
-    }
-
 
     /**
      * コントローラを作成するメイン処理。
-     * MakeFileTrait::makeFiler() を呼ぶ前後で、
-     * コントローラ固有の stub選択 / 追加置換を加える。
      *
-     * @param  string  $className
-     * @param  array   $subDirs
-     * @param  array   $options
-     * @return void
+     * @param  string  $className  クラス名
+     * @param  string  $fileType   ファイルタイプ
+     * @param  array   $options    オプション配列
+     * @param  array   $subDirs    サブディレクトリ配列
+     * @param  string  $pluginName プラグイン名
+     * @param  string  $scope      スコープ (front/adminなど)
+     * @return bool
      */
-
-    protected function makeControllerFile(array $common, array $options): bool
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '')
     {
-        // 連想配列から値を取得
-        $fileType = $common['fileType'];
-        $pluginName = $common['pluginName'];
-        $className = $common['className'];
-        $subDirs = $common['subDirs'];
-        $licenseInfo = $common['licenseInfo'];
-        $category = 'controller';
-        $scope = $common['scope'];
 
-        // カテゴリに基づいてオプションをマージ
-        $options = $this->mergeCategoryOptions($category, $common, $options);
-
-        // スタブの取得
-        $stub = $this->renderStub($options, $scope);
+        $scope = $options['scope'] ?? 'plain'; // スコープの取得（例: admin, front, plain）
         
+        // スタブの取得（スコープを考慮）
+        $stub = $this->renderStub($options, $scope);
+    
+    
         // ファイル生成
         $this->makeFiler(
-            $className,
-            $fileType,
-            'controllers',
-            $options,
-            $subDirs,
-            $stub,
-            $pluginName,
-            [],
-            $licenseInfo
+            className: $className,
+            fileType: $fileType,
+            fileCategory: 'controller',
+            options: $options,
+            subDirs: $subDirs,
+            stub: $stub,
+            pluginName: $pluginName,
+            placeholders: [],
+            licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
         );
-
+        
         return true;
-
     }
 
 

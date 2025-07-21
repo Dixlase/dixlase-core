@@ -66,6 +66,17 @@ class MakePluginLanguage extends Command
      */
     public function handle()
     {
+        $options = $this->options();
+        $options['lang'] = $this->argument('lang');
+
+        $this->generatePluginFile(
+            $this->argument('className'),
+            $this->argument('pluginName'),
+            'lang',
+            $options
+        );
+
+        /*
         // Initialize language command (class name prompt is now handled in the trait)
         $common = $this->initializeLanguageCommand(
             $this->argument('className'),
@@ -81,6 +92,7 @@ class MakePluginLanguage extends Command
         return $this->makePluginFile($common, $this->options())
             ? Command::SUCCESS
             : Command::FAILURE;
+        */
     }
 
     /**

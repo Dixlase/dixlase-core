@@ -43,7 +43,7 @@ class MakePlugin extends Command
      */
 
     protected $signature = 'make:plugin
-                            {name? : The name of the plugin}
+                            {pluginName? : The name of the plugin}
                             {--author= : The author of the plugin}
                             {--website= : The website URL for the plugin}
                             {--license= : The license type (GPL, AGPL, MIT, Apache, BSD, LGPL, commercial, custom, none)}
@@ -94,7 +94,7 @@ class MakePlugin extends Command
         // ソフトウェア名をスネークケースに変換
         $cmsNameSlug = Str::slug(Str::snake($softwareName));
         // プラグイン名を取得（引数がなければ入力を求める）
-        $pluginName = $this->argument('name') ?: $this->ask(__('command.make_plugin.enter_plugin_name'));
+        $pluginName = $this->argument('pluginName') ?: $this->ask(__('command.make_plugin.enter_plugin_name'));
         // スラッグ名。プラグイン名をスネークケースに変換
         $pluginSlug = Str::slug(Str::snake($pluginName));
         // プラグインディレクトリ名。プラグイン名をキャメルケースに変換
@@ -110,11 +110,11 @@ class MakePlugin extends Command
 
 
         if (File::exists($pluginDir)) {
-            $this->error(__('command.make_plugin.already_exists', ['name' => $pluginName]));
+            $this->error(__('command.make_plugin.already_exists', ['pluginName' => $pluginName]));
             return Command::FAILURE;
         }
 
-                // 開発者情報の取得
+        // 開発者情報の取得
         $author = $this->option('author') ?: $this->ask(__('command.make_plugin.enter_author_name'));
         $licenseInfo['author'] = $author;
 
@@ -429,14 +429,14 @@ class MakePlugin extends Command
 
         //フロント用のルートファイルを作成        
         Artisan::call('make:plugin:route', [
-            'className' => "web.php",
+            'className' => "web",
             'pluginName' => $pluginName,
             'routeType' => 'web',
         ]);
 
         //管理画面用のルートファイルを作成
         Artisan::call('make:plugin:route', [
-            'className' => "admin.php",
+            'className' => "admin",
             'pluginName' => $pluginName,
             'routeType' => 'admin',
         ]);
@@ -452,21 +452,10 @@ class MakePlugin extends Command
      */
     protected function createConfigFile(string $pluginName, string $pluginDir, array $placeholders, array $licenseInfo)
     {
-        /*
-        // コンフィグディレクトリを作成
-        $configPath = "{$pluginDir}/config";
-        if (!file_exists($configPath)) {
-            mkdir($configPath, 0755, true);
-        }
-
-        // スタブファイルの内容を取得してファイルを生成
-        $content = $this->getStubContent('config.stub', $placeholders);
-        file_put_contents("{$configPath}/settings.php", $content);
-        */
 
         //フロント用のコンフィグファイルを作成        
         Artisan::call('make:plugin:config', [
-            'className' => "app.php",
+            'className' => "app",
             'pluginName' => $pluginName,
         ]);
 
@@ -483,14 +472,14 @@ class MakePlugin extends Command
 
         //英語の言語ファイルを作成        
         Artisan::call('make:plugin:lang', [
-            'className' => "messages.php",
+            'className' => "messages",
             'pluginName' => $pluginName,
             'lang' => 'en',
         ]);
 
         //日本語の言語ファイルを作成
         Artisan::call('make:plugin:lang', [
-            'className' => "messages.php",
+            'className' => "messages",
             'pluginName' => $pluginName,
             'lang' => 'ja',
         ]);

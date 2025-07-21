@@ -75,6 +75,20 @@ class MakePluginConfig extends Command
     public function handle()
     {
 
+        $options = $this->options();
+
+
+
+        $this->generatePluginFile(
+            $this->argument('className'),
+            $this->argument('pluginName'),
+            'config',
+            $options
+        );
+
+
+
+        /*
         $common = $this->initializePluginCommand($this->argument('className'), $this->argument('pluginName'));
         if (!$common) {
             return Command::FAILURE;
@@ -85,6 +99,7 @@ class MakePluginConfig extends Command
         return $this->makePluginFile($common, $this->options())
             ? Command::SUCCESS
             : Command::FAILURE;
+        */
 
     }
 }

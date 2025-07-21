@@ -24,7 +24,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
-use App\Services\FileGenerator;
 use App\Console\Traits\MakeModelTrait;
 use App\Console\Traits\MakePluginCommandTrait;
 
@@ -55,27 +54,39 @@ class MakePluginModel extends Command
 
     public function handle()
     {
+
+        return $this->generatePluginFile(
+            $this->argument('className'),
+            $this->argument('pluginName'),
+            'model',
+            $this->options()
+        );
+
+
+        /*
         // 共通の初期化処理
         $common = $this->initializePluginCommand($this->argument('className'), $this->argument('pluginName'));
         if (!$common) {
             return Command::FAILURE;
         }
 
+        $common['category'] = 'models';
+
         // 関連ファイルの作成
-        /*
-        $success = $this->handleModelOptions(
-            $commonInit['className'],
+        $success = $this->handleOptions(
+            $common['className'],
             $this->options(),
             'plugin',
-            $commonInit['subDirs'],
-            $commonInit['pluginName']
+            $common['subDirs'],
+            $common['pluginName']
         );
-        */
 
         // モデルファイルの生成
         return $this->makePluginFile($common, $this->options())
             ? Command::SUCCESS
             : Command::FAILURE;
+        */
+
 
     }
 }

@@ -35,71 +35,82 @@ trait MakePluginCommandTrait
     use MakeLicenseTrait;
 
     /**
-     * プラグインコマンドの共通初期化処理
+     * プラグインファイルの生成処理を実行します
      *
      * @param string|null $classPath クラスパス（オプション）
      * @param string|null $pluginName プラグイン名（オプション）
-     * @return array|false [fileType, className, pluginName, subDirs, licenseInfo] または false
+     * @param string $fileType ファイルタイプ（'plugin' または 'custom'）
+     * @param bool $needsScope スコープの選択が必要かどうか
+     * @param string|null $scope 事前に指定されたスコープ（オプション）
+     * @param array $options 追加オプション
+     * @return bool 成功したかどうか
      */
-    protected function initializePluginCommand(
-        ?string $classPath = null, 
-        ?string $pluginName = null
-    ) {
+    protected function generatePluginFile(
+        ?string $classPath = null,
+        ?string $pluginName = null,
+        string $category = null,
+        array $options = [],
+        bool $needsScope = false,
+        ?string $scope = null,
+    ): bool {
+
+        $fileType = 'plugin';
+
         // クラス名が指定されていない場合は入力を求める
         if (empty($classPath)) {
-            $classPath = $this->ask(__('command.class.enter_class_name'));
-            if (empty($classPath)) {
-                $this->error(__('command.class.class_name_required'));
+            $classPath = $this->askForClassName();
+            if ($classPath === false) {
                 return false;
             }
         }
 
-        // プラグイン選択
+        // プラグイン名の指定がなければプラグイン選択
         if (empty($pluginName)) {
             $pluginName = $this->choosePlugin();
+            if (empty($pluginName)) {
+                $this->error(__('command.plugin.not_found'));
+                return false;
+            }
         }
-            
-        if (empty($pluginName)) { 
-            $this->error(__('command.plugin.not_found'));
-            return false;
-        }
-        
-        // パス情報の分解
-        [$className, $subDirs] = $this->parseClassPath($classPath);
         $pluginName = Str::studly($pluginName);
-
-        // ライセンス情報の取得
         $licenseInfo = $this->getPluginLicenseInfo($pluginName) ?? [];
 
-        // fileTypeは常に'plugin'
-        return [
-            'fileType' => 'plugin',
+        // スコープの処理（必要な場合）
+        if ($needsScope && empty($scope)) {
+            $scope = $this->chooseScope();
+            if ($scope === false) {
+                return false;
+            }
+        }
+
+        // パス情報の分解（スコープがある場合は考慮）
+        [$className, $subDirs] = $this->parseClassPath(
+            $category,
+            $classPath,
+            $needsScope ? $scope : null
+        );
+
+        $this->info(print_r($subDirs));
+
+        
+        // 共通パラメータを準備
+        $common = [
+            'fileType' => $fileType,
             'className' => $className,
             'pluginName' => $pluginName,
             'subDirs' => $subDirs,
-            'licenseInfo' => $licenseInfo
+            'licenseInfo' => $licenseInfo,
+            'scope' => $scope,
+            'category' => $category
         ];
-    }
-
-    /**
-     * プラグインファイルの生成処理
-     *
-     * @param array $commonInit initializePluginCommandの結果
-     * @param array $options オプション
-     * @return bool 成功したかどうか
-     */
-    protected function makePluginFile(array $common, array $options): bool
-    {
-        // 連想配列から値を取得
-        $fileType = $common['fileType'];
-        $pluginName = $common['pluginName'];
-        $className = $common['className'];
-        $subDirs = $common['subDirs'];
-        $licenseInfo = $common['licenseInfo'];
-        $category = $common['category'] ?? 'default';
         
         // カテゴリに基づいてオプションをマージ
         $options = $this->mergeCategoryOptions($category, $common, $options);
+
+        // スコープの指定があれば、オプションにマージ
+        if (!empty($scope)) {
+            $options = array_merge($options, ['scope' => $scope]);
+        }
 
         // ファイル生成
         $this->makeFile(
@@ -111,8 +122,34 @@ trait MakePluginCommandTrait
             $licenseInfo
         );
 
-        
-
         return true;
+    }
+    
+    /**
+     * @deprecated 後方互換性のため残しています。代わりに generatePluginFile() を使用してください。
+     */
+    protected function initializePluginCommand(
+        ?string $classPath = null,
+        ?string $pluginName = null,
+        string $fileType = 'plugin',
+        bool $needsScope = false,
+        ?string $scope = null
+    ) {
+        return $this->generatePluginFile($classPath, $pluginName, $fileType, $needsScope, $scope, []);
+    }
+    
+    /**
+     * @deprecated 後方互換性のため残しています。代わりに generatePluginFile() を使用してください。
+     */
+    protected function makePluginFile(array $common, array $options): bool
+    {
+        return $this->generatePluginFile(
+            $common['className'],
+            $common['pluginName'],
+            $common['fileType'],
+            !empty($common['scope']),
+            $common['scope'] ?? null,
+            $options
+        );
     }
 }

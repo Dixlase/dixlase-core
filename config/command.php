@@ -34,24 +34,31 @@ return [
     // 形式: 'category' => [path, namespace]
     'category_paths' => [
         // App directory files
-        'controllers' => ['app/Http/Controllers', 'App\\Http\\Controllers'],
-        'models' => ['app/Models', 'App\\Models'],
-        'requests' => ['app/Http/Requests', 'App\\Http\\Requests'],
-        'providers' => ['app/Providers', 'App\\Providers'],
-        'policies' => ['app/Policies', 'App\\Policies'],
-        'listeners' => ['app/Listeners', 'App\\Listeners'],
-        'observers' => ['app/Observers', 'App\\Observers'],
-        'jobs' => ['app/Jobs', 'App\\Jobs'],
+        'controller' => ['app/Http/Controllers', 'App\\Http\\Controllers'],
+        'model' => ['app/Models', 'App\\Models'],
+        'request' => ['app/Http/Requests', 'App\\Http\\Requests'],
+        'provider' => ['app/Providers', 'App\\Providers'],
+        'policy' => ['app/Policies', 'App\\Policies'],
+        'listener' => ['app/Listeners', 'App\\Listeners'],
+        'observer' => ['app/Observers', 'App\\Observers'],
+        'job' => ['app/Jobs', 'App\\Jobs'],
         'middleware' => ['app/Http/Middleware', 'App\\Http\\Middleware'],
-        'services' => ['app/Services', 'App\\Services'],
-        'repositories' => ['app/Repositories', 'App\\Repositories'],
-        'traits' => ['app/Traits', 'App\\Traits'],
-        'views' => ['resources/views', ''],
-        'routes' => ['routes', ''],
+        'service' => ['app/Services', 'App\\Services'],
+        'repository' => ['app/Repositories', 'App\\Repositories'],
+        'trait' => ['app/Traits', 'App\\Traits'],
+        'view' => ['resources/views', ''],
+        'route' => ['routes', ''],
         'lang' => ['lang', ''],
         'config' => ['config', ''],
-        'migrations' => ['database/migrations', 'Database\\Migrations'],
-        'seeders' => ['database/seeders', 'Database\\Seeders'],
-        'factories' => ['database/factories', 'Database\\Factories'],
+        'migration' => ['database/migrations', 'Database\\Migrations'],
+        'seeder' => ['database/seeders', 'Database\\Seeders'],
+        'factory' => ['database/factories', 'Database\\Factories'],
+        'blade' => ['resources/views', ''],
+    ],
+    
+    // ディレクトリ名をStudlyCaseにするファイルカテゴリ
+    'studly_case_categories' => [
+        'controller', 'model', 'provider', 'service', 'repository', 'middleware', 'request', 'listener', 'event', 'job', 
+        'mail', 'notification', 'policy', 'rule'
     ],
 ];
