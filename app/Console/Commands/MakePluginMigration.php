@@ -35,29 +35,14 @@ class MakePluginMigration extends Command
     use MakeMigrationTrait;
     use MakePluginCommandTrait;
 
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature;
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-
-    protected $description = 'Create a new migration file in the specified plugin directory';
-
-
     public function __construct()
     {
-        $this->signature = $this->makeSignature('make:plugin:migration
-            {className? : The name of the migration (e.g., User)}
-            {pluginName? : The name of the plugin}',
+        $this->signature = $this->makeSignature(
+            'make:plugin:migration '
+            .$this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );
+        $this->setDescription(__('command.make_plugin.migration.description'));
 
         parent::__construct();
     }

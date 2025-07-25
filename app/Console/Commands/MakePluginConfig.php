@@ -37,33 +37,17 @@ class MakePluginConfig extends Command
     use MakePluginCommandTrait;
     use MakeConfigTrait;
 
-
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature;
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Create a new configuration file for a plugin';
-    
     public function __construct()
     {
-        //$this->signature = $this->makeSignature('make:plugin:config {className} {pluginName?} ', $this->getAdditionalOptions());
-
-        $this->signature = $this->makeSignature('make:plugin:config
-            {className? : The class name (e.g. app)}
-            {pluginName? : The plugin name (e.g. MyPlugin)}',
+        // シグネチャーを設定
+        $this->signature = $this->makeSignature(
+            'make:plugin:config '
+            .$this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );
-        
         // デフォルトのプロンプトメッセージを設定
-        $this->description = __('command.make_plugin.config.description');
+        $this->setDescription(__('command.make_plugin.config.description'));
+        
         parent::__construct();
     }
 
@@ -74,16 +58,11 @@ class MakePluginConfig extends Command
      */
     public function handle()
     {
-
-        $options = $this->options();
-
-
-
-        $this->generatePluginFile(
+        return $this->generatePluginFile(
             $this->argument('className'),
             $this->argument('pluginName'),
             'config',
-            $options
+            $this->options()
         );
 
     }

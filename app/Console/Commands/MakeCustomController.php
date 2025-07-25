@@ -39,23 +39,27 @@ class MakeCustomController extends Command
 
     public function __construct()
     {
-        $this->signature = $this->makeSignature('make:custom:controller', $this->getAdditionalOptions());
+        $this->signature = $this->makeSignature(
+            'make:custom:controller'
+            .$this->getCustomCommandSignature(true),
+            $this->getAdditionalOptions()
+        );
+        $this->setDescription(__('command.make_custom.controller.description'));
+        
         parent::__construct();
     }
 
     public function handle()
     {
-        // 共通の初期化処理
-        $common = $this->initializeCustomCommand($this->argument('className'));
-        if (!$common) {
-            return Command::FAILURE;
-        }
 
-        
-
-        // ファイル生成
-        return $this->makeCustomFile($common, $this->option())
-            ? Command::SUCCESS
-            : Command::FAILURE;
+        return $this->generateCustomFile(
+            $this->argument('className'),
+            $this->argument('fileType'),
+            $this->argument('pluginName'),
+            'controller',
+            $this->options(),
+            true,
+            $this->argument('scope')
+        );
     }
 }

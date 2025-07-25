@@ -33,12 +33,16 @@ class MakePluginRoute extends Command
     use MakeFileTrait;
     use MakePluginCommandTrait;
 
-    protected $signature;
-
     public function __construct()
     {
-        $this->signature = $this->makeSignature('make:plugin:route {className?} {pluginName?} {routeType?}', $this->getAdditionalOptions());
+        $this->signature = $this->makeSignature(
+            'make:plugin:route '
+            .$this->getPluginCommandSignature(true),
+            $this->getAdditionalOptions()
+        );
+        
         $this->setDescription(__('command.make_plugin.route.description'));
+        
         parent::__construct();
 
     }
@@ -46,14 +50,11 @@ class MakePluginRoute extends Command
     public function handle()
     {
 
-        $options = $this->options();
-        $options['routeType'] = $this->argument('routeType');
-
         $this->generatePluginFile(
             $this->argument('className'),
             $this->argument('pluginName'),
             'route',
-            $options
+            $this->options(),
         );
     }
     

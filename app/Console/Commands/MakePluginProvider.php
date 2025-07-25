@@ -36,50 +36,16 @@ class MakePluginProvider extends Command
     use MakePluginCommandTrait;
     use MakeLicenseTrait;
 
-    /**
-     * コンソールコマンドの説明
-     *
-     * @var string
-     */
-    protected $description = 'プラグイン用の新しいサービスプロバイダを作成します';
-
-    /**
-     * 生成するクラスのタイプ
-     *
-     * @var string
-     */
-    protected $type = 'Provider';
-    
-    /**
-     * ファイルタイプ
-     *
-     * @var string
-     */
-    protected $fileType = 'provider';
-    
-    /**
-     * プラグイン名
-     *
-     * @var string
-     */
-    protected $pluginName;
-    
-    /**
-     * コマンドのシグネチャ
-     *
-     * @var string
-     */
-    protected $signature;
-    
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
-        // 追加オプションを取得してシグネチャを構築
-        $this->signature = $this->makeSignature('make:plugin:provider {className?} {pluginName?}', $this->getAdditionalOptions());
+        $this->signature = $this->makeSignature(
+            'make:plugin:provider '
+            .$this->getPluginCommandSignature(true),
+            $this->getAdditionalOptions()
+        );
+
+        $this->setDescription(__('command.make_plugin.provider.description'));
+        
         parent::__construct();
     }
 
@@ -98,8 +64,6 @@ class MakePluginProvider extends Command
         );
     }
 
-    
-    
     /**
      * プロバイダーをブートストラップファイルに追加します。
      *

@@ -26,67 +26,35 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use App\Services\FileGenerator;
 use App\Console\Traits\MakeRequestTrait;
+use App\Console\Traits\MakeCustomCommandTrait;
 
 class MakeCustomRequest extends Command
 {
     use MakeRequestTrait;
-
-    protected $signature = 'make:custom:request
-        {name : The FormRequest class name (with optional subfolders, e.g. Admin/StoreDataRequest)}
-        {--license= : Specify a license (e.g. gpl, mit, apache)}
-        {--force : Overwrite if the request already exists}';
-
-    protected $description = 'Create a new FormRequest in the custom directory';
-
-    protected FileGenerator $fileGenerator;
+    use MakeCustomCommandTrait;
 
     public function __construct(FileGenerator $fileGenerator)
     {
+        $this->signature = $this->makeSignature(
+            'make:custom:request'
+            .$this->getCustomCommandSignature(),
+            $this->getAdditionalOptions()
+        );
+        
+        $this->setDescription(__('command.make_custom.request.description'));
+        
         parent::__construct();
         $this->fileGenerator = $fileGenerator;
     }
 
     public function handle()
     {
-        // 1) parse subDirs + className
-        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
-
-        // 2) --force
-        $force = (bool)$this->option('force');
-
-        $licenseKey = $this->option('license') ?? 'gpl';
-
-        // ルートのライセンス情報を取得
-        $licenseInfo = $this->getLicenseInfo($licenseKey);
-        if (!$licenseInfo) {
-            return Command::FAILURE;
-        }
-
-        // ファイルの生成
-        $this->makeFile($className, $subDirs, $force, $licenseInfo);
-
-        $this->info("カスタムディレクトリのリクエストファイル [{$className}] を作成しました。");
-        return Command::SUCCESS;
-    }
-
-    /**
-     * getRequestDirectory/Namespace
-     */
-    protected function getRequestDirectory(array $subDirs): string
-    {
-        $base = base_path('custom/http/requests');
-        if ($subDirs) {
-            $base .= '/' . implode('/', $subDirs);
-        }
-        return $base;
-    }
-
-    protected function getRequestNamespace(array $subDirs): string
-    {
-        $base = 'Custom\\Http\\Requests';
-        if ($subDirs) {
-            $base .= '\\' . implode('\\', $subDirs);
-        }
-        return $base;
+        return $this->generateCustomFile(
+            $this->argument('className'),
+            $this->argument('fileType'),
+            $this->argument('pluginName'),
+            'request',
+            $this->options()
+        );
     }
 }

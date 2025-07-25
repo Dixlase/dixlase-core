@@ -31,25 +31,19 @@ class MakePluginFactory extends Command
 {
     use MakeFactoryTrait;
     use MakePluginCommandTrait;
-    
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Create a new model factory in the specified plugin directory';
 
     /**
      * Constructor
      */
     public function __construct()
     {
-        $this->signature = $this->makeSignature('make:plugin:factory
-            {className? : The name of the factory class (e.g. "EventFactory" or "Event")}
-            {pluginName? : The name of the plugin (e.g. "EventsPlugin")}',
+        $this->signature = $this->makeSignature(
+            'make:plugin:factory '
+            .$this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );
-        parent::__construct($this->signature);
+        $this->setDescription(__('command.make_plugin.factory.description'));
+        parent::__construct();
     }
 
     /**

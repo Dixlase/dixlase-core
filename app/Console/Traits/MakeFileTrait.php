@@ -172,8 +172,11 @@ trait MakeFileTrait
         // 追加の置換をマージ
         $finalPlaceholders = array_merge($defaultPlaceholders, $placeholders);
 
-        // 3. ファイル内容生成
-        $content = $this->getStubContent($stub, $finalPlaceholders);
+        // スタブファイルのプレースホルダーを置換
+        $content = $this->replacePlaceholders($stub, $finalPlaceholders);
+
+        // 余分な空白を除去
+        $content = $this->trimAndIndent($content);
 
         // 4. パスとファイル名の生成
         $fullPath = $this->path . '/' . $className . '.php';
@@ -267,31 +270,20 @@ trait MakeFileTrait
 
     /**
      * スタブファイルを取得
-     * 
-     * @param string $stub スタブファイル名（拡張子付き）
-     * @param array $placeholders 置換用のプレースホルダ
-     * @return string 処理済みのスタブコンテンツ
      */
-    public function getStubContent(string $stub, array $placeholders = []): string
+    
+    public function getStubContent(string $stubFileName, array $placeholders = []): string
     {
-        // スタブファイルのパスを構築
-        $stubPath = config('command.custom_stub_directory') . '/' . $stub;
-        
-        // ファイルが存在するか確認
-        if (!file_exists($stubPath)) {
-            $this->error("Stub file not found: {$stubPath}");
-            return '';
-        }
-        
-        // ファイルの内容を読み込む
-        $content = file_get_contents($stubPath);
-        
-        // プレースホルダを置換
+        //スタブファイルのパスを指定
+        $stubPath = config('command.custom_stub_directory') . '/' . $stubFileName;
+        //スタブファイルを取得
+        $content = File::get($stubPath);
+        //プレースホルダーを置換
         $content = $this->replacePlaceholders($content, $placeholders);
-        
-        // インデントを整えて返す
+        //余分な空白を削除
         return $this->trimAndIndent($content);
     }
+    
 
     /**
      * ファイルの種類ごとに適切な命名規則を適用
@@ -335,7 +327,7 @@ trait MakeFileTrait
         $fileType = array_search($selectedLabel, $labels) ?: 'core';
 
         $pluginName = '';
-        if ($fileType === 'plugin') {
+        if ($fileType === 'plugin' || $fileType === 'custom_plugin') {
             $pluginName = $this->choosePlugin();
             if (!$pluginName) {
                 return [null, null];

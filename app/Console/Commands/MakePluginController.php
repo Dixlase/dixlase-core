@@ -33,18 +33,14 @@ class MakePluginController extends Command
     use MakeControllerTrait;
     use MakePluginCommandTrait;
 
-    protected $signature;
-
-    protected $description = 'Create a new controller for the specified plugin';
-
     public function __construct()
     {
-        $this->signature = $this->makeSignature('make:plugin:controller
-            {className? : The name of the controller class (e.g., UserController)}
-            {pluginName? : The name of the plugin}
-            {scope? : The scope of the controller (e.g., admin, api)}', 
+        $this->signature = $this->makeSignature(
+            'make:plugin:controller '
+            .$this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );
+        $this->setDescription(__('command.make_plugin.controller.description'));
         parent::__construct();
     }
 

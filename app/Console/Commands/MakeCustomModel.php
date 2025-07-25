@@ -41,38 +41,27 @@ class MakeCustomModel extends Command
 
     public function __construct()
     {
-        $this->signature = $this->makeSignature('make:custom:model', $this->getAdditionalOptions());
+        $this->signature = $this->makeSignature(
+            'make:custom:model'
+            .$this->getCustomCommandSignature(),
+            $this->getAdditionalOptions()
+        );
+
+        $this->setDescription(__('command.make_custom.model.description'));
+        
         parent::__construct();
     }
 
     public function handle()
     {
-        // 共通の初期化処理
-        $common = $this->initializeCustomCommand($this->argument('className'));
-        if (!$common) {
-            return Command::FAILURE;
-        }
-
-        // オプションを取得
-        $options = $this->options();
-
-        // 関連ファイルの作成
-        $handleOptions = $this->handleOptions(
+        return $this->generateCustomFile(
             $this->argument('className'),
-            $options,
-            $common['fileType'],
-            $common['subDirs'],
-            $common['pluginName'] ?? ''
+            $this->argument('fileType'),
+            $this->argument('pluginName'),
+            'model',
+            $this->options()
         );
 
-        // 関連ファイルの作成に失敗した場合は、コマンドを終了
-        if (!$handleOptions) {
-            return Command::FAILURE;
-        }
 
-        // モデルのファイル生成
-        return $this->makeCustomFile($common, $options)
-            ? Command::SUCCESS
-            : Command::FAILURE;
     }
 }

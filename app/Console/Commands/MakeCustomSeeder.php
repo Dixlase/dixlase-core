@@ -26,75 +26,35 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use App\Services\FileGenerator;
 use App\Console\Traits\MakeSeederTrait;
+use App\Console\Traits\MakeCustomCommandTrait;
 
 class MakeCustomSeeder extends Command
 {
     use MakeSeederTrait;
+    use MakeCustomCommandTrait;
 
-    protected $signature = 'make:custom:seeder
-        {name : The name of the seeder class (e.g. "EventSeeder" or "Event")}
-        {--env= : Specify the environment ("dev" or "pro")}
-        {--force : Overwrite if the seeder already exists}';
 
-    protected $description = 'Create a new seeder in the custom directory';
-
-    protected FileGenerator $fileGenerator;
-
-    public function __construct(FileGenerator $fileGenerator)
+    public function __construct()
     {
+        $this->signature = $this->makeSignature(
+            'make:custom:seeder'
+            .$this->getCustomCommandSignature(),
+            $this->getAdditionalOptions()
+        );
+        
+        $this->setDescription(__('command.make_custom.seeder.description'));
+        
         parent::__construct();
-        $this->fileGenerator = $fileGenerator;
     }
 
     public function handle()
     {
-        // 1) parse subDirs + className
-        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
-
-        if (! Str::endsWith($className, 'Seeder')) {
-            $className .= 'Seeder';
-        }
-
-        // 2) --force
-        $force = (bool)$this->option('force');
-
-        // 3) makeFile
-        $this->makeFile($className, $subDirs, $force);
-
-        return 0;
-    }
-
-    protected function getSeederDirectory(array $subDirs): string
-    {
-        $base = base_path('custom/database/seeders');
-
-        // --env オプションの取得
-        $env = $this->option('env');
-        if (in_array($env, ['dev', 'pro'])) {
-            $base .= "/{$env}";
-        }
-
-        if ($subDirs) {
-            $base .= '/' . implode('/', $subDirs);
-        }
-
-        return $base;
-    }
-
-    protected function getSeederNamespace(array $subDirs): string
-    {
-        $base = 'Custom\\Database\\Seeders';
-
-        // --env オプションの取得
-        $env = $this->option('env');
-        if (in_array($env, ['dev', 'pro'])) {
-            $base .= '\\' . ucfirst($env);
-        }
-
-        if ($subDirs) {
-            $base .= '\\' . implode('\\', $subDirs);
-        }
-
-        return $base;
+        return $this->generateCustomFile(
+            $this->argument('className'),
+            $this->argument('fileType'),
+            $this->argument('pluginName'),
+            'seeder',
+            $this->options()
+        );
     }
 }

@@ -33,25 +33,18 @@ class MakePluginSeeder extends Command
     use MakeSeederTrait;
     use MakePluginCommandTrait;
     
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Create a new database seeder in the specified plugin directory';
 
-
-    /**
-     * Constructor
-     */
     public function __construct()
     {
-        $this->signature = $this->makeSignature('make:plugin:seeder
-            {className? : The name of the seeder class (e.g. "EventSeeder" or "Event")}
-            {pluginName? : The name of the plugin (e.g. "EventsPlugin")}',
+        $this->signature = $this->makeSignature(
+            'make:plugin:seeder '
+            .$this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );
-        parent::__construct($this->signature);
+
+        $this->setDescription(__('command.make_plugin.seeder.description'));
+        
+        parent::__construct();
     }
 
     /**

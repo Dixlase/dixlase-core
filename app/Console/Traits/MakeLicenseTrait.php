@@ -16,9 +16,9 @@ trait MakeLicenseTrait
      */
     protected function getFileTypeLicenseInfo(string $fileType, ?string $pluginName = null): array
     {
-        if ($fileType === 'core') {
+        if ($fileType === 'custom_core') {
             return $this->getCustomFileLicenseInfo(true) ?? [];
-        } elseif ($fileType === 'plugin' && $pluginName) {
+        } elseif ($fileType === 'plugin' || $fileType === 'custom_plugin' && $pluginName) {
             return $this->getPluginLicenseInfo($pluginName) ?? [];
         }
         return [];
@@ -35,74 +35,97 @@ trait MakeLicenseTrait
 
     protected function getCustomFileLicenseInfo(bool $showNotice = false): array
     {
-        // For core files, try to get license info from custom/license-info.json
-        if ($showNotice) {
-            $customLicensePath = base_path('custom/license-info.json');
-            
-            if (File::exists($customLicensePath)) {
-                try {
-                    $licenseInfo = json_decode(File::get($customLicensePath), true);
-                    if (json_last_error() === JSON_ERROR_NONE) {
-                        // ライセンスキーが存在しないか空の場合はスキップ
-                        if (empty($licenseInfo['license'])) {
-                            $this->warn(__('command.license.warnings.license_key_missing_or_empty'));
-                            return [];
-                        }
-                        
-                        $licenseKey = $licenseInfo['license'];
-                        $templatePath = config('license.templates.' . $licenseKey);
-                        
-                        if (empty($templatePath)) {
-                            $this->warn(__('command.license.warnings.invalid_license_key', ['license' => $licenseKey]));
-                            return [];
-                        }
-                        
-                        $this->info(__('command.license.using_custom_license', ['license' => $licenseKey]));
-                        
-                        return [
-                            'info' => [
-                                'software' => $licenseInfo['software'] ?? config('license.defaults.software'),
-                                'author' => $licenseInfo['author'] ?? config('license.defaults.author'),
-                                'website' => $licenseInfo['website'] ?? config('license.defaults.website'),
-                                'license' => $licenseKey,
-                                'year' => date('Y'),
-                                'template' => $templatePath,
-                            ],
-                            'template' => File::exists(base_path($templatePath)) ? 
-                                File::get(base_path($templatePath)) : 
-                                "// License: {$licenseKey}\n",
-                        ];
-                    }
-                } catch (\Exception $e) {
-                    $this->warn(__('command.license.failed_to_read_license', ['error' => $e->getMessage()]));
+        // カスタムライセンス情報ファイルのパス
+        $customLicensePath = base_path('custom/license-info.json');
+        
+        // カスタムライセンス情報ファイルが存在する場合
+        if (File::exists($customLicensePath)) {
+            try {
+                $licenseInfo = json_decode(File::get($customLicensePath), true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    throw new \RuntimeException('Invalid JSON format in license info file');
                 }
+
+                // ライセンスキーの検証
+                $licenseKey = $licenseInfo['license'] ?? null;
+                if (empty($licenseKey)) {
+                    $this->warn(__('command.license.warnings.license_key_missing_or_empty'));
+                    return [];
+                }
+                
+                // テンプレートファイルのパスを取得
+                $templateFile = config("license.templates.{$licenseKey}");
+                if (empty($templateFile)) {
+                    $this->warn(__('command.license.warnings.invalid_license_key', ['license' => $licenseKey]));
+                    return [];
+                }
+                
+                // テンプレートファイルのフルパス
+                $templatePath = base_path("license-templates/{$templateFile}");
+                
+                if (!File::exists($templatePath)) {
+                    $this->warn(__('command.license.template_not_found', ['path' => $templatePath]));
+                    return [];
+                }
+                
+                $this->info(__('command.license.using_custom_license', ['license' => $licenseKey]));
+                
+                return [
+                    'info' => [
+                        'software' => $licenseInfo['software'] ?? config('license.defaults.software'),
+                        'author' => $licenseInfo['author'] ?? config('license.defaults.author'),
+                        'website' => $licenseInfo['website'] ?? config('license.defaults.website'),
+                        'license' => $licenseKey,
+                        'year' => date('Y'),
+                        'template' => $templatePath,
+                    ],
+                    'template' => File::get($templatePath),
+                ];
+                
+            } catch (\Exception $e) {
+                $this->warn(__('command.license.failed_to_read_license', ['error' => $e->getMessage()]));
+                // フォールバック処理に進む
             }
         }
 
-        // Fallback to the original behavior for plugins or if custom file is not found
-        $licenseKeys = config('license.keys', []);
+        // カスタムライセンス情報が利用できない場合のフォールバック
+        $licenseKeys = array_keys(config('license.templates', []));
+        $licenseKeys = array_filter($licenseKeys, fn($key) => $key !== 'NONE'); // NONEは除外
+        
         if (empty($licenseKeys)) {
             $this->warn(__('command.license.no_available_choices'));
             return [];
         }
 
+        // ライセンス選択肢の準備
         $licenseLabels = [];
         foreach ($licenseKeys as $key) {
             $label = trans("license.labels.{$key}");
             $licenseLabels[$key] = $label !== "license.labels.{$key}" ? $label : $key;
         }
+        
+        // 選択肢に「ライセンスなし」を追加
+        $licenseLabels['none'] = 'ライセンスなし';
 
-        $values = array_values($licenseLabels);
-        $selectedLabel = $this->choice(__('command.license.prompt'), $values);
+        // ユーザーにライセンスを選択させる
+        $selectedLabel = $this->choice(__('command.license.prompt'), $licenseLabels);
         $selectedKey = array_search($selectedLabel, $licenseLabels);
 
         if ($selectedKey === 'none') {
-            return []; // No license
+            return []; // ライセンスなし
         }
 
-        $templatePath = config('license.templates')[$selectedKey] ?? null;
-        if (!$templatePath || !File::exists(base_path($templatePath))) {
-            $this->warn(__('command.license.template_missing_core', ['path' => $templatePath]));
+        // 選択されたライセンスのテンプレートファイルを取得
+        $templateFile = config("license.templates.{$selectedKey}");
+        if (empty($templateFile)) {
+            $this->warn(__('command.license.warnings.invalid_license_key', ['license' => $selectedKey]));
+            return [];
+        }
+        
+        $templatePath = base_path("license-templates/{$templateFile}");
+        
+        if (!File::exists($templatePath)) {
+            $this->warn(__('command.license.template_not_found', ['path' => $templatePath]));
             return [];
         }
 
@@ -115,7 +138,7 @@ trait MakeLicenseTrait
                 'year' => date('Y'),
                 'template' => $templatePath,
             ],
-            'template' => File::get(base_path($templatePath)),
+            'template' => File::get($templatePath),
         ];
     }
 

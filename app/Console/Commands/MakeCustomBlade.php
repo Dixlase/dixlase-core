@@ -25,60 +25,36 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Services\FileGenerator;
 use App\Console\Traits\MakeBladeTrait;
+use App\Console\Traits\MakeCustomCommandTrait;
 
 
 class MakeCustomBlade extends Command
 {
     use MakeBladeTrait;
+    use MakeCustomCommandTrait;
 
-    protected $signature = 'make:custom:blade
-        {file : The blade file name (e.g. admin/dashboard)}
-        {--force : Overwrite if the blade file already exists}
-        {--type=front : The type of Blade file (front/admin)}';
-
-    protected $description = 'Create a new Blade template in the custom/views directory';
-
-    protected FileGenerator $fileGenerator;
-
-    public function __construct(FileGenerator $fileGenerator)
+    public function __construct()
     {
+        $this->signature = $this->makeSignature(
+            'make:custom:blade'
+            .$this->getCustomCommandSignature(true),
+            $this->getAdditionalOptions());
+        
+        $this->setDescription(__('command.make_custom.blade.description'));
+        
         parent::__construct();
-        $this->fileGenerator = $fileGenerator;
     }
 
     public function handle()
     {
-        $file  = $this->argument('file');
-
-        $options = [
-            'force' => (bool) $this->option('force'),
-            'type' => $this->option('type'),
-        ];
-
-        if (!in_array($options['type'], ['front', 'admin'])) {
-            $this->error("Invalid type: '{$options['type']}'. Choose 'front' or 'admin'.");
-            return 1;
-        }
-
-        $this->makeFile($file, [], $options);
-
-        return 0;
-    }
-
-    /**
-     * Blade ファイルの保存先
-     */
-    protected function getDirectory(array $subDirs): string
-    {
-        $base = base_path('custom/resources/views');
-        if (!empty($subDirs)) {
-            $base .= '/' . implode('/', $subDirs);
-        }
-        return $base;
-    }
-
-    protected function getNamespace(array $subDirs): string
-    {
-        return ''; // Blade ファイルにはネームスペース不要
+        return $this->generateCustomFile(
+            $this->argument('className'),
+            $this->argument('fileType'),
+            $this->argument('pluginName'),
+            'blade',
+            $this->options(),
+            true,
+            $this->argument('scope')
+        );
     }
 }
