@@ -37,27 +37,14 @@ class MakePluginLanguage extends Command
     use MakeLanguageTrait;
     use MakePluginCommandTrait;
 
-        /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature;
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Create a new language file in the specified plugin\'s lang directory';
-
     public function __construct()
     {
-        $this->signature = $this->makeSignature('make:plugin:lang
-            {className? : The class name (e.g. messages)}
-            {pluginName? : The plugin name (e.g. MyPlugin)}
-            {lang? : The language code (e.g. en, ja)}',
-        $this->getAdditionalOptions());
+        $this->signature = $this->makeSignature(
+            'make:plugin:lang '
+            .$this->getPluginCommandSignature(true),
+            $this->getAdditionalOptions()
+        );
+        $this->setDescription(__('command.make_plugin.lang.description'));
         parent::__construct();
     }
 

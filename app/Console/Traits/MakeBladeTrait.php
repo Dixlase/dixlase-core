@@ -35,6 +35,18 @@ trait MakeBladeTrait
 {
 
     /**
+     * コンフィグファイル作成の共通オプション定義
+     *
+     * @return array
+     */
+    protected function getAdditionalOptions(): array
+    {
+        return [
+
+        ];
+    }
+
+    /**
      * Bladeファイルを作成するメイン処理。
      *
      * @param  string  $className  クラス名

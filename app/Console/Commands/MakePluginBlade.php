@@ -32,31 +32,18 @@ class MakePluginBlade extends Command
     use MakeBladeTrait;
     use MakePluginCommandTrait;
 
-    protected $signature;
-
-    protected $description = 'Create a new Blade template in a plugin';
-
     public function __construct()
     {
-        $this->signature = $this->makeSignature('make:plugin:blade
-            {className? : The name of the model class (e.g., User)}
-            {pluginName? : The name of the plugin}
-            {scope? : The scope of the controller (e.g., admin, api)}', 
+        $this->signature = $this->makeSignature(
+            'make:plugin:blade '
+            .$this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );
+        $this->setDescription(__('command.make_plugin.blade.description'));
         
         parent::__construct();
     }
 
-    /**
-     * Get additional options specific to this command
-     */
-    protected function getAdditionalOptions(): array
-    {
-        return [
-            
-        ];
-    }
 
     /**
      * Handle the command execution.

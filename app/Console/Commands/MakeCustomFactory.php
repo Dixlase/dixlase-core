@@ -26,10 +26,12 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use App\Services\FileGenerator;
 use App\Console\Traits\MakeFactoryTrait;
+use App\Console\Traits\MakeCustomCommandTrait;
 
 class MakeCustomFactory extends Command
 {
     use MakeFactoryTrait;
+    use MakeCustomCommandTrait;
 
     protected $signature = 'make:custom:factory
         {name : The factory class name (e.g. UserFactory or just User)}
@@ -38,40 +40,27 @@ class MakeCustomFactory extends Command
 
     protected $description = 'Create a new model factory in the custom directory (custom/database/factories).';
 
-    protected FileGenerator $fileGenerator;
-
-    public function __construct(FileGenerator $fileGenerator)
+    public function __construct()
     {
+        $this->signature = $this->makeSignature(
+            'make:custom:factory'
+            .$this->getCustomCommandSignature(),
+            $this->getAdditionalOptions()
+        );
+        
+        $this->setDescription(__('command.make_custom.factory.description'));
+        
         parent::__construct();
-        $this->fileGenerator = $fileGenerator;
     }
 
     public function handle()
     {
-        $className = $this->argument('name');
-        if (! Str::endsWith($className, 'Factory')) {
-            $className .= 'Factory';
-        }
-
-        $model = $this->option('model');
-        $force = (bool) $this->option('force');
-
-        // MakeFactoryTrait::makeFile(...) を呼ぶ
-        $this->makeFile($className, $model, $force);
-
-        return 0;
-    }
-
-    /**
-     * サブクラスで実装: getFactoryDirectory(), getFactoryNamespace()
-     */
-    protected function getFactoryDirectory(): string
-    {
-        return base_path('custom/database/factories');
-    }
-
-    protected function getFactoryNamespace(): string
-    {
-        return 'Custom\\Database\\Factories';
+        return $this->generateCustomFile(
+            $this->argument('className'),
+            $this->argument('fileType'),
+            $this->argument('pluginName'),
+            'factory',
+            $this->options()
+        );
     }
 }

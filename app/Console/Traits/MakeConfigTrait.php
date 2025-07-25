@@ -63,10 +63,6 @@ trait MakeConfigTrait
     
         // ファイル名をスネークケースに変換
         $snakeCaseFileName = Str::snake($className);
-
-
-        $this->info($stub);
-
         
         // ファイル生成
         return $this->makeFiler(

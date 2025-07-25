@@ -35,6 +35,23 @@ trait MakePluginCommandTrait
     use MakeLicenseTrait;
 
     /**
+     * プラグインコマンドの共通引数を取得します
+     *
+     * @param bool $includeScope スコープ引数を含めるかどうか
+     * @return string 共通引数のシグネチャ文字列
+     */
+    protected function getPluginCommandSignature(bool $includeScope = false): string
+    {
+        $signature = "{className? : The class name (e.g. User)} {pluginName? : The plugin name (e.g. MyPlugin)}";
+        
+        if ($includeScope) {
+            $signature .= " {scope?}";
+        }
+        
+        return $signature;
+    }
+
+    /**
      * プラグインファイルの生成処理を実行します
      *
      * @param string|null $classPath クラスパス（オプション）

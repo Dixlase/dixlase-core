@@ -37,15 +37,14 @@ class MakePluginModel extends Command
     use MakeModelTrait;
     use MakePluginCommandTrait;
 
-    protected $description = 'Create a new model in a plugin';
-
     public function __construct()
     {
-        $this->signature = $this->makeSignature('make:plugin:model
-            {className? : The name of the model class (e.g., User)}
-            {pluginName? : The name of the plugin}',
+        $this->signature = $this->makeSignature(
+            'make:plugin:model '
+            .$this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );
+        $this->setDescription(__('command.make_plugin.model.description'));
         
         parent::__construct();
     }

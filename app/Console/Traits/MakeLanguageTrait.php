@@ -44,90 +44,10 @@ trait MakeLanguageTrait
     protected function getAdditionalOptions(): array
     {
         return [
-
+            '{lang? : The language code (e.g. en, ja)}',
         ];
     }
 
-    public function __construct()
-    {
-        parent::__construct();
-    }
-    /**
-     * Initialize language command with optional prompts for missing parameters
-     *
-     * @param string|null $classPath The class path (can be null for prompting)
-     * @param string|null $pluginName The plugin name (optional)
-     * @param string|null $lang The language code (optional)
-     * @return array|false Returns command data array or false on failure
-     */
-    public function initializeLanguageCommand(?string $classPath = null, ?string $pluginName = null, ?string $lang = null)
-    {
-        // プラグインルートの場合はファイルタイプ選択をスキップ
-        $commandName = $this->getName();
-
-        if ($commandName === 'make:plugin:lang') {
-            $fileType = 'plugin';
-        } elseif ($commandName === 'make:custom:lang') {
-            $fileType = 'custom';
-        } else {
-            $this->error('Unsupported command for language file creation');
-            return false;
-        }
-
-        // Prompt for class name if not provided
-        if (empty($classPath)) {
-            $classPath = $this->ask(__('class.enter_class_name'));
-            if (empty($classPath)) {
-                $this->error(__('class.class_name_required'));
-                return false;
-            }
-        }
-
-        // プラグイン名
-        if ($fileType === 'plugin') {
-            if (!$pluginName) {
-                $pluginName = $this->choosePlugin();
-                if (!$pluginName) {
-                    return false;
-                }
-            }
-        }
-
-        // 言語コードの選択
-        if (!$lang) {
-            $lang = $this->chooseLanguage();
-            if (!$lang) {
-                return false;
-            }
-        }
-
-        // パス情報の分解
-        try {
-            [$className, $subDirs] = $this->parseClassPath($classPath);
-        } catch (\Exception $e) {
-            $this->error('Invalid class path: ' . $e->getMessage());
-            return false;
-        }
-        //サブディレクトリに言語のパスを追加
-        array_unshift($subDirs, $lang);
-        $pluginName = Str::studly($pluginName);
-
-    
-        // ライセンス情報の取得
-        $licenseInfo = $this->getPluginLicenseInfo($pluginName) ?? [];
-
-
-        return [
-            'fileType' => $fileType,
-            'className' => $className,
-            'pluginName' => $pluginName,
-            'subDirs' => $subDirs,
-            'licenseInfo' => $licenseInfo,
-            'lang' => $lang,
-            'category' => 'lang'
-        ];
-        
-    }
 
     protected function chooseLanguage(): string
     {
@@ -213,72 +133,5 @@ trait MakeLanguageTrait
 
         // スタブファイルの内容を取得
         return File::get($stubPath);
-    }
-
-
-
-    /**
-     * 言語ファイルを作成する
-     *
-     * @param string $langCode 言語コード (例: "en", "ja")
-     * @param string $fileName ファイル名 (例: "messages")
-     * @param array $options オプション
-     */
-    protected function makeLanguageFile(string $langCode, string $fileName, array $options): void
-    {
-        // 言語ファイルの拡張子を `.php` に統一
-        if (!str_ends_with($fileName, '.php')) {
-            $fileName .= '.php';
-        }
-
-        // 言語ファイルの保存パスを取得
-        $filePath = $this->getDirectory([$langCode]) . '/' . $fileName;
-
-        try {
-            $this->fileGenerator->prepareFilePath($filePath, "Language file [{$fileName}] already exists. Use --force to overwrite.");
-        } catch (\RuntimeException $e) {
-            if (!($options['force'] ?? false)) {
-                $this->error($e->getMessage());
-                return;
-            }
-            File::delete($filePath);
-        }
-
-        // スタブファイルを取得
-        $stubFile = $this->resolveStubFile($langCode);
-        $stubContent = $this->fileGenerator->getStubContent($stubFile);
-
-        // プレースホルダー置換
-        $placeholders = [
-            '{{ license }}' => $this->fileGenerator->getLicenseContent(),
-            '{{ langCode }}' => $langCode,
-            '{{ fileName }}' => Str::studly($fileName),
-        ];
-
-        $finalContent = $this->fileGenerator->replacePlaceholders($stubContent, $placeholders);
-        $this->fileGenerator->generateFile($filePath, $finalContent);
-
-        $this->info("Language file created: {$filePath}");
-    }
-
-    /**
-     * 言語ファイルのスタブを選択
-     */
-    protected function resolveStubFile(string $langCode): string
-    {
-        return "messages.{$langCode}.stub";
-    }
-
-    /**
-     * 言語ファイルの保存先ディレクトリを取得（抽象）
-     */
-    abstract protected function getDirectory(array $subDirs): string;
-
-    /**
-     * 言語ファイルにはネームスペースは不要
-     */
-    protected function getNamespace(array $subDirs): string
-    {
-        return '';
     }
 }

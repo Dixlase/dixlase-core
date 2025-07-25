@@ -35,58 +35,28 @@ class MakeCustomProvider extends Command
     use MakeLicenseTrait;
     use MakeCustomCommandTrait;
 
-    protected $signature;
-
-    protected $description = 'Create a new service provider in the custom directory';
-
     public function __construct()
     {
-        $this->signature = $this->makeSignature('make:custom:provider', $this->getAdditionalOptions());
+        $this->signature = $this->makeSignature(
+            'make:custom:provider '
+            .$this->getCustomCommandSignature(),
+            $this->getAdditionalOptions()
+        );
+        
+        $this->setDescription(__('command.make_custom.provider.description'));
+        
         parent::__construct();
     }
 
     public function handle()
     {
-        // クラス名を取得
-        $className = $this->argument('name');
-        
-        // 共通の初期化処理を実行
-        $common = $this->initializeCustomCommand($className);
-        if (!$common) {
-            return Command::FAILURE;
-        }
-        
-        // プラグイン名を取得
-        $pluginName = $this->option('plugin');
-        
-        // プラグイン名が指定されている場合は、プラグインディレクトリに作成
-        if ($pluginName) {
-            $common['pluginName'] = $pluginName;
-        }
-        
-        // オプションをマージ
-        $options = array_merge($this->options(), [
-            'plugin' => $pluginName ?? false
-        ]);
-
-        // 関連ファイルの作成
-        $handleOptions = $this->handleOptions(
-            $className,
-            $options,
-            $common['fileType'],
-            $common['subDirs'] ?? [],
-            $common['pluginName'] ?? ''
+        return $this->generateCustomFile(
+            $this->argument('className'),
+            $this->argument('fileType'),
+            $this->argument('pluginName'),
+            'provider',
+            $this->options()
         );
-
-        // プロバイダーのファイル生成
-        $result = $this->makeCustomFile($common, $options);
-        
-        if ($result) {
-            $this->info(__('command.custom.provider.created'));
-            return Command::SUCCESS;
-        }
-        
-        $this->error(__('command.custom.provider.failed'));
-        return Command::FAILURE;
     }
+    
 }

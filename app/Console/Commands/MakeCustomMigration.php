@@ -26,10 +26,12 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use App\Services\FileGenerator;
 use App\Console\Traits\MakeMigrationTrait;
+use App\Console\Traits\MakeCustomCommandTrait;
 
 class MakeCustomMigration extends Command
 {
     use MakeMigrationTrait;
+    use MakeCustomCommandTrait;
 
     protected $signature = 'make:custom:migration
         {name : The migration name (e.g. "create_custom_table")}
@@ -46,42 +48,25 @@ class MakeCustomMigration extends Command
 
     public function __construct(FileGenerator $fileGenerator)
     {
+        $this->signature = $this->makeSignature(
+            'make:custom:migration'
+            .$this->getCustomCommandSignature(),
+            $this->getAdditionalOptions()
+        );
+        
+        $this->setDescription(__('command.make_custom.migration.description'));
+        
         parent::__construct();
-        $this->fileGenerator = $fileGenerator;
     }
 
     public function handle()
     {
-        $migrationName = $this->argument('name');
-        $createOption  = $this->option('create');
-        $tableOption   = $this->option('table');
-        $customPath    = $this->option('path');
-        $realpathOpt   = (bool)$this->option('realpath');
-        $fullpathOpt   = (bool)$this->option('fullpath');
-        $forceOpt      = (bool)$this->option('force');
-
-        $this->makeMigration(
-            $migrationName,
-            $forceOpt,
-            $createOption,
-            $tableOption,
-            $customPath,
-            $realpathOpt,
-            $fullpathOpt
+        return $this->generateCustomFile(
+            $this->argument('className'),
+            $this->argument('fileType'),
+            $this->argument('pluginName'),
+            'migration',
+            $this->options()
         );
-
-        return 0;
-    }
-
-    protected function getMigrationDirectory(): string
-    {
-        // custom/database/migrations
-        return base_path('custom/database/migrations');
-    }
-
-    protected function getMigrationNamespace(): string
-    {
-        // 任意の namespace
-        return 'Custom\\Database\\Migrations';
     }
 }

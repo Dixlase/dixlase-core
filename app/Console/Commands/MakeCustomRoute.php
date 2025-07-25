@@ -32,45 +32,25 @@ class MakeCustomRoute extends Command
     use MakeRouteTrait;
     use MakeCustomCommandTrait;
 
-
-    protected $signature;
-
-    protected $description = 'Create a new route file in the custom directory';
-
     public function __construct()
     {
-        $this->signature = $this->makeSignature('make:custom:route', $this->getAdditionalOptions());
+        $this->signature = $this->makeSignature(
+            'make:custom:route '
+            .$this->getCustomCommandSignature(false),
+            $this->getAdditionalOptions());
         parent::__construct();
     }
 
     public function handle()
     {
-        // ルートファイル用の初期化処理
-        $common = $this->initializeRouteCommand($this->argument('className'));
-        if (!$common) {
-            return Command::FAILURE;
-        }
 
-        // オプションを取得
-        $options = $this->options();
-
-        // 関連ファイルの作成
-        $handleOptions = $this->handleOptions(
+        return $this->generateCustomFile(
             $this->argument('className'),
-            $options,
-            $common['fileType'],
-            $common['subDirs'],
-            $common['pluginName'] ?? ''
+            $this->argument('fileType'),
+            $this->argument('pluginName'),
+            'route',
+            $this->options()
         );
 
-        // 関連ファイルの作成に失敗した場合は、コマンドを終了
-        if (!$handleOptions) {
-            return Command::FAILURE;
-        }
-
-        // ルートファイルの生成
-        return $this->makeCustomFile($common, $options)
-            ? Command::SUCCESS
-            : Command::FAILURE;
     }
 }

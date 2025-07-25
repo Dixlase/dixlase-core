@@ -93,11 +93,10 @@ trait MakeProviderTrait
             $stubName = 'provider.plugin.stub';
         }
 
-        // スタブファイルのパスを取得
-        $stubPath = config('command.custom_stub_directory') . '/' . $stubName;
-
         // スタブファイルの内容を取得
-        return File::get($stubPath);
+        $stub = $this->getStubContent($stubName);
+
+        return $stub;
     }
     
 

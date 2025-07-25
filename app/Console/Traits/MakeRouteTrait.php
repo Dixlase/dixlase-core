@@ -41,102 +41,12 @@ trait MakeRouteTrait
      */
     protected function getAdditionalOptions(): array
     {
-        return [];
-    }
-
-    /**
-     * ルートファイル用の初期化処理
-     *
-     * @param string $classPath
-     * @return array|false
-     */
-    protected function initializeRouteCommand(?string $classPath = null, string $pluginName = null, string $routeType = null)
-    {
-        // プラグインルートの場合はファイルタイプ選択をスキップ
-        $commandName = $this->getName();
-
-        if($commandName === 'make:plugin:route'){
-            $fileType = 'plugin';
-        }elseif($commandName === 'make:custom:route'){
-            $fileType = 'custom';
-        }
-
-        // クラス名が指定されていない場合は入力を求める
-        if (empty($classPath)) {
-            $classPath = $this->ask(__('class.enter_route_name'));
-            if (empty($classPath)) {
-                $this->error(__('class.route_name_required'));
-                return false;
-            }
-        }
-
-
-        if ($fileType == 'plugin') {
-            if(!$pluginName){
-                $pluginName = $this->choosePlugin();
-            }
-        }
-
-        // ルートタイプの選択肢を定義
-        $routeTypes = [
-            1 => [
-                'key' => 'web',
-                'name' => __('command.make.route_types.web'),
-                'description' => __('command.make.route_types.web_description')
-            ],
-            2 => [
-                'key' => 'admin',
-                'name' => __('command.make.route_types.admin'),
-                'description' => __('command.make.route_types.admin_description')
-            ],
-            3 => [
-                'key' => 'api',
-                'name' => __('command.make.route_types.api'),
-                'description' => __('command.make.route_types.api_description')
-            ]
-        ];
-
-        // 選択肢を表示
-        $this->info(__('command.make.select_route_type'));
-        foreach ($routeTypes as $number => $type) {
-            $this->line(sprintf(
-                "  [%d] %s - %s",
-                $number,
-                str_pad($type['name'], 10, ' ', STR_PAD_RIGHT),
-                $type['description']
-            ));
-        }
-
-        if(!$routeType){
-            // 選択を取得
-            $selected = (int)$this->ask(__('command.make.enter_route_type'), 1);
-            $routeType = isset($routeTypes[$selected]['key']) ? $routeTypes[$selected]['key'] : 'web';
-        }
-
-
-        // パス情報の分解（スコープは使用しない）
-        $className = $this->parseRoutePath($classPath);
-
-        // ライセンス情報を取得
-        $licenseInfo = $this->getFileTypeLicenseInfo($fileType, $pluginName);
-
-        // スタブファイルの決定
-        $stub = "routes.{$routeType}";
-
-
         return [
-            'fileType' => $fileType,
-            'category' => 'route',
-            'pluginName' => $pluginName,
-            'routeType' => $routeType,
-            'className' => $className,
-            'subDirs' => [], // サブディレクトリは使用しない
-            'stub' => $stub,
-            'licenseInfo' => $licenseInfo,
+            '{routeType? : The route type (e.g. web, admin, api)}',
         ];
     }
-    
 
+    
     /**
      * ルートファイルを作成するメイン処理。
      *

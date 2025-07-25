@@ -34,28 +34,15 @@ class MakePluginRequest extends Command
     use MakePluginCommandTrait;
     use MakeLicenseTrait;
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Create a new FormRequest class for the specified plugin';
-
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:request
-            {className?}
-            {pluginName?}',
+            'make:plugin:request '
+            .$this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );
-        
-        parent::__construct($this->signature);
+        $this->setDescription(__('command.make_plugin.request.description'));
+        parent::__construct();
     }
 
     /**
