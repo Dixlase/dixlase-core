@@ -1,9 +1,14 @@
 <?php
 
 return [
+    'file' => [
+        'already_exists' => 'ファイル [ :path ] は既に存在します。',
+        'created' => 'ファイル [ :path ] を作成しました。',
+    ],
     'make_plugin' => [
         'enter_plugin_name' => 'プラグイン名を入力してください',
         'enter_author_name' => '開発者名を入力してください',
+        'enter_email' => '開発者のメールアドレスを入力してください',
         'enter_website_url' => '開発者のWebサイトURLを入力してください（https://の後の部分のみ入力）',
         'select_license' => 'ライセンスを選択してください',
         'enter_license_number' => 'ライセンス番号を入力してください（デフォルト：なし）：',
@@ -13,6 +18,7 @@ return [
         'already_exists' => 'プラグイン \':pluginName\' は既に存在します。',
         'installed' => 'プラグイン \':pluginName\' がインストールされました。',
         'enabled' => 'プラグイン \':pluginName\' が有効化されました。',
+        'disabled' => 'プラグイン \':pluginName\' が無効化されました。',
         'not_found' => 'プラグイン \':pluginName\' がデータベースに見つかりません。',
         'no_assets' => 'プラグイン \':pluginName\' のアセットディレクトリが見つかりません。',
         'files' => [
@@ -33,9 +39,11 @@ return [
             'config' => 'コンフィグファイルがプラグイン [:pluginName] 用に作成されました。',
             'lang' => '言語ファイル（en & ja）がプラグイン [:pluginName] 用に作成されました。',
             'vite' => 'Vite設定ファイルがプラグイン [:pluginName] 用に作成されました。',
-            'composer' => 'Composer.jsonファイルがプラグイン [:pluginName] 用に作成されました。',
+            'composer' => 'composer.jsonファイルがプラグイン [:pluginName] 用に作成されました。',
             'readme' => 'README.mdがプラグイン [:pluginName] 用に作成されました。',
             'license_info' => 'ライセンス情報ファイルがプラグイン [:pluginName] 用に作成されました。',
+            'database_seeder' => 'データベースシーダー [:className] がプラグイン [:pluginName] 用に作成されました。',
+            'phpunit_config' => 'PHPUnit設定ファイルがプラグイン [:pluginName] 用に作成されました。',
         ],
         'license_options' => [
             'gpl' => 'GPL-3.0',
@@ -49,11 +57,51 @@ return [
         ],
         'config' => [
             'description' => 'プラグイン用の新しい設定ファイルを作成します',
+        ],
+        'installation' => [
+            'installed' => 'プラグイン \':pluginName\' をインストールしました。',
+            'migrating' => 'マイグレーションを実行中...',
+            'enable_confirm' => 'プラグイン \':pluginName\' を有効化しますか？',
+            'enable_skipped' => 'プラグイン \':pluginName\' は無効のままです。有効化するには管理画面または `php artisan plugin:enable :pluginName` コマンドを使用してください。',
+            'composer_parse_error' => 'composer.json の解析に失敗しました: :error'
         ]
     ],  
     'plugin' => [
         'prompt' => 'プラグインを選択してください',
-        'not_found' => 'プラグインが見つかりません。pluginsディレクトリに少なくとも1つのプラグインディレクトリが存在する必要があります。',
+        'not_found' => '指定されたプラグインが見つかりません。',
+        'not_exists' => '指定されたプラグインは存在しません。',
+    ],
+    'plugin_install' => [
+        'description' => 'プラグインをインストールし、データベースに登録し、マイグレーションを実行し、オートロードを更新します。',
+    ],
+    'plugin_disable' => [
+        'description' => 'プラグインを無効にし、シンボリックリンクを削除します',
+    ],
+    'plugin_enable' => [
+        'description' => 'プラグインを有効にし、必要なシンボリックリンクを作成します',
+    ],
+    'plugin_symlink' => [
+        'description' => 'プラグインアセットのシンボリックリンクを管理します',
+        'invalid_action' => '無効なアクションです。"create" または "remove" を使用してください。',
+        'created' => 'プラグインのシンボリックリンクを作成しました: :plugin',
+        'removed' => 'プラグインのシンボリックリンクを削除しました: :plugin',
+    ],
+    'plugin_autoload_sync' => [
+        'description' => 'プラグインをcomposer.jsonのPSR-4設定と同期します（オプションでクリーンアップも可能）。',
+        'success' => 'Composerのオートロードが更新されました（プラグインが同期されました）。',
+    ],
+    'plugin_uninstall' => [
+        'description' => 'プラグインをアンインストールし、データベースとファイルを削除します。',
+        'not_found' => 'プラグイン \':pluginName\' は見つかりません。',
+        'rollback_running' => 'マイグレーションのロールバックを実行中...',
+        'rollback_confirm' => 'プラグイン \':pluginName\' に関連するデータベースのテーブルを削除しますか？',
+        'rollback_skipped' => 'データベースのロールバックはスキップされました。',
+        'directory_deleted' => 'プラグインのディレクトリ \':path\' を削除しました。',
+        'directory_not_exists' => 'プラグインのディレクトリは既に存在しません。',
+        'directory_not_deleted' => 'プラグインのディレクトリは削除されませんでした。',
+        'delete_confirm' => 'プラグイン \':pluginName\' のディレクトリとファイルを削除しますか？',
+        'database_removed' => 'プラグイン \':pluginName\' をデータベースから削除しました。',
+        'completed' => 'プラグイン \':pluginName\' のアンインストールが完了しました。',
     ],
     'class' => [
         'enter_class_name' => 'クラス名を入力してください',
@@ -106,9 +154,10 @@ return [
             'force' => '既存のファイルを上書き',
         ]
     ],
-    'file' => [
-        'already_exists' => 'ファイルが既に存在します: :path',
-        'created' => 'ファイルが作成されました: :path',
+    'plugin_autoload' => [
+        'description' => 'composer.jsonのautoloadに新しいプラグインディレクトリを追加します（クリーンアップは行いません）。',
+        'added' => 'composer.jsonのautoloadに新しいプラグインディレクトリを追加しました。',
+        'no_changes' => '新しいプラグインディレクトリは見つかりませんでした。変更はありません。'
     ],
     'scope' => [
         'prompt' => 'スコープを選択してください',

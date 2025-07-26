@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of MySoftware.
+ * This file is part of Dixlase.
  *
  * Copyright (C) 2025 exc-D inc.
  * https://exc-d.com
@@ -42,14 +42,14 @@ class PluginInstall extends Command
      *
      * @var string
      */
-    protected $signature = 'plugin:install {name}';
+    protected $signature = 'plugin:install {pluginName} {--enable : Enable the plugin after installation}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'プラグインをインストールし、データベースに登録し、マイグレーションを実行し、オートロードを更新します。';
+    protected $description = 'command.plugin_install.description';
 
     /**
      * Execute the console command.
@@ -57,12 +57,12 @@ class PluginInstall extends Command
     public function handle()
     {
         //
-        $pluginName = $this->argument('name');
+        $pluginName = $this->argument('pluginName');
         $pluginPath = base_path('plugins/' . $pluginName);
         $composerPath = $pluginPath . '/composer.json';
 
         if (!File::exists($pluginPath)) {
-            $this->error('指定されたプラグインは存在しません。');
+            $this->error(__('command.plugin.not_exists'));
             return;
         }
 
@@ -80,7 +80,9 @@ class PluginInstall extends Command
             $composerData = json_decode(File::get($composerPath), true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
-                $this->error('composer.json の解析に失敗しました: ' . json_last_error_msg());
+                $this->error(__('command.make_plugin.installation.composer_parse_error', [
+                    'error' => json_last_error_msg()
+                ]));
                 return;
             }
 
@@ -118,22 +120,28 @@ class PluginInstall extends Command
             ]
         );
 
-        $this->info("プラグイン '{$pluginName}' をインストールしました。");
+        $this->info(__('command.make_plugin.installation.installed', [
+            'pluginName' => $pluginName
+        ]));
 
         // マイグレーションを実行
-        $this->info('マイグレーションを実行中...');
+        $this->info(__('command.make_plugin.installation.migrating'));
         $migrator = new PluginMigrator(app(Filesystem::class), app(ConnectionResolverInterface::class), 'plugin_migrations', $slug);
         $migrator->migrate($pluginName);
 
-        // オートロードを更新
-        $this->updateAutoload();
 
-        // プラグインの有効化を確認
-        if ($this->confirm("プラグイン '{$pluginName}' を有効化しますか？", true)) {
-            DB::table('plugins')->where('name', $pluginName)->update(['status' => 1]);
-            $this->info("プラグイン '{$pluginName}' を有効化しました。");
+
+        // プラグインの有効化を確認（--enable オプションが指定されていない場合のみ確認）
+        if ($this->option('enable') || $this->confirm(__('command.make_plugin.installation.enable_confirm', [
+            'pluginName' => $pluginName
+        ]), true)) {
+            $this->call('plugin:enable', [
+                'pluginName' => $pluginName
+            ]);
         } else {
-            $this->info("プラグイン '{$pluginName}' は無効のままです。有効化するには管理画面またはコマンドを使用してください。");
+            $this->info(__('command.make_plugin.installation.enable_skipped', [
+                'pluginName' => $pluginName
+            ]));
         }
     }
 }

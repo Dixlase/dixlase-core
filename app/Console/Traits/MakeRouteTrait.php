@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of MySoftware.
+ * This file is part of Dixlase.
  *
  * Copyright (C) 2025 exc-D inc.
  * https://exc-d.com
@@ -60,55 +60,35 @@ trait MakeRouteTrait
     protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '', $licenseInfo = [])
     {
 
-        // ルートタイプの選択肢を定義
-        $routeTypes = [
-            1 => [
-                'key' => 'web',
-                'name' => __('command.make.route_types.web'),
-                'description' => __('command.make.route_types.web_description')
-            ],
-            2 => [
-                'key' => 'admin',
-                'name' => __('command.make.route_types.admin'),
-                'description' => __('command.make.route_types.admin_description')
-            ],
-            3 => [
-                'key' => 'api',
-                'name' => __('command.make.route_types.api'),
-                'description' => __('command.make.route_types.api_description')
-            ]
-        ];
-
-        // 選択肢を表示
-        $this->info(__('command.make.select_route_type'));
-        foreach ($routeTypes as $number => $type) {
-            $this->line(sprintf(
-                "  [%d] %s - %s",
-                $number,
-                str_pad($type['name'], 10, ' ', STR_PAD_RIGHT),
-                $type['description']
-            ));
-        }
-        
+        // ルートタイプの取得と検証
         $routeType = null;
-        if(isset($options['routeType']) && $options['routeType']){
-            $routeType = $options['routeType'];
+        if (isset($options['routeType']) && $options['routeType']) {
+            $routeType = strtolower($options['routeType']);
         }
 
-        if(!$routeType){
-            // 選択を取得
-            $selected = (int)$this->ask(__('command.make.enter_route_type'), 1);
-            $routeType = isset($routeTypes[$selected]['key']) ? $routeTypes[$selected]['key'] : 'web';
+        // ルートタイプが指定されていない場合は選択を求める
+        if (!$routeType) {
+            $routeType = $this->chooseRouteType();
         }
 
-        // スタブファイルのパスを取得（ルートタイプを使用）
-        $stubPath = $this->getStubPath($routeType ?? 'web', $options);
-        if (!$stubPath) {
+        // 有効なルートタイプか検証
+        $validRouteTypes = ['web', 'admin', 'api'];
+        if (!in_array($routeType, $validRouteTypes, true)) {
+            $this->error(sprintf(
+                '無効なルートタイプです: %s (有効な値: %s)',
+                $routeType,
+                implode(', ', $validRouteTypes)
+            ));
             return false;
         }
 
+        $options['routeType'] = $routeType;        
+
         // スタブファイルの内容を取得
-        $stub = file_exists($stubPath) ? file_get_contents($stubPath) : '';
+        $stub = $this->renderStub($options);
+        if ($stub === false) {
+            return false;
+        }
         
         // ファイル生成
         return $this->makeFiler(
@@ -144,28 +124,27 @@ trait MakeRouteTrait
     }
 
     /**
-     * スタブファイルのパスを取得
+     * ルートタイプに基づいて適切なスタブファイルをレンダリングする
+     * 
+     * @param array $options オプション
+     *        string $options['routeType'] ルートタイプ (web, api, admin)
+     *        bool $options['api'] APIルートの場合はtrue
+     *        bool $options['admin'] 管理画面ルートの場合はtrue
+     * @return string|false スタブファイルの内容、または失敗時はfalse
      */
-    protected function getStubPath($routeType, $options)
+    protected function renderStub(array $options = []): string|false
     {
-
+        // ルートタイプを決定（後方互換性のため古いオプションもサポート）
+        $routeType = $options['routeType'] ?? 'web';
+        
         // カスタムスタブディレクトリを確認
         $customStubDir = config('command.custom_stub_directory');
         if ($customStubDir && is_dir($customStubDir)) {
             $stubPath = $customStubDir . '/routes.' . $routeType . '.stub';
             if (file_exists($stubPath)) {
-                return $stubPath;
+                return File::get($stubPath);
             }
         }
-
-        // デフォルトのスタブファイルを使用
-        $stubPath = config('command.default_stub_directory') . '/routes.' . $routeType . '.stub';
-        if (!file_exists($stubPath)) {
-            $this->error("Stub file not found: {$stubPath}");
-            return false;
-        }
-
-        return $stubPath;
     }
 
     /**
@@ -184,28 +163,40 @@ trait MakeRouteTrait
         return true;
     }
 
+    protected function chooseRouteType(){
+        // ルートタイプの選択肢を定義
+        $routeTypes = [
+            1 => [
+                'key' => 'web',
+                'name' => __('command.make.route_types.web'),
+                'description' => __('command.make.route_types.web_description')
+            ],
+            2 => [
+                'key' => 'admin',
+                'name' => __('command.make.route_types.admin'),
+                'description' => __('command.make.route_types.admin_description')
+            ],
+            3 => [
+                'key' => 'api',
+                'name' => __('command.make.route_types.api'),
+                'description' => __('command.make.route_types.api_description')
+            ]
+        ];
 
-    /**
-     * ルートファイルのスタブを取得
-     *
-     * @param  array  $options
-     * @return string
-     */
-    protected function getStub($options = [])
-    {
-        $type = 'web';
-        if ($options['api'] ?? false) {
-            $type = 'api';
-        } elseif ($options['admin'] ?? false) {
-            $type = 'admin';
+        // 選択肢を表示
+        $this->info(__('command.make.select_route_type'));
+        foreach ($routeTypes as $number => $type) {
+            $this->line(sprintf(
+                "  [%d] %s - %s",
+                $number,
+                str_pad($type['name'], 10, ' ', STR_PAD_RIGHT),
+                $type['description']
+            ));
         }
-
-        $stubPath = config('command.custom_stub_directory') . "/routes.{$type}.stub";
         
-        if (!file_exists($stubPath)) {
-            $stubPath = config('command.custom_stub_directory') . '/routes.web.stub';
-        }
-
-        return $stubPath;
+        $selected = (int)$this->ask(__('command.make.enter_route_type'), 1);
+        $routeType = isset($routeTypes[$selected]['key']) ? $routeTypes[$selected]['key'] : 'web';
+        
+        return $routeType;
     }
 }

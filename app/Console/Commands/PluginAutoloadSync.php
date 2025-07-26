@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of MySoftware.
+ * This file is part of Dixlase.
  *
  * Copyright (C) 2025 exc-D inc.
  * https://exc-d.com
@@ -34,11 +34,15 @@ class PluginAutoloadSync extends Command
     protected $signature = 'plugin:autoload:sync {--cleanup}';
 
     /**
-     * The console command description.
+     * Create a new command instance.
      *
-     * @var string
+     * @return void
      */
-    protected $description = 'Synchronize plugins with composer.json PSR-4 settings (and optionally clean up).';
+    public function __construct()
+    {
+        parent::__construct();
+        $this->description = __('command.plugin_autoload_sync.description');
+    }
 
     /**
      * Execute the console command.
@@ -56,7 +60,7 @@ class PluginAutoloadSync extends Command
         // 3. 最後に composer dump-autoload
         exec('composer dump-autoload');
 
-        $this->info('Composer autoload has been updated (plugins synced).');
+        $this->info(__('command.plugin_autoload_sync.success'));
         return Command::SUCCESS;
     }
 }

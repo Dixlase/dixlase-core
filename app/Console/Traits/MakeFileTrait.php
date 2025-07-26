@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of MySoftware.
+ * This file is part of Dixlase.
  *
  * Copyright (C) 2025 exc-D inc.
  * https://exc-d.com
@@ -153,6 +153,7 @@ trait MakeFileTrait
 
             //ライセンス情報をファイルフォーマットによって整形
             if ($fileCategory == 'blade') { //BladeファイルならBlade用の整形
+                $license = $this->embedLicenseForBlade($license);
             } else { //PHPならPHP用の整形
                 $license = $this->embedLicenseForPhp($license);
             }
@@ -179,7 +180,8 @@ trait MakeFileTrait
         $content = $this->trimAndIndent($content);
 
         // 4. パスとファイル名の生成
-        $fullPath = $this->path . '/' . $className . '.php';
+        $extension = ($fileCategory === 'blade') ? '.blade.php' : '.php';
+        $fullPath = $this->path . '/' . $className . $extension;
 
         // 5. 上書き確認
         if (File::exists($fullPath) && empty($options['force'])) {
@@ -218,6 +220,7 @@ trait MakeFileTrait
     protected function notifyFileCreated(string $fileCategory, string $fullPath): void
     {
         // ファイルの種類に応じたラベルを取得
+
         $label = __('command.files.category.' . strtolower($fileCategory));
         $label .= __('command.files.created');
         $this->info("{$label}: {$fullPath}");
@@ -326,11 +329,22 @@ trait MakeFileTrait
         // 選択されたラベルからファイルタイプを取得
         $fileType = array_search($selectedLabel, $labels) ?: 'core';
 
+        // プラグインの指定を取得
         $pluginName = '';
         if ($fileType === 'plugin' || $fileType === 'custom_plugin') {
-            $pluginName = $this->choosePlugin();
-            if (!$pluginName) {
-                return [null, null];
+            // コマンド引数でプラグイン名が指定されている場合はそのまま使用
+            if (!empty($this->argument('pluginName'))) {
+                $pluginName = $this->argument('pluginName');
+                $availablePlugins = $this->getAvailablePluginNames();
+                if (!in_array($pluginName, $availablePlugins)) {
+                    $this->error(__('command.plugin.not_found', ['name' => $pluginName]));
+                    return [null, null];
+                }
+            } else {
+                $pluginName = $this->choosePlugin();
+                if (!$pluginName) {
+                    return [null, null];
+                }
             }
         }
 

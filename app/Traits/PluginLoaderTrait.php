@@ -59,8 +59,6 @@ trait PluginLoaderTrait
 
             $this->loadPluginFiles($pluginName, $pluginPath, $customPluginPath, $pluginSlug);
 
-            // 設定が正しく読み込まれたか確認
-            //dump(config('users-plugin.auth'));
 
             // サービスプロバイダの登録 (プラグインのファイルをロードした後)
             $providerClass = $this->resolvePluginServiceProvider($pluginName, $pluginDirectory);

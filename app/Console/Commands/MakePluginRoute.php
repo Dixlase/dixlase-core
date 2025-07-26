@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of MySoftware.
+ * This file is part of Dixlase.
  *
  * Copyright (C) 2025 exc-D inc.
  * https://exc-d.com
@@ -37,7 +37,7 @@ class MakePluginRoute extends Command
     {
         $this->signature = $this->makeSignature(
             'make:plugin:route '
-            .$this->getPluginCommandSignature(true),
+            .$this->getPluginCommandSignature(false),
             $this->getAdditionalOptions()
         );
         
@@ -49,12 +49,14 @@ class MakePluginRoute extends Command
 
     public function handle()
     {
+        $options = $this->options();
+        $options['routeType'] = $this->argument('routeType');
 
         $this->generatePluginFile(
             $this->argument('className'),
             $this->argument('pluginName'),
             'route',
-            $this->options(),
+            $options
         );
     }
     

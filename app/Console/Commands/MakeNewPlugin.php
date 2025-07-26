@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of MySoftware.
+ * This file is part of Dixlase.
  *
  * Copyright (C) 2025 exc-D inc.
  * https://exc-d.com
@@ -30,7 +30,7 @@ use App\Models\Plugin;
 use App\Console\Traits\MakeLicenseTrait;
 use App\Console\Traits\MakeFileTrait;
 
-class MakePlugin extends Command
+class MakeNewPlugin extends Command
 {
     use MakeLicenseTrait, MakeFileTrait;
 
@@ -45,8 +45,11 @@ class MakePlugin extends Command
     protected $signature = 'make:plugin
                             {pluginName? : The name of the plugin}
                             {--author= : The author of the plugin}
+                            {--email= : The email address of the author}
                             {--website= : The website URL for the plugin}
-                            {--license= : The license type (GPL, AGPL, MIT, Apache, BSD, LGPL, commercial, custom, none)}';
+                            {--license= : The license type (GPL, AGPL, MIT, Apache, BSD, LGPL, commercial, custom, none)}
+                            {--install : Install the plugin after creation}
+                            {--enable : Enable the plugin after installation (implies --install)}';
 
     protected $description = 'Create a new plugin with a predefined structure';
 
@@ -102,12 +105,14 @@ class MakePlugin extends Command
         }
 
         // 開発者情報の取得
-        $author = $this->option('author') ?: $this->ask(__('command.make_plugin.enter_author_name'));
-        $licenseInfo['author'] = $author;
+        $author = $this->option('author') ?: $this->ask(__('command.make_plugin.enter_author_name') . ' (optional)');
+
+        // メールアドレスの入力を求める（オプションで指定されていればそれを使用、なければ入力を求める）
+        $email = $this->option('email') ?: $this->ask(__('command.make_plugin.enter_email') . ' (optional)', 'your-email@example.com');
 
         // URL入力を補完（https://を自動追加）
         $defaultWebsite = 'example.com';
-        $websitePrompt = $this->option('website') ?: $this->ask(__('command.make_plugin.enter_website_url') . ' [' . $defaultWebsite . ']');
+        $websitePrompt = $this->option('website') ?: $this->ask(__('command.make_plugin.enter_website_url') . ' (optional)' , $defaultWebsite);
         $website = $websitePrompt === $defaultWebsite ? $websitePrompt : $this->ensureUrlHasScheme($websitePrompt);
 
 
@@ -119,6 +124,7 @@ class MakePlugin extends Command
         if (!empty($selectedLicense)) {
             $selectedLicense['info']['software'] = $pluginName;
             $selectedLicense['info']['author'] = $author;
+            $selectedLicense['info']['email'] = $email;
             $selectedLicense['info']['website'] = $website;
         }
 
@@ -127,6 +133,7 @@ class MakePlugin extends Command
         $licenseInfo = [
             'software' => $pluginName,
             'author' => $author,
+            'email' => $email,
             'website' => $website,
         ];
     
@@ -137,6 +144,7 @@ class MakePlugin extends Command
 
         $licenseInfo['website'] = $website;
 
+    
         // 選択されたライセンス情報をマージ
         if (!empty($selectedLicense['info'])) {
             $licenseInfo = array_merge($selectedLicense['info'], $licenseInfo);
@@ -160,20 +168,30 @@ class MakePlugin extends Command
             $pluginSlug,
             $softwareName,
             $author,
+            $email,
             $website,
             $licenseInfo
         );
 
-        // Optionally install and enable the plugin
-        if ($this->confirm(__('command.make_plugin.confirm_install'), true)) {
-            $this->installPlugin($pluginName, $pluginDirName);
-
-            if ($this->confirm(__('command.make_plugin.confirm_enable'), true)) {
-                $this->enablePlugin($pluginName);
+        // Handle plugin installation and enabling based on options
+        $shouldInstall = $this->option('install') || $this->option('enable');
+        $shouldEnable = $this->option('enable');
+        
+        if ($shouldInstall || $shouldEnable) {
+            // If --enable is specified, it implies --install
+            if ($shouldEnable) {
+                // 有効化を指定してインストールを実行
+                $this->installPlugin($pluginName, $pluginDirName, true);
+            } else if ($shouldInstall) {
+                // 有効化せずにインストールのみ実行
+                $this->installPlugin($pluginName, $pluginDirName, false);
             }
+        } else if ($this->confirm(__('command.make_plugin.confirm_install'), true)) {
+            // インタラクティブモードでインストールを実行
+            $shouldEnableAfterInstall = $this->confirm(__('command.make_plugin.confirm_enable'), true);
+            $this->installPlugin($pluginName, $pluginDirName, $shouldEnableAfterInstall);
         }
 
-        // composer.json に PSR-4 オートロード設定を更新
         $this->call('plugin:autoload:sync');
 
         $this->info(__('command.make_plugin.success', ['pluginName' => $pluginName]));
@@ -207,12 +225,11 @@ class MakePlugin extends Command
             // 言語ファイル
             "lang/en",
             "lang/ja",
+            
             // マイグレーションやファクトリなど
             "database/migrations",
             "database/factories",
             "database/seeders",
-            "database/seeders/dev",
-            "database/seeders/pro",
 
             // アセット関連
             "resources/assets/js",
@@ -241,6 +258,7 @@ class MakePlugin extends Command
         string $pluginSlug,
         string $softwareName,
         string $author,
+        string $email,
         string $website,
         array $licenseInfo
     ) {
@@ -252,8 +270,9 @@ class MakePlugin extends Command
         // vendorName を StudlyCase に
         $vendorNameStudly = Str::studly($vendorNameDefault);
 
-        // pluginName も StudlyCase に
-        $pluginNameStudly = Str::studly($pluginName);
+        // プラグイン名からスペースを除去してからStudlyCaseに変換
+        $pluginNameNoSpaces = str_replace(' ', '', $pluginName);
+        $pluginNameStudly = Str::studly($pluginNameNoSpaces);
 
         // ライセンス情報を取得
         $licenseText = $licenseInfo['licenseText'] ?? '';
@@ -275,6 +294,7 @@ class MakePlugin extends Command
             'softwareName'      => $softwareName,
             'cmsNameSlug'       => $cmsNameSlug,
             'author'            => $author,
+            'email'             => $email,
             'website'           => $website,
         ];
 
@@ -309,73 +329,12 @@ class MakePlugin extends Command
 
         // サービスプロバイダを生成
         $this->createServiceProvider($pluginName, $pluginDirName, $licenseInfo);
-
         
-        // オプションに基づいて追加ファイルを作成
-
-        /*
-        if ($this->option('all')) {
-            // オプションが指定されている場合は、全てのファイルを生成
-            $this->createController($pluginName, $pluginDirName, $namespace);
-            $this->createModel($pluginName, $pluginDirName, $namespace);
-            $this->createMigration($pluginName, $pluginDirName);
-            $this->createPolicy($pluginName, $pluginDirName, $namespace);
-            $this->createListener($pluginName, $pluginDirName, $namespace);
-            $this->createTests($pluginName, $pluginDirName);
-            $this->createCommand($pluginName, $pluginDirName, $namespace);
-            $this->createJob($pluginName, $pluginDirName, $namespace);
-            $this->createNotification($pluginName, $pluginDirName, $namespace);
-            $this->createResource($pluginName, $pluginDirName, $namespace);
-            $this->createFactory($pluginName, $pluginDirName, $namespace);
-            $this->createSeeder($pluginName, $pluginDirName);
-        } else {
-            // オプションに基づいて追加ファイルを作成
-            if ($this->option('controller')) {
-                $this->createController($pluginName, $pluginDirName, $namespace);
-            }
-
-            if ($this->option('model')) {
-                $this->createModel($pluginName, $pluginDirName, $namespace);
-            }
-
-            if ($this->option('migration')) {
-                $this->createMigration($pluginName, $pluginDirName);
-            }
-
-            if ($this->option('policy')) {
-                $this->createPolicy($pluginName, $pluginDirName, $namespace);
-            }
-
-            if ($this->option('listener')) {
-                $this->createListener($pluginName, $pluginDirName, $namespace);
-            }
-
-            if ($this->option('test')) {
-                $this->createTests($pluginName, $pluginDirName);
-            }
-
-            if ($this->option('command')) {
-                $this->createCommand($pluginName, $pluginDirName, $namespace);
-            }
-
-            if ($this->option('job')) {
-                $this->createJob($pluginName, $pluginDirName, $namespace);
-            }
-
-            if ($this->option('notification')) {
-                $this->createNotification($pluginName, $pluginDirName, $namespace);
-            }
-            if ($this->option('resource')) {
-                $this->createResource($pluginName, $pluginDirName, $namespace);
-            }
-            if ($this->option('factory')) {
-                $this->createFactory($pluginName, $pluginDirName, $namespace);
-            }
-            if ($this->option('seeder')) {
-                $this->createSeeder($pluginName, $pluginDirName);
-            }
-        }
-        */
+        // DatabaseSeederを作成
+        $this->createDatabaseSeeder($pluginName, $pluginDir, $namespace, $licenseInfo);
+        
+        // PHPUnit 設定ファイルを作成
+        $this->createPhpUnitConfig($pluginDir, $placeholders);
         
     }
 
@@ -402,6 +361,7 @@ class MakePlugin extends Command
         $licenseData = [
             'software' => $pluginName,
             'author' => $licenseInfo['author'] ?? 'My Company',
+            'email' => $licenseInfo['email'] ?? 'company@example.com',
             'website' => $licenseInfo['website'] ?? 'https://example.com',
             'license' => $licenseName,
             'template' => $template
@@ -444,14 +404,14 @@ class MakePlugin extends Command
      */
     protected function createConfigFile(string $pluginName, string $pluginDir, array $placeholders, array $licenseInfo)
     {
+        // Convert plugin name to snake_case for the config file name
+        $configFileName = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $pluginName));
 
-        //フロント用のコンフィグファイルを作成        
+        // フロント用のコンフィグファイルを作成        
         Artisan::call('make:plugin:config', [
-            'className' => "app",
+            'className' => $configFileName,
             'pluginName' => $pluginName,
         ]);
-
-
 
         $this->info(__('command.make_plugin.files.config', ['pluginName' => $pluginName]));
     }
@@ -461,17 +421,19 @@ class MakePlugin extends Command
      */
     protected function createLangFiles(string $pluginName, string $pluginDir, array $placeholders, array $licenseInfo)
     {
+        // Convert plugin name to snake_case for the language file name
+        $langFileName = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $pluginName));
 
-        //英語の言語ファイルを作成        
+        // 英語の言語ファイルを作成        
         Artisan::call('make:plugin:lang', [
-            'className' => "messages",
+            'className' => $langFileName,
             'pluginName' => $pluginName,
             'lang' => 'en',
         ]);
 
-        //日本語の言語ファイルを作成
+        // 日本語の言語ファイルを作成
         Artisan::call('make:plugin:lang', [
-            'className' => "messages",
+            'className' => $langFileName,
             'pluginName' => $pluginName,
             'lang' => 'ja',
         ]);
@@ -538,277 +500,208 @@ class MakePlugin extends Command
     }
 
     /**
-     * コントローラを作成
+     * プラグイン用のDatabaseSeederを作成
+     *
+     * @param string $pluginName プラグイン名
+     * @param string $pluginDir プラグインディレクトリのフルパス
+     * @param string $namespace プラグインの名前空間
+     * @param array $licenseInfo ライセンス情報
+     * @return void
      */
-    protected function createController(string $pluginName, string $pluginDirName, string $namespace)
+    protected function createDatabaseSeeder(string $pluginName, string $pluginDir, string $namespace, array $licenseInfo)
     {
-        $controllerName = "{$pluginDirName}Controller";
-
-        Artisan::call('make:plugin:controller', [
-            'className' => $controllerName,
-            'pluginName' => $pluginName,
-            'scope' => 'plain',
+        $seederPath = "{$pluginDir}/database/seeders/DatabaseSeeder.php";
+        
+        // 既に存在する場合は上書きしない
+        if (File::exists($seederPath)) {
+            return;
+        }
+        
+        // ライセンス情報を取得
+        $licenseInfo = $this->getPluginLicenseInfo($pluginName);
+        
+        // ライセンス情報が有効な場合は処理を続行
+        if ($licenseInfo && !empty($licenseInfo['template'])) {
+            // プレースホルダを置換するためのデータを準備
+            $placeholders = [
+                'software' => $licenseInfo['info']['software'] ?? config('app.name', 'Dixlase'),
+                'year' => $licenseInfo['info']['year'] ?? date('Y'),
+                'author' => $licenseInfo['info']['author'] ?? config('app.name', 'Dixlase'),
+                'website' => $licenseInfo['info']['website'] ?? ''
+            ];
             
+            // 1. プレースホルダを置換
+            $licenseTemplate = $this->replacePlaceholders($licenseInfo['template'], $placeholders);
+            
+            // 2. PHP用にコメントアウト
+            $licenseHeader = $this->embedLicenseForPhp($licenseTemplate);
+        } else {
+            $licenseHeader = '';
+        }
+        
+        // スタブファイルの内容を取得してファイルを生成
+        $content = $this->getStubContent('database-seeder.stub', [
+            'namespace' => "{$namespace}\\Database\\Seeders",
+            'license' => $licenseHeader
         ]);
-
-        $this->info(__('command.make_plugin.files.controller', ['className' => $controllerName, 'pluginName' => $pluginName]));
+        
+        // ディレクトリが存在することを確認
+        $seederDir = dirname($seederPath);
+        if (!File::exists($seederDir)) {
+            File::makeDirectory($seederDir, 0755, true);
+        }
+        
+        file_put_contents($seederPath, $content);
+        
+        // クラス名を取得（パスから抽出）
+        $seederName = 'DatabaseSeeder';
+        
+        // ローカライズされたメッセージを表示
+        $this->info(__('command.make_plugin.files.database_seeder', [
+            'className' => $seederName,
+            'pluginName' => $pluginName
+        ]));
     }
-
-    /**
-     * モデルを作成
-     */
-    protected function createModel(string $pluginName, string $pluginDirName, string $namespace)
-    {
-        $modelName = "{$pluginDirName}";
-
-        Artisan::call('make:plugin:model', [
-            'pluginName' => $pluginName,
-            'className' => $modelName,
-        ]);
-
-        $this->info(__('command.make_plugin.files.model', ['className' => $modelName, 'pluginName' => $pluginName]));
-    }
-
-    /**
-     * ポリシーファイルを作成
-     */
-    protected function createPolicy(string $pluginName, string $pluginDirName, string $namespace)
-    {
-        $policyName = "{$pluginDirName}Policy";
-
-        Artisan::call('make:plugin:policy', [
-            'pluginName' => $pluginName,
-            'className' => $policyName,
-        ]);
-
-        $this->info(__('command.make_plugin.files.policy', ['className' => $policyName, 'pluginName' => $pluginName]));
-    }
-
-    /**
-     * イベントリスナーを作成
-     */
-    protected function createListener(string $pluginName, string $pluginDirName, string $namespace)
-    {
-        $listenerName = "{$pluginDirName}Listener";
-
-        Artisan::call('make:plugin:listener', [
-            'pluginName' => $pluginName,
-            'className' => $listenerName,
-        ]);
-
-        $this->info(__('command.make_plugin.files.listener', ['className' => $listenerName, 'pluginName' => $pluginName]));
-    }
-
-    /**
-     * テストファイルを作成
-     */
-    protected function createTests(string $pluginName, string $pluginDirName)
-    {
-        $testName = "{$pluginDirName}Test";
-
-        Artisan::call('make:plugin:test', [
-            'pluginName' => $pluginName,
-            'className' => $testName,
-        ]);
-
-        $this->info(__('command.make_plugin.files.test', ['className' => $testName, 'pluginName' => $pluginName]));
-    }
-
-
-    /**
-     * マイグレーションファイルを作成
-     */
-    protected function createMigration(string $pluginName, string $pluginDirName)
-    {
-        // プラグイン名をスネークケースに変換
-        $pluginSnakeName = Str::snake($pluginDirName);
-        // 日付を取得
-        $date = now()->format('Y_m_d_His');
-        // マイグレーション名を生成
-        $migrationName = "{$date}_create_{$pluginSnakeName}_table";
-
-        Artisan::call('make:plugin:migration', [
-            'pluginName' => $pluginName,
-            'className' => $migrationName,
-        ]);
-
-        $this->info(__('command.make_plugin.files.migration', ['className' => $migrationName, 'pluginName' => $pluginName]));
-    }
-
-    /**
-     * リソースを作成
-     */
-    protected function createResource(string $pluginName, string $pluginDirName, string $namespace)
-    {
-        $resourceName = "{$pluginDirName}Resource";
-
-        Artisan::call('make:plugin:resource', [
-            'pluginName' => $pluginName,
-            'className' => $resourceName,
-        ]);
-
-        $this->info(__('command.make_plugin.files.resource', ['className' => $resourceName, 'pluginName' => $pluginName]));
-    }
-
-    /**
-     * コマンドを作成
-     */
-    protected function createCommand(string $pluginName, string $pluginDirName, string $namespace)
-    {
-        $commandName = "{$pluginDirName}Command";
-
-        Artisan::call('pmake:plugin:command', [
-            'pluginName' => $pluginName,
-            'className' => $commandName,
-        ]);
-
-        $this->info(__('command.make_plugin.files.command', ['className' => $commandName, 'pluginName' => $pluginName]));
-    }
-
-    /**
-     * ジョブを作成
-     */
-    protected function createJob(string $pluginName, string $pluginDirName, string $namespace)
-    {
-        $jobName = "{$pluginDirName}Job";
-
-        Artisan::call('make:plugin:job', [
-            'pluginName' => $pluginName,
-            'className' => $jobName,
-        ]);
-
-        $this->info(__('command.make_plugin.files.job', ['className' => $jobName, 'pluginName' => $pluginName]));
-    }
-
-    /**
-     * 通知を作成
-     */
-    protected function createNotification(string $pluginName, string $pluginDirName, string $namespace)
-    {
-        $notificationName = "{$pluginDirName}Notification";
-
-        Artisan::call('make:plugin:notification', [
-            'pluginName' => $pluginName,
-            'className' => $notificationName,
-        ]);
-
-        $this->info(__('command.make_plugin.files.notification', ['className' => $notificationName, 'pluginName' => $pluginName]));
-    }
-
-    /**
-     * シーダーを作成
-     */
-    protected function createSeeder(string $pluginName, string $pluginDirName)
-    {
-        // DatabaseSeeder の作成
-        Artisan::call('make:plugin:seeder', [
-            'pluginName' => $pluginName,
-            'className' => 'DatabaseSeeder',
-        ]);
-
-
-        // DevelopmentSeeder の作成
-        Artisan::call('make:plugin:seeder', [
-            'pluginName' => $pluginName,
-            'className' => 'DevelopmentSeeder',
-            '--env' => 'dev',
-            '--force' => true,
-        ]);
-
-        $this->info("Seeder DevelopmentSeeder.php created for plugin [{$pluginName}].");
-
-        // ProductionSeeder の作成
-        Artisan::call('make:plugin:seeder', [
-            'pluginName' => $pluginName,
-            'className' => 'ProductionSeeder',
-            '--env' => 'pro',
-            '--force' => true,
-        ]);
-
-        $this->info("Seeder ProductionSeeder.php created for plugin [{$pluginName}].");
-    }
-
-    /**
-     * ファクトリを作成
-     */
-    protected function createFactory(string $pluginName, string $pluginDirName, string $namespace)
-    {
-        $factoryName = "{$pluginDirName}Factory";
-
-        Artisan::call('make:plugin:factory', [
-            'pluginName' => $pluginName,
-            'className' => $factoryName,
-        ]);
-
-        $this->info(__('command.make_plugin.files.factory', ['className' => $factoryName, 'pluginName' => $pluginName]));
-    }
-
     
+    /**
+     * Create PHPUnit configuration file for the plugin
+     *
+     * @param string $pluginDir
+     * @param array $placeholders
+     * @return void
+     */
+    protected function createPhpUnitConfig(string $pluginDir, array $placeholders)
+    {
+        $phpunitPath = "{$pluginDir}/phpunit.xml";
+        
+        // 既に存在する場合は上書きしない
+        if (File::exists($phpunitPath)) {
+            return;
+        }
+        
+        // Use the getStubContent method to read and process the stub
+        $content = $this->getStubContent('phpunit.xml.stub', $placeholders, 'custom');
+        
+        if ($content === false) {
+            $this->error('Failed to generate PHPUnit configuration');
+            return;
+        }
+        
+        File::put($phpunitPath, $content);
+        
+        // Create tests directory structure
+        File::ensureDirectoryExists("{$pluginDir}/tests/Unit", 0755, true);
+        File::ensureDirectoryExists("{$pluginDir}/tests/Feature", 0755, true);
+        
+        // Create placeholder test files if they don't exist
+        $this->createExampleTestFile(
+            "{$pluginDir}/tests/Unit/ExampleTest.php",
+            $placeholders['namespace'] . '\\Tests\\Unit',
+            'PHPUnit\\Framework\\TestCase'
+        );
+        
+        $this->createExampleTestFile(
+            "{$pluginDir}/tests/Feature/ExampleTest.php",
+            $placeholders['namespace'] . '\\Tests\\Feature',
+            'Tests\\TestCase'
+        );
+        
+        $this->info(__('command.make_plugin.files.phpunit_config', [
+            'pluginName' => basename($pluginDir)
+        ]));
+    }
+    
+    /**
+     * Create an example test file
+     *
+     * @param string $path
+     * @param string $namespace
+     * @param string $testCase
+     * @return void
+     */
+    /**
+     * Create an example test file using stub templates
+     *
+     * @param string $path
+     * @param string $namespace
+     * @param string $testCase
+     * @return void
+     */
+    protected function createExampleTestFile(string $path, string $namespace, string $testCase)
+    {
+        if (!File::exists($path)) {
+            // Determine which stub to use based on test type
+            $isUnitTest = str_contains($path, 'Unit/');
+            $stubFile = $isUnitTest ? 'test.unit.stub' : 'test.stub';
+            
+            // Get the class name from the path
+            $className = basename($path, '.php');
+            
+            // Prepare placeholders
+            $placeholders = [
+                'namespace' => $namespace,
+                'class' => $className,
+                'testCase' => $testCase,
+                'license' => $this->licenseInfo['licenseText'] ?? ''
+            ];
+            
+            // Get the stub content using the existing method
+            $content = $this->getStubContent($stubFile, $placeholders, 'custom');
+            
+            if ($content === false) {
+                $this->error("Failed to generate test file: " . $path);
+                return;
+            }
+            
+            // Ensure the directory exists
+            File::ensureDirectoryExists(dirname($path));
+            
+            // Write the test file
+            File::put($path, $content);
+            
+            $this->info(sprintf('Created test file: %s', $path));
+        }
+    }
+
 
     
     /**
      * プラグインをインストール (DBに登録）
+     * PluginInstallコマンドを利用してインストールを実行
+     *
+     * @param string $pluginName プラグイン名
+     * @param string $pluginDirName プラグインディレクトリ名
+     * @return void
      */
-    protected function installPlugin($pluginName, $pluginDirName)
+    /**
+     * プラグインをインストール (DBに登録）
+     * PluginInstallコマンドを利用してインストールを実行
+     *
+     * @param string $pluginName プラグイン名
+     * @param string $pluginDirName プラグインディレクトリ名
+     * @param bool $enable インストール後に有効化するかどうか
+     * @return void
+     */
+    protected function installPlugin($pluginName, $pluginDirName, $enable = false)
     {
-        // Convert plugin name to kebab-case for slug (e.g., 'MyPlugin' → 'my-plugin')
-        $slug = Str::slug(Str::headline($pluginName), '-');
-            
-        // Register plugin in database
-        Plugin::create([
-            'name' => $pluginName,
-            'slug' => $slug,
-            'directory' => $pluginDirName,
-            'namespace' => "Plugins\\$pluginDirName",
-            'version' => '1.0.0',
-            'status' => 0,
+        // PluginInstallコマンドを実行（--enableオプションで有効化を制御）
+        $this->call('plugin:install', [
+            'pluginName' => $pluginDirName,
+            '--enable' => $enable, // 明示的に有効化を指定した場合のみ有効化
         ]);
-
-        // Run migrations if exist
-        $pluginMigrationPath = base_path("plugins/{$pluginDirName}/migrations");
-        if (is_dir($pluginMigrationPath)) {
-            Artisan::call('migrate', [
-                '--path' => "plugins/{$pluginDirName}/migrations",
-                '--force' => true,
-            ]);
-        }
-
-        $this->info(__('command.make_plugin.installed', ['pluginName' => $pluginName]));
     }
 
     /**
      * プラグインを有効化 (DBでstatusを1に変更)
+     * PluginEnableコマンドを利用して有効化を実行
+     *
+     * @param string $pluginName 有効化するプラグイン名
+     * @return void
      */
-
     protected function enablePlugin($pluginName)
     {
-        // Enable the plugin
-        $plugin = Plugin::where('name', $pluginName)->first();
-        if ($plugin) {
-            $plugin->update(['status' => 1]);
-            $this->createPluginSymlink($plugin->directory);
-            $this->info(__('command.make_plugin.enabled', ['pluginName' => $pluginName]));
-        } else {
-            $this->error(__('command.make_plugin.not_found', ['pluginName' => $pluginName]));
-        }
-    }
-
-
-    /**
-     * public配下へアセットディレクトリのシンボリックリンクを作成
-     */
-    protected function createPluginSymlink(string $pluginDirName)
-    {
-        $target = base_path("plugins/{$pluginDirName}/resources/assets");
-        $link = public_path("assets/plugins/{$pluginDirName}");
-
-        if (File::exists($target) && is_dir($target)) {
-            if (File::exists($link) || is_link($link)) {
-                unlink($link);
-            }
-            symlink($target, $link);
-        } else {
-            $this->warn(__('command.make_plugin.no_assets', ['name' => $pluginDirName]));
-        }
+        $this->call('plugin:enable', [
+            'name' => $pluginName
+        ]);
     }
 }
