@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of MySoftware.
+ * This file is part of Dixlase.
  *
  * Copyright (C) 2025 exc-D inc.
  * https://exc-d.com
@@ -81,14 +81,24 @@ trait MakePluginCommandTrait
             }
         }
 
-        // プラグイン名の指定がなければプラグイン選択
-        if (empty($pluginName)) {
+        // プラグイン名がコマンドで指定されていれば、それを使用する
+        if (!empty($this->argument('pluginName'))) {
+            $pluginName = $this->argument('pluginName');
+            $availablePlugins = $this->getAvailablePluginNames();
+            //プラグインディレクトリに指定されたプラグイン名がなければエラーを返す。
+            if (!in_array($pluginName, $availablePlugins)) {
+                $this->error(__('command.plugin.not_found', ['name' => $pluginName]));
+                return false;
+            }
+        } else {
+            // プラグイン名の指定がなければプラグイン選択
             $pluginName = $this->choosePlugin();
             if (empty($pluginName)) {
                 $this->error(__('command.plugin.not_found'));
                 return false;
             }
         }
+
         $pluginName = Str::studly($pluginName);
         $licenseInfo = $this->getPluginLicenseInfo($pluginName) ?? [];
 

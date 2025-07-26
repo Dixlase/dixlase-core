@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of MySoftware.
+ * This file is part of Dixlase.
  *
  * Copyright (C) 2025 exc-D inc.
  * https://exc-d.com
@@ -38,7 +38,18 @@ class PluginAutoloadSyncOnly extends Command
      *
      * @var string
      */
-    protected $description = 'Add new plugin directories to composer.json autoload (no cleanup).';
+    protected $description;
+
+    /**
+     * Create a new command instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->description = __('command.plugin_autoload.description');
+        parent::__construct();
+    }
 
     // プラグインで追加したいPSR-4パス設定例
     protected array $pluginPaths = [
@@ -91,9 +102,9 @@ class PluginAutoloadSyncOnly extends Command
                 json_encode($composerConfig, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
             );
 
-            $this->info('Added new plugin directories to composer.json autoload.');
+            $this->info(__('command.plugin_autoload.added'));
         } else {
-            $this->info('No new plugin directories found; no changes made.');
+            $this->info(__('command.plugin_autoload.no_changes'));
         }
 
         return Command::SUCCESS;

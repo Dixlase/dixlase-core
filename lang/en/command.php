@@ -1,9 +1,14 @@
 <?php
 
 return [
+    'file' => [
+        'already_exists' => 'File [ :path ] already exists.',
+        'created' => 'File [ :path ] created successfully.',
+    ],
     'make_plugin' => [
         'enter_plugin_name' => 'Please enter the plugin name',
         'enter_author_name' => 'Please enter the developer name',
+        'enter_email' => 'Please enter the developer\'s email address',
         'enter_website_url' => 'Please enter the developer\'s website URL (only the part after https://)',
         'select_license' => 'Available licenses:',
         'enter_license_number' => 'Enter license number (default: none):',
@@ -13,6 +18,7 @@ return [
         'already_exists' => 'The plugin \':pluginName\' already exists.',
         'installed' => 'Plugin :pluginName has been installed.',
         'enabled' => 'Plugin \':pluginName\' has been enabled.',
+        'disabled' => 'Plugin \':pluginName\' has been disabled.',
         'not_found' => 'Plugin \':pluginName\' not found in the database.',
         'no_assets' => 'No assets directory found for plugin \':pluginName\'.',
         'files' => [
@@ -33,9 +39,11 @@ return [
             'config' => 'Config file created for plugin [:pluginName].',
             'lang' => 'Language files (en & ja) created for plugin [:pluginName].',
             'vite' => 'Vite config file created for plugin [:pluginName].',
-            'composer' => 'Composer.json file created for plugin [:pluginName].',
+            'composer' => 'composer.json file created for plugin [:pluginName].',
             'readme' => 'README.md created for plugin [:pluginName].',
             'license_info' => 'License info file created for plugin [:pluginName].',
+            'database_seeder' => 'Database seeder [:className] created for plugin [:pluginName].',
+            'phpunit_config' => 'PHPUnit configuration file created for plugin [:pluginName].',
         ],
         'license_options' => [
             'gpl' => 'GPL-3.0',
@@ -49,6 +57,13 @@ return [
         ],
         'config' => [
             'description' => 'Create a new configuration file for a plugin',
+        ],
+        'installation' => [
+            'installed' => 'Plugin \':pluginName\' has been installed.',
+            'migrating' => 'Running migrations...',
+            'enable_confirm' => 'Enable plugin \':pluginName\'?',
+            'enable_skipped' => 'Plugin \':pluginName\' remains disabled. To enable it later, use the admin panel or run `php artisan plugin:enable :pluginName`.',
+            'composer_parse_error' => 'Failed to parse composer.json: :error',
         ]
     ],
     'file_type' => [
@@ -68,7 +83,40 @@ return [
     ],
     'plugin' => [
         'prompt' => 'Please select a plugin',
-        'not_found' => 'No plugins found. At least one plugin directory must exist under plugins.',
+        'not_found' => 'Not found plugin.',
+        'not_exists' => 'The specified plugin does not exist.',
+    ],
+    'plugin_install' => [
+        'description' => 'Install the plugin, register it in the database, run migrations, and update autoload.',
+    ],
+    'plugin_disable' => [
+        'description' => 'Disable a plugin by setting its status to 0 and removing symlinks',
+    ],
+    'plugin_enable' => [
+        'description' => 'Enable a plugin by setting its status to 1 and creating necessary symlinks',
+    ],
+    'plugin_symlink' => [
+        'description' => 'Manage plugin asset symlinks',
+        'invalid_action' => 'Invalid action. Use "create" or "remove".',
+        'created' => 'Symlink created for plugin: :plugin',
+        'removed' => 'Symlink removed for plugin: :plugin',
+    ],
+    'plugin_autoload_sync' => [
+        'description' => 'Synchronize plugins with composer.json PSR-4 settings (and optionally clean up).',
+        'success' => 'Composer autoload has been updated (plugins synced).',
+    ],
+    'plugin_uninstall' => [
+        'description' => 'Uninstall the plugin and remove database and files.',
+        'not_found' => 'Plugin \':pluginName\' not found.',
+        'rollback_running' => 'Running migrations rollback...',
+        'rollback_confirm' => 'Do you want to delete database tables related to plugin \':pluginName\'?',
+        'rollback_skipped' => 'Database rollback was skipped.',
+        'directory_deleted' => 'Plugin directory \':path\' has been deleted.',
+        'directory_not_exists' => 'Plugin directory does not exist.',
+        'directory_not_deleted' => 'Plugin directory was not deleted.',
+        'delete_confirm' => 'Do you want to delete the directory and files for plugin \':pluginName\'?',
+        'database_removed' => 'Plugin \':pluginName\' has been removed from the database.',
+        'completed' => 'Plugin \':pluginName\' has been uninstalled successfully.',
     ],
     'class' => [
         'enter_class_name' => 'Enter the class name',
@@ -138,8 +186,9 @@ return [
             'force' => 'Overwrite existing files',
         ]
     ],
-    'file' => [
-        'already_exists' => 'File already exists: :path',
-        'created' => 'File created: :path',
-    ]
+    'plugin_autoload' => [
+        'description' => 'Add new plugin directories to composer.json autoload (no cleanup).',
+        'added' => 'Added new plugin directories to composer.json autoload.',
+        'no_changes' => 'No new plugin directories found; no changes made.'
+    ],
 ];

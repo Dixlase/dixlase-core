@@ -251,7 +251,18 @@ trait MakeLicenseTrait
         // ライセンスキーが指定されていない場合は選択を求める
         else {
             $values = array_values($licenseLabels);
-            $selectedLabel = $this->choice(__('command.license.prompt'), $values);
+            // 1から始まる連想配列を作成
+            $choices = [];
+            foreach ($values as $index => $value) {
+                $choices[$index + 1] = $value;
+            }
+            
+            // 選択肢を表示（1から始まる番号で表示）
+            $selectedNumber = $this->choice(__('command.license.prompt'), $choices);
+            
+            // 選択された番号から正しい配列のインデックスを計算
+            $selectedIndex = array_search($selectedNumber, $choices);
+            $selectedLabel = $values[$selectedIndex - 1];
             $selectedKey = array_search($selectedLabel, $licenseLabels);
         }
 
@@ -300,12 +311,11 @@ trait MakeLicenseTrait
      */
     public function embedLicenseForBlade(string $license): string
     {
-        $plain = $this->getLicensePlain($license);
-        if (empty($plain)) {
+        if (empty(trim($license))) {
             return '';
         }
 
         // Blade用コメントでラップ
-        return "{{--\n" . trim($plain) . "\n--}}";
+        return "{{--\n" . trim($license) . "\n--}}";
     }
 }

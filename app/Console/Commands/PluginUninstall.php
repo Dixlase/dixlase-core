@@ -20,25 +20,30 @@ class PluginUninstall extends Command
      *
      * @var string
      */
-    protected $signature = 'plugin:uninstall {name}';
-
+    protected $signature = 'plugin:uninstall {pluginName}
+                            {--rollback : Rollback database migrations}
+                            {--delete : Delete plugin files and directories}';
     /**
-     * The console command description.
+     * Create a new command instance.
      *
-     * @var string
+     * @return void
      */
-    protected $description = 'プラグインをアンインストールし、データベースとファイルを削除します。';
+    public function __construct()
+    {
+        parent::__construct();
+        $this->description = __('command.plugin_uninstall.description');
+    }
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        $pluginName = $this->argument('name');
+        $pluginName = $this->argument('pluginName');
         $plugin = DB::table('plugins')->where('name', $pluginName)->first();
 
         if (!$plugin) {
-            $this->error("プラグイン '{$pluginName}' は見つかりません。");
+            $this->error(__('command.plugin_uninstall.not_found', ['pluginName' => $pluginName]));
             return;
         }
 
@@ -48,32 +53,44 @@ class PluginUninstall extends Command
         $this->disablePlugin($pluginName);
 
         // マイグレーションのロールバック
-        if ($this->confirm("プラグイン '{$pluginName}' に関連するデータベースのテーブルを削除しますか？", false)) {
-            $this->info("マイグレーションのロールバックを実行中...");
+        if ($this->option('rollback')) {
+            $this->info(__('command.plugin_uninstall.rollback_running'));
             $migrator = new PluginMigrator(app(Filesystem::class), app(ConnectionResolverInterface::class), 'plugin_migrations', $plugin->slug);
             $migrator->rollback($plugin->directory);
+        } else if ($this->confirm(__('command.plugin_uninstall.rollback_confirm', ['pluginName' => $pluginName]), false)) {
+            $this->info(__('command.plugin_uninstall.rollback_running'));
+            $migrator = new PluginMigrator(app(Filesystem::class), app(ConnectionResolverInterface::class), 'plugin_migrations', $plugin->slug);
+            $migrator->rollback($plugin->directory);
+        } else {
+            $this->info(__('command.plugin_uninstall.rollback_skipped'));
         }
 
-
         // プラグインのディレクトリを削除するか？
-        if ($this->confirm("プラグイン '{$pluginName}' のディレクトリとファイルを削除しますか？", false)) {
+        if ($this->option('delete')) {
             if (File::exists($pluginPath)) {
                 File::deleteDirectory($pluginPath);
-                $this->info("プラグインのディレクトリ '{$pluginPath}' を削除しました。");
+                $this->info(__('command.plugin_uninstall.directory_deleted', ['path' => $pluginPath]));
             } else {
-                $this->info("プラグインのディレクトリは既に存在しません。");
+                $this->info(__('command.plugin_uninstall.directory_not_exists'));
+            }
+        } else if ($this->confirm(__('command.plugin_uninstall.delete_confirm', ['pluginName' => $pluginName]), false)) {
+            if (File::exists($pluginPath)) {
+                File::deleteDirectory($pluginPath);
+                $this->info(__('command.plugin_uninstall.directory_deleted', ['path' => $pluginPath]));
+            } else {
+                $this->info(__('command.plugin_uninstall.directory_not_exists'));
             }
         } else {
-            $this->info("プラグインのディレクトリは削除されませんでした。");
+            $this->info(__('command.plugin_uninstall.directory_not_deleted'));
         }
 
         // データベースからプラグインを削除
         DB::table('plugins')->where('name', $pluginName)->delete();
-        $this->info("プラグイン '{$pluginName}' をデータベースから削除しました。");
+        $this->info(__('command.plugin_uninstall.database_removed', ['pluginName' => $pluginName]));
 
         // オートロードを更新
         $this->updateAutoload();
 
-        $this->info("プラグイン '{$pluginName}' のアンインストールが完了しました。");
+        $this->info(__('command.plugin_uninstall.completed', ['pluginName' => $pluginName]));
     }
 }

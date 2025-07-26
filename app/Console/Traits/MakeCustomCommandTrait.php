@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of MySoftware.
+ * This file is part of Dixlase.
  *
  * Copyright (C) 2025 exc-D inc.
  * https://exc-d.com
@@ -115,93 +115,6 @@ trait MakeCustomCommandTrait
             $options,
             $subDirs,
             $pluginName,
-        );
-
-        return true;
-    }
-
-
-    /**
-     * カスタムディレクトリ用ファイル作成コマンドの共通初期化処理
-     *
-     * @param string $classPath クラスパス
-     * @return array|false [$fileType, $pluginName, $scope, $className, $subDirs, $licenseInfo] または false
-     */
-    protected function initializeCustomCommand(string $classPath)
-    {
-        // ファイルタイプの選択
-        [$fileType, $pluginName] = $this->chooseFileType();
-        if (!$fileType) {
-            return false;
-        }
-
-        // パス情報の分解（スコープなしで一度パース）
-        [$className, $subDirs] = $this->parseClassPath($classPath, '');
-
-        $common = [
-            'fileType' => $fileType,
-            'pluginName' => $pluginName,
-            'className' => $className,
-            'subDirs' => $subDirs,
-        ];
-
-        
-        // コントローラーの場合のみスコープを選択
-        
-        if (in_array('App\\Console\\Traits\\MakeControllerTrait', class_uses_recursive($this))) {
-            $scope = $this->chooseScope();
-            // スコープが選択されたら再度パス情報を分解
-            if ($scope) {
-                [$className, $subDirs] = $this->parseClassPath($classPath, $scope);
-                $common['className'] = $className;
-                $common['subDirs'] = $subDirs;
-                $common['scope'] = $scope;
-            }
-        }
-
-        // ライセンス取得
-        $common['licenseInfo'] = $this->getFileTypeLicenseInfo($fileType, $pluginName);
-
-        return  $common;
-    }
-
-
-    /**
-     * カスタムファイルの生成処理
-     *
-     * @param array $common initializeCustomCommandの結果
-     * @param array $options オプション
-     * @return bool 成功したかどうか
-     */
-    protected function makeCustomFile(array $common, array $options): bool
-    {
-        // 連想配列から値を取得
-        $fileType = $common['fileType'];
-        $pluginName = $common['pluginName'];
-        $className = $common['className'];
-        $subDirs = $common['subDirs'] ?? [];
-        $licenseInfo = $common['licenseInfo'] ?? [];
-        $category = $common['category'] ?? 'default';
-        
-        // カテゴリに基づいて適切なオプションを追加
-        if ($category === 'route' && isset($common['routeType'])) {
-            $options = array_merge($options, ['routeType' => $common['routeType']]);
-        } elseif (isset($common['scope'])) {
-            $options = array_merge($options, ['scope' => $common['scope']]);
-        }
-
-        // ファイルタイプを決定
-        $targetFileType = $fileType === 'core' ? 'custom_core' : 'custom_plugin';
-
-
-        // ファイル生成
-        $this->makeFile(
-            $className,
-            $targetFileType,
-            $options,
-            $subDirs,
-            $pluginName,
-            $licenseInfo
         );
 
         return true;

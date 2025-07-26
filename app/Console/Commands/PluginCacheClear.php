@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of MySoftware.
+ * This file is part of Dixlase.
  *
  * Copyright (C) 2025 exc-D inc.
  * https://exc-d.com
@@ -31,7 +31,7 @@ class PluginCacheClear extends Command
      *
      * @var string
      */
-    protected $signature = 'plugin:cache:clear {name}';
+    protected $signature = 'plugin:cache:clear {pluginName}';
 
     /**
      * The console command description.
@@ -45,7 +45,7 @@ class PluginCacheClear extends Command
      */
     public function handle()
     {
-        $pluginName = $this->argument('name');
+        $pluginName = $this->argument('pluginName');
         cache()->forget("plugin_{$pluginName}_cache");
         $this->info("Cache for plugin '{$pluginName}' has been cleared.");
     }

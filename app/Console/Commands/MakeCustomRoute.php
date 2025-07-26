@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of MySoftware.
+ * This file is part of Dixlase.
  *
  * Copyright (C) 2025 exc-D inc.
  * https://exc-d.com
@@ -44,12 +44,15 @@ class MakeCustomRoute extends Command
     public function handle()
     {
 
+        $options = $this->options();
+        $options['routeType'] = $this->argument('routeType');
+
         return $this->generateCustomFile(
             $this->argument('className'),
             $this->argument('fileType'),
             $this->argument('pluginName'),
             'route',
-            $this->options()
+            $options
         );
 
     }

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of MySoftware.
+ * This file is part of Dixlase.
  *
  * Copyright (C) 2025 exc-D inc.
  * https://exc-d.com
@@ -29,7 +29,7 @@ use Illuminate\Support\Str;
 use App\Models\Theme;
 use App\Services\FileGenerator;
 
-class MakeTheme extends Command
+class MakeNewTheme extends Command
 {
     protected $signature = 'make:theme {name} {--install} {--activate}';
     protected $description = 'Create a new theme, optionally register it in the database and activate it';

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of MySoftware.
+ * This file is part of Dixlase.
  *
  * Copyright (C) 2025 exc-D inc.
  * https://exc-d.com
@@ -26,7 +26,7 @@ use Illuminate\Console\Command;
 use App\Services\FileGenerator;
 use App\Console\Traits\MakeLanguageTrait;
 
-class MakeLanguage extends Command
+class MakeCoreLanguage extends Command
 {
     use MakeLanguageTrait;
 
