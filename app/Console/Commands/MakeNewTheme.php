@@ -24,37 +24,47 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use App\Models\Theme;
-use App\Services\FileGenerator;
+use Illuminate\Support\Facades\Artisan;
 
 class MakeNewTheme extends Command
 {
-    protected $signature = 'make:theme {name} {--install} {--activate}';
-    protected $description = 'Create a new theme, optionally register it in the database and activate it';
+    protected $signature = 'make:theme {themeName? : command.make_theme.enter_theme_name}
+        {--install : command.make_theme.confirm_install}
+        {--activate : command.make_theme.confirm_activate}';
+    
+    protected $description = 'command.make_theme.description';
 
-    protected FileGenerator $fileGenerator;
 
     /**
      * コンストラクタ
      */
-    public function __construct(FileGenerator $fileGenerator)
+    public function __construct()
     {
         parent::__construct();
-        $this->fileGenerator = $fileGenerator;
     }
 
     public function handle()
     {
         // ユーザーが入力したテーマ名（スペース等を含むオリジナル）
-        $originalName = $this->argument('name');
+        $originalName = $this->argument('themeName');
+        
+        // テーマ名が指定されていない場合は入力を求める
+        if (empty($originalName)) {
+            $originalName = $this->ask(__('command.make_theme.enter_theme_name'));
+            
+            // 空の場合はエラー
+            if (empty($originalName)) {
+                $this->error(__('command.make_theme.name_cannot_be_empty'));
+                return Command::FAILURE;
+            }
+        }
 
         // テーマ用ディレクトリ名 (キャメルケース化)
         $themeDirName = Str::studly($originalName);
 
-        // slug化はFileGeneratorへ委譲
-        $slugName = $this->fileGenerator->sanitizeName($originalName);
+        // スラッグ名。テーマ名をスネークケースに変換
+        $slugName = Str::slug(Str::snake($originalName));
 
         // テーマ保存先のパス
         $themeDir = base_path("themes/{$themeDirName}");
@@ -62,7 +72,7 @@ class MakeNewTheme extends Command
 
         // 既に存在していたらエラー
         if (File::exists($themeDir)) {
-            $this->error("Theme '{$originalName}' already exists.");
+            $this->error(__('command.make_theme.theme_exists', ['themeName' => $originalName]));
             return Command::FAILURE;
         }
 
@@ -72,17 +82,30 @@ class MakeNewTheme extends Command
         // テーマ初期ファイルの生成
         $this->createThemeFiles($themeDir, $originalName, $themeDirName);
 
-        // テーマをデータベースに登録
-        if ($this->option('install')) {
-            $themeId = $this->registerThemeInDatabase($originalName, $themeDirName);
+        $this->info(__('command.make_theme.created', ['themeName' => $originalName]));
+        
+        // インストール確認（オプション指定がない場合は確認）
+        $shouldInstall = $this->option('install') || $this->confirm(__('command.make_theme.confirm_install'), true);
+        
+        if ($shouldInstall) {
+            // インストールコマンドを実行
+            $this->call('theme:install', [
+                'themeName' => $slugName,
+                '--force' => true
+            ]);
 
-            // テーマを有効化
-            if ($this->option('activate')) {
-                $this->activateTheme($themeId, $themeDirName);
+            // 有効化確認（オプション指定がない場合は確認）
+            $shouldActivate = $this->option('activate') || $this->confirm(__('command.make_theme.confirm_activate'), true);
+            
+            if ($shouldActivate) {
+                // 有効化コマンドを実行
+                $this->call('theme:activate', [
+                    'themeName' => $slugName
+                ]);
             }
+        } else {
+            $this->info(__('command.make_theme.install_later', ['slugName' => $slugName]));
         }
-
-        $this->info("Theme '{$originalName}' has been created successfully.");
         return Command::SUCCESS;
     }
 
@@ -156,63 +179,5 @@ class MakeNewTheme extends Command
         // ***** デフォルトJS/SCSSなどの初期ファイル *****
         File::put("{$themeDir}/resources/src/js/app.js", "// JavaScript for {$themeDirName}");
         File::put("{$themeDir}/resources/src/css/style.css", "/* Styles for {$themeDirName} */");
-    }
-
-
-    /**
-     * テーマをデータベースに登録
-     *
-     * @param string $originalName
-     * @param string $themeName
-     * @return int $themeId
-     */
-    protected function registerThemeInDatabase(string $originalName, string $themeName)
-    {
-        if (Theme::where('slug', $themeName)->exists()) {
-            $this->error("Theme '{$themeName}' is already registered in the database.");
-            return Command::FAILURE;
-        }
-
-        $theme = Theme::create([
-            'name' => $originalName,
-            'slug' => $themeName,
-            'directory' => $themeName,
-            'version' => '1.0.0',
-        ]);
-
-        $this->info("Theme '{$themeName}' has been registered in the database.");
-        return $theme->id;
-    }
-
-    /**
-     * テーマを有効化
-     *
-     * @param int $themeId
-     */
-    protected function activateTheme(int $themeId, string $themeName)
-    {
-        DB::table('theme_settings')->updateOrInsert(
-            ['id' => 1], // 一意の設定
-            ['active_theme_id' => $themeId, 'updated_at' => now()]
-        );
-
-        $themeAssetsDir = base_path("themes/{$themeName}/resources/assets");
-        $linkDir = public_path("assets/theme");
-
-        // シンボリックリンクの作成
-        if (File::exists($themeAssetsDir) && is_dir($themeAssetsDir)) {
-            // すでにリンクがあれば削除
-            if (File::exists($linkDir) || is_link($linkDir)) {
-                unlink($linkDir);
-            }
-
-            // 新しくシンボリックリンクを作成
-            symlink($themeAssetsDir, $linkDir);
-            $this->info("Symlink created: {$linkDir} -> {$themeAssetsDir}");
-        } else {
-            $this->warn("Assets directory does not exist for theme: {$themeName}");
-        }
-
-        $this->info("Theme ID '{$themeId}' has been activated.");
     }
 }
