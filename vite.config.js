@@ -15,14 +15,20 @@ export default defineConfig({
             refresh: true,
         }),
         liveReload([
-			__dirname + '/**/*.php',
-			__dirname + '/resources/src/**/*.scss',
-			__dirname + '/resources/src/**/*.js',
-		]),
+            __dirname + '/app/**/*.php',
+            __dirname + '/config/**/*.php',
+            __dirname + '/database/**/*.php',
+            __dirname + '/lang/**/*.php',
+            __dirname + '/routes/**/*.php',
+            __dirname + '/stubs/**/*.stub',
+            __dirname + '/resources/src/**/*.php',
+            __dirname + '/resources/src/**/*.scss',
+            __dirname + '/resources/src/**/*.js',
+        ]),
     ],
     build: {
         manifest: 'manifest.json', // マニフェストファイルの出力先
-		outDir: 'public/assets/build', // 出力先ディレクトリ
+        outDir: 'public/assets/build', // 出力先ディレクトリ
         rollupOptions: {
             input: {
                 admin_js: path.resolve(__dirname, 'resources/src/admin/js/app.js'),
@@ -44,7 +50,7 @@ export default defineConfig({
                 },
             },
         },
-	},
+    },
     css: {
         preprocessorOptions: {
             scss: {
@@ -57,14 +63,14 @@ export default defineConfig({
         port: 5173,
         strictPort: true,       // ポートが使用中なら失敗する
         watch: {
-        usePolling: true,     // ポーリングでファイル変更を検知
-        interval: 100,        // ポーリングの間隔（お好みで調整）
+            usePolling: true,     // ポーリングでファイル変更を検知
+            interval: 100,        // ポーリングの間隔（お好みで調整）
         },
         // HMRの設定
         hmr: {
-        host: 'localhost',    // ブラウザがアクセスするホスト(ホストOSから見た名前)
-        port: 5173,
-        // protocol: 'wss',    // HTTPS/WSS を使いたい場合は有効化
+            host: 'localhost',    // ブラウザがアクセスするホスト(ホストOSから見た名前)
+            port: 5173,
+            // protocol: 'wss',    // HTTPS/WSS を使いたい場合は有効化
         },
     },
     resolve: {
