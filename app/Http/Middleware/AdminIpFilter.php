@@ -37,19 +37,29 @@ class AdminIpFilter
      */
     public function handle(Request $request, Closure $next): Response
     {
-        //security_settingsテーブルの値を取得
-        //テーブルが存在しているか確認
-        if (Schema::hasTable('security_settings')) {
-            $enableAllowedIps = SecuritySetting::get('enable_allowed_admin_ips', false);
-            $allowedIps = explode(',', SecuritySetting::get('allowed_admin_ips', ''));
+        // ローカル環境ではIP制限をスキップ
+        if (app()->environment('local')) {
+            return $next($request);
+        }
 
-            $enableBlockedIps = SecuritySetting::get('enable_blocked_admin_ips', false);
-            $blockedIps = explode(',', SecuritySetting::get('blocked_admin_ips', ''));
-        } else {
-            $enableAllowedIps = false;
-            $allowedIps = [];
-            $enableBlockedIps = false;
-            $blockedIps = [];
+        // デフォルト値の設定
+        $enableAllowedIps = false;
+        $allowedIps = [];
+        $enableBlockedIps = false;
+        $blockedIps = [];
+
+        // セキュリティ設定テーブルが存在する場合のみ値を取得
+        if (Schema::hasTable('security_settings')) {
+            $enableAllowedIps = (bool)SecuritySetting::get('enable_allowed_admin_ips', 0);
+            $allowedIps = array_filter(explode(',', SecuritySetting::get('allowed_admin_ips', '')));
+            
+            $enableBlockedIps = (bool)SecuritySetting::get('enable_blocked_admin_ips', 0);
+            $blockedIps = array_filter(explode(',', SecuritySetting::get('blocked_admin_ips', '')));
+        }
+
+        // 許可リストが有効でない場合はIP制限をスキップ
+        if (!$enableAllowedIps && !$enableBlockedIps) {
+            return $next($request);
         }
 
         if ($enableBlockedIps && in_array($request->ip(), $blockedIps)) {

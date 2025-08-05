@@ -34,22 +34,95 @@ use App\Models\SecuritySetting;
 use Illuminate\Support\Facades\Crypt;
 
 
-
 class InstallController extends Controller
 {
+    // 利用可能な言語のリスト
+    protected $availableLocales = ['en', 'ja'];
+
+    /**
+     * 言語切り替えと.envの更新
+     */
+    public function setLanguage($locale)
+    {
+        if (in_array($locale, $this->availableLocales)) {
+            // セッションに保存
+            session(['install_locale' => $locale]);
+            app()->setLocale($locale);
+            
+            // .envファイルを更新
+            $envPath = base_path('.env');
+            if (file_exists($envPath)) {
+                $envContent = file_get_contents($envPath);
+                
+                // 更新するキーと値のペア
+                $updates = [
+                    'APP_LOCALE' => $locale,
+                    'APP_FALLBACK_LOCALE' => $locale,
+                    'APP_FAKER_LOCALE' => $locale . '_' . strtoupper($locale)
+                ];
+                
+                // 各キーを更新
+                foreach ($updates as $key => $value) {
+                    if (str_contains($envContent, $key . '=')) {
+                        $envContent = preg_replace(
+                            '/^' . $key . '=.*/m',
+                            $key . '=' . $value,
+                            $envContent
+                        );
+                    } else {
+                        $envContent .= "\n" . $key . '=' . $value;
+                    }
+                }
+                
+                // 変更を保存
+                file_put_contents($envPath, $envContent);
+                
+                // 設定をリフレッシュ
+                if (function_exists('opcache_reset')) {
+                    opcache_reset();
+                }
+            }
+            
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'locale' => $locale,
+                    'redirect' => url()->current()
+                ]);
+            }
+        } else if (request()->ajax()) {
+            return response()->json([
+                'success' => false,
+                'message' => '無効な言語が選択されました。'
+            ], 400);
+        }
+        
+        return redirect()->route('install.index');
+    }
+
     // 最初の画面
     public function index()
     {
-        // ✅ インストール開始時にセッションデータを削除
+        // ✅ インストール開始時にセッションデータを削除（言語設定は保持）
+        $installData = session('install_data', []);
         session()->forget('install_data');
+        session(['install_data' => $installData]);
+
+        // 言語設定をセッションから取得、デフォルトはブラウザの言語設定を考慮
+        $browserLocale = substr(request()->server('HTTP_ACCEPT_LANGUAGE', 'en'), 0, 2);
+        $locale = session('install_locale', in_array($browserLocale, $this->availableLocales) ? $browserLocale : 'en');
+        app()->setLocale($locale);
 
         // ✅ 設定をクリアし、新しい `.env` を適用
         Artisan::call('config:clear');
         Artisan::call('config:cache');
 
-
         $requirements = $this->checkServerRequirements();
-        return view('install.index', compact('requirements'));
+        return view('install.index', [
+            'requirements' => $requirements,
+            'currentLocale' => $locale,
+            'availableLocales' => $this->availableLocales
+        ]);
     }
 
     // **ステップ 1: 基本設定**
@@ -114,6 +187,7 @@ class InstallController extends Controller
             'app_env' => 'required|in:local,staging,production',
             'app_debug' => 'nullable|boolean',
             'app_url' => 'required|string',
+            'app_timezone' => 'required|timezone',
             'force_ssl' => 'nullable|boolean',
         ]);
 
@@ -190,6 +264,7 @@ class InstallController extends Controller
             'db_database' => 'required|string',
             'db_username' => 'required|string',
             'db_password' => 'nullable|string',
+            'preserve_data' => 'nullable|boolean',
         ]);
 
         session([
@@ -199,6 +274,7 @@ class InstallController extends Controller
             'install_data.db_database' => $request->db_database,
             'install_data.db_username' => $request->db_username,
             'install_data.db_password' => $request->db_password ? Crypt::encryptString($request->db_password) : null, // ✅ 暗号化
+            'install_data.preserve_data' => $request->has('preserve_data'),
         ]);
 
         return redirect()->route('install.confirm');
@@ -232,11 +308,17 @@ class InstallController extends Controller
 
         // .envファイルの更新やインストール処理
         // 環境変数の更新
+        // セッションから言語設定を取得、デフォルトは 'en'
+        $locale = session('install_locale', 'en');
+        
         $envData = [
             'APP_NAME' => $data['site_name'],
             'APP_ENV' => $data['app_env'],
             'APP_DEBUG' => $data['app_debug'] ? 'true' : 'false',
             'APP_URL' => $appUrl,
+            'APP_LOCALE' => $locale,
+            'FALLBACK_LOCALE' => 'en',
+            'APP_TIMEZONE' => $data['app_timezone'] ?? 'Asia/Tokyo',
             'INSTALLED' => 'false', // ✅ ここでは false にする
             'FORCE_SSL' => $data['force_ssl'] ? 'true' : 'false',
             'SESSION_DRIVER' => 'database',
@@ -255,15 +337,28 @@ class InstallController extends Controller
         Artisan::call('config:clear');
         Artisan::call('config:cache');
 
-        // マイグレーション
-        Artisan::call('migrate', ['--force' => true]);
-
-        // シーダーを実行して初期データを挿入
-        Artisan::call('db:seed', ['--force' => true]);
+        // データベースをリセットするかどうかを確認
+        if (empty($data['preserve_data'])) {
+            // データベースをリセットしてマイグレーションを実行
+            Artisan::call('migrate:fresh', ['--force' => true]);
+        } else {
+            // データベースをリセットせずにマイグレーションのみを実行
+            Artisan::call('migrate', ['--force' => true]);
+        }
+        
+        // 常にメンバーロールパーミッションシーダーを実行
+        // 既存のデータを保持するため、テーブルが空の場合のみ実行
+        if (!DB::table('member_role_permissions')->exists()) {
+            Artisan::call('db:seed', [
+                '--class' => 'DatabaseSeeder',
+                '--force' => true
+            ]);
+        }
 
         // 初期データの投入
         $this->initializeDatabase($data, $adminPassword);
 
+        // ストレージのシンボリックリンクを作成
         // ✅ ストレージのシンボリックリンクを作成
         Artisan::call('storage:link');
 
@@ -310,8 +405,8 @@ class InstallController extends Controller
 
         // ✅ アプリケーションURLの取得
         $appUrl = rtrim(config('app.url'), '/');
-        // ✅ 管理画面URLを取得（デフォルト値は 'admin'）
-        $adminSlug = getAdminUrl();
+        // ✅ 管理画面URLを取得（セッションから取得、デフォルトは 'admin'）
+        $adminSlug = session('install_data.admin_url', 'admin');
         $adminUrl = rtrim($appUrl . '/' . $adminSlug, '/');
         $adminLoginUrl = $adminUrl . '/login';
 
@@ -355,60 +450,111 @@ class InstallController extends Controller
      */
     private function initializeDatabase(array $data, string $adminPassword)
     {
-        // `base_settings` にサイト名を追加
-        DB::table('base_settings')->insert([
-            'name' => 'site_name',
-            'value' => $data['site_name'],
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        // `base_settings` にサイト名を追加 (存在しない場合のみ)
+        if (!DB::table('base_settings')->where('name', 'site_name')->exists()) {
+            DB::table('base_settings')->insert([
+                'name' => 'site_name',
+                'value' => $data['site_name'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        } else {
+            // 既存のサイト名を更新
+            DB::table('base_settings')
+                ->where('name', 'site_name')
+                ->update(['value' => $data['site_name'], 'updated_at' => now()]);
+        }
 
-        // `security_settings` に管理画面URLとSSL設定を追加
-        DB::table('security_settings')->insert([
-            ['name' => 'admin_url', 'value' => $data['admin_url'], 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'enable_allowed_admin_ips', 'value' => $data['enable_allowed_admin_ips'], 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'allowed_admin_ips', 'value' => $data['enable_allowed_admin_ips'] ? $data['allowed_admin_ips'] : '', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'enable_blocked_admin_ips', 'value' => $data['enable_blocked_admin_ips'], 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'blocked_admin_ips', 'value' => $data['enable_blocked_admin_ips'] ? $data['blocked_admin_ips'] : '', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'enable_allowed_front_ips', 'value' => $data['enable_allowed_front_ips'], 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'allowed_front_ips', 'value' => $data['enable_allowed_front_ips'] ? $data['allowed_front_ips'] : '', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'enable_blocked_front_ips', 'value' => $data['enable_blocked_front_ips'], 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'blocked_front_ips', 'value' => $data['enable_blocked_front_ips'] ? $data['blocked_front_ips'] : '', 'created_at' => now(), 'updated_at' => now()],
-        ]);
+        // `security_settings` の各設定を更新または作成
+        $securitySettings = [
+            'admin_url' => $data['admin_url'],
+            'enable_allowed_admin_ips' => $data['enable_allowed_admin_ips'] ?? 0,
+            'allowed_admin_ips' => ($data['enable_allowed_admin_ips'] ?? 0) ? ($data['allowed_admin_ips'] ?? '') : '',
+            'enable_blocked_admin_ips' => $data['enable_blocked_admin_ips'] ?? 0,
+            'blocked_admin_ips' => ($data['enable_blocked_admin_ips'] ?? 0) ? ($data['blocked_admin_ips'] ?? '') : '',
+            'enable_allowed_front_ips' => $data['enable_allowed_front_ips'] ?? 0,
+            'allowed_front_ips' => ($data['enable_allowed_front_ips'] ?? 0) ? ($data['allowed_front_ips'] ?? '') : '',
+            'enable_blocked_front_ips' => $data['enable_blocked_front_ips'] ?? 0,
+            'blocked_front_ips' => ($data['enable_blocked_front_ips'] ?? 0) ? ($data['blocked_front_ips'] ?? '') : '',
+        ];
 
-        // `members` に管理者を追加
-        DB::table('members')->insert([
-            'name' => $data['admin_name'],
-            'email' => $data['admin_email'],
-            'role' => 'super_admin',
-            'password' => Hash::make($adminPassword),
-            'status' => 1, // active
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        foreach ($securitySettings as $name => $value) {
+            if (DB::table('security_settings')->where('name', $name)->exists()) {
+                DB::table('security_settings')
+                    ->where('name', $name)
+                    ->update(['value' => $value, 'updated_at' => now()]);
+            } else {
+                DB::table('security_settings')->insert([
+                    'name' => $name,
+                    'value' => $value,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
+
+        // `members` テーブルに管理者が存在するか確認
+        $admin = DB::table('members')->where('email', $data['admin_email'])->first();
+        
+        if ($admin) {
+            // 既存の管理者を更新 - 正しいロール値を使用
+            DB::table('members')
+                ->where('id', $admin->id)
+                ->update([
+                    'name' => $data['admin_name'],
+                    'password' => Hash::make($adminPassword),
+                    'role' => 10, // super_admin
+                    'status' => 1, // active
+                    'updated_at' => now(),
+                ]);
+        } else {
+            // 新しい管理者を作成
+            DB::table('members')->insert([
+                'name' => $data['admin_name'],
+                'email' => $data['admin_email'],
+                'role' => 10, // super_admin
+                'password' => Hash::make($adminPassword),
+                'status' => 1, // active
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
     }
 
     /**
      * サーバーが Laravel 12 の要件を満たしているか確認
+     * 
+     * @return array
      */
     protected function checkServerRequirements()
     {
+        // 必須の拡張機能
+        $requiredExtensions = [
+            'Ctype' => extension_loaded('ctype'),
+            'cURL' => extension_loaded('curl'),
+            'DOM' => extension_loaded('dom'),
+            'Fileinfo' => extension_loaded('fileinfo'),
+            'JSON' => extension_loaded('json'),
+            'Mbstring' => extension_loaded('mbstring'),
+            'OpenSSL' => extension_loaded('openssl'),
+            'PCRE' => extension_loaded('pcre'),
+            'PDO' => extension_loaded('pdo'),
+            'Tokenizer' => extension_loaded('tokenizer'),
+            'XML' => extension_loaded('xml'),
+        ];
+
+        // オプションの拡張機能
+        $optionalExtensions = [
+            'BCMath' => extension_loaded('bcmath'),
+        ];
+
+        $allExtensions = array_merge($requiredExtensions, $optionalExtensions);
+
         return [
             'php' => version_compare(PHP_VERSION, '8.2.0', '>='),
-            'extensions' => [
-                'BCMath' => extension_loaded('bcmath'),
-                'Ctype' => extension_loaded('ctype'),
-                'cURL' => extension_loaded('curl'),
-                'DOM' => extension_loaded('dom'),
-                'Fileinfo' => extension_loaded('fileinfo'),
-                'JSON' => extension_loaded('json'),
-                'Mbstring' => extension_loaded('mbstring'),
-                'OpenSSL' => extension_loaded('openssl'),
-                'PCRE' => extension_loaded('pcre'),
-                'PDO' => extension_loaded('pdo'),
-                'Tokenizer' => extension_loaded('tokenizer'),
-                'XML' => extension_loaded('xml'),
-            ],
+            'extensions' => $allExtensions,
+            'required_extensions' => $requiredExtensions,
+            'optional_extensions' => $optionalExtensions,
             'permissions' => [
                 'storage' => is_writable(storage_path()),
                 'bootstrap/cache' => is_writable(base_path('bootstrap/cache')),

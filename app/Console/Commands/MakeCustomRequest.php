@@ -24,7 +24,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
-use App\Services\FileGenerator;
 use App\Console\Traits\MakeRequestTrait;
 use App\Console\Traits\MakeCustomCommandTrait;
 
@@ -33,18 +32,15 @@ class MakeCustomRequest extends Command
     use MakeRequestTrait;
     use MakeCustomCommandTrait;
 
-    public function __construct(FileGenerator $fileGenerator)
+    public function __construct()
     {
         $this->signature = $this->makeSignature(
             'make:custom:request'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );
-        
         $this->setDescription(__('command.make_custom.request.description'));
-        
         parent::__construct();
-        $this->fileGenerator = $fileGenerator;
     }
 
     public function handle()

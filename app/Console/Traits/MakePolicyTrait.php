@@ -67,21 +67,45 @@ trait MakePolicyTrait
     }
 
     /**
-     * (B)パターン: getDirectory/getNamespace => getPolicyDirectory/getPolicyNamespace
+     * Get additional options specific to policy generation
+     * 
+     * @return array
      */
-    protected function getDirectory(array $subDirs): string
+    protected function getAdditionalOptions(): array
     {
-        return $this->getPolicyDirectory($subDirs);
-    }
-
-    protected function getNamespace(array $subDirs): string
-    {
-        return $this->getPolicyNamespace($subDirs);
+        return [
+            '{--model=} ' . __('The model that the policy applies to'),
+            '{--guard=} ' . __('The guard that the policy relies on')
+        ];
     }
 
     /**
-     * サブクラスで実装
+     * Get the model class name for the policy.
+     *
+     * @param  string  $modelOption
+     * @param  string  $pluginName
+     * @return string
      */
-    abstract protected function getPolicyDirectory(array $subDirs): string;
-    abstract protected function getPolicyNamespace(array $subDirs): string;
+    protected function qualifyModel(string $modelOption, string $pluginName): string
+    {
+        if (Str::startsWith($modelOption, '\\')) {
+            $modelOption = Str::replaceFirst('\\', '', $modelOption);
+        }
+        
+        if (Str::contains($modelOption, '\\')) {
+            return $modelOption;
+        }
+        
+        return "Plugins\\{$pluginName}\\App\\Models\\{$modelOption}";
+    }
+
+    /**
+     * Get the user model class name.
+     *
+     * @return string
+     */
+    protected function qualifyUserModel(): string
+    {
+        return config('auth.providers.users.model', 'App\\Models\\User');
+    }
 }

@@ -13,6 +13,10 @@ return [
         'cache' => 'Bootstrap cache directory writable',
     ],
     'start_button' => 'Start Installation',
+    'languages' => [
+        'en' => 'English',
+        'ja' => 'Japanese',
+    ],
 
     //step 1
     'settings_title' => 'Installation - Step 1',
@@ -40,6 +44,7 @@ return [
 
     'app_url' => 'Application URL',
     'app_url_note' => 'The default URL is automatically set based on the current host. Change it if necessary.',
+    'timezone' => 'Timezone',
 
     //step 3
     'system_title' => 'Installation - Step 2',
@@ -63,6 +68,8 @@ return [
     'db_database' => 'Database Name',
     'db_username' => 'Database Username',
     'db_password' => 'Database Password',
+    'preserve_database' => 'Do not reset database',
+    'preserve_database_help' => 'If checked, only necessary updates will be applied without deleting existing data. If unchecked, all existing data will be deleted during installation.',
     'test_db_connection' => 'Test Connection',
     'db_connection_success' => 'Database connection successful!',
     'db_connection_error' => 'Failed to connect to the database: :error',
@@ -115,4 +122,11 @@ return [
     'password_strength_weak' => 'Password is too weak.',
     'password_strength_medium' => 'Password strength is medium.',
     'password_strength_strong' => 'Password is strong.',
+    
+    // Timezone
+    'timezone' => [
+        'label' => 'Timezone',
+        // Timezone translations are now in timezones.php
+    ],
+    'timezone_note' => 'Select the default timezone for the application.',
 ];

@@ -12,7 +12,15 @@ return [
         'storage' => 'storageディレクトリが書き込み可能',
         'cache' => 'bootstrap/cacheディレクトリが書き込み可能',
     ],
+    'required' => '必須',
+    'optional' => 'オプション',
+    'not_required' => '必須ではありません',
+    'required_issues' => '必須項目に問題があります。インストールを続行するには上記の問題を解決してください。',
     'start_button' => 'インストールを開始',
+    'languages' => [
+        'en' => 'English',
+        'ja' => '日本語',
+    ],
 
     //step 1
     'settings_title' => '基本設定',
@@ -66,7 +74,7 @@ return [
     'app_debug_note' => '本番環境ではデバッグモードは選択できません。',
 
     'app_url' => 'アプリケーションURL',
-    'app_url_note' => 'デフォルトのURLは現在のホストを基に自動設定されています。必要に応じて変更してください。',
+    'app_url_note' => '現在のホストに基づいて自動的に設定されます。必要に応じて変更してください。',
 
     //step 3
     'security_title' => 'セキュリティ設定',
@@ -93,6 +101,8 @@ return [
     'db_database' => 'データベース名',
     'db_username' => 'データベースユーザー名',
     'db_password' => 'データベースパスワード',
+    'preserve_database' => 'データベースをリセットしない',
+    'preserve_database_help' => 'チェックを入れると、既存のデータを保持したまま必要な更新のみを適用します。チェックを外すと、インストール時に既存のデータがすべて削除されます。',
     'test_db_connection' => '接続テスト',
     'db_connection_success' => 'データベース接続成功！',
     'db_connection_error' => 'データベース接続に失敗しました: :error',
@@ -156,4 +166,10 @@ return [
     // コピー＆ペースト制限
     'password_paste_error' => 'パスワードのコピー＆ペーストは禁止されています。手入力してください。',
 
+    // タイムゾーン
+    'timezone' => [
+        'label' => 'タイムゾーン',
+        // タイムゾーンの翻訳は timezones.php に移動しました
+    ],
+    'timezone_note' => 'アプリケーションのデフォルトタイムゾーンを選択してください。',
 ];

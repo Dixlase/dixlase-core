@@ -50,7 +50,7 @@ use App\Helpers\AdminHelper;
 $adminUrl = AdminHelper::getAdminUrl();
 
 Route::prefix($adminUrl)->name('admin.')
-    ->middleware(['admin.ip', 'check.menu.access:menu_key', 'check.menu.edit:menu_key']) // IPアドレスフィルタ、メニューアクセス権限、メニュー編集権限
+    ->middleware(['admin.ip']) // IPアドレスフィルタのみを先に適用
     ->group(function () {
         Route::get('/', function () {
             $member = Auth::guard('member')->user();
@@ -71,7 +71,13 @@ Route::prefix($adminUrl)->name('admin.')
         Route::post('/two-factor-resend', [AdminLoginController::class, 'resendTwoFactorCode'])->name('two-factor.resend');
 
 
-        Route::middleware(['auth:member', 'log.admin.activity'])->group(function () {
+        // 認証済みルート
+        Route::middleware([
+            'auth:member', 
+            'log.admin.activity',
+            'check.menu.access:menu_key', 
+            'check.menu.edit:menu_key'
+        ])->group(function () {
 
             // ダッシュボード
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');

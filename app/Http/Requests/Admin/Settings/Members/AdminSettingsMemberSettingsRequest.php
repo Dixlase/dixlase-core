@@ -23,11 +23,13 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'force_2fa' => ['required', new \Illuminate\Validation\Rules\Enum(\App\Enums\TwoFactorMode::class)],
-            'login_notification_mode' => ['required', new \Illuminate\Validation\Rules\Enum(\App\Enums\LoginNotificationMode::class)],
-            'password_min_length' => ['required', 'integer', 'in:8,12,16'],
-            'password_require_uppercase' => ['required', 'boolean'],
-            'password_require_symbol' => ['required', 'boolean'],
+            'password_min_length' => 'required|integer|min:6|max:32',
+            'password_require_uppercase' => 'required|boolean',
+            'password_require_symbol' => 'required|boolean',
+            'login_notification_mode' => ['required', new Enum(LoginNotificationMode::class)],
+            'force_2fa' => ['required', new Enum(TwoFactorMode::class)],
+            'two_factor_methods' => 'required|array|min:1',
+            'two_factor_methods.*' => 'in:' . implode(',', array_column(TwoFactorMethod::cases(), 'value')),
         ];
     }
 }

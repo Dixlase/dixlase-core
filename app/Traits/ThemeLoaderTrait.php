@@ -53,15 +53,16 @@ trait ThemeLoaderTrait
      */
     public function getActiveThemeDirectory(): string
     {
-
         $activeThemeId = $this->getActiveTheme();
+        
         if (Schema::hasTable('themes')) {
             $theme = Theme::find($activeThemeId);
-        } else {
-            $theme = config('themes.default_theme', env('APP_THEME', 'DefaultTheme'));
+            if ($theme) {
+                return $theme->directory ?? config('themes.default_theme', env('APP_THEME', 'DefaultTheme'));
+            }
         }
-
-        return $theme;
+        
+        return config('themes.default_theme', env('APP_THEME', 'DefaultTheme'));
     }
 
     /**
