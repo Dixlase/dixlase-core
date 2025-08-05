@@ -24,59 +24,33 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
-use App\Services\FileGenerator;
 use App\Console\Traits\MakeHelperTrait;
+use App\Console\Traits\MakeCustomCommandTrait;
 
 class MakeCustomHelper extends Command
 {
     use MakeHelperTrait;
+    use MakeCustomCommandTrait;
 
-    protected $signature = 'make:custom:helper
-        {name : The helper class name (with optional subfolders, e.g. Admin/MyHelper)}
-        {--force : Overwrite if the helper already exists}';
-
-    protected $description = 'Create a new helper file in the custom directory';
-
-    protected FileGenerator $fileGenerator;
-
-    public function __construct(FileGenerator $fileGenerator)
+    public function __construct()
     {
+        $this->signature = $this->makeSignature(
+            'make:custom:helper'
+            .$this->getCustomCommandSignature(),
+            $this->getAdditionalOptions()
+        );
+        $this->setDescription(__('command.make_custom.helper.description'));
         parent::__construct();
-        $this->fileGenerator = $fileGenerator;
     }
 
     public function handle()
     {
-        // 1) parse subDirs + className
-        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
-
-        // 2) --force
-        $force = (bool)$this->option('force');
-
-        // 3) trait method
-        $this->makeFile($className, $subDirs, $force);
-
-        return 0;
-    }
-
-    /**
-     * (B)パターン: getHelperDirectory/Namespace
-     */
-    protected function getHelperDirectory(array $subDirs): string
-    {
-        $base = base_path('custom/helpers');
-        if ($subDirs) {
-            $base .= '/' . implode('/', $subDirs);
-        }
-        return $base;
-    }
-
-    protected function getHelperNamespace(array $subDirs): string
-    {
-        $base = 'Custom\\Helpers';
-        if ($subDirs) {
-            $base .= '\\' . implode('\\', $subDirs);
-        }
-        return $base;
+        return $this->generateCustomFile(
+            $this->argument('className'),
+            $this->argument('fileType'),
+            $this->argument('pluginName'),
+            'helper',
+            $this->options()
+        );
     }
 }

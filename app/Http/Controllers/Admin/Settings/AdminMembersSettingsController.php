@@ -398,20 +398,24 @@ class AdminMembersSettingsController extends AdminLoggedInController
     public function settings()
     {
 
-        // 🔽 パスワード条件の取得
+        // 既存の設定を取得
         $passwordMinLength = (int) MemberSetting::getValue('password_min_length', 8);
         $passwordRequireUppercase = (bool) MemberSetting::getValue('password_require_uppercase', true);
         $passwordRequireSymbol = (bool) MemberSetting::getValue('password_require_symbol', false);
 
-        // ログイン通知設定の追加
+        // ログイン通知設定
         $loginNotification = (int) MemberSetting::getValue('login_notification_mode', LoginNotificationMode::UseProfileSetting->value);
         $loginNotificationOptions = collect(config('admin.settings.members.login_notification_mode.options_global'));
 
-        // 二段階認証設定の追加
+        // 二段階認証設定
         $force2fa = (int) MemberSetting::getValue('force_2fa', TwoFactorMode::Disabled->value);
-        $twoFactorOptions = collect(TwoFactorMode::cases())->mapWithKeys(function ($case) {
-            return [$case->value => $case->label()];
-        })->toArray();
+        $twoFactorOptions = TwoFactorMode::options();
+        
+        // 有効な二段階認証方法を取得（デフォルトはメール認証のみ有効）
+        $enabledTwoFactorMethods = json_decode(
+            MemberSetting::getValue('enabled_two_factor_methods', json_encode([TwoFactorMethod::EMAIL->value])),
+            true
+        );
 
 
         // ビューに渡すデータをセット
@@ -422,6 +426,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['loginNotificationOptions'] = $loginNotificationOptions;
         $this->viewParams['force2fa'] = $force2fa;
         $this->viewParams['twoFactorOptions'] = $twoFactorOptions;
+        $this->viewParams['enabledTwoFactorMethods'] = $enabledTwoFactorMethods;
 
         return view('admin.settings.members.settings', $this->viewParams);
     }
@@ -432,13 +437,21 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $validated = $request->validated();
 
 
-        MemberSetting::setValue('login_notification_mode', (int) $validated['login_notification_mode']);
-        MemberSetting::setValue('force_2fa', (int) $validated['force_2fa']);
         MemberSetting::setValue('password_min_length', (int) $validated['password_min_length']);
         MemberSetting::setValue('password_require_uppercase', (int) $validated['password_require_uppercase']);
         MemberSetting::setValue('password_require_symbol', (int) $validated['password_require_symbol']);
+        MemberSetting::setValue('login_notification_mode', (int) $validated['login_notification_mode']);
+        MemberSetting::setValue('force_2fa', (int) $validated['force_2fa']);
 
-        return redirect()->route('admin.settings.members.settings')
-            ->with('success', __('admin.settings.members.settings.updated'));
+        // 有効な二段階認証方法を保存
+    $enabledMethods = $request->input('two_factor_methods', []);
+    // 最低1つは有効にする
+    if (empty($enabledMethods)) {
+        $enabledMethods = [TwoFactorMethod::EMAIL->value];
+    }
+    MemberSetting::setValue('enabled_two_factor_methods', json_encode($enabledMethods));
+
+    return redirect()->route('admin.settings.members.settings')
+        ->with('success', __('admin.settings.members.settings.updated'));
     }
 }

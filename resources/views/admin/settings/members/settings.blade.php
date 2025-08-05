@@ -106,7 +106,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             ])
         </div>
 
-
+        <!-- 二段階認証の設定 -->
         <div class="mb-6">
             <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
                 {{ __('admin.settings.members.two_factor_mode.label') }}
@@ -126,6 +126,35 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             ])
 
         </div>
+
+        <!-- 二段階認証の方法 -->
+        <div class="mb-6">
+            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
+                利用可能な二段階認証の方法
+            </label>
+            
+            <div class="space-y-2 mt-2">
+                @foreach(\App\Enums\TwoFactorMethod::cases() as $method)
+                <div class="flex items-center">
+                    <input 
+                        id="two_factor_method_{{ $method->value }}" 
+                        name="two_factor_methods[]" 
+                        type="checkbox" 
+                        value="{{ $method->value }}"
+                        {{ in_array($method->value, $enabledTwoFactorMethods) ? 'checked' : '' }}
+                        class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                    <label for="two_factor_method_{{ $method->value }}" class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                        {{ $method->label() }}
+                    </label>
+                </div>
+                @endforeach
+            </div>
+            
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                ユーザーが利用できる二段階認証の方法を選択してください。最低1つは有効にする必要があります。
+            </p>
+        </div>
+
     </form>
 
 @endsection

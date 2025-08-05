@@ -18,8 +18,15 @@
 
     <div>
         <label class="block text-gray-700">{{ __('install.db_host') }}</label>
+        @php
+            $defaultDbHost = '127.0.0.1';
+            $appEnv = session('install_data.app_env', 'local');
+            if ($appEnv === 'local') {
+                $defaultDbHost = 'mysql';
+            }
+        @endphp
         <input type="text" name="db_host" id="db_host"
-            value="{{ old('db_host', session('install_data.db_host', '127.0.0.1')) }}"
+            value="{{ old('db_host', session('install_data.db_host', $defaultDbHost)) }}"
             class="w-full p-2 border rounded-lg" required>
     </div>
 
@@ -33,21 +40,34 @@
     <div>
         <label class="block text-gray-700">{{ __('install.db_database') }}</label>
         <input type="text" name="db_database" id="db_database"
-            value="{{ old('db_database', session('install_data.db_database', '')) }}"
+            value="{{ old('db_database', session('install_data.db_database', 'dixlase')) }}"
             class="w-full p-2 border rounded-lg" required>
     </div>
 
     <div>
         <label class="block text-gray-700">{{ __('install.db_username') }}</label>
+        @php
+            $defaultDbUser = '';
+            if ($appEnv === 'local') {
+                $defaultDbUser = 'dixlase';
+            }
+        @endphp
         <input type="text" name="db_username" id="db_username"
-            value="{{ old('db_username', session('install_data.db_username', '')) }}"
+            value="{{ old('db_username', session('install_data.db_username', $defaultDbUser)) }}"
             class="w-full p-2 border rounded-lg" required>
     </div>
 
     <div>
         <label class="block text-gray-700">{{ __('install.db_password') }}</label>
+        @php
+            $defaultDbPassword = '';
+            if ($appEnv === 'local') {
+                $defaultDbPassword = 'dixlase';
+            }
+        @endphp
         <div class="relative">
             <input type="password" name="db_password" id="db_password"
+                value="{{ old('db_password', session('install_data.db_password', $defaultDbPassword)) }}"
                 class="w-full p-2 border rounded-lg" required>
             <button type="button" onclick="togglePassword()" class="absolute right-3 top-3">
                 <i class="fas fa-eye"></i>
@@ -55,6 +75,16 @@
         </div>
         <small class="text-gray-500">{{ __('install.db_password_required') }}</small>
     </div>
+
+    <div class="flex items-center">
+        <input type="checkbox" name="preserve_data" id="preserve_data" value="1" 
+            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            {{ old('preserve_data', session('install_data.preserve_data', false)) ? 'checked' : '' }}>
+        <label for="preserve_data" class="ml-2 block text-sm text-gray-700">
+            {{ __('install.preserve_database') }}
+        </label>
+    </div>
+    <p class="text-sm text-gray-500 mb-4">{{ __('install.preserve_database_help') }}</p>
 
     <!-- ✅ DB接続テストボタン -->
     <button type="button" onclick="testDatabaseConnection()"

@@ -40,7 +40,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('description')->nullable();
             $table->string('email')->unique();
-            $table->integer('role')->default('admin');   // super_admin, admin, editor, author, contributor,
+            $table->integer('role')->default(1);   // 1=admin, 2=super_admin, 3=editor, 4=author, 5=contributor
             $table->integer('appearance')->default(0); // 0= auto, 1 = light, 2 = dark
             $table->string('password'); // Hashed
             $table->integer('login_notification_mode')->default(1); // 1= Disabled, 2 = Always, 3 = OnlyNewDevice

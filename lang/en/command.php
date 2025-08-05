@@ -44,6 +44,7 @@ return [
             'license_info' => 'License info file created for plugin [:pluginName].',
             'database_seeder' => 'Database seeder [:className] created for plugin [:pluginName].',
             'phpunit_config' => 'PHPUnit configuration file created for plugin [:pluginName].',
+            'editorconfig' => '.editorconfig file created for plugin [:pluginName].',
         ],
         'license_options' => [
             'gpl' => 'GPL-3.0',

@@ -24,7 +24,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
-use App\Services\FileGenerator;
 use App\Console\Traits\MakeMigrationTrait;
 use App\Console\Traits\MakeCustomCommandTrait;
 
@@ -33,20 +32,8 @@ class MakeCustomMigration extends Command
     use MakeMigrationTrait;
     use MakeCustomCommandTrait;
 
-    protected $signature = 'make:custom:migration
-        {name : The migration name (e.g. "create_custom_table")}
-        {--create= : The table to be created}
-        {--table= : The table to migrate}
-        {--path= : The location where the file should be created}
-        {--realpath : Indicate that the provided migration file paths are absolute}
-        {--fullpath : Output the full path of the migration}
-        {--force : Force the operation to run when in production}';
 
-    protected $description = 'Create a new migration in the custom directory';
-
-    protected FileGenerator $fileGenerator;
-
-    public function __construct(FileGenerator $fileGenerator)
+    public function __construct()
     {
         $this->signature = $this->makeSignature(
             'make:custom:migration'

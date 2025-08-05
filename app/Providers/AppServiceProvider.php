@@ -84,7 +84,7 @@ class AppServiceProvider extends ServiceProvider
         if (Schema::hasTable('base_settings')) {
             $language = BaseSetting::where('name', 'language')->value('value');
         } else {
-            $language = config('admin.lang', 'ja');
+            $language = config('app.locale', 'en');
         }
         app()->setLocale($language);
 
@@ -135,7 +135,6 @@ class AppServiceProvider extends ServiceProvider
 
         // プラグインロード後にカスタムファイルをロード
         $this->app->booted(function () use ($customFilesPath, $fileTypes) {
-
             // プラグインのロード
             $this->loadActivePlugins();
             // カスタムファイルのロード

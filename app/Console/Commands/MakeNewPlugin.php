@@ -327,6 +327,9 @@ class MakeNewPlugin extends Command
         // README.md を作成
         $this->createReadmeFile($pluginName, $pluginDir, $placeholders, $licenseInfo);
 
+        // .editorconfig を作成
+        $this->createEditorConfigFile($pluginDir, $placeholders);
+
         // サービスプロバイダを生成
         $this->createServiceProvider($pluginName, $pluginDirName, $licenseInfo);
         
@@ -627,6 +630,38 @@ class MakeNewPlugin extends Command
      * @param string $testCase
      * @return void
      */
+    /**
+     * .editorconfig ファイルを作成
+     *
+     * @param string $pluginDir プラグインディレクトリ
+     * @param array $placeholders プレースホルダ
+     * @return void
+     */
+    protected function createEditorConfigFile(string $pluginDir, array $placeholders)
+    {
+        $editorConfigPath = "{$pluginDir}/.editorconfig";
+        
+        // 既に存在する場合は上書きしない
+        if (File::exists($editorConfigPath)) {
+            return;
+        }
+        
+        // スタブファイルからコンテンツを取得
+        $content = $this->getStubContent('editorconfig.stub', $placeholders, 'custom');
+        
+        if ($content === false) {
+            $this->error('Failed to generate .editorconfig file');
+            return;
+        }
+        
+        // ファイルを作成
+        File::put($editorConfigPath, $content);
+        
+        $this->info(__('command.make_plugin.files.editorconfig', [
+            'pluginName' => basename($pluginDir)
+        ]));
+    }
+
     protected function createExampleTestFile(string $path, string $namespace, string $testCase)
     {
         if (!File::exists($path)) {

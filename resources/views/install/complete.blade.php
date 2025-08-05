@@ -14,12 +14,6 @@
             <a href="{{ $appUrl }}" class="text-blue-600 underline break-words">{{ $appUrl }}</a>
         </div>
 
-        <!-- ✅ 管理画面URL -->
-        <div>
-            <p class="text-gray-700 font-semibold">{{ __('install.admin_url') }}</p>
-            <a href="{{ $adminUrl }}" class="text-green-600 underline break-words">{{ $adminUrl }}</a>
-        </div>
-
         <!-- ✅ 管理者ログインページURL -->
         <div>
             <p class="text-gray-700 font-semibold">{{ __('install.admin_login_url') }}</p>

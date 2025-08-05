@@ -44,6 +44,7 @@ return [
             'license_info' => 'ライセンス情報ファイルがプラグイン [:pluginName] 用に作成されました。',
             'database_seeder' => 'データベースシーダー [:className] がプラグイン [:pluginName] 用に作成されました。',
             'phpunit_config' => 'PHPUnit設定ファイルがプラグイン [:pluginName] 用に作成されました。',
+            'editorconfig' => '.editorconfigファイルがプラグイン [:pluginName] 用に作成されました。',
         ],
         'license_options' => [
             'gpl' => 'GPL-3.0',

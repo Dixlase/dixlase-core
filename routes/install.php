@@ -28,6 +28,9 @@ use Illuminate\Http\Request;
 
 Route::prefix('install')->name('install.')->group(
     function () {
+        // 言語切り替え
+        Route::get('/language/{locale}', [InstallController::class, 'setLanguage'])->name('language');
+        
         Route::get('/', [InstallController::class, 'index'])->name('index');
 
         //基本設定

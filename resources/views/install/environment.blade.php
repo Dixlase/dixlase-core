@@ -63,6 +63,55 @@
         <label for="force_ssl" class="text-gray-700">{{ __('install.force_ssl') }}</label>
     </div>
 
+    <div class="mt-4">
+        <label class="block text-gray-700 mb-2">{{ is_array(__('install.timezone')) ? __('install.timezone.label') : __('install.timezone') }}</label>
+        <select name="app_timezone" id="app_timezone" class="w-full p-2 border rounded-lg">
+            @php
+                // 現在のタイムゾーンを取得（セッションがあればそれを使い、なければブラウザのタイムゾーンを検出）
+                $currentTz = old('app_timezone', session('install_data.app_timezone', ''));
+                if (empty($currentTz)) {
+                    // ブラウザのタイムゾーンを検出
+                    echo '<script>
+                        try {
+                            const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                            document.cookie = `user_timezone=${userTimeZone};path=/;samesite=lax`;
+                        } catch (e) {
+                            console.error("タイムゾーンの検出に失敗しました:", e);
+                        }
+                    </script>';
+                    // PHPでクッキーから取得を試みる
+                    $currentTz = $_COOKIE['user_timezone'] ?? 'Asia/Tokyo'; // デフォルトは東京
+                }
+            @endphp
+            @php
+                // Get all available timezone identifiers
+                $timezones = timezone_identifiers_list();
+                
+                // Get the timezone translations from the dedicated timezones.php file
+                $timezoneTranslations = trans('timezones');
+                
+                // Get the translated timezone names
+                $translatedTimezones = [];
+                foreach ($timezones as $timezone) {
+                    // Use the translation if available, otherwise use the timezone identifier
+                    if (is_array($timezoneTranslations) && array_key_exists($timezone, $timezoneTranslations)) {
+                        $translatedTimezones[$timezone] = $timezoneTranslations[$timezone];
+                    } else {
+                        $translatedTimezones[$timezone] = $timezone;
+                    }
+                }
+                asort($translatedTimezones);
+            @endphp
+            
+            @foreach($translatedTimezones as $timezone => $translatedName)
+                <option value="{{ $timezone }}" {{ $currentTz === $timezone ? 'selected' : '' }}>
+                    {{ $translatedName }}
+                </option>
+            @endforeach
+        </select>
+        <small class="text-gray-500">{{ __('install.timezone_note') }}</small>
+    </div>
+
     <div class="flex justify-between mt-6">
         <a href="{{ route('install.settings') }}"
             class="bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition">

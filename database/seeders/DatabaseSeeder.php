@@ -37,6 +37,7 @@ class DatabaseSeeder extends Seeder
             FrontSettingsTableSeeder::class,
             MediaTableSeeder::class,
             MediaSettingsSeeder::class,
+            MemberRolePermissionSeeder::class,
             SecuritySettingsTableSeeder::class,
             ThemeSettingsTableSeeder::class,
             ThemesTableSeeder::class,
