@@ -22,7 +22,7 @@
 
 
  return [
-    'default' => 'ja',
+    'default' => 'en',
     'languages' => [
         'ja' => 'Japanese',
         'en' => 'English',

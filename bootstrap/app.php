@@ -15,6 +15,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Register global middlewares
+        $middleware->append([
+            \App\Http\Middleware\CheckEnvironment::class, // 環境チェックを最初に実行
+        ]);
+
+        $middleware->append([
+            \App\Http\Middleware\CheckInstallationStatus::class, // グローバルなインストール状態チェック
+        ]);
+
+        // Register route middleware aliases
         $middleware->alias([
             'auth' => \App\Http\Middleware\Authenticate::class, //認証
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class, // メール認証
@@ -23,6 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'log.admin.activity' => \App\Http\Middleware\LogAdminActivity::class, // 管理画面操作ログ
             'check.menu.access' => \App\Http\Middleware\CheckMenuAccess::class, // 管理画面メニューアクセス権限
             'check.menu.edit' => \App\Http\Middleware\CheckMenuEdit::class, // 管理画面メニュー編集権限
+            'install.steps' => \App\Http\Middleware\CheckInstallationSteps::class, // インストールステップチェック
         ]);
 
 
@@ -33,8 +44,8 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ]);
 
-        // CheckInstallationミドルウェアをグローバルに追加
-        $middleware->prepend(\App\Http\Middleware\CheckInstallation::class);
+        // Add CheckInstallation middleware only for install routes
+        //$middleware->alias(['install' => \App\Http\Middleware\CheckInstallation::class]);
     })
 
 

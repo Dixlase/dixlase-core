@@ -1,8 +1,9 @@
 <?php
 
 return [
-    //index
     'title' => 'インストール',
+    //index
+    'header' => 'Dixlase インストール',
     'welcome' => 'インストールへようこそ',
     'description' => 'インストールを開始する前に、サーバー要件を確認してください。',
     'server_requirements' => 'サーバー要件',
@@ -162,6 +163,11 @@ return [
     'password_strength_weak' => 'パスワードが弱すぎます。',
     'password_strength_medium' => 'パスワードの強度は普通です。',
     'password_strength_strong' => 'パスワードは安全です。',
+
+    // エラーメッセージ
+    'missing_required_fields' => '必須項目が不足しています。インストール手順を最初からやり直してください。',
+    'please_complete_previous_steps' => '先に前の手順を完了させてください。',
+    'please_complete_this_step' => 'この手順を完了させてください。',
 
     // コピー＆ペースト制限
     'password_paste_error' => 'パスワードのコピー＆ペーストは禁止されています。手入力してください。',

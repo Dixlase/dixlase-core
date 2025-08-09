@@ -78,12 +78,34 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
-        //言語の設定
-        //base_settingsテーブルのlanguageの値を取得
-        //テーブルが存在しているか確認
-        if (Schema::hasTable('base_settings')) {
-            $language = BaseSetting::where('name', 'language')->value('value');
-        } else {
+        // 言語の設定
+        // インストール中はセッション/クッキーの言語を優先
+        $request = $this->app['request'];
+        $language = null;
+        
+        // 有効なロケールのリスト
+        $availableLocales = array_keys(config('language.languages', ['en' => 'English']));
+        
+        if ($request && $request->is('install*')) {
+            // セッションの値（StartSessionより前でも取得できる場合がある）、なければクッキー
+            $sessionLocale = session()->get('install_locale');
+            $cookieLocale = $request->cookie('install_locale');
+            
+            // 有効なロケールのみを許可
+            if ($sessionLocale && in_array($sessionLocale, $availableLocales)) {
+                $language = $sessionLocale;
+            } elseif ($cookieLocale && in_array($cookieLocale, $availableLocales)) {
+                $language = $cookieLocale;
+            }
+        }
+
+        // それでも未設定ならDB→configの順で決定
+        if (!$language) {
+            if (Schema::hasTable('base_settings')) {
+                $language = BaseSetting::where('name', 'language')->value('value');
+            }
+        }
+        if (!$language) {
             $language = config('app.locale', 'en');
         }
         app()->setLocale($language);

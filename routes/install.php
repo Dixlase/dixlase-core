@@ -26,10 +26,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 
-Route::prefix('install')->name('install.')->group(
+Route::prefix('install')->name('install.')->middleware('install.steps')->group(
     function () {
-        // 言語切り替え
-        Route::get('/language/{locale}', [InstallController::class, 'setLanguage'])->name('language');
+        // 言語切り替え（AJAX専用）
+        Route::post('/language/{locale}', [InstallController::class, 'setLanguage'])->name('language');
         
         Route::get('/', [InstallController::class, 'index'])->name('index');
 
