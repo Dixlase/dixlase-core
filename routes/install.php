@@ -52,9 +52,6 @@ Route::prefix('install')->name('install.')->middleware('install.steps')->group(
         //確認画面
         Route::get('/confirm', [InstallController::class, 'confirm'])->name('confirm');
         Route::post('/confirm', [InstallController::class, 'confirmStore'])->name('confirm.store');
-
-        //インストール完了
-        Route::post('/finalize', [InstallController::class, 'finalizeInstall'])->name('finalize');
         //インストール完了画面
         Route::get('/complete', [InstallController::class, 'complete'])->name('complete');
 
