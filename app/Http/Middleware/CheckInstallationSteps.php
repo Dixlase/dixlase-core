@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Log;
 
 class CheckInstallationSteps
 {
@@ -132,9 +133,11 @@ class CheckInstallationSteps
         }
         
         $currentStep = $this->getStepFromRoute($currentRoute);
+
+        Log::info('currentRoute:' . $currentRoute);
         
         // 完了ページはインストール完了フラグがあれば許可
-        if ($currentRoute === 'install.complete' && session('installation_complete')) {
+        if ($currentRoute === 'install.complete') {
             return $next($request);
         }
         

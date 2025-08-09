@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
 
 class CheckInstallationStatus
 {
@@ -20,12 +21,17 @@ class CheckInstallationStatus
         }
 
         // .envファイルが存在しない場合、.env.example からコピーして生成
-        if (!file_exists(base_path('.env'))) {
-            copy(base_path('.env.example'), base_path('.env'));
+        $envPath = base_path('.env');
+        if (!file_exists($envPath)) {
+            return redirect()->route('install.index');
         }
 
-        // .envファイルの内容を直接取得
-        $envPath = base_path('.env');
+        // ファイルキャッシュをクリア（最新の.env内容を確実に読み取るため）
+        if (function_exists('opcache_invalidate')) {
+            opcache_invalidate($envPath, true);
+        }
+        clearstatcache(true, $envPath);
+
         $envContent = file_get_contents($envPath);
         $appKeyExists = preg_match('/^APP_KEY=(.+)$/m', $envContent, $matches);
 
@@ -35,15 +41,45 @@ class CheckInstallationStatus
             $this->updateAppKey($newKey);
         }
 
+        // .envファイルから直接INSTALLEDの値を確認（キャッシュ問題回避）
+        $installedFromFile = false;
+        
+        // デバッグ: .envファイルの内容をログ出力（INSTALLEDの行のみ）
+        $envLines = explode("\n", $envContent);
+        $installedLines = array_filter($envLines, function($line) {
+            return strpos($line, 'INSTALLED') !== false;
+        });
+        Log::info('CheckInstallationStatus - INSTALLED lines in .env: ' . json_encode(array_values($installedLines)));
+        
+        if (preg_match('/^INSTALLED=(.+)$/m', $envContent, $installedMatches)) {
+            $installedValue = trim($installedMatches[1]);
+            $installedFromFile = ($installedValue === 'true' || $installedValue === '1');
+            Log::info('CheckInstallationStatus - INSTALLED from file: ' . $installedValue . ' (parsed as: ' . ($installedFromFile ? 'true' : 'false') . ')');
+        } else {
+            Log::info('CheckInstallationStatus - INSTALLED not found in .env file via regex');
+        }
+        
         // インストール済みでない場合
-        if (env('INSTALLED') !== true) {
-            // インストール関連のルート以外はインデックスにリダイレクト
-            if (!$request->is('install*') && !$request->is('install/*')) {
-                return redirect()->route('install.index');
+        if (!$installedFromFile) {
+            Log::info('CheckInstallationStatus - インストール未完了と判定、install画面にリダイレクト');
+            // インストール完了画面へのアクセスは、フラグファイルがある場合のみ許可
+            if ($request->is('install/complete')) {
+                $flagFile = storage_path('app/installation_complete.flag');
+                if (file_exists($flagFile)) {
+                    return $next($request);
+                }
             }
+            
+            // インストール関連のルート（GET/POST問わず）は全て許可
+            if ($request->is('install') || $request->is('install/*')) {
+                return $next($request);
+            }
+            
+            // インストール関連以外のルートはインデックスにリダイレクト
+            return redirect()->route('install.index');
         } else {
             // インストール済みの場合、インストール画面にはアクセスできないようにする
-            if ($request->is('install', 'install/*') && !$request->is('install/finalize')) {
+            if ($request->is('install') || $request->is('install/*')) {
                 return redirect('/')->with('message', 'このアプリケーションは既にインストールされています。');
             }
         }
