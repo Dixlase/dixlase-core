@@ -1,9 +1,10 @@
 <?php
 
 return [
-    //index
     'title' => 'Installation',
-    'welcome' => 'Welcome to :app Installation',
+    //index
+    'header' => 'Dixlase Installation',
+    'welcome' => 'Welcome to Dixlase Installation',
     'description' => 'Before proceeding, please check if your server meets the requirements.',
     'server_requirements' => 'Server Requirements',
     'ok' => 'OK',
@@ -122,6 +123,11 @@ return [
     'password_strength_weak' => 'Password is too weak.',
     'password_strength_medium' => 'Password strength is medium.',
     'password_strength_strong' => 'Password is strong.',
+    
+    // Errors
+    'missing_required_fields' => 'Some required fields are missing. Please complete all installation steps in order.',
+    'please_complete_previous_steps' => 'Please complete the previous installation steps before proceeding.',
+    'please_complete_this_step' => 'Please complete this step before proceeding.',
     
     // Timezone
     'timezone' => [
