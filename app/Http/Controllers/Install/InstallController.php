@@ -414,10 +414,11 @@ class InstallController extends Controller
             'APP_DEBUG' => $data['app_debug'] ? 'true' : 'false',
             'APP_URL' => $appUrl,
             'APP_LOCALE' => $locale,
+            'FALLBACK_LOCALE' => 'en',
             'APP_TIMEZONE' => $data['app_timezone'] ?? 'Asia/Tokyo',
             'INSTALLED' => 'false', // ✅ ここでは false にする
             'FORCE_SSL' => $data['force_ssl'] ? 'true' : 'false',
-            'SESSION_DRIVER' => 'file', // 一時的にfileに変更してテスト
+            'SESSION_DRIVER' => 'database',
             'DB_CONNECTION' => $data['db_connection'],
             'DB_HOST' => $data['db_host'],
             'DB_PORT' => $data['db_port'],
@@ -429,99 +430,30 @@ class InstallController extends Controller
         // .env ファイル更新
         $this->updateEnv($envData);
 
-        // ✅ キャッシュクリアはcomplete()で行う（セッション保持のため）
+        // ✅ 設定をクリアし、新しい `.env` を適用
+        Artisan::call('config:clear');
+        Artisan::call('config:cache');
 
         // データベースをリセットするかどうかを確認
-        Log::info('confirmStore - データベースマイグレーション開始');
-        
-        try {
-            // データベース接続を強制的に再設定
-            config(['database.connections.mysql' => [
-                'driver' => 'mysql',
-                'host' => $data['db_host'],
-                'port' => $data['db_port'],
-                'database' => $data['db_database'],
-                'username' => $data['db_username'],
-                'password' => $dbPassword ?? '',
-                'charset' => 'utf8mb4',
-                'collation' => 'utf8mb4_unicode_ci',
-                'prefix' => '',
-                'strict' => true,
-                'engine' => null,
-            ]]);
-            
-            // データベース接続をクリア
-            DB::purge('mysql');
-            
-            // 接続テスト
-            Log::info('confirmStore - データベース接続テスト開始');
-            $testConnection = DB::connection('mysql')->getPdo();
-            Log::info('confirmStore - データベース接続成功: ' . DB::connection('mysql')->getDatabaseName());
-            
-            if (empty($data['preserve_data'])) {
-                // データベースをリセットしてマイグレーションを実行
-                Log::info('confirmStore - migrate:fresh実行中...');
-                $exitCode = Artisan::call('migrate:fresh', [
-                    '--force' => true,
-                    '--database' => 'mysql'
-                ]);
-                Log::info('confirmStore - migrate:fresh完了 (exit code: ' . $exitCode . ')');
-                Log::info('confirmStore - migrate:fresh output: ' . Artisan::output());
-            } else {
-                // データベースをリセットせずにマイグレーションのみを実行
-                Log::info('confirmStore - migrate実行中...');
-                $exitCode = Artisan::call('migrate', [
-                    '--force' => true,
-                    '--database' => 'mysql'
-                ]);
-                Log::info('confirmStore - migrate完了 (exit code: ' . $exitCode . ')');
-                Log::info('confirmStore - migrate output: ' . Artisan::output());
-            }
-            
-            // マイグレーション後の確認
-            Log::info('confirmStore - マイグレーション後のテーブル確認');
-            $tables = DB::connection('mysql')->getSchemaBuilder()->getTableListing();
-            Log::info('confirmStore - 作成されたテーブル: ' . implode(', ', $tables));
-            
-        } catch (\Exception $e) {
-            Log::error('confirmStore - マイグレーションエラー: ' . $e->getMessage());
-            Log::error('confirmStore - エラースタックトレース: ' . $e->getTraceAsString());
-            throw $e;
+        if (empty($data['preserve_data'])) {
+            // データベースをリセットしてマイグレーションを実行
+            Artisan::call('migrate:fresh', ['--force' => true]);
+        } else {
+            // データベースをリセットせずにマイグレーションのみを実行
+            Artisan::call('migrate', ['--force' => true]);
         }
         
         // 常にメンバーロールパーミッションシーダーを実行
         // 既存のデータを保持するため、テーブルが空の場合のみ実行
-        try {
-            Log::info('confirmStore - テーブル存在確認: member_role_permissions');
-            if (!DB::connection('mysql')->getSchemaBuilder()->hasTable('member_role_permissions') || 
-                DB::connection('mysql')->table('member_role_permissions')->count() === 0) {
-                Log::info('confirmStore - DatabaseSeeder実行中...');
-                $exitCode = Artisan::call('db:seed', [
-                    '--class' => 'DatabaseSeeder',
-                    '--force' => true,
-                    '--database' => 'mysql'
-                ]);
-                Log::info('confirmStore - DatabaseSeeder完了 (exit code: ' . $exitCode . ')');
-                Log::info('confirmStore - DatabaseSeeder output: ' . Artisan::output());
-            } else {
-                Log::info('confirmStore - member_role_permissionsテーブルは既に存在し、データがあります');
-            }
-        } catch (\Exception $e) {
-            Log::error('confirmStore - シーダーエラー: ' . $e->getMessage());
-            Log::error('confirmStore - シーダーエラースタックトレース: ' . $e->getTraceAsString());
-            // シーダーエラーは致命的ではないので続行
+        if (!DB::table('member_role_permissions')->exists()) {
+            Artisan::call('db:seed', [
+                '--class' => 'DatabaseSeeder',
+                '--force' => true
+            ]);
         }
 
         // 初期データの投入
-        Log::info('confirmStore - 初期データ投入開始');
-        try {
-            $this->initializeDatabase($data, $adminPassword);
-            Log::info('confirmStore - 初期データ投入完了');
-        } catch (\Exception $e) {
-            Log::error('confirmStore - 初期データ投入エラー: ' . $e->getMessage());
-            Log::error('confirmStore - 初期データ投入エラースタックトレース: ' . $e->getTraceAsString());
-            throw $e;
-        }
+        $this->initializeDatabase($data, $adminPassword);
 
         // ストレージのシンボリックリンクを作成
         // ✅ ストレージのシンボリックリンクを作成
@@ -543,18 +475,9 @@ class InstallController extends Controller
             Log::warning("アクティブなテーマが見つかりません。シンボリックリンクは作成されませんでした。");
         }
 
-        // インストール完了フラグをファイルに保存（セッション問題回避）
-        $flagFile = storage_path('app/installation_complete.flag');
-        $flagData = [
-            'timestamp' => time(),
-            'admin_email' => $data['admin_email'],
-            'admin_url' => $data['admin_url'],
-            'completed' => false // complete()メソッドで true に変更
-        ];
-        file_put_contents($flagFile, json_encode($flagData));
-        
-        Log::info('confirm_1 - インストール完了フラグファイル作成: ' . $flagFile);
-        
+        // セッションデータを削除
+        session()->forget('install_data');
+
         return redirect()->route('install.complete');
     }
 
@@ -563,75 +486,16 @@ class InstallController extends Controller
     // 完了画面
     public function complete()
     {
-        Log::info('complete_0 - リクエスト開始');
-        
-        // インストール完了フラグファイルを確認
-        $flagFile = storage_path('app/installation_complete.flag');
-        if (!file_exists($flagFile)) {
-            Log::info('complete_0 - インストール完了フラグファイルが存在しないため、install.indexにリダイレクト');
-            return redirect()->route('install.index');
-        }
-        
-        Log::info('complete_1 - インストール完了フラグファイルが確認できました: ' . $flagFile);
-        
-        // ✅ フラグファイル確認後にキャッシュをクリア（confirmStore()から移動）
-        Artisan::call('config:clear');
-        Artisan::call('config:cache');
-        
-        // 設定を強制的に再読み込み
-        config()->set('app.installed', true);
-        
-        // セッションデータとフラグファイルを削除（完了画面表示後）
-        session()->forget(['install_data', 'installation_complete']);
-        Log::info('complete_1 - インストール完了フラグファイルが確認できました: ' . $flagFile);
-
-        // フラグファイルの内容を読み取り
-        $flagContent = file_get_contents($flagFile);
-        $flagData = json_decode($flagContent, true);
-        Log::info('complete_1.1 - フラグファイル内容: ' . $flagContent);
-
-        // 既に完了済みの場合はリダイレクト
-        if (isset($flagData['completed']) && $flagData['completed'] === true) {
-            Log::info('complete_1.2 - 既に完了済み、ホームにリダイレクト');
-            return redirect('/');
-        }
-
-        // フラグファイルを完了済みに更新
-        $flagData['completed'] = true;
-        file_put_contents($flagFile, json_encode($flagData));
-        Log::info('complete_2 - インストール完了フラグを完了済みに更新: ' . $flagFile);
-
-        Log::info('complete_2');
+        // ✅ セッションデータを削除
+        session()->forget('install_data');
 
         // ✅ `.env` を `INSTALLED=true` に更新
-        Log::info('complete_2.1 - INSTALLED=trueに更新開始');
         $this->updateEnv(['INSTALLED' => 'true']);
-        
-        // ファイルキャッシュをクリア（OPcache対策）
-        if (function_exists('opcache_invalidate')) {
-            opcache_invalidate(base_path('.env'), true);
-            Log::info('complete_2.1.1 - OPcacheクリア実行');
-        }
-        
-        // ファイルシステムキャッシュをクリア
-        clearstatcache(true, base_path('.env'));
-        Log::info('complete_2.1.2 - ファイルシステムキャッシュクリア実行');
-        
-        // 更新後の確認
-        $envPath = base_path('.env');
-        $envContent = file_get_contents($envPath);
-        if (preg_match('/^INSTALLED=(.+)$/m', $envContent, $matches)) {
-            Log::info('complete_2.2 - .env更新後のINSTALLED値: ' . trim($matches[1]));
-        } else {
-            Log::error('complete_2.2 - .env更新後にINSTALLEDが見つかりません');
-        }
 
-        Log::info('complete_3');
+
 
         // ✅ `.env` の `APP_URL` を確実に取得する
         config()->set('app.url', env('APP_URL', 'http://localhost'));
-
-        Log::info('conplete_4');
 
         // ✅ アプリケーションURLの取得
         $appUrl = rtrim(config('app.url'), '/');
@@ -640,13 +504,9 @@ class InstallController extends Controller
         $adminUrl = rtrim($appUrl . '/' . $adminSlug, '/');
         $adminLoginUrl = $adminUrl . '/login';
 
-        Log::info('conplete_5');
-
-        // 完了画面表示前にフラグファイルを削除
-        if (file_exists($flagFile)) {
-            unlink($flagFile);
-            Log::info('complete_6 - インストール完了フラグファイルを削除: ' . $flagFile);
-        }
+        // ✅ キャッシュをクリア
+        Artisan::call('config:clear');
+        Artisan::call('config:cache');
 
         return view('install.complete', compact('appUrl', 'adminUrl', 'adminLoginUrl'));
     }
