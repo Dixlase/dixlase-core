@@ -9,6 +9,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "laragear/webauthn": "^4.0",
         "laravel/fortify": "^1.25",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.9"
@@ -28,7 +29,7 @@
             "Database\\Seeders\\": "database/seeders/",
             "Database\\Seeders\\Dev\\": "database/seeders/dev",
             "Database\\Seeders\\Pro\\": "database/seeders/pro",
-            "Custom\\App\\": "custom/app",
+            "Custom\\App\\": "custom/app/",
             "Custom\\Database\\Factories\\": "custom/database/factories",
             "Custom\\Database\\Seeders\\": "custom/database/seeders",
             "Custom\\Database\\Seeders\\Dev\\": "custom/database/seeders/dev",
@@ -67,11 +68,21 @@
             "Plugins\\MyPlugin\\Database\\Factories\\": "plugins/MyPlugin/database/factories",
             "Plugins\\MyPlugin\\Database\\Seeders\\": "plugins/MyPlugin/database/seeders",
             "Plugins\\MyPlugin\\Database\\Seeders\\Dev\\": "plugins/MyPlugin/database/seeders/dev",
-            "Plugins\\MyPlugin\\Database\\Seeders\\Pro\\": "plugins/MyPlugin/database/seeders/pro"
+            "Plugins\\MyPlugin\\Database\\Seeders\\Pro\\": "plugins/MyPlugin/database/seeders/pro",
+            "Plugins\\DixlaseInquiry\\App\\": "plugins/DixlaseInquiry/app",
+            "Plugins\\DixlaseInquiry\\Database\\Factories\\": "plugins/DixlaseInquiry/database/factories",
+            "Plugins\\DixlaseInquiry\\Database\\Seeders\\": "plugins/DixlaseInquiry/database/seeders",
+            "Plugins\\DixlasePages\\App\\": "plugins/DixlasePages/app",
+            "Plugins\\DixlasePages\\Database\\Factories\\": "plugins/DixlasePages/database/factories",
+            "Plugins\\DixlasePages\\Database\\Seeders\\": "plugins/DixlasePages/database/seeders",
+            "Plugins\\DixlasePages\\Database\\Seeders\\Dev\\": "plugins/DixlasePages/database/seeders/dev",
+            "Plugins\\DixlasePages\\Database\\Seeders\\Pro\\": "plugins/DixlasePages/database/seeders/pro",
+            "Plugins\\MyPluin\\App\\": "plugins/MyPluin/app",
+            "Plugins\\MyPluin\\Database\\Factories\\": "plugins/MyPluin/database/factories",
+            "Plugins\\MyPluin\\Database\\Seeders\\": "plugins/MyPluin/database/seeders"
         },
         "files": [
-            "app/Helpers/AssetHelper.php",
-            "app/Helpers/AdminHelper.php"
+            "app/Helpers/AssetHelper.php"
         ]
     },
     "autoload-dev": {

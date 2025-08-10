@@ -27,12 +27,15 @@ class CheckInstallationStatus
         }
 
         // ファイルキャッシュをクリア（最新の.env内容を確実に読み取るため）
+        /*
         if (function_exists('opcache_invalidate')) {
             opcache_invalidate($envPath, true);
         }
         clearstatcache(true, $envPath);
+        */
 
         $envContent = file_get_contents($envPath);
+        /*
         $appKeyExists = preg_match('/^APP_KEY=(.+)$/m', $envContent, $matches);
 
         // APP_KEYの設定がない、または空の場合のみ新規生成
@@ -40,6 +43,7 @@ class CheckInstallationStatus
             $newKey = 'base64:' . base64_encode(random_bytes(32));
             $this->updateAppKey($newKey);
         }
+        */
 
         // .envファイルから直接INSTALLEDの値を確認（キャッシュ問題回避）
         $installedFromFile = false;
@@ -61,27 +65,39 @@ class CheckInstallationStatus
         
         // インストール済みでない場合
         if (!$installedFromFile) {
-            Log::info('CheckInstallationStatus - インストール未完了と判定、install画面にリダイレクト');
+            Log::info('CheckInstallationStatus - インストール未完了と判定、install画面にリダイレクト1');
             // インストール完了画面へのアクセスは、フラグファイルがある場合のみ許可
+            /*
             if ($request->is('install/complete')) {
+                Log::info('CheckInstallationStatus - インストール完了画面へのアクセスは、フラグファイルがある場合のみ許可1');
                 $flagFile = storage_path('app/installation_complete.flag');
                 if (file_exists($flagFile)) {
+                    Log::info('CheckInstallationStatus - インストール完了画面へのアクセスは、フラグファイルがある場合のみ許可2');
                     return $next($request);
                 }
             }
+            */
             
+            /*
             // インストール関連のルート（GET/POST問わず）は全て許可
             if ($request->is('install') || $request->is('install/*')) {
+                Log::info('インストール関連のルート（GET/POST問わず）は全て許可');
                 return $next($request);
             }
             
             // インストール関連以外のルートはインデックスにリダイレクト
+            Log::info('インストール関連以外のルートはインデックスにリダイレクト');
             return redirect()->route('install.index');
+            */
         } else {
+            /*
             // インストール済みの場合、インストール画面にはアクセスできないようにする
+            Log::info('CheckInstallationStatus - インストール済みと判定、インストール画面へのアクセスを許可しない1');
             if ($request->is('install') || $request->is('install/*')) {
+                Log::info('CheckInstallationStatus - インストール済みと判定、インストール画面へのアクセスを許可しない2');
                 return redirect('/')->with('message', 'このアプリケーションは既にインストールされています。');
             }
+            */
         }
 
         return $next($request);

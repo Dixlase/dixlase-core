@@ -12,6 +12,7 @@ use App\Models\MembersTwoFactorToken;
 use Illuminate\Support\Facades\Hash;
 use App\Models\MemberSetting;
 use App\Enums\TwoFactorMode;
+use App\Enums\TwoFactorMethod;
 
 class MembersTwoFactorService
 {
@@ -50,12 +51,33 @@ class MembersTwoFactorService
     public function has($member)
     {
         $force = (int) MemberSetting::getValue('force_2fa', 0);
+        $enabledMethods = json_decode(
+            MemberSetting::getValue('enabled_two_factor_methods', json_encode([TwoFactorMethod::EMAIL->value])),
+            true
+        );
 
-        return match ($force) {
-            TwoFactorMode::Disabled->value => false,
-            TwoFactorMode::Always->value => true,
-            TwoFactorMode::OnlyNewDevice->value => $this->isDifferentEnvironment($member),
-            TwoFactorMode::UseProfileSetting->value => $this->checkMemberSetting($member),
+        // 有効な認証方法がない場合は2FAを無効化
+        if (empty($enabledMethods)) {
+            return false;
+        }
+
+        // 現在の設定に基づいて2FAが必要かチェック
+        $mode = $this->getEffectiveTwoFactorMode($member, $force);
+
+        // デバイス認証が有効で、信頼済みデバイスからのアクセスの場合は2FAをスキップ
+        if (in_array(TwoFactorMethod::DEVICE->value, $enabledMethods) && $this->isFromTrustedDevice($member)) {
+            return false;
+        }
+
+        // 生体認証が有効な場合は常に2FAを要求
+        if (in_array(TwoFactorMethod::BIOMETRIC->value, $enabledMethods)) {
+            return true;
+        }
+
+        // 既存のロジック
+        return match ($mode) {
+            TwoFactorMode::Always => true,
+            TwoFactorMode::OnlyNewDevice => $this->isDifferentEnvironment($member),
             default => false,
         };
     }
@@ -80,12 +102,48 @@ class MembersTwoFactorService
     public function isDifferentEnvironment($member): bool
     {
 
-        $currentIp = request()->ip();
-        $currentUa = request()->userAgent();
+        // 信頼済みデバイスチェックの実装
+        // 例: クッキーやセッション、データベースを確認
+        // ここでは簡易的な実装
+        $trustedDeviceToken = request()->cookie('trusted_device');
+        return $trustedDeviceToken && $member->trustedDevices()
+            ->where('token', hash('sha256', $trustedDeviceToken))
+            ->exists();
+    }
 
-        $lastIp = $member->last_login_ip;
-        $lastUa = $member->last_login_ua;
-
-        return $currentIp !== $lastIp || $currentUa !== $lastUa;
+    /**
+     * 有効な2要素認証モードを取得する
+     *
+     * @param \App\Models\Member $member
+     * @param int $forceSetting システム設定の強制2FA設定 (0: オフ, 1: 管理者のみ, 2: 全ユーザー)
+     * @return string 有効な2FAモード (TwoFactorMode の値)
+     */
+    protected function getEffectiveTwoFactorMode($member, int $forceSetting): int
+    {
+        // システム設定で2FAが無効化されている場合
+        if ($forceSetting === 0) {
+            return TwoFactorMode::Disabled->value;
+        }
+        
+        // システム設定で全ユーザーに2FAを強制
+        if ($forceSetting === 2) {
+            return TwoFactorMode::Always->value;
+        }
+        
+        // システム設定で管理者のみ2FAを強制
+        if ($forceSetting === 1 && $member->role->value === MemberRole::SUPER_ADMIN->value) {
+            return TwoFactorMode::Always->value;
+        }
+        
+        // ユーザー個別の設定を確認
+        $userSetting = $member->two_factor_mode ?? null;
+        
+        // ユーザー設定が有効な値の場合はそれを返す
+        if ($userSetting !== null && in_array((int)$userSetting, array_column(TwoFactorMode::cases(), 'value'))) {
+            return (int)$userSetting;
+        }
+        
+        // デフォルトは無効
+        return TwoFactorMode::Disabled->value;
     }
 }
