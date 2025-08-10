@@ -7,13 +7,18 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Log;
 
-class CheckEnvironment
+class CheckInstallationReady
 {
     /**
      * Handle an incoming request.
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // セッションから言語を設定
+        if (session()->has('install_locale')) {
+            app()->setLocale(session('install_locale'));
+        }
+
         $envPath = base_path('.env');
         $envExamplePath = base_path('.env.example');
 
@@ -78,6 +83,19 @@ class CheckEnvironment
         } catch (\Exception $e) {
             Log::error('Environment setup error: ' . $e->getMessage());
             throw $e;
+        }
+
+        // インストール状態チェック
+        if (env('INSTALLED') !== true) {
+            // インストール関連のルート以外はインデックスにリダイレクト
+            if (!$request->is('install*') && !$request->is('install/*')) {
+                return redirect()->route('install.index');
+            }
+        } else {
+            // インストール済みの場合、インストール画面にはアクセスできないようにする
+            if ($request->is('install', 'install/*') && !$request->is('install/finalize')) {
+                return redirect('/')->with('message', 'このアプリケーションは既にインストールされています。');
+            }
         }
 
         return $next($request);

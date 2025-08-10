@@ -17,11 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         // Register global middlewares
         $middleware->append([
-            \App\Http\Middleware\CheckEnvironment::class, // 環境チェックを最初に実行
-        ]);
-
-        $middleware->append([
-            \App\Http\Middleware\CheckInstallationStatus::class, // グローバルなインストール状態チェック
+            \App\Http\Middleware\CheckInstallationReady::class, // インストール準備状況チェック + インストール状態チェック
         ]);
 
         // Register route middleware aliases
@@ -43,9 +39,6 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ]);
-
-        // Add CheckInstallation middleware only for install routes
-        //$middleware->alias(['install' => \App\Http\Middleware\CheckInstallation::class]);
     })
 
 
