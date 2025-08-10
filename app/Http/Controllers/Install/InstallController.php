@@ -491,6 +491,9 @@ class InstallController extends Controller
 
         // ✅ `.env` を `INSTALLED=true` に更新
         $this->updateEnv(['INSTALLED' => 'true']);
+        
+        // ✅ INSTALLED=true更新後にキャッシュを再構築
+        Artisan::call('config:cache');
 
 
 
@@ -504,9 +507,8 @@ class InstallController extends Controller
         $adminUrl = rtrim($appUrl . '/' . $adminSlug, '/');
         $adminLoginUrl = $adminUrl . '/login';
 
-        // ✅ キャッシュをクリア
+        // ✅ キャッシュをクリア（INSTALLED=true更新後に再構築するため、一旦クリアのみ）
         Artisan::call('config:clear');
-        Artisan::call('config:cache');
 
         return view('install.complete', compact('appUrl', 'adminUrl', 'adminLoginUrl'));
     }
