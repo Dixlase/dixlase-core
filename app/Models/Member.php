@@ -78,4 +78,9 @@ class Member extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    public function trustedDevices()
+    {
+        return $this->hasMany(TrustedDevice::class);
+    }
 }
