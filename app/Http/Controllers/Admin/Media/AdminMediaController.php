@@ -36,8 +36,8 @@ class AdminMediaController extends AdminLoggedInController
      */
     public function index()
     {
-        //メディアをページネーションで読み込み
-        $media = Media::paginate(config('admin.perPage'));
+        //メディアをページネーションで読み込み（メンバー情報も事前読み込み）
+        $media = Media::with('member')->paginate(config('admin.perPage'));
         $this->viewParams['media'] = $media;
 
         return view('admin.media.index', $this->viewParams);
@@ -115,6 +115,9 @@ class AdminMediaController extends AdminLoggedInController
 
     public function preview(Media $media)
     {
+        // メンバー情報を事前に読み込み
+        $media->load('member');
+        
         $filePath = storage_path('app/' . config('admin.storageDisk') . '/' . config('admin.mediaPath') . '/' . $media->path);
 
         if (!file_exists($filePath)) {
@@ -134,9 +137,12 @@ class AdminMediaController extends AdminLoggedInController
         $allowedFileTypes = MediaSetting::where('name', 'allowed_file_types')->value('value');
         $allowedFileTypes = json_decode($allowedFileTypes, true) ?? [];
 
+        $maxFileSize = MediaSetting::where('name', 'max_file_size')->value('value') ?? '2048';
+
         $fileExtensions = config('admin.fileExtensions');
 
         $this->viewParams['allowedFileTypes'] = $allowedFileTypes;
+        $this->viewParams['maxFileSize'] = $maxFileSize;
         $this->viewParams['fileExtensions'] = $fileExtensions;
 
         return view('admin.media.settings', $this->viewParams);
@@ -152,13 +158,21 @@ class AdminMediaController extends AdminLoggedInController
         $request->validate([
             'allowed_file_types' => 'array',
             'allowed_file_types.*' => 'in:' . implode(',', $fileExtensions),
+            'max_file_size' => 'required|integer|min:1|max:100', // 1MB to 100MB
         ]);
 
         $selectedTypes = $request->input('allowed_file_types', []);
+        $maxFileSizeMB = $request->input('max_file_size');
+        $maxFileSize = round($maxFileSizeMB * 1024); // Convert MB to KB for storage
 
         MediaSetting::updateOrCreate(
             ['name' => 'allowed_file_types'],
             ['value' => json_encode($selectedTypes)]
+        );
+
+        MediaSetting::updateOrCreate(
+            ['name' => 'max_file_size'],
+            ['value' => $maxFileSize]
         );
 
         return redirect()->back()->with('success', 'メディア設定が更新されました。');
