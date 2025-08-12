@@ -32,6 +32,7 @@ use App\Models\MemberSetting;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Enum;
 use App\Enums\TwoFactorMode;
+use App\Enums\TwoFactorMethod;
 use App\Enums\LoginNotificationMode;
 use App\Enums\AppearanceMode;
 use App\Enums\MemberRole;
@@ -88,12 +89,13 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['member'] = null;
 
         // 権限の選択肢をセット
-        $this->viewParams['roleOptions'] = collect(MemberRole::cases())
-            ->mapWithKeys(fn($role) => [$role->value => $role->label()])
-            ->toArray();
+        $this->viewParams['roleOptions'] = MemberRole::translationOptions();
 
         // 他の初期値も同様にセット可能
         $this->viewParams['roleValue'] = (int) request()->old('role', MemberRole::ADMIN->value);
+
+        // 外観の選択肢をセット
+        $this->viewParams['appearanceOptions'] = AppearanceMode::translationOptions();
 
         $this->viewParams['statusOptions'] = MemberStatus::options();
 
@@ -141,7 +143,8 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['member'] = $member;
 
         // 選択肢用の配列
-        $this->viewParams['roleOptions'] = MemberRole::options();
+        $this->viewParams['roleOptions'] = MemberRole::translationOptions();
+        $this->viewParams['appearanceOptions'] = AppearanceMode::translationOptions();
         $this->viewParams['statusOptions'] = MemberStatus::options();
 
         // 初期値（old() の fallback にも対応）

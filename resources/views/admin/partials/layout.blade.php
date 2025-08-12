@@ -20,7 +20,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <!DOCTYPE html>
 <html
-    lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+    lang="{{ str_replace('_', '-', env('APP_LOCALE', config('app.locale', 'en'))) }}"
     class="{{ $htmlClass ?? '' }} {{ empty($transitionEnabled) ? 'disable-transition' : '' }}"
     x-data="appearanceTheme('{{ $appearance }}')"
     @if(empty($transitionEnabled))
@@ -70,7 +70,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </h2>
                     </div>
 
-                    <div class="px-4 sm:px-6 lg:px-8">
+                    <div class="pb-8 sm:px-6 lg:px-8">
                         @include('components::flash-message')
                         <!-- Page Content -->
                         @yield('content')

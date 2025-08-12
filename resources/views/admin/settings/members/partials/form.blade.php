@@ -25,7 +25,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <div class="mb-4">
     @include('components::form.label', [
         'for' => 'name',
-        'text' => '名前',
+        'text' => __('admin.settings.members.form.name'),
     ])
     @include('components::form.text', [
         'id' => 'name',
@@ -43,7 +43,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <div class="mb-4">
     @include('components::form.label', [
         'for' => 'email',
-        'text' => 'メールアドレス',
+        'text' => __('admin.settings.members.form.email'),
     ])
     @include('components::form.text', [
         'type' => 'email',
@@ -60,7 +60,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <div class="mb-4">
     @include('components::form.label', [
         'for' => 'password',
-        'text' => 'パスワード',
+        'text' => __('admin.settings.members.form.password'),
     ])
     @include('components::form.password-tools', [
         'id' => 'password',
@@ -76,7 +76,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <div class="mb-4">
     @include('components::form.label', [
         'for' => 'role',
-        'text' => config('admin.role'),
+        'text' => __('admin.settings.members.form.role'),
 
     ])
 
@@ -93,13 +93,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <div class="mb-4">
     @include('components::form.label', [
         'for' => 'appearance',
-        'text' => '外観モード',
+        'text' => __('admin.settings.members.form.appearance'),
 
     ])
     @include('components::form.select', [
         'id' => 'appearance',
         'name' => 'appearance',
-        'options' => config('admin.appearance'),
+        'options' => $appearanceOptions,
         'value' => old('appearance', $member->appearance ?? ''),
         'required' => true,
     ])
@@ -108,7 +108,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <div class="mb-4">
     @include('components::form.label', [
         'for' => 'status',
-        'text' => 'ステータス',
+        'text' => __('admin.settings.members.form.status'),
 
     ])
     @include('components::form.select', [

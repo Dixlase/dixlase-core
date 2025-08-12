@@ -48,19 +48,23 @@ class AdminBaseSettingsController extends AdminLoggedInController
     public function index()
     {
         $settings = [
-            'app_name' => BaseSettings::get('app_name', 'MySoftware'),
-            'locale' => BaseSettings::get('locale', 'ja_JA'),
-            'timezone' => BaseSettings::get('timezone', 'Asia/Tokyo'),
+            // .env から読み取る設定
+            'app_name' => env('APP_NAME', 'MySoftware'),
+            'locale' => env('APP_LOCALE', 'ja'),
+            'timezone' => env('APP_TIMEZONE', 'Asia/Tokyo'),
 
-            'mail_mailer' => BaseSettings::get('mail_mailer', 'smtp'),
-            'mail_host' => BaseSettings::get('mail_host', 'smtp.example.com'),
-            'mail_port' => BaseSettings::get('mail_port', '587'),
-            'mail_username' => BaseSettings::get('mail_username', ''),
-            'mail_password' => BaseSettings::get('mail_password', ''),
-            'mail_encryption' => BaseSettings::get('mail_encryption', 'tls'),
-            'mail_from_address' => BaseSettings::get('MAIL_FROM_ADDRESS', 'no-reply@example.com'),
+            'mail_mailer' => env('MAIL_MAILER', 'smtp'),
+            'mail_host' => env('MAIL_HOST', 'smtp.example.com'),
+            'mail_port' => env('MAIL_PORT', '587'),
+            'mail_username' => env('MAIL_USERNAME', ''),
+            'mail_password' => env('MAIL_PASSWORD', ''),
+            'mail_encryption' => env('MAIL_ENCRYPTION', 'tls'),
+            'mail_from_address' => env('MAIL_FROM_ADDRESS', 'no-reply@example.com'),
 
-            'maintenance_mode' => BaseSetting::getValue('maintenance_mode', 'false'),
+            // メンテナンスモードのON/OFFも.envから読み取り
+            'maintenance_mode' => env('MAINTENANCE_MODE', 'false'),
+            
+            // データベースから読み取る設定（メンテナンスメッセージのみ）
             'maintenance_message' => BaseSetting::getValue('maintenance_message', '現在メンテナンス中です。しばらくお待ちください。'),
         ];
 
@@ -69,9 +73,11 @@ class AdminBaseSettingsController extends AdminLoggedInController
 
         $this->viewParams['settings'] = $settings;
         $this->viewParams['timezones'] = $timezones;
-        $this->viewParams['locales'] = trans('admin.locales');
-        $this->viewParams['mailers'] = trans('mail.mailers');
-        $this->viewParams['encryptions'] = trans('mail.encryptions');
+        $this->viewParams['locales'] = collect(config('admin.locale.available', []))->mapWithKeys(function ($locale, $key) {
+            return [$key => $locale['name']];
+        })->toArray();
+        $this->viewParams['mailers'] = __('mail.mailers');
+        $this->viewParams['encryptions'] = __('mail.encryptions');
 
         return view(
             'admin::settings.base.index',
@@ -86,11 +92,12 @@ class AdminBaseSettingsController extends AdminLoggedInController
     {
 
 
+        // DBに保存するもの（メンテナンスメッセージのみ）
         $settings = $request->only([
-            'maintenance_mode',
             'maintenance_message',
         ]);
 
+        // .envに保存するもの（メンテナンスモードのON/OFFも含む）
         $envData = $request->only([
             'app_name',
             'locale',
@@ -102,11 +109,18 @@ class AdminBaseSettingsController extends AdminLoggedInController
             'mail_password',
             'mail_encryption',
             'mail_from_address',
+            'maintenance_mode',
         ]);
 
-        // DBに保存するもの(メンテナンスモードの設定)
+        // APP_FAKER_LOCALEを選択された言語に基づいて自動設定
+        if (isset($envData['locale'])) {
+            $availableLocales = config('admin.locale.available', []);
+            $envData['faker_locale'] = $availableLocales[$envData['locale']]['faker_locale'] ?? 'ja_JA';
+        }
+
+        // DBに保存するもの（メンテナンスメッセージのみ）
         BaseSetting::setMany($settings);
-        // .env に保存するもの
+        // .env に保存するもの（メンテナンスモードのON/OFFも含む）
         EnvHelper::update($envData);
 
         return redirect()->route('admin.settings.base')->with('success', '設定が更新されました。');

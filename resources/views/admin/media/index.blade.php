@@ -22,7 +22,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 
-<a href="{{ route('admin.media.upload') }}" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition duration-300">新しいファイルをアップロード</a>
+<a href="{{ route('admin.media.upload') }}" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition duration-300">{{ __('admin.media.index.upload_new_file') }}</a>
 
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
     @foreach($media as $file)
@@ -42,18 +42,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="mt-4">
                 <a href="{{ route('admin.media.preview', $file->id) }}" target="_blank" class="text-sm font-bold truncate">{{ $file->name }}</a>
                 <div class="flex gap-2 mt-2 justify-end">
-                    <a href="{{ route('admin.media.download', $file->id) }}" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-500">
+                    <a href="{{ route('admin.media.download', $file->id) }}" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-500" title="{{ __('admin.media.index.download') }}" aria-label="{{ __('admin.media.index.download') }}">
                         <i class="fas fa-download"></i>
                     </a>
 
-                    <a href="{{ route('admin.media.preview', $file->id) }}" target="_blank" class="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-500">
+                    <a href="{{ route('admin.media.preview', $file->id) }}" target="_blank" class="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-500" title="{{ __('admin.media.index.preview') }}" aria-label="{{ __('admin.media.index.preview') }}">
                         <i class="fas fa-eye"></i>
                     </a>
 
                     <form action="{{ route('admin.media.delete', $file->id) }}" method="POST" class="inline">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-500">
+                        <button type="submit" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-500" title="{{ __('admin.media.index.delete') }}" aria-label="{{ __('admin.media.index.delete') }}" onclick="return confirm('{{ __('admin.media.index.delete') }}?')">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </form>

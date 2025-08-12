@@ -35,15 +35,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('save')
-    <!-- 保存ボタンとモーダル -->
+    <!-- {{ __('admin.settings.members.create.create_confirmation_title') }} -->
     @include('components::form.save', [
         'id' => 'confirmationModal',
-        'label' => '作成',
+        'label' => __('admin.settings.members.create.create_button'),
         'onclick' => "openModal('confirmationModal')",
-        'title' => '作成の確認',
-        'message' => '新規管理者を作成しますか？',
-        'confirm_label' => '作成',
-        'cancel_label' => '戻る',
+        'title' => __('admin.settings.members.create.create_confirmation_title'),
+        'message' => __('admin.settings.members.create.create_confirmation_message'),
+        'confirm_label' => __('admin.settings.members.create.create_button'),
+        'cancel_label' => __('admin.settings.members.create.back_button'),
         'form' => 'create-form', // 🔁 保存ボタンに form 属性を渡す（必要なら）
     ])
 @endsection

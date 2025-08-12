@@ -25,11 +25,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <form method="POST" action="{{ route('admin.settings.members.settings.update') }}" id="member-settings-form">
         @csrf
 
-        <!-- パスワードの最小文字数 -->
-        <h3>
-            {{ __('admin.settings.members.settings.password_conditions') }}
-        </h3>
-        <div class="mb-6 mt-8">
+        <!-- パスワード条件設定 -->
+        <div>
+            <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.members.settings.password_conditions') }}</h2>
+            
+            <div class="mb-6">
             <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
                 {{ __('admin.settings.members.settings.password_min_length') }}
             </label>
@@ -48,50 +48,54 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             ])
         </div>
 
-        <!-- 大文字 -->
-        <div class="mb-6">
-            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
-                {{ __('admin.settings.members.settings.password_require_uppercase') }}
-            </label>
+            <!-- 大文字 -->
+            <div class="mb-6">
+                <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
+                    {{ __('admin.settings.members.settings.password_require_uppercase') }}
+                </label>
 
-            @php
-                $uppercaseOptions = collect(__('admin.settings.members.settings.password_require_uppercase_options'))
-                    ->mapWithKeys(fn($label, $key) => [$key => $label])
-                    ->toArray();
-            @endphp
+                @php
+                    $uppercaseOptions = collect(__('admin.settings.members.settings.password_require_uppercase_options'))
+                        ->mapWithKeys(fn($label, $key) => [$key => $label])
+                        ->toArray();
+                @endphp
 
-            @include('components.form.radio-group', [
-                'name' => 'password_require_uppercase',
-                'options' => $uppercaseOptions,
-                'value' => old('password_require_uppercase', (string) (int) $passwordRequireUppercase),
-            ])
-        </div>
+                @include('components.form.radio-group', [
+                    'name' => 'password_require_uppercase',
+                    'options' => $uppercaseOptions,
+                    'value' => old('password_require_uppercase', (string) (int) $passwordRequireUppercase),
+                ])
+            </div>
 
-        <!-- 記号 -->
-        <div class="mb-6">
-            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
-                {{ __('admin.settings.members.settings.password_require_symbol') }}
-            </label>
+            <!-- 記号 -->
+            <div class="mb-6">
+                <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
+                    {{ __('admin.settings.members.settings.password_require_symbol') }}
+                </label>
 
-            @php
-                $symbolOptions = collect(__('admin.settings.members.settings.password_require_symbol_options'))
-                    ->mapWithKeys(fn($label, $key) => [$key => $label])
-                    ->toArray();
-            @endphp
+                @php
+                    $symbolOptions = collect(__('admin.settings.members.settings.password_require_symbol_options'))
+                        ->mapWithKeys(fn($label, $key) => [$key => $label])
+                        ->toArray();
+                @endphp
 
-            @include('components.form.radio-group', [
-                'name' => 'password_require_symbol',
-                'options' => $symbolOptions,
-                'value' => old('password_require_symbol', (string) (int) $passwordRequireSymbol),
-            ])
+                @include('components.form.radio-group', [
+                    'name' => 'password_require_symbol',
+                    'options' => $symbolOptions,
+                    'value' => old('password_require_symbol', (string) (int) $passwordRequireSymbol),
+                ])
+            </div>
         </div>
 
 
         <!-- ログイン通知設定 -->
-        <div class="mb-6 mt-8">
-            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
-                ログイン通知メールの全体設定
-            </label>
+        <div class="mt-8 border-t pt-6">
+            <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.members.settings.login_notification_settings') }}</h2>
+            
+            <div class="mb-6">
+                <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
+                    {{ __('admin.settings.members.settings.login_notification_global_setting') }}
+                </label>
 
             @php
                 $loginNotificationOptions = collect(config('admin.global_login_notification_mail_mode'))
@@ -99,18 +103,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     ->toArray();
             @endphp
 
-            @include('components.form.radio-group', [
-                'name' => 'login_notification_mode',
-                'options' => $loginNotificationOptions,
-                'value' => old('login_notification_mode', (string) $loginNotification),
-            ])
+                @include('components.form.radio-group', [
+                    'name' => 'login_notification_mode',
+                    'options' => $loginNotificationOptions,
+                    'value' => old('login_notification_mode', (string) $loginNotification),
+                ])
+            </div>
         </div>
 
-        <!-- 二段階認証の設定 -->
-        <div class="mb-6">
-            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
-                {{ __('admin.settings.members.two_factor_mode.label') }}
-            </label>
+        <!-- 二段階認証設定 -->
+        <div class="mt-8 border-t pt-6">
+            <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.members.settings.two_factor_settings') }}</h2>
+            
+            <div class="mb-6">
+                <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
+                    {{ __('admin.settings.members.two_factor_mode.label') }}
+                </label>
 
             @php
                 $twoFactorOptions = collect(config('admin.global_two_factor_mode'))
@@ -119,40 +127,40 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endphp
 
 
-            @include('components.form.radio-group', [
-                'name' => 'force_2fa',
-                'options' => $twoFactorOptions,
-                'value' => old('force_2fa', (string) $force2fa),
-            ])
-
-        </div>
-
-        <!-- 二段階認証の方法 -->
-        <div class="mb-6">
-            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
-                利用可能な二段階認証の方法
-            </label>
-            
-            <div class="space-y-2 mt-2">
-                @foreach(\App\Enums\TwoFactorMethod::cases() as $method)
-                <div class="flex items-center">
-                    <input 
-                        id="two_factor_method_{{ $method->value }}" 
-                        name="two_factor_methods[]" 
-                        type="checkbox" 
-                        value="{{ $method->value }}"
-                        {{ in_array($method->value, $enabledTwoFactorMethods) ? 'checked' : '' }}
-                        class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                    <label for="two_factor_method_{{ $method->value }}" class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                        {{ $method->label() }}
-                    </label>
-                </div>
-                @endforeach
+                @include('components.form.radio-group', [
+                    'name' => 'force_2fa',
+                    'options' => $twoFactorOptions,
+                    'value' => old('force_2fa', (string) $force2fa),
+                ])
             </div>
-            
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                ユーザーが利用できる二段階認証の方法を選択してください。最低1つは有効にする必要があります。
-            </p>
+
+            <!-- 二段階認証の方法 -->
+            <div class="mb-6">
+                <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
+                    {{ __('admin.settings.members.settings.two_factor_methods_label') }}
+                </label>
+                
+                <div class="space-y-2 mt-2">
+                    @foreach(\App\Enums\TwoFactorMethod::cases() as $method)
+                    <div class="flex items-center">
+                        <input 
+                            id="two_factor_method_{{ $method->value }}" 
+                            name="two_factor_methods[]" 
+                            type="checkbox" 
+                            value="{{ $method->value }}"
+                            {{ in_array($method->value, $enabledTwoFactorMethods) ? 'checked' : '' }}
+                            class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                        <label for="two_factor_method_{{ $method->value }}" class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                            {{ $method->label() }}
+                        </label>
+                    </div>
+                    @endforeach
+                </div>
+                
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    {{ __('admin.settings.members.settings.two_factor_methods_help') }}
+                </p>
+            </div>
         </div>
 
     </form>
@@ -163,7 +171,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 更新ボタンとモーダル-->
     @include('components::form.save', [
         'id' => 'confirmationModal',
-        'label' => '更新',
+        'label' => __('admin.settings.members.settings.update_button'),
         'onclick' => "openModal('confirmationModal')",
         'title' => __('admin.settings.members.settings.confirm_title'),
         'message' => __('admin.settings.members.settings.confirm_message'),

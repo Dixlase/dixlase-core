@@ -19,22 +19,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @props([
-    'type' => 'button',      // ボタンのタイプ (button, submit, reset)
-    'disabled' => false,     // ボタンを無効にする
-    'class' => '',                          // カスタムクラス
-    'label' => '保存',                    // ボタンのテキスト
-    'id' => 'confirmationModal',            // モーダルのID
-    'title' => '保存の確認',                  // モーダルのタイトル
-    'message' => 'この内容で保存しますか？',    // モーダルのメッセージ
-    'confirm_label' => '保存',                  // キャンセルボタンのテキスト
-    'form' => null,                          // フォームのID
-    'id_confirmation' => 'confirmationModal',        // モーダルのID
-    'id_delete' => 'deleteModal',                  // 削除モーダルのID
+    'type' => 'button',      // Button type (button, submit, reset)
+    'disabled' => false,     // Disable button
+    'class' => '',                          // Custom class
+    'label' => __('common.form.save_button'),                    // Button text
+    'id' => 'confirmationModal',            // Modal ID
+    'title' => __('common.form.save_confirmation_title'),                  // Modal title
+    'message' => __('common.form.save_confirmation_message'),    // Modal message
+    'confirm_label' => __('common.form.save_button'),                  // Confirm button text
+    'cancel_label' => __('common.form.cancel_button'),                  // Cancel button text
+    'form' => null,                          // Form ID
+    'id_confirmation' => 'confirmationModal',        // Modal ID
+    'id_delete' => 'deleteModal',                  // Delete modal ID
 
 
 ])
 
-<!-- 保存ボタン -->
+<!-- {{ __('common.form.save_button') }} -->
 @include('components::form.button', [
     'type' => $type,
     'label' => $label,
@@ -43,7 +44,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'form' => $form,
 ])
 
-<!-- 保存モーダル -->
+<!-- {{ __('common.form.save_confirmation_title') }} -->
 @push('modals')
     @include('components::form.modal', [
     'id' => $id_confirmation,

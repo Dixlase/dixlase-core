@@ -23,7 +23,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 
     <div class="mb-4">
-        <label class="mr-2 dark:text-gray-200">ログ種別：</label>
+        <label class="mr-2 dark:text-gray-200">{{ __('admin.settings.systems.logs.log_type_label') }}</label>
         @foreach ($logTypes as $type)
             <a href="{{ route('admin.settings.systems.logs', ['type' => $type]) }}"
                 class="inline-block px-2 py-1 rounded mr-2 text-white {{ $logType === $type ? 'bg-blue-500' : 'bg-gray-500' }}
@@ -43,7 +43,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 {{ $line }}
             </div>
         @empty
-            <p class="p-2 dark:text-gray-300">ログが見つかりません。</p>
+            <p class="p-2 dark:text-gray-300">{{ __('admin.settings.systems.logs.no_logs_found') }}</p>
         @endforelse
 
         </div>

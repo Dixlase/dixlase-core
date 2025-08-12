@@ -24,88 +24,220 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <div x-data="{
     enableAllowedIPs: {{ $settings['enable_allowed_admin_ips'] ? 'true' : 'false' }},
-    blockedAdminIps: {{ $settings['enable_blocked_admin_ips'] ? 'true' : 'false' }}
+    blockedAdminIps: {{ $settings['enable_blocked_admin_ips'] ? 'true' : 'false' }},
+    captchaEnabled: {{ $settings['captcha_enabled'] ? 'true' : 'false' }},
+    captchaVersion: '{{ $settings['captcha_google_version'] }}'
 }">
-    <form method="POST" action="{{ route('admin.settings.security.update') }}">
+    <form id="security-settings-form" method="POST" action="{{ route('admin.settings.security.update') }}">
         @csrf
         @method('POST')
 
-        @include('components::form.label', [
-            'for' => 'admin_url',
-            'text' => 'admin.features.settings.security.admin_url',
-        ])
-        @include('components::form.text', [
-            'id' => 'admin_url',
-            'name' => 'admin_url',
-            'value' => old('admin_url', $settings['admin_url']),
-            'required' => true,
-        ])
+        <!-- 基本セキュリティ設定 -->
+        <div>
+            <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.security.basic_security_settings') }}</h2>
+            
+            <div>
+                @include('components::form.label', [
+                    'for' => 'admin_url',
+                    'text' => __('admin.settings.security.admin_url'),
+                ])
+                @include('components::form.text', [
+                    'id' => 'admin_url',
+                    'name' => 'admin_url',
+                    'value' => old('admin_url', $settings['admin_url']),
+                    'required' => true,
+                ])
+            </div>
 
+            <div class="mt-4">
+                @include('components::form.checkbox', [
+                    'label' => __('admin.settings.security.force_ssl'),
+                    'id' => 'force_ssl',
+                    'name' => 'force_ssl',
+                    'value' => old('force_ssl', $settings['force_ssl']),
+                ])
+            </div>
+        </div>
 
-        @include('components::form.checkbox', [
-            'label' => '特定のIPアドレスのみ許可',
-            'id' => 'enable_allowed_admin_ips',
-            'name' => 'enable_allowed_admin_ips',
-            'value' => old('enable_allowed_admin_ips', $settings['enable_allowed_admin_ips']),
-            'xModel' => 'enableAllowedIPs' // Alpine.jsに状態をバインド
-        ])
+        <!-- IPアクセス制御設定 -->
+        <div class="mt-8 border-t pt-6">
+            <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.security.ip_access_control') }}</h2>
 
-        @include('components::form.textarea', [
-            'id' => 'allowed_admin_ips',
-            'name' => 'allowed_admin_ips',
-            'value' => $settings['allowed_admin_ips'],
-            'rows' => 10,
-            'placeholder' => '',
-            'class' => '',
-            'readonly' => !$settings['enable_allowed_admin_ips'], // 初期状態
-            'xBindReadonly' => '!enableAllowedIPs', // Alpine.jsでreadonlyを動的に管理
-            'xBindClass' => "{ 'bg-gray-100': !enableAllowedIPs, 'bg-white': enableAllowedIPs }", //readonlyの有無でクラスを切り替え
-        ])
+            @include('components::form.checkbox', [
+                'label' => __('admin.settings.security.enable_allowed_admin_ips'),
+                'id' => 'enable_allowed_admin_ips',
+                'name' => 'enable_allowed_admin_ips',
+                'value' => old('enable_allowed_admin_ips', $settings['enable_allowed_admin_ips']),
+                'xModel' => 'enableAllowedIPs' // Alpine.jsに状態をバインド
+            ])
 
-        @include('components::form.checkbox', [
-            'label' => '特定のIPアドレスを拒否',
-            'id' => 'enable_blocked_admin_ips',
-            'name' => 'enable_blocked_admin_ips',
-            'value' => old('enable_blocked_admin_ips', $settings['enable_blocked_admin_ips']),
-            'xModel' => 'blockedAdminIps' // Alpine.jsに状態をバインド
-        ])
+            @include('components::form.textarea', [
+                'id' => 'allowed_admin_ips',
+                'name' => 'allowed_admin_ips',
+                'value' => $settings['allowed_admin_ips'],
+                'rows' => 10,
+                'placeholder' => '',
+                'class' => '',
+                'readonly' => !$settings['enable_allowed_admin_ips'], // 初期状態
+                'xBindReadonly' => '!enableAllowedIPs', // Alpine.jsでreadonlyを動的に管理
+                'xBindClass' => "{ 'bg-gray-100': !enableAllowedIPs, 'bg-white': enableAllowedIPs }", //readonlyの有無でクラスを切り替え
+            ])
 
-        @include('components::form.textarea', [
-            'id' => 'blocked_admin_ips',
-            'name' => 'blocked_admin_ips',
-            'value' => $settings['blocked_admin_ips'],
-            'rows' => 10,
-            'placeholder' => '',
-            'required' => false,
-            'class' => '',
-            'readonly' => !$settings['blocked_admin_ips'], //初期状態
-            'xBindReadonly' => '!blockedAdminIps', // Alpine.jsでreadonlyを動的に管理
-            'xBindClass' => "{ 'bg-gray-100': !enableAllowedIPs, 'bg-white': blockedAdminIps }", //readonlyの有無でクラスを切り替え
+            @include('components::form.checkbox', [
+                'label' => __('admin.settings.security.enable_blocked_admin_ips'),
+                'id' => 'enable_blocked_admin_ips',
+                'name' => 'enable_blocked_admin_ips',
+                'value' => old('enable_blocked_admin_ips', $settings['enable_blocked_admin_ips']),
+                'xModel' => 'blockedAdminIps' // Alpine.jsに状態をバインド
+            ])
 
-        ])
+            @include('components::form.textarea', [
+                'id' => 'blocked_admin_ips',
+                'name' => 'blocked_admin_ips',
+                'value' => $settings['blocked_admin_ips'],
+                'rows' => 10,
+                'placeholder' => '',
+                'required' => false,
+                'class' => '',
+                'readonly' => !$settings['blocked_admin_ips'], //初期状態
+                'xBindReadonly' => '!blockedAdminIps', // Alpine.jsでreadonlyを動的に管理
+                'xBindClass' => "{ 'bg-gray-100': !enableAllowedIPs, 'bg-white': blockedAdminIps }", //readonlyの有無でクラスを切り替え
 
-        @include('components::form.checkbox', [
-            'label' => 'SSLを強制',
-            'id' => 'force_ssl',
-            'name' => 'force_ssl',
-            'value' => old('force_ssl', $settings['force_ssl']),
-        ])
+            ])
+        </div>
+
+        <!-- reCAPTCHA設定 -->
+        <div class="mt-8 border-t pt-6">
+            <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.security.recaptcha_settings') }}</h2>
+            
+            @include('components::form.checkbox', [
+                'label' => __('admin.settings.security.captcha_enabled'),
+                'id' => 'captcha_enabled',
+                'name' => 'captcha_enabled',
+                'value' => old('captcha_enabled', $settings['captcha_enabled']),
+                'xModel' => 'captchaEnabled'
+            ])
+
+            <div x-show="captchaEnabled" class="mt-4 space-y-4">
+                @include('components::form.label', [
+                    'for' => 'captcha_driver',
+                    'text' => __('admin.settings.security.captcha_driver'),
+                ])
+                @include('components::form.select', [
+                    'id' => 'captcha_driver',
+                    'name' => 'captcha_driver',
+                    'value' => old('captcha_driver', $settings['captcha_driver']),
+                    'options' => [
+                        'google' => 'Google reCAPTCHA',
+                    ],
+                ])
+
+                @include('components::form.label', [
+                    'for' => 'captcha_google_site_key',
+                    'text' => __('admin.settings.security.captcha_google_site_key'),
+                ])
+                @include('components::form.text', [
+                    'id' => 'captcha_google_site_key',
+                    'name' => 'captcha_google_site_key',
+                    'value' => old('captcha_google_site_key', $settings['captcha_google_site_key']),
+                    'placeholder' => '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI',
+                ])
+
+                @include('components::form.label', [
+                    'for' => 'captcha_google_secret_key',
+                    'text' => __('admin.settings.security.captcha_google_secret_key'),
+                ])
+                @include('components::form.text', [
+                    'id' => 'captcha_google_secret_key',
+                    'name' => 'captcha_google_secret_key',
+                    'value' => old('captcha_google_secret_key', $settings['captcha_google_secret_key']),
+                    'placeholder' => '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe',
+                    'type' => 'password',
+                ])
+
+                @include('components::form.label', [
+                    'for' => 'captcha_google_version',
+                    'text' => __('admin.settings.security.captcha_google_version'),
+                ])
+                @include('components::form.select', [
+                    'id' => 'captcha_google_version',
+                    'name' => 'captcha_google_version',
+                    'value' => old('captcha_google_version', $settings['captcha_google_version']),
+                    'options' => __('admin.settings.security.captcha_version_options'),
+                    'xModel' => 'captchaVersion'
+                ])
+
+                <div x-show="captchaVersion === 'v3'" class="mt-4">
+                    @include('components::form.label', [
+                        'for' => 'captcha_google_min_score',
+                        'text' => __('admin.settings.security.captcha_google_min_score'),
+                    ])
+                    @include('components::form.text', [
+                        'id' => 'captcha_google_min_score',
+                        'name' => 'captcha_google_min_score',
+                        'value' => old('captcha_google_min_score', $settings['captcha_google_min_score']),
+                        'placeholder' => '0.5',
+                        'type' => 'number',
+                        'step' => '0.1',
+                        'min' => '0',
+                        'max' => '1',
+                    ])
+                    <p class="text-sm text-gray-600 mt-1">
+                        {{ __('admin.settings.security.captcha_min_score_description') }}
+                    </p>
+                </div>
+
+                <div class="mt-6">
+                    <h4 class="text-md font-medium text-gray-800 mb-3">{{ __('admin.settings.security.captcha_form_settings') }}</h4>
+                    <div class="space-y-2">
+                        @include('components::form.checkbox', [
+                            'label' => __('admin.settings.security.captcha_contact_form'),
+                            'id' => 'captcha_contact_form',
+                            'name' => 'captcha_contact_form',
+                            'value' => old('captcha_contact_form', $settings['captcha_contact_form']),
+                        ])
+
+                        @include('components::form.checkbox', [
+                            'label' => __('admin.settings.security.captcha_registration_form'),
+                            'id' => 'captcha_registration_form',
+                            'name' => 'captcha_registration_form',
+                            'value' => old('captcha_registration_form', $settings['captcha_registration_form']),
+                        ])
+
+                        @include('components::form.checkbox', [
+                            'label' => __('admin.settings.security.captcha_login_form'),
+                            'id' => 'captcha_login_form',
+                            'name' => 'captcha_login_form',
+                            'value' => old('captcha_login_form', $settings['captcha_login_form']),
+                        ])
+
+                        @include('components::form.checkbox', [
+                            'label' => __('admin.settings.security.captcha_comment_form'),
+                            'id' => 'captcha_comment_form',
+                            'name' => 'captcha_comment_form',
+                            'value' => old('captcha_comment_form', $settings['captcha_comment_form']),
+                        ])
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
 
 
 
         <!-- 保存ボタンとモーダル -->
-        @include('components::form.save', [
-            'id' => 'confirmationModal',
-            'onclick' => "openModal('confirmationModal')",
-            'title' => '保存の確認',
-            'message' => '変更内容を保存しますか？',
-            'confirm_label' => '保存',
-            'cancel_label' => '戻る',
-        ])
-
-
-        <button type="submit">保存</button>
+        <div class="mt-4">
+            @include('components::form.save', [
+                'id' => 'confirmationModal',
+                'onclick' => "openModal('confirmationModal')",
+                'title' => __('admin.settings.security.save_confirmation_title'),
+                'message' => __('admin.settings.security.save_confirmation_message'),
+                'confirm_label' => __('admin.settings.security.save_button'),
+                'cancel_label' => __('admin.settings.security.back_button'),
+                'form' => 'security-settings-form',
+            ])
+        </div>
     </form>
 </div>
 

@@ -51,7 +51,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                             // 編集権限
                             echo '<div>';
-                            echo '<h5 class="text-sm font-medium mb-2">編集権限（access_roles）</h5>';
+                            echo '<h5 class="text-sm font-medium mb-2">' . __('admin.settings.members.roles.access_roles') . '</h5>';
                             foreach ($roles as $role) {
                                 if ($role->value !== \App\Enums\MemberRole::SUPER_ADMIN->value) {
                                     $checked = in_array($role->value, $permissions[$menuKey]->access_roles ?? []) ? 'checked' : '';
@@ -65,7 +65,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                             // 閲覧権限
                             echo '<div>';
-                            echo '<h5 class="text-sm font-medium mb-2">閲覧権限（view_roles）</h5>';
+                            echo '<h5 class="text-sm font-medium mb-2">' . __('admin.settings.members.roles.view_roles') . '</h5>';
                             foreach ($roles as $role) {
                                 if ($role->value !== \App\Enums\MemberRole::SUPER_ADMIN->value) {
                                     $checked = in_array($role->value, $permissions[$menuKey]->view_roles ?? []) ? 'checked' : '';

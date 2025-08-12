@@ -12,10 +12,10 @@ enum LoginNotificationMode: int
     public function label(): string
     {
         return match ($this) {
-            self::UseProfileSetting => 'メンバーのプロフィール設定を反映',
-            self::Disabled => '無効',
-            self::Always => '常に有効',
-            self::OnlyNewDevice => '異なる端末・IPのみ有効',
+            self::UseProfileSetting => __('admin.settings.members.login_notification_mode.options.0'),
+            self::Disabled => __('admin.settings.members.login_notification_mode.options.1'),
+            self::Always => __('admin.settings.members.login_notification_mode.options.2'),
+            self::OnlyNewDevice => __('admin.settings.members.login_notification_mode.options.3'),
         };
     }
 

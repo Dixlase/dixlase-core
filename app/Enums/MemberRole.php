@@ -2,6 +2,8 @@
 
 namespace App\Enums;
 
+use Illuminate\Support\Facades\Lang;
+
 enum MemberRole: int
 {
     case SUPER_ADMIN = 10;
@@ -14,15 +16,17 @@ enum MemberRole: int
 
     public function label(): string
     {
-        return match ($this) {
-            self::SUPER_ADMIN => '特権管理者',
-            self::ADMIN => '管理者',
-            self::EDITOR => '編集者',
-            self::AUTHOR => '投稿者',
-            self::CONTRIBUTOR => '寄稿者',
-            self::RECEPTIONIST => '受付',
-            self::GUEST => 'ゲスト',
+        $key = match ($this) {
+            self::SUPER_ADMIN => 'super_admin',
+            self::ADMIN => 'admin',
+            self::EDITOR => 'editor',
+            self::AUTHOR => 'author',
+            self::CONTRIBUTOR => 'contributor',
+            self::RECEPTIONIST => 'receptionist',
+            self::GUEST => 'guest',
         };
+
+        return __("member.roles.{$key}");
     }
 
     public function priority(): int
@@ -35,11 +39,30 @@ enum MemberRole: int
         return $this->priority() >= $requiredRole->priority();
     }
 
+    public function translationKey(): string
+    {
+        return match ($this) {
+            self::SUPER_ADMIN => 'super_admin',
+            self::ADMIN => 'admin',
+            self::EDITOR => 'editor',
+            self::AUTHOR => 'author',
+            self::CONTRIBUTOR => 'contributor',
+            self::RECEPTIONIST => 'receptionist',
+            self::GUEST => 'guest',
+        };
+    }
 
     public static function options(): array
     {
         return collect(self::cases())->mapWithKeys(fn($role) => [
             $role->value => $role->label()
+        ])->toArray();
+    }
+
+    public static function translationOptions(): array
+    {
+        return collect(self::cases())->mapWithKeys(fn($role) => [
+            $role->value => "member.roles.{$role->translationKey()}"
         ])->toArray();
     }
 }

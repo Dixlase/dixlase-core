@@ -63,7 +63,7 @@
 @if($showConfirmation)
     <div class="mt-4">
         <label for="{{ $id }}_confirmation" class="block text-sm font-medium text-gray-700 dark:text-gray-200">
-            {{ __('パスワード（確認）') }}
+            {{ __('admin.settings.members.form.password') }}（{{ __('common.confirm') }}）
         </label>
         <input type="password" name="{{ $name }}_confirmation" id="{{ $id }}_confirmation"
             class="w-full mt-1 p-2 border rounded-lg dark:bg-gray-800 dark:text-white"

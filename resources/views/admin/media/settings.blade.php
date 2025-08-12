@@ -24,7 +24,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <form action="{{ route('admin.media.settings.update') }}" method="POST" class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
         @csrf
         <div class="mb-6">
-            <h2 class="text-lg font-bold mb-2 text-gray-900 dark:text-gray-100">許可するファイルタイプ</h2>
+            <h2 class="text-lg font-bold mb-2 text-gray-900 dark:text-gray-100">{{ __('admin.media.settings.allowed_file_types') }}</h2>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
                 @foreach($fileExtensions as $extension)
                     <label class="flex items-center space-x-2 cursor-pointer bg-gray-100 dark:bg-gray-700 p-2 rounded-lg shadow-sm hover:bg-gray-200 dark:hover:bg-gray-600">
@@ -37,13 +37,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
 
         <div class="mb-6">
-            <h2 class="text-lg font-bold mb-2 text-gray-900 dark:text-gray-100">最大ファイルサイズ</h2>
+            <h2 class="text-lg font-bold mb-2 text-gray-900 dark:text-gray-100">{{ __('admin.media.settings.max_file_size') }}</h2>
             <div class="flex items-center space-x-2">
                 <input type="number" name="max_file_size" value="{{ round($maxFileSize / 1024, 1) }}" 
                        class="form-input w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                        min="1" max="100" step="1" required>
                 <span class="text-gray-600 dark:text-gray-400">MB</span>
-                <span class="text-sm text-gray-500 dark:text-gray-400">(1MB - 100MB)</span>
+                <span class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin.media.settings.file_size_range') }}</span>
             </div>
             @error('max_file_size')
                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -51,7 +51,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
 
         <button type="submit" class="bg-blue-600 dark:bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-400 transition">
-            設定を保存
+            {{ __('admin.media.settings.save_settings') }}
         </button>
     </form>
 @endsection
