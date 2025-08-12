@@ -108,7 +108,9 @@ Route::prefix($adminUrl)->name('admin.')
             // 全体設定
             // 基本設定
             Route::get('/settings/base', [AdminBaseSettingsController::class, 'index'])->name('settings.base');
-            Route::put('/settings/update', [AdminBaseSettingsController::class, 'update'])->name('settings.base.update');
+            Route::put('/settings/base', [AdminBaseSettingsController::class, 'update'])->name('settings.base.update');
+            Route::post('/settings/base/test-mail', [AdminBaseSettingsController::class, 'testMail'])->name('settings.base.test-mail');
+            Route::post('/settings/base/test-connection', [AdminBaseSettingsController::class, 'testConnection'])->name('settings.base.test-connection');
 
             // セキュリティ設定
             Route::get('/settings/security', [AdminSecuritySettingsController::class, 'index'])->name('settings.security');

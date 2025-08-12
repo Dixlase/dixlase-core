@@ -208,6 +208,19 @@ return [
             'mail_password' => 'Password',
             'mail_encryption' => 'Encryption Method',
             'mail_from_address' => 'From Email Address',
+            'mail_test' => 'Mail Send Test',
+            'mail_test_description' => 'Send a test email with the current settings. A test email will be sent to the from email address.',
+            'test_connection_button' => 'Connection Test',
+            'test_mail_button' => 'Send Test Mail',
+            'testing_connection' => 'Connecting...',
+            'testing_mail' => 'Sending...',
+            'mail_test_error' => 'An error occurred during the mail send test.',
+            'test_mail_subject' => 'Mail Send Test',
+            'test_mail_body' => 'This is a mail send test from :app_name.
+
+Your mail settings are working correctly.',
+            'test_mail_success' => 'Test mail has been sent successfully. Please check your inbox.',
+            'test_mail_failed' => 'Mail sending failed: :error',
             'maintenance_settings' => 'Maintenance Mode Settings',
             'maintenance_mode' => 'Maintenance Mode',
             'maintenance_message' => 'Maintenance Display Message',
@@ -362,6 +375,7 @@ return [
 
             ],
             'roles' => [
+                'heading' => 'Permission Settings',
                 'access_roles' => 'Edit Permission (access_roles)',
                 'view_roles' => 'View Permission (view_roles)',
                 'confirm_title' => 'Permission Settings Update Confirmation',
