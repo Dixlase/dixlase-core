@@ -208,6 +208,19 @@ return [
             'mail_password' => 'パスワード',
             'mail_encryption' => '暗号化方式',
             'mail_from_address' => '送信元メールアドレス',
+            'mail_test' => 'メール送信テスト',
+            'mail_test_description' => '現在の設定でテストメールを送信します。送信元メールアドレス宛にテストメールが送信されます。',
+            'test_connection_button' => '接続テスト',
+            'test_mail_button' => 'テストメール送信',
+            'testing_connection' => '接続中...',
+            'testing_mail' => '送信中...',
+            'mail_test_error' => 'メール送信テストでエラーが発生しました。',
+            'test_mail_subject' => 'メール送信テスト',
+            'test_mail_body' => 'これは :app_name からのメール送信テストです。
+
+メール設定が正常に動作しています。',
+            'test_mail_success' => 'テストメールが正常に送信されました。受信トレイをご確認ください。',
+            'test_mail_failed' => 'メール送信に失敗しました: :error',
             'maintenance_settings' => 'メンテナンスモード設定',
             'maintenance_mode' => 'メンテナンスモード',
             'maintenance_message' => 'メンテナンス中の表示メッセージ',
@@ -362,6 +375,7 @@ return [
 
             ],
             'roles' => [
+                'heading' => '権限設定',
                 'access_roles' => '編集権限（access_roles）',
                 'view_roles' => '閲覧権限（view_roles）',
                 'confirm_title' => '権限設定更新の確認',

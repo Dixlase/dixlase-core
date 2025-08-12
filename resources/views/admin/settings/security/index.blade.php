@@ -226,18 +226,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
 
-        <!-- 保存ボタンとモーダル -->
-        <div class="mt-4">
-            @include('components::form.save', [
-                'id' => 'confirmationModal',
-                'onclick' => "openModal('confirmationModal')",
-                'title' => __('admin.settings.security.save_confirmation_title'),
-                'message' => __('admin.settings.security.save_confirmation_message'),
-                'confirm_label' => __('admin.settings.security.save_button'),
-                'cancel_label' => __('admin.settings.security.back_button'),
-                'form' => 'security-settings-form',
-            ])
-        </div>
     </form>
 </div>
 
@@ -258,4 +246,18 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+@endsection
+
+@section('save')
+    <!-- 保存ボタンとモーダル -->
+    @include('components::form.save', [
+        'id' => 'confirmationModal',
+        'label' => __('admin.settings.security.save_button'),
+        'onclick' => "openModal('confirmationModal')",
+        'title' => __('admin.settings.security.save_confirmation_title'),
+        'message' => __('admin.settings.security.save_confirmation_message'),
+        'confirm_label' => __('admin.settings.security.save_button'),
+        'cancel_label' => __('admin.settings.security.back_button'),
+        'form' => 'security-settings-form',
+    ])
 @endsection
