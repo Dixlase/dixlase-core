@@ -23,13 +23,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 
 
-    {{-- プロフィール編集フォーム --}}
+    {{-- {{ __('admin.settings.members.profile.heading') }} --}}
     <form method="POST" action="{{ route('admin.settings.members.profile.update') }}" id="profile-form" class="mb-8">
         @csrf
 
         <!-- 名前 -->
         <div class="mb-4">
-            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300">名前</label>
+            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300">{{ __('admin.settings.members.profile.name') }}</label>
             <input type="text" name="name" value="{{ old('name', $member->name) }}"
                 class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded px-3 py-2">
             @error('name')
@@ -39,7 +39,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- 説明 -->
         <div class="mb-4">
-            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300">説明</label>
+            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300">{{ __('admin.settings.members.profile.description') }}</label>
             <textarea name="description"
                 class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded px-3 py-2"
                 rows="3">{{ old('description', $member->description) }}</textarea>
@@ -50,7 +50,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- メールアドレス -->
         <div class="mb-4">
-            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300">メールアドレス</label>
+            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300">{{ __('admin.settings.members.profile.email') }}</label>
             <input type="email" name="email" value="{{ old('email', $member->email) }}"
                 class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded px-3 py-2">
             @error('email')
@@ -60,7 +60,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- パスワード -->
         <div class="mb-4">
-            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">パスワード(変更する場合のみ)</label>
+            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">{{ __('admin.settings.members.profile.password_change_only') }}</label>
             @include('components.form.password-tools', [
                 'name' => 'password',
                 'id' => 'profile_password',
@@ -80,20 +80,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endphp
 
         <div x-data x-init="$watch('themeStore.theme', value => themeStore.applyTheme())" class="mb-6">
-            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">外観モード</label>
+            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">{{ __('admin.settings.members.profile.appearance_mode') }}</label>
 
             <div class="flex gap-4">
                 <label class="inline-flex items-center">
                     <input type="radio" name="appearance" value="0" x-model="theme" class="form-radio text-indigo-600">
-                    <span class="ml-2">自動</span>
+                    <span class="ml-2">{{ __('admin.settings.members.profile.appearance_auto') }}</span>
                 </label>
                 <label class="inline-flex items-center">
                     <input type="radio" name="appearance" value="1" x-model="theme" class="form-radio text-indigo-600">
-                    <span class="ml-2">ライト</span>
+                    <span class="ml-2">{{ __('admin.settings.members.profile.appearance_light') }}</span>
                 </label>
                 <label class="inline-flex items-center">
                     <input type="radio" name="appearance" value="2" x-model="theme" class="form-radio text-indigo-600">
-                    <span class="ml-2">ダーク</span>
+                    <span class="ml-2">{{ __('admin.settings.members.profile.appearance_dark') }}</span>
                 </label>
             </div>
         </div>
@@ -102,7 +102,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- ログイン通知の設定 -->
         <div class="mb-6">
             <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
-                ログイン通知メールの設定
+                {{ __('admin.settings.members.profile.login_notification_setting') }}
             </label>
 
 
@@ -135,7 +135,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- 2段階認証の設定 -->
         <div class="mb-6">
             <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
-                2段階認証の設定
+                {{ __('admin.settings.members.profile.two_factor_setting') }}
             </label>
 
             @php
@@ -172,10 +172,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('save')
-    <!-- 更新ボタンとモーダル-->
+    <!-- {{ __('admin.settings.members.profile.update_button') }} -->
     @include('components::form.save', [
         'id' => 'confirmationModal',
-        'label' => '更新',
+        'label' => __('admin.settings.members.profile.update_button'),
         'onclick' => "openModal('confirmProfileModal')",
         'title' => __('admin.settings.members.profile.confirm_title'),
         'message' => __('admin.settings.members.profile.confirm_message'),

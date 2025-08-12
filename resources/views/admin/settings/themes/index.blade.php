@@ -23,7 +23,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
     <!-- テーマ一覧 -->
     <div class="max-w-4xl mx-auto mt-12">
-        <h2 class="text-2xl font-bold mb-4">利用可能なテーマ</h2>
+        <h2 class="text-2xl font-bold mb-4">{{ __('admin.settings.themes.index.available_themes') }}</h2>
 
         <!-- デフォルトテーマ -->
         @if ($defaultTheme)
@@ -31,13 +31,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <h3 class="text-lg font-bold mb-2">{{ $defaultTheme->name }} <span class="text-sm text-gray-500">({{ $defaultTheme->version }})</span></h3>
 
                 @if ($defaultTheme->id === $activeThemeId)
-                        <span class="text-green-500 font-semibold">現在使用中</span>
+                        <span class="text-green-500 font-semibold">{{ __('admin.settings.themes.index.currently_active') }}</span>
                 @else
                     <!-- 有効化ボタン -->
                     <form action="{{ route('admin.contents.themes.activate', $defaultTheme->id) }}" method="POST" class="inline-block">
                         @csrf
-                        <button type="submit" onclick="return confirm('このテーマを有効化しますか？')" class="text-white bg-blue-500 hover:bg-blue-600 font-medium rounded-lg text-sm px-4 py-2 mr-2">
-                            有効化
+                        <button type="submit" onclick="return confirm('{{ __('admin.settings.themes.index.activate_confirm') }}')" class="text-white bg-blue-500 hover:bg-blue-600 font-medium rounded-lg text-sm px-4 py-2 mr-2">
+                            {{ __('admin.settings.themes.index.activate_button') }}
                         </button>
                     </form>
                 @endif
@@ -54,20 +54,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
                     @if ($theme->id === $activeThemeId)
-                        <span class="text-green-500 font-semibold">現在使用中</span>
+                        <span class="text-green-500 font-semibold">{{ __('admin.settings.themes.index.currently_active') }}</span>
                     @else
                         <!-- 有効化ボタン -->
                         <form action="{{ route('admin.contents.themes.activate', $theme->id) }}" method="POST" class="inline-block">
                             @csrf
-                            <button type="submit" onclick="return confirm('このテーマを有効化しますか？')" class="text-white bg-blue-500 hover:bg-blue-600 font-medium rounded-lg text-sm px-4 py-2 mr-2">
-                                有効化
+                            <button type="submit" onclick="return confirm('{{ __('admin.settings.themes.index.activate_confirm') }}')" class="text-white bg-blue-500 hover:bg-blue-600 font-medium rounded-lg text-sm px-4 py-2 mr-2">
+                                {{ __('admin.settings.themes.index.activate_button') }}
                             </button>
                         </form>
                         <!-- 削除ボタン -->
                         <form action="{{ route('admin.contents.themes.delete', $theme->slug) }}" method="POST" class="inline-block">
                             @csrf
-                            <button type="submit" onclick="return confirm('本当に削除しますか？')" class="text-white bg-red-500 hover:bg-red-600 font-medium rounded-lg text-sm px-4 py-2">
-                                削除
+                            <button type="submit" onclick="return confirm('{{ __('admin.settings.themes.index.delete_confirm') }}')" class="text-white bg-red-500 hover:bg-red-600 font-medium rounded-lg text-sm px-4 py-2">
+                                {{ __('admin.settings.themes.index.delete_button') }}
                             </button>
                         </form>
                     @endif

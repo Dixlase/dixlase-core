@@ -40,9 +40,11 @@ class AdminBaseSettingsRequest extends FormRequest
      */
     public function rules()
     {
+        $availableLocales = array_keys(config('admin.locale.available', []));
+        
         return [
             'app_name' => 'required|string|max:255',
-            'locale' => 'required|in:ja_JA,en_EN',
+            'locale' => ['required', Rule::in($availableLocales)],
             'timezone' => 'required|timezone',
             'mail_mailer' => ['required', Rule::in(array_keys(trans('mail.mailers')))],
             'mail_host' => 'required|string',

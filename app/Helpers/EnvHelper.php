@@ -11,6 +11,7 @@ class EnvHelper
     protected static array $envMap = [
         'app_name' => 'APP_NAME',
         'locale' => 'APP_LOCALE',
+        'faker_locale' => 'APP_FAKER_LOCALE',
         'timezone' => 'APP_TIMEZONE',
         'system_email' => 'MAIL_FROM_ADDRESS',
         'mail_mailer' => 'MAIL_MAILER',
@@ -19,6 +20,7 @@ class EnvHelper
         'mail_username' => 'MAIL_USERNAME',
         'mail_password' => 'MAIL_PASSWORD',
         'mail_encryption' => 'MAIL_ENCRYPTION',
+        'maintenance_mode' => 'MAINTENANCE_MODE',
     ];
 
     public static function toEnvKey(string $snakeCaseKey): string

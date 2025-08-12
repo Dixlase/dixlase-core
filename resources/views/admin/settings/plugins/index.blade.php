@@ -27,10 +27,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
             <thead>
                 <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
-                    <th class="py-3 px-6 text-left">ID</th>
-                    <th class="py-3 px-6 text-left">プラグイン名</th>
-                    <th class="py-3 px-6 text-center">状態</th>
-                    <th class="py-3 px-6 text-center">操作</th>
+                    <th class="py-3 px-6 text-left">{{ __('admin.settings.plugins.index.table.id') }}</th>
+                    <th class="py-3 px-6 text-left">{{ __('admin.settings.plugins.index.table.name') }}</th>
+                    <th class="py-3 px-6 text-center">{{ __('admin.settings.plugins.index.table.status') }}</th>
+                    <th class="py-3 px-6 text-center">{{ __('admin.settings.plugins.index.table.actions') }}</th>
                 </tr>
             </thead>
             <tbody class="text-gray-700 text-sm font-medium">
@@ -43,7 +43,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 class="inline-block px-3 py-1 rounded-full text-xs font-semibold
                                 {{ $plugin->status === 'enabled' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}"
                             >
-                                {{ $plugin->status === 1 ? '有効' : '無効' }}
+                                {{ $plugin->status === 1 ? __('admin.settings.plugins.index.status.enabled') : __('admin.settings.plugins.index.status.disabled') }}
                             </span>
                         </td>
                         <td class="py-3 px-6 text-center flex justify-center space-x-2">
@@ -54,7 +54,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         type="submit"
                                         class="bg-yellow-500 hover:bg-yellow-600 text-white py-1 px-3 rounded-md text-sm"
                                     >
-                                        無効化
+                                        {{ __('admin.settings.plugins.index.buttons.disable') }}
                                     </button>
                                 </form>
                             @else
@@ -64,7 +64,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         type="submit"
                                         class="bg-green-500 hover:bg-green-600 text-white py-1 px-3 rounded-md text-sm"
                                     >
-                                        有効化
+                                        {{ __('admin.settings.plugins.index.buttons.enable') }}
                                     </button>
                                 </form>
                             @endif
@@ -74,7 +74,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 @csrf
                                 @include('components::form.button', [
                                     'type' => 'button',
-                                    'label' => 'アンインストール',
+                                    'label' => __('admin.settings.plugins.index.buttons.uninstall'),
                                     'class' => 'bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded-md text-sm',
                                     'onclick' => "openModal('uninstallModal-{$plugin->id}')",
                                 ])
@@ -82,14 +82,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 <!-- 確認画面のモーダルを表示 -->
                                 @include('components.form.modal', [
                                     'id' => "uninstallModal-{$plugin->id}",
-                                    'title' => 'アンインストールの確認',
-                                    'message' => "プラグイン [{$plugin->name}] をアンインストールしますか？",
-                                    'confirm_label' => 'アンインストール',
-                                    'cancel_label'  => 'キャンセル',
+                                    'title' => __('admin.settings.plugins.index.uninstall.confirm_title'),
+                                    'message' => str_replace('{name}', $plugin->name, __('admin.settings.plugins.index.uninstall.confirm_message')),
+                                    'confirm_label' => __('admin.settings.plugins.index.uninstall.confirm_button'),
+                                    'cancel_label'  => __('admin.settings.plugins.index.uninstall.cancel_button'),
                                     // チェックボックスを使いたい場合
                                     'checkbox' => true,
                                     'checkbox_name' => 'remove_db_data',
-                                    'checkbox_label' => 'プラグインのインストール時に作成されたデータベースのテーブルを削除する。注意！テーブル削除するとプラグインで作成したデータが失われます！',
+                                    'checkbox_label' => __('admin.settings.plugins.index.uninstall.remove_data_checkbox'),
                                 ])
                             </form>
                         </td>

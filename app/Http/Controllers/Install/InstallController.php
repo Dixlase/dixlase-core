@@ -413,8 +413,8 @@ class InstallController extends Controller
             'APP_ENV' => $data['app_env'],
             'APP_DEBUG' => $data['app_debug'] ? 'true' : 'false',
             'APP_URL' => $appUrl,
-            'APP_LOCALE' => $locale,
-            'FALLBACK_LOCALE' => 'en',
+            //'APP_LOCALE' => $locale,
+            //'APP_FALLBACK_LOCALE' => $locale,
             'APP_TIMEZONE' => $data['app_timezone'] ?? 'Asia/Tokyo',
             'INSTALLED' => 'false', // ✅ ここでは false にする
             'FORCE_SSL' => $data['force_ssl'] ? 'true' : 'false',

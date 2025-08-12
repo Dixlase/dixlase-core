@@ -8,13 +8,37 @@ enum AppearanceMode: int
     case Light = 1;
     case Dark = 2;
 
-
     public function label(): string
     {
-        return match ($this) {
-            self::Auto => '自動（PC設定に従う）',
-            self::Light => 'ライト',
-            self::Dark => 'ダーク',
+        $key = match ($this) {
+            self::Auto => 'auto',
+            self::Light => 'light',
+            self::Dark => 'dark',
         };
+
+        return __("member.appearance.{$key}");
+    }
+
+    public function translationKey(): string
+    {
+        return match ($this) {
+            self::Auto => 'auto',
+            self::Light => 'light',
+            self::Dark => 'dark',
+        };
+    }
+
+    public static function options(): array
+    {
+        return collect(self::cases())->mapWithKeys(fn($mode) => [
+            $mode->value => $mode->label()
+        ])->toArray();
+    }
+
+    public static function translationOptions(): array
+    {
+        return collect(self::cases())->mapWithKeys(fn($mode) => [
+            $mode->value => "member.appearance.{$mode->translationKey()}"
+        ])->toArray();
     }
 }

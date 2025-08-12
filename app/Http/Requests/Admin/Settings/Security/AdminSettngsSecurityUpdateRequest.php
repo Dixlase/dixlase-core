@@ -42,6 +42,12 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
             'allowed_admin_ips' => $this->input('allowed_admin_ips') === '' ? null : $this->input('allowed_admin_ips'),
             'blocked_admin_ips' => $this->input('blocked_admin_ips') === '' ? null : $this->input('blocked_admin_ips'),
             'force_ssl' => filter_var($this->input('force_ssl'), FILTER_VALIDATE_BOOLEAN),
+            // reCAPTCHA settings
+            'captcha_enabled' => filter_var($this->input('captcha_enabled'), FILTER_VALIDATE_BOOLEAN),
+            'captcha_contact_form' => filter_var($this->input('captcha_contact_form'), FILTER_VALIDATE_BOOLEAN),
+            'captcha_registration_form' => filter_var($this->input('captcha_registration_form'), FILTER_VALIDATE_BOOLEAN),
+            'captcha_login_form' => filter_var($this->input('captcha_login_form'), FILTER_VALIDATE_BOOLEAN),
+            'captcha_comment_form' => filter_var($this->input('captcha_comment_form'), FILTER_VALIDATE_BOOLEAN),
         ]);
     }
 
@@ -61,6 +67,17 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
             'enable_blocked_admin_ips' => 'required|boolean',
             'blocked_admin_ips' => 'nullable|string|regex:/^(\d{1,3}\.){3}\d{1,3}(,\s*(\d{1,3}\.){3}\d{1,3})*$/',
             'force_ssl' => 'required|boolean',
+            // reCAPTCHA validation rules
+            'captcha_enabled' => 'required|boolean',
+            'captcha_driver' => 'nullable|string|in:google',
+            'captcha_google_site_key' => 'nullable|string|max:255',
+            'captcha_google_secret_key' => 'nullable|string|max:255',
+            'captcha_google_version' => 'nullable|string|in:v2_checkbox,v2_invisible,v3',
+            'captcha_google_min_score' => 'nullable|numeric|between:0,1',
+            'captcha_contact_form' => 'required|boolean',
+            'captcha_registration_form' => 'required|boolean',
+            'captcha_login_form' => 'required|boolean',
+            'captcha_comment_form' => 'required|boolean',
         ];
     }
 
@@ -72,6 +89,9 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
         return [
             'allowed_admin_ips.regex' => 'IPアドレスはカンマ区切りの形式で入力してください (例: 192.168.1.1, 127.0.0.1)。',
             'blocked_admin_ips.regex' => 'IPアドレスはカンマ区切りの形式で入力してください (例: 192.168.1.1, 127.0.0.1)。',
+            'captcha_google_version.in' => 'reCAPTCHAのバージョンは v2_checkbox, v2_invisible, v3 のいずれかを選択してください。',
+            'captcha_google_min_score.between' => 'reCAPTCHAの最小スコアは0から1の間で入力してください。',
+            'captcha_driver.in' => 'サポートされているCAPTCHAプロバイダーを選択してください。',
         ];
     }
 }

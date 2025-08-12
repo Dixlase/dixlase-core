@@ -39,5 +39,27 @@ return [
     'throttled' => 'Please wait before retrying.',
     'token' => 'This password reset token is invalid.',
     'user' => "We can't find a user with that email address.",
+    'error' => 'Password does not meet requirements',
+    'requirements' => [
+        'password' => 'Password Requirements',
+        'length_full' => ':min characters or more (:recommended characters or more recommended)',
+        'length_simple' => ':min characters or more',
+        'suggestion' => ':length characters or more recommended',
+        'lowercase' => '1 or more lowercase letters',
+        'number' => '1 or more numbers',
+        'symbol_required' => 'Include symbols (!@#$%^&* etc.)',
+        'symbol_optional' => 'Include symbols (!@#$%^&* etc.) for stronger password (recommended)',
+        'uppercase_required' => '1 or more uppercase letters',
+        'uppercase_optional' => 'Include uppercase letters for stronger password (recommended)',
+        'weak' => 'Weak',
+        'normal' => 'Normal',
+        'strong' => 'Strong',
+        'very_strong' => 'Very Strong',
+    ],
+    'tooltip' => [
+        'generate' => 'Generate password',
+        'copy' => 'Copy password',
+        'toggle' => 'Toggle password visibility',
+    ],
 
 ];

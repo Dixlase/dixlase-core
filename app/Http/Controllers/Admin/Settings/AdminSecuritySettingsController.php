@@ -49,6 +49,17 @@ class AdminSecuritySettingsController extends AdminLoggedInController
             'enable_blocked_admin_ips' => SecuritySetting::get('enable_blocked_admin_ips', false),
             'blocked_admin_ips' => SecuritySetting::get('blocked_admin_ips', ''),
             'force_ssl' => SecuritySetting::get('force_ssl', false),
+            // reCAPTCHA settings
+            'captcha_enabled' => SecuritySetting::get('captcha_enabled', false),
+            'captcha_driver' => SecuritySetting::get('captcha_driver', 'google'),
+            'captcha_google_site_key' => SecuritySetting::get('captcha_google_site_key', ''),
+            'captcha_google_secret_key' => SecuritySetting::get('captcha_google_secret_key', ''),
+            'captcha_google_version' => SecuritySetting::get('captcha_google_version', 'v3'),
+            'captcha_google_min_score' => SecuritySetting::get('captcha_google_min_score', '0.5'),
+            'captcha_contact_form' => SecuritySetting::get('captcha_contact_form', true),
+            'captcha_registration_form' => SecuritySetting::get('captcha_registration_form', true),
+            'captcha_login_form' => SecuritySetting::get('captcha_login_form', false),
+            'captcha_comment_form' => SecuritySetting::get('captcha_comment_form', true),
         ];
 
         $this->viewParams['settings'] = $settings;
@@ -67,6 +78,18 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         SecuritySetting::set('allowed_admin_ips', $request->input('allowed_admin_ips'));
         SecuritySetting::set('blocked_admin_ips', $request->input('blocked_admin_ips'));
         SecuritySetting::set('force_ssl', $request->boolean('force_ssl'));
+        
+        // Save reCAPTCHA settings
+        SecuritySetting::set('captcha_enabled', $request->boolean('captcha_enabled'));
+        SecuritySetting::set('captcha_driver', $request->input('captcha_driver', 'google'));
+        SecuritySetting::set('captcha_google_site_key', $request->input('captcha_google_site_key', ''));
+        SecuritySetting::set('captcha_google_secret_key', $request->input('captcha_google_secret_key', ''));
+        SecuritySetting::set('captcha_google_version', $request->input('captcha_google_version', 'v3'));
+        SecuritySetting::set('captcha_google_min_score', $request->input('captcha_google_min_score', '0.5'));
+        SecuritySetting::set('captcha_contact_form', $request->boolean('captcha_contact_form'));
+        SecuritySetting::set('captcha_registration_form', $request->boolean('captcha_registration_form'));
+        SecuritySetting::set('captcha_login_form', $request->boolean('captcha_login_form'));
+        SecuritySetting::set('captcha_comment_form', $request->boolean('captcha_comment_form'));
 
         // 新しい管理画面URLを取得
         $newAdminUrl = $request->input('admin_url', config('security.admin_url'));

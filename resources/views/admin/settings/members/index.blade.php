@@ -22,40 +22,40 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 
-    <h3 class="text-lg font-semibold">管理者検索</h3>
+    <h3 class="text-lg font-semibold">{{ __('admin.settings.members.index.search_title') }}</h3>
 
-    <!-- 検索フォーム -->
+    <!-- {{ __('admin.settings.members.index.search_title') }} -->
     <form action="{{ route('admin.settings.members.index') }}" method="GET" class="mb-6">
         <div class="flex items-center">
             @csrf
             @include('components::form.text', [
                 'name' => 'search',
-                'placeholder' => 'ユーザー名やメールアドレスで検索',
+                'placeholder' => __('admin.settings.members.index.search_placeholder'),
                 'value' => $search,
 
             ])
 
             @include('components::form.button', [
                 'type' => "submit",
-                'label' => '検索',
+                'label' => __('admin.settings.members.index.search_button'),
             ])
 
         </div>
     </form>
 
-    <!-- 管理者一覧 -->
+    <!-- {{ __('admin.settings.members.index.heading') }} -->
     <div class="shadow-md rounded p-6">
 
-        <!-- デスクトップ用テーブル -->
+        <!-- Desktop Table -->
         <div class="hidden md:block overflow-x-auto">
             <table class="w-full text-sm text-left rtl:text-right">
                 <thead class="text-xs uppercase {{ config('admin.appearance_class.table.header') }}">
                     <tr>
-                        <th class="border px-4 py-2">ID</th>
-                        <th class="border px-4 py-2">名前</th>
-                        <th class="border px-4 py-2">メールアドレス</th>
-                        <th class="border px-4 py-2">権限</th>
-                        <th class="border px-4 py-2">操作</th>
+                        <th class="border px-4 py-2">{{ __('admin.settings.members.index.table.id') }}</th>
+                        <th class="border px-4 py-2">{{ __('admin.settings.members.index.table.name') }}</th>
+                        <th class="border px-4 py-2">{{ __('admin.settings.members.index.table.email') }}</th>
+                        <th class="border px-4 py-2">{{ __('admin.settings.members.index.table.role') }}</th>
+                        <th class="border px-4 py-2">{{ __('admin.settings.members.index.table.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -68,7 +68,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <td class="border px-4 py-2">
                                 <a href="{{ route('admin.settings.members.edit', ['member' => $member->id]) }}"
                                     class="{{ config('admin.appearance_class.link') }}">
-                                    編集
+                                    {{ __('admin.settings.members.index.table.edit') }}
                                 </a>
                             </td>
                         </tr>
@@ -77,26 +77,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </table>
         </div>
 
-        <!-- モバイル用カード -->
+        <!-- Mobile Cards -->
         <div class="block md:hidden">
             @foreach ($members as $member)
                 <div class="border rounded-lg p-4 mb-4 shadow">
-                    <p><strong>ID:</strong> {{ $member->id }}</p>
-                    <p><strong>名前:</strong> {{ $member->name }}</p>
-                    <p><strong>メールアドレス:</strong> {{ $member->email }}</p>
+                    <p><strong>{{ __('admin.settings.members.index.table.id') }}:</strong> {{ $member->id }}</p>
+                    <p><strong>{{ __('admin.settings.members.index.table.name') }}:</strong> {{ $member->name }}</p>
+                    <p><strong>{{ __('admin.settings.members.index.table.email') }}:</strong> {{ $member->email }}</p>
 
-                    <p><strong>権限:</strong>{{ ($member->role instanceof \App\Enums\MemberRole ? $member->role : \App\Enums\MemberRole::tryFrom($member->role))?->label() ?? '不明' }}</p>
+                    <p><strong>{{ __('admin.settings.members.index.table.role') }}:</strong>{{ ($member->role instanceof \App\Enums\MemberRole ? $member->role : \App\Enums\MemberRole::tryFrom($member->role))?->label() ?? __('admin.settings.members.index.table.unknown_role') }}</p>
                     <div class="mt-2">
                         <a href="{{ route('admin.settings.members.edit', ['member' => $member->id]) }}"
                             class="text-blue-600 hover:text-blue-800">
-                            編集
+                            {{ __('admin.settings.members.index.table.edit') }}
                         </a>
                     </div>
                 </div>
             @endforeach
         </div>
 
-        <!-- ページネーション -->
+        <!-- Pagination -->
         <div class="mt-4">
             {{ $members->links() }}
         </div>

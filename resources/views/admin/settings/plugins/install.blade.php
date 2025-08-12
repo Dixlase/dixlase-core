@@ -72,16 +72,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             @if(session('installed_plugin_id'))
                 <!-- 有効化フォーム -->
-                <br>プラグインを有効化する場合はから
+                <br>{{ __('admin.settings.plugins.install.enable_plugin_text') }}
                 <form action="{{ route('admin.settings.plugins.enable', session('installed_plugin_id')) }}"
                     method="POST" class="inline-block ml-3">
                     @csrf
                     <button type="submit"
                             class="bg-blue-500 hover:bg-blue-600 text-white py-1 px-2 rounded text-sm">
-                        こちら
+                        {{ __('admin.settings.plugins.install.enable_from_here') }}
                     </button>
                 </form>
-                から有効化してください。
+                {{ __('admin.settings.plugins.install.enable_instruction') }}
             @endif
         </div>
     @endif
@@ -97,7 +97,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @endif
 
     <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
-        <h2 class="text-2xl font-bold mb-6 text-gray-700 dark:text-white">プラグインアップロード</h2>
+        <h2 class="text-2xl font-bold mb-6 text-gray-700 dark:text-white">{{ __('admin.settings.plugins.install.upload_title') }}</h2>
         <!-- Alpine.jsでファイルアップロードを管理 -->
         <form
             action="{{ route('admin.settings.plugins.upload') }}"
@@ -111,7 +111,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <!-- アップロードフィールド -->
             <div class="flex flex-col gap-2">
                 <label for="plugin_file" class="text-gray-600 dark:text-gray-300 font-medium">
-                    ZIPファイルを選択:
+                    {{ __('admin.settings.plugins.install.file_select_label') }}
                 </label>
                 <div
                     class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-blue-500 transition duration-300"
@@ -144,11 +144,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 d="M12 16v4m0 0H8m4 0h4m-4-4a4 4 0 01-4-4 4 4 0 014-4 4 4 0 014 4 4 4 0 01-4 4z"
                             ></path>
                         </svg>
-                        <p class="text-sm text-gray-500 dark:text-gray-400" x-text="fileName || 'ここにファイルをドラッグするか、クリックしてアップロード'"></p>
-                        <p class="text-xs text-gray-400 mt-1">対応形式: <strong>.zip</strong></p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400" x-text="fileName || '{{ __('admin.settings.plugins.install.drag_drop_text') }}'"></p>
+                        <p class="text-xs text-gray-400 mt-1">{{ __('admin.settings.plugins.install.supported_format') }} <strong>.zip</strong></p>
 
                         <!-- アップロード上限表示 -->
-                        <p class="text-xs text-gray-400 mt-1">アップロード可能ファイルサイズ上限:
+                        <p class="text-xs text-gray-400 mt-1">{{ __('admin.settings.plugins.install.upload_limit') }}
                             <strong>{{ $uploadMaxMB }} MB</strong>
                         </p>
                     </div>
@@ -161,7 +161,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     type="submit"
                     class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-300"
                 >
-                    アップロードしてインストール
+                    {{ __('admin.settings.plugins.install.upload_button') }}
                 </button>
             </div>
         </form>

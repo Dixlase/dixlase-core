@@ -99,14 +99,13 @@ class AppServiceProvider extends ServiceProvider
             }
         }
 
-        // それでも未設定ならDB→configの順で決定
+        // それでも未設定なら環境変数→DB→configの順で決定
         if (!$language) {
-            if (Schema::hasTable('base_settings')) {
-                $language = BaseSetting::where('name', 'language')->value('value');
-            }
+            // 環境変数を直接優先
+            $language = env('APP_LOCALE');
         }
         if (!$language) {
-            $language = config('app.locale', 'en');
+            $language = config('app.locale.default', 'en');
         }
         app()->setLocale($language);
 

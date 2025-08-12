@@ -21,17 +21,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('admin::partials.layout')
 
 @section('content')
-<form action="{{ route('admin.settings.base.update') }}" method="POST">
+<form id="base-settings-form" action="{{ route('admin.settings.base.update') }}" method="POST">
     @csrf
     @method('PUT')
 
     <!-- サイト設定 -->
     <div>
-        <h2 class="text-xl font-semibold mb-2">サイト設定</h2>
+        <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.base.site_settings') }}</h2>
         <div>
             @include('components::form.label', [
                 'for' => 'app_name',
-                'text' => 'common.app_name',
+                'text' => __('admin.settings.base.app_name'),
             ])
             @include('components::form.text', [
                 'id' => 'app_name',
@@ -45,7 +45,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="mt-4">
             @include('components::form.label', [
                 'for' => 'locale',
-                'text' => 'common.locale',
+                'text' => __('admin.settings.base.locale'),
             ])
 
             @include('components::form.select', [
@@ -62,7 +62,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="mt-4">
             @include('components::form.label', [
                 'for' => 'timezone',
-                'text' => 'タイムゾーン',
+                'text' => __('admin.settings.base.timezone'),
             ])
             @include('components::form.select', [
                 'id' => 'timezone',
@@ -75,13 +75,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- メールサーバー設定 -->
     <div class="mt-6 border-t pt-6">
-        <h2 class="text-xl font-semibold mb-2">メールサーバー設定</h2>
+        <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.base.mail_server_settings') }}</h2>
 
         <!-- Mailer -->
         <div class="mt-4">
             @include('components::form.label', [
                 'for' => 'mail_mailer',
-                'text' => 'Mailer',
+                'text' => __('admin.settings.base.mailer'),
             ])
             @include('components::form.select', [
                 'id' => 'mail_mailer',
@@ -95,7 +95,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="mt-4">
             @include('components::form.label', [
                 'for' => 'mail_host',
-                'text' => 'ホスト名',
+                'text' => __('admin.settings.base.mail_host'),
             ])
             @include('components::form.text', [
                 'id' => 'mail_host',
@@ -108,7 +108,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="mt-4">
             @include('components::form.label', [
                 'for' => 'mail_port',
-                'text' => 'ポート番号',
+                'text' => __('admin.settings.base.mail_port'),
             ])
             @include('components::form.text', [
                 'id' => 'mail_port',
@@ -121,7 +121,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="mt-4">
             @include('components::form.label', [
                 'for' => 'mail_username',
-                'text' => 'ユーザー名',
+                'text' => __('admin.settings.base.mail_username'),
             ])
             @include('components::form.text', [
                 'id' => 'mail_username',
@@ -134,7 +134,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="mt-4">
             @include('components::form.label', [
                 'for' => 'mail_password',
-                'text' => 'パスワード',
+                'text' => __('admin.settings.base.mail_password'),
             ])
             @include('components::form.text', [
                 'id' => 'mail_password',
@@ -147,7 +147,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="mt-4">
             @include('components::form.label', [
                 'for' => 'mail_encryption',
-                'text' => '暗号化方式',
+                'text' => __('admin.settings.base.mail_encryption'),
             ])
             @include('components::form.select', [
                 'id' => 'mail_encryption',
@@ -161,7 +161,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="mt-4">
             @include('components::form.label', [
                 'for' => 'mail_from_address',
-                'text' => '送信元メールアドレス',
+                'text' => __('admin.settings.base.mail_from_address'),
             ])
             @include('components::form.text', [
                 'id' => 'mail_from_address',
@@ -175,9 +175,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
     <div class="mt-6 border-t pt-6">
-        <h2 class="text-xl font-semibold mb-2">メンテナンスモード設定</h2>
+        <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.base.maintenance_settings') }}</h2>
         @include('components::form.label', [
-            'text' => 'メンテナンスモード',
+            'text' => __('admin.settings.base.maintenance_mode'),
         ])
         @include('components::form.hidden', [
             'id' => 'maintenance_mode',
@@ -187,8 +187,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @include('components::form.radio-group', [
             'name' => 'maintenance_mode',
             'options' => [
-                1 => 'はい',
-                0 => 'いいえ'
+                1 => __('admin.settings.base.yes'),
+                0 => __('admin.settings.base.no')
             ],
             'value' => $settings['maintenance_mode'],
         ])
@@ -198,7 +198,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <div class="mt-6">
         @include('components::form.label', [
             'for' => 'maintenance_message',
-            'text' => 'メンテナンス中の表示メッセージ',
+            'text' => __('admin.settings.base.maintenance_message'),
         ])
         @include('components::form.textarea', [
             'id' => 'maintenance_message',
@@ -206,7 +206,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'value' => old('maintenance_message', $settings['maintenance_message']),
             'rows' => 3,
         ])
-        <p class="text-sm text-gray-500 mt-1">※メンテナンスモード有効時にフロント画面で表示されます。</p>
+        <p class="text-sm text-gray-500 mt-1">{{ __('admin.settings.base.maintenance_message_help') }}</p>
     </div>
 
     <!-- 保存ボタンとモーダル -->
@@ -214,10 +214,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @include('components::form.save', [
             'id' => 'confirmationModal',
             'onclick' => "openModal('confirmationModal')",
-            'title' => '保存の確認',
-            'message' => '変更内容を保存しますか？',
-            'confirm_label' => '保存',
-            'cancel_label' => '戻る',
+            'title' => __('admin.settings.base.save_confirmation_title'),
+            'message' => __('admin.settings.base.save_confirmation_message'),
+            'confirm_label' => __('admin.settings.base.save_button'),
+            'cancel_label' => __('admin.settings.base.cancel_button'),
+            'form' => 'base-settings-form',
         ])
     </div>
 </form>

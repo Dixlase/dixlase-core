@@ -22,12 +22,22 @@
 return [
     'close' => 'Close',
     'logout' => 'Logout',
+    'preview' => 'Preview',
+    'save' => 'Save',
+    'reset' => 'Reset',
+    'submit' => 'Submit',
+    'back' => 'Back',
+    'next' => 'Next',
+    'finish' => 'Finish',
+    'yes' => 'Yes',
+    'no' => 'No',
+    'ok' => 'OK',
+    'cancel' => 'Cancel',
+    'confirm' => 'Confirmation',
     'light' => 'Light',
     'dark' => 'Dark',
     'ja' => 'Japanese',
     'en' => 'English',
-    'save' => 'Save',
-    'cancel' => 'Cancel',
     'edit' => 'Edit',
     'delete' => 'Delete',
     'add' => 'Add',
@@ -37,6 +47,12 @@ return [
     'created_at' => 'Created At',
     'updated_at' => 'Updated At',
     'deleted_at' => 'Deleted At',
+    'form' => [
+        'save_confirmation_title' => 'Save Confirmation',
+        'save_confirmation_message' => 'Do you want to save this content?',
+        'save_button' => 'Save',
+        'cancel_button' => 'Cancel',
+    ],
     'site_name' => 'Site Name',
     'is_member_site' => 'Is Member Site',
     'allow_external_registration' => 'Allow External Registration',
@@ -69,4 +85,28 @@ return [
     'fax' => 'FAX',
     'gender' => 'Gender',
     'birthday' => 'Birthday',
+
+    'password_messages' => [
+        'strength' => [
+            'error' => 'Password does not meet requirements',
+            'normal' => 'Normal strength',
+            'strong' => 'Strong password',
+        ],
+        'tooltip' => [
+            'generate' => 'Generate',
+            'copy' => 'Copy',
+            'toggle' => 'Toggle visibility',
+        ],
+        'copied' => 'Password copied!',
+
+        'requirements' => [
+            'length' => '8 or more characters',
+            'uppercase' => 'Include at least 1 uppercase letter',
+            'lowercase' => 'Include at least 1 lowercase letter',
+            'number' => 'Include at least 1 number',
+            'symbol' => 'Include symbols (!@#$%^&* etc.) for stronger password (optional)',
+        ],
+        'error' => 'Password does not meet requirements. Please enter a password that meets all conditions.',
+
+    ],
 ];
