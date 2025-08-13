@@ -104,7 +104,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 更新ボタンとモーダル-->
     @include('components::form.save', [
         'id' => 'confirmationModal',
-        'label' => '更新',
+        'label' => __('admin.settings.members.roles.confirm_label'),
         'onclick' => "openModal('confirmationModal')",
         'title' => __('admin.settings.members.roles.confirm_title'),
         'message' => __('admin.settings.members.roles.confirm_message'),

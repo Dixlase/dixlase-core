@@ -6,6 +6,8 @@ use App\Http\Controllers\Admin\AdminLoggedInController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 
 class AdminSystemsController extends AdminLoggedInController
 {
@@ -67,7 +69,7 @@ class AdminSystemsController extends AdminLoggedInController
 
         $info = [
             'software' => [
-                'name' => config('app.name', 'MyCMS'),
+                'name' => config('app.name', 'Dixlase'),
                 'version' => config('app.cms_version', '1.0.0'), // 独自CMSバージョン
             ],
             'Laravel' => [
@@ -113,5 +115,84 @@ class AdminSystemsController extends AdminLoggedInController
         $this->viewParams['info'] = $info;
 
         return view('admin::settings.systems.info', $this->viewParams);
+    }
+
+    // キャッシュ管理画面
+    public function cache()
+    {
+        $cacheInfo = [
+            'config' => [
+                'name' => __('admin.settings.systems.cache.config_cache.name'),
+                'description' => __('admin.settings.systems.cache.config_cache.description'),
+                'command' => 'config:clear'
+            ],
+            'route' => [
+                'name' => __('admin.settings.systems.cache.route_cache.name'),
+                'description' => __('admin.settings.systems.cache.route_cache.description'),
+                'command' => 'route:clear'
+            ],
+            'view' => [
+                'name' => __('admin.settings.systems.cache.view_cache.name'),
+                'description' => __('admin.settings.systems.cache.view_cache.description'),
+                'command' => 'view:clear'
+            ],
+            'application' => [
+                'name' => __('admin.settings.systems.cache.application_cache.name'),
+                'description' => __('admin.settings.systems.cache.application_cache.description'),
+                'command' => 'cache:clear'
+            ]
+        ];
+
+        $this->viewParams['cacheInfo'] = $cacheInfo;
+        
+        return view('admin::settings.systems.cache', $this->viewParams);
+    }
+
+    // 個別キャッシュクリア
+    public function clearCache(Request $request)
+    {
+        $type = $request->input('type');
+        $message = '';
+        $success = true;
+
+        try {
+            switch ($type) {
+                case 'config':
+                    Artisan::call('config:clear');
+                    $message = __('admin.settings.systems.cache.success_config');
+                    break;
+                case 'route':
+                    Artisan::call('route:clear');
+                    $message = __('admin.settings.systems.cache.success_route');
+                    break;
+                case 'view':
+                    Artisan::call('view:clear');
+                    $message = __('admin.settings.systems.cache.success_view');
+                    break;
+                case 'application':
+                    Artisan::call('cache:clear');
+                    $message = __('admin.settings.systems.cache.success_application');
+                    break;
+                case 'all':
+                    Artisan::call('config:clear');
+                    Artisan::call('route:clear');
+                    Artisan::call('view:clear');
+                    Artisan::call('cache:clear');
+                    $message = __('admin.settings.systems.cache.success_all');
+                    break;
+                default:
+                    $success = false;
+                    $message = __('admin.settings.systems.cache.error_invalid_type');
+            }
+        } catch (\Exception $e) {
+            $success = false;
+            $message = __('admin.settings.systems.cache.error_general', ['error' => $e->getMessage()]);
+        }
+
+        if ($success) {
+            return redirect()->route('admin.settings.systems.cache')->with('success', $message);
+        } else {
+            return redirect()->route('admin.settings.systems.cache')->with('error', $message);
+        }
     }
 }

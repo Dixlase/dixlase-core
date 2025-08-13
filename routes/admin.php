@@ -156,6 +156,9 @@ Route::prefix($adminUrl)->name('admin.')
             Route::post('/settings/plugins/disable/{id}', [AdminPluginsSettingsController::class, 'disable'])->name('settings.plugins.disable');
             Route::post('/settings/plugins/uninstall/{id}', [AdminPluginsSettingsController::class, 'uninstall'])->name('settings.plugins.uninstall');
 
+            //キャッシュ管理
+            Route::get('/settings/systems/cache', [AdminSystemsController::class, 'cache'])->name('settings.systems.cache');
+            Route::post('/settings/systems/cache/clear', [AdminSystemsController::class, 'clearCache'])->name('settings.systems.cache.clear');
             //ログ情報
             Route::get('/settings/system/logs/{type?}', [AdminSystemsController::class, 'logs'])->name('settings.systems.logs');
             //システム情報
