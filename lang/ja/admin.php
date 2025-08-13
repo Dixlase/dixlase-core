@@ -33,6 +33,37 @@ return [
     |
     */
 
+    'login' => [
+        'title' => '管理画面ログイン',
+        'header' => '管理画面ログイン',
+        'description' => '管理画面にアクセスするにはログインしてください。',
+        'email' => 'メールアドレス',
+        'password' => 'パスワード',
+        'remember_me' => 'ログイン状態を保持する',
+        'forgot_password' => 'パスワードをお忘れですか？',
+        'login_button' => 'ログイン',
+    ],
+
+    'auth' => [
+        'forgot_password' => [
+            'title' => 'パスワードリセット',
+            'header' => 'パスワードリセット',
+            'description' => 'パスワードをお忘れですか？<br>メールアドレスを入力してください。<br>パスワードリセット用のリンクをお送りします。',
+            'email' => 'メールアドレス',
+            'send_reset_link' => 'パスワードリセットリンクを送信',
+            'back_to_login' => 'ログイン画面に戻る',
+        ],
+        'reset_password' => [
+            'title' => '新しいパスワードの設定',
+            'header' => '新しいパスワードの設定',
+            'description' => '新しいパスワードを設定してください。',
+            'email' => 'メールアドレス',
+            'password' => '新しいパスワード',
+            'password_confirmation' => 'パスワード確認',
+            'reset_password_button' => 'パスワードをリセット',
+        ],
+    ],
+
     'common' => [
         'search' => '検索',
         'submit' => '更新',
@@ -377,6 +408,13 @@ return [
                 'login_notification_global_setting' => 'ログイン通知メールの全体設定',
                 'two_factor_methods_label' => '利用可能な二段階認証の方法',
                 'two_factor_methods_help' => 'ユーザーが利用できる二段階認証の方法を選択してください。最低1つは有効にする必要があります。',
+                'password_reset_settings' => 'パスワードリセット機能設定',
+                'password_reset_enabled' => 'ログイン画面でのパスワードリセット機能',
+                'password_reset_enabled_options' => [
+                    'enabled' => '有効',
+                    'disabled' => '無効',
+                ],
+                'password_reset_help' => '無効にした場合、管理画面のログイン画面でパスワードリセットリンクが非表示になり、パスワードリセット機能が利用できなくなります。<br>無効時にパスワードをリセットする場合は、管理画面のメンバー編集画面から行ってください。',
                 'update_button' => '更新',
 
             ],

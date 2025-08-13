@@ -22,11 +22,16 @@ class MembersSettingsSeeder extends Seeder
             ['key' => 'password_require_uppercase', 'value' => '1'], // デフォルト: 大文字を含める
             ['key' => 'password_require_symbol', 'value' => '0'], // デフォルト: 記号は含めない
 
+            // パスワードリセット機能設定
+            ['key' => 'password_reset_enabled', 'value' => '1'], // デフォルト: 有効
+
             // ログイン通知設定
             ['key' => 'login_notification_mode', 'value' => '0'], // 0 = UseProfileSetting（プロファイルに任せる）
 
             // 二段階認証設定
             ['key' => 'force_2fa', 'value' => '0'], // 0 = UseProfileSetting（プロファイルに任せる）
+            ['key' => 'enabled_two_factor_methods', 'value' => '["email"]'], // デフォルト: メール認証のみ有効
+
         ];
 
         foreach ($settings as $setting) {

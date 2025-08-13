@@ -70,6 +70,12 @@ Route::prefix($adminUrl)->name('admin.')
         Route::post('/two-factor-challenge', [AdminLoginController::class, 'confirmTwoFactor'])->name('two-factor.confirm');
         Route::post('/two-factor-resend', [AdminLoginController::class, 'resendTwoFactorCode'])->name('two-factor.resend');
 
+        // パスワードリセット
+        Route::get('/forgot-password', [AdminPasswordResetLinkController::class, 'create'])->name('password.request');
+        Route::post('/forgot-password', [AdminPasswordResetLinkController::class, 'store'])->name('password.email');
+        Route::get('/reset-password/{token}', [AdminNewPasswordController::class, 'create'])->name('password.reset');
+        Route::post('/reset-password', [AdminNewPasswordController::class, 'store'])->name('password.store');
+
 
         // 認証済みルート
         Route::middleware([

@@ -108,9 +108,9 @@ return [
     'passwords' => [
         'members' => [
             'provider' => 'members',
-            'table' => 'members_user_password_reset_tokens',
+            'table' => 'members_password_reset_tokens',
             'expire' => 60,
-            'throttle' => 60,
+            'throttle' => env('APP_ENV') === 'local' ? 0 : env('PASSWORD_RESET_THROTTLE', 60),
         ],
     ],
 

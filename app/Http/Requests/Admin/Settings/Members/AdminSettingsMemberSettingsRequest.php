@@ -4,6 +4,10 @@ namespace App\Http\Requests\Admin\Settings\Members;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rules\Enum;
+use App\Enums\LoginNotificationMode;
+use App\Enums\TwoFactorMode;
+use App\Enums\TwoFactorMethod;
 
 class AdminSettingsMemberSettingsRequest extends FormRequest
 {
@@ -30,6 +34,7 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
             'force_2fa' => ['required', new Enum(TwoFactorMode::class)],
             'two_factor_methods' => 'required|array|min:1',
             'two_factor_methods.*' => 'in:' . implode(',', array_column(TwoFactorMethod::cases(), 'value')),
+            'password_reset_enabled' => 'required|boolean',
         ];
     }
 }

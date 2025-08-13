@@ -420,6 +420,8 @@ class AdminMembersSettingsController extends AdminLoggedInController
             true
         );
 
+        // パスワードリセット機能設定
+        $passwordResetEnabled = (bool) MemberSetting::getValue('password_reset_enabled', true);
 
         // ビューに渡すデータをセット
         $this->viewParams['passwordMinLength'] = $passwordMinLength;
@@ -430,6 +432,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['force2fa'] = $force2fa;
         $this->viewParams['twoFactorOptions'] = $twoFactorOptions;
         $this->viewParams['enabledTwoFactorMethods'] = $enabledTwoFactorMethods;
+        $this->viewParams['passwordResetEnabled'] = $passwordResetEnabled;
 
         return view('admin.settings.members.settings', $this->viewParams);
     }
@@ -445,6 +448,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         MemberSetting::setValue('password_require_symbol', (int) $validated['password_require_symbol']);
         MemberSetting::setValue('login_notification_mode', (int) $validated['login_notification_mode']);
         MemberSetting::setValue('force_2fa', (int) $validated['force_2fa']);
+        MemberSetting::setValue('password_reset_enabled', (bool) $validated['password_reset_enabled']);
 
         // 有効な二段階認証方法を保存
     $enabledMethods = $request->input('two_factor_methods', []);

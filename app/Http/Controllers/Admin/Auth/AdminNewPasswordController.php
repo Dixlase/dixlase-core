@@ -27,7 +27,8 @@ use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use App\Facades\Password;
+use Illuminate\Support\Facades\Password;
+use App\Models\MemberSetting;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
@@ -39,6 +40,12 @@ class AdminNewPasswordController extends Controller
      */
     public function create(Request $request): View
     {
+        // パスワードリセット機能が無効の場合は404を返す
+        $passwordResetEnabled = (bool) MemberSetting::getValue('password_reset_enabled', true);
+        if (!$passwordResetEnabled) {
+            abort(404);
+        }
+
         return view('admin.auth.reset-password', ['request' => $request]);
     }
 
@@ -58,7 +65,7 @@ class AdminNewPasswordController extends Controller
         // Here we will attempt to reset the user's password. If it is successful we
         // will update the password on an actual user model and persist it to the
         // database. Otherwise we will parse the error and return the response.
-        $status = Password::broker('member')->reset(
+        $status = Password::broker('members')->reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user) use ($request) {
                 $user->forceFill([

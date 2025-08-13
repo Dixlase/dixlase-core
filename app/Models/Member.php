@@ -83,4 +83,16 @@ class Member extends Authenticatable
     {
         return $this->hasMany(TrustedDevice::class);
     }
+
+    /**
+     * Send the password reset notification.
+     *
+     * @param  string  $token
+     * @return void
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        // カスタムパスワードリセット通知を作成
+        $this->notify(new \App\Notifications\AdminResetPasswordNotification($token));
+    }
 }

@@ -29,6 +29,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Member;
+use App\Models\MemberSetting;
 use Illuminate\Support\Facades\Hash;
 use App\Services\MembersTwoFactorService;
 use App\Services\MembersLoginNotificationService;
@@ -53,6 +54,9 @@ class AdminLoginController extends AdminController
         if ($member) {
             return redirect()->route('admin.dashboard');
         }
+
+        // パスワードリセット機能の有効/無効設定を取得
+        $this->viewParams['passwordResetEnabled'] = (bool) MemberSetting::getValue('password_reset_enabled', true);
 
         return view('admin::login', $this->viewParams);
     }
