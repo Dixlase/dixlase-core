@@ -162,6 +162,11 @@ return [
                     'text' => 'admin.nav.settings.systems.text',
                     'icon' => 'fas fa-fw fa-server',
                     'children' => [
+                        'cache' => [
+                            'text' => 'admin.nav.settings.systems.cache',
+                            'route' => 'admin.settings.systems.cache',
+                            'icon' => 'fas fa-fw fa-trash-alt',
+                        ],
                         'logs' => [
                             'text' => 'admin.nav.settings.systems.logs',
                             'route' => 'admin.settings.systems.logs',

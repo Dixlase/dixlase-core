@@ -40,6 +40,7 @@ return [
         'roles' => 'ロール',
         'permissions' => '権限',
         'logout' => 'ログアウト',
+        'cancel' => 'キャンセル',
         'required' => ':attribute は必須です。',
         'email' => ':attribute は正しいメールアドレス形式で入力してください。',
         'unique' => ':attribute は既に存在しています。',
@@ -112,6 +113,7 @@ return [
             ],
             'systems' => [
                 'text' => 'システム',
+                'cache' => 'キャッシュ管理',
                 'logs' => 'ログ',
                 'info'  => 'システム情報',
             ],
@@ -499,6 +501,46 @@ return [
 
         //システム情報
         'systems' => [
+            'cache' => [
+                'heading' => 'キャッシュ管理',
+                'description' => 'アプリケーションの各種キャッシュをクリアできます',
+                'config_cache' => [
+                    'name' => '設定キャッシュ',
+                    'description' => 'アプリケーションの設定ファイルのキャッシュをクリアします',
+                ],
+                'route_cache' => [
+                    'name' => 'ルートキャッシュ',
+                    'description' => 'ルーティング情報のキャッシュをクリアします',
+                ],
+                'view_cache' => [
+                    'name' => 'ビューキャッシュ',
+                    'description' => 'コンパイル済みビューファイルのキャッシュをクリアします',
+                ],
+                'application_cache' => [
+                    'name' => 'アプリケーションキャッシュ',
+                    'description' => 'アプリケーションで使用されるキャッシュデータをクリアします',
+                ],
+                'clear_button' => 'クリア',
+                'clear_confirm' => ':nameをクリアしますか？',
+                'clear_all_title' => '一括キャッシュクリア',
+                'clear_all_description' => '全てのキャッシュ（設定、ルート、ビュー、アプリケーション）を一度にクリアします。',
+                'clear_all_warning' => 'この操作により、一時的にアプリケーションの動作が遅くなる場合があります。',
+                'clear_all_button' => '全てのキャッシュをクリア',
+                'clear_all_confirm' => '全てのキャッシュをクリアしますか？この操作により一時的にパフォーマンスが低下する可能性があります。',
+                'info_title' => 'キャッシュについて',
+                'info_config' => 'アプリケーションの設定ファイルをキャッシュして高速化します',
+                'info_route' => 'ルーティング情報をキャッシュして高速化します',
+                'info_view' => 'Bladeテンプレートをコンパイル済みPHPファイルとしてキャッシュします',
+                'info_application' => 'アプリケーション内で使用される各種データのキャッシュです',
+                'success_config' => '設定キャッシュをクリアしました',
+                'success_route' => 'ルートキャッシュをクリアしました',
+                'success_view' => 'ビューキャッシュをクリアしました',
+                'success_application' => 'アプリケーションキャッシュをクリアしました',
+                'success_all' => '全てのキャッシュをクリアしました',
+                'error_invalid_type' => '無効なキャッシュタイプです',
+                'error_general' => 'キャッシュクリア中にエラーが発生しました: :error',
+                'warning' => '注意：',
+            ],
             'logs' => [
                 'heading' => 'ログ情報',
                 'log_type_label' => 'ログ種別：',

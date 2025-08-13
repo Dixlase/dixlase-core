@@ -40,6 +40,7 @@ return [
         'roles' => 'Roles',
         'permissions' => 'Permissions',
         'logout' => 'Logout',
+        'cancel' => 'Cancel',
         'required' => 'The :attribute field is required.',
         'email' => 'The :attribute must be a valid email address.',
         'unique' => 'The :attribute has already been taken.',
@@ -112,6 +113,7 @@ return [
             ],
             'systems' => [
                 'text' => 'System',
+                'cache' => 'Cache',
                 'logs' => 'Logs',
                 'info'  => 'System Information',
             ],
@@ -499,6 +501,46 @@ Your mail settings are working correctly.',
 
         // System Information
         'systems' => [
+            'cache' => [
+                'heading' => 'Cache Management',
+                'description' => 'Clear various application caches',
+                'config_cache' => [
+                    'name' => 'Configuration Cache',
+                    'description' => 'Clear cached application configuration files',
+                ],
+                'route_cache' => [
+                    'name' => 'Route Cache',
+                    'description' => 'Clear cached routing information',
+                ],
+                'view_cache' => [
+                    'name' => 'View Cache',
+                    'description' => 'Clear compiled view files cache',
+                ],
+                'application_cache' => [
+                    'name' => 'Application Cache',
+                    'description' => 'Clear application cache data',
+                ],
+                'clear_button' => 'Clear',
+                'clear_confirm' => 'Clear :name?',
+                'clear_all_title' => 'Clear All Caches',
+                'clear_all_description' => 'Clear all caches (configuration, route, view, application) at once.',
+                'clear_all_warning' => 'This operation may temporarily slow down the application.',
+                'clear_all_button' => 'Clear All Caches',
+                'clear_all_confirm' => 'Clear all caches? This operation may temporarily reduce performance.',
+                'info_title' => 'About Caches',
+                'info_config' => 'Cache application configuration files for faster performance',
+                'info_route' => 'Cache routing information for faster performance',
+                'info_view' => 'Cache compiled Blade templates as PHP files',
+                'info_application' => 'Cache various data used within the application',
+                'success_config' => 'Configuration cache cleared',
+                'success_route' => 'Route cache cleared',
+                'success_view' => 'View cache cleared',
+                'success_application' => 'Application cache cleared',
+                'success_all' => 'All caches cleared',
+                'error_invalid_type' => 'Invalid cache type',
+                'error_general' => 'Error occurred while clearing cache: :error',
+                'warning' => 'Warning:',
+            ],
             'logs' => [
                 'heading' => 'Log Information',
                 'log_type_label' => 'Log Type:',
