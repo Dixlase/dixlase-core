@@ -21,7 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('admin::partials.layout')
 
 @section('content')
-    <form action="{{ route('admin.media.settings.update') }}" method="POST" class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+    <form id="media-settings-form" action="{{ route('admin.media.settings.update') }}" method="POST">
         @csrf
         <div class="mb-6">
             <h2 class="text-lg font-bold mb-2 text-gray-900 dark:text-gray-100">{{ __('admin.media.settings.allowed_file_types') }}</h2>
@@ -50,8 +50,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @enderror
         </div>
 
-        <button type="submit" class="bg-blue-600 dark:bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-400 transition">
-            {{ __('admin.media.settings.save_settings') }}
-        </button>
     </form>
+@endsection
+
+@section('save')
+    <!-- 保存ボタンとモーダル -->
+    @include('components::form.save', [
+        'id' => 'confirmationModal',
+        'label' => __('admin.media.settings.save_settings'),
+        'onclick' => "openModal('confirmationModal')",
+        'title' => __('admin.media.settings.save_confirmation_title'),
+        'message' => __('admin.media.settings.save_confirmation_message'),
+        'confirm_label' => __('admin.media.settings.save_button'),
+        'cancel_label' => __('admin.media.settings.cancel_button'),
+        'form' => 'media-settings-form',
+    ])
 @endsection

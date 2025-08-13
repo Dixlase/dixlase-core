@@ -183,7 +183,11 @@ return [
             'allowed_file_types' => '許可するファイルタイプ',
             'max_file_size' => '最大ファイルサイズ',
             'file_size_range' => '(1MB - 100MB)',
-            'save_settings' => '設定を保存',
+            'save_settings' => '保存',
+            'save_confirmation_title' => 'メディア設定保存の確認',
+            'save_confirmation_message' => 'メディア設定を保存しますか？',
+            'save_button' => '保存',
+            'cancel_button' => 'キャンセル',
         ],
 
     ],
