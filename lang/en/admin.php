@@ -33,6 +33,37 @@ return [
     |
     */
 
+    'login' => [
+        'title' => 'Admin Login',
+        'header' => 'Admin Login',
+        'description' => 'Please log in to access the admin panel.',
+        'email' => 'Email',
+        'password' => 'Password',
+        'remember_me' => 'Remember me',
+        'forgot_password' => 'Forgot your password?',
+        'login_button' => 'Log in',
+    ],
+
+    'auth' => [
+        'forgot_password' => [
+            'title' => 'Password Reset',
+            'header' => 'Password Reset',
+            'description' => 'Forgot your password? Enter your email address and we will send you a password reset link.',
+            'email' => 'Email',
+            'send_reset_link' => 'Send Password Reset Link',
+            'back_to_login' => 'Back to Login',
+        ],
+        'reset_password' => [
+            'title' => 'Set New Password',
+            'header' => 'Set New Password',
+            'description' => 'Please set your new password.',
+            'email' => 'Email',
+            'password' => 'New Password',
+            'password_confirmation' => 'Confirm Password',
+            'reset_password_button' => 'Reset Password',
+        ],
+    ],
+
     'common' => [
         'search' => 'Search',
         'submit' => 'Update',
@@ -377,6 +408,13 @@ Your mail settings are working correctly.',
                 'login_notification_global_setting' => 'Global Login Notification Email Settings',
                 'two_factor_methods_label' => 'Available Two-Factor Authentication Methods',
                 'two_factor_methods_help' => 'Select the two-factor authentication methods that users can use. At least one must be enabled.',
+                'password_reset_settings' => 'Password Reset Function Settings',
+                'password_reset_enabled' => 'Password Reset Function',
+                'password_reset_enabled_options' => [
+                    'enabled' => 'Enabled',
+                    'disabled' => 'Disabled',
+                ],
+                'password_reset_help' => 'When disabled, the password reset link will be hidden on the admin login screen and the password reset function will not be available. To reset passwords when disabled, please use the member edit screen in the admin panel.',
                 'update_button' => 'Update',
 
             ],

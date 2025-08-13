@@ -85,8 +85,9 @@ class CheckInstallationReady
             throw $e;
         }
 
-        // インストール状態チェック
-        if (env('INSTALLED') !== true) {
+        // インストール状態チェック（.envの設定を優先）
+        $installed = env('INSTALLED') ?? config('app.installed');
+        if ($installed !== true) {
             // インストール関連のルート以外はインデックスにリダイレクト
             if (!$request->is('install*') && !$request->is('install/*')) {
                 return redirect()->route('install.index');

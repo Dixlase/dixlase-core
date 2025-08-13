@@ -11,9 +11,9 @@ enum TwoFactorMethod: string
     public function label(): string
     {
         return match($this) {
-            self::EMAIL => 'メール認証',
-            self::DEVICE => 'デバイス認証',
-            self::BIOMETRIC => '生体認証',
+            self::EMAIL => __('admin.settings.members.two_factor_method.options.email'),
+            self::DEVICE => __('admin.settings.members.two_factor_method.options.device'),
+            self::BIOMETRIC => __('admin.settings.members.two_factor_method.options.biometric'),
         };
     }
     

@@ -25,7 +25,8 @@ namespace App\Http\Controllers\Admin\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use App\Facades\Password;
+use Illuminate\Support\Facades\Password;
+use App\Models\MemberSetting;
 use Illuminate\View\View;
 
 class AdminPasswordResetLinkController extends Controller
@@ -35,6 +36,12 @@ class AdminPasswordResetLinkController extends Controller
      */
     public function create(): View
     {
+        // パスワードリセット機能が無効の場合は404を返す
+        $passwordResetEnabled = (bool) MemberSetting::getValue('password_reset_enabled', true);
+        if (!$passwordResetEnabled) {
+            abort(404);
+        }
+
         return view('admin.auth.forgot-password');
     }
 
@@ -45,6 +52,12 @@ class AdminPasswordResetLinkController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        // パスワードリセット機能が無効の場合は404を返す
+        $passwordResetEnabled = (bool) MemberSetting::getValue('password_reset_enabled', true);
+        if (!$passwordResetEnabled) {
+            abort(404);
+        }
+
         $request->validate([
             'email' => ['required', 'email'],
         ]);

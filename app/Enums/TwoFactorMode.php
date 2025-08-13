@@ -12,11 +12,20 @@ enum TwoFactorMode: int
     public function label(): string
     {
         return match ($this) {
-            self::UseProfileSetting => 'メンバーのプロフィール設定を反映',
-            self::Disabled => '無効',
-            self::Always => '常に有効',
-            self::OnlyNewDevice => '異なる端末・IPのみ有効',
+            self::UseProfileSetting => __('admin.settings.members.two_factor_mode.options.0'),
+            self::Disabled => __('admin.settings.members.two_factor_mode.options.1'),
+            self::Always => __('admin.settings.members.two_factor_mode.options.2'),
+            self::OnlyNewDevice => __('admin.settings.members.two_factor_mode.options.3'),
         };
+    }
+
+    public static function options(): array
+    {
+        $options = [];
+        foreach (self::cases() as $case) {
+            $options[$case->value] = $case->label();
+        }
+        return $options;
     }
 
     public static function forProfile(): array

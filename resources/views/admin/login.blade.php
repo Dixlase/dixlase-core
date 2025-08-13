@@ -19,9 +19,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @extends('admin::partials.layout-auth')
-@section('title', '管理画面ログイン')
-@section('header', '管理画面ログイン')
-@section('description', '管理画面にアクセスするにはログインしてください。')
+@section('title', __('admin.login.title'))
+@section('header', __('admin.login.header'))
+@section('description', __('admin.login.description'))
 
 @section('content')
     <form method="POST" action="{{ route('admin.login') }}">
@@ -29,7 +29,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- メールアドレス -->
         <div>
-            <label for="email" class="block font-medium text-sm text-gray-700">Email</label>
+            <label for="email" class="block font-medium text-sm text-gray-700">{{ __('admin.login.email') }}</label>
             <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username"
                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
             @error('email')
@@ -39,7 +39,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- パスワード -->
         <div class="mt-4">
-            <label for="password" class="block font-medium text-sm text-gray-700">Password</label>
+            <label for="password" class="block font-medium text-sm text-gray-700">{{ __('admin.login.password') }}</label>
             <input id="password" type="password" name="password" required autocomplete="current-password"
                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
             @error('password')
@@ -51,21 +51,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="block mt-4">
             <label for="remember_me" class="flex items-center">
                 <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ml-2 text-sm text-gray-600">Remember me</span>
+                <span class="ml-2 text-sm text-gray-600">{{ __('admin.login.remember_me') }}</span>
             </label>
         </div>
 
         <!-- ボタンとパスワードリセットリンク -->
         <div class="flex items-center justify-between mt-4">
-            @if (Route::has('admin.password.request'))
+            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                {{ __('admin.login.login_button') }}
+            </button>
+
+
+            @if (Route::has('admin.password.request') && ($passwordResetEnabled ?? true))
                 <a class="text-sm text-indigo-600 hover:underline" href="{{ route('admin.password.request') }}">
-                    Forgot your password?
+                    {{ __('admin.login.forgot_password') }}
                 </a>
             @endif
-
-            <button type="submit" class="ml-3 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                Log in
-            </button>
         </div>
     </form>
 @endsection

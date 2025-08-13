@@ -60,8 +60,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
 
-
-
         //セキュリティ設定でSSLを矯正しているかどうかを判定
         //security_settingsテーブルのforce_sslの値を取得
         //テーブルが存在しているか確認
@@ -101,11 +99,13 @@ class AppServiceProvider extends ServiceProvider
 
         // それでも未設定なら環境変数→DB→configの順で決定
         if (!$language) {
-            // 環境変数を直接優先
-            $language = env('APP_LOCALE');
-        }
-        if (!$language) {
-            $language = config('app.locale.default', 'en');
+            // 環境変数を直接優先（.envの設定を最優先）
+            $language = env('APP_LOCALE') ?? config('app.locale', 'en');
+            
+            // 有効なロケールかチェック
+            if (!in_array($language, $availableLocales)) {
+                $language = 'en'; // デフォルトにフォールバック
+            }
         }
         app()->setLocale($language);
 

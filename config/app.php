@@ -181,4 +181,16 @@ return [
         'email_code_expire' => env('TWO_FACTOR_EMAIL_EXPIRE', 5), // 分
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Installation Status
+    |--------------------------------------------------------------------------
+    |
+    | This value determines whether the application has been installed.
+    | When cached, this ensures the INSTALLED status is properly recognized.
+    |
+    */
+
+    'installed' => env('INSTALLED', false),
+
 ];
