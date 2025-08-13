@@ -28,14 +28,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
     <form method="POST" action="{{ route('admin.password.email') }}">
         @csrf
-
-        <!-- Session Status -->
-        @if (session('status'))
-            <div class="mb-4 font-medium text-sm text-green-600">
-                {{ session('status') }}
-            </div>
-        @endif
-
+        
         <!-- Email Address -->
         <div>
             <label for="email" class="block font-medium text-sm text-gray-700">{{ __('admin.auth.forgot_password.email') }}</label>

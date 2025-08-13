@@ -5,12 +5,13 @@ namespace App\Services;
 use App\Models\Member;
 use App\Models\MemberSetting;
 use App\Mail\MembersLoginNotificationMail;
+use App\Notifications\AdminLoginNotification;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use App\Enums\LoginNotificationModeGlobal;
 use App\Enums\LoginNotificationMode;
 
-class MembersLoginNotificationService
+class AdminLoginNotificationService
 {
     public function handle(Member $member, Request $request): void
     {
@@ -23,13 +24,30 @@ class MembersLoginNotificationService
         $member->last_login_at = $now;
         $member->save();
 
+        // Prepare login details for notification
+        $loginDetails = [
+            'datetime' => $now->format('Y-m-d H:i:s'),
+            'ip' => $ip,
+            'user_agent' => $ua,
+        ];
+
+        // Send user notification if conditions are met
         if ($this->shouldSend($member, $ip, $ua)) {
-            Mail::to($member->email)->send(new MembersLoginNotificationMail($member, $ip, $ua, $now, false));
+            $member->notify(new AdminLoginNotification($loginDetails, false));
         }
 
+        // Send system notification if enabled
         if (MemberSetting::getValue('send_login_notice_to_system') === '1') {
             $adminEmail = MemberSetting::getValue('system_login_notice_email') ?? config('mail.from.address');
-            Mail::to($adminEmail)->send(new MembersLoginNotificationMail($member, $ip, $ua, $now, true));
+            
+            // Create a temporary user object for system notification
+            $systemNotifiable = new class($adminEmail) {
+                public function __construct(public string $email) {}
+                public function routeNotificationForMail() { return $this->email; }
+                public $name = 'System Administrator';
+            };
+            
+            $systemNotifiable->notify(new AdminLoginNotification($loginDetails, true));
         }
     }
 

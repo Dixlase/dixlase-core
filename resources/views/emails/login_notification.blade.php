@@ -1,14 +1,26 @@
-@component('mail::message')
-# ログイン通知
+<x-mail::message>
+# {{ __('mail.login_notification.title') }}
 
-{{ $toSystem ? 'システム通知' : $member->name . 'さん、ログインがありました。' }}
+{{ $toSystem ? __('mail.login_notification.system_message') : __('mail.login_notification.user_message', ['name' => $member->name]) }}
 
-- 日時: {{ $datetime }}
-- IPアドレス: {{ $ip }}
+**{{ __('mail.login_notification.details_title') }}**
+
+- **{{ __('mail.login_notification.datetime') }}** {{ $datetime }}
+- **{{ __('mail.login_notification.ip_address') }}** {{ $ip }}
 
 @if ($toSystem)
-- User-Agent: {{ $ua }}
-- メンバーID: {{ $member->id }}
+- **{{ __('mail.login_notification.user_agent') }}** {{ $ua }}
+- **{{ __('mail.login_notification.member_id') }}** {{ $member->id }}
 @endif
 
-@endcomponent
+@if (!$toSystem)
+{{ __('mail.login_notification.security_notice') }}
+
+<x-mail::button :url="config('app.url')" color="primary">
+{{ __('mail.login_notification.access_site') }}
+</x-mail::button>
+@endif
+
+{{ __('mail.login_notification.thanks') }}<br>
+{{ config('app.name') }}
+</x-mail::message>
