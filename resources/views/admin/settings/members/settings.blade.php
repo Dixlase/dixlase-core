@@ -87,6 +87,34 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </div>
 
+        <!-- パスワードリセット機能設定 -->
+        <div class="mt-8 border-t pt-6">
+            <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.members.settings.password_reset_settings') }}</h2>
+            
+            <div class="mb-6">
+                <label class="block font-medium text-sm text-gray-700 dark:text-white mb-1">
+                    {{ __('admin.settings.members.settings.password_reset_enabled') }}
+                </label>
+
+                @php
+                    $passwordResetOptions = [
+                        '1' => __('admin.settings.members.settings.password_reset_enabled_options.enabled'),
+                        '0' => __('admin.settings.members.settings.password_reset_enabled_options.disabled'),
+                    ];
+                @endphp
+
+                @include('components.form.radio-group', [
+                    'name' => 'password_reset_enabled',
+                    'options' => $passwordResetOptions,
+                    'value' => old('password_reset_enabled', (string) (int) $passwordResetEnabled),
+                ])
+                
+                <p class="mt-1 text-xs text-gray-500 dark:text-white">
+                    {!! __('admin.settings.members.settings.password_reset_help') !!}
+                </p>
+            </div>
+        </div>
+
 
         <!-- ログイン通知設定 -->
         <div class="mt-8 border-t pt-6">
@@ -162,6 +190,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </p>
             </div>
         </div>
+
+        
 
     </form>
 
