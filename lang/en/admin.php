@@ -57,7 +57,7 @@ return [
             'title' => 'Set New Password',
             'header' => 'Set New Password',
             'description' => 'Please set your new password.',
-            'email' => 'Email',
+            'email' => 'Email Address',
             'password' => 'New Password',
             'password_confirmation' => 'Confirm Password',
             'reset_password_button' => 'Reset Password',

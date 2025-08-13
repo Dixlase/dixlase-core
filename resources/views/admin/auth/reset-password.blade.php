@@ -61,7 +61,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
 
         <!-- Submit Button -->
-        <div class="flex items-center justify-end mt-4">
+        <div class="flex items-center justify-center mt-4">
             <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                 {{ __('admin.auth.reset_password.reset_password_button') }}
             </button>
