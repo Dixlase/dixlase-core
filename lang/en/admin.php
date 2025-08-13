@@ -183,7 +183,11 @@ return [
             'allowed_file_types' => 'Allowed File Types',
             'max_file_size' => 'Maximum File Size',
             'file_size_range' => '(1MB - 100MB)',
-            'save_settings' => 'Save Settings',
+            'save_settings' => 'Save',
+            'save_confirmation_title' => 'Media Settings Save Confirmation',
+            'save_confirmation_message' => 'Do you want to save the media settings?',
+            'save_button' => 'Save',
+            'cancel_button' => 'Cancel',
         ],
 
     ],

@@ -50,16 +50,84 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <i class="fas fa-eye"></i>
                     </a>
 
-                    <form action="{{ route('admin.media.delete', $file->id) }}" method="POST" class="inline">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-500" title="{{ __('admin.media.index.delete') }}" aria-label="{{ __('admin.media.index.delete') }}" onclick="return confirm('{{ __('admin.media.index.delete') }}?')">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </form>
+                    <button type="button" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-500" title="{{ __('admin.media.index.delete') }}" aria-label="{{ __('admin.media.index.delete') }}" onclick="openDeleteModal({{ $file->id }}, '{{ $file->name }}')">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
                 </div>
             </div>
         </div>
     @endforeach
 </div>
+
+<!-- 削除確認モーダル -->
+<div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+        <div class="mt-3 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900">
+                <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 text-xl"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mt-4">{{ __('admin.media.preview.delete_confirmation') }}</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                    {{ __('admin.media.preview.delete_message') }}
+                </p>
+                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mt-2" id="fileNameDisplay"></p>
+            </div>
+            <div class="items-center px-4 py-3">
+                <button id="confirmDeleteBtn" class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-24 mr-2 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800">
+                    {{ __('admin.media.index.delete') }}
+                </button>
+                <button id="cancelDeleteBtn" class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-24 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800">
+                    {{ __('admin.media.preview.cancel') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 削除用の隠しフォーム -->
+<form id="deleteForm" method="POST" style="display: none;">
+    @csrf
+    @method('DELETE')
+</form>
+
+<script>
+let currentFileId = null;
+
+function openDeleteModal(fileId, fileName) {
+    currentFileId = fileId;
+    document.getElementById('fileNameDisplay').textContent = fileName;
+    document.getElementById('deleteModal').classList.remove('hidden');
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.add('hidden');
+    currentFileId = null;
+}
+
+document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+    if (currentFileId) {
+        const form = document.getElementById('deleteForm');
+        form.action = `{{ route('admin.media.delete', '') }}/${currentFileId}`;
+        form.submit();
+    }
+});
+
+document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
+
+// モーダル外クリックで閉じる
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDeleteModal();
+    }
+});
+
+// ESCキーで閉じる
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && !document.getElementById('deleteModal').classList.contains('hidden')) {
+        closeDeleteModal();
+    }
+});
+</script>
+
 @endsection
