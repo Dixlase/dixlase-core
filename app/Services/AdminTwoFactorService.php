@@ -14,7 +14,7 @@ use App\Models\MemberSetting;
 use App\Enums\TwoFactorMode;
 use App\Enums\TwoFactorMethod;
 
-class MembersTwoFactorService
+class AdminTwoFactorService
 {
     public function generate($user): string
     {

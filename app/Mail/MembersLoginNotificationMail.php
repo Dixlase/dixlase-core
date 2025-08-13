@@ -31,8 +31,8 @@ class MembersLoginNotificationMail  extends Mailable
     public function envelope(): Envelope
     {
         $subject = $this->toSystem
-            ? '【システム通知】管理画面へのログインがありました'
-            : '【ログイン通知】' . $this->member->name . 'さん、ログインがありました';
+            ? __('mail.login_notification.subject_system')
+            : __('mail.login_notification.subject_user', ['name' => $this->member->name]);
 
         return new Envelope(subject: $subject);
     }

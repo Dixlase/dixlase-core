@@ -31,8 +31,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Member;
 use App\Models\MemberSetting;
 use Illuminate\Support\Facades\Hash;
-use App\Services\MembersTwoFactorService;
-use App\Services\MembersLoginNotificationService;
+use App\Services\AdminTwoFactorService;
+use App\Services\AdminLoginNotificationService;
 use Illuminate\Support\Facades\Log;
 
 
@@ -74,7 +74,7 @@ class AdminLoginController extends AdminController
             ]);
         }
         // 2FA 判定（有効な場合だけ進める）
-        $twoFactor = app(MembersTwoFactorService::class);
+        $twoFactor = app(AdminTwoFactorService::class);
         if ($twoFactor->has($member)) {
             session([
                 'login.id' => $member->getAuthIdentifier(),
@@ -87,7 +87,7 @@ class AdminLoginController extends AdminController
         } else {
 
             // ログイン環境を記録、通知
-            app(MembersLoginNotificationService::class)->handle($member, $request);
+            app(AdminLoginNotificationService::class)->handle($member, $request);
 
             // 2FA不要なら即ログイン
             Auth::guard('member')->login($member, $request->boolean('remember'));
@@ -130,7 +130,7 @@ class AdminLoginController extends AdminController
         }
 
 
-        $twoFactor = app(MembersTwoFactorService::class);
+        $twoFactor = app(AdminTwoFactorService::class);
         if (!$twoFactor->validate($member, $request->code)) {
             return back()->withErrors(['code' => __('auth.two_factor.invalid')]);
         }
@@ -157,7 +157,7 @@ class AdminLoginController extends AdminController
             return redirect()->route('admin.login');
         }
 
-        $twoFactor = app(MembersTwoFactorService::class);
+        $twoFactor = app(AdminTwoFactorService::class);
         $twoFactor->generate($member); // ← DB保存 & メール送信
 
         return back()->with('status', __('auth.two_factor.resend_success'));
