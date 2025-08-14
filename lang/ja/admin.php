@@ -145,6 +145,7 @@ return [
             'systems' => [
                 'text' => 'システム',
                 'cache' => 'キャッシュ管理',
+                'database_cleanup' => 'データベースクリーンアップ',
                 'logs' => 'ログ',
                 'info'  => 'システム情報',
             ],
@@ -511,15 +512,22 @@ return [
         'plugins' => [
             'index' => [
                 'heading' => 'プラグインマスター',
+                'systems' => [
+                    'text' => 'システム',
+                    'cache' => 'キャッシュ管理',
+                    'database_cleanup' => 'データベースクリーンアップ',
+                    'logs' => 'システムログ',
+                    'info' => 'システム情報',
+                ],
+                'status' => [
+                    'enabled' => '有効',
+                    'disabled' => '無効',
+                ],
                 'table' => [
                     'id' => 'ID',
                     'name' => 'プラグイン名',
                     'status' => '状態',
                     'actions' => '操作',
-                ],
-                'status' => [
-                    'enabled' => '有効',
-                    'disabled' => '無効',
                 ],
                 'buttons' => [
                     'enable' => '有効化',
@@ -602,10 +610,131 @@ return [
                 'laravel' => 'Laravel',
 
             ],
+            'database_cleanup' => [
+                'heading' => 'データベースクリーンアップ',
+                'description' => 'システムパフォーマンスを維持するために古いデータベースレコードをクリーンアップします',
+                'login_attempts' => [
+                    'name' => 'ログイン試行履歴',
+                    'description' => '古いログイン試行記録をクリーンアップします',
+                    'default_days' => '30日',
+                ],
+                'password_reset_tokens' => [
+                    'name' => 'パスワードリセットトークン',
+                    'description' => '古いパスワードリセットトークン記録をクリーンアップします',
+                    'default_days' => '30日',
+                ],
+                'trusted_devices' => [
+                    'name' => '信頼されたデバイス',
+                    'description' => '古い信頼されたデバイス記録をクリーンアップします',
+                    'default_days' => '90日',
+                ],
+                'two_factor_tokens' => [
+                    'name' => '二段階認証トークン',
+                    'description' => '古い二段階認証トークン記録をクリーンアップします',
+                    'default_days' => '7日',
+                ],
+                'cache_data' => [
+                    'name' => 'キャッシュデータ',
+                    'description' => '期限切れのキャッシュエントリとロックをクリーンアップします',
+                    'default_days' => '期限切れのみ',
+                ],
+                'sessions' => [
+                    'name' => 'セッション',
+                    'description' => '古いセッション記録をクリーンアップします',
+                    'default_days' => '7日',
+                ],
+                'cleanup_success' => ':count 件のレコードを正常にクリーンアップしました。',
+                'cleanup_error' => 'クリーンアップ中にエラーが発生しました: :error',
+                'confirm_cleanup' => ':type のレコードをクリーンアップしてもよろしいですか？',
+                'days_label' => '保持日数',
+                'cleanup_button' => 'クリーンアップ',
+                'all_cleanup_button' => '全種類クリーンアップ',
+            ],
             'info' => [
                 'heading' => 'システム情報',
             ],
         ],
+    ],
+
+    // ログイン試行履歴クリーンアップコマンド
+    'cleanup_login_attempts' => [
+        'days_zero_warning' => '日数が0に設定されています - すべてのログイン試行記録が削除されます。',
+        'confirm_delete_all' => 'すべてのログイン試行記録を削除してもよろしいですか？この操作は元に戻すことができません。',
+        'operation_cancelled' => '操作がキャンセルされました。',
+        'deleting_all' => 'すべてのログイン試行記録を削除しています...',
+        'deleted_all_success' => 'すべての :count 件のログイン試行記録を正常に削除しました。',
+        'no_records_found' => '削除するログイン試行記録が見つかりませんでした。',
+        'invalid_days' => '日数は正の整数である必要があります。すべてのレコードを削除する場合は --all を使用してください。',
+        'cleaning_up' => ':days 日より古いログイン試行記録をクリーンアップしています...',
+        'deleted_old_success' => ':count 件の古いログイン試行記録を正常に削除しました。',
+        'no_old_records_found' => '削除する古いログイン試行記録が見つかりませんでした。',
+    ],
+
+    // パスワードリセットトークンクリーンアップコマンド
+    'cleanup_password_reset_tokens' => [
+        'days_zero_warning' => '日数が0に設定されています - すべてのパスワードリセットトークン記録が削除されます。',
+        'confirm_delete_all' => 'すべてのパスワードリセットトークン記録を削除してもよろしいですか？この操作は元に戻すことができません。',
+        'operation_cancelled' => '操作がキャンセルされました。',
+        'deleting_all' => 'すべてのパスワードリセットトークン記録を削除しています...',
+        'deleted_all_success' => 'すべての :count 件のパスワードリセットトークン記録を正常に削除しました。',
+        'no_records_found' => '削除するパスワードリセットトークン記録が見つかりませんでした。',
+        'invalid_days' => '日数は正の整数である必要があります。すべてのレコードを削除する場合は --all を使用してください。',
+        'cleaning_up' => ':days 日より古いパスワードリセットトークンをクリーンアップしています...',
+        'deleted_old_success' => ':count 件の古いパスワードリセットトークン記録を正常に削除しました。',
+        'no_old_records_found' => '削除する古いパスワードリセットトークン記録が見つかりませんでした。',
+    ],
+
+    // 信頼されたデバイスクリーンアップコマンド
+    'cleanup_trusted_devices' => [
+        'days_zero_warning' => '日数が0に設定されています - すべての信頼されたデバイス記録が削除されます。',
+        'confirm_delete_all' => 'すべての信頼されたデバイス記録を削除してもよろしいですか？この操作は元に戻すことができません。',
+        'operation_cancelled' => '操作がキャンセルされました。',
+        'deleting_all' => 'すべての信頼されたデバイス記録を削除しています...',
+        'deleted_all_success' => 'すべての :count 件の信頼されたデバイス記録を正常に削除しました。',
+        'no_records_found' => '削除する信頼されたデバイス記録が見つかりませんでした。',
+        'invalid_days' => '日数は正の整数である必要があります。すべてのレコードを削除する場合は --all を使用してください。',
+        'cleaning_up' => ':days 日より古い信頼されたデバイスをクリーンアップしています...',
+        'deleted_old_success' => ':count 件の古い信頼されたデバイス記録を正常に削除しました。',
+        'no_old_records_found' => '削除する古い信頼されたデバイス記録が見つかりませんでした。',
+    ],
+
+    // 二段階認証トークンクリーンアップコマンド
+    'cleanup_two_factor_tokens' => [
+        'days_zero_warning' => '日数が0に設定されています - すべての二段階認証トークン記録が削除されます。',
+        'confirm_delete_all' => 'すべての二段階認証トークン記録を削除してもよろしいですか？この操作は元に戻すことができません。',
+        'operation_cancelled' => '操作がキャンセルされました。',
+        'deleting_all' => 'すべての二段階認証トークン記録を削除しています...',
+        'deleted_all_success' => 'すべての :count 件の二段階認証トークン記録を正常に削除しました。',
+        'no_records_found' => '削除する二段階認証トークン記録が見つかりませんでした。',
+        'invalid_days' => '日数は正の整数である必要があります。すべてのレコードを削除する場合は --all を使用してください。',
+        'cleaning_up' => ':days 日より古い二段階認証トークンをクリーンアップしています...',
+        'deleted_old_success' => ':count 件の古い二段階認証トークン記録を正常に削除しました。',
+        'no_old_records_found' => '削除する古い二段階認証トークン記録が見つかりませんでした。',
+    ],
+
+    // キャッシュクリーンアップコマンド
+    'cleanup_cache' => [
+        'confirm_delete_all' => 'すべてのキャッシュエントリとロックを削除してもよろしいですか？この操作は元に戻すことができません。',
+        'operation_cancelled' => '操作がキャンセルされました。',
+        'deleting_all' => 'すべてのキャッシュエントリとロックを削除しています...',
+        'deleted_all_success' => ':cache_count 件のキャッシュエントリと :locks_count 件のキャッシュロックを正常に削除しました。',
+        'no_records_found' => '削除するキャッシュ記録が見つかりませんでした。',
+        'cleaning_expired' => '期限切れのキャッシュエントリとロックをクリーンアップしています...',
+        'deleted_expired_success' => ':cache_count 件の期限切れキャッシュエントリと :locks_count 件の期限切れキャッシュロックを正常に削除しました。',
+        'no_expired_records_found' => '削除する期限切れキャッシュ記録が見つかりませんでした。',
+    ],
+
+    // セッションクリーンアップコマンド
+    'cleanup_sessions' => [
+        'confirm_delete_all' => 'すべてのセッション記録を削除してもよろしいですか？この操作は元に戻すことができません。',
+        'operation_cancelled' => '操作がキャンセルされました。',
+        'deleting_all' => 'すべてのセッション記録を削除しています...',
+        'deleted_all_success' => 'すべての :count 件のセッション記録を正常に削除しました。',
+        'no_records_found' => '削除するセッション記録が見つかりませんでした。',
+        'invalid_days' => '日数は正の整数である必要があります。すべてのレコードを削除する場合は --all を使用してください。',
+        'cleaning_up' => ':days 日より古いセッションをクリーンアップしています...',
+        'deleted_old_success' => ':count 件の古いセッション記録を正常に削除しました。',
+        'no_old_records_found' => '削除する古いセッション記録が見つかりませんでした。',
     ],
 
 ];

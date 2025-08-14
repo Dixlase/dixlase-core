@@ -33,7 +33,7 @@ return new class extends Migration
      * @return void
      */
 
-    protected $table = 'settings';
+    protected $table = 'front_settings';
 
     public function up()
     {

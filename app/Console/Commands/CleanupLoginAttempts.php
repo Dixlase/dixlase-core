@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\AdminLoginAttempt;
+use App\Models\MemberLoginAttempt;
 use Illuminate\Console\Command;
 
 class CleanupLoginAttempts extends Command
@@ -32,39 +32,39 @@ class CleanupLoginAttempts extends Command
         // --allオプションまたは--days=0で全レコード削除
         if ($deleteAll || $days === 0) {
             if (!$deleteAll && $days === 0) {
-                $this->info('Days set to 0 - this will delete ALL login attempt records.');
+                $this->info(__('admin.cleanup_login_attempts.days_zero_warning'));
             }
             
-            if (!$this->confirm('Are you sure you want to delete ALL login attempt records? This action cannot be undone.')) {
-                $this->info('Operation cancelled.');
+            if (!$this->confirm(__('admin.cleanup_login_attempts.confirm_delete_all'))) {
+                $this->info(__('admin.cleanup_login_attempts.operation_cancelled'));
                 return 0;
             }
             
-            $this->info('Deleting all login attempt records...');
-            $deletedCount = AdminLoginAttempt::query()->delete();
+            $this->info(__('admin.cleanup_login_attempts.deleting_all'));
+            $deletedCount = MemberLoginAttempt::query()->delete();
             
             if ($deletedCount > 0) {
-                $this->info("Successfully deleted all {$deletedCount} login attempt records.");
+                $this->info(__('admin.cleanup_login_attempts.deleted_all_success', ['count' => $deletedCount]));
             } else {
-                $this->info('No login attempt records found to delete.');
+                $this->info(__('admin.cleanup_login_attempts.no_records_found'));
             }
             
             return 0;
         }
         
         if ($days < 1) {
-            $this->error('Days must be a positive integer, or use --all to delete all records.');
+            $this->error(__('admin.cleanup_login_attempts.invalid_days'));
             return 1;
         }
 
-        $this->info("Cleaning up login attempts older than {$days} days...");
+        $this->info(__('admin.cleanup_login_attempts.cleaning_up', ['days' => $days]));
 
-        $deletedCount = AdminLoginAttempt::cleanupOldAttempts($days);
+        $deletedCount = MemberLoginAttempt::cleanupOldAttempts($days);
 
         if ($deletedCount > 0) {
-            $this->info("Successfully deleted {$deletedCount} old login attempt records.");
+            $this->info(__('admin.cleanup_login_attempts.deleted_old_success', ['count' => $deletedCount]));
         } else {
-            $this->info('No old login attempt records found to delete.');
+            $this->info(__('admin.cleanup_login_attempts.no_old_records_found'));
         }
 
         return 0;
