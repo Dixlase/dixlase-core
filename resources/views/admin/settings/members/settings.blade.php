@@ -115,6 +115,94 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </div>
 
+        <!-- ログイン試行制限設定 -->
+        <div class="mt-8 border-t pt-6">
+            <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.members.settings.login_attempt_limit_settings') }}</h2>
+            
+            <!-- 機能有効/無効 -->
+            <div class="mb-6">
+                <label class="block font-medium text-sm text-gray-700 dark:text-white mb-1">
+                    {{ __('admin.settings.members.settings.login_attempt_limit_enabled') }}
+                </label>
+
+                @php
+                    $loginAttemptLimitOptions = [
+                        '1' => __('admin.settings.members.settings.login_attempt_limit_enabled_options.enabled'),
+                        '0' => __('admin.settings.members.settings.login_attempt_limit_enabled_options.disabled'),
+                    ];
+                @endphp
+
+                @include('components.form.radio-group', [
+                    'name' => 'login_attempt_limit_enabled',
+                    'options' => $loginAttemptLimitOptions,
+                    'value' => old('login_attempt_limit_enabled', (string) (int) $loginAttemptLimitEnabled),
+                ])
+                
+                <p class="mt-1 text-xs text-gray-500 dark:text-white">
+                    {{ __('admin.settings.members.settings.login_attempt_limit_help') }}
+                </p>
+            </div>
+
+            <!-- 設定詳細（機能が有効な場合のみ表示） -->
+            <div id="login-attempt-details" class="space-y-6" style="display: {{ $loginAttemptLimitEnabled ? 'block' : 'none' }};">
+                <!-- 最大試行回数 -->
+                <div>
+                    <label for="login_attempt_max_attempts" class="block font-medium text-sm text-gray-700 dark:text-white mb-1">
+                        {{ __('admin.settings.members.settings.login_attempt_max_attempts') }}
+                    </label>
+                    <input 
+                        type="number" 
+                        id="login_attempt_max_attempts" 
+                        name="login_attempt_max_attempts" 
+                        value="{{ old('login_attempt_max_attempts', $loginAttemptMaxAttempts) }}"
+                        min="1" 
+                        max="100"
+                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    >
+                    <p class="mt-1 text-xs text-gray-500 dark:text-white">
+                        {{ __('admin.settings.members.settings.login_attempt_max_attempts_help') }}
+                    </p>
+                </div>
+
+                <!-- 時間窓 -->
+                <div>
+                    <label for="login_attempt_time_window" class="block font-medium text-sm text-gray-700 dark:text-white mb-1">
+                        {{ __('admin.settings.members.settings.login_attempt_time_window') }}
+                    </label>
+                    <input 
+                        type="number" 
+                        id="login_attempt_time_window" 
+                        name="login_attempt_time_window" 
+                        value="{{ old('login_attempt_time_window', $loginAttemptTimeWindow) }}"
+                        min="1" 
+                        max="1440"
+                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    >
+                    <p class="mt-1 text-xs text-gray-500 dark:text-white">
+                        {{ __('admin.settings.members.settings.login_attempt_time_window_help') }}
+                    </p>
+                </div>
+
+                <!-- ロックアウト時間 -->
+                <div>
+                    <label for="login_attempt_lockout_duration" class="block font-medium text-sm text-gray-700 dark:text-white mb-1">
+                        {{ __('admin.settings.members.settings.login_attempt_lockout_duration') }}
+                    </label>
+                    <input 
+                        type="number" 
+                        id="login_attempt_lockout_duration" 
+                        name="login_attempt_lockout_duration" 
+                        value="{{ old('login_attempt_lockout_duration', $loginAttemptLockoutDuration) }}"
+                        min="1" 
+                        max="10080"
+                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    >
+                    <p class="mt-1 text-xs text-gray-500 dark:text-white">
+                        {{ __('admin.settings.members.settings.login_attempt_lockout_duration_help') }}
+                    </p>
+                </div>
+            </div>
+        </div>
 
         <!-- ログイン通知設定 -->
         <div class="mt-8 border-t pt-6">
@@ -211,4 +299,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     ])
 @endsection
 
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ログイン試行制限の有効/無効切り替え
+    const loginAttemptRadios = document.querySelectorAll('input[name="login_attempt_limit_enabled"]');
+    const loginAttemptDetails = document.getElementById('login-attempt-details');
+    
+    function toggleLoginAttemptDetails() {
+        const isEnabled = document.querySelector('input[name="login_attempt_limit_enabled"]:checked').value === '1';
+        loginAttemptDetails.style.display = isEnabled ? 'block' : 'none';
+    }
+    
+    // 初期状態を設定
+    toggleLoginAttemptDetails();
+    
+    // ラジオボタンの変更を監視
+    loginAttemptRadios.forEach(radio => {
+        radio.addEventListener('change', toggleLoginAttemptDetails);
+    });
+});
+</script>
+@endpush
 

@@ -35,6 +35,10 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
             'two_factor_methods' => 'required|array|min:1',
             'two_factor_methods.*' => 'in:' . implode(',', array_column(TwoFactorMethod::cases(), 'value')),
             'password_reset_enabled' => 'required|boolean',
+            'login_attempt_limit_enabled' => 'required|boolean',
+            'login_attempt_max_attempts' => 'required|integer|min:1|max:100',
+            'login_attempt_time_window' => 'required|integer|min:1|max:1440', // 最大24時間
+            'login_attempt_lockout_duration' => 'required|integer|min:1|max:10080', // 最大1週間
         ];
     }
 }

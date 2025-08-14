@@ -34,6 +34,9 @@ return [
     */
 
     'failed' => '認証情報が正しくありません。',
+    'failed_with_attempts' => '認証情報が正しくありません。残り :attempts 回の試行が可能です。',
+    'lockout' => 'ログイン試行回数が上限に達しました。:minutes 分後に再試行してください。',
+    'ip_lockout' => 'このIPアドレスからのログイン試行が一時的に制限されています。',
     'password' => '提供されたパスワードが正しくありません。',
     'throttle' => 'ログイン試行が多すぎます。:seconds 秒後に再試行してください。',
     'two_factor' => [
