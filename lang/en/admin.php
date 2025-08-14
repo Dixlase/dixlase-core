@@ -608,15 +608,61 @@ Your mail settings are working correctly.',
                 'error' => 'Error',
                 'login' => 'Login',
                 'laravel' => 'Laravel',
-
+                'download' => 'Download',
+                'clear' => 'Clear Logs',
+                'clear_confirm' => 'Are you sure you want to clear the log file contents? This action cannot be undone.',
+                'pagination' => [
+                    'showing' => ':from - :to of :total entries',
+                    'page' => 'Page :current / :total',
+                    'previous' => '← Previous',
+                    'next' => 'Next →',
+                ],
+                'fields' => [
+                    'operation' => 'Operation',
+                    'id' => 'ID',
+                    'name' => 'name',
+                    'method' => 'method',
+                    'uri' => 'uri',
+                    'route' => 'route',
+                    'controller' => 'controller',
+                    'ip' => 'ip',
+                    'user_agent' => 'user_agent',
+                    'time' => 'time',
+                ],
+                'messages' => [
+                    'download_error' => 'Log file does not exist: :filename',
+                    'clear_success' => 'Log file cleared successfully: :filename',
+                    'clear_error' => 'Log file does not exist: :filename',
+                    'clear_failed' => 'Failed to clear log file: :error',
+                    'file_not_found' => 'Log file does not exist: :filename',
+                ],
             ],
             'database_cleanup' => [
                 'heading' => 'Database Cleanup',
                 'description' => 'Clean up old database records to maintain system performance',
+                'all_cleanup_button' => 'Clean All',
+                'all_cleanup_description' => 'Clean up all database tables with default settings',
+                'all_tables' => 'All Tables',
                 'login_attempts' => [
                     'name' => 'Login Attempts',
                     'description' => 'Clean up old login attempt records',
                     'default_days' => '30 days',
+                ],
+                'info_panel' => [
+                    'title' => 'Important Notes',
+                    'notes' => [
+                        'irreversible' => 'Database cleanup is an irreversible operation. We recommend backing up necessary data before execution.',
+                        'performance' => 'Regular cleanup helps improve system performance.',
+                        'production' => 'In production environments, execute carefully during maintenance hours.',
+                        'defaults' => 'Default retention periods for each table are optimized according to data characteristics.',
+                    ],
+                ],
+                'modal' => [
+                    'title' => 'Confirm Cleanup',
+                    'message' => 'Are you sure you want to execute this database cleanup?',
+                    'confirm_message' => 'Are you sure you want to cleanup :name records? This operation cannot be undone.',
+                    'execute' => 'Execute',
+                    'cancel' => 'Cancel',
                 ],
                 'password_reset_tokens' => [
                     'name' => 'Password Reset Tokens',
@@ -654,87 +700,6 @@ Your mail settings are working correctly.',
                 'heading' => 'System Information',
             ],
         ],
-    ],
-
-    // Cleanup Login Attempts Command
-    'cleanup_login_attempts' => [
-        'days_zero_warning' => 'Days set to 0 - this will delete ALL login attempt records.',
-        'confirm_delete_all' => 'Are you sure you want to delete ALL login attempt records? This action cannot be undone.',
-        'operation_cancelled' => 'Operation cancelled.',
-        'deleting_all' => 'Deleting all login attempt records...',
-        'deleted_all_success' => 'Successfully deleted all :count login attempt records.',
-        'no_records_found' => 'No login attempt records found to delete.',
-        'invalid_days' => 'Days must be a positive integer, or use --all to delete all records.',
-        'cleaning_up' => 'Cleaning up login attempts older than :days days...',
-        'deleted_old_success' => 'Successfully deleted :count old login attempt records.',
-        'no_old_records_found' => 'No old login attempt records found to delete.',
-    ],
-
-    // Cleanup Password Reset Tokens Command
-    'cleanup_password_reset_tokens' => [
-        'days_zero_warning' => 'Days set to 0 - this will delete ALL password reset token records.',
-        'confirm_delete_all' => 'Are you sure you want to delete ALL password reset token records? This action cannot be undone.',
-        'operation_cancelled' => 'Operation cancelled.',
-        'deleting_all' => 'Deleting all password reset token records...',
-        'deleted_all_success' => 'Successfully deleted all :count password reset token records.',
-        'no_records_found' => 'No password reset token records found to delete.',
-        'invalid_days' => 'Days must be a positive integer, or use --all to delete all records.',
-        'cleaning_up' => 'Cleaning up password reset tokens older than :days days...',
-        'deleted_old_success' => 'Successfully deleted :count old password reset token records.',
-        'no_old_records_found' => 'No old password reset token records found to delete.',
-    ],
-
-    // Cleanup Trusted Devices Command
-    'cleanup_trusted_devices' => [
-        'days_zero_warning' => 'Days set to 0 - this will delete ALL trusted device records.',
-        'confirm_delete_all' => 'Are you sure you want to delete ALL trusted device records? This action cannot be undone.',
-        'operation_cancelled' => 'Operation cancelled.',
-        'deleting_all' => 'Deleting all trusted device records...',
-        'deleted_all_success' => 'Successfully deleted all :count trusted device records.',
-        'no_records_found' => 'No trusted device records found to delete.',
-        'invalid_days' => 'Days must be a positive integer, or use --all to delete all records.',
-        'cleaning_up' => 'Cleaning up trusted devices older than :days days...',
-        'deleted_old_success' => 'Successfully deleted :count old trusted device records.',
-        'no_old_records_found' => 'No old trusted device records found to delete.',
-    ],
-
-    // Cleanup Two-Factor Tokens Command
-    'cleanup_two_factor_tokens' => [
-        'days_zero_warning' => 'Days set to 0 - this will delete ALL two-factor token records.',
-        'confirm_delete_all' => 'Are you sure you want to delete ALL two-factor token records? This action cannot be undone.',
-        'operation_cancelled' => 'Operation cancelled.',
-        'deleting_all' => 'Deleting all two-factor token records...',
-        'deleted_all_success' => 'Successfully deleted all :count two-factor token records.',
-        'no_records_found' => 'No two-factor token records found to delete.',
-        'invalid_days' => 'Days must be a positive integer, or use --all to delete all records.',
-        'cleaning_up' => 'Cleaning up two-factor tokens older than :days days...',
-        'deleted_old_success' => 'Successfully deleted :count old two-factor token records.',
-        'no_old_records_found' => 'No old two-factor token records found to delete.',
-    ],
-
-    // Cleanup Cache Command
-    'cleanup_cache' => [
-        'confirm_delete_all' => 'Are you sure you want to delete ALL cache entries and locks? This action cannot be undone.',
-        'operation_cancelled' => 'Operation cancelled.',
-        'deleting_all' => 'Deleting all cache entries and locks...',
-        'deleted_all_success' => 'Successfully deleted :cache_count cache entries and :locks_count cache locks.',
-        'no_records_found' => 'No cache records found to delete.',
-        'cleaning_expired' => 'Cleaning up expired cache entries and locks...',
-        'deleted_expired_success' => 'Successfully deleted :cache_count expired cache entries and :locks_count expired cache locks.',
-        'no_expired_records_found' => 'No expired cache records found to delete.',
-    ],
-
-    // Cleanup Sessions Command
-    'cleanup_sessions' => [
-        'confirm_delete_all' => 'Are you sure you want to delete ALL session records? This action cannot be undone.',
-        'operation_cancelled' => 'Operation cancelled.',
-        'deleting_all' => 'Deleting all session records...',
-        'deleted_all_success' => 'Successfully deleted all :count session records.',
-        'no_records_found' => 'No session records found to delete.',
-        'invalid_days' => 'Days must be a positive integer, or use --all to delete all records.',
-        'cleaning_up' => 'Cleaning up sessions older than :days days...',
-        'deleted_old_success' => 'Successfully deleted :count old session records.',
-        'no_old_records_found' => 'No old session records found to delete.',
     ],
 
 ];

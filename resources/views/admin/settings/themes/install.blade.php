@@ -63,7 +63,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="container mx-auto p-6">
-
     <!-- Flash message for success or error -->
     @if(session('success'))
         <div class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50">
@@ -95,17 +94,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <!-- アップロードフィールド -->
             <div class="flex flex-col gap-2">
-                <label for="theme" class="text-gray-600 dark:text-gray-300 font-medium">
-                    {{ __('admin.settings.themes.install.file_select_label') }}
+                <label for="plugin_file" class="text-gray-600 dark:text-gray-300 font-medium">
+                    {{ __('admin.settings.plugins.install.file_select_label') }}
                 </label>
                 <div
-                    class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-indigo-500 transition duration-300"
+                    class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-blue-500 transition duration-300"
                 >
                     <!-- ファイル入力 -->
                     <input
                         type="file"
-                        name="theme"
-                        id="theme"
+                        name="plugin_file"
+                        id="plugin_file"
                         accept=".zip"
                         class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
                         @change="fileName = $event.target.files[0] ? $event.target.files[0].name : ''"
@@ -115,7 +114,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <!-- ドロップエリア表示部分 -->
                     <div class="flex flex-col items-center justify-center text-center pointer-events-none">
                         <svg
-                            class="w-12 h-12 text-indigo-500 mb-3"
+                            class="w-12 h-12 text-blue-500 mb-3"
                             fill="none"
                             stroke="currentColor"
                             stroke-width="1.5"
@@ -129,16 +128,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 d="M12 16v4m0 0H8m4 0h4m-4-4a4 4 0 01-4-4 4 4 0 014-4 4 4 0 014 4 4 4 0 01-4 4z"
                             ></path>
                         </svg>
-                        <p class="text-sm text-gray-500 dark:text-gray-400" x-text="fileName || '{{ __('admin.settings.themes.install.drag_drop_text') }}'"></p>
-                        <p class="text-xs text-gray-400 mt-1">{{ __('admin.settings.themes.install.supported_format') }} <strong>.zip</strong></p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400" x-text="fileName || '{{ __('admin.settings.plugins.install.drag_drop_text') }}'"></p>
+                        <p class="text-xs text-gray-400 mt-1">{{ __('admin.settings.plugins.install.supported_format') }} <strong>.zip</strong></p>
 
                         <!-- アップロード上限表示 -->
-                        <p class="text-xs text-gray-400 mt-1">{{ __('admin.settings.themes.install.upload_limit') }}
+                        <p class="text-xs text-gray-400 mt-1">{{ __('admin.settings.plugins.install.upload_limit') }}
                             <strong>{{ $uploadMaxMB }} MB</strong>
                         </p>
                     </div>
                 </div>
             </div>
+
 
             <!-- アップロードボタン -->
             <div class="text-right">
@@ -151,7 +151,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </form>
     </div>
-
 </div>
 <!-- Alpine.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>

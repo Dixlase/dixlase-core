@@ -171,6 +171,8 @@ Route::prefix($adminUrl)->name('admin.')
             Route::post('/settings/systems/database-cleanup/clean', [AdminSystemsController::class, 'cleanupDatabase'])->name('settings.systems.database_cleanup.clean');
             //ログ
             Route::get('/settings/system/logs/{type?}', [AdminSystemsController::class, 'logs'])->name('settings.systems.logs');
+            Route::get('/settings/system/logs/{type}/download', [AdminSystemsController::class, 'downloadLog'])->name('settings.systems.logs.download');
+            Route::post('/settings/system/logs/{type}/clear', [AdminSystemsController::class, 'clearLog'])->name('settings.systems.logs.clear');
             //システム情報
             Route::get('/settings/systems/info', [AdminSystemsController::class, 'info'])->name('settings.systems.info');
 

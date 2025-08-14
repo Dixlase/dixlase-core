@@ -39,8 +39,25 @@ class AdminSystemsController extends AdminLoggedInController
 
 
         if (!File::exists($filePath)) {
-
-            $this->viewParams['logs'] = ["ログファイルが存在しません：{$fileName}"];
+            // Return structured data even when file doesn't exist
+            $this->viewParams['logs'] = [[
+                'timestamp' => '',
+                'level' => '',
+                'message' => __('admin.settings.systems.logs.messages.file_not_found', ['filename' => $fileName]),
+                'context' => [],
+                'parsed' => false
+            ]];
+            $this->viewParams['pagination'] = [
+                'current_page' => 1,
+                'per_page' => 50,
+                'total' => 1,
+                'last_page' => 1,
+                'from' => 1,
+                'to' => 1,
+                'has_more_pages' => false,
+                'prev_page' => null,
+                'next_page' => null,
+            ];
             $this->viewParams['logTypes'] = array_keys($this->logPaths);
 
             return response()->view('admin::settings.systems.logs', $this->viewParams);
@@ -54,11 +71,75 @@ class AdminSystemsController extends AdminLoggedInController
             )
         );
 
-        $this->viewParams['logs'] = $lines;
+        // Parse log lines into structured data
+        $parsedLogs = [];
+        foreach ($lines as $line) {
+            $parsedLog = $this->parseLogLine($line);
+            if ($parsedLog) {
+                $parsedLogs[] = $parsedLog;
+            }
+        }
+
+        // Implement pagination
+        $perPage = 50;
+        $currentPage = $request->get('page', 1);
+        $offset = ($currentPage - 1) * $perPage;
+        $totalLogs = count($parsedLogs);
+        $paginatedLogs = array_slice($parsedLogs, $offset, $perPage);
+
+        // Create pagination data
+        $pagination = [
+            'current_page' => $currentPage,
+            'per_page' => $perPage,
+            'total' => $totalLogs,
+            'last_page' => ceil($totalLogs / $perPage),
+            'from' => $offset + 1,
+            'to' => min($offset + $perPage, $totalLogs),
+            'has_more_pages' => $currentPage < ceil($totalLogs / $perPage),
+            'prev_page' => $currentPage > 1 ? $currentPage - 1 : null,
+            'next_page' => $currentPage < ceil($totalLogs / $perPage) ? $currentPage + 1 : null,
+        ];
+
+        $this->viewParams['logs'] = $paginatedLogs;
+        $this->viewParams['pagination'] = $pagination;
         $this->viewParams['logTypes'] = array_keys($this->logPaths);
 
-
         return view('admin::settings.systems.logs', $this->viewParams);
+    }
+
+    // ログファイルダウンロード
+    public function downloadLog(Request $request, $type = 'activity')
+    {
+        $fileName = $this->logPaths[$type] ?? $this->logPaths['activity'];
+        $filePath = storage_path("logs/{$fileName}");
+
+        if (!File::exists($filePath)) {
+            return redirect()->route('admin.settings.systems.logs', ['type' => $type])
+                ->with('error', __('admin.settings.systems.logs.messages.download_error', ['filename' => $fileName]));
+        }
+
+        return response()->download($filePath, $fileName);
+    }
+
+    // ログ内容消去
+    public function clearLog(Request $request, $type = 'activity')
+    {
+        $fileName = $this->logPaths[$type] ?? $this->logPaths['activity'];
+        $filePath = storage_path("logs/{$fileName}");
+
+        try {
+            if (File::exists($filePath)) {
+                File::put($filePath, '');
+                return redirect()->route('admin.settings.systems.logs', ['type' => $type])
+                    ->with('success', __('admin.settings.systems.logs.messages.clear_success', ['filename' => $fileName]));
+            } else {
+                return redirect()->route('admin.settings.systems.logs', ['type' => $type])
+                    ->with('error', __('admin.settings.systems.logs.messages.clear_error', ['filename' => $fileName]));
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('admin.settings.systems.logs', ['type' => $type])
+                ->with('error', __('admin.settings.systems.logs.messages.clear_failed', ['error' => $e->getMessage()]));
+        }
     }
 
     // システム情報
@@ -339,5 +420,49 @@ class AdminSystemsController extends AdminLoggedInController
         }
         
         return 0;
+    }
+
+    /**
+     * Parse a log line into structured data
+     */
+    private function parseLogLine($line)
+    {
+        // Pattern to match Laravel log format: [timestamp] level.LEVEL: message {"context"}
+        $pattern = '/^\[([^\]]+)\]\s+([^:]+):\s+(.+?)(\s+\{.*\})?$/';
+        
+        if (!preg_match($pattern, $line, $matches)) {
+            // If the line doesn't match the expected format, return it as raw text
+            return [
+                'timestamp' => '',
+                'level' => '',
+                'message' => $line,
+                'context' => [],
+                'parsed' => false
+            ];
+        }
+
+        $timestamp = $matches[1];
+        $level = $matches[2];
+        $message = $matches[3];
+        $contextJson = isset($matches[4]) ? trim($matches[4]) : '';
+
+        // Parse context JSON if present
+        $context = [];
+        if (!empty($contextJson)) {
+            try {
+                $context = json_decode($contextJson, true) ?? [];
+            } catch (\Exception $e) {
+                // If JSON parsing fails, keep as empty array
+                $context = [];
+            }
+        }
+
+        return [
+            'timestamp' => $timestamp,
+            'level' => $level,
+            'message' => $message,
+            'context' => $context,
+            'parsed' => true
+        ];
     }
 }

@@ -23,7 +23,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'arrow_class' => 'w-4 h-4 ml-auto transform'
 ])
 
-<div class="flex flex-col w-64 h-full">
+<div class="flex flex-col w-64">
     <nav class="flex-1 px-4 py-4 space-y-1">
         @foreach (config('admin.nav') as $key => $item)
             @php

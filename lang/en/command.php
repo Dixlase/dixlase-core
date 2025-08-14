@@ -249,4 +249,86 @@ return [
         'added' => 'Added new plugin directories to composer.json autoload.',
         'no_changes' => 'No new plugin directories found; no changes made.'
     ],
+
+    // Cleanup Login Attempts Command
+    'cleanup_login_attempts' => [
+        'days_zero_warning' => 'Days set to 0 - this will delete ALL login attempt records.',
+        'confirm_delete_all' => 'Are you sure you want to delete ALL login attempt records? This action cannot be undone.',
+        'operation_cancelled' => 'Operation cancelled.',
+        'deleting_all' => 'Deleting all login attempt records...',
+        'deleted_all_success' => 'Successfully deleted all :count login attempt records.',
+        'no_records_found' => 'No login attempt records found to delete.',
+        'invalid_days' => 'Days must be a positive integer, or use --all to delete all records.',
+        'cleaning_up' => 'Cleaning up login attempts older than :days days...',
+        'deleted_old_success' => 'Successfully deleted :count old login attempt records.',
+        'no_old_records_found' => 'No old login attempt records found to delete.',
+    ],
+
+    // Cleanup Password Reset Tokens Command
+    'cleanup_password_reset_tokens' => [
+        'days_zero_warning' => 'Days set to 0 - this will delete ALL password reset token records.',
+        'confirm_delete_all' => 'Are you sure you want to delete ALL password reset token records? This action cannot be undone.',
+        'operation_cancelled' => 'Operation cancelled.',
+        'deleting_all' => 'Deleting all password reset token records...',
+        'deleted_all_success' => 'Successfully deleted all :count password reset token records.',
+        'no_records_found' => 'No password reset token records found to delete.',
+        'invalid_days' => 'Days must be a positive integer, or use --all to delete all records.',
+        'cleaning_up' => 'Cleaning up password reset tokens older than :days days...',
+        'deleted_old_success' => 'Successfully deleted :count old password reset token records.',
+        'no_old_records_found' => 'No old password reset token records found to delete.',
+    ],
+
+    // Cleanup Trusted Devices Command
+    'cleanup_trusted_devices' => [
+        'days_zero_warning' => 'Days set to 0 - this will delete ALL trusted device records.',
+        'confirm_delete_all' => 'Are you sure you want to delete ALL trusted device records? This action cannot be undone.',
+        'operation_cancelled' => 'Operation cancelled.',
+        'deleting_all' => 'Deleting all trusted device records...',
+        'deleted_all_success' => 'Successfully deleted all :count trusted device records.',
+        'no_records_found' => 'No trusted device records found to delete.',
+        'invalid_days' => 'Days must be a positive integer, or use --all to delete all records.',
+        'cleaning_up' => 'Cleaning up trusted devices older than :days days...',
+        'deleted_old_success' => 'Successfully deleted :count old trusted device records.',
+        'no_old_records_found' => 'No old trusted device records found to delete.',
+    ],
+
+    // Cleanup Two-Factor Tokens Command
+    'cleanup_two_factor_tokens' => [
+        'days_zero_warning' => 'Days set to 0 - this will delete ALL two-factor token records.',
+        'confirm_delete_all' => 'Are you sure you want to delete ALL two-factor token records? This action cannot be undone.',
+        'operation_cancelled' => 'Operation cancelled.',
+        'deleting_all' => 'Deleting all two-factor token records...',
+        'deleted_all_success' => 'Successfully deleted all :count two-factor token records.',
+        'no_records_found' => 'No two-factor token records found to delete.',
+        'invalid_days' => 'Days must be a positive integer, or use --all to delete all records.',
+        'cleaning_up' => 'Cleaning up two-factor tokens older than :days days...',
+        'deleted_old_success' => 'Successfully deleted :count old two-factor token records.',
+        'no_old_records_found' => 'No old two-factor token records found to delete.',
+    ],
+
+    // Cleanup Cache Command
+    'cleanup_cache' => [
+        'confirm_delete_all' => 'Are you sure you want to delete ALL cache entries and locks? This action cannot be undone.',
+        'operation_cancelled' => 'Operation cancelled.',
+        'deleting_all' => 'Deleting all cache entries and locks...',
+        'deleted_all_success' => 'Successfully deleted :cache_count cache entries and :locks_count cache locks.',
+        'no_records_found' => 'No cache records found to delete.',
+        'cleaning_expired' => 'Cleaning up expired cache entries and locks...',
+        'deleted_expired_success' => 'Successfully deleted :cache_count expired cache entries and :locks_count expired cache locks.',
+        'no_expired_records_found' => 'No expired cache records found to delete.',
+    ],
+
+    // Cleanup Sessions Command
+    'cleanup_sessions' => [
+        'confirm_delete_all' => 'Are you sure you want to delete ALL session records? This action cannot be undone.',
+        'operation_cancelled' => 'Operation cancelled.',
+        'deleting_all' => 'Deleting all session records...',
+        'deleted_all_success' => 'Successfully deleted all :count session records.',
+        'no_records_found' => 'No session records found to delete.',
+        'invalid_days' => 'Days must be a positive integer, or use --all to delete all records.',
+        'cleaning_up' => 'Cleaning up sessions older than :days days...',
+        'deleted_old_success' => 'Successfully deleted :count old session records.',
+        'no_old_records_found' => 'No old session records found to delete.',
+    ],
+
 ];
