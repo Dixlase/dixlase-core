@@ -87,7 +87,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between">
                 <div>
                     <h3 class="text-lg font-semibold text-white mb-2">{{ __('admin.settings.systems.database_cleanup.all_cleanup_button') }}</h3>
-                    <p class="text-red-100 text-sm">すべてのデータベーステーブルをデフォルト設定でクリーンアップします</p>
+                    <p class="text-red-100 text-sm">{{ __('admin.settings.systems.database_cleanup.all_cleanup_description') }}</p>
                 </div>
                 <form id="cleanupAllForm" action="{{ route('admin.settings.systems.database_cleanup.clean') }}" method="POST" class="inline">
                     @csrf
@@ -95,7 +95,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </form>
                 <button type="button" 
                         class="bg-white text-red-600 hover:bg-red-50 font-medium py-2 px-6 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-red-600"
-                        onclick="confirmCleanup('all', 'すべてのテーブル')">
+                        onclick="confirmCleanup('all', translations.allTables)">
                     {{ __('admin.settings.systems.database_cleanup.all_cleanup_button') }}
                 </button>
             </div>
@@ -109,13 +109,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                 </svg>
-                重要な注意事項
+                {{ __('admin.settings.systems.database_cleanup.info_panel.title') }}
             </h3>
             <ul class="text-sm text-blue-700 dark:text-blue-300 space-y-2">
-                <li>• データベースクリーンアップは不可逆的な操作です。実行前に必要なデータのバックアップを取ることをお勧めします。</li>
-                <li>• 定期的なクリーンアップはシステムパフォーマンスの向上に役立ちます。</li>
-                <li>• 本番環境では慎重に実行し、メンテナンス時間中に行うことをお勧めします。</li>
-                <li>• 各テーブルのデフォルト保持期間は、データの性質に応じて最適化されています。</li>
+                <li>• {{ __('admin.settings.systems.database_cleanup.info_panel.notes.irreversible') }}</li>
+                <li>• {{ __('admin.settings.systems.database_cleanup.info_panel.notes.performance') }}</li>
+                <li>• {{ __('admin.settings.systems.database_cleanup.info_panel.notes.production') }}</li>
+                <li>• {{ __('admin.settings.systems.database_cleanup.info_panel.notes.defaults') }}</li>
             </ul>
         </div>
     </div>
@@ -130,18 +130,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                 </svg>
             </div>
-            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mt-4">クリーンアップの確認</h3>
+            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mt-4">{{ __('admin.settings.systems.database_cleanup.modal.title') }}</h3>
             <div class="mt-2 px-7 py-3">
                 <p class="text-sm text-gray-500 dark:text-gray-300" id="confirmationMessage">
-                    このデータベースクリーンアップを実行してもよろしいですか？
+                    {{ __('admin.settings.systems.database_cleanup.modal.message') }}
                 </p>
             </div>
             <div class="items-center px-4 py-3">
                 <button id="confirmButton" class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-24 mr-2 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300">
-                    実行
+                    {{ __('admin.settings.systems.database_cleanup.modal.execute') }}
                 </button>
                 <button id="cancelButton" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white text-base font-medium rounded-md w-24 hover:bg-gray-400 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300">
-                    キャンセル
+                    {{ __('admin.settings.systems.database_cleanup.modal.cancel') }}
                 </button>
             </div>
         </div>
@@ -151,12 +151,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <script>
 let currentFormId = '';
 
+// Translation strings for JavaScript
+const translations = {
+    confirmMessage: @json(__('admin.settings.systems.database_cleanup.modal.confirm_message', ['name' => ':name'])),
+    allTables: @json(__('admin.settings.systems.database_cleanup.all_tables'))
+};
+
 function confirmCleanup(type, name) {
     const modal = document.getElementById('confirmationModal');
     const message = document.getElementById('confirmationMessage');
     const confirmButton = document.getElementById('confirmButton');
     
-    message.textContent = `${name} のレコードをクリーンアップしてもよろしいですか？この操作は元に戻すことができません。`;
+    message.textContent = translations.confirmMessage.replace(':name', name);
     currentFormId = type === 'all' ? 'cleanupAllForm' : `cleanupForm${type.charAt(0).toUpperCase() + type.slice(1)}`;
     
     modal.classList.remove('hidden');

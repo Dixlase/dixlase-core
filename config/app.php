@@ -24,6 +24,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Software Name
+    |--------------------------------------------------------------------------
+    |
+    | This value is the name of your software, which will be used when the
+    | framework needs to place the software's name in a notification or
+    | other UI elements where an application name needs to be displayed.
+    |
+    */
+    'software_name' => env('SOFTWARE_NAME', 'Dixlase'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Name
     |--------------------------------------------------------------------------
     |

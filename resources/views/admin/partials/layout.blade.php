@@ -55,12 +55,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <div class="min-h-screen flex pt-16">
                  <!-- Side Bar -->
-                <aside class="hidden sm:block w-64 flex-shrink-0 {{ config('admin.appearance_class.layout.aside') }}">
+                <aside class="md:fixed overflow-auto md:h-full hidden sm:block w-64 flex-shrink-0 {{ config('admin.appearance_class.layout.aside') }}">
                     @include('admin.partials.sidebar')
                 </aside>
 
                 <!-- Main -->
-                <main class="flex-1 {{ config('admin.appearance_class.layout.main') }}">
+                <main class="p-6 sm:p-0 ml-0 md:ml-64 flex-1 {{ config('admin.appearance_class.layout.main') }}">
 
                     <!-- Page Heading -->
                     <div class="mx-auto py-6 px-4 sm:px-6 lg:px-8 mb-10 {{ config('admin.appearance_class.layout.title') }}">
@@ -70,7 +70,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </h2>
                     </div>
 
-                    <div class="pb-8 px-4 sm:px-6 lg:px-8">
+                    <div class="w-full pb-8 px-0 sm:px-6 lg:px-8">
                         @include('components::flash-message')
                         <!-- Page Content -->
                         @yield('content')
