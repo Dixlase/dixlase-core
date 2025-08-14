@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\Models\AdminLoginAttempt;
+use App\Models\MemberLoginAttempt;
 use App\Models\MemberSetting;
 use App\Services\AdminLoginLockoutService;
 use Carbon\Carbon;
@@ -56,7 +56,7 @@ class AdminLoginLockoutServiceTest extends TestCase
 
         // Create 3 failed attempts (below max of 5)
         for ($i = 0; $i < 3; $i++) {
-            AdminLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
+            MemberLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
         }
 
         $this->assertFalse($this->service->isLockedOut($email));
@@ -68,7 +68,7 @@ class AdminLoginLockoutServiceTest extends TestCase
 
         // Create 5 failed attempts (equals max)
         for ($i = 0; $i < 5; $i++) {
-            AdminLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
+            MemberLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
         }
 
         $this->assertTrue($this->service->isLockedOut($email));
@@ -80,7 +80,7 @@ class AdminLoginLockoutServiceTest extends TestCase
 
         // Create 7 failed attempts (exceeds max of 5)
         for ($i = 0; $i < 7; $i++) {
-            AdminLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
+            MemberLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
         }
 
         $this->assertTrue($this->service->isLockedOut($email));
@@ -92,7 +92,7 @@ class AdminLoginLockoutServiceTest extends TestCase
 
         // Create 10 failed attempts from same IP (double the max of 5)
         for ($i = 0; $i < 10; $i++) {
-            AdminLoginAttempt::recordAttempt("user{$i}@example.com", $ip, null, false);
+            MemberLoginAttempt::recordAttempt("user{$i}@example.com", $ip, null, false);
         }
 
         $this->assertTrue($this->service->isIpLockedOut($ip));
@@ -104,7 +104,7 @@ class AdminLoginLockoutServiceTest extends TestCase
 
         // Create 8 failed attempts from same IP (less than double max of 10)
         for ($i = 0; $i < 8; $i++) {
-            AdminLoginAttempt::recordAttempt("user{$i}@example.com", $ip, null, false);
+            MemberLoginAttempt::recordAttempt("user{$i}@example.com", $ip, null, false);
         }
 
         $this->assertFalse($this->service->isIpLockedOut($ip));
@@ -116,7 +116,7 @@ class AdminLoginLockoutServiceTest extends TestCase
 
         // Create max failed attempts to trigger lockout
         for ($i = 0; $i < 5; $i++) {
-            AdminLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
+            MemberLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
         }
 
         $remainingMinutes = $this->service->getLockoutRemainingMinutes($email);
@@ -132,7 +132,7 @@ class AdminLoginLockoutServiceTest extends TestCase
 
         // Create only 2 failed attempts (below max)
         for ($i = 0; $i < 2; $i++) {
-            AdminLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
+            MemberLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
         }
 
         $remainingMinutes = $this->service->getLockoutRemainingMinutes($email);
@@ -145,20 +145,20 @@ class AdminLoginLockoutServiceTest extends TestCase
 
         // Create some failed attempts
         for ($i = 0; $i < 3; $i++) {
-            AdminLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
+            MemberLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
         }
 
         // Verify failed attempts exist
-        $this->assertEquals(3, AdminLoginAttempt::getFailedAttemptsCount($email, 15));
+        $this->assertEquals(3, MemberLoginAttempt::getFailedAttemptsCount($email, 15));
 
         // Handle successful login
         $this->service->handleSuccessfulLogin($email);
 
         // Verify failed attempts are cleared
-        $this->assertEquals(0, AdminLoginAttempt::getFailedAttemptsCount($email, 15));
+        $this->assertEquals(0, MemberLoginAttempt::getFailedAttemptsCount($email, 15));
         
         // Verify successful attempt is recorded
-        $this->assertEquals(1, AdminLoginAttempt::where('identifier', $email)->where('successful', true)->count());
+        $this->assertEquals(1, MemberLoginAttempt::where('identifier', $email)->where('successful', true)->count());
     }
 
     public function test_handle_failed_login_records_attempt()
@@ -187,7 +187,7 @@ class AdminLoginLockoutServiceTest extends TestCase
 
         // Create 4 existing failed attempts
         for ($i = 0; $i < 4; $i++) {
-            AdminLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
+            MemberLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
         }
 
         // This should be the 5th attempt, triggering lockout
@@ -215,7 +215,7 @@ class AdminLoginLockoutServiceTest extends TestCase
 
         // Create 2 failed attempts
         for ($i = 0; $i < 2; $i++) {
-            AdminLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
+            MemberLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
         }
 
         $info = $this->service->getLockoutInfo($email);
@@ -236,7 +236,7 @@ class AdminLoginLockoutServiceTest extends TestCase
 
         // Create 5 failed attempts to trigger lockout
         for ($i = 0; $i < 5; $i++) {
-            AdminLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
+            MemberLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
         }
 
         $info = $this->service->getLockoutInfo($email);
@@ -260,7 +260,7 @@ class AdminLoginLockoutServiceTest extends TestCase
 
         $attempt = $this->service->recordLoginAttempt($request, $email, false);
 
-        $this->assertInstanceOf(AdminLoginAttempt::class, $attempt);
+        $this->assertInstanceOf(MemberLoginAttempt::class, $attempt);
         $this->assertEquals($email, $attempt->identifier);
         $this->assertEquals('192.168.1.1', $attempt->ip_address);
         $this->assertEquals('Mozilla/5.0', $attempt->user_agent);

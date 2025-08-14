@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Models\AdminLoginAttempt;
+use App\Models\MemberLoginAttempt;
 use App\Models\Member;
 use App\Models\MemberSetting;
 use Carbon\Carbon;
@@ -57,9 +57,9 @@ class AdminLoginLockoutTest extends TestCase
         $response->assertSessionHasErrors(['email']);
 
         // Verify attempt was recorded
-        $this->assertEquals(1, AdminLoginAttempt::where('identifier', $this->testMember->email)->count());
+        $this->assertEquals(1, MemberLoginAttempt::where('identifier', $this->testMember->email)->count());
         
-        $attempt = AdminLoginAttempt::where('identifier', $this->testMember->email)->first();
+        $attempt = MemberLoginAttempt::where('identifier', $this->testMember->email)->first();
         $this->assertFalse($attempt->successful);
         $this->assertEquals('127.0.0.1', $attempt->ip_address);
     }
@@ -111,7 +111,7 @@ class AdminLoginLockoutTest extends TestCase
     {
         // Create max failed attempts to trigger lockout
         for ($i = 0; $i < 3; $i++) {
-            AdminLoginAttempt::recordAttempt($this->testMember->email, '127.0.0.1', null, false);
+            MemberLoginAttempt::recordAttempt($this->testMember->email, '127.0.0.1', null, false);
         }
 
         // Try to login with correct password - should still be blocked
@@ -132,11 +132,11 @@ class AdminLoginLockoutTest extends TestCase
     {
         // Create some failed attempts
         for ($i = 0; $i < 2; $i++) {
-            AdminLoginAttempt::recordAttempt($this->testMember->email, '127.0.0.1', null, false);
+            MemberLoginAttempt::recordAttempt($this->testMember->email, '127.0.0.1', null, false);
         }
 
         // Verify failed attempts exist
-        $this->assertEquals(2, AdminLoginAttempt::getFailedAttemptsCount($this->testMember->email, 15));
+        $this->assertEquals(2, MemberLoginAttempt::getFailedAttemptsCount($this->testMember->email, 15));
 
         // Successful login
         $response = $this->post(route('admin.login'), [
@@ -147,10 +147,10 @@ class AdminLoginLockoutTest extends TestCase
         $response->assertRedirect(route('admin.dashboard'));
 
         // Verify failed attempts are cleared
-        $this->assertEquals(0, AdminLoginAttempt::getFailedAttemptsCount($this->testMember->email, 15));
+        $this->assertEquals(0, MemberLoginAttempt::getFailedAttemptsCount($this->testMember->email, 15));
         
         // Verify successful attempt is recorded
-        $this->assertEquals(1, AdminLoginAttempt::where('identifier', $this->testMember->email)
+        $this->assertEquals(1, MemberLoginAttempt::where('identifier', $this->testMember->email)
             ->where('successful', true)->count());
     }
 
@@ -160,7 +160,7 @@ class AdminLoginLockoutTest extends TestCase
 
         // Create failed attempts from same IP with different emails (4 attempts = 2 * 2)
         for ($i = 0; $i < 4; $i++) {
-            AdminLoginAttempt::recordAttempt("user{$i}@example.com", '127.0.0.1', null, false);
+            MemberLoginAttempt::recordAttempt("user{$i}@example.com", '127.0.0.1', null, false);
         }
 
         // Try to login - should be blocked by IP lockout
@@ -211,7 +211,7 @@ class AdminLoginLockoutTest extends TestCase
         
         // Create old failed attempts (outside time window)
         for ($i = 0; $i < 5; $i++) {
-            $attempt = AdminLoginAttempt::recordAttempt($this->testMember->email, '127.0.0.1', null, false);
+            $attempt = MemberLoginAttempt::recordAttempt($this->testMember->email, '127.0.0.1', null, false);
             $attempt->attempted_at = Carbon::now()->subMinutes($timeWindow + 5); // 20 minutes ago
             $attempt->save();
         }
@@ -269,7 +269,7 @@ class AdminLoginLockoutTest extends TestCase
         $response->assertSessionHasErrors(['email']);
 
         // Verify attempt was recorded even for non-existent user
-        $this->assertEquals(1, AdminLoginAttempt::where('identifier', 'nonexistent@example.com')->count());
+        $this->assertEquals(1, MemberLoginAttempt::where('identifier', 'nonexistent@example.com')->count());
     }
 
     public function test_lockout_respects_custom_settings()

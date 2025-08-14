@@ -2,25 +2,25 @@
 
 namespace Tests\Unit;
 
-use App\Models\AdminLoginAttempt;
+use App\Models\MemberLoginAttempt;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class AdminLoginAttemptTest extends TestCase
+class MemberLoginAttemptTest extends TestCase
 {
     use RefreshDatabase;
 
     public function test_can_record_login_attempt()
     {
-        $attempt = AdminLoginAttempt::recordAttempt(
+        $attempt = MemberLoginAttempt::recordAttempt(
             'test@example.com',
             '192.168.1.1',
             'Mozilla/5.0',
             false
         );
 
-        $this->assertInstanceOf(AdminLoginAttempt::class, $attempt);
+        $this->assertInstanceOf(MemberLoginAttempt::class, $attempt);
         $this->assertEquals('test@example.com', $attempt->identifier);
         $this->assertEquals('192.168.1.1', $attempt->ip_address);
         $this->assertEquals('Mozilla/5.0', $attempt->user_agent);
@@ -34,14 +34,14 @@ class AdminLoginAttemptTest extends TestCase
         $timeWindow = 15; // 15 minutes
 
         // Create some failed attempts
-        AdminLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
-        AdminLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
-        AdminLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
+        MemberLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
+        MemberLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
+        MemberLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
 
         // Create a successful attempt (should not be counted)
-        AdminLoginAttempt::recordAttempt($email, '192.168.1.1', null, true);
+        MemberLoginAttempt::recordAttempt($email, '192.168.1.1', null, true);
 
-        $count = AdminLoginAttempt::getFailedAttemptsCount($email, $timeWindow);
+        $count = MemberLoginAttempt::getFailedAttemptsCount($email, $timeWindow);
         $this->assertEquals(3, $count);
     }
 
@@ -51,15 +51,15 @@ class AdminLoginAttemptTest extends TestCase
         $timeWindow = 15; // 15 minutes
 
         // Create an old failed attempt (outside time window)
-        $oldAttempt = AdminLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
+        $oldAttempt = MemberLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
         $oldAttempt->attempted_at = Carbon::now()->subMinutes(20);
         $oldAttempt->save();
 
         // Create recent failed attempts (within time window)
-        AdminLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
-        AdminLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
+        MemberLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
+        MemberLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
 
-        $count = AdminLoginAttempt::getFailedAttemptsCount($email, $timeWindow);
+        $count = MemberLoginAttempt::getFailedAttemptsCount($email, $timeWindow);
         $this->assertEquals(2, $count); // Only recent attempts should be counted
     }
 
@@ -69,14 +69,14 @@ class AdminLoginAttemptTest extends TestCase
         $timeWindow = 15;
 
         // Create failed attempts from same IP with different emails
-        AdminLoginAttempt::recordAttempt('user1@example.com', $ip, null, false);
-        AdminLoginAttempt::recordAttempt('user2@example.com', $ip, null, false);
-        AdminLoginAttempt::recordAttempt('user3@example.com', $ip, null, false);
+        MemberLoginAttempt::recordAttempt('user1@example.com', $ip, null, false);
+        MemberLoginAttempt::recordAttempt('user2@example.com', $ip, null, false);
+        MemberLoginAttempt::recordAttempt('user3@example.com', $ip, null, false);
 
         // Create attempt from different IP (should not be counted)
-        AdminLoginAttempt::recordAttempt('user4@example.com', '192.168.1.2', null, false);
+        MemberLoginAttempt::recordAttempt('user4@example.com', '192.168.1.2', null, false);
 
-        $count = AdminLoginAttempt::getFailedAttemptsCountByIp($ip, $timeWindow);
+        $count = MemberLoginAttempt::getFailedAttemptsCountByIp($ip, $timeWindow);
         $this->assertEquals(3, $count);
     }
 
@@ -85,11 +85,11 @@ class AdminLoginAttemptTest extends TestCase
         $email = 'test@example.com';
 
         // Create multiple failed attempts
-        AdminLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
+        MemberLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
         sleep(1); // Ensure different timestamps
-        $lastAttempt = AdminLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
+        $lastAttempt = MemberLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
 
-        $retrieved = AdminLoginAttempt::getLastFailedAttempt($email);
+        $retrieved = MemberLoginAttempt::getLastFailedAttempt($email);
         
         $this->assertNotNull($retrieved);
         $this->assertEquals($lastAttempt->attempted_at->timestamp, $retrieved->timestamp);
@@ -100,17 +100,17 @@ class AdminLoginAttemptTest extends TestCase
         $email = 'test@example.com';
 
         // Create failed attempts
-        AdminLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
-        AdminLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
+        MemberLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
+        MemberLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
 
         // Verify attempts exist
-        $this->assertEquals(2, AdminLoginAttempt::getFailedAttemptsCount($email, 15));
+        $this->assertEquals(2, MemberLoginAttempt::getFailedAttemptsCount($email, 15));
 
         // Clear failed attempts
-        AdminLoginAttempt::clearFailedAttempts($email);
+        MemberLoginAttempt::clearFailedAttempts($email);
 
         // Verify attempts are cleared
-        $this->assertEquals(0, AdminLoginAttempt::getFailedAttemptsCount($email, 15));
+        $this->assertEquals(0, MemberLoginAttempt::getFailedAttemptsCount($email, 15));
     }
 
     public function test_clear_failed_attempts_does_not_affect_successful_attempts()
@@ -118,15 +118,15 @@ class AdminLoginAttemptTest extends TestCase
         $email = 'test@example.com';
 
         // Create failed and successful attempts
-        AdminLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
-        AdminLoginAttempt::recordAttempt($email, '192.168.1.1', null, true);
+        MemberLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
+        MemberLoginAttempt::recordAttempt($email, '192.168.1.1', null, true);
 
         // Clear failed attempts
-        AdminLoginAttempt::clearFailedAttempts($email);
+        MemberLoginAttempt::clearFailedAttempts($email);
 
         // Verify only failed attempts are cleared
-        $this->assertEquals(0, AdminLoginAttempt::where('identifier', $email)->where('successful', false)->count());
-        $this->assertEquals(1, AdminLoginAttempt::where('identifier', $email)->where('successful', true)->count());
+        $this->assertEquals(0, MemberLoginAttempt::where('identifier', $email)->where('successful', false)->count());
+        $this->assertEquals(1, MemberLoginAttempt::where('identifier', $email)->where('successful', true)->count());
     }
 
     public function test_can_cleanup_old_attempts()
@@ -134,17 +134,17 @@ class AdminLoginAttemptTest extends TestCase
         $email = 'test@example.com';
 
         // Create old attempt
-        $oldAttempt = AdminLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
+        $oldAttempt = MemberLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
         $oldAttempt->attempted_at = Carbon::now()->subDays(35);
         $oldAttempt->save();
 
         // Create recent attempt
-        AdminLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
+        MemberLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
 
         // Cleanup attempts older than 30 days
-        $deletedCount = AdminLoginAttempt::cleanupOldAttempts(30);
+        $deletedCount = MemberLoginAttempt::cleanupOldAttempts(30);
 
         $this->assertEquals(1, $deletedCount);
-        $this->assertEquals(1, AdminLoginAttempt::count()); // Only recent attempt should remain
+        $this->assertEquals(1, MemberLoginAttempt::count()); // Only recent attempt should remain
     }
 }
