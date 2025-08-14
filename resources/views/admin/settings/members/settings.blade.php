@@ -143,8 +143,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </p>
             </div>
 
-            <!-- 設定詳細（機能が有効な場合のみ表示） -->
-            <div id="login-attempt-details" class="space-y-6" style="display: {{ $loginAttemptLimitEnabled ? 'block' : 'none' }};">
+            <!-- 設定詳細 -->
+            <div id="login-attempt-details" class="space-y-6">
                 <!-- 最大試行回数 -->
                 <div>
                     <label for="login_attempt_max_attempts" class="block font-medium text-sm text-gray-700 dark:text-white mb-1">
@@ -157,7 +157,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         value="{{ old('login_attempt_max_attempts', $loginAttemptMaxAttempts) }}"
                         min="1" 
                         max="100"
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        class="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     >
                     <p class="mt-1 text-xs text-gray-500 dark:text-white">
                         {{ __('admin.settings.members.settings.login_attempt_max_attempts_help') }}
@@ -176,7 +176,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         value="{{ old('login_attempt_time_window', $loginAttemptTimeWindow) }}"
                         min="1" 
                         max="1440"
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        class="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     >
                     <p class="mt-1 text-xs text-gray-500 dark:text-white">
                         {{ __('admin.settings.members.settings.login_attempt_time_window_help') }}
@@ -195,7 +195,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         value="{{ old('login_attempt_lockout_duration', $loginAttemptLockoutDuration) }}"
                         min="1" 
                         max="10080"
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        class="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     >
                     <p class="mt-1 text-xs text-gray-500 dark:text-white">
                         {{ __('admin.settings.members.settings.login_attempt_lockout_duration_help') }}
@@ -299,26 +299,5 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     ])
 @endsection
 
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // ログイン試行制限の有効/無効切り替え
-    const loginAttemptRadios = document.querySelectorAll('input[name="login_attempt_limit_enabled"]');
-    const loginAttemptDetails = document.getElementById('login-attempt-details');
-    
-    function toggleLoginAttemptDetails() {
-        const isEnabled = document.querySelector('input[name="login_attempt_limit_enabled"]:checked').value === '1';
-        loginAttemptDetails.style.display = isEnabled ? 'block' : 'none';
-    }
-    
-    // 初期状態を設定
-    toggleLoginAttemptDetails();
-    
-    // ラジオボタンの変更を監視
-    loginAttemptRadios.forEach(radio => {
-        radio.addEventListener('change', toggleLoginAttemptDetails);
-    });
-});
-</script>
-@endpush
+
 

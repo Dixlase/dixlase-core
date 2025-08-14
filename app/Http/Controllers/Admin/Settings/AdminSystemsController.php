@@ -195,4 +195,149 @@ class AdminSystemsController extends AdminLoggedInController
             return redirect()->route('admin.settings.systems.cache')->with('error', $message);
         }
     }
+
+    // データベースクリーンアップ管理画面
+    public function databaseCleanup()
+    {
+        $cleanupInfo = [
+            'login_attempts' => [
+                'name' => __('admin.settings.systems.database_cleanup.login_attempts.name'),
+                'description' => __('admin.settings.systems.database_cleanup.login_attempts.description'),
+                'default_days' => 30,
+                'command' => 'admin:cleanup-login-attempts'
+            ],
+            'password_reset_tokens' => [
+                'name' => __('admin.settings.systems.database_cleanup.password_reset_tokens.name'),
+                'description' => __('admin.settings.systems.database_cleanup.password_reset_tokens.description'),
+                'default_days' => 30,
+                'command' => 'admin:cleanup-password-reset-tokens'
+            ],
+            'trusted_devices' => [
+                'name' => __('admin.settings.systems.database_cleanup.trusted_devices.name'),
+                'description' => __('admin.settings.systems.database_cleanup.trusted_devices.description'),
+                'default_days' => 90,
+                'command' => 'admin:cleanup-trusted-devices'
+            ],
+            'two_factor_tokens' => [
+                'name' => __('admin.settings.systems.database_cleanup.two_factor_tokens.name'),
+                'description' => __('admin.settings.systems.database_cleanup.two_factor_tokens.description'),
+                'default_days' => 7,
+                'command' => 'admin:cleanup-two-factor-tokens'
+            ],
+            'cache_data' => [
+                'name' => __('admin.settings.systems.database_cleanup.cache_data.name'),
+                'description' => __('admin.settings.systems.database_cleanup.cache_data.description'),
+                'default_days' => null, // 期限切れのみ
+                'command' => 'admin:cleanup-cache'
+            ],
+            'sessions' => [
+                'name' => __('admin.settings.systems.database_cleanup.sessions.name'),
+                'description' => __('admin.settings.systems.database_cleanup.sessions.description'),
+                'default_days' => 7,
+                'command' => 'admin:cleanup-sessions'
+            ]
+        ];
+
+        $this->viewParams['cleanupInfo'] = $cleanupInfo;
+        
+        return view('admin::settings.systems.database_cleanup', $this->viewParams);
+    }
+
+    // 個別データベースクリーンアップ
+    public function cleanupDatabase(Request $request)
+    {
+        $type = $request->input('type');
+        $days = $request->input('days');
+        $message = '';
+        $success = true;
+        $count = 0;
+
+        try {
+            switch ($type) {
+                case 'login_attempts':
+                    $exitCode = Artisan::call('admin:cleanup-login-attempts', ['--days' => $days]);
+                    $output = Artisan::output();
+                    $count = $this->extractCountFromOutput($output);
+                    $message = __('admin.settings.systems.database_cleanup.cleanup_success', ['count' => $count]);
+                    break;
+                case 'password_reset_tokens':
+                    $exitCode = Artisan::call('admin:cleanup-password-reset-tokens', ['--days' => $days]);
+                    $output = Artisan::output();
+                    $count = $this->extractCountFromOutput($output);
+                    $message = __('admin.settings.systems.database_cleanup.cleanup_success', ['count' => $count]);
+                    break;
+                case 'trusted_devices':
+                    $exitCode = Artisan::call('admin:cleanup-trusted-devices', ['--days' => $days]);
+                    $output = Artisan::output();
+                    $count = $this->extractCountFromOutput($output);
+                    $message = __('admin.settings.systems.database_cleanup.cleanup_success', ['count' => $count]);
+                    break;
+                case 'two_factor_tokens':
+                    $exitCode = Artisan::call('admin:cleanup-two-factor-tokens', ['--days' => $days]);
+                    $output = Artisan::output();
+                    $count = $this->extractCountFromOutput($output);
+                    $message = __('admin.settings.systems.database_cleanup.cleanup_success', ['count' => $count]);
+                    break;
+                case 'cache_data':
+                    $exitCode = Artisan::call('admin:cleanup-cache', ['--expired-only' => true]);
+                    $output = Artisan::output();
+                    $count = $this->extractCountFromOutput($output);
+                    $message = __('admin.settings.systems.database_cleanup.cleanup_success', ['count' => $count]);
+                    break;
+                case 'sessions':
+                    $exitCode = Artisan::call('admin:cleanup-sessions', ['--days' => $days]);
+                    $output = Artisan::output();
+                    $count = $this->extractCountFromOutput($output);
+                    $message = __('admin.settings.systems.database_cleanup.cleanup_success', ['count' => $count]);
+                    break;
+                case 'all':
+                    $totalCount = 0;
+                    $commands = [
+                        ['admin:cleanup-login-attempts', ['--days' => 30]],
+                        ['admin:cleanup-password-reset-tokens', ['--days' => 30]],
+                        ['admin:cleanup-trusted-devices', ['--days' => 90]],
+                        ['admin:cleanup-two-factor-tokens', ['--days' => 7]],
+                        ['admin:cleanup-cache', ['--expired-only' => true]],
+                        ['admin:cleanup-sessions', ['--days' => 7]]
+                    ];
+                    
+                    foreach ($commands as $command) {
+                        Artisan::call($command[0], $command[1]);
+                        $output = Artisan::output();
+                        $totalCount += $this->extractCountFromOutput($output);
+                    }
+                    
+                    $message = __('admin.settings.systems.database_cleanup.cleanup_success', ['count' => $totalCount]);
+                    break;
+                default:
+                    $success = false;
+                    $message = __('admin.settings.systems.database_cleanup.cleanup_error', ['error' => 'Invalid cleanup type']);
+            }
+        } catch (\Exception $e) {
+            $success = false;
+            $message = __('admin.settings.systems.database_cleanup.cleanup_error', ['error' => $e->getMessage()]);
+        }
+
+        if ($success) {
+            return redirect()->route('admin.settings.systems.database_cleanup')->with('success', $message);
+        } else {
+            return redirect()->route('admin.settings.systems.database_cleanup')->with('error', $message);
+        }
+    }
+
+    // コマンド出力から削除件数を抽出
+    private function extractCountFromOutput($output)
+    {
+        // "Successfully deleted X records" のパターンを探す
+        if (preg_match('/Successfully deleted (\d+)/', $output, $matches)) {
+            return (int) $matches[1];
+        }
+        
+        // "Successfully deleted all X records" のパターンを探す
+        if (preg_match('/Successfully deleted all (\d+)/', $output, $matches)) {
+            return (int) $matches[1];
+        }
+        
+        return 0;
+    }
 }

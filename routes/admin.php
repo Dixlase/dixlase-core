@@ -165,7 +165,11 @@ Route::prefix($adminUrl)->name('admin.')
             //キャッシュ管理
             Route::get('/settings/systems/cache', [AdminSystemsController::class, 'cache'])->name('settings.systems.cache');
             Route::post('/settings/systems/cache/clear', [AdminSystemsController::class, 'clearCache'])->name('settings.systems.cache.clear');
-            //ログ情報
+
+            //データベースクリーンアップ
+            Route::get('/settings/systems/database-cleanup', [AdminSystemsController::class, 'databaseCleanup'])->name('settings.systems.database_cleanup');
+            Route::post('/settings/systems/database-cleanup/clean', [AdminSystemsController::class, 'cleanupDatabase'])->name('settings.systems.database_cleanup.clean');
+            //ログ
             Route::get('/settings/system/logs/{type?}', [AdminSystemsController::class, 'logs'])->name('settings.systems.logs');
             //システム情報
             Route::get('/settings/systems/info', [AdminSystemsController::class, 'info'])->name('settings.systems.info');

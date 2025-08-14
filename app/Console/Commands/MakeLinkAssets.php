@@ -28,9 +28,9 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Theme;
 use App\Models\Plugin;
 
-class LinkAssets extends Command
+class MakeLinkAssets extends Command
 {
-    protected $signature = 'assets:link';
+    protected $signature = 'make:link-assets';
     protected $description = 'Create symbolic links for admin, plugin, and theme assets';
 
     public function handle()
