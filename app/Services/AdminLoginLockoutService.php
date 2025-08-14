@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\AdminLoginAttempt;
+use App\Models\MemberLoginAttempt;
 use App\Models\MemberSetting;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -61,7 +61,7 @@ class AdminLoginLockoutService
             return false;
         }
 
-        $failedAttempts = AdminLoginAttempt::getFailedAttemptsCount(
+        $failedAttempts = MemberLoginAttempt::getFailedAttemptsCount(
             $identifier,
             $this->getTimeWindow()
         );
@@ -81,7 +81,7 @@ class AdminLoginLockoutService
             return false;
         }
 
-        $failedAttempts = AdminLoginAttempt::getFailedAttemptsCountByIp(
+        $failedAttempts = MemberLoginAttempt::getFailedAttemptsCountByIp(
             $ipAddress,
             $this->getTimeWindow()
         );
@@ -104,7 +104,7 @@ class AdminLoginLockoutService
             return null;
         }
 
-        $lastFailedAttempt = AdminLoginAttempt::getLastFailedAttempt($identifier);
+        $lastFailedAttempt = MemberLoginAttempt::getLastFailedAttempt($identifier);
         if (!$lastFailedAttempt) {
             return null;
         }
@@ -125,11 +125,11 @@ class AdminLoginLockoutService
      * @param Request $request
      * @param string $identifier
      * @param bool $successful
-     * @return AdminLoginAttempt
+     * @return MemberLoginAttempt
      */
-    public function recordLoginAttempt(Request $request, string $identifier, bool $successful = false): AdminLoginAttempt
+    public function recordLoginAttempt(Request $request, string $identifier, bool $successful = false): MemberLoginAttempt
     {
-        return AdminLoginAttempt::recordAttempt(
+        return MemberLoginAttempt::recordAttempt(
             $identifier,
             $request->ip(),
             $request->userAgent(),
@@ -146,7 +146,7 @@ class AdminLoginLockoutService
     public function handleSuccessfulLogin(string $identifier): void
     {
         // 成功したログインを記録
-        AdminLoginAttempt::recordAttempt(
+        MemberLoginAttempt::recordAttempt(
             $identifier,
             request()->ip(),
             request()->userAgent(),
@@ -154,7 +154,7 @@ class AdminLoginLockoutService
         );
 
         // 過去の失敗記録をクリア
-        AdminLoginAttempt::clearFailedAttempts($identifier);
+        MemberLoginAttempt::clearFailedAttempts($identifier);
     }
 
     /**
@@ -177,7 +177,7 @@ class AdminLoginLockoutService
             ];
         }
 
-        $failedAttempts = AdminLoginAttempt::getFailedAttemptsCount(
+        $failedAttempts = MemberLoginAttempt::getFailedAttemptsCount(
             $identifier,
             $this->getTimeWindow()
         );
@@ -209,7 +209,7 @@ class AdminLoginLockoutService
         }
 
         $isLockedOut = $this->isLockedOut($identifier);
-        $failedAttempts = AdminLoginAttempt::getFailedAttemptsCount(
+        $failedAttempts = MemberLoginAttempt::getFailedAttemptsCount(
             $identifier,
             $this->getTimeWindow()
         );

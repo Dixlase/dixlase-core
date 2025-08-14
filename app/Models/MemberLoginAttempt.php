@@ -6,9 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 
-class AdminLoginAttempt extends Model
+class MemberLoginAttempt extends Model
 {
     use HasFactory;
+
+    protected $table = 'members_login_attempts';
 
     protected $fillable = [
         'identifier',

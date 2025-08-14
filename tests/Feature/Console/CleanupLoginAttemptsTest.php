@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Console;
 
-use App\Models\AdminLoginAttempt;
+use App\Models\MemberLoginAttempt;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -15,20 +15,20 @@ class CleanupLoginAttemptsTest extends TestCase
     {
         // Create old attempts (35 days old)
         for ($i = 0; $i < 3; $i++) {
-            $attempt = AdminLoginAttempt::recordAttempt("old{$i}@example.com", '192.168.1.1', null, false);
+            $attempt = MemberLoginAttempt::recordAttempt("old{$i}@example.com", '192.168.1.1', null, false);
             $attempt->attempted_at = Carbon::now()->subDays(35);
             $attempt->save();
         }
 
         // Create recent attempts (10 days old)
         for ($i = 0; $i < 2; $i++) {
-            $attempt = AdminLoginAttempt::recordAttempt("recent{$i}@example.com", '192.168.1.1', null, false);
+            $attempt = MemberLoginAttempt::recordAttempt("recent{$i}@example.com", '192.168.1.1', null, false);
             $attempt->attempted_at = Carbon::now()->subDays(10);
             $attempt->save();
         }
 
         // Verify all attempts exist
-        $this->assertEquals(5, AdminLoginAttempt::count());
+        $this->assertEquals(5, MemberLoginAttempt::count());
 
         // Run cleanup command with default 30 days
         $this->artisan('admin:cleanup-login-attempts')
@@ -37,21 +37,21 @@ class CleanupLoginAttemptsTest extends TestCase
             ->assertExitCode(0);
 
         // Verify only recent attempts remain
-        $this->assertEquals(2, AdminLoginAttempt::count());
+        $this->assertEquals(2, MemberLoginAttempt::count());
     }
 
     public function test_cleanup_command_with_custom_days()
     {
         // Create attempts of different ages
-        $attempt1 = AdminLoginAttempt::recordAttempt('user1@example.com', '192.168.1.1', null, false);
+        $attempt1 = MemberLoginAttempt::recordAttempt('user1@example.com', '192.168.1.1', null, false);
         $attempt1->attempted_at = Carbon::now()->subDays(15);
         $attempt1->save();
 
-        $attempt2 = AdminLoginAttempt::recordAttempt('user2@example.com', '192.168.1.1', null, false);
+        $attempt2 = MemberLoginAttempt::recordAttempt('user2@example.com', '192.168.1.1', null, false);
         $attempt2->attempted_at = Carbon::now()->subDays(8);
         $attempt2->save();
 
-        $attempt3 = AdminLoginAttempt::recordAttempt('user3@example.com', '192.168.1.1', null, false);
+        $attempt3 = MemberLoginAttempt::recordAttempt('user3@example.com', '192.168.1.1', null, false);
         $attempt3->attempted_at = Carbon::now()->subDays(5);
         $attempt3->save();
 
@@ -62,14 +62,14 @@ class CleanupLoginAttemptsTest extends TestCase
             ->assertExitCode(0);
 
         // Verify only attempts newer than 10 days remain
-        $this->assertEquals(2, AdminLoginAttempt::count());
+        $this->assertEquals(2, MemberLoginAttempt::count());
     }
 
     public function test_cleanup_command_with_no_old_records()
     {
         // Create only recent attempts
         for ($i = 0; $i < 3; $i++) {
-            AdminLoginAttempt::recordAttempt("recent{$i}@example.com", '192.168.1.1', null, false);
+            MemberLoginAttempt::recordAttempt("recent{$i}@example.com", '192.168.1.1', null, false);
         }
 
         $this->artisan('admin:cleanup-login-attempts')
@@ -78,7 +78,7 @@ class CleanupLoginAttemptsTest extends TestCase
             ->assertExitCode(0);
 
         // All attempts should still exist
-        $this->assertEquals(3, AdminLoginAttempt::count());
+        $this->assertEquals(3, MemberLoginAttempt::count());
     }
 
     public function test_cleanup_command_validates_days_parameter()
@@ -95,12 +95,12 @@ class CleanupLoginAttemptsTest extends TestCase
     public function test_cleanup_command_preserves_successful_attempts()
     {
         // Create old failed attempt
-        $failedAttempt = AdminLoginAttempt::recordAttempt('user@example.com', '192.168.1.1', null, false);
+        $failedAttempt = MemberLoginAttempt::recordAttempt('user@example.com', '192.168.1.1', null, false);
         $failedAttempt->attempted_at = Carbon::now()->subDays(35);
         $failedAttempt->save();
 
         // Create old successful attempt
-        $successfulAttempt = AdminLoginAttempt::recordAttempt('user@example.com', '192.168.1.1', null, true);
+        $successfulAttempt = MemberLoginAttempt::recordAttempt('user@example.com', '192.168.1.1', null, true);
         $successfulAttempt->attempted_at = Carbon::now()->subDays(35);
         $successfulAttempt->save();
 
@@ -109,21 +109,21 @@ class CleanupLoginAttemptsTest extends TestCase
             ->assertExitCode(0);
 
         // Both old attempts should be deleted (command cleans up all old attempts, not just failed ones)
-        $this->assertEquals(0, AdminLoginAttempt::count());
+        $this->assertEquals(0, MemberLoginAttempt::count());
     }
 
     public function test_cleanup_command_works_with_large_dataset()
     {
         // Create a large number of old attempts
         for ($i = 0; $i < 1000; $i++) {
-            $attempt = AdminLoginAttempt::recordAttempt("user{$i}@example.com", '192.168.1.1', null, false);
+            $attempt = MemberLoginAttempt::recordAttempt("user{$i}@example.com", '192.168.1.1', null, false);
             $attempt->attempted_at = Carbon::now()->subDays(35);
             $attempt->save();
         }
 
         // Create some recent attempts
         for ($i = 0; $i < 100; $i++) {
-            AdminLoginAttempt::recordAttempt("recent{$i}@example.com", '192.168.1.1', null, false);
+            MemberLoginAttempt::recordAttempt("recent{$i}@example.com", '192.168.1.1', null, false);
         }
 
         $this->artisan('admin:cleanup-login-attempts')
@@ -131,6 +131,6 @@ class CleanupLoginAttemptsTest extends TestCase
             ->assertExitCode(0);
 
         // Only recent attempts should remain
-        $this->assertEquals(100, AdminLoginAttempt::count());
+        $this->assertEquals(100, MemberLoginAttempt::count());
     }
 }

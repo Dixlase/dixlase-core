@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('admin_login_attempts', function (Blueprint $table) {
+        Schema::create('members_login_attempts', function (Blueprint $table) {
             $table->id();
             $table->string('identifier')->index(); // email or username
             $table->string('ip_address', 45)->index(); // IPv4 or IPv6
@@ -32,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('admin_login_attempts');
+        Schema::dropIfExists('members_login_attempts');
     }
 };
