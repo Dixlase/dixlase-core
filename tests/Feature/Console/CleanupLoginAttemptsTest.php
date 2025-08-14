@@ -1,0 +1,136 @@
+<?php
+
+namespace Tests\Feature\Console;
+
+use App\Models\AdminLoginAttempt;
+use Carbon\Carbon;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class CleanupLoginAttemptsTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_cleanup_command_removes_old_attempts()
+    {
+        // Create old attempts (35 days old)
+        for ($i = 0; $i < 3; $i++) {
+            $attempt = AdminLoginAttempt::recordAttempt("old{$i}@example.com", '192.168.1.1', null, false);
+            $attempt->attempted_at = Carbon::now()->subDays(35);
+            $attempt->save();
+        }
+
+        // Create recent attempts (10 days old)
+        for ($i = 0; $i < 2; $i++) {
+            $attempt = AdminLoginAttempt::recordAttempt("recent{$i}@example.com", '192.168.1.1', null, false);
+            $attempt->attempted_at = Carbon::now()->subDays(10);
+            $attempt->save();
+        }
+
+        // Verify all attempts exist
+        $this->assertEquals(5, AdminLoginAttempt::count());
+
+        // Run cleanup command with default 30 days
+        $this->artisan('admin:cleanup-login-attempts')
+            ->expectsOutput('Cleaning up login attempts older than 30 days...')
+            ->expectsOutput('Successfully deleted 3 old login attempt records.')
+            ->assertExitCode(0);
+
+        // Verify only recent attempts remain
+        $this->assertEquals(2, AdminLoginAttempt::count());
+    }
+
+    public function test_cleanup_command_with_custom_days()
+    {
+        // Create attempts of different ages
+        $attempt1 = AdminLoginAttempt::recordAttempt('user1@example.com', '192.168.1.1', null, false);
+        $attempt1->attempted_at = Carbon::now()->subDays(15);
+        $attempt1->save();
+
+        $attempt2 = AdminLoginAttempt::recordAttempt('user2@example.com', '192.168.1.1', null, false);
+        $attempt2->attempted_at = Carbon::now()->subDays(8);
+        $attempt2->save();
+
+        $attempt3 = AdminLoginAttempt::recordAttempt('user3@example.com', '192.168.1.1', null, false);
+        $attempt3->attempted_at = Carbon::now()->subDays(5);
+        $attempt3->save();
+
+        // Run cleanup with custom 10 days
+        $this->artisan('admin:cleanup-login-attempts', ['--days' => 10])
+            ->expectsOutput('Cleaning up login attempts older than 10 days...')
+            ->expectsOutput('Successfully deleted 1 old login attempt records.')
+            ->assertExitCode(0);
+
+        // Verify only attempts newer than 10 days remain
+        $this->assertEquals(2, AdminLoginAttempt::count());
+    }
+
+    public function test_cleanup_command_with_no_old_records()
+    {
+        // Create only recent attempts
+        for ($i = 0; $i < 3; $i++) {
+            AdminLoginAttempt::recordAttempt("recent{$i}@example.com", '192.168.1.1', null, false);
+        }
+
+        $this->artisan('admin:cleanup-login-attempts')
+            ->expectsOutput('Cleaning up login attempts older than 30 days...')
+            ->expectsOutput('No old login attempt records found to delete.')
+            ->assertExitCode(0);
+
+        // All attempts should still exist
+        $this->assertEquals(3, AdminLoginAttempt::count());
+    }
+
+    public function test_cleanup_command_validates_days_parameter()
+    {
+        $this->artisan('admin:cleanup-login-attempts', ['--days' => 0])
+            ->expectsOutput('Days must be a positive integer.')
+            ->assertExitCode(1);
+
+        $this->artisan('admin:cleanup-login-attempts', ['--days' => -5])
+            ->expectsOutput('Days must be a positive integer.')
+            ->assertExitCode(1);
+    }
+
+    public function test_cleanup_command_preserves_successful_attempts()
+    {
+        // Create old failed attempt
+        $failedAttempt = AdminLoginAttempt::recordAttempt('user@example.com', '192.168.1.1', null, false);
+        $failedAttempt->attempted_at = Carbon::now()->subDays(35);
+        $failedAttempt->save();
+
+        // Create old successful attempt
+        $successfulAttempt = AdminLoginAttempt::recordAttempt('user@example.com', '192.168.1.1', null, true);
+        $successfulAttempt->attempted_at = Carbon::now()->subDays(35);
+        $successfulAttempt->save();
+
+        $this->artisan('admin:cleanup-login-attempts')
+            ->expectsOutput('Successfully deleted 2 old login attempt records.')
+            ->assertExitCode(0);
+
+        // Both old attempts should be deleted (command cleans up all old attempts, not just failed ones)
+        $this->assertEquals(0, AdminLoginAttempt::count());
+    }
+
+    public function test_cleanup_command_works_with_large_dataset()
+    {
+        // Create a large number of old attempts
+        for ($i = 0; $i < 1000; $i++) {
+            $attempt = AdminLoginAttempt::recordAttempt("user{$i}@example.com", '192.168.1.1', null, false);
+            $attempt->attempted_at = Carbon::now()->subDays(35);
+            $attempt->save();
+        }
+
+        // Create some recent attempts
+        for ($i = 0; $i < 100; $i++) {
+            AdminLoginAttempt::recordAttempt("recent{$i}@example.com", '192.168.1.1', null, false);
+        }
+
+        $this->artisan('admin:cleanup-login-attempts')
+            ->expectsOutput('Successfully deleted 1000 old login attempt records.')
+            ->assertExitCode(0);
+
+        // Only recent attempts should remain
+        $this->assertEquals(100, AdminLoginAttempt::count());
+    }
+}

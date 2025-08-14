@@ -33,6 +33,7 @@ use App\Models\MemberSetting;
 use Illuminate\Support\Facades\Hash;
 use App\Services\AdminTwoFactorService;
 use App\Services\AdminLoginNotificationService;
+use App\Services\AdminLoginLockoutService;
 use Illuminate\Support\Facades\Log;
 
 
@@ -66,11 +67,39 @@ class AdminLoginController extends AdminController
      */
     public function store(AdminLoginRequest $request)
     {
-        $member = Member::where('email', $request->email)->first();
+        $lockoutService = app(AdminLoginLockoutService::class);
+        $email = $request->email;
+
+        // ロックアウト状態をチェック
+        if ($lockoutService->isLockedOut($email)) {
+            $remainingMinutes = $lockoutService->getLockoutRemainingMinutes($email);
+            return back()->withErrors([
+                'email' => __('auth.lockout', ['minutes' => $remainingMinutes]),
+            ]);
+        }
+
+        // IPアドレスベースのロックアウトもチェック
+        if ($lockoutService->isIpLockedOut($request->ip())) {
+            return back()->withErrors([
+                'email' => __('auth.ip_lockout'),
+            ]);
+        }
+
+        $member = Member::where('email', $email)->first();
 
         if (!$member || !Hash::check($request->password, $member->password)) {
+            // 失敗したログインを記録
+            $lockoutInfo = $lockoutService->handleFailedLogin($request, $email);
+            
+            $errorMessage = __('auth.failed');
+            if ($lockoutInfo['locked_out']) {
+                $errorMessage = __('auth.lockout', ['minutes' => $lockoutInfo['lockout_minutes']]);
+            } elseif ($lockoutInfo['remaining_attempts'] > 0) {
+                $errorMessage = __('auth.failed_with_attempts', ['attempts' => $lockoutInfo['remaining_attempts']]);
+            }
+
             return back()->withErrors([
-                'email' => __('auth.failed'),
+                'email' => $errorMessage,
             ]);
         }
         // 2FA 判定（有効な場合だけ進める）
@@ -85,6 +114,8 @@ class AdminLoginController extends AdminController
 
             return redirect()->route('admin.two-factor.login'); // ← 入力画面へ遷移
         } else {
+            // 成功したログインを記録（失敗記録をクリア）
+            $lockoutService->handleSuccessfulLogin($email);
 
             // ログイン環境を記録、通知
             app(AdminLoginNotificationService::class)->handle($member, $request);
@@ -135,8 +166,11 @@ class AdminLoginController extends AdminController
             return back()->withErrors(['code' => __('auth.two_factor.invalid')]);
         }
 
+        // 成功したログインを記録（失敗記録をクリア）
+        app(AdminLoginLockoutService::class)->handleSuccessfulLogin($member->email);
+
         // ログイン環境を記録、通知
-        app(MembersLoginNotificationService::class)->handle($member, $request);
+        app(AdminLoginNotificationService::class)->handle($member, $request);
 
         Auth::guard('member')->login($member, session('login.remember', false));
         session()->forget(['login.id', 'login.remember']);
