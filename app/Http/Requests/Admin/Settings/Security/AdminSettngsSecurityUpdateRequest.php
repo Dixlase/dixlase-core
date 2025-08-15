@@ -87,11 +87,11 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'allowed_admin_ips.regex' => 'IPアドレスはカンマ区切りの形式で入力してください (例: 192.168.1.1, 127.0.0.1)。',
-            'blocked_admin_ips.regex' => 'IPアドレスはカンマ区切りの形式で入力してください (例: 192.168.1.1, 127.0.0.1)。',
-            'captcha_google_version.in' => 'reCAPTCHAのバージョンは v2_checkbox, v2_invisible, v3 のいずれかを選択してください。',
-            'captcha_google_min_score.between' => 'reCAPTCHAの最小スコアは0から1の間で入力してください。',
-            'captcha_driver.in' => 'サポートされているCAPTCHAプロバイダーを選択してください。',
+            'allowed_admin_ips.regex' => __('admin.security.validation.allowed_admin_ips_format'),
+            'blocked_admin_ips.regex' => __('admin.security.validation.blocked_admin_ips_format'),
+            'captcha_google_version.in' => __('admin.security.validation.captcha_google_version_invalid'),
+            'captcha_google_min_score.between' => __('admin.security.validation.captcha_google_min_score_range'),
+            'captcha_driver.in' => __('admin.security.validation.captcha_driver_invalid'),
         ];
     }
 }

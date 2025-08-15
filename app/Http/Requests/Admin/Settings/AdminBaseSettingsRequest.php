@@ -47,8 +47,8 @@ class AdminBaseSettingsRequest extends FormRequest
             'locale' => ['required', Rule::in($availableLocales)],
             'timezone' => 'required|timezone',
             'mail_mailer' => ['required', Rule::in(array_keys(trans('mail.mailers')))],
-            'mail_host' => 'required|string',
-            'mail_port' => 'required|numeric',
+            'mail_host' => 'nullable|string',
+            'mail_port' => 'nullable|numeric',
             'mail_username' => 'nullable|string',
             'mail_password' => 'nullable|string',
             'mail_encryption' => ['nullable', Rule::in(array_keys(trans('mail.encryptions')))],
@@ -64,10 +64,14 @@ class AdminBaseSettingsRequest extends FormRequest
     public function messages()
     {
         return [
-            'site_name.required' => 'サイト名は必須です。',
-            'locale.required' => '言語を選択してください。',
-            'timezone.timezone' => '有効なタイムゾーンを選択してください。',
-            'required_fields.required' => '必須項目の設定を行ってください。',
+            'app_name.required' => __('admin.base.validation.app_name_required'),
+            'locale.required' => __('admin.base.validation.locale_required'),
+            'timezone.timezone' => __('admin.base.validation.timezone_invalid'),
+            'mail_mailer.required' => __('admin.base.validation.mail_mailer_required'),
+            'mail_host.required' => __('admin.base.validation.mail_host_required'),
+            'mail_port.required' => __('admin.base.validation.mail_port_required'),
+            'mail_port.numeric' => __('admin.base.validation.mail_port_numeric'),
+            'maintenance_mode.required' => __('admin.base.validation.maintenance_mode_required'),
         ];
     }
 }

@@ -33,7 +33,7 @@ class MembersSettingsSeeder extends Seeder
             ['key' => 'enabled_two_factor_methods', 'value' => '["email"]'], // デフォルト: メール認証のみ有効
 
             // ログイン試行制限設定
-            ['key' => 'login_attempt_limit_enabled', 'value' => '0'], // デフォルト: 無効
+            ['key' => 'login_attempt_limit_enabled', 'value' => '1'], // デフォルト: 有効
             ['key' => 'login_attempt_max_attempts', 'value' => '5'], // デフォルト: 5回
             ['key' => 'login_attempt_time_window', 'value' => '15'], // デフォルト: 15分
             ['key' => 'login_attempt_lockout_duration', 'value' => '30'], // デフォルト: 30分

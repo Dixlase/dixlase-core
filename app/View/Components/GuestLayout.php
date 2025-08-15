@@ -44,7 +44,7 @@ class GuestLayout extends Component
 
         // データベースからサイト名を取得。取得できなかった場合は.envからデフォルト値を使用
         $this->site_name = DB::table('base_settings')->where('name', 'site_name')->value('value')
-            ?? env('APP_NAME', 'EventManagementSystem');
+            ?? env('APP_NAME', 'Dixlase');
 
         // データベースからテーマ情報を取得。取得できなかった場合はコンフィグからデフォルト値を使用
         $this->theme = DB::table('base_settings')->where('name', 'admin_theme')->value('value')

@@ -33,8 +33,10 @@ trait AdminInterfaceTrait
 
     protected function getSiteName()
     {
-        $this->siteName = DB::table('base_settings')->where('name', 'site_name')->value('value')
-            ?? env('APP_NAME', 'EventManagementSystem');
+        $this->siteName = env('APP_NAME') 
+            ?? config('app.name') 
+            ?? DB::table('base_settings')->where('name', 'site_name')->value('value')
+            ?? 'Dixlase';
         $this->viewParams['site_name'] = $this->siteName;
     }
 

@@ -11,6 +11,7 @@ class EnvHelper
     protected static array $envMap = [
         'app_name' => 'APP_NAME',
         'locale' => 'APP_LOCALE',
+        'fallback_locale' => 'APP_FALLBACK_LOCALE',
         'faker_locale' => 'APP_FAKER_LOCALE',
         'timezone' => 'APP_TIMEZONE',
         'system_email' => 'MAIL_FROM_ADDRESS',

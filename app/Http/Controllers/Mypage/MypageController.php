@@ -43,7 +43,7 @@ class MypageController extends Controller
     {
         // データベースからサイト名を取得。取得できなかった場合は.envからデフォルト値を使用
         $this->siteName = DB::table('base_settings')->where('name', 'site_name')->value('value')
-            ?? env('APP_NAME', 'EventManagementSystem');
+            ?? env('APP_NAME', 'Dixlase');
 
         //ログイン中の管理者情報を取得
         $admin = auth('web')->user();

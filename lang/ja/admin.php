@@ -248,6 +248,7 @@ return [
             'mail_from_address' => '送信元メールアドレス',
             'mail_test' => 'メール送信テスト',
             'mail_test_description' => '現在の設定でテストメールを送信します。送信元メールアドレス宛にテストメールが送信されます。',
+            'mail_test_description_2' => 'メール送信機能を有効するには、必ず接続テストとメール送信テストを実行してください。',
             'test_connection_button' => '接続テスト',
             'test_mail_button' => 'テストメール送信',
             'testing_connection' => '接続中...',
@@ -270,6 +271,22 @@ return [
             'yes' => 'はい',
             'no' => 'いいえ',
             'submit' => '更新',
+            'last_test_date' => '最終テスト日時',
+            'mail_server_warning' => 'メールサーバー未設定',
+            'mail_server_warning_message' => 'メールサーバーの設定とテストが未実行のため、メール送信機能が利用できません。',
+            'mail_server_test_passed' => 'メールサーバー接続テスト合格済み。メール送信機能が利用できます。',
+            'save_settings_reminder' => '設定を保存してください',
+            'save_settings_reminder_message' => '変更を有効にするため、必ず設定を保存してください。',
+            'validation' => [
+                'app_name_required' => 'アプリケーション名は必須です。',
+                'locale_required' => '言語を選択してください。',
+                'timezone_invalid' => '有効なタイムゾーンを選択してください。',
+                'mail_mailer_required' => 'メールドライバーを選択してください。',
+                'mail_host_required' => 'メールホストを入力してください。',
+                'mail_port_required' => 'メールポートを入力してください。',
+                'mail_port_numeric' => 'メールポートは数値で入力してください。',
+                'maintenance_mode_required' => 'メンテナンスモードの設定を選択してください。',
+            ],
         ],
         // セキュリティ
         'security' => [
@@ -305,6 +322,13 @@ return [
             'save_button' => '保存',
             'back_button' => '戻る',
             'submit' => '更新',
+            'validation' => [
+                'allowed_admin_ips_format' => 'IPアドレスはカンマ区切りの形式で入力してください (例: 192.168.1.1, 127.0.0.1)。',
+                'blocked_admin_ips_format' => 'IPアドレスはカンマ区切りの形式で入力してください (例: 192.168.1.1, 127.0.0.1)。',
+                'captcha_google_version_invalid' => 'reCAPTCHAのバージョンは v2_checkbox, v2_invisible, v3 のいずれかを選択してください。',
+                'captcha_google_min_score_range' => 'reCAPTCHAの最小スコアは0から1の間で入力してください。',
+                'captcha_driver_invalid' => 'サポートされているCAPTCHAプロバイダーを選択してください。',
+            ],
         ],
         // メンバー
         'members' => [
@@ -444,20 +468,20 @@ return [
             'login_notification_mode' => [
                 'label' => 'ログイン通知の設定',
                 'options' => [
-                    0 => 'メンバーのプロフィール設定を反映',
-                    1 => '無効',
-                    2 => '常に有効',
-                    3 => '異なる端末/IP時のみ有効',
+                    0 => '無効',
+                    1 => 'メンバーのプロフィール設定を反映',
+                    2 => '異なる端末/IP時のみ有効',
+                    3 => '常に有効',
                 ]
 
             ],
             'two_factor_mode' => [
                 'label' => '2段階認証の設定',
                 'options' => [
-                    0 => 'メンバーのプロフィール設定を反映',
-                    1 => '無効',
-                    2 => '常に有効',
-                    3 => '異なる端末/IP時のみ有効',
+                    0 => '無効',
+                    1 => 'メンバーのプロフィール設定を反映',
+                    2 => '異なる端末/IP時のみ有効',
+                    3 => '常に有効',
                 ]
             ],
             'two_factor_method' => [
@@ -467,6 +491,26 @@ return [
                     'device' => 'デバイス認証',
                     'biometric' => '生体認証',
                 ]
+            ],
+            'validation' => [
+                'mail_server_not_tested' => 'パスワードリセット機能、ログイン通知機能、2段階認証機能を使用するには、基本設定でメールサーバーの接続テストに合格する必要があります。',
+                'mail_server_warning' => 'メールサーバー未設定',
+                'mail_server_warning_message' => 'メールサーバーの設定とテストが未実行のため、パスワードリセット機能、ログイン通知機能、2段階認証機能は動作しません。',
+                'mail_server_test_passed' => 'メールサーバー接続テスト合格済み。パスワードリセット機能、ログイン通知機能、2段階認証機能が利用できます。',
+                'please_configure_in' => 'でメールサーバーを設定してください。',
+                'name_required' => '名前は必須です。',
+                'email_required' => 'メールアドレスは必須です。',
+                'email_invalid' => 'メールアドレスの形式が正しくありません。',
+                'email_unique' => 'このメールアドレスは既に登録されています。',
+                'password_required' => 'パスワードは必須です。',
+                'password_min' => 'パスワードは最低8文字必要です。',
+                'password_confirmed' => 'パスワード確認が一致しません。',
+                'role_required' => 'ロールを選択してください。',
+                'role_invalid' => '無効なロールが選択されています。',
+                'appearance_required' => '外観設定を選択してください。',
+                'appearance_invalid' => '無効な外観設定が選択されています。',
+                'status_required' => 'ステータスを選択してください。',
+                'status_invalid' => '無効なステータスが選択されています。',
             ],
             'force_setting_1' => 'メンバー全体設定で',
             'force_setting_2' => 'が選択されているため、個別設定は変更できません。',

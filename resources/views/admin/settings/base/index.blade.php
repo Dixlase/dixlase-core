@@ -170,10 +170,52 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             ])
         </div>
 
+        <!-- メール接続テスト状態の警告 -->
+        @if (!$mailConnectionTested)
+            <div class="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                            {{ __('admin.settings.base.mail_server_warning') }}
+                        </h3>
+                        <div class="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
+                            <p>{{ __('admin.settings.base.mail_server_warning_message') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @elseif ($mailConnectionTested && $mailConnectionTestDate)
+            <div class="mt-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-green-800 dark:text-green-200">
+                            {{ __('admin.settings.base.mail_server_test_passed') }}
+                        </h3>
+                        <div class="mt-2 text-sm text-green-700 dark:text-green-300">
+                            <p>{{ __('admin.settings.base.last_test_date') }}: {{ $mailConnectionTestDate }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <!-- メール送信テスト -->
         <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{{ __('admin.settings.base.mail_test') }}</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ __('admin.settings.base.mail_test_description') }}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                {{ __('admin.settings.base.mail_test_description') }}<br>
+                {{ __('admin.settings.base.mail_test_description_2') }}
+            </p>
             <div class="flex space-x-3">
                 <button type="button" id="test-connection-btn" class="bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200">
                     {{ __('admin.settings.base.test_connection_button') }}
@@ -283,10 +325,24 @@ document.addEventListener('DOMContentLoaded', function() {
             testResult.classList.remove('hidden');
             
             if (data.success) {
+                // 接続テスト成功時は成功メッセージと保存促しメッセージを統合して表示
                 testResult.innerHTML = `
-                    <div class="p-3 bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-300 rounded">
-                        <i class="fas fa-check-circle mr-2"></i>
-                        ${data.message}
+                    <div class="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                        <div class="flex items-start mb-3">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-green-800 dark:text-green-200">
+                                    ${data.message}
+                                </h3>
+                                <div class="mt-2 text-sm text-blue-700 dark:text-green-200">
+                                    <p>{{ __('admin.settings.base.save_settings_reminder_message') }}</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 `;
             } else {

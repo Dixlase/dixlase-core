@@ -36,6 +36,8 @@ class BaseSettingsTableSeeder extends Seeder
     {
         $settings = [
             ['name' => 'maintenance_message', 'value' => '現在メンテナンス中です。しばらくお待ちください。'],
+            ['name' => 'mail_connection_tested', 'value' => 0],
+            ['name' => 'mail_connection_test_date', 'value' => null],
         ];
 
         foreach ($settings as $setting) {
