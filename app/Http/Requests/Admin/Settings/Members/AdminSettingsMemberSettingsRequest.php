@@ -8,6 +8,7 @@ use Illuminate\Validation\Rules\Enum;
 use App\Enums\LoginNotificationMode;
 use App\Enums\TwoFactorMode;
 use App\Enums\TwoFactorMethod;
+use App\Models\BaseSetting;
 
 class AdminSettingsMemberSettingsRequest extends FormRequest
 {
@@ -40,5 +41,18 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
             'login_attempt_time_window' => 'required|integer|min:1|max:1440', // 最大24時間
             'login_attempt_lockout_duration' => 'required|integer|min:1|max:10080', // 最大1週間
         ];
+    }
+
+    /**
+     * Configure the validator instance.
+     */
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            // Mail server validation has been relaxed for all features
+            // All mail-dependent features (password reset, login notifications, 2FA) 
+            // can now be configured regardless of mail server test status
+            // Features will display warnings but allow configuration
+        });
     }
 }

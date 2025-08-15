@@ -72,9 +72,14 @@ class AdminBaseSettingsController extends AdminLoggedInController
 
         $timezones = TimezoneHelper::getTimezonesWithUtcOffset();
 
+        // メール接続テストの状態を取得
+        $mailConnectionTested = (bool) BaseSetting::getValue('mail_connection_tested', false);
+        $mailConnectionTestDate = BaseSetting::getValue('mail_connection_test_date', null);
 
         $this->viewParams['settings'] = $settings;
         $this->viewParams['timezones'] = $timezones;
+        $this->viewParams['mailConnectionTested'] = $mailConnectionTested;
+        $this->viewParams['mailConnectionTestDate'] = $mailConnectionTestDate;
         $this->viewParams['locales'] = collect(config('admin.locale.available', []))->mapWithKeys(function ($locale, $key) {
             return [$key => $locale['name']];
         })->toArray();
@@ -114,16 +119,54 @@ class AdminBaseSettingsController extends AdminLoggedInController
             'maintenance_mode',
         ]);
 
-        // APP_FAKER_LOCALEを選択された言語に基づいて自動設定
+        // 空文字列をnullに変換（mail_username, mail_password, mail_encryption のみ）
+        // mail_host と mail_port は空文字列のままで保存
+        $nullableMailFields = ['mail_username', 'mail_password', 'mail_encryption'];
+        foreach ($nullableMailFields as $field) {
+            if (isset($envData[$field]) && $envData[$field] === '') {
+                $envData[$field] = null;
+            }
+        }
+
+        // APP_FAKER_LOCALEとAPP_FALLBACK_LOCALEを選択された言語に基づいて自動設定
         if (isset($envData['locale'])) {
             $availableLocales = config('admin.locale.available', []);
             $envData['faker_locale'] = $availableLocales[$envData['locale']]['faker_locale'] ?? 'ja_JA';
+            
+            // フォールバック言語を選択された言語と同じに設定
+            $envData['fallback_locale'] = $envData['locale'];
+        }
+
+        // メール設定が実際に変更された場合は接続テストステータスをリセット（.env更新前に確認）
+        $mailKeys = ['mail_mailer', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption', 'mail_from_address'];
+        $mailSettingsChanged = false;
+        
+        foreach ($mailKeys as $key) {
+            if (array_key_exists($key, $envData)) {
+                $currentValue = env(strtoupper($key));
+                $newValue = $envData[$key];
+                
+                // null値を空文字列に正規化して比較
+                $currentValue = $currentValue === null ? '' : (string)$currentValue;
+                $newValue = $newValue === null ? '' : (string)$newValue;
+                
+                // 値が実際に変更された場合のみフラグを立てる
+                if ($currentValue !== $newValue) {
+                    $mailSettingsChanged = true;
+                    break;
+                }
+            }
         }
 
         // DBに保存するもの（メンテナンスメッセージのみ）
         BaseSetting::setMany($settings);
         // .env に保存するもの（メンテナンスモードのON/OFFも含む）
         EnvHelper::update($envData);
+        
+        if ($mailSettingsChanged) {
+            BaseSetting::setValue('mail_connection_tested', 0);
+            BaseSetting::setValue('mail_connection_test_date', null);
+        }
 
         return redirect()->route('admin.settings.base')->with('success', '設定が更新されました。');
     }
@@ -207,6 +250,10 @@ class AdminBaseSettingsController extends AdminLoggedInController
                 ]);
             }
 
+            // 接続テスト成功時にステータスを保存
+            BaseSetting::setValue('mail_connection_tested', true);
+            BaseSetting::setValue('mail_connection_test_date', now()->toDateTimeString());
+            
             return response()->json([
                 'success' => true,
                 'message' => 'メールサーバーへの接続が正常に確認されました。'

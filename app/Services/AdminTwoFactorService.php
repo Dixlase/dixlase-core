@@ -62,7 +62,8 @@ class AdminTwoFactorService
         }
 
         // 現在の設定に基づいて2FAが必要かチェック
-        $mode = $this->getEffectiveTwoFactorMode($member, $force);
+        $modeValue = $this->getEffectiveTwoFactorMode($member, $force);
+        $mode = TwoFactorMode::tryFrom($modeValue);
 
         // デバイス認証が有効で、信頼済みデバイスからのアクセスの場合は2FAをスキップ
         if (in_array(TwoFactorMethod::DEVICE->value, $enabledMethods) && $this->isFromTrustedDevice($member)) {
@@ -84,12 +85,12 @@ class AdminTwoFactorService
 
     private function checkMemberSetting($member): bool
     {
-        $raw = $member->two_factor_mode;
+        $mode = $member->two_factor_mode;
 
-        // すでに Enum ならそのまま、そうでなければ tryFrom で変換
-        $mode = $raw instanceof TwoFactorMode
-            ? $raw
-            : TwoFactorMode::tryFrom((int) $raw);
+        // null の場合はデフォルトで無効
+        if ($mode === null) {
+            return false;
+        }
 
         return match ($mode) {
             TwoFactorMode::Always => true,
@@ -135,12 +136,12 @@ class AdminTwoFactorService
             return TwoFactorMode::Always->value;
         }
         
-        // ユーザー個別の設定を確認
-        $userSetting = $member->two_factor_mode ?? null;
+        // ユーザー個別の設定を確認（Eloquent cast により常に TwoFactorMode オブジェクトまたは null）
+        $userSetting = $member->two_factor_mode;
         
-        // ユーザー設定が有効な値の場合はそれを返す
-        if ($userSetting !== null && in_array((int)$userSetting, array_column(TwoFactorMode::cases(), 'value'))) {
-            return (int)$userSetting;
+        // ユーザー設定が有効な値の場合はその値を返す
+        if ($userSetting instanceof TwoFactorMode) {
+            return $userSetting->value;
         }
         
         // デフォルトは無効

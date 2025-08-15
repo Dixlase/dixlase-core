@@ -29,6 +29,7 @@ use App\Http\Requests\Admin\Settings\Members\AdminSettingsMemberSettingsRequest;
 use App\Models\Member;
 use App\Models\MemberRolePermission;
 use App\Models\MemberSetting;
+use App\Models\BaseSetting;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Enum;
 use App\Enums\TwoFactorMode;
@@ -429,6 +430,10 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $loginAttemptTimeWindow = (int) MemberSetting::getValue('login_attempt_time_window', 15);
         $loginAttemptLockoutDuration = (int) MemberSetting::getValue('login_attempt_lockout_duration', 30);
 
+        // メールサーバー接続テスト状況
+        $isMailServerTested = $this->isMailServerTested();
+        $mailConnectionTestDate = $this->getMailConnectionTestDate();
+
         // ビューに渡すデータをセット
         $this->viewParams['passwordMinLength'] = $passwordMinLength;
         $this->viewParams['passwordRequireUppercase'] = $passwordRequireUppercase;
@@ -443,6 +448,8 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['loginAttemptMaxAttempts'] = $loginAttemptMaxAttempts;
         $this->viewParams['loginAttemptTimeWindow'] = $loginAttemptTimeWindow;
         $this->viewParams['loginAttemptLockoutDuration'] = $loginAttemptLockoutDuration;
+        $this->viewParams['isMailServerTested'] = $isMailServerTested;
+        $this->viewParams['mailConnectionTestDate'] = $mailConnectionTestDate;
 
         return view('admin.settings.members.settings', $this->viewParams);
     }
@@ -476,5 +483,21 @@ class AdminMembersSettingsController extends AdminLoggedInController
 
     return redirect()->route('admin.settings.members.settings')
         ->with('success', __('admin.settings.members.settings.updated'));
+}
+
+    /**
+     * メールサーバー接続テストが完了しているかチェック
+     */
+    private function isMailServerTested(): bool
+    {
+        return (bool) BaseSetting::getValue('mail_connection_tested', false);
+    }
+
+    /**
+     * メールサーバー接続テスト日時を取得
+     */
+    private function getMailConnectionTestDate(): ?string
+    {
+        return BaseSetting::getValue('mail_connection_test_date', null);
     }
 }
