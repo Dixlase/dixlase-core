@@ -27,6 +27,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use App\Models\MemberSetting;
+use App\Services\MailServerValidatorService;
 use Illuminate\View\View;
 
 class AdminPasswordResetLinkController extends Controller
@@ -39,6 +40,11 @@ class AdminPasswordResetLinkController extends Controller
         // パスワードリセット機能が無効の場合は404を返す
         $passwordResetEnabled = (bool) MemberSetting::getValue('password_reset_enabled', true);
         if (!$passwordResetEnabled) {
+            abort(404);
+        }
+
+        // メールサーバーが設定・テスト済みでない場合は404を返す
+        if (!MailServerValidatorService::canSendMail()) {
             abort(404);
         }
 
@@ -55,6 +61,11 @@ class AdminPasswordResetLinkController extends Controller
         // パスワードリセット機能が無効の場合は404を返す
         $passwordResetEnabled = (bool) MemberSetting::getValue('password_reset_enabled', true);
         if (!$passwordResetEnabled) {
+            abort(404);
+        }
+
+        // メールサーバーが設定・テスト済みでない場合は404を返す
+        if (!MailServerValidatorService::canSendMail()) {
             abort(404);
         }
 

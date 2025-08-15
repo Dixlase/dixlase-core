@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use App\Enums\LoginNotificationModeGlobal;
 use App\Enums\LoginNotificationMode;
+use Illuminate\Support\Facades\Log;
 
 class AdminLoginNotificationService
 {
@@ -30,6 +31,15 @@ class AdminLoginNotificationService
             'ip' => $ip,
             'user_agent' => $ua,
         ];
+
+        // メールサーバーが設定・テスト済みの場合のみ通知を送信
+        if (!MailServerValidatorService::canSendMail()) {
+            Log::info('Login notification skipped: ' . MailServerValidatorService::getMailDisabledReason(), [
+                'member_id' => $member->id,
+                'ip' => $ip
+            ]);
+            return;
+        }
 
         // Send user notification if conditions are met
         if ($this->shouldSend($member, $ip, $ua)) {

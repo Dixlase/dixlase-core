@@ -432,7 +432,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
 
         // メールサーバー接続テスト状況
         $isMailServerTested = $this->isMailServerTested();
-        $mailConnectionTestDate = $this->getMailConnectionTestDate();
+        $mailConnectionTestDate = BaseSetting::getValue('mail_connection_test_date');
 
         // ビューに渡すデータをセット
         $this->viewParams['passwordMinLength'] = $passwordMinLength;
@@ -483,21 +483,17 @@ class AdminMembersSettingsController extends AdminLoggedInController
 
     return redirect()->route('admin.settings.members.settings')
         ->with('success', __('admin.settings.members.settings.updated'));
-}
-
-    /**
-     * メールサーバー接続テストが完了しているかチェック
-     */
-    private function isMailServerTested(): bool
-    {
-        return (bool) BaseSetting::getValue('mail_connection_tested', false);
     }
 
     /**
-     * メールサーバー接続テスト日時を取得
+     * メールサーバーがテスト済みかどうかを確認（3段階すべて完了）
      */
-    private function getMailConnectionTestDate(): ?string
+    private function isMailServerTested(): bool
     {
-        return BaseSetting::getValue('mail_connection_test_date', null);
+        $connectionTested = (bool) BaseSetting::getValue('mail_connection_tested', false);
+        $sendTested = (bool) BaseSetting::getValue('mail_send_tested', false);
+        $receiveTested = (bool) BaseSetting::getValue('mail_receive_tested', false);
+        
+        return $connectionTested && $sendTested && $receiveTested;
     }
 }

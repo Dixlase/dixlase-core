@@ -49,6 +49,10 @@ class AdminBaseSettingsController extends AdminLoggedInController
 
     public function index()
     {
+        // 基本設定ページを開くたびにメールテストセッションをクリア
+        // （保存されていないテスト結果を削除）
+        session()->forget('mail_test_results');
+        
         $settings = [
             // .env から読み取る設定
             'app_name' => env('APP_NAME', 'MySoftware'),
@@ -72,14 +76,24 @@ class AdminBaseSettingsController extends AdminLoggedInController
 
         $timezones = TimezoneHelper::getTimezonesWithUtcOffset();
 
-        // メール接続テストの状態を取得
-        $mailConnectionTested = (bool) BaseSetting::getValue('mail_connection_tested', false);
-        $mailConnectionTestDate = BaseSetting::getValue('mail_connection_test_date', null);
+        // メール接続テストの状態を取得（セッション優先、なければDB）
+        $sessionTestResults = session('mail_test_results', []);
+        
+        $mailConnectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? BaseSetting::getValue('mail_connection_tested', false));
+        $mailConnectionTestDate = $sessionTestResults['mail_connection_test_date'] ?? BaseSetting::getValue('mail_connection_test_date', null);
+        $mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? BaseSetting::getValue('mail_send_tested', false));
+        $mailSendTestDate = $sessionTestResults['mail_send_test_date'] ?? BaseSetting::getValue('mail_send_test_date', null);
+        $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? BaseSetting::getValue('mail_receive_tested', false));
+        $mailReceiveTestDate = $sessionTestResults['mail_receive_test_date'] ?? BaseSetting::getValue('mail_receive_test_date', null);
 
         $this->viewParams['settings'] = $settings;
         $this->viewParams['timezones'] = $timezones;
         $this->viewParams['mailConnectionTested'] = $mailConnectionTested;
         $this->viewParams['mailConnectionTestDate'] = $mailConnectionTestDate;
+        $this->viewParams['mailSendTested'] = $mailSendTested;
+        $this->viewParams['mailSendTestDate'] = $mailSendTestDate;
+        $this->viewParams['mailReceiveTested'] = $mailReceiveTested;
+        $this->viewParams['mailReceiveTestDate'] = $mailReceiveTestDate;
         $this->viewParams['locales'] = collect(config('admin.locale.available', []))->mapWithKeys(function ($locale, $key) {
             return [$key => $locale['name']];
         })->toArray();
@@ -164,11 +178,74 @@ class AdminBaseSettingsController extends AdminLoggedInController
         EnvHelper::update($envData);
         
         if ($mailSettingsChanged) {
+            // メール設定変更時は全てのテストステータスをリセット
             BaseSetting::setValue('mail_connection_tested', 0);
             BaseSetting::setValue('mail_connection_test_date', null);
+            BaseSetting::setValue('mail_send_tested', 0);
+            BaseSetting::setValue('mail_send_test_date', null);
+            BaseSetting::setValue('mail_receive_tested', 0);
+            BaseSetting::setValue('mail_receive_test_date', null);
+            BaseSetting::setValue('mail_verification_token', null);
+            
+            // セッションのテスト結果もクリア
+            session()->forget('mail_test_results');
+        } else {
+            // メール設定が変更されていない場合、セッションのテスト結果をDBに保存
+            $sessionTestResults = session('mail_test_results', []);
+            
+            if (!empty($sessionTestResults)) {
+                foreach ($sessionTestResults as $key => $value) {
+                    BaseSetting::setValue($key, $value);
+                }
+                
+                // セッションからテスト結果をクリア
+                session()->forget('mail_test_results');
+            }
         }
 
         return redirect()->route('admin.settings.base')->with('success', '設定が更新されました。');
+    }
+
+    /**
+     * メールテストセッションをクリア
+     */
+    public function clearTestSession()
+    {
+        session()->forget('mail_test_results');
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'テストセッションがクリアされました。'
+        ]);
+    }
+
+    /**
+     * メールテストセッション状態をチェック
+     */
+    public function checkTestSession()
+    {
+        $sessionTestResults = session('mail_test_results', []);
+        
+        // セッションとDBの状態を統合
+        $mailConnectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? BaseSetting::getValue('mail_connection_tested', false));
+        $mailConnectionTestDate = $sessionTestResults['mail_connection_test_date'] ?? BaseSetting::getValue('mail_connection_test_date', null);
+        $mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? BaseSetting::getValue('mail_send_tested', false));
+        $mailSendTestDate = $sessionTestResults['mail_send_test_date'] ?? BaseSetting::getValue('mail_send_test_date', null);
+        $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? BaseSetting::getValue('mail_receive_tested', false));
+        $mailReceiveTestDate = $sessionTestResults['mail_receive_test_date'] ?? BaseSetting::getValue('mail_receive_test_date', null);
+        
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'connection_tested' => $mailConnectionTested,
+                'connection_test_date' => $mailConnectionTestDate,
+                'send_tested' => $mailSendTested,
+                'send_test_date' => $mailSendTestDate,
+                'receive_tested' => $mailReceiveTested,
+                'receive_test_date' => $mailReceiveTestDate,
+                'all_tests_complete' => $mailConnectionTested && $mailSendTested && $mailReceiveTested
+            ]
+        ]);
     }
 
     /**
@@ -198,18 +275,35 @@ class AdminBaseSettingsController extends AdminLoggedInController
             Config::set('mail.from.address', $mailSettings['mail_from_address']);
             Config::set('mail.from.name', env('APP_NAME', 'MySoftware'));
 
+            // 認証トークンを生成
+            $verificationToken = bin2hex(random_bytes(32));
+            BaseSetting::setValue('mail_verification_token', $verificationToken);
+            
+            // 認証リンクを生成
+            $verificationUrl = route('admin.settings.base.verify-mail', ['token' => $verificationToken]);
+            
             // テストメールを送信
             $testEmail = $mailSettings['mail_from_address'];
             $appName = env('APP_NAME', 'MySoftware');
             
             // 多言語対応のメール内容を取得
             $subject = __('admin.settings.base.test_mail_subject');
-            $body = __('admin.settings.base.test_mail_body', ['app_name' => $appName]);
+            $body = __('admin.settings.base.test_mail_body', [
+                'app_name' => $appName,
+                'verification_url' => $verificationUrl
+            ]);
             
             Mail::raw($body, function ($message) use ($testEmail, $appName, $subject) {
                 $message->to($testEmail)
                         ->subject("[{$appName}] {$subject}");
             });
+
+            // メール送信テスト成功時にセッションに保存（フォーム保存時にDBに反映）
+            session(['mail_test_results.mail_send_tested' => 1]);
+            session(['mail_test_results.mail_send_test_date' => now()->toDateTimeString()]);
+            
+            // 認証トークンは即座にDBに保存（メール認証で必要）
+            BaseSetting::setValue('mail_verification_token', $verificationToken);
 
             return response()->json([
                 'success' => true,
@@ -250,9 +344,9 @@ class AdminBaseSettingsController extends AdminLoggedInController
                 ]);
             }
 
-            // 接続テスト成功時にステータスを保存
-            BaseSetting::setValue('mail_connection_tested', true);
-            BaseSetting::setValue('mail_connection_test_date', now()->toDateTimeString());
+            // 接続テスト成功時にセッションに保存（フォーム保存時にDBに反映）
+            session(['mail_test_results.mail_connection_tested' => 1]);
+            session(['mail_test_results.mail_connection_test_date' => now()->toDateTimeString()]);
             
             return response()->json([
                 'success' => true,
@@ -360,6 +454,43 @@ class AdminBaseSettingsController extends AdminLoggedInController
         // 接続を閉じる
         fwrite($socket, "QUIT\r\n");
         fclose($socket);
+    }
+
+    /**
+     * メール受信確認（認証リンクアクセス時）
+     */
+    public function verifyMail($token)
+    {
+        try {
+            $storedToken = BaseSetting::getValue('mail_verification_token');
+            
+            if (!$storedToken || $storedToken !== $token) {
+                return redirect()->route('admin.settings.base')
+                    ->with('error', 'メール認証トークンが無効です。');
+            }
+
+            // メール受信テスト成功時にセッションに保存（フォーム保存時にDBに反映）
+            session(['mail_test_results.mail_receive_tested' => 1]);
+            session(['mail_test_results.mail_receive_test_date' => now()->toDateTimeString()]);
+            
+            // 使用済みトークンをクリア
+            BaseSetting::setValue('mail_verification_token', null);
+
+            // 専用の確認ページにリダイレクト（ウィンドウを閉じるメッセージを表示）
+            return redirect()->route('admin.settings.base.mail-verification-success');
+
+        } catch (\Exception $e) {
+            return redirect()->route('admin.settings.base')
+                ->with('error', 'メール認証中にエラーが発生しました: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * メール認証成功ページ（ウィンドウを閉じるメッセージを表示）
+     */
+    public function mailVerificationSuccess()
+    {
+        return view('admin::settings.base.mail-verification-success');
     }
 
     private function getTimezonesWithUtcOffset(): array

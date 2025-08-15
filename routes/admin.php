@@ -117,6 +117,10 @@ Route::prefix($adminUrl)->name('admin.')
             Route::put('/settings/base', [AdminBaseSettingsController::class, 'update'])->name('settings.base.update');
             Route::post('/settings/base/test-mail', [AdminBaseSettingsController::class, 'testMail'])->name('settings.base.test-mail');
             Route::post('/settings/base/test-connection', [AdminBaseSettingsController::class, 'testConnection'])->name('settings.base.test-connection');
+            Route::post('/settings/base/clear-test-session', [AdminBaseSettingsController::class, 'clearTestSession'])->name('settings.base.clear-test-session');
+            Route::get('/settings/base/check-test-session', [AdminBaseSettingsController::class, 'checkTestSession'])->name('settings.base.check-test-session');
+            Route::get('/settings/base/verify-mail/{token}', [AdminBaseSettingsController::class, 'verifyMail'])->name('settings.base.verify-mail');
+            Route::get('/settings/base/mail-verification-success', [AdminBaseSettingsController::class, 'mailVerificationSuccess'])->name('settings.base.mail-verification-success');
 
             // セキュリティ設定
             Route::get('/settings/security', [AdminSecuritySettingsController::class, 'index'])->name('settings.security');

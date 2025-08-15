@@ -34,6 +34,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Services\AdminTwoFactorService;
 use App\Services\AdminLoginNotificationService;
 use App\Services\AdminLoginLockoutService;
+use App\Services\MailServerValidatorService;
 use Illuminate\Support\Facades\Log;
 
 
@@ -57,7 +58,10 @@ class AdminLoginController extends AdminController
         }
 
         // パスワードリセット機能の有効/無効設定を取得
-        $this->viewParams['passwordResetEnabled'] = (bool) MemberSetting::getValue('password_reset_enabled', true);
+        $passwordResetEnabled = (bool) MemberSetting::getValue('password_reset_enabled', true);
+        
+        // メールサーバーが設定・テスト済みの場合のみパスワードリセットを有効にする
+        $this->viewParams['passwordResetEnabled'] = $passwordResetEnabled && MailServerValidatorService::canSendMail();
 
         return view('admin::login', $this->viewParams);
     }
