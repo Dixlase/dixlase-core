@@ -255,9 +255,14 @@ return [
             'testing_mail' => '送信中...',
             'mail_test_error' => 'メール送信テストでエラーが発生しました。',
             'test_mail_subject' => 'メール送信テスト',
-            'test_mail_body' => 'これは :app_name からのメール送信テストです。
+            'test_mail_body' => ':app_name からのテストメールです。
 
-メール設定が正常に動作しています。',
+メール送信テストが正常に完了しました。
+メール受信確認を完了するには、以下のリンクをクリックしてください：
+
+:verification_url
+
+このリンクをクリックすることで、メール機能の完全なテストが完了します。',
             'test_mail_success' => 'テストメールが正常に送信されました。受信トレイをご確認ください。',
             'test_mail_failed' => 'メール送信に失敗しました: :error',
             'maintenance_settings' => 'メンテナンスモード設定',
