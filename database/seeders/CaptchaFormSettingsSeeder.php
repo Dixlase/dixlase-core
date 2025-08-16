@@ -1,4 +1,5 @@
-{{--
+<?php
+/*
 This file is part of MySoftware.
 
 Copyright (C) 2025 exc-D inc.
@@ -16,21 +17,33 @@ GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
---}}
+*/
 
-@props([
-    'id' => null,
-    'name' => null,
-    'value' => '',
-    'type' => 'text',
-    'disabled' => false,
-    'class' => '',
-])
+namespace Database\Seeders;
 
-<input type="{{ $type }}"
-    id="{{ $id }}"
-    name="{{ $name }}"
-    @if ($disabled) disabled @endif
-    class="mt-1 block w-full rounded-md shadow-sm text-lg {{ config('admin.appearance_class.form.text') }} {{ $class }}"
-    value="{{ old($name, $value) }}"
-    >
+use App\Models\CaptchaFormSetting;
+use Illuminate\Database\Seeder;
+
+class CaptchaFormSettingsSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        $formSettings = [
+            [
+                'key' => 'admin_login',
+                'route_name' => 'admin.login',
+                'enabled' => false,
+                'plugin_name' => null,
+                'is_core' => true,
+                'display_order' => 1,
+            ],
+        ];
+
+        foreach ($formSettings as $setting) {
+            CaptchaFormSetting::createOrUpdate($setting);
+        }
+    }
+}

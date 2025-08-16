@@ -4,7 +4,7 @@
  * This file is part of MySoftware.
  *
  * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -20,29 +20,34 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+namespace App\Captcha;
 
-namespace Database\Seeders;
+use Illuminate\Http\Request;
 
-use Illuminate\Database\Seeder;
-
-class DatabaseSeeder extends Seeder
+interface CaptchaDriver
 {
     /**
-     * Seed the application's database.
+     * Render the captcha script tags
      */
-    public function run(): void
-    {
-        $this->call([
-            BaseSettingsTableSeeder::class,
-            CaptchaFormSettingsSeeder::class,
-            FrontSettingsTableSeeder::class,
-            MediaTableSeeder::class,
-            MediaSettingsSeeder::class,
-            MemberRolePermissionSeeder::class,
-            MembersSettingsSeeder::class,
-            SecuritySettingsTableSeeder::class,
-            ThemeSettingsTableSeeder::class,
-            ThemesTableSeeder::class,
-        ]);
-    }
+    public function renderScript(): string;
+
+    /**
+     * Render the captcha widget
+     */
+    public function renderWidget(array $options = []): string;
+
+    /**
+     * Verify the captcha response
+     */
+    public function verify(Request $request): CaptchaResult;
+
+    /**
+     * Get validation rules for forms using this captcha
+     */
+    public function rules(): array;
+
+    /**
+     * Check if the captcha is enabled
+     */
+    public function isEnabled(): bool;
 }

@@ -35,6 +35,9 @@ use App\Services\AdminTwoFactorService;
 use App\Services\AdminLoginNotificationService;
 use App\Services\AdminLoginLockoutService;
 use App\Services\MailServerValidatorService;
+use App\Models\SecuritySetting;
+use App\Models\CaptchaFormSetting;
+use App\Captcha\CaptchaDriver;
 use Illuminate\Support\Facades\Log;
 
 
@@ -63,6 +66,22 @@ class AdminLoginController extends AdminController
         // メールサーバーが設定・テスト済みの場合のみパスワードリセットを有効にする
         $this->viewParams['passwordResetEnabled'] = $passwordResetEnabled && MailServerValidatorService::canSendMail();
 
+        // CAPTCHA設定を取得
+        $captchaEnabled = SecuritySetting::get('captcha_enabled', false);
+        $adminLoginCaptchaEnabled = CaptchaFormSetting::isEnabledFor('admin_login');
+        
+        if ($captchaEnabled && $adminLoginCaptchaEnabled) {
+            $captchaDriver = SecuritySetting::get('captcha_driver', 'google');
+            $this->viewParams['captchaEnabled'] = true;
+            $this->viewParams['captchaDriver'] = $captchaDriver;
+            
+            // CAPTCHAウィジェットを生成
+            $captchaDriverInstance = app(CaptchaDriver::class);
+            $this->viewParams['captchaWidget'] = $captchaDriverInstance->renderWidget();
+        } else {
+            $this->viewParams['captchaEnabled'] = false;
+        }
+
         return view('admin::login', $this->viewParams);
     }
 
@@ -73,6 +92,21 @@ class AdminLoginController extends AdminController
     {
         $lockoutService = app(AdminLoginLockoutService::class);
         $email = $request->email;
+
+        // CAPTCHA検証
+        $captchaEnabled = SecuritySetting::get('captcha_enabled', false);
+        $adminLoginCaptchaEnabled = CaptchaFormSetting::isEnabledFor('admin_login');
+        
+        if ($captchaEnabled && $adminLoginCaptchaEnabled) {
+            $captchaDriverInstance = app(CaptchaDriver::class);
+            $captchaResult = $captchaDriverInstance->verify($request);
+            
+            if (!$captchaResult->isValid()) {
+                return back()->withErrors([
+                    'captcha' => $captchaResult->getErrorMessage(),
+                ])->withInput($request->except('password'));
+            }
+        }
 
         // ロックアウト状態をチェック
         if ($lockoutService->isLockedOut($email)) {

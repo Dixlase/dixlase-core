@@ -18,19 +18,20 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-@props([
-    'id' => null,
-    'name' => null,
-    'value' => '',
-    'type' => 'text',
-    'disabled' => false,
-    'class' => '',
-])
+@props(['action' => 'submit', 'callback' => 'onRecaptchaCallback'])
 
-<input type="{{ $type }}"
-    id="{{ $id }}"
-    name="{{ $name }}"
-    @if ($disabled) disabled @endif
-    class="mt-1 block w-full rounded-md shadow-sm text-lg {{ config('admin.appearance_class.form.text') }} {{ $class }}"
-    value="{{ old($name, $value) }}"
-    >
+@php
+    $captcha = app(\App\Captcha\CaptchaDriver::class);
+@endphp
+
+@if($captcha->isEnabled())
+    <div class="captcha-container">
+        {!! $captcha->renderWidget(['action' => $action, 'callback' => $callback]) !!}
+    </div>
+@endif
+
+@push('scripts')
+    @if($captcha->isEnabled())
+        {!! $captcha->renderScript() !!}
+    @endif
+@endpush
