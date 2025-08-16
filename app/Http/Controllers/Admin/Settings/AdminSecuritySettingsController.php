@@ -24,6 +24,7 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\SecuritySetting;
+use App\Models\CaptchaFormSetting;
 use App\Http\Requests\Admin\Settings\Security\AdminSettngsSecurityUpdateRequest;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
@@ -56,13 +57,16 @@ class AdminSecuritySettingsController extends AdminLoggedInController
             'captcha_google_secret_key' => SecuritySetting::get('captcha_google_secret_key', ''),
             'captcha_google_version' => SecuritySetting::get('captcha_google_version', 'v3'),
             'captcha_google_min_score' => SecuritySetting::get('captcha_google_min_score', '0.5'),
-            'captcha_contact_form' => SecuritySetting::get('captcha_contact_form', true),
-            'captcha_registration_form' => SecuritySetting::get('captcha_registration_form', true),
-            'captcha_login_form' => SecuritySetting::get('captcha_login_form', false),
-            'captcha_comment_form' => SecuritySetting::get('captcha_comment_form', true),
+            // Turnstile settings
+            'captcha_turnstile_site_key' => SecuritySetting::get('captcha_turnstile_site_key', ''),
+            'captcha_turnstile_secret_key' => SecuritySetting::get('captcha_turnstile_secret_key', ''),
         ];
 
+        // 動的reCAPTCHAフォーム設定を取得
+        $captchaFormSettings = CaptchaFormSetting::getOrderedForms();
+
         $this->viewParams['settings'] = $settings;
+        $this->viewParams['captchaFormSettings'] = $captchaFormSettings;
 
         return view('admin.settings.security.index', $this->viewParams);
     }
@@ -86,10 +90,17 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         SecuritySetting::set('captcha_google_secret_key', $request->input('captcha_google_secret_key', ''));
         SecuritySetting::set('captcha_google_version', $request->input('captcha_google_version', 'v3'));
         SecuritySetting::set('captcha_google_min_score', $request->input('captcha_google_min_score', '0.5'));
-        SecuritySetting::set('captcha_contact_form', $request->boolean('captcha_contact_form'));
-        SecuritySetting::set('captcha_registration_form', $request->boolean('captcha_registration_form'));
-        SecuritySetting::set('captcha_login_form', $request->boolean('captcha_login_form'));
-        SecuritySetting::set('captcha_comment_form', $request->boolean('captcha_comment_form'));
+        // Save Turnstile settings
+        SecuritySetting::set('captcha_turnstile_site_key', $request->input('captcha_turnstile_site_key', ''));
+        SecuritySetting::set('captcha_turnstile_secret_key', $request->input('captcha_turnstile_secret_key', ''));
+        
+        // Save dynamic captcha form settings
+        $captchaFormSettings = CaptchaFormSetting::all();
+        foreach ($captchaFormSettings as $formSetting) {
+            $inputKey = 'captcha_form_' . $formSetting->key;
+            $formSetting->enabled = $request->boolean($inputKey);
+            $formSetting->save();
+        }
 
         // 新しい管理画面URLを取得
         $newAdminUrl = $request->input('admin_url', config('security.admin_url'));

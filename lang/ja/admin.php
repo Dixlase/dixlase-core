@@ -42,6 +42,7 @@ return [
         'remember_me' => 'ログイン状態を保持する',
         'forgot_password' => 'パスワードをお忘れですか？',
         'login_button' => 'ログイン',
+        'captcha' => 'セキュリティ認証',
     ],
 
     'auth' => [
@@ -337,12 +338,13 @@ return [
             'captcha_google_secret_key' => 'Google reCAPTCHA シークレットキー',
             'captcha_google_version' => 'reCAPTCHAバージョン',
             'captcha_google_min_score' => '最小スコア (0.0-1.0)',
+            'captcha_turnstile_site_key' => 'Cloudflare Turnstile サイトキー',
+            'captcha_turnstile_secret_key' => 'Cloudflare Turnstile シークレットキー',
             'captcha_min_score_description' => '0.0は最も疑わしく、1.0は最も信頼できることを示します。通常は0.5を推奨します。',
             'captcha_form_settings' => 'フォーム別設定',
-            'captcha_contact_form' => 'お問い合わせフォーム',
-            'captcha_registration_form' => '会員登録フォーム',
-            'captcha_login_form' => 'ログインフォーム',
-            'captcha_comment_form' => 'コメントフォーム',
+            'captcha_forms' => [
+                'admin_login' => '管理画面ログイン',
+            ],
             'captcha_version_options' => [
                 'v3' => 'v3 (推奨 - 非対話型)',
                 'v2_checkbox' => 'v2 チェックボックス',

@@ -42,6 +42,7 @@ return [
         'remember_me' => 'Remember me',
         'forgot_password' => 'Forgot your password?',
         'login_button' => 'Log in',
+        'captcha' => 'Security Verification',
     ],
 
     'auth' => [
@@ -347,12 +348,13 @@ Clicking this link will complete the full mail function test.',
             'captcha_google_secret_key' => 'Google reCAPTCHA Secret Key',
             'captcha_google_version' => 'reCAPTCHA Version',
             'captcha_google_min_score' => 'Minimum Score (0.0-1.0)',
+            'captcha_turnstile_site_key' => 'Cloudflare Turnstile Site Key',
+            'captcha_turnstile_secret_key' => 'Cloudflare Turnstile Secret Key',
             'captcha_min_score_description' => '0.0 is most suspicious, 1.0 is most trustworthy. Usually 0.5 is recommended.',
             'captcha_form_settings' => 'Form-specific Settings',
-            'captcha_contact_form' => 'Contact Form',
-            'captcha_registration_form' => 'Registration Form',
-            'captcha_login_form' => 'Login Form',
-            'captcha_comment_form' => 'Comment Form',
+            'captcha_forms' => [
+                'admin_login' => 'Admin Login',
+            ],
             'captcha_version_options' => [
                 'v3' => 'v3 (Recommended - Non-interactive)',
                 'v2_checkbox' => 'v2 Checkbox',

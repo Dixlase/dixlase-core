@@ -55,6 +55,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </label>
         </div>
 
+        <!-- CAPTCHA -->
+        @if (isset($captchaEnabled) && $captchaEnabled)
+            <div class="mt-4">
+                <label class="block font-medium text-sm text-gray-700 mb-2">{{ __('admin.login.captcha') }}</label>
+                {!! $captchaWidget !!}
+                @error('captcha')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+        @endif
+
         <!-- ボタンとパスワードリセットリンク -->
         <div class="flex items-center justify-between mt-4">
             <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
