@@ -42,4 +42,17 @@ return [
         'security_notice' => 'もしこのログインに心当たりがない場合は、すぐにパスワードを変更してください。',
         'regards' => 'よろしくお願いいたします。',
     ],
+
+    // テストメール
+    'test_mail' => [
+        'subject' => 'メールテスト',
+        'greeting' => 'こんにちは！',
+        'test_details_title' => 'メール送信メール',
+        'app_name' => 'アプリケーション名:',
+        'test_datetime' => 'テスト実行日時:',
+        'verification_required' => 'このメールが正常に受信できているかを確認するため、以下のボタンをクリックしてください。',
+        'verify_button' => 'メール受信を確認',
+        'manual_verification' => 'ボタンが機能しない場合は、以下のURLを直接ブラウザにコピーしてアクセスしてください:',
+        'regards' => 'よろしくお願いいたします。',
+    ],
 ];

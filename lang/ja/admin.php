@@ -292,6 +292,32 @@ return [
                 'mail_port_numeric' => 'メールポートは数値で入力してください。',
                 'maintenance_mode_required' => 'メンテナンスモードの設定を選択してください。',
             ],
+            'view_messages' => [
+                'mail_test_complete' => 'メール機能テスト完了',
+                'mail_test_incomplete' => 'メール機能テスト未完了',
+                'mail_test_warning_features' => 'メンバー全体設定のロックアウト通知、パスワードリセット、ログイン通知、二段階認証機能を使用するには、すべてのメールテストを完了してください。',
+                'mail_test_warning_temporary' => 'テスト結果は一時的に保存されます。更新ボタンを押すまで、設定やテスト結果は保存されません。',
+                'connection_test' => 'サーバー接続テスト',
+                'send_test' => 'メール送信テスト',
+                'receive_test' => 'メール受信確認テスト',
+                'test_passed' => 'テスト合格',
+                'test_not_completed' => '未実行',
+                'mail_receive_test_completed' => 'メール受信テストが完了しました。設定を保存してください。',
+            ],
+            'mail_verification_success' => [
+                'title' => 'メール受信確認完了',
+                'heading' => 'メール受信確認が完了しました',
+                'description' => 'メール機能のテストが正常に完了しました。',
+                'next_steps_title' => '次の手順',
+                'next_steps' => [
+                    'close_window' => 'このウィンドウを閉じてください',
+                    'save_settings' => '基本設定画面で「更新」ボタンを押して設定を保存してください',
+                    'data_saved' => 'テスト結果が保存され、メール機能が有効になります',
+                ],
+                'important_notice_title' => '重要な注意事項',
+                'important_notice' => 'テスト結果は一時的に保存されています。必ず設定を保存してください。',
+                'close_button' => 'ウィンドウを閉じる',
+            ],
         ],
         // セキュリティ
         'security' => [
@@ -751,4 +777,28 @@ return [
         ],
     ],
 
+    'controller_messages' => [
+        'settings_updated' => '設定が更新されました。',
+        'test_session_cleared' => 'テストセッションがクリアされました。',
+        'mailer_not_supported' => 'メーラー「:mailer」は接続テストをサポートしていません。',
+        'connection_success' => 'メールサーバーへの接続が正常に確認されました。',
+        'connection_failed' => 'メールサーバーへの接続に失敗しました: :error',
+        'verification_token_invalid' => 'メール認証トークンが無効です。',
+        'verification_error' => 'メール認証中にエラーが発生しました: :error',
+    ],
+    'maintenance_settings' => 'メンテナンスモード設定',
+    'mail_verification_success' => [
+        'title' => 'メール受信確認完了',
+        'heading' => 'メール受信確認が完了しました',
+        'description' => 'メール機能のテストが正常に完了しました。',
+        'next_steps_title' => '次の手順',
+        'next_steps' => [
+            'close_window' => 'このウィンドウを閉じてください',
+            'save_settings' => '基本設定画面で「更新」ボタンを押して設定を保存してください',
+            'data_saved' => 'テスト結果が保存され、メール機能が有効になります',
+        ],
+        'important_notice_title' => '重要な注意事項',
+        'important_notice' => 'テスト結果は一時的に保存されています。必ず設定を保存してください。',
+        'close_button' => 'ウィンドウを閉じる',
+    ],
 ];

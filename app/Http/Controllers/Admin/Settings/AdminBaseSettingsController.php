@@ -31,6 +31,7 @@ use App\Facades\BaseSettings;
 use DateTime;
 use DateTimeZone;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Config;
 
 class AdminBaseSettingsController extends AdminLoggedInController
@@ -203,7 +204,7 @@ class AdminBaseSettingsController extends AdminLoggedInController
             }
         }
 
-        return redirect()->route('admin.settings.base')->with('success', '設定が更新されました。');
+        return redirect()->route('admin.settings.base')->with('success', __('admin.settings.base.controller_messages.settings_updated'));
     }
 
     /**
@@ -275,6 +276,12 @@ class AdminBaseSettingsController extends AdminLoggedInController
             Config::set('mail.from.address', $mailSettings['mail_from_address']);
             Config::set('mail.from.name', env('APP_NAME', 'MySoftware'));
 
+            // アプリケーション名を取得
+            $appName = env('APP_NAME', 'Dixlase');
+
+            // テストメール送信先を設定
+            $testEmail = $mailSettings['mail_from_address'];
+
             // 認証トークンを生成
             $verificationToken = bin2hex(random_bytes(32));
             BaseSetting::setValue('mail_verification_token', $verificationToken);
@@ -282,20 +289,35 @@ class AdminBaseSettingsController extends AdminLoggedInController
             // 認証リンクを生成
             $verificationUrl = route('admin.settings.base.verify-mail', ['token' => $verificationToken]);
             
-            // テストメールを送信
-            $testEmail = $mailSettings['mail_from_address'];
-            $appName = env('APP_NAME', 'MySoftware');
-            
             // 多言語対応のメール内容を取得
-            $subject = __('admin.settings.base.test_mail_subject');
-            $body = __('admin.settings.base.test_mail_body', [
-                'app_name' => $appName,
-                'verification_url' => $verificationUrl
-            ]);
+            $subject = __('mail.test_mail.subject');
             
-            Mail::raw($body, function ($message) use ($testEmail, $appName, $subject) {
-                $message->to($testEmail)
-                        ->subject("[{$appName}] {$subject}");
+            // MailMessage形式でメールを作成（ログイン通知と同じ形式）
+            $message = new MailMessage;
+            $message->subject("[{$appName}] {$subject}");
+            $message->greeting(__('mail.test_mail.greeting'));
+            
+            // テスト詳細を追加
+            $message->line('**' . __('mail.test_mail.test_details_title') . '**');
+            $message->line('**' . __('mail.test_mail.app_name') . '** ' . $appName);
+            $message->line('**' . __('mail.test_mail.test_datetime') . '** ' . now()->format('Y-m-d H:i:s'));
+            
+            // 受信確認の説明
+            $message->line(__('mail.test_mail.verification_required'));
+            
+            // 確認ボタン
+            $message->action(__('mail.test_mail.verify_button'), $verificationUrl);
+            
+            // 手動確認用URL
+            $message->line(__('mail.test_mail.manual_verification'));
+            $message->line($verificationUrl);
+            
+            $message->salutation(__('mail.test_mail.regards') . "\n\n" . $appName);
+            
+            Mail::send([], [], function ($mail) use ($testEmail, $message) {
+                $mail->to($testEmail)
+                     ->subject($message->subject)
+                     ->html((string) $message->render());
             });
 
             // メール送信テスト成功時にセッションに保存（フォーム保存時にDBに反映）
@@ -340,7 +362,7 @@ class AdminBaseSettingsController extends AdminLoggedInController
             } else {
                 return response()->json([
                     'success' => true,
-                    'message' => 'メーラー「' . $mailSettings['mail_mailer'] . '」は接続テストをサポートしていません。'
+                    'message' => __('admin.settings.base.controller_messages.mailer_not_supported', ['mailer' => $mailSettings['mail_mailer']])
                 ]);
             }
 
@@ -350,13 +372,13 @@ class AdminBaseSettingsController extends AdminLoggedInController
             
             return response()->json([
                 'success' => true,
-                'message' => 'メールサーバーへの接続が正常に確認されました。'
+                'message' => __('admin.settings.base.controller_messages.connection_success')
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'メールサーバーへの接続に失敗しました: ' . $e->getMessage()
+                'message' => __('admin.settings.base.controller_messages.connection_failed', ['error' => $e->getMessage()])
             ], 400);
         }
     }
@@ -466,7 +488,7 @@ class AdminBaseSettingsController extends AdminLoggedInController
             
             if (!$storedToken || $storedToken !== $token) {
                 return redirect()->route('admin.settings.base')
-                    ->with('error', 'メール認証トークンが無効です。');
+                    ->with('error', __('admin.settings.base.controller_messages.verification_token_invalid'));
             }
 
             // メール受信テスト成功時にセッションに保存（フォーム保存時にDBに反映）
