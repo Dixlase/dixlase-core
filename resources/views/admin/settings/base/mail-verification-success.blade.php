@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>メール認証完了 - {{ config('app.name', 'MySoftware') }}</title>
+    <title>{{ __('admin.settings.base.mail_verification_success.title') }} - {{ config('app.name', 'MySoftware') }}</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -26,10 +26,10 @@
                 
                 <!-- メッセージ -->
                 <h2 class="mt-6 text-2xl font-bold text-gray-900 dark:text-white">
-                    メール受信テスト完了
+                    {{ __('admin.settings.base.mail_verification_success.heading') }}
                 </h2>
                 <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                    メールの受信が正常に確認されました。
+                    {{ __('admin.settings.base.mail_verification_success.description') }}
                 </p>
             </div>
 
@@ -43,13 +43,13 @@
                     </div>
                     <div class="ml-3">
                         <h3 class="text-sm font-medium text-blue-800 dark:text-blue-200">
-                            次の手順
+                            {{ __('admin.settings.base.mail_verification_success.next_steps_title') }}
                         </h3>
                         <div class="mt-2 text-sm text-blue-700 dark:text-blue-300">
                             <ol class="list-decimal list-inside space-y-1">
-                                <li>このウィンドウを閉じてください</li>
-                                <li>基本設定画面で「設定を保存」ボタンを押してください</li>
-                                <li>テスト結果がデータベースに保存されます</li>
+                                <li>{{ __('admin.settings.base.mail_verification_success.next_steps.close_window') }}</li>
+                                <li>{{ __('admin.settings.base.mail_verification_success.next_steps.save_settings') }}</li>
+                                <li>{{ __('admin.settings.base.mail_verification_success.next_steps.data_saved') }}</li>
                             </ol>
                         </div>
                     </div>
@@ -66,10 +66,10 @@
                     </div>
                     <div class="ml-3">
                         <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                            重要な注意
+                            {{ __('admin.settings.base.mail_verification_success.important_notice_title') }}
                         </h3>
                         <p class="mt-1 text-sm text-yellow-700 dark:text-yellow-300">
-                            テスト結果は一時的に保存されています。基本設定で「設定を保存」を実行するまで、データベースには反映されません。
+                            {{ __('admin.settings.base.mail_verification_success.important_notice') }}
                         </p>
                     </div>
                 </div>
@@ -78,7 +78,7 @@
             <!-- ボタン -->
             <div class="flex justify-center">
                 <button onclick="window.close()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors duration-200">
-                    ウィンドウを閉じる
+                    {{ __('admin.settings.base.mail_verification_success.close_button') }}
                 </button>
             </div>
         </div>
@@ -100,7 +100,7 @@
                     // 親ウィンドウに受信テスト完了を通知
                     window.opener.postMessage({
                         type: 'mail_receive_test_completed',
-                        message: 'メール受信テストが完了しました。設定を保存してください。'
+                        message: '{{ __('admin.settings.base.mail_verification_success.description') }} {{ __('admin.settings.base.mail_verification_success.next_steps.save_settings') }}'
                     }, '*');
                 } catch (e) {
                     console.log('親ウィンドウへのメッセージ送信に失敗しました:', e);

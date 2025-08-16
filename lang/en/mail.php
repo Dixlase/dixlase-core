@@ -42,4 +42,17 @@ return [
         'security_notice' => 'If you do not recognize this login, please change your password immediately.',
         'regards' => 'Regards',
     ],
+
+    // Test Mail
+    'test_mail' => [
+        'subject' => 'Mail Test',
+        'greeting' => 'Hello!',
+        'test_details_title' => 'Send Mail Test',
+        'app_name' => 'Application Name:',
+        'test_datetime' => 'Test Execution Date & Time:',
+        'verification_required' => 'To confirm that this email is being received properly, please click the button below.',
+        'verify_button' => 'Confirm Email Receipt',
+        'manual_verification' => 'If the button does not work, please copy and access the following URL directly in your browser:',
+        'regards' => 'Regards,',
+    ],
 ];

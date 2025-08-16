@@ -248,7 +248,26 @@ return [
             'mail_from_address' => 'From Email Address',
             'mail_test' => 'Mail Send Test',
             'mail_test_description' => 'Send a test email with the current settings. A test email will be sent to the from email address.',
-            'mail_test_description_2' => 'A test email will be sent to the from email address.',
+            'mail_test_description_2' => 'To enable mail sending functionality, please execute both connection test and mail send test.',
+            'test_connection_button' => 'Connection Test',
+            'test_mail_button' => 'Send Test Mail',
+            'testing_connection' => 'Connecting...',
+            'testing_mail' => 'Sending...',
+            'mail_test_error' => 'An error occurred during mail send test.',
+            'test_mail_subject' => 'Mail Send Test',
+            'test_mail_body' => 'This is a test email from :app_name.
+
+Mail send test has been completed successfully.
+To complete mail receive verification, please click the following link:
+
+:verification_url
+
+Clicking this link will complete the full mail function test.',
+            'test_mail_success' => 'Test email has been sent successfully. Please check your inbox.',
+            'test_mail_failed' => 'Failed to send email: :error',
+            'maintenance_settings' => 'Maintenance Mode Settings',
+            'maintenance_mode' => 'Maintenance Mode',
+            'maintenance_message' => 'Maintenance Message',
             'maintenance_message_help' => '※Displayed on the front screen when maintenance mode is enabled.',
             'save_confirmation_title' => 'Save Confirmation',
             'save_confirmation_message' => 'Do you want to save the changes?',
@@ -273,6 +292,42 @@ return [
                 'mail_port_numeric' => 'Mail port must be a number.',
                 'maintenance_mode_required' => 'Please select maintenance mode setting.',
             ],
+            'controller_messages' => [
+                'settings_updated' => 'Settings have been updated.',
+                'test_session_cleared' => 'Test session has been cleared.',
+                'mailer_not_supported' => 'Mailer ":mailer" does not support connection testing.',
+                'connection_success' => 'Connection to mail server has been successfully verified.',
+                'connection_failed' => 'Failed to connect to mail server: :error',
+                'verification_token_invalid' => 'Mail verification token is invalid.',
+                'verification_error' => 'An error occurred during mail verification: :error',
+            ],
+            'mail_verification_success' => [
+                'title' => 'Mail Receive Verification Complete',
+                'heading' => 'Mail receive verification completed',
+                'description' => 'Mail function test has been completed successfully.',
+                'next_steps_title' => 'Next Steps',
+                'next_steps' => [
+                    'close_window' => 'Please close this window',
+                    'save_settings' => 'Press the "Update" button on the base settings screen to save your settings',
+                    'data_saved' => 'Test results will be saved and mail function will be enabled',
+                ],
+                'important_notice_title' => 'Important Notice',
+                'important_notice' => 'Test results are temporarily stored. Please make sure to save your settings.',
+                'close_button' => 'Close Window',
+            ],
+            'view_messages' => [
+                'mail_test_complete' => 'Mail Function Test Complete',
+                'mail_test_incomplete' => 'Mail Function Test Incomplete',
+                'mail_test_warning_features' => 'To use lockout notifications, password reset, login notifications, and two-factor authentication features in member settings, please complete all mail tests.',
+                'mail_test_warning_temporary' => 'Test results are temporarily stored. Settings and test results will not be saved until you press the update button.',
+                'connection_test' => 'Server Connection Test',
+                'send_test' => 'Mail Send Test',
+                'receive_test' => 'Mail Receive Test',
+                'test_passed' => 'Test Passed',
+                'test_not_completed' => 'Not Executed',
+                'mail_receive_test_completed' => 'Mail receive test completed. Please save your settings.',
+            ],
+            'maintenance_message_help' => '※Displayed on the front screen when maintenance mode is enabled.',
         ],
         // Security
         'security' => [
