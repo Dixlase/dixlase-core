@@ -429,6 +429,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $loginAttemptMaxAttempts = (int) MemberSetting::getValue('login_attempt_max_attempts', 5);
         $loginAttemptTimeWindow = (int) MemberSetting::getValue('login_attempt_time_window', 15);
         $loginAttemptLockoutDuration = (int) MemberSetting::getValue('login_attempt_lockout_duration', 30);
+        $lockoutNotificationEnabled = (bool) MemberSetting::getValue('lockout_notification_enabled', true);
 
         // メールサーバー接続テスト状況
         $isMailServerTested = $this->isMailServerTested();
@@ -448,6 +449,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['loginAttemptMaxAttempts'] = $loginAttemptMaxAttempts;
         $this->viewParams['loginAttemptTimeWindow'] = $loginAttemptTimeWindow;
         $this->viewParams['loginAttemptLockoutDuration'] = $loginAttemptLockoutDuration;
+        $this->viewParams['lockoutNotificationEnabled'] = $lockoutNotificationEnabled;
         $this->viewParams['isMailServerTested'] = $isMailServerTested;
         $this->viewParams['mailConnectionTestDate'] = $mailConnectionTestDate;
 
@@ -467,11 +469,12 @@ class AdminMembersSettingsController extends AdminLoggedInController
         MemberSetting::setValue('force_2fa', (int) $validated['force_2fa']);
         MemberSetting::setValue('password_reset_enabled', (bool) $validated['password_reset_enabled']);
         
-        // ログイン試行制限設定を保存
-        MemberSetting::setValue('login_attempt_limit_enabled', (bool) $validated['login_attempt_limit_enabled']);
-        MemberSetting::setValue('login_attempt_max_attempts', (int) $validated['login_attempt_max_attempts']);
-        MemberSetting::setValue('login_attempt_time_window', (int) $validated['login_attempt_time_window']);
-        MemberSetting::setValue('login_attempt_lockout_duration', (int) $validated['login_attempt_lockout_duration']);
+        // ログイン試行制限設定
+        MemberSetting::setValue('login_attempt_limit_enabled', $validated['login_attempt_limit_enabled'] ? '1' : '0');
+        MemberSetting::setValue('login_attempt_max_attempts', (string) $validated['login_attempt_max_attempts']);
+        MemberSetting::setValue('login_attempt_time_window', (string) $validated['login_attempt_time_window']);
+        MemberSetting::setValue('login_attempt_lockout_duration', (string) $validated['login_attempt_lockout_duration']);
+        MemberSetting::setValue('lockout_notification_enabled', $validated['lockout_notification_enabled'] ? '1' : '0');
 
         // 有効な二段階認証方法を保存
     $enabledMethods = $request->input('two_factor_methods', []);

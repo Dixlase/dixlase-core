@@ -19,7 +19,7 @@
 
 <div class="relative flex items-center">
     <input type="password" name="{{ $name }}" id="{{ $id }}"
-        class="w-full p-2 border rounded-lg pr-32 dark:bg-gray-800 dark:text-white"
+        class="w-full text-gray-700 p-2 border rounded-lg pr-32 dark:bg-gray-800 dark:text-white"
         @if ($required) required @endif
         onkeyup="PasswordTools.checkPasswordStrength('{{ $id }}')">
 
@@ -66,7 +66,7 @@
             {{ __('admin.settings.members.form.password') }}（{{ __('common.confirm') }}）
         </label>
         <input type="password" name="{{ $name }}_confirmation" id="{{ $id }}_confirmation"
-            class="w-full mt-1 p-2 border rounded-lg dark:bg-gray-800 dark:text-white"
+            class="w-full mt-1 p-2 border rounded-lg bg-white text-gray-700 dark:bg-gray-800 dark:text-white"
             @if ($required) required @endif>
     </div>
 @endif

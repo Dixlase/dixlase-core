@@ -211,6 +211,16 @@ return [
     */
 
     'attributes' => [
+        // Basic fields
+        'email' => 'Email Address',
+        'password' => 'Password',
+        'password_confirmation' => 'Password Confirmation',
+        'name' => 'Name',
+        'title' => 'Title',
+        'content' => 'Content',
+        'token' => 'Token',
+        
+        // Installation related
         'site_name' => 'Site Name',
         'admin_email' => 'Administrator Email Address',
         'admin_password' => 'Administrator Password',

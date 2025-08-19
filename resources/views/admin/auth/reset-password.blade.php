@@ -42,19 +42,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- Password -->
         <div class="mt-4">
-            <label for="password" class="block font-medium text-sm text-gray-700">{{ __('admin.auth.reset_password.password') }}</label>
-            <input id="password" type="password" name="password" required autocomplete="new-password"
-                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+            <label for="password" class="block font-medium text-sm text-gray-700 dark:text-gray-200">{{ __('admin.auth.reset_password.password') }}</label>
+            <x-form.password-tools 
+                name="password" 
+                id="password" 
+                :required="true"
+                :minLength="$passwordMinLength"
+                :requireUppercase="$passwordRequireUppercase"
+                :requireLowercase="true"
+                :requireNumber="true"
+                :requireSymbol="$passwordRequireSymbol"
+                :showConfirmation="true"
+            />
             @error('password')
                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
             @enderror
-        </div>
-
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <label for="password_confirmation" class="block font-medium text-sm text-gray-700">{{ __('admin.auth.reset_password.password_confirmation') }}</label>
-            <input id="password_confirmation" type="password" name="password_confirmation" required autocomplete="new-password"
-                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
             @error('password_confirmation')
                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
             @enderror
