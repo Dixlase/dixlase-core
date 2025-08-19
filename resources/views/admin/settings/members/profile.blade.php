@@ -79,20 +79,36 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             $appearanceValue = old('appearance', (string) ($member->appearance->value ?? 0));
         @endphp
 
-        <div x-data x-init="$watch('themeStore.theme', value => themeStore.applyTheme())" class="mb-6">
+        <div x-data="{
+            localTheme: '{{ $appearanceValue }}',
+            savedTheme: '{{ $appearanceValue }}',
+            applyLocalTheme() {
+                const isDark = this.localTheme === '2' || (this.localTheme === '0' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                document.documentElement.classList.toggle('dark', isDark);
+                document.documentElement.classList.toggle('light', !isDark);
+            },
+            resetToSavedTheme() {
+                this.localTheme = this.savedTheme;
+                this.applyLocalTheme();
+            }
+        }" x-init="
+            // 初期化時に保存された値でDOMをリセット
+            resetToSavedTheme();
+            $watch('localTheme', () => applyLocalTheme());
+        " class="mb-6" data-profile-theme>
             <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">{{ __('admin.settings.members.profile.appearance_mode') }}</label>
 
             <div class="flex gap-4">
                 <label class="inline-flex items-center">
-                    <input type="radio" name="appearance" value="0" x-model="theme" class="form-radio text-indigo-600">
+                    <input type="radio" name="appearance" value="0" x-model="localTheme" class="form-radio text-indigo-600">
                     <span class="ml-2">{{ __('admin.settings.members.profile.appearance_auto') }}</span>
                 </label>
                 <label class="inline-flex items-center">
-                    <input type="radio" name="appearance" value="1" x-model="theme" class="form-radio text-indigo-600">
+                    <input type="radio" name="appearance" value="1" x-model="localTheme" class="form-radio text-indigo-600">
                     <span class="ml-2">{{ __('admin.settings.members.profile.appearance_light') }}</span>
                 </label>
                 <label class="inline-flex items-center">
-                    <input type="radio" name="appearance" value="2" x-model="theme" class="form-radio text-indigo-600">
+                    <input type="radio" name="appearance" value="2" x-model="localTheme" class="form-radio text-indigo-600">
                     <span class="ml-2">{{ __('admin.settings.members.profile.appearance_dark') }}</span>
                 </label>
             </div>
@@ -170,6 +186,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // フォーム送信成功時にグローバルテーマストアを更新
+    @if(session('success'))
+        const savedAppearance = '{{ old('appearance', (string) ($member->appearance->value ?? 0)) }}';
+        if (window.themeStore) {
+            window.themeStore.theme = savedAppearance;
+            window.themeStore.applyTheme();
+        }
+    @endif
+});
+</script>
+@endpush
 
 @section('save')
     <!-- {{ __('admin.settings.members.profile.update_button') }} -->

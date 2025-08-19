@@ -125,9 +125,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         document.documentElement.classList.remove('disable-transition');
 
                         document.querySelectorAll('input[name="appearance"]').forEach((el) => {
+                            // プロフィール画面の外観設定は除外
+                            if (el.closest('[data-profile-theme]')) {
+                                return;
+                            }
                             el.addEventListener('change', (e) => {
                                 this.theme = e.target.value;
-                                this.applyTheme(false); // ← ここも保存しない
+                                this.applyTheme(false);
                             });
                         });
                     }
