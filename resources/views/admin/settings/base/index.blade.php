@@ -319,6 +319,85 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div id="test-result" class="mt-3 hidden"></div>
         </div>
     </div>
+
+    <!-- システムエラー通知設定 -->
+    <div class="mt-6 border-t pt-6">
+        <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.base.notification_settings') }}</h2>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            {{ __('admin.settings.base.notification_settings_description') }}
+        </p>
+
+        <!-- エラー通知機能の有効/無効 -->
+        <div class="mt-4">
+            @include('components::form.label', [
+                'text' => __('admin.settings.base.notification_enabled'),
+            ])
+            @include('components::form.hidden', [
+                'id' => 'notification_enabled',
+                'name' => 'notification_enabled',
+                'value' => '0'
+            ])
+            @include('components::form.radio-group', [
+                'name' => 'notification_enabled',
+                'options' => [
+                    1 => __('admin.settings.base.yes'),
+                    0 => __('admin.settings.base.no')
+                ],
+                'value' => $settings['notification_enabled'],
+            ])
+            <p class="text-sm text-gray-500 mt-1">{{ __('admin.settings.base.notification_enabled_help') }}</p>
+        </div>
+
+        <!-- 通知先メールアドレス -->
+        <div class="mt-4" x-data="{ enabled: {{ $settings['notification_enabled'] ? 'true' : 'false' }} }" x-init="
+            $watch('enabled', value => {
+                const radios = document.querySelectorAll('input[name=notification_enabled]');
+                radios.forEach(radio => {
+                    if (radio.checked) {
+                        enabled = radio.value === '1';
+                    }
+                });
+            });
+            
+            // ラジオボタンの変更を監視
+            document.querySelectorAll('input[name=notification_enabled]').forEach(radio => {
+                radio.addEventListener('change', () => {
+                    enabled = radio.value === '1';
+                });
+            });
+        ">
+            @include('components::form.label', [
+                'for' => 'notification_email',
+                'text' => __('admin.settings.base.notification_email'),
+            ])
+            @include('components::form.text', [
+                'id' => 'notification_email',
+                'name' => 'notification_email',
+                'value' => old('notification_email', $settings['notification_email']),
+                'type' => 'email',
+                'placeholder' => 'admin@example.com',
+                'x-bind:disabled' => '!enabled',
+                'x-bind:class' => '!enabled ? "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400" : ""'
+            ])
+            <p class="text-sm text-gray-500 mt-1">{{ __('admin.settings.base.notification_email_help') }}</p>
+            
+            <!-- メールサーバー設定の確認メッセージ -->
+            @if(!($mailConnectionTested && $mailSendTested && $mailReceiveTested))
+                <div class="mt-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-yellow-400 text-sm"></i>
+                        </div>
+                        <div class="ml-2">
+                            <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                                {{ __('admin.settings.base.notification_mail_test_required') }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+        </div>
+    </div>
 </form>
 
 <script>

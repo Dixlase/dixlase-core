@@ -37,6 +37,7 @@ class MembersSettingsSeeder extends Seeder
             ['key' => 'login_attempt_max_attempts', 'value' => '5'], // デフォルト: 5回
             ['key' => 'login_attempt_time_window', 'value' => '15'], // デフォルト: 15分
             ['key' => 'login_attempt_lockout_duration', 'value' => '30'], // デフォルト: 30分
+            ['key' => 'lockout_notification_enabled', 'value' => '1'], // デフォルト: 有効
 
         ];
 

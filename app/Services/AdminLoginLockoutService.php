@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\MemberLoginAttempt;
 use App\Models\MemberSetting;
+use App\Services\SystemNotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -17,6 +18,16 @@ class AdminLoginLockoutService
     public function isLockoutEnabled(): bool
     {
         return (bool) MemberSetting::getValue('login_attempt_limit_enabled', false);
+    }
+
+    /**
+     * ロックアウト通知が有効かどうかを確認
+     *
+     * @return bool
+     */
+    public function isNotificationEnabled(): bool
+    {
+        return (bool) MemberSetting::getValue('lockout_notification_enabled', true);
     }
 
     /**
@@ -185,12 +196,51 @@ class AdminLoginLockoutService
         $maxAttempts = $this->getMaxAttempts();
         $isLockedOut = $failedAttempts >= $maxAttempts;
 
+        // ロックアウトが発生した場合、通知を送信
+        if ($isLockedOut && $this->isNotificationEnabled()) {
+            $this->sendLockoutNotification($identifier, $request->ip(), $failedAttempts);
+        }
+
         return [
             'locked_out' => $isLockedOut,
             'remaining_attempts' => $isLockedOut ? 0 : max(0, $maxAttempts - $failedAttempts),
             'lockout_minutes' => $isLockedOut ? $this->getLockoutDuration() : null,
             'failed_attempts' => $failedAttempts,
         ];
+    }
+
+    /**
+     * ロックアウト通知を送信
+     *
+     * @param string $identifier
+     * @param string $ipAddress
+     * @param int $failedAttempts
+     * @return void
+     */
+    private function sendLockoutNotification(string $identifier, string $ipAddress, int $failedAttempts): void
+    {
+        try {
+            $notificationService = app(SystemNotificationService::class);
+            
+            $errorDetails = [
+                'type' => 'Login Lockout',
+                'identifier' => $identifier,
+                'ip_address' => $ipAddress,
+                'failed_attempts' => $failedAttempts,
+                'max_attempts' => $this->getMaxAttempts(),
+                'time_window' => $this->getTimeWindow() . ' minutes',
+                'lockout_duration' => $this->getLockoutDuration() . ' minutes',
+                'timestamp' => now()->toDateTimeString(),
+            ];
+
+            $notificationService->sendErrorNotification(
+                'Admin Login Lockout Triggered',
+                'A user has been locked out due to excessive login attempts.',
+                $errorDetails
+            );
+        } catch (\Exception $e) {
+            \Log::error('Failed to send lockout notification: ' . $e->getMessage());
+        }
     }
 
     /**

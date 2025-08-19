@@ -88,6 +88,30 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
 
         
+        <!-- メールサーバー設定状況 -->
+        @if(!$isMailServerTested)
+            <div class="mt-8 mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg">
+                <div class="flex items-start">
+                    <i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400 mt-0.5 mr-3 flex-shrink-0"></i>
+                    <div class="text-sm">
+                        <p class="text-yellow-800 dark:text-yellow-200 font-medium">{{ __('admin.settings.members.validation.mail_server_warning') }}</p>
+                        <p class="text-yellow-700 dark:text-yellow-300 mt-1">
+                            {{ __('admin.settings.members.validation.mail_server_warning_message') }}<br>
+                            <a href="{{ route('admin.settings.base') }}" class="underline hover:no-underline ml-1">{{ __('admin.settings.base.heading') }}</a>{{ __('admin.settings.members.validation.please_configure_in') }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        @elseif($mailConnectionTestDate)
+            <div class="mt-8 mb-6 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg">
+                <div class="flex items-center">
+                    <i class="fas fa-check-circle text-green-600 dark:text-green-400 mr-2"></i>
+                    <span class="text-sm text-green-800 dark:text-green-200">
+                        {{ __('admin.settings.members.validation.mail_server_test_passed') }} 
+                    </span>
+                </div>
+            </div>
+        @endif
 
         <!-- ログイン試行制限設定 -->
         <div class="mt-8 border-t pt-6">
@@ -175,37 +199,49 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         {{ __('admin.settings.members.settings.login_attempt_lockout_duration_help') }}
                     </p>
                 </div>
+
+                <!-- ロックアウト通知設定 -->
+                <div>
+                    <label class="block font-medium text-sm text-gray-700 dark:text-white mb-1">
+                        {{ __('admin.settings.members.settings.lockout_notification_enabled') }}
+                    </label>
+
+                    @php
+                        $lockoutNotificationOptions = [
+                            '1' => __('admin.settings.members.settings.lockout_notification_enabled_options.enabled'),
+                            '0' => __('admin.settings.members.settings.lockout_notification_enabled_options.disabled'),
+                        ];
+                    @endphp
+
+                    @include('components.form.radio-group', [
+                        'name' => 'lockout_notification_enabled',
+                        'options' => $lockoutNotificationOptions,
+                        'value' => old('lockout_notification_enabled', (string) (int) $lockoutNotificationEnabled),
+                    ])
+                    
+                    <p class="mt-1 text-xs text-gray-500 dark:text-white">
+                        {{ __('admin.settings.members.settings.lockout_notification_help') }}
+                    </p>
+
+                    @if(!$isMailServerTested)
+                        <div class="mt-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-exclamation-triangle text-yellow-400 text-sm"></i>
+                                </div>
+                                <div class="ml-2">
+                                    <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                                        {{ __('admin.settings.members.settings.lockout_notification_mail_test_required') }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                </div>
             </div>
         </div>
 
-        <!-- メールサーバー設定状況 -->
-        @if(!$isMailServerTested)
-            <div class="mt-8 mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg">
-                <div class="flex items-start">
-                    <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                    </svg>
-                    <div class="text-sm">
-                        <p class="text-yellow-800 dark:text-yellow-200 font-medium">{{ __('admin.settings.members.validation.mail_server_warning') }}</p>
-                        <p class="text-yellow-700 dark:text-yellow-300 mt-1">
-                            {{ __('admin.settings.members.validation.mail_server_warning_message') }}<br>
-                            <a href="{{ route('admin.settings.base') }}" class="underline hover:no-underline ml-1">{{ __('admin.settings.base.heading') }}</a>{{ __('admin.settings.members.validation.please_configure_in') }}
-                        </p>
-                    </div>
-                </div>
-            </div>
-        @elseif($mailConnectionTestDate)
-            <div class="mt-8 mb-6 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg">
-                <div class="flex items-center">
-                    <svg class="w-4 h-4 text-green-600 dark:text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    <span class="text-sm text-green-800 dark:text-green-200">
-                        {{ __('admin.settings.members.validation.mail_server_test_passed') }} 
-                    </span>
-                </div>
-            </div>
-        @endif
+        
 
         <!-- パスワードリセット機能設定 -->
         <div class="mt-8 border-t pt-6">

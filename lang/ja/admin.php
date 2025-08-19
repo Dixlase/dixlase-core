@@ -319,6 +319,14 @@ return [
                 'important_notice' => 'テスト結果は一時的に保存されています。必ず設定を保存してください。',
                 'close_button' => 'ウィンドウを閉じる',
             ],
+            // システムエラー通知設定
+            'notification_settings' => 'システムエラー通知設定',
+            'notification_settings_description' => 'システムエラーやアプリケーションの問題が発生した際に、指定したメールアドレスに通知を送信します。',
+            'notification_enabled' => 'エラー通知機能',
+            'notification_enabled_help' => 'システムエラーが発生した際にメール通知を送信するかどうかを設定します。',
+            'notification_email' => '通知先メールアドレス',
+            'notification_email_help' => 'システムエラー通知を受信するメールアドレスを入力してください。',
+            'notification_mail_test_required' => 'エラー通知機能を使用するには、上記のメール機能テストをすべて完了してください。',
         ],
         // セキュリティ
         'security' => [
@@ -484,7 +492,14 @@ return [
                 'login_attempt_time_window' => '時間窓（分）',
                 'login_attempt_time_window_help' => 'この時間内での失敗回数をカウントします。',
                 'login_attempt_lockout_duration' => 'ロックアウト時間（分）',
-                'login_attempt_lockout_duration_help' => '制限に達した場合、この時間だけログインを禁止します。',
+                'login_attempt_lockout_duration_help' => 'ロックアウト時間を分単位で設定します（1-10080分）。',
+                'lockout_notification_enabled' => 'ロックアウト通知',
+                'lockout_notification_enabled_options' => [
+                    'enabled' => '有効',
+                    'disabled' => '無効',
+                ],
+                'lockout_notification_help' => 'ログイン試行制限によりロックアウトが発生した際に、システムエラー通知を送信します。メールは基本設定で設定したメールアドレスに送信されます。',
+                'lockout_notification_mail_test_required' => 'ロックアウト通知を使用するには、基本設定でメールサーバーテストを完了してください。',
                 'login_attempt_limit_help' => 'ブルートフォース攻撃を防ぐため、短時間内に連続してログインに失敗した場合、一定時間ログインを制限します。',
                 'update_button' => '更新',
 
@@ -777,16 +792,6 @@ return [
                 'heading' => 'システム情報',
             ],
         ],
-    ],
-
-    'controller_messages' => [
-        'settings_updated' => '設定が更新されました。',
-        'test_session_cleared' => 'テストセッションがクリアされました。',
-        'mailer_not_supported' => 'メーラー「:mailer」は接続テストをサポートしていません。',
-        'connection_success' => 'メールサーバーへの接続が正常に確認されました。',
-        'connection_failed' => 'メールサーバーへの接続に失敗しました: :error',
-        'verification_token_invalid' => 'メール認証トークンが無効です。',
-        'verification_error' => 'メール認証中にエラーが発生しました: :error',
     ],
     'maintenance_settings' => 'メンテナンスモード設定',
     'mail_verification_success' => [

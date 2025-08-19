@@ -40,6 +40,7 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
             'login_attempt_max_attempts' => 'required|integer|min:1|max:100',
             'login_attempt_time_window' => 'required|integer|min:1|max:1440', // 最大24時間
             'login_attempt_lockout_duration' => 'required|integer|min:1|max:10080', // 最大1週間
+            'lockout_notification_enabled' => 'required|boolean',
         ];
     }
 

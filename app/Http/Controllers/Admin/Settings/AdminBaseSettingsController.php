@@ -71,8 +71,10 @@ class AdminBaseSettingsController extends AdminLoggedInController
             // メンテナンスモードのON/OFFも.envから読み取り
             'maintenance_mode' => env('MAINTENANCE_MODE', 'false'),
             
-            // データベースから読み取る設定（メンテナンスメッセージのみ）
+            // データベースから読み取る設定
             'maintenance_message' => BaseSetting::getValue('maintenance_message', '現在メンテナンス中です。しばらくお待ちください。'),
+            'notification_enabled' => (bool) BaseSetting::getValue('notification_enabled', false),
+            'notification_email' => BaseSetting::getValue('notification_email', ''),
         ];
 
         $timezones = TimezoneHelper::getTimezonesWithUtcOffset();
@@ -114,9 +116,11 @@ class AdminBaseSettingsController extends AdminLoggedInController
     {
 
 
-        // DBに保存するもの（メンテナンスメッセージのみ）
+        // DBに保存するもの
         $settings = $request->only([
             'maintenance_message',
+            'notification_enabled',
+            'notification_email',
         ]);
 
         // .envに保存するもの（メンテナンスモードのON/OFFも含む）
@@ -279,8 +283,8 @@ class AdminBaseSettingsController extends AdminLoggedInController
             // アプリケーション名を取得
             $appName = env('APP_NAME', 'Dixlase');
 
-            // テストメール送信先を設定
-            $testEmail = $mailSettings['mail_from_address'];
+            // テストメール送信先を設定（現在ログイン中のアカウントのメールアドレス）
+            $testEmail = auth()->user()->email;
 
             // 認証トークンを生成
             $verificationToken = bin2hex(random_bytes(32));

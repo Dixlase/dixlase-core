@@ -200,6 +200,16 @@ return [
     */
 
     'attributes' => [
+        // 基本フィールド
+        'email' => 'メールアドレス',
+        'password' => 'パスワード',
+        'password_confirmation' => 'パスワード確認',
+        'name' => '名前',
+        'title' => 'タイトル',
+        'content' => '内容',
+        'token' => 'トークン',
+        
+        // インストール関連
         'site_name' => 'サイト名',
         'admin_email' => '管理者メールアドレス',
         'admin_password' => '管理者パスワード',

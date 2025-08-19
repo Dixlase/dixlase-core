@@ -35,6 +35,8 @@ class BaseSettingsTableSeeder extends Seeder
     public function run(): void
     {
         $settings = [
+            // メンテナンスモード
+            ['name' => 'maintenance_mode', 'value' => 0],
             ['name' => 'maintenance_message', 'value' => '現在メンテナンス中です。しばらくお待ちください。'],
             // メール接続テスト関連
             ['name' => 'mail_connection_tested', 'value' => 0],
@@ -44,6 +46,9 @@ class BaseSettingsTableSeeder extends Seeder
             ['name' => 'mail_receive_tested', 'value' => 0],
             ['name' => 'mail_receive_test_date', 'value' => null],
             ['name' => 'mail_verification_token', 'value' => null],
+            // システムエラー通知関連
+            ['name' => 'notification_enabled', 'value' => 0],
+            ['name' => 'notification_email', 'value' => ''],
         ];
 
         foreach ($settings as $setting) {

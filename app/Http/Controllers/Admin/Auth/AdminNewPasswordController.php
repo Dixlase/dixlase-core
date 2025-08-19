@@ -52,7 +52,17 @@ class AdminNewPasswordController extends Controller
             abort(404);
         }
 
-        return view('admin.auth.reset-password', ['request' => $request]);
+        // パスワード条件の取得
+        $passwordMinLength = (int) MemberSetting::getValue('password_min_length', 8);
+        $passwordRequireUppercase = (bool) MemberSetting::getValue('password_require_uppercase', true);
+        $passwordRequireSymbol = (bool) MemberSetting::getValue('password_require_symbol', false);
+
+        return view('admin.auth.reset-password', [
+            'request' => $request,
+            'passwordMinLength' => $passwordMinLength,
+            'passwordRequireUppercase' => $passwordRequireUppercase,
+            'passwordRequireSymbol' => $passwordRequireSymbol,
+        ]);
     }
 
     /**
