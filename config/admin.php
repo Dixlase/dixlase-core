@@ -109,11 +109,6 @@ return [
                             'route' => 'admin.settings.members.create',
                             'icon' => 'fas fa-fw fa-user-plus',
                         ],
-                        'profile' => [
-                            'text' => 'admin.nav.settings.members.profile',
-                            'route' => 'admin.settings.members.profile',
-                            'icon' => 'fas fa-fw fa-id-badge',
-                        ],
                         'roles' => [
                             'text' => 'admin.nav.settings.members.roles',
                             'route' => 'admin.settings.members.roles',
@@ -123,7 +118,12 @@ return [
                             'text' => 'admin.nav.settings.members.settings',
                             'route' => 'admin.settings.members.settings',
                             'icon' => 'fas fa-fw fa-user-cog',
-                        ]
+                        ],
+                        'profile' => [
+                            'text' => 'admin.nav.settings.members.profile',
+                            'route' => 'admin.settings.members.profile',
+                            'icon' => 'fas fa-fw fa-id-badge',
+                        ],
                     ]
                 ],
                 'themes' => [

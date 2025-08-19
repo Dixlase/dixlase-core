@@ -194,6 +194,9 @@ class AdminMembersSettingsController extends AdminLoggedInController
      */
     public function profile()
     {
+        // 外観モードのセッションをクリアして、保存された値に戻す
+        session()->forget('appearance');
+        
         // プロフィール画面だけアニメーションを有効にする
         $transition = 'transition-colors duration-300';
 
