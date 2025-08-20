@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class MemberRolePermission extends Model
 {
+    protected $table = 'members_role_permissions';
     protected $fillable = [
         'menu_key',
         'access_roles',

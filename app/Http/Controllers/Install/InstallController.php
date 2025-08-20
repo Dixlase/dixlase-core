@@ -33,7 +33,9 @@ use Illuminate\Support\Facades\Log;
 use App\Models\SecuritySetting;
 use Illuminate\Support\Facades\Crypt;
 
-
+/**
+ * インストールコントローラー
+ */
 class InstallController extends Controller
 {
     // 利用可能な言語のリスト
@@ -388,102 +390,174 @@ class InstallController extends Controller
     // 確認画面の処理
     public function confirmStore()
     {
-        $data = session('install_data');
+        try {
+            Log::info('=== インストール開始 ===');
+            
+            $data = session('install_data');
+            Log::info('セッションデータ取得完了', ['keys' => array_keys($data ?? [])]);
 
-        // ✅ 暗号化された管理者パスワードを取得して復号化
-        $adminPassword = isset($data['admin_password']) ? Crypt::decryptString($data['admin_password']) : null;
+            // ✅ 暗号化された管理者パスワードを取得して復号化
+            $adminPassword = isset($data['admin_password']) ? Crypt::decryptString($data['admin_password']) : null;
+            Log::info('管理者パスワード復号化完了');
 
-        // ✅ DBパスワードを復号化
-        $dbPassword = isset($data['db_password']) ? Crypt::decryptString($data['db_password']) : null;
+            // ✅ DBパスワードを復号化
+            $dbPassword = isset($data['db_password']) ? Crypt::decryptString($data['db_password']) : null;
+            Log::info('DBパスワード復号化完了');
 
-        // ✅ `force_ssl` の値を取得（チェックなしなら false）
-        $forceSslBool = !empty($data['force_ssl']);
+            // ✅ `force_ssl` の値を取得（チェックなしなら false）
+            $forceSslBool = !empty($data['force_ssl']);
 
-        // ✅ `force_ssl` に基づいて `APP_URL` のプロトコルを決定
-        $protocol = $forceSslBool ? 'https://' : 'http://';
-        $appUrl = $protocol . $data['app_url'];
+            // ✅ `force_ssl` に基づいて `APP_URL` のプロトコルを決定
+            $protocol = $forceSslBool ? 'https://' : 'http://';
+            $appUrl = $protocol . $data['app_url'];
 
-        // .envファイルの更新やインストール処理
-        // 環境変数の更新
-        // セッションから言語設定を取得、デフォルトは 'en'
-        $locale = session('install_locale', 'en');
-        
-        $envData = [
-            'APP_NAME' => $data['site_name'],
-            'APP_ENV' => $data['app_env'],
-            'APP_DEBUG' => $data['app_debug'] ? 'true' : 'false',
-            'APP_URL' => $appUrl,
-            //'APP_LOCALE' => $locale,
-            //'APP_FALLBACK_LOCALE' => $locale,
-            'APP_TIMEZONE' => $data['app_timezone'] ?? 'Asia/Tokyo',
-            'INSTALLED' => 'false', // ✅ ここでは false にする
-            'FORCE_SSL' => $data['force_ssl'] ? 'true' : 'false',
-            'SESSION_DRIVER' => 'database',
-            'DB_CONNECTION' => $data['db_connection'],
-            'DB_HOST' => $data['db_host'],
-            'DB_PORT' => $data['db_port'],
-            'DB_DATABASE' => $data['db_database'],
-            'DB_USERNAME' => $data['db_username'],
-            'DB_PASSWORD' => $dbPassword ?? '', // ✅ 復号化して `.env` に適用
-        ];
+            // .envファイルの更新やインストール処理
+            // 環境変数の更新
+            // セッションから言語設定を取得、デフォルトは 'en'
+            $locale = session('install_locale', 'en');
+            
+            $envData = [
+                'APP_NAME' => $data['site_name'],
+                'APP_ENV' => $data['app_env'],
+                'APP_DEBUG' => $data['app_debug'] ? 'true' : 'false',
+                'APP_URL' => $appUrl,
+                //'APP_LOCALE' => $locale,
+                //'APP_FALLBACK_LOCALE' => $locale,
+                'APP_TIMEZONE' => $data['app_timezone'] ?? 'Asia/Tokyo',
+                'INSTALLED' => 'false', // ✅ ここでは false にする
+                'FORCE_SSL' => $data['force_ssl'] ? 'true' : 'false',
+                'SESSION_DRIVER' => 'database',
+                'DB_CONNECTION' => $data['db_connection'],
+                'DB_HOST' => $data['db_host'],
+                'DB_PORT' => $data['db_port'],
+                'DB_DATABASE' => $data['db_database'],
+                'DB_USERNAME' => $data['db_username'],
+                'DB_PASSWORD' => $dbPassword ?? '', // ✅ 復号化して `.env` に適用
+            ];
 
-        // .env ファイル更新
-        $this->updateEnv($envData);
+            // .env ファイル更新
+            Log::info('.envファイル更新開始');
+            $this->updateEnv($envData);
+            Log::info('.envファイル更新完了');
 
-        // ✅ 設定をクリアし、新しい `.env` を適用
-        Artisan::call('config:clear');
-        Artisan::call('config:cache');
+            // ✅ 設定をクリアし、新しい `.env` を適用
+            Log::info('設定キャッシュクリア開始');
+            Artisan::call('config:clear');
+            Log::info('設定キャッシュクリア完了');
+            
+            Log::info('設定キャッシュ再構築開始');
+            Artisan::call('config:cache');
+            Log::info('設定キャッシュ再構築完了');
 
-        // データベースをリセットするかどうかを確認
-        if (empty($data['preserve_data'])) {
-            // データベースをリセットしてマイグレーションを実行
-            Artisan::call('migrate:fresh', ['--force' => true]);
-        } else {
-            // データベースをリセットせずにマイグレーションのみを実行
-            Artisan::call('migrate', ['--force' => true]);
-        }
-        
-        // 常にメンバーロールパーミッションシーダーを実行
-        // 既存のデータを保持するため、テーブルが空の場合のみ実行
-        if (!DB::table('member_role_permissions')->exists()) {
-            Artisan::call('db:seed', [
-                '--class' => 'DatabaseSeeder',
-                '--force' => true
-            ]);
-        }
-
-        // 初期データの投入
-        $this->initializeDatabase($data, $adminPassword);
-
-        // ストレージのシンボリックリンクを作成
-        // ✅ ストレージのシンボリックリンクを作成
-        Artisan::call('storage:link');
-
-        // ✅ アクティブなテーマのシンボリックリンクを作成
-        $activeTheme = DB::table('theme_settings')
-            ->join('themes', 'theme_settings.active_theme_id', '=', 'themes.id')
-            ->select('themes.directory')
-            ->first();
-
-        if ($activeTheme) {
-            try {
-                update_theme_symlink($activeTheme->directory);
-            } catch (\Exception $e) {
-                Log::error("シンボリックリンクの作成に失敗しました: {$e->getMessage()}");
+            // データベースをリセットするかどうかを確認
+            if (empty($data['preserve_data'])) {
+                // データベースをリセットしてマイグレーションを実行
+                Log::info('データベースリセット＆マイグレーション開始');
+                Artisan::call('migrate:fresh', ['--force' => true]);
+                Log::info('データベースリセット＆マイグレーション完了');
+            } else {
+                // データベースをリセットせずにマイグレーションのみを実行
+                Log::info('マイグレーション開始（データ保持）');
+                Artisan::call('migrate', ['--force' => true]);
+                Log::info('マイグレーション完了（データ保持）');
             }
-        } else {
-            Log::warning("アクティブなテーマが見つかりません。シンボリックリンクは作成されませんでした。");
+            
+            // 常にメンバーロールパーミッションシーダーを実行
+            // 既存のデータを保持するため、テーブルが空の場合のみ実行
+            Log::info('シーダー実行チェック開始');
+            if (!DB::table('members_role_permissions')->exists()) {
+                Log::info('DatabaseSeeder実行開始');
+                Artisan::call('db:seed', [
+                    '--class' => 'DatabaseSeeder',
+                    '--force' => true
+                ]);
+                Log::info('DatabaseSeeder実行完了');
+            } else {
+                Log::info('members_role_permissionsテーブルが既に存在するため、シーダーをスキップ');
+            }
+
+            // 初期データの投入
+            Log::info('初期データ投入開始');
+            $this->initializeDatabase($data, $adminPassword);
+            Log::info('初期データ投入完了');
+
+            // ストレージのシンボリックリンクを作成
+            // ✅ ストレージのシンボリックリンクを作成
+            Log::info('ストレージシンボリックリンク作成開始');
+            Artisan::call('storage:link');
+            Log::info('ストレージシンボリックリンク作成完了');
+
+            // ✅ アクティブなテーマのシンボリックリンクを作成
+            Log::info('テーマシンボリックリンク作成開始');
+            $activeTheme = DB::table('theme_settings')
+                ->join('themes', 'theme_settings.active_theme_id', '=', 'themes.id')
+                ->select('themes.directory')
+                ->first();
+
+            if ($activeTheme) {
+                try {
+                    update_theme_symlink($activeTheme->directory);
+                    Log::info('テーマシンボリックリンク作成完了', ['theme' => $activeTheme->directory]);
+                } catch (\Exception $e) {
+                    Log::error("シンボリックリンクの作成に失敗しました: {$e->getMessage()}");
+                }
+            } else {
+                Log::warning("アクティブなテーマが見つかりません。シンボリックリンクは作成されませんでした。");
+            }
+
+            // セッションデータを削除
+            session()->forget('install_data');
+            Log::info('=== インストール完了 ===');
+
+            return redirect()->route('install.complete');
+            
+        } catch (\Exception $e) {
+            Log::error('=== インストールエラー ===', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            // ユーザーフレンドリーなエラーメッセージを作成
+            $errorMessage = $this->getInstallationErrorMessage($e);
+            
+            return redirect()->route('install.confirm')
+                ->with('error', $errorMessage)
+                ->with('error_details', $e->getMessage());
         }
-
-        // セッションデータを削除
-        session()->forget('install_data');
-
-        return redirect()->route('install.complete');
     }
 
+    /**
+     * インストールエラーのユーザーフレンドリーなエラーメッセージを取得
+     */
+    private function getInstallationErrorMessage(\Exception $e)
+    {
+        // エラーメッセージを取得
+        $errorMessage = $e->getMessage();
+        
+        // エラーがデータベース関連の場合
+        if (strpos($errorMessage, 'database') !== false) {
+            return __('install.error.database');
+        }
+        
+        // エラーがファイルシステム関連の場合
+        if (strpos($errorMessage, 'file') !== false || strpos($errorMessage, 'directory') !== false) {
+            return __('install.error.file_system');
+        }
+        
+        // エラーが環境変数関連の場合
+        if (strpos($errorMessage, 'env') !== false || strpos($errorMessage, 'environment') !== false) {
+            return __('install.error.environment');
+        }
+        
+        // エラーが不明な場合
+        return __('install.error.unknown');
+    }
 
-
-    // 完了画面
+    /**
+     * 完了画面
+     */
     public function complete()
     {
         // ✅ セッションデータを削除
@@ -531,7 +605,11 @@ class InstallController extends Controller
         foreach ($values as $key => $value) {
             if (preg_match("/^{$key}=/m", $env)) {
                 // 既存の値を更新
-                $env = preg_replace("/^{$key}=.*/m", "{$key}={$value}", $env);
+                $env = preg_replace(
+                    "/^{$key}=.*/m",
+                    "{$key}={$value}",
+                    $env
+                );
             } else {
                 // `.env` に存在しない場合は末尾に追加
                 $env .= "\n{$key}={$value}";
@@ -564,6 +642,24 @@ class InstallController extends Controller
                 ->where('name', 'site_name')
                 ->update(['value' => $data['site_name'], 'updated_at' => now()]);
             Log::info('initializeDatabase - site_name更新: ' . $data['site_name']);
+        }
+
+        // `notification_email` に管理者メールアドレスを設定
+        Log::info('initializeDatabase - notification_email設定開始: ' . $data['admin_email']);
+        if (!DB::connection('mysql')->table('base_settings')->where('name', 'notification_email')->exists()) {
+            DB::connection('mysql')->table('base_settings')->insert([
+                'name' => 'notification_email',
+                'value' => $data['admin_email'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            Log::info('initializeDatabase - notification_email新規作成: ' . $data['admin_email']);
+        } else {
+            // 既存の通知メールアドレスを更新
+            DB::connection('mysql')->table('base_settings')
+                ->where('name', 'notification_email')
+                ->update(['value' => $data['admin_email'], 'updated_at' => now()]);
+            Log::info('initializeDatabase - notification_email更新: ' . $data['admin_email']);
         }
 
         // `security_settings` の各設定を更新または作成

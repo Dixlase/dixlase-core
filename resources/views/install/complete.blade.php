@@ -1,11 +1,10 @@
 @extends('layouts.install')
 
 @section('title', __('install.complete_title'))
+@section('header', __('install.complete_header'))
+@section('description', __('install.complete_message'))
 
 @section('content')
-
-    <h1 class="text-2xl font-bold text-gray-800 mb-4">{{ __('install.complete_title') }}</h1>
-    <p class="text-gray-600 mb-6">{{ __('install.complete_message') }}</p>
 
     <div class="text-left space-y-4">
         <!-- ✅ フロントページURL -->

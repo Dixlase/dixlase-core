@@ -20,14 +20,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-
     protected $table = 'themes';
 
     /**
@@ -37,10 +35,13 @@ return new class extends Migration
     {
         Schema::create($this->table, function (Blueprint $table) {
             $table->id();
-            $table->string('name'); // テーマ名
-            $table->string('slug')->unique(); // ディレクトリ名などの識別子
-            $table->string('directory')->nullable(); // テーマディレクトリ
-            $table->string('version')->nullable(); // バージョン情報
+            $table->string('name');
+            $table->string('directory');
+            $table->string('slug')->unique();
+            $table->string('version')->default('1.0.0');
+            $table->text('description')->nullable();
+            $table->json('config')->nullable();
+            $table->boolean('is_active')->default(false);
             $table->timestamps();
         });
     }

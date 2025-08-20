@@ -7,11 +7,12 @@ use Illuminate\Support\Facades\Cache;
 
 class MemberSetting extends Model
 {
+    protected $table = 'members_settings';
     protected $fillable = ['key', 'value'];
 
     public static function getAllSettings(): array
     {
-        return Cache::remember('member_settings_all', now()->addMinutes(10), function () {
+        return Cache::remember('members_settings_all', now()->addMinutes(10), function () {
             return static::pluck('value', 'key')->toArray();
         });
     }

@@ -400,7 +400,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </div>
 </form>
 
-<script>
+
+
+@endsection
+
+@section('save')
+    <!-- 保存ボタンとモーダル -->
+    @include('components::form.save', [
+        'id' => 'confirmationModal',
+        'label' => __('admin.settings.base.submit'),
+        'onclick' => "openModal('confirmationModal')",
+        'title' => __('admin.settings.base.save_confirmation_title'),
+        'message' => __('admin.settings.base.save_confirmation_message'),
+        'confirm_label' => __('admin.settings.base.save_button'),
+        'cancel_label' => __('admin.settings.base.cancel_button'),
+        'form' => 'base-settings-form',
+    ])
+@endsection
+
+
+@section('scripts')
+
     // 翻訳テキストをJavaScriptで使用するために定義
     const translations = {
         mailTestComplete: '{{ __('admin.settings.base.view_messages.mail_test_complete') }}',
@@ -849,20 +869,4 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             }, 5000);
         }
     });
-</script>
-
-@endsection
-
-@section('save')
-    <!-- 保存ボタンとモーダル -->
-    @include('components::form.save', [
-        'id' => 'confirmationModal',
-        'label' => __('admin.settings.base.submit'),
-        'onclick' => "openModal('confirmationModal')",
-        'title' => __('admin.settings.base.save_confirmation_title'),
-        'message' => __('admin.settings.base.save_confirmation_message'),
-        'confirm_label' => __('admin.settings.base.save_button'),
-        'cancel_label' => __('admin.settings.base.cancel_button'),
-        'form' => 'base-settings-form',
-    ])
 @endsection

@@ -20,15 +20,13 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-
-    protected $table = 'webauthn_credentials';
+    protected $table = 'captcha_form_settings';
 
     /**
      * Run the migrations.
@@ -37,10 +35,12 @@ return new class extends Migration
     {
         Schema::create($this->table, function (Blueprint $table) {
             $table->id();
-            $table->foreignId('member_id')->constrained('members')->onDelete('cascade');
-            $table->string('credential_id')->unique();
-            $table->text('public_key');
-            $table->string('name')->nullable(); // デバイス名
+            $table->string('key')->unique(); // フォーム識別キー (admin_login, contact, etc.)
+            $table->string('route_name')->nullable(); // ルート名
+            $table->boolean('enabled')->default(false); // CAPTCHA有効/無効
+            $table->string('plugin_name')->nullable(); // プラグイン名（コア機能の場合はnull）
+            $table->boolean('is_core')->default(true); // コア機能かどうか
+            $table->integer('display_order')->default(0); // 表示順序
             $table->timestamps();
         });
     }

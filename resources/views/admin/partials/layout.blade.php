@@ -91,9 +91,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
 
         <!-- Modals Section -->
-        @hasSection('modals')
-            @yield('modals')
-        @endif
+        @stack('modals')
 
         <script>
 
@@ -144,6 +142,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @hasSection('scripts')
                 @yield('scripts')
             @endif
+
+            @stack('scripts')
 
         </script>
 

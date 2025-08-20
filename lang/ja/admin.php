@@ -319,6 +319,41 @@ return [
                 'important_notice' => 'テスト結果は一時的に保存されています。必ず設定を保存してください。',
                 'close_button' => 'ウィンドウを閉じる',
             ],
+            'controller_messages' => [
+                'settings_updated' => '設定が更新されました。',
+                'test_session_cleared' => 'テストセッションがクリアされました。',
+                'mailer_not_supported' => 'メーラー ":mailer" は接続テストをサポートしていません。',
+                'connection_success' => 'メールサーバーへの接続が正常に確認されました。',
+                'connection_failed' => 'メールサーバーへの接続に失敗しました: :error',
+                'verification_token_invalid' => 'メール確認トークンが無効です。',
+                'verification_error' => 'メール確認中にエラーが発生しました: :error',
+            ],
+            'view_messages' => [
+                'mail_test_complete' => 'メール機能テスト完了',
+                'mail_test_incomplete' => 'メール機能テスト未完了',
+                'mail_test_warning_features' => 'メンバー全体設定のロックアウト通知、パスワードリセット、ログイン通知、二段階認証機能を使用するには、すべてのメールテストを完了してください。',
+                'mail_test_warning_temporary' => 'テスト結果は一時的に保存されます。更新ボタンを押すまで、設定やテスト結果は保存されません。',
+                'connection_test' => 'サーバー接続テスト',
+                'send_test' => 'メール送信テスト',
+                'receive_test' => 'メール受信確認テスト',
+                'test_passed' => 'テスト合格',
+                'test_not_completed' => '未実行',
+                'mail_receive_test_completed' => 'メール受信テストが完了しました。設定を保存してください。',
+            ],
+            'mail_verification_success' => [
+                'title' => 'メール受信確認完了',
+                'heading' => 'メール受信確認が完了しました',
+                'description' => 'メール機能のテストが正常に完了しました。',
+                'next_steps_title' => '次の手順',
+                'next_steps' => [
+                    'close_window' => 'このウィンドウを閉じてください',
+                    'save_settings' => '基本設定画面で「更新」ボタンを押して設定を保存してください',
+                    'data_saved' => 'テスト結果が保存され、メール機能が有効になります',
+                ],
+                'important_notice_title' => '重要な注意事項',
+                'important_notice' => 'テスト結果は一時的に保存されています。必ず設定を保存してください。',
+                'close_button' => 'ウィンドウを閉じる',
+            ],
             // システムエラー通知設定
             'notification_settings' => 'システムエラー通知設定',
             'notification_settings_description' => 'システムエラーやアプリケーションの問題が発生した際に、指定したメールアドレスに通知を送信します。',
@@ -349,7 +384,7 @@ return [
             'captcha_turnstile_site_key' => 'Cloudflare Turnstile サイトキー',
             'captcha_turnstile_secret_key' => 'Cloudflare Turnstile シークレットキー',
             'captcha_min_score_description' => '0.0は最も疑わしく、1.0は最も信頼できることを示します。通常は0.5を推奨します。',
-            'captcha_form_settings' => 'フォーム別設定',
+            'captcha_form_settings' => 'reCAPTCHAを使用するフォーム',
             'captcha_forms' => [
                 'admin_login' => '管理画面ログイン',
             ],
@@ -502,7 +537,16 @@ return [
                 'mail_server_test_warning' => 'メールサーバーのテストが完了していません。通知機能を有効にする前に、基本設定でメールサーバーのテストを完了してください。',
                 'login_attempt_limit_help' => 'ブルートフォース攻撃を防ぐため、短時間内に連続してログインに失敗した場合、一定時間ログインを制限します。',
                 'update_button' => '更新',
-
+                // メンバー強制ログアウト
+                'force_logout_success' => ':nameを強制的にログアウトしました。',
+                'force_logout_all_success' => '全メンバーを強制的にログアウトしました。（:count件のセッションを削除）',
+                'force_logout_all_error' => '全メンバーの強制ログアウトに失敗しました。',
+                'force_logout_all_modal' => [
+                    'title' => '全メンバー強制ログアウトの確認',
+                    'message' => '全てのメンバー（あなた以外）を強制的にログアウトさせますか？<br><br>この操作により、現在ログイン中の全メンバーのセッションが無効化され、再度ログインが必要になります。<br><br><strong>注意: この操作は取り消すことができません。</strong>',
+                    'confirm_label' => '全メンバーを強制ログアウト',
+                    'cancel_label' => 'キャンセル',
+                ],
             ],
             'roles' => [
                 'heading' => '権限設定',
@@ -792,31 +836,5 @@ return [
                 'heading' => 'システム情報',
             ],
         ],
-    ],
-    'maintenance_settings' => 'メンテナンスモード設定',
-    'mail_verification_success' => [
-        'title' => 'メール受信確認完了',
-        'heading' => 'メール受信確認が完了しました',
-        'description' => 'メール機能のテストが正常に完了しました。',
-        'next_steps_title' => '次の手順',
-        'next_steps' => [
-            'close_window' => 'このウィンドウを閉じてください',
-            'save_settings' => '基本設定画面で「更新」ボタンを押して設定を保存してください',
-            'data_saved' => 'テスト結果が保存され、メール機能が有効になります',
-        ],
-        'important_notice_title' => '重要な注意事項',
-        'important_notice' => 'テスト結果は一時的に保存されています。必ず設定を保存してください。',
-        'close_button' => 'ウィンドウを閉じる',
-    ],
-
-    // メンバー強制ログアウト
-    'force_logout_success' => ':nameを強制的にログアウトしました。',
-    'force_logout_all_success' => '全メンバーを強制的にログアウトしました。（:count件のセッションを削除）',
-    'force_logout_all_error' => '全メンバーの強制ログアウトに失敗しました。',
-    'force_logout_all_modal' => [
-        'title' => '全メンバー強制ログアウトの確認',
-        'message' => '全てのメンバー（あなた以外）を強制的にログアウトさせますか？<br><br>この操作により、現在ログイン中の全メンバーのセッションが無効化され、再度ログインが必要になります。<br><br><strong>注意: この操作は取り消すことができません。</strong>',
-        'confirm_label' => '全メンバーを強制ログアウト',
-        'cancel_label' => 'キャンセル',
     ],
 ];
