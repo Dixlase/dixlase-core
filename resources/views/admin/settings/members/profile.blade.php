@@ -183,24 +183,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </form>
 
-
-
 @endsection
-
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // フォーム送信成功時にグローバルテーマストアを更新
-    @if(session('success'))
-        const savedAppearance = '{{ old('appearance', (string) ($member->appearance->value ?? 0)) }}';
-        if (window.themeStore) {
-            window.themeStore.theme = savedAppearance;
-            window.themeStore.applyTheme();
-        }
-    @endif
-});
-</script>
-@endpush
 
 @section('save')
     <!-- {{ __('admin.settings.members.profile.update_button') }} -->
@@ -216,3 +199,15 @@ document.addEventListener('DOMContentLoaded', function() {
     ])
 @endsection
 
+@section('scripts')
+    document.addEventListener('DOMContentLoaded', function() {
+        // フォーム送信成功時にグローバルテーマストアを更新
+        @if(session('success'))
+            const savedAppearance = '{{ old('appearance', (string) ($member->appearance->value ?? 0)) }}';
+            if (window.themeStore) {
+                window.themeStore.theme = savedAppearance;
+                window.themeStore.applyTheme();
+            }
+        @endif
+    });
+@endsection

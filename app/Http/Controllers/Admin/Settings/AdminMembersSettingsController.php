@@ -190,6 +190,49 @@ class AdminMembersSettingsController extends AdminLoggedInController
     }
 
     /**
+     * Force logout the specified member.
+     */
+    public function forceLogout(Member $member)
+    {
+        // セッションストアからこのメンバーのセッションを削除
+        $sessionStore = app('session.store');
+        $sessionTable = config('session.table', 'sessions');
+        
+        if ($sessionTable && \DB::getSchemaBuilder()->hasTable($sessionTable)) {
+            // データベースセッションの場合
+            \DB::table($sessionTable)
+                ->where('user_id', $member->id)
+                ->delete();
+        }
+
+        return redirect()->route('admin.settings.members.edit', ['member' => $member->id])
+            ->with('success', __('admin.settings.members.force_logout_success', ['name' => $member->name]));
+    }
+
+    /**
+     * Force logout all members except current user.
+     */
+    public function forceLogoutAll()
+    {
+        $currentUserId = Auth::guard('member')->id();
+        $sessionTable = config('session.table', 'sessions');
+        
+        if ($sessionTable && \DB::getSchemaBuilder()->hasTable($sessionTable)) {
+            // 現在のユーザー以外の全てのセッションを削除
+            $deletedCount = \DB::table($sessionTable)
+                ->where('user_id', '!=', $currentUserId)
+                ->whereNotNull('user_id')
+                ->delete();
+            
+            return redirect()->route('admin.settings.members.settings')
+                ->with('success', __('admin.settings.members.force_logout_all_success', ['count' => $deletedCount]));
+        }
+
+        return redirect()->route('admin.settings.members.settings')
+            ->with('error', __('admin.settings.members.force_logout_all_error'));
+    }
+
+    /**
      * Show the form for editing the profile.
      */
     public function profile()
@@ -480,15 +523,15 @@ class AdminMembersSettingsController extends AdminLoggedInController
         MemberSetting::setValue('lockout_notification_enabled', $validated['lockout_notification_enabled'] ? '1' : '0');
 
         // 有効な二段階認証方法を保存
-    $enabledMethods = $request->input('two_factor_methods', []);
-    // 最低1つは有効にする
-    if (empty($enabledMethods)) {
-        $enabledMethods = [TwoFactorMethod::EMAIL->value];
-    }
-    MemberSetting::setValue('enabled_two_factor_methods', json_encode($enabledMethods));
+        $enabledMethods = $request->input('two_factor_methods', []);
+        // 最低1つは有効にする
+        if (empty($enabledMethods)) {
+            $enabledMethods = [TwoFactorMethod::EMAIL->value];
+        }
+        MemberSetting::setValue('enabled_two_factor_methods', json_encode($enabledMethods));
 
-    return redirect()->route('admin.settings.members.settings')
-        ->with('success', __('admin.settings.members.settings.updated'));
+        return redirect()->route('admin.settings.members.settings')
+            ->with('success', __('admin.settings.members.settings.updated'));
     }
 
     /**

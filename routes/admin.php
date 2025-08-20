@@ -139,6 +139,10 @@ Route::prefix($adminUrl)->name('admin.')
             Route::patch('/settings/members/update/{member}', [AdminMembersSettingsController::class, 'update'])->name('settings.members.update');
             // メンバー削除
             Route::delete('/settings/members/destroy/{member}', [AdminMembersSettingsController::class, 'destroy'])->name('settings.members.destroy');
+            // メンバー強制ログアウト
+            Route::post('/settings/members/force-logout/{member}', [AdminMembersSettingsController::class, 'forceLogout'])->name('settings.members.force-logout');
+            // 全メンバー強制ログアウト
+            Route::post('/settings/members/force-logout-all', [AdminMembersSettingsController::class, 'forceLogoutAll'])->name('settings.members.force-logout-all');
             // プロフィール
             Route::get('/settings/members/profile', [AdminMembersSettingsController::class, 'profile'])->name('settings.members.profile');
             Route::post('/settings/members/profile', [AdminMembersSettingsController::class, 'updateProfile'])->name('settings.members.profile.update');

@@ -553,10 +553,10 @@ Clicking this link will complete the full mail function test.',
                 ]
             ],
             'validation' => [
-                'mail_server_not_tested' => 'To enable password reset function, login notification function, and two-factor authentication function, you must pass the mail server connection test in the basic settings.',
+                'mail_server_not_tested' => 'To enable lockout notification function, password reset function, login notification function, and two-factor authentication function, you must pass the mail server connection test in the basic settings.',
                 'mail_server_warning' => 'Mail Server Not Configured',
-                'mail_server_warning_message' => 'This feature will not function because mail server configuration and testing have not been completed.',
-                'mail_server_test_passed' => 'Mail server connection test passed. Password reset function, login notification function, and two-factor authentication function can be used.',
+                'mail_server_warning_message' => 'Lockout notification function, password reset function, login notification function, and two-factor authentication function will not work because mail server configuration and testing have not been completed.',
+                'mail_server_test_passed' => 'Mail server connection test passed. Lockout notification, password reset function, login notification function, and two-factor authentication function can be used.',
                 'please_configure_in' => 'Please configure mail server settings in the basic settings',
                 'name_required' => 'Name is required.',
                 'email_required' => 'Email address is required.',
@@ -806,4 +806,14 @@ Clicking this link will complete the full mail function test.',
         ],
     ],
 
+    // Member force logout
+    'force_logout_success' => ':name has been forcibly logged out.',
+    'force_logout_all_success' => 'All members have been forcibly logged out. (:count sessions deleted)',
+    'force_logout_all_error' => 'Failed to force logout all members.',
+    'force_logout_all_modal' => [
+        'title' => 'Confirm Force Logout All Members',
+        'message' => 'Do you want to forcibly log out all members (except yourself)?<br><br>This operation will invalidate all currently logged-in member sessions and require them to log in again.<br><br><strong>Warning: This operation cannot be undone.</strong>',
+        'confirm_label' => 'Force Logout All Members',
+        'cancel_label' => 'Cancel',
+    ],
 ];
