@@ -152,8 +152,8 @@ return [
     'confirm_button' => 'インストール',
 
     //complete
-    'complete_title' => 'インストール完了',
-    'complete_message' => 'インストールが正常に完了しました。以下のリンクからサイトまたは管理画面にアクセスしてください。',
+    'complete_title' => 'インストール完了！',
+    'complete_message' => 'インストールが正常に完了しました！以下のリンクからサイトまたは管理画面にアクセスしてください。',
     'go_to_site' => 'サイトへ移動',
     'go_to_admin' => '管理画面へログイン',
     'admin_login_url' => '管理画面ログインURL',
@@ -178,4 +178,21 @@ return [
         // タイムゾーンの翻訳は timezones.php に移動しました
     ],
     'timezone_note' => 'アプリケーションのデフォルトタイムゾーンを選択してください。',
+
+    // インストールエラーメッセージ
+    'error' => [
+        'installation_failed' => 'インストール中にエラーが発生しました',
+        'technical_details' => '技術的な詳細を表示',
+        'database_column_missing' => 'データベースのカラムが見つかりません',
+        'database_table_exists' => 'データベーステーブルが既に存在します',
+        'database_table_missing' => 'データベーステーブルが見つかりません',
+        'database_access_denied' => 'データベースへのアクセスが拒否されました',
+        'database_general' => 'データベースエラーが発生しました',
+        'migration_failed' => 'データベースマイグレーションに失敗しました',
+        'seeder_failed' => 'データベースシーダーの実行に失敗しました',
+        'file_system' => 'ファイルシステムエラーが発生しました（権限を確認してください）',
+        'environment' => '環境設定ファイルの更新に失敗しました',
+        'encryption' => 'データの暗号化・復号化に失敗しました',
+        'unknown' => '予期しないエラーが発生しました',
+    ],
 ];

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 class MemberRolePermissionSeeder extends Seeder
 {
 
-    protected $table = 'member_role_permissions';
+    protected $table = 'members_role_permissions';
     /**
      * Run the database seeds.
      */

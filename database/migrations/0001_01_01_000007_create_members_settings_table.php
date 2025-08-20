@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
 
-    protected $table = 'member_settings';
+    protected $table = 'members_settings';
 
     /**
      * Run the migrations.

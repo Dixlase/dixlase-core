@@ -114,8 +114,8 @@ return [
     'confirm_button' => 'Confirm & Install',
 
     //complete
-    'complete_title' => 'Installation Complete',
-    'complete_message' => 'The installation has been successfully completed. You can now access your site or the admin panel.',
+    'complete_title' => 'Installation Complete!',
+    'complete_message' => 'The installation has been successfully completed! You can now access your site or the admin panel.',
     'go_to_site' => 'Go to Site',
     'go_to_admin' => 'Go to Admin Panel',
     //errors
@@ -135,4 +135,21 @@ return [
         // Timezone translations are now in timezones.php
     ],
     'timezone_note' => 'Select the default timezone for the application.',
+
+    // Installation error messages
+    'error' => [
+        'installation_failed' => 'An error occurred during installation',
+        'technical_details' => 'Show technical details',
+        'database_column_missing' => 'Database column not found',
+        'database_table_exists' => 'Database table already exists',
+        'database_table_missing' => 'Database table not found',
+        'database_access_denied' => 'Database access denied',
+        'database_general' => 'Database error occurred',
+        'migration_failed' => 'Database migration failed',
+        'seeder_failed' => 'Database seeder execution failed',
+        'file_system' => 'File system error occurred (check permissions)',
+        'environment' => 'Environment configuration file update failed',
+        'encryption' => 'Data encryption/decryption failed',
+        'unknown' => 'An unexpected error occurred',
+    ],
 ];

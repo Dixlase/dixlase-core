@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
 
-    protected $table = 'member_role_permissions';
+    protected $table = 'members_role_permissions';
 
     /**
      * Run the migrations.

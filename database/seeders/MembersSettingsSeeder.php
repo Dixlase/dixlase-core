@@ -10,7 +10,7 @@ use App\Models\MemberSetting;
 class MembersSettingsSeeder extends Seeder
 {
 
-    protected $table = 'member_settings';
+    protected $table = 'members_settings';
     /**
      * Run the database seeds.
      */
