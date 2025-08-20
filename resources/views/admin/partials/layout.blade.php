@@ -60,7 +60,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </aside>
 
                 <!-- Main -->
-                <main class="p-6 sm:p-0 ml-0 md:ml-64 flex-1 {{ config('admin.appearance_class.layout.main') }}">
+                <main class="ml-0 md:ml-64 flex-1 {{ config('admin.appearance_class.layout.main') }}">
 
                     <!-- Page Heading -->
                     <div class="mx-auto py-6 px-4 sm:px-6 lg:px-8 mb-10 {{ config('admin.appearance_class.layout.title') }}">
@@ -70,7 +70,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </h2>
                     </div>
 
-                    <div class="w-full pb-8 px-0 sm:px-6 lg:px-8">
+                    <div class="w-full p-6 sm:p-0 lg:px-8 pb-8">
                         @include('components::flash-message')
                         <!-- Page Content -->
                         @yield('content')
@@ -85,13 +85,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @endif
 
                 </main>
-
-
             </div>
-            @stack('scripts')
             <!-- Footer -->
             @include('admin.partials.footer')
         </div>
+
+        <!-- Modals Section -->
+        @hasSection('modals')
+            @yield('modals')
+        @endif
 
         <script>
 
@@ -138,7 +140,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 }
             }
 
+            // Page-specific scripts
+            @hasSection('scripts')
+                @yield('scripts')
+            @endif
+
         </script>
-        @stack('modals')
+
     </body>
 </html>

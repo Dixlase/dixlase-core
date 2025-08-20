@@ -40,6 +40,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @csrf
         @method('DELETE')
     </form>
+
+    <!-- 強制ログアウト用フォーム -->
+    <form id="force-logout-form" action="{{ route('admin.settings.members.force-logout', ['member' => $member->id]) }}" method="POST">
+        @csrf
+    </form>
 @endsection
 
 @section('save')
@@ -52,15 +57,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'onclick' => "openModal('confirmationModal')"
         ])
 
-        <!-- 削除ボタン -->
-        @include('components::form.button', [
-            'type' => 'button',
-            'label' => 'メンバーを削除',
-            'class' => 'bg-red-700 hover:bg-red-800 text-white dark:bg-red-600 dark:hover:bg-red-700',
-            'onclick' => "openModal('deleteModal')"
-        ])
-    </div>
+        <div class="flex flex-col sm:flex-row gap-2">
+            <!-- 強制ログアウトボタン -->
+            @include('components::form.button', [
+                'type' => 'button',
+                'label' => '強制ログアウト',
+                'class' => 'bg-orange-600 hover:bg-orange-700 text-white dark:bg-orange-500 dark:hover:bg-orange-600',
+                'onclick' => "openModal('forceLogoutModal')"
+            ])
 
+            <!-- 削除ボタン -->
+            @include('components::form.button', [
+                'type' => 'button',
+                'label' => 'メンバーを削除',
+                'class' => 'bg-red-700 hover:bg-red-800 text-white dark:bg-red-600 dark:hover:bg-red-700',
+                'onclick' => "openModal('deleteModal')"
+            ])
+        </div>
+    </div>
+@endsection
+
+@section('modals')
     <!-- 保存モーダル -->
     @include('components::form.modal', [
         'id' => 'confirmationModal',
@@ -69,6 +86,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'confirm_label' => '更新',
         'cancel_label' => 'キャンセル',
         'form' => 'update-form',
+    ])
+
+    <!-- 強制ログアウトモーダル -->
+    @include('components::form.modal', [
+        'id' => 'forceLogoutModal',
+        'title' => '強制ログアウトの確認',
+        'message' => 'このメンバーを強制的にログアウトさせますか？<br><br>対象メンバー: ' . $member->name . '<br><br>この操作により、対象メンバーの全てのセッションが無効化され、再度ログインが必要になります。',
+        'confirm_label' => '強制ログアウト',
+        'cancel_label' => 'キャンセル',
+        'form' => 'force-logout-form',
     ])
 
     <!-- 削除モーダル -->
@@ -81,19 +108,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'form' => 'delete-form',
     ])
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const saveModal = document.getElementById('confirmationModal');
-            const deleteModal = document.getElementById('deleteModal');
+@endsection
 
-            saveModal.querySelector('button[type="submit"]').addEventListener('click', () => {
-                document.getElementById('update-form').submit();
-            });
+@section('scripts')
+    document.addEventListener('DOMContentLoaded', function () {
+        const saveModal = document.getElementById('confirmationModal');
+        const forceLogoutModal = document.getElementById('forceLogoutModal');
+        const deleteModal = document.getElementById('deleteModal');
 
-            deleteModal.querySelector('button[type="submit"]').addEventListener('click', () => {
-                document.getElementById('delete-form').submit();
-            });
+        saveModal.querySelector('button[type="submit"]').addEventListener('click', () => {
+            document.getElementById('update-form').submit();
         });
-    </script>
+
+        forceLogoutModal.querySelector('button[type="submit"]').addEventListener('click', () => {
+            document.getElementById('force-logout-form').submit();
+        });
+
+        deleteModal.querySelector('button[type="submit"]').addEventListener('click', () => {
+            document.getElementById('delete-form').submit();
+        });
+    });
 @endsection
 

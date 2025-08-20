@@ -103,10 +103,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
         @elseif($mailConnectionTestDate)
-            <div class="mt-8 mb-6 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg">
+            <div class="mb-4 p-4 text-green-800 bg-green-100 border border-green-200 rounded-lg">
                 <div class="flex items-center">
                     <i class="fas fa-check-circle text-green-600 dark:text-green-400 mr-2"></i>
-                    <span class="text-sm text-green-800 dark:text-green-200">
+                    <span class="text-sm">
                         {{ __('admin.settings.members.validation.mail_server_test_passed') }} 
                     </span>
                 </div>
@@ -349,20 +349,68 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     </form>
 
+    <!-- 全メンバー強制ログアウト用フォーム -->
+    <form id="force-logout-all-form" action="{{ route('admin.settings.members.force-logout-all') }}" method="POST">
+        @csrf
+    </form>
+
 @endsection
 
 @section('save')
-    <!-- 更新ボタンとモーダル-->
-    @include('components::form.save', [
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+        <!-- 更新ボタン -->
+        @include('components::form.button', [
+            'type' => 'button',
+            'label' => __('admin.settings.members.settings.update_button'),
+            'class' => '',
+            'onclick' => "openModal('confirmationModal')"
+        ])
+
+        <!-- 全メンバー強制ログアウトボタン -->
+        @include('components::form.button', [
+            'type' => 'button',
+            'label' => '全メンバー強制ログアウト',
+            'class' => 'bg-orange-600 hover:bg-orange-700 text-white dark:bg-orange-500 dark:hover:bg-orange-600',
+            'onclick' => "openModal('forceLogoutAllModal')"
+        ])
+    </div>
+@endsection
+
+@section('modals')
+    <!-- 更新確認モーダル -->
+    @include('components::form.modal', [
         'id' => 'confirmationModal',
-        'label' => __('admin.settings.members.settings.update_button'),
-        'onclick' => "openModal('confirmationModal')",
         'title' => __('admin.settings.members.settings.confirm_title'),
         'message' => __('admin.settings.members.settings.confirm_message'),
         'confirm_label' => __('admin.settings.members.settings.confirm_label'),
         'cancel_label' => __('admin.settings.members.settings.cancel_label'),
         'form' => 'member-settings-form',
     ])
+
+    <!-- 全メンバー強制ログアウト確認モーダル -->
+    @include('components::form.modal', [
+        'id' => 'forceLogoutAllModal',
+        'title' => __('admin.force_logout_all_modal.title'),
+        'message' => __('admin.force_logout_all_modal.message'),
+        'confirm_label' => __('admin.force_logout_all_modal.confirm_label'),
+        'cancel_label' => __('admin.force_logout_all_modal.cancel_label'),
+        'form' => 'force-logout-all-form',
+    ])
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const confirmationModal = document.getElementById('confirmationModal');
+            const forceLogoutAllModal = document.getElementById('forceLogoutAllModal');
+
+            confirmationModal.querySelector('button[type="submit"]').addEventListener('click', () => {
+                document.getElementById('member-settings-form').submit();
+            });
+
+            forceLogoutAllModal.querySelector('button[type="submit"]').addEventListener('click', () => {
+                document.getElementById('force-logout-all-form').submit();
+            });
+        });
+    </script>
 @endsection
 
 
