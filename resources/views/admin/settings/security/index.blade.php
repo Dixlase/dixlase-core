@@ -107,8 +107,68 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             ])
         </div>
 
+        <!-- システムエラー通知設定 -->
+        <div class="my-6 border-t pt-6">
+            <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.security.error_notification_settings') }}</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                {{ __('admin.settings.security.error_notification_settings_description') }}
+            </p>
+
+            <!-- エラー通知機能の有効/無効 -->
+            <div class="mt-4">
+                @include('components::form.label', [
+                    'text' => __('admin.settings.security.notification_enabled'),
+                ])
+                @include('components::form.hidden', [
+                    'id' => 'notification_enabled',
+                    'name' => 'notification_enabled',
+                    'value' => '0'
+                ])
+                @include('components::form.radio-group', [
+                    'name' => 'notification_enabled',
+                    'options' => [
+                        1 => __('admin.settings.security.yes'),
+                        0 => __('admin.settings.security.no')
+                    ],
+                    'value' => $settings['notification_enabled'] ?? 0,
+                ])
+                <p class="text-sm text-gray-500 mt-1">{{ __('admin.settings.security.notification_enabled_help') }}</p>
+            </div>
+
+            <!-- 通知するログレベル -->
+            <div class="mt-6" x-data="{ enabled: {{ ($settings['notification_enabled'] ?? 0) ? 'true' : 'false' }} }" x-init="
+                // ラジオボタンの変更を監視
+                document.querySelectorAll('input[name=notification_enabled]').forEach(radio => {
+                    radio.addEventListener('change', () => {
+                        enabled = radio.value === '1';
+                    });
+                });
+            ">
+                @include('components::form.label', [
+                    'text' => __('admin.settings.security.notification_log_levels'),
+                ])
+                <div class="mt-2 space-y-2">
+                    @php
+                        $logLevelOptions = [];
+                        foreach (\App\Enums\LogLevel::getNotificationLevels() as $level) {
+                            $levelString = \App\Enums\LogLevel::from($level)->toString();
+                            $logLevelOptions[$level] = 'admin.settings.security.log_levels.' . $levelString;
+                        }
+                    @endphp
+                    @include('components::form.checkbox-group', [
+                        'name' => 'notification_log_levels',
+                        'options' => $logLevelOptions,
+                        'values' => $settings['notification_log_levels'] ?? \App\Enums\LogLevel::getDefaultNotificationLevels(),
+                        'disabled' => !($settings['notification_enabled'] ?? false),
+                        'flexDirection' => 'col'
+                    ])
+                </div>
+                <p class="text-sm text-gray-500 mt-3">{{ __('admin.settings.security.notification_log_levels_help') }}</p>
+            </div>
+        </div>
+
         <!-- reCAPTCHA設定 -->
-        <div class="mt-8 pt-6">
+        <div class="my-6">
             <h2 class="{{ config('admin.appearance_class.heading.h2') }}">{{ __('admin.settings.security.recaptcha_settings') }}</h2>
             
             @include('components::form.checkbox', [
@@ -240,9 +300,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </div>
 
-
-
-
+        
 
     </form>
 </div>

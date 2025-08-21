@@ -48,6 +48,8 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
             'captcha_registration_form' => filter_var($this->input('captcha_registration_form'), FILTER_VALIDATE_BOOLEAN),
             'captcha_login_form' => filter_var($this->input('captcha_login_form'), FILTER_VALIDATE_BOOLEAN),
             'captcha_comment_form' => filter_var($this->input('captcha_comment_form'), FILTER_VALIDATE_BOOLEAN),
+            // Notification settings
+            'notification_enabled' => filter_var($this->input('notification_enabled'), FILTER_VALIDATE_BOOLEAN),
         ]);
     }
 
@@ -69,7 +71,7 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
             'force_ssl' => 'required|boolean',
             // reCAPTCHA validation rules
             'captcha_enabled' => 'required|boolean',
-            'captcha_driver' => 'nullable|string|in:google',
+            'captcha_driver' => 'nullable|string|in:google,turnstile',
             'captcha_google_site_key' => 'nullable|string|max:255',
             'captcha_google_secret_key' => 'nullable|string|max:255',
             'captcha_google_version' => 'nullable|string|in:v2_checkbox,v2_invisible,v3',
@@ -78,6 +80,9 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
             'captcha_registration_form' => 'required|boolean',
             'captcha_login_form' => 'required|boolean',
             'captcha_comment_form' => 'required|boolean',
+            // Notification validation rules
+            'notification_enabled' => 'required|boolean',
+            'notification_log_levels' => 'nullable|array',
         ];
     }
 

@@ -216,7 +216,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- Pagination Controls -->
     @if(isset($pagination) && $pagination['last_page'] > 1)
-        <div class="mt-6 flex items-center justify-between">
+        <div class="my-6 flex items-center justify-between">
             <div class="flex items-center space-x-2">
                 @if($pagination['prev_page'])
                     <a href="{{ route('admin.settings.systems.logs', ['type' => $logType, 'page' => $pagination['prev_page']]) }}" 
