@@ -76,6 +76,40 @@ class SecuritySettingsTableSeeder extends Seeder
             ['value' => '0.5']
         );
 
+        // IP Restriction settings
+        SecuritySetting::updateOrCreate(
+            ['key' => 'enable_allowed_admin_ips'],
+            ['value' => '0']
+        );
+        SecuritySetting::updateOrCreate(
+            ['key' => 'allowed_admin_ips'],
+            ['value' => '']
+        );
+        SecuritySetting::updateOrCreate(
+            ['key' => 'enable_blocked_admin_ips'],
+            ['value' => '0']
+        );
+        SecuritySetting::updateOrCreate(
+            ['key' => 'blocked_admin_ips'],
+            ['value' => '']
+        );
+        SecuritySetting::updateOrCreate(
+            ['key' => 'enable_allowed_front_ips'],
+            ['value' => '0']
+        );
+        SecuritySetting::updateOrCreate(
+            ['key' => 'allowed_front_ips'],
+            ['value' => '']
+        );
+        SecuritySetting::updateOrCreate(
+            ['key' => 'enable_blocked_front_ips'],
+            ['value' => '0']
+        );
+        SecuritySetting::updateOrCreate(
+            ['key' => 'blocked_front_ips'],
+            ['value' => '']
+        );
+
         // Turnstile settings
         SecuritySetting::updateOrCreate(
             ['key' => 'captcha_turnstile_site_key'],

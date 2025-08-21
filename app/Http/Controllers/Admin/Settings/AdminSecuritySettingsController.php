@@ -51,6 +51,10 @@ class AdminSecuritySettingsController extends AdminLoggedInController
             'allowed_admin_ips' => SecuritySetting::get('allowed_admin_ips', ''),
             'enable_blocked_admin_ips' => SecuritySetting::get('enable_blocked_admin_ips', false),
             'blocked_admin_ips' => SecuritySetting::get('blocked_admin_ips', ''),
+            'enable_allowed_front_ips' => SecuritySetting::get('enable_allowed_front_ips', false),
+            'allowed_front_ips' => SecuritySetting::get('allowed_front_ips', ''),
+            'enable_blocked_front_ips' => SecuritySetting::get('enable_blocked_front_ips', false),
+            'blocked_front_ips' => SecuritySetting::get('blocked_front_ips', ''),
             'force_ssl' => SecuritySetting::get('force_ssl', false),
             // reCAPTCHA settings
             'captcha_enabled' => SecuritySetting::get('captcha_enabled', false),
@@ -84,8 +88,14 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         $currentAdminUrl = SecuritySetting::get('admin_url', config('security.admin_url'));
 
         SecuritySetting::set('admin_url', $request->input('admin_url'));
+        SecuritySetting::set('enable_allowed_admin_ips', $request->boolean('enable_allowed_admin_ips'));
         SecuritySetting::set('allowed_admin_ips', $request->input('allowed_admin_ips'));
+        SecuritySetting::set('enable_blocked_admin_ips', $request->boolean('enable_blocked_admin_ips'));
         SecuritySetting::set('blocked_admin_ips', $request->input('blocked_admin_ips'));
+        SecuritySetting::set('enable_allowed_front_ips', $request->boolean('enable_allowed_front_ips'));
+        SecuritySetting::set('allowed_front_ips', $request->input('allowed_front_ips'));
+        SecuritySetting::set('enable_blocked_front_ips', $request->boolean('enable_blocked_front_ips'));
+        SecuritySetting::set('blocked_front_ips', $request->input('blocked_front_ips'));
         SecuritySetting::set('force_ssl', $request->boolean('force_ssl'));
         
         // Save reCAPTCHA settings

@@ -35,15 +35,45 @@ class FrontIpFilter
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $allowedIps = config('security.allowed_frontend_ips', []);
-        $blockedIps = config('security.blocked_frontend_ips', []);
-
-        if (in_array($request->ip(), $blockedIps)) {
-            abort(403, 'Access Denied.');
+        // Do not apply restrictions in the local environment
+        if (app()->environment('local')) {
+            return $next($request);
         }
 
-        if (!empty($allowedIps) && !in_array($request->ip(), $allowedIps)) {
-            abort(403, 'Unauthorized Access.');
+        // Bypass if an admin is logged in
+        if (auth('admin')->check()) {
+            return $next($request);
+        }
+
+        $settings = settings([
+            'enable_allowed_front_ips',
+            'allowed_front_ips',
+            'enable_blocked_front_ips',
+            'blocked_front_ips',
+        ]);
+
+        $userIp = $request->ip();
+
+        // Allowed IPs check
+        if (!empty($settings['enable_allowed_front_ips'])) {
+            $allowedIps = collect(explode(',', $settings['allowed_front_ips'] ?? ''))
+                ->map(fn ($ip) => trim($ip))
+                ->filter();
+
+            if ($allowedIps->isNotEmpty() && !$allowedIps->contains($userIp)) {
+                abort(403);
+            }
+        }
+
+        // Blocked IPs check
+        if (!empty($settings['enable_blocked_front_ips'])) {
+            $blockedIps = collect(explode(',', $settings['blocked_front_ips'] ?? ''))
+                ->map(fn ($ip) => trim($ip))
+                ->filter();
+
+            if ($blockedIps->isNotEmpty() && $blockedIps->contains($userIp)) {
+                abort(403);
+            }
         }
 
         return $next($request);
