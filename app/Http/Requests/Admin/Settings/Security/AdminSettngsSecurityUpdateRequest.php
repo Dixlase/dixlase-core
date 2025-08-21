@@ -41,6 +41,10 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
             'enable_blocked_admin_ips' => filter_var($this->input('enable_blocked_admin_ips'), FILTER_VALIDATE_BOOLEAN),
             'allowed_admin_ips' => $this->input('allowed_admin_ips') === '' ? null : $this->input('allowed_admin_ips'),
             'blocked_admin_ips' => $this->input('blocked_admin_ips') === '' ? null : $this->input('blocked_admin_ips'),
+            'enable_allowed_front_ips' => filter_var($this->input('enable_allowed_front_ips'), FILTER_VALIDATE_BOOLEAN),
+            'allowed_front_ips' => $this->input('allowed_front_ips') === '' ? null : $this->input('allowed_front_ips'),
+            'enable_blocked_front_ips' => filter_var($this->input('enable_blocked_front_ips'), FILTER_VALIDATE_BOOLEAN),
+            'blocked_front_ips' => $this->input('blocked_front_ips') === '' ? null : $this->input('blocked_front_ips'),
             'force_ssl' => filter_var($this->input('force_ssl'), FILTER_VALIDATE_BOOLEAN),
             // reCAPTCHA settings
             'captcha_enabled' => filter_var($this->input('captcha_enabled'), FILTER_VALIDATE_BOOLEAN),
@@ -68,6 +72,10 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
             'allowed_admin_ips' => 'nullable|string|regex:/^(\d{1,3}\.){3}\d{1,3}(,\s*(\d{1,3}\.){3}\d{1,3})*$/',
             'enable_blocked_admin_ips' => 'required|boolean',
             'blocked_admin_ips' => 'nullable|string|regex:/^(\d{1,3}\.){3}\d{1,3}(,\s*(\d{1,3}\.){3}\d{1,3})*$/',
+            'enable_allowed_front_ips' => 'required|boolean',
+            'allowed_front_ips' => 'nullable|string|regex:/^(\d{1,3}\.){3}\d{1,3}(,\s*(\d{1,3}\.){3}\d{1,3})*$/',
+            'enable_blocked_front_ips' => 'required|boolean',
+            'blocked_front_ips' => 'nullable|string|regex:/^(\d{1,3}\.){3}\d{1,3}(,\s*(\d{1,3}\.){3}\d{1,3})*$/',
             'force_ssl' => 'required|boolean',
             // reCAPTCHA validation rules
             'captcha_enabled' => 'required|boolean',
@@ -94,6 +102,8 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
         return [
             'allowed_admin_ips.regex' => __('admin.security.validation.allowed_admin_ips_format'),
             'blocked_admin_ips.regex' => __('admin.security.validation.blocked_admin_ips_format'),
+            'allowed_front_ips.regex' => __('admin.security.validation.allowed_front_ips_format'),
+            'blocked_front_ips.regex' => __('admin.security.validation.blocked_front_ips_format'),
             'captcha_google_version.in' => __('admin.security.validation.captcha_google_version_invalid'),
             'captcha_google_min_score.between' => __('admin.security.validation.captcha_google_min_score_range'),
             'captcha_driver.in' => __('admin.security.validation.captcha_driver_invalid'),
