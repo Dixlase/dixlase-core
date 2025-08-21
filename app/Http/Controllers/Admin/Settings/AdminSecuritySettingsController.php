@@ -26,8 +26,10 @@ use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\SecuritySetting;
 use App\Models\CaptchaFormSetting;
 use App\Http\Requests\Admin\Settings\Security\AdminSettngsSecurityUpdateRequest;
+use App\Enums\LogLevel;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 
 
@@ -60,6 +62,9 @@ class AdminSecuritySettingsController extends AdminLoggedInController
             // Turnstile settings
             'captcha_turnstile_site_key' => SecuritySetting::get('captcha_turnstile_site_key', ''),
             'captcha_turnstile_secret_key' => SecuritySetting::get('captcha_turnstile_secret_key', ''),
+            // Notification settings
+            'notification_enabled' => SecuritySetting::get('notification_enabled', true),
+            'notification_log_levels' => array_map('intval', array_filter(explode(',', SecuritySetting::get('notification_log_levels', implode(',', LogLevel::getDefaultNotificationLevels()))))),
         ];
 
         // 動的reCAPTCHAフォーム設定を取得
@@ -93,6 +98,22 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         // Save Turnstile settings
         SecuritySetting::set('captcha_turnstile_site_key', $request->input('captcha_turnstile_site_key', ''));
         SecuritySetting::set('captcha_turnstile_secret_key', $request->input('captcha_turnstile_secret_key', ''));
+        
+        // Save notification settings
+        SecuritySetting::set('notification_enabled', $request->boolean('notification_enabled'));
+        $notificationLogLevels = $request->input('notification_log_levels', []);
+
+
+        
+        // チェックされた値のみを取得し、0を除外してLogLevel enumの値のみを保存
+        $validLogLevels = array_filter(
+            array_map('intval', $notificationLogLevels),
+            function($value) {
+                return $value > 0 && in_array($value, \App\Enums\LogLevel::getNotificationLevels());
+            }
+        );
+        
+        SecuritySetting::set('notification_log_levels', implode(',', $validLogLevels));
         
         // Save dynamic captcha form settings
         $captchaFormSettings = CaptchaFormSetting::all();

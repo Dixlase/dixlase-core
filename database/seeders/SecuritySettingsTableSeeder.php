@@ -25,11 +25,66 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\SecuritySetting;
+use App\Enums\LogLevel;
 
 class SecuritySettingsTableSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
-    public function run(): void {}
+    public function run(): void
+    {
+        // System error notification settings
+        SecuritySetting::updateOrCreate(
+            ['key' => 'notification_enabled'],
+            ['value' => '1']
+        );
+
+        SecuritySetting::updateOrCreate(
+            ['key' => 'notification_log_levels'],
+            ['value' => implode(',', LogLevel::getDefaultNotificationLevels())]
+        );
+
+        // reCAPTCHA settings
+        SecuritySetting::updateOrCreate(
+            ['key' => 'captcha_enabled'],
+            ['value' => '0']
+        );
+
+        SecuritySetting::updateOrCreate(
+            ['key' => 'captcha_driver'],
+            ['value' => 'google']
+        );
+
+        SecuritySetting::updateOrCreate(
+            ['key' => 'captcha_google_site_key'],
+            ['value' => '']
+        );
+
+        SecuritySetting::updateOrCreate(
+            ['key' => 'captcha_google_secret_key'],
+            ['value' => '']
+        );
+
+        SecuritySetting::updateOrCreate(
+            ['key' => 'captcha_google_version'],
+            ['value' => 'v3']
+        );
+
+        SecuritySetting::updateOrCreate(
+            ['key' => 'captcha_google_min_score'],
+            ['value' => '0.5']
+        );
+
+        // Turnstile settings
+        SecuritySetting::updateOrCreate(
+            ['key' => 'captcha_turnstile_site_key'],
+            ['value' => '']
+        );
+
+        SecuritySetting::updateOrCreate(
+            ['key' => 'captcha_turnstile_secret_key'],
+            ['value' => '']
+        );
+    }
 }
