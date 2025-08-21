@@ -39,6 +39,8 @@ use App\Traits\CustomFilesLoaderTrait;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Auth;
+use App\Enums\AppearanceMode;
 
 class AppServiceProvider extends ServiceProvider
 {

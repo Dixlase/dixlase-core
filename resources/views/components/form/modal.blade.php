@@ -76,17 +76,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @push('scripts')
 
-const modalId = '{{ $id }}';
+var modalId = '{{ $id }}';
 // モーダルウィンドウを開く
 function openModal(modalId) {
-    const modal = document.getElementById(modalId);
+    var modal = document.getElementById(modalId);
     modal.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
     modal.classList.add('opacity-100', 'scale-100');
 }
 
 // モーダルウィンドウを閉じる
 function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
+    var modal = document.getElementById(modalId);
     modal.classList.remove('opacity-100', 'scale-100');
     modal.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
 }

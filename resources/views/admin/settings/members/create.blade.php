@@ -20,9 +20,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @extends('admin::partials.layout')
 
-@push('scripts')
-    @include('components.form.password-messages')
-@endpush
+
 
 @section('content')
 
@@ -47,3 +45,5 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'form' => 'create-form', // 🔁 保存ボタンに form 属性を渡す（必要なら）
     ])
 @endsection
+
+
