@@ -36,23 +36,12 @@ trait AdminLoggedInTrait
     {
         $this->middleware(function ($request, $next) {
             $this->setMember();
-            $this->setAppearance();
 
             $transition = config('admin.transition_class');
             $this->viewParams['transition'] = $transition;
 
             return $next($request);
         });
-    }
-
-    /**
-     * 管理者の外観設定を取得して設定
-     */
-
-    protected function setAppearance()
-    {
-        $this->appearance = $this->viewParams['member']['appearance'] ?? 0;
-        $this->viewParams['appearance'] = $this->appearance;
     }
 
     /**
