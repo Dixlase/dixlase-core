@@ -2,39 +2,17 @@
 
 @section('title', __('install.security_title'))
 @section('header', __('install.security_header'))
-@section('description', __('install.security_description'))
+@section('description')
+    {!! __('install.security_description') !!}
+@endsection
 
 @section('content')
 
-@php
-    // ✅ SSLの強制設定に応じてプロトコルを決定
-    $protocol = session('install_data.force_ssl', false) ? 'https://' : 'http://';
-
-    // ✅ 前の画面で設定された `APP_URL` を取得（プロトコルは除去）
-    $appUrl = rtrim(session('install_data.app_url', request()->getHost()), '/');
-
-    // ✅ プロトコル付きの管理画面ベースURL
-    $baseAdminUrl = $protocol . $appUrl . '/';
-
-    // ✅ 管理画面URLの初期値（スラッグ部分のみ）
-    $adminSlug = session('install_data.admin_url', 'admin');
-@endphp
 
 <form action="{{ route('install.security.store') }}" method="POST" class="space-y-4">
     @csrf
 
-    <!-- ✅ 管理画面URLの設定 -->
-    <div>
-        <label class="block text-gray-700">{{ __('install.admin_url') }}</label>
-        <div class="flex items-center">
-            <!-- `APP_URL` をプロトコル付きでプレフィックスとして表示 -->
-            <span class="p-2 bg-gray-200 border rounded-l-lg">{{ $baseAdminUrl }}</span>
-            <input type="text" name="admin_url" id="admin_url"
-                value="{{ old('admin_url', $adminSlug) }}"
-                class="w-full p-2 border rounded-r-lg">
-        </div>
-    </div>
-
+    <hr class="my-6">
     <!-- ✅ IP制御のチェックボックス -->
     <h2 class="text-lg font-bold mt-6">{{ __('install.ip_restrictions') }}</h2>
 
@@ -96,7 +74,7 @@
     </div>
 
     <div class="flex justify-between mt-6">
-        <a href="{{ route('install.environment') }}"
+        <a href="{{ route('install.mail') }}"
             class="bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600">
             {{ __('install.back') }}
         </a>

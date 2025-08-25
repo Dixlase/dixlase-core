@@ -67,7 +67,7 @@
         @endphp
         <div class="relative">
             <input type="password" name="db_password" id="db_password"
-                value="{{ old('db_password', session('install_data.db_password', $defaultDbPassword)) }}"
+                value="{{ old('db_password', $defaultDbPassword) }}"
                 class="w-full p-2 border rounded-lg" required>
             <button type="button" onclick="togglePassword()" class="absolute right-3 top-3">
                 <i class="fas fa-eye"></i>
@@ -98,7 +98,7 @@
 
     <!-- ✅ ナビゲーションボタン（戻る・次へ） -->
     <div class="flex justify-between mt-6">
-        <a href="{{ route('install.security') }}"
+        <a href="{{ route('install.environment') }}"
             class="bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600">
             {{ __('install.back') }}
         </a>

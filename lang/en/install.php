@@ -23,6 +23,7 @@ return [
     'settings_title' => 'Installation - Step 1',
     'settings_header' => 'Basic Settings',
     'settings_description' => 'Please enter the basic information to set up your site.',
+    'step_of_total' => 'Step :current of :total',
     'site_name' => 'Site Name',
     'admin_email' => 'Admin Email',
     'admin_password' => 'Admin Password',
@@ -48,18 +49,6 @@ return [
     'timezone' => 'Timezone',
 
     //step 3
-    'system_title' => 'Installation - Step 2',
-    'system_header' => 'System Settings',
-    'system_description' => 'Set up your system settings, such as admin panel URL and security settings.',
-    'admin_url' => 'Admin Panel URL',
-    'enable_allowed_admin_ips' => 'Allow access to the admin panel only from specific IP addresses',
-    'enable_blocked_admin_ips' => 'Block access to the admin panel from specific IP addresses',
-    'enable_allowed_front_ips' => 'Allow access to the frontend only from specific IP addresses',
-    'enable_blocked_front_ips' => 'Block access to the frontend from specific IP addresses',
-    'yes' => 'Yes',
-    'no' => 'No',
-
-    //step 4
     'database_title' => 'Database Settings',
     'database_header' => 'Enter your database details',
     'database_description' => 'Configure the database that the system will use.',
@@ -77,6 +66,82 @@ return [
     'back' => 'Back',
     'next' => 'Next',
 
+    //step 3
+    'security_title' => 'Security Settings',
+    'security_header' => 'Security Settings(optional)',
+    'security_description' => 'Set the URL for the admin panel and configure IP restrictions.<br>IP restrictions can also be configured after installation.',
+    'admin_url' => 'Admin Panel URL',
+    'enable_allowed_admin_ips' => 'Allow access to the admin panel only from specific IP addresses',
+    'enable_blocked_admin_ips' => 'Block access to the admin panel from specific IP addresses',
+    'enable_allowed_front_ips' => 'Allow access to the frontend only from specific IP addresses',
+    'enable_blocked_front_ips' => 'Block access to the frontend from specific IP addresses',
+    'yes' => 'Yes',
+    'no' => 'No',
+
+
+
+    //step 6
+    'mail_title' => 'Mail Server Settings',
+    'mail_header' => 'Mail Server Settings (Optional)',
+    'mail_description' => 'Enter the information for the mail server that the application will use to send emails.<br>This setting can be skipped and configured after installation.',
+    'mail_mailer' => 'Mailer',
+    'mail_host' => 'Host',
+    'mail_port' => 'Port',
+    'mail_username' => 'Username',
+    'mail_password' => 'Password',
+    'mail_encryption' => 'Encryption',
+    'mail_from_address' => 'From Address',
+    'mail_from_name' => 'From Name',
+    
+    // Mail test functionality
+    'mail_test' => [
+        'title' => 'Mail Test',
+        'description' => 'Test mail server connection and email sending functionality.',
+        'description_admin_email' => 'Test emails will be sent to the admin email address entered in basic settings.',
+    ],
+    'mail_test_description' => 'Test mail server connection and email sending functionality.',
+    'mail_test_description_admin_email' => 'Test emails will be sent to the admin email address entered in basic settings.',
+    'test_connection_button' => 'Test Connection',
+    'test_mail_button' => 'Test Email Send',
+    'testing' => 'Testing',
+    'mail_test_advanced' => [
+        'test_email_subject' => 'Mail Server Configuration Test',
+        'test_email_body' => 'This is a test email for mail server configuration. If you receive this email successfully, your mail server settings are working correctly.',
+        'test_email_body_with_verification' => "This is a test email for mail server configuration. If you receive this email successfully, your mail server settings are working correctly.\n\nTo complete the mail receipt verification, please click the following link:\n:verification_url\n\nClicking this link will complete the mail receipt test.",
+        'connection_test_not_supported' => ':mailer mailer does not support connection testing.',
+        'connection_test_success' => 'Successfully connected to the mail server.',
+        'connection_test_failed' => 'Failed to connect to the mail server',
+        'send_test_success' => 'Test email sent to :email.',
+        'send_test_failed' => 'Failed to send test email',
+        'verification_token_invalid' => 'Mail verification token is invalid.',
+        'verification_error' => 'An error occurred during mail verification: :error',
+        'verification_success' => [
+            'title' => 'Mail Receipt Verification Complete',
+            'heading' => 'Mail Receipt Verification Completed',
+            'description' => 'Your mail server configuration has been verified to be working correctly.',
+            'next_steps_title' => 'Next Steps',
+            'next_steps' => [
+                'close_window' => 'Close this window',
+                'continue_install' => 'Return to the installation screen to continue setup'
+            ],
+            'close_button' => 'Close Window',
+            'completed_message' => 'Mail receipt verification completed'
+        ],
+        'three_stage_test_incomplete' => '3-stage mail test incomplete',
+        'three_stage_test_complete' => '3-stage mail test complete',
+        'connection_test' => 'Server Connection Test',
+        'send_test' => 'Mail Send Test',
+        'receive_test' => 'Mail Receipt Verification',
+    ],
+    'connection_test_error' => 'An error occurred during connection test.',
+    'mail_send_test_error' => 'An error occurred during email send test.',
+    'mail_connection_test_not_supported' => ':mailer mailer does not support connection testing.',
+    'mail_connection_test_success' => 'Successfully connected to mail server.',
+    'mail_connection_test_failed' => 'Failed to connect to mail server: :error',
+    'admin_email_not_found' => 'Admin email address not found. Please check basic settings.',
+    'mail_send_test_success' => 'Test email sent to :email.',
+    'mail_send_test_failed' => 'Failed to send test email: :error',
+
     //confirm
     'confirm_title' => 'Confirm Installation Settings',
     'confirm_header' => 'Confirm Installation',
@@ -89,6 +154,7 @@ return [
 
     // 管理画面設定
     'admin_url' => 'Admin Panel URL',
+    'admin_url_security_note' => 'For production environments, it is recommended to set the admin panel URL to something other than "admin" that is difficult to guess.',
     'force_ssl' => 'Force SSL (HTTPS)',
     'enabled' => 'Enabled',
     'disabled' => 'Disabled',

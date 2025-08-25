@@ -48,37 +48,12 @@
                         <div class="mt-2 text-sm text-blue-700 dark:text-blue-300">
                             <ol class="list-decimal list-inside space-y-1">
                                 <li>{{ __('install.mail_test_advanced.verification_success.next_steps.close_window') }}</li>
-                                @if(request()->routeIs('admin.*'))
-                                    <li>設定を保存してテスト結果を確定してください</li>
-                                @else
-                                    <li>{{ __('install.mail_test_advanced.verification_success.next_steps.continue_install') }}</li>
-                                @endif
+                                <li>{{ __('install.mail_test_advanced.verification_success.next_steps.continue_install') }}</li>
                             </ol>
                         </div>
                     </div>
                 </div>
             </div>
-
-            @if(request()->routeIs('admin.*'))
-            <!-- 警告メッセージ（管理画面のみ） -->
-            <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                        </svg>
-                    </div>
-                    <div class="ml-3">
-                        <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                            重要なお知らせ
-                        </h3>
-                        <p class="mt-1 text-sm text-yellow-700 dark:text-yellow-300">
-                            テスト結果は一時的なものです。設定を保存するまで確定されません。
-                        </p>
-                    </div>
-                </div>
-            </div>
-            @endif
 
             <!-- ボタン -->
             <div class="flex justify-center">
@@ -91,12 +66,15 @@
 
     <script>
         function closeWindow() {
+            console.log('=== closeWindow関数実行 ===');
             // 親ウィンドウにメッセージを送信
             if (window.opener) {
+                console.log('closeWindow: 親ウィンドウにpostMessage送信中...');
                 window.opener.postMessage({
                     type: 'mail_receive_test_completed',
                     message: '{{ __('install.mail_test_advanced.verification_success.completed_message') }}'
                 }, window.location.origin);
+                console.log('closeWindow: postMessage送信完了');
             }
             
             // ウィンドウを閉じる
@@ -113,16 +91,54 @@
 
         // ページ読み込み時に親ウィンドウにメッセージを送信（可能な場合）
         window.addEventListener('load', function() {
+            console.log('=== メール認証成功ページ読み込み完了 ===');
+            console.log('window.opener存在:', !!window.opener);
+            console.log('window.opener.closed:', window.opener ? window.opener.closed : 'N/A');
+            console.log('window.parent存在:', !!window.parent);
+            console.log('window.parent === window:', window.parent === window);
+            
+            // 複数の方法でメッセージ送信を試行
+            const message = {
+                type: 'mail_receive_test_completed',
+                message: '{{ __('install.mail_test_advanced.verification_success.completed_message') }}'
+            };
+            
+            // 方法1: window.opener経由
             if (window.opener && !window.opener.closed) {
                 try {
-                    // 親ウィンドウに受信テスト完了を通知
-                    window.opener.postMessage({
-                        type: 'mail_receive_test_completed',
-                        message: '{{ __('install.mail_test_advanced.verification_success.completed_message') }}'
-                    }, '*');
+                    console.log('方法1: window.opener経由でpostMessage送信中...');
+                    window.opener.postMessage(message, '*');
+                    console.log('方法1: postMessage送信完了');
                 } catch (e) {
-                    console.log('親ウィンドウへのメッセージ送信に失敗しました:', e);
+                    console.log('方法1: 送信失敗:', e);
                 }
+            }
+            
+            // 方法2: window.parent経由（iframe内の場合）
+            if (window.parent && window.parent !== window) {
+                try {
+                    console.log('方法2: window.parent経由でpostMessage送信中...');
+                    window.parent.postMessage(message, '*');
+                    console.log('方法2: postMessage送信完了');
+                } catch (e) {
+                    console.log('方法2: 送信失敗:', e);
+                }
+            }
+            
+            // 方法3: localStorage経由でのフォールバック
+            try {
+                console.log('方法3: localStorage経由でメッセージ保存中...');
+                localStorage.setItem('mail_receive_test_completed', JSON.stringify({
+                    timestamp: Date.now(),
+                    message: message.message
+                }));
+                console.log('方法3: localStorage保存完了');
+            } catch (e) {
+                console.log('方法3: localStorage保存失敗:', e);
+            }
+            
+            if (!window.opener && window.parent === window) {
+                console.log('親ウィンドウが存在しません - 新しいタブで開かれた可能性があります');
             }
         });
     </script>

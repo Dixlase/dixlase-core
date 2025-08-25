@@ -63,6 +63,20 @@
         <label for="force_ssl" class="text-gray-700">{{ __('install.force_ssl') }}</label>
     </div>
 
+    <!-- ✅ 管理画面URLの設定 -->
+    <div>
+        <label class="block text-gray-700">{{ __('install.admin_url') }}</label>
+        <div class="flex items-center">
+            <span id="admin_url_prefix" class="p-2 bg-gray-200 border rounded-l-lg"></span>
+            <input type="text" name="admin_url" id="admin_url"
+                value="{{ old('admin_url', session('install_data.admin_url', 'admin')) }}"
+                class="w-full p-2 border rounded-r-lg">
+        </div>
+        <small class="text-gray-500">{{ __('install.admin_url_security_note') }}</small>
+    </div>
+
+
+
     <div class="mt-4">
         <label class="block text-gray-700 mb-2">{{ is_array(__('install.timezone')) ? __('install.timezone.label') : __('install.timezone') }}</label>
         <select name="app_timezone" id="app_timezone" class="w-full p-2 border rounded-lg">
@@ -144,35 +158,43 @@
     // ページ読み込み時に実行
     document.addEventListener('DOMContentLoaded', toggleDebugMode);
 
-    // プロトコルを切り替える
     document.addEventListener('DOMContentLoaded', function () {
-        let appUrlInput = document.getElementById('app_url');
-        let forceSslCheckbox = document.getElementById('force_ssl');
-        let protocolDisplay = document.getElementById('protocol_display');
+        const appUrlInput = document.getElementById('app_url');
+        const forceSslCheckbox = document.getElementById('force_ssl');
+        const protocolDisplay = document.getElementById('protocol_display');
+        const adminUrlPrefix = document.getElementById('admin_url_prefix');
 
-        function updateProtocol() {
-            let currentValue = appUrlInput.value;
+        function updateUrls() {
+            const protocol = forceSslCheckbox.checked ? 'https://' : 'http://';
+            const appUrl = appUrlInput.value.trim().replace(/^(https?:\/\/)?/, ''); // プロトコルを除去し、空白も削除
 
-            if (forceSslCheckbox.checked) {
-                // ✅ チェックが入っているとき: `http://` → `https://`
-                protocolDisplay.innerText = "https://";
-                if (currentValue.startsWith("http://")) {
-                    appUrlInput.value = currentValue.replace(/^http:/, "https:");
-                }
+            // アプリケーションURLのプロトコル表示を更新
+            protocolDisplay.innerText = protocol;
+            
+            // 管理画面URLのプレフィックスを更新（アプリケーションURL + スラッシュ）
+            if (appUrl) {
+                adminUrlPrefix.innerText = protocol + appUrl + '/';
             } else {
-                // ✅ チェックが外れているとき: `https://` → `http://`
-                protocolDisplay.innerText = "http://";
-                if (currentValue.startsWith("https://")) {
-                    appUrlInput.value = currentValue.replace(/^https:/, "http:");
-                }
+                adminUrlPrefix.innerText = protocol;
             }
         }
 
-        // 初回ロード時にも適用
-        updateProtocol();
+        // 初回ロード時にURLを更新
+        updateUrls();
 
-        // ✅ チェックボックスの変更時にプロトコルを変更
-        forceSslCheckbox.addEventListener('change', updateProtocol);
+        // SSL設定変更時にリアルタイム更新
+        forceSslCheckbox.addEventListener('change', function() {
+            updateUrls();
+        });
+
+        // アプリケーションURL入力時にリアルタイム更新
+        appUrlInput.addEventListener('input', function() {
+            updateUrls();
+        });
+
+        // アプリケーションURL入力フィールドのフォーカス時とブラー時にも更新
+        appUrlInput.addEventListener('focus', updateUrls);
+        appUrlInput.addEventListener('blur', updateUrls);
     });
 </script>
 
