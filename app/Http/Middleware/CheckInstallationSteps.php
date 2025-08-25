@@ -14,59 +14,54 @@ class CheckInstallationSteps
      */
     private function getStepFromRoute($routeName)
     {
-        $steps = [
-            'install.index' => 0,
-            'install.settings' => 1,
-            'install.settings.store' => 1,
-            'install.environment' => 2,
-            'install.environment.store' => 2,
-            'install.security' => 3,
-            'install.security.store' => 3,
-            'install.database' => 4,
-            'install.database.store' => 4,
-            'install.confirm' => 5,
-            'install.confirm.store' => 5,
-            'install.complete' => 6,
+        $routeToStep = [
+            'install.settings' => 'settings',
+            'install.environment' => 'environment',
+            'install.environment.store' => 'environment',
+            'install.database' => 'database',
+            'install.database.store' => 'database',
+            'install.mail' => 'mail',
+            'install.mail.store' => 'mail',
+            'install.security' => 'security',
+            'install.security.store' => 'security',
+            'install.confirm' => 'confirm',
+            'install.confirm.store' => 'confirm',
         ];
-        
-        return $steps[$routeName] ?? 0;
+
+        $stepOrder = [
+            'settings', // 1
+            'environment', // 2
+            'database', // 3
+            'mail', // 4
+            'security', // 5
+            'confirm', // 6
+            'complete', // 7
+        ];
+
+        $stepName = $routeToStep[$routeName] ?? null;
+        $step = array_search($stepName, $stepOrder);
+
+        return $step !== false ? $step + 1 : 0;
     }
     
     /**
      * 各ステップで必要なフィールドがセッションに存在するか確認
      */
-    private function checkStepFields($step, $data)
+    private function checkStepFields($stepName, $data)
     {
-
-        $stepRequirements = [
-            1 => [ // 基本設定
-                'site_name',
-                'admin_name',
-                'admin_email',
-                'admin_password'
-            ],
-            2 => [ // 環境設定
-                'app_env',
-                'app_url',
-                'app_timezone'
-            ],
-            3 => [ // セキュリティ設定
-                'admin_url'
-            ],
-            4 => [ // データベース設定
-                'db_connection',
-                'db_host',
-                'db_port',
-                'db_database',
-                'db_username'
-            ]
+        $requiredKeys = [
+            'settings' => ['site_name', 'admin_name', 'admin_email', 'admin_password'],
+            'environment' => ['app_env', 'app_debug', 'app_url', 'app_timezone'],
+            'database' => ['db_connection', 'db_host', 'db_port', 'db_database', 'db_username'],
+            'mail' => [],
+            'security' => ['admin_url'],
         ];
 
-        if (!isset($stepRequirements[$step])) {
-            return false;
+        if (!isset($requiredKeys[$stepName])) {
+            return true; // チェック対象外のステップは常に成功とみなす
         }
 
-        foreach ($stepRequirements[$step] as $field) {
+        foreach ($requiredKeys[$stepName] as $field) {
             if (!isset($data[$field])) {
                 return false;
             }
@@ -83,18 +78,30 @@ class CheckInstallationSteps
      */
     private function isStepCompleted($step, $installData)
     {
-        // Check if install_data is set in the session
-        if (empty($installData['install_data'])) {
-            return [false, 1]; // 基本設定から開始
+        $stepOrder = [
+            'settings', // 1
+            'environment', // 2
+            'database', // 3
+            'mail', // 4
+            'security', // 5
+            'confirm', // 6
+            'complete', // 7
+        ];
+
+        // Get the actual install data, or an empty array if not set
+        $data = $installData['install_data'] ?? [];
+
+        // First, always check if the very first step (settings) is complete.
+        // This handles cases where install_data exists but is incomplete.
+        if (!$this->checkStepFields('settings', $data)) {
+            return [false, 1];
         }
         
-        // Get the actual install data
-        $data = $installData['install_data'];
-        
-        // 指定されたステップまでの全ステップをチェック
-        for ($i = 1; $i <= $step; $i++) {
-            if (!$this->checkStepFields($i, $data)) {
-                return [false, $i];
+        // 指定されたステップの直前のステップまでをチェック
+        for ($i = 0; $i < ($step - 1); $i++) {
+            $stepName = $stepOrder[$i];
+            if (!$this->checkStepFields($stepName, $data)) {
+                return [false, $i + 1];
             }
         }
         
@@ -106,13 +113,24 @@ class CheckInstallationSteps
      */
     private function getRouteForStep($step)
     {
+        $stepOrder = [
+            'settings', // 基本設定
+            'environment', // 環境設定
+            'database', // データベース
+            'mail', // メール
+            'security', // セキュリティ
+            'confirm', // 確認
+            'complete', // 完了
+        ];
+
         $routes = [
-            1 => 'install.index',     // 基本設定
+            1 => 'install.settings',     // 基本設定
             2 => 'install.environment', // 環境設定
-            3 => 'install.security',  // セキュリティ設定
-            4 => 'install.database',  // データベース設定
-            5 => 'install.confirm',   // 確認画面
-            6 => 'install.complete'   // 完了画面
+            3 => 'install.database',  // データベース設定
+            4 => 'install.mail',  // メール設定
+            5 => 'install.security',  // セキュリティ設定
+            6 => 'install.confirm',   // 確認画面
+            7 => 'install.complete'   // 完了画面
         ];
         
         return $routes[$step] ?? 'install.index';

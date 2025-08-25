@@ -27,6 +27,7 @@ return [
     'settings_title' => '基本設定',
     'settings_header' => 'インストール設定',
     'settings_description' => 'ソフトウェアの基本設定を行います。',
+    'step_of_total' => ':current / :total ステップ',
     'admin_name' => '管理者名',
     'admin_name_placeholder' => '半角英数字で入力（例: admin123）',
     'admin_name_requirements' => '3〜20文字の半角英数字のみ使用可能',
@@ -78,21 +79,6 @@ return [
     'app_url_note' => '現在のホストに基づいて自動的に設定されます。必要に応じて変更してください。',
 
     //step 3
-    'security_title' => 'セキュリティ設定',
-    'security_header' => 'セキュリティ設定',
-    'security_description' => '管理画面のURLやIP制御を設定します。',
-    'site_url' => 'サイトのURL（管理画面）',
-    'force_ssl' => 'SSL（HTTPS）を強制する',
-    'ip_restrictions' => 'IPアドレス制限',
-    'enable_allowed_admin_ips' => '特定のIPアドレスのみ管理画面へのアクセスを許可',
-    'enable_blocked_admin_ips' => '特定のIPアドレスを管理画面へのアクセス禁止',
-    'enable_allowed_front_ips' => '特定のIPアドレスのみフロントへのアクセスを許可',
-    'enable_blocked_front_ips' => '特定のIPアドレスをフロントへのアクセス禁止',
-    'ip_note' => '複数のIPを入力する場合は改行で区切ってください。',
-    'back' => '戻る',
-    'next' => '次へ',
-
-    //step 4
     'database_title' => 'データベース設定',
     'database_header' => 'データベース情報を入力してください',
     'database_description' => 'システムで使用するデータベースの設定を行います。',
@@ -114,6 +100,98 @@ return [
     'back' => '戻る',
     'next' => '次へ',
 
+    //step 4
+    'mail_title' => 'メールサーバー設定',
+    'mail_header' => 'メールサーバー設定(任意)',
+    'mail_description' => 'アプリケーションがメールを送信するために使用する<br>メールサーバーの情報を入力します。<br>この設定はスキップしてインストール後に設定することも可能です。',
+    'mail_mailer' => 'メーラー',
+    'mail_host' => 'ホスト',
+    'mail_port' => 'ポート',
+    'mail_username' => 'ユーザー名',
+    'mail_password' => 'パスワード',
+    'mail_encryption' => '暗号化',
+    'mail_from_address' => '送信元メールアドレス',
+    'mail_from_name' => '送信元名',
+    
+    // メールテスト機能
+    'mail_test' => [
+        'title' => 'メールテスト',
+        'description' => 'メールサーバーの接続とメール送信をテストできます。',
+        'description_admin_email' => 'テストメールは基本設定で入力した管理者メールアドレスに送信されます。',
+    ],
+    'mail_test_description' => 'メールサーバーの接続とメール送信をテストできます。',
+    'mail_test_description_admin_email' => 'テストメールは基本設定で入力した管理者メールアドレスに送信されます。',
+    'test_connection_button' => '接続テスト',
+    'test_mail_button' => 'メール送信テスト',
+    'testing' => 'テスト中',
+    'connection_test_error' => '接続テストでエラーが発生しました。',
+    'mail_send_test_error' => 'テストメールの送信に失敗しました: :error',
+    'mail_test_advanced' => [
+        'test_email_subject' => 'メールサーバー設定テスト',
+        'test_email_body' => 'これはメールサーバー設定のテストメールです。このメールが正常に受信できた場合、メールサーバーの設定は正しく動作しています。',
+        'test_email_body_with_verification' => "これはメールサーバー設定のテストメールです。このメールが正常に受信できた場合、メールサーバーの設定は正しく動作しています。\n\nメール受信確認を完了するには、以下のリンクをクリックしてください：\n:verification_url\n\nこのリンクをクリックすることで、メールの受信テストが完了します。",
+        'connection_test_not_supported' => ':mailer メーラーは接続テストに対応していません。',
+        'connection_test_success' => 'メールサーバーへの接続に成功しました。',
+        'connection_test_failed' => 'メールサーバーへの接続に失敗しました',
+        'mail_connection_test_not_supported' => ':mailer メーラーは接続テストに対応していません。',
+        'mail_connection_test_success' => 'メールサーバーへの接続に成功しました。',
+        'mail_connection_test_failed' => 'メールサーバーへの接続に失敗しました: :error',
+        'send_test_success' => 'テストメールを :email に送信しました。',
+        'send_test_failed' => 'テストメールの送信に失敗しました',
+    ],
+    'mail_send_test_success' => 'テストメールを :email に送信しました。',
+    'mail_send_test_failed' => 'テストメールの送信に失敗しました: :error',
+    'mail_test_advanced' => [
+        'test_email_subject' => 'メールサーバー設定テスト',
+        'test_email_body' => 'これはメールサーバー設定のテストメールです。このメールが正常に受信できた場合、メールサーバーの設定は正しく動作しています。',
+        'test_email_body_with_verification' => "これはメールサーバー設定のテストメールです。このメールが正常に受信できた場合、メールサーバーの設定は正しく動作しています。\n\nメール受信確認を完了するには、以下のリンクをクリックしてください：\n:verification_url\n\nこのリンクをクリックすることで、メールの受信テストが完了します。",
+        'connection_test_not_supported' => ':mailer メーラーは接続テストに対応していません。',
+        'connection_test_success' => 'メールサーバーへの接続に成功しました。',
+        'connection_test_failed' => 'メールサーバーへの接続に失敗しました',
+        'mail_connection_test_not_supported' => ':mailer メーラーは接続テストに対応していません。',
+        'mail_connection_test_success' => 'メールサーバーへの接続に成功しました。',
+        'mail_connection_test_failed' => 'メールサーバーへの接続に失敗しました: :error',
+        'send_test_success' => 'テストメールを :email に送信しました。',
+        'send_test_failed' => 'テストメールの送信に失敗しました',
+        'verification_token_invalid' => 'メール認証トークンが無効です。',
+        'verification_error' => 'メール認証処理中にエラーが発生しました: :error',
+        'verification_success' => [
+            'title' => 'メール受信確認完了',
+            'heading' => 'メール受信確認が完了しました',
+            'description' => 'メールサーバーの設定が正しく動作していることが確認されました。',
+            'next_steps_title' => '次の手順',
+            'next_steps' => [
+                'close_window' => 'このウィンドウを閉じてください',
+                'continue_install' => 'インストール画面に戻って設定を続行してください'
+            ],
+            'close_button' => 'ウィンドウを閉じる',
+            'completed_message' => 'メール受信確認が完了しました'
+        ],
+        'three_stage_test_incomplete' => 'メールテストが未完了です',
+        'three_stage_test_complete' => 'メールテストが完了しました',
+        'connection_test' => 'サーバー接続テスト',
+        'send_test' => 'メール送信テスト',
+        'receive_test' => 'メール受信確認',
+    ],
+    //step 5
+    'security_title' => 'セキュリティ設定',
+    'security_header' => 'セキュリティ設定(任意)',
+    'security_description' => '管理画面のURLやIP制限を設定します。<br>IP制限はインストール後に設定することも可能です。',
+    'site_url' => 'サイトのURL（管理画面）',
+    'force_ssl' => 'SSL（HTTPS）を強制する',
+    'ip_restrictions' => 'IPアドレス制限',
+    'enable_allowed_admin_ips' => '特定のIPアドレスのみ管理画面へのアクセスを許可',
+    'enable_blocked_admin_ips' => '特定のIPアドレスを管理画面へのアクセス禁止',
+    'enable_allowed_front_ips' => '特定のIPアドレスのみフロントへのアクセスを許可',
+    'enable_blocked_front_ips' => '特定のIPアドレスをフロントへのアクセス禁止',
+    'ip_note' => '複数のIPを入力する場合は改行で区切ってください。',
+    'back' => '戻る',
+    'next' => '次へ',
+
+
+
+    
+
     //confirm
     'confirm_title' => 'インストール設定の確認',
     'confirm_header' => 'インストールの確認',
@@ -127,6 +205,7 @@ return [
 
     // 管理画面設定
     'admin_url' => '管理画面URL',
+    'admin_url_security_note' => '本番環境では管理画面URLは「admin」以外の予想されにくいURLを設定することを推奨します。',
     'force_ssl' => 'SSL（HTTPS）を強制する',
     'enabled' => '有効',
     'disabled' => '無効',

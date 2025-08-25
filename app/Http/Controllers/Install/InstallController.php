@@ -32,14 +32,18 @@ use Exception;
 use Illuminate\Support\Facades\Log;
 use App\Models\SecuritySetting;
 use Illuminate\Support\Facades\Crypt;
+use App\Traits\MailTestTrait;
 
 /**
  * インストールコントローラー
  */
 class InstallController extends Controller
 {
+    use MailTestTrait;
+    
     // 利用可能な言語のリスト
     protected $availableLocales;
+    private $total_steps = 5;
 
     public function __construct()
     {
@@ -176,7 +180,9 @@ class InstallController extends Controller
         return view('install.settings', [
             'errors' => session('errors') ?? new \Illuminate\Support\MessageBag(),
             'currentLocale' => $locale,
-            'availableLocales' => $this->availableLocales
+            'availableLocales' => $this->availableLocales,
+            'current_step' => 1,
+            'total_steps' => $this->total_steps
         ]);
     }
 
@@ -232,7 +238,9 @@ class InstallController extends Controller
         
         return view('install.environment', [
             'currentLocale' => $locale,
-            'availableLocales' => $this->availableLocales
+            'availableLocales' => $this->availableLocales,
+            'current_step' => 2,
+            'total_steps' => $this->total_steps
         ]);
     }
 
@@ -242,6 +250,7 @@ class InstallController extends Controller
             'app_env' => 'required|in:local,staging,production',
             'app_debug' => 'nullable|boolean',
             'app_url' => 'required|string',
+            'admin_url' => 'required|string|max:255',
             'app_timezone' => 'required|timezone',
             'force_ssl' => 'nullable|boolean',
         ]);
@@ -267,11 +276,120 @@ class InstallController extends Controller
         // 設定をセッションに保存（.env への書き出しはインストール完了時）
         session(['install_data' => array_merge(session('install_data', []), $data)]);
 
+        return redirect()->route('install.database');
+    }
+
+
+    
+
+
+
+    // **ステップ 3: データベース設定**
+    public function database()
+    {
+        $locale = $this->getCurrentLocale();
+        app()->setLocale($locale);
+        
+        return view('install.database', [
+            'currentLocale' => $locale,
+            'availableLocales' => $this->availableLocales,
+            'current_step' => 3,
+            'total_steps' => $this->total_steps
+        ]);
+    }
+
+    public function storeDatabase(Request $request)
+    {
+        $request->validate([
+            'db_connection' => 'required|string',
+            'db_host' => 'required|string',
+            'db_port' => 'required|integer',
+            'db_database' => 'required|string',
+            'db_username' => 'required|string',
+            'db_password' => 'nullable|string',
+            'preserve_data' => 'nullable|boolean',
+        ]);
+
+        $data = $request->only([
+            'db_connection',
+            'db_host',
+            'db_port',
+            'db_database',
+            'db_username',
+            'db_password',
+        ]);
+
+        if ($request->filled('db_password')) {
+            $data['db_password'] = Crypt::encryptString($request->db_password);
+        }
+
+        $data['preserve_data'] = $request->has('preserve_data');
+
+        session(['install_data' => array_merge(session('install_data', []), $data)]);
+
+        return redirect()->route('install.mail');
+    }
+
+
+    // **ステップ 4: メールサーバー設定**
+    public function mail()
+    {
+        $locale = $this->getCurrentLocale();
+        app()->setLocale($locale);
+
+        $installData = session('install_data', []);
+        $adminEmail = $installData['admin_email'] ?? '';
+
+        // メールテスト結果をセッションから取得
+        $testStatus = [
+            'connection_tested' => (bool) ($installData['mail_connection_tested'] ?? false),
+            'connection_test_date' => $installData['mail_connection_test_date'] ?? null,
+            'send_tested' => (bool) ($installData['mail_send_tested'] ?? false),
+            'send_test_date' => $installData['mail_send_test_date'] ?? null,
+            'receive_tested' => (bool) ($installData['mail_receive_tested'] ?? false),
+            'receive_test_date' => $installData['mail_receive_test_date'] ?? null,
+        ];
+
+        // デバッグ用ログ
+        \Log::info('メールページ表示時のセッションデータ', [
+            'install_data_keys' => array_keys($installData),
+            'test_status' => $testStatus,
+            'session_id' => session()->getId()
+        ]);
+
+        return view('install.mail', [
+            'currentLocale' => $locale,
+            'availableLocales' => $this->availableLocales,
+            'current_step' => 4,
+            'total_steps' => $this->total_steps,
+            'admin_email' => $adminEmail,
+            'testStatus' => $testStatus
+        ]);
+    }
+
+    public function storeMail(Request $request)
+    {
+        $validated = $request->validate([
+            'mail_mailer' => 'nullable|string',
+            'mail_host' => 'nullable|string',
+            'mail_port' => 'nullable|integer',
+            'mail_username' => 'nullable|string',
+            'mail_password' => 'nullable|string',
+            'mail_encryption' => 'nullable|string',
+            'mail_from_address' => 'nullable|email',
+        ]);
+
+        if ($request->filled('mail_password')) {
+            $validated['mail_password'] = Crypt::encryptString($request->mail_password);
+        }
+
+        session(['install_data' => array_merge(session('install_data', []), $validated)]);
+
         return redirect()->route('install.security');
     }
 
 
-    // **ステップ 3: システム設定**
+    // **ステップ 4: セキュリティ設定**
     public function security()
     {
         $locale = $this->getCurrentLocale();
@@ -279,14 +397,15 @@ class InstallController extends Controller
         
         return view('install.security', [
             'currentLocale' => $locale,
-            'availableLocales' => $this->availableLocales
+            'availableLocales' => $this->availableLocales,
+            'current_step' => 5,
+            'total_steps' => $this->total_steps
         ]);
     }
 
     public function storeSecurity(Request $request)
     {
         $validated = $request->validate([
-            'admin_url' => 'required|string|max:255',
             'enable_allowed_admin_ips' => 'nullable|boolean',
             'allowed_admin_ips' => 'nullable|string',
             'enable_blocked_admin_ips' => 'nullable|boolean',
@@ -306,47 +425,68 @@ class InstallController extends Controller
 
         session(['install_data' => array_merge(session('install_data', []), $validated)]);
 
-        return redirect()->route('install.database');
-    }
-
-
-    // **ステップ 4: データベース設定**
-    public function database()
-    {
-        $locale = $this->getCurrentLocale();
-        app()->setLocale($locale);
-        
-        return view('install.database', [
-            'currentLocale' => $locale,
-            'availableLocales' => $this->availableLocales
-        ]);
-    }
-
-    public function storeDatabase(Request $request)
-    {
-        $request->validate([
-            'db_connection' => 'required|string',
-            'db_host' => 'required|string',
-            'db_port' => 'required|integer',
-            'db_database' => 'required|string',
-            'db_username' => 'required|string',
-            'db_password' => 'nullable|string',
-            'preserve_data' => 'nullable|boolean',
-        ]);
-
-        session([
-            'install_data.db_connection' => $request->db_connection,
-            'install_data.db_host' => $request->db_host,
-            'install_data.db_port' => $request->db_port,
-            'install_data.db_database' => $request->db_database,
-            'install_data.db_username' => $request->db_username,
-            'install_data.db_password' => $request->db_password ? Crypt::encryptString($request->db_password) : null, // ✅ 暗号化
-            'install_data.preserve_data' => $request->has('preserve_data'),
-        ]);
-
         return redirect()->route('install.confirm');
     }
 
+    /**
+     * メールサーバー接続テスト（インストール時）
+     */
+    public function testMailConnection(Request $request)
+    {
+        return $this->performConnectionTest($request, 'install');
+    }
+
+    /**
+     * メール送信テスト（インストール時）
+     */
+    public function testMailSend(Request $request)
+    {
+        return $this->performMailTest($request, 'install');
+    }
+
+    /**
+     * メール受信確認（インストール時）
+     */
+    public function verifyMail($token)
+    {
+        return $this->performMailVerification($token, 'install');
+    }
+
+    /**
+     * メールテスト結果をリセット（インストール時）
+     */
+    public function resetMailTests()
+    {
+        $installData = session('install_data', []);
+        
+        // メールテスト関連のセッションデータをクリア
+        unset($installData['mail_connection_tested']);
+        unset($installData['mail_connection_test_date']);
+        unset($installData['mail_send_tested']);
+        unset($installData['mail_send_test_date']);
+        unset($installData['mail_receive_tested']);
+        unset($installData['mail_receive_test_date']);
+        
+        // セッションを強制的に保存
+        session(['install_data' => $installData]);
+        session()->save();
+        
+        \Log::info('メールテスト結果リセット完了', [
+            'reset_data' => array_keys($installData),
+            'session_id' => session()->getId()
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'メールテスト結果をリセットしました',
+            'debug' => [
+                'session_keys' => array_keys($installData),
+                'has_connection_tested' => isset($installData['mail_connection_tested']),
+                'has_send_tested' => isset($installData['mail_send_tested']),
+                'has_receive_tested' => isset($installData['mail_receive_tested'])
+            ]
+        ]);
+    }
 
     // 入力内容の確認画面
     public function confirm()
@@ -361,9 +501,7 @@ class InstallController extends Controller
             // 基本設定
             'settings' => ['site_name', 'admin_name', 'admin_email', 'admin_password'],
             // 環境設定
-            'environment' => ['app_env', 'app_url', 'app_timezone'],
-            // セキュリティ設定
-            'security' => ['admin_url'],
+            'environment' => ['app_env', 'app_url','admin_url', 'app_timezone'],
             // データベース設定
             'database' => ['db_connection', 'db_host', 'db_port', 'db_database', 'db_username']
         ];
@@ -380,8 +518,19 @@ class InstallController extends Controller
             }
         }
         
+        // メールテスト結果をセッションから取得
+        $mailTestStatus = [
+            'connection_tested' => (bool) ($data['mail_connection_tested'] ?? false),
+            'connection_test_date' => $data['mail_connection_test_date'] ?? null,
+            'send_tested' => (bool) ($data['mail_send_tested'] ?? false),
+            'send_test_date' => $data['mail_send_test_date'] ?? null,
+            'receive_tested' => (bool) ($data['mail_receive_tested'] ?? false),
+            'receive_test_date' => $data['mail_receive_test_date'] ?? null,
+        ];
+
         return view('install.confirm', [
             'data' => $data,
+            'mailTestStatus' => $mailTestStatus,
             'currentLocale' => $locale,
             'availableLocales' => $this->availableLocales
         ]);
@@ -404,6 +553,10 @@ class InstallController extends Controller
             $dbPassword = isset($data['db_password']) ? Crypt::decryptString($data['db_password']) : null;
             Log::info('DBパスワード復号化完了');
 
+            // ✅ メールパスワードを復号化
+            $mailPassword = isset($data['mail_password']) ? Crypt::decryptString($data['mail_password']) : null;
+            Log::info('メールパスワード復号化完了');
+
             // ✅ `force_ssl` の値を取得（チェックなしなら false）
             $forceSslBool = !empty($data['force_ssl']);
 
@@ -421,12 +574,22 @@ class InstallController extends Controller
                 'APP_ENV' => $data['app_env'],
                 'APP_DEBUG' => $data['app_debug'] ? 'true' : 'false',
                 'APP_URL' => $appUrl,
-                //'APP_LOCALE' => $locale,
-                //'APP_FALLBACK_LOCALE' => $locale,
                 'APP_TIMEZONE' => $data['app_timezone'] ?? 'Asia/Tokyo',
                 'INSTALLED' => 'false', // ✅ ここでは false にする
                 'FORCE_SSL' => $data['force_ssl'] ? 'true' : 'false',
                 'SESSION_DRIVER' => 'database',
+
+                // メール設定
+                'MAIL_MAILER' => $data['mail_mailer'] ?? 'smtp',
+                'MAIL_HOST' => $data['mail_host'] ?? 'localhost',
+                'MAIL_PORT' => $data['mail_port'] ?? 1025,
+                'MAIL_USERNAME' => $data['mail_username'] ?? 'null',
+                'MAIL_PASSWORD' => $mailPassword ?? 'null',
+                'MAIL_ENCRYPTION' => $data['mail_encryption'] ?? 'null',
+                'MAIL_FROM_ADDRESS' => $data['mail_from_address'] ?? $data['admin_email'],
+                'MAIL_FROM_NAME' => "\"{$data['site_name']}\"",
+
+                // DB設定
                 'DB_CONNECTION' => $data['db_connection'],
                 'DB_HOST' => $data['db_host'],
                 'DB_PORT' => $data['db_port'],
@@ -434,6 +597,7 @@ class InstallController extends Controller
                 'DB_USERNAME' => $data['db_username'],
                 'DB_PASSWORD' => $dbPassword ?? '', // ✅ 復号化して `.env` に適用
             ];
+
 
             // .env ファイル更新
             Log::info('.envファイル更新開始');
@@ -642,7 +806,45 @@ class InstallController extends Controller
                 ->where('name', 'site_name')
                 ->update(['value' => $data['site_name'], 'updated_at' => now()]);
             Log::info('initializeDatabase - site_name更新: ' . $data['site_name']);
+
+            // 管理画面のURLを設定
+            DB::connection('mysql')->table('base_settings')
+                ->where('name', 'admin_url')
+                ->update(['value' => $data['admin_url'], 'updated_at' => now()]);
+
+            Log::info('initializeDatabase - admin_url更新: ' . $data['admin_url']);
         }
+
+        // メールテスト結果をbase_settingsに保存
+        Log::info('initializeDatabase - メールテスト結果保存開始');
+        $mailTestFields = [
+            'mail_connection_tested' => $data['mail_connection_tested'] ?? 0,
+            'mail_connection_test_date' => $data['mail_connection_test_date'] ?? null,
+            'mail_send_tested' => $data['mail_send_tested'] ?? 0,
+            'mail_send_test_date' => $data['mail_send_test_date'] ?? null,
+            'mail_receive_tested' => $data['mail_receive_tested'] ?? 0,
+            'mail_receive_test_date' => $data['mail_receive_test_date'] ?? null,
+        ];
+
+        foreach ($mailTestFields as $fieldName => $fieldValue) {
+            if ($fieldValue !== null) {
+                if (!DB::connection('mysql')->table('base_settings')->where('name', $fieldName)->exists()) {
+                    DB::connection('mysql')->table('base_settings')->insert([
+                        'name' => $fieldName,
+                        'value' => $fieldValue,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                    Log::info("initializeDatabase - {$fieldName}新規作成: {$fieldValue}");
+                } else {
+                    DB::connection('mysql')->table('base_settings')
+                        ->where('name', $fieldName)
+                        ->update(['value' => $fieldValue, 'updated_at' => now()]);
+                    Log::info("initializeDatabase - {$fieldName}更新: {$fieldValue}");
+                }
+            }
+        }
+        Log::info('initializeDatabase - メールテスト結果保存完了');
 
         // `notification_email` に管理者メールアドレスを設定
         Log::info('initializeDatabase - notification_email設定開始: ' . $data['admin_email']);

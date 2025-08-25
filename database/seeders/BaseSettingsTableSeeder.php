@@ -35,6 +35,7 @@ class BaseSettingsTableSeeder extends Seeder
     public function run(): void
     {
         $settings = [
+            
             // メンテナンスモード
             ['name' => 'maintenance_mode', 'value' => 0],
             ['name' => 'maintenance_message', 'value' => '現在メンテナンス中です。しばらくお待ちください。'],

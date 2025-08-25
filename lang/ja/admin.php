@@ -293,6 +293,7 @@ return [
                 'mail_port_numeric' => 'メールポートは数値で入力してください。',
                 'maintenance_mode_required' => 'メンテナンスモードの設定を選択してください。',
             ],
+            'connection_test_required' => '接続テストを先に実行してください。',
             'view_messages' => [
                 'mail_test_complete' => 'メール機能テスト完了',
                 'mail_test_incomplete' => 'メール機能テスト未完了',

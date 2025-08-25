@@ -41,13 +41,23 @@ Route::prefix('install')->name('install.')->middleware('install.steps')->group(
         Route::get('/environment', [InstallController::class, 'environment'])->name('environment');
         Route::post('/environment', [InstallController::class, 'storeEnvironment'])->name('environment.store');
 
-        //セキュリティ設定
-        Route::get('/security', [InstallController::class, 'security'])->name('security');
-        Route::post('/security', [InstallController::class, 'storeSecurity'])->name('security.store');
-
         //データベース設定
         Route::get('/database', [InstallController::class, 'database'])->name('database');
         Route::post('/database', [InstallController::class, 'storeDatabase'])->name('database.store');
+
+        //メールサーバー設定
+        Route::get('/mail', [InstallController::class, 'mail'])->name('mail');
+        Route::post('/mail', [InstallController::class, 'storeMail'])->name('mail.store');
+        
+        // メールテスト関連のルート
+        Route::post('/test-mail-connection', [InstallController::class, 'testMailConnection'])->name('mail.test-connection');
+        Route::post('/test-mail-send', [InstallController::class, 'testMailSend'])->name('mail.test-send');
+        Route::get('/verify-mail/{token}', [InstallController::class, 'verifyMail'])->name('mail.verify-mail');
+        Route::post('/reset-mail-tests', [InstallController::class, 'resetMailTests'])->name('mail.reset-tests');
+
+        //セキュリティ設定
+        Route::get('/security', [InstallController::class, 'security'])->name('security');
+        Route::post('/security', [InstallController::class, 'storeSecurity'])->name('security.store');
 
         //確認画面
         Route::get('/confirm', [InstallController::class, 'confirm'])->name('confirm');

@@ -27,6 +27,7 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title') | {{ config('app.name') }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js" crossorigin="anonymous"></script>
@@ -50,19 +51,30 @@
 
         <img src="{{ asset('assets/images/logo.svg') }}" alt="{{ env('APP_NAME') }}" class="w-32 h-auto mx-auto mb-4">
 
-        
-
+    
         <div class="bg-white shadow-lg rounded-lg p-8 max-w-xl w-full">
 
-            <!-- Language Selector -->
-            @if(isset($availableLocales) && isset($currentLocale))
-                <div class="flex justify-end w-full max-w-xl mb-4">
+            <!-- Header with Step Counter and Language Selector -->
+            <div class="flex justify-between items-center w-full max-w-xl mb-4">
+                <!-- Step Counter -->
+                @if(isset($current_step) && isset($total_steps))
+                    <div class="text-gray-600">
+                        {{ __('install.step_of_total', ['current' => $current_step, 'total' => $total_steps]) }}
+                    </div>
+                @else
+                    <div></div> <!-- This empty div ensures the language selector stays on the right -->
+                @endif
+
+                <!-- Language Selector -->
+                @if(isset($availableLocales) && isset($currentLocale))
                     <div class="relative">
                         <form id="language-form" action="{{ route('install.language', ['locale' => '__locale__']) }}" method="POST">
+                            @csrf
                             <select 
                                 id="language-selector" 
                                 class="appearance-none bg-white border border-gray-300 rounded-lg py-2 px-4 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 style="-webkit-appearance: none; -moz-appearance: none; text-indent: 1px; text-overflow: ''; min-width: 150px;"
+                                onchange="this.form.action = this.form.action.replace('__locale__', this.value); this.form.submit()"
                             >
                                 @foreach($availableLocales as $locale)
                                     <option value="{{ $locale }}" {{ $currentLocale === $locale ? 'selected' : '' }}>
@@ -72,11 +84,13 @@
                             </select>
                         </form>
                     </div>
-                </div>
-            @endif
+                @endif
+            </div>
             
             <h1 class="text-2xl font-bold text-gray-800 mb-4 text-center">@yield('header')</h1>
-            <p class="text-gray-600 mb-6 text-center">@yield('description')</p>
+            <p class="text-gray-600 mb-6 text-center">
+                @yield('description')
+            </p>
 
             @if(session('error'))
                 <div class="bg-red-100 text-red-600 p-3 mb-4 rounded-lg">

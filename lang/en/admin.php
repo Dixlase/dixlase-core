@@ -293,6 +293,7 @@ Clicking this link will complete the full mail function test.',
                 'mail_port_numeric' => 'Mail port must be a number.',
                 'maintenance_mode_required' => 'Please select maintenance mode setting.',
             ],
+            'connection_test_required' => 'Please run the connection test first.',
             'controller_messages' => [
                 'settings_updated' => 'Settings have been updated.',
                 'test_session_cleared' => 'Test session has been cleared.',

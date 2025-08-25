@@ -28,6 +28,7 @@ use App\Http\Requests\Admin\Settings\AdminBaseSettingsRequest;
 use App\Helpers\EnvHelper;
 use App\Helpers\TimezoneHelper;
 use App\Facades\BaseSettings;
+use App\Traits\MailTestTrait;
 use DateTime;
 use DateTimeZone;
 use Illuminate\Support\Facades\Mail;
@@ -36,6 +37,7 @@ use Illuminate\Support\Facades\Config;
 
 class AdminBaseSettingsController extends AdminLoggedInController
 {
+    use MailTestTrait;
 
     //初期設定を行う
     public function __construct()
@@ -48,8 +50,18 @@ class AdminBaseSettingsController extends AdminLoggedInController
      * 設定の表示
      */
 
-    public function index()
+    public function index(Request $request)
     {
+        // メール受信テスト状態更新のリクエストを処理
+        if ($request->isMethod('post') && $request->input('action') === 'update_receive_test_status') {
+            $mailTestResults = session('mail_test_results', []);
+            $mailTestResults['mail_receive_tested'] = 1;
+            $mailTestResults['mail_receive_test_date'] = now()->format('Y-m-d H:i:s');
+            session(['mail_test_results' => $mailTestResults]);
+            
+            return response()->json(['success' => true]);
+        }
+        
         // 基本設定ページを開くたびにメールテストセッションをクリア
         // （保存されていないテスト結果を削除）
         session()->forget('mail_test_results');
@@ -79,23 +91,9 @@ class AdminBaseSettingsController extends AdminLoggedInController
 
         $timezones = TimezoneHelper::getTimezonesWithUtcOffset();
 
-        // メール接続テストの状態を取得（セッション優先、なければDB）
-        $sessionTestResults = session('mail_test_results', []);
-        
-        $mailConnectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? BaseSetting::getValue('mail_connection_tested', false));
-        $mailConnectionTestDate = $sessionTestResults['mail_connection_test_date'] ?? BaseSetting::getValue('mail_connection_test_date', null);
-        $mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? BaseSetting::getValue('mail_send_tested', false));
-        $mailSendTestDate = $sessionTestResults['mail_send_test_date'] ?? BaseSetting::getValue('mail_send_test_date', null);
-        $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? BaseSetting::getValue('mail_receive_tested', false));
-        $mailReceiveTestDate = $sessionTestResults['mail_receive_test_date'] ?? BaseSetting::getValue('mail_receive_test_date', null);
-
         $this->viewParams['settings'] = $settings;
         $this->viewParams['timezones'] = $timezones;
-        $this->viewParams['mailConnectionTested'] = $mailConnectionTested;
-        $this->viewParams['mailConnectionTestDate'] = $mailConnectionTestDate;
-        $this->viewParams['mailSendTested'] = $mailSendTested;
-        $this->viewParams['mailSendTestDate'] = $mailSendTestDate;
-        $this->viewParams['mailReceiveTested'] = $mailReceiveTested;
+        $this->viewParams['data'] = $data;
         $this->viewParams['mailReceiveTestDate'] = $mailReceiveTestDate;
         $this->viewParams['locales'] = collect(config('admin.locale.available', []))->mapWithKeys(function ($locale, $key) {
             return [$key => $locale['name']];
@@ -253,262 +251,32 @@ class AdminBaseSettingsController extends AdminLoggedInController
         ]);
     }
 
-    /**
-     * メール送信テスト
-     */
-    public function testMail(AdminBaseSettingsRequest $request)
-    {
-        try {
-            // リクエストからメール設定を取得
-            $mailSettings = $request->only([
-                'mail_mailer',
-                'mail_host',
-                'mail_port',
-                'mail_username',
-                'mail_password',
-                'mail_encryption',
-                'mail_from_address',
-            ]);
-
-            // 一時的にメール設定を変更
-            Config::set('mail.default', $mailSettings['mail_mailer']);
-            Config::set('mail.mailers.smtp.host', $mailSettings['mail_host']);
-            Config::set('mail.mailers.smtp.port', $mailSettings['mail_port']);
-            Config::set('mail.mailers.smtp.username', $mailSettings['mail_username']);
-            Config::set('mail.mailers.smtp.password', $mailSettings['mail_password']);
-            Config::set('mail.mailers.smtp.encryption', $mailSettings['mail_encryption']);
-            Config::set('mail.from.address', $mailSettings['mail_from_address']);
-            Config::set('mail.from.name', env('APP_NAME', 'MySoftware'));
-
-            // アプリケーション名を取得
-            $appName = env('APP_NAME', 'Dixlase');
-
-            // テストメール送信先を設定（現在ログイン中のアカウントのメールアドレス）
-            $testEmail = auth()->user()->email;
-
-            // 認証トークンを生成
-            $verificationToken = bin2hex(random_bytes(32));
-            BaseSetting::setValue('mail_verification_token', $verificationToken);
-            
-            // 認証リンクを生成
-            $verificationUrl = route('admin.settings.base.verify-mail', ['token' => $verificationToken]);
-            
-            // 多言語対応のメール内容を取得
-            $subject = __('mail.test_mail.subject');
-            
-            // MailMessage形式でメールを作成（ログイン通知と同じ形式）
-            $message = new MailMessage;
-            $message->subject("[{$appName}] {$subject}");
-            $message->greeting(__('mail.test_mail.greeting'));
-            
-            // テスト詳細を追加
-            $message->line('**' . __('mail.test_mail.test_details_title') . '**');
-            $message->line('**' . __('mail.test_mail.app_name') . '** ' . $appName);
-            $message->line('**' . __('mail.test_mail.test_datetime') . '** ' . now()->format('Y-m-d H:i:s'));
-            
-            // 受信確認の説明
-            $message->line(__('mail.test_mail.verification_required'));
-            
-            // 確認ボタン
-            $message->action(__('mail.test_mail.verify_button'), $verificationUrl);
-            
-            // 手動確認用URL
-            $message->line(__('mail.test_mail.manual_verification'));
-            $message->line($verificationUrl);
-            
-            $message->salutation(__('mail.test_mail.regards') . "\n\n" . $appName);
-            
-            Mail::send([], [], function ($mail) use ($testEmail, $message) {
-                $mail->to($testEmail)
-                     ->subject($message->subject)
-                     ->html((string) $message->render());
-            });
-
-            // メール送信テスト成功時にセッションに保存（フォーム保存時にDBに反映）
-            session(['mail_test_results.mail_send_tested' => 1]);
-            session(['mail_test_results.mail_send_test_date' => now()->toDateTimeString()]);
-            
-            // 認証トークンは即座にDBに保存（メール認証で必要）
-            BaseSetting::setValue('mail_verification_token', $verificationToken);
-
-            return response()->json([
-                'success' => true,
-                'message' => __('admin.settings.base.test_mail_success')
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => __('admin.settings.base.test_mail_failed', ['error' => $e->getMessage()])
-            ], 400);
-        }
-    }
 
     /**
      * メールサーバー接続テスト
      */
     public function testConnection(AdminBaseSettingsRequest $request)
     {
-        try {
-            // リクエストからメール設定を取得
-            $mailSettings = $request->only([
-                'mail_mailer',
-                'mail_host',
-                'mail_port',
-                'mail_username',
-                'mail_password',
-                'mail_encryption',
-            ]);
-
-            // SMTPの場合のみ接続テストを実行
-            if ($mailSettings['mail_mailer'] === 'smtp') {
-                $this->testSmtpConnection($mailSettings);
-            } else {
-                return response()->json([
-                    'success' => true,
-                    'message' => __('admin.settings.base.controller_messages.mailer_not_supported', ['mailer' => $mailSettings['mail_mailer']])
-                ]);
-            }
-
-            // 接続テスト成功時にセッションに保存（フォーム保存時にDBに反映）
-            session(['mail_test_results.mail_connection_tested' => 1]);
-            session(['mail_test_results.mail_connection_test_date' => now()->toDateTimeString()]);
-            
-            return response()->json([
-                'success' => true,
-                'message' => __('admin.settings.base.controller_messages.connection_success')
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => __('admin.settings.base.controller_messages.connection_failed', ['error' => $e->getMessage()])
-            ], 400);
-        }
+        // MailTestTraitの統合メソッドを使用（メソッド名の競合を避けるため別名で呼び出し）
+        return $this->performConnectionTest($request, 'admin');
     }
+
 
     /**
-     * SMTP接続テスト
+     * メール送信テスト
      */
-    private function testSmtpConnection(array $mailSettings)
+    public function testMail(AdminBaseSettingsRequest $request)
     {
-        $host = $mailSettings['mail_host'];
-        $port = (int) $mailSettings['mail_port'];
-        $username = $mailSettings['mail_username'];
-        $password = $mailSettings['mail_password'];
-        $encryption = $mailSettings['mail_encryption'];
-
-        // ソケット接続でSMTPサーバーに接続テスト
-        $context = stream_context_create();
-        
-        if ($encryption === 'ssl') {
-            $host = 'ssl://' . $host;
-        }
-
-        $socket = @stream_socket_client(
-            $host . ':' . $port,
-            $errno,
-            $errstr,
-            10, // 10秒タイムアウト
-            STREAM_CLIENT_CONNECT,
-            $context
-        );
-
-        if (!$socket) {
-            throw new \Exception("接続エラー: {$errstr} (エラーコード: {$errno})");
-        }
-
-        // SMTPレスポンスを読み取り
-        $response = fgets($socket);
-        if (!$response || !str_starts_with($response, '220')) {
-            fclose($socket);
-            throw new \Exception('SMTPサーバーからの応答が不正です: ' . trim($response));
-        }
-
-        // STARTTLSが必要な場合
-        if ($encryption === 'tls') {
-            fwrite($socket, "EHLO localhost\r\n");
-            $response = fgets($socket);
-            
-            fwrite($socket, "STARTTLS\r\n");
-            $response = fgets($socket);
-            
-            if (!str_starts_with($response, '220')) {
-                fclose($socket);
-                throw new \Exception('STARTTLS の開始に失敗しました: ' . trim($response));
-            }
-
-            // TLS暗号化を有効にする
-            if (!stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
-                fclose($socket);
-                throw new \Exception('TLS暗号化の有効化に失敗しました');
-            }
-        }
-
-        // 認証テスト（ユーザー名とパスワードが設定されている場合）
-        if (!empty($username) && !empty($password)) {
-            fwrite($socket, "EHLO localhost\r\n");
-            $response = fgets($socket);
-
-            fwrite($socket, "AUTH LOGIN\r\n");
-            $response = fgets($socket);
-            
-            if (!str_starts_with($response, '334')) {
-                fclose($socket);
-                throw new \Exception('AUTH LOGIN コマンドが失敗しました: ' . trim($response));
-            }
-
-            // ユーザー名を送信
-            fwrite($socket, base64_encode($username) . "\r\n");
-            $response = fgets($socket);
-            
-            if (!str_starts_with($response, '334')) {
-                fclose($socket);
-                throw new \Exception('ユーザー名認証が失敗しました: ' . trim($response));
-            }
-
-            // パスワードを送信
-            fwrite($socket, base64_encode($password) . "\r\n");
-            $response = fgets($socket);
-            
-            if (!str_starts_with($response, '235')) {
-                fclose($socket);
-                throw new \Exception('パスワード認証が失敗しました: ' . trim($response));
-            }
-        }
-
-        // 接続を閉じる
-        fwrite($socket, "QUIT\r\n");
-        fclose($socket);
+        return $this->performMailTest($request, 'admin');
     }
+
 
     /**
      * メール受信確認（認証リンクアクセス時）
      */
     public function verifyMail($token)
     {
-        try {
-            $storedToken = BaseSetting::getValue('mail_verification_token');
-            
-            if (!$storedToken || $storedToken !== $token) {
-                return redirect()->route('admin.settings.base')
-                    ->with('error', __('admin.settings.base.controller_messages.verification_token_invalid'));
-            }
-
-            // メール受信テスト成功時にセッションに保存（フォーム保存時にDBに反映）
-            session(['mail_test_results.mail_receive_tested' => 1]);
-            session(['mail_test_results.mail_receive_test_date' => now()->toDateTimeString()]);
-            
-            // 使用済みトークンをクリア
-            BaseSetting::setValue('mail_verification_token', null);
-
-            // 専用の確認ページにリダイレクト（ウィンドウを閉じるメッセージを表示）
-            return redirect()->route('admin.settings.base.mail-verification-success');
-
-        } catch (\Exception $e) {
-            return redirect()->route('admin.settings.base')
-                ->with('error', 'メール認証中にエラーが発生しました: ' . $e->getMessage());
-        }
+        return $this->performMailVerification($token, 'admin');
     }
 
     /**
