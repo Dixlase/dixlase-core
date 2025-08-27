@@ -25,7 +25,7 @@ namespace App\Http\Requests\Admin\Settings;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class AdminBaseSettingsRequest extends FormRequest
+class MailTestRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -36,29 +36,19 @@ class AdminBaseSettingsRequest extends FormRequest
     }
 
     /**
-     * バリデーションルールの設定
+     * メールテスト用のバリデーションルール
      */
     public function rules()
     {
-        $availableLocales = array_keys(config('admin.locale.available', []));
-        
         return [
-            'app_name' => 'required|string|max:255',
-            'locale' => ['required', Rule::in($availableLocales)],
-            'timezone' => 'required|timezone',
-            'mail_mailer' => ['required', Rule::in(array_keys(trans('mail.mailers')))],
+            'mail_mailer' => 'required|string',
             'mail_host' => 'nullable|string',
             'mail_port' => 'nullable|numeric',
             'mail_username' => 'nullable|string',
             'mail_password' => 'nullable|string',
-            'mail_encryption' => ['nullable', Rule::in(array_keys(trans('mail.encryptions')))],
+            'mail_encryption' => 'nullable|string',
             'mail_from_address' => 'nullable|email|max:255',
             'mail_from_name' => 'nullable|string|max:255',
-            'maintenance_mode' => 'required|boolean',
-            'maintenance_message' => 'nullable|string',
-            'notification_email' => 'nullable|email|max:255',
-            'admin_url' => 'required|string|max:255',
-            'force_ssl' => 'nullable|boolean',
         ];
     }
 
@@ -68,14 +58,9 @@ class AdminBaseSettingsRequest extends FormRequest
     public function messages()
     {
         return [
-            'app_name.required' => __('admin.settings.base.validation.app_name_required'),
-            'locale.required' => __('admin.settings.base.validation.locale_required'),
-            'timezone.timezone' => __('admin.settings.base.validation.timezone_invalid'),
             'mail_mailer.required' => __('admin.settings.base.validation.mail_mailer_required'),
-            'mail_host.required' => __('admin.settings.base.validation.mail_host_required'),
-            'mail_port.required' => __('admin.settings.base.validation.mail_port_required'),
             'mail_port.numeric' => __('admin.settings.base.validation.mail_port_numeric'),
-            'maintenance_mode.required' => __('admin.settings.base.validation.maintenance_mode_required'),
+            'mail_from_address.email' => __('admin.settings.base.validation.mail_from_address_email'),
         ];
     }
 }

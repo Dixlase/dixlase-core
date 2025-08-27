@@ -48,16 +48,6 @@
             </div>
         </div>
 
-        <!-- テスト結果の保存に関する注意 -->
-        @if(!($testStatus['connection_tested'] && $testStatus['send_tested'] && $testStatus['receive_tested']))
-            <div class="ml-5 my-3 text-sm text-yellow-700 dark:text-yellow-300">
-                <ul class="list-disc">
-                    <li>メンバー全体設定のロックアウト通知、パスワードリセット、ログイン通知、二段階認証機能を使用するには、すべてのメールテストを完了してください。</li>
-                    <li>テスト結果は一時的に保存されます。更新ボタンを押すまで、設定やテスト結果は保存されません。</li>
-                </ul>
-            </div>
-        @endif
-
         <!-- テスト進捗状況 -->
         <div class="space-y-2">
             <!-- 接続テスト -->
@@ -88,10 +78,10 @@
 
             <!-- 受信確認テスト -->
             <div id="receive-test-status" class="flex items-center">
-                <i id="receive-test-icon" class="mr-2 {{ $testStatus['receive_tested'] ? 'fas fa-check-circle text-green-500' : 'fas fa-times-circle text-gray-400' }}"></i>
-                <span id="receive-test-text" class="text-sm {{ $testStatus['receive_tested'] ? 'text-green-700 dark:text-green-300' : 'text-gray-600 dark:text-gray-400' }}">
+                <i id="receive-test-icon-main" class="mr-2 {{ $testStatus['receive_tested'] ? 'fas fa-check-circle text-green-500' : 'fas fa-times-circle text-gray-400' }}"></i>
+                <span id="receive-test-text-main" class="text-sm {{ $testStatus['receive_tested'] ? 'text-green-700 dark:text-green-300' : 'text-gray-600 dark:text-gray-400' }}">
                     3. {{ __('admin.settings.base.view_messages.receive_test') }}
-                    <span id="receive-test-date">
+                    <span id="receive-test-date-main">
                         @if($testStatus['receive_tested'] && $testStatus['receive_test_date'])
                             ({{ $testStatus['receive_test_date'] }})
                         @endif
@@ -261,7 +251,13 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => {
             console.log('接続テストレスポンス受信:', response.status);
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                // エラーレスポンスの詳細を取得
+                return response.json().then(errorData => {
+                    console.error('バリデーションエラー詳細:', errorData);
+                    throw new Error(`HTTP ${response.status}: ${response.statusText} - ${JSON.stringify(errorData)}`);
+                }).catch(() => {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                });
             }
             return response.json();
         })
@@ -270,6 +266,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (data.success) {
                 updateTestStatus('connection', true, data.test_date);
+                enableMailTestButton();
                 showTestResult('success', data.message || '接続テストが成功しました');
             } else {
                 showTestResult('error', data.message || '接続テストが失敗しました');
@@ -346,7 +343,13 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => {
             console.log('メール送信テストレスポンス受信:', response.status);
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                // エラーレスポンスの詳細を取得
+                return response.json().then(errorData => {
+                    console.error('バリデーションエラー詳細:', errorData);
+                    throw new Error(`HTTP ${response.status}: ${response.statusText} - ${JSON.stringify(errorData)}`);
+                }).catch(() => {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                });
             }
             return response.json();
         })
@@ -391,19 +394,34 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 5000);
     }
 
-    // テストステータス更新関数
+    // テストステータス更新関数（グローバルスコープに定義）
     function updateTestStatus(testType, success, testDate) {
         console.log(`updateTestStatus呼び出し: ${testType}, success: ${success}, date: ${testDate}`);
         
+        // 両方のDOM要素を更新（メイン表示とステータス表示）
         const icon = document.getElementById(testType + '-test-icon');
         const text = document.getElementById(testType + '-test-text');
         const dateSpan = document.getElementById(testType + '-test-date');
         
+        // メイン表示の要素も取得
+        const iconMain = document.getElementById(testType + '-test-icon-main');
+        const textMain = document.getElementById(testType + '-test-text-main');
+        const dateSpanMain = document.getElementById(testType + '-test-date-main');
+        
         console.log('アイコン要素:', icon);
         console.log('テキスト要素:', text);
         console.log('日付要素:', dateSpan);
+        console.log('メインアイコン要素:', iconMain);
+        console.log('メインテキスト要素:', textMain);
+        console.log('メイン日付要素:', dateSpanMain);
+        
+        // DOM要素が見つからない場合の詳細デバッグ（開発時のみ）
+        if (!icon && !iconMain) console.warn(`両方のアイコン要素が見つかりません: ${testType}`);
+        if (!text && !textMain) console.warn(`両方のテキスト要素が見つかりません: ${testType}`);
+        if (!dateSpan && !dateSpanMain) console.warn(`両方の日付要素が見つかりません: ${testType}`);
         
         if (success) {
+            // ステータス表示の要素を更新
             if (icon) {
                 console.log('アイコンを成功状態に更新');
                 icon.className = 'mr-2 fas fa-circle-check text-green-600';
@@ -417,6 +435,22 @@ document.addEventListener('DOMContentLoaded', function() {
             if (dateSpan && testDate) {
                 console.log('日付を更新:', testDate);
                 dateSpan.textContent = `(${testDate})`;
+            }
+            
+            // メイン表示の要素も更新
+            if (iconMain) {
+                console.log('メインアイコンを成功状態に更新');
+                iconMain.className = 'mr-2 fas fa-check-circle text-green-500';
+            }
+            
+            if (textMain) {
+                console.log('メインテキストを成功状態に更新');
+                textMain.className = 'text-sm text-green-700 dark:text-green-300';
+            }
+            
+            if (dateSpanMain && testDate) {
+                console.log('メイン日付を更新:', testDate);
+                dateSpanMain.textContent = `(${testDate})`;
             }
             
             // セッションストレージに保存（インストール時）
@@ -433,6 +467,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // メインステータス更新
         updateInstallMainStatus();
     }
+    
+    // グローバルスコープに関数を公開
+    window.updateTestStatus = updateTestStatus;
+    window.showNotification = showNotification;
 
     // メインステータス更新関数
     function updateInstallMainStatus() {
@@ -556,93 +594,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // ページ読み込み時にも一度チェック
     checkLocalStorageForMailTest();
 
-    // テスト状態を即座に更新する関数
-    function updateTestStatus(testType, success, testDate) {
-        console.log('=== updateTestStatus デバッグ ===');
-        console.log('testType:', testType);
-        console.log('success:', success);
-        console.log('testDate:', testDate);
-        
-        let iconId, textId, dateId;
-        
-        switch(testType) {
-            case 'connection':
-                iconId = 'connection-test-icon';
-                textId = 'connection-test-text';
-                dateId = 'connection-test-date';
-                break;
-            case 'send':
-                iconId = 'send-test-icon';
-                textId = 'send-test-text';
-                dateId = 'send-test-date';
-                break;
-            case 'receive':
-                iconId = 'receive-test-icon';
-                textId = 'receive-test-text';
-                dateId = 'receive-test-date';
-                break;
-        }
-        
-        console.log('要素ID:', { iconId, textId, dateId });
-        
-        if (success && iconId && textId && dateId) {
-            const icon = document.getElementById(iconId);
-            const text = document.getElementById(textId);
-            const dateSpan = document.getElementById(dateId);
-            
-            console.log('要素取得結果:', { 
-                icon: icon ? 'found' : 'not found', 
-                text: text ? 'found' : 'not found',
-                dateSpan: dateSpan ? 'found' : 'not found'
-            });
-            
-            if (icon) {
-                console.log('アイコン更新前のクラス:', icon.className);
-                
-                // iタグのFontAwesomeクラス更新（シンプルに）
-                icon.classList.remove('fa-circle-xmark', 'fa-times-circle', 'text-gray-400');
-                icon.classList.add('fa-circle-check', 'text-green-600');
-                
-                console.log('アイコン更新後のクラス:', icon.className);
-            }
-            
-            if (text) {
-                console.log('テキスト更新前のクラス:', text.className);
-                text.className = 'text-sm text-green-700 dark:text-green-300';
-                console.log('テキスト更新後のクラス:', text.className);
-            }
-            
-            if (dateSpan) {
-                if (testDate) {
-                    dateSpan.textContent = ` (${testDate})`;
-                } else {
-                    const now = new Date();
-                    const formattedDate = now.getFullYear() + '-' + 
-                        String(now.getMonth() + 1).padStart(2, '0') + '-' + 
-                        String(now.getDate()).padStart(2, '0') + ' ' + 
-                        String(now.getHours()).padStart(2, '0') + ':' + 
-                        String(now.getMinutes()).padStart(2, '0');
-                    dateSpan.textContent = ` (${formattedDate})`;
-                }
-            }
-            
-            // セッションストレージに保存（インストール時）
-            const isInstall = {{ $isInstall ? 'true' : 'false' }};
-            if (isInstall) {
-                const installData = JSON.parse(sessionStorage.getItem('install_data') || '{}');
-                installData[`mail_${testType}_tested`] = true;
-                installData[`mail_${testType}_test_date`] = testDate || new Date().toISOString();
-                sessionStorage.setItem('install_data', JSON.stringify(installData));
-                console.log('セッションストレージ更新:', installData);
-            }
-            
-            updateInstallMainStatus();
-            
-            if (testType === 'connection') {
-                enableMailTestButton();
-            }
-        }
-    }
     
     function enableMailTestButton() {
         const mailTestBtn = document.getElementById('test-mail-btn');
@@ -653,77 +604,39 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function updateInstallMainStatus() {
-        console.log('=== updateInstallMainStatus デバッグ開始 ===');
+        console.log('updateInstallMainStatus関数呼び出し');
         
+        const mainStatusDiv = document.querySelector('.mt-6.p-4.border.rounded-lg');
+        const mainIcon = document.getElementById('status-icon');
+        const mainTitle = document.getElementById('status-title');
+        
+        if (!mainStatusDiv || !mainIcon || !mainTitle) {
+            console.log('メインステータス要素が見つからない');
+            return;
+        }
+        
+        // 各テストの完了状態をチェック
         const connectionIcon = document.getElementById('connection-test-icon');
         const sendIcon = document.getElementById('send-test-icon');
         const receiveIcon = document.getElementById('receive-test-icon');
         
-        console.log('アイコン要素の存在確認:', {
-            connectionIcon: connectionIcon ? 'found' : 'NOT FOUND',
-            sendIcon: sendIcon ? 'found' : 'NOT FOUND',
-            receiveIcon: receiveIcon ? 'found' : 'NOT FOUND'
-        });
-        
-        if (!connectionIcon || !sendIcon || !receiveIcon) {
-            console.log('アイコン要素が見つからないため処理を終了');
-            return;
-        }
-        
-        const connectionComplete = connectionIcon.classList.contains('text-green-600');
-        const sendComplete = sendIcon.classList.contains('text-green-600');
-        const receiveComplete = receiveIcon.classList.contains('text-green-600');
-        
-        console.log('各テストの完了状態:', {
-            connection: connectionComplete,
-            send: sendComplete,
-            receive: receiveComplete
-        });
+        const connectionComplete = connectionIcon && connectionIcon.classList.contains('text-green-600');
+        const sendComplete = sendIcon && sendIcon.classList.contains('text-green-600');
+        const receiveComplete = receiveIcon && receiveIcon.classList.contains('text-green-600');
         
         const allTestsComplete = connectionComplete && sendComplete && receiveComplete;
-        console.log('全テスト完了:', allTestsComplete);
         
-        const mainStatusDiv = document.getElementById('mail-test-status');
-        const mainIcon = document.getElementById('status-icon');
-        const mainTitle = document.getElementById('status-title');
-        
-        console.log('メインステータス要素の存在確認:', {
-            mainStatusDiv: mainStatusDiv ? 'found' : 'NOT FOUND',
-            mainIcon: mainIcon ? 'found' : 'NOT FOUND',
-            mainTitle: mainTitle ? 'found' : 'NOT FOUND'
-        });
-        
-        if (mainStatusDiv && mainIcon && mainTitle) {
-            console.log('現在のメインアイコンクラス:', mainIcon.className);
-            
-            if (allTestsComplete) {
-                console.log('全テスト完了 - 緑のチェックマークに変更');
-                mainStatusDiv.className = 'mt-6 p-4 border rounded-lg bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
-                
-                // メインアイコンをFontAwesomeクラス更新で変更
-                console.log('メインアイコンを緑のチェックマークに変更');
-                mainIcon.className = 'fas fa-check-circle text-green-400 text-xl';
-                
-                mainTitle.className = 'text-sm font-medium text-green-800 dark:text-green-200';
-                mainTitle.textContent = '{{ __('mail.test.three_stage_test_complete') }}';
-            } else {
-                console.log('テスト未完了 - 黄色の警告マークに変更');
-                mainStatusDiv.className = 'mt-6 p-4 border rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800';
-                
-                // メインアイコンをFontAwesomeクラス更新で変更
-                console.log('メインアイコンを黄色の警告マークに変更');
-                mainIcon.className = 'fas fa-exclamation-triangle text-yellow-400 text-xl';
-                
-                mainTitle.className = 'text-sm font-medium text-yellow-800 dark:text-yellow-200';
-                mainTitle.textContent = '{{ __('mail.test.three_stage_test_incomplete') }}';
-            }
-            
-            console.log('変更後のメインアイコンクラス:', mainIcon.className);
+        if (allTestsComplete) {
+            mainStatusDiv.className = 'mt-6 p-4 border rounded-lg bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
+            mainIcon.className = 'fas fa-check-circle text-green-400 text-xl';
+            mainTitle.className = 'text-sm font-medium text-green-800 dark:text-green-200';
+            mainTitle.textContent = '{{ __('mail.test.three_stage_test_complete') }}';
         } else {
-            console.log('メインステータス要素が見つからないため処理をスキップ');
+            mainStatusDiv.className = 'mt-6 p-4 border rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800';
+            mainIcon.className = 'fas fa-exclamation-triangle text-yellow-400 text-xl';
+            mainTitle.className = 'text-sm font-medium text-yellow-800 dark:text-yellow-200';
+            mainTitle.textContent = '{{ __('mail.test.three_stage_test_incomplete') }}';
         }
-        
-        console.log('=== updateInstallMainStatus デバッグ終了 ===');
     }
     
     function showNotification(type, message) {
