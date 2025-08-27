@@ -20,8 +20,7 @@
  */
 
 return [
-    // 管理画面のURL
-    'admin_url' => env('ADMIN_URL', 'admin'),
+
     // 管理画面へのアクセスを許可するIPアドレス
     'allowed_admin_ips' => [
         //'127.0.0.1', // 例: ローカルIP

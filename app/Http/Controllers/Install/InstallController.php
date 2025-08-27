@@ -806,12 +806,22 @@ class InstallController extends Controller
                 ->where('name', 'site_name')
                 ->update(['value' => $data['site_name'], 'updated_at' => now()]);
             Log::info('initializeDatabase - site_name更新: ' . $data['site_name']);
+        }
 
-            // 管理画面のURLを設定
+        // `base_settings` に管理画面URLを追加 (存在しない場合のみ)
+        if (!DB::connection('mysql')->table('base_settings')->where('name', 'admin_url')->exists()) {
+            DB::connection('mysql')->table('base_settings')->insert([
+                'name' => 'admin_url',
+                'value' => $data['admin_url'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            Log::info('initializeDatabase - admin_url新規作成: ' . $data['admin_url']);
+        } else {
+            // 既存の管理画面URLを更新
             DB::connection('mysql')->table('base_settings')
                 ->where('name', 'admin_url')
                 ->update(['value' => $data['admin_url'], 'updated_at' => now()]);
-
             Log::info('initializeDatabase - admin_url更新: ' . $data['admin_url']);
         }
 

@@ -35,148 +35,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @csrf
         @method('POST')
 
-        <!-- 基本セキュリティ設定 -->
-        <div>
-            <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.security.basic_security_settings') }}</h2>
-            
-            <div>
-                @include('components::form.label', [
-                    'for' => 'admin_url',
-                    'text' => __('admin.settings.security.admin_url'),
-                ])
-                @include('components::form.text', [
-                    'id' => 'admin_url',
-                    'name' => 'admin_url',
-                    'value' => old('admin_url', $settings['admin_url']),
-                    'required' => true,
-                ])
-            </div>
-
-            <div class="mt-4">
-                @include('components::form.checkbox', [
-                    'label' => __('admin.settings.security.force_ssl'),
-                    'id' => 'force_ssl',
-                    'name' => 'force_ssl',
-                    'value' => old('force_ssl', $settings['force_ssl']),
-                ])
-            </div>
-        </div>
-
-        <!-- IPアクセス制御設定 -->
-        <div class="mt-8 border-t pt-6">
-            <h2 class="{{ config('admin.appearance_class.heading.h2') }}">{{ __('admin.settings.security.ip_access_control') }}</h2>
-            <h3>{{ __('admin.settings.security.admin_ip_access_control') }}</h3>
-            <div>
-                <div class="my-4">
-                    <div class="my-4">
-                        @include('components::form.checkbox', [
-                            'label' => __('admin.settings.security.enable_allowed_admin_ips'),
-                            'id' => 'enable_allowed_admin_ips',
-                            'name' => 'enable_allowed_admin_ips',
-                            'value' => old('enable_allowed_admin_ips', $settings['enable_allowed_admin_ips']),
-                            'xModel' => 'enableAllowedIPs' // Alpine.jsに状態をバインド
-                            
-                        ])
-                    </div>
-            
-                    @include('components::form.textarea', [
-                        'id' => 'allowed_admin_ips',
-                        'name' => 'allowed_admin_ips',
-                        'value' => $settings['allowed_admin_ips'],
-                        'rows' => 10,
-                        'placeholder' => '',
-                        'class' => '',
-                        'readonly' => !$settings['enable_allowed_admin_ips'], // 初期状態
-                        'xBindReadonly' => '!enableAllowedIPs', // Alpine.jsでreadonlyを動的に管理
-                        'xBindClass' => "{ 'bg-gray-100': !enableAllowedIPs, 'bg-white': enableAllowedIPs }", //readonlyの有無でクラスを切り替え
-                    ])
-                </div>
-
-                <div class="my-4">
-                    <div class="my-4">
-                        @include('components::form.checkbox', [
-                            'label' => __('admin.settings.security.enable_blocked_admin_ips'),
-                            'id' => 'enable_blocked_admin_ips',
-                            'name' => 'enable_blocked_admin_ips',
-                            'value' => old('enable_blocked_admin_ips', $settings['enable_blocked_admin_ips']),
-                            'xModel' => 'blockedAdminIps' // Alpine.jsに状態をバインド
-                        ])
-                    </div>
-
-                    @include('components::form.textarea', [
-                        'id' => 'blocked_admin_ips',
-                        'name' => 'blocked_admin_ips',
-                        'value' => $settings['blocked_admin_ips'],
-                        'rows' => 10,
-                        'placeholder' => '',
-                        'required' => false,
-                        'class' => '',
-                        'readonly' => !$settings['blocked_admin_ips'], //初期状態
-                        'xBindReadonly' => '!blockedAdminIps', // Alpine.jsでreadonlyを動的に管理
-                        'xBindClass' => "{ 'bg-gray-100': !enableAllowedIPs, 'bg-white': blockedAdminIps }", //readonlyの有無でクラスを切り替え
-                    ])
-                </div>
-            </div>
-
-            <h3>{{ __('admin.settings.security.front_ip_access_control') }}</h3>
-            <div>
-                <div class="my-4">
-                    <div class="my-4">
-                        @include('components::form.checkbox', [
-                            'label' => __('admin.settings.security.enable_allowed_front_ips'),
-                            'id' => 'enable_allowed_front_ips',
-                            'name' => 'enable_allowed_front_ips',
-                            'value' => old('enable_allowed_front_ips', $settings['enable_allowed_front_ips']),
-                            'xModel' => 'enableAllowedFrontIPs' // Alpine.jsに状態をバインド
-                        ])
-                    </div>
-                
-
-                    @include('components::form.textarea', [
-                        'id' => 'allowed_front_ips',
-                        'name' => 'allowed_front_ips',
-                        'value' => $settings['allowed_front_ips'],
-                        'rows' => 10,
-                        'placeholder' => '',
-                        'class' => '',
-                        'readonly' => !$settings['enable_allowed_front_ips'], // 初期状態
-                        'xBindReadonly' => '!enableAllowedFrontIPs', // Alpine.jsでreadonlyを動的に管理
-                        'xBindClass' => "{ 'bg-gray-100': !enableAllowedFrontIPs, 'bg-white': enableAllowedFrontIPs }", //readonlyの有無でクラスを切り替え
-                    ])
-                </div>
-
-                <div class="my-4">
-                    <div class="my-4">
-                        @include('components::form.checkbox', [
-                            'label' => __('admin.settings.security.enable_blocked_front_ips'),
-                            'id' => 'enable_blocked_front_ips',
-                            'name' => 'enable_blocked_front_ips',
-                            'value' => old('enable_blocked_front_ips', $settings['enable_blocked_front_ips']),
-                            'xModel' => 'enableBlockedFrontIps' // Alpine.jsに状態をバインド
-                        ])
-                    </div>
-
-                    @include('components::form.textarea', [
-                        'id' => 'blocked_front_ips',
-                        'name' => 'blocked_front_ips',
-                        'value' => $settings['blocked_front_ips'],
-                        'rows' => 10,
-                        'placeholder' => '',
-                        'required' => false,
-                        'class' => '',
-                        'readonly' => !$settings['enable_blocked_front_ips'], //初期状態
-                        'xBindReadonly' => '!enableBlockedFrontIps', // Alpine.jsでreadonlyを動的に管理
-                        'xBindClass' => "{ 'bg-gray-100': !enableBlockedFrontIps, 'bg-white': enableBlockedFrontIps }", //readonlyの有無でクラスを切り替え
-                    ])
-                </div>
-            </div>
-        </div>
-    
-
+        
         <!-- システムエラー通知設定 -->
         <div class="my-6 border-t pt-6">
             <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.security.error_notification_settings') }}</h2>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            <p class="text-sm mb-4">
                 {{ __('admin.settings.security.error_notification_settings_description') }}
             </p>
 
@@ -198,7 +61,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     ],
                     'value' => $settings['notification_enabled'] ?? 0,
                 ])
-                <p class="text-sm text-gray-500 mt-1">{{ __('admin.settings.security.notification_enabled_help') }}</p>
+                <p class="text-sm mt-1">{{ __('admin.settings.security.notification_enabled_help') }}</p>
             </div>
 
             <!-- 通知するログレベル -->
@@ -229,7 +92,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         'flexDirection' => 'col'
                     ])
                 </div>
-                <p class="text-sm text-gray-500 mt-3">{{ __('admin.settings.security.notification_log_levels_help') }}</p>
+                <p class="text-sm mt-3">{{ __('admin.settings.security.notification_log_levels_help') }}</p>
             </div>
         </div>
 
@@ -362,6 +225,116 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             ])
                         @endforeach
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- IPアクセス制御設定 -->
+        <div class="mt-8 border-t pt-6">
+            <h2 class="{{ config('admin.appearance_class.heading.h2') }}">{{ __('admin.settings.security.ip_access_control') }}</h2>
+            <h3>{{ __('admin.settings.security.admin_ip_access_control') }}</h3>
+            <div>
+                <div class="my-4">
+                    <div class="my-4">
+                        @include('components::form.checkbox', [
+                            'label' => __('admin.settings.security.enable_allowed_admin_ips'),
+                            'id' => 'enable_allowed_admin_ips',
+                            'name' => 'enable_allowed_admin_ips',
+                            'value' => old('enable_allowed_admin_ips', $settings['enable_allowed_admin_ips']),
+                            'xModel' => 'enableAllowedIPs' // Alpine.jsに状態をバインド
+                            
+                        ])
+                    </div>
+            
+                    @include('components::form.textarea', [
+                        'id' => 'allowed_admin_ips',
+                        'name' => 'allowed_admin_ips',
+                        'value' => $settings['allowed_admin_ips'],
+                        'rows' => 10,
+                        'placeholder' => '',
+                        'class' => '',
+                        'readonly' => !$settings['enable_allowed_admin_ips'], // 初期状態
+                        'xBindReadonly' => '!enableAllowedIPs', // Alpine.jsでreadonlyを動的に管理
+                        'xBindClass' => "{ 'bg-gray-100': !enableAllowedIPs, 'bg-white': enableAllowedIPs }", //readonlyの有無でクラスを切り替え
+                    ])
+                </div>
+
+                <div class="my-4">
+                    <div class="my-4">
+                        @include('components::form.checkbox', [
+                            'label' => __('admin.settings.security.enable_blocked_admin_ips'),
+                            'id' => 'enable_blocked_admin_ips',
+                            'name' => 'enable_blocked_admin_ips',
+                            'value' => old('enable_blocked_admin_ips', $settings['enable_blocked_admin_ips']),
+                            'xModel' => 'blockedAdminIps' // Alpine.jsに状態をバインド
+                        ])
+                    </div>
+
+                    @include('components::form.textarea', [
+                        'id' => 'blocked_admin_ips',
+                        'name' => 'blocked_admin_ips',
+                        'value' => $settings['blocked_admin_ips'],
+                        'rows' => 10,
+                        'placeholder' => '',
+                        'required' => false,
+                        'class' => '',
+                        'readonly' => !$settings['blocked_admin_ips'], //初期状態
+                        'xBindReadonly' => '!blockedAdminIps', // Alpine.jsでreadonlyを動的に管理
+                        'xBindClass' => "{ 'bg-gray-100': !enableAllowedIPs, 'bg-white': blockedAdminIps }", //readonlyの有無でクラスを切り替え
+                    ])
+                </div>
+            </div>
+
+            <h3>{{ __('admin.settings.security.front_ip_access_control') }}</h3>
+            <div>
+                <div class="my-4">
+                    <div class="my-4">
+                        @include('components::form.checkbox', [
+                            'label' => __('admin.settings.security.enable_allowed_front_ips'),
+                            'id' => 'enable_allowed_front_ips',
+                            'name' => 'enable_allowed_front_ips',
+                            'value' => old('enable_allowed_front_ips', $settings['enable_allowed_front_ips']),
+                            'xModel' => 'enableAllowedFrontIPs' // Alpine.jsに状態をバインド
+                        ])
+                    </div>
+                
+
+                    @include('components::form.textarea', [
+                        'id' => 'allowed_front_ips',
+                        'name' => 'allowed_front_ips',
+                        'value' => $settings['allowed_front_ips'],
+                        'rows' => 10,
+                        'placeholder' => '',
+                        'class' => '',
+                        'readonly' => !$settings['enable_allowed_front_ips'], // 初期状態
+                        'xBindReadonly' => '!enableAllowedFrontIPs', // Alpine.jsでreadonlyを動的に管理
+                        'xBindClass' => "{ 'bg-gray-100': !enableAllowedFrontIPs, 'bg-white': enableAllowedFrontIPs }", //readonlyの有無でクラスを切り替え
+                    ])
+                </div>
+
+                <div class="my-4">
+                    <div class="my-4">
+                        @include('components::form.checkbox', [
+                            'label' => __('admin.settings.security.enable_blocked_front_ips'),
+                            'id' => 'enable_blocked_front_ips',
+                            'name' => 'enable_blocked_front_ips',
+                            'value' => old('enable_blocked_front_ips', $settings['enable_blocked_front_ips']),
+                            'xModel' => 'enableBlockedFrontIps' // Alpine.jsに状態をバインド
+                        ])
+                    </div>
+
+                    @include('components::form.textarea', [
+                        'id' => 'blocked_front_ips',
+                        'name' => 'blocked_front_ips',
+                        'value' => $settings['blocked_front_ips'],
+                        'rows' => 10,
+                        'placeholder' => '',
+                        'required' => false,
+                        'class' => '',
+                        'readonly' => !$settings['enable_blocked_front_ips'], //初期状態
+                        'xBindReadonly' => '!enableBlockedFrontIps', // Alpine.jsでreadonlyを動的に管理
+                        'xBindClass' => "{ 'bg-gray-100': !enableBlockedFrontIps, 'bg-white': enableBlockedFrontIps }", //readonlyの有無でクラスを切り替え
+                    ])
                 </div>
             </div>
         </div>

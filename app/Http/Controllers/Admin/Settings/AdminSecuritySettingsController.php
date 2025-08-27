@@ -46,7 +46,6 @@ class AdminSecuritySettingsController extends AdminLoggedInController
 
 
         $settings = [
-            'admin_url' => SecuritySetting::get('admin_url', 'member'),
             'enable_allowed_admin_ips' => SecuritySetting::get('enable_allowed_admin_ips', false),
             'allowed_admin_ips' => SecuritySetting::get('allowed_admin_ips', ''),
             'enable_blocked_admin_ips' => SecuritySetting::get('enable_blocked_admin_ips', false),
@@ -55,7 +54,6 @@ class AdminSecuritySettingsController extends AdminLoggedInController
             'allowed_front_ips' => SecuritySetting::get('allowed_front_ips', ''),
             'enable_blocked_front_ips' => SecuritySetting::get('enable_blocked_front_ips', false),
             'blocked_front_ips' => SecuritySetting::get('blocked_front_ips', ''),
-            'force_ssl' => SecuritySetting::get('force_ssl', false),
             // reCAPTCHA settings
             'captcha_enabled' => SecuritySetting::get('captcha_enabled', false),
             'captcha_driver' => SecuritySetting::get('captcha_driver', 'google'),
@@ -83,11 +81,6 @@ class AdminSecuritySettingsController extends AdminLoggedInController
     public function update(AdminSettngsSecurityUpdateRequest $request)
     {
 
-
-        // 現在の管理画面URLを取得
-        $currentAdminUrl = SecuritySetting::get('admin_url', config('security.admin_url'));
-
-        SecuritySetting::set('admin_url', $request->input('admin_url'));
         SecuritySetting::set('enable_allowed_admin_ips', $request->boolean('enable_allowed_admin_ips'));
         SecuritySetting::set('allowed_admin_ips', $request->input('allowed_admin_ips'));
         SecuritySetting::set('enable_blocked_admin_ips', $request->boolean('enable_blocked_admin_ips'));
@@ -96,7 +89,6 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         SecuritySetting::set('allowed_front_ips', $request->input('allowed_front_ips'));
         SecuritySetting::set('enable_blocked_front_ips', $request->boolean('enable_blocked_front_ips'));
         SecuritySetting::set('blocked_front_ips', $request->input('blocked_front_ips'));
-        SecuritySetting::set('force_ssl', $request->boolean('force_ssl'));
         
         // Save reCAPTCHA settings
         SecuritySetting::set('captcha_enabled', $request->boolean('captcha_enabled'));
@@ -133,40 +125,7 @@ class AdminSecuritySettingsController extends AdminLoggedInController
             $formSetting->save();
         }
 
-        // 新しい管理画面URLを取得
-        $newAdminUrl = $request->input('admin_url', config('security.admin_url'));
-
-        // SSLを強制しているかどうかを確認
-        $forceSsl = $request->boolean('force_ssl');
-
-        // 管理画面のURLが変更された場合
-        if ($newAdminUrl !== $currentAdminUrl) {
-            // ユーザーをログアウト
-            Auth::guard('admin')->logout();
-            Session::flush();
-
-            $newAdminLoginUrl = url($newAdminUrl . '/login');
-
-            //SSLを強制している場合、HTTPSにリダイレクト
-            if ($forceSsl) {
-                $newAdminLoginUrl = str_replace('http://', 'https://', $newAdminLoginUrl);
-            }
-
-            // 新しいURLのログイン画面にリダイレクト
-            return redirect($newAdminLoginUrl)
-                ->with('success', '管理画面URLが変更されました。新しいURLでログインしてください。');
-        }
-
-        //通常のリダイレクト。セキュリティ設定のURLを取得
-        $securityUrl = url($newAdminUrl . '/settings/security');
-
-        //SSLを強制している場合、HTTPSに変換
-        if ($forceSsl) {
-            $securityUrl = str_replace('http://', 'https://', $securityUrl);
-        }
-
-        //リダイレクト
-        return redirect($securityUrl)
-            ->with('success', 'セキュリティ設定が更新されました。');
+        return redirect()->route('admin.settings.security')
+            ->with('success', __('admin.settings.security.controller_messages.settings_updated'));
     }
 }

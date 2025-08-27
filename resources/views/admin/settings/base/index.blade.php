@@ -71,6 +71,32 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 'value' => $settings['timezone'],
             ])
         </div>
+
+        <!-- 管理画面URL -->
+        <div class="mt-4">
+            @include('components::form.label', [
+                'for' => 'admin_url',
+                'text' => __('admin.settings.base.admin_url'),
+            ])
+            @include('components::form.text', [
+                'id' => 'admin_url',
+                'name' => 'admin_url',
+                'value' => old('admin_url', $settings['admin_url']),
+                'required' => true,
+            ])
+            <p class="text-sm mt-1">{!! __('admin.settings.base.admin_url_help') !!}</p>
+        </div>
+
+        <!-- SSL強制設定 -->
+        <div class="mt-4">
+            @include('components::form.checkbox', [
+                'label' => __('admin.settings.base.force_ssl'),
+                'id' => 'force_ssl',
+                'name' => 'force_ssl',
+                'value' => old('force_ssl', $settings['force_ssl']),
+            ])
+            <p class="text-sm mt-1">{{ __('admin.settings.base.force_ssl_help') }}</p>
+        </div>
     </div>
 
     <!-- メンテナンスモード設定 -->
@@ -106,7 +132,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'value' => old('maintenance_message', $settings['maintenance_message']),
             'rows' => 3,
         ])
-        <p class="text-sm text-gray-500 mt-1">{{ __('admin.settings.base.maintenance_message_help') }}</p>
+        <p class="text-sm mt-1">{{ __('admin.settings.base.maintenance_message_help') }}</p>
     </div>
 
     <!-- メールサーバー設定 -->
