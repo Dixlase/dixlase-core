@@ -25,6 +25,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Admin\AdminController;
 use App\Traits\AdminLoggedInTrait;
 
+
+
 class AdminLoggedInController extends AdminController
 {
 

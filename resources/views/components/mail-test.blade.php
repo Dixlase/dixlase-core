@@ -105,19 +105,19 @@
 <!-- メールテスト機能 -->
 <div class="mt-6 p-4 {{ $isInstall ? 'bg-gray-50 border border-gray-200' : 'bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700' }} rounded-lg">
     <h3 class="text-lg font-medium {{ $isInstall ? 'text-gray-900' : 'text-gray-900 dark:text-gray-100' }} mb-2">
-        {{ is_array(__($context . '.mail_test')) ? __($context . '.mail_test.title') : __($context . '.mail_test') }}
+        {{ __('mail.test.title') }}
     </h3>
     <p class="text-sm {{ $isInstall ? 'text-gray-600' : 'text-gray-600 dark:text-gray-400' }} mb-4">
-        {{ __($context . '.mail_test_description') }}<br>
+        {{ __('mail.settings.mail_test_description') }}<br>
         @if($isInstall)
-            {{ __($context . '.mail_test_description_admin_email') }}
+            {{ __('mail.test.description_admin_email') }}
         @else
-            {{ __('admin.settings.base.mail_test_description_2') }}
+            {{ __('mail.settings.mail_test_description_2') }}
         @endif
     </p>
     <div class="flex space-x-3">
         <button type="button" id="test-connection-btn" class="bg-green-500 hover:bg-green-600 {{ $isInstall ? '' : 'dark:bg-green-600 dark:hover:bg-green-700' }} text-white font-bold py-2 px-4 rounded transition-colors duration-200">
-            {{ __($context . '.test_connection_button') }}
+            {{ __('mail.settings.test_connection_button') }}
         </button>
         <button 
             type="button"
@@ -132,7 +132,7 @@
             "
             @if(($isInstall && !$testStatus['connection_tested']) || (!$isInstall && $showStatus && !$testStatus['connection_tested'])) disabled @endif
         >
-            {{ __($context . '.test_mail_button') }}
+            {{ __('mail.settings.test_mail_button') }}
         </button>
     </div>
     <div id="test-result" class="hidden mt-4"></div>
@@ -283,7 +283,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // ボタンを再有効化
             if (btn) {
                 btn.disabled = false;
-                btn.textContent = '{{ __("install.test_connection_button") }}';
+                btn.textContent = '{{ __("mail.settings.test_connection_button") }}';
             }
         });
     }
@@ -368,7 +368,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // ボタンを再有効化
             if (btn) {
                 btn.disabled = false;
-                btn.textContent = '{{ __("install.test_mail_button") }}';
+                btn.textContent = '{{ __("mail.settings.test_mail_button") }}';
             }
         });
     }
@@ -531,7 +531,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     @if($context === 'admin')
                     // 管理画面用：セッションに受信テスト完了を記録
-                    fetch('{{ route('admin.settings.base.index') }}', {
+                    fetch('{{ route('admin.settings.base') }}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

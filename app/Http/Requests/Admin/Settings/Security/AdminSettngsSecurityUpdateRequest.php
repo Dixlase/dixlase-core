@@ -45,7 +45,6 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
             'allowed_front_ips' => $this->input('allowed_front_ips') === '' ? null : $this->input('allowed_front_ips'),
             'enable_blocked_front_ips' => filter_var($this->input('enable_blocked_front_ips'), FILTER_VALIDATE_BOOLEAN),
             'blocked_front_ips' => $this->input('blocked_front_ips') === '' ? null : $this->input('blocked_front_ips'),
-            'force_ssl' => filter_var($this->input('force_ssl'), FILTER_VALIDATE_BOOLEAN),
             // reCAPTCHA settings
             'captcha_enabled' => filter_var($this->input('captcha_enabled'), FILTER_VALIDATE_BOOLEAN),
             'captcha_contact_form' => filter_var($this->input('captcha_contact_form'), FILTER_VALIDATE_BOOLEAN),
@@ -67,7 +66,6 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
     {
         return [
 
-            'admin_url' => 'required|string|max:255',
             'enable_allowed_admin_ips' => 'required|boolean',
             'allowed_admin_ips' => 'nullable|string|regex:/^(\d{1,3}\.){3}\d{1,3}(,\s*(\d{1,3}\.){3}\d{1,3})*$/',
             'enable_blocked_admin_ips' => 'required|boolean',
@@ -76,7 +74,6 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
             'allowed_front_ips' => 'nullable|string|regex:/^(\d{1,3}\.){3}\d{1,3}(,\s*(\d{1,3}\.){3}\d{1,3})*$/',
             'enable_blocked_front_ips' => 'required|boolean',
             'blocked_front_ips' => 'nullable|string|regex:/^(\d{1,3}\.){3}\d{1,3}(,\s*(\d{1,3}\.){3}\d{1,3})*$/',
-            'force_ssl' => 'required|boolean',
             // reCAPTCHA validation rules
             'captcha_enabled' => 'required|boolean',
             'captcha_driver' => 'nullable|string|in:google,turnstile',

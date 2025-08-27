@@ -26,7 +26,7 @@ namespace App\Helpers;
 use App\Enums\MemberRole;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
-use App\Models\SecuritySetting;
+use App\Models\BaseSetting;
 use App\Models\MemberRolePermission;
 
 
@@ -35,10 +35,10 @@ class AdminHelper
 
     public static function getAdminUrl()
     {
-        if (Schema::hasTable('security_settings')) {
-            $adminUrl = SecuritySetting::get('admin_url', config('security.admin_url'));
+        if (Schema::hasTable('base_settings')) {
+            $adminUrl = BaseSetting::getValue('admin_url', config('admin.admin_url'));
         } else {
-            $adminUrl = config('security.admin_url');
+            $adminUrl = config('admin.admin_url');
         }
         return $adminUrl;
     }

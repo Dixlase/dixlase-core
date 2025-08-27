@@ -22,18 +22,24 @@
 
 namespace App\Http\Controllers\Admin\Settings;
 
-use App\Http\Controllers\Admin\AdminLoggedInController;
-use App\Models\BaseSetting;
-use App\Http\Requests\Admin\Settings\AdminBaseSettingsRequest;
+use App\Helpers\AdminHelper;
 use App\Helpers\EnvHelper;
 use App\Helpers\TimezoneHelper;
-use App\Facades\BaseSettings;
+use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\AdminLoggedInController;
+use App\Http\Requests\Admin\Settings\AdminBaseSettingsRequest;
+use App\Models\BaseSetting;
 use App\Traits\MailTestTrait;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Facades\BaseSettings;
 use DateTime;
 use DateTimeZone;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Config;
+
 
 class AdminBaseSettingsController extends AdminLoggedInController
 {
@@ -87,13 +93,30 @@ class AdminBaseSettingsController extends AdminLoggedInController
             'maintenance_message' => BaseSetting::getValue('maintenance_message', '現在メンテナンス中です。しばらくお待ちください。'),
             'notification_enabled' => (bool) BaseSetting::getValue('notification_enabled', false),
             'notification_email' => BaseSetting::getValue('notification_email', ''),
+            'admin_url' => BaseSetting::getValue('admin_url', config('admin.admin_url')),
+            'force_ssl' => (bool) BaseSetting::getValue('force_ssl', false),
         ];
+
+        // メールテスト状態を取得（DB優先、セッションは一時的な状態のみ）
+        $sessionTestResults = session('mail_test_results', []);
+        
+        $mailConnectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? BaseSetting::getValue('mail_connection_tested', false));
+        $mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? BaseSetting::getValue('mail_send_tested', false));
+        $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? BaseSetting::getValue('mail_receive_tested', false));
+        
+        $mailConnectionTestDate = $sessionTestResults['mail_connection_test_date'] ?? BaseSetting::getValue('mail_connection_test_date', '');
+        $mailSendTestDate = $sessionTestResults['mail_send_test_date'] ?? BaseSetting::getValue('mail_send_test_date', '');
+        $mailReceiveTestDate = $sessionTestResults['mail_receive_test_date'] ?? BaseSetting::getValue('mail_receive_test_date', '');
 
         $timezones = TimezoneHelper::getTimezonesWithUtcOffset();
 
         $this->viewParams['settings'] = $settings;
         $this->viewParams['timezones'] = $timezones;
-        $this->viewParams['data'] = $data;
+        $this->viewParams['mailConnectionTested'] = $mailConnectionTested;
+        $this->viewParams['mailSendTested'] = $mailSendTested;
+        $this->viewParams['mailReceiveTested'] = $mailReceiveTested;
+        $this->viewParams['mailConnectionTestDate'] = $mailConnectionTestDate;
+        $this->viewParams['mailSendTestDate'] = $mailSendTestDate;
         $this->viewParams['mailReceiveTestDate'] = $mailReceiveTestDate;
         $this->viewParams['locales'] = collect(config('admin.locale.available', []))->mapWithKeys(function ($locale, $key) {
             return [$key => $locale['name']];
@@ -175,7 +198,18 @@ class AdminBaseSettingsController extends AdminLoggedInController
             }
         }
 
-        // DBに保存するもの（メンテナンスメッセージのみ）
+        // DBに保存するもの（メンテナンスメッセージ、admin_url、force_sslなど）
+        $settings = $request->only([
+            'maintenance_message',
+            'notification_enabled',
+            'notification_email',
+            'admin_url',
+            'force_ssl',
+        ]);
+        
+        // チェックボックスの場合、未チェック時は値が送信されないため、デフォルト値を設定
+        $settings['force_ssl'] = $settings['force_ssl'] ?? 0;
+        
         BaseSetting::setMany($settings);
         // .env に保存するもの（メンテナンスモードのON/OFFも含む）
         EnvHelper::update($envData);
@@ -206,7 +240,37 @@ class AdminBaseSettingsController extends AdminLoggedInController
             }
         }
 
-        return redirect()->route('admin.settings.base')->with('success', __('admin.settings.base.controller_messages.settings_updated'));
+        // 管理画面URLが変更された場合の特別な処理
+        $currentAdminUrl = AdminHelper::getAdminUrl();
+        $newAdminUrl = $settings['admin_url'];
+        $forceSsl = (bool) $settings['force_ssl'];
+
+        if ($newAdminUrl !== $currentAdminUrl) {
+            // ユーザーをログアウト
+            Auth::guard('admin')->logout();
+            Session::flush();
+
+            $newAdminLoginUrl = url($newAdminUrl . '/login');
+
+            // SSL強制の場合、HTTPSにリダイレクト
+            if ($forceSsl) {
+                $newAdminLoginUrl = str_replace('http://', 'https://', $newAdminLoginUrl);
+            }
+
+            // 新しいURLのログイン画面にリダイレクト
+            return redirect($newAdminLoginUrl)
+                ->with('success', __('admin.settings.base.controller_messages.admin_url_changed'));
+        }
+
+        // 通常のリダイレクト
+        $baseUrl = url($newAdminUrl . '/settings/base');
+
+        // SSL強制の場合、HTTPSに変換
+        if ($forceSsl) {
+            $baseUrl = str_replace('http://', 'https://', $baseUrl);
+        }
+
+        return redirect($baseUrl)->with('success', __('admin.settings.base.controller_messages.settings_updated'));
     }
 
     /**
@@ -286,6 +350,7 @@ class AdminBaseSettingsController extends AdminLoggedInController
     {
         return view('admin::settings.base.mail-verification-success');
     }
+
 
     private function getTimezonesWithUtcOffset(): array
     {

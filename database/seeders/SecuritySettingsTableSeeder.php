@@ -36,88 +36,88 @@ class SecuritySettingsTableSeeder extends Seeder
     {
         // System error notification settings
         SecuritySetting::updateOrCreate(
-            ['key' => 'notification_enabled'],
+            ['name' => 'notification_enabled'],
             ['value' => '1']
         );
 
         SecuritySetting::updateOrCreate(
-            ['key' => 'notification_log_levels'],
+            ['name' => 'notification_log_levels'],
             ['value' => implode(',', LogLevel::getDefaultNotificationLevels())]
         );
 
         // reCAPTCHA settings
         SecuritySetting::updateOrCreate(
-            ['key' => 'captcha_enabled'],
+            ['name' => 'captcha_enabled'],
             ['value' => '0']
         );
 
         SecuritySetting::updateOrCreate(
-            ['key' => 'captcha_driver'],
+            ['name' => 'captcha_driver'],
             ['value' => 'google']
         );
 
         SecuritySetting::updateOrCreate(
-            ['key' => 'captcha_google_site_key'],
+            ['name' => 'captcha_google_site_key'],
             ['value' => '']
         );
 
         SecuritySetting::updateOrCreate(
-            ['key' => 'captcha_google_secret_key'],
+            ['name' => 'captcha_google_secret_key'],
             ['value' => '']
         );
 
         SecuritySetting::updateOrCreate(
-            ['key' => 'captcha_google_version'],
+            ['name' => 'captcha_google_version'],
             ['value' => 'v3']
         );
 
         SecuritySetting::updateOrCreate(
-            ['key' => 'captcha_google_min_score'],
+            ['name' => 'captcha_google_min_score'],
             ['value' => '0.5']
         );
 
         // IP Restriction settings
         SecuritySetting::updateOrCreate(
-            ['key' => 'enable_allowed_admin_ips'],
+            ['name' => 'enable_allowed_admin_ips'],
             ['value' => '0']
         );
         SecuritySetting::updateOrCreate(
-            ['key' => 'allowed_admin_ips'],
+            ['name' => 'allowed_admin_ips'],
             ['value' => '']
         );
         SecuritySetting::updateOrCreate(
-            ['key' => 'enable_blocked_admin_ips'],
+            ['name' => 'enable_blocked_admin_ips'],
             ['value' => '0']
         );
         SecuritySetting::updateOrCreate(
-            ['key' => 'blocked_admin_ips'],
+            ['name' => 'blocked_admin_ips'],
             ['value' => '']
         );
         SecuritySetting::updateOrCreate(
-            ['key' => 'enable_allowed_front_ips'],
+            ['name' => 'enable_allowed_front_ips'],
             ['value' => '0']
         );
         SecuritySetting::updateOrCreate(
-            ['key' => 'allowed_front_ips'],
+            ['name' => 'allowed_front_ips'],
             ['value' => '']
         );
         SecuritySetting::updateOrCreate(
-            ['key' => 'enable_blocked_front_ips'],
+            ['name' => 'enable_blocked_front_ips'],
             ['value' => '0']
         );
         SecuritySetting::updateOrCreate(
-            ['key' => 'blocked_front_ips'],
+            ['name' => 'blocked_front_ips'],
             ['value' => '']
         );
 
         // Turnstile settings
         SecuritySetting::updateOrCreate(
-            ['key' => 'captcha_turnstile_site_key'],
+            ['name' => 'captcha_turnstile_site_key'],
             ['value' => '']
         );
 
         SecuritySetting::updateOrCreate(
-            ['key' => 'captcha_turnstile_secret_key'],
+            ['name' => 'captcha_turnstile_secret_key'],
             ['value' => '']
         );
     }

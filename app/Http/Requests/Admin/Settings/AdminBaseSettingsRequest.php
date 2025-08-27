@@ -55,8 +55,9 @@ class AdminBaseSettingsRequest extends FormRequest
             'mail_from_name' => 'nullable|string|max:255',
             'maintenance_mode' => 'required|boolean',
             'maintenance_message' => 'nullable|string',
-            'notification_enabled' => 'required|boolean',
             'notification_email' => 'nullable|email|max:255',
+            'admin_url' => 'required|string|max:255',
+            'force_ssl' => 'nullable|boolean',
         ];
     }
 

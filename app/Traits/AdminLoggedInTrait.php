@@ -24,6 +24,8 @@ namespace App\Traits;
 use Illuminate\Support\Facades\Auth;
 use App\Enums\AppearanceMode;
 
+
+
 trait AdminLoggedInTrait
 {
     protected $member;
