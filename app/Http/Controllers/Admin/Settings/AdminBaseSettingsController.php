@@ -354,7 +354,9 @@ class AdminBaseSettingsController extends AdminLoggedInController
      */
     public function mailVerificationSuccess()
     {
-        return view('admin::settings.base.mail-verification-success');
+        return view('components.mail-verification-success', [
+            'isInstall' => false
+        ]);
     }
 
 

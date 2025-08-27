@@ -123,15 +123,39 @@ Clicking this link will complete the full mail functionality test.',
         'title' => 'Mail Receipt Verification Complete',
         'heading' => 'Mail receipt verification completed',
         'description' => 'Mail functionality test completed successfully.',
+        'already_verified_heading' => 'Mail Receive Already Verified',
+        'already_verified_description' => 'This email verification has already been completed.',
         'next_steps_title' => 'Next Steps',
         'next_steps' => [
             'close_window' => 'Please close this window',
-            'save_settings' => 'Press the "Update" button on the basic settings screen to save settings',
-            'data_saved' => 'Test results will be saved and mail functionality will be enabled',
+            'save_settings' => 'Save settings to confirm test results',
+            'data_saved' => 'Data has been saved',
+        ],
+        'next_steps_install' => [
+            'close_window' => 'Please close this window',
+            'continue_install' => 'Continue with installation',
         ],
         'important_notice_title' => 'Important Notice',
-        'important_notice' => 'Test results are temporarily stored. Be sure to save settings.',
+        'important_notice' => 'Test results are temporary. Settings must be saved to confirm.',
         'close_button' => 'Close Window',
+        'completed_message' => 'Mail receive verification completed.',
+    ],
+
+    // Mail Verification Error Page
+    'verification_error' => [
+        'title' => 'Mail Verification Error',
+        'heading' => 'Mail verification error occurred',
+        'invalid_token_description' => 'This email verification link is invalid or expired.',
+        'verification_error_description' => 'An error occurred during mail verification processing.',
+        'general_error_description' => 'An unexpected error occurred.',
+        'solution_title' => 'Solution',
+        'solution_steps' => [
+            'Please close this window',
+            'Send a new test email from the base settings screen',
+            'Complete verification using the link in the new email',
+        ],
+        'close_button' => 'Close Window',
+        'error_occurred' => 'Mail verification error occurred.',
     ],
 
     // Controller Messages

@@ -498,16 +498,61 @@ trait MailTestTrait
             // コンテキストに応じてトークンを検証
             if ($context === 'install') {
                 $storedToken = session('install_mail_verification_token');
+                $installData = session('install_data', []);
+                $alreadyVerified = isset($installData['mail_receive_tested']) && $installData['mail_receive_tested'] == 1;
+                \Log::info('インストール時の確認', [
+                    'stored_token' => $storedToken,
+                    'install_data' => $installData,
+                    'already_verified' => $alreadyVerified
+                ]);
             } else {
                 $storedToken = BaseSetting::getValue('mail_verification_token');
+                $testResults = session('mail_test_results', []);
+                $dbMailReceiveTested = BaseSetting::getValue('mail_receive_tested');
+                
+                // セッションまたはDBで認証済みかチェック
+                $alreadyVerified = (isset($testResults['mail_receive_tested']) && $testResults['mail_receive_tested'] == 1) 
+                                || ($dbMailReceiveTested == 1);
+                
+                \Log::info('管理画面時の確認', [
+                    'stored_token' => $storedToken,
+                    'test_results' => $testResults,
+                    'db_mail_receive_tested' => $dbMailReceiveTested,
+                    'already_verified' => $alreadyVerified
+                ]);
+            }
+            
+            // 既に認証済みの場合
+            if ($alreadyVerified && !$storedToken) {
+                \Log::info('既に認証済み - 専用画面を表示', ['context' => $context]);
+                return view('components.mail-verification-success', [
+                    'isInstall' => $context === 'install',
+                    'alreadyVerified' => true
+                ]);
             }
             
             if (!$storedToken || $storedToken !== $token) {
-                \Log::warning('無効な認証トークン', ['provided_token' => $token, 'stored_token' => $storedToken]);
-                return response()->json([
-                    'success' => false,
-                    'message' => __('admin.settings.base.controller_messages.verification_token_invalid')
-                ], 400);
+                \Log::warning('無効な認証トークン', [
+                    'provided_token' => $token, 
+                    'stored_token' => $storedToken,
+                    'already_verified' => $alreadyVerified,
+                    'context' => $context
+                ]);
+                
+                // 既に認証済みかつトークンがnullの場合のみ（正常に完了済み）
+                if ($alreadyVerified && $storedToken === null) {
+                    \Log::info('認証済みでトークンもクリア済み - 専用画面を表示');
+                    return view('components.mail-verification-success', [
+                        'isInstall' => $context === 'install',
+                        'alreadyVerified' => true
+                    ]);
+                }
+                
+                // それ以外は無効なトークンエラー
+                return view('components.mail-verification-error', [
+                    'errorType' => 'invalid_token',
+                    'errorMessage' => __('mail.controller_messages.verification_token_invalid')
+                ]);
             }
 
             // 受信確認成功時にセッションに保存
@@ -532,12 +577,10 @@ trait MailTestTrait
             
             \Log::info('メール受信確認テスト完了');
 
-            // コンテキストに応じて適切なビューを返す
-            if ($context === 'install') {
-                return view('install.mail-verification-success');
-            } else {
-                return view('admin.settings.base.mail-verification-success');
-            }
+            // 共有コンポーネントを使用
+            return view('components.mail-verification-success', [
+                'isInstall' => $context === 'install'
+            ]);
 
         } catch (\Exception $e) {
             \Log::error('メール受信確認テストエラー', [
@@ -547,10 +590,10 @@ trait MailTestTrait
                 'error_line' => $e->getLine(),
             ]);
             
-            return response()->json([
-                'success' => false,
-                'message' => __('admin.settings.base.controller_messages.verification_error', ['error' => $e->getMessage()])
-            ], 400);
+            return view('components.mail-verification-error', [
+                'errorType' => 'verification_error',
+                'errorMessage' => __('mail.controller_messages.verification_error', ['error' => $e->getMessage()])
+            ]);
         }
     }
 }
