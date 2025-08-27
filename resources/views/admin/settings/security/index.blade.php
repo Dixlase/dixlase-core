@@ -88,11 +88,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         'name' => 'notification_log_levels',
                         'options' => $logLevelOptions,
                         'values' => $settings['notification_log_levels'] ?? \App\Enums\LogLevel::getDefaultNotificationLevels(),
-                        'disabled' => !($settings['notification_enabled'] ?? false),
+                        'disabled' => !(    $settings['notification_enabled'] ?? false),
                         'flexDirection' => 'col'
                     ])
                 </div>
-                <p class="text-sm mt-3">{{ __('admin.settings.security.notification_log_levels_help') }}</p>
+                <p class="text-sm  mt-3">{{ __('admin.settings.security.notification_log_levels_help') }}</p>
             </div>
         </div>
 

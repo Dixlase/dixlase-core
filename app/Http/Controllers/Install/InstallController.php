@@ -433,6 +433,18 @@ class InstallController extends Controller
      */
     public function testMailConnection(Request $request)
     {
+        // インストール時のメール設定バリデーション
+        $request->validate([
+            'mail_mailer' => 'required|string',
+            'mail_host' => 'nullable|string',
+            'mail_port' => 'nullable|numeric',
+            'mail_username' => 'nullable|string',
+            'mail_password' => 'nullable|string',
+            'mail_encryption' => 'nullable|string',
+            'mail_from_address' => 'nullable|email|max:255',
+            'mail_from_name' => 'nullable|string|max:255',
+        ]);
+        
         return $this->performConnectionTest($request, 'install');
     }
 
@@ -441,6 +453,18 @@ class InstallController extends Controller
      */
     public function testMailSend(Request $request)
     {
+        // インストール時のメール設定バリデーション
+        $request->validate([
+            'mail_mailer' => 'required|string',
+            'mail_host' => 'nullable|string',
+            'mail_port' => 'nullable|numeric',
+            'mail_username' => 'nullable|string',
+            'mail_password' => 'nullable|string',
+            'mail_encryption' => 'nullable|string',
+            'mail_from_address' => 'nullable|email|max:255',
+            'mail_from_name' => 'nullable|string|max:255',
+        ]);
+        
         return $this->performMailTest($request, 'install');
     }
 

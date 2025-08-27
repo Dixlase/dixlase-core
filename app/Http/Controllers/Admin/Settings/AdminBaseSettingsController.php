@@ -28,6 +28,7 @@ use App\Helpers\TimezoneHelper;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\AdminBaseSettingsRequest;
+use App\Http\Requests\Admin\Settings\MailTestRequest;
 use App\Models\BaseSetting;
 use App\Traits\MailTestTrait;
 use Illuminate\Support\Facades\Auth;
@@ -280,6 +281,11 @@ class AdminBaseSettingsController extends AdminLoggedInController
     {
         session()->forget('mail_test_results');
         
+        Log::info('メールテストセッションクリア完了', [
+            'session_before' => session('mail_test_results'),
+            'session_after' => session('mail_test_results')
+        ]);
+        
         return response()->json([
             'success' => true,
             'message' => 'テストセッションがクリアされました。'
@@ -319,7 +325,7 @@ class AdminBaseSettingsController extends AdminLoggedInController
     /**
      * メールサーバー接続テスト
      */
-    public function testConnection(AdminBaseSettingsRequest $request)
+    public function testConnection(MailTestRequest $request)
     {
         // MailTestTraitの統合メソッドを使用（メソッド名の競合を避けるため別名で呼び出し）
         return $this->performConnectionTest($request, 'admin');
@@ -329,7 +335,7 @@ class AdminBaseSettingsController extends AdminLoggedInController
     /**
      * メール送信テスト
      */
-    public function testMail(AdminBaseSettingsRequest $request)
+    public function testMail(MailTestRequest $request)
     {
         return $this->performMailTest($request, 'admin');
     }

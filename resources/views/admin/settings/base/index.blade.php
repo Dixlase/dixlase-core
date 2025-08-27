@@ -165,9 +165,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- システム管理者メールアドレス -->
     <div class="mt-6 border-t pt-6">
         <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.base.admin_email_settings') }}</h2>
-        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+        <p class="text-sm mb-4">
             {{ __('admin.settings.base.admin_email_settings_description') }}
         </p>
+
+        <!-- メールサーバー設定の確認メッセージ -->
+        @if(!($mailConnectionTested && $mailSendTested && $mailReceiveTested))
+            <div class="mt-2 p-3 bg-yellow-50 dark:bg-green-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle text-yellow-400 text-sm"></i>
+                    </div>
+                    <div class="ml-2">
+                        <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                            {{ __('admin.settings.base.admin_email_mail_test_required') }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        @endif
 
         <!-- 管理者メールアドレス -->
         <div class="my-6">
@@ -182,23 +198,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 'type' => 'email',
                 'placeholder' => 'admin@example.com',
             ])
-            <p class="text-sm text-gray-500 mt-1">{{ __('admin.settings.base.admin_email_help') }}</p>
+            <p class="text-sm mt-1">{{ __('admin.settings.base.admin_email_help') }}</p>
             
-            <!-- メールサーバー設定の確認メッセージ -->
-            @if(!($mailConnectionTested && $mailSendTested && $mailReceiveTested))
-                <div class="mt-2 p-3 bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-exclamation-triangle text-yellow-400 text-sm"></i>
-                        </div>
-                        <div class="ml-2">
-                            <p class="text-sm text-yellow-800 dark:text-yellow-200">
-                                {{ __('admin.settings.base.admin_email_mail_test_required') }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            @endif
         </div>
     </div>
 </form>
@@ -296,17 +297,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         }
 
         function updateUIFromSessionState(state) {
-            if (state.connection_tested) {
-                updateTestStatus('connection', true, state.connection_test_date);
-            }
-            
-            if (state.send_tested) {
-                updateTestStatus('send', true, state.send_test_date);
-            }
-            
-            if (state.receive_tested) {
-                updateTestStatus('receive', true, state.receive_test_date);
-                showNotification('success', '{{ __('admin.settings.base.view_messages.mail_receive_test_completed') }}');
+            // Check if updateTestStatus function exists (defined in mail-test component)
+            if (typeof updateTestStatus === 'function') {
+                if (state.connection_tested) {
+                    updateTestStatus('connection', true, state.connection_test_date);
+                }
+                
+                if (state.send_tested) {
+                    updateTestStatus('send', true, state.send_test_date);
+                }
+                
+                if (state.receive_tested) {
+                    updateTestStatus('receive', true, state.receive_test_date);
+                    if (typeof showNotification === 'function') {
+                        showNotification('success', '{{ __('admin.settings.base.view_messages.mail_receive_test_completed') }}');
+                    }
+                }
+            } else {
+                console.warn('updateTestStatus function not available');
             }
         }
 
@@ -356,6 +364,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         }
         
         function resetTestStatusUI() {
+            console.log('=== resetTestStatusUI デバッグ開始 ===');
             const testTypes = ['connection', 'send', 'receive'];
             
             testTypes.forEach(testType => {
@@ -363,16 +372,45 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 const textId = `${testType}-test-text`;
                 const dateId = `${testType}-test-date`;
                 
+                // メイン要素のIDも確認
+                const iconMainId = `${testType}-test-icon-main`;
+                const textMainId = `${testType}-test-text-main`;
+                const dateMainId = `${testType}-test-date-main`;
+                
                 const icon = document.getElementById(iconId);
                 const text = document.getElementById(textId);
                 const dateSpan = document.getElementById(dateId);
                 
+                const iconMain = document.getElementById(iconMainId);
+                const textMain = document.getElementById(textMainId);
+                const dateSpanMain = document.getElementById(dateMainId);
+                
+                console.log(`${testType}テスト要素:`, {
+                    icon: icon ? 'found' : 'not found',
+                    text: text ? 'found' : 'not found',
+                    dateSpan: dateSpan ? 'found' : 'not found',
+                    iconMain: iconMain ? 'found' : 'not found',
+                    textMain: textMain ? 'found' : 'not found',
+                    dateSpanMain: dateSpanMain ? 'found' : 'not found'
+                });
+                
+                // ステータス表示要素をリセット
                 if (icon && text && dateSpan) {
+                    console.log(`${testType}ステータス表示をリセット`);
                     icon.className = 'mr-2 fas fa-times-circle text-gray-400';
                     text.className = 'text-sm text-gray-600 dark:text-gray-400';
                     dateSpan.textContent = '';
                 }
+                
+                // メイン表示要素もリセット
+                if (iconMain && textMain && dateSpanMain) {
+                    console.log(`${testType}メイン表示をリセット`);
+                    iconMain.className = 'mr-2 fas fa-times-circle text-gray-400';
+                    textMain.className = 'text-sm text-gray-600 dark:text-gray-400';
+                    dateSpanMain.textContent = '';
+                }
             });
+            console.log('=== resetTestStatusUI デバッグ終了 ===');
             
             const mainStatusDiv = document.querySelector('.mt-6.p-4.border.rounded-lg');
             const mainIcon = mainStatusDiv.querySelector('i');
