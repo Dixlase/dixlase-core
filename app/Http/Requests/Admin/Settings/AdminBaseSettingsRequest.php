@@ -71,10 +71,10 @@ class AdminBaseSettingsRequest extends FormRequest
             'app_name.required' => __('admin.settings.base.validation.app_name_required'),
             'locale.required' => __('admin.settings.base.validation.locale_required'),
             'timezone.timezone' => __('admin.settings.base.validation.timezone_invalid'),
-            'mail_mailer.required' => __('admin.settings.base.validation.mail_mailer_required'),
-            'mail_host.required' => __('admin.settings.base.validation.mail_host_required'),
-            'mail_port.required' => __('admin.settings.base.validation.mail_port_required'),
-            'mail_port.numeric' => __('admin.settings.base.validation.mail_port_numeric'),
+            'mail_mailer.required' => __('mail.validation.mail_mailer_required'),
+            'mail_host.required' => __('mail.validation.mail_host_required'),
+            'mail_port.required' => __('mail.validation.mail_port_required'),
+            'mail_port.numeric' => __('mail.validation.mail_port_numeric'),
             'maintenance_mode.required' => __('admin.settings.base.validation.maintenance_mode_required'),
         ];
     }

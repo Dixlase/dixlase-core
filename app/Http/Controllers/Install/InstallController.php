@@ -33,6 +33,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\SecuritySetting;
 use Illuminate\Support\Facades\Crypt;
 use App\Traits\MailTestTrait;
+use App\Http\Requests\MailServerRequest;
 
 /**
  * インストールコントローラー
@@ -431,40 +432,20 @@ class InstallController extends Controller
     /**
      * メールサーバー接続テスト（インストール時）
      */
-    public function testMailConnection(Request $request)
+    public function testMailConnection(MailServerRequest $request)
     {
-        // インストール時のメール設定バリデーション
-        $request->validate([
-            'mail_mailer' => 'required|string',
-            'mail_host' => 'nullable|string',
-            'mail_port' => 'nullable|numeric',
-            'mail_username' => 'nullable|string',
-            'mail_password' => 'nullable|string',
-            'mail_encryption' => 'nullable|string',
-            'mail_from_address' => 'nullable|email|max:255',
-            'mail_from_name' => 'nullable|string|max:255',
-        ]);
-        
+        $locale = $this->getCurrentLocale();
+        app()->setLocale($locale);
         return $this->performConnectionTest($request, 'install');
     }
 
     /**
      * メール送信テスト（インストール時）
      */
-    public function testMailSend(Request $request)
+    public function testMailSend(MailServerRequest $request)
     {
-        // インストール時のメール設定バリデーション
-        $request->validate([
-            'mail_mailer' => 'required|string',
-            'mail_host' => 'nullable|string',
-            'mail_port' => 'nullable|numeric',
-            'mail_username' => 'nullable|string',
-            'mail_password' => 'nullable|string',
-            'mail_encryption' => 'nullable|string',
-            'mail_from_address' => 'nullable|email|max:255',
-            'mail_from_name' => 'nullable|string|max:255',
-        ]);
-        
+        $locale = $this->getCurrentLocale();
+        app()->setLocale($locale);
         return $this->performMailTest($request, 'install');
     }
 
@@ -473,6 +454,8 @@ class InstallController extends Controller
      */
     public function verifyMail($token)
     {
+        $locale = $this->getCurrentLocale();
+        app()->setLocale($locale);
         return $this->performMailVerification($token, 'install');
     }
 

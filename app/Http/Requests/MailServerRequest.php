@@ -20,12 +20,16 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Requests\Admin\Settings;
+namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class MailTestRequest extends FormRequest
+/**
+ * 統合メールサーバー設定リクエスト
+ * 管理画面とインストーラーの両方で使用
+ */
+class MailServerRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -36,17 +40,17 @@ class MailTestRequest extends FormRequest
     }
 
     /**
-     * メールテスト用のバリデーションルール
+     * メールサーバー設定用のバリデーションルール
      */
     public function rules()
     {
         return [
-            'mail_mailer' => 'required|string',
+            'mail_mailer' => ['required', 'string', Rule::in(array_keys(trans('mail.mailers')))],
             'mail_host' => 'nullable|string',
             'mail_port' => 'nullable|numeric',
             'mail_username' => 'nullable|string',
             'mail_password' => 'nullable|string',
-            'mail_encryption' => 'nullable|string',
+            'mail_encryption' => ['nullable', 'string', Rule::in(array_keys(trans('mail.encryptions')))],
             'mail_from_address' => 'nullable|email|max:255',
             'mail_from_name' => 'nullable|string|max:255',
         ];
@@ -58,9 +62,13 @@ class MailTestRequest extends FormRequest
     public function messages()
     {
         return [
-            'mail_mailer.required' => __('admin.settings.base.validation.mail_mailer_required'),
-            'mail_port.numeric' => __('admin.settings.base.validation.mail_port_numeric'),
-            'mail_from_address.email' => __('admin.settings.base.validation.mail_from_address_email'),
+            'mail_mailer.required' => __('mail.validation.mail_mailer_required'),
+            'mail_mailer.in' => __('mail.validation.mail_mailer_required'),
+            'mail_host.required' => __('mail.validation.mail_host_required'),
+            'mail_port.required' => __('mail.validation.mail_port_required'),
+            'mail_port.numeric' => __('mail.validation.mail_port_numeric'),
+            'mail_from_address.email' => __('mail.validation.mail_from_address_email'),
+            'mail_encryption.in' => __('mail.validation.mail_mailer_required'),
         ];
     }
 }

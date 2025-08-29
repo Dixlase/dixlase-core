@@ -28,7 +28,7 @@ use App\Helpers\TimezoneHelper;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\AdminBaseSettingsRequest;
-use App\Http\Requests\Admin\Settings\MailTestRequest;
+use App\Http\Requests\MailServerRequest;
 use App\Models\BaseSetting;
 use App\Traits\MailTestTrait;
 use Illuminate\Support\Facades\Auth;
@@ -325,7 +325,7 @@ class AdminBaseSettingsController extends AdminLoggedInController
     /**
      * メールサーバー接続テスト
      */
-    public function testConnection(MailTestRequest $request)
+    public function testConnection(MailServerRequest $request)
     {
         // MailTestTraitの統合メソッドを使用（メソッド名の競合を避けるため別名で呼び出し）
         return $this->performConnectionTest($request, 'admin');
@@ -335,7 +335,7 @@ class AdminBaseSettingsController extends AdminLoggedInController
     /**
      * メール送信テスト
      */
-    public function testMail(MailTestRequest $request)
+    public function testMail(MailServerRequest $request)
     {
         return $this->performMailTest($request, 'admin');
     }

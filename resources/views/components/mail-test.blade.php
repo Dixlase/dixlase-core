@@ -209,8 +209,8 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('接続テストルート:', connectionTestRoute);
         
         if (!connectionTestRoute) {
-            console.error('接続テストルートが設定されていません');
-            showTestResult('error', 'テストルートが設定されていません');
+            console.error('{{ __('mail.js_messages.test_route_not_set') }}');
+            showTestResult('error', '{{ __('mail.js_messages.test_route_not_set') }}');
             return;
         }
 
@@ -218,7 +218,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const btn = document.getElementById('test-connection-btn');
         if (btn) {
             btn.disabled = true;
-            btn.textContent = 'テスト中...';
+            btn.textContent = '{{ __('mail.js_messages.testing') }}';
         }
 
         // CSRF トークンを取得
@@ -267,14 +267,19 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 updateTestStatus('connection', true, data.test_date);
                 enableMailTestButton();
-                showTestResult('success', data.message || '接続テストが成功しました');
+                showTestResult('success', data.message || '{{ __('mail.js_messages.connection_test_success_default') }}');
             } else {
-                showTestResult('error', data.message || '接続テストが失敗しました');
+                const failedMessage = data.message || '{{ __('mail.js_messages.connection_test_failed_default') }}';
+                const noteMessage = '{{ __('mail.js_messages.mail_test_failed_side_note') }}';
+                showTestResult('error', failedMessage + ' ' + noteMessage);
             }
         })
         .catch(error => {
             console.error('接続テストエラー:', error);
-            showTestResult('error', '接続テストでエラーが発生しました: ' + error.message);
+            const mainMessage = '{{ __('mail.js_messages.connection_test_error') }}';
+            const noteMessage = '{{ __('mail.js_messages.mail_test_failed_side_note') }}';
+            const errorDetails = ': ' + error.message;
+            showTestResult('error', mainMessage + noteMessage + errorDetails);
         })
         .finally(() => {
             // ボタンを再有効化
@@ -291,8 +296,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const mailTestRoute = '{{ $mailTestRoute ?? "" }}';
         if (!mailTestRoute) {
-            console.error('メールテストルートが設定されていません');
-            showTestResult('error', 'メールテストルートが設定されていません');
+            console.error('{{ __('mail.js_messages.mail_test_route_not_set') }}');
+            showTestResult('error', '{{ __('mail.js_messages.mail_test_route_not_set') }}');
             return;
         }
 
@@ -301,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (isInstall) {
             const installData = JSON.parse(sessionStorage.getItem('install_data') || '{}');
             if (!installData.mail_connection_tested) {
-                showTestResult('error', '先に接続テストを実行してください');
+                showTestResult('error', '{{ __('mail.js_messages.connection_test_first') }}');
                 return;
             }
         }
@@ -310,7 +315,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const btn = document.getElementById('test-mail-btn');
         if (btn) {
             btn.disabled = true;
-            btn.textContent = 'テスト中...';
+            btn.textContent = '{{ __('mail.js_messages.testing') }}';
         }
 
         // CSRF トークンを取得
@@ -358,14 +363,19 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (data.success) {
                 updateTestStatus('send', true, data.test_date);
-                showTestResult('success', data.message || 'メール送信テストが成功しました');
+                showTestResult('success', data.message || '{{ __('mail.js_messages.mail_test_success_default') }}');
             } else {
-                showTestResult('error', data.message || 'メール送信テストが失敗しました');
+                const failedMessage = data.message || '{{ __('mail.js_messages.mail_test_failed_default') }}';
+                const noteMessage = '{{ __('mail.js_messages.mail_test_failed_side_note') }}';
+                showTestResult('error', failedMessage + ' ' + noteMessage);
             }
         })
         .catch(error => {
             console.error('メール送信テストエラー:', error);
-            showTestResult('error', 'メール送信テストでエラーが発生しました: ' + error.message);
+            const mainMessage = '{{ __('mail.js_messages.mail_test_error') }}';
+            const noteMessage = '{{ __('mail.js_messages.mail_test_failed_side_note') }}';
+            const errorDetails = ': ' + error.message;
+            showTestResult('error', mainMessage + noteMessage + errorDetails);
         })
         .finally(() => {
             // ボタンを再有効化
@@ -537,7 +547,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // メール受信テスト完了の監視（localStorage経由）
     window.addEventListener('storage', function(e) {
         if (e.key === 'mail_receive_test_completed' && e.newValue === 'true') {
-            console.log('メール受信テスト完了を検出');
+            console.log('{{ __('mail.js_messages.mail_receive_test_completed') }}');
             const testDate = localStorage.getItem('mail_receive_test_date');
             updateTestStatus('receive', true, testDate);
             
@@ -556,7 +566,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const now = Date.now();
                 // 5分以内のデータのみ有効とする
                 if (now - data.timestamp < 300000) {
-                    console.log('localStorage経由でメール受信テスト完了を検出');
+                    console.log('{{ __('mail.js_messages.mail_receive_test_completed') }}');
                     updateTestStatus('receive', true, null);
                     
                     // メインステータスも更新

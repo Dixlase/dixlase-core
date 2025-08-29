@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- Mailer -->
 <div class="{{ $isInstall ? '' : 'mt-4' }}">
     @if($isInstall)
-        <label for="mail_mailer" class="block text-gray-700">{{ __($context . '.mail_mailer') }}</label>
+        <label for="mail_mailer" class="block text-gray-700">{{ __('mail.server_settings.mailer') }}</label>
         <select name="mail_mailer" id="mail_mailer" class="w-full p-2 border rounded-lg mail-setting-input">
             @foreach($mailers as $value => $label)
                 <option value="{{ $value }}" {{ old('mail_mailer', session('install_data.mail_mailer', 'smtp')) == $value ? 'selected' : '' }}>{{ $label }}</option>
@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
     @else
         @include('components::form.label', [
             'for' => 'mail_mailer',
-            'text' => __('admin.settings.base.mailer'),
+            'text' => __('mail.server_settings.mailer'),
         ])
         @include('components::form.select', [
             'id' => 'mail_mailer',
@@ -188,12 +188,12 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- Host -->
 <div class="{{ $isInstall ? '' : 'mt-4' }}">
     @if($isInstall)
-        <label for="mail_host" class="block text-gray-700">{{ __($context . '.mail_host') }}</label>
+        <label for="mail_host" class="block text-gray-700">{{ __('mail.server_settings.mail_host') }}</label>
         <input type="text" name="mail_host" id="mail_host" value="{{ old('mail_host', session('install_data.mail_host', 'mailpit')) }}" class="w-full p-2 border rounded-lg mail-setting-input">
     @else
         @include('components::form.label', [
             'for' => 'mail_host',
-            'text' => __('admin.settings.base.mail_host'),
+            'text' => __('mail.server_settings.mail_host'),
         ])
         @include('components::form.text', [
             'id' => 'mail_host',
@@ -206,12 +206,12 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- Port -->
 <div class="{{ $isInstall ? '' : 'mt-4' }}">
     @if($isInstall)
-        <label for="mail_port" class="block text-gray-700">{{ __($context . '.mail_port') }}</label>
+        <label for="mail_port" class="block text-gray-700">{{ __('mail.server_settings.mail_port') }}</label>
         <input type="number" name="mail_port" id="mail_port" value="{{ old('mail_port', session('install_data.mail_port', '1025')) }}" class="w-full p-2 border rounded-lg mail-setting-input">
     @else
         @include('components::form.label', [
             'for' => 'mail_port',
-            'text' => __('admin.settings.base.mail_port'),
+            'text' => __('mail.server_settings.mail_port'),
         ])
         @include('components::form.text', [
             'id' => 'mail_port',
@@ -224,12 +224,12 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- Username -->
 <div class="{{ $isInstall ? '' : 'mt-4' }}">
     @if($isInstall)
-        <label for="mail_username" class="block text-gray-700">{{ __($context . '.mail_username') }}</label>
+        <label for="mail_username" class="block text-gray-700">{{ __('mail.server_settings.mail_username') }}</label>
         <input type="text" name="mail_username" id="mail_username" value="{{ old('mail_username', session('install_data.mail_username')) }}" class="w-full p-2 border rounded-lg mail-setting-input">
     @else
         @include('components::form.label', [
             'for' => 'mail_username',
-            'text' => __('admin.settings.base.mail_username'),
+            'text' => __('mail.server_settings.mail_username'),
         ])
         @include('components::form.text', [
             'id' => 'mail_username',
@@ -242,12 +242,12 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- Password -->
 <div class="{{ $isInstall ? '' : 'mt-4' }}">
     @if($isInstall)
-        <label for="mail_password" class="block text-gray-700">{{ __($context . '.mail_password') }}</label>
+        <label for="mail_password" class="block text-gray-700">{{ __('mail.server_settings.mail_password') }}</label>
         <input type="password" name="mail_password" id="mail_password" value="{{ old('mail_password') }}" class="w-full p-2 border rounded-lg mail-setting-input">
     @else
         @include('components::form.label', [
             'for' => 'mail_password',
-            'text' => __('admin.settings.base.mail_password'),
+            'text' => __('mail.server_settings.mail_password'),
         ])
         @include('components::form.text', [
             'id' => 'mail_password',
@@ -260,7 +260,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- Encryption -->
 <div class="{{ $isInstall ? '' : 'mt-4' }}">
     @if($isInstall)
-        <label for="mail_encryption" class="block text-gray-700">{{ __($context . '.mail_encryption') }}</label>
+        <label for="mail_encryption" class="block text-gray-700">{{ __('mail.server_settings.mail_encryption') }}</label>
         <select name="mail_encryption" id="mail_encryption" class="w-full p-2 border rounded-lg mail-setting-input">
             @foreach($encryptions as $value => $label)
                 <option value="{{ $value }}" {{ old('mail_encryption', session('install_data.mail_encryption')) == $value ? 'selected' : '' }}>{{ $label }}</option>
@@ -269,7 +269,7 @@ document.addEventListener('DOMContentLoaded', function() {
     @else
         @include('components::form.label', [
             'for' => 'mail_encryption',
-            'text' => __('admin.settings.base.mail_encryption'),
+            'text' => __('mail.server_settings.mail_encryption'),
         ])
         @include('components::form.select', [
             'id' => 'mail_encryption',
@@ -283,12 +283,12 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- From Address -->
 <div class="{{ $isInstall ? '' : 'mt-4' }}">
     @if($isInstall)
-        <label for="mail_from_address" class="block text-gray-700">{{ __($context . '.mail_from_address') }}</label>
+        <label for="mail_from_address" class="block text-gray-700">{{ __('mail.server_settings.mail_from_address') }}</label>
         <input type="email" name="mail_from_address" id="mail_from_address" value="{{ old('mail_from_address', session('install_data.mail_from_address', $admin_email ?? '')) }}" class="w-full p-2 border rounded-lg mail-setting-input">
     @else
         @include('components::form.label', [
             'for' => 'mail_from_address',
-            'text' => __('admin.settings.base.mail_from_address'),
+            'text' => __('mail.server_settings.mail_from_address'),
         ])
         @include('components::form.text', [
             'id' => 'mail_from_address',

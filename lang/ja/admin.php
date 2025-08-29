@@ -244,32 +244,6 @@ return [
             'force_ssl' => 'SSL強制',
             'force_ssl_help' => 'HTTPSでのアクセスを強制します。SSL証明書が設定されている場合のみ有効にしてください。',
             'mail_server_settings' => 'メールサーバー設定',
-            'mailer' => 'Mailer',
-            'mail_host' => 'ホスト名',
-            'mail_port' => 'ポート番号',
-            'mail_username' => 'ユーザー名',
-            'mail_password' => 'パスワード',
-            'mail_encryption' => '暗号化方式',
-            'mail_from_address' => '送信元メールアドレス',
-            'mail_test' => 'メール送信テスト',
-            'mail_test_description' => '現在の設定でテストメールを送信します。送信元メールアドレス宛にテストメールが送信されます。',
-            'mail_test_description_2' => 'メール送信機能を有効するには、必ず接続テストとメール送信テストを実行してください。',
-            'test_connection_button' => '接続テスト',
-            'test_mail_button' => 'テストメール送信',
-            'testing_connection' => '接続中...',
-            'testing_mail' => '送信中...',
-            'mail_test_error' => 'メール送信テストでエラーが発生しました。',
-            'test_mail_subject' => 'メール送信テスト',
-            'test_mail_body' => ':app_name からのテストメールです。
-
-メール送信テストが正常に完了しました。
-メール受信確認を完了するには、以下のリンクをクリックしてください：
-
-:verification_url
-
-このリンクをクリックすることで、メール機能の完全なテストが完了します。',
-            'test_mail_success' => 'テストメールが正常に送信されました。受信トレイをご確認し、メール内のリンクから受信確認を完了させてください。',
-            'test_mail_failed' => 'メール送信に失敗しました: :error',
             'maintenance_settings' => 'メンテナンスモード設定',
             'maintenance_mode' => 'メンテナンスモード',
             'maintenance_message' => 'メンテナンス中の表示メッセージ',
