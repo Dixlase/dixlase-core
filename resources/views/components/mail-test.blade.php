@@ -16,7 +16,7 @@
 
 @if($showStatus && !$isInstall)
     <!-- メール機能テスト状態の表示 (管理画面用) -->
-    <div class="mt-6 p-4 border rounded-lg 
+    <div id="mail-test-main-status" class="mt-6 p-4 border rounded-lg 
         @if($testStatus['connection_tested'] && $testStatus['send_tested'] && $testStatus['receive_tested'])
             bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800
         @else
@@ -486,7 +486,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateInstallMainStatus() {
         console.log('updateInstallMainStatus関数呼び出し');
         
-        const mainStatusDiv = document.querySelector('.mt-6.p-4.border.rounded-lg');
+        const mainStatusDiv = document.querySelector('#mail-test-main-status');
         const mainIcon = document.getElementById('status-icon');
         const mainTitle = document.getElementById('status-title');
         
@@ -616,7 +616,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateInstallMainStatus() {
         console.log('updateInstallMainStatus関数呼び出し');
         
-        const mainStatusDiv = document.querySelector('.mt-6.p-4.border.rounded-lg');
+        const mainStatusDiv = document.querySelector('#mail-test-main-status');
         const mainIcon = document.getElementById('status-icon');
         const mainTitle = document.getElementById('status-title');
         
