@@ -279,16 +279,26 @@ class AdminBaseSettingsController extends AdminLoggedInController
      */
     public function clearTestSession()
     {
+        // セッションのテスト結果をクリア
         session()->forget('mail_test_results');
         
-        Log::info('メールテストセッションクリア完了', [
-            'session_before' => session('mail_test_results'),
-            'session_after' => session('mail_test_results')
+        // データベースのテスト結果も即座にリセット
+        BaseSetting::setValue('mail_connection_tested', 0);
+        BaseSetting::setValue('mail_connection_test_date', null);
+        BaseSetting::setValue('mail_send_tested', 0);
+        BaseSetting::setValue('mail_send_test_date', null);
+        BaseSetting::setValue('mail_receive_tested', 0);
+        BaseSetting::setValue('mail_receive_test_date', null);
+        BaseSetting::setValue('mail_verification_token', null);
+        
+        Log::info('メールテストセッション・DB両方クリア完了', [
+            'session_cleared' => true,
+            'db_reset' => true
         ]);
         
         return response()->json([
             'success' => true,
-            'message' => 'テストセッションがクリアされました。'
+            'message' => __('admin.settings.base.controller_messages.test_session_cleared')
         ]);
     }
 
