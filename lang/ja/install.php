@@ -113,6 +113,14 @@ return [
     ],
     'mail_test_description' => 'メールサーバーの接続とメール送信をテストできます。',
     'mail_test_description_admin_email' => 'テストメールは基本設定で入力した管理者メールアドレスに送信されます。',
+    
+    'mail_test_advanced' => [
+        'three_stage_test_incomplete' => '3段階メールテストが未完了です',
+        'three_stage_test_complete' => '3段階メールテストが完了しました',
+        'connection_test' => 'サーバー接続テスト',
+        'send_test' => 'メール送信テスト',
+        'receive_test' => 'メール受信確認',
+    ],
     //step 5
     'security_title' => 'セキュリティ設定',
     'security_header' => 'セキュリティ設定(任意)',

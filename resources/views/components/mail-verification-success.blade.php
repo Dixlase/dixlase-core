@@ -126,17 +126,43 @@
             }
         }, 5000);
 
-        // ページ読み込み時に親ウィンドウにメッセージを送信（可能な場合）
+        // ページ読み込み時の処理
         window.addEventListener('load', function() {
+            console.log('=== メール認証成功ページ読み込み完了 ===');
+            
+            // セッションストレージに受信テスト完了を記録
+            try {
+                sessionStorage.setItem('mail_receive_test_completed', 'true');
+                sessionStorage.setItem('mail_receive_test_date', new Date().toLocaleString());
+                console.log('✅ セッションストレージに受信テスト完了を記録しました');
+            } catch (e) {
+                console.error('❌ セッションストレージへの保存に失敗しました:', e);
+            }
+            
+            // 親ウィンドウをリロード（可能な場合）
             if (window.opener && !window.opener.closed) {
                 try {
-                    // 親ウィンドウに受信テスト完了を通知
-                    window.opener.postMessage({
-                        type: 'mail_receive_test_completed',
-                        message: '{{ __('mail.verification_success.completed_message') }}'
-                    }, '*');
+                    console.log('親ウィンドウをリロードします...');
+                    window.opener.location.reload();
+                    console.log('✅ 親ウィンドウのリロード完了');
                 } catch (e) {
-                    console.log('親ウィンドウへのメッセージ送信に失敗しました:', e);
+                    console.error('❌ 親ウィンドウのリロードに失敗しました:', e);
+                }
+            } else {
+                console.log('❌ 親ウィンドウが存在しないか閉じられています');
+                console.log('💡 元のページに戻ってリロードしてください');
+                
+                // 代替案：BroadcastChannelを使用してタブ間通信
+                try {
+                    const channel = new BroadcastChannel('mail_test_channel');
+                    channel.postMessage({
+                        type: 'mail_receive_test_completed',
+                        timestamp: new Date().toISOString()
+                    });
+                    console.log('✅ BroadcastChannelでメッセージを送信しました');
+                    channel.close();
+                } catch (e) {
+                    console.error('❌ BroadcastChannelの送信に失敗しました:', e);
                 }
             }
         });

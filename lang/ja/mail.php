@@ -255,6 +255,36 @@ return [
         'connection_test_error' => '接続テストでエラーが発生しました。',
         'mail_test_error' => 'メール送信テストでエラーが発生しました。',
         'mail_receive_test_completed' => 'メール受信テスト完了を検出',
-        
+    ],
+
+    // 3段階メールテスト機能
+    'test_advanced' => [
+        'test_email_subject' => 'メールサーバー設定テスト',
+        'test_email_body' => 'これはメールサーバー設定のテストメールです。このメールが正常に受信できた場合、メールサーバーの設定が正しく動作しています。',
+        'test_email_body_with_verification' => "これはメールサーバー設定のテストメールです。このメールが正常に受信できた場合、メールサーバーの設定が正しく動作しています。\n\nメール受信確認を完了するには、以下のリンクをクリックしてください：\n:verification_url\n\nこのリンクをクリックすることで、メール受信テストが完了します。",
+        'connection_test_not_supported' => ':mailer メーラーは接続テストをサポートしていません。',
+        'connection_test_success' => 'メールサーバーへの接続に成功しました。',
+        'connection_test_failed' => 'メールサーバーへの接続に失敗しました',
+        'send_test_success' => 'テストメールを :email に送信しました。',
+        'send_test_failed' => 'テストメールの送信に失敗しました',
+        'verification_token_invalid' => 'メール確認トークンが無効です。',
+        'verification_error' => 'メール確認中にエラーが発生しました: :error',
+        'verification_success' => [
+            'title' => 'メール受信確認完了',
+            'heading' => 'メール受信確認が完了しました',
+            'description' => 'メールサーバーの設定が正しく動作していることが確認されました。',
+            'next_steps_title' => '次のステップ',
+            'next_steps' => [
+                'close_window' => 'このウィンドウを閉じる',
+                'continue_install' => 'インストール画面に戻って設定を続行する'
+            ],
+            'close_button' => 'ウィンドウを閉じる',
+            'completed_message' => 'メール受信確認が完了しました'
+        ],
+        'three_stage_test_incomplete' => '3段階メールテストが未完了です',
+        'three_stage_test_complete' => '3段階メールテストが完了しました',
+        'connection_test' => 'サーバー接続テスト',
+        'send_test' => 'メール送信テスト',
+        'receive_test' => 'メール受信確認',
     ],
 ];

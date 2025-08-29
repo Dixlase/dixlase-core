@@ -74,7 +74,6 @@
                                 id="language-selector" 
                                 class="appearance-none bg-white border border-gray-300 rounded-lg py-2 px-4 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 style="-webkit-appearance: none; -moz-appearance: none; text-indent: 1px; text-overflow: ''; min-width: 150px;"
-                                onchange="this.form.action = this.form.action.replace('__locale__', this.value); this.form.submit()"
                             >
                                 @foreach($availableLocales as $locale)
                                     <option value="{{ $locale }}" {{ $currentLocale === $locale ? 'selected' : '' }}>
@@ -139,19 +138,19 @@
             
             if (languageForm && languageSelector) {
                 // セレクト変更で即時適用
-                languageSelector.addEventListener('change', function() {
+                languageSelector.addEventListener('change', function(e) {
+                    e.preventDefault();
                     const locale = languageSelector.value;
+                    console.log('Language selector changed to:', locale);
                     languageSelector.disabled = true;
                     changeLanguage(locale);
                 });
 
+                // フォーム送信を完全に無効化
                 languageForm.addEventListener('submit', function(e) {
                     e.preventDefault();
-                    const locale = languageSelector.value;
-                    
-                    // ローディング状態を表示
-                    languageSelector.disabled = true;
-                    changeLanguage(locale);
+                    console.log('Form submit prevented');
+                    return false;
                 });
             }
 
@@ -187,16 +186,18 @@
                 .then(data => {
                     console.log('Language change response:', data);
                     if (data && data.success) {
+                        console.log('Language change successful, reloading page...');
                         window.location.reload();
                     } else {
+                        console.error('Language change failed:', data);
                         alert((data && data.message) || '{{ __("Language switch failed.") }}');
-                        languageSelector.disabled = false;
+                        if (languageSelector) languageSelector.disabled = false;
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     alert('{{ __("An error occurred. Please reload the page.") }}');
-                    languageSelector.disabled = false;
+                    if (languageSelector) languageSelector.disabled = false;
                 });
             }
         });
