@@ -105,28 +105,6 @@ return [
     'test_mail_button' => 'Test Email Send',
     'testing' => 'Testing',
     'mail_test_advanced' => [
-        'test_email_subject' => 'Mail Server Configuration Test',
-        'test_email_body' => 'This is a test email for mail server configuration. If you receive this email successfully, your mail server settings are working correctly.',
-        'test_email_body_with_verification' => "This is a test email for mail server configuration. If you receive this email successfully, your mail server settings are working correctly.\n\nTo complete the mail receipt verification, please click the following link:\n:verification_url\n\nClicking this link will complete the mail receipt test.",
-        'connection_test_not_supported' => ':mailer mailer does not support connection testing.',
-        'connection_test_success' => 'Successfully connected to the mail server.',
-        'connection_test_failed' => 'Failed to connect to the mail server',
-        'send_test_success' => 'Test email sent to :email.',
-        'send_test_failed' => 'Failed to send test email',
-        'verification_token_invalid' => 'Mail verification token is invalid.',
-        'verification_error' => 'An error occurred during mail verification: :error',
-        'verification_success' => [
-            'title' => 'Mail Receipt Verification Complete',
-            'heading' => 'Mail Receipt Verification Completed',
-            'description' => 'Your mail server configuration has been verified to be working correctly.',
-            'next_steps_title' => 'Next Steps',
-            'next_steps' => [
-                'close_window' => 'Close this window',
-                'continue_install' => 'Return to the installation screen to continue setup'
-            ],
-            'close_button' => 'Close Window',
-            'completed_message' => 'Mail receipt verification completed'
-        ],
         'three_stage_test_incomplete' => '3-stage mail test incomplete',
         'three_stage_test_complete' => '3-stage mail test complete',
         'connection_test' => 'Server Connection Test',
