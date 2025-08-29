@@ -253,9 +253,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         'rows' => 10,
                         'placeholder' => '',
                         'class' => '',
-                        'readonly' => !$settings['enable_allowed_admin_ips'], // 初期状態
-                        'xBindReadonly' => '!enableAllowedIPs', // Alpine.jsでreadonlyを動的に管理
-                        'xBindClass' => "{ 'bg-gray-100': !enableAllowedIPs, 'bg-white': enableAllowedIPs }", //readonlyの有無でクラスを切り替え
                     ])
                 </div>
 
@@ -278,9 +275,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         'placeholder' => '',
                         'required' => false,
                         'class' => '',
-                        'readonly' => !$settings['blocked_admin_ips'], //初期状態
-                        'xBindReadonly' => '!blockedAdminIps', // Alpine.jsでreadonlyを動的に管理
-                        'xBindClass' => "{ 'bg-gray-100': !enableAllowedIPs, 'bg-white': blockedAdminIps }", //readonlyの有無でクラスを切り替え
                     ])
                 </div>
             </div>
@@ -306,9 +300,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         'rows' => 10,
                         'placeholder' => '',
                         'class' => '',
-                        'readonly' => !$settings['enable_allowed_front_ips'], // 初期状態
-                        'xBindReadonly' => '!enableAllowedFrontIPs', // Alpine.jsでreadonlyを動的に管理
-                        'xBindClass' => "{ 'bg-gray-100': !enableAllowedFrontIPs, 'bg-white': enableAllowedFrontIPs }", //readonlyの有無でクラスを切り替え
                     ])
                 </div>
 
@@ -331,9 +322,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         'placeholder' => '',
                         'required' => false,
                         'class' => '',
-                        'readonly' => !$settings['enable_blocked_front_ips'], //初期状態
-                        'xBindReadonly' => '!enableBlockedFrontIps', // Alpine.jsでreadonlyを動的に管理
-                        'xBindClass' => "{ 'bg-gray-100': !enableBlockedFrontIps, 'bg-white': enableBlockedFrontIps }", //readonlyの有無でクラスを切り替え
                     ])
                 </div>
             </div>
@@ -341,22 +329,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </form>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    function toggleInput(checkbox, textarea) {
-        textarea.disabled = !checkbox.checked;
-    }
-
-    document.querySelectorAll('input[type="checkbox"]').forEach(function(checkbox) {
-        const textarea = checkbox.parentElement.nextElementSibling;
-        toggleInput(checkbox, textarea);
-
-        checkbox.addEventListener('change', function() {
-            toggleInput(checkbox, textarea);
-        });
-    });
-});
-</script>
 
 @endsection
 
