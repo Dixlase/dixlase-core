@@ -85,6 +85,7 @@ return [
         'mail_test_warning_features' => 'メンバー全体設定のロックアウト通知、パスワードリセット、ログイン通知、二段階認証機能を使用するには、すべてのメールテストを完了してください。',
         'mail_test_warning_temporary' => 'テスト結果は一時的に保存されます。更新ボタンを押すまで、設定やテスト結果は保存されません。',
         'mail_receive_test_completed' => 'メール受信テストが完了しました。設定を保存してください。',
+        'connection_test_required' => '接続テストを先に実行してください。',
     ],
 
     // テストメール内容
@@ -167,5 +168,93 @@ return [
         'connection_failed' => 'メールサーバーへの接続に失敗しました: :error',
         'verification_token_invalid' => 'メール確認トークンが無効です。',
         'verification_error' => 'メール確認中にエラーが発生しました: :error',
+    ],
+
+    // メールサーバー設定フィールド (共通)
+    'server_settings' => [
+        'mailer' => 'メーラー',
+        'mail_host' => 'ホスト',
+        'mail_port' => 'ポート',
+        'mail_username' => 'ユーザー名',
+        'mail_password' => 'パスワード',
+        'mail_encryption' => '暗号化',
+        'mail_from_address' => '送信元メールアドレス',
+        'mail_from_name' => '送信元名',
+    ],
+
+    // メールテスト機能 (共通)
+    'test_functions' => [
+        'test_connection_button' => '接続テスト',
+        'test_mail_button' => 'メール送信テスト',
+        'testing' => 'テスト中',
+        'testing_connection' => '接続中...',
+        'testing_mail' => '送信中...',
+        'mail_test_description' => 'メールサーバーの接続とメール送信をテストできます。',
+        'mail_test_description_2' => 'メール送信機能を有効するには、必ず接続テストとメール送信テストを実行してください。',
+        'connection_test_error' => '接続テストでエラーが発生しました。メールサーバーの設定が正しいかご確認ください。',
+        'mail_send_test_error' => 'テストメールの送信に失敗しました: :error',
+        'mail_send_test_success' => 'テストメールを :email に送信しました。',
+        'mail_send_test_failed' => 'テストメールの送信に失敗しました: :error',
+        'connection_test_not_supported' => ':mailer メーラーは接続テストに対応していません。',
+        'connection_test_success' => 'メールサーバーへの接続に成功しました。',
+        'connection_test_failed' => 'メールサーバーへの接続に失敗しました',
+        'mail_connection_test_not_supported' => ':mailer メーラーは接続テストに対応していません。',
+        'mail_connection_test_success' => 'メールサーバーへの接続に成功しました。',
+        'mail_connection_test_failed' => 'メールサーバーへの接続に失敗しました: :error',
+        'send_test_success' => 'テストメールを :email に送信しました。',
+        'send_test_failed' => 'テストメールの送信に失敗しました',
+        'test_mail_success' => 'テストメールが正常に送信されました。受信トレイをご確認し、メール内のリンクから受信確認を完了させてください。',
+        'test_mail_failed' => 'メール送信に失敗しました: :error',
+        'three_stage_test_incomplete' => 'メールテストが未完了です',
+        'three_stage_test_complete' => 'メールテストが完了しました',
+        'connection_test' => 'サーバー接続テスト',
+        'send_test' => 'メール送信テスト',
+        'receive_test' => 'メール受信確認',
+    ],
+
+    // メール受信確認機能 (共通)
+    'verification' => [
+        'verification_token_invalid' => 'メール認証トークンが無効です。',
+        'verification_error' => 'メール認証処理中にエラーが発生しました: :error',
+        'verification_success' => [
+            'title' => 'メール受信確認完了',
+            'heading' => 'メール受信確認が完了しました',
+            'description' => 'メールサーバーの設定が正しく動作していることが確認されました。',
+            'next_steps_title' => '次の手順',
+            'next_steps' => [
+                'close_window' => 'このウィンドウを閉じてください',
+                'continue_install' => 'インストール画面に戻って設定を続行してください',
+                'save_settings' => '設定を保存してください',
+                'data_saved' => 'データは一時的に保存されています',
+            ],
+            'close_button' => 'ウィンドウを閉じる',
+            'completed_message' => 'メール受信確認が完了しました'
+        ],
+    ],
+
+    // バリデーションメッセージ (共通)
+    'validation' => [
+        'mail_mailer_required' => 'メーラーを選択してください。',
+        'mail_host_required' => 'メールホストを入力してください。',
+        'mail_port_required' => 'メールポートを入力してください。',
+        'mail_port_numeric' => 'メールポートは数値で入力してください。',
+        'mail_from_address_email' => '送信元アドレスは有効なメールアドレスである必要があります。',
+    ],
+
+    // JavaScript用メッセージ (共通)
+    'js_messages' => [
+        'test_route_not_set' => 'テストルートが設定されていません',
+        'mail_test_route_not_set' => 'メールテストルートが設定されていません',
+        'connection_test_first' => '先に接続テストを実行してください',
+        'testing' => 'テスト中...',
+        'mail_test_failed_side_note' => 'メールサーバーの設定が正しいか、メールサーバーの動作状況をご確認ください。',
+        'connection_test_success_default' => '接続テストが成功しました',
+        'connection_test_failed_default' => '接続テストが失敗しました',
+        'mail_test_success_default' => 'メール送信テストが成功しました',
+        'mail_test_failed_default' => 'メール送信テストが失敗しました。',
+        'connection_test_error' => '接続テストでエラーが発生しました。',
+        'mail_test_error' => 'メール送信テストでエラーが発生しました。',
+        'mail_receive_test_completed' => 'メール受信テスト完了を検出',
+        
     ],
 ];

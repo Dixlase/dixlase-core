@@ -85,6 +85,7 @@ return [
         'mail_test_warning_features' => 'To use member settings lockout notifications, password reset, login notifications, and two-factor authentication features, please complete all mail tests.',
         'mail_test_warning_temporary' => 'Test results are temporarily stored. Settings and test results will not be saved until you press the update button.',
         'mail_receive_test_completed' => 'Mail receive test completed. Please save settings.',
+        'connection_test_required' => 'Please run connection test first.',
     ],
 
     // Test Mail Content
@@ -158,14 +159,101 @@ Clicking this link will complete the full mail functionality test.',
         'error_occurred' => 'Mail verification error occurred.',
     ],
 
-    // Controller Messages
+    // Controller messages
     'controller_messages' => [
         'settings_updated' => 'Settings have been updated.',
         'test_session_cleared' => 'Test session has been cleared.',
-        'mailer_not_supported' => 'Mailer ":mailer" does not support connection testing.',
-        'connection_success' => 'Mail server connection verified successfully.',
-        'connection_failed' => 'Mail server connection failed: :error',
+        'mailer_not_supported' => 'The ":mailer" mailer does not support connection testing.',
+        'connection_success' => 'Mail server connection has been successfully verified.',
+        'connection_failed' => 'Failed to connect to mail server: :error',
         'verification_token_invalid' => 'Mail verification token is invalid.',
         'verification_error' => 'An error occurred during mail verification: :error',
+    ],
+
+    // Mail server settings fields (common)
+    'server_settings' => [
+        'mailer' => 'Mailer',
+        'mail_host' => 'Host',
+        'mail_port' => 'Port',
+        'mail_username' => 'Username',
+        'mail_password' => 'Password',
+        'mail_encryption' => 'Encryption',
+        'mail_from_address' => 'From Address',
+        'mail_from_name' => 'From Name',
+    ],
+
+    // Mail test functions (common)
+    'test_functions' => [
+        'test_connection_button' => 'Test Connection',
+        'test_mail_button' => 'Send Test Mail',
+        'testing' => 'Testing',
+        'testing_connection' => 'Connecting...',
+        'testing_mail' => 'Sending...',
+        'mail_test_description' => 'You can test mail server connection and mail sending.',
+        'mail_test_description_2' => 'To enable mail sending functionality, you must run both connection test and mail sending test.',
+        'connection_test_error' => 'An error occurred during connection test. Please verify your mail server settings.',
+        'mail_send_test_error' => 'Failed to send test mail: :error',
+        'mail_send_test_success' => 'Test mail sent to :email.',
+        'mail_send_test_failed' => 'Failed to send test mail: :error',
+        'connection_test_not_supported' => 'The :mailer mailer does not support connection testing.',
+        'connection_test_success' => 'Successfully connected to mail server.',
+        'connection_test_failed' => 'Failed to connect to mail server',
+        'mail_connection_test_not_supported' => 'The :mailer mailer does not support connection testing.',
+        'mail_connection_test_success' => 'Successfully connected to mail server.',
+        'mail_connection_test_failed' => 'Failed to connect to mail server: :error',
+        'send_test_success' => 'Test mail sent to :email.',
+        'send_test_failed' => 'Failed to send test mail',
+        'test_mail_success' => 'Test mail has been sent successfully. Please check your inbox and complete the verification by clicking the link in the email.',
+        'test_mail_failed' => 'Failed to send mail: :error',
+        'three_stage_test_incomplete' => 'Mail test is incomplete',
+        'three_stage_test_complete' => 'Mail test is complete',
+        'connection_test' => 'Server Connection Test',
+        'send_test' => 'Mail Send Test',
+        'receive_test' => 'Mail Receive Verification',
+    ],
+
+    // Mail verification functions (common)
+    'verification' => [
+        'verification_token_invalid' => 'Mail verification token is invalid.',
+        'verification_error' => 'An error occurred during mail verification: :error',
+        'verification_success' => [
+            'title' => 'Mail Verification Complete',
+            'heading' => 'Mail verification has been completed',
+            'description' => 'It has been confirmed that the mail server settings are working correctly.',
+            'next_steps_title' => 'Next Steps',
+            'next_steps' => [
+                'close_window' => 'Please close this window',
+                'continue_install' => 'Return to the installation screen and continue with the setup',
+                'save_settings' => 'Please save the settings',
+                'data_saved' => 'Data is temporarily saved',
+            ],
+            'close_button' => 'Close Window',
+            'completed_message' => 'Mail verification has been completed'
+        ],
+    ],
+
+    // Validation messages (common)
+    'validation' => [
+        'mail_mailer_required' => 'Please select a mailer.',
+        'mail_host_required' => 'Please enter a mail host.',
+        'mail_port_required' => 'Please enter a mail port.',
+        'mail_port_numeric' => 'Mail port must be a number.',
+        'mail_from_address_email' => 'From address must be a valid email address.',
+    ],
+
+    // JavaScript messages (common)
+    'js_messages' => [
+        'test_route_not_set' => 'Test route is not configured',
+        'mail_test_route_not_set' => 'Mail test route is not configured',
+        'connection_test_first' => 'Please run the connection test first',
+        'testing' => 'Testing...',
+        'mail_test_failed_side_note' => 'Please verify your mail server settings or check the mail server status.',
+        'connection_test_success_default' => 'Connection test succeeded',
+        'connection_test_failed_default' => 'Connection test failed',
+        'mail_test_success_default' => 'Mail sending test succeeded',
+        'mail_test_failed_default' => 'Mail sending test failed',
+        'connection_test_error' => 'An error occurred during connection test. Please verify your mail server settings.',
+        'mail_test_error' => 'An error occurred during mail sending test',
+        'mail_receive_test_completed' => 'Mail receive test completion detected',
     ],
 ];

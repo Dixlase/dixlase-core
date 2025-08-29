@@ -73,14 +73,14 @@
         <h2 class="text-lg font-semibold mb-2">メール設定</h2>
         <ul>
             <!-- ✅ メールサーバー設定 -->
-            <li><strong>{{ __('install.mail_mailer') }}:</strong> {{ $data['mail_mailer'] ?? '' }}</li>
-            <li><strong>{{ __('install.mail_host') }}:</strong> {{ $data['mail_host'] ?? '' }}</li>
-            <li><strong>{{ __('install.mail_port') }}:</strong> {{ $data['mail_port'] ?? '' }}</li>
-            <li><strong>{{ __('install.mail_username') }}:</strong> {{ $data['mail_username'] ?? '' }}</li>
-            <li><strong>{{ __('install.mail_password') }}:</strong> <span class="text-gray-500">{{ !empty($data['mail_password']) ? '●●●●●' : '' }}</span></li>
-            <li><strong>{{ __('install.mail_encryption') }}:</strong> {{ $data['mail_encryption'] ?? '' }}</li>
-            <li><strong>{{ __('install.mail_from_address') }}:</strong> {{ $data['mail_from_address'] ?? '' }}</li>
-            <li><strong>{{ __('install.mail_from_name') }}:</strong> {{ $data['mail_from_name'] ?? '' }}</li>
+            <li><strong>{{ __('mail.server_settings.mailer') }}:</strong> {{ $data['mail_mailer'] ?? '' }}</li>
+            <li><strong>{{ __('mail.server_settings.mail_host') }}:</strong> {{ $data['mail_host'] ?? '' }}</li>
+            <li><strong>{{ __('mail.server_settings.mail_port') }}:</strong> {{ $data['mail_port'] ?? '' }}</li>
+            <li><strong>{{ __('mail.server_settings.mail_username') }}:</strong> {{ $data['mail_username'] ?? '' }}</li>
+            <li><strong>{{ __('mail.server_settings.mail_password') }}:</strong> <span class="text-gray-500">{{ !empty($data['mail_password']) ? '●●●●●' : '' }}</span></li>
+            <li><strong>{{ __('mail.server_settings.mail_encryption') }}:</strong> {{ $data['mail_encryption'] ?? '' }}</li>
+            <li><strong>{{ __('mail.server_settings.mail_from_address') }}:</strong> {{ $data['mail_from_address'] ?? '' }}</li>
+            <li><strong>{{ __('mail.server_settings.mail_from_name') }}:</strong> {{ $data['mail_from_name'] ?? '' }}</li>
             
             <!-- メールテスト結果 -->
             @if(!empty($data['mail_mailer']))

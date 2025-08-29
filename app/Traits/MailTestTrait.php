@@ -272,7 +272,7 @@ trait MailTestTrait
                 \Log::warning('サポートされていないメーラー', ['mailer' => $mailSettings['mail_mailer']]);
                 return response()->json([
                     'success' => false,
-                    'message' => __('admin.settings.base.controller_messages.mailer_not_supported', ['mailer' => $mailSettings['mail_mailer']])
+                    'message' => __('mail.test_functions.mailer_not_supported', ['mailer' => $mailSettings['mail_mailer']])
                 ], 400);
             }
 
@@ -300,13 +300,13 @@ trait MailTestTrait
             
             return response()->json([
                 'success' => true,
-                'message' => __('admin.settings.base.controller_messages.connection_success')
+                'message' => __('mail.test_functions.connection_test_success')
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('admin.settings.base.controller_messages.connection_failed', ['error' => $e->getMessage()])
+                'message' => __('mail.test_functions.connection_test_failed', ['error' => $e->getMessage()])
             ], 400);
         }
     }
@@ -348,7 +348,7 @@ trait MailTestTrait
                 ]);
                 return response()->json([
                     'success' => false,
-                    'message' => __('admin.settings.base.connection_test_required')
+                    'message' => __('mail.test.connection_test_required')
                 ], 400);
             }
             
@@ -469,7 +469,7 @@ trait MailTestTrait
 
             return response()->json([
                 'success' => true,
-                'message' => __('admin.settings.base.test_mail_success')
+                'message' => __('mail.test_functions.test_mail_success')
             ]);
 
         } catch (\Exception $e) {
@@ -482,7 +482,7 @@ trait MailTestTrait
             
             return response()->json([
                 'success' => false,
-                'message' => __('admin.settings.base.test_mail_failed', ['error' => $e->getMessage()])
+                'message' => __('mail.test_functions.test_mail_failed', ['error' => $e->getMessage()])
             ], 400);
         }
     }
