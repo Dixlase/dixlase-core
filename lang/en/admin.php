@@ -120,6 +120,7 @@ return [
             'upload' => 'Media Upload',
             'settings' => 'Media Settings'
         ],
+        'profile' => 'Profile Settings',
         'settings' => [
             'text' => 'Global Settings',
             'base' => 'Basic Settings',
@@ -227,8 +228,30 @@ return [
 
     ],
 
-
-
+    // Profile Settings
+    'profile' => [
+        'heading' => 'Profile Settings',
+        'name' => 'Name',
+        'description' => 'Description',
+        'email' => 'Email Address',
+        'password' => 'Password',
+        'password_change_only' => 'Password (only if changing)',
+        'password_confirmation' => 'Password Confirmation',
+        'appearance_mode' => 'Appearance Mode',
+        'appearance_auto' => 'Auto',
+        'appearance_light' => 'Light',
+        'appearance_dark' => 'Dark',
+        'login_notification_setting' => 'Login Notification Email Settings',
+        'two_factor_setting' => 'Two-Factor Authentication Settings',
+        'always' => 'Individual settings cannot be changed because it is set to "Always Enabled" in the member global settings.',
+        'submit' => 'Update Profile',
+        'update_button' => 'Update',
+        'updated' => 'Profile has been updated.',
+        'confirm_title' => 'Profile Update Confirmation',
+        'confirm_message' => 'Do you want to update your profile?',
+        'confirm_label' => 'Update',
+        'cancel_label' => 'Cancel',
+    ],
 
     // Settings
     'settings' => [
