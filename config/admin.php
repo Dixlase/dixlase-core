@@ -84,6 +84,11 @@ return [
                 ],
             ]
         ],
+        'profile' => [
+            'text' => 'admin.nav.profile',
+            'route' => 'admin.profile',
+            'icon' => 'fas fa-fw fa-id-badge',
+        ],
         'settings' => [
             'text' => 'admin.nav.settings.text',
             'icon' => 'fas fa-fw fa-cogs',
@@ -121,11 +126,6 @@ return [
                             'text' => 'admin.nav.settings.members.settings',
                             'route' => 'admin.settings.members.settings',
                             'icon' => 'fas fa-fw fa-user-cog',
-                        ],
-                        'profile' => [
-                            'text' => 'admin.nav.settings.members.profile',
-                            'route' => 'admin.settings.members.profile',
-                            'icon' => 'fas fa-fw fa-id-badge',
                         ],
                     ]
                 ],

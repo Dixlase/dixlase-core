@@ -38,6 +38,7 @@ use App\Http\Controllers\Admin\Settings\AdminSecuritySettingsController;
 use App\Http\Controllers\Admin\Settings\AdminMembersSettingsController;
 use App\Http\Controllers\Admin\Settings\AdminThemesSettingsController;
 use App\Http\Controllers\Admin\Settings\AdminSystemsController;
+use App\Http\Controllers\Admin\Profile\AdminProfileController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\SecuritySetting;
@@ -110,6 +111,10 @@ Route::prefix($adminUrl)->name('admin.')
             //メディア設定
             Route::get('/media/settings', [AdminMediaController::class, 'settings'])->name('media.settings');
             Route::post('/media/settings', [AdminMediaController::class, 'update'])->name('media.settings.update');
+
+            // プロフィール設定
+            Route::get('/profile', [AdminProfileController::class, 'index'])->name('profile');
+            Route::post('/profile', [AdminProfileController::class, 'update'])->name('profile.update');
 
             // 全体設定
             // 基本設定

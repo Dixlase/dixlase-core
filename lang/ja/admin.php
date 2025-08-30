@@ -120,6 +120,7 @@ return [
             'upload' => 'メディアアップロード',
             'settings' => 'メディア設定'
         ],
+        'profile' => 'プロフィール設定',
         'settings' => [
             'text' => '全体設定',
             'base' => '基本設定',
@@ -227,8 +228,30 @@ return [
 
     ],
 
-
-
+    // プロフィール設定
+    'profile' => [
+        'heading' => 'プロフィール設定',
+        'name' => '名前',
+        'description' => '説明',
+        'email' => 'メールアドレス',
+        'password' => 'パスワード',
+        'password_change_only' => 'パスワード(変更する場合のみ)',
+        'password_confirmation' => 'パスワード確認',
+        'appearance_mode' => '外観モード',
+        'appearance_auto' => '自動',
+        'appearance_light' => 'ライト',
+        'appearance_dark' => 'ダーク',
+        'login_notification_setting' => 'ログイン通知メールの設定',
+        'two_factor_setting' => '2段階認証の設定',
+        'always' => 'メンバー全体設定で「常に有効」にされているため、個別設定は変更できません。',
+        'submit' => 'プロフィールを更新',
+        'update_button' => '更新',
+        'updated' => 'プロフィールが更新されました。',
+        'confirm_title' => 'プロフィール更新の確認',
+        'confirm_message' => 'プロフィールを更新しますか？',
+        'confirm_label' => '更新',
+        'cancel_label' => 'キャンセル',
+    ],
 
     // 設定
     'settings' => [
