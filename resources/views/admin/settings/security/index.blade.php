@@ -37,7 +37,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         
         <!-- システムエラー通知設定 -->
-        <div class="my-6 border-t pt-6">
+        <div class="my-6 pt-6">
             <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.security.error_notification_settings') }}</h2>
             <p class="text-sm mb-4">
                 {{ __('admin.settings.security.error_notification_settings_description') }}
@@ -94,6 +94,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
                 <p class="text-sm  mt-3">{{ __('admin.settings.security.notification_log_levels_help') }}</p>
             </div>
+
+            <!-- メールサーバー設定の確認メッセージ -->
+            @if(!($mailConnectionTested && $mailSendTested && $mailReceiveTested))
+                <div class="mt-4 p-3 bg-yellow-50 dark:bg-green-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-yellow-400 text-sm"></i>
+                        </div>
+                        <div class="ml-2">
+                            <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                                {!! __('admin.settings.security.error_notification_mail_test_required', ['url' => route('admin.settings.base')]) !!}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            @endif
         </div>
 
         <!-- reCAPTCHA設定 -->
