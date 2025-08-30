@@ -397,6 +397,7 @@ return [
             'notification_enabled_help' => 'システムエラーが発生した際にメール通知を送信するかどうかを設定します。',
             'notification_log_levels' => '通知するログレベル',
             'notification_log_levels_help' => '通知を送信するログレベルを選択してください。重要度の高いエラーのみを通知することで、必要な情報だけを受け取れます。',
+            'error_notification_mail_test_required' => 'エラー通知機能を使用するには、<a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">基本設定</a>でメールサーバー設定とメールテストをすべて完了してください。',
             'log_levels' => [
                 'emergency' => 'Emergency（緊急）- システムが使用不可',
                 'alert' => 'Alert（警告）- 即座に対応が必要',

@@ -84,7 +84,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 'value' => old('admin_url', $settings['admin_url']),
                 'required' => true,
             ])
-            <p class="text-sm mt-1">{!! __('admin.settings.base.admin_url_help') !!}</p>
+            <p class="text-sm mt-3">{!! __('admin.settings.base.admin_url_help') !!}</p>
         </div>
 
         <!-- SSL強制設定 -->

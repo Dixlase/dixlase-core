@@ -394,6 +394,7 @@ Clicking this link will complete the full mail function test.',
             'notification_enabled_help' => 'Set whether to send email notifications when system errors occur.',
             'notification_log_levels' => 'Notification Log Levels',
             'notification_log_levels_help' => 'Select the log levels for which notifications should be sent. By notifying only high-priority errors, you can receive only the necessary information.',
+            'error_notification_mail_test_required' => 'To use the error notification function, please complete mail server settings and mail tests in the <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">base settings</a>.',
             'log_levels' => [
                 'emergency' => 'Emergency - System is unusable',
                 'alert' => 'Alert - Action must be taken immediately',

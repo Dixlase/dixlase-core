@@ -24,6 +24,7 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\SecuritySetting;
+use App\Models\BaseSetting;
 use App\Models\CaptchaFormSetting;
 use App\Http\Requests\Admin\Settings\Security\AdminSettngsSecurityUpdateRequest;
 use App\Enums\LogLevel;
@@ -72,8 +73,18 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         // 動的reCAPTCHAフォーム設定を取得
         $captchaFormSettings = CaptchaFormSetting::getOrderedForms();
 
+        // メールテスト状態を取得（DB優先、セッションは一時的な状態のみ）
+        $sessionTestResults = session('mail_test_results', []);
+        
+        $mailConnectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? BaseSetting::getValue('mail_connection_tested', false));
+        $mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? BaseSetting::getValue('mail_send_tested', false));
+        $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? BaseSetting::getValue('mail_receive_tested', false));
+
         $this->viewParams['settings'] = $settings;
         $this->viewParams['captchaFormSettings'] = $captchaFormSettings;
+        $this->viewParams['mailConnectionTested'] = $mailConnectionTested;
+        $this->viewParams['mailSendTested'] = $mailSendTested;
+        $this->viewParams['mailReceiveTested'] = $mailReceiveTested;
 
         return view('admin.settings.security.index', $this->viewParams);
     }
