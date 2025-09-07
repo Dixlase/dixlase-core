@@ -18,7 +18,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import '../scss/app.scss';
+import '../scss/style.scss';
 import './bootstrap';
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse'

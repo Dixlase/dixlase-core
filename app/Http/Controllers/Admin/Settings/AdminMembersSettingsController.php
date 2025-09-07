@@ -288,12 +288,30 @@ class AdminMembersSettingsController extends AdminLoggedInController
 
         // 二段階認証設定
         $force2fa = (int) MemberSetting::getValue('force_2fa', TwoFactorMode::Disabled->value);
+        
+        // old() の値がある場合はそれを優先（バリデーションエラー後の再表示時）
+        if (old('force_2fa') !== null) {
+            $force2fa = (int) old('force_2fa');
+        }
+        
         $twoFactorOptions = TwoFactorMode::options();
         
         // 有効な二段階認証方法を取得（複数選択可能）
-        $enabledTwoFactorMethodsString = MemberSetting::getValue('enabled_two_factor_methods', TwoFactorMethod::EMAIL->value);
-        $enabledTwoFactorMethods = $enabledTwoFactorMethodsString ? explode(',', $enabledTwoFactorMethodsString) : [];
+        // バリデーションエラー時は old() の値を優先して使用
+        $enabledTwoFactorMethodsString = MemberSetting::getValue('enabled_two_factor_methods', (string)TwoFactorMethod::EMAIL->value);
+        $enabledTwoFactorMethods = ($enabledTwoFactorMethodsString !== null && $enabledTwoFactorMethodsString !== '') ? explode(',', $enabledTwoFactorMethodsString) : [];
+        
+        // old() の値がある場合はそれを優先（バリデーションエラー後の再表示時）
+        if (old('enabled_two_factor_methods')) {
+            $enabledTwoFactorMethods = old('enabled_two_factor_methods');
+        }
+        
         $defaultTwoFactorMethod = (int) MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value);
+        
+        // old() の値がある場合はそれを優先（バリデーションエラー後の再表示時）
+        if (old('default_two_factor_method')) {
+            $defaultTwoFactorMethod = (int) old('default_two_factor_method');
+        }
         $twoFactorMethodOptions = TwoFactorMethod::forGlobalSettings();
 
         // パスワードリセット機能設定
@@ -353,33 +371,48 @@ class AdminMembersSettingsController extends AdminLoggedInController
         MemberSetting::setValue('login_attempt_lockout_duration', (string) $validated['login_attempt_lockout_duration']);
         MemberSetting::setValue('lockout_notification_enabled', $validated['lockout_notification_enabled'] ? '1' : '0');
 
-        // 有効な二段階認証方法を保存（複数選択）
-        $enabledMethods = $request->input('enabled_two_factor_methods', []);
-        
-        // 二段階認証が無効の場合は空配列を保存
-        if ($validated['force_2fa'] == \App\Enums\TwoFactorMode::Disabled->value) {
-            $enabledMethods = [];
-            $defaultMethod = null;
-        } else {
-            // デフォルトの二段階認証方法を決定
-            $defaultMethod = $request->input('default_two_factor_method');
+        // 二段階認証方法設定の保存
+        $autoSelectedDefaultMethod = null;
+        if (array_key_exists('enabled_two_factor_methods', $validated)) {
+            $enabledMethods = $validated['enabled_two_factor_methods'] ?? [];
+            $enabledMethodsString = !empty($enabledMethods) ? implode(',', $enabledMethods) : '';
+            MemberSetting::setValue('enabled_two_factor_methods', $enabledMethodsString);
+
+            // デフォルト認証方法の自動選択ロジック
+            $defaultMethod = $validated['default_two_factor_method'] ?? null;
             
-            // デフォルトが指定されていない場合、有効な方法の最初のものを使用
-            if (!$defaultMethod && !empty($enabledMethods)) {
-                $defaultMethod = $enabledMethods[0];
+            if (!empty($enabledMethods)) {
+                // 有効な方法が1つだけの場合、自動的にデフォルトに設定
+                if (count($enabledMethods) === 1) {
+                    $autoSelectedDefaultMethod = $enabledMethods[0];
+                    MemberSetting::setValue('default_two_factor_method', $autoSelectedDefaultMethod);
+                }
+                // 有効な方法が複数ある場合
+                else {
+                    // デフォルトが指定されていない、または指定されたデフォルトが有効な方法に含まれていない場合
+                    if (!$defaultMethod || !in_array($defaultMethod, $enabledMethods)) {
+                        $autoSelectedDefaultMethod = $enabledMethods[0]; // 最初の有効な方法を選択
+                        MemberSetting::setValue('default_two_factor_method', $autoSelectedDefaultMethod);
+                    } else {
+                        MemberSetting::setValue('default_two_factor_method', $defaultMethod);
+                    }
+                }
             }
+        } elseif (array_key_exists('default_two_factor_method', $validated)) {
+            MemberSetting::setValue('default_two_factor_method', $validated['default_two_factor_method']);
         }
-        
-        MemberSetting::setValue('enabled_two_factor_methods', implode(',', $enabledMethods));
-        MemberSetting::setValue('default_two_factor_method', $defaultMethod ?: TwoFactorMethod::EMAIL->value);
+
+        // 成功メッセージの準備
+        $successMessage = __('admin.settings.members.settings.updated');
+        if ($autoSelectedDefaultMethod) {
+            $methodLabel = \App\Enums\TwoFactorMethod::from((int)$autoSelectedDefaultMethod)->label();
+            $successMessage .= ' ' . __('admin.settings.members.settings.auto_selected_default_method', ['method' => $methodLabel]);
+        }
 
         return redirect()->route('admin.settings.members.settings')
-            ->with('success', __('admin.settings.members.settings.updated'));
+            ->with('success', $successMessage);
     }
 
-    /**
-     * メールサーバーがテスト済みかどうかを確認（3段階すべて完了）
-     */
     private function isMailServerTested(): bool
     {
         $connectionTested = (bool) BaseSetting::getValue('mail_connection_tested', false);

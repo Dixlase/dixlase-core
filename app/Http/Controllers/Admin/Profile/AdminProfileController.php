@@ -27,6 +27,7 @@ use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Enums\AppearanceMode;
 use App\Enums\LoginNotificationMode;
 use App\Enums\TwoFactorMode;
+use App\Enums\TwoFactorMethod;
 use App\Models\MemberSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -117,19 +118,80 @@ class AdminProfileController extends AdminLoggedInController
         $this->viewParams['loginNotificationOptions'] = $loginNotificationOptions;
 
         // 二段階認証設定の追加
-        $force2fa = MemberSetting::getValue(
+        $force2fa = (int) MemberSetting::getValue(
             'force_2fa',
             TwoFactorMode::UseProfileSetting->value
         );
         $twoFactorMode = Auth::guard('member')->user()->two_factor_mode;
 
-        $twoFactorOptions = collect(TwoFactorMode::forProfile())
-            ->mapWithKeys(fn($case) => [$case->value => $case->label()])
-            ->toArray();
+        // グローバル設定で有効な二段階認証方法を取得
+        $enabledTwoFactorMethodsString = MemberSetting::getValue('enabled_two_factor_methods', '0');
+        $enabledTwoFactorMethods = $enabledTwoFactorMethodsString ? array_map('intval', explode(',', $enabledTwoFactorMethodsString)) : [0];
+        $defaultTwoFactorMethod = (int) MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value);
+
+        // プロフィール用の二段階認証オプション
+        // 全体設定が「プロフィール設定を反映」の場合は、無効/異なる端末時のみ/常に有効から選択可能
+        if ($force2fa === TwoFactorMode::UseProfileSetting->value) {
+            $profileTwoFactorOptions = [
+                TwoFactorMode::Disabled->value => __('admin.profile.two_factor_mode_options.' . TwoFactorMode::Disabled->value), // 無効
+                TwoFactorMode::OnlyNewDevice->value => __('admin.profile.two_factor_mode_options.' . TwoFactorMode::OnlyNewDevice->value), // 異なる端末/IP時のみ有効
+                TwoFactorMode::Always->value => __('admin.profile.two_factor_mode_options.' . TwoFactorMode::Always->value), // 常に有効
+            ];
+        } else {
+            // 従来通り（無効、有効のみ）
+            $profileTwoFactorOptions = [
+                '0' => __('admin.profile.two_factor_mode_options.0'), // 無効
+                '1' => __('admin.profile.two_factor_mode_options.1'), // 有効
+            ];
+        }
+
+        // 有効な認証方法のオプションを生成（プロフィール設定用）
+        $availableMethodOptions = [];
+        foreach ($enabledTwoFactorMethods as $methodValue) {
+            try {
+                $method = TwoFactorMethod::from((int) $methodValue);
+                $availableMethodOptions[$method->value] = $method->label();
+            } catch (\ValueError $e) {
+                // 無効なメソッド値はスキップ
+                continue;
+            }
+        }
+
+        // 現在のユーザーの認証方法を取得
+        $user = Auth::guard('member')->user();
+        $currentTwoFactorMethod = $user->two_factor_method ?? $defaultTwoFactorMethod;
+        
+        // 現在のメソッドが有効なメソッドに含まれていない場合はデフォルトを使用
+        if (!in_array((int)$currentTwoFactorMethod, $enabledTwoFactorMethods, true) && !empty($enabledTwoFactorMethods)) {
+            $currentTwoFactorMethod = $defaultTwoFactorMethod;
+            
+            // デフォルトメソッドも有効でない場合は最初の有効なメソッドを使用
+            if (!in_array($currentTwoFactorMethod, $enabledTwoFactorMethods, true)) {
+                $currentTwoFactorMethod = $enabledTwoFactorMethods[0];
+            }
+            
+            // ユーザーの設定を更新
+            $user->two_factor_method = $currentTwoFactorMethod;
+            $user->save();
+        }
+
+        // 認証方法選択を表示するかどうか（プロフィール設定を反映の場合、または複数の認証方法が有効な場合）
+        $showMethodSelection = ($force2fa === TwoFactorMode::UseProfileSetting->value || count($availableMethodOptions) > 1);
+        
+        // 全体設定が OnlyNewDevice または Always の場合は現在の設定を表示用として取得
+        $currentGlobalTwoFactorMode = null;
+        if (in_array($force2fa, [TwoFactorMode::OnlyNewDevice->value, TwoFactorMode::Always->value], true)) {
+            $currentGlobalTwoFactorMode = TwoFactorMode::from($force2fa);
+        }
 
         $this->viewParams['force2fa'] = $force2fa;
         $this->viewParams['twoFactorMode'] = $twoFactorMode;
-        $this->viewParams['twoFactorOptions'] = $twoFactorOptions;
+        $this->viewParams['profileTwoFactorOptions'] = $profileTwoFactorOptions;
+        $this->viewParams['availableMethodOptions'] = $availableMethodOptions;
+        $this->viewParams['currentTwoFactorMethod'] = $currentTwoFactorMethod;
+        $this->viewParams['defaultTwoFactorMethod'] = $defaultTwoFactorMethod;
+        $this->viewParams['showMethodSelection'] = $showMethodSelection;
+        $this->viewParams['currentGlobalTwoFactorMode'] = $currentGlobalTwoFactorMode;
 
         return view('admin.profile.index', $this->viewParams);
     }
@@ -160,21 +222,40 @@ class AdminProfileController extends AdminLoggedInController
 
         // 条件に応じて大文字と記号を追加
         if ($requireUppercase) {
-            $passwordRules[] = 'regex:/[A-Z]/'; // 英大文字
+            $passwordRules[] = 'regex:/[A-Z]/'; // 大文字
         }
         if ($requireSymbol) {
             $passwordRules[] = 'regex:/[!@#$%^&*(),.?":{}|<>]/'; // 記号
         }
 
-        $validated = $request->validate([
+        $rules = [
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
-            'email' => 'required|email|unique:members,email,' . $member->id,
+            'email' => 'required|string|email|max:255|unique:members,email,' . $member->id,
             'password' => $passwordRules,
             'appearance' => ['nullable', new Enum(AppearanceMode::class)],
-            'two_factor_mode' => ['nullable', new Enum(TwoFactorMode::class)],
             'login_notification_mode' => ['nullable', new Enum(LoginNotificationMode::class)],
-        ]);
+            'two_factor_mode' => ['nullable', new Enum(TwoFactorMode::class)],
+            'two_factor_method' => 'nullable|integer',
+        ];
+
+        // 二段階認証方法のバリデーション（有効な方法の中から選択されているかチェック）
+        $enabledTwoFactorMethodsString = MemberSetting::getValue('enabled_two_factor_methods', '0');
+        $enabledTwoFactorMethods = $enabledTwoFactorMethodsString ? array_map('intval', explode(',', $enabledTwoFactorMethodsString)) : [0];
+        $force2faValue = (int) MemberSetting::getValue('force_2fa', TwoFactorMode::UseProfileSetting->value);
+        $defaultTwoFactorMethod = (int) MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value);
+        
+        // グローバル設定が有効な場合のみ認証方法選択をバリデーション
+        if (in_array($force2faValue, [TwoFactorMode::UseProfileSetting->value, TwoFactorMode::OnlyNewDevice->value, TwoFactorMode::Always->value]) && !empty($enabledTwoFactorMethods)) {
+            // 有効な認証方法が1つだけの場合はその方法を強制
+            if (count($enabledTwoFactorMethods) === 1) {
+                $rules['two_factor_method'] = 'required|integer|in:' . $enabledTwoFactorMethods[0];
+            } else {
+                $rules['two_factor_method'] = 'required|integer|in:' . implode(',', $enabledTwoFactorMethods);
+            }
+        }
+
+        $validated = $request->validate($rules);
 
         $member->fill([
             'name' => $validated['name'],
@@ -193,10 +274,33 @@ class AdminProfileController extends AdminLoggedInController
             $member->login_notification_mode = (int) $validated['login_notification_mode'];
         }
 
-        // two_factor_mode は全体設定が 0 のときだけ上書き
+        // two_factor_mode は全体設定が UseProfileSetting のときだけ上書き
         $force2fa = (int) MemberSetting::getValue('force_2fa', TwoFactorMode::UseProfileSetting->value);
         if ($force2fa === TwoFactorMode::UseProfileSetting->value && array_key_exists('two_factor_mode', $validated)) {
             $member->two_factor_mode = (int) $validated['two_factor_mode'];
+        }
+
+        // two_factor_method の処理
+        if (in_array($force2fa, [TwoFactorMode::UseProfileSetting->value, TwoFactorMode::OnlyNewDevice->value, TwoFactorMode::Always->value])) {
+            // 有効な認証方法を再度取得
+            $enabledTwoFactorMethodsString = MemberSetting::getValue('enabled_two_factor_methods', '0');
+            $enabledTwoFactorMethods = $enabledTwoFactorMethodsString ? array_map('intval', explode(',', $enabledTwoFactorMethodsString)) : [0];
+            $defaultTwoFactorMethod = (int) MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value);
+            
+            // 送信された値が有効な方法かチェック
+            $selectedMethod = isset($validated['two_factor_method']) ? (int)$validated['two_factor_method'] : $defaultTwoFactorMethod;
+            
+            // 選択された方法が有効でない場合はデフォルトの方法を使用
+            if (!in_array($selectedMethod, $enabledTwoFactorMethods, true)) {
+                $selectedMethod = $defaultTwoFactorMethod;
+                
+                // デフォルトの方法も有効でない場合は最初の有効な方法を使用
+                if (!in_array($selectedMethod, $enabledTwoFactorMethods, true) && !empty($enabledTwoFactorMethods)) {
+                    $selectedMethod = $enabledTwoFactorMethods[0];
+                }
+            }
+            
+            $member->two_factor_method = $selectedMethod;
         }
 
         $member->save();
