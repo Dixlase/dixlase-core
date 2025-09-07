@@ -1,0 +1,22 @@
+{
+    "mcpServers": {
+        "laravel-boost": {
+            "command": "docker",
+            "args": [
+                "compose",
+                "-p",
+                "your-project-name", // ← プロジェクト名。docker compose ps で確認可（例: dixlase）
+                "-f",
+                "/absolute/path/to/docker-compose.yml", // ← docker-compose.yml の絶対パスを指定
+                "exec",
+                "-T",
+                "-w",
+                "/var/www/html", // ← Laravel プロジェクトのルート（コンテナ内パス）
+                "laravel.test", // ← docker-compose.yml のサービス名
+                "php",
+                "artisan",
+                "boost:mcp"
+            ]
+        }
+    }
+}

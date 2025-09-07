@@ -1,59 +1,201 @@
-name: Laravel CI/CD Pipeline
+name: Dixlase Release (build Vite & attach ZIP)
 
-# ワークフローの実行トリガーを設定
 on:
+  # タグを push したら自動実行（例: v1.0.0 / v0.9.1 など）
   push:
-    branches:
-      - main # mainブランチへのプッシュ時に実行
-      - test # testブランチへのプッシュ時
-  pull_request:
-    branches:
-      - main # mainブランチへのPRが作成されたときに実行
-      - test # testブランチへのPRが作成されたときに実行
+    tags:
+      - 'v*'
+  # 手動実行にも対応
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (e.g. v1.2.3). If empty, uses ref name when triggered by tag.'
+        required: false
+        default: ''
+      prerelease:
+        description: 'Mark as pre-release?'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write  # GitHub Release 作成・添付に必要
 
 jobs:
-  laravel-tests: # ジョブ名
-    runs-on: ubuntu-latest # ジョブを実行する環境
+  build-and-release:
+    name: Build & Release ZIP
+    runs-on: ubuntu-latest
 
-    services:
-      mysql: # MySQLサービスの設定
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: password
-          MYSQL_DATABASE: laravel_test
-          MYSQL_USER: user
-          MYSQL_PASSWORD: password
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping --silent"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
+    env:
+      PHP_VERSION: '8.2'
+      NODE_VERSION: '20'
+      # Vite の出力先など（vite.config.js に合わせて）
+      BUILD_DIR: public/assets/build
+      ZIP_NAME: dixlase-${{ github.ref_name }}.zip
 
     steps:
-      - name: Checkout repository # コードを取得
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Set up PHP # PHPのセットアップ
+      # Composer（PHP）セットアップ
+      - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.2"
-          extensions: mbstring, intl, pdo, mysql
+          php-version: ${{ env.PHP_VERSION }}
+          coverage: none
+          extensions: mbstring, intl, pdo_mysql, fileinfo, ctype, curl, dom, json, openssl, tokenizer, xml
 
-      - name: Install Composer dependencies # Composerの依存関係をインストール
-        run: composer install --prefer-dist --no-progress --no-suggest
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.composer/cache/files
+          key: composer-${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            composer-${{ runner.os }}-
 
-      - name: Set up the environment file # .envファイルの設定
+      - name: Composer Install (no-dev, optimized)
         run: |
-          cp .env.example .env
-          php artisan config:clear
+          composer install --no-interaction --prefer-dist --no-progress --no-dev
+          # scripts を実行したい場合は --no-scripts を外す
+          php artisan --version || true
 
-      - name: Generate application key # アプリケーションキーを生成
-        run: php artisan key:generate
+      # Node（Vite/Tailwind）セットアップ
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
-      - name: Run database migrations
-        run: php artisan migrate --env=testing --force
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-
 
-      - name: Run tests # Laravelのテストを実行
-        run: php artisan test --env=testing || cat storage/logs/laravel.log
+      - name: Install Node deps
+        run: npm ci
+
+      - name: Build assets (Vite)
+        # vite.config.js の outDir = public/assets/build を想定
+        run: npm run build
+
+      - name: Verify build output
+        run: |
+          test -d "${{ env.BUILD_DIR }}" || (echo "Build output not found: $BUILD_DIR" && exit 1)
+          ls -la "${{ env.BUILD_DIR }}" || true
+
+      # ZIP 生成：本番で必要なものだけを同梱（vendor + public/assets/build + 主要ファイル）
+      # node_modules や .git などは除外
+      - name: Create release ZIP
+        shell: bash
+        run: |
+          VERSION_INPUT='${{ inputs.version }}'
+          if [ -n "$VERSION_INPUT" ]; then
+            export ZIP_NAME="dixlase-${VERSION_INPUT}.zip"
+          fi
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
+
+          rm -f "$ZIP_NAME"
+
+          # 一時ディレクトリを作って必要なファイルだけコピー
+          WORKDIR="$(pwd)"
+          STAGE="$WORKDIR/.release"
+          rm -rf "$STAGE"
+          mkdir -p "$STAGE"
+
+          # 主要ディレクトリ/ファイル（必要に応じて追加・調整してください）
+          rsync -a --delete \
+            app bootstrap config database public resources routes vendor artisan composer.json composer.lock \
+            "$STAGE/"
+
+          # ビルド成果物と必要アセット
+          mkdir -p "$STAGE/public/assets"
+          rsync -a public/assets/build "$STAGE/public/assets/"    # ビルド済み
+          # 手動管理の画像は必要なら同梱（README方針に合わせて）
+          if [ -d public/assets/images ]; then
+            rsync -a public/assets/images "$STAGE/public/assets/"
+          fi
+
+          # 不要ファイルの掃除（万一混入した場合）
+          rm -rf "$STAGE/node_modules" "$STAGE/.git" "$STAGE/tests" "$STAGE/storage/logs" || true
+
+          # .env は含めず、.env.example は含める
+          if [ -f .env.example ]; then
+            cp .env.example "$STAGE/.env.example"
+          fi
+
+          # ZIP 化
+          cd "$STAGE"
+          zip -r "$WORKDIR/$ZIP_NAME" . -9
+          cd "$WORKDIR"
+          echo "Created $ZIP_NAME"
+          ls -lh "$ZIP_NAME"
+
+      - name: Upload artifact (for CI browsing)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ZIP_NAME }}
+          path: ${{ env.ZIP_NAME }}
+          if-no-files-found: error
+          retention-days: 7
+
+      # GitHub Release 作成＋ZIP 添付
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.version != '' && inputs.version || github.ref_name }}
+          name: ${{ inputs.version != '' && inputs.version || github.ref_name }}
+          prerelease: ${{ inputs.prerelease }}
+          files: |
+            ${{ env.ZIP_NAME }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  upload-to-server:
+    name: Upload ZIP to self-hosted server
+    needs: build-and-release
+    runs-on: ubuntu-latest
+    if: ${{ success() }}
+    steps:
+    - name: Prepare SSH key & known_hosts
+      shell: bash
+      run: "install -m 700 -d ~/.ssh\necho \"${{ secrets.SSH_PRIVATE_KEY }}\" > ~/.ssh/id_ed25519\n\
+        chmod 600 ~/.ssh/id_ed25519\nif [ -n \"${{ secrets.SSH_KNOWN_HOSTS }}\" ];\
+        \ then\n  echo \"${{ secrets.SSH_KNOWN_HOSTS }}\" > ~/.ssh/known_hosts\nelse\n\
+        \  ssh-keyscan -p \"${{ secrets.SSH_PORT }}\" \"${{ secrets.SSH_HOST }}\"\
+        \ >> ~/.ssh/known_hosts 2>/dev/null\nfi"
+    - name: Download release artifact (ZIP)
+      uses: actions/download-artifact@v4
+      with:
+        pattern: '*.zip'
+        merge-multiple: true
+        path: .
+    - name: Resolve ZIP filename
+      id: resolve_zip
+      shell: bash
+      run: "ZIP_FILE=\"$(ls -1 *.zip | head -n1)\"\nif [ -z \"$ZIP_FILE\" ]; then\n\
+        \  echo \"No ZIP found\"; exit 1; fi\necho \"zip_name=$ZIP_FILE\" >> \"$GITHUB_OUTPUT\""
+    - name: Upload via rsync over SSH
+      env:
+        SSH_HOST: ${{ secrets.SSH_HOST }}
+        SSH_PORT: ${{ secrets.SSH_PORT }}
+        SSH_USER: ${{ secrets.SSH_USER }}
+        REMOTE_DIR: ${{ secrets.SSH_REMOTE_DIR }}
+      shell: bash
+      run: 'mkdir -p tmp && mv "${{ steps.resolve_zip.outputs.zip_name }}" tmp/
+
+        rsync -avz -e "ssh -p ${SSH_PORT:-22}" "tmp/${{ steps.resolve_zip.outputs.zip_name
+        }}" "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}/"'
+    - name: Create/Update latest symlink on server (optional)
+      if: always()
+      env:
+        SSH_HOST: ${{ secrets.SSH_HOST }}
+        SSH_PORT: ${{ secrets.SSH_PORT }}
+        SSH_USER: ${{ secrets.SSH_USER }}
+        REMOTE_DIR: ${{ secrets.SSH_REMOTE_DIR }}
+        ZIP_BASENAME: ${{ steps.resolve_zip.outputs.zip_name }}
+      run: ssh -p "${SSH_PORT:-22}" "${SSH_USER}@${SSH_HOST}" "mkdir -p '${REMOTE_DIR}'
+        && ln -sfn '${REMOTE_DIR}/${ZIP_BASENAME}' '${REMOTE_DIR}/latest.zip'"

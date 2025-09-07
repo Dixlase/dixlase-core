@@ -1,11 +1,17 @@
 /.phpunit.cache
 /node_modules
+
+# --- ビルド成果物（Vite 出力）を除外 ---
 /public/assets/build
 /public/assets/plugins
 /public/assets/theme
 /public/hot
 /public/storage
+
+# ただし画像など手動管理アセットは残す
 !public/assets/images/
+
+# Laravel / PHP 関連
 /storage/*.key
 /vendor
 .env
@@ -18,12 +24,16 @@ Homestead.yaml
 auth.json
 npm-debug.log
 yarn-error.log
+
+# IDE / Editor configs
 /.fleet
 /.idea
 /.vscode
 /.zed
 DS_Store
+CLAUDE.md
 
+# Dixlase カスタム
 # カスタムファイルを入れるディレクトリを除外
 custom/*
 # プラグインを入れるディレクトリを除外
@@ -32,3 +42,9 @@ plugins/*
 themes/**
 license-info.json
 license.txt
+
+# IDE / MCP / AI assistant configs
+.junie/
+.cursor/
+.vscode/mcp.json
+.mcp.json
