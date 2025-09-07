@@ -32,9 +32,9 @@ export default defineConfig({
         rollupOptions: {
             input: {
                 admin_js: path.resolve(__dirname, 'resources/src/admin/js/app.js'),
-                admin_css: path.resolve(__dirname, 'resources/src/admin/scss/app.scss'),
+                admin_css: path.resolve(__dirname, 'resources/src/admin/scss/style.scss'),
                 common_js: path.resolve(__dirname, 'resources/src/common/js/app.js'),
-                common_css: path.resolve(__dirname, 'resources/src/common/scss/app.scss'),
+                common_css: path.resolve(__dirname, 'resources/src/common/scss/style.scss'),
             },
             output: {
                 // JavaScriptファイルの名前を指定

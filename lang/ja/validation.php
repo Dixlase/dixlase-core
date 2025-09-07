@@ -186,6 +186,9 @@ return [
         'attribute-name' => [
             'rule-name' => 'custom-message',
         ],
+        'default_two_factor_method' => [
+            'in_enabled_methods' => 'デフォルトの二段階認証方法は有効な方法の中から選択してください。',
+        ],
     ],
 
     /*

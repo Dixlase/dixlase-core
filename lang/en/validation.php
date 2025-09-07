@@ -197,6 +197,9 @@ return [
         'attribute-name' => [
             'rule-name' => 'custom-message',
         ],
+        'default_two_factor_method' => [
+            'in_enabled_methods' => 'The default two-factor method must be selected from the enabled methods.',
+        ],
     ],
 
     /*

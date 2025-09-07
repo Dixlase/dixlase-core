@@ -290,11 +290,11 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $force2fa = (int) MemberSetting::getValue('force_2fa', TwoFactorMode::Disabled->value);
         $twoFactorOptions = TwoFactorMode::options();
         
-        // 有効な二段階認証方法を取得（デフォルトはメール認証のみ有効）
-        $enabledTwoFactorMethods = json_decode(
-            MemberSetting::getValue('enabled_two_factor_methods', json_encode([TwoFactorMethod::EMAIL->value])),
-            true
-        );
+        // 有効な二段階認証方法を取得（複数選択可能）
+        $enabledTwoFactorMethodsString = MemberSetting::getValue('enabled_two_factor_methods', TwoFactorMethod::EMAIL->value);
+        $enabledTwoFactorMethods = $enabledTwoFactorMethodsString ? explode(',', $enabledTwoFactorMethodsString) : [];
+        $defaultTwoFactorMethod = (int) MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value);
+        $twoFactorMethodOptions = TwoFactorMethod::forGlobalSettings();
 
         // パスワードリセット機能設定
         $passwordResetEnabled = (bool) MemberSetting::getValue('password_reset_enabled', true);
@@ -319,6 +319,8 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['force2fa'] = $force2fa;
         $this->viewParams['twoFactorOptions'] = $twoFactorOptions;
         $this->viewParams['enabledTwoFactorMethods'] = $enabledTwoFactorMethods;
+        $this->viewParams['defaultTwoFactorMethod'] = $defaultTwoFactorMethod;
+        $this->viewParams['twoFactorMethodOptions'] = $twoFactorMethodOptions;
         $this->viewParams['passwordResetEnabled'] = $passwordResetEnabled;
         $this->viewParams['loginAttemptLimitEnabled'] = $loginAttemptLimitEnabled;
         $this->viewParams['loginAttemptMaxAttempts'] = $loginAttemptMaxAttempts;
@@ -351,13 +353,25 @@ class AdminMembersSettingsController extends AdminLoggedInController
         MemberSetting::setValue('login_attempt_lockout_duration', (string) $validated['login_attempt_lockout_duration']);
         MemberSetting::setValue('lockout_notification_enabled', $validated['lockout_notification_enabled'] ? '1' : '0');
 
-        // 有効な二段階認証方法を保存
-        $enabledMethods = $request->input('two_factor_methods', []);
-        // 最低1つは有効にする
-        if (empty($enabledMethods)) {
-            $enabledMethods = [TwoFactorMethod::EMAIL->value];
+        // 有効な二段階認証方法を保存（複数選択）
+        $enabledMethods = $request->input('enabled_two_factor_methods', []);
+        
+        // 二段階認証が無効の場合は空配列を保存
+        if ($validated['force_2fa'] == \App\Enums\TwoFactorMode::Disabled->value) {
+            $enabledMethods = [];
+            $defaultMethod = null;
+        } else {
+            // デフォルトの二段階認証方法を決定
+            $defaultMethod = $request->input('default_two_factor_method');
+            
+            // デフォルトが指定されていない場合、有効な方法の最初のものを使用
+            if (!$defaultMethod && !empty($enabledMethods)) {
+                $defaultMethod = $enabledMethods[0];
+            }
         }
-        MemberSetting::setValue('enabled_two_factor_methods', json_encode($enabledMethods));
+        
+        MemberSetting::setValue('enabled_two_factor_methods', implode(',', $enabledMethods));
+        MemberSetting::setValue('default_two_factor_method', $defaultMethod ?: TwoFactorMethod::EMAIL->value);
 
         return redirect()->route('admin.settings.members.settings')
             ->with('success', __('admin.settings.members.settings.updated'));

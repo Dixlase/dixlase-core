@@ -60,7 +60,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </aside>
 
                 <!-- Main -->
-                <main class="ml-0 md:ml-64 flex-1 {{ config('admin.appearance_class.layout.main') }}">
+                <main class="ml-0 md:ml-64 md:pl-4 lg:pl-0 flex-1 {{ config('admin.appearance_class.layout.main') }}">
 
                     <!-- Page Heading -->
                     <div class="mx-auto py-6 px-4 sm:px-6 lg:px-8 mb-10 {{ config('admin.appearance_class.layout.title') }}">
@@ -91,6 +91,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
 
         <!-- Modals Section -->
+        @hasSection('modals')
+            @yield('modals')
+        @endif
         @stack('modals')
 
         <script>

@@ -2,26 +2,34 @@
 
 namespace App\Enums;
 
-enum TwoFactorMethod: string
+enum TwoFactorMethod: int
 {
-    case EMAIL = 'email';
-    case DEVICE = 'device';
-    case BIOMETRIC = 'biometric';
+    case EMAIL = 0;
+    case DEVICE = 1;
+    case BIOMETRIC = 2;
+    case USE_PROFILE_SETTING = 3;
     
     public function label(): string
     {
         return match($this) {
-            self::EMAIL => __('admin.settings.members.two_factor_method.options.email'),
-            self::DEVICE => __('admin.settings.members.two_factor_method.options.device'),
-            self::BIOMETRIC => __('admin.settings.members.two_factor_method.options.biometric'),
+            self::EMAIL => __('admin.settings.members.settings.two_factor_method.options.0'),
+            self::DEVICE => __('admin.settings.members.settings.two_factor_method.options.1'),
+            self::BIOMETRIC => __('admin.settings.members.settings.two_factor_method.options.2'),
+            self::USE_PROFILE_SETTING => __('admin.settings.members.settings.two_factor_method.options.3'),
         };
     }
     
     public static function options(): array
     {
-        return array_combine(
-            array_column(self::cases(), 'value'),
-            array_map(fn($case) => $case->label(), self::cases())
-        );
+        $options = [];
+        foreach (self::cases() as $case) {
+            $options[$case->value] = $case->label();
+        }
+        return $options;
+    }
+
+    public static function forGlobalSettings(): array
+    {
+        return array_filter(self::cases(), fn(self $case) => $case !== self::USE_PROFILE_SETTING);
     }
 }
