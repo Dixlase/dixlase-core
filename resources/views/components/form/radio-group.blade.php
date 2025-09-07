@@ -26,7 +26,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'class' => '',     // カスタムクラス
 ])
 
-<div class="flex items-center space-x-4">
+<div class="flex flex-col md:flex-row md:items-center md:space-x-4">
     @foreach ($options as $option_value => $option_label)
         <label class="inline-flex items-center">
             <input type="radio"

@@ -250,7 +250,7 @@ return [
             'label' => 'block text-sm font-medium text-gray-700 dark:text-gray-300',
             'text' => 'bg-white border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-900 dark:border-gray-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-500',
             'input' => 'block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm',
-            'button' => 'ml-2 px-4 py-2 bg-indigo-600 text-white rounded-md shadow-sm hover:bg-indigo-700',
+            'button' => 'px-4 py-2 bg-indigo-600 text-white rounded-md shadow-sm hover:bg-indigo-700',
             'checkbox' => 'text-gray-600 dark:text-gray-600',
             'error' => 'text-red-600 dark:text-red-400',
             'select' => 'block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm',

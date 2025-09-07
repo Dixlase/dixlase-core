@@ -27,20 +27,44 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'password_min_length' => 'required|integer|min:6|max:32',
             'password_require_uppercase' => 'required|boolean',
             'password_require_symbol' => 'required|boolean',
             'login_notification_mode' => ['required', new Enum(LoginNotificationMode::class)],
             'force_2fa' => ['required', new Enum(TwoFactorMode::class)],
-            'two_factor_methods' => 'required|array|min:1',
-            'two_factor_methods.*' => 'in:' . implode(',', array_column(TwoFactorMethod::cases(), 'value')),
             'password_reset_enabled' => 'required|boolean',
             'login_attempt_limit_enabled' => 'required|boolean',
             'login_attempt_max_attempts' => 'required|integer|min:1|max:100',
             'login_attempt_time_window' => 'required|integer|min:1|max:1440', // 最大24時間
             'login_attempt_lockout_duration' => 'required|integer|min:1|max:10080', // 最大1週間
             'lockout_notification_enabled' => 'required|boolean',
+        ];
+
+        // 二段階認証が有効な場合のみ、認証方法の選択を必須にする
+        $force2fa = $this->input('force_2fa');
+        if ($force2fa && $force2fa != TwoFactorMode::Disabled->value) {
+            $rules['enabled_two_factor_methods'] = 'required|array|min:1';
+            $rules['enabled_two_factor_methods.*'] = 'required|in:' . implode(',', array_column(TwoFactorMethod::forGlobalSettings(), 'value'));
+            $rules['default_two_factor_method'] = 'nullable|in:' . implode(',', array_column(TwoFactorMethod::forGlobalSettings(), 'value'));
+        } else {
+            $rules['enabled_two_factor_methods'] = 'nullable|array';
+            $rules['enabled_two_factor_methods.*'] = 'nullable|in:' . implode(',', array_column(TwoFactorMethod::forGlobalSettings(), 'value'));
+            $rules['default_two_factor_method'] = 'nullable|in:' . implode(',', array_column(TwoFactorMethod::forGlobalSettings(), 'value'));
+        }
+
+        return $rules;
+    }
+
+    /**
+     * Get custom validation messages.
+     */
+    public function messages(): array
+    {
+        return [
+            'enabled_two_factor_methods.required' => '二段階認証を有効にしている場合は、いずれかの認証方法を選択してください。',
+            'enabled_two_factor_methods.min' => '二段階認証を有効にしている場合は、最低1つの認証方法を選択してください。',
+            'default_two_factor_method.required' => '二段階認証を有効にしている場合は、デフォルトの認証方法を選択してください。',
         ];
     }
 
@@ -50,6 +74,19 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
+            $force2fa = $this->input('force_2fa');
+            $enabledMethods = $this->input('enabled_two_factor_methods', []);
+            $defaultMethod = $this->input('default_two_factor_method');
+            
+            // 二段階認証が有効な場合のみバリデーション
+            if ($force2fa && $force2fa != TwoFactorMode::Disabled->value) {
+                // デフォルトの二段階認証方法が有効な方法の中に含まれているかチェック
+                if ($defaultMethod && !in_array($defaultMethod, $enabledMethods)) {
+                    $validator->errors()->add('default_two_factor_method', 
+                        __('validation.custom.default_two_factor_method.in_enabled_methods'));
+                }
+            }
+            
             // Mail server validation has been relaxed for all features
             // All mail-dependent features (password reset, login notifications, 2FA) 
             // can now be configured regardless of mail server test status

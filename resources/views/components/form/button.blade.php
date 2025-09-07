@@ -30,7 +30,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <button type="{{ $type }}"
     @if ($onclick) onclick="{{ $onclick }}" @endif
     @if ($form) form="{{ $form }}" @endif
-    class="py-2 px-4 rounded-md shadow-sm {{ config('admin.appearance_class.form.button') }} {{ $class }}"
+    class="rounded-md shadow-sm {{ config('admin.appearance_class.form.button') }} {{ $class }}"
     @if ($disabled) disabled @endif
     >
     {{ $label }}
