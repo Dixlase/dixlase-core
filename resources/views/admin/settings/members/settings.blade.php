@@ -388,17 +388,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('save')
-    <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <!-- 更新ボタン -->
-        @include('components::form.button', [
-            'type' => 'button',
-            'label' => __('admin.settings.members.settings.update_button'),
-            'class' => '',
-            'onclick' => "openModal('confirmationModal')"
-        ])
-
-
-    </div>
+    <!-- 更新ボタン -->
+    @include('components::form.button', [
+        'type' => 'button',
+        'label' => __('admin.settings.members.settings.update_button'),
+        'class' => '',
+        'onclick' => "openModal('confirmationModal')"
+    ])
 @endsection
 
 @section('modals')

@@ -29,9 +29,9 @@ class MembersSettingsSeeder extends Seeder
             ['key' => 'login_notification_mode', 'value' => '0'], // 0 = UseProfileSetting（プロファイルに任せる）
 
             // 二段階認証設定
-            ['key' => 'force_2fa', 'value' => '0'], // 0 = UseProfileSetting（プロファイルに任せる）
-            ['key' => 'enabled_two_factor_methods', 'value' => '[0]'], // デフォルト: メール認証のみ有効（integer値）
-            ['key' => 'default_two_factor_method', 'value' => '0'], // デフォルト: メール認証（integer値）
+            ['key' => 'force_2fa', 'value' => '1'], // 1 = メンバーのプロフィール設定を反映
+            ['key' => 'enabled_two_factor_methods', 'value' => '0'], // メール認証のみ有効
+            ['key' => 'default_two_factor_method', 'value' => '0'], // デフォルトの認証方法はメール認証
 
             // ログイン試行制限設定
             ['key' => 'login_attempt_limit_enabled', 'value' => '1'], // デフォルト: 有効

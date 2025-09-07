@@ -5,14 +5,14 @@
             "args": [
                 "compose",
                 "-p",
-                "your-project-name", // ← プロジェクト名。docker compose ps で確認可（例: dixlase）
+                "your-project-name",
                 "-f",
-                "/absolute/path/to/docker-compose.yml", // ← docker-compose.yml の絶対パスを指定
+                "/absolute/path/to/docker-compose.yml",
                 "exec",
                 "-T",
                 "-w",
-                "/var/www/html", // ← Laravel プロジェクトのルート（コンテナ内パス）
-                "laravel.test", // ← docker-compose.yml のサービス名
+                "/var/www/html",
+                "laravel.test",
                 "php",
                 "artisan",
                 "boost:mcp"

@@ -77,7 +77,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
 
                     @hasSection('save')
-                        <div class="sticky bottom-0 z-30 backdrop-blur-sm bg-white/50 bg-white dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700 px-4 sm:px-6 lg:px-6 py-3">
+                        <div class="sticky bottom-0 z-30 backdrop-blur-sm bg-white/50 bg-white dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700 pl-6 sm:px-6 lg:px-8 py-3">
                             <div class="w-full mx-auto">
                                 @yield('save')
                             </div>
