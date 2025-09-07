@@ -113,25 +113,85 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
 
         <!-- ログイン通知設定 -->
-        @if($loginNoticeGlobal === 0)
-            <div class="mb-4">
-                <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
-                    {{ __('admin.profile.login_notification_mode') }}
-                </label>
+        @php
+            // 0 = 無効, 1 = プロフィール設定を反映, 2 = 異なる端末/IP時のみ有効, 3 = 常に有効
+            $globalLoginNotification = (int) ($loginNoticeGlobal ?? 0);
+            
+            // 現在の通知モードを取得 (フォーム送信後の値 or 現在のユーザー設定 or デフォルト値 1 = 無効)
+            $currentLoginNotificationMode = old('login_notification_mode', (string) ($loginNotificationMode ?? 1));
+            
+            // 全体設定が「無効」の場合はセクションを非表示
+            $hideLoginNotificationSection = ($globalLoginNotification === 0);
+            
+            // 全体設定が「プロフィール設定を反映」の場合は設定を表示
+            $showLoginNotificationSettings = ($globalLoginNotification === 1);
+        @endphp
 
-                @include('components.form.radio-group', [
-                    'name' => 'login_notification_mode',
-                    'options' => $loginNotificationOptions,
-                    'value' => old('login_notification_mode', (string) ($loginNotificationMode?->value ?? 0)),
-                ])
-
-                <div class="mt-1">
-                    <p class="text-xs text-gray-500 dark:text-gray-400">
+        @unless($hideLoginNotificationSection)
+            @if($showLoginNotificationSettings)
+                <div class="mb-6">
+                    <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">
+                        {{ __('admin.profile.login_notification_mode') }}
+                    </label>
+                    <div class="space-y-2">
+                        <div class="flex items-center">
+                            <input type="radio" id="login_notification_disabled" 
+                                   name="login_notification_mode" 
+                                   value="1" 
+                                   class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600"
+                                   @if($currentLoginNotificationMode == 1) checked @endif>
+                            <label for="login_notification_disabled" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                                {{ __('admin.profile.login_notification_mode_options.disabled') }}
+                            </label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="radio" id="login_notification_new_device" 
+                                   name="login_notification_mode" 
+                                   value="3" 
+                                   class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600"
+                                   @if($currentLoginNotificationMode == 3) checked @endif>
+                            <label for="login_notification_new_device" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                                {{ __('admin.profile.login_notification_mode_options.only_new_device') }}
+                            </label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="radio" id="login_notification_always" 
+                                   name="login_notification_mode" 
+                                   value="2" 
+                                   class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600"
+                                   @if($currentLoginNotificationMode == 2) checked @endif>
+                            <label for="login_notification_always" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                                {{ __('admin.profile.login_notification_mode_options.always') }}
+                            </label>
+                        </div>
+                    </div>
+                    <p class="mt-1 text-xs">
                         {{ __('admin.profile.login_notification_help') }}
                     </p>
                 </div>
-            </div>
-        @endif
+            @else
+                <!-- 全体設定で固定されている場合の表示 -->
+                <div class="mb-6">
+                    <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
+                        {{ __('admin.profile.login_notification_mode') }}
+                    </label>
+                    <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
+                        <p class="text-sm text-gray-700 dark:text-gray-300">
+                            <span class="font-medium">
+                                @if($globalLoginNotification === 2)
+                                    {{ __('admin.profile.login_notification_mode_options.only_new_device') }}
+                                @elseif($globalLoginNotification === 3)
+                                    {{ __('admin.profile.login_notification_mode_options.always') }}
+                                @endif
+                            </span>
+                        </p>
+                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                            {{ __('admin.profile.login_notification_global_setting_help') }}
+                        </p>
+                    </div>
+                </div>
+            @endif
+        @endunless
 
         <!-- 二段階認証設定 -->
         @if($force2fa === \App\Enums\TwoFactorMode::UseProfileSetting->value)
@@ -147,7 +207,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 ])
 
                 <div class="mt-1">
-                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                    <p class="text-xs">
                         {{ __('admin.profile.two_factor_help') }}
                     </p>
                 </div>
@@ -160,10 +220,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </label>
                 
                 <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
-                    <p class="text-sm text-gray-700 dark:text-gray-300">
+                    <p class="text-sm">
                         {{ __('admin.profile.two_factor_mode_options.' . $currentGlobalTwoFactorMode->value) }}
                     </p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <p class="text-xs mt-1">
                         {{ __('admin.profile.two_factor_global_setting_fixed') }}
                     </p>
                 </div>
@@ -175,11 +235,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="mb-4">
                 <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
                     {{ __('admin.profile.two_factor_method') }}
-                    @if(count($availableMethodOptions) > 1)
-                        <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">
-                            ({{ count($availableMethodOptions) }} {{ __('admin.profile.available_methods') }})
-                        </span>
-                    @endif
                 </label>
 
                 @php
@@ -206,22 +261,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                            @if(!$showMethodSelection) disabled @endif>
                                 </div>
                                 <div class="ml-3 text-sm">
-                                    <label for="two_factor_method_{{ $methodValue }}" class="font-medium text-gray-700 dark:text-gray-300">
+                                    <label for="two_factor_method_{{ $methodValue }}" class="font-medium">
                                         {{ $methodLabel }}
                                         @if((int)$methodValue === (int)$defaultTwoFactorMethod)
-                                            <span class="ml-1 text-xs text-primary-600 dark:text-primary-400">({{ __('admin.profile.default_method') }})</span>
+                                            <span class="ml-1 text-xs"></span>
                                         @endif
                                     </label>
                                     @if($methodValue == \App\Enums\TwoFactorMethod::EMAIL->value)
-                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                        <p class="text-xs mt-0.5">
                                             {{ __('admin.profile.two_factor_method_email_help') }}
                                         </p>
                                     @elseif($methodValue == \App\Enums\TwoFactorMethod::DEVICE->value)
-                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                        <p class="text-xs mt-0.5">
                                             {{ __('admin.profile.two_factor_method_device_help') }}
                                         </p>
                                     @elseif($methodValue == \App\Enums\TwoFactorMethod::BIOMETRIC->value)
-                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                        <p class="text-xs mt-0.5">
                                             {{ __('admin.profile.two_factor_method_biometric_help') }}
                                         </p>
                                     @endif
@@ -234,19 +289,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <p class="text-sm text-gray-700 dark:text-gray-300">
                             {{ reset($availableMethodOptions) }}
                             @if((int)key($availableMethodOptions) === (int)$defaultTwoFactorMethod)
-                                <span class="ml-1 text-xs text-primary-600 dark:text-primary-400">({{ __('admin.profile.only_method_available') }})</span>
+                                <span class="ml-1 text-xs text-primary-600 dark:text-primary-400"></span>
                             @endif
                         </p>
                         @if(isset($availableMethodOptions[\App\Enums\TwoFactorMethod::EMAIL->value]))
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <p class="text-xs mt-1">
                                 {{ __('admin.profile.two_factor_method_email_help') }}
                             </p>
                         @elseif(isset($availableMethodOptions[\App\Enums\TwoFactorMethod::DEVICE->value]))
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <p class="text-xs mt-1">
                                 {{ __('admin.profile.two_factor_method_device_help') }}
                             </p>
                         @elseif(isset($availableMethodOptions[\App\Enums\TwoFactorMethod::BIOMETRIC->value]))
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <p class="text-xs mt-1">
                                 {{ __('admin.profile.two_factor_method_biometric_help') }}
                             </p>
                         @endif
@@ -255,13 +310,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
 
                 @if($errors->has('two_factor_method'))
-                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">
+                    <p class="mt-1 text-sm">
                         {{ $errors->first('two_factor_method') }}
                     </p>
                 @endif
 
                 <div class="mt-2">
-                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                    <p class="text-xs">
                         {{ count($availableMethodOptions) > 1 ? 
                             __('admin.profile.two_factor_method_help_multiple') : 
                             __('admin.profile.two_factor_method_help_single') }}
@@ -284,10 +339,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <p class="text-sm text-gray-700 dark:text-gray-300">
                         {{ $availableMethodOptions[$currentTwoFactorMethod] ?? __('admin.profile.two_factor_method_not_set') }}
                         @if(isset($availableMethodOptions[$currentTwoFactorMethod]) && (int)$currentTwoFactorMethod === (int)$defaultTwoFactorMethod)
-                            <span class="ml-1 text-xs text-primary-600 dark:text-primary-400">({{ __('admin.profile.default_method') }})</span>
+                            <span class="ml-1 text-xs text-primary-600 dark:text-primary-400"></span>
                         @endif
                     </p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <p class="text-xs mt-1">
                         {{ __('admin.profile.two_factor_method_global_setting_fixed') }}
                     </p>
                 </div>
