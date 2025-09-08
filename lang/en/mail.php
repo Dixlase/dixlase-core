@@ -43,6 +43,34 @@ return [
         'regards' => 'Regards',
     ],
 
+    // Two-Factor Authentication Email
+    'two_factor' => [
+        'default' => [
+            'subject' => '[:app_name] Two-Factor Authentication Code',
+            'greeting' => 'Hello!',
+            'message' => 'Here is your two-factor authentication code for login.',
+            'instructions' => 'Please enter this code on the login screen. The code expires in 10 minutes.',
+            'security_notice' => 'If you do not recognize this login attempt, please change your password immediately.',
+            'regards' => 'Regards',
+        ],
+        'admin' => [
+            'subject' => '[:app_name] Admin Two-Factor Authentication Code',
+            'greeting' => 'Hello!',
+            'message' => 'Here is your two-factor authentication code for admin login.',
+            'instructions' => 'Please enter this code on the admin login screen. The code expires in 10 minutes.',
+            'security_notice' => 'If you do not recognize this login attempt, please change your password immediately and contact the system administrator.',
+            'regards' => 'Regards',
+        ],
+        'user' => [
+            'subject' => '[:app_name] User Two-Factor Authentication Code',
+            'greeting' => 'Hello!',
+            'message' => 'Here is your two-factor authentication code for user login.',
+            'instructions' => 'Please enter this code on the login screen. The code expires in 10 minutes.',
+            'security_notice' => 'If you do not recognize this login attempt, please change your password immediately.',
+            'regards' => 'Regards',
+        ],
+    ],
+
     // Mail Settings & Test Common
     'settings' => [
         'mailer' => 'Mailer',
