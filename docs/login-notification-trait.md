@@ -2,18 +2,18 @@
 
 ## 概要
 
-`HandlesLoginNotifications` トレイトは、ログイン通知機能の共通ロジックを提供し、コアシステムとプラグインの両方で使用できるように設計されています。
+`LoginNotificationsTrait` トレイトは、ログイン通知機能の共通ロジックを提供し、コアシステムとプラグインの両方で使用できるように設計されています。
 
 ## 基本的な使用方法
 
 ### 1. トレイトのインポート
 
 ```php
-use App\Traits\HandlesLoginNotifications;
+use App\Traits\LoginNotificationsTrait;
 
 class YourLoginNotificationService
 {
-    use HandlesLoginNotifications;
+    use LoginNotificationsTrait;
     
     // サービスの実装
 }
@@ -26,14 +26,14 @@ class YourLoginNotificationService
 
 namespace YourPlugin\Services;
 
-use App\Traits\HandlesLoginNotifications;
+use App\Traits\LoginNotificationsTrait;
 use YourPlugin\Models\User;
 use YourPlugin\Notifications\LoginNotification;
 use Illuminate\Http\Request;
 
 class UserLoginNotificationService
 {
-    use HandlesLoginNotifications;
+    use LoginNotificationsTrait;
 
     public function handle(User $user, Request $request): void
     {
@@ -201,14 +201,14 @@ class LoginNotification extends Notification
 
 namespace YourPlugin\Http\Controllers;
 
-use App\Traits\HandlesLoginNotifications;
+use App\Traits\LoginNotificationsTrait;
 use YourPlugin\Models\FrontUser;
 use YourPlugin\Notifications\FrontUserLoginNotification;
 use Illuminate\Http\Request;
 
 class FrontUserLoginController extends Controller
 {
-    use HandlesLoginNotifications;
+    use LoginNotificationsTrait;
 
     public function store(Request $request)
     {

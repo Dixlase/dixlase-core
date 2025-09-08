@@ -26,28 +26,19 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
-use App\Models\MemberSetting;
-use App\Services\MailServerValidatorService;
+use App\Traits\PasswordResetTrait;
 use Illuminate\View\View;
 
 class AdminPasswordResetLinkController extends Controller
 {
+    use PasswordResetTrait;
     /**
      * Display the password reset link request view.
      */
     public function create(): View
     {
-        // パスワードリセット機能が無効の場合は404を返す
-        $passwordResetEnabled = (bool) MemberSetting::getValue('password_reset_enabled', true);
-        if (!$passwordResetEnabled) {
-            abort(404);
-        }
-
-        // メールサーバーが設定・テスト済みでない場合は404を返す
-        if (!MailServerValidatorService::canSendMail()) {
-            abort(404);
-        }
-
+        $this->abortIfPasswordResetUnavailable();
+        
         return view('admin.auth.forgot-password');
     }
 
@@ -58,20 +49,9 @@ class AdminPasswordResetLinkController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        // パスワードリセット機能が無効の場合は404を返す
-        $passwordResetEnabled = (bool) MemberSetting::getValue('password_reset_enabled', true);
-        if (!$passwordResetEnabled) {
-            abort(404);
-        }
-
-        // メールサーバーが設定・テスト済みでない場合は404を返す
-        if (!MailServerValidatorService::canSendMail()) {
-            abort(404);
-        }
-
-        $request->validate([
-            'email' => ['required', 'email'],
-        ]);
+        $this->abortIfPasswordResetUnavailable();
+        
+        $request->validate($this->getPasswordResetLinkValidationRules());
 
         // We will send the password reset link to this user. Once we have attempted
         // to send the link, we will examine the response then see the message we
