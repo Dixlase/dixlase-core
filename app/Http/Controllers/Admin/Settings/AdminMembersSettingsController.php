@@ -167,10 +167,22 @@ class AdminMembersSettingsController extends AdminLoggedInController
     {
         $this->viewParams['member'] = $member;
 
+        // 初期管理者アカウント（ID=1）かどうかを判定
+        $isInitialAdmin = ($member->id === 1);
+        $this->viewParams['isInitialAdmin'] = $isInitialAdmin;
+
         // 選択肢用の配列
         $this->viewParams['roleOptions'] = MemberRole::translationOptions();
         $this->viewParams['appearanceOptions'] = AppearanceMode::translationOptions();
-        $this->viewParams['statusOptions'] = MemberStatus::options();
+        
+        // 初期管理者の場合はステータス選択肢を制限
+        if ($isInitialAdmin) {
+            $this->viewParams['statusOptions'] = [
+                MemberStatus::Active->value => MemberStatus::Active->label()
+            ];
+        } else {
+            $this->viewParams['statusOptions'] = MemberStatus::options();
+        }
 
         // 初期値（old() の fallback にも対応）
         $this->viewParams['roleValue'] = (int) request()->old('role', $member->role?->value ?? MemberRole::ADMIN->value);
@@ -216,6 +228,25 @@ class AdminMembersSettingsController extends AdminLoggedInController
         // バリデーション済みデータを取得
         $validated = $request->validated();
 
+        // 初期管理者アカウント（ID=1）の保護
+        if ($member->id === 1) {
+            // 権限変更を防ぐ
+            if (isset($validated['role']) && $validated['role'] !== MemberRole::SUPER_ADMIN->value) {
+                return redirect()->back()->withErrors(['role' => '初期管理者アカウントの権限は変更できません。']);
+            }
+            
+            // ステータス無効化を防ぐ
+            if (isset($validated['status']) && $validated['status'] !== MemberStatus::Active->value) {
+                return redirect()->back()->withErrors(['status' => '初期管理者アカウントは無効化できません。']);
+            }
+        }
+
+        // 初期管理者の場合は権限とステータスを強制的に固定
+        if ($member->id === 1) {
+            $validated['role'] = MemberRole::SUPER_ADMIN->value;
+            $validated['status'] = MemberStatus::Active->value;
+        }
+
         // パスワードが送信されている場合のみ更新
         if (!empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
@@ -226,7 +257,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $member->update($validated);
         $id = $member->id;
 
-        return redirect()->route('admin.settings.members.edit', ['member' => $id])->with('success', '管理車情報を更新しました！');
+        return redirect()->route('admin.settings.members.edit', ['member' => $id])->with('success', '管理者情報を更新しました！');
     }
 
     /**
@@ -234,6 +265,11 @@ class AdminMembersSettingsController extends AdminLoggedInController
      */
     public function destroy(Member $member)
     {
+        // 初期管理者アカウント（ID=1）の削除を防ぐ
+        if ($member->id === 1) {
+            return redirect()->back()->withErrors(['delete' => '初期管理者アカウントは削除できません。']);
+        }
+
         $member->delete();
 
         return redirect()->route('admin.settings.members.index')->with('success', '管理者アカウントを削除しました！');

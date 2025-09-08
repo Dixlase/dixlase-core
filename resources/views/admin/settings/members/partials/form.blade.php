@@ -114,32 +114,59 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <div class="mb-6">
     <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">
         {{ __('admin.settings.members.form.status') }}
+        @if(isset($isInitialAdmin) && $isInitialAdmin)
+            <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">（初期管理者のため変更不可）</span>
+        @endif
     </label>
-    @include('components::form.radio-group', [
-        'name' => 'status',
-        'options' => $statusOptions,
-        'value' => $statusValue
-    ])
+    @if(isset($isInitialAdmin) && $isInitialAdmin)
+        <!-- 初期管理者の場合は読み取り専用表示 -->
+        <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
+            <p class="text-sm text-gray-700 dark:text-gray-300">
+                {{ \App\Enums\MemberStatus::Active->label() }}
+            </p>
+        </div>
+        <input type="hidden" name="status" value="{{ \App\Enums\MemberStatus::Active->value }}">
+    @else
+        @include('components::form.radio-group', [
+            'name' => 'status',
+            'options' => $statusOptions,
+            'value' => $statusValue
+        ])
+    @endif
     @include('components::form.error', [
         'messages' => $errors->get('status')
     ])
 </div>
 
-<!-- 権限設定 -->
+<!-- 権限 -->
 <div class="mb-6">
     <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">
         {{ __('admin.settings.members.form.role') }}
+        @if(isset($isInitialAdmin) && $isInitialAdmin)
+            <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">（初期管理者のため変更不可）</span>
+        @endif
     </label>
-    @include('components::form.radio-group', [
-        'name' => 'role',
-        'options' => $roleOptions,
-        'value' => $roleValue
-    ])
+    @if(isset($isInitialAdmin) && $isInitialAdmin)
+        <!-- 初期管理者の場合は読み取り専用表示 -->
+        <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
+            <p class="text-sm text-gray-700 dark:text-gray-300">
+                {{ \App\Enums\MemberRole::SUPER_ADMIN->label() }}
+            </p>
+        </div>
+        <input type="hidden" name="role" value="{{ \App\Enums\MemberRole::SUPER_ADMIN->value }}">
+    @else
+        @include('components::form.radio-group', [
+            'name' => 'role',
+            'options' => $roleOptions,
+            'value' => $roleValue
+        ])
+    @endif
     @include('components::form.error', [
         'messages' => $errors->get('role')
     ])
 </div>
 
+<!-- ログイン通知設定の初期値 -->
 
 
 
@@ -190,7 +217,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'options' => $loginNotificationOptions,
         'value' => $currentLoginNotificationMode
     ])
-    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+    <p class="mt-1 text-xs">
         {{ __('admin.profile.login_notification_help') }}
     </p>
     @include('components::form.error', [
@@ -202,7 +229,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @if($force2fa === \App\Enums\TwoFactorMode::UseProfileSetting->value)
     <!-- プロフィール設定を反映の場合：ユーザーが選択可能 -->
     <div class="mb-6" x-data="{ twoFactorMode: '{{ $currentTwoFactorMode }}' }">
-        <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">
+        <label class="block font-medium text-sm mb-2">
             {{ __('admin.profile.two_factor_mode') }}
         </label>
         @include('components::form.radio-group', [
@@ -214,7 +241,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- 二段階認証方法設定 -->
         @if(!empty($enabledTwoFactorMethods))
             <div class="mt-4" x-show="twoFactorMode !== '1'">
-                <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">
+                <label class="block font-medium text-sm mb-2">
                     {{ __('admin.profile.two_factor_method') }}
                 </label>
 
@@ -246,7 +273,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
                 @endif
                 
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                <p class="mt-1 text-xs">
                     {{ __('admin.profile.two_factor_method_help') }}
                 </p>
             </div>
@@ -314,18 +341,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @else
                     <!-- 認証方法が1つだけの場合：表示のみ -->
                     <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
-                        <p class="text-sm text-gray-700 dark:text-gray-300">
+                        <p class="text-sm">
                             {{ array_values($enabledTwoFactorMethods)[0] }}
                             <span class="ml-1 text-xs text-blue-500">({{ __('admin.profile.default_method') }})</span>
                         </p>
-                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        <p class="mt-1 text-xs">
                             {{ __('admin.profile.two_factor_method_global_setting_fixed') }}
                         </p>
                         <input type="hidden" name="two_factor_method" value="{{ array_keys($enabledTwoFactorMethods)[0] }}">
                     </div>
                 @endif
                 
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                <p class="mt-1 text-xs">
                     {{ __('admin.profile.two_factor_method_help') }}
                 </p>
             </div>
@@ -340,23 +367,44 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             管理操作
         </h3>
         
-        <div class="flex flex-col sm:flex-row gap-2">
-            <!-- 強制ログアウトボタン -->
-            @include('components::form.button', [
-                'type' => 'button',
-                'label' => '強制ログアウト',
-                'class' => 'bg-orange-600 hover:bg-orange-700 text-white dark:bg-orange-500 dark:hover:bg-orange-600',
-                'onclick' => "openModal('forceLogoutModal')"
-            ])
+        @if(isset($isInitialAdmin) && $isInitialAdmin)
+            <!-- 初期管理者の場合は削除不可の説明 -->
+            <div class="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                            初期管理者アカウント
+                        </h3>
+                        <div class="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
+                            <p>このアカウントは初期管理者のため、削除や強制ログアウトはできません。システムの安全性を保つため、これらの操作は制限されています。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @else
+            <div class="flex flex-col sm:flex-row gap-2">
+                <!-- 強制ログアウトボタン -->
+                @include('components::form.button', [
+                    'type' => 'button',
+                    'label' => '強制ログアウト',
+                    'class' => 'bg-orange-600 hover:bg-orange-700 text-white dark:bg-orange-500 dark:hover:bg-orange-600',
+                    'onclick' => "openModal('forceLogoutModal')"
+                ])
 
-            <!-- 削除ボタン -->
-            @include('components::form.button', [
-                'type' => 'button',
-                'label' => 'メンバーを削除',
-                'class' => 'bg-red-700 hover:bg-red-800 text-white dark:bg-red-600 dark:hover:bg-red-700',
-                'onclick' => "openModal('deleteModal')"
-            ])
-        </div>
+                <!-- 削除ボタン -->
+                @include('components::form.button', [
+                    'type' => 'button',
+                    'label' => 'メンバーを削除',
+                    'class' => 'bg-red-700 hover:bg-red-800 text-white dark:bg-red-600 dark:hover:bg-red-700',
+                    'onclick' => "openModal('deleteModal')"
+                ])
+            </div>
+        @endif
     </div>
 
     <!-- モーダル（編集時のみ） -->

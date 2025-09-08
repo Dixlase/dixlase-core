@@ -46,12 +46,44 @@ class MemberFactory extends Factory
     {
         return [
             'name' => fake()->name(),
+            'description' => fake()->optional()->sentence(),
             'email' => fake()->unique()->safeEmail(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
-            'role' => fake()->randomElement(['super_admin', 'manager', 'editor', 'receptionist', 'viewer']), // 役割を追加
-            'status' => fake()->randomElement([0, 1]), // ステータスを追加
-            'appearance' => fake()->randomElement([0, 1, 2]), // 外観モードを追加
+            'role' => fake()->randomElement([
+                \App\Enums\MemberRole::ADMIN->value,
+                \App\Enums\MemberRole::EDITOR->value,
+                \App\Enums\MemberRole::AUTHOR->value,
+                \App\Enums\MemberRole::CONTRIBUTOR->value,
+                \App\Enums\MemberRole::RECEPTIONIST->value,
+            ]),
+            'status' => fake()->randomElement([
+                \App\Enums\MemberStatus::Active->value,
+                \App\Enums\MemberStatus::Inactive->value,
+            ]),
+            'appearance' => fake()->randomElement([
+                \App\Enums\AppearanceMode::Auto->value,
+                \App\Enums\AppearanceMode::Light->value,
+                \App\Enums\AppearanceMode::Dark->value,
+            ]),
+            'login_notification_mode' => fake()->randomElement([
+                \App\Enums\LoginNotificationMode::Disabled->value,
+                \App\Enums\LoginNotificationMode::OnlyNewDevice->value,
+                \App\Enums\LoginNotificationMode::Always->value,
+            ]),
+            'two_factor_mode' => fake()->randomElement([
+                \App\Enums\TwoFactorMode::Disabled->value,
+                \App\Enums\TwoFactorMode::OnlyNewDevice->value,
+                \App\Enums\TwoFactorMode::Always->value,
+            ]),
+            'two_factor_method' => fake()->randomElement([
+                \App\Enums\TwoFactorMethod::EMAIL->value,
+                \App\Enums\TwoFactorMethod::DEVICE->value,
+                \App\Enums\TwoFactorMethod::BIOMETRIC->value,
+            ]),
+            'last_login_ip' => fake()->optional()->ipv4(),
+            'last_login_ua' => fake()->optional()->userAgent(),
+            'last_login_at' => fake()->optional()->dateTimeBetween('-1 month', 'now'),
         ];
     }
 }
