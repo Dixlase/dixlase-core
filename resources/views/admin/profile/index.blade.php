@@ -375,5 +375,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 window.themeStore.applyTheme();
             }
         @endif
+
+        // フォーム送信前にパスワード確認フィールドの処理
+        const profileForm = document.getElementById('profile-form');
+        if (profileForm) {
+            profileForm.addEventListener('submit', function(e) {
+                const passwordField = document.getElementById('profile_password');
+                const confirmationField = document.getElementById('profile_password_confirmation');
+                
+                // パスワードフィールドが空の場合、確認フィールドを削除
+                if (passwordField && confirmationField) {
+                    if (!passwordField.value.trim()) {
+                        confirmationField.remove();
+                    }
+                }
+            });
+        }
     });
 @endsection

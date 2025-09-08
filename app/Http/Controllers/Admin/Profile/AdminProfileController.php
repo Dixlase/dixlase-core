@@ -208,25 +208,41 @@ class AdminProfileController extends AdminLoggedInController
         $requireUppercase = (bool) MemberSetting::getValue('password_require_uppercase', true);
         $requireSymbol = (bool) MemberSetting::getValue('password_require_symbol', false);
 
+        // デバッグ用ログ出力
+        \Log::info('Profile Update Debug', [
+            'password_filled' => $request->filled('password'),
+            'password_value' => $request->input('password') ? '[HIDDEN]' : 'null/empty',
+            'password_confirmation_filled' => $request->filled('password_confirmation'),
+            'password_confirmation_value' => $request->input('password_confirmation') ? '[HIDDEN]' : 'null/empty',
+            'all_inputs' => array_keys($request->all())
+        ]);
+
         // 🔽 パスワードのルールを動的に構築
         $passwordRules = ['nullable', "min:$minLength"];
 
-        // パスワードの確認が必要な場合
-        if ($showConfirmation) {
+        // パスワードが入力されている場合のみ確認を必須にする
+        if ($showConfirmation && $request->filled('password') && $request->filled('password_confirmation')) {
             $passwordRules[] = 'confirmed';
+            \Log::info('Password confirmation rule added');
         }
 
-        // 常に小文字と数字を必須にする
-        $passwordRules[] = 'regex:/[a-z]/'; // 小文字
-        $passwordRules[] = 'regex:/[0-9]/'; // 数字
+        // パスワードが入力されている場合のみ複雑性チェックを適用
+        if ($request->filled('password')) {
+            // 常に小文字と数字を必須にする
+            $passwordRules[] = 'regex:/[a-z]/'; // 小文字
+            $passwordRules[] = 'regex:/[0-9]/'; // 数字
 
-        // 条件に応じて大文字と記号を追加
-        if ($requireUppercase) {
-            $passwordRules[] = 'regex:/[A-Z]/'; // 大文字
+            // 条件に応じて大文字と記号を追加
+            if ($requireUppercase) {
+                $passwordRules[] = 'regex:/[A-Z]/'; // 大文字
+            }
+            if ($requireSymbol) {
+                $passwordRules[] = 'regex:/[!@#$%^&*(),.?":{}|<>]/'; // 記号
+            }
+            \Log::info('Password complexity rules added');
         }
-        if ($requireSymbol) {
-            $passwordRules[] = 'regex:/[!@#$%^&*(),.?":{}|<>]/'; // 記号
-        }
+
+        \Log::info('Final password rules', ['rules' => $passwordRules]);
 
         $rules = [
             'name' => 'required|string|max:255',
@@ -255,7 +271,16 @@ class AdminProfileController extends AdminLoggedInController
             }
         }
 
-        $validated = $request->validate($rules);
+        try {
+            $validated = $request->validate($rules);
+            \Log::info('Validation passed');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Validation failed', [
+                'errors' => $e->errors(),
+                'rules_applied' => $rules
+            ]);
+            throw $e;
+        }
 
         $member->fill([
             'name' => $validated['name'],

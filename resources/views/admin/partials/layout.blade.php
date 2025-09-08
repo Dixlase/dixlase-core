@@ -116,8 +116,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     applyTheme(skipApply = false) {
                         this.isDark = this.theme === '2' || (this.theme === '0' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-                        // メンバー管理画面以外でのみlocalStorageに保存
-                        if (!document.querySelector('[data-member-theme]')) {
+                        // プロフィール画面でのみlocalStorageに保存（リアルタイム変更のため）
+                        if (document.querySelector('[data-profile-theme]')) {
                             localStorage.setItem('appearance', this.theme);
                         }
                         if (!skipApply) {
@@ -127,13 +127,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     },
 
                     init() {
-                        // メンバー管理画面以外ではlocalStorageの値を使用
-                        if (!document.querySelector('[data-member-theme]')) {
+                        // プロフィール画面のみlocalStorageの値を使用（リアルタイム変更のため）
+                        if (document.querySelector('[data-profile-theme]')) {
                             const storedTheme = localStorage.getItem('appearance');
                             if (storedTheme !== null) {
                                 this.theme = storedTheme;
                             }
                         }
+                        // その他の画面（メンバー管理画面含む）はDBの値を優先
                         
                         this.applyTheme(false);
                         document.documentElement.classList.remove('disable-transition');

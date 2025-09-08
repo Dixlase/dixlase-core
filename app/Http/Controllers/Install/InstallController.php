@@ -503,6 +503,26 @@ class InstallController extends Controller
         
         $data = session('install_data', []);
         
+        // デバッグ情報をログに出力
+        Log::info('確認画面表示時のセッションデータ', [
+            'session_id' => session()->getId(),
+            'session_keys' => array_keys($data),
+            'has_site_name' => isset($data['site_name']),
+            'has_admin_name' => isset($data['admin_name']),
+            'has_admin_email' => isset($data['admin_email']),
+            'has_admin_password' => isset($data['admin_password']),
+            'has_app_env' => isset($data['app_env']),
+            'has_app_url' => isset($data['app_url']),
+            'has_admin_url' => isset($data['admin_url']),
+            'has_app_timezone' => isset($data['app_timezone']),
+            'has_db_connection' => isset($data['db_connection']),
+            'has_db_host' => isset($data['db_host']),
+            'has_db_port' => isset($data['db_port']),
+            'has_db_database' => isset($data['db_database']),
+            'has_db_username' => isset($data['db_username']),
+            'full_data_keys' => $data ? array_keys($data) : 'empty'
+        ]);
+        
         // 必須フィールドのチェックと不足フィールドに基づく適切なステップへのリダイレクト
         $steps = [
             // 基本設定
@@ -513,16 +533,36 @@ class InstallController extends Controller
             'database' => ['db_connection', 'db_host', 'db_port', 'db_database', 'db_username']
         ];
         
+        // セッションデータが完全に空の場合は最初からやり直し
+        if (empty($data)) {
+            Log::error('セッションデータが完全に空です - インストールを最初からやり直してください');
+            return redirect()->route('install.index')
+                ->with('error', 'セッションデータが失われました。インストールを最初からやり直してください。');
+        }
+
         // 各ステップの必須フィールドをチェック
+        $missingFields = [];
         foreach ($steps as $step => $fields) {
             foreach ($fields as $field) {
                 if (empty($data[$field])) {
-                    // 不足しているフィールドがあるステップにリダイレクト
-                    $route = 'install.' . ($step === 'settings' ? 'index' : $step);
-                    return redirect()->route($route)
-                        ->with('error', __('install.missing_required_fields'));
+                    $missingFields[] = ['step' => $step, 'field' => $field];
                 }
             }
+        }
+
+        // 不足フィールドがある場合
+        if (!empty($missingFields)) {
+            $firstMissing = $missingFields[0];
+            Log::error('必須フィールドが不足しています', [
+                'missing_fields' => $missingFields,
+                'session_keys' => array_keys($data),
+                'session_id' => session()->getId(),
+                'redirecting_to_step' => $firstMissing['step']
+            ]);
+            
+            $route = 'install.' . ($firstMissing['step'] === 'settings' ? 'index' : $firstMissing['step']);
+            return redirect()->route($route)
+                ->with('error', __('install.missing_required_fields') . " (不足フィールド: {$firstMissing['field']})");
         }
         
         // メールテスト結果をセッションから取得
@@ -550,7 +590,18 @@ class InstallController extends Controller
             Log::info('=== インストール開始 ===');
             
             $data = session('install_data');
-            Log::info('セッションデータ取得完了', ['keys' => array_keys($data ?? [])]);
+            Log::info('セッションデータ取得完了', [
+                'keys' => array_keys($data ?? []),
+                'session_id' => session()->getId(),
+                'full_data' => $data
+            ]);
+
+            // セッションデータが空の場合は確認画面にリダイレクト
+            if (empty($data)) {
+                Log::error('セッションデータが空です - 確認画面にリダイレクト');
+                return redirect()->route('install.confirm')
+                    ->with('error', 'セッションデータが失われました。再度お試しください。');
+            }
 
             // ✅ 暗号化された管理者パスワードを取得して復号化
             $adminPassword = isset($data['admin_password']) ? Crypt::decryptString($data['admin_password']) : null;
@@ -687,8 +738,19 @@ class InstallController extends Controller
                 'error' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
+                'session_data_exists' => !empty($data),
+                'session_keys' => array_keys($data ?? [])
             ]);
+            
+            // セッションデータが失われていないことを確認
+            if (empty(session('install_data'))) {
+                Log::warning('セッションデータが失われています - 復元を試行');
+                if (!empty($data)) {
+                    session(['install_data' => $data]);
+                    Log::info('セッションデータを復元しました');
+                }
+            }
             
             // ユーザーフレンドリーなエラーメッセージを作成
             $errorMessage = $this->getInstallationErrorMessage($e);
