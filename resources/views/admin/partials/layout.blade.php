@@ -111,12 +111,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             function appearanceTheme(defaultValue) {
                 return {
-                    theme: localStorage.getItem('appearance') ?? defaultValue,
+                    theme: defaultValue, // データベースの値を優先
                     isDark: false,
 
                     applyTheme(skipApply = false) {
                         this.isDark = this.theme === '2' || (this.theme === '0' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-                        localStorage.setItem('appearance', this.theme);
+                        // メンバー管理画面以外でのみlocalStorageに保存
+                        if (!document.querySelector('[data-member-theme]')) {
+                            localStorage.setItem('appearance', this.theme);
+                        }
                         if (!skipApply) {
                             document.documentElement.classList.toggle('dark', this.isDark);
                             document.documentElement.classList.toggle('light', !this.isDark);
@@ -124,12 +127,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     },
 
                     init() {
+                        // メンバー管理画面以外ではlocalStorageの値を使用
+                        if (!document.querySelector('[data-member-theme]')) {
+                            const storedTheme = localStorage.getItem('appearance');
+                            if (storedTheme !== null) {
+                                this.theme = storedTheme;
+                            }
+                        }
+                        
                         this.applyTheme(false);
                         document.documentElement.classList.remove('disable-transition');
 
                         document.querySelectorAll('input[name="appearance"]').forEach((el) => {
-                            // プロフィール画面の外観設定は除外
-                            if (el.closest('[data-profile-theme]')) {
+                            // プロフィール画面とメンバー管理画面の外観設定は除外
+                            if (el.closest('[data-profile-theme]') || el.closest('[data-member-theme]')) {
                                 return;
                             }
                             el.addEventListener('change', (e) => {

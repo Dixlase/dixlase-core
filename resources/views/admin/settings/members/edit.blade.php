@@ -56,24 +56,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'class' => '',
             'onclick' => "openModal('confirmationModal')"
         ])
-
-        <div class="flex flex-col sm:flex-row gap-2">
-            <!-- 強制ログアウトボタン -->
-            @include('components::form.button', [
-                'type' => 'button',
-                'label' => '強制ログアウト',
-                'class' => 'bg-orange-600 hover:bg-orange-700 text-white dark:bg-orange-500 dark:hover:bg-orange-600',
-                'onclick' => "openModal('forceLogoutModal')"
-            ])
-
-            <!-- 削除ボタン -->
-            @include('components::form.button', [
-                'type' => 'button',
-                'label' => 'メンバーを削除',
-                'class' => 'bg-red-700 hover:bg-red-800 text-white dark:bg-red-600 dark:hover:bg-red-700',
-                'onclick' => "openModal('deleteModal')"
-            ])
-        </div>
     </div>
 @endsection
 
@@ -88,25 +70,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'form' => 'update-form',
     ])
 
-    <!-- 強制ログアウトモーダル -->
-    @include('components::form.modal', [
-        'id' => 'forceLogoutModal',
-        'title' => '強制ログアウトの確認',
-        'message' => 'このメンバーを強制的にログアウトさせますか？<br><br>対象メンバー: ' . $member->name . '<br><br>この操作により、対象メンバーの全てのセッションが無効化され、再度ログインが必要になります。',
-        'confirm_label' => '強制ログアウト',
-        'cancel_label' => 'キャンセル',
-        'form' => 'force-logout-form',
-    ])
-
-    <!-- 削除モーダル -->
-    @include('components::form.modal', [
-        'id' => 'deleteModal',
-        'title' => '削除の確認',
-        'message' => 'このユーザーを削除しますか？',
-        'confirm_label' => '削除',
-        'cancel_label' => 'キャンセル',
-        'form' => 'delete-form',
-    ])
 
 @endsection
 
