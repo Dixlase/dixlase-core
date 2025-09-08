@@ -201,7 +201,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         '2' => 'admin.profile.two_factor_mode_options.always',
     ];
     
-    $currentTwoFactorMethods = old('two_factor_methods', $member->two_factor_methods ? explode(',', $member->two_factor_methods) : []);
+    $currentTwoFactorMethods = old('two_factor_methods', $member?->two_factor_methods ? explode(',', $member?->two_factor_methods) : []);
     $enabledTwoFactorMethods = $enabledTwoFactorMethods ?? [];
     $defaultTwoFactorMethod = $defaultTwoFactorMethod ?? '';
 @endphp
@@ -247,7 +247,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 @php
                     // 現在の認証方法を取得
-                    $currentTwoFactorMethod = old('two_factor_method', $member->two_factor_method ?? $defaultTwoFactorMethod);
+                    $currentTwoFactorMethod = old('two_factor_method', $member?->two_factor_method ?? $defaultTwoFactorMethod);
                     // 現在の認証方法が有効な方法に含まれているか確認
                     $currentMethodValid = array_key_exists($currentTwoFactorMethod, $enabledTwoFactorMethods);
                     // デフォルトの認証方法を取得
@@ -322,7 +322,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 @php
                     // 現在の認証方法を取得
-                    $currentTwoFactorMethod = old('two_factor_method', $member->two_factor_method ?? $defaultTwoFactorMethod);
+                    $currentTwoFactorMethod = old('two_factor_method', $member?->two_factor_method ?? $defaultTwoFactorMethod);
                     // 現在の認証方法が有効な方法に含まれているか確認
                     $currentMethodValid = array_key_exists($currentTwoFactorMethod, $enabledTwoFactorMethods);
                     // デフォルトの認証方法を取得
