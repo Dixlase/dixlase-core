@@ -62,7 +62,7 @@ enum MemberRole: int
     public static function translationOptions(): array
     {
         return collect(self::cases())->mapWithKeys(fn($role) => [
-            $role->value => "member.roles.{$role->translationKey()}"
+            $role->value => $role->label()
         ])->toArray();
     }
 }

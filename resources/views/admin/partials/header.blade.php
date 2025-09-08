@@ -86,8 +86,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <div class="font-medium text-sm text-gray-600 dark:text-gray-400">{{ Auth::user()->email }}</div>
                         </div>
                     </div>
-                    <a href="{{ route('admin.settings.members.profile') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 transition">
-                        {{ __('admin.settings.members.profile.heading') }}
+                    <a href="{{ route('admin.profile') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 transition">
+                        {{ __('admin.profile.heading') }}
                     </a>
                     <form method="POST" action="{{ route('admin.logout') }}">
                         @csrf

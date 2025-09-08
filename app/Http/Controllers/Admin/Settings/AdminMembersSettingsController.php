@@ -84,8 +84,6 @@ class AdminMembersSettingsController extends AdminLoggedInController
      */
     public function create()
     {
-
-
         // フォームの初期値をセット
         $this->viewParams['member'] = null;
 
@@ -114,6 +112,32 @@ class AdminMembersSettingsController extends AdminLoggedInController
 
         //パスワードの必須を有効に
         $this->viewParams['requirePassword'] = true;
+
+        // パスワード設定を取得
+        $this->viewParams['passwordMinLength'] = (int) MemberSetting::getValue('password_min_length', 8);
+        $this->viewParams['passwordRequireUppercase'] = (bool) MemberSetting::getValue('password_require_uppercase', true);
+        $this->viewParams['passwordRequireSymbol'] = (bool) MemberSetting::getValue('password_require_symbol', false);
+
+        // 二段階認証設定
+        $this->viewParams['force2fa'] = (int) MemberSetting::getValue('force_2fa', TwoFactorMode::Disabled->value);
+        
+        // 有効な二段階認証方法を取得
+        $enabledTwoFactorMethodsString = MemberSetting::getValue('enabled_two_factor_methods', (string)TwoFactorMethod::EMAIL->value);
+        $enabledTwoFactorMethods = ($enabledTwoFactorMethodsString !== null && $enabledTwoFactorMethodsString !== '') ? explode(',', $enabledTwoFactorMethodsString) : [];
+        
+        // 二段階認証方法の選択肢を作成
+        $twoFactorMethodOptions = [];
+        foreach ($enabledTwoFactorMethods as $methodValue) {
+            if (is_numeric($methodValue)) {
+                $method = TwoFactorMethod::tryFrom((int)$methodValue);
+                if ($method) {
+                    $twoFactorMethodOptions[$methodValue] = $method->label();
+                }
+            }
+        }
+        
+        $this->viewParams['enabledTwoFactorMethods'] = $twoFactorMethodOptions;
+        $this->viewParams['defaultTwoFactorMethod'] = (int) MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value);
 
         return view('admin::settings.members.create', $this->viewParams);
     }
@@ -154,6 +178,32 @@ class AdminMembersSettingsController extends AdminLoggedInController
 
         //パスワードの必須を無効に
         $this->viewParams['requirePassword'] = false;
+
+        // パスワード設定を取得
+        $this->viewParams['passwordMinLength'] = (int) MemberSetting::getValue('password_min_length', 8);
+        $this->viewParams['passwordRequireUppercase'] = (bool) MemberSetting::getValue('password_require_uppercase', true);
+        $this->viewParams['passwordRequireSymbol'] = (bool) MemberSetting::getValue('password_require_symbol', false);
+
+        // 二段階認証設定
+        $this->viewParams['force2fa'] = (int) MemberSetting::getValue('force_2fa', TwoFactorMode::Disabled->value);
+        
+        // 有効な二段階認証方法を取得
+        $enabledTwoFactorMethodsString = MemberSetting::getValue('enabled_two_factor_methods', (string)TwoFactorMethod::EMAIL->value);
+        $enabledTwoFactorMethods = ($enabledTwoFactorMethodsString !== null && $enabledTwoFactorMethodsString !== '') ? explode(',', $enabledTwoFactorMethodsString) : [];
+        
+        // 二段階認証方法の選択肢を作成
+        $twoFactorMethodOptions = [];
+        foreach ($enabledTwoFactorMethods as $methodValue) {
+            if (is_numeric($methodValue)) {
+                $method = TwoFactorMethod::tryFrom((int)$methodValue);
+                if ($method) {
+                    $twoFactorMethodOptions[$methodValue] = $method->label();
+                }
+            }
+        }
+        
+        $this->viewParams['enabledTwoFactorMethods'] = $twoFactorMethodOptions;
+        $this->viewParams['defaultTwoFactorMethod'] = (int) MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value);
 
         return view('admin::settings.members.edit', $this->viewParams);
     }

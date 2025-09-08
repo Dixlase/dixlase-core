@@ -38,7 +38,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     ])
 </div>
 
-
+<div class="mb-4">
+    @include('components::form.label', [
+        'for' => 'description',
+        'text' => __('admin.settings.members.form.description'),
+    ])
+    <textarea name="description" id="description" rows="3" 
+        class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded px-3 py-2">{{ old('description', $member->description ?? '') }}</textarea>
+    @include('components::form.error', [
+        'messages' => $errors->get('description')
+    ])
+</div>
 
 <div class="mb-4">
     @include('components::form.label', [
@@ -57,65 +67,316 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     ])
 </div>
 
-<div class="mb-4">
+<div class="mb-6">
     @include('components::form.label', [
         'for' => 'password',
-        'text' => __('admin.settings.members.form.password'),
+        'text' => $requirePassword ? __('admin.settings.members.form.password') : __('admin.settings.members.form.password_change_only'),
     ])
     @include('components::form.password-tools', [
         'id' => 'password',
         'name' => 'password',
         'required' => $requirePassword,
+        'minLength' => $passwordMinLength,
+        'requireUppercase' => $passwordRequireUppercase,
+        'requireSymbol' => $passwordRequireSymbol,
+        'showConfirmation' => true
     ])
     @include('components::form.error', [
         'messages' => $errors->get('password')
     ])
 </div>
 
+<!-- 外観モード -->
+@php
+    $appearanceValue = old('appearance', (string) ($member->appearance->value ?? 0));
+    $appearanceOptions = [
+        '0' => 'admin.profile.appearance_auto',
+        '1' => 'admin.profile.appearance_light',
+        '2' => 'admin.profile.appearance_dark',
+    ];
+@endphp
 
-<div class="mb-4">
-    @include('components::form.label', [
-        'for' => 'role',
-        'text' => __('admin.settings.members.form.role'),
-
-    ])
-
-
-    @include('components::form.select', [
-        'id' => 'role',
-        'name' => 'role',
-        'options' => $roleOptions,
-        'value' => $roleValue,
-        'required' => true,
-    ])
-</div>
-
-<div class="mb-4">
-    @include('components::form.label', [
-        'for' => 'appearance',
-        'text' => __('admin.settings.members.form.appearance'),
-
-    ])
-    @include('components::form.select', [
-        'id' => 'appearance',
+<div class="mb-6" data-member-theme>
+    <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">
+        {{ __('admin.settings.members.form.appearance') }}
+    </label>
+    @include('components::form.radio-group', [
         'name' => 'appearance',
         'options' => $appearanceOptions,
-        'value' => old('appearance', $member->appearance ?? ''),
-        'required' => true,
+        'value' => $appearanceValue
+    ])
+    @include('components::form.error', [
+        'messages' => $errors->get('appearance')
     ])
 </div>
 
-<div class="mb-4">
-    @include('components::form.label', [
-        'for' => 'status',
-        'text' => __('admin.settings.members.form.status'),
-
-    ])
-    @include('components::form.select', [
-        'id' => 'status',
+<!-- アカウントステータス -->
+<div class="mb-6">
+    <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">
+        {{ __('admin.settings.members.form.status') }}
+    </label>
+    @include('components::form.radio-group', [
         'name' => 'status',
         'options' => $statusOptions,
-        'value' => $statusValue,
-        'required' => true,
+        'value' => $statusValue
+    ])
+    @include('components::form.error', [
+        'messages' => $errors->get('status')
     ])
 </div>
+
+<!-- 権限設定 -->
+<div class="mb-6">
+    <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">
+        {{ __('admin.settings.members.form.role') }}
+    </label>
+    @include('components::form.radio-group', [
+        'name' => 'role',
+        'options' => $roleOptions,
+        'value' => $roleValue
+    ])
+    @include('components::form.error', [
+        'messages' => $errors->get('role')
+    ])
+</div>
+
+
+
+
+
+@php
+    // ログイン通知設定の初期値
+    $currentLoginNotificationMode = old('login_notification_mode', (string)($member->login_notification_mode->value ?? '1'));
+    
+    // ログイン通知設定のオプション
+    $loginNotificationOptions = [
+        '1' => 'admin.profile.login_notification_mode_options.disabled',
+        '3' => 'admin.profile.login_notification_mode_options.only_new_device',
+        '2' => 'admin.profile.login_notification_mode_options.always',
+    ];
+    
+    // 二段階認証設定の初期値 - 全体設定に基づいてデフォルト値を決定
+    $memberTwoFactorMode = $member->two_factor_mode ?? null;
+    $defaultTwoFactorModeValue = '1'; // デフォルトは無効
+    
+    // 全体設定が「プロフィール設定を反映」の場合、メンバーの設定値またはデフォルト値を使用
+    if ($force2fa === \App\Enums\TwoFactorMode::UseProfileSetting->value) {
+        $currentTwoFactorMode = old('two_factor_mode', $memberTwoFactorMode ? (string)$memberTwoFactorMode->value : $defaultTwoFactorModeValue);
+    } else {
+        // 全体設定で固定されている場合は、その値を使用
+        $currentTwoFactorMode = (string)$force2fa;
+    }
+
+    // 二段階認証モードのオプション
+    $twoFactorModeOptions = [
+        '1' => 'admin.profile.two_factor_mode_options.disabled',
+        '3' => 'admin.profile.two_factor_mode_options.only_new_device',
+        '2' => 'admin.profile.two_factor_mode_options.always',
+    ];
+    
+    $currentTwoFactorMethods = old('two_factor_methods', $member->two_factor_methods ? explode(',', $member->two_factor_methods) : []);
+    $enabledTwoFactorMethods = $enabledTwoFactorMethods ?? [];
+    $defaultTwoFactorMethod = $defaultTwoFactorMethod ?? '';
+@endphp
+
+
+<!-- ログイン通知設定 -->
+<div class="mb-6">
+    <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">
+        {{ __('admin.profile.login_notification_mode') }}
+    </label>
+    @include('components::form.radio-group', [
+        'name' => 'login_notification_mode',
+        'options' => $loginNotificationOptions,
+        'value' => $currentLoginNotificationMode
+    ])
+    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+        {{ __('admin.profile.login_notification_help') }}
+    </p>
+    @include('components::form.error', [
+        'messages' => $errors->get('login_notification_mode')
+    ])
+</div>
+
+<!-- 二段階認証設定 -->
+@if($force2fa === \App\Enums\TwoFactorMode::UseProfileSetting->value)
+    <!-- プロフィール設定を反映の場合：ユーザーが選択可能 -->
+    <div class="mb-6" x-data="{ twoFactorMode: '{{ $currentTwoFactorMode }}' }">
+        <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">
+            {{ __('admin.profile.two_factor_mode') }}
+        </label>
+        @include('components::form.radio-group', [
+            'name' => 'two_factor_mode',
+            'options' => $twoFactorModeOptions,
+            'value' => $currentTwoFactorMode
+        ])
+        
+        <!-- 二段階認証方法設定 -->
+        @if(!empty($enabledTwoFactorMethods))
+            <div class="mt-4" x-show="twoFactorMode !== '1'">
+                <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">
+                    {{ __('admin.profile.two_factor_method') }}
+                </label>
+
+                @php
+                    // 現在の認証方法を取得
+                    $currentTwoFactorMethod = old('two_factor_method', $member->two_factor_method ?? $defaultTwoFactorMethod);
+                    // 現在の認証方法が有効な方法に含まれているか確認
+                    $currentMethodValid = array_key_exists($currentTwoFactorMethod, $enabledTwoFactorMethods);
+                    // デフォルトの認証方法を取得
+                    $defaultMethod = $defaultTwoFactorMethod ?? array_key_first($enabledTwoFactorMethods);
+                    // 現在の認証方法を決定（無効な場合はデフォルトを使用）
+                    $currentMethod = $currentMethodValid ? $currentTwoFactorMethod : $defaultMethod;
+                @endphp
+
+                @if(count($enabledTwoFactorMethods) > 1)
+                    @include('components::form.radio-group', [
+                        'name' => 'two_factor_method',
+                        'options' => $enabledTwoFactorMethods,
+                        'value' => $currentMethod
+                    ])
+                @else
+                    <!-- 認証方法が1つだけの場合 -->
+                    <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
+                        <p class="text-sm text-gray-700 dark:text-gray-300">
+                            {{ array_values($enabledTwoFactorMethods)[0] }}
+                            <span class="ml-1 text-xs text-blue-500">({{ __('admin.profile.default_method') }})</span>
+                        </p>
+                        <input type="hidden" name="two_factor_method" value="{{ array_keys($enabledTwoFactorMethods)[0] }}">
+                    </div>
+                @endif
+                
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    {{ __('admin.profile.two_factor_method_help') }}
+                </p>
+            </div>
+        @endif
+        
+        @include('components::form.error', [
+            'messages' => $errors->get('two_factor_mode')
+        ])
+        @include('components::form.error', [
+            'messages' => $errors->get('two_factor_method')
+        ])
+    </div>
+@elseif($force2fa === \App\Enums\TwoFactorMode::OnlyNewDevice->value || $force2fa === \App\Enums\TwoFactorMode::Always->value)
+    <!-- 全体設定で固定されている場合：表示のみ -->
+    <div class="mb-6">
+        <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">
+            {{ __('admin.profile.two_factor_mode') }}
+        </label>
+        
+        <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
+            <p class="text-sm text-gray-700 dark:text-gray-300">
+                <span class="font-medium">
+                    @if($force2fa === \App\Enums\TwoFactorMode::OnlyNewDevice->value)
+                        {{ __('admin.profile.two_factor_mode_options.only_new_device') }}
+                    @elseif($force2fa === \App\Enums\TwoFactorMode::Always->value)
+                        {{ __('admin.profile.two_factor_mode_options.always') }}
+                    @endif
+                </span>
+            </p>
+            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                {{ __('admin.profile.two_factor_global_setting_fixed') }}
+            </p>
+        </div>
+        
+        <!-- 二段階認証方法設定 -->
+        @if(!empty($enabledTwoFactorMethods))
+            <div class="mt-4">
+                <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">
+                    {{ __('admin.profile.two_factor_method') }}
+                    @if(count($enabledTwoFactorMethods) > 1)
+                        <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">
+                            ({{ count($enabledTwoFactorMethods) }} {{ __('admin.profile.available_methods') }})
+                        </span>
+                    @endif
+                </label>
+
+                @php
+                    // 現在の認証方法を取得
+                    $currentTwoFactorMethod = old('two_factor_method', $member->two_factor_method ?? $defaultTwoFactorMethod);
+                    // 現在の認証方法が有効な方法に含まれているか確認
+                    $currentMethodValid = array_key_exists($currentTwoFactorMethod, $enabledTwoFactorMethods);
+                    // デフォルトの認証方法を取得
+                    $defaultMethod = $defaultTwoFactorMethod ?? array_key_first($enabledTwoFactorMethods);
+                    // 現在の認証方法を決定（無効な場合はデフォルトを使用）
+                    $currentMethod = $currentMethodValid ? $currentTwoFactorMethod : $defaultMethod;
+                @endphp
+
+                @if(count($enabledTwoFactorMethods) > 1)
+                    <!-- 複数の認証方法がある場合：選択可能 -->
+                    @include('components::form.radio-group', [
+                        'name' => 'two_factor_method',
+                        'options' => $enabledTwoFactorMethods,
+                        'value' => $currentMethod
+                    ])
+                @else
+                    <!-- 認証方法が1つだけの場合：表示のみ -->
+                    <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
+                        <p class="text-sm text-gray-700 dark:text-gray-300">
+                            {{ array_values($enabledTwoFactorMethods)[0] }}
+                            <span class="ml-1 text-xs text-blue-500">({{ __('admin.profile.default_method') }})</span>
+                        </p>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            {{ __('admin.profile.two_factor_method_global_setting_fixed') }}
+                        </p>
+                        <input type="hidden" name="two_factor_method" value="{{ array_keys($enabledTwoFactorMethods)[0] }}">
+                    </div>
+                @endif
+                
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    {{ __('admin.profile.two_factor_method_help') }}
+                </p>
+            </div>
+        @endif
+    </div>
+@endif
+
+<!-- 管理操作ボタン（編集時のみ表示） -->
+@if(isset($member) && $member->exists)
+    <div class="mb-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
+            管理操作
+        </h3>
+        
+        <div class="flex flex-col sm:flex-row gap-2">
+            <!-- 強制ログアウトボタン -->
+            @include('components::form.button', [
+                'type' => 'button',
+                'label' => '強制ログアウト',
+                'class' => 'bg-orange-600 hover:bg-orange-700 text-white dark:bg-orange-500 dark:hover:bg-orange-600',
+                'onclick' => "openModal('forceLogoutModal')"
+            ])
+
+            <!-- 削除ボタン -->
+            @include('components::form.button', [
+                'type' => 'button',
+                'label' => 'メンバーを削除',
+                'class' => 'bg-red-700 hover:bg-red-800 text-white dark:bg-red-600 dark:hover:bg-red-700',
+                'onclick' => "openModal('deleteModal')"
+            ])
+        </div>
+    </div>
+
+    <!-- モーダル（編集時のみ） -->
+    <!-- 強制ログアウトモーダル -->
+    @include('components::form.modal', [
+        'id' => 'forceLogoutModal',
+        'title' => '強制ログアウトの確認',
+        'message' => 'このメンバーを強制的にログアウトさせますか？<br><br>対象メンバー: ' . $member->name . '<br><br>この操作により、対象メンバーの全てのセッションが無効化され、再度ログインが必要になります。',
+        'confirm_label' => '強制ログアウト',
+        'cancel_label' => 'キャンセル',
+        'form' => 'force-logout-form',
+    ])
+
+    <!-- 削除モーダル -->
+    @include('components::form.modal', [
+        'id' => 'deleteModal',
+        'title' => '削除の確認',
+        'message' => 'このユーザーを削除しますか？',
+        'confirm_label' => '削除',
+        'cancel_label' => 'キャンセル',
+        'form' => 'delete-form',
+    ])
+@endif
