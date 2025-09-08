@@ -5,13 +5,13 @@ namespace App\Services;
 use App\Models\Member;
 use App\Models\MemberSetting;
 use App\Notifications\AdminLoginNotification;
-use App\Traits\HandlesLoginNotifications;
+use App\Traits\LoginNotificationsTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class AdminLoginNotificationService
 {
-    use HandlesLoginNotifications;
+    use LoginNotificationsTrait;
 
     public function handle(Member $member, Request $request): void
     {

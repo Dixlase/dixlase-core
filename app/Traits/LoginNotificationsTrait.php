@@ -28,7 +28,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Model;
 
-trait HandlesLoginNotifications
+trait LoginNotificationsTrait
 {
     /**
      * ログイン情報を記録する

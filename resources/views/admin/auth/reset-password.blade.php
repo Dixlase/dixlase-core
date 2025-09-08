@@ -24,49 +24,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('description', __('admin.auth.reset_password.description'))
 
 @section('content')
-    <form method="POST" action="{{ route('admin.password.store') }}">
-        @csrf
-
-        <!-- Password Reset Token -->
-        <input type="hidden" name="token" value="{{ $request->route('token') }}">
-
-        <!-- Email Address -->
-        <div>
-            <label for="email" class="block font-medium text-sm text-gray-700">{{ __('admin.auth.reset_password.email') }}</label>
-            <input id="email" type="email" name="email" value="{{ old('email', $request->email) }}" required autofocus autocomplete="username"
-                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-            @error('email')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <!-- Password -->
-        <div class="mt-4">
-            <label for="password" class="block font-medium text-sm text-gray-700 dark:text-gray-200">{{ __('admin.auth.reset_password.password') }}</label>
-            <x-form.password-tools 
-                name="password" 
-                id="password" 
-                :required="true"
-                :minLength="$passwordMinLength"
-                :requireUppercase="$passwordRequireUppercase"
-                :requireLowercase="true"
-                :requireNumber="true"
-                :requireSymbol="$passwordRequireSymbol"
-                :showConfirmation="true"
-            />
-            @error('password')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-            @enderror
-            @error('password_confirmation')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <!-- Submit Button -->
-        <div class="flex items-center justify-center mt-4">
-            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                {{ __('admin.auth.reset_password.reset_password_button') }}
-            </button>
-        </div>
-    </form>
+    <x-auth.reset-password-form 
+        :action="route('admin.password.store')"
+        :token="$request->route('token')"
+        :email="$request->email"
+        :email-label="__('admin.auth.reset_password.email')"
+        :password-label="__('admin.auth.reset_password.password')"
+        :submit-text="__('admin.auth.reset_password.reset_password_button')"
+        :password-min-length="$passwordMinLength"
+        :password-require-uppercase="$passwordRequireUppercase"
+        :password-require-symbol="$passwordRequireSymbol"
+    />
 @endsection
