@@ -45,7 +45,7 @@ return new class extends Migration
             $table->string('password'); // Hashed
             $table->integer('login_notification_mode')->default(1); // 1= Disabled, 2 = Always, 3 = OnlyNewDevice
             $table->integer('two_factor_mode')->default(1); // 1= Disabled, 2 = Always, 3 = Smart
-            $table->integer('two_factor_method')->nullable()->after('two_factor_mode');
+            $table->integer('two_factor_method')->nullable();
             $table->string('last_login_ip')->nullable();
             $table->text('last_login_ua')->nullable();
             $table->timestamp('last_login_at')->nullable();
