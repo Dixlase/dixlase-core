@@ -12,7 +12,7 @@ class CleanupLoginAttempts extends Command
      *
      * @var string
      */
-    protected $signature = 'admin:cleanup-login-attempts {--days=30 : Number of days to keep login attempt records} {--all : Delete all login attempt records}';
+    protected $signature = 'admin:cleanup-login-attempts {--days=30 : Number of days to keep login attempt records} {--all : Delete all login attempt records} {--force : Force deletion without confirmation}';
 
     /**
      * The console command description.
@@ -28,6 +28,7 @@ class CleanupLoginAttempts extends Command
     {
         $deleteAll = $this->option('all');
         $days = (int) $this->option('days');
+        $force = $this->option('force');
         
         // --allオプションまたは--days=0で全レコード削除
         if ($deleteAll || $days === 0) {
@@ -35,9 +36,20 @@ class CleanupLoginAttempts extends Command
                 $this->info(__('admin.cleanup_login_attempts.days_zero_warning'));
             }
             
-            if (!$this->confirm(__('admin.cleanup_login_attempts.confirm_delete_all'))) {
-                $this->info(__('admin.cleanup_login_attempts.operation_cancelled'));
-                return 0;
+            // --forceオプションがない場合のみ確認を求める
+            // Webインターフェースからの実行時はSTDINが利用できないため、forceフラグが必須
+            if (!$force) {
+                // コマンドラインから実行されている場合のみ確認プロンプトを表示
+                if (app()->runningInConsole() && php_sapi_name() === 'cli') {
+                    if (!$this->confirm(__('admin.cleanup_login_attempts.confirm_delete_all'))) {
+                        $this->info(__('admin.cleanup_login_attempts.operation_cancelled'));
+                        return 0;
+                    }
+                } else {
+                    // Webインターフェースからの実行時は--forceフラグが必要
+                    $this->error('--force flag is required when running from web interface');
+                    return 1;
+                }
             }
             
             $this->info(__('admin.cleanup_login_attempts.deleting_all'));
@@ -45,8 +57,10 @@ class CleanupLoginAttempts extends Command
             
             if ($deletedCount > 0) {
                 $this->info(__('admin.cleanup_login_attempts.deleted_all_success', ['count' => $deletedCount]));
+                $this->line("DELETED_COUNT: {$deletedCount}");
             } else {
                 $this->info(__('admin.cleanup_login_attempts.no_records_found'));
+                $this->line("DELETED_COUNT: 0");
             }
             
             return 0;
@@ -63,8 +77,11 @@ class CleanupLoginAttempts extends Command
 
         if ($deletedCount > 0) {
             $this->info(__('admin.cleanup_login_attempts.deleted_old_success', ['count' => $deletedCount]));
+            // Web interface用の出力
+            $this->line("DELETED_COUNT: {$deletedCount}");
         } else {
             $this->info(__('admin.cleanup_login_attempts.no_old_records_found'));
+            $this->line("DELETED_COUNT: 0");
         }
 
         return 0;

@@ -12,7 +12,7 @@ class CleanupPasswordResetTokens extends Command
      *
      * @var string
      */
-    protected $signature = 'admin:cleanup-password-reset-tokens {--days=30 : Number of days to keep password reset token records} {--all : Delete all password reset token records}';
+    protected $signature = 'admin:cleanup-password-reset-tokens {--days=30 : Number of days to keep password reset token records} {--all : Delete all password reset token records} {--force : Force deletion without confirmation}';
 
     /**
      * The console command description.
@@ -35,9 +35,20 @@ class CleanupPasswordResetTokens extends Command
                 $this->info(__('admin.cleanup_password_reset_tokens.days_zero_warning'));
             }
             
-            if (!$this->confirm(__('admin.cleanup_password_reset_tokens.confirm_delete_all'))) {
-                $this->info(__('admin.cleanup_password_reset_tokens.operation_cancelled'));
-                return 0;
+            // --forceオプションがない場合のみ確認を求める
+            // Webインターフェースからの実行時はSTDINが利用できないため、forceフラグが必須
+            if (!$this->option('force')) {
+                // コマンドラインから実行されている場合のみ確認プロンプトを表示
+                if (app()->runningInConsole() && php_sapi_name() === 'cli') {
+                    if (!$this->confirm(__('admin.cleanup_password_reset_tokens.confirm_delete_all'))) {
+                        $this->info(__('admin.cleanup_password_reset_tokens.operation_cancelled'));
+                        return 0;
+                    }
+                } else {
+                    // Webインターフェースからの実行時は--forceフラグが必要
+                    $this->error('--force flag is required when running from web interface');
+                    return 1;
+                }
             }
             
             $this->info(__('admin.cleanup_password_reset_tokens.deleting_all'));
@@ -45,8 +56,10 @@ class CleanupPasswordResetTokens extends Command
             
             if ($deletedCount > 0) {
                 $this->info(__('admin.cleanup_password_reset_tokens.deleted_all_success', ['count' => $deletedCount]));
+                $this->line("DELETED_COUNT: {$deletedCount}");
             } else {
                 $this->info(__('admin.cleanup_password_reset_tokens.no_records_found'));
+                $this->line("DELETED_COUNT: 0");
             }
             
             return 0;
@@ -65,8 +78,10 @@ class CleanupPasswordResetTokens extends Command
 
         if ($deletedCount > 0) {
             $this->info(__('admin.cleanup_password_reset_tokens.deleted_old_success', ['count' => $deletedCount]));
+            $this->line("DELETED_COUNT: {$deletedCount}");
         } else {
             $this->info(__('admin.cleanup_password_reset_tokens.no_old_records_found'));
+            $this->line("DELETED_COUNT: 0");
         }
 
         return 0;
