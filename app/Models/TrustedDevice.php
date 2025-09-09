@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class TrustedDevice extends Model
 {
+    use HasFactory;
+    
     protected $table = 'members_trusted_devices';
     
     protected $fillable = [
@@ -17,10 +20,8 @@ class TrustedDevice extends Model
         'last_used_at',
     ];
 
-    protected $dates = [
-        'last_used_at',
-        'created_at',
-        'updated_at',
+    protected $casts = [
+        'last_used_at' => 'datetime',
     ];
 
     public function member()

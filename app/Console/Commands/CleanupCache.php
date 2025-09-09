@@ -12,7 +12,7 @@ class CleanupCache extends Command
      *
      * @var string
      */
-    protected $signature = 'admin:cleanup-cache {--expired-only : Delete only expired cache entries} {--all : Delete all cache entries}';
+    protected $signature = 'admin:cleanup-cache {--expired-only : Delete only expired cache entries} {--all : Delete all cache entries} {--force : Force deletion without confirmation}';
 
     /**
      * The console command description.
@@ -30,9 +30,20 @@ class CleanupCache extends Command
         $expiredOnly = $this->option('expired-only');
         
         if ($deleteAll) {
-            if (!$this->confirm(__('admin.cleanup_cache.confirm_delete_all'))) {
-                $this->info(__('admin.cleanup_cache.operation_cancelled'));
-                return 0;
+            // --forceオプションがない場合のみ確認を求める
+            // Webインターフェースからの実行時はSTDINが利用できないため、forceフラグが必須
+            if (!$this->option('force')) {
+                // コマンドラインから実行されている場合のみ確認プロンプトを表示
+                if (app()->runningInConsole() && php_sapi_name() === 'cli') {
+                    if (!$this->confirm(__('admin.cleanup_cache.confirm_delete_all'))) {
+                        $this->info(__('admin.cleanup_cache.operation_cancelled'));
+                        return 0;
+                    }
+                } else {
+                    // Webインターフェースからの実行時は--forceフラグが必要
+                    $this->error('--force flag is required when running from web interface');
+                    return 1;
+                }
             }
             
             $this->info(__('admin.cleanup_cache.deleting_all'));
@@ -55,28 +66,26 @@ class CleanupCache extends Command
             return 0;
         }
         
-        // Default behavior: clean expired entries
-        $this->info(__('admin.cleanup_cache.cleaning_expired'));
+        // Default behavior: clean all cache entries
+        $this->info(__('admin.cleanup_cache.cleaning_all'));
         
-        $now = time();
-        
-        // Delete expired cache entries
-        $expiredCacheDeleted = DB::table('cache')
-            ->where('expiration', '<', $now)
-            ->delete();
+        // Delete all cache entries
+        $expiredCacheDeleted = DB::table('cache')->delete();
             
-        // Delete expired cache locks
-        $expiredLocksDeleted = DB::table('cache_locks')
-            ->where('expiration', '<', $now)
-            ->delete();
+        // Delete all cache locks
+        $expiredLocksDeleted = DB::table('cache_locks')->delete();
 
-        if ($expiredCacheDeleted > 0 || $expiredLocksDeleted > 0) {
+        $totalDeleted = $expiredCacheDeleted + $expiredLocksDeleted;
+        
+        if ($totalDeleted > 0) {
             $this->info(__('admin.cleanup_cache.deleted_expired_success', [
                 'cache_count' => $expiredCacheDeleted,
                 'locks_count' => $expiredLocksDeleted
             ]));
+            $this->line("DELETED_COUNT: {$totalDeleted}");
         } else {
             $this->info(__('admin.cleanup_cache.no_expired_records_found'));
+            $this->line("DELETED_COUNT: 0");
         }
 
         return 0;

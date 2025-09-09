@@ -328,7 +328,7 @@ class AdminSystemsController extends AdminLoggedInController
     public function cleanupDatabase(Request $request)
     {
         $type = $request->input('type');
-        $days = $request->input('days');
+        $days = (int) $request->input('days');
         $message = '';
         $success = true;
         $count = 0;
@@ -336,37 +336,44 @@ class AdminSystemsController extends AdminLoggedInController
         try {
             switch ($type) {
                 case 'login_attempts':
-                    $exitCode = Artisan::call('admin:cleanup-login-attempts', ['--days' => $days]);
+                    $options = ['--days' => $days];
+                    if ($days === 0) {
+                        $options['--force'] = true;
+                    }
+                    $exitCode = Artisan::call('admin:cleanup-login-attempts', $options);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
                     $message = __('admin.settings.systems.database_cleanup.cleanup_success', ['count' => $count]);
                     break;
                 case 'password_reset_tokens':
-                    $exitCode = Artisan::call('admin:cleanup-password-reset-tokens', ['--days' => $days]);
+                    $options = $days === 0 ? ['--days' => $days, '--force' => true] : ['--days' => $days];
+                    $exitCode = Artisan::call('admin:cleanup-password-reset-tokens', $options);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
                     $message = __('admin.settings.systems.database_cleanup.cleanup_success', ['count' => $count]);
                     break;
                 case 'trusted_devices':
-                    $exitCode = Artisan::call('admin:cleanup-trusted-devices', ['--days' => $days]);
+                    $options = $days === 0 ? ['--days' => $days, '--force' => true] : ['--days' => $days];
+                    $exitCode = Artisan::call('admin:cleanup-trusted-devices', $options);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
                     $message = __('admin.settings.systems.database_cleanup.cleanup_success', ['count' => $count]);
                     break;
                 case 'two_factor_tokens':
-                    $exitCode = Artisan::call('admin:cleanup-two-factor-tokens', ['--days' => $days]);
+                    $options = $days === 0 ? ['--days' => $days, '--force' => true] : ['--days' => $days];
+                    $exitCode = Artisan::call('admin:cleanup-two-factor-tokens', $options);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
                     $message = __('admin.settings.systems.database_cleanup.cleanup_success', ['count' => $count]);
                     break;
                 case 'cache_data':
-                    $exitCode = Artisan::call('admin:cleanup-cache', ['--expired-only' => true]);
+                    $exitCode = Artisan::call('admin:cleanup-cache', ['--force' => true]);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
                     $message = __('admin.settings.systems.database_cleanup.cleanup_success', ['count' => $count]);
                     break;
                 case 'sessions':
-                    $exitCode = Artisan::call('admin:cleanup-sessions', ['--days' => $days]);
+                    $exitCode = Artisan::call('admin:cleanup-sessions', ['--days' => $days, '--force' => true]);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
                     $message = __('admin.settings.systems.database_cleanup.cleanup_success', ['count' => $count]);
@@ -374,12 +381,12 @@ class AdminSystemsController extends AdminLoggedInController
                 case 'all':
                     $totalCount = 0;
                     $commands = [
-                        ['admin:cleanup-login-attempts', ['--days' => 30]],
-                        ['admin:cleanup-password-reset-tokens', ['--days' => 30]],
-                        ['admin:cleanup-trusted-devices', ['--days' => 90]],
-                        ['admin:cleanup-two-factor-tokens', ['--days' => 7]],
-                        ['admin:cleanup-cache', ['--expired-only' => true]],
-                        ['admin:cleanup-sessions', ['--days' => 7]]
+                        ['admin:cleanup-login-attempts', ['--days' => 30, '--force' => true]],
+                        ['admin:cleanup-password-reset-tokens', ['--days' => 30, '--force' => true]],
+                        ['admin:cleanup-trusted-devices', ['--days' => 90, '--force' => true]],
+                        ['admin:cleanup-two-factor-tokens', ['--days' => 7, '--force' => true]],
+                        ['admin:cleanup-cache', ['--expired-only' => true, '--force' => true]],
+                        ['admin:cleanup-sessions', ['--days' => 7, '--force' => true]]
                     ];
                     
                     foreach ($commands as $command) {
@@ -409,13 +416,28 @@ class AdminSystemsController extends AdminLoggedInController
     // コマンド出力から削除件数を抽出
     private function extractCountFromOutput($output)
     {
-        // "Successfully deleted X records" のパターンを探す
+        // 新しいパターン: "DELETED_COUNT: X"
+        if (preg_match('/DELETED_COUNT: (\d+)/', $output, $matches)) {
+            return (int) $matches[1];
+        }
+        
+        // 英語パターン: "Successfully deleted X records"
         if (preg_match('/Successfully deleted (\d+)/', $output, $matches)) {
             return (int) $matches[1];
         }
         
-        // "Successfully deleted all X records" のパターンを探す
+        // 英語パターン: "Successfully deleted all X records"
         if (preg_match('/Successfully deleted all (\d+)/', $output, $matches)) {
+            return (int) $matches[1];
+        }
+        
+        // 日本語パターン: "X 件の古い...記録を正常に削除しました。"
+        if (preg_match('/(\d+) 件の.*を正常に削除しました/', $output, $matches)) {
+            return (int) $matches[1];
+        }
+        
+        // 日本語パターン: "X 件の...記録を正常に削除しました。"
+        if (preg_match('/(\d+) 件の.*記録を正常に削除しました/', $output, $matches)) {
             return (int) $matches[1];
         }
         

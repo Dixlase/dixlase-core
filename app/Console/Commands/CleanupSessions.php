@@ -12,7 +12,7 @@ class CleanupSessions extends Command
      *
      * @var string
      */
-    protected $signature = 'admin:cleanup-sessions {--days=7 : Number of days to keep session records} {--all : Delete all session records}';
+    protected $signature = 'admin:cleanup-sessions {--days=7 : Number of days to keep session records} {--all : Delete all session records} {--force : Force deletion without confirmation}';
 
     /**
      * The console command description.
@@ -31,9 +31,20 @@ class CleanupSessions extends Command
         
         // --allオプションで全レコード削除
         if ($deleteAll) {
-            if (!$this->confirm(__('admin.cleanup_sessions.confirm_delete_all'))) {
-                $this->info(__('admin.cleanup_sessions.operation_cancelled'));
-                return 0;
+            // --forceオプションがない場合のみ確認を求める
+            // Webインターフェースからの実行時はSTDINが利用できないため、forceフラグが必須
+            if (!$this->option('force')) {
+                // コマンドラインから実行されている場合のみ確認プロンプトを表示
+                if (app()->runningInConsole() && php_sapi_name() === 'cli') {
+                    if (!$this->confirm(__('admin.cleanup_sessions.confirm_delete_all'))) {
+                        $this->info(__('admin.cleanup_sessions.operation_cancelled'));
+                        return 0;
+                    }
+                } else {
+                    // Webインターフェースからの実行時は--forceフラグが必要
+                    $this->error('--force flag is required when running from web interface');
+                    return 1;
+                }
             }
             
             $this->info(__('admin.cleanup_sessions.deleting_all'));
@@ -41,8 +52,10 @@ class CleanupSessions extends Command
             
             if ($deletedCount > 0) {
                 $this->info(__('admin.cleanup_sessions.deleted_all_success', ['count' => $deletedCount]));
+                $this->line("DELETED_COUNT: {$deletedCount}");
             } else {
                 $this->info(__('admin.cleanup_sessions.no_records_found'));
+                $this->line("DELETED_COUNT: 0");
             }
             
             return 0;
@@ -64,8 +77,10 @@ class CleanupSessions extends Command
 
         if ($deletedCount > 0) {
             $this->info(__('admin.cleanup_sessions.deleted_old_success', ['count' => $deletedCount]));
+            $this->line("DELETED_COUNT: {$deletedCount}");
         } else {
             $this->info(__('admin.cleanup_sessions.no_old_records_found'));
+            $this->line("DELETED_COUNT: 0");
         }
 
         return 0;
