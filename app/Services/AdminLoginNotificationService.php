@@ -7,6 +7,7 @@ use App\Models\MemberSetting;
 use App\Notifications\AdminLoginNotification;
 use App\Traits\LoginNotificationsTrait;
 use App\Traits\DeviceDetectionTrait;
+use App\Enums\LoginNotificationMode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -56,10 +57,10 @@ class AdminLoginNotificationService
         
         $globalMode = MemberSetting::getValue('login_notification_mode');
         $shouldSendUser = match ($globalMode) {
-            '0' => false, // Disabled
-            '1' => $this->shouldSendBasedOnProfile($member, $ip, $userAgent), // UseProfileSetting
-            '2' => $isDifferentDevice, // OnlyNewDevice - 異なるデバイス時のみ
-            '3' => true, // Always
+            LoginNotificationMode::Disabled->value => false,
+            LoginNotificationMode::UseProfileSetting->value => $this->shouldSendBasedOnProfile($member, $ip, $userAgent),
+            LoginNotificationMode::OnlyNewDevice->value => $isDifferentDevice,
+            LoginNotificationMode::Always->value => true,
             default => false,
         };
 
