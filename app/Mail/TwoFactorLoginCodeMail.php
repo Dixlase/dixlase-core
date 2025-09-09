@@ -28,7 +28,7 @@ class TwoFactorLoginCodeMail extends Mailable
     {
         $this->code = $code;
         $this->context = $context;
-        $this->appName = $appName ?? config('app.name', 'MySoftware');
+        $this->appName = $appName ?? config('app.name', 'Dixlase');
     }
 
     public function envelope(): Envelope
@@ -47,9 +47,9 @@ class TwoFactorLoginCodeMail extends Mailable
     public function content(): Content
     {
         $template = match ($this->context) {
-            'admin' => 'emails.two-factor-admin-code',
+            'admin' => 'emails.members_two_factor_code',
             'user' => 'emails.two-factor-user-code',
-            default => 'emails.two-factor-code',
+            default => 'emails.default_two_factor_code',
         };
 
         return new Content(

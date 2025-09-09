@@ -27,6 +27,8 @@ class MembersSettingsSeeder extends Seeder
 
             // ログイン通知設定
             ['key' => 'login_notification_mode', 'value' => '0'], // 0 = UseProfileSetting（プロファイルに任せる）
+            ['key' => 'send_login_notice_to_system', 'value' => '0'], // デフォルト: システム通知無効
+            ['key' => 'system_login_notice_email', 'value' => ''], // デフォルト: 空（管理者メールアドレス）
 
             // 二段階認証設定
             ['key' => 'force_2fa', 'value' => '1'], // 1 = メンバーのプロフィール設定を反映

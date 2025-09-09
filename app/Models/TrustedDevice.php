@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class TrustedDevice extends Model
 {
+    protected $table = 'members_trusted_devices';
+    
     protected $fillable = [
         'member_id',
         'device_name',

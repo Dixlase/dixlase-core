@@ -315,4 +315,23 @@ Clicking this link will complete the full mail functionality test.',
         'send_test' => 'Mail Send Test',
         'receive_test' => 'Mail Receipt Verification',
     ],
+
+    // Lockout Notification Email
+    'lockout_notification' => [
+        'subject' => '[Security Alert] Login Lockout Occurred',
+        'title' => 'Login Lockout Notification',
+        'message' => 'A login lockout has occurred in the system. This may indicate unauthorized login attempts.',
+        'details' => 'Lockout Details',
+        'identifier' => 'User Identifier',
+        'ip_address' => 'IP Address',
+        'user_agent' => 'User Agent',
+        'timestamp' => 'Occurrence Time',
+        'settings' => 'Lockout Settings',
+        'max_attempts' => 'Maximum Attempts',
+        'time_window' => 'Time Window',
+        'lockout_duration' => 'Lockout Duration',
+        'times' => ' times',
+        'minutes' => ' minutes',
+        'action_required' => 'For security reasons, please review this login lockout and take appropriate action as necessary.',
+    ],
 ];

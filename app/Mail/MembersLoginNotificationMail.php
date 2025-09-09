@@ -43,7 +43,7 @@ class MembersLoginNotificationMail  extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.login_notification',
+            markdown: 'emails.members_login_notification',
             with: [
                 'member' => $this->member,
                 'ip' => $this->ip,

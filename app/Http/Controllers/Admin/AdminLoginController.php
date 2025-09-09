@@ -130,7 +130,7 @@ class AdminLoginController extends AdminController
             $lockoutInfo = $lockoutService->handleFailedLogin($request, $email);
             
             $errorMessage = __('auth.failed');
-            if ($lockoutInfo['locked_out']) {
+            if ($lockoutInfo['is_locked_out']) {
                 $errorMessage = __('auth.lockout', ['minutes' => $lockoutInfo['lockout_minutes']]);
             } elseif ($lockoutInfo['remaining_attempts'] > 0) {
                 $errorMessage = __('auth.failed_with_attempts', ['attempts' => $lockoutInfo['remaining_attempts']]);
@@ -182,7 +182,7 @@ class AdminLoginController extends AdminController
             return redirect()->route('admin.login');
         }
 
-        return view('admin::two-factor-challenge');
+        return view('admin::two_factor_challenge');
     }
 
     public function confirmTwoFactor(Request $request)

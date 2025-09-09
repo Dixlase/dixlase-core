@@ -315,4 +315,23 @@ return [
         'send_test' => 'メール送信テスト',
         'receive_test' => 'メール受信確認',
     ],
+
+    // ロックアウト通知メール
+    'lockout_notification' => [
+        'subject' => '【セキュリティ警告】ログインロックアウト発生',
+        'title' => 'ログインロックアウト通知',
+        'message' => 'システムでログインロックアウトが発生しました。不正なログイン試行の可能性があります。',
+        'details' => 'ロックアウト詳細',
+        'identifier' => 'ユーザー識別子',
+        'ip_address' => 'IPアドレス',
+        'user_agent' => 'ユーザーエージェント',
+        'timestamp' => '発生日時',
+        'settings' => 'ロックアウト設定',
+        'max_attempts' => '最大試行回数',
+        'time_window' => '時間枠',
+        'lockout_duration' => 'ロックアウト期間',
+        'times' => '回',
+        'minutes' => '分',
+        'action_required' => 'セキュリティ上の理由により、このログインロックアウトを確認し、必要に応じて適切な対応を行ってください。',
+    ],
 ];
