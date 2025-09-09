@@ -2,14 +2,27 @@
 
 namespace App\Services;
 
-use App\Models\MemberLoginAttempt;
+use App\Helpers\LoginLockoutHelper;
 use App\Models\MemberSetting;
-use App\Services\SystemNotificationService;
-use Carbon\Carbon;
+use App\Traits\LoginLockoutTrait;
 use Illuminate\Http\Request;
 
 class AdminLoginLockoutService
 {
+    use LoginLockoutTrait;
+
+    /**
+     * 設定値を取得（LoginLockoutTraitで必要）
+     *
+     * @param string $key
+     * @param mixed $default
+     * @return mixed
+     */
+    protected function getSetting(string $key, $default = null)
+    {
+        return MemberSetting::getValue($key, $default);
+    }
+
     /**
      * ログイン試行制限が有効かどうかを確認
      *
@@ -17,7 +30,7 @@ class AdminLoginLockoutService
      */
     public function isLockoutEnabled(): bool
     {
-        return (bool) MemberSetting::getValue('login_attempt_limit_enabled', false);
+        return LoginLockoutHelper::isLockoutEnabled();
     }
 
     /**
@@ -27,7 +40,7 @@ class AdminLoginLockoutService
      */
     public function isNotificationEnabled(): bool
     {
-        return (bool) MemberSetting::getValue('lockout_notification_enabled', true);
+        return LoginLockoutHelper::isNotificationEnabled();
     }
 
     /**
@@ -37,7 +50,7 @@ class AdminLoginLockoutService
      */
     public function getMaxAttempts(): int
     {
-        return (int) MemberSetting::getValue('login_attempt_max_attempts', 5);
+        return $this->getIntegerSetting('login_attempt_max_attempts', 5);
     }
 
     /**
@@ -47,7 +60,7 @@ class AdminLoginLockoutService
      */
     public function getTimeWindow(): int
     {
-        return (int) MemberSetting::getValue('login_attempt_time_window', 15);
+        return $this->getIntegerSetting('login_attempt_time_window', 15);
     }
 
     /**
@@ -57,7 +70,7 @@ class AdminLoginLockoutService
      */
     public function getLockoutDuration(): int
     {
-        return (int) MemberSetting::getValue('login_attempt_lockout_duration', 30);
+        return $this->getIntegerSetting('login_attempt_lockout_duration', 30);
     }
 
     /**
@@ -68,11 +81,12 @@ class AdminLoginLockoutService
      */
     public function isLockedOut(string $identifier): bool
     {
+        // LoginLockoutTraitのメソッドを直接使用（デフォルト設定キーで）
         if (!$this->isLockoutEnabled()) {
             return false;
         }
 
-        $failedAttempts = MemberLoginAttempt::getFailedAttemptsCount(
+        $failedAttempts = \App\Models\MemberLoginAttempt::getFailedAttemptsCount(
             $identifier,
             $this->getTimeWindow()
         );
@@ -92,7 +106,7 @@ class AdminLoginLockoutService
             return false;
         }
 
-        $failedAttempts = MemberLoginAttempt::getFailedAttemptsCountByIp(
+        $failedAttempts = \App\Models\MemberLoginAttempt::getFailedAttemptsCountByIp(
             $ipAddress,
             $this->getTimeWindow()
         );
@@ -115,13 +129,13 @@ class AdminLoginLockoutService
             return null;
         }
 
-        $lastFailedAttempt = MemberLoginAttempt::getLastFailedAttempt($identifier);
+        $lastFailedAttempt = \App\Models\MemberLoginAttempt::getLastFailedAttempt($identifier);
         if (!$lastFailedAttempt) {
             return null;
         }
 
         $lockoutUntil = $lastFailedAttempt->addMinutes($this->getLockoutDuration());
-        $now = Carbon::now();
+        $now = \Carbon\Carbon::now();
 
         if ($now->greaterThanOrEqualTo($lockoutUntil)) {
             return 0; // ロックアウト期間終了
@@ -136,11 +150,11 @@ class AdminLoginLockoutService
      * @param Request $request
      * @param string $identifier
      * @param bool $successful
-     * @return MemberLoginAttempt
+     * @return \App\Models\MemberLoginAttempt
      */
-    public function recordLoginAttempt(Request $request, string $identifier, bool $successful = false): MemberLoginAttempt
+    public function recordLoginAttempt(Request $request, string $identifier, bool $successful = false)
     {
-        return MemberLoginAttempt::recordAttempt(
+        return \App\Models\MemberLoginAttempt::recordAttempt(
             $identifier,
             $request->ip(),
             $request->userAgent(),
@@ -157,15 +171,15 @@ class AdminLoginLockoutService
     public function handleSuccessfulLogin(string $identifier): void
     {
         // 成功したログインを記録
-        MemberLoginAttempt::recordAttempt(
+        \App\Models\MemberLoginAttempt::recordAttempt(
             $identifier,
             request()->ip(),
             request()->userAgent(),
             true
         );
 
-        // 過去の失敗記録をクリア
-        MemberLoginAttempt::clearFailedAttempts($identifier);
+        // 失敗した試行記録をクリア
+        \App\Models\MemberLoginAttempt::clearFailedAttempts($identifier);
     }
 
     /**
@@ -173,106 +187,33 @@ class AdminLoginLockoutService
      *
      * @param Request $request
      * @param string $identifier
-     * @return array ロックアウト情報
+     * @return array
      */
     public function handleFailedLogin(Request $request, string $identifier): array
     {
-        // 失敗したログインを記録
-        $this->recordLoginAttempt($request, $identifier, false);
-
-        if (!$this->isLockoutEnabled()) {
-            return [
-                'locked_out' => false,
-                'remaining_attempts' => null,
-                'lockout_minutes' => null,
-            ];
-        }
-
-        $failedAttempts = MemberLoginAttempt::getFailedAttemptsCount(
-            $identifier,
-            $this->getTimeWindow()
-        );
-
-        $maxAttempts = $this->getMaxAttempts();
-        $isLockedOut = $failedAttempts >= $maxAttempts;
-
-        // ロックアウトが発生した場合、通知を送信
-        if ($isLockedOut && $this->isNotificationEnabled()) {
-            $this->sendLockoutNotification($identifier, $request->ip(), $failedAttempts);
-        }
-
-        return [
-            'locked_out' => $isLockedOut,
-            'remaining_attempts' => $isLockedOut ? 0 : max(0, $maxAttempts - $failedAttempts),
-            'lockout_minutes' => $isLockedOut ? $this->getLockoutDuration() : null,
-            'failed_attempts' => $failedAttempts,
-        ];
-    }
-
-    /**
-     * ロックアウト通知を送信
-     *
-     * @param string $identifier
-     * @param string $ipAddress
-     * @param int $failedAttempts
-     * @return void
-     */
-    private function sendLockoutNotification(string $identifier, string $ipAddress, int $failedAttempts): void
-    {
-        try {
-            $notificationService = app(SystemNotificationService::class);
-            
-            $errorDetails = [
-                'type' => 'Login Lockout',
-                'identifier' => $identifier,
-                'ip_address' => $ipAddress,
-                'failed_attempts' => $failedAttempts,
-                'max_attempts' => $this->getMaxAttempts(),
-                'time_window' => $this->getTimeWindow() . ' minutes',
-                'lockout_duration' => $this->getLockoutDuration() . ' minutes',
-                'timestamp' => now()->toDateTimeString(),
-            ];
-
-            $notificationService->sendErrorNotification(
-                'Admin Login Lockout Triggered',
-                'A user has been locked out due to excessive login attempts.',
-                $errorDetails
-            );
-        } catch (\Exception $e) {
-            \Log::error('Failed to send lockout notification: ' . $e->getMessage());
-        }
+        return LoginLockoutHelper::recordAndCheckLockout($request, $identifier, false);
     }
 
     /**
      * ロックアウト状態の詳細情報を取得
      *
      * @param string $identifier
+     * @param string $ipAddress
      * @return array
      */
-    public function getLockoutInfo(string $identifier): array
+    public function getLockoutStatusDetails(string $identifier, string $ipAddress): array
     {
-        if (!$this->isLockoutEnabled()) {
-            return [
-                'enabled' => false,
-                'locked_out' => false,
-            ];
-        }
+        return LoginLockoutHelper::getLockoutStatusDetails($identifier, $ipAddress);
+    }
 
-        $isLockedOut = $this->isLockedOut($identifier);
-        $failedAttempts = MemberLoginAttempt::getFailedAttemptsCount(
-            $identifier,
-            $this->getTimeWindow()
-        );
-
-        return [
-            'enabled' => true,
-            'locked_out' => $isLockedOut,
-            'failed_attempts' => $failedAttempts,
-            'max_attempts' => $this->getMaxAttempts(),
-            'remaining_attempts' => max(0, $this->getMaxAttempts() - $failedAttempts),
-            'remaining_minutes' => $isLockedOut ? $this->getLockoutRemainingMinutes($identifier) : null,
-            'time_window' => $this->getTimeWindow(),
-            'lockout_duration' => $this->getLockoutDuration(),
-        ];
+    /**
+     * ロックアウトエラーメッセージを生成
+     *
+     * @param array $lockoutInfo
+     * @return string
+     */
+    public function generateLockoutMessage(array $lockoutInfo): string
+    {
+        return LoginLockoutHelper::generateLockoutMessage($lockoutInfo, 'admin');
     }
 }

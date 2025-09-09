@@ -8,9 +8,11 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\MembersTwoFactorToken;
 use App\Enums\TwoFactorMode;
 use App\Enums\TwoFactorMethod;
+use App\Traits\DeviceDetectionTrait;
 
 trait TwoFactorTrait
 {
+    use DeviceDetectionTrait;
     /**
      * 二段階認証コードを生成してデータベースに保存
      *
@@ -182,20 +184,6 @@ trait TwoFactorTrait
         };
     }
 
-    /**
-     * 異なる環境からのアクセスかどうかを判定
-     *
-     * @param mixed $user ユーザーモデル
-     * @return bool 異なる環境かどうか
-     */
-    public function isDifferentEnvironment($user): bool
-    {
-        // 信頼済みデバイスチェックの実装
-        $trustedDeviceToken = request()->cookie('trusted_device');
-        return !($trustedDeviceToken && $user->trustedDevices()
-            ->where('token', hash('sha256', $trustedDeviceToken))
-            ->exists());
-    }
 
     /**
      * 信頼済みデバイスからのアクセスかどうかを判定
