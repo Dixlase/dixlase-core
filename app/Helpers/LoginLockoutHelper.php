@@ -36,9 +36,23 @@ class LoginLockoutHelper
     public static function isNotificationEnabled(string $settingKey = 'lockout_notification_enabled', $settingSource = null): bool
     {
         if ($settingSource) {
-            return (bool) $settingSource::getValue($settingKey, true);
+            $value = $settingSource::getValue($settingKey, true);
+            Log::info('LoginLockoutHelper::isNotificationEnabled (custom source)', [
+                'setting_key' => $settingKey,
+                'source' => get_class($settingSource),
+                'raw_value' => $value,
+                'boolean_value' => (bool) $value
+            ]);
+            return (bool) $value;
         }
-        return (bool) MemberSetting::getValue($settingKey, true);
+        
+        $value = MemberSetting::getValue($settingKey, true);
+        Log::info('LoginLockoutHelper::isNotificationEnabled (MemberSetting)', [
+            'setting_key' => $settingKey,
+            'raw_value' => $value,
+            'boolean_value' => (bool) $value
+        ]);
+        return (bool) $value;
     }
 
     /**
@@ -183,7 +197,17 @@ class LoginLockoutHelper
 
                 // ロックアウト通知を送信
                 if ($lockoutSettings['notification_enabled']) {
+                    Log::info('LoginLockout: Sending notification', [
+                        'identifier' => $identifier,
+                        'notification_enabled' => $lockoutSettings['notification_enabled'],
+                        'settings' => $lockoutSettings
+                    ]);
                     static::sendLockoutNotification($identifier, $request, $lockoutSettings);
+                } else {
+                    Log::info('LoginLockout: Notification disabled', [
+                        'identifier' => $identifier,
+                        'notification_enabled' => $lockoutSettings['notification_enabled']
+                    ]);
                 }
             }
         } else {
@@ -243,12 +267,25 @@ class LoginLockoutHelper
      */
     public static function sendLockoutNotification(string $identifier, Request $request, array $settings): void
     {
+        Log::info('LoginLockout: sendLockoutNotification called', [
+            'identifier' => $identifier,
+            'ip' => $request->ip(),
+            'settings' => $settings
+        ]);
+        
         try {
-            // システム管理者のメールアドレスを取得
-            $adminEmail = \App\Models\MemberSetting::getValue('notification_email');
+            // 通知先メールアドレスを取得
+            $notificationEmail = \App\Models\BaseSetting::getValue('notification_email');
             
-            if (empty($adminEmail)) {
+            if (empty($notificationEmail)) {
                 Log::warning('ロックアウト通知: 管理者メールアドレスが設定されていません');
+                return;
+            }
+
+            // メールサーバーが設定済みかチェック（SystemNotificationServiceの一部機能を借用）
+            $systemNotificationService = new SystemNotificationService();
+            if (!$systemNotificationService->isMailServerConfigured()) {
+                Log::warning('ロックアウト通知: メールサーバーが設定されていません');
                 return;
             }
 
@@ -263,19 +300,15 @@ class LoginLockoutHelper
                 'lockout_duration' => $settings['lockout_duration'],
             ];
 
-            $message = view('emails.members_lockout_notification', compact('details'))->render();
-
-            // 管理者メールアドレスに直接送信
-            \Mail::send([], [], function ($mail) use ($adminEmail, $subject, $message) {
-                $mail->to($adminEmail)
-                     ->subject($subject)
-                     ->html($message);
-            });
+            // Mailableクラスを使用してメール送信
+            $lockoutMail = new \App\Mail\MembersLockoutNotificationMail($details);
+            
+            \Mail::to($notificationEmail)->send($lockoutMail);
 
             Log::info('ロックアウト通知を送信しました', [
                 'identifier' => $identifier,
                 'ip_address' => $request->ip(),
-                'admin_email' => $adminEmail,
+                'notification_email' => $notificationEmail,
             ]);
         } catch (\Exception $e) {
             Log::error('ロックアウト通知の送信に失敗しました', [

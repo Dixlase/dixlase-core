@@ -318,11 +318,11 @@ Clicking this link will complete the full mail functionality test.',
 
     // Lockout Notification Email
     'lockout_notification' => [
-        'subject' => '[Security Alert] Login Lockout Occurred',
-        'title' => 'Login Lockout Notification',
-        'message' => 'A login lockout has occurred in the system. This may indicate unauthorized login attempts.',
+        'subject' => '[Security Alert] Admin Login Lockout Occurred',
+        'title' => 'Admin Login Lockout Notification',
+        'message' => 'An admin login lockout has occurred in the system. This may indicate unauthorized login attempts.',
         'details' => 'Lockout Details',
-        'identifier' => 'User Identifier',
+        'identifier' => 'Email Address',
         'ip_address' => 'IP Address',
         'user_agent' => 'User Agent',
         'timestamp' => 'Occurrence Time',
@@ -333,5 +333,6 @@ Clicking this link will complete the full mail functionality test.',
         'times' => ' times',
         'minutes' => ' minutes',
         'action_required' => 'For security reasons, please review this login lockout and take appropriate action as necessary.',
+        'thanks' => 'Thank you for your attention',
     ],
 ];
