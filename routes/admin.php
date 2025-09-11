@@ -186,6 +186,8 @@ Route::prefix($adminUrl)->name('admin.')
             Route::get('/settings/system/logs/{type?}', [AdminSystemsController::class, 'logs'])->name('settings.systems.logs');
             Route::get('/settings/system/logs/{type}/download', [AdminSystemsController::class, 'downloadLog'])->name('settings.systems.logs.download');
             Route::post('/settings/system/logs/{type}/clear', [AdminSystemsController::class, 'clearLog'])->name('settings.systems.logs.clear');
+            Route::post('/settings/system/logs/test', [AdminSystemsController::class, 'testLogs'])->name('settings.systems.logs.test');
+            Route::post('/settings/system/logs/test-error', [AdminSystemsController::class, 'testErrorLog'])->name('settings.systems.logs.test_error');
             //システム情報
             Route::get('/settings/systems/info', [AdminSystemsController::class, 'info'])->name('settings.systems.info');
 

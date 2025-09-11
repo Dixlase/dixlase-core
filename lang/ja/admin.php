@@ -800,7 +800,7 @@ return [
                 'activity' => '管理アクティビティ',
                 'error' => 'エラー',
                 'login' => 'ログイン',
-                'laravel' => 'Laravel',
+                'dixlase' => 'Dixlase',
                 'download' => 'ダウンロード',
                 'clear' => 'ログ消去',
                 'clear_confirm' => 'ログファイルの内容を消去してもよろしいですか？この操作は元に戻せません。',
