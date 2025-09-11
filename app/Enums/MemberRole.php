@@ -26,7 +26,7 @@ enum MemberRole: int
             self::GUEST => 'guest',
         };
 
-        return __("member.roles.{$key}");
+        return __("admin.common.roles.{$key}");
     }
 
     public function priority(): int
