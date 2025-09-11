@@ -74,7 +74,7 @@ return [
 
         'stack' => [
             'driver' => 'stack',
-            'channels' => explode(',', env('LOG_STACK', 'single')),
+            'channels' => explode(',', env('LOG_STACK', 'single,notification')),
             'ignore_exceptions' => false,
         ],
 
@@ -173,6 +173,12 @@ return [
             'days' => env('LOG_DAILY_DAYS', 14),
         ],
 
+        // システム通知付きログチャンネル
+        'notification' => [
+            'driver' => 'custom',
+            'via' => App\Logging\SystemNotificationLogger::class,
+            'level' => env('LOG_LEVEL', 'debug'),
+        ],
 
     ],
 

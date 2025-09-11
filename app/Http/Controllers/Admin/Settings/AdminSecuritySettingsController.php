@@ -113,20 +113,28 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         SecuritySetting::set('captcha_turnstile_secret_key', $request->input('captcha_turnstile_secret_key', ''));
         
         // Save notification settings
-        SecuritySetting::set('notification_enabled', $request->boolean('notification_enabled'));
-        $notificationLogLevels = $request->input('notification_log_levels', []);
+        $notificationEnabled = $request->boolean('notification_enabled');
+        SecuritySetting::set('notification_enabled', $notificationEnabled);
 
+        // ログレベルは通知の有効/無効に関わらず保存できるようにする
+        $submittedLevels = $request->input('notification_log_levels', null);
 
-        
-        // チェックされた値のみを取得し、0を除外してLogLevel enumの値のみを保存
-        $validLogLevels = array_filter(
-            array_map('intval', $notificationLogLevels),
-            function($value) {
-                return $value > 0 && in_array($value, \App\Enums\LogLevel::getNotificationLevels());
+        if (is_array($submittedLevels)) {
+            // チェックされた値のみを取得し、0を除外してLogLevel enumの値のみを保存
+            $validLogLevels = array_filter(
+                array_map('intval', $submittedLevels),
+                function ($value) {
+                    return $value > 0 && in_array($value, \App\Enums\LogLevel::getNotificationLevels());
+                }
+            );
+
+            // 何も選択されていない（または不正）場合はデフォルトレベルを適用
+            if (empty($validLogLevels)) {
+                $validLogLevels = \App\Enums\LogLevel::getDefaultNotificationLevels();
             }
-        );
-        
-        SecuritySetting::set('notification_log_levels', implode(',', $validLogLevels));
+
+            SecuritySetting::set('notification_log_levels', implode(',', $validLogLevels));
+        }
         
         // Save dynamic captcha form settings
         $captchaFormSettings = CaptchaFormSetting::all();
