@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of MySoftware.
+ * This file is part of Dixlase.
  *
  * Copyright (C) 2025 exc-D inc.
  * Website: https://exc-d.com
@@ -801,6 +801,8 @@ return [
                 'error' => 'エラー',
                 'login' => 'ログイン',
                 'dixlase' => 'Dixlase',
+                'front_activity' => 'フロント操作',
+                'front_error' => 'フロントエラー',
                 'download' => 'ダウンロード',
                 'clear' => 'ログ消去',
                 'clear_confirm' => 'ログファイルの内容を消去してもよろしいですか？この操作は元に戻せません。',

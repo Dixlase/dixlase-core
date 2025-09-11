@@ -3,7 +3,7 @@
 
 
 /**
- * This file is part of MySoftware.
+ * This file is part of Dixlase.
  *
  * Copyright (C) 2025 exc-D inc.
  * Website: https://exc-d.com

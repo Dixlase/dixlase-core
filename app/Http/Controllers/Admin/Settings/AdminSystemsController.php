@@ -19,6 +19,8 @@ class AdminSystemsController extends AdminLoggedInController
         'error'    => 'admin_error.log',
         'login'    => 'admin_login.log',
         'dixlase'  => 'dixlase.log',
+        'front_activity' => 'front_activity.log',
+        'front_error' => 'front_error.log',
     ];
 
     public function __construct()
@@ -618,6 +620,69 @@ class AdminSystemsController extends AdminLoggedInController
             ]);
             
             return redirect()->back()->with('success', 'エラーが発生し、admin_error.logに記録されました: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * フロントログをテスト
+     */
+    public function testFrontLogs(Request $request)
+    {
+        try {
+            // フロント操作ログのテスト
+            Log::channel('front_activity')->info('フロント操作テスト', [
+                'action' => 'テスト操作',
+                'user_id' => null,
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'url' => 'http://localhost/test',
+                'method' => 'GET',
+                'timestamp' => now()->toDateTimeString(),
+                'test_type' => 'manual_front_test',
+                'admin_user' => auth()->user()->name,
+                'details' => [
+                    'page' => 'テストページ',
+                    'form_type' => 'お問い合わせ',
+                    'search_query' => 'テスト検索',
+                ]
+            ]);
+
+            return redirect()->back()->with('success', 'フロント操作ログをfront_activity.logに記録しました');
+            
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'フロントログテストでエラーが発生しました: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * フロントエラーログをテスト
+     */
+    public function testFrontErrorLog(Request $request)
+    {
+        try {
+            // フロントエラーログのテスト
+            Log::channel('front_error')->error('フロントエラーテスト', [
+                'error' => 'テストエラー',
+                'user_id' => null,
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'url' => 'http://localhost/test-error',
+                'method' => 'POST',
+                'timestamp' => now()->toDateTimeString(),
+                'test_type' => 'manual_front_error_test',
+                'admin_user' => auth()->user()->name,
+                'context' => [
+                    'error_type' => 'validation_error',
+                    'form_data' => ['email' => 'invalid-email', 'name' => ''],
+                    'database_error' => false,
+                    'api_error' => false,
+                ]
+            ]);
+
+            return redirect()->back()->with('success', 'フロントエラーログをfront_error.logに記録しました');
+            
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'フロントエラーログテストでエラーが発生しました: ' . $e->getMessage());
         }
     }
 }

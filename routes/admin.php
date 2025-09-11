@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of MySoftware.
+ * This file is part of Dixlase.
  *
  * Copyright (C) 2025 exc-D inc.
  * Website: https://exc-d.com
@@ -182,12 +182,16 @@ Route::prefix($adminUrl)->name('admin.')
             //データベースクリーンアップ
             Route::get('/settings/systems/database-cleanup', [AdminSystemsController::class, 'databaseCleanup'])->name('settings.systems.database_cleanup');
             Route::post('/settings/systems/database-cleanup/clean', [AdminSystemsController::class, 'cleanupDatabase'])->name('settings.systems.database_cleanup.clean');
+            
             //ログ
             Route::get('/settings/system/logs/{type?}', [AdminSystemsController::class, 'logs'])->name('settings.systems.logs');
             Route::get('/settings/system/logs/{type}/download', [AdminSystemsController::class, 'downloadLog'])->name('settings.systems.logs.download');
             Route::post('/settings/system/logs/{type}/clear', [AdminSystemsController::class, 'clearLog'])->name('settings.systems.logs.clear');
             Route::post('/settings/system/logs/test', [AdminSystemsController::class, 'testLogs'])->name('settings.systems.logs.test');
             Route::post('/settings/system/logs/test-error', [AdminSystemsController::class, 'testErrorLog'])->name('settings.systems.logs.test_error');
+            Route::post('/settings/system/logs/test-front', [AdminSystemsController::class, 'testFrontLogs'])->name('settings.systems.logs.test_front');
+            Route::post('/settings/system/logs/test-front-error', [AdminSystemsController::class, 'testFrontErrorLog'])->name('settings.systems.logs.test_front_error');
+            
             //システム情報
             Route::get('/settings/systems/info', [AdminSystemsController::class, 'info'])->name('settings.systems.info');
 

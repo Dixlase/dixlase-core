@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of MySoftware.
+ * This file is part of Dixlase.
  *
  * Copyright (C) 2025 exc-D inc.
  * Website: https://exc-d.com
@@ -801,6 +801,8 @@ Clicking this link will complete the full mail function test.',
                 'error' => 'Error',
                 'login' => 'Login',
                 'dixlase' => 'Dixlase',
+                'front_activity' => 'Front Activity',
+                'front_error' => 'Front Error',
                 'download' => 'Download',
                 'clear' => 'Clear Logs',
                 'clear_confirm' => 'Are you sure you want to clear the log file contents? This action cannot be undone.',

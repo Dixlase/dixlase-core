@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of MySoftware.
+ * This file is part of Dixlase.
  *
  * Copyright (C) 2025 exc-D inc.
  * Website: https://exc-d.com
@@ -170,6 +170,24 @@ return [
             'driver' => 'single',
             'path' => storage_path('logs/admin_login.log'),
             'level' => 'info',
+            'days' => env('LOG_DAILY_DAYS', 14),
+        ],
+
+        //フロントページの操作
+        'front_activity' => [
+            'driver' => 'single',
+            'formatter' => env('LOG_STDERR_FORMATTER'),
+            'path' => storage_path('logs/front_activity.log'),
+            'level' => 'info',
+            'days' => env('LOG_DAILY_DAYS', 14),
+        ],
+
+        //フロントページのエラー
+        'front_error' => [
+            'driver' => 'single',
+            'formatter' => env('LOG_STDERR_FORMATTER'),
+            'path' => storage_path('logs/front_error.log'),
+            'level' => 'error',
             'days' => env('LOG_DAILY_DAYS', 14),
         ],
 
