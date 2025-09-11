@@ -133,7 +133,16 @@ class SystemNotificationService
      */
     public function isNotificationEnabled(): bool
     {
-        return (bool) BaseSetting::getValue('notification_enabled', false);
+        try {
+            // SecuritySettingから通知設定を取得
+            $enabled = \DB::table('security_settings')
+                ->where('name', 'notification_enabled')
+                ->value('value');
+            
+            return (bool) $enabled;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 
     /**

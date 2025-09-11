@@ -354,7 +354,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
 
     protected function authorizeEdit(string $menuKey)
     {
-        if (!canEditMenu($menuKey)) {
+        if (!\App\Helpers\AdminHelper::canEditMenu($menuKey)) {
             abort(403, 'この操作を行う権限がありません');
         }
     }
