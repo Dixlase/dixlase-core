@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class AdminSystemsController extends AdminLoggedInController
 {
@@ -17,7 +18,7 @@ class AdminSystemsController extends AdminLoggedInController
         'activity' => 'admin_activity.log',
         'error'    => 'admin_error.log',
         'login'    => 'admin_login.log',
-        'laravel'  => 'laravel.log',
+        'dixlase'  => 'dixlase.log',
     ];
 
     public function __construct()
@@ -486,5 +487,137 @@ class AdminSystemsController extends AdminLoggedInController
             'context' => $context,
             'parsed' => true
         ];
+    }
+
+    /**
+     * ログ出力テスト
+     */
+    public function testLogs(Request $request)
+    {
+        $type = $request->input('type', 'all');
+        $results = [];
+
+        try {
+            if ($type === 'all' || $type === 'dixlase') {
+                // 通常ログ（dixlase.log）のテスト
+                Log::info('ログ出力テスト - 通常ログ', [
+                    'test_type' => 'dixlase_log',
+                    'timestamp' => now()->toDateTimeString(),
+                    'user_id' => auth()->id(),
+                    'user_name' => auth()->user()->name,
+                ]);
+                $results['dixlase'] = 'success';
+            }
+
+            if ($type === 'all' || $type === 'activity') {
+                // アクティビティログのテスト
+                Log::channel('admin_activity')->info('ログ出力テスト - アクティビティログ', [
+                    'test_type' => 'activity_log',
+                    'timestamp' => now()->toDateTimeString(),
+                    'user_id' => auth()->id(),
+                    'user_name' => auth()->user()->name,
+                    'action' => 'log_test',
+                ]);
+                $results['activity'] = 'success';
+            }
+
+            if ($type === 'all' || $type === 'error') {
+                // エラーログのテスト
+                Log::channel('admin_error')->error('ログ出力テスト - エラーログ', [
+                    'test_type' => 'error_log',
+                    'timestamp' => now()->toDateTimeString(),
+                    'user_id' => auth()->id(),
+                    'user_name' => auth()->user()->name,
+                    'error_message' => 'これはテスト用のエラーメッセージです',
+                ]);
+                $results['error'] = 'success';
+            }
+
+            if ($type === 'all' || $type === 'login') {
+                // ログインログのテスト
+                Log::channel('admin_login')->info('ログ出力テスト - ログインログ', [
+                    'test_type' => 'login_log',
+                    'timestamp' => now()->toDateTimeString(),
+                    'user_id' => auth()->id(),
+                    'user_name' => auth()->user()->name,
+                    'action' => 'test_login_log',
+                    'ip' => request()->ip(),
+                ]);
+                $results['login'] = 'success';
+            }
+
+            $message = __('admin.settings.systems.logs.test_success', ['results' => implode(', ', array_keys($results))]);
+            return redirect()->back()->with('success', $message);
+
+        } catch (\Exception $e) {
+            Log::error('ログ出力テストでエラーが発生しました', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            return redirect()->back()->with('error', 'ログ出力テストでエラーが発生しました: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * 意図的にエラーを発生させてadmin_error.logに出力をテスト
+     */
+    public function testErrorLog(Request $request)
+    {
+        $errorType = $request->input('error_type', 'exception');
+
+        try {
+            switch ($errorType) {
+                case 'exception':
+                    // 意図的に例外を発生させる
+                    throw new \Exception('テスト用の例外エラーです - admin_error.logに記録されるかテスト中');
+                    
+                case 'database':
+                    // 存在しないテーブルにアクセスしてDBエラーを発生
+                    DB::table('non_existent_table')->get();
+                    break;
+                    
+                case 'file':
+                    // 存在しないファイルを読み込んでファイルエラーを発生
+                    $content = file_get_contents('/path/to/non/existent/file.txt');
+                    break;
+                    
+                case 'division':
+                    // ゼロ除算エラーを発生
+                    $result = 10 / 0;
+                    break;
+                    
+                case 'manual_log':
+                    // 手動でエラーログに記録（例外は発生させない）
+                    Log::channel('admin_error')->error('手動エラーログテスト', [
+                        'test_type' => 'manual_error_test',
+                        'timestamp' => now()->toDateTimeString(),
+                        'user_id' => auth()->id(),
+                        'user_name' => auth()->user()->name,
+                        'error_details' => 'これは手動で記録したテスト用エラーです',
+                        'ip' => request()->ip(),
+                    ]);
+                    
+                    return redirect()->back()->with('success', '手動エラーログをadmin_error.logに記録しました');
+                    
+                default:
+                    throw new \InvalidArgumentException('無効なエラータイプです: ' . $errorType);
+            }
+            
+        } catch (\Exception $e) {
+            // エラーをadmin_errorチャンネルに記録
+            Log::channel('admin_error')->error('テストエラーが発生しました', [
+                'error_type' => $errorType,
+                'error_message' => $e->getMessage(),
+                'error_file' => $e->getFile(),
+                'error_line' => $e->getLine(),
+                'user_id' => auth()->id(),
+                'user_name' => auth()->user()->name,
+                'timestamp' => now()->toDateTimeString(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            return redirect()->back()->with('success', 'エラーが発生し、admin_error.logに記録されました: ' . $e->getMessage());
+        }
     }
 }
