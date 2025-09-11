@@ -35,18 +35,46 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     @endif
 
-    <div class="flex justify-around">
-        <div class="my-3">
-            <label class="mr-2 dark:text-gray-200">{{ __('admin.settings.systems.logs.log_type_label') }}</label>
-            @foreach ($logTypes as $type)
+    <!-- Log Type Selection -->
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">{{ __('admin.settings.systems.logs.log_type_label') }}</label>
+    <div class="mb-6">
+        <!-- Admin Logs Row -->
+        <div class="mb-3">
+            <span class="text-sm text-gray-600 dark:text-gray-400 mr-3">管理画面ログ:</span>
+            @foreach (['activity', 'error', 'login', 'dixlase'] as $type)
                 <a href="{{ route('admin.settings.systems.logs', ['type' => $type]) }}"
-                    class="inline-block px-2 py-1 rounded mr-2 text-white {{ $logType === $type ? 'bg-blue-500' : 'bg-gray-500' }}
-                    dark:{{ $logType === $type ? 'bg-blue-700' : 'bg-gray-700' }}">
+                    class="inline-block px-3 py-2 rounded mr-2 text-white text-sm font-medium transition-colors duration-200 {{ $logType === $type ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-500 hover:bg-gray-600' }}
+                    dark:{{ $logType === $type ? 'bg-blue-700 hover:bg-blue-800' : 'bg-gray-700 hover:bg-gray-600' }}">
                     {{ __('admin.settings.systems.logs.' . $type) }}
                 </a>
             @endforeach
         </div>
-        <div class="my-3">
+        
+        <!-- Front Logs Row -->
+        <div class="mb-3">
+            <span class="text-sm text-gray-600 dark:text-gray-400 mr-3">フロントページログ:</span>
+            @foreach (['front_activity', 'front_error'] as $type)
+                <a href="{{ route('admin.settings.systems.logs', ['type' => $type]) }}"
+                    class="inline-block px-3 py-2 rounded mr-2 text-white text-sm font-medium transition-colors duration-200 {{ $logType === $type ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-500 hover:bg-gray-600' }}
+                    dark:{{ $logType === $type ? 'bg-green-700 hover:bg-green-800' : 'bg-gray-700 hover:bg-gray-600' }}">
+                    {{ __('admin.settings.systems.logs.' . $type) }}
+                </a>
+            @endforeach
+        </div>
+    </div>
+
+    
+
+    <!-- Pagination Info -->
+    <div class="flex justify-between items-center">
+        <div>
+            @if(isset($pagination) && $pagination['total'] > 0)
+                <div class="text-sm">
+                    {{ __('admin.settings.systems.logs.pagination.showing', ['from' => $pagination['from'], 'to' => $pagination['to'], 'total' => $pagination['total']]) }}
+                </div>
+            @endif
+        </div>
+        <div class="flex justify-end">
             <!-- Action Buttons -->
             <div class="flex items-center space-x-2">
                 <!-- Download Button -->
@@ -72,15 +100,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </form>
             </div>
         </div>
-
     </div>
-
-    <!-- Pagination Info -->
-    @if(isset($pagination) && $pagination['total'] > 0)
-        <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-            {{ __('admin.settings.systems.logs.pagination.showing', ['from' => $pagination['from'], 'to' => $pagination['to'], 'total' => $pagination['total']]) }}
-        </div>
-    @endif
 
     <!-- Pagination Controls -->
     @if(isset($pagination) && $pagination['last_page'] > 1)
