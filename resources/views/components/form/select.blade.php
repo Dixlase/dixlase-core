@@ -26,13 +26,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'disabled' => false, // 無効フラグ
     'class' => 'default-class', // 追加クラス
     'required' => false, // 必須フラグ
+    'xModel' => null, // Alpine.js x-model属性
 ])
 
 <select id="{{ $id }}"
         name="{{ $name }}"
         class="mt-1 block rounded-md shadow-sm {{ config('admin.appearance_class.form.select') }} {{ $class }}"
         @if ($disabled) disabled @endif
-        @if ($required) required @endif>
+        @if ($required) required @endif
+        @if ($xModel) x-model="{{ $xModel }}" @endif>
     @foreach ($options as $optionValue => $optionText)
         <option value="{{ $optionValue }}" {{ $value == $optionValue ? 'selected' : '' }}>
             {{ __($optionText) }}

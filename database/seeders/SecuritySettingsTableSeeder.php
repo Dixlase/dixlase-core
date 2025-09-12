@@ -76,6 +76,33 @@ class SecuritySettingsTableSeeder extends Seeder
             ['value' => '0.5']
         );
 
+        // Google reCAPTCHA Enterprise settings
+        SecuritySetting::updateOrCreate(
+            ['name' => 'captcha_google_enterprise_site_key'],
+            ['value' => '']
+        );
+
+        SecuritySetting::updateOrCreate(
+            ['name' => 'captcha_google_enterprise_secret_key'],
+            ['value' => '']
+        );
+
+        SecuritySetting::updateOrCreate(
+            ['name' => 'captcha_google_project_id'],
+            ['value' => '']
+        );
+
+        // Turnstile settings
+        SecuritySetting::updateOrCreate(
+            ['name' => 'captcha_turnstile_site_key'],
+            ['value' => '']
+        );
+
+        SecuritySetting::updateOrCreate(
+            ['name' => 'captcha_turnstile_secret_key'],
+            ['value' => '']
+        );
+
         // IP Restriction settings
         SecuritySetting::updateOrCreate(
             ['name' => 'enable_allowed_admin_ips'],
@@ -107,17 +134,6 @@ class SecuritySettingsTableSeeder extends Seeder
         );
         SecuritySetting::updateOrCreate(
             ['name' => 'blocked_front_ips'],
-            ['value' => '']
-        );
-
-        // Turnstile settings
-        SecuritySetting::updateOrCreate(
-            ['name' => 'captcha_turnstile_site_key'],
-            ['value' => '']
-        );
-
-        SecuritySetting::updateOrCreate(
-            ['name' => 'captcha_turnstile_secret_key'],
             ['value' => '']
         );
     }
