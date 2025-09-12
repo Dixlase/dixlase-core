@@ -130,6 +130,8 @@ Route::prefix($adminUrl)->name('admin.')
             // セキュリティ設定
             Route::get('/settings/security', [AdminSecuritySettingsController::class, 'index'])->name('settings.security');
             Route::post('/settings/security', [AdminSecuritySettingsController::class, 'update'])->name('settings.security.update');
+            Route::post('/settings/security/test-captcha', [AdminSecuritySettingsController::class, 'testCaptcha'])->name('settings.security.test-captcha');
+            Route::post('/settings/security/reset-captcha-test', [AdminSecuritySettingsController::class, 'resetCaptchaTest'])->name('settings.security.reset-captcha-test');
 
             // メンバー管理
             // メンバーマスター

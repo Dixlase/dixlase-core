@@ -97,18 +97,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @stack('modals')
 
         <script>
-
-            window.themeStore = {
-                theme: localStorage.getItem('appearance') ?? '{{ $appearance }}',
-                isDark: false,
-                applyTheme() {
-                    this.isDark = this.theme === '2' || (this.theme === '0' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-                    localStorage.setItem('appearance', this.theme);
-                    document.documentElement.classList.toggle('dark', this.isDark);
-                    document.documentElement.classList.toggle('light', !this.isDark);
-                }
-            };
-
+            // Alpine.js関数を先に定義
             function appearanceTheme(defaultValue) {
                 return {
                     theme: defaultValue, // データベースの値を優先
@@ -159,6 +148,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endif
 
             @stack('scripts')
+
+            // テーマストア（後方互換性のため）
+            window.themeStore = {
+                theme: localStorage.getItem('appearance') ?? '{{ $appearance }}',
+                isDark: false,
+                applyTheme() {
+                    this.isDark = this.theme === '2' || (this.theme === '0' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                    localStorage.setItem('appearance', this.theme);
+                    document.documentElement.classList.toggle('dark', this.isDark);
+                    document.documentElement.classList.toggle('light', !this.isDark);
+                }
+            };
 
         </script>
 

@@ -27,7 +27,9 @@ use App\Models\SecuritySetting;
 use App\Models\BaseSetting;
 use App\Models\CaptchaFormSetting;
 use App\Http\Requests\Admin\Settings\Security\AdminSettngsSecurityUpdateRequest;
+use App\Services\CaptchaTestService;
 use App\Enums\LogLevel;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -83,8 +85,18 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         $mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? BaseSetting::getValue('mail_send_tested', false));
         $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? BaseSetting::getValue('mail_receive_tested', false));
 
+        // CAPTCHAテスト結果を取得
+        $captchaTestService = new CaptchaTestService();
+        $captchaTestResults = [];
+        
+        foreach (['google', 'google_enterprise', 'turnstile'] as $driver) {
+            $testResult = $captchaTestService->getCaptchaTestResult($driver);
+            $captchaTestResults[$driver] = $testResult;
+        }
+
         $this->viewParams['settings'] = $settings;
         $this->viewParams['captchaFormSettings'] = $captchaFormSettings;
+        $this->viewParams['captchaTestResults'] = $captchaTestResults;
         $this->viewParams['mailConnectionTested'] = $mailConnectionTested;
         $this->viewParams['mailSendTested'] = $mailSendTested;
         $this->viewParams['mailReceiveTested'] = $mailReceiveTested;
@@ -94,6 +106,64 @@ class AdminSecuritySettingsController extends AdminLoggedInController
 
     public function update(AdminSettngsSecurityUpdateRequest $request)
     {
+        $captchaTestService = new CaptchaTestService();
+        
+        // 現在のCAPTCHA設定を取得
+        $currentCaptchaEnabled = SecuritySetting::get('captcha_enabled', false);
+        $currentCaptchaDriver = SecuritySetting::get('captcha_driver', 'google');
+        $currentCaptchaSettings = [
+            'captcha_google_site_key' => SecuritySetting::get('captcha_google_site_key', ''),
+            'captcha_google_secret_key' => SecuritySetting::get('captcha_google_secret_key', ''),
+            'captcha_google_enterprise_site_key' => SecuritySetting::get('captcha_google_enterprise_site_key', ''),
+            'captcha_google_enterprise_secret_key' => SecuritySetting::get('captcha_google_enterprise_secret_key', ''),
+            'captcha_google_project_id' => SecuritySetting::get('captcha_google_project_id', ''),
+            'captcha_turnstile_site_key' => SecuritySetting::get('captcha_turnstile_site_key', ''),
+            'captcha_turnstile_secret_key' => SecuritySetting::get('captcha_turnstile_secret_key', ''),
+        ];
+        
+        // 新しいCAPTCHA設定
+        $newCaptchaEnabled = $request->boolean('captcha_enabled');
+        $newCaptchaDriver = $request->input('captcha_driver', 'google');
+        $newCaptchaSettings = [
+            'captcha_google_site_key' => $request->input('captcha_google_site_key', ''),
+            'captcha_google_secret_key' => $request->input('captcha_google_secret_key', ''),
+            'captcha_google_enterprise_site_key' => $request->input('captcha_google_enterprise_site_key', ''),
+            'captcha_google_enterprise_secret_key' => $request->input('captcha_google_enterprise_secret_key', ''),
+            'captcha_google_project_id' => $request->input('captcha_google_project_id', ''),
+            'captcha_turnstile_site_key' => $request->input('captcha_turnstile_site_key', ''),
+            'captcha_turnstile_secret_key' => $request->input('captcha_turnstile_secret_key', ''),
+        ];
+        
+        // CAPTCHA設定が変更されたかチェック
+        $captchaSettingsChanged = (
+            $currentCaptchaEnabled !== $newCaptchaEnabled ||
+            $currentCaptchaDriver !== $newCaptchaDriver ||
+            $currentCaptchaSettings !== $newCaptchaSettings
+        );
+        
+        // CAPTCHA設定が有効で、テストが必要な場合はチェック
+        if ($newCaptchaEnabled) {
+            $captchaSettings = [
+                'captcha_enabled' => true,
+                'captcha_driver' => $newCaptchaDriver,
+            ] + $newCaptchaSettings;
+            
+            // 無効→有効に変更された場合、または設定が変更された場合はテストが必要
+            if (!$currentCaptchaEnabled || $captchaSettingsChanged) {
+                if ($captchaTestService->isTestRequired($captchaSettings)) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->withErrors(['captcha' => __('admin.settings.security.captcha_test_required')]);
+                }
+            }
+        }
+        
+        // CAPTCHA設定が変更された場合、テスト結果をリセット
+        if ($captchaSettingsChanged) {
+            $captchaTestService->resetCaptchaTestResults();
+            // セッションからもテスト結果を削除
+            session()->forget(['captcha_test_result_google', 'captcha_test_result_google_enterprise', 'captcha_test_result_turnstile']);
+        }
 
         SecuritySetting::set('enable_allowed_admin_ips', $request->boolean('enable_allowed_admin_ips'));
         SecuritySetting::set('allowed_admin_ips', $request->input('allowed_admin_ips'));
@@ -155,5 +225,61 @@ class AdminSecuritySettingsController extends AdminLoggedInController
 
         return redirect()->route('admin.settings.security')
             ->with('success', __('admin.settings.security.controller_messages.settings_updated'));
+    }
+
+    /**
+     * CAPTCHAテストを実行
+     */
+    public function testCaptcha(Request $request)
+    {
+        $captchaTestService = new CaptchaTestService();
+        
+        $settings = [
+            'captcha_driver' => $request->input('captcha_driver', 'google'),
+            'captcha_google_site_key' => $request->input('captcha_google_site_key', ''),
+            'captcha_google_secret_key' => $request->input('captcha_google_secret_key', ''),
+            'captcha_google_enterprise_site_key' => $request->input('captcha_google_enterprise_site_key', ''),
+            'captcha_google_enterprise_secret_key' => $request->input('captcha_google_enterprise_secret_key', ''),
+            'captcha_google_project_id' => $request->input('captcha_google_project_id', ''),
+            'captcha_turnstile_site_key' => $request->input('captcha_turnstile_site_key', ''),
+            'captcha_turnstile_secret_key' => $request->input('captcha_turnstile_secret_key', ''),
+        ];
+        
+        $result = $captchaTestService->testCaptchaConnection($settings);
+        
+        // テスト結果をデータベースに保存
+        $driver = $settings['captcha_driver'];
+        $captchaTestService->saveCaptchaTestResult(
+            $driver, 
+            $result['success'], 
+            $result['success'] ? null : $result['message']
+        );
+        
+        // セッションにもテスト結果を保存（即座にUIに反映するため）
+        session()->put("captcha_test_result_{$driver}", $result);
+        
+        return response()->json($result);
+    }
+
+    /**
+     * CAPTCHAテスト結果をリセット
+     */
+    public function resetCaptchaTest(Request $request)
+    {
+        $captchaTestService = new CaptchaTestService();
+        $driver = $request->input('driver');
+        
+        if ($driver) {
+            // 特定のドライバーのテスト結果をリセット
+            $testKey = "captcha_test_result_{$driver}";
+            SecuritySetting::where('name', $testKey)->delete();
+            session()->forget("captcha_test_result_{$driver}");
+        } else {
+            // 全てのテスト結果をリセット
+            $captchaTestService->resetCaptchaTestResults();
+            session()->forget(['captcha_test_result_google', 'captcha_test_result_google_enterprise', 'captcha_test_result_turnstile']);
+        }
+        
+        return response()->json(['success' => true]);
     }
 }
