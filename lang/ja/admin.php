@@ -440,7 +440,14 @@ return [
                 'bad-request' => 'リクエストが無効または形式が正しくありません',
                 'timeout-or-duplicate' => 'レスポンスが無効です：期限切れまたは既に使用されています',
                 'internal-error' => 'レスポンス検証中に内部エラーが発生しました',
-                'unknown-error' => '不明な検証エラー',
+            ],
+            'captcha_test_required' => 'CAPTCHA接続テストが必要です。設定を保存する前にテストを実行してください',
+            'captcha_test_button' => '接続テスト',
+            'captcha_test_status' => [
+                'not_tested' => 'テスト未実行',
+                'passed' => 'テスト成功',
+                'failed' => 'テスト失敗',
+                'testing' => 'テスト中...',
             ],
             'captcha_version_options' => [
                 'v3' => 'v3 (推奨 - 非対話型)',
