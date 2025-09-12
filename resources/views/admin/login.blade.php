@@ -56,15 +56,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
 
         <!-- CAPTCHA -->
-        @if (isset($captchaEnabled) && $captchaEnabled)
-            <div class="mt-4">
-                <label class="block font-medium text-sm text-gray-700 mb-2">{{ __('admin.login.captcha') }}</label>
-                {!! $captchaWidget !!}
-                @error('captcha')
-                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-        @endif
+        <x-captcha action="admin_login" form-name="admin_login" />
 
         <!-- ボタンとパスワードリセットリンク -->
         <div class="flex items-center justify-between mt-4">

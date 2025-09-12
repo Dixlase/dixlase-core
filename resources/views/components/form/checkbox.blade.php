@@ -20,8 +20,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @props([
     'label' => '', // チェックボックスのラベル
+    'id' => '',            // チェックボックスのid
     'name' => '',          // チェックボックスの共通name
-    'value' => '',         // チェックボックスの値
+    'value' => 1,          // チェックボックスの値（デフォルト1）
     'checked' => false,    // チェック状態
     'class' => '',         // カスタムクラス
     'xModel' => null, // Alpine.jsのx-model属性
@@ -30,12 +31,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <div class="flex flex-wrap gap-4">
         <label class="inline-flex items-center">
             <input type="checkbox"
-                id="{{ $name }}"
+                id="{{ $id ?: $name }}"
                 name="{{ $name }}"
-                value="{{ $value }}"
+                value="1"
                 {{ $xModel ? "x-model=$xModel" : '' }}
                 class="{{ config('admin.appearance_class.form.checkbox') }} {{ $class }}"
-                @if ($checked) checked @endif>
+                @if ($value || $checked) checked @endif>
             <span class="ml-2">{{ __($label) }}</span>
         </label>
 </div>

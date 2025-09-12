@@ -22,23 +22,35 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 namespace App\Captcha;
 
 use Illuminate\Http\Client\Response;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Models\SecuritySetting;
 
 class TurnstileCaptchaDriver implements CaptchaDriver
 {
     private string $siteKey;
     private string $secretKey;
 
-    public function __construct(string $siteKey, string $secretKey)
+    public function __construct(array $config = [])
     {
-        $this->siteKey = $siteKey;
-        $this->secretKey = $secretKey;
+        $this->siteKey = $config['site_key'] ?? SecuritySetting::get('captcha_turnstile_site_key', '');
+        $this->secretKey = $config['secret_key'] ?? SecuritySetting::get('captcha_turnstile_secret_key', '');
     }
 
-    public function verify(string $token, ?string $remoteIp = null): CaptchaResult
+    public function verify(Request $request): CaptchaResult
     {
         try {
+            // Turnstileトークンを複数のキー名で試行
+            $token = $request->input('cf-turnstile-response') 
+                  ?? $request->input('turnstile-response') 
+                  ?? $request->input('g-recaptcha-response');
+            $remoteIp = $request->ip();
+            
+            if (empty($token)) {
+                return new CaptchaResult(false, null, null, ['CAPTCHA token is missing']);
+            }
+            
             $response = Http::asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
                 'secret' => $this->secretKey,
                 'response' => $token,
@@ -50,18 +62,18 @@ class TurnstileCaptchaDriver implements CaptchaDriver
                     'status' => $response->status(),
                     'body' => $response->body()
                 ]);
-                return new CaptchaResult(false, 'API request failed');
+                return new CaptchaResult(false, null, null, ['API request failed']);
             }
 
             $data = $response->json();
 
             if (!isset($data['success'])) {
                 Log::error('Invalid Turnstile API response format', ['response' => $data]);
-                return new CaptchaResult(false, 'Invalid API response format');
+                return new CaptchaResult(false, null, null, ['Invalid API response format']);
             }
 
             if ($data['success']) {
-                return new CaptchaResult(true, 'Verification successful');
+                return new CaptchaResult(true);
             }
 
             $errorCodes = $data['error-codes'] ?? [];
@@ -72,14 +84,14 @@ class TurnstileCaptchaDriver implements CaptchaDriver
                 'error_message' => $errorMessage
             ]);
 
-            return new CaptchaResult(false, $errorMessage);
+            return new CaptchaResult(false, null, null, [$errorMessage]);
 
         } catch (\Exception $e) {
             Log::error('Turnstile verification exception', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return new CaptchaResult(false, 'Verification failed due to system error');
+            return new CaptchaResult(false, null, null, ['Verification failed due to system error']);
         }
     }
 
@@ -95,6 +107,10 @@ class TurnstileCaptchaDriver implements CaptchaDriver
 
     public function renderWidget(array $attributes = []): string
     {
+        if (!$this->isEnabled()) {
+            return '';
+        }
+
         $defaultAttributes = [
             'class' => 'cf-turnstile',
             'data-sitekey' => $this->siteKey,
@@ -109,7 +125,10 @@ class TurnstileCaptchaDriver implements CaptchaDriver
             $attributeString .= sprintf(' %s="%s"', $key, htmlspecialchars($value));
         }
 
-        return sprintf('<div%s></div>', $attributeString);
+        $scriptTag = '<script src="' . $this->getScriptUrl() . '" async defer></script>';
+        $widgetTag = sprintf('<div%s></div>', $attributeString);
+        
+        return $scriptTag . "\n" . $widgetTag;
     }
 
     public function getScriptUrl(): string
@@ -119,25 +138,43 @@ class TurnstileCaptchaDriver implements CaptchaDriver
 
     private function getErrorMessage(array $errorCodes): string
     {
-        $errorMessages = [
-            'missing-input-secret' => 'The secret parameter is missing',
-            'invalid-input-secret' => 'The secret parameter is invalid or malformed',
-            'missing-input-response' => 'The response parameter is missing',
-            'invalid-input-response' => 'The response parameter is invalid or malformed',
-            'bad-request' => 'The request is invalid or malformed',
-            'timeout-or-duplicate' => 'The response is no longer valid: either is too old or has been used previously',
-            'internal-error' => 'An internal error happened while validating the response',
-        ];
-
         if (empty($errorCodes)) {
-            return 'Unknown verification error';
+            return __('admin.settings.security.turnstile_errors.unknown-error');
         }
 
         $messages = [];
         foreach ($errorCodes as $code) {
-            $messages[] = $errorMessages[$code] ?? "Unknown error code: {$code}";
+            $translationKey = "admin.settings.security.turnstile_errors.{$code}";
+            $messages[] = __($translationKey, [], null, $translationKey);
         }
 
         return implode(', ', $messages);
+    }
+
+    public function renderScript(): string
+    {
+        if (!$this->isEnabled()) {
+            return '';
+        }
+
+        return '<script src="' . $this->getScriptUrl() . '" async defer></script>';
+    }
+
+    public function rules(): array
+    {
+        return [
+            'cf-turnstile-response' => 'required|string',
+        ];
+    }
+
+    public function isEnabled(): bool
+    {
+        $captchaEnabled = SecuritySetting::get('captcha_enabled', false);
+        $captchaDriver = SecuritySetting::get('captcha_driver', 'google');
+        
+        return $captchaEnabled && 
+               $captchaDriver === 'turnstile' && 
+               !empty($this->siteKey) && 
+               !empty($this->secretKey);
     }
 }

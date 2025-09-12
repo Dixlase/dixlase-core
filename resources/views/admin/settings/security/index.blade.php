@@ -29,7 +29,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     enableBlockedFrontIps: {{ $settings['enable_blocked_front_ips'] ? 'true' : 'false' }},
     captchaEnabled: {{ $settings['captcha_enabled'] ? 'true' : 'false' }},
     captchaDriver: '{{ $settings['captcha_driver'] }}',
-    captchaVersion: '{{ $settings['captcha_google_version'] }}'
+    captchaVersion: '{{ $settings['captcha_google_version'] }}',
 }">
     <form id="security-settings-form" method="POST" action="{{ route('admin.settings.security.update') }}">
         @csrf
@@ -130,32 +130,36 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     'text' => __('admin.settings.security.captcha_driver'),
                 ])
                 @include('components::form.select', [
+                    'label' => __('admin.settings.security.captcha_driver'),
                     'id' => 'captcha_driver',
                     'name' => 'captcha_driver',
                     'value' => old('captcha_driver', $settings['captcha_driver']),
                     'options' => [
-                        'google' => 'Google reCAPTCHA',
-                        'turnstile' => 'Cloudflare Turnstile',
+                        'google' => 'Google reCAPTCHA (v2/v3)',
+                        'google_enterprise' => 'Google reCAPTCHA Enterprise',
+                        'turnstile' => 'Cloudflare Turnstile'
                     ],
                     'xModel' => 'captchaDriver'
                 ])
 
                 <!-- Google reCAPTCHA Settings -->
-                <div x-show="captchaDriver === 'google'">
+                <div x-show="captchaDriver === 'google' || captchaDriver === 'google_enterprise'">
 
                     @include('components::form.label', [
                         'for' => 'captcha_google_version',
                         'text' => __('admin.settings.security.captcha_google_version'),
                     ])
-                    @include('components::form.select', [
-                        'id' => 'captcha_google_version',
-                        'name' => 'captcha_google_version',
-                        'value' => old('captcha_google_version', $settings['captcha_google_version']),
-                        'options' => __('admin.settings.security.captcha_version_options'),
-                        'xModel' => 'captchaVersion'
-                    ])
+                    <div x-show="captchaDriver === 'google'">
+                        @include('components::form.select', [
+                            'id' => 'captcha_google_version',
+                            'name' => 'captcha_google_version',
+                            'value' => old('captcha_google_version', $settings['captcha_google_version']),
+                            'options' => __('admin.settings.security.captcha_version_options'),
+                            'xModel' => 'captchaVersion'
+                        ])
+                    </div>
 
-                    <div x-show="captchaVersion === 'v3'" class="mt-4">
+                    <div x-show="captchaVersion === 'v3' || captchaDriver === 'google_enterprise'" class="mt-4">
                         @include('components::form.label', [
                             'for' => 'captcha_google_min_score',
                             'text' => __('admin.settings.security.captcha_google_min_score'),
@@ -164,7 +168,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             'id' => 'captcha_google_min_score',
                             'name' => 'captcha_google_min_score',
                             'value' => old('captcha_google_min_score', $settings['captcha_google_min_score']),
-                            'placeholder' => '0.5',
                             'type' => 'number',
                             'step' => '0.1',
                             'min' => '0',
@@ -197,6 +200,46 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         'value' => old('captcha_google_secret_key', $settings['captcha_google_secret_key']),
                         'placeholder' => '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe',
                         'type' => 'password',
+                    ])
+
+                    
+                </div>
+
+                <!-- Google reCAPTCHA Enterprise Settings -->
+                <div x-show="captchaDriver === 'google_enterprise'">
+                    @include('components::form.label', [
+                        'for' => 'captcha_google_enterprise_site_key',
+                        'text' => __('admin.settings.security.captcha_google_enterprise_site_key'),
+                    ])
+                    @include('components::form.text', [
+                        'id' => 'captcha_google_enterprise_site_key',
+                        'name' => 'captcha_google_enterprise_site_key',
+                        'value' => old('captcha_google_enterprise_site_key', $settings['captcha_google_enterprise_site_key']),
+                        'placeholder' => '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI',
+                        'type' => 'password',
+                    ])
+
+                    @include('components::form.label', [
+                        'for' => 'captcha_google_enterprise_secret_key',
+                        'text' => __('admin.settings.security.captcha_google_enterprise_secret_key'),
+                    ])
+                    @include('components::form.text', [
+                        'id' => 'captcha_google_enterprise_secret_key',
+                        'name' => 'captcha_google_enterprise_secret_key',
+                        'value' => old('captcha_google_enterprise_secret_key', $settings['captcha_google_enterprise_secret_key']),
+                        'placeholder' => '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe',
+                        'type' => 'password',
+                    ])
+
+                    @include('components::form.label', [
+                        'for' => 'captcha_google_project_id',
+                        'text' => __('admin.settings.security.captcha_google_project_id'),
+                    ])
+                    @include('components::form.text', [
+                        'id' => 'captcha_google_project_id',
+                        'name' => 'captcha_google_project_id',
+                        'value' => old('captcha_google_project_id', $settings['captcha_google_project_id']),
+                        'placeholder' => 'your-gcp-project-id'
                     ])
 
                     
@@ -345,6 +388,58 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </form>
 </div>
 
+<div class="my-4">
+    <div x-show="captchaDriver === 'google'" class="space-y-4">
+        @include('components::form.text', [
+            'label' => __('admin.settings.security.captcha_google_site_key'),
+            'id' => 'captcha_google_site_key',
+            'name' => 'captcha_google_site_key',
+            'value' => old('captcha_google_site_key', $settings['captcha_google_site_key']),
+            'type' => 'password'
+        ])
+
+        @include('components::form.text', [
+            'label' => __('admin.settings.security.captcha_google_secret_key'),
+            'id' => 'captcha_google_secret_key',
+            'name' => 'captcha_google_secret_key',
+            'value' => old('captcha_google_secret_key', $settings['captcha_google_secret_key']),
+            'type' => 'password'
+        ])
+
+
+        <div x-show="captchaDriver === 'google_enterprise'">
+            @include('components::form.text', [
+                'label' => __('admin.settings.security.captcha_google_project_id'),
+                'id' => 'captcha_google_project_id',
+                'name' => 'captcha_google_project_id',
+                'value' => old('captcha_google_project_id', $settings['captcha_google_project_id']),
+                'placeholder' => 'your-gcp-project-id'
+            ])
+        </div>
+
+        @include('components::form.select', [
+            'label' => __('admin.settings.security.captcha_google_version'),
+            'id' => 'captcha_google_version',
+            'name' => 'captcha_google_version',
+            'value' => old('captcha_google_version', $settings['captcha_google_version']),
+            'options' => [
+                'v2' => 'reCAPTCHA v2',
+                'v3' => 'reCAPTCHA v3'
+            ]
+        ])
+
+        @include('components::form.text', [
+            'label' => __('admin.settings.security.captcha_google_min_score'),
+            'id' => 'captcha_google_min_score',
+            'name' => 'captcha_google_min_score',
+            'value' => old('captcha_google_min_score', $settings['captcha_google_min_score']),
+            'type' => 'number',
+            'step' => '0.1',
+            'min' => '0',
+            'max' => '1'
+        ])
+    </div>
+</div>
 
 @endsection
 

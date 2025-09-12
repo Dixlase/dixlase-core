@@ -18,20 +18,76 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-@props(['action' => 'submit', 'callback' => 'onRecaptchaCallback'])
+@props(['action' => 'submit', 'callback' => 'onRecaptchaCallback', 'formName' => null])
 
 @php
-    $captcha = app(\App\Captcha\CaptchaDriver::class);
+    use App\Models\SecuritySetting;
+    use App\Models\CaptchaFormSetting;
+    
+    // CAPTCHA設定を取得
+    $captchaEnabled = SecuritySetting::get('captcha_enabled', false);
+    $captchaDriver = SecuritySetting::get('captcha_driver', 'google');
+    
+    // フォーム固有のCAPTCHA設定をチェック
+    $formCaptchaEnabled = $formName ? CaptchaFormSetting::isEnabledFor($formName) : true;
+    
+    $shouldShowCaptcha = $captchaEnabled && $formCaptchaEnabled;
 @endphp
 
-@if($captcha->isEnabled())
+@if($shouldShowCaptcha)
     <div class="captcha-container">
-        {!! $captcha->renderWidget(['action' => $action, 'callback' => $callback]) !!}
+        @if($captchaDriver === 'google_enterprise')
+            <!-- Google reCAPTCHA Enterprise -->
+            @php
+                $siteKey = SecuritySetting::get('captcha_google_enterprise_site_key', '');
+            @endphp
+            <script src="https://www.google.com/recaptcha/enterprise.js?render={{ $siteKey }}"></script>
+            <input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response" value="">
+            <script>
+                grecaptcha.enterprise.ready(function() {
+                    grecaptcha.enterprise.execute('{{ $siteKey }}', {action: '{{ $action }}'}).then(function(token) {
+                        document.getElementById('g-recaptcha-response').value = token;
+                    });
+                });
+            </script>
+            
+        @elseif($captchaDriver === 'google')
+            <!-- Standard Google reCAPTCHA -->
+            @php
+                $siteKey = SecuritySetting::get('captcha_google_site_key', '');
+                $version = SecuritySetting::get('captcha_google_version', 'v3');
+            @endphp
+            
+            @if($version === 'v3')
+                <script src="https://www.google.com/recaptcha/api.js?render={{ $siteKey }}"></script>
+                <input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response" value="">
+                <script>
+                    grecaptcha.ready(function() {
+                        grecaptcha.execute('{{ $siteKey }}', {action: '{{ $action }}'}).then(function(token) {
+                            document.getElementById('g-recaptcha-response').value = token;
+                        });
+                    });
+                </script>
+            @else
+                <!-- reCAPTCHA v2 -->
+                <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+                <div class="g-recaptcha" data-sitekey="{{ $siteKey }}" data-callback="{{ $callback }}"></div>
+            @endif
+            
+        @elseif($captchaDriver === 'turnstile')
+            <!-- Cloudflare Turnstile -->
+            @php
+                $siteKey = SecuritySetting::get('captcha_turnstile_site_key', '');
+            @endphp
+            <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+            <div class="cf-turnstile" data-sitekey="{{ $siteKey }}" data-theme="auto" data-size="normal"></div>
+        @endif
     </div>
+    
+    <!-- CAPTCHA エラー表示 -->
+    @error('captcha')
+        <div class="text-red-600 text-sm mt-1">
+            {{ $message }}
+        </div>
+    @enderror
 @endif
-
-@push('scripts')
-    @if($captcha->isEnabled())
-        {!! $captcha->renderScript() !!}
-    @endif
-@endpush
