@@ -46,7 +46,11 @@ class AdminSecuritySettingsController extends AdminLoggedInController
 
     public function index()
     {
-
+        // バリデーションエラーがある場合はセッションを保持（リセット状態を維持）
+        if (!session()->has('errors')) {
+            // ページ開始時にCAPTCHAセッションをクリアして最新のDB状態を反映
+            session()->forget('captcha_test_result');
+        }
 
         $settings = [
             'enable_allowed_admin_ips' => SecuritySetting::get('enable_allowed_admin_ips', false),
@@ -85,13 +89,22 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         $mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? BaseSetting::getValue('mail_send_tested', false));
         $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? BaseSetting::getValue('mail_receive_tested', false));
 
-        // CAPTCHAテスト結果を取得
+        // CAPTCHAテスト結果を取得（セッション優先、DB次点）
         $captchaTestService = new CaptchaTestService();
         $captchaTestResults = [];
         
+        // セッションから共通のテスト結果を取得
+        $sessionResult = session('captcha_test_result');
+        
         foreach (['google', 'google_enterprise', 'turnstile'] as $driver) {
-            $testResult = $captchaTestService->getCaptchaTestResult($driver);
-            $captchaTestResults[$driver] = $testResult;
+            if ($sessionResult && !($sessionResult['is_reset'] ?? false)) {
+                // セッションにデータがあり、リセット状態でない場合はそれを使用
+                $captchaTestResults[$driver] = $sessionResult;
+            } else {
+                // セッションにない場合またはリセット状態の場合はDBから取得
+                $testResult = $captchaTestService->getCaptchaTestResult($driver);
+                $captchaTestResults[$driver] = $testResult;
+            }
         }
 
         $this->viewParams['settings'] = $settings;
@@ -148,9 +161,15 @@ class AdminSecuritySettingsController extends AdminLoggedInController
                 'captcha_driver' => $newCaptchaDriver,
             ] + $newCaptchaSettings;
             
-            // 無効→有効に変更された場合、または設定が変更された場合はテストが必要
-            if (!$currentCaptchaEnabled || $captchaSettingsChanged) {
-                if ($captchaTestService->isTestRequired($captchaSettings)) {
+            // セッションの状態をチェック（プロバイダー変更でリセットされた場合）
+            $sessionResult = session('captcha_test_result');
+            $isSessionReset = $sessionResult && ($sessionResult['is_reset'] ?? false);
+            $hasValidSessionTest = $sessionResult && ($sessionResult['success'] ?? false) && !$isSessionReset;
+            
+            // 無効→有効に変更された場合、設定が変更された場合、またはセッションがリセット状態の場合はテストが必要
+            if (!$currentCaptchaEnabled || $captchaSettingsChanged || $isSessionReset) {
+                // セッションに有効なテスト結果がある場合はテスト不要
+                if (!$hasValidSessionTest && ($captchaTestService->isTestRequired($captchaSettings) || $isSessionReset)) {
                     return redirect()->back()
                         ->withInput()
                         ->withErrors(['captcha' => __('admin.settings.security.captcha_test_required')]);
@@ -158,12 +177,8 @@ class AdminSecuritySettingsController extends AdminLoggedInController
             }
         }
         
-        // CAPTCHA設定が変更された場合、テスト結果をリセット
-        if ($captchaSettingsChanged) {
-            $captchaTestService->resetCaptchaTestResults();
-            // セッションからもテスト結果を削除
-            session()->forget(['captcha_test_result_google', 'captcha_test_result_google_enterprise', 'captcha_test_result_turnstile']);
-        }
+        // CAPTCHA設定が変更された場合のみテスト結果をリセット（保存時は保持）
+        // 注意: 設定保存時はテスト結果を保持し、設定変更時のみリセットする
 
         SecuritySetting::set('enable_allowed_admin_ips', $request->boolean('enable_allowed_admin_ips'));
         SecuritySetting::set('allowed_admin_ips', $request->input('allowed_admin_ips'));
@@ -223,6 +238,9 @@ class AdminSecuritySettingsController extends AdminLoggedInController
             $formSetting->save();
         }
 
+        // フォーム保存後にCAPTCHAセッションをクリアして次回ページ読み込み時にDB状態を反映
+        session()->forget('captcha_test_result');
+        
         return redirect()->route('admin.settings.security')
             ->with('success', __('admin.settings.security.controller_messages.settings_updated'));
     }
@@ -256,7 +274,11 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         );
         
         // セッションにもテスト結果を保存（即座にUIに反映するため）
-        session()->put("captcha_test_result_{$driver}", $result);
+        session()->put('captcha_test_result', [
+            'success' => $result['success'],
+            'tested_at' => now()->toISOString(),
+            'error_message' => $result['success'] ? null : $result['message']
+        ]);
         
         return response()->json($result);
     }
@@ -267,19 +289,55 @@ class AdminSecuritySettingsController extends AdminLoggedInController
     public function resetCaptchaTest(Request $request)
     {
         $captchaTestService = new CaptchaTestService();
-        $driver = $request->input('driver');
         
-        if ($driver) {
-            // 特定のドライバーのテスト結果をリセット
-            $testKey = "captcha_test_result_{$driver}";
-            SecuritySetting::where('name', $testKey)->delete();
-            session()->forget("captcha_test_result_{$driver}");
-        } else {
-            // 全てのテスト結果をリセット
-            $captchaTestService->resetCaptchaTestResults();
-            session()->forget(['captcha_test_result_google', 'captcha_test_result_google_enterprise', 'captcha_test_result_turnstile']);
-        }
+        // テスト結果をfalseにリセット（レコードは保持）
+        $captchaTestService->resetCaptchaTestResults();
+        session()->forget('captcha_test_result');
         
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * CAPTCHAテスト結果をクリア（プロバイダー切り替え時用）
+     */
+    public function clearCaptchaTest(Request $request)
+    {
+        $driver = $request->input('driver');
+        
+        if (!$driver) {
+            return response()->json(['success' => false, 'message' => 'Driver not specified'], 400);
+        }
+        
+        try {
+            // セッションからテスト結果を削除（DBは更新しない）
+            session()->forget('captcha_test_result');
+            
+            // セッションに未テスト状態を設定
+            session()->put('captcha_test_result', [
+                'success' => false,
+                'tested_at' => null,
+                'error_message' => null,
+                'is_reset' => true // リセット状態を示すフラグ
+            ]);
+            
+            Log::info("CAPTCHAテスト結果をクリアしました（セッションのみ）", [
+                'driver' => $driver,
+                'admin_id' => Auth::id()
+            ]);
+            
+            return response()->json(['success' => true]);
+            
+        } catch (\Exception $e) {
+            Log::error("CAPTCHAテスト結果のクリアに失敗しました", [
+                'driver' => $driver,
+                'error' => $e->getMessage(),
+                'admin_id' => Auth::id()
+            ]);
+            
+            return response()->json([
+                'success' => false, 
+                'message' => 'テスト結果のクリアに失敗しました'
+            ], 500);
+        }
     }
 }

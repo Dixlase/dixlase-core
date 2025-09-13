@@ -206,17 +206,11 @@ class CaptchaTestService
      */
     public function saveCaptchaTestResult(string $driver, bool $success, ?string $errorMessage = null): void
     {
-        $testKey = "captcha_test_result_{$driver}";
+        $testKey = "captcha_test_result";
         
         SecuritySetting::updateOrCreate(
             ['name' => $testKey],
-            [
-                'value' => json_encode([
-                    'success' => $success,
-                    'tested_at' => Carbon::now()->toISOString(),
-                    'error_message' => $errorMessage
-                ])
-            ]
+            ['value' => $success ? '1' : '0']
         );
     }
 
@@ -225,14 +219,21 @@ class CaptchaTestService
      */
     public function getCaptchaTestResult(string $driver): ?array
     {
-        $testKey = "captcha_test_result_{$driver}";
-        $result = SecuritySetting::get($testKey);
+        $testKey = "captcha_test_result";
+        $setting = SecuritySetting::where('name', $testKey)->first();
         
-        if (empty($result)) {
+        if (!$setting) {
             return null;
         }
         
-        return json_decode($result, true);
+        $success = (bool) $setting->value;
+        $testedAt = $setting->updated_at ? $setting->updated_at->toISOString() : null;
+        
+        return [
+            'success' => $success,
+            'tested_at' => $testedAt,
+            'error_message' => $success ? null : 'テストに失敗しました'
+        ];
     }
 
     /**
@@ -240,12 +241,11 @@ class CaptchaTestService
      */
     public function resetCaptchaTestResults(): void
     {
-        $drivers = ['google', 'google_enterprise', 'turnstile'];
-        
-        foreach ($drivers as $driver) {
-            $testKey = "captcha_test_result_{$driver}";
-            SecuritySetting::where('name', $testKey)->delete();
-        }
+        $testKey = "captcha_test_result";
+        SecuritySetting::updateOrCreate(
+            ['name' => $testKey],
+            ['value' => '0']
+        );
     }
 
     /**

@@ -143,23 +143,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 ])
 
                 <!-- Google reCAPTCHA Settings -->
-                <div x-show="captchaDriver === 'google' || captchaDriver === 'google_enterprise'">
+                <div x-show="captchaDriver === 'google'">
 
                     @include('components::form.label', [
                         'for' => 'captcha_google_version',
                         'text' => __('admin.settings.security.captcha_google_version'),
                     ])
-                    <div x-show="captchaDriver === 'google'">
-                        @include('components::form.select', [
-                            'id' => 'captcha_google_version',
-                            'name' => 'captcha_google_version',
-                            'value' => old('captcha_google_version', $settings['captcha_google_version']),
-                            'options' => __('admin.settings.security.captcha_version_options'),
-                            'xModel' => 'captchaVersion'
-                        ])
-                    </div>
+                    @include('components::form.select', [
+                        'id' => 'captcha_google_version',
+                        'name' => 'captcha_google_version',
+                        'value' => old('captcha_google_version', $settings['captcha_google_version']),
+                        'options' => __('admin.settings.security.captcha_version_options'),
+                        'xModel' => 'captchaVersion'
+                    ])
 
-                    <div x-show="captchaVersion === 'v3' || captchaDriver === 'google_enterprise'" class="mt-4">
+                    <div x-show="captchaVersion === 'v3'" class="mt-4">
                         @include('components::form.label', [
                             'for' => 'captcha_google_min_score',
                             'text' => __('admin.settings.security.captcha_google_min_score'),
@@ -202,65 +200,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         'type' => 'password',
                     ])
 
-                    <!-- CAPTCHA接続テスト -->
-                    <div class="mt-4">
-                        <button type="button" 
-                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                                :disabled="!captchaEnabled"
-                                onclick="testCaptchaConnection('google')">
-                            {{ __('admin.settings.security.captcha_test_button') }}
-                        </button>
-                        
-                        <!-- テスト結果表示 -->
-                        <div id="captcha-test-status-google" class="mt-4 p-3 border rounded-lg 
-                            @php
-                                $testResult = $captchaTestResults['google'] ?? null;
-                                if ($testResult && $testResult['success']) {
-                                    echo 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
-                                } elseif ($testResult && !$testResult['success']) {
-                                    echo 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800';
-                                } else {
-                                    echo 'bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-800';
-                                }
-                            @endphp
-                        " x-show="captchaEnabled">
-                            <div class="flex items-center">
-                                @php
-                                    $testResult = $captchaTestResults['google'] ?? null;
-                                    if ($testResult && $testResult['success']) {
-                                        $iconClass = 'fas fa-check-circle text-green-500';
-                                        $textClass = 'text-green-700 dark:text-green-300';
-                                        $statusText = __('admin.settings.security.captcha_test_status.passed');
-                                    } elseif ($testResult && !$testResult['success']) {
-                                        $iconClass = 'fas fa-times-circle text-red-500';
-                                        $textClass = 'text-red-700 dark:text-red-300';
-                                        $statusText = __('admin.settings.security.captcha_test_status.failed') . ': ' . ($testResult['error_message'] ?? '');
-                                    } else {
-                                        $iconClass = 'fas fa-clock text-gray-400';
-                                        $textClass = 'text-gray-600 dark:text-gray-400';
-                                        $statusText = __('admin.settings.security.captcha_test_status.not_tested');
-                                    }
-                                @endphp
-                                <i class="mr-2 {{ $iconClass }}"></i>
-                                <span class="text-sm {{ $textClass }}">
-                                    Google reCAPTCHA: {{ $statusText }}
-                                    @if($testResult && isset($testResult['tested_at']))
-                                        <span class="text-xs opacity-75">({{ $testResult['tested_at'] }})</span>
-                                    @endif
-                                </span>
-                            </div>
-                            @if(!$testResult)
-                                <div class="mt-3 text-sm text-blue-600 dark:text-blue-400">
-                                    <i class="fas fa-info-circle mr-1"></i>
-                                    reCAPTCHAを有効にする場合は、サイトキーとシークレットキーを入力し、接続テストを完了させてください。
-                                </div>
-                            @endif
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Google reCAPTCHA Enterprise Settings -->
                 <div x-show="captchaDriver === 'google_enterprise'">
+                    <div class="mt-4">
+                        @include('components::form.label', [
+                            'for' => 'captcha_google_min_score',
+                            'text' => __('admin.settings.security.captcha_google_min_score'),
+                        ])
+                        @include('components::form.text', [
+                            'id' => 'captcha_google_min_score',
+                            'name' => 'captcha_google_min_score',
+                            'value' => old('captcha_google_min_score', $settings['captcha_google_min_score']),
+                            'type' => 'number',
+                            'step' => '0.1',
+                            'min' => '0',
+                            'max' => '1',
+                        ])
+                        <p class="text-sm text-gray-200 mt-1">
+                            {{ __('admin.settings.security.captcha_min_score_description') }}
+                        </p>
+                    </div>
+
                     @include('components::form.label', [
                         'for' => 'captcha_google_enterprise_site_key',
                         'text' => __('admin.settings.security.captcha_google_enterprise_site_key'),
@@ -296,61 +258,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         'placeholder' => 'your-gcp-project-id'
                     ])
 
-                    <!-- CAPTCHA接続テスト -->
-                    <div class="mt-4">
-                        <button type="button" 
-                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                                :disabled="!captchaEnabled"
-                                onclick="testCaptchaConnection('google_enterprise')">
-                            {{ __('admin.settings.security.captcha_test_button') }}
-                        </button>
-                        
-                        <!-- テスト結果表示 -->
-                        <div id="captcha-test-status-google_enterprise" class="mt-4 p-3 border rounded-lg 
-                            @php
-                                $testResult = $captchaTestResults['google_enterprise'] ?? null;
-                                if ($testResult && $testResult['success']) {
-                                    echo 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
-                                } elseif ($testResult && !$testResult['success']) {
-                                    echo 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800';
-                                } else {
-                                    echo 'bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-800';
-                                }
-                            @endphp
-                        " x-show="captchaEnabled">
-                            <div class="flex items-center">
-                                @php
-                                    $testResult = $captchaTestResults['google_enterprise'] ?? null;
-                                    if ($testResult && $testResult['success']) {
-                                        $iconClass = 'fas fa-check-circle text-green-500';
-                                        $textClass = 'text-green-700 dark:text-green-300';
-                                        $statusText = __('admin.settings.security.captcha_test_status.passed');
-                                    } elseif ($testResult && !$testResult['success']) {
-                                        $iconClass = 'fas fa-times-circle text-red-500';
-                                        $textClass = 'text-red-700 dark:text-red-300';
-                                        $statusText = __('admin.settings.security.captcha_test_status.failed') . ': ' . ($testResult['error_message'] ?? '');
-                                    } else {
-                                        $iconClass = 'fas fa-clock text-gray-400';
-                                        $textClass = 'text-gray-600 dark:text-gray-400';
-                                        $statusText = __('admin.settings.security.captcha_test_status.not_tested');
-                                    }
-                                @endphp
-                                <i class="mr-2 {{ $iconClass }}"></i>
-                                <span class="text-sm {{ $textClass }}">
-                                    Google reCAPTCHA Enterprise: {{ $statusText }}
-                                    @if($testResult && isset($testResult['tested_at']))
-                                        <span class="text-xs opacity-75">({{ $testResult['tested_at'] }})</span>
-                                    @endif
-                                </span>
-                            </div>
-                            @if(!$testResult)
-                                <div class="mt-3 text-sm text-blue-600 dark:text-blue-400">
-                                    <i class="fas fa-info-circle mr-1"></i>
-                                    reCAPTCHA Enterpriseを有効にする場合は、サイトキー、シークレットキー、プロジェクトIDを入力し、接続テストを完了させてください。
-                                </div>
-                            @endif
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Cloudflare Turnstile Settings -->
@@ -379,19 +286,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         'type' => 'password',
                     ])
 
-                    <!-- CAPTCHA接続テスト -->
-                    <div class="mt-4">
-                        <button type="button" 
-                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                                :disabled="!captchaEnabled"
-                                onclick="testCaptchaConnection('turnstile')">
-                            {{ __('admin.settings.security.captcha_test_button') }}
-                        </button>
-                        
-                        <!-- テスト結果表示 -->
-                        <div id="captcha-test-status-turnstile" class="mt-4 p-3 border rounded-lg 
+                </div>
+
+                <!-- 統合CAPTCHAテスト -->
+                <div class="mt-6" x-show="captchaEnabled">
+                    <button type="button" 
+                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                            :disabled="!captchaEnabled"
+                        @click="testCaptchaConnection(captchaDriver)">
+                        {{ __('admin.settings.security.captcha_test_button') }}
+                    </button>
+                    
+                    <!-- テスト結果表示 -->
+                    <div :id="`captcha-test-status-${captchaDriver}`" class="mt-4 p-3 border rounded-lg 
                             @php
-                                $testResult = $captchaTestResults['turnstile'] ?? null;
+                            // 現在選択されているドライバーのテスト結果を取得
+                            $currentDriver = old('captcha_driver', $settings['captcha_driver']);
+                            $testResult = $captchaTestResults[$currentDriver] ?? null;
                                 if ($testResult && $testResult['success']) {
                                     echo 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
                                 } elseif ($testResult && !$testResult['success']) {
@@ -403,7 +314,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         " x-show="captchaEnabled">
                             <div class="flex items-center">
                                 @php
-                                    $testResult = $captchaTestResults['turnstile'] ?? null;
+                                $testResult = $captchaTestResults[$currentDriver] ?? null;
                                     if ($testResult && $testResult['success']) {
                                         $iconClass = 'fas fa-check-circle text-green-500';
                                         $textClass = 'text-green-700 dark:text-green-300';
@@ -417,10 +328,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         $textClass = 'text-gray-600 dark:text-gray-400';
                                         $statusText = __('admin.settings.security.captcha_test_status.not_tested');
                                     }
+                                
+                                // プロバイダー名の取得
+                                $providerNames = [
+                                    'google' => 'Google reCAPTCHA',
+                                    'google_enterprise' => 'Google reCAPTCHA Enterprise', 
+                                    'turnstile' => 'Cloudflare Turnstile'
+                                ];
+                                $providerName = $providerNames[$currentDriver] ?? $currentDriver;
                                 @endphp
                                 <i class="mr-2 {{ $iconClass }}"></i>
-                                <span class="text-sm {{ $textClass }}">
-                                    Cloudflare Turnstile: {{ $statusText }}
+                                <span class="text-sm {{ $textClass }}" x-text="`{{ $providerName }}: {{ $statusText }}`">
+                                    {{ $providerName }}: {{ $statusText }}
                                     @if($testResult && isset($testResult['tested_at']))
                                         <span class="text-xs opacity-75">({{ $testResult['tested_at'] }})</span>
                                     @endif
@@ -429,10 +348,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             @if(!$testResult)
                                 <div class="mt-3 text-sm text-blue-600 dark:text-blue-400">
                                     <i class="fas fa-info-circle mr-1"></i>
+                                <span x-show="captchaDriver === 'google'">
+                                    Google reCAPTCHAを有効にする場合は、サイトキーとシークレットキーを入力し、接続テストを完了させてください。
+                                </span>
+                                <span x-show="captchaDriver === 'google_enterprise'">
+                                    reCAPTCHA Enterpriseを有効にする場合は、サイトキー、シークレットキー、プロジェクトIDを入力し、接続テストを完了させてください。
+                                </span>
+                                <span x-show="captchaDriver === 'turnstile'">
                                     Cloudflare Turnstileを有効にする場合は、サイトキーとシークレットキーを入力し、接続テストを完了させてください。
+                                </span>
                                 </div>
                             @endif
-                        </div>
                     </div>
                 </div>
 
@@ -675,17 +601,74 @@ function testCaptchaConnection(driver) {
     });
 }
 
-// 設定変更時にテスト結果をリセット
+// プロバイダー切り替え時とフィールド変更時のテスト結果リセット関数
+function resetCaptchaTestResult(driver) {
+    const statusElement = document.getElementById(`captcha-test-status-${driver}`);
+    if (statusElement) {
+        // ガイダンスメッセージを含む完全なリセット表示
+        let guidanceMessage = '';
+        if (driver === 'google') {
+            guidanceMessage = 'Google reCAPTCHAを有効にする場合は、サイトキーとシークレットキーを入力し、接続テストを完了させてください。';
+        } else if (driver === 'google_enterprise') {
+            guidanceMessage = 'reCAPTCHA Enterpriseを有効にする場合は、サイトキー、シークレットキー、プロジェクトIDを入力し、接続テストを完了させてください。';
+        } else if (driver === 'turnstile') {
+            guidanceMessage = 'Cloudflare Turnstileを有効にする場合は、サイトキーとシークレットキーを入力し、接続テストを完了させてください。';
+        }
+        
+        statusElement.className = 'mt-4 p-3 border rounded-lg bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-800';
+        statusElement.innerHTML = `
+            <div class="flex items-center">
+                <i class="mr-2 fas fa-clock text-gray-400"></i>
+                <span class="text-sm text-gray-600 dark:text-gray-400">
+                    @lang("admin.settings.security.captcha_test_status.not_tested")
+                </span>
+            </div>
+            <div class="mt-3 text-sm text-blue-600 dark:text-blue-400">
+                <i class="fas fa-info-circle mr-1"></i>
+                ${guidanceMessage}
+            </div>
+        `;
+    }
+}
+
+// セッションからテスト結果をクリアする関数
+function clearCaptchaTestSession(driver) {
+    fetch('@php echo route("admin.settings.security.clear-captcha-test"); @endphp', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            driver: driver
+        })
+    }).catch(error => {
+        console.log('セッションクリアエラー:', error);
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    // プロバイダー切り替え時のリセット
+    const driverSelect = document.querySelector('select[name="captcha_driver"]');
+    if (driverSelect) {
+        driverSelect.addEventListener('change', function() {
+            const newDriver = this.value;
+            
+            // テスト結果をリセット（セッションもクリア）
+            resetCaptchaTestResult(newDriver);
+            clearCaptchaTestSession(newDriver);
+        });
+    }
+    
+    // フィールド変更時のリセット
     const inputs = document.querySelectorAll('input[name^="captcha_"]');
     inputs.forEach(input => {
         input.addEventListener('change', function() {
             // 現在のドライバーのテスト結果をリセット
             const driver = document.querySelector('select[name="captcha_driver"]').value;
-            const statusElement = document.getElementById(`captcha-test-status-${driver}`);
-            if (statusElement) {
-                statusElement.innerHTML = '<span class="text-gray-500">@lang("admin.settings.security.captcha_test_status.not_tested")</span>';
-            }
+            resetCaptchaTestResult(driver);
+            clearCaptchaTestSession(driver);
         });
     });
 });
