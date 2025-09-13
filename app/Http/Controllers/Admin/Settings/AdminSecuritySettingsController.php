@@ -97,14 +97,21 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         $sessionResult = session('captcha_test_result');
         
         foreach (['google', 'google_enterprise', 'turnstile'] as $driver) {
-            if ($sessionResult && !($sessionResult['is_reset'] ?? false)) {
-                // セッションにデータがあり、リセット状態でない場合はそれを使用
+            if ($sessionResult) {
+                // セッションにデータがある場合はそれを使用（リセット状態も含む）
                 $captchaTestResults[$driver] = $sessionResult;
             } else {
-                // セッションにない場合またはリセット状態の場合はDBから取得
+                // セッションにない場合のみDBから取得
                 $testResult = $captchaTestService->getCaptchaTestResult($driver);
                 $captchaTestResults[$driver] = $testResult;
             }
+        }
+        
+        // デバッグ用: セッションとテスト結果の状態をログ出力
+        if (config('app.debug')) {
+            \Log::debug('CAPTCHA Debug - Session result:', ['session' => $sessionResult]);
+            \Log::debug('CAPTCHA Debug - Test results:', ['results' => $captchaTestResults]);
+            \Log::debug('CAPTCHA Debug - Has validation errors:', ['has_errors' => session()->has('errors')]);
         }
 
         $this->viewParams['settings'] = $settings;
@@ -319,6 +326,11 @@ class AdminSecuritySettingsController extends AdminLoggedInController
                 'error_message' => null,
                 'is_reset' => true // リセット状態を示すフラグ
             ]);
+            
+            // デバッグ用: セッション設定後の状態をログ出力
+            if (config('app.debug')) {
+                \Log::debug('CAPTCHA Clear - Session after reset:', ['session' => session('captcha_test_result')]);
+            }
             
             Log::info("CAPTCHAテスト結果をクリアしました（セッションのみ）", [
                 'driver' => $driver,
