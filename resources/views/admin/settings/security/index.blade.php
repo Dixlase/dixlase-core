@@ -331,17 +331,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             } else {
                                 $iconClass = 'fas fa-clock text-yellow-500';
                                 $textClass = 'text-yellow-700 dark:text-yellow-300';
-                                $statusText = __('admin.settings.security.captcha_test_status.not_tested');
+                                $providerEnum = \App\Enums\CaptchaProvider::fromString($currentDriver);
+                                $providerName = $providerEnum ? $providerEnum->label() : $currentDriver;
+                                $setupUrl = $providerEnum ? $providerEnum->getSetupUrl() : '#';
+                                $statusText = __('admin.settings.security.captcha_test_status.not_tested_with_provider', [
+                                    'provider' => $providerName,
+                                    'link' => $setupUrl
+                                ]);
                                 $showProviderName = false;
                             }
                             
                             // プロバイダー名の取得
-                            $providerNames = [
-                                'google' => 'Google reCAPTCHA',
-                                'google_enterprise' => 'Google reCAPTCHA Enterprise', 
-                                'turnstile' => 'Cloudflare Turnstile'
-                            ];
-                            $providerName = $providerNames[$currentDriver] ?? $currentDriver;
+                            $providerEnum = \App\Enums\CaptchaProvider::fromString($currentDriver);
+                            $providerName = $providerEnum ? $providerEnum->label() : $currentDriver;
                             @endphp
                             <i class="mr-2 {{ $iconClass }}"></i>
                             <span class="text-sm {{ $textClass }}">
@@ -351,7 +353,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         <span class="text-xs opacity-75">({{ $testResult['tested_at'] }})</span>
                                     @endif
                                 @else
-                                    {{ $statusText }}
+                                    {!! $statusText !!}
                                 @endif
                             </span>
                         </div>
@@ -508,15 +510,13 @@ function testCaptchaConnection(driver) {
     const statusElement = document.getElementById(`captcha-test-status-${driver}`);
     const button = event.target;
     
-    // ドライバー名を取得
-    let driverName = '';
-    if (driver === 'google') {
-        driverName = 'Google reCAPTCHA';
-    } else if (driver === 'google_enterprise') {
-        driverName = 'Google reCAPTCHA Enterprise';
-    } else if (driver === 'turnstile') {
-        driverName = 'Cloudflare Turnstile';
-    }
+    // ドライバー名を取得（Enumから）
+    const providerLabels = {
+        'google': '@php echo \App\Enums\CaptchaProvider::GOOGLE->label(); @endphp',
+        'google_enterprise': '@php echo \App\Enums\CaptchaProvider::GOOGLE_ENTERPRISE->label(); @endphp',
+        'turnstile': '@php echo \App\Enums\CaptchaProvider::TURNSTILE->label(); @endphp'
+    };
+    const driverName = providerLabels[driver] || driver;
     
     // テスト中の表示
     statusElement.className = 'my-4 p-3 border rounded-lg bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800';
@@ -599,17 +599,42 @@ function testCaptchaConnection(driver) {
     });
 }
 
+// プロバイダー情報を取得する関数
+function getProviderInfo(driver) {
+    const providers = {
+        'google': {
+            name: 'Google reCAPTCHA',
+            url: 'https://www.google.com/recaptcha/admin/create'
+        },
+        'google_enterprise': {
+            name: 'Google reCAPTCHA Enterprise',
+            url: 'https://cloud.google.com/recaptcha-enterprise/docs/create-key'
+        },
+        'turnstile': {
+            name: 'Cloudflare Turnstile',
+            url: 'https://dash.cloudflare.com/?to=/:account/turnstile'
+        }
+    };
+    return providers[driver] || { name: driver, url: '#' };
+}
+
 // プロバイダー切り替え時とフィールド変更時のテスト結果リセット関数
 function resetCaptchaTestResult(driver) {
     const statusElement = document.getElementById(`captcha-test-status-${driver}`);
     if (statusElement) {
+        const providerInfo = getProviderInfo(driver);
+        
         statusElement.className = 'my-4 p-3 border rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800';
+        const notTestedMessage = '@lang("admin.settings.security.captcha_test_status.not_tested")';
+        const setupLinkText = '@lang("admin.settings.security.captcha_test_status.setup_link_text")';
+        
         statusElement.innerHTML = `
             <div class="flex items-center">
                 <i class="mr-2 fas fa-clock text-yellow-500"></i>
-                <span class="text-sm text-yellow-700 dark:text-yellow-300">
-                    @lang('admin.settings.security.captcha_test_status.not_tested')
-                </span>
+                <div class="text-sm text-yellow-700 dark:text-yellow-300">
+                    <div class="mb-1">${notTestedMessage}</div>
+                    <div><a href="${providerInfo.url}" target="_blank" class="underline hover:text-yellow-100">${setupLinkText.replace(':provider', providerInfo.name)}</a></div>
+                </div>
             </div>
         `;
     }

@@ -25,14 +25,14 @@
         <!-- ロゴ -->
         <img src="{{ asset('assets/images/logo.svg') }}" alt="{{ config('app.name') }}" class="w-32 h-auto mx-auto mb-4">
 
-        <div class="bg-white shadow-lg rounded-lg p-8 max-w-md w-full">
+        <div class="bg-white shadow-lg rounded-lg p-8 max-w-md w-full mb-4">
             <h1 class="text-2xl font-bold text-gray-800 mb-4 text-center">@yield('header')</h1>
             <p class="text-gray-600 mb-6 text-center">@yield('description')</p>
-
             @include('components::flash-message')
-
             @yield('content')
         </div>
+
+
     </div>
 </body>
 </html>
