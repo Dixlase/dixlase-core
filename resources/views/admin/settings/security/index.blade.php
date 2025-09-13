@@ -321,17 +321,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             if ($testResult && $testResult['success'] && !($testResult['is_reset'] ?? false)) {
                                 $iconClass = 'fas fa-check-circle text-green-500';
                                 $textClass = 'text-green-700 dark:text-green-300';
-                                $statusText = 'テスト実行済み';
+                                $statusText = __('admin.settings.security.captcha_test_status.passed_initial');
                                 $showProviderName = false;
                             } elseif ($testResult && !$testResult['success'] && !($testResult['is_reset'] ?? false)) {
                                 $iconClass = 'fas fa-times-circle text-red-500';
                                 $textClass = 'text-red-700 dark:text-red-300';
-                                $statusText = 'CAPTCHA接続テストに失敗しました。各項目やプロバイダの設定内容をご確認ください。';
+                                $statusText = __('admin.settings.security.captcha_test_status.failed');
                                 $showProviderName = false;
                             } else {
                                 $iconClass = 'fas fa-clock text-yellow-500';
                                 $textClass = 'text-yellow-700 dark:text-yellow-300';
-                                $statusText = 'テスト未実行。CAPTCHAを有効にする場合は、各項目を入力し、接続テストを完了させてください。';
+                                $statusText = __('admin.settings.security.captcha_test_status.not_tested');
                                 $showProviderName = false;
                             }
                             
@@ -524,7 +524,7 @@ function testCaptchaConnection(driver) {
         <div class="flex items-center">
             <i class="mr-2 fas fa-spinner fa-spin text-blue-500"></i>
             <span class="text-sm text-blue-700 dark:text-blue-300">
-                ${driverName}: @lang("admin.settings.security.captcha_test_status.testing")
+                @lang("admin.settings.security.captcha_test_status.testing")
             </span>
         </div>
     `;
@@ -566,7 +566,7 @@ function testCaptchaConnection(driver) {
                 <div class="flex items-center">
                     <i class="mr-2 fas fa-check-circle text-green-500"></i>
                     <span class="text-sm text-green-700 dark:text-green-300">
-                        テスト成功しました！保存するとCAPTCHAが使用できます。
+                        @lang('admin.settings.security.captcha_test_status.passed_success')
                     </span>
                 </div>
             `;
@@ -576,7 +576,7 @@ function testCaptchaConnection(driver) {
                 <div class="flex items-center">
                     <i class="mr-2 fas fa-times-circle text-red-500"></i>
                     <span class="text-sm text-red-700 dark:text-red-300">
-                        CAPTCHA接続テストに失敗しました。各項目やプロバイダの設定内容をご確認ください。
+                        @lang('admin.settings.security.captcha_test_status.failed')
                     </span>
                 </div>
             `;
@@ -588,7 +588,7 @@ function testCaptchaConnection(driver) {
             <div class="flex items-center">
                 <i class="mr-2 fas fa-times-circle text-red-500"></i>
                 <span class="text-sm text-red-700 dark:text-red-300">
-                    CAPTCHA接続テストに失敗しました。各項目やプロバイダの設定内容をご確認ください。
+                    @lang('admin.settings.security.captcha_test_status.failed')
                 </span>
             </div>
         `;
@@ -603,16 +603,12 @@ function testCaptchaConnection(driver) {
 function resetCaptchaTestResult(driver) {
     const statusElement = document.getElementById(`captcha-test-status-${driver}`);
     if (statusElement) {
-        // ガイダンスメッセージを含む完全なリセット表示
-        let guidanceMessage = '';
-        guidanceMessage = 'CAPTCHAを有効にする場合は、各項目を入力し、接続テストを完了させてください。';
-        
         statusElement.className = 'my-4 p-3 border rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800';
         statusElement.innerHTML = `
             <div class="flex items-center">
                 <i class="mr-2 fas fa-clock text-yellow-500"></i>
                 <span class="text-sm text-yellow-700 dark:text-yellow-300">
-                    テスト未実行。CAPTCHAを有効にする場合は、各項目を入力し、接続テストを完了させてください。
+                    @lang('admin.settings.security.captcha_test_status.not_tested')
                 </span>
             </div>
         `;

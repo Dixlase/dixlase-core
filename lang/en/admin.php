@@ -443,9 +443,10 @@ Clicking this link will complete the full mail function test.',
             'captcha_test_required' => 'CAPTCHA connection test is required before saving settings',
             'captcha_test_button' => 'Test Connection',
             'captcha_test_status' => [
-                'not_tested' => 'Not tested',
-                'passed' => 'Test passed',
-                'failed' => 'Test failed',
+                'not_tested' => 'Not tested. To enable CAPTCHA, please fill in all fields and complete the connection test.',
+                'passed_initial' => 'Test completed',
+                'passed_success' => 'Test successful! Save to enable CAPTCHA.',
+                'failed' => 'CAPTCHA connection test failed. Please check your settings and provider configuration.',
                 'testing' => 'Testing...',
             ],
             'captcha_version_options' => [
