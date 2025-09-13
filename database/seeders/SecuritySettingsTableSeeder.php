@@ -103,6 +103,12 @@ class SecuritySettingsTableSeeder extends Seeder
             ['value' => '']
         );
 
+        // CAPTCHA test result (boolean型、常にレコード保持)
+        SecuritySetting::updateOrCreate(
+            ['name' => 'captcha_test_result'],
+            ['value' => '0']
+        );
+
         // IP Restriction settings
         SecuritySetting::updateOrCreate(
             ['name' => 'enable_allowed_admin_ips'],
@@ -136,5 +142,7 @@ class SecuritySettingsTableSeeder extends Seeder
             ['name' => 'blocked_front_ips'],
             ['value' => '']
         );
+
+
     }
 }
