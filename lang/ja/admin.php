@@ -452,6 +452,13 @@ return [
                 'failed' => '接続テストに失敗しました。各項目やプロバイダの設定内容をご確認ください。',
                 'testing' => '接続テスト中...',
             ],
+            'captcha_live_validation' => 'CAPTCHA実証テスト',
+            'captcha_live_validation_description' => '設定を保存する前に、実際のCAPTCHAウィジェットで認証を完了してください。バージョンとキーの組み合わせが正しく動作することを確認できます。',
+            'captcha_validation_required' => 'CAPTCHA認証が必要です',
+            'captcha_validate_button' => 'CAPTCHA認証を実行',
+            'captcha_validation_success' => 'CAPTCHA認証が成功しました',
+            'captcha_validation_failed' => 'CAPTCHA認証に失敗しました',
+            'captcha_validation_required_before_save' => 'CAPTCHAが有効な場合、設定を保存する前にCAPTCHA認証を完了してください。',
             'captcha_version_options' => [
                 'v3' => 'v3 (推奨 - 非対話型)',
                 'v2_checkbox' => 'v2 チェックボックス',

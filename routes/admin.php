@@ -131,6 +131,7 @@ Route::prefix($adminUrl)->name('admin.')
             Route::get('/settings/security', [AdminSecuritySettingsController::class, 'index'])->name('settings.security');
             Route::post('/settings/security', [AdminSecuritySettingsController::class, 'update'])->name('settings.security.update');
             Route::post('/settings/security/test-captcha', [AdminSecuritySettingsController::class, 'testCaptcha'])->name('settings.security.test-captcha');
+            Route::post('/settings/security/validate-captcha-widget', [AdminSecuritySettingsController::class, 'validateCaptchaWidget'])->name('settings.security.validate-captcha-widget');
             Route::post('/settings/security/reset-captcha-test', [AdminSecuritySettingsController::class, 'resetCaptchaTest'])->name('settings.security.reset-captcha-test');
             Route::post('/settings/security/clear-captcha-test', [AdminSecuritySettingsController::class, 'clearCaptchaTest'])->name('settings.security.clear-captcha-test');
 
