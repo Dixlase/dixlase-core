@@ -62,16 +62,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <script src="https://www.google.com/recaptcha/api.js?render={{ $siteKey }}"></script>
                 <input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response" value="">
                 <script>
-                    grecaptcha.ready(function() {
-                        grecaptcha.execute('{{ $siteKey }}', {action: '{{ $action }}'}).then(function(token) {
-                            document.getElementById('g-recaptcha-response').value = token;
+                    if (typeof grecaptcha !== 'undefined') {
+                        grecaptcha.ready(function() {
+                            grecaptcha.execute('{{ $siteKey }}', {action: '{{ $action }}'}).then(function(token) {
+                                document.getElementById('g-recaptcha-response').value = token;
+                            });
                         });
-                    });
+                    } else {
+                        console.error('reCAPTCHA v3 script not loaded properly');
+                    }
                 </script>
             @else
                 <!-- reCAPTCHA v2 -->
                 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
                 <div class="g-recaptcha" data-sitekey="{{ $siteKey }}" data-callback="{{ $callback }}"></div>
+                <script>
+                    // v2用のエラーハンドリング
+                    window.addEventListener('load', function() {
+                        if (typeof grecaptcha === 'undefined') {
+                            console.error('reCAPTCHA v2 script not loaded properly');
+                        }
+                    });
+                </script>
             @endif
             
         @elseif($captchaDriver === 'turnstile')

@@ -33,6 +33,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 
 
 
@@ -263,6 +264,7 @@ class AdminSecuritySettingsController extends AdminLoggedInController
             'captcha_driver' => $request->input('captcha_driver', 'google'),
             'captcha_google_site_key' => $request->input('captcha_google_site_key', ''),
             'captcha_google_secret_key' => $request->input('captcha_google_secret_key', ''),
+            'captcha_google_version' => $request->input('captcha_google_version', 'v3'),
             'captcha_google_enterprise_site_key' => $request->input('captcha_google_enterprise_site_key', ''),
             'captcha_google_enterprise_secret_key' => $request->input('captcha_google_enterprise_secret_key', ''),
             'captcha_google_project_id' => $request->input('captcha_google_project_id', ''),
@@ -288,6 +290,86 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         ]);
         
         return response()->json($result);
+    }
+
+    /**
+     * CAPTCHAウィジェットの実証検証
+     */
+    public function validateCaptchaWidget(Request $request)
+    {
+        $driver = $request->input('captcha_driver', 'google');
+        $token = $request->input('g-recaptcha-response', '');
+        
+        if (empty($token)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'CAPTCHA token is missing'
+            ]);
+        }
+        
+        // 実際のCAPTCHA検証を実行
+        if ($driver === 'google') {
+            $secretKey = $request->input('captcha_google_secret_key', '');
+            $version = $request->input('captcha_google_version', 'v3');
+            
+            if (empty($secretKey)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Secret key is missing'
+                ]);
+            }
+            
+            $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+                'secret' => $secretKey,
+                'response' => $token,
+                'remoteip' => $request->ip(),
+            ]);
+            
+            if ($response->successful()) {
+                $data = $response->json();
+                
+                if ($data['success'] ?? false) {
+                    // v3の場合はスコアもチェック
+                    if ($version === 'v3') {
+                        $score = $data['score'] ?? 0;
+                        $minScore = floatval($request->input('captcha_google_min_score', 0.5));
+                        
+                        if ($score >= $minScore) {
+                            return response()->json([
+                                'success' => true,
+                                'message' => "CAPTCHA validation successful (score: {$score})"
+                            ]);
+                        } else {
+                            return response()->json([
+                                'success' => false,
+                                'message' => "CAPTCHA score too low: {$score} (minimum: {$minScore})"
+                            ]);
+                        }
+                    } else {
+                        return response()->json([
+                            'success' => true,
+                            'message' => 'CAPTCHA validation successful'
+                        ]);
+                    }
+                } else {
+                    $errorCodes = $data['error-codes'] ?? [];
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'CAPTCHA validation failed: ' . implode(', ', $errorCodes)
+                    ]);
+                }
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to connect to reCAPTCHA API'
+                ]);
+            }
+        }
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Unsupported CAPTCHA driver'
+        ]);
     }
 
     /**

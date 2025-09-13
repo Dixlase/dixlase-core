@@ -70,9 +70,14 @@ class GoogleRecaptchaDriver implements CaptchaDriver
 
         $siteKey = $this->config['site_key'];
         $version = $this->config['version'];
+        $useEnterprise = $this->config['use_enterprise'] ?? false;
 
         if ($version === 'v3') {
-            return "<script src=\"https://www.google.com/recaptcha/enterprise.js?render={$siteKey}\"></script>";
+            if ($useEnterprise) {
+                return "<script src=\"https://www.google.com/recaptcha/enterprise.js?render={$siteKey}\"></script>";
+            } else {
+                return "<script src=\"https://www.google.com/recaptcha/api.js?render={$siteKey}\"></script>";
+            }
         } else {
             return "<script src=\"https://www.google.com/recaptcha/api.js\" async defer></script>";
         }
@@ -88,18 +93,32 @@ class GoogleRecaptchaDriver implements CaptchaDriver
         $version = $this->config['version'];
         $action = $options['action'] ?? 'submit';
         $callback = $options['callback'] ?? 'onRecaptchaCallback';
+        $useEnterprise = $this->config['use_enterprise'] ?? false;
 
         if ($version === 'v3') {
-            return "
-                <script>
-                    grecaptcha.ready(function() {
-                        grecaptcha.execute('{$siteKey}', {action: '{$action}'}).then(function(token) {
-                            document.getElementById('g-recaptcha-response').value = token;
+            if ($useEnterprise) {
+                return "
+                    <script>
+                        grecaptcha.enterprise.ready(function() {
+                            grecaptcha.enterprise.execute('{$siteKey}', {action: '{$action}'}).then(function(token) {
+                                document.getElementById('g-recaptcha-response').value = token;
+                            });
                         });
-                    });
-                </script>
-                <input type=\"hidden\" id=\"g-recaptcha-response\" name=\"g-recaptcha-response\" value=\"\">
-            ";
+                    </script>
+                    <input type=\"hidden\" id=\"g-recaptcha-response\" name=\"g-recaptcha-response\" value=\"\">
+                ";
+            } else {
+                return "
+                    <script>
+                        grecaptcha.ready(function() {
+                            grecaptcha.execute('{$siteKey}', {action: '{$action}'}).then(function(token) {
+                                document.getElementById('g-recaptcha-response').value = token;
+                            });
+                        });
+                    </script>
+                    <input type=\"hidden\" id=\"g-recaptcha-response\" name=\"g-recaptcha-response\" value=\"\">
+                ";
+            }
         } else {
             return "<div class=\"g-recaptcha\" data-sitekey=\"{$siteKey}\" data-callback=\"{$callback}\"></div>";
         }
