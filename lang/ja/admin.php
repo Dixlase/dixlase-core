@@ -444,9 +444,10 @@ return [
             'captcha_test_required' => 'CAPTCHA接続テストが必要です。設定を保存する前にテストを実行してください',
             'captcha_test_button' => '接続テスト',
             'captcha_test_status' => [
-                'not_tested' => 'テスト未実行',
-                'passed' => 'テスト成功',
-                'failed' => 'テスト失敗',
+                'not_tested' => 'テスト未実行。CAPTCHAを有効にする場合は、各項目を入力し、接続テストを完了させてください。',
+                'passed_initial' => 'テスト実行済み',
+                'passed_success' => 'テスト成功しました！保存するとCAPTCHAが使用できます。',
+                'failed' => 'CAPTCHA接続テストに失敗しました。各項目やプロバイダの設定内容をご確認ください。',
                 'testing' => 'テスト中...',
             ],
             'captcha_version_options' => [
