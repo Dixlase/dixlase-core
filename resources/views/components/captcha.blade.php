@@ -35,7 +35,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endphp
 
 @if($shouldShowCaptcha)
-    <div class="captcha-container">
+    <div class="captcha-container flex justify-center items-center h-24">
         @if($captchaDriver === 'google_enterprise')
             <!-- Google reCAPTCHA Enterprise -->
             @php
@@ -80,7 +80,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 $siteKey = SecuritySetting::get('captcha_turnstile_site_key', '');
             @endphp
             <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-            <div class="cf-turnstile" data-sitekey="{{ $siteKey }}" data-theme="auto" data-size="normal"></div>
+            <div class="cf-turnstile" data-sitekey="{{ $siteKey }}" data-theme="light" data-size="normal"></div>
         @endif
     </div>
     

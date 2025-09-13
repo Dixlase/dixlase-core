@@ -27,6 +27,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <form method="POST" action="{{ route('admin.login') }}">
         @csrf
 
+        <x-captcha action="admin_login" form-name="admin_login" />
+
         <!-- メールアドレス -->
         <div>
             <label for="email" class="block font-medium text-sm text-gray-700">{{ __('admin.login.email') }}</label>
@@ -47,6 +49,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @enderror
         </div>
 
+
+
         <!-- Remember Me -->
         <div class="block mt-4">
             <label for="remember_me" class="flex items-center">
@@ -55,8 +59,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </label>
         </div>
 
-        <!-- CAPTCHA -->
-        <x-captcha action="admin_login" form-name="admin_login" />
+
 
         <!-- ボタンとパスワードリセットリンク -->
         <div class="flex items-center justify-between mt-4">
@@ -71,5 +74,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </a>
             @endif
         </div>
+
+
     </form>
+@endsection
+
+<!-- CAPTCHA -->
+@section('captcha')
+    
 @endsection

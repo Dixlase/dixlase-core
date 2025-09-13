@@ -444,11 +444,13 @@ return [
             'captcha_test_required' => 'CAPTCHA接続テストが必要です。設定を保存する前にテストを実行してください',
             'captcha_test_button' => '接続テスト',
             'captcha_test_status' => [
-                'not_tested' => 'テスト未実行。CAPTCHAを有効にする場合は、各項目を入力し、接続テストを完了させてください。',
-                'passed_initial' => 'テスト実行済み',
-                'passed_success' => 'テスト成功しました！保存するとCAPTCHAが使用できます。',
-                'failed' => 'CAPTCHA接続テストに失敗しました。各項目やプロバイダの設定内容をご確認ください。',
-                'testing' => 'テスト中...',
+                'not_tested' => '接続テスト未実行。CAPTCHAを有効にする場合は、各項目を入力し、接続テストを完了させてください。',
+                'not_tested_with_provider' => '接続テスト未実行。CAPTCHAを有効にする場合は、各項目を入力し、接続テストを完了させてください。<br>選択中: :provider （<a href=":link" target="_blank" class="text-blue-600 hover:text-blue-800 underline">設定方法を確認</a>）',
+                'setup_link_text' => ':providerの設定を確認',
+                'passed_initial' => '接続テスト実行済み',
+                'passed_success' => '接続テストが成功しました！保存するとCAPTCHAが使用できます。',
+                'failed' => '接続テストに失敗しました。各項目やプロバイダの設定内容をご確認ください。',
+                'testing' => '接続テスト中...',
             ],
             'captcha_version_options' => [
                 'v3' => 'v3 (推奨 - 非対話型)',
