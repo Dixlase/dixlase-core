@@ -229,11 +229,24 @@ class CaptchaTestService
         $success = (bool) $setting->value;
         $testedAt = $setting->updated_at ? $setting->updated_at->toISOString() : null;
         
-        return [
-            'success' => $success,
-            'tested_at' => $testedAt,
-            'error_message' => $success ? null : 'テストに失敗しました'
-        ];
+        // DBに値が'0'で保存されている場合のみ失敗として扱う
+        // 値が存在しない場合は未実行として扱う
+        if ($setting->value === '0') {
+            return [
+                'success' => false,
+                'tested_at' => $testedAt,
+                'error_message' => 'テストに失敗しました'
+            ];
+        } elseif ($setting->value === '1') {
+            return [
+                'success' => true,
+                'tested_at' => $testedAt,
+                'error_message' => null
+            ];
+        }
+        
+        // その他の場合は未実行として扱う
+        return null;
     }
 
     /**

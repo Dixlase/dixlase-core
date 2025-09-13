@@ -290,6 +290,72 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 <!-- 統合CAPTCHAテスト -->
                 <div class="mt-6" x-show="captchaEnabled">
+
+                    <!-- テスト結果表示 -->
+                    <div :id="`captcha-test-status-${captchaDriver}`" class="my-4 p-3 border rounded-lg 
+                        @php
+                        // 現在選択されているドライバーのテスト結果を取得
+                        $currentDriver = old('captcha_driver', $settings['captcha_driver']);
+                        $testResult = $captchaTestResults[$currentDriver] ?? null;
+                            if ($testResult && $testResult['success'] && !($testResult['is_reset'] ?? false)) {
+                                echo 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
+                            } elseif ($testResult && !$testResult['success'] && !($testResult['is_reset'] ?? false)) {
+                                echo 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800';
+                            } else {
+                                echo 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800';
+                            }
+                        @endphp
+                    " x-show="captchaEnabled">
+                        <div class="flex items-center">
+                            @php
+                            $testResult = $captchaTestResults[$currentDriver] ?? null;
+                            
+                            // デバッグ用: セッションとテスト結果の状態を表示
+                            if (config('app.debug')) {
+                                echo "<!-- DEBUG: Session captcha_test_result: " . json_encode(session('captcha_test_result')) . " -->";
+                                echo "<!-- DEBUG: Current driver: {$currentDriver} -->";
+                                echo "<!-- DEBUG: Test result for {$currentDriver}: " . json_encode($testResult) . " -->";
+                                echo "<!-- DEBUG: is_reset flag: " . json_encode($testResult['is_reset'] ?? 'not set') . " -->";
+                            }
+                            
+                            if ($testResult && $testResult['success'] && !($testResult['is_reset'] ?? false)) {
+                                $iconClass = 'fas fa-check-circle text-green-500';
+                                $textClass = 'text-green-700 dark:text-green-300';
+                                $statusText = 'テスト実行済み';
+                                $showProviderName = false;
+                            } elseif ($testResult && !$testResult['success'] && !($testResult['is_reset'] ?? false)) {
+                                $iconClass = 'fas fa-times-circle text-red-500';
+                                $textClass = 'text-red-700 dark:text-red-300';
+                                $statusText = 'CAPTCHA接続テストに失敗しました。各項目やプロバイダの設定内容をご確認ください。';
+                                $showProviderName = false;
+                            } else {
+                                $iconClass = 'fas fa-clock text-yellow-500';
+                                $textClass = 'text-yellow-700 dark:text-yellow-300';
+                                $statusText = 'テスト未実行。CAPTCHAを有効にする場合は、各項目を入力し、接続テストを完了させてください。';
+                                $showProviderName = false;
+                            }
+                            
+                            // プロバイダー名の取得
+                            $providerNames = [
+                                'google' => 'Google reCAPTCHA',
+                                'google_enterprise' => 'Google reCAPTCHA Enterprise', 
+                                'turnstile' => 'Cloudflare Turnstile'
+                            ];
+                            $providerName = $providerNames[$currentDriver] ?? $currentDriver;
+                            @endphp
+                            <i class="mr-2 {{ $iconClass }}"></i>
+                            <span class="text-sm {{ $textClass }}">
+                                @if($showProviderName)
+                                    {{ $providerName }}: {{ $statusText }}
+                                    @if($testResult && isset($testResult['tested_at']))
+                                        <span class="text-xs opacity-75">({{ $testResult['tested_at'] }})</span>
+                                    @endif
+                                @else
+                                    {{ $statusText }}
+                                @endif
+                            </span>
+                        </div>
+                    </div>
                     <button type="button" 
                             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                             :disabled="!captchaEnabled"
@@ -297,69 +363,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         {{ __('admin.settings.security.captcha_test_button') }}
                     </button>
                     
-                    <!-- テスト結果表示 -->
-                    <div :id="`captcha-test-status-${captchaDriver}`" class="mt-4 p-3 border rounded-lg 
-                            @php
-                            // 現在選択されているドライバーのテスト結果を取得
-                            $currentDriver = old('captcha_driver', $settings['captcha_driver']);
-                            $testResult = $captchaTestResults[$currentDriver] ?? null;
-                                if ($testResult && $testResult['success']) {
-                                    echo 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
-                                } elseif ($testResult && !$testResult['success']) {
-                                    echo 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800';
-                                } else {
-                                    echo 'bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-800';
-                                }
-                            @endphp
-                        " x-show="captchaEnabled">
-                            <div class="flex items-center">
-                                @php
-                                $testResult = $captchaTestResults[$currentDriver] ?? null;
-                                    if ($testResult && $testResult['success']) {
-                                        $iconClass = 'fas fa-check-circle text-green-500';
-                                        $textClass = 'text-green-700 dark:text-green-300';
-                                        $statusText = __('admin.settings.security.captcha_test_status.passed');
-                                    } elseif ($testResult && !$testResult['success']) {
-                                        $iconClass = 'fas fa-times-circle text-red-500';
-                                        $textClass = 'text-red-700 dark:text-red-300';
-                                        $statusText = __('admin.settings.security.captcha_test_status.failed') . ': ' . ($testResult['error_message'] ?? '');
-                                    } else {
-                                        $iconClass = 'fas fa-clock text-gray-400';
-                                        $textClass = 'text-gray-600 dark:text-gray-400';
-                                        $statusText = __('admin.settings.security.captcha_test_status.not_tested');
-                                    }
-                                
-                                // プロバイダー名の取得
-                                $providerNames = [
-                                    'google' => 'Google reCAPTCHA',
-                                    'google_enterprise' => 'Google reCAPTCHA Enterprise', 
-                                    'turnstile' => 'Cloudflare Turnstile'
-                                ];
-                                $providerName = $providerNames[$currentDriver] ?? $currentDriver;
-                                @endphp
-                                <i class="mr-2 {{ $iconClass }}"></i>
-                                <span class="text-sm {{ $textClass }}" x-text="`{{ $providerName }}: {{ $statusText }}`">
-                                    {{ $providerName }}: {{ $statusText }}
-                                    @if($testResult && isset($testResult['tested_at']))
-                                        <span class="text-xs opacity-75">({{ $testResult['tested_at'] }})</span>
-                                    @endif
-                                </span>
-                            </div>
-                            @if(!$testResult)
-                                <div class="mt-3 text-sm text-blue-600 dark:text-blue-400">
-                                    <i class="fas fa-info-circle mr-1"></i>
-                                <span x-show="captchaDriver === 'google'">
-                                    Google reCAPTCHAを有効にする場合は、サイトキーとシークレットキーを入力し、接続テストを完了させてください。
-                                </span>
-                                <span x-show="captchaDriver === 'google_enterprise'">
-                                    reCAPTCHA Enterpriseを有効にする場合は、サイトキー、シークレットキー、プロジェクトIDを入力し、接続テストを完了させてください。
-                                </span>
-                                <span x-show="captchaDriver === 'turnstile'">
-                                    Cloudflare Turnstileを有効にする場合は、サイトキーとシークレットキーを入力し、接続テストを完了させてください。
-                                </span>
-                                </div>
-                            @endif
-                    </div>
+                    
                 </div>
 
                 <div class="mt-6">
@@ -476,8 +480,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
         </div>
-
-
     </form>
 </div>
 
@@ -517,7 +519,7 @@ function testCaptchaConnection(driver) {
     }
     
     // テスト中の表示
-    statusElement.className = 'mt-4 p-3 border rounded-lg bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800';
+    statusElement.className = 'my-4 p-3 border rounded-lg bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800';
     statusElement.innerHTML = `
         <div class="flex items-center">
             <i class="mr-2 fas fa-spinner fa-spin text-blue-500"></i>
@@ -559,38 +561,34 @@ function testCaptchaConnection(driver) {
     .then(data => {
         const currentTime = new Date().toLocaleString('ja-JP');
         if (data.success) {
-            statusElement.className = 'mt-4 p-3 border rounded-lg bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
+            statusElement.className = 'my-4 p-3 border rounded-lg bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
             statusElement.innerHTML = `
                 <div class="flex items-center">
                     <i class="mr-2 fas fa-check-circle text-green-500"></i>
                     <span class="text-sm text-green-700 dark:text-green-300">
-                        ${driverName}: @lang("admin.settings.security.captcha_test_status.passed")
-                        <span class="text-xs opacity-75">(${currentTime})</span>
+                        テスト成功しました！保存するとCAPTCHAが使用できます。
                     </span>
                 </div>
             `;
         } else {
-            statusElement.className = 'mt-4 p-3 border rounded-lg bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800';
+            statusElement.className = 'my-4 p-3 border rounded-lg bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800';
             statusElement.innerHTML = `
                 <div class="flex items-center">
                     <i class="mr-2 fas fa-times-circle text-red-500"></i>
                     <span class="text-sm text-red-700 dark:text-red-300">
-                        ${driverName}: @lang("admin.settings.security.captcha_test_status.failed"): ${data.message}
-                        <span class="text-xs opacity-75">(${currentTime})</span>
+                        CAPTCHA接続テストに失敗しました。各項目やプロバイダの設定内容をご確認ください。
                     </span>
                 </div>
             `;
         }
     })
     .catch(error => {
-        const currentTime = new Date().toLocaleString('ja-JP');
         statusElement.className = 'mt-4 p-3 border rounded-lg bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800';
         statusElement.innerHTML = `
             <div class="flex items-center">
                 <i class="mr-2 fas fa-times-circle text-red-500"></i>
                 <span class="text-sm text-red-700 dark:text-red-300">
-                    ${driverName}: @lang("admin.settings.security.captcha_test_status.failed"): ${error.message}
-                    <span class="text-xs opacity-75">(${currentTime})</span>
+                    CAPTCHA接続テストに失敗しました。各項目やプロバイダの設定内容をご確認ください。
                 </span>
             </div>
         `;
@@ -607,25 +605,15 @@ function resetCaptchaTestResult(driver) {
     if (statusElement) {
         // ガイダンスメッセージを含む完全なリセット表示
         let guidanceMessage = '';
-        if (driver === 'google') {
-            guidanceMessage = 'Google reCAPTCHAを有効にする場合は、サイトキーとシークレットキーを入力し、接続テストを完了させてください。';
-        } else if (driver === 'google_enterprise') {
-            guidanceMessage = 'reCAPTCHA Enterpriseを有効にする場合は、サイトキー、シークレットキー、プロジェクトIDを入力し、接続テストを完了させてください。';
-        } else if (driver === 'turnstile') {
-            guidanceMessage = 'Cloudflare Turnstileを有効にする場合は、サイトキーとシークレットキーを入力し、接続テストを完了させてください。';
-        }
+        guidanceMessage = 'CAPTCHAを有効にする場合は、各項目を入力し、接続テストを完了させてください。';
         
-        statusElement.className = 'mt-4 p-3 border rounded-lg bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-800';
+        statusElement.className = 'my-4 p-3 border rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800';
         statusElement.innerHTML = `
             <div class="flex items-center">
-                <i class="mr-2 fas fa-clock text-gray-400"></i>
-                <span class="text-sm text-gray-600 dark:text-gray-400">
-                    @lang("admin.settings.security.captcha_test_status.not_tested")
+                <i class="mr-2 fas fa-clock text-yellow-500"></i>
+                <span class="text-sm text-yellow-700 dark:text-yellow-300">
+                    テスト未実行。CAPTCHAを有効にする場合は、各項目を入力し、接続テストを完了させてください。
                 </span>
-            </div>
-            <div class="mt-3 text-sm text-blue-600 dark:text-blue-400">
-                <i class="fas fa-info-circle mr-1"></i>
-                ${guidanceMessage}
             </div>
         `;
     }
