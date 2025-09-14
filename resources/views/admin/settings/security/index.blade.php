@@ -266,7 +266,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 <span class="text-sm font-medium">CAPTCHAを使用するには認証テストが必要です。</span>
                             </div>
                             <div class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
-                                認証テストが成功したら再度保存してください。
+                                認証が成功したら再度保存してください。<br>
+                                認証に失敗する場合は設定内容をご確認ください。<br>
+                                設定内容を変更した場合には再度保存してから認証テストを行ってください。
                             </div>
                         </div>
                         @endif
@@ -532,8 +534,8 @@ function testCaptchaConnection(driver) {
     
     // ドライバー別の設定を取得
     if (driver === 'google') {
-        formData.append('captcha_google_site_key', document.getElementById('captcha_google_site_key').value);
-        formData.append('captcha_google_secret_key', document.getElementById('captcha_google_secret_key').value);
+        formData.append('captcha_site_key', document.getElementById('captcha_site_key').value);
+        formData.append('captcha_secret_key', document.getElementById('captcha_secret_key').value);
     } else if (driver === 'google_enterprise') {
         formData.append('captcha_google_enterprise_site_key', document.getElementById('captcha_google_enterprise_site_key').value);
         formData.append('captcha_google_enterprise_secret_key', document.getElementById('captcha_google_enterprise_secret_key').value);
@@ -1001,7 +1003,7 @@ function validateCaptchaWidget() {
     
     if (driver === 'google' && version === 'v3') {
         // v3の場合は手動で実行
-        const siteKey = document.getElementById('captcha_google_site_key').value;
+        const siteKey = document.getElementById('captcha_site_key').value;
         console.log('Executing v3 with siteKey:', siteKey.substring(0, 20) + '...');
         
         // v3実行前にエラーハンドラーを設定
@@ -1043,7 +1045,7 @@ function validateCaptchaWidget() {
         });
     } else if (driver === 'google' && version === 'v2_invisible') {
         // v2非表示の場合は手動で実行
-        const siteKey = document.getElementById('captcha_google_site_key').value;
+        const siteKey = document.getElementById('captcha_site_key').value;
         debugCaptcha('v2 invisible validation started', {siteKey: siteKey.substring(0, 20) + '...', currentCaptchaWidget});
         
         // キー形式チェックを削除 - プロバイダー/バージョン選択に基づいて処理
@@ -1062,7 +1064,7 @@ function validateCaptchaWidget() {
         });
     } else if (driver === 'google' && version === 'v2_checkbox') {
         // v2チェックボックスの場合はレスポンスをチェック
-        const siteKey = document.getElementById('captcha_google_site_key').value;
+        const siteKey = document.getElementById('captcha_site_key').value;
         debugCaptcha('v2 checkbox validation started', {siteKey: siteKey.substring(0, 20) + '...', currentCaptchaWidget});
         
         // キー形式チェックを削除 - プロバイダー/バージョン選択に基づいて処理
@@ -1093,8 +1095,8 @@ function validateCaptchaToken(token) {
     formData.append('g-recaptcha-response', token);
     
     if (driver === 'google') {
-        formData.append('captcha_google_site_key', document.getElementById('captcha_google_site_key').value);
-        formData.append('captcha_google_secret_key', document.getElementById('captcha_google_secret_key').value);
+        formData.append('captcha_site_key', document.getElementById('captcha_site_key').value);
+        formData.append('captcha_secret_key', document.getElementById('captcha_secret_key').value);
         formData.append('captcha_google_version', document.getElementById('captcha_google_version').value);
         
         // v3の場合はmin_scoreも送信
