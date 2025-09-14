@@ -90,8 +90,14 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         $mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? BaseSetting::getValue('mail_send_tested', false));
         $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? BaseSetting::getValue('mail_receive_tested', false));
 
-        // CAPTCHAテスト結果を取得（セッション優先、DB次点）
+        // CAPTCHAテスト結果を取得（初回読み込み時はセッションクリア、バリデーションエラー時は保持）
         $captchaTestService = new CaptchaTestService();
+        
+        // バリデーションエラーがない場合はセッションをクリアしてDBから読み込み
+        if (!session()->has('errors') || !session('errors')->any()) {
+            session()->forget('captcha_authentication_result');
+        }
+        
         $captchaTestResult = $captchaTestService->getTestResult();
         
         $this->viewParams['settings'] = $settings;
@@ -351,7 +357,7 @@ class AdminSecuritySettingsController extends AdminLoggedInController
                         
                         if ($score >= $minScore) {
                             // テスト成功時はセッションのみに保存（DBには保存しない）
-                            session(['captcha_test_result' => true]);
+                            session(['captcha_authentication_result' => true]);
                             
                             return response()->json([
                                 'success' => true,
