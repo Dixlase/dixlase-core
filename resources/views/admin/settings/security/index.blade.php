@@ -31,6 +31,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     captchaEnabledSaved: {{ $settings['captcha_enabled'] ? 'true' : 'false' }},
     captchaDriver: '{{ old('captcha_driver', $settings['captcha_driver']) }}',
     captchaVersion: '{{ old('captcha_google_version', $settings['captcha_google_version']) }}',
+    captchaSettingsChanged: false,
 }">
     <form id="security-settings-form" method="POST" action="{{ route('admin.settings.security.update') }}" onsubmit="debugFormSubmission(event)">
         @csrf
@@ -311,7 +312,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 id="captcha-validate-button"
                                 class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                                 onclick="validateCaptchaWidget()"
-                                @if(!$settings['captcha_enabled'] || empty($settings['captcha_driver']) || empty($settings['captcha_site_key']) || empty($settings['captcha_secret_key']) || ($settings['captcha_driver'] === 'google_enterprise' && empty($settings['captcha_google_project_id'])))
+                                x-show="!captchaSettingsChanged && captchaEnabled && captchaDriver && (captchaDriver === 'google_enterprise' || (captchaDriver === 'google' && captchaVersion !== 'v2_checkbox'))"
+                                @if(!$settings['captcha_enabled'] || empty($settings['captcha_driver']) || empty($settings['captcha_site_key']) || empty($settings['captcha_secret_key']) || ($settings['captcha_driver'] === 'google_enterprise' && empty($settings['captcha_google_project_id'])) || ($settings['captcha_driver'] === 'google' && $settings['captcha_google_version'] === 'v2_checkbox'))
                                 style="display: none;"
                                 @endif>
                             {{ __('admin.settings.security.captcha_validate_button') }}
@@ -1043,7 +1045,7 @@ function validateCaptchaWidget() {
         // キー形式チェックを削除 - プロバイダー/バージョン選択に基づいて処理
         
         // currentCaptchaWidgetが正しく設定されているかチェック
-        if (!currentCaptchaWidget || currentCaptchaWidget === 0) {
+        if (currentCaptchaWidget === null || currentCaptchaWidget === undefined) {
             debugCaptcha('Invalid currentCaptchaWidget detected', {currentCaptchaWidget});
             updateValidationStatus('failed');
             disableValidationButton('CAPTCHAウィジェットが正しく初期化されていません');
@@ -1051,9 +1053,16 @@ function validateCaptchaWidget() {
             return;
         }
         
-        grecaptcha.ready(function() {
-            grecaptcha.execute(currentCaptchaWidget);
-        });
+        try {
+            grecaptcha.ready(function() {
+                debugCaptcha('Executing v2 invisible CAPTCHA', {widgetId: currentCaptchaWidget});
+                grecaptcha.execute(currentCaptchaWidget);
+            });
+        } catch (error) {
+            console.error('v2 invisible execution error:', error);
+            updateValidationStatus('failed');
+            alert('CAPTCHA認証の実行に失敗しました。ページを再読み込みしてください。');
+        }
     } else if (driver === 'google' && version === 'v2_checkbox') {
         // v2チェックボックスの場合はレスポンスをチェック
         const siteKey = document.getElementById('captcha_site_key').value;
@@ -1246,6 +1255,18 @@ document.addEventListener('DOMContentLoaded', function() {
             } catch (error) {
                 console.log('Alpine.js data update failed:', error);
             }
+            
+            // バージョン変更時にCAPTCHAテスト結果メッセージを非表示にする
+            hideTestResult();
+            console.log('DEBUG: Hidden CAPTCHA test result message due to version change');
+            
+            // バージョン変更時にCAPTCHA認証ボタンを非表示にする
+            hideTestButton();
+            console.log('DEBUG: Hidden CAPTCHA validation button due to version change');
+            
+            // バージョン変更時にCAPTCHA認証結果を0にリセット
+            resetCaptchaAuthenticationResult('version change');
+            console.log('DEBUG: Reset captcha-authentication-result to 0 due to version change');
         });
     }
     
@@ -1421,6 +1442,13 @@ function setupCaptchaToggleMonitoring() {
                 hideTestButton();
                 clearCaptchaWidget();
                 hideTestRequiredNotice();
+                
+                // Alpine.jsのcaptchaSettingsChangedフラグを設定
+                const alpineElement = document.querySelector('[x-data]');
+                if (alpineElement && alpineElement.__x && alpineElement.__x.$data) {
+                    alpineElement.__x.$data.captchaSettingsChanged = true;
+                }
+                
                 const settingsNotice = document.getElementById('settings-change-notice');
                 if (settingsNotice) {
                     settingsNotice.style.display = 'block';
@@ -1542,6 +1570,12 @@ function loadCaptchaWidgetAfterSave() {
         
         // テストボタンを表示
         showTestButton();
+        
+        // Alpine.jsのcaptchaSettingsChangedフラグをリセット
+        const alpineElement = document.querySelector('[x-data]');
+        if (alpineElement && alpineElement.__x && alpineElement.__x.$data) {
+            alpineElement.__x.$data.captchaSettingsChanged = false;
+        }
         
         // 設定変更通知を非表示
         const settingsNotice = document.getElementById('settings-change-notice');
