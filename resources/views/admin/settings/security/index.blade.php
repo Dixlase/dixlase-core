@@ -1568,8 +1568,11 @@ function loadCaptchaWidgetAfterSave() {
             loadTurnstileWidget();
         }
         
-        // テストボタンを表示
-        showTestButton();
+        // テストボタンを表示（v2_checkboxの場合は除く）
+        const version = '{{ $settings["captcha_google_version"] ?? "" }}';
+        if (!(driver === 'google' && version === 'v2_checkbox')) {
+            showTestButton();
+        }
         
         // Alpine.jsのcaptchaSettingsChangedフラグをリセット
         const alpineElement = document.querySelector('[x-data]');
