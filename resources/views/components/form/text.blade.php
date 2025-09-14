@@ -25,12 +25,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'type' => 'text',
     'disabled' => false,
     'class' => '',
+    'step' => null,
+    'min' => null,
+    'max' => null,
 ])
 
 <input type="{{ $type }}"
     id="{{ $id }}"
     name="{{ $name }}"
     @if ($disabled) disabled @endif
+    @if ($step) step="{{ $step }}" @endif
+    @if ($min !== null) min="{{ $min }}" @endif
+    @if ($max !== null) max="{{ $max }}" @endif
     class="mt-1 block w-full rounded-md shadow-sm text-lg {{ config('admin.appearance_class.form.text') }} {{ $class }}"
     value="{{ old($name, $value) }}"
     >

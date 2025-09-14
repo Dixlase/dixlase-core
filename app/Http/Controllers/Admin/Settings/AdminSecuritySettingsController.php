@@ -47,31 +47,36 @@ class AdminSecuritySettingsController extends AdminLoggedInController
 
     public function index()
     {
+        // DEBUG: Log current CAPTCHA settings
+        if (config('app.debug')) {
+            $rawCaptchaEnabled = SecuritySetting::get('captcha_enabled', false);
+            $convertedCaptchaEnabled = filter_var($rawCaptchaEnabled, FILTER_VALIDATE_BOOLEAN);
+            Log::info('AdminSecuritySettingsController::index() - CAPTCHA Settings Debug', [
+                'captcha_enabled_raw' => $rawCaptchaEnabled,
+                'captcha_enabled_converted' => $convertedCaptchaEnabled,
+                'captcha_driver' => SecuritySetting::get('captcha_driver', 'google'),
+            ]);
+        }
 
         $settings = [
-            'enable_allowed_admin_ips' => SecuritySetting::get('enable_allowed_admin_ips', false),
+            'enable_allowed_admin_ips' => filter_var(SecuritySetting::get('enable_allowed_admin_ips', false), FILTER_VALIDATE_BOOLEAN),
             'allowed_admin_ips' => SecuritySetting::get('allowed_admin_ips', ''),
-            'enable_blocked_admin_ips' => SecuritySetting::get('enable_blocked_admin_ips', false),
+            'enable_blocked_admin_ips' => filter_var(SecuritySetting::get('enable_blocked_admin_ips', false), FILTER_VALIDATE_BOOLEAN),
             'blocked_admin_ips' => SecuritySetting::get('blocked_admin_ips', ''),
-            'enable_allowed_front_ips' => SecuritySetting::get('enable_allowed_front_ips', false),
+            'enable_allowed_front_ips' => filter_var(SecuritySetting::get('enable_allowed_front_ips', false), FILTER_VALIDATE_BOOLEAN),
             'allowed_front_ips' => SecuritySetting::get('allowed_front_ips', ''),
-            'enable_blocked_front_ips' => SecuritySetting::get('enable_blocked_front_ips', false),
+            'enable_blocked_front_ips' => filter_var(SecuritySetting::get('enable_blocked_front_ips', false), FILTER_VALIDATE_BOOLEAN),
             'blocked_front_ips' => SecuritySetting::get('blocked_front_ips', ''),
             // reCAPTCHA settings
-            'captcha_enabled' => SecuritySetting::get('captcha_enabled', false),
+            'captcha_enabled' => filter_var(SecuritySetting::get('captcha_enabled', false), FILTER_VALIDATE_BOOLEAN),
             'captcha_driver' => SecuritySetting::get('captcha_driver', 'google'),
-            'captcha_google_site_key' => SecuritySetting::get('captcha_google_site_key', ''),
-            'captcha_google_secret_key' => SecuritySetting::get('captcha_google_secret_key', ''),
+            'captcha_site_key' => SecuritySetting::get('captcha_site_key', ''),
+            'captcha_secret_key' => SecuritySetting::get('captcha_secret_key', ''),
             'captcha_google_version' => SecuritySetting::get('captcha_google_version', 'v3'),
             'captcha_google_min_score' => SecuritySetting::get('captcha_google_min_score', '0.5'),
-            'captcha_google_enterprise_site_key' => SecuritySetting::get('captcha_google_enterprise_site_key', ''),
-            'captcha_google_enterprise_secret_key' => SecuritySetting::get('captcha_google_enterprise_secret_key', ''),
             'captcha_google_project_id' => SecuritySetting::get('captcha_google_project_id', ''),
-            // Turnstile settings
-            'captcha_turnstile_site_key' => SecuritySetting::get('captcha_turnstile_site_key', ''),
-            'captcha_turnstile_secret_key' => SecuritySetting::get('captcha_turnstile_secret_key', ''),
             // Notification settings
-            'notification_enabled' => SecuritySetting::get('notification_enabled', true),
+            'notification_enabled' => filter_var(SecuritySetting::get('notification_enabled', true), FILTER_VALIDATE_BOOLEAN),
             'notification_log_levels' => array_map('intval', array_filter(explode(',', SecuritySetting::get('notification_log_levels', implode(',', LogLevel::getDefaultNotificationLevels()))))),
         ];
 
@@ -86,14 +91,12 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? BaseSetting::getValue('mail_receive_tested', false));
 
         // CAPTCHAテスト結果を取得（セッション優先、DB次点）
-        // 旧CAPTCHAテスト結果処理を削除（新ライブ認証システムでは不要）
-        $captchaTestResults = [];
+        $captchaTestService = new CaptchaTestService();
+        $captchaTestResult = $captchaTestService->getTestResult();
         
-        // 旧デバッグログも削除
-
         $this->viewParams['settings'] = $settings;
         $this->viewParams['captchaFormSettings'] = $captchaFormSettings;
-        $this->viewParams['captchaTestResults'] = $captchaTestResults;
+        $this->viewParams['captchaTestResult'] = $captchaTestResult;
         $this->viewParams['mailConnectionTested'] = $mailConnectionTested;
         $this->viewParams['mailSendTested'] = $mailSendTested;
         $this->viewParams['mailReceiveTested'] = $mailReceiveTested;
@@ -164,19 +167,51 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         // Save reCAPTCHA settings
         SecuritySetting::set('captcha_enabled', $request->boolean('captcha_enabled'));
         SecuritySetting::set('captcha_driver', $request->input('captcha_driver', 'google'));
-        SecuritySetting::set('captcha_google_site_key', $request->input('captcha_google_site_key', ''));
-        SecuritySetting::set('captcha_google_secret_key', $request->input('captcha_google_secret_key', ''));
+        
+        // Save common keys directly
+        SecuritySetting::set('captcha_site_key', $request->input('captcha_site_key', ''));
+        SecuritySetting::set('captcha_secret_key', $request->input('captcha_secret_key', ''));
+        
         SecuritySetting::set('captcha_google_version', $request->input('captcha_google_version', 'v3'));
-        SecuritySetting::set('captcha_google_min_score', $request->input('captcha_google_min_score', '0.5'));
+        // Debug: Check if min_score is in POST data
+        \Log::info('CAPTCHA Min Score Debug', [
+            'all_post_data' => $request->all(),
+            'has_min_score_field' => $request->has('captcha_google_min_score'),
+            'min_score_value' => $request->input('captcha_google_min_score'),
+            'captcha_driver' => $request->input('captcha_driver'),
+            'captcha_version' => $request->input('captcha_google_version'),
+            'request_method' => $request->method(),
+            'content_type' => $request->header('Content-Type')
+        ]);
         
-        // Save Google reCAPTCHA Enterprise settings
-        SecuritySetting::set('captcha_google_enterprise_site_key', $request->input('captcha_google_enterprise_site_key', ''));
-        SecuritySetting::set('captcha_google_enterprise_secret_key', $request->input('captcha_google_enterprise_secret_key', ''));
+        // Handle min_score for Google reCAPTCHA v3 and Enterprise
+        $driver = $request->input('captcha_driver');
+        $version = $request->input('captcha_google_version');
+        
+        if (($driver === 'google' && $version === 'v3') || $driver === 'google_enterprise') {
+            $minScore = $request->input('captcha_google_min_score', '0.5');
+            \Log::info('Min Score Processing', [
+                'condition_met' => true,
+                'driver' => $driver,
+                'version' => $version,
+                'min_score_value' => $minScore,
+                'before_save' => SecuritySetting::get('captcha_google_min_score')
+            ]);
+            SecuritySetting::set('captcha_google_min_score', $minScore);
+            \Log::info('Min Score After Save', [
+                'saved_value' => SecuritySetting::get('captcha_google_min_score')
+            ]);
+        } else {
+            \Log::info('Min Score Processing', [
+                'condition_met' => false,
+                'driver' => $driver,
+                'version' => $version,
+                'reason' => 'Not Google v3 or Enterprise'
+            ]);
+        }
+        
+        // Save Google reCAPTCHA Enterprise project ID
         SecuritySetting::set('captcha_google_project_id', $request->input('captcha_google_project_id', ''));
-        
-        // Save Turnstile settings
-        SecuritySetting::set('captcha_turnstile_site_key', $request->input('captcha_turnstile_site_key', ''));
-        SecuritySetting::set('captcha_turnstile_secret_key', $request->input('captcha_turnstile_secret_key', ''));
         
         // Save notification settings
         $notificationEnabled = $request->boolean('notification_enabled');

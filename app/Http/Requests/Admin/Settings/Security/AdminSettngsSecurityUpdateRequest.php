@@ -77,12 +77,13 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
             'blocked_front_ips' => 'nullable|string|regex:/^(\d{1,3}\.){3}\d{1,3}(,\s*(\d{1,3}\.){3}\d{1,3})*$/',
             // reCAPTCHA validation rules
             'captcha_enabled' => 'required|boolean',
-            'captcha_driver' => 'nullable|string|in:google,turnstile',
+            'captcha_driver' => 'nullable|string|in:google,google_enterprise,turnstile',
             'captcha_google_version' => 'nullable|string|in:v2_checkbox,v2_invisible,v3',
             'captcha_google_min_score' => 'nullable|numeric|between:0,1',
-            // Turnstile validation rules
-            'captcha_turnstile_site_key' => 'nullable|string|max:255',
-            'captcha_turnstile_secret_key' => 'nullable|string|max:255',
+            'captcha_google_project_id' => 'nullable|string|max:255',
+            // Common CAPTCHA fields
+            'captcha_site_key' => 'nullable|string|max:255',
+            'captcha_secret_key' => 'nullable|string|max:255',
             'captcha_contact_form' => 'required|boolean',
             'captcha_registration_form' => 'required|boolean',
             'captcha_login_form' => 'required|boolean',
@@ -96,29 +97,25 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
         if ($this->boolean('captcha_enabled')) {
             $captchaDriver = $this->input('captcha_driver', 'google');
             
-            // CAPTCHA認証が必須
-            $rules['captcha_validation_status'] = 'required|boolean|accepted';
-            $rules['captcha_validation_token'] = 'required|string';
+            // 共通フィールドを必須にする
+            $rules['captcha_site_key'] = 'required|string';
+            $rules['captcha_secret_key'] = 'required|string';
             
-            // Google reCAPTCHA条件付きバリデーション
-            if ($this->input('captcha_enabled') && ($this->input('captcha_driver') === 'google' || $this->input('captcha_driver') === 'google_enterprise')) {
-                $rules['captcha_google_site_key'] = 'required|string';
-                $rules['captcha_google_secret_key'] = 'required|string';
-                
-                // Enterprise使用時はプロジェクトIDも必須
-                if ($this->input('captcha_driver') === 'google_enterprise') {
-                    $rules['captcha_google_project_id'] = 'required|string';
-                }
-            } elseif ($captchaDriver === 'turnstile') {
-                $rules['captcha_turnstile_site_key'] = 'required|string|max:255';
-                $rules['captcha_turnstile_secret_key'] = 'required|string|max:255';
+            // Google reCAPTCHA v3またはEnterpriseの場合のみmin_scoreを必須にする
+            if (($captchaDriver === 'google' && $this->input('captcha_google_version') === 'v3') || $captchaDriver === 'google_enterprise') {
+                $rules['captcha_google_min_score'] = 'required|numeric|between:0,1';
             }
+            
+            // Enterprise使用時はプロジェクトIDも必須
+            if ($captchaDriver === 'google_enterprise') {
+                $rules['captcha_google_project_id'] = 'required|string';
+            }
+            
+            // CAPTCHAが有効な場合でもテストは必須ではない（設定のみ必須）
         } else {
             $rules['captcha_google_site_key'] = 'nullable|string|max:255';
             $rules['captcha_google_secret_key'] = 'nullable|string|max:255';
             $rules['captcha_google_project_id'] = 'nullable|string|max:255';
-            $rules['captcha_validation_status'] = 'nullable|boolean';
-            $rules['captcha_validation_token'] = 'nullable|string';
         }
 
         return $rules;
@@ -130,21 +127,17 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'allowed_admin_ips.regex' => __('admin.security.validation.allowed_admin_ips_format'),
-            'blocked_admin_ips.regex' => __('admin.security.validation.blocked_admin_ips_format'),
-            'allowed_front_ips.regex' => __('admin.security.validation.allowed_front_ips_format'),
-            'blocked_front_ips.regex' => __('admin.security.validation.blocked_front_ips_format'),
-            'captcha_google_version.in' => __('admin.security.validation.captcha_google_version_invalid'),
-            'captcha_google_min_score.between' => __('admin.security.validation.captcha_google_min_score_range'),
-            'captcha_driver.in' => __('admin.security.validation.captcha_driver_invalid'),
+            'allowed_admin_ips.regex' => __('admin.settings.security.validation.allowed_admin_ips_format'),
+            'blocked_admin_ips.regex' => __('admin.settings.security.validation.blocked_admin_ips_format'),
+            'allowed_front_ips.regex' => __('admin.settings.security.validation.allowed_front_ips_format'),
+            'blocked_front_ips.regex' => __('admin.settings.security.validation.blocked_front_ips_format'),
+            'captcha_google_version.in' => __('admin.settings.security.validation.captcha_google_version_invalid'),
+            'captcha_google_min_score.between' => __('admin.settings.security.validation.captcha_google_min_score_range'),
+            'captcha_driver.in' => __('admin.settings.security.validation.captcha_driver_invalid'),
             // CAPTCHA必須バリデーションメッセージ
-            'captcha_google_site_key.required' => __('admin.security.validation.captcha_google_site_key_required'),
-            'captcha_google_secret_key.required' => __('admin.security.validation.captcha_google_secret_key_required'),
-            'captcha_turnstile_site_key.required' => __('admin.security.validation.captcha_turnstile_site_key_required'),
-            'captcha_turnstile_secret_key.required' => __('admin.security.validation.captcha_turnstile_secret_key_required'),
-            // CAPTCHA認証バリデーションメッセージ
-            'captcha_validation_status.accepted' => __('admin.security.validation.captcha_validation_required'),
-            'captcha_validation_token.required' => __('admin.security.validation.captcha_validation_required'),
+            'captcha_site_key.required' => __('admin.settings.security.validation.captcha_site_key_required'),
+            'captcha_secret_key.required' => __('admin.settings.security.validation.captcha_secret_key_required'),
+            'captcha_google_project_id.required' => __('admin.settings.security.validation.captcha_google_project_id_required'),
         ];
     }
 }
