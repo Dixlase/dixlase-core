@@ -703,7 +703,7 @@ class CaptchaTestService
     public function getTestResult(): bool
     {
         // セッションから取得を試行
-        $sessionResult = session('captcha_test_result');
+        $sessionResult = session('captcha_authentication_result');
         if ($sessionResult !== null) {
             return (bool) $sessionResult;
         }
@@ -774,5 +774,18 @@ class CaptchaTestService
         
         // テストが失敗している場合はテスト必要
         return !($testResult['success'] ?? false);
+    }
+
+    /**
+     * CAPTCHAテスト結果をリセット
+     */
+    public function resetCaptchaTestResults(): void
+    {
+        // セッションからテスト結果を削除
+        session()->forget('captcha_authentication_result');
+        
+        // データベースのテスト結果を0にリセット（レコードは保持）
+        $testKey = "captcha_authentication_result";
+        SecuritySetting::where('name', $testKey)->update(['value' => '0']);
     }
 }

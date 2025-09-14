@@ -249,7 +249,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <!-- CAPTCHA Test Section (Only shown when CAPTCHA is enabled) -->
                     <div class="mt-4 p-4 border rounded-lg bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
                         <!-- Test Status Display -->
-                        @if(!session('captcha_test_result.captcha_tested'))
+                        @if(!$captchaTestResult)
                         <div id="captcha-test-required-notice" class="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
                             <div class="flex items-center text-yellow-600 dark:text-yellow-400">
                                 <i class="fas fa-exclamation-triangle mr-2"></i>
@@ -261,6 +261,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     <li>認証に失敗する場合は設定内容をご確認ください。</li>
                                     <li>設定内容を変更した場合には再度保存してから認証テストを行ってください。</li>
                                 </ul>
+                            </div>
+                        </div>
+                        @endif
+
+                        <!-- CAPTCHA Test Success Display (from DB) -->
+                        @if($captchaTestResult)
+                        <div class="mb-4 p-3 border rounded-lg bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-200">
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle mr-3 text-green-600 dark:text-green-400"></i>
+                                <div>
+                                    <h4 class="font-semibold">認証成功</h4>
+                                    <p class="text-sm mt-1">CAPTCHAの認証テストが正常に完了しています。</p>
+                                </div>
                             </div>
                         </div>
                         @endif
@@ -1135,11 +1148,33 @@ function validateCaptchaToken(token) {
             if (statusElement) statusElement.value = '1';
             if (tokenElement) tokenElement.value = token;
             
+            // CAPTCHA authentication result hidden inputを更新
+            const authResultInput = document.getElementById('captcha-authentication-result');
+            console.log('DEBUG: Looking for auth result input:', authResultInput);
+            if (authResultInput) {
+                const oldValue = authResultInput.value;
+                authResultInput.value = '1';
+                console.log('DEBUG: Updated captcha_authentication_result from:', oldValue, 'to:', authResultInput.value);
+            } else {
+                console.error('DEBUG: captcha-authentication-result input not found!');
+            }
+            
             // 認証成功時に警告通知を非表示にする
             hideTestRequiredNotice();
         } else {
             debugCaptcha('CAPTCHA validation FAILED', {message: data.message, error: data.error});
             resetValidationState();
+            
+            // CAPTCHA authentication result hidden inputを失敗に更新
+            const authResultInput = document.getElementById('captcha-authentication-result');
+            console.log('DEBUG: Looking for auth result input (failure):', authResultInput);
+            if (authResultInput) {
+                const oldValue = authResultInput.value;
+                authResultInput.value = '0';
+                console.log('DEBUG: Updated captcha_authentication_result from:', oldValue, 'to:', authResultInput.value);
+            } else {
+                console.error('DEBUG: captcha-authentication-result input not found!');
+            }
             
             // 失敗メッセージを表示
             showTestResult('error', data.message || 'CAPTCHA認証に失敗しました。');
@@ -1149,6 +1184,13 @@ function validateCaptchaToken(token) {
         console.error('CAPTCHA validation error:', error);
         debugCaptcha('CAPTCHA validation ERROR', {error: error.message});
         resetValidationState();
+        
+        // CAPTCHA authentication result hidden inputをエラーに更新
+        const authResultInput = document.getElementById('captcha-authentication-result');
+        if (authResultInput) {
+            authResultInput.value = '0';
+            console.log('DEBUG: Updated captcha_authentication_result to 0 due to error');
+        }
         
         // エラーメッセージを表示
         showTestResult('error', 'CAPTCHA認証中にエラーが発生しました。');
@@ -1556,12 +1598,44 @@ function hideAuthenticationButton() {
 function onCaptchaValidationSuccess() {
     updateValidationStatus('passed');
     debugCaptcha('CAPTCHA validation successful - status updated to passed');
+    
+    // Hidden inputの値を1に更新
+    const hiddenInput = document.getElementById('captcha-authentication-result');
+    console.log('DEBUG: Looking for hidden input element:', hiddenInput);
+    if (hiddenInput) {
+        const oldValue = hiddenInput.value;
+        hiddenInput.value = '1';
+        console.log('DEBUG: Updated captcha_authentication_result hidden input from:', oldValue, 'to:', hiddenInput.value);
+        
+        // 値が正しく設定されたか確認
+        const newValue = document.getElementById('captcha-authentication-result').value;
+        console.log('DEBUG: Verification - current value is:', newValue);
+    } else {
+        console.error('DEBUG: Hidden input element not found! Available elements:');
+        console.log('DEBUG: All hidden inputs:', document.querySelectorAll('input[type="hidden"]'));
+    }
 }
 
 // 失敗時のバリデーション状態更新  
 function onCaptchaValidationFailure() {
     updateValidationStatus('failed');
     debugCaptcha('CAPTCHA validation failed - status updated to failed');
+    
+    // Hidden inputの値を0に更新
+    const hiddenInput = document.getElementById('captcha-authentication-result');
+    console.log('DEBUG: Looking for hidden input element (failure):', hiddenInput);
+    if (hiddenInput) {
+        const oldValue = hiddenInput.value;
+        hiddenInput.value = '0';
+        console.log('DEBUG: Updated captcha_authentication_result hidden input from:', oldValue, 'to:', hiddenInput.value);
+        
+        // 値が正しく設定されたか確認
+        const newValue = document.getElementById('captcha-authentication-result').value;
+        console.log('DEBUG: Verification - current value is:', newValue);
+    } else {
+        console.error('DEBUG: Hidden input element not found! Available elements:');
+        console.log('DEBUG: All hidden inputs:', document.querySelectorAll('input[type="hidden"]'));
+    }
 }
 
 
