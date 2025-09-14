@@ -266,17 +266,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         @endif
 
                         <!-- CAPTCHA Test Success Display (from DB) -->
-                        @if($captchaTestResult)
-                        <div class="mb-4 p-3 border rounded-lg bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-200">
-                            <div class="flex items-center">
-                                <i class="fas fa-check-circle mr-3 text-green-600 dark:text-green-400"></i>
-                                <div>
-                                    <h4 class="font-semibold">認証成功</h4>
-                                    <p class="text-sm mt-1">CAPTCHAの認証テストが正常に完了しています。</p>
-                                </div>
-                            </div>
-                        </div>
-                        @endif
                         
                         <!-- CAPTCHA Widget Container -->
                         <div id="captcha-widget-container" class="mb-4">
@@ -295,23 +284,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             </div>
                         </div>
                         
-                        <!-- CAPTCHA Test Result Messages (Static HTML) -->
-                        <div id="captcha-test-success" class="mb-4 p-3 border rounded-lg bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-200" style="display: none;">
+                        <!-- CAPTCHA Test Result Message (Unified) -->
+                        <div id="captcha-test-result" class="mb-4 p-3 border rounded-lg" style="display: none;">
                             <div class="flex items-center">
-                                <i class="fas fa-check-circle mr-3 text-green-600 dark:text-green-400"></i>
+                                <i id="captcha-test-icon" class="mr-3"></i>
                                 <div>
-                                    <h4 class="font-semibold">認証成功</h4>
-                                    <p class="text-sm mt-1" id="captcha-success-message"></p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div id="captcha-test-failure" class="mb-4 p-3 border rounded-lg bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-200" style="display: none;">
-                            <div class="flex items-center">
-                                <i class="fas fa-times-circle mr-3 text-red-600 dark:text-red-400"></i>
-                                <div>
-                                    <h4 class="font-semibold">認証失敗</h4>
-                                    <p class="text-sm mt-1" id="captcha-failure-message"></p>
+                                    <h4 id="captcha-test-title" class="font-semibold"></h4>
+                                    <p id="captcha-test-message" class="text-sm mt-1"></p>
                                 </div>
                             </div>
                         </div>
@@ -1229,6 +1208,20 @@ function resetValidationState() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    // ページ読み込み時にCAPTCHA認証結果をチェックして適切なメッセージを表示
+    const authResultInput = document.getElementById('captcha-authentication-result');
+    if (authResultInput) {
+        if (authResultInput.value === '1') {
+            // 認証成功時は統合メッセージ要素で成功状態を表示
+            showTestResult('success', 'CAPTCHAの認証テストが正常に完了しています。');
+            console.log('DEBUG: Displayed CAPTCHA success message on page load');
+        } else {
+            // 認証結果が0の場合はメッセージを非表示
+            hideTestResult();
+            console.log('DEBUG: Hidden CAPTCHA test result messages on page load due to reset authentication result');
+        }
+    }
+    
     // プロバイダー切り替え時のリセット
     const driverSelect = document.getElementById('captcha_driver');
     if (driverSelect) {
@@ -1513,13 +1506,9 @@ function hideTestRequiredNotice() {
 
 // テスト結果メッセージを非表示にする関数
 function hideTestResult() {
-    const successElement = document.getElementById('captcha-test-success');
-    const failureElement = document.getElementById('captcha-test-failure');
-    if (successElement) {
-        successElement.style.display = 'none';
-    }
-    if (failureElement) {
-        failureElement.style.display = 'none';
+    const resultElement = document.getElementById('captcha-test-result');
+    if (resultElement) {
+        resultElement.style.display = 'none';
     }
     debugCaptcha('Test result messages hidden');
 }
@@ -1574,20 +1563,28 @@ function showTestResult(type, message) {
     // 既存の結果表示を非表示
     hideTestResult();
     
-    if (type === 'success') {
-        const successElement = document.getElementById('captcha-test-success');
-        const messageElement = document.getElementById('captcha-success-message');
-        if (successElement && messageElement) {
-            messageElement.textContent = message;
-            successElement.style.display = 'block';
+    const resultElement = document.getElementById('captcha-test-result');
+    const iconElement = document.getElementById('captcha-test-icon');
+    const titleElement = document.getElementById('captcha-test-title');
+    const messageElement = document.getElementById('captcha-test-message');
+    
+    if (resultElement && iconElement && titleElement && messageElement) {
+        // メッセージとタイトルを設定
+        messageElement.textContent = message;
+        
+        if (type === 'success') {
+            // 成功時のスタイル設定
+            resultElement.className = 'mb-4 p-3 border rounded-lg bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-200';
+            iconElement.className = 'fas fa-check-circle mr-3 text-green-600 dark:text-green-400';
+            titleElement.textContent = '認証成功';
+        } else {
+            // 失敗時のスタイル設定
+            resultElement.className = 'mb-4 p-3 border rounded-lg bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-200';
+            iconElement.className = 'fas fa-times-circle mr-3 text-red-600 dark:text-red-400';
+            titleElement.textContent = '認証失敗';
         }
-    } else {
-        const failureElement = document.getElementById('captcha-test-failure');
-        const messageElement = document.getElementById('captcha-failure-message');
-        if (failureElement && messageElement) {
-            messageElement.textContent = message;
-            failureElement.style.display = 'block';
-        }
+        
+        resultElement.style.display = 'block';
     }
     
     debugCaptcha('Test result displayed', {type, message});
@@ -1654,6 +1651,10 @@ function resetCaptchaAuthenticationResult(reason) {
         authResultInput.value = '0';
         console.log(`DEBUG: Reset captcha_authentication_result to 0 due to ${reason}`);
     }
+    
+    // 統合されたテスト結果メッセージを非表示にする
+    hideTestResult();
+    console.log('DEBUG: Hidden CAPTCHA test result message due to settings change');
 }
 
 
