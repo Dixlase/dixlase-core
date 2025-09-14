@@ -47,11 +47,6 @@ class AdminSecuritySettingsController extends AdminLoggedInController
 
     public function index()
     {
-        // バリデーションエラーがある場合はセッションを保持（リセット状態を維持）
-        if (!session()->has('errors')) {
-            // ページ開始時にCAPTCHAセッションをクリアして最新のDB状態を反映
-            session()->forget('captcha_test_result');
-        }
 
         $settings = [
             'enable_allowed_admin_ips' => SecuritySetting::get('enable_allowed_admin_ips', false),
@@ -91,29 +86,10 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? BaseSetting::getValue('mail_receive_tested', false));
 
         // CAPTCHAテスト結果を取得（セッション優先、DB次点）
-        $captchaTestService = new CaptchaTestService();
+        // 旧CAPTCHAテスト結果処理を削除（新ライブ認証システムでは不要）
         $captchaTestResults = [];
         
-        // セッションから共通のテスト結果を取得
-        $sessionResult = session('captcha_test_result');
-        
-        foreach (['google', 'google_enterprise', 'turnstile'] as $driver) {
-            if ($sessionResult) {
-                // セッションにデータがある場合はそれを使用（リセット状態も含む）
-                $captchaTestResults[$driver] = $sessionResult;
-            } else {
-                // セッションにない場合のみDBから取得
-                $testResult = $captchaTestService->getCaptchaTestResult($driver);
-                $captchaTestResults[$driver] = $testResult;
-            }
-        }
-        
-        // デバッグ用: セッションとテスト結果の状態をログ出力
-        if (config('app.debug')) {
-            \Log::debug('CAPTCHA Debug - Session result:', ['session' => $sessionResult]);
-            \Log::debug('CAPTCHA Debug - Test results:', ['results' => $captchaTestResults]);
-            \Log::debug('CAPTCHA Debug - Has validation errors:', ['has_errors' => session()->has('errors')]);
-        }
+        // 旧デバッグログも削除
 
         $this->viewParams['settings'] = $settings;
         $this->viewParams['captchaFormSettings'] = $captchaFormSettings;
@@ -169,20 +145,8 @@ class AdminSecuritySettingsController extends AdminLoggedInController
                 'captcha_driver' => $newCaptchaDriver,
             ] + $newCaptchaSettings;
             
-            // セッションの状態をチェック（プロバイダー変更でリセットされた場合）
-            $sessionResult = session('captcha_test_result');
-            $isSessionReset = $sessionResult && ($sessionResult['is_reset'] ?? false);
-            $hasValidSessionTest = $sessionResult && ($sessionResult['success'] ?? false) && !$isSessionReset;
-            
-            // 無効→有効に変更された場合、設定が変更された場合、またはセッションがリセット状態の場合はテストが必要
-            if (!$currentCaptchaEnabled || $captchaSettingsChanged || $isSessionReset) {
-                // セッションに有効なテスト結果がある場合はテスト不要
-                if (!$hasValidSessionTest && ($captchaTestService->isTestRequired($captchaSettings) || $isSessionReset)) {
-                    return redirect()->back()
-                        ->withInput()
-                        ->withErrors(['captcha' => __('admin.settings.security.captcha_test_required')]);
-                }
-            }
+            // 旧CAPTCHA接続テストロジックを削除
+            // 新しいライブ認証システムではフォームバリデーションで処理
         }
         
         // CAPTCHA設定が変更された場合のみテスト結果をリセット（保存時は保持）
@@ -246,8 +210,10 @@ class AdminSecuritySettingsController extends AdminLoggedInController
             $formSetting->save();
         }
 
-        // フォーム保存後にCAPTCHAセッションをクリアして次回ページ読み込み時にDB状態を反映
-        session()->forget('captcha_test_result');
+        // 保存成功後は認証状態をセッションに一時保存（次回ページ読み込み時用）
+        if ($request->boolean('captcha_enabled') && $request->boolean('captcha_validation_status')) {
+            session()->flash('captcha_just_saved', true);
+        }
         
         return redirect()->route('admin.settings.security')
             ->with('success', __('admin.settings.security.controller_messages.settings_updated'));
@@ -282,12 +248,7 @@ class AdminSecuritySettingsController extends AdminLoggedInController
             $result['success'] ? null : $result['message']
         );
         
-        // セッションにもテスト結果を保存（即座にUIに反映するため）
-        session()->put('captcha_test_result', [
-            'success' => $result['success'],
-            'tested_at' => now()->toISOString(),
-            'error_message' => $result['success'] ? null : $result['message']
-        ]);
+        // 旧セッション保存処理を削除（新ライブ認証システムでは不要）
         
         return response()->json($result);
     }
@@ -381,7 +342,7 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         
         // テスト結果をfalseにリセット（レコードは保持）
         $captchaTestService->resetCaptchaTestResults();
-        session()->forget('captcha_test_result');
+        // 旧セッション処理を削除（新ライブ認証システムでは不要）
         
         return response()->json(['success' => true]);
     }
@@ -398,23 +359,9 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         }
         
         try {
-            // セッションからテスト結果を削除（DBは更新しない）
-            session()->forget('captcha_test_result');
+            // 旧セッション処理を削除（新ライブ認証システムでは不要）
             
-            // セッションに未テスト状態を設定
-            session()->put('captcha_test_result', [
-                'success' => false,
-                'tested_at' => null,
-                'error_message' => null,
-                'is_reset' => true // リセット状態を示すフラグ
-            ]);
-            
-            // デバッグ用: セッション設定後の状態をログ出力
-            if (config('app.debug')) {
-                \Log::debug('CAPTCHA Clear - Session after reset:', ['session' => session('captcha_test_result')]);
-            }
-            
-            Log::info("CAPTCHAテスト結果をクリアしました（セッションのみ）", [
+            Log::info("CAPTCHAテスト結果をクリアしました", [
                 'driver' => $driver,
                 'admin_id' => Auth::id()
             ]);
