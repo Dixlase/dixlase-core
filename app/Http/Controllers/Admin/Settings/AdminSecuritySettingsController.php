@@ -112,6 +112,10 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         $currentCaptchaEnabled = SecuritySetting::get('captcha_enabled', false);
         $currentCaptchaDriver = SecuritySetting::get('captcha_driver', 'google');
         $currentCaptchaSettings = [
+            'captcha_site_key' => SecuritySetting::get('captcha_site_key', ''),
+            'captcha_secret_key' => SecuritySetting::get('captcha_secret_key', ''),
+            'captcha_google_version' => SecuritySetting::get('captcha_google_version', 'v3'),
+            'captcha_google_min_score' => SecuritySetting::get('captcha_google_min_score', '0.5'),
             'captcha_google_site_key' => SecuritySetting::get('captcha_google_site_key', ''),
             'captcha_google_secret_key' => SecuritySetting::get('captcha_google_secret_key', ''),
             'captcha_google_enterprise_site_key' => SecuritySetting::get('captcha_google_enterprise_site_key', ''),
@@ -125,6 +129,10 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         $newCaptchaEnabled = $request->boolean('captcha_enabled');
         $newCaptchaDriver = $request->input('captcha_driver', 'google');
         $newCaptchaSettings = [
+            'captcha_site_key' => $request->input('captcha_site_key', ''),
+            'captcha_secret_key' => $request->input('captcha_secret_key', ''),
+            'captcha_google_version' => $request->input('captcha_google_version', 'v3'),
+            'captcha_google_min_score' => $request->input('captcha_google_min_score', '0.5'),
             'captcha_google_site_key' => $request->input('captcha_google_site_key', ''),
             'captcha_google_secret_key' => $request->input('captcha_google_secret_key', ''),
             'captcha_google_enterprise_site_key' => $request->input('captcha_google_enterprise_site_key', ''),
@@ -152,8 +160,12 @@ class AdminSecuritySettingsController extends AdminLoggedInController
             // 新しいライブ認証システムではフォームバリデーションで処理
         }
         
-        // CAPTCHA設定が変更された場合のみテスト結果をリセット（保存時は保持）
-        // 注意: 設定保存時はテスト結果を保持し、設定変更時のみリセットする
+        // CAPTCHA設定が変更された場合、テスト結果をリセット
+        // ただし、認証テスト成功後の保存では現在のテスト結果を保持
+        $currentTestResult = $captchaTestService->getTestResult();
+        if ($captchaSettingsChanged && !$currentTestResult) {
+            $captchaTestService->resetCaptchaTestResults();
+        }
 
         SecuritySetting::set('enable_allowed_admin_ips', $request->boolean('enable_allowed_admin_ips'));
         SecuritySetting::set('allowed_admin_ips', $request->input('allowed_admin_ips'));
@@ -331,6 +343,10 @@ class AdminSecuritySettingsController extends AdminLoggedInController
                         $minScore = floatval($request->input('captcha_google_min_score', 0.5));
                         
                         if ($score >= $minScore) {
+                            // テスト成功時にデータベースに保存
+                            $captchaTestService = new CaptchaTestService();
+                            $captchaTestService->saveCaptchaTestResult($driver, true);
+                            
                             return response()->json([
                                 'success' => true,
                                 'message' => "CAPTCHA validation successful (score: {$score})"
@@ -342,6 +358,10 @@ class AdminSecuritySettingsController extends AdminLoggedInController
                             ]);
                         }
                     } else {
+                        // v2の場合もテスト成功時にデータベースに保存
+                        $captchaTestService = new CaptchaTestService();
+                        $captchaTestService->saveCaptchaTestResult($driver, true);
+                        
                         return response()->json([
                             'success' => true,
                             'message' => 'CAPTCHA validation successful'
