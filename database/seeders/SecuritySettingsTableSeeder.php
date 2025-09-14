@@ -57,16 +57,6 @@ class SecuritySettingsTableSeeder extends Seeder
         );
 
         SecuritySetting::updateOrCreate(
-            ['name' => 'captcha_google_site_key'],
-            ['value' => '']
-        );
-
-        SecuritySetting::updateOrCreate(
-            ['name' => 'captcha_google_secret_key'],
-            ['value' => '']
-        );
-
-        SecuritySetting::updateOrCreate(
             ['name' => 'captcha_google_version'],
             ['value' => 'v3']
         );
@@ -76,38 +66,33 @@ class SecuritySettingsTableSeeder extends Seeder
             ['value' => '0.5']
         );
 
-        // Google reCAPTCHA Enterprise settings
-        SecuritySetting::updateOrCreate(
-            ['name' => 'captcha_google_enterprise_site_key'],
-            ['value' => '']
-        );
 
-        SecuritySetting::updateOrCreate(
-            ['name' => 'captcha_google_enterprise_secret_key'],
-            ['value' => '']
-        );
 
         SecuritySetting::updateOrCreate(
             ['name' => 'captcha_google_project_id'],
             ['value' => '']
         );
 
-        // Turnstile settings
-        SecuritySetting::updateOrCreate(
-            ['name' => 'captcha_turnstile_site_key'],
-            ['value' => '']
-        );
 
-        SecuritySetting::updateOrCreate(
-            ['name' => 'captcha_turnstile_secret_key'],
-            ['value' => '']
-        );
 
-        // CAPTCHA test result (boolean型、常にレコード保持)
+        // CAPTCHA authentication result (boolean型、常にレコード保持)
         SecuritySetting::updateOrCreate(
-            ['name' => 'captcha_test_result'],
+            ['name' => 'captcha_authentication_result'],
             ['value' => '0']
         );
+
+        // 統一キー設定（プロバイダー共通）
+        SecuritySetting::updateOrCreate(
+            ['name' => 'captcha_site_key'],
+            ['value' => '']
+        );
+
+        SecuritySetting::updateOrCreate(
+            ['name' => 'captcha_secret_key'],
+            ['value' => '']
+        );
+
+        
 
         // IP Restriction settings
         SecuritySetting::updateOrCreate(

@@ -53,8 +53,8 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
             'captcha_comment_form' => filter_var($this->input('captcha_comment_form'), FILTER_VALIDATE_BOOLEAN),
             // Notification settings
             'notification_enabled' => filter_var($this->input('notification_enabled'), FILTER_VALIDATE_BOOLEAN),
-            // CAPTCHA validation status
-            'captcha_validation_status' => filter_var($this->input('captcha_validation_status'), FILTER_VALIDATE_BOOLEAN),
+            // CAPTCHA authentication result
+            'captcha_authentication_result' => filter_var($this->input('captcha_authentication_result'), FILTER_VALIDATE_BOOLEAN),
         ]);
     }
 

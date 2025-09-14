@@ -36,8 +36,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @csrf
         @method('POST')
         
-        <!-- Hidden field to track CAPTCHA validation status -->
-        <input type="hidden" id="captcha-validation-status" name="captcha_validation_status" value="{{ $captchaTestResult ? '1' : '0' }}">
+        <!-- Hidden field to track CAPTCHA authentication result -->
+        <input type="hidden" id="captcha-authentication-result" name="captcha_authentication_result" value="{{ $captchaTestResult ? '1' : '0' }}">
         
         <!-- CAPTCHA test required notice for enabled CAPTCHA -->
         @if($settings['captcha_enabled'] && !$captchaTestResult)

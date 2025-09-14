@@ -161,7 +161,7 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         }
         
         // フォームから送信されたテスト結果を確認
-        $submittedTestResult = $request->boolean('captcha_validation_status');
+        $submittedTestResult = $request->boolean('captcha_authentication_result');
         
         // テスト結果をデータベースに保存（フォームから送信された値を使用）
         if ($submittedTestResult) {

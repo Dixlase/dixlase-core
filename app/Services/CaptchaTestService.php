@@ -689,7 +689,7 @@ class CaptchaTestService
      */
     public function saveCaptchaTestResult(string $driver, bool $success, ?string $errorMessage = null): void
     {
-        $testKey = "captcha_test_result";
+        $testKey = "captcha_authentication_result";
         
         SecuritySetting::updateOrCreate(
             ['name' => $testKey],
@@ -709,7 +709,7 @@ class CaptchaTestService
         }
         
         // データベースから取得
-        $testKey = "captcha_test_result";
+        $testKey = "captcha_authentication_result";
         $setting = SecuritySetting::where('name', $testKey)->first();
         
         if (!$setting) {
@@ -724,7 +724,7 @@ class CaptchaTestService
      */
     public function getCaptchaTestResult(string $driver): ?array
     {
-        $testKey = "captcha_test_result";
+        $testKey = "captcha_authentication_result";
         $setting = SecuritySetting::where('name', $testKey)->first();
         
         if (!$setting) {
@@ -752,18 +752,6 @@ class CaptchaTestService
         
         // その他の場合は未実行として扱う
         return null;
-    }
-
-    /**
-     * 設定変更時にテスト結果をリセット
-     */
-    public function resetCaptchaTestResults(): void
-    {
-        $testKey = "captcha_test_result";
-        SecuritySetting::updateOrCreate(
-            ['name' => $testKey],
-            ['value' => '0']
-        );
     }
 
     /**
