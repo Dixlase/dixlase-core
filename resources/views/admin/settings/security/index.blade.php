@@ -32,6 +32,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     captchaDriver: '{{ old('captcha_driver', $settings['captcha_driver']) }}',
     captchaVersion: '{{ old('captcha_google_version', $settings['captcha_google_version']) }}',
     captchaSettingsChanged: false,
+    $watch: {
+        captchaVersion() {
+            console.log('DEBUG: Alpine.js captchaVersion watcher triggered:', this.captchaVersion);
+        },
+        captchaSettingsChanged() {
+            console.log('DEBUG: Alpine.js captchaSettingsChanged watcher triggered:', this.captchaSettingsChanged);
+        }
+    }
 }">
     <form id="security-settings-form" method="POST" action="{{ route('admin.settings.security.update') }}" onsubmit="debugFormSubmission(event)">
         @csrf
@@ -313,6 +321,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                                 onclick="validateCaptchaWidget()"
                                 x-show="!captchaSettingsChanged && captchaEnabled && captchaDriver && (captchaDriver === 'google_enterprise' || (captchaDriver === 'google' && captchaVersion !== 'v2_checkbox'))"
+                                x-init="console.log('DEBUG: Button x-init - captchaSettingsChanged:', captchaSettingsChanged, 'captchaEnabled:', captchaEnabled, 'captchaDriver:', captchaDriver, 'captchaVersion:', captchaVersion)"
                                 @if(!$settings['captcha_enabled'] || empty($settings['captcha_driver']) || empty($settings['captcha_site_key']) || empty($settings['captcha_secret_key']) || ($settings['captcha_driver'] === 'google_enterprise' && empty($settings['captcha_google_project_id'])) || ($settings['captcha_driver'] === 'google' && $settings['captcha_google_version'] === 'v2_checkbox'))
                                 style="display: none;"
                                 @endif>
@@ -1246,23 +1255,51 @@ document.addEventListener('DOMContentLoaded', function() {
     const versionSelect = document.getElementById('captcha_google_version');
     if (versionSelect) {
         versionSelect.addEventListener('change', function() {
-            // Alpine.jsのcaptchaVersionも更新
+            console.log('DEBUG: Version change detected, from:', this.dataset.previousValue, 'to:', this.value);
+            
+            // まず最初にAlpine.jsのcaptchaSettingsChangedを更新してボタンを非表示にする
             try {
                 const alpineElement = document.querySelector('[x-data]');
                 if (alpineElement && alpineElement.__x && alpineElement.__x.$data) {
-                    alpineElement.__x.$data.captchaVersion = this.value;
+                    console.log('DEBUG: Before Alpine update - captchaVersion:', alpineElement.__x.$data.captchaVersion, 'captchaSettingsChanged:', alpineElement.__x.$data.captchaSettingsChanged);
+                    
+                    // 設定変更フラグを先に設定してボタンを非表示に
+                    alpineElement.__x.$data.captchaSettingsChanged = true;
+                    
+                    // 少し遅延してからバージョンを更新（Alpine.jsの反応性を制御）
+                    setTimeout(() => {
+                        alpineElement.__x.$data.captchaVersion = this.value;
+                        console.log('DEBUG: After Alpine update - captchaVersion:', alpineElement.__x.$data.captchaVersion, 'captchaSettingsChanged:', alpineElement.__x.$data.captchaSettingsChanged);
+                    }, 10);
                 }
             } catch (error) {
                 console.log('Alpine.js data update failed:', error);
+            }
+            
+            // ボタンの表示状態をチェック
+            const button = document.getElementById('captcha-validate-button');
+            if (button) {
+                console.log('DEBUG: Button display before hide:', window.getComputedStyle(button).display);
+                console.log('DEBUG: Button visibility before hide:', window.getComputedStyle(button).visibility);
             }
             
             // バージョン変更時にCAPTCHAテスト結果メッセージを非表示にする
             hideTestResult();
             console.log('DEBUG: Hidden CAPTCHA test result message due to version change');
             
-            // バージョン変更時にCAPTCHA認証ボタンを非表示にする
-            hideTestButton();
-            console.log('DEBUG: Hidden CAPTCHA validation button due to version change');
+            // バージョン変更時にCAPTCHA認証ボタンを非表示にする（Alpine.jsの後に実行）
+            setTimeout(() => {
+                hideTestButton();
+                console.log('DEBUG: Hidden CAPTCHA validation button due to version change (delayed)');
+            }, 50);
+            
+            // ボタンの表示状態を再チェック
+            if (button) {
+                setTimeout(() => {
+                    console.log('DEBUG: Button display after hide (delayed):', window.getComputedStyle(button).display);
+                    console.log('DEBUG: Button visibility after hide (delayed):', window.getComputedStyle(button).visibility);
+                }, 200);
+            }
             
             // バージョン変更時にCAPTCHA認証結果を0にリセット
             resetCaptchaAuthenticationResult('version change');
