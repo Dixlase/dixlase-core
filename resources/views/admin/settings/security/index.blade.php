@@ -34,6 +34,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <form id="security-settings-form" method="POST" action="{{ route('admin.settings.security.update') }}">
         @csrf
         @method('POST')
+        
+        <!-- CAPTCHA validation status hidden fields -->
+        <input type="hidden" id="captcha_validation_status" name="captcha_validation_status" value="{{ session('captcha_just_saved') ? '1' : '0' }}">
+        <input type="hidden" id="captcha_validation_token" name="captcha_validation_token" value="{{ session('captcha_just_saved') ? 'saved_token' : '' }}">
 
         
         <!-- システムエラー通知設定 -->
@@ -291,73 +295,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <!-- 統合CAPTCHAテスト -->
                 <div class="mt-6" x-show="captchaEnabled">
 
-                    <!-- テスト結果表示 -->
-                    <div :id="`captcha-test-status-${captchaDriver}`" class="my-4 p-3 border rounded-lg 
-                        @php
-                        // 現在選択されているドライバーのテスト結果を取得
-                        $currentDriver = old('captcha_driver', $settings['captcha_driver']);
-                        $testResult = $captchaTestResults[$currentDriver] ?? null;
-                            if ($testResult && $testResult['success'] && !($testResult['is_reset'] ?? false)) {
-                                echo 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
-                            } elseif ($testResult && !$testResult['success'] && !($testResult['is_reset'] ?? false)) {
-                                echo 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800';
-                            } else {
-                                echo 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800';
-                            }
-                        @endphp
-                    " x-show="captchaEnabled">
-                        <div class="flex items-center">
-                            @php
-                            $testResult = $captchaTestResults[$currentDriver] ?? null;
-                            
-                            // デバッグ用: セッションとテスト結果の状態を表示
-                            if (config('app.debug')) {
-                                echo "<!-- DEBUG: Session captcha_test_result: " . json_encode(session('captcha_test_result')) . " -->";
-                                echo "<!-- DEBUG: Current driver: {$currentDriver} -->";
-                                echo "<!-- DEBUG: Test result for {$currentDriver}: " . json_encode($testResult) . " -->";
-                                echo "<!-- DEBUG: is_reset flag: " . json_encode($testResult['is_reset'] ?? 'not set') . " -->";
-                            }
-                            
-                            if ($testResult && $testResult['success'] && !($testResult['is_reset'] ?? false)) {
-                                $iconClass = 'fas fa-check-circle text-green-500';
-                                $textClass = 'text-green-700 dark:text-green-300';
-                                $statusText = __('admin.settings.security.captcha_test_status.passed_initial');
-                                $showProviderName = false;
-                            } elseif ($testResult && !$testResult['success'] && !($testResult['is_reset'] ?? false)) {
-                                $iconClass = 'fas fa-times-circle text-red-500';
-                                $textClass = 'text-red-700 dark:text-red-300';
-                                $statusText = __('admin.settings.security.captcha_test_status.failed');
-                                $showProviderName = false;
-                            } else {
-                                $iconClass = 'fas fa-clock text-yellow-500';
-                                $textClass = 'text-yellow-700 dark:text-yellow-300';
-                                $providerEnum = \App\Enums\CaptchaProvider::fromString($currentDriver);
-                                $providerName = $providerEnum ? $providerEnum->label() : $currentDriver;
-                                $setupUrl = $providerEnum ? $providerEnum->getSetupUrl() : '#';
-                                $statusText = __('admin.settings.security.captcha_test_status.not_tested_with_provider', [
-                                    'provider' => $providerName,
-                                    'link' => $setupUrl
-                                ]);
-                                $showProviderName = false;
-                            }
-                            
-                            // プロバイダー名の取得
-                            $providerEnum = \App\Enums\CaptchaProvider::fromString($currentDriver);
-                            $providerName = $providerEnum ? $providerEnum->label() : $currentDriver;
-                            @endphp
-                            <i class="mr-2 {{ $iconClass }}"></i>
-                            <span class="text-sm {{ $textClass }}">
-                                @if($showProviderName)
-                                    {{ $providerName }}: {{ $statusText }}
-                                    @if($testResult && isset($testResult['tested_at']))
-                                        <span class="text-xs opacity-75">({{ $testResult['tested_at'] }})</span>
-                                    @endif
-                                @else
-                                    {!! $statusText !!}
-                                @endif
-                            </span>
-                        </div>
-                    </div>
                     <!-- Live CAPTCHA Widget Validation -->
                     <div class="mt-4 p-4 border rounded-lg bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
                         <h4 class="text-sm font-medium mb-3 text-blue-800 dark:text-blue-200">
@@ -366,6 +303,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <p class="text-xs text-blue-600 dark:text-blue-300 mb-3">
                             {{ __('admin.settings.security.captcha_live_validation_description') }}
                         </p>
+                        
+                        <!-- Provider Information -->
+                        <div id="provider-info" class="mb-3">
+                            <div class="text-xs text-blue-700 dark:text-blue-300">
+                                @php
+                                $currentDriver = old('captcha_driver', $settings['captcha_driver']);
+                                $providerEnum = \App\Enums\CaptchaProvider::fromString($currentDriver);
+                                $providerName = $providerEnum ? $providerEnum->label() : $currentDriver;
+                                $setupUrl = $providerEnum ? $providerEnum->getSetupUrl() : '#';
+                                @endphp
+    
+                                <a id="provider-setup-link" href="{{ $setupUrl }}" target="_blank" class="text-blue-300 hover:text-blue-100 underline">
+                                    <span id="provider-name">{{ $providerName }}</span>の設定を確認
+                                </a>
+                            </div>
+                        </div>
                         
                         <!-- CAPTCHA Widget Container -->
                         <div id="captcha-widget-container" class="mb-4">
@@ -657,27 +610,6 @@ function getProviderInfo(driver) {
     return providers[driver] || { name: driver, url: '#' };
 }
 
-// プロバイダー切り替え時とフィールド変更時のテスト結果リセット関数
-function resetCaptchaTestResult(driver) {
-    const statusElement = document.getElementById(`captcha-test-status-${driver}`);
-    if (statusElement) {
-        const providerInfo = getProviderInfo(driver);
-        
-        statusElement.className = 'my-4 p-3 border rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800';
-        const notTestedMessage = '@lang("admin.settings.security.captcha_test_status.not_tested")';
-        const setupLinkText = '@lang("admin.settings.security.captcha_test_status.setup_link_text")';
-        
-        statusElement.innerHTML = `
-            <div class="flex items-center">
-                <i class="mr-2 fas fa-clock text-yellow-500"></i>
-                <div class="text-sm text-yellow-700 dark:text-yellow-300">
-                    <div class="mb-1">${notTestedMessage}</div>
-                    <div><a href="${providerInfo.url}" target="_blank" class="underline hover:text-yellow-100">${setupLinkText.replace(':provider', providerInfo.name)}</a></div>
-                </div>
-            </div>
-        `;
-    }
-}
 
 // セッションからテスト結果をクリアする関数
 function clearCaptchaTestSession(driver) {
@@ -748,10 +680,10 @@ function loadGoogleRecaptchaWidget() {
     script.id = scriptId;
     
     if (version === 'v3') {
-        script.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`;
+        script.src = `//www.google.com/recaptcha/api.js?render=${siteKey}`;
         script.onload = () => renderV3Widget(siteKey);
     } else {
-        script.src = 'https://www.google.com/recaptcha/api.js';
+        script.src = '//www.google.com/recaptcha/api.js';
         script.onload = () => renderV2Widget(siteKey, version);
     }
     
@@ -762,15 +694,49 @@ function loadGoogleRecaptchaWidget() {
 function renderV3Widget(siteKey) {
     const container = document.getElementById('captcha-widget-container');
     container.innerHTML = `
-        <div class="text-sm text-gray-600 mb-2">reCAPTCHA v3 (自動実行)</div>
-        <div id="v3-status" class="p-2 bg-gray-100 rounded text-sm">準備中...</div>
         <input type="hidden" id="g-recaptcha-response-v3" name="g-recaptcha-response" value="">
     `;
     
-    grecaptcha.ready(function() {
-        document.getElementById('v3-status').textContent = 'v3ウィジェット準備完了 - 認証ボタンをクリックしてください';
-        currentCaptchaWidget = 'v3';
-    });
+    // reCAPTCHAスクリプトエラーを監視
+    const errorHandler = function(event) {
+        if (event.message && event.message.includes('Invalid site key')) {
+            console.error('Caught v3 site key error:', event.message);
+            updateValidationStatus('failed');
+            container.innerHTML = '<div class="text-red-600 text-sm">v3サイトキーが無効です。正しいv3用のキーを入力してください。<br>現在のキー: ' + siteKey.substring(0, 20) + '...</div>';
+            event.preventDefault();
+            // エラーハンドラーを削除
+            window.removeEventListener('error', errorHandler);
+            return true;
+        }
+    };
+    window.addEventListener('error', errorHandler);
+    
+    try {
+        grecaptcha.ready(function() {
+            // v3キーの有効性を事前チェック
+            try {
+                grecaptcha.execute(siteKey, {action: 'test'}).then(function(token) {
+                    // キーが有効な場合
+                    currentCaptchaWidget = 'v3';
+                }).catch(function(error) {
+                    // キーが無効な場合
+                    console.error('Invalid v3 site key:', error);
+                    updateValidationStatus('failed');
+                    container.innerHTML = '<div class="text-red-600 text-sm">v3サイトキーが無効です。正しいv3用のキーを入力してください。<br>現在のキー: ' + siteKey.substring(0, 20) + '...</div>';
+                    // エラーハンドラーを削除
+                    window.removeEventListener('error', errorHandler);
+                });
+            } catch (error) {
+                console.error('reCAPTCHA v3 execution error:', error);
+                updateValidationStatus('failed');
+                container.innerHTML = '<div class="text-red-600 text-sm">reCAPTCHA v3の実行に失敗しました。サイトキーを確認してください。</div>';
+            }
+        });
+    } catch (error) {
+        console.error('reCAPTCHA v3 initialization error:', error);
+        updateValidationStatus('failed');
+        container.innerHTML = '<div class="text-red-600 text-sm">reCAPTCHA v3の初期化に失敗しました。サイトキーを確認してください。</div>';
+    }
 }
 
 // v2ウィジェットをレンダリング
@@ -780,31 +746,39 @@ function renderV2Widget(siteKey, version) {
     
     if (version === 'v2_invisible') {
         container.innerHTML = `
-            <div class="text-sm text-gray-600 mb-2">reCAPTCHA v2 非表示</div>
             <div id="${widgetId}"></div>
             <input type="hidden" id="g-recaptcha-response-v2" name="g-recaptcha-response" value="">
-            <p class="text-xs text-gray-500 mt-2">v2非表示モード: 認証ボタンをクリックして実行してください</p>
         `;
     } else {
         container.innerHTML = `
-            <div class="text-sm text-gray-600 mb-2">reCAPTCHA ${version}</div>
             <div id="${widgetId}"></div>
             <input type="hidden" id="g-recaptcha-response-v2" name="g-recaptcha-response" value="">
         `;
     }
     
     grecaptcha.ready(function() {
-        const widgetOptions = {
-            'sitekey': siteKey,
-            'callback': onRecaptchaSuccess,
-            'expired-callback': onRecaptchaExpired
-        };
-        
-        if (version === 'v2_invisible') {
-            widgetOptions['size'] = 'invisible';
+        try {
+            const widgetOptions = {
+                'sitekey': siteKey,
+                'callback': onRecaptchaSuccess,
+                'expired-callback': onRecaptchaExpired,
+                'error-callback': function() {
+                    console.error('reCAPTCHA v2 error: Invalid site key or configuration');
+                    updateValidationStatus('failed');
+                    container.innerHTML = '<div class="text-red-600 text-sm">v2サイトキーが無効です。正しいv2用のキーを入力してください。</div>';
+                }
+            };
+            
+            if (version === 'v2_invisible') {
+                widgetOptions['size'] = 'invisible';
+            }
+            
+            currentCaptchaWidget = grecaptcha.render(widgetId, widgetOptions);
+        } catch (error) {
+            console.error('reCAPTCHA v2 render error:', error);
+            updateValidationStatus('failed');
+            container.innerHTML = '<div class="text-red-600 text-sm">reCAPTCHA v2の初期化に失敗しました。サイトキーを確認してください。</div>';
         }
-        
-        currentCaptchaWidget = grecaptcha.render(widgetId, widgetOptions);
     });
 }
 
@@ -820,8 +794,8 @@ function onRecaptchaSuccess(token) {
         v3Field.value = token;
     }
     
-    captchaValidated = true;
-    updateValidationStatus('success');
+    // サーバーでトークンを検証
+    validateCaptchaToken(token);
 }
 
 // reCAPTCHA期限切れコールバック
@@ -887,7 +861,15 @@ function updateValidationStatus(status) {
             html = `
                 <div class="flex items-center text-green-600 dark:text-green-400">
                     <i class="fas fa-check-circle mr-2"></i>
-                    <span class="text-sm">{{ __('admin.settings.security.captcha_validation_success') }}</span>
+                    <span class="text-sm">{{ __('admin.settings.security.validation.captcha_validation_success_fresh') }}</span>
+                </div>
+            `;
+            break;
+        case 'authenticated':
+            html = `
+                <div class="flex items-center text-blue-600 dark:text-blue-400">
+                    <i class="fas fa-shield-alt mr-2"></i>
+                    <span class="text-sm">{{ __('admin.settings.security.validation.captcha_validation_authenticated') }}</span>
                 </div>
             `;
             break;
@@ -916,13 +898,37 @@ function validateCaptchaWidget() {
     const driver = document.getElementById('captcha_driver').value;
     const version = document.getElementById('captcha_google_version').value;
     
+    console.log('validateCaptchaWidget called:', {driver, version, currentCaptchaWidget});
+    
     if (driver === 'google' && version === 'v3') {
         // v3の場合は手動で実行
         const siteKey = document.getElementById('captcha_google_site_key').value;
+        console.log('Executing v3 with siteKey:', siteKey.substring(0, 20) + '...');
+        
+        // v3実行前にエラーハンドラーを設定
+        const v3ErrorHandler = function(event) {
+            if (event.message && event.message.includes('Invalid site key')) {
+                console.error('Caught v3 execution error:', event.message);
+                updateValidationStatus('failed');
+                alert('v3サイトキーが無効です。正しいv3用のキーを入力してください。\n現在のキー: ' + siteKey.substring(0, 20) + '...');
+                window.removeEventListener('error', v3ErrorHandler);
+                event.preventDefault();
+                return true;
+            }
+        };
+        window.addEventListener('error', v3ErrorHandler);
+        
         grecaptcha.ready(function() {
             grecaptcha.execute(siteKey, {action: 'validate_settings'}).then(function(token) {
+                console.log('v3 execution successful, token received');
                 document.getElementById('g-recaptcha-response-v3').value = token;
                 validateCaptchaToken(token);
+                window.removeEventListener('error', v3ErrorHandler);
+            }).catch(function(error) {
+                console.error('reCAPTCHA v3 execution error:', error);
+                updateValidationStatus('failed');
+                alert('reCAPTCHA v3の実行に失敗しました。サイトキーが正しいか確認してください。\n現在のキー: ' + siteKey.substring(0, 20) + '...');
+                window.removeEventListener('error', v3ErrorHandler);
             });
         });
     } else if (driver === 'google' && version === 'v2_invisible') {
@@ -982,16 +988,47 @@ function validateCaptchaToken(token) {
         if (data.success) {
             captchaValidated = true;
             updateValidationStatus('success');
+            
+            // hiddenフィールドに検証結果を保存
+            document.getElementById('captcha_validation_status').value = '1';
+            document.getElementById('captcha_validation_token').value = token;
         } else {
-            captchaValidated = false;
-            updateValidationStatus('failed');
+            resetValidationState();
         }
     })
     .catch(error => {
         console.error('CAPTCHA validation error:', error);
-        captchaValidated = false;
-        updateValidationStatus('failed');
+        resetValidationState();
     });
+}
+
+// リアルタイム監視用の関数（グローバルスコープに移動）
+function resetValidationState() {
+    captchaValidated = false;
+    updateValidationStatus('required');
+    
+    // hiddenフィールドをリセット
+    document.getElementById('captcha_validation_status').value = '0';
+    document.getElementById('captcha_validation_token').value = '';
+    
+    // 既存のreCAPTCHAウィジェットをクリア
+    if (typeof grecaptcha !== 'undefined' && currentCaptchaWidget) {
+        try {
+            // v2ウィジェットの場合のみリセット
+            const version = document.getElementById('captcha_google_version').value;
+            if (version !== 'v3') {
+                grecaptcha.reset(currentCaptchaWidget);
+            }
+        } catch (error) {
+            console.log('reCAPTCHA reset failed:', error);
+        }
+    }
+    
+    // ウィジェットIDをクリア
+    currentCaptchaWidget = null;
+    
+    // ウィジェットを再読み込み
+    loadCaptchaWidget();
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -1001,12 +1038,11 @@ document.addEventListener('DOMContentLoaded', function() {
         driverSelect.addEventListener('change', function() {
             const newDriver = this.value;
             
-            // テスト結果をリセット（セッションもクリア）
-            resetCaptchaTestResult(newDriver);
-            clearCaptchaTestSession(newDriver);
+            // プロバイダー情報を更新
+            updateProviderInfo(newDriver);
             
-            // CAPTCHAウィジェットを再読み込み
-            loadCaptchaWidget();
+            // 認証状態をリセット
+            resetValidationState();
         });
     }
     
@@ -1014,17 +1050,68 @@ document.addEventListener('DOMContentLoaded', function() {
     const versionSelect = document.getElementById('captcha_google_version');
     if (versionSelect) {
         versionSelect.addEventListener('change', function() {
-            captchaValidated = false;
-            loadCaptchaWidget();
+            resetValidationState();
+            
+            // Alpine.jsのcaptchaVersionも更新
+            try {
+                const alpineElement = document.querySelector('[x-data]');
+                if (alpineElement && alpineElement.__x && alpineElement.__x.$data) {
+                    alpineElement.__x.$data.captchaVersion = this.value;
+                }
+            } catch (error) {
+                console.log('Alpine.js data update failed:', error);
+            }
         });
     }
     
-    // キー入力時のウィジェット再読み込み
+    // プロバイダー情報更新関数
+    function updateProviderInfo(driver) {
+        const providerInfo = getProviderInfo(driver);
+        const providerNameElement = document.getElementById('provider-name');
+        const providerLinkElement = document.getElementById('provider-setup-link');
+        
+        if (providerNameElement && providerLinkElement) {
+            providerNameElement.textContent = providerInfo.name;
+            providerLinkElement.href = providerInfo.url;
+            providerLinkElement.textContent = `(${providerInfo.name}の設定を確認)`;
+        }
+    }
+    
+    // サイトキー変更監視（リアルタイム）
     const siteKeyInput = document.getElementById('captcha_google_site_key');
     if (siteKeyInput) {
-        siteKeyInput.addEventListener('blur', function() {
-            if (this.value) {
-                loadCaptchaWidget();
+        let siteKeyOriginalValue = siteKeyInput.value;
+        
+        siteKeyInput.addEventListener('input', function() {
+            if (this.value !== siteKeyOriginalValue) {
+                resetValidationState();
+                siteKeyOriginalValue = this.value;
+            }
+        });
+    }
+    
+    // シークレットキー変更監視（リアルタイム）
+    const secretKeyInput = document.getElementById('captcha_google_secret_key');
+    if (secretKeyInput) {
+        let secretKeyOriginalValue = secretKeyInput.value;
+        
+        secretKeyInput.addEventListener('input', function() {
+            if (this.value !== secretKeyOriginalValue) {
+                resetValidationState();
+                secretKeyOriginalValue = this.value;
+            }
+        });
+    }
+    
+    // 最小スコア変更監視（リアルタイム）
+    const minScoreInput = document.getElementById('captcha_google_min_score');
+    if (minScoreInput) {
+        let minScoreOriginalValue = minScoreInput.value;
+        
+        minScoreInput.addEventListener('input', function() {
+            if (this.value !== minScoreOriginalValue) {
+                resetValidationState();
+                minScoreOriginalValue = this.value;
             }
         });
     }
@@ -1034,15 +1121,12 @@ document.addEventListener('DOMContentLoaded', function() {
         loadCaptchaWidget();
     }
     
-    // フィールド変更時のリセット
-    const inputs = document.querySelectorAll('input[name^="captcha_"]');
-    inputs.forEach(input => {
-        input.addEventListener('change', function() {
-            // 現在のドライバーのテスト結果をリセット
-            const driver = document.querySelector('select[name="captcha_driver"]').value;
-            resetCaptchaTestResult(driver);
-            clearCaptchaTestSession(driver);
-        });
-    });
+    // 保存後のページ読み込み時に認証状態を確認
+    const initialValidationStatus = document.getElementById('captcha_validation_status').value;
+    if (initialValidationStatus === '1') {
+        captchaValidated = true;
+        updateValidationStatus('authenticated');
+    }
+    
 });
 @endpush

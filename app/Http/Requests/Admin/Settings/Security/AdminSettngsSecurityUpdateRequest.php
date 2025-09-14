@@ -53,6 +53,8 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
             'captcha_comment_form' => filter_var($this->input('captcha_comment_form'), FILTER_VALIDATE_BOOLEAN),
             // Notification settings
             'notification_enabled' => filter_var($this->input('notification_enabled'), FILTER_VALIDATE_BOOLEAN),
+            // CAPTCHA validation status
+            'captcha_validation_status' => filter_var($this->input('captcha_validation_status'), FILTER_VALIDATE_BOOLEAN),
         ]);
     }
 
@@ -93,6 +95,11 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
         // CAPTCHAが有効な場合の条件付きバリデーション
         if ($this->boolean('captcha_enabled')) {
             $captchaDriver = $this->input('captcha_driver', 'google');
+            
+            // CAPTCHA認証が必須
+            $rules['captcha_validation_status'] = 'required|boolean|accepted';
+            $rules['captcha_validation_token'] = 'required|string';
+            
             // Google reCAPTCHA条件付きバリデーション
             if ($this->input('captcha_enabled') && ($this->input('captcha_driver') === 'google' || $this->input('captcha_driver') === 'google_enterprise')) {
                 $rules['captcha_google_site_key'] = 'required|string';
@@ -110,6 +117,8 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
             $rules['captcha_google_site_key'] = 'nullable|string|max:255';
             $rules['captcha_google_secret_key'] = 'nullable|string|max:255';
             $rules['captcha_google_project_id'] = 'nullable|string|max:255';
+            $rules['captcha_validation_status'] = 'nullable|boolean';
+            $rules['captcha_validation_token'] = 'nullable|string';
         }
 
         return $rules;
@@ -133,6 +142,9 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
             'captcha_google_secret_key.required' => __('admin.security.validation.captcha_google_secret_key_required'),
             'captcha_turnstile_site_key.required' => __('admin.security.validation.captcha_turnstile_site_key_required'),
             'captcha_turnstile_secret_key.required' => __('admin.security.validation.captcha_turnstile_secret_key_required'),
+            // CAPTCHA認証バリデーションメッセージ
+            'captcha_validation_status.accepted' => __('admin.security.validation.captcha_validation_required'),
+            'captcha_validation_token.required' => __('admin.security.validation.captcha_validation_required'),
         ];
     }
 }
