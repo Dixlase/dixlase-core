@@ -700,6 +700,28 @@ class CaptchaTestService
     /**
      * テスト結果をデータベースから取得
      */
+    public function getTestResult(): bool
+    {
+        // セッションから取得を試行
+        $sessionResult = session('captcha_test_result');
+        if ($sessionResult !== null) {
+            return (bool) $sessionResult;
+        }
+        
+        // データベースから取得
+        $testKey = "captcha_test_result";
+        $setting = SecuritySetting::where('name', $testKey)->first();
+        
+        if (!$setting) {
+            return false;
+        }
+        
+        return (bool) $setting->value;
+    }
+
+    /**
+     * テスト結果をデータベースから取得（詳細版）
+     */
     public function getCaptchaTestResult(string $driver): ?array
     {
         $testKey = "captcha_test_result";

@@ -31,14 +31,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     captchaDriver: '{{ old('captcha_driver', $settings['captcha_driver']) }}',
     captchaVersion: '{{ old('captcha_google_version', $settings['captcha_google_version']) }}',
 }">
-    <form id="security-settings-form" method="POST" action="{{ route('admin.settings.security.update') }}">
+    <form id="security-settings-form" method="POST" action="{{ route('admin.settings.security.update') }}" onsubmit="debugFormSubmission(event)">
         @csrf
         @method('POST')
         
-        <!-- CAPTCHA validation status hidden fields -->
-        <input type="hidden" id="captcha_validation_status" name="captcha_validation_status" value="{{ session('captcha_just_saved') ? '1' : '0' }}">
+        <!-- Hidden field to track CAPTCHA validation status -->
+        <input type="hidden" id="captcha-validation-status" name="captcha_validation_status" value="{{ $captchaTestResult ? '1' : '0' }}">
+        
+        <!-- CAPTCHA test required notice for enabled CAPTCHA -->
+        @if($settings['captcha_enabled'] && !$captchaTestResult)
+        <div class="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+                <p class="text-sm text-yellow-800 dark:text-yellow-200 font-medium">
+                    {{ __('admin.security.validation.captcha_test_required') }}
+                </p>
+            </div>
+        </div>
+        @endif
+        
         <input type="hidden" id="captcha_validation_token" name="captcha_validation_token" value="{{ session('captcha_just_saved') ? 'saved_token' : '' }}">
-
         
         <!-- システムエラー通知設定 -->
         <div class="my-6 pt-6">
@@ -127,6 +141,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 'value' => old('captcha_enabled', $settings['captcha_enabled']),
                 'xModel' => 'captchaEnabled'
             ])
+            
+            <!-- CAPTCHA有効化時のメッセージ -->
+            <div id="captcha-enabled-notice" class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg" style="display: none;">
+                <div class="flex items-center text-blue-600 dark:text-blue-400">
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="text-sm font-medium">CAPTCHAを有効にしました</span>
+                </div>
+                <div class="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                    各項目をすべて入力してから保存し、保存後に認証テストを行ってください。
+                </div>
+            </div>
 
             <div class="mt-4 space-y-4">
                 @include('components::form.label', [
@@ -146,9 +173,31 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     'xModel' => 'captchaDriver'
                 ])
 
+                <!-- Common CAPTCHA Settings -->
+                @include('components::form.label', [
+                    'for' => 'captcha_site_key',
+                    'text' => __('admin.settings.security.captcha_site_key'),
+                ])
+                @include('components::form.text', [
+                    'id' => 'captcha_site_key',
+                    'name' => 'captcha_site_key',
+                    'value' => old('captcha_site_key', $settings['captcha_site_key'] ?? ''),
+                    'type' => 'password',
+                ])
+
+                @include('components::form.label', [
+                    'for' => 'captcha_secret_key',
+                    'text' => __('admin.settings.security.captcha_secret_key'),
+                ])
+                @include('components::form.text', [
+                    'id' => 'captcha_secret_key',
+                    'name' => 'captcha_secret_key',
+                    'value' => old('captcha_secret_key', $settings['captcha_secret_key'] ?? ''),
+                    'type' => 'password',
+                ])
+
                 <!-- Google reCAPTCHA Settings -->
                 <div x-show="captchaDriver === 'google'">
-
                     @include('components::form.label', [
                         'for' => 'captcha_google_version',
                         'text' => __('admin.settings.security.captcha_google_version'),
@@ -160,165 +209,66 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         'options' => __('admin.settings.security.captcha_version_options'),
                         'xModel' => 'captchaVersion'
                     ])
-
-                    <div x-show="captchaVersion === 'v3'" class="mt-4">
-                        @include('components::form.label', [
-                            'for' => 'captcha_google_min_score',
-                            'text' => __('admin.settings.security.captcha_google_min_score'),
-                        ])
-                        @include('components::form.text', [
-                            'id' => 'captcha_google_min_score',
-                            'name' => 'captcha_google_min_score',
-                            'value' => old('captcha_google_min_score', $settings['captcha_google_min_score']),
-                            'type' => 'number',
-                            'step' => '0.1',
-                            'min' => '0',
-                            'max' => '1',
-                        ])
-                        <p class="text-sm text-gray-200 mt-1">
-                            {{ __('admin.settings.security.captcha_min_score_description') }}
-                        </p>
-                    </div>
-                    
-                    @include('components::form.label', [
-                        'for' => 'captcha_google_site_key',
-                        'text' => __('admin.settings.security.captcha_google_site_key'),
-                    ])
-                    @include('components::form.text', [
-                        'id' => 'captcha_google_site_key',
-                        'name' => 'captcha_google_site_key',
-                        'value' => old('captcha_google_site_key', $settings['captcha_google_site_key']),
-                        'placeholder' => '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI',
-                        'type' => 'password',
-                    ])
-
-                    @include('components::form.label', [
-                        'for' => 'captcha_google_secret_key',
-                        'text' => __('admin.settings.security.captcha_google_secret_key'),
-                    ])
-                    @include('components::form.text', [
-                        'id' => 'captcha_google_secret_key',
-                        'name' => 'captcha_google_secret_key',
-                        'value' => old('captcha_google_secret_key', $settings['captcha_google_secret_key']),
-                        'placeholder' => '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe',
-                        'type' => 'password',
-                    ])
-
                 </div>
 
                 <!-- Google reCAPTCHA Enterprise Settings -->
                 <div x-show="captchaDriver === 'google_enterprise'">
-                    <div class="mt-4">
-                        @include('components::form.label', [
-                            'for' => 'captcha_google_min_score',
-                            'text' => __('admin.settings.security.captcha_google_min_score'),
-                        ])
-                        @include('components::form.text', [
-                            'id' => 'captcha_google_min_score',
-                            'name' => 'captcha_google_min_score',
-                            'value' => old('captcha_google_min_score', $settings['captcha_google_min_score']),
-                            'type' => 'number',
-                            'step' => '0.1',
-                            'min' => '0',
-                            'max' => '1',
-                        ])
-                        <p class="text-sm text-gray-200 mt-1">
-                            {{ __('admin.settings.security.captcha_min_score_description') }}
-                        </p>
-                    </div>
-
                     @include('components::form.label', [
-                        'for' => 'captcha_google_enterprise_site_key',
-                        'text' => __('admin.settings.security.captcha_google_enterprise_site_key'),
-                    ])
-                    @include('components::form.text', [
-                        'id' => 'captcha_google_enterprise_site_key',
-                        'name' => 'captcha_google_enterprise_site_key',
-                        'value' => old('captcha_google_enterprise_site_key', $settings['captcha_google_enterprise_site_key']),
-                        'placeholder' => '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI',
-                        'type' => 'password',
-                    ])
-
-                    @include('components::form.label', [
-                        'for' => 'captcha_google_enterprise_secret_key',
-                        'text' => __('admin.settings.security.captcha_google_enterprise_secret_key'),
-                    ])
-                    @include('components::form.text', [
-                        'id' => 'captcha_google_enterprise_secret_key',
-                        'name' => 'captcha_google_enterprise_secret_key',
-                        'value' => old('captcha_google_enterprise_secret_key', $settings['captcha_google_enterprise_secret_key']),
-                        'placeholder' => '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe',
-                        'type' => 'password',
-                    ])
-
-                    @include('components::form.label', [
-                        'for' => 'captcha_google_enterprise_project_id',
+                        'for' => 'captcha_google_project_id',
                         'text' => __('admin.settings.security.captcha_google_project_id'),
                     ])
                     @include('components::form.text', [
-                        'id' => 'captcha_google_enterprise_project_id',
+                        'id' => 'captcha_google_project_id',
                         'name' => 'captcha_google_project_id',
                         'value' => old('captcha_google_project_id', $settings['captcha_google_project_id']),
                         'placeholder' => 'your-gcp-project-id'
                     ])
-
                 </div>
 
-                <!-- Cloudflare Turnstile Settings -->
-                <div x-show="captchaDriver === 'turnstile'">
+                <!-- Min Score for Google v3 and Enterprise -->
+                <div x-show="(captchaDriver === 'google' && captchaVersion === 'v3') || captchaDriver === 'google_enterprise'" class="mt-4">
                     @include('components::form.label', [
-                        'for' => 'captcha_turnstile_site_key',
-                        'text' => __('admin.settings.security.captcha_turnstile_site_key'),
+                        'for' => 'captcha_google_min_score',
+                        'text' => __('admin.settings.security.captcha_google_min_score'),
                     ])
                     @include('components::form.text', [
-                        'id' => 'captcha_turnstile_site_key',
-                        'name' => 'captcha_turnstile_site_key',
-                        'value' => old('captcha_turnstile_site_key', $settings['captcha_turnstile_site_key']),
-                        'placeholder' => '0x4AAAAAAABkMYinukE_XyJO',
-                        'type' => 'password',
+                        'id' => 'captcha_google_min_score',
+                        'name' => 'captcha_google_min_score',
+                        'value' => old('captcha_google_min_score', $settings['captcha_google_min_score']),
+                        'type' => 'number',
+                        'step' => '0.1',
                     ])
-
-                    @include('components::form.label', [
-                        'for' => 'captcha_turnstile_secret_key',
-                        'text' => __('admin.settings.security.captcha_turnstile_secret_key'),
-                    ])
-                    @include('components::form.text', [
-                        'id' => 'captcha_turnstile_secret_key',
-                        'name' => 'captcha_turnstile_secret_key',
-                        'value' => old('captcha_turnstile_secret_key', $settings['captcha_turnstile_secret_key']),
-                        'placeholder' => '0x4AAAAAAABkMYinukE_XyJN',
-                        'type' => 'password',
-                    ])
-
+                    <p class="text-sm text-gray-200 mt-1">
+                        {{ __('admin.settings.security.captcha_min_score_description') }}
+                    </p>
                 </div>
 
-                <!-- 統合CAPTCHAテスト -->
-                <div class="mt-6" x-show="captchaEnabled">
-
-                    <!-- Live CAPTCHA Widget Validation -->
+                <!-- CAPTCHA設定保存後のテスト -->
+                <div class="mt-6" x-show="captchaEnabled" id="captcha-test-section">
+                    <!-- CAPTCHA Test Section (Only shown when CAPTCHA is enabled) -->
                     <div class="mt-4 p-4 border rounded-lg bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-                        <h4 class="text-sm font-medium mb-3 text-blue-800 dark:text-blue-200">
-                            {{ __('admin.settings.security.captcha_live_validation') }}
-                        </h4>
-                        <p class="text-xs text-blue-600 dark:text-blue-300 mb-3">
-                            {{ __('admin.settings.security.captcha_live_validation_description') }}
-                        </p>
-                        
-                        <!-- Provider Information -->
-                        <div id="provider-info" class="mb-3">
-                            <div class="text-xs text-blue-700 dark:text-blue-300">
-                                @php
-                                $currentDriver = old('captcha_driver', $settings['captcha_driver']);
-                                $providerEnum = \App\Enums\CaptchaProvider::fromString($currentDriver);
-                                $providerName = $providerEnum ? $providerEnum->label() : $currentDriver;
-                                $setupUrl = $providerEnum ? $providerEnum->getSetupUrl() : '#';
-                                @endphp
-    
-                                <a id="provider-setup-link" href="{{ $setupUrl }}" target="_blank" class="text-blue-300 hover:text-blue-100 underline">
-                                    <span id="provider-name">{{ $providerName }}</span>の設定を確認
-                                </a>
+                        <!-- Test Status Display -->
+                        @if(session('captcha_test_result.captcha_tested'))
+                        <div class="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded">
+                            <div class="flex items-center text-green-600 dark:text-green-400">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                <span class="text-sm font-medium">CAPTCHA認証テスト完了</span>
+                            </div>
+                            <div class="text-xs text-green-600 dark:text-green-400 mt-1">
+                                テスト日時: {{ session('captcha_test_result.captcha_test_date') }}
                             </div>
                         </div>
+                        @else
+                        <div id="captcha-test-required-notice" class="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
+                            <div class="flex items-center text-yellow-600 dark:text-yellow-400">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                <span class="text-sm font-medium">CAPTCHAを使用するには認証テストが必要です。</span>
+                            </div>
+                            <div class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+                                認証テストが成功したら再度保存してください。
+                            </div>
+                        </div>
+                        @endif
                         
                         <!-- CAPTCHA Widget Container -->
                         <div id="captcha-widget-container" class="mb-4">
@@ -327,9 +277,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         
                         <!-- Validation Status -->
                         <div id="captcha-validation-status" class="mb-3">
-                            <div class="flex items-center text-yellow-600 dark:text-yellow-400">
+                            <!-- Status will be updated dynamically -->
+                        </div>
+                        
+                        <!-- Settings Change Notice -->
+                        <div id="settings-change-notice" class="mb-4 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded" style="display: none;">
+                            <div class="flex items-center text-orange-600 dark:text-orange-400">
                                 <i class="fas fa-exclamation-triangle mr-2"></i>
-                                <span class="text-sm">{{ __('admin.settings.security.captcha_validation_required') }}</span>
+                                <span class="text-sm font-medium">設定が変更されました</span>
+                            </div>
+                            <div class="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                                CAPTCHAの設定を変更する場合には一度保存し、保存後に認証テストを行ってください。
+                            </div>
+                        </div>
+                        
+                        <!-- Save Required Notice -->
+                        <div id="save-required-notice" class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded" style="display: none;">
+                            <div class="flex items-center text-blue-600 dark:text-blue-400">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                <span class="text-sm font-medium">設定を保存してください</span>
+                            </div>
+                            <div class="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                                必須項目をすべて入力し、設定を保存後に認証テストを実行してください。
                             </div>
                         </div>
                         
@@ -337,26 +306,35 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <button type="button" 
                                 id="captcha-validate-button"
                                 class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                                :disabled="!captchaEnabled"
-                                @click="validateCaptchaWidget()">
+                                onclick="validateCaptchaWidget()"
+                                @if(!$settings['captcha_enabled'] || empty($settings['captcha_driver']) || empty($settings['captcha_site_key']) || empty($settings['captcha_secret_key']) || ($settings['captcha_driver'] === 'google_enterprise' && empty($settings['captcha_google_project_id'])))
+                                style="display: none;"
+                                @endif>
                             {{ __('admin.settings.security.captcha_validate_button') }}
                         </button>
+                        
+                        <!-- Clear Test Button -->
+                        @if(session('captcha_test_result.captcha_tested'))
+                        <button type="button" 
+                                class="ml-2 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                                onclick="clearCaptchaTest()">
+                            テスト結果をクリア
+                        </button>
+                        @endif
                     </div>
-                    
-                    
-                </div>
 
-                <div class="mt-6">
-                    <h4 class="text-md font-medium mb-3">{{ __('admin.settings.security.captcha_form_settings') }}</h4>
-                    <div class="space-y-2">
-                        @foreach($captchaFormSettings as $formSetting)
-                            @include('components::form.checkbox', [
-                                'label' => __('admin.settings.security.captcha_forms.' . $formSetting->key),
-                                'id' => 'captcha_form_' . $formSetting->key,
-                                'name' => 'captcha_form_' . $formSetting->key,
-                                'value' => old('captcha_form_' . $formSetting->key, $formSetting->enabled),
-                            ])
-                        @endforeach
+                    <div class="mt-6">
+                        <h4 class="text-md font-medium mb-3">{{ __('admin.settings.security.captcha_form_settings') }}</h4>
+                        <div class="space-y-2">
+                            @foreach($captchaFormSettings as $formSetting)
+                                @include('components::form.checkbox', [
+                                    'label' => __('admin.settings.security.captcha_forms.' . $formSetting->key),
+                                    'id' => 'captcha_form_' . $formSetting->key,
+                                    'name' => 'captcha_form_' . $formSetting->key,
+                                    'value' => old('captcha_form_' . $formSetting->key, $formSetting->enabled),
+                                ])
+                            @endforeach
+                        </div>
                     </div>
                 </div>
             </div>
@@ -484,6 +462,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
 @push('scripts')
+
+// フォーム送信時のデバッグ関数
+function debugFormSubmission(event) {
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    console.log('=== FORM SUBMISSION DEBUG ===');
+    console.log('All form data:');
+    for (let [key, value] of formData.entries()) {
+        console.log(`${key}: ${value}`);
+    }
+    
+    // 最小スコア関連の値を特別にログ
+    const visibleMinScore = document.getElementById('captcha_google_min_score')?.value;
+    const version = document.getElementById('captcha_google_version')?.value;
+    
+    console.log('Min Score Debug:');
+    console.log('- Visible field value:', visibleMinScore);
+    console.log('- Version:', version);
+    console.log('- Form data captcha_google_min_score:', formData.get('captcha_google_min_score'));
+    console.log('=== END DEBUG ===');
+}
+
 // CAPTCHA検証が必要かチェックして保存前に検証
 function validateBeforeSave() {
     const captchaEnabled = document.getElementById('captcha_enabled').checked;
@@ -611,6 +612,42 @@ function getProviderInfo(driver) {
 }
 
 
+// CAPTCHAトークンをサーバーに送信して検証
+function validateCaptchaToken(token) {
+    fetch('{{ route("admin.settings.security.test-captcha") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            'g-recaptcha-response': token,
+            captcha_driver: document.getElementById('captcha_driver').value,
+            captcha_google_version: document.getElementById('captcha_google_version').value
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('CAPTCHA validation successful');
+            showTestResult('success', data.message);
+            onCaptchaValidationSuccess();
+            enableValidationButton();
+        } else {
+            console.error('CAPTCHA validation failed:', data.message);
+            showTestResult('error', data.message);
+            onCaptchaValidationFailure();
+            enableValidationButton();
+        }
+    })
+    .catch(error => {
+        console.error('CAPTCHA validation error:', error);
+        showTestResult('error', 'CAPTCHA検証中にエラーが発生しました。');
+        onCaptchaValidationFailure();
+        enableValidationButton();
+    });
+}
+
 // セッションからテスト結果をクリアする関数
 function clearCaptchaTestSession(driver) {
     fetch('@php echo route("admin.settings.security.clear-captcha-test"); @endphp', {
@@ -658,11 +695,55 @@ function loadCaptchaWidget() {
     }
 }
 
+// デバッグ用ログ関数
+function debugCaptcha(message, data = {}) {
+    const timestamp = new Date().toLocaleTimeString();
+    console.log(`[CAPTCHA DEBUG ${timestamp}] ${message}`, data);
+}
+
+// 認証ボタンを無効化/有効化する関数
+function disableValidationButton(reason) {
+    const button = document.querySelector('button[onclick="validateCaptchaWidget()"]');
+    if (button) {
+        button.disabled = true;
+        button.classList.add('opacity-50', 'cursor-not-allowed');
+        button.title = reason || 'キーエラーのため無効化されています';
+        debugCaptcha('Validation button disabled', {reason});
+    }
+}
+
+function enableValidationButton() {
+    const button = document.querySelector('button[onclick="validateCaptchaWidget()"]');
+    if (button) {
+        button.disabled = false;
+        button.classList.remove('opacity-50', 'cursor-not-allowed');
+        button.title = '';
+        debugCaptcha('Validation button enabled');
+    }
+}
+
 // Google reCAPTCHAウィジェットを読み込み
 function loadGoogleRecaptchaWidget() {
-    const siteKey = document.getElementById('captcha_google_site_key').value;
-    const version = document.getElementById('captcha_google_version').value;
+    const siteKeyElement = document.getElementById('captcha_site_key');
+    const versionElement = document.getElementById('captcha_google_version');
     const container = document.getElementById('captcha-widget-container');
+    
+    if (!siteKeyElement || !versionElement || !container) {
+        debugCaptcha('Required elements not found', {
+            siteKeyElement: !!siteKeyElement,
+            versionElement: !!versionElement,
+            container: !!container
+        });
+        return;
+    }
+    
+    const siteKey = siteKeyElement.value;
+    const version = versionElement.value;
+    
+    debugCaptcha('loadGoogleRecaptchaWidget called', {siteKey: siteKey.substring(0, 20) + '...', version});
+    
+    // 認証ボタンを有効化（新しいウィジェット読み込み時）
+    enableValidationButton();
     
     if (!siteKey) {
         container.innerHTML = '<p class="text-sm text-gray-500">サイトキーを入力してください</p>';
@@ -713,29 +794,27 @@ function renderV3Widget(siteKey) {
     
     try {
         grecaptcha.ready(function() {
-            // v3キーの有効性を事前チェック
-            try {
-                grecaptcha.execute(siteKey, {action: 'test'}).then(function(token) {
-                    // キーが有効な場合
-                    currentCaptchaWidget = 'v3';
-                }).catch(function(error) {
-                    // キーが無効な場合
-                    console.error('Invalid v3 site key:', error);
-                    updateValidationStatus('failed');
-                    container.innerHTML = '<div class="text-red-600 text-sm">v3サイトキーが無効です。正しいv3用のキーを入力してください。<br>現在のキー: ' + siteKey.substring(0, 20) + '...</div>';
-                    // エラーハンドラーを削除
-                    window.removeEventListener('error', errorHandler);
-                });
-            } catch (error) {
-                console.error('reCAPTCHA v3 execution error:', error);
-                updateValidationStatus('failed');
-                container.innerHTML = '<div class="text-red-600 text-sm">reCAPTCHA v3の実行に失敗しました。サイトキーを確認してください。</div>';
-            }
+            debugCaptcha('v3 widget rendering started', {siteKey: siteKey.substring(0, 20) + '...', keyLength: siteKey.length});
+            
+            // キー形式の事前チェックを削除 - プロバイダー/バージョン選択に基づいてウィジェットを読み込み
+            
+            // v3ウィジェットを配置 - キーの有効性に関係なく表示
+            currentCaptchaWidget = 'v3';
+            container.innerHTML = `
+                <div class="text-sm text-gray-600">reCAPTCHA v3が読み込まれました。認証ボタンをクリックしてテストしてください。</div>
+                <input type="hidden" id="g-recaptcha-response-v3" name="g-recaptcha-response" value="">
+            `;
+            debugCaptcha('v3 widget placed', {siteKey: siteKey.substring(0, 20) + '...'});
         });
     } catch (error) {
         console.error('reCAPTCHA v3 initialization error:', error);
-        updateValidationStatus('failed');
-        container.innerHTML = '<div class="text-red-600 text-sm">reCAPTCHA v3の初期化に失敗しました。サイトキーを確認してください。</div>';
+        // エラーが発生してもウィジェットを配置
+        currentCaptchaWidget = 'v3';
+        container.innerHTML = `
+            <div class="text-sm text-gray-600">reCAPTCHA v3が読み込まれました。認証ボタンをクリックしてテストしてください。</div>
+            <input type="hidden" id="g-recaptcha-response-v3" name="g-recaptcha-response" value="">
+        `;
+        debugCaptcha('v3 widget placed despite initialization error', {error: error.message});
     }
 }
 
@@ -758,14 +837,18 @@ function renderV2Widget(siteKey, version) {
     
     grecaptcha.ready(function() {
         try {
+            debugCaptcha('v2 widget rendering started', {siteKey: siteKey.substring(0, 20) + '...', version, keyLength: siteKey.length});
+            
+            // キー形式チェックを削除 - プロバイダー/バージョン選択に基づいてウィジェットを配置
+            
             const widgetOptions = {
                 'sitekey': siteKey,
                 'callback': onRecaptchaSuccess,
                 'expired-callback': onRecaptchaExpired,
                 'error-callback': function() {
+                    debugCaptcha('v2 widget error callback triggered', {version, siteKey: siteKey.substring(0, 20) + '...'});
                     console.error('reCAPTCHA v2 error: Invalid site key or configuration');
-                    updateValidationStatus('failed');
-                    container.innerHTML = '<div class="text-red-600 text-sm">v2サイトキーが無効です。正しいv2用のキーを入力してください。</div>';
+                    // エラーが発生してもウィジェットは配置済みなので、テスト時にエラーハンドリング
                 }
             };
             
@@ -776,8 +859,8 @@ function renderV2Widget(siteKey, version) {
             currentCaptchaWidget = grecaptcha.render(widgetId, widgetOptions);
         } catch (error) {
             console.error('reCAPTCHA v2 render error:', error);
-            updateValidationStatus('failed');
-            container.innerHTML = '<div class="text-red-600 text-sm">reCAPTCHA v2の初期化に失敗しました。サイトキーを確認してください。</div>';
+            // エラーが発生してもウィジェット配置は完了しているので、テスト時にエラーハンドリング
+            debugCaptcha('v2 widget placed despite render error', {error: error.message, version});
         }
     });
 }
@@ -847,6 +930,14 @@ function updateValidationStatus(status) {
     const statusElement = document.getElementById('captcha-validation-status');
     if (!statusElement) return;
     
+    // 隠しフィールドの値も更新
+    const hiddenInput = document.getElementById('captcha-validation-status');
+    if (hiddenInput && hiddenInput.tagName === 'INPUT') {
+        const value = (status === 'success' || status === 'authenticated' || status === 'passed') ? '1' : '0';
+        hiddenInput.value = value;
+        debugCaptcha('Validation status updated', {status, value});
+    }
+    
     let html = '';
     switch (status) {
         case 'required':
@@ -858,6 +949,7 @@ function updateValidationStatus(status) {
             `;
             break;
         case 'success':
+        case 'passed':
             html = `
                 <div class="flex items-center text-green-600 dark:text-green-400">
                     <i class="fas fa-check-circle mr-2"></i>
@@ -890,7 +982,13 @@ function updateValidationStatus(status) {
             `;
             break;
     }
-    statusElement.innerHTML = html;
+    
+    // UI表示要素を探す（隠しフィールドではない要素）
+    const displayElement = document.querySelector('#captcha-validation-status:not(input)') || 
+                          document.querySelector('[id*="captcha-validation"]:not(input)');
+    if (displayElement) {
+        displayElement.innerHTML = html;
+    }
 }
 
 // CAPTCHAウィジェット検証を実行
@@ -921,8 +1019,19 @@ function validateCaptchaWidget() {
         grecaptcha.ready(function() {
             grecaptcha.execute(siteKey, {action: 'validate_settings'}).then(function(token) {
                 console.log('v3 execution successful, token received');
-                document.getElementById('g-recaptcha-response-v3').value = token;
-                validateCaptchaToken(token);
+                debugCaptcha('v3 token generated successfully', {tokenLength: token.length, action: 'validate_settings'});
+                
+                const responseElement = document.getElementById('g-recaptcha-response-v3');
+                if (responseElement) {
+                    responseElement.value = token;
+                    debugCaptcha('Starting server-side validation', {token: token.substring(0, 50) + '...'});
+                    validateCaptchaToken(token);
+                } else {
+                    console.error('g-recaptcha-response-v3 element not found');
+                    debugCaptcha('ERROR: g-recaptcha-response-v3 element not found');
+                    updateValidationStatus('failed');
+                    alert('CAPTCHA要素が見つかりません。ページを再読み込みしてください。');
+                }
                 window.removeEventListener('error', v3ErrorHandler);
             }).catch(function(error) {
                 console.error('reCAPTCHA v3 execution error:', error);
@@ -933,11 +1042,30 @@ function validateCaptchaWidget() {
         });
     } else if (driver === 'google' && version === 'v2_invisible') {
         // v2非表示の場合は手動で実行
+        const siteKey = document.getElementById('captcha_google_site_key').value;
+        debugCaptcha('v2 invisible validation started', {siteKey: siteKey.substring(0, 20) + '...', currentCaptchaWidget});
+        
+        // キー形式チェックを削除 - プロバイダー/バージョン選択に基づいて処理
+        
+        // currentCaptchaWidgetが正しく設定されているかチェック
+        if (!currentCaptchaWidget || currentCaptchaWidget === 0) {
+            debugCaptcha('Invalid currentCaptchaWidget detected', {currentCaptchaWidget});
+            updateValidationStatus('failed');
+            disableValidationButton('CAPTCHAウィジェットが正しく初期化されていません');
+            alert('CAPTCHAウィジェットが正しく初期化されていません。ページを再読み込みしてください。');
+            return;
+        }
+        
         grecaptcha.ready(function() {
             grecaptcha.execute(currentCaptchaWidget);
         });
     } else if (driver === 'google' && version === 'v2_checkbox') {
         // v2チェックボックスの場合はレスポンスをチェック
+        const siteKey = document.getElementById('captcha_google_site_key').value;
+        debugCaptcha('v2 checkbox validation started', {siteKey: siteKey.substring(0, 20) + '...', currentCaptchaWidget});
+        
+        // キー形式チェックを削除 - プロバイダー/バージョン選択に基づいて処理
+        
         const token = grecaptcha.getResponse(currentCaptchaWidget);
         if (token) {
             validateCaptchaToken(token);
@@ -983,22 +1111,41 @@ function validateCaptchaToken(token) {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        debugCaptcha('Server response received', {status: response.status, ok: response.ok});
+        return response.json();
+    })
     .then(data => {
+        debugCaptcha('Server validation result', {success: data.success, message: data.message});
+        
         if (data.success) {
             captchaValidated = true;
             updateValidationStatus('success');
+            debugCaptcha('CAPTCHA validation SUCCESS', {token: token.substring(0, 20) + '...'});
+            
+            // 成功メッセージを表示
+            showTestResult('success', data.message || 'CAPTCHA認証が成功しました。');
             
             // hiddenフィールドに検証結果を保存
-            document.getElementById('captcha_validation_status').value = '1';
-            document.getElementById('captcha_validation_token').value = token;
+            const statusElement = document.getElementById('captcha-validation-status');
+            const tokenElement = document.getElementById('captcha_validation_token');
+            if (statusElement) statusElement.value = '1';
+            if (tokenElement) tokenElement.value = token;
         } else {
+            debugCaptcha('CAPTCHA validation FAILED', {message: data.message, error: data.error});
             resetValidationState();
+            
+            // 失敗メッセージを表示
+            showTestResult('error', data.message || 'CAPTCHA認証に失敗しました。');
         }
     })
     .catch(error => {
         console.error('CAPTCHA validation error:', error);
+        debugCaptcha('CAPTCHA validation ERROR', {error: error.message});
         resetValidationState();
+        
+        // エラーメッセージを表示
+        showTestResult('error', 'CAPTCHA認証中にエラーが発生しました。');
     });
 }
 
@@ -1008,8 +1155,10 @@ function resetValidationState() {
     updateValidationStatus('required');
     
     // hiddenフィールドをリセット
-    document.getElementById('captcha_validation_status').value = '0';
-    document.getElementById('captcha_validation_token').value = '';
+    const statusElement = document.getElementById('captcha-validation-status');
+    const tokenElement = document.getElementById('captcha_validation_token');
+    if (statusElement) statusElement.value = '0';
+    if (tokenElement) tokenElement.value = '';
     
     // 既存のreCAPTCHAウィジェットをクリア
     if (typeof grecaptcha !== 'undefined' && currentCaptchaWidget) {
@@ -1041,8 +1190,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // プロバイダー情報を更新
             updateProviderInfo(newDriver);
             
-            // 認証状態をリセット
-            resetValidationState();
+            // 認証ボタンを非表示にし、保存を促す
+            hideAuthenticationButton();
+            showSaveFirstMessage();
         });
     }
     
@@ -1050,7 +1200,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const versionSelect = document.getElementById('captcha_google_version');
     if (versionSelect) {
         versionSelect.addEventListener('change', function() {
-            resetValidationState();
+            // 認証ボタンを非表示にし、保存を促す
+            hideAuthenticationButton();
+            showSaveFirstMessage();
             
             // Alpine.jsのcaptchaVersionも更新
             try {
@@ -1078,26 +1230,32 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // サイトキー変更監視（リアルタイム）
-    const siteKeyInput = document.getElementById('captcha_google_site_key');
+    const siteKeyInput = document.getElementById('captcha_site_key');
     if (siteKeyInput) {
         let siteKeyOriginalValue = siteKeyInput.value;
         
         siteKeyInput.addEventListener('input', function() {
             if (this.value !== siteKeyOriginalValue) {
-                resetValidationState();
+                hideTestButton();
+                clearCaptchaWidget();
+                hideTestRequiredNotice();
+                showSaveFirstMessage();
                 siteKeyOriginalValue = this.value;
             }
         });
     }
     
     // シークレットキー変更監視（リアルタイム）
-    const secretKeyInput = document.getElementById('captcha_google_secret_key');
+    const secretKeyInput = document.getElementById('captcha_secret_key');
     if (secretKeyInput) {
         let secretKeyOriginalValue = secretKeyInput.value;
         
         secretKeyInput.addEventListener('input', function() {
             if (this.value !== secretKeyOriginalValue) {
-                resetValidationState();
+                hideTestButton();
+                clearCaptchaWidget();
+                hideTestRequiredNotice();
+                showSaveFirstMessage();
                 secretKeyOriginalValue = this.value;
             }
         });
@@ -1105,28 +1263,341 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 最小スコア変更監視（リアルタイム）
     const minScoreInput = document.getElementById('captcha_google_min_score');
+    
     if (minScoreInput) {
         let minScoreOriginalValue = minScoreInput.value;
         
         minScoreInput.addEventListener('input', function() {
             if (this.value !== minScoreOriginalValue) {
-                resetValidationState();
+                hideTestButton();
+                clearCaptchaWidget();
+                hideTestRequiredNotice();
+                showSaveFirstMessage();
                 minScoreOriginalValue = this.value;
             }
         });
     }
     
-    // 初期ウィジェット読み込み
-    if (document.getElementById('captcha_enabled').checked) {
-        loadCaptchaWidget();
-    }
-    
-    // 保存後のページ読み込み時に認証状態を確認
-    const initialValidationStatus = document.getElementById('captcha_validation_status').value;
-    if (initialValidationStatus === '1') {
-        captchaValidated = true;
-        updateValidationStatus('authenticated');
-    }
+    // CAPTCHA有効/無効のリアルタイム監視
+    setupCaptchaToggleMonitoring();
     
 });
+
+
+
+
+
+
+
+// CAPTCHA有効/無効のリアルタイム監視設定
+function setupCaptchaToggleMonitoring() {
+    const captchaEnabledCheckbox = document.getElementById('captcha_enabled');
+    const captchaDriverSelect = document.getElementById('captcha_driver');
+    const captchaVersionSelect = document.getElementById('captcha_google_version');
+    const siteKeyInput = document.getElementById('captcha_site_key');
+    const secretKeyInput = document.getElementById('captcha_secret_key');
+    const projectIdInput = document.getElementById('captcha_google_project_id');
+    const turnsiteSiteKeyInput = document.getElementById('captcha_turnstile_site_key');
+    const turnstileSecretKeyInput = document.getElementById('captcha_turnstile_secret_key');
+    
+    // 初期状態を保存
+    let initialState = {
+        enabled: captchaEnabledCheckbox ? captchaEnabledCheckbox.checked : false,
+        driver: captchaDriverSelect ? captchaDriverSelect.value : '',
+        version: captchaVersionSelect ? captchaVersionSelect.value : '',
+        siteKey: siteKeyInput ? siteKeyInput.value : '',
+        secretKey: secretKeyInput ? secretKeyInput.value : '',
+        projectId: projectIdInput ? projectIdInput.value : '',
+        turnsiteSiteKey: turnsiteSiteKeyInput ? turnsiteSiteKeyInput.value : '',
+        turnstileSecretKey: turnstileSecretKeyInput ? turnstileSecretKeyInput.value : ''
+    };
+    
+    debugCaptcha('Initial CAPTCHA state saved', initialState);
+    
+    // CAPTCHA有効/無効の変更監視
+    if (captchaEnabledCheckbox) {
+        captchaEnabledCheckbox.addEventListener('change', function() {
+            const currentEnabled = this.checked;
+            const previousEnabled = initialState.enabled;
+            debugCaptcha('CAPTCHA enabled changed', {from: previousEnabled, to: currentEnabled});
+            
+            // 設定変更時はテストボタンを非表示
+            hideTestButton();
+            hideTestRequiredNotice();
+            
+            if (!previousEnabled && currentEnabled) {
+                // 無効から有効に変更された場合
+                const captchaNotice = document.getElementById('captcha-enabled-notice');
+                if (captchaNotice) {
+                    captchaNotice.style.display = 'block';
+                }
+                updateValidationStatus('pending');
+            } else if (previousEnabled && !currentEnabled) {
+                // 有効から無効に変更された場合
+                const captchaNotice = document.getElementById('captcha-enabled-notice');
+                if (captchaNotice) {
+                    captchaNotice.style.display = 'none';
+                }
+                // ウィジェットをクリア
+                clearCaptchaWidget();
+            }
+            
+            // 初期状態を更新
+            initialState.enabled = currentEnabled;
+        });
+    }
+    
+    // プロバイダー変更監視
+    if (captchaDriverSelect) {
+        captchaDriverSelect.addEventListener('change', function() {
+            if (captchaEnabledCheckbox && captchaEnabledCheckbox.checked) {
+                debugCaptcha('CAPTCHA driver changed', {from: initialState.driver, to: this.value});
+                hideTestButton();
+                clearCaptchaWidget();
+                hideTestRequiredNotice();
+                const settingsNotice = document.getElementById('settings-change-notice');
+                if (settingsNotice) {
+                    settingsNotice.style.display = 'block';
+                }
+            }
+        });
+    }
+    
+    // バージョン変更監視
+    if (captchaVersionSelect) {
+        captchaVersionSelect.addEventListener('change', function() {
+            if (captchaEnabledCheckbox && captchaEnabledCheckbox.checked) {
+                debugCaptcha('CAPTCHA version changed', {from: initialState.version, to: this.value});
+                hideTestButton();
+                clearCaptchaWidget();
+                hideTestRequiredNotice();
+                const settingsNotice = document.getElementById('settings-change-notice');
+                if (settingsNotice) {
+                    settingsNotice.style.display = 'block';
+                }
+            }
+        });
+    }
+    
+    // キー変更監視
+    const keyInputs = [
+        {element: siteKeyInput, key: 'siteKey'},
+        {element: secretKeyInput, key: 'secretKey'},
+        {element: projectIdInput, key: 'projectId'},
+        {element: turnsiteSiteKeyInput, key: 'turnsiteSiteKey'},
+        {element: turnstileSecretKeyInput, key: 'turnstileSecretKey'}
+    ];
+    
+    keyInputs.forEach(({element, key}) => {
+        if (element) {
+            element.addEventListener('input', function() {
+                if (captchaEnabledCheckbox && captchaEnabledCheckbox.checked && this.value !== initialState[key]) {
+                    debugCaptcha(`CAPTCHA ${key} changed`, {from: initialState[key], to: this.value});
+                    hideTestButton();
+                    clearCaptchaWidget();
+                    hideTestRequiredNotice();
+                    // Show settings change notice inline
+                    const settingsNotice = document.getElementById('settings-change-notice');
+                    if (settingsNotice) {
+                        settingsNotice.style.display = 'block';
+                    }
+                }
+            });
+        }
+    });
+}
+
+// テストボタンを非表示にする関数
+function hideTestButton() {
+    const testButton = document.getElementById('captcha-validate-button');
+    if (testButton) {
+        testButton.style.display = 'none';
+        debugCaptcha('Test button hidden');
+    }
+}
+
+// テストボタンを表示する関数
+function showTestButton() {
+    const testButton = document.getElementById('captcha-validate-button');
+    if (testButton) {
+        testButton.style.display = 'inline-block';
+        debugCaptcha('Test button shown');
+    }
+}
+
+// CAPTCHAウィジェットをクリアする関数
+function clearCaptchaWidget() {
+    const container = document.getElementById('captcha-widget-container');
+    if (container) {
+        container.innerHTML = '';
+        debugCaptcha('CAPTCHA widget cleared');
+    }
+}
+
+// テスト必須通知を非表示にする関数
+function hideTestRequiredNotice() {
+    const notice = document.getElementById('captcha-test-required-notice');
+    if (notice) {
+        notice.style.display = 'none';
+        debugCaptcha('Test required notice hidden');
+    }
+}
+
+// 保存後にCAPTCHAウィジェットを読み込む関数
+function loadCaptchaWidgetAfterSave() {
+    const enabled = {{ $settings['captcha_enabled'] ? 'true' : 'false' }};
+    const driver = '{{ $settings["captcha_driver"] ?? "" }}';
+    const siteKey = '{{ $settings["captcha_site_key"] ?? "" }}';
+    const secretKey = '{{ $settings["captcha_secret_key"] ?? "" }}';
+    const projectId = '{{ $settings["captcha_google_project_id"] ?? "" }}';
+    
+    debugCaptcha('Loading CAPTCHA widget after save', {enabled, driver, siteKey: siteKey.substring(0, 20) + '...'});
+    
+    // 必須条件をチェック
+    if (enabled && driver && siteKey && secretKey) {
+        // Google Enterprise の場合はプロジェクトIDも必須
+        if (driver === 'google_enterprise' && !projectId) {
+            debugCaptcha('Google Enterprise requires project ID');
+            return;
+        }
+        
+        // ウィジェットを読み込み
+        if (driver === 'google') {
+            loadGoogleRecaptchaWidget();
+        } else if (driver === 'google_enterprise') {
+            loadGoogleEnterpriseWidget();
+        } else if (driver === 'turnstile') {
+            loadTurnstileWidget();
+        }
+        
+        // テストボタンを表示
+        showTestButton();
+        
+        // 設定変更通知を非表示
+        const settingsNotice = document.getElementById('settings-change-notice');
+        if (settingsNotice) {
+            settingsNotice.style.display = 'none';
+        }
+    }
+}
+
+// ページ読み込み時にウィジェットを読み込み（保存済み設定がある場合）
+@if($settings['captcha_enabled'] && !empty($settings['captcha_driver']) && !empty($settings['captcha_site_key']) && !empty($settings['captcha_secret_key']))
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(loadCaptchaWidgetAfterSave, 1000); // 1秒後に読み込み
+});
+@endif
+
+// テスト結果をページに表示する関数
+function showTestResult(type, message) {
+    // 既存の結果表示を削除
+    const existingResult = document.getElementById('captcha-test-result');
+    if (existingResult) {
+        existingResult.remove();
+    }
+    
+    // 新しい結果表示を作成
+    const resultDiv = document.createElement('div');
+    resultDiv.id = 'captcha-test-result';
+    resultDiv.className = 'mt-4 p-4 rounded-lg border';
+    
+    if (type === 'success') {
+        resultDiv.className += ' bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-200';
+        resultDiv.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-check-circle mr-3 text-green-600 dark:text-green-400"></i>
+                <div>
+                    <h4 class="font-semibold">認証成功</h4>
+                    <p class="text-sm mt-1">${message}</p>
+                </div>
+            </div>
+        `;
+    } else {
+        resultDiv.className += ' bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-200';
+        resultDiv.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-times-circle mr-3 text-red-600 dark:text-red-400"></i>
+                <div>
+                    <h4 class="font-semibold">認証失敗</h4>
+                    <p class="text-sm mt-1">${message}</p>
+                </div>
+            </div>
+        `;
+    }
+    
+    // CAPTCHAウィジェットコンテナの後に挿入
+    const container = document.getElementById('captcha-widget-container');
+    if (container && container.parentNode) {
+        container.parentNode.insertBefore(resultDiv, container.nextSibling);
+    }
+    
+    debugCaptcha('Test result displayed', {type, message});
+    
+    // 5秒後に自動で非表示
+    setTimeout(() => {
+        if (resultDiv && resultDiv.parentNode) {
+            resultDiv.style.opacity = '0';
+            resultDiv.style.transition = 'opacity 0.5s';
+            setTimeout(() => {
+                if (resultDiv && resultDiv.parentNode) {
+                    resultDiv.remove();
+                }
+            }, 500);
+        }
+    }, 5000);
+}
+
+// 認証ボタンを非表示にする
+function hideAuthenticationButton() {
+    const button = document.getElementById('captcha-validate-button');
+    if (button) {
+        button.style.display = 'none';
+        debugCaptcha('Authentication button hidden');
+    }
+}
+
+// 保存を促すメッセージを表示
+function showSaveFirstMessage() {
+    // 既存のメッセージを削除
+    const existingMessage = document.getElementById('save-first-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    // 新しいメッセージを作成
+    const messageDiv = document.createElement('div');
+    messageDiv.id = 'save-first-message';
+    messageDiv.className = 'mt-4 p-4 rounded-lg border bg-orange-50 border-orange-200 text-orange-800 dark:bg-orange-900/20 dark:border-orange-800 dark:text-orange-200';
+    messageDiv.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas fa-exclamation-triangle mr-3 text-orange-600 dark:text-orange-400"></i>
+            <div>
+                <h4 class="font-semibold">設定が変更されました</h4>
+                <p class="text-sm mt-1">CAPTCHA設定を変更した場合は、まず設定を保存してから認証テストを実行してください。</p>
+            </div>
+        </div>
+    `;
+    
+    // CAPTCHAウィジェットコンテナの前に挿入
+    const container = document.getElementById('captcha-widget-container');
+    if (container && container.parentNode) {
+        container.parentNode.insertBefore(messageDiv, container);
+    }
+    
+    debugCaptcha('Save first message displayed');
+}
+
+// 成功時のバリデーション状態更新
+function onCaptchaValidationSuccess() {
+    updateValidationStatus('passed');
+    debugCaptcha('CAPTCHA validation successful - status updated to passed');
+}
+
+// 失敗時のバリデーション状態更新  
+function onCaptchaValidationFailure() {
+    updateValidationStatus('failed');
+    debugCaptcha('CAPTCHA validation failed - status updated to failed');
+}
+
+
 @endpush

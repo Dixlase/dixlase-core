@@ -41,6 +41,10 @@ class SecuritySetting extends Model
 
     public static function set($key, $value)
     {
+        // Convert boolean to string for consistent storage
+        if (is_bool($value)) {
+            $value = $value ? '1' : '0';
+        }
         return self::updateOrCreate(['name' => $key], ['value' => $value]);
     }
 }
