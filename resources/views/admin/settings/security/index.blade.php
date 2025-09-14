@@ -282,6 +282,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             </div>
                         </div>
                         
+                        <!-- CAPTCHA Test Result Messages (Static HTML) -->
+                        <div id="captcha-test-success" class="mb-4 p-3 border rounded-lg bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-200" style="display: none;">
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle mr-3 text-green-600 dark:text-green-400"></i>
+                                <div>
+                                    <h4 class="font-semibold">認証成功</h4>
+                                    <p class="text-sm mt-1" id="captcha-success-message"></p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="captcha-test-failure" class="mb-4 p-3 border rounded-lg bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-200" style="display: none;">
+                            <div class="flex items-center">
+                                <i class="fas fa-times-circle mr-3 text-red-600 dark:text-red-400"></i>
+                                <div>
+                                    <h4 class="font-semibold">認証失敗</h4>
+                                    <p class="text-sm mt-1" id="captcha-failure-message"></p>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <!-- Save Required Notice -->
                         <div id="save-required-notice" class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded" style="display: none;">
                             <div class="flex items-center text-blue-600 dark:text-blue-400">
@@ -1225,12 +1246,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 hideTestButton();
                 clearCaptchaWidget();
                 hideTestRequiredNotice();
+                hideTestResult();
                 const settingsNotice = document.getElementById('settings-change-notice');
                 if (settingsNotice) {
                     settingsNotice.style.display = 'block';
                 }
-                siteKeyOriginalValue = this.value;
             }
+            siteKeyOriginalValue = this.value;
         });
     }
     
@@ -1244,12 +1266,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 hideTestButton();
                 clearCaptchaWidget();
                 hideTestRequiredNotice();
+                hideTestResult();
                 const settingsNotice = document.getElementById('settings-change-notice');
                 if (settingsNotice) {
                     settingsNotice.style.display = 'block';
                 }
-                secretKeyOriginalValue = this.value;
             }
+            secretKeyOriginalValue = this.value;
         });
     }
     
@@ -1264,12 +1287,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 hideTestButton();
                 clearCaptchaWidget();
                 hideTestRequiredNotice();
+                hideTestResult();
                 const settingsNotice = document.getElementById('settings-change-notice');
                 if (settingsNotice) {
                     settingsNotice.style.display = 'block';
                 }
-                minScoreOriginalValue = this.value;
             }
+            minScoreOriginalValue = this.value;
         });
     }
     
@@ -1438,11 +1462,15 @@ function hideTestRequiredNotice() {
 
 // テスト結果メッセージを非表示にする関数
 function hideTestResult() {
-    const existingResult = document.getElementById('captcha-test-result');
-    if (existingResult) {
-        existingResult.remove();
-        debugCaptcha('Test result message hidden');
+    const successElement = document.getElementById('captcha-test-success');
+    const failureElement = document.getElementById('captcha-test-failure');
+    if (successElement) {
+        successElement.style.display = 'none';
     }
+    if (failureElement) {
+        failureElement.style.display = 'none';
+    }
+    debugCaptcha('Test result messages hidden');
 }
 
 // 保存後にCAPTCHAウィジェットを読み込む関数
@@ -1492,50 +1520,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // テスト結果をページに表示する関数
 function showTestResult(type, message) {
-    // 既存の結果表示を削除
-    const existingResult = document.getElementById('captcha-test-result');
-    if (existingResult) {
-        existingResult.remove();
-    }
-    
-    // 新しい結果表示を作成
-    const resultDiv = document.createElement('div');
-    resultDiv.id = 'captcha-test-result';
-    resultDiv.className = 'mt-4 p-4 rounded-lg border';
+    // 既存の結果表示を非表示
+    hideTestResult();
     
     if (type === 'success') {
-        resultDiv.className += ' bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-200';
-        resultDiv.innerHTML = `
-            <div class="flex items-center">
-                <i class="fas fa-check-circle mr-3 text-green-600 dark:text-green-400"></i>
-                <div>
-                    <h4 class="font-semibold">認証成功</h4>
-                    <p class="text-sm mt-1">${message}</p>
-                </div>
-            </div>
-        `;
+        const successElement = document.getElementById('captcha-test-success');
+        const messageElement = document.getElementById('captcha-success-message');
+        if (successElement && messageElement) {
+            messageElement.textContent = message;
+            successElement.style.display = 'block';
+        }
     } else {
-        resultDiv.className += ' bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-200';
-        resultDiv.innerHTML = `
-            <div class="flex items-center">
-                <i class="fas fa-times-circle mr-3 text-red-600 dark:text-red-400"></i>
-                <div>
-                    <h4 class="font-semibold">認証失敗</h4>
-                    <p class="text-sm mt-1">${message}</p>
-                </div>
-            </div>
-        `;
-    }
-    
-    // CAPTCHAウィジェットコンテナの後に挿入
-    const container = document.getElementById('captcha-widget-container');
-    if (container && container.parentNode) {
-        container.parentNode.insertBefore(resultDiv, container.nextSibling);
+        const failureElement = document.getElementById('captcha-test-failure');
+        const messageElement = document.getElementById('captcha-failure-message');
+        if (failureElement && messageElement) {
+            messageElement.textContent = message;
+            failureElement.style.display = 'block';
+        }
     }
     
     debugCaptcha('Test result displayed', {type, message});
-    
-    // メッセージは自動で消えないように変更
 }
 
 // 認証ボタンを非表示にする
