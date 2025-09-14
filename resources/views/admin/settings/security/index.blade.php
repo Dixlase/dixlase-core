@@ -1280,6 +1280,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 clearCaptchaWidget();
                 hideTestRequiredNotice();
                 hideTestResult();
+                resetCaptchaAuthenticationResult('site key change');
+                
                 const settingsNotice = document.getElementById('settings-change-notice');
                 if (settingsNotice) {
                     settingsNotice.style.display = 'block';
@@ -1300,6 +1302,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 clearCaptchaWidget();
                 hideTestRequiredNotice();
                 hideTestResult();
+                resetCaptchaAuthenticationResult('secret key change');
+                
                 const settingsNotice = document.getElementById('settings-change-notice');
                 if (settingsNotice) {
                     settingsNotice.style.display = 'block';
@@ -1322,6 +1326,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 clearCaptchaWidget();
                 hideTestRequiredNotice();
                 hideTestResult();
+                resetCaptchaAuthenticationResult('min score change');
+                
                 const settingsNotice = document.getElementById('settings-change-notice');
                 if (settingsNotice) {
                     settingsNotice.style.display = 'block';
@@ -1446,6 +1452,8 @@ function setupCaptchaToggleMonitoring() {
                     hideTestButton();
                     clearCaptchaWidget();
                     hideTestRequiredNotice();
+                    resetCaptchaAuthenticationResult(`${key} change`);
+                    
                     // Show settings change notice inline
                     const settingsNotice = document.getElementById('settings-change-notice');
                     if (settingsNotice) {
@@ -1456,6 +1464,7 @@ function setupCaptchaToggleMonitoring() {
         }
     });
 }
+
 
 // テストボタンを非表示にする関数
 function hideTestButton() {
@@ -1637,6 +1646,16 @@ function onCaptchaValidationFailure() {
         console.log('DEBUG: All hidden inputs:', document.querySelectorAll('input[type="hidden"]'));
     }
 }
+
+// CAPTCHA authentication result hidden inputを0にリセットする関数
+function resetCaptchaAuthenticationResult(reason) {
+    const authResultInput = document.getElementById('captcha-authentication-result');
+    if (authResultInput) {
+        authResultInput.value = '0';
+        console.log(`DEBUG: Reset captcha_authentication_result to 0 due to ${reason}`);
+    }
+}
+
 
 
 @endpush
