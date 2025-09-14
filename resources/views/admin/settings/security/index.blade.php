@@ -10,7 +10,7 @@ the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
+but WITHOUT ANY WARRANTY; without even the  implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU Affero General Public License for more details.
 
@@ -324,15 +324,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 @endif>
                             {{ __('admin.settings.security.captcha_validate_button') }}
                         </button>
-                        
-                        <!-- Clear Test Button -->
-                        @if(session('captcha_test_result.captcha_tested'))
-                        <button type="button" 
-                                class="ml-2 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-                                onclick="clearCaptchaTest()">
-                            テスト結果をクリア
-                        </button>
-                        @endif
                     </div>
 
                     <div class="mt-6">
@@ -1316,8 +1307,6 @@ function setupCaptchaToggleMonitoring() {
     const siteKeyInput = document.getElementById('captcha_site_key');
     const secretKeyInput = document.getElementById('captcha_secret_key');
     const projectIdInput = document.getElementById('captcha_google_project_id');
-    const turnsiteSiteKeyInput = document.getElementById('captcha_turnstile_site_key');
-    const turnstileSecretKeyInput = document.getElementById('captcha_turnstile_secret_key');
     
     // 初期状態を保存
     let initialState = {
@@ -1327,8 +1316,6 @@ function setupCaptchaToggleMonitoring() {
         siteKey: siteKeyInput ? siteKeyInput.value : '',
         secretKey: secretKeyInput ? secretKeyInput.value : '',
         projectId: projectIdInput ? projectIdInput.value : '',
-        turnsiteSiteKey: turnsiteSiteKeyInput ? turnsiteSiteKeyInput.value : '',
-        turnstileSecretKey: turnstileSecretKeyInput ? turnstileSecretKeyInput.value : ''
     };
     
     debugCaptcha('Initial CAPTCHA state saved', initialState);
@@ -1339,6 +1326,9 @@ function setupCaptchaToggleMonitoring() {
             const currentEnabled = this.checked;
             const previousEnabled = initialState.enabled;
             debugCaptcha('CAPTCHA enabled changed', {from: previousEnabled, to: currentEnabled});
+            
+            // CAPTCHA有効/無効が変更されたら検証ステータスをリセット
+            resetCaptchaValidationStatus();
             
             // 有効/無効の変更時はセクション全体の表示制御（個別要素の非表示は不要）
             
@@ -1360,7 +1350,6 @@ function setupCaptchaToggleMonitoring() {
             }
             
             // 初期状態を更新
-            initialState.enabled = currentEnabled;
         });
     }
     
@@ -1369,6 +1358,7 @@ function setupCaptchaToggleMonitoring() {
         captchaDriverSelect.addEventListener('change', function() {
             if (captchaEnabledCheckbox && captchaEnabledCheckbox.checked) {
                 debugCaptcha('CAPTCHA driver changed', {from: initialState.driver, to: this.value});
+                resetCaptchaValidationStatus();
                 hideTestButton();
                 clearCaptchaWidget();
                 hideTestRequiredNotice();
@@ -1401,8 +1391,6 @@ function setupCaptchaToggleMonitoring() {
         {element: siteKeyInput, key: 'siteKey'},
         {element: secretKeyInput, key: 'secretKey'},
         {element: projectIdInput, key: 'projectId'},
-        {element: turnsiteSiteKeyInput, key: 'turnsiteSiteKey'},
-        {element: turnstileSecretKeyInput, key: 'turnstileSecretKey'}
     ];
     
     keyInputs.forEach(({element, key}) => {
@@ -1410,6 +1398,7 @@ function setupCaptchaToggleMonitoring() {
             element.addEventListener('input', function() {
                 if (captchaEnabledCheckbox && captchaEnabledCheckbox.checked && this.value !== initialState[key]) {
                     debugCaptcha(`CAPTCHA ${key} changed`, {from: initialState[key], to: this.value});
+                    resetCaptchaValidationStatus();
                     hideTestButton();
                     clearCaptchaWidget();
                     hideTestRequiredNotice();
@@ -1448,6 +1437,15 @@ function clearCaptchaWidget() {
     if (container) {
         container.innerHTML = '';
         debugCaptcha('CAPTCHA widget cleared');
+    }
+}
+
+// CAPTCHA検証ステータスをリセットする関数
+function resetCaptchaValidationStatus() {
+    const hiddenInput = document.getElementById('captcha-validation-status');
+    if (hiddenInput && hiddenInput.tagName === 'INPUT') {
+        hiddenInput.value = '0';
+        debugCaptcha('CAPTCHA validation status reset to 0');
     }
 }
 

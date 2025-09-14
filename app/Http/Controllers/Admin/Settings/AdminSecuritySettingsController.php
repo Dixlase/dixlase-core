@@ -160,10 +160,17 @@ class AdminSecuritySettingsController extends AdminLoggedInController
             // 新しいライブ認証システムではフォームバリデーションで処理
         }
         
-        // CAPTCHA設定が変更された場合、テスト結果をリセット
-        // ただし、認証テスト成功後の保存では現在のテスト結果を保持
-        $currentTestResult = $captchaTestService->getTestResult();
-        if ($captchaSettingsChanged && !$currentTestResult) {
+        // フォームから送信されたテスト結果を確認
+        $submittedTestResult = $request->boolean('captcha_validation_status');
+        
+        // テスト結果をデータベースに保存（フォームから送信された値を使用）
+        if ($submittedTestResult) {
+            $captchaTestService->saveCaptchaTestResult('form_submission', true);
+        }
+        
+        // CAPTCHA設定が変更された場合のテスト結果リセット処理
+        // ただし、フォームでテスト成功状態が送信された場合は保持
+        if ($captchaSettingsChanged && !$submittedTestResult) {
             $captchaTestService->resetCaptchaTestResults();
         }
 
@@ -343,9 +350,8 @@ class AdminSecuritySettingsController extends AdminLoggedInController
                         $minScore = floatval($request->input('captcha_google_min_score', 0.5));
                         
                         if ($score >= $minScore) {
-                            // テスト成功時にデータベースに保存
-                            $captchaTestService = new CaptchaTestService();
-                            $captchaTestService->saveCaptchaTestResult($driver, true);
+                            // テスト成功時はセッションのみに保存（DBには保存しない）
+                            session(['captcha_test_result' => true]);
                             
                             return response()->json([
                                 'success' => true,
@@ -358,9 +364,8 @@ class AdminSecuritySettingsController extends AdminLoggedInController
                             ]);
                         }
                     } else {
-                        // v2の場合もテスト成功時にデータベースに保存
-                        $captchaTestService = new CaptchaTestService();
-                        $captchaTestService->saveCaptchaTestResult($driver, true);
+                        // v2の場合もテスト成功時はセッションのみに保存（DBには保存しない）
+                        session(['captcha_test_result' => true]);
                         
                         return response()->json([
                             'success' => true,
