@@ -305,7 +305,7 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         
         // 実際のCAPTCHA検証を実行
         if ($driver === 'google') {
-            $secretKey = $request->input('captcha_google_secret_key', '');
+            $secretKey = $request->input('captcha_secret_key', '');
             $version = $request->input('captcha_google_version', 'v3');
             
             if (empty($secretKey)) {
