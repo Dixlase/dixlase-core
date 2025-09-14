@@ -1189,10 +1189,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // プロバイダー情報を更新
             updateProviderInfo(newDriver);
-            
-            // 認証ボタンを非表示にし、保存を促す
-            hideAuthenticationButton();
-            showSaveFirstMessage();
         });
     }
     
@@ -1200,10 +1196,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const versionSelect = document.getElementById('captcha_google_version');
     if (versionSelect) {
         versionSelect.addEventListener('change', function() {
-            // 認証ボタンを非表示にし、保存を促す
-            hideAuthenticationButton();
-            showSaveFirstMessage();
-            
             // Alpine.jsのcaptchaVersionも更新
             try {
                 const alpineElement = document.querySelector('[x-data]');
@@ -1239,7 +1231,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 hideTestButton();
                 clearCaptchaWidget();
                 hideTestRequiredNotice();
-                showSaveFirstMessage();
+                const settingsNotice = document.getElementById('settings-change-notice');
+                if (settingsNotice) {
+                    settingsNotice.style.display = 'block';
+                }
                 siteKeyOriginalValue = this.value;
             }
         });
@@ -1255,7 +1250,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 hideTestButton();
                 clearCaptchaWidget();
                 hideTestRequiredNotice();
-                showSaveFirstMessage();
+                const settingsNotice = document.getElementById('settings-change-notice');
+                if (settingsNotice) {
+                    settingsNotice.style.display = 'block';
+                }
                 secretKeyOriginalValue = this.value;
             }
         });
@@ -1272,7 +1270,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 hideTestButton();
                 clearCaptchaWidget();
                 hideTestRequiredNotice();
-                showSaveFirstMessage();
+                const settingsNotice = document.getElementById('settings-change-notice');
+                if (settingsNotice) {
+                    settingsNotice.style.display = 'block';
+                }
                 minScoreOriginalValue = this.value;
             }
         });
@@ -1556,36 +1557,6 @@ function hideAuthenticationButton() {
     }
 }
 
-// 保存を促すメッセージを表示
-function showSaveFirstMessage() {
-    // 既存のメッセージを削除
-    const existingMessage = document.getElementById('save-first-message');
-    if (existingMessage) {
-        existingMessage.remove();
-    }
-    
-    // 新しいメッセージを作成
-    const messageDiv = document.createElement('div');
-    messageDiv.id = 'save-first-message';
-    messageDiv.className = 'mt-4 p-4 rounded-lg border bg-orange-50 border-orange-200 text-orange-800 dark:bg-orange-900/20 dark:border-orange-800 dark:text-orange-200';
-    messageDiv.innerHTML = `
-        <div class="flex items-center">
-            <i class="fas fa-exclamation-triangle mr-3 text-orange-600 dark:text-orange-400"></i>
-            <div>
-                <h4 class="font-semibold">設定が変更されました</h4>
-                <p class="text-sm mt-1">CAPTCHA設定を変更した場合は、まず設定を保存してから認証テストを実行してください。</p>
-            </div>
-        </div>
-    `;
-    
-    // CAPTCHAウィジェットコンテナの前に挿入
-    const container = document.getElementById('captcha-widget-container');
-    if (container && container.parentNode) {
-        container.parentNode.insertBefore(messageDiv, container);
-    }
-    
-    debugCaptcha('Save first message displayed');
-}
 
 // 成功時のバリデーション状態更新
 function onCaptchaValidationSuccess() {
