@@ -28,6 +28,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     enableAllowedFrontIPs: {{ old('enable_allowed_front_ips', $settings['enable_allowed_front_ips']) ? 'true' : 'false' }},
     enableBlockedFrontIps: {{ old('enable_blocked_front_ips', $settings['enable_blocked_front_ips']) ? 'true' : 'false' }},
     captchaEnabled: {{ old('captcha_enabled', $settings['captcha_enabled']) ? 'true' : 'false' }},
+    captchaEnabledSaved: {{ $settings['captcha_enabled'] ? 'true' : 'false' }},
     captchaDriver: '{{ old('captcha_driver', $settings['captcha_driver']) }}',
     captchaVersion: '{{ old('captcha_google_version', $settings['captcha_google_version']) }}',
 }">
@@ -244,7 +245,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
 
                 <!-- CAPTCHA設定保存後のテスト -->
-                <div class="mt-6" x-show="captchaEnabled" id="captcha-test-section">
+                <div class="mt-6" x-show="captchaEnabled && captchaEnabledSaved" id="captcha-test-section">
                     <!-- CAPTCHA Test Section (Only shown when CAPTCHA is enabled) -->
                     <div class="mt-4 p-4 border rounded-lg bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
                         <!-- Test Status Display -->
@@ -1322,9 +1323,7 @@ function setupCaptchaToggleMonitoring() {
             const previousEnabled = initialState.enabled;
             debugCaptcha('CAPTCHA enabled changed', {from: previousEnabled, to: currentEnabled});
             
-            // 設定変更時はテストボタンを非表示
-            hideTestButton();
-            hideTestRequiredNotice();
+            // 有効/無効の変更時はセクション全体の表示制御（個別要素の非表示は不要）
             
             if (!previousEnabled && currentEnabled) {
                 // 無効から有効に変更された場合
