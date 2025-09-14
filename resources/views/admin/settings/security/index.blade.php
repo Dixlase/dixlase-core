@@ -1275,6 +1275,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         minScoreInput.addEventListener('input', function() {
             if (this.value !== minScoreOriginalValue) {
+                resetCaptchaValidationStatus();
                 hideTestButton();
                 clearCaptchaWidget();
                 hideTestRequiredNotice();
@@ -1375,6 +1376,7 @@ function setupCaptchaToggleMonitoring() {
         captchaVersionSelect.addEventListener('change', function() {
             if (captchaEnabledCheckbox && captchaEnabledCheckbox.checked) {
                 debugCaptcha('CAPTCHA version changed', {from: initialState.version, to: this.value});
+                resetCaptchaValidationStatus();
                 hideTestButton();
                 clearCaptchaWidget();
                 hideTestRequiredNotice();
