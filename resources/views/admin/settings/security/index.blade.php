@@ -249,26 +249,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <!-- CAPTCHA Test Section (Only shown when CAPTCHA is enabled) -->
                     <div class="mt-4 p-4 border rounded-lg bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
                         <!-- Test Status Display -->
-                        @if(session('captcha_test_result.captcha_tested'))
-                        <div class="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded">
-                            <div class="flex items-center text-green-600 dark:text-green-400">
-                                <i class="fas fa-check-circle mr-2"></i>
-                                <span class="text-sm font-medium">CAPTCHA認証テスト完了</span>
-                            </div>
-                            <div class="text-xs text-green-600 dark:text-green-400 mt-1">
-                                テスト日時: {{ session('captcha_test_result.captcha_test_date') }}
-                            </div>
-                        </div>
-                        @else
+                        @if(!session('captcha_test_result.captcha_tested'))
                         <div id="captcha-test-required-notice" class="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
                             <div class="flex items-center text-yellow-600 dark:text-yellow-400">
                                 <i class="fas fa-exclamation-triangle mr-2"></i>
                                 <span class="text-sm font-medium">CAPTCHAを使用するには認証テストが必要です。</span>
                             </div>
                             <div class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
-                                認証が成功したら再度保存してください。<br>
-                                認証に失敗する場合は設定内容をご確認ください。<br>
-                                設定内容を変更した場合には再度保存してから認証テストを行ってください。
+                                <ul>
+                                    <li>認証が成功したら再度保存してください。</li>
+                                    <li>認証に失敗する場合は設定内容をご確認ください。</li>
+                                    <li>設定内容を変更した場合には再度保存してから認証テストを行ってください。</li>
+                                </ul>
                             </div>
                         </div>
                         @endif
@@ -278,10 +270,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <!-- Dynamic CAPTCHA widget will be loaded here -->
                         </div>
                         
-                        <!-- Validation Status -->
-                        <div id="captcha-validation-status" class="mb-3">
-                            <!-- Status will be updated dynamically -->
-                        </div>
                         
                         <!-- Settings Change Notice -->
                         <div id="settings-change-notice" class="mb-4 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded" style="display: none;">
@@ -1134,6 +1122,9 @@ function validateCaptchaToken(token) {
             const tokenElement = document.getElementById('captcha_validation_token');
             if (statusElement) statusElement.value = '1';
             if (tokenElement) tokenElement.value = token;
+            
+            // 認証成功時に警告通知を非表示にする
+            hideTestRequiredNotice();
         } else {
             debugCaptcha('CAPTCHA validation FAILED', {message: data.message, error: data.error});
             resetValidationState();
@@ -1445,6 +1436,15 @@ function hideTestRequiredNotice() {
     }
 }
 
+// テスト結果メッセージを非表示にする関数
+function hideTestResult() {
+    const existingResult = document.getElementById('captcha-test-result');
+    if (existingResult) {
+        existingResult.remove();
+        debugCaptcha('Test result message hidden');
+    }
+}
+
 // 保存後にCAPTCHAウィジェットを読み込む関数
 function loadCaptchaWidgetAfterSave() {
     const enabled = {{ $settings['captcha_enabled'] ? 'true' : 'false' }};
@@ -1535,18 +1535,7 @@ function showTestResult(type, message) {
     
     debugCaptcha('Test result displayed', {type, message});
     
-    // 5秒後に自動で非表示
-    setTimeout(() => {
-        if (resultDiv && resultDiv.parentNode) {
-            resultDiv.style.opacity = '0';
-            resultDiv.style.transition = 'opacity 0.5s';
-            setTimeout(() => {
-                if (resultDiv && resultDiv.parentNode) {
-                    resultDiv.remove();
-                }
-            }, 500);
-        }
-    }, 5000);
+    // メッセージは自動で消えないように変更
 }
 
 // 認証ボタンを非表示にする
