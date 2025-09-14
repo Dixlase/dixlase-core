@@ -361,12 +361,12 @@ class AdminSecuritySettingsController extends AdminLoggedInController
                             
                             return response()->json([
                                 'success' => true,
-                                'message' => "CAPTCHA validation successful (score: {$score})"
+                                'message' => __('admin.settings.security.captcha_validation_success_with_score', ['score' => $score])
                             ]);
                         } else {
                             return response()->json([
                                 'success' => false,
-                                'message' => "CAPTCHA score too low: {$score} (minimum: {$minScore})"
+                                'message' => __('admin.settings.security.captcha_validation_score_too_low', ['score' => $score, 'min_score' => $minScore])
                             ]);
                         }
                     } else {
@@ -375,27 +375,27 @@ class AdminSecuritySettingsController extends AdminLoggedInController
                         
                         return response()->json([
                             'success' => true,
-                            'message' => 'CAPTCHA validation successful'
+                            'message' => __('admin.settings.security.captcha_validation_success') . '. ' . __('admin.settings.security.captcha_test_validation_description')
                         ]);
                     }
                 } else {
                     $errorCodes = $data['error-codes'] ?? [];
                     return response()->json([
                         'success' => false,
-                        'message' => 'CAPTCHA validation failed: ' . implode(', ', $errorCodes)
+                        'message' => __('admin.settings.security.captcha_validation_failed_with_errors', ['errors' => implode(', ', $errorCodes)])
                     ]);
                 }
             } else {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Failed to connect to reCAPTCHA API'
+                    'message' => __('admin.settings.security.captcha_api_connection_failed')
                 ]);
             }
         }
         
         return response()->json([
             'success' => false,
-            'message' => 'Unsupported CAPTCHA driver'
+            'message' => __('admin.settings.security.captcha_driver_unsupported')
         ]);
     }
 
