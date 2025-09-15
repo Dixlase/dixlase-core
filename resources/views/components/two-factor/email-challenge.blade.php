@@ -1,0 +1,238 @@
+@props([
+    'action',
+    'resendAction' => null,
+    'title' => '認証コード入力',
+    'prompt' => '送信された認証コードを入力してください',
+    'submitText' => '認証',
+    'resendText' => '再送信',
+    'expireMinutes' => 10,
+    'codeLength' => 6,
+    'autoSubmit' => true,
+    'showExpireTime' => true,
+    'showResend' => true,
+    'context' => 'admin'
+])
+
+<div class="text-center">
+    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900 mb-4">
+        <svg class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+        </svg>
+    </div>
+    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+        {{ $title }}
+    </h3>
+    <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
+        {{ $prompt }}
+    </p>
+
+    <form action="{{ $action }}" method="POST" id="two-factor-form">
+        @csrf
+        
+        <!-- 認証コード入力 -->
+        <div class="mb-4">
+            <div class="flex justify-center space-x-2" id="code-inputs">
+                @for($i = 0; $i < $codeLength; $i++)
+                    <input 
+                        type="text" 
+                        maxlength="1" 
+                        class="w-12 h-12 text-center text-lg font-bold border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        data-index="{{ $i }}"
+                        autocomplete="off"
+                        inputmode="numeric"
+                        pattern="[0-9]*"
+                    >
+                @endfor
+            </div>
+            <input type="hidden" name="code" id="hidden-code">
+            @error('code')
+                <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <!-- 有効期限表示 -->
+        @if($showExpireTime)
+            <div class="mb-4">
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    コードの有効期限: <span id="expire-time">{{ $expireMinutes }}分</span>
+                </p>
+            </div>
+        @endif
+
+        <!-- 送信ボタン -->
+        <div class="mb-4">
+            <button 
+                type="submit" 
+                id="submit-button"
+                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-500 dark:hover:bg-blue-600"
+                disabled
+            >
+                {{ $submitText }}
+            </button>
+        </div>
+
+        <!-- 再送信ボタン -->
+        @if($showResend && $resendAction)
+            <div class="text-center">
+                <button 
+                    type="button" 
+                    id="resend-button"
+                    class="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    onclick="resendCode()"
+                >
+                    {{ $resendText }}
+                </button>
+                <span id="resend-countdown" class="text-xs text-gray-500 dark:text-gray-400 ml-2 hidden"></span>
+            </div>
+        @endif
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('#code-inputs input');
+    const hiddenInput = document.getElementById('hidden-code');
+    const submitButton = document.getElementById('submit-button');
+    const resendButton = document.getElementById('resend-button');
+    const form = document.getElementById('two-factor-form');
+    
+    let resendCountdown = 0;
+    let countdownInterval = null;
+
+    // コード入力処理
+    inputs.forEach((input, index) => {
+        input.addEventListener('input', function(e) {
+            const value = e.target.value.replace(/[^0-9]/g, '');
+            e.target.value = value;
+
+            if (value && index < inputs.length - 1) {
+                inputs[index + 1].focus();
+            }
+
+            updateHiddenInput();
+            updateSubmitButton();
+
+            // 自動送信
+            @if($autoSubmit)
+            if (getCodeValue().length === {{ $codeLength }}) {
+                setTimeout(() => form.submit(), 100);
+            }
+            @endif
+        });
+
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                inputs[index - 1].focus();
+                inputs[index - 1].value = '';
+                updateHiddenInput();
+                updateSubmitButton();
+            }
+        });
+
+        input.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const paste = (e.clipboardData || window.clipboardData).getData('text');
+            const numbers = paste.replace(/[^0-9]/g, '').slice(0, {{ $codeLength }});
+            
+            for (let i = 0; i < numbers.length && i < inputs.length; i++) {
+                inputs[i].value = numbers[i];
+            }
+            
+            updateHiddenInput();
+            updateSubmitButton();
+
+            // 自動送信
+            @if($autoSubmit)
+            if (numbers.length === {{ $codeLength }}) {
+                setTimeout(() => form.submit(), 100);
+            }
+            @endif
+        });
+    });
+
+    function getCodeValue() {
+        return Array.from(inputs).map(input => input.value).join('');
+    }
+
+    function updateHiddenInput() {
+        hiddenInput.value = getCodeValue();
+    }
+
+    function updateSubmitButton() {
+        const code = getCodeValue();
+        submitButton.disabled = code.length !== {{ $codeLength }};
+    }
+
+    // 再送信機能
+    @if($showResend && $resendAction)
+    window.resendCode = function() {
+        if (resendCountdown > 0) return;
+
+        fetch('{{ $resendAction }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                startResendCountdown(60); // 60秒間再送信を無効化
+                // 入力フィールドをクリア
+                inputs.forEach(input => input.value = '');
+                inputs[0].focus();
+                updateHiddenInput();
+                updateSubmitButton();
+            } else {
+                alert(data.message || 'コードの再送信に失敗しました');
+            }
+        })
+        .catch(error => {
+            console.error('Resend error:', error);
+            alert('ネットワークエラーが発生しました');
+        });
+    };
+
+    function startResendCountdown(seconds) {
+        resendCountdown = seconds;
+        resendButton.disabled = true;
+        document.getElementById('resend-countdown').classList.remove('hidden');
+        
+        countdownInterval = setInterval(() => {
+            resendCountdown--;
+            document.getElementById('resend-countdown').textContent = `(${resendCountdown}秒)`;
+            
+            if (resendCountdown <= 0) {
+                clearInterval(countdownInterval);
+                resendButton.disabled = false;
+                document.getElementById('resend-countdown').classList.add('hidden');
+            }
+        }, 1000);
+    }
+    @endif
+
+    // 最初の入力フィールドにフォーカス
+    inputs[0].focus();
+
+    // 有効期限カウントダウン
+    @if($showExpireTime)
+    let expireTime = {{ $expireMinutes }} * 60; // 秒に変換
+    const expireElement = document.getElementById('expire-time');
+    
+    const expireInterval = setInterval(() => {
+        expireTime--;
+        const minutes = Math.floor(expireTime / 60);
+        const seconds = expireTime % 60;
+        expireElement.textContent = `${minutes}分${seconds.toString().padStart(2, '0')}秒`;
+        
+        if (expireTime <= 0) {
+            clearInterval(expireInterval);
+            expireElement.textContent = '期限切れ';
+            inputs.forEach(input => input.disabled = true);
+            submitButton.disabled = true;
+        }
+    }, 1000);
+    @endif
+});
+</script>
