@@ -802,12 +802,9 @@ function renderV3Widget(siteKey) {
         grecaptcha.ready(function() {
             debugCaptcha('v3 widget rendering started', {siteKey: siteKey.substring(0, 20) + '...', keyLength: siteKey.length});
             
-            // キー形式の事前チェックを削除 - プロバイダー/バージョン選択に基づいてウィジェットを読み込み
-            
             // v3ウィジェットを配置 - キーの有効性に関係なく表示
             currentCaptchaWidget = 'v3';
             container.innerHTML = `
-                <div class="text-sm text-gray-600">reCAPTCHA v3が読み込まれました。認証ボタンをクリックしてテストしてください。</div>
                 <input type="hidden" id="g-recaptcha-response-v3" name="g-recaptcha-response" value="">
             `;
             debugCaptcha('v3 widget placed', {siteKey: siteKey.substring(0, 20) + '...'});
@@ -817,7 +814,6 @@ function renderV3Widget(siteKey) {
         // エラーが発生してもウィジェットを配置
         currentCaptchaWidget = 'v3';
         container.innerHTML = `
-            <div class="text-sm text-gray-600">reCAPTCHA v3が読み込まれました。認証ボタンをクリックしてテストしてください。</div>
             <input type="hidden" id="g-recaptcha-response-v3" name="g-recaptcha-response" value="">
         `;
         debugCaptcha('v3 widget placed despite initialization error', {error: error.message});
