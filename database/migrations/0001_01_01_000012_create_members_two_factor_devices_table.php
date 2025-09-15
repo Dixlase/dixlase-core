@@ -26,15 +26,30 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    protected $table = 'members_two_factor_devices';
+
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::table('security_settings', function (Blueprint $table) {
-            $table->timestamp('captcha_test_date')->nullable()->after('value');
-            $table->boolean('captcha_test_passed')->default(false)->after('captcha_test_date');
-            $table->text('captcha_test_error')->nullable()->after('captcha_test_passed');
+        Schema::create($this->table, function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('member_id')->constrained('members')->onDelete('cascade');
+            $table->string('device_name')->nullable();
+            $table->string('token')->unique();
+            $table->string('ip_address', 45)->nullable();
+            $table->string('user_agent')->nullable();
+            $table->string('device_type')->default('unknown'); // mobile, desktop, tablet, unknown
+            $table->string('platform')->nullable(); // iOS, Android, Windows, macOS, Linux
+            $table->string('browser')->nullable(); // Chrome, Safari, Firefox, Edge
+            $table->boolean('is_trusted')->default(true);
+            $table->timestamp('last_used_at')->nullable();
+            $table->timestamp('expires_at')->nullable(); // デバイス信頼の有効期限
+            $table->timestamps();
+            
+            $table->index(['member_id', 'token']);
+            $table->index(['member_id', 'is_trusted']);
         });
     }
 
@@ -43,8 +58,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('security_settings', function (Blueprint $table) {
-            $table->dropColumn(['captcha_test_date', 'captcha_test_passed', 'captcha_test_error']);
-        });
+        Schema::dropIfExists($this->table);
     }
 };

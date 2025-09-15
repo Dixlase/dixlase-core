@@ -48,8 +48,8 @@ class TwoFactorLoginCodeMail extends Mailable
     {
         $template = match ($this->context) {
             'admin' => 'emails.members_two_factor_code',
-            'user' => 'emails.two-factor-user-code',
-            default => 'emails.default_two_factor_code',
+            'user' => 'emails.members_two_factor_code',
+            default => 'emails.members_two_factor_code',
         };
 
         return new Content(
