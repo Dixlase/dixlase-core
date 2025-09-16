@@ -463,7 +463,7 @@ return [
             'captcha_validation_failed' => 'CAPTCHA認証に失敗しました',
             'captcha_validation_required_before_save' => 'CAPTCHAが有効な場合、設定を保存する前にCAPTCHA認証を完了してください。',
             'captcha_test_validation' => 'CAPTCHAを使用するには認証テストが必要です',
-            'captcha_test_validation_description' => '認証テストが成功したら再度保存してください。',
+            'captcha_test_validation_description' => '保存するとCAPTCHAを使用できます。',
             'captcha_test_required' => 'CAPTCHA認証が完了してません。CAPTCHAを使用するには認証を実行して成功する必要があります。',
             'captcha_validation_success_with_score' => 'CAPTCHA認証が成功しました (スコア: :score)。保存するとCAPTCHAが使用できるようになります。',
             'captcha_validation_score_too_low' => 'CAPTCHAスコアが低すぎます: :score (最小値: :min_score)',

@@ -421,6 +421,54 @@ class AdminSecuritySettingsController extends AdminLoggedInController
                     'message' => __('admin.settings.security.captcha_api_connection_failed')
                 ]);
             }
+        } elseif ($driver === 'turnstile') {
+            $secretKey = $request->input('captcha_secret_key', '');
+            
+            if (empty($secretKey)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Secret key is missing'
+                ]);
+            }
+            
+            $response = Http::asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
+                'secret' => $secretKey,
+                'response' => $token,
+                'remoteip' => $request->ip(),
+            ]);
+            
+            if ($response->successful()) {
+                $data = $response->json();
+                
+                \Log::info('Cloudflare Turnstile API Response', [
+                    'success' => $data['success'] ?? false,
+                    'error_codes' => $data['error-codes'] ?? [],
+                    'challenge_ts' => $data['challenge_ts'] ?? 'not_provided',
+                    'hostname' => $data['hostname'] ?? 'not_provided',
+                    'request_ip' => $request->ip()
+                ]);
+                
+                if ($data['success'] ?? false) {
+                    // テスト成功時はセッションのみに保存（DBには保存しない）
+                    session(['captcha_authentication_result' => true]);
+                    
+                    return response()->json([
+                        'success' => true,
+                        'message' => __('admin.settings.security.captcha_validation_success') . '. ' . __('admin.settings.security.captcha_test_validation_description')
+                    ]);
+                } else {
+                    $errorCodes = $data['error-codes'] ?? [];
+                    return response()->json([
+                        'success' => false,
+                        'message' => __('admin.settings.security.captcha_validation_failed_with_errors', ['errors' => implode(', ', $errorCodes)])
+                    ]);
+                }
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('admin.settings.security.captcha_api_connection_failed')
+                ]);
+            }
         }
         
         return response()->json([
