@@ -1177,23 +1177,93 @@ function loadGoogleV2CheckboxDynamic(siteKey) {
     const container = document.getElementById('captcha-widget-container');
     container.innerHTML = '<div id="recaptcha-v2-checkbox"></div><div class="mt-2 text-sm text-yellow-400">チェックボックスをクリックして認証を完了してください。</div>';
     
+    // 既にgrecaptchaが読み込まれている場合は直接レンダリング
+    if (typeof grecaptcha !== 'undefined' && grecaptcha.render) {
+        console.log('Google reCAPTCHA v2 already loaded, rendering checkbox widget...');
+        try {
+            grecaptcha.render('recaptcha-v2-checkbox', {
+                'sitekey': siteKey,
+                'callback': function(token) {
+                    console.log('v2 checkbox token generated:', token.substring(0, 50) + '...');
+                    validateCaptchaToken(token);
+                },
+                'error-callback': function() {
+                    console.error('reCAPTCHA v2 checkbox error');
+                    showTestResult('error', 'reCAPTCHA v2 checkboxでエラーが発生しました');
+                }
+            });
+        } catch (error) {
+            console.error('grecaptcha.render failed:', error);
+            console.log('grecaptcha object:', grecaptcha);
+            console.log('grecaptcha.render type:', typeof grecaptcha.render);
+            showTestResult('error', 'reCAPTCHA v2ウィジェットのレンダリングに失敗しました');
+        }
+        return;
+    }
+    
+    // スクリプトが既に存在するかチェック
+    const existingScript = document.querySelector('script[src="https://www.google.com/recaptcha/api.js"]');
+    if (existingScript) {
+        console.log('Google reCAPTCHA v2 script already exists, waiting for load...');
+        // スクリプトが読み込まれるまで待機
+        const checkGrecaptcha = setInterval(() => {
+            if (typeof grecaptcha !== 'undefined' && grecaptcha.render) {
+                clearInterval(checkGrecaptcha);
+                console.log('Google reCAPTCHA v2 ready, rendering checkbox widget...');
+                grecaptcha.render('recaptcha-v2-checkbox', {
+                    'sitekey': siteKey,
+                    'callback': function(token) {
+                        console.log('v2 checkbox token generated:', token.substring(0, 50) + '...');
+                        validateCaptchaToken(token);
+                    },
+                    'error-callback': function() {
+                        console.error('reCAPTCHA v2 checkbox error');
+                        showTestResult('error', 'reCAPTCHA v2 checkboxでエラーが発生しました');
+                    }
+                });
+            }
+        }, 100);
+        return;
+    }
+    
     // v2スクリプトを動的に読み込み
     const script = document.createElement('script');
     script.src = 'https://www.google.com/recaptcha/api.js';
     script.onload = function() {
         console.log('Google reCAPTCHA v2 script loaded, rendering checkbox widget...');
         
-        grecaptcha.render('recaptcha-v2-checkbox', {
-            'sitekey': siteKey,
-            'callback': function(token) {
-                console.log('v2 checkbox token generated:', token.substring(0, 50) + '...');
-                validateCaptchaToken(token);
-            },
-            'error-callback': function() {
-                console.error('reCAPTCHA v2 checkbox error');
-                showTestResult('error', 'reCAPTCHA v2 checkboxでエラーが発生しました');
+        // grecaptchaが完全に初期化されるまで待機
+        const waitForGrecaptcha = () => {
+            if (typeof grecaptcha !== 'undefined' && grecaptcha.render && typeof grecaptcha.render === 'function') {
+                console.log('grecaptcha.render is ready, rendering widget...');
+                try {
+                    grecaptcha.render('recaptcha-v2-checkbox', {
+                        'sitekey': siteKey,
+                        'callback': function(token) {
+                            console.log('v2 checkbox token generated:', token.substring(0, 50) + '...');
+                            validateCaptchaToken(token);
+                        },
+                        'error-callback': function() {
+                            console.error('reCAPTCHA v2 checkbox error');
+                            showTestResult('error', 'reCAPTCHA v2 checkboxでエラーが発生しました');
+                        }
+                    });
+                } catch (error) {
+                    console.error('grecaptcha.render failed in script.onload:', error);
+                    console.log('grecaptcha object:', grecaptcha);
+                    showTestResult('error', 'reCAPTCHA v2ウィジェットのレンダリングに失敗しました');
+                }
+            } else {
+                console.log('grecaptcha not ready yet, waiting...', {
+                    exists: typeof grecaptcha !== 'undefined',
+                    hasRender: typeof grecaptcha !== 'undefined' && grecaptcha.render,
+                    renderType: typeof grecaptcha !== 'undefined' ? typeof grecaptcha.render : 'undefined'
+                });
+                setTimeout(waitForGrecaptcha, 100);
             }
-        });
+        };
+        
+        waitForGrecaptcha();
     };
     script.onerror = function() {
         console.error('Failed to load Google reCAPTCHA v2 script');
@@ -1680,14 +1750,22 @@ function loadCaptchaWidgetAfterSave() {
     const siteKey = '{{ $settings["captcha_site_key"] ?? "" }}';
     const secretKey = '{{ $settings["captcha_secret_key"] ?? "" }}';
     const projectId = '{{ $settings["captcha_google_project_id"] ?? "" }}';
+    const authResult = {{ $captchaTestResult ? 'true' : 'false' }};
     
-    debugCaptcha('Loading CAPTCHA widget after save', {enabled, driver, siteKey: siteKey.substring(0, 20) + '...'});
+    debugCaptcha('Loading CAPTCHA widget after save', {enabled, driver, siteKey: siteKey.substring(0, 20) + '...', authResult});
     
     // 必須条件をチェック
     if (enabled && driver && siteKey && secretKey) {
         // Google Enterprise の場合はプロジェクトIDも必須
         if (driver === 'google_enterprise' && !projectId) {
             debugCaptcha('Google Enterprise requires project ID');
+            return;
+        }
+        
+        // 認証が既に成功している場合はウィジェットを読み込まない
+        if (authResult) {
+            debugCaptcha('Authentication already successful, skipping widget load');
+            hideAuthTestRequiredNotice();
             return;
         }
         
