@@ -187,10 +187,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     'xModel' => 'captchaSiteKey'
                 ])
 
-                @include('components::form.label', [
-                    'for' => 'captcha_secret_key',
-                    'text' => __('admin.settings.security.captcha_secret_key'),
-                ])
+                <label for="captcha_secret_key" class="block font-medium text-lg {{ config('admin.appearance_class.form.label') }}" 
+                       x-text="captchaDriver === 'google_enterprise' ? '{{ __("admin.settings.security.captcha_google_enterprise_secret_key") }}' : '{{ __("admin.settings.security.captcha_secret_key") }}'">
+                    {{ __('admin.settings.security.captcha_secret_key') }}
+                </label>
                 @include('components::form.text', [
                     'id' => 'captcha_secret_key',
                     'name' => 'captcha_secret_key',
@@ -1011,7 +1011,7 @@ function validateCaptchaWidget() {
     }
     
     // Enterpriseの場合はプロジェクトIDも必須
-    if (version === 'enterprise' && !projectId) {
+    if (driver === 'google_enterprise' && !projectId) {
         showTestResult('error', 'reCAPTCHA EnterpriseにはプロジェクトIDが必要です');
         return;
     }
@@ -1037,12 +1037,11 @@ function validateCaptchaWidget() {
             case 'v2_checkbox':
                 loadGoogleV2CheckboxDynamic(siteKey);
                 break;
-            case 'enterprise':
-                loadGoogleEnterpriseWidgetDynamic(siteKey, projectId);
-                break;
             default:
                 showTestResult('error', 'サポートされていないreCAPTCHAバージョンです: ' + version);
         }
+    } else if (driver === 'google_enterprise') {
+        loadGoogleEnterpriseWidgetDynamic(siteKey, projectId);
     } else if (driver === 'turnstile') {
         loadTurnstileWidgetDynamic(siteKey);
     } else {
@@ -1305,6 +1304,19 @@ function loadTurnstileWidgetDynamic(siteKey) {
     document.head.appendChild(script);
 }
 
+// Google reCAPTCHA Enterprise ウィジェット読み込み
+function loadGoogleEnterpriseWidget() {
+    const siteKey = document.getElementById('captcha_site_key').value;
+    const projectId = document.getElementById('captcha_google_project_id').value;
+    
+    if (!siteKey || !projectId) {
+        showTestResult('error', 'サイトキーまたはプロジェクトIDが設定されていません');
+        return;
+    }
+    
+    loadGoogleEnterpriseWidgetDynamic(siteKey, projectId);
+}
+
 // Google reCAPTCHA Enterprise 動的読み込み
 function loadGoogleEnterpriseWidgetDynamic(siteKey, projectId) {
     console.log('Loading Google reCAPTCHA Enterprise dynamically with siteKey:', siteKey.substring(0, 20) + '...', 'projectId:', projectId);
@@ -1354,7 +1366,8 @@ function validateCaptchaToken(token) {
     
     const projectId = document.getElementById('captcha_google_project_id').value;
     if (projectId) {
-        formData.append('captcha_project_id', projectId);
+        formData.append('captcha_google_project_id', projectId);
+        console.log('Adding project ID to request:', projectId);
     }
     
     console.log('Sending CAPTCHA validation request with token:', token.substring(0, 50) + '...');

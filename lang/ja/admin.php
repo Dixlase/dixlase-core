@@ -423,7 +423,7 @@ return [
             'captcha_google_site_key' => 'Google reCAPTCHA サイトキー',
             'captcha_google_secret_key' => 'Google reCAPTCHA シークレットキー',
             'captcha_google_enterprise_site_key' => 'Google reCAPTCHA Enterprise サイトキー',
-            'captcha_google_enterprise_secret_key' => 'Google reCAPTCHA Enterprise シークレットキー',
+            'captcha_google_enterprise_secret_key' => 'APIキー',
             'captcha_google_project_id' => 'Google Cloud プロジェクト ID',
             'captcha_google_version' => 'reCAPTCHA バージョン',
             'captcha_google_min_score' => '最小スコア (0.0-1.0)',
