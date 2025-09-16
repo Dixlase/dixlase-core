@@ -1175,7 +1175,7 @@ function loadGoogleV2CheckboxDynamic(siteKey) {
     
     // ウィジェットコンテナを準備
     const container = document.getElementById('captcha-widget-container');
-    container.innerHTML = '<div id="recaptcha-v2-checkbox"></div><div class="mt-2 text-sm text-blue-600">チェックボックスをクリックして認証を完了してください。</div>';
+    container.innerHTML = '<div id="recaptcha-v2-checkbox"></div><div class="mt-2 text-sm text-yellow-400">チェックボックスをクリックして認証を完了してください。</div>';
     
     // v2スクリプトを動的に読み込み
     const script = document.createElement('script');
@@ -1271,7 +1271,7 @@ function validateCaptchaToken(token) {
     formData.append('g-recaptcha-response', token);
     
     // 現在のフォーム値を追加
-    formData.append('captcha_version', document.getElementById('captcha_google_version').value);
+    formData.append('captcha_google_version', document.getElementById('captcha_google_version').value);
     formData.append('captcha_site_key', document.getElementById('captcha_site_key').value);
     formData.append('captcha_secret_key', document.getElementById('captcha_secret_key').value);
     
