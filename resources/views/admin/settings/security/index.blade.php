@@ -251,22 +251,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div class="mt-6" x-show="captchaEnabled" id="captcha-test-section">
                     <!-- CAPTCHA Test Section (Only shown when CAPTCHA is enabled) -->
                     <div class="mt-4 p-4 border rounded-lg bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-                        <!-- Test Status Display -->
-                        @if(!$captchaTestResult)
-                        <div id="captcha-test-required-notice" class="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
-                            <div class="flex items-center text-yellow-600 dark:text-yellow-400">
-                                <i class="fas fa-exclamation-triangle mr-2"></i>
-                                <span class="text-sm font-medium">CAPTCHAを使用するには認証テストが必要です。</span>
-                            </div>
-                            <div class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
-                                <ul>
-                                    <li>認証が成功したら再度保存してください。</li>
-                                    <li>認証に失敗する場合は設定内容をご確認ください。</li>
-                                    <li>設定内容を変更した場合には再度保存してから認証テストを行ってください。</li>
-                                </ul>
-                            </div>
-                        </div>
-                        @endif
 
                         <!-- CAPTCHA Test Success Display (from DB) -->
                         
@@ -988,12 +972,29 @@ function updateValidationStatus(status) {
 function validateCaptchaWidget() {
     console.log('=== CAPTCHA Widget Validation Started ===');
     
-    // 現在のフォーム値を取得
-    const driver = document.getElementById('captcha_driver').value;
-    const version = document.getElementById('captcha_version').value;
-    const siteKey = document.getElementById('captcha_site_key').value;
-    const secretKey = document.getElementById('captcha_secret_key').value;
-    const projectId = document.getElementById('captcha_project_id').value;
+    // 現在のフォーム値を取得（null チェック付き）
+    const driverElement = document.getElementById('captcha_driver');
+    const versionElement = document.getElementById('captcha_version');
+    const siteKeyElement = document.getElementById('captcha_site_key');
+    const secretKeyElement = document.getElementById('captcha_secret_key');
+    const projectIdElement = document.getElementById('captcha_project_id');
+    
+    if (!driverElement || !versionElement || !siteKeyElement || !secretKeyElement) {
+        console.error('Required form elements not found:', {
+            driver: !!driverElement,
+            version: !!versionElement,
+            siteKey: !!siteKeyElement,
+            secretKey: !!secretKeyElement
+        });
+        showTestResult('error', '必要なフォーム要素が見つかりません');
+        return;
+    }
+    
+    const driver = driverElement.value;
+    const version = versionElement.value;
+    const siteKey = siteKeyElement.value;
+    const secretKey = secretKeyElement.value;
+    const projectId = projectIdElement ? projectIdElement.value : '';
     
     console.log('Current form values:', {
         driver: driver,
@@ -1518,19 +1519,13 @@ function setupCaptchaToggleMonitoring() {
             
             if (!previousEnabled && currentEnabled) {
                 // 無効から有効に変更された場合
-                const captchaNotice = document.getElementById('captcha-enabled-notice');
-                if (captchaNotice) {
-                    captchaNotice.style.display = 'block';
-                }
                 updateValidationStatus('pending');
+                showAuthTestRequiredNotice();
             } else if (previousEnabled && !currentEnabled) {
                 // 有効から無効に変更された場合
-                const captchaNotice = document.getElementById('captcha-enabled-notice');
-                if (captchaNotice) {
-                    captchaNotice.style.display = 'none';
-                }
                 // ウィジェットをクリア
                 clearCaptchaWidget();
+                hideAuthTestRequiredNotice();
             }
             
             // 初期状態を更新
