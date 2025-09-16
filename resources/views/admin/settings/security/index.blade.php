@@ -1345,6 +1345,13 @@ function validateCaptchaToken(token) {
     formData.append('captcha_site_key', document.getElementById('captcha_site_key').value);
     formData.append('captcha_secret_key', document.getElementById('captcha_secret_key').value);
     
+    // 最小スコアを追加（v3の場合）
+    const minScoreElement = document.getElementById('captcha_google_min_score');
+    if (minScoreElement && minScoreElement.value) {
+        formData.append('captcha_google_min_score', minScoreElement.value);
+        console.log('Adding min score to request:', minScoreElement.value);
+    }
+    
     const projectId = document.getElementById('captcha_google_project_id').value;
     if (projectId) {
         formData.append('captcha_project_id', projectId);

@@ -425,7 +425,7 @@ Clicking this link will complete the full mail function test.',
             'captcha_google_min_score' => 'Minimum Score (0.0-1.0)',
             'captcha_turnstile_site_key' => 'Cloudflare Turnstile Site Key',
             'captcha_turnstile_secret_key' => 'Cloudflare Turnstile Secret Key',
-            'captcha_min_score_description' => '0.0 is most suspicious, 1.0 is most trustworthy. Usually 0.5 is recommended.',
+            'captcha_min_score_description' => '0 is most suspicious, 1.0 is most trustworthy. Usually 0.5 is recommended. Set to 0 for development environment (localhost).',
             'captcha_form_settings' => 'reCAPTCHA Form Settings',
             'captcha_forms' => [
                 'admin_login' => 'Admin Login',
