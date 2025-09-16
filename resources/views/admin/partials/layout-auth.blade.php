@@ -12,11 +12,11 @@
         {{-- 開発環境ではリソースを直接読み込み --}}
         @vite([
             'resources/src/common/js/app.js',
-            'resources/src/common/scss/app.scss'
+            'resources/src/common/scss/style.scss'
         ])
     @else
         {{-- 本番環境ではmanifest.jsonを読み込み --}}
-        @vite(['resources/src/common/js/app.js', 'resources/src/common/scss/app.scss'], 'build')
+        @vite(['resources/src/common/js/app.js', 'resources/src/common/scss/style.scss'], 'build')
     @endif
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
