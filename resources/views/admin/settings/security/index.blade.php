@@ -974,10 +974,10 @@ function validateCaptchaWidget() {
     
     // 現在のフォーム値を取得（null チェック付き）
     const driverElement = document.getElementById('captcha_driver');
-    const versionElement = document.getElementById('captcha_version');
+    const versionElement = document.getElementById('captcha_google_version');
     const siteKeyElement = document.getElementById('captcha_site_key');
     const secretKeyElement = document.getElementById('captcha_secret_key');
-    const projectIdElement = document.getElementById('captcha_project_id');
+    const projectIdElement = document.getElementById('captcha_google_project_id');
     
     if (!driverElement || !versionElement || !siteKeyElement || !secretKeyElement) {
         console.error('Required form elements not found:', {
@@ -1023,19 +1023,19 @@ function validateCaptchaWidget() {
     }
     
     // テスト結果をリセット
-    resetTestResult();
+    hideTestResult();
     
     // プロバイダーとバージョンに基づいて動的読み込み
     if (driver === 'google') {
         switch (version) {
             case 'v3':
-                loadGoogleV3WidgetDynamic(siteKey);
+                loadGoogleV3Dynamic(siteKey);
                 break;
             case 'v2_invisible':
-                loadGoogleV2InvisibleWidgetDynamic(siteKey);
+                loadGoogleV2InvisibleDynamic(siteKey);
                 break;
             case 'v2_checkbox':
-                loadGoogleV2CheckboxWidgetDynamic(siteKey);
+                loadGoogleV2CheckboxDynamic(siteKey);
                 break;
             case 'enterprise':
                 loadGoogleEnterpriseWidgetDynamic(siteKey, projectId);
@@ -1271,11 +1271,11 @@ function validateCaptchaToken(token) {
     formData.append('g-recaptcha-response', token);
     
     // 現在のフォーム値を追加
-    formData.append('captcha_version', document.getElementById('captcha_version').value);
+    formData.append('captcha_version', document.getElementById('captcha_google_version').value);
     formData.append('captcha_site_key', document.getElementById('captcha_site_key').value);
     formData.append('captcha_secret_key', document.getElementById('captcha_secret_key').value);
     
-    const projectId = document.getElementById('captcha_project_id').value;
+    const projectId = document.getElementById('captcha_google_project_id').value;
     if (projectId) {
         formData.append('captcha_project_id', projectId);
     }
