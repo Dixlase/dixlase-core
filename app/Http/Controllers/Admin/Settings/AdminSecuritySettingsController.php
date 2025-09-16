@@ -349,11 +349,33 @@ class AdminSecuritySettingsController extends AdminLoggedInController
             if ($response->successful()) {
                 $data = $response->json();
                 
+                \Log::info('Google reCAPTCHA API Response', [
+                    'success' => $data['success'] ?? false,
+                    'score' => $data['score'] ?? 'not_provided',
+                    'error_codes' => $data['error-codes'] ?? [],
+                    'challenge_ts' => $data['challenge_ts'] ?? 'not_provided',
+                    'hostname' => $data['hostname'] ?? 'not_provided',
+                    'version' => $version,
+                    'request_ip' => $request->ip()
+                ]);
+                
+                // localhost/開発環境での警告
+                if (($data['hostname'] ?? '') === 'localhost' && ($data['score'] ?? 0) === 0.0) {
+                    \Log::warning('reCAPTCHA v3 returning score 0 for localhost - this is expected behavior. Please add your domain to Google reCAPTCHA console for production.');
+                }
+                
                 if ($data['success'] ?? false) {
                     // v3の場合はスコアもチェック
                     if ($version === 'v3') {
                         $score = $data['score'] ?? 0;
                         $minScore = floatval($request->input('captcha_google_min_score', 0.5));
+                        
+                        \Log::info('reCAPTCHA v3 Score Check', [
+                            'score' => $score,
+                            'min_score' => $minScore,
+                            'min_score_input' => $request->input('captcha_google_min_score'),
+                            'passed' => $score >= $minScore
+                        ]);
                         
                         if ($score >= $minScore) {
                             // テスト成功時はセッションのみに保存（DBには保存しない）
@@ -364,6 +386,14 @@ class AdminSecuritySettingsController extends AdminLoggedInController
                                 'message' => __('admin.settings.security.captcha_validation_success_with_score', ['score' => $score])
                             ]);
                         } else {
+                            // localhost環境での特別なメッセージ
+                            if (($data['hostname'] ?? '') === 'localhost' && $score === 0.0) {
+                                return response()->json([
+                                    'success' => false,
+                                    'message' => 'CAPTCHAスコアが低すぎます: ' . $score . ' (最小値: ' . $minScore . '). 開発環境(localhost)では正常なスコアが取得できません。Google reCAPTCHA管理コンソールで本番ドメインを設定してください。'
+                                ]);
+                            }
+                            
                             return response()->json([
                                 'success' => false,
                                 'message' => __('admin.settings.security.captcha_validation_score_too_low', ['score' => $score, 'min_score' => $minScore])

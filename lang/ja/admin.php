@@ -429,7 +429,7 @@ return [
             'captcha_google_min_score' => '最小スコア (0.0-1.0)',
             'captcha_turnstile_site_key' => 'Cloudflare Turnstile サイトキー',
             'captcha_turnstile_secret_key' => 'Cloudflare Turnstile シークレットキー',
-            'captcha_min_score_description' => '0.0は最も疑わしく、1.0は最も信頼できることを示します。通常は0.5を推奨します。',
+            'captcha_min_score_description' => '0は最も疑わしく、1.0は最も信頼できることを示します。通常は0.5を推奨します。開発環境(localhost)では0に設定してください。',
             'captcha_form_settings' => 'CAPTCHAを使用するフォーム',
             'captcha_forms' => [
                 'admin_login' => '管理画面ログイン',
