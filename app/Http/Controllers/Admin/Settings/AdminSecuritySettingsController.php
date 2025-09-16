@@ -421,6 +421,83 @@ class AdminSecuritySettingsController extends AdminLoggedInController
                     'message' => __('admin.settings.security.captcha_api_connection_failed')
                 ]);
             }
+        } elseif ($driver === 'google_enterprise') {
+            $apiKey = $request->input('captcha_secret_key', '');
+            $projectId = $request->input('captcha_google_project_id', '');
+            
+            if (empty($apiKey)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'API key is missing'
+                ]);
+            }
+            
+            if (empty($projectId)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Project ID is missing'
+                ]);
+            }
+            
+            // Google reCAPTCHA Enterprise API呼び出し
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+            ])->post("https://recaptchaenterprise.googleapis.com/v1/projects/{$projectId}/assessments?key={$apiKey}", [
+                'event' => [
+                    'token' => $token,
+                    'siteKey' => $request->input('captcha_site_key', ''),
+                ]
+            ]);
+            
+            if ($response->successful()) {
+                $data = $response->json();
+                
+                \Log::info('Google reCAPTCHA Enterprise API Response', [
+                    'token_valid' => $data['tokenProperties']['valid'] ?? false,
+                    'score' => $data['riskAnalysis']['score'] ?? 'not_provided',
+                    'reasons' => $data['riskAnalysis']['reasons'] ?? [],
+                    'hostname' => $data['tokenProperties']['hostname'] ?? 'not_provided',
+                    'project_id' => $projectId,
+                    'request_ip' => $request->ip()
+                ]);
+                
+                if ($data['tokenProperties']['valid'] ?? false) {
+                    $score = $data['riskAnalysis']['score'] ?? 0;
+                    $minScore = floatval($request->input('captcha_google_min_score', 0.5));
+                    
+                    \Log::info('reCAPTCHA Enterprise Score Check', [
+                        'score' => $score,
+                        'min_score' => $minScore,
+                        'passed' => $score >= $minScore
+                    ]);
+                    
+                    if ($score >= $minScore) {
+                        // テスト成功時はセッションのみに保存（DBには保存しない）
+                        session(['captcha_authentication_result' => true]);
+                        
+                        return response()->json([
+                            'success' => true,
+                            'message' => __('admin.settings.security.captcha_validation_success_with_score', ['score' => $score])
+                        ]);
+                    } else {
+                        return response()->json([
+                            'success' => false,
+                            'message' => __('admin.settings.security.captcha_validation_score_too_low', ['score' => $score, 'min_score' => $minScore])
+                        ]);
+                    }
+                } else {
+                    $reasons = $data['riskAnalysis']['reasons'] ?? [];
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'reCAPTCHA Enterprise token validation failed: ' . implode(', ', $reasons)
+                    ]);
+                }
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('admin.settings.security.captcha_api_connection_failed')
+                ]);
+            }
         } elseif ($driver === 'turnstile') {
             $secretKey = $request->input('captcha_secret_key', '');
             
