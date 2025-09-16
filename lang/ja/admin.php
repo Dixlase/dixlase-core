@@ -465,7 +465,7 @@ return [
             'captcha_test_validation' => 'CAPTCHAを使用するには認証テストが必要です',
             'captcha_test_validation_description' => '認証テストが成功したら再度保存してください。',
             'captcha_test_required' => 'CAPTCHA認証が完了してません。CAPTCHAを使用するには認証を実行して成功する必要があります。',
-            'captcha_validation_success_with_score' => 'CAPTCHA認証が成功しました (スコア: :score)。再度保存するとCAPTCHAが使用できるようになります。',
+            'captcha_validation_success_with_score' => 'CAPTCHA認証が成功しました (スコア: :score)。保存するとCAPTCHAが使用できるようになります。',
             'captcha_validation_score_too_low' => 'CAPTCHAスコアが低すぎます: :score (最小値: :min_score)',
             'captcha_validation_failed_with_errors' => 'CAPTCHA認証に失敗しました: :errors',
             'captcha_api_connection_failed' => 'reCAPTCHA APIへの接続に失敗しました',
