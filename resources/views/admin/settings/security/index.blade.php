@@ -443,6 +443,41 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
 @push('scripts')
+<script>
+// Localized messages for JavaScript
+const captchaMessages = {
+    validationError: @json(__('admin.settings.security.captcha_validation_error')),
+    buttonDisabledReason: @json(__('admin.settings.security.captcha_button_disabled_reason')),
+    enterSiteKey: @json(__('admin.settings.security.captcha_enter_site_key')),
+    invalidV3SiteKey: @json(__('admin.settings.security.captcha_invalid_v3_site_key')),
+    requiredFieldsMissing: @json(__('admin.settings.security.captcha_required_fields_missing')),
+    requiredFieldsEmpty: @json(__('admin.settings.security.captcha_required_fields_empty')),
+    enterpriseProjectIdRequired: @json(__('admin.settings.security.captcha_enterprise_project_id_required')),
+    unsupportedVersion: @json(__('admin.settings.security.captcha_unsupported_version')),
+    unsupportedProvider: @json(__('admin.settings.security.captcha_unsupported_provider')),
+    authenticationSuccess: @json(__('admin.settings.security.captcha_authentication_success')),
+    authenticationFailed: @json(__('admin.settings.security.captcha_authentication_failed')),
+    v3ExecutionFailed: @json(__('admin.settings.security.captcha_v3_execution_failed')),
+    v3ScriptLoadFailed: @json(__('admin.settings.security.captcha_v3_script_load_failed')),
+    v2InvisibleError: @json(__('admin.settings.security.captcha_v2_invisible_error')),
+    v2ScriptLoadFailed: @json(__('admin.settings.security.captcha_v2_script_load_failed')),
+    v2CheckboxInstruction: @json(__('admin.settings.security.captcha_v2_checkbox_instruction')),
+    v2CheckboxError: @json(__('admin.settings.security.captcha_v2_checkbox_error')),
+    v2WidgetRenderFailed: @json(__('admin.settings.security.captcha_v2_widget_render_failed')),
+    turnstileError: @json(__('admin.settings.security.captcha_turnstile_error')),
+    turnstileScriptLoadFailed: @json(__('admin.settings.security.captcha_turnstile_script_load_failed')),
+    enterpriseExecutionFailed: @json(__('admin.settings.security.captcha_enterprise_execution_failed')),
+    enterpriseScriptLoadFailed: @json(__('admin.settings.security.captcha_enterprise_script_load_failed')),
+    
+    // Additional messages
+    testCompletedSuccessfully: @json(__('admin.settings.security.captcha_test_completed_successfully')),
+    authenticationSuccessTitle: @json(__('admin.settings.security.captcha_authentication_success_title')),
+    authenticationFailedTitle: @json(__('admin.settings.security.captcha_authentication_failed_title')),
+    expiredMessage: @json(__('admin.settings.security.captcha_expired_message')),
+    siteKeyProjectIdMissing: @json(__('admin.settings.security.captcha_site_key_project_id_missing')),
+    serverCommunicationFailed: @json(__('admin.settings.security.captcha_server_communication_failed')),
+    providerSettingsCheck: @json(__('admin.settings.security.captcha_provider_settings_check'))
+};
 
 // フォーム送信時のデバッグ関数
 function debugFormSubmission(event) {
@@ -623,7 +658,7 @@ function validateCaptchaToken(token) {
     })
     .catch(error => {
         console.error('CAPTCHA validation error:', error);
-        showTestResult('error', 'CAPTCHA検証中にエラーが発生しました。');
+        showTestResult('error', captchaMessages.validationError);
         onCaptchaValidationFailure();
         enableValidationButton();
     });
@@ -688,7 +723,7 @@ function disableValidationButton(reason) {
     if (button) {
         button.disabled = true;
         button.classList.add('opacity-50', 'cursor-not-allowed');
-        button.title = reason || 'キーエラーのため無効化されています';
+        button.title = reason || captchaMessages.buttonDisabledReason;
         debugCaptcha('Validation button disabled', {reason});
     }
 }
@@ -727,7 +762,7 @@ function loadGoogleRecaptchaWidget() {
     enableValidationButton();
     
     if (!siteKey) {
-        container.innerHTML = '<p class="text-sm text-gray-500">サイトキーを入力してください</p>';
+        container.innerHTML = '<p class="text-sm text-gray-500">' + captchaMessages.enterSiteKey + '</p>';
         return;
     }
     
@@ -764,7 +799,7 @@ function renderV3Widget(siteKey) {
         if (event.message && event.message.includes('Invalid site key')) {
             console.error('Caught v3 site key error:', event.message);
             updateValidationStatus('failed');
-            container.innerHTML = '<div class="text-red-600 text-sm">v3サイトキーが無効です。正しいv3用のキーを入力してください。<br>現在のキー: ' + siteKey.substring(0, 20) + '...</div>';
+            container.innerHTML = '<div class="text-red-600 text-sm">' + captchaMessages.invalidV3SiteKey + '<br>現在のキー: ' + siteKey.substring(0, 20) + '...</div>';
             event.preventDefault();
             // エラーハンドラーを削除
             window.removeEventListener('error', errorHandler);
@@ -879,7 +914,7 @@ function loadTurnstileWidget() {
     const container = document.getElementById('captcha-widget-container');
     
     if (!siteKey) {
-        container.innerHTML = '<p class="text-sm text-gray-500">サイトキーを入力してください</p>';
+        container.innerHTML = '<p class="text-sm text-gray-500">' + captchaMessages.enterSiteKey + '</p>';
         return;
     }
     
@@ -954,7 +989,7 @@ function updateValidationStatus(status) {
             html = `
                 <div class="flex items-center text-orange-600 dark:text-orange-400">
                     <i class="fas fa-clock mr-2"></i>
-                    <span class="text-sm">CAPTCHA認証が期限切れです。再度実行してください。</span>
+                    <span class="text-sm">' + captchaMessages.expiredMessage + '</span>
                 </div>
             `;
             break;
@@ -986,7 +1021,7 @@ function validateCaptchaWidget() {
             siteKey: !!siteKeyElement,
             secretKey: !!secretKeyElement
         });
-        showTestResult('error', '必要なフォーム要素が見つかりません');
+        showTestResult('error', captchaMessages.requiredFieldsMissing);
         return;
     }
     
@@ -1006,13 +1041,13 @@ function validateCaptchaWidget() {
     
     // 必須フィールドの検証
     if (!driver || !version || !siteKey || !secretKey) {
-        showTestResult('error', '必須フィールドが入力されていません');
+        showTestResult('error', captchaMessages.requiredFieldsEmpty);
         return;
     }
     
     // Enterpriseの場合はプロジェクトIDも必須
     if (driver === 'google_enterprise' && !projectId) {
-        showTestResult('error', 'reCAPTCHA EnterpriseにはプロジェクトIDが必要です');
+        showTestResult('error', captchaMessages.enterpriseProjectIdRequired);
         return;
     }
     
@@ -1038,14 +1073,14 @@ function validateCaptchaWidget() {
                 loadGoogleV2CheckboxDynamic(siteKey);
                 break;
             default:
-                showTestResult('error', 'サポートされていないreCAPTCHAバージョンです: ' + version);
+                showTestResult('error', captchaMessages.unsupportedVersion + ': ' + version);
         }
     } else if (driver === 'google_enterprise') {
         loadGoogleEnterpriseWidgetDynamic(siteKey, projectId);
     } else if (driver === 'turnstile') {
         loadTurnstileWidgetDynamic(siteKey);
     } else {
-        showTestResult('error', 'サポートされていないCAPTCHAプロバイダーです: ' + driver);
+        showTestResult('error', captchaMessages.unsupportedProvider + ': ' + driver);
     }
 }
 
@@ -1059,7 +1094,7 @@ function handleCaptchaAuthenticationResult(success, message) {
         if (resultInput) {
             resultInput.value = '1';
         }
-        showTestResult('success', message || 'CAPTCHA認証が成功しました');
+        showTestResult('success', message || captchaMessages.authenticationSuccess);
         hideAuthTestRequiredNotice();
     } else {
         // 失敗時: 隠し入力をクリアし、エラーメッセージを表示
@@ -1067,7 +1102,7 @@ function handleCaptchaAuthenticationResult(success, message) {
         if (resultInput) {
             resultInput.value = '0';
         }
-        showTestResult('error', message || 'CAPTCHA認証に失敗しました');
+        showTestResult('error', message || captchaMessages.authenticationFailed);
         showAuthTestRequiredNotice();
     }
 }
@@ -1118,13 +1153,13 @@ function loadGoogleV3Dynamic(siteKey) {
                 validateCaptchaToken(token);
             }).catch(function(error) {
                 console.error('reCAPTCHA v3 execution error:', error);
-                showTestResult('error', 'reCAPTCHA v3の実行に失敗しました: ' + error.message);
+                showTestResult('error', captchaMessages.v3ExecutionFailed + ': ' + error.message);
             });
         });
     };
     script.onerror = function() {
         console.error('Failed to load Google reCAPTCHA v3 script');
-        showTestResult('error', 'reCAPTCHA v3スクリプトの読み込みに失敗しました');
+        showTestResult('error', captchaMessages.v3ScriptLoadFailed);
     };
     document.head.appendChild(script);
 }
@@ -1152,7 +1187,7 @@ function loadGoogleV2InvisibleDynamic(siteKey) {
             },
             'error-callback': function() {
                 console.error('reCAPTCHA v2 invisible error');
-                showTestResult('error', 'reCAPTCHA v2 invisibleでエラーが発生しました');
+                showTestResult('error', captchaMessages.v2InvisibleError);
             }
         });
         
@@ -1163,7 +1198,7 @@ function loadGoogleV2InvisibleDynamic(siteKey) {
     };
     script.onerror = function() {
         console.error('Failed to load Google reCAPTCHA v2 script');
-        showTestResult('error', 'reCAPTCHA v2スクリプトの読み込みに失敗しました');
+        showTestResult('error', captchaMessages.v2ScriptLoadFailed);
     };
     document.head.appendChild(script);
 }
@@ -1174,7 +1209,7 @@ function loadGoogleV2CheckboxDynamic(siteKey) {
     
     // ウィジェットコンテナを準備
     const container = document.getElementById('captcha-widget-container');
-    container.innerHTML = '<div id="recaptcha-v2-checkbox"></div><div class="mt-2 text-sm text-yellow-400">チェックボックスをクリックして認証を完了してください。</div>';
+    container.innerHTML = '<div id="recaptcha-v2-checkbox"></div><div class="mt-2 text-sm text-yellow-400">' + captchaMessages.v2CheckboxInstruction + '</div>';
     
     // 既にgrecaptchaが読み込まれている場合は直接レンダリング
     if (typeof grecaptcha !== 'undefined' && grecaptcha.render) {
@@ -1188,14 +1223,14 @@ function loadGoogleV2CheckboxDynamic(siteKey) {
                 },
                 'error-callback': function() {
                     console.error('reCAPTCHA v2 checkbox error');
-                    showTestResult('error', 'reCAPTCHA v2 checkboxでエラーが発生しました');
+                    showTestResult('error', captchaMessages.v2CheckboxError);
                 }
             });
         } catch (error) {
             console.error('grecaptcha.render failed:', error);
             console.log('grecaptcha object:', grecaptcha);
             console.log('grecaptcha.render type:', typeof grecaptcha.render);
-            showTestResult('error', 'reCAPTCHA v2ウィジェットのレンダリングに失敗しました');
+            showTestResult('error', captchaMessages.v2WidgetRenderFailed);
         }
         return;
     }
@@ -1217,7 +1252,7 @@ function loadGoogleV2CheckboxDynamic(siteKey) {
                     },
                     'error-callback': function() {
                         console.error('reCAPTCHA v2 checkbox error');
-                        showTestResult('error', 'reCAPTCHA v2 checkboxでエラーが発生しました');
+                        showTestResult('error', captchaMessages.v2CheckboxError);
                     }
                 });
             }
@@ -1244,13 +1279,13 @@ function loadGoogleV2CheckboxDynamic(siteKey) {
                         },
                         'error-callback': function() {
                             console.error('reCAPTCHA v2 checkbox error');
-                            showTestResult('error', 'reCAPTCHA v2 checkboxでエラーが発生しました');
+                            showTestResult('error', captchaMessages.v2CheckboxError);
                         }
                     });
                 } catch (error) {
                     console.error('grecaptcha.render failed in script.onload:', error);
                     console.log('grecaptcha object:', grecaptcha);
-                    showTestResult('error', 'reCAPTCHA v2ウィジェットのレンダリングに失敗しました');
+                    showTestResult('error', captchaMessages.v2WidgetRenderFailed);
                 }
             } else {
                 console.log('grecaptcha not ready yet, waiting...', {
@@ -1266,7 +1301,7 @@ function loadGoogleV2CheckboxDynamic(siteKey) {
     };
     script.onerror = function() {
         console.error('Failed to load Google reCAPTCHA v2 script');
-        showTestResult('error', 'reCAPTCHA v2スクリプトの読み込みに失敗しました');
+        showTestResult('error', captchaMessages.v2ScriptLoadFailed);
     };
     document.head.appendChild(script);
 }
@@ -1293,13 +1328,13 @@ function loadTurnstileWidgetDynamic(siteKey) {
             },
             'error-callback': function() {
                 console.error('Turnstile error');
-                showTestResult('error', 'Turnstileでエラーが発生しました');
+                showTestResult('error', captchaMessages.turnstileError);
             }
         });
     };
     script.onerror = function() {
         console.error('Failed to load Cloudflare Turnstile script');
-        showTestResult('error', 'Turnstileスクリプトの読み込みに失敗しました');
+        showTestResult('error', captchaMessages.turnstileScriptLoadFailed);
     };
     document.head.appendChild(script);
 }
@@ -1310,7 +1345,7 @@ function loadGoogleEnterpriseWidget() {
     const projectId = document.getElementById('captcha_google_project_id').value;
     
     if (!siteKey || !projectId) {
-        showTestResult('error', 'サイトキーまたはプロジェクトIDが設定されていません');
+        showTestResult('error', captchaMessages.siteKeyProjectIdMissing);
         return;
     }
     
@@ -1333,13 +1368,13 @@ function loadGoogleEnterpriseWidgetDynamic(siteKey, projectId) {
                 validateCaptchaToken(token);
             }).catch(function(error) {
                 console.error('reCAPTCHA Enterprise execution error:', error);
-                showTestResult('error', 'reCAPTCHA Enterpriseの実行に失敗しました: ' + error.message);
+                showTestResult('error', captchaMessages.enterpriseExecutionFailed + ': ' + error.message);
             });
         });
     };
     script.onerror = function() {
         console.error('Failed to load Google reCAPTCHA Enterprise script');
-        showTestResult('error', 'reCAPTCHA Enterpriseスクリプトの読み込みに失敗しました');
+        showTestResult('error', captchaMessages.enterpriseScriptLoadFailed);
     };
     document.head.appendChild(script);
 }
@@ -1386,7 +1421,7 @@ function validateCaptchaToken(token) {
     })
     .catch(error => {
         console.error('CAPTCHA validation error:', error);
-        handleCaptchaAuthenticationResult(false, 'サーバーとの通信に失敗しました');
+        handleCaptchaAuthenticationResult(false, captchaMessages.serverCommunicationFailed);
     });
 }
 
@@ -1427,7 +1462,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (authResultInput) {
         if (authResultInput.value === '1') {
             // 認証成功時は統合メッセージ要素で成功状態を表示
-            showTestResult('success', 'CAPTCHAの認証テストが正常に完了しています。');
+            showTestResult('success', captchaMessages.testCompletedSuccessfully);
             console.log('DEBUG: Displayed CAPTCHA success message on page load');
         } else {
             // 認証結果が0の場合はメッセージを非表示
@@ -1509,7 +1544,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (providerNameElement && providerLinkElement) {
             providerNameElement.textContent = providerInfo.name;
             providerLinkElement.href = providerInfo.url;
-            providerLinkElement.textContent = `(${providerInfo.name}の設定を確認)`;
+            providerLinkElement.textContent = `(${providerInfo.name}${captchaMessages.providerSettingsCheck})`;
         }
     }
     
@@ -1840,12 +1875,12 @@ function showTestResult(type, message) {
             // 成功時のスタイル設定
             resultElement.className = 'mb-4 p-3 border rounded-lg bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-200';
             iconElement.className = 'fas fa-check-circle mr-3 text-green-600 dark:text-green-400';
-            titleElement.textContent = '認証成功';
+            titleElement.textContent = captchaMessages.authenticationSuccessTitle;
         } else {
             // 失敗時のスタイル設定
             resultElement.className = 'mb-4 p-3 border rounded-lg bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-200';
             iconElement.className = 'fas fa-times-circle mr-3 text-red-600 dark:text-red-400';
-            titleElement.textContent = '認証失敗';
+            titleElement.textContent = captchaMessages.authenticationFailedTitle;
         }
         
         resultElement.style.display = 'block';
@@ -1920,7 +1955,5 @@ function resetCaptchaAuthenticationResult(reason) {
     hideTestResult();
     console.log('DEBUG: Hidden CAPTCHA test result message due to settings change');
 }
-
-
-
+</script>
 @endpush

@@ -75,7 +75,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 </div>
 
 @push('scripts')
-
+<script>
 var modalId = '{{ $id }}';
 // モーダルウィンドウを開く
 function openModal(modalId) {
@@ -97,5 +97,5 @@ document.addEventListener('DOMContentLoaded', () => {
         closeModal(modalId);
     @endif
 });
-
+</script>
 @endpush
