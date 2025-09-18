@@ -49,7 +49,7 @@ class CaptchaTestService
                 default:
                     return [
                         'success' => false,
-                        'message' => 'Unsupported CAPTCHA driver: ' . $driver
+                        'message' => __('admin.settings.security.captcha_test_unsupported_driver') . ': ' . $driver
                     ];
             }
         } catch (\Exception $e) {
@@ -61,7 +61,7 @@ class CaptchaTestService
             
             return [
                 'success' => false,
-                'message' => 'Test failed due to system error: ' . $e->getMessage()
+                'message' => __('admin.settings.security.captcha_test_system_error') . ': ' . $e->getMessage()
             ];
         }
     }
@@ -88,7 +88,7 @@ class CaptchaTestService
             ]);
             return [
                 'success' => false,
-                'message' => 'Site key or secret key is missing'
+                'message' => __('admin.settings.security.captcha_test_keys_missing')
             ];
         }
         
@@ -116,7 +116,7 @@ class CaptchaTestService
         if (empty($siteKey) || empty($secretKey) || empty($projectId)) {
             return [
                 'success' => false,
-                'message' => 'Site key, secret key, or project ID is missing'
+                'message' => __('admin.settings.security.captcha_test_enterprise_keys_missing')
             ];
         }
         
@@ -133,18 +133,18 @@ class CaptchaTestService
             if (!$driver->isEnabled()) {
                 return [
                     'success' => false,
-                    'message' => 'Google reCAPTCHA Enterprise configuration is invalid'
+                    'message' => __('admin.settings.security.captcha_test_enterprise_config_invalid')
                 ];
             }
             
             return [
                 'success' => true,
-                'message' => 'Google reCAPTCHA Enterprise configuration test successful'
+                'message' => __('admin.settings.security.captcha_test_enterprise_success')
             ];
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => 'Enterprise API test failed: ' . $e->getMessage()
+                'message' => __('admin.settings.security.captcha_test_enterprise_api_failed') . ': ' . $e->getMessage()
             ];
         }
     }
@@ -160,7 +160,7 @@ class CaptchaTestService
         if (empty($siteKey) || empty($secretKey)) {
             return [
                 'success' => false,
-                'message' => 'Site key or secret key is missing'
+                'message' => __('admin.settings.security.captcha_test_keys_missing')
             ];
         }
         
@@ -174,7 +174,7 @@ class CaptchaTestService
         if (!$response->successful()) {
             return [
                 'success' => false,
-                'message' => 'API request failed with status: ' . $response->status()
+                'message' => __('admin.settings.security.captcha_test_api_request_failed') . ': ' . $response->status()
             ];
         }
         
@@ -184,13 +184,13 @@ class CaptchaTestService
         if (isset($data['error-codes']) && in_array('invalid-input-secret', $data['error-codes'])) {
             return [
                 'success' => false,
-                'message' => 'Invalid secret key'
+                'message' => __('admin.settings.security.captcha_test_invalid_secret_key')
             ];
         }
         
         return [
             'success' => true,
-            'message' => 'Cloudflare Turnstile connection test successful'
+            'message' => __('admin.settings.security.captcha_test_turnstile_success')
         ];
     }
 
@@ -207,7 +207,7 @@ class CaptchaTestService
         if (!preg_match('/^6[A-Za-z0-9_-]{39}$/', $siteKey)) {
             return [
                 'valid' => false,
-                'message' => 'Invalid site key format. Google reCAPTCHA site keys should be 40 characters starting with "6".'
+                'message' => __('admin.settings.security.captcha_test_invalid_site_key_format')
             ];
         }
         
@@ -242,7 +242,7 @@ class CaptchaTestService
         if ($version !== 'v3' && in_array('invalid-keys', $errorCodes)) {
             return [
                 'valid' => false,
-                'message' => 'Key type mismatch: This appears to be a v3 key but v2 is configured. Please check your reCAPTCHA version settings.'
+                'message' => __('admin.settings.security.captcha_test_key_version_mismatch_v2_to_v3')
             ];
         }
         
@@ -250,7 +250,7 @@ class CaptchaTestService
         if ($version === 'v3' && in_array('invalid-keys', $errorCodes)) {
             return [
                 'valid' => false,
-                'message' => 'Key type mismatch: This appears to be a v2 key but v3 is configured. Please check your reCAPTCHA version settings.'
+                'message' => __('admin.settings.security.captcha_test_key_version_mismatch_v3_to_v2')
             ];
         }
         
@@ -258,14 +258,14 @@ class CaptchaTestService
         if (in_array('invalid-input-secret', $errorCodes)) {
             return [
                 'valid' => false,
-                'message' => 'Invalid secret key. Please verify your secret key is correct.'
+                'message' => __('admin.settings.security.captcha_test_invalid_secret_verify')
             ];
         }
         
         if (in_array('bad-request', $errorCodes)) {
             return [
                 'valid' => false,
-                'message' => 'Bad request. The request format may be incorrect for the selected version.'
+                'message' => __('admin.settings.security.captcha_test_bad_request')
             ];
         }
         

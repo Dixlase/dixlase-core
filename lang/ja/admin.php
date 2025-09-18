@@ -468,6 +468,23 @@ return [
             'captcha_test_required_title' => '認証テストが必要です',
             'captcha_test_required_description' => 'CAPTCHAを使用できるようにするには認証テストを行い、認証に成功する必要があります。',
             'captcha_provider_setup_link' => 'プロバイダー設定ページ',
+            
+            // CAPTCHA test service messages
+            'captcha_test_unsupported_driver' => 'サポートされていないCAPTCHAドライバーです',
+            'captcha_test_system_error' => 'システムエラーによりテストに失敗しました',
+            'captcha_test_keys_missing' => 'サイトキーまたはシークレットキーが不足しています',
+            'captcha_test_enterprise_keys_missing' => 'サイトキー、シークレットキー、またはプロジェクトIDが不足しています',
+            'captcha_test_enterprise_config_invalid' => 'Google reCAPTCHA Enterpriseの設定が無効です',
+            'captcha_test_enterprise_success' => 'Google reCAPTCHA Enterpriseの設定テストが成功しました',
+            'captcha_test_enterprise_api_failed' => 'Enterprise APIテストに失敗しました',
+            'captcha_test_api_request_failed' => 'APIリクエストが失敗しました。ステータス',
+            'captcha_test_invalid_secret_key' => 'シークレットキーが無効です',
+            'captcha_test_turnstile_success' => 'Cloudflare Turnstile接続テストが成功しました',
+            'captcha_test_invalid_site_key_format' => 'サイトキーの形式が無効です。Google reCAPTCHAサイトキーは「6」で始まる40文字である必要があります。',
+            'captcha_test_key_version_mismatch_v2_to_v3' => 'キータイプの不一致: v3が設定されていますが、これはv2キーのようです。reCAPTCHAバージョン設定を確認してください。',
+            'captcha_test_key_version_mismatch_v3_to_v2' => 'キータイプの不一致: v2が設定されていますが、これはv3キーのようです。reCAPTCHAバージョン設定を確認してください。',
+            'captcha_test_invalid_secret_verify' => 'シークレットキーが無効です。正しいシークレットキーを入力してください。',
+            'captcha_test_bad_request' => 'リクエストが無効です。選択されたバージョンに対してリクエスト形式が正しくない可能性があります。',
             'captcha_form_settings' => 'CAPTCHAを使用するフォーム',
             'captcha_forms' => [
                 'admin_login' => '管理画面ログイン',
