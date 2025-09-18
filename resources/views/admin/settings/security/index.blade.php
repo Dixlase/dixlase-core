@@ -261,13 +261,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         
                         
                         <!-- Authentication Test Required Notice -->
-                        <div id="auth-test-required-notice" class="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded" style="display: none;">
+                        <div id="auth-test-required-notice" class="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                             <div class="flex items-center text-yellow-600 dark:text-yellow-400">
                                 <i class="fas fa-exclamation-triangle mr-2"></i>
-                                <span class="text-sm font-medium">認証テストが必要です</span>
+                                <span class="text-sm font-medium">{{ __('admin.settings.security.captcha_test_required_title') }}</span>
                             </div>
                             <div class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
-                                CAPTCHAを使用できるようにするには認証テストを行い、認証に成功する必要があります。
+                                {{ __('admin.settings.security.captcha_test_required_description') }}
+                            </div>
+                            <div class="mt-2 pt-2 border-t border-yellow-200 dark:border-yellow-700">
+                                <div class="flex items-center text-xs">
+                                    <i class="fas fa-external-link-alt mr-1 text-yellow-500"></i>
+                                    <span class="text-yellow-600 dark:text-yellow-400 mr-2">{{ __('admin.settings.security.captcha_provider_setup_link') }}:</span>
+                                    <a id="provider-setup-link" href="#" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">
+                                        <span id="provider-name">CAPTCHA Provider</span>{{ __('admin.settings.security.captcha_provider_settings_check') }}
+                                    </a>
+                                </div>
                             </div>
                         </div>
                         
@@ -1471,14 +1480,28 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // プロバイダー切り替え時のリセット
+    // 初期プロバイダー情報を設定とプロバイダー切り替え時のリセット
     const driverSelect = document.getElementById('captcha_driver');
     if (driverSelect) {
+        // 初期プロバイダー情報を設定
+        if (driverSelect.value) {
+            updateProviderInfo(driverSelect.value);
+        }
+        
+        // プロバイダー切り替え時のリセット
         driverSelect.addEventListener('change', function() {
             const newDriver = this.value;
             
             // プロバイダー情報を更新
             updateProviderInfo(newDriver);
+            
+            // CAPTCHA認証結果をリセット（プロバイダー変更時は再認証が必要）
+            resetCaptchaAuthenticationResult('provider change');
+            
+            // 認証テスト必要メッセージを表示
+            showAuthTestRequiredNotice();
+            
+            console.log('DEBUG: Provider changed to:', newDriver, '- Reset authentication result and showing test required notice');
         });
     }
     
@@ -1542,9 +1565,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const providerLinkElement = document.getElementById('provider-setup-link');
         
         if (providerNameElement && providerLinkElement) {
+            // プロバイダー名を更新
             providerNameElement.textContent = providerInfo.name;
+            
+            // リンクのURLを更新
             providerLinkElement.href = providerInfo.url;
-            providerLinkElement.textContent = `(${providerInfo.name}${captchaMessages.providerSettingsCheck})`;
+            
+            // リンクテキストを更新（span要素内のテキストのみ変更し、翻訳部分は保持）
+            const spanElement = providerLinkElement.querySelector('span');
+            if (spanElement) {
+                spanElement.textContent = providerInfo.name;
+            }
+            
+            console.log('DEBUG: Updated provider info - Name:', providerInfo.name, 'URL:', providerInfo.url);
         }
     }
     

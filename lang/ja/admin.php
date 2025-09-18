@@ -463,6 +463,11 @@ return [
             'captcha_site_key_project_id_missing' => 'サイトキーまたはプロジェクトIDが設定されていません',
             'captcha_server_communication_failed' => 'サーバーとの通信に失敗しました',
             'captcha_provider_settings_check' => 'の設定を確認',
+            
+            // CAPTCHA test required messages
+            'captcha_test_required_title' => '認証テストが必要です',
+            'captcha_test_required_description' => 'CAPTCHAを使用できるようにするには認証テストを行い、認証に成功する必要があります。',
+            'captcha_provider_setup_link' => 'プロバイダー設定ページ',
             'captcha_form_settings' => 'CAPTCHAを使用するフォーム',
             'captcha_forms' => [
                 'admin_login' => '管理画面ログイン',
