@@ -142,12 +142,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 }
             }
 
-            // Page-specific scripts
-            @hasSection('scripts')
-                @yield('scripts')
-            @endif
 
-            @stack('scripts')
 
             // テーマストア（後方互換性のため）
             window.themeStore = {
@@ -162,6 +157,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             };
 
         </script>
+
+        {{-- Page-specific scripts --}}
+        @hasSection('scripts')
+            @yield('scripts')
+        @endif
+
+        @stack('scripts')
 
     </body>
 </html>
