@@ -30,7 +30,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <x-captcha action="admin_login" form-name="admin_login" />
 
         <!-- メールアドレス -->
-        <div>
+        <div class="mt-4">
             <label for="email" class="block font-medium text-sm text-gray-700">{{ __('admin.login.email') }}</label>
             <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username"
                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">

@@ -23,6 +23,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @php
     use App\Models\SecuritySetting;
     use App\Models\CaptchaFormSetting;
+    use App\Services\CaptchaTestService;
     
     // CAPTCHA設定を取得
     $captchaEnabled = SecuritySetting::get('captcha_enabled', false);
@@ -31,11 +32,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     // フォーム固有のCAPTCHA設定をチェック
     $formCaptchaEnabled = $formName ? CaptchaFormSetting::isEnabledFor($formName) : true;
     
-    $shouldShowCaptcha = $captchaEnabled && $formCaptchaEnabled;
+    // 認証テスト結果をチェック
+    $captchaTestService = new CaptchaTestService();
+    $captchaTestResult = $captchaTestService->getTestResult();
+    
+    $shouldShowCaptcha = $captchaEnabled && $formCaptchaEnabled && $captchaTestResult;
 @endphp
 
 @if($shouldShowCaptcha)
-    <div class="captcha-container flex justify-center items-center h-24">
+    <div class="captcha-container flex justify-center items-center">
         @if($captchaDriver === 'google_enterprise')
             <!-- Google reCAPTCHA Enterprise -->
             @php
