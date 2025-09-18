@@ -459,6 +459,11 @@ Clicking this link will complete the full mail function test.',
             'captcha_site_key_project_id_missing' => 'Site key or Project ID is not configured',
             'captcha_server_communication_failed' => 'Failed to communicate with server',
             'captcha_provider_settings_check' => ' settings check',
+            
+            // CAPTCHA test required messages
+            'captcha_test_required_title' => 'Authentication Test Required',
+            'captcha_test_required_description' => 'To enable CAPTCHA functionality, you must perform an authentication test and pass it successfully.',
+            'captcha_provider_setup_link' => 'Provider Setup Page',
             'captcha_form_settings' => 'reCAPTCHA Form Settings',
             'captcha_forms' => [
                 'admin_login' => 'Admin Login',
