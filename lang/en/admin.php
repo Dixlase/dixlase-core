@@ -287,7 +287,7 @@ return [
             'heading' => 'Basic Settings',
             'site_settings' => 'Site Settings',
             'app_name' => 'Application Name',
-            'locale' => 'Language Settings',
+            'locale' => 'Default Language Settings',
             'timezone' => 'Timezone',
             'admin_url' => 'Admin URL',
             'admin_url_help' => 'Set the URL path for accessing the admin panel. <br>For production environments, it is recommended to avoid predictable URLs like "admin".<br>Warning: Changing the admin URL will log you out of the admin panel.',

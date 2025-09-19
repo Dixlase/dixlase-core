@@ -78,7 +78,8 @@ class AdminBaseSettingsController extends AdminLoggedInController
         $settings = [
             // App settings - config(.env) -> database -> default
             'app_name' => ConfigHelper::getAppName(),
-            'locale' => ConfigHelper::getAppLocale(),
+            // 基本設定では個人設定を無視してシステム設定を取得
+            'locale' => $this->getSystemLocale(),
             'timezone' => ConfigHelper::getAppTimezone(),
 
             // Mail settings - config(.env) -> database -> default
@@ -114,6 +115,19 @@ class AdminBaseSettingsController extends AdminLoggedInController
 
         $timezones = TimezoneHelper::getTimezonesWithUtcOffset();
 
+        // デバッグ情報: フォーム表示時の言語設定
+        if (config('app.debug')) {
+            Log::info('基本設定表示デバッグ: フォーム表示時の言語設定', [
+                'settings_locale' => $settings['locale'],
+                'confighelper_result' => ConfigHelper::getAppLocale(),
+                'old_locale' => old('locale'),
+                'old_locale_exists' => session()->hasOldInput('locale'),
+                'final_value_for_form' => old('locale', $settings['locale']),
+                'session_has_errors' => session()->has('errors'),
+                'session_old_input_keys' => array_keys(session()->getOldInput()),
+            ]);
+        }
+
         $this->viewParams['settings'] = $settings;
         $this->viewParams['timezones'] = $timezones;
         $this->viewParams['mailConnectionTested'] = $mailConnectionTested;
@@ -132,6 +146,29 @@ class AdminBaseSettingsController extends AdminLoggedInController
             'admin::settings.base.index',
             $this->viewParams
         );
+    }
+
+    /**
+     * システムの基本言語設定を取得（個人設定を無視）
+     * 
+     * @return string
+     */
+    private function getSystemLocale(): string
+    {
+        // 1. .env ファイルから直接取得
+        $envLocale = env('APP_LOCALE');
+        if ($envLocale !== null) {
+            return $envLocale;
+        }
+
+        // 2. データベースから取得
+        $dbLocale = BaseSetting::getValue('locale');
+        if ($dbLocale !== null) {
+            return $dbLocale;
+        }
+
+        // 3. デフォルト値
+        return 'en';
     }
 
     /**
@@ -166,14 +203,6 @@ class AdminBaseSettingsController extends AdminLoggedInController
         // force_ssl はチェックボックスなので has() で判定
         $allSettings['force_ssl'] = $request->has('force_ssl') ? 1 : 0;
 
-        // デバッグ情報: メンテナンスモードの処理
-        if (config('app.debug')) {
-            Log::info('メンテナンスモード保存デバッグ', [
-                'request_maintenance_mode' => $request->input('maintenance_mode'),
-                'processed_maintenance_mode' => $allSettings['maintenance_mode'],
-                'request_all' => $request->all(),
-            ]);
-        }
 
         // .envに保存するもの
         $envData = [
@@ -316,6 +345,11 @@ class AdminBaseSettingsController extends AdminLoggedInController
             $baseUrl = str_replace('http://', 'https://', $baseUrl);
         }
 
+        // セッションの古い入力値を完全にクリア（フォーム表示の正常化のため）
+        session()->forget('_old_input');
+        session()->forget('_flash');
+        session()->reflash();
+        
         return redirect($baseUrl)->with('success', __('admin.settings.base.controller_messages.settings_updated'));
     }
 

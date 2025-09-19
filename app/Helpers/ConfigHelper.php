@@ -212,7 +212,7 @@ class ConfigHelper
      */
     public static function getAppLocale(): string
     {
-        return self::get('app.locale', 'locale', 'ja', 'string', 'BaseSetting');
+        return self::get('app.locale', 'locale', 'en', 'string', 'BaseSetting');
     }
 
     /**
