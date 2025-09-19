@@ -51,81 +51,7 @@ class InstallController extends Controller
         $this->availableLocales = array_keys(config('language.languages', []));
     }
 
-    /**
-     * 言語切り替えと.envの更新
-     */
-    public function setLanguage($locale)
-    {
-        // 有効なロケードのみを許可
-        if (in_array($locale, $this->availableLocales)) {
-            // セッションに保存（複数のキーで保存して確実に保持）
-            session([
-                'install_locale' => $locale,
-                'app.locale' => $locale,
-                'locale' => $locale
-            ]);
-            
-            // 現在のリクエストのロケールも即時変更
-            app()->setLocale($locale);
-            
-            // .envファイルを同期的に更新
-            $envPath = base_path('.env');
-            if (file_exists($envPath) && is_writable($envPath)) {
-                $envContent = file_get_contents($envPath);
-                $updates = [
-                    'APP_LOCALE' => $locale,
-                    'APP_FALLBACK_LOCALE' => $locale,
-                    'APP_FAKER_LOCALE' => $locale . '_' . strtoupper($locale)
-                ];
-                
-                $updated = false;
-                
-                foreach ($updates as $key => $value) {
-                    if (str_contains($envContent, $key . '=')) {
-                        $newContent = preg_replace(
-                            '/^' . $key . '=.*/m',
-                            $key . '=' . $value,
-                            $envContent,
-                            -1,
-                            $count
-                        );
-                        
-                        if ($count > 0) {
-                            $envContent = $newContent;
-                            $updated = true;
-                        }
-                    } else {
-                        $envContent .= "\n" . $key . '=' . $value;
-                        $updated = true;
-                    }
-                }
-                
-                if ($updated) {
-                    file_put_contents($envPath, $envContent);
-                }
-            }
-            
-            // レスポンス用の設定
-            $response = [
-                'success' => true,
-                'locale' => $locale,
-                'message' => __('install.language_changed')
-            ];
-            
-            // 常にJSONで返す（リダイレクトなし）＋ クッキーで永続化
-            return response()->json($response)
-                ->cookie('install_locale', $locale, 60 * 24 * 30);
-        } else {
-            return response()->json([
-                'success' => false,
-                'message' => '無効な言語が選択されました。'
-            ], 400);
-        }
-        
-        // 元のページにリダイレクト
-        return redirect()->back();
-    }
-
+   
     // 最初の画面
     public function index()
     {
@@ -145,10 +71,6 @@ class InstallController extends Controller
             : (in_array($browserLocale, $this->availableLocales) ? $browserLocale : 'en');
         app()->setLocale($locale);
         
-        // ✅ 設定をクリアし、新しい `.env` を適用
-        //Artisan::call('config:clear');
-        //Artisan::call('config:cache');
-
         $requirements = $this->checkServerRequirements();
         
         return view('install.index', [
@@ -632,10 +554,16 @@ class InstallController extends Controller
                 'APP_ENV' => $data['app_env'],
                 'APP_DEBUG' => $data['app_debug'] ? 'true' : 'false',
                 'APP_URL' => $appUrl,
+                'APP_LOCALE' => $data['app_locale'] ?? 'ja',
                 'APP_TIMEZONE' => $data['app_timezone'] ?? 'Asia/Tokyo',
                 'INSTALLED' => 'false', // ✅ ここでは false にする
                 'FORCE_SSL' => $data['force_ssl'] ? 'true' : 'false',
+                'MAINTENANCE_MODE' => 'false',
+                
+                // Session settings
                 'SESSION_DRIVER' => 'database',
+                'SESSION_LIFETIME' => '120',
+                'SESSION_ENCRYPT' => 'false',
 
                 // メール設定
                 'MAIL_MAILER' => $data['mail_mailer'] ?? 'smtp',
@@ -730,6 +658,7 @@ class InstallController extends Controller
             // セッションデータを削除
             session()->forget('install_data');
             Log::info('=== インストール完了 ===');
+            Log::info('install.completeルートにリダイレクト中...');
 
             return redirect()->route('install.complete');
             
@@ -793,32 +722,177 @@ class InstallController extends Controller
      */
     public function complete()
     {
-        // ✅ セッションデータを削除
-        session()->forget('install_data');
-
-        // ✅ `.env` を `INSTALLED=true` に更新
-        $this->updateEnv(['INSTALLED' => 'true']);
+        Log::info('=== InstallController::complete() 開始 ===');
         
-        // ✅ INSTALLED=true更新後にキャッシュを再構築
-        Artisan::call('config:cache');
+        // 現在の環境変数とセッション状態をログ出力
+        $installed = env('INSTALLED');
+        $installCompleted = session('install_completed', false);
+        
+        Log::info('INSTALLED環境変数の値: ' . var_export($installed, true));
+        Log::info('install_completedセッション値: ' . var_export($installCompleted, true));
+        
+        // インストール状態の判定
+        $isInstalled = (env('INSTALLED') === 'true' || env('INSTALLED') === true);
+        
+        if ($isInstalled && $installCompleted) {
+            Log::info('2回目以降のアクセス: フロントページにリダイレクト');
+            // 2回目以降のアクセスはフロントページにリダイレクト
+            return redirect('/')->with('message', 'インストールは既に完了しています。');
+        } elseif ($isInstalled) {
+            Log::info('初回完了画面表示: セッションフラグを設定');
+            // 初回表示時のみセッションにフラグを設定
+            session(['install_completed' => true]);
+        } else {
+            Log::info('インストール未完了: 初回インストール完了処理');
+        }
 
-
-
+        // ✅ セッションデータから管理画面URLを先に取得
+        $adminSlug = session('install_data.admin_url', 'admin');
+        
         // ✅ `.env` の `APP_URL` を確実に取得する
-        config()->set('app.url', env('APP_URL', 'http://localhost'));
+        $envAppUrl = env('APP_URL');
+        if (!$envAppUrl) {
+            // フォールバック: リクエストから現在のURLを構築
+            $scheme = request()->isSecure() ? 'https' : 'http';
+            $host = request()->getHost();
+            $port = request()->getPort();
+            
+            if (($scheme === 'http' && $port != 80) || ($scheme === 'https' && $port != 443)) {
+                $envAppUrl = $scheme . '://' . $host . ':' . $port;
+            } else {
+                $envAppUrl = $scheme . '://' . $host;
+            }
+        }
+        
+        config()->set('app.url', $envAppUrl);
 
         // ✅ アプリケーションURLの取得
         $appUrl = rtrim(config('app.url'), '/');
-        // ✅ 管理画面URLを取得（セッションから取得、デフォルトは 'admin'）
-        $adminSlug = session('install_data.admin_url', 'admin');
+        // ✅ 管理画面URLを取得
         $adminUrl = rtrim($appUrl . '/' . $adminSlug, '/');
         $adminLoginUrl = $adminUrl . '/login';
 
-        // ✅ キャッシュをクリア（INSTALLED=true更新後に再構築するため、一旦クリアのみ）
-        Artisan::call('config:clear');
+        // ✅ セッションデータを削除（install_completedは保持）
+        session()->forget('install_data');
 
+        // 完了フラグを設定（初回表示時）
+        if (!$installCompleted) {
+            session(['install_completed' => true]);
+        }
+
+        Log::info('完了画面を表示: appUrl=' . $appUrl . ', adminLoginUrl=' . $adminLoginUrl);
+        Log::info('APP_URL取得結果: ' . $envAppUrl);
+        Log::info('=== InstallController::complete() 終了 ===');
+        
+        // 完了画面では INSTALLED=true を設定せず、表示のみ行う
+        // INSTALLED=true の設定は finalize メソッドで行う
+        
         return view('install.complete', compact('appUrl', 'adminUrl', 'adminLoginUrl'));
     }
+
+    /**
+     * インストール最終化（INSTALLED=trueを設定）
+     */
+    public function finalize(Request $request)
+    {
+        Log::info('=== InstallController::finalize() 開始 ===');
+        
+        // INSTALLED=trueを設定
+        Log::info('INSTALLED=trueを設定中...');
+        $this->updateEnv(['INSTALLED' => 'true']);
+        Artisan::call('config:cache');
+        Artisan::call('config:clear');
+        Log::info('INSTALLED=true設定完了');
+        
+        Log::info('=== InstallController::finalize() 終了 ===');
+        
+        // リダイレクト先を取得
+        $redirectTo = $request->input('redirect_to');
+        
+        if ($redirectTo) {
+            // リダイレクト先が指定されている場合
+            return redirect($redirectTo)->with('message', 'インストールが完了しました。');
+        } else {
+            // AJAX呼び出しの場合はJSONレスポンス
+            return response()->json(['success' => true, 'message' => 'インストールが完了しました。']);
+        }
+    }
+
+     /**
+     * 言語切り替えと.envの更新
+     */
+    public function setLanguage($locale)
+    {
+        // 有効なロケードのみを許可
+        if (in_array($locale, $this->availableLocales)) {
+            // セッションに保存（複数のキーで保存して確実に保持）
+            session([
+                'install_locale' => $locale,
+                'app.locale' => $locale,
+                'locale' => $locale
+            ]);
+            
+            // 現在のリクエストのロケールも即時変更
+            app()->setLocale($locale);
+            
+            // .envファイルを同期的に更新
+            $envPath = base_path('.env');
+            if (file_exists($envPath) && is_writable($envPath)) {
+                $envContent = file_get_contents($envPath);
+                $updates = [
+                    'APP_LOCALE' => $locale,
+                    'APP_FALLBACK_LOCALE' => $locale,
+                    'APP_FAKER_LOCALE' => $locale . '_' . strtoupper($locale)
+                ];
+                
+                $updated = false;
+                
+                foreach ($updates as $key => $value) {
+                    if (str_contains($envContent, $key . '=')) {
+                        $newContent = preg_replace(
+                            '/^' . $key . '=.*/m',
+                            $key . '=' . $value,
+                            $envContent,
+                            -1,
+                            $count
+                        );
+                        
+                        if ($count > 0) {
+                            $envContent = $newContent;
+                            $updated = true;
+                        }
+                    } else {
+                        $envContent .= "\n" . $key . '=' . $value;
+                        $updated = true;
+                    }
+                }
+                
+                if ($updated) {
+                    file_put_contents($envPath, $envContent);
+                }
+            }
+            
+            // レスポンス用の設定
+            $response = [
+                'success' => true,
+                'locale' => $locale,
+                'message' => __('install.language_changed')
+            ];
+            
+            // 常にJSONで返す（リダイレクトなし）＋ クッキーで永続化
+            return response()->json($response)
+                ->cookie('install_locale', $locale, 60 * 24 * 30);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => '無効な言語が選択されました。'
+            ], 400);
+        }
+        
+        // 元のページにリダイレクト
+        return redirect()->back();
+    }
+
 
     /**
      * `.env` ファイルを更新する
@@ -859,22 +933,49 @@ class InstallController extends Controller
     {
         Log::info('initializeDatabase - 開始: admin_email=' . $data['admin_email'] . ', admin_name=' . $data['admin_name']);
         
-        // `base_settings` にサイト名を追加 (存在しない場合のみ)
+        // `base_settings` に基本設定を保存（.envとの同期用）
         Log::info('initializeDatabase - base_settings更新開始');
-        if (!DB::connection('mysql')->table('base_settings')->where('name', 'site_name')->exists()) {
-            DB::connection('mysql')->table('base_settings')->insert([
-                'name' => 'site_name',
-                'value' => $data['site_name'],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-            Log::info('initializeDatabase - site_name新規作成: ' . $data['site_name']);
-        } else {
-            // 既存のサイト名を更新
-            DB::connection('mysql')->table('base_settings')
-                ->where('name', 'site_name')
-                ->update(['value' => $data['site_name'], 'updated_at' => now()]);
-            Log::info('initializeDatabase - site_name更新: ' . $data['site_name']);
+        
+        $baseSettings = [
+            // App settings
+            'app_name' => $data['site_name'],
+            'locale' => $data['app_locale'] ?? 'ja',
+            'timezone' => $data['app_timezone'] ?? 'Asia/Tokyo',
+            
+            // Mail settings
+            'mail_mailer' => $data['mail_mailer'] ?? 'smtp',
+            'mail_host' => $data['mail_host'] ?? 'localhost',
+            'mail_port' => (string) ($data['mail_port'] ?? 587),
+            'mail_username' => $data['mail_username'] ?? '',
+            'mail_password' => $data['mail_password'] ?? '',
+            'mail_encryption' => $data['mail_encryption'] ?? 'tls',
+            'system_email' => $data['mail_from_address'] ?? $data['admin_email'],
+            
+            // Other settings
+            'maintenance_mode' => '0', // デフォルト: 無効
+            'maintenance_message' => '現在メンテナンス中です。しばらくお待ちください。',
+            'notification_enabled' => '1', // デフォルト: 有効
+            
+            // Legacy site_name for backward compatibility
+            'site_name' => $data['site_name'],
+        ];
+        
+        foreach ($baseSettings as $name => $value) {
+            if (!DB::connection('mysql')->table('base_settings')->where('name', $name)->exists()) {
+                DB::connection('mysql')->table('base_settings')->insert([
+                    'name' => $name,
+                    'value' => $value,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                Log::info("initializeDatabase - {$name}新規作成: {$value}");
+            } else {
+                // 既存の設定を更新
+                DB::connection('mysql')->table('base_settings')
+                    ->where('name', $name)
+                    ->update(['value' => $value, 'updated_at' => now()]);
+                Log::info("initializeDatabase - {$name}更新: {$value}");
+            }
         }
 
         // `base_settings` に管理画面URLを追加 (存在しない場合のみ)
@@ -954,6 +1055,11 @@ class InstallController extends Controller
             'allowed_front_ips' => ($data['enable_allowed_front_ips'] ?? 0) ? ($data['allowed_front_ips'] ?? '') : '',
             'enable_blocked_front_ips' => $data['enable_blocked_front_ips'] ?? 0,
             'blocked_front_ips' => ($data['enable_blocked_front_ips'] ?? 0) ? ($data['blocked_front_ips'] ?? '') : '',
+            
+            // Session settings (フォールバック用)
+            'session_driver' => 'database',
+            'session_lifetime' => '120',
+            'session_encrypt' => '0',
         ];
 
         foreach ($securitySettings as $name => $value) {

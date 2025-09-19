@@ -53,12 +53,14 @@
                            in_array(false, $requirements['required_extensions']) || 
                            in_array(false, $requirements['permissions']);
     @endphp
-    <a href="{{ $hasRequiredIssues ? '#' : route('install.settings') }}"
-       class="block bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition text-center
-              {{ $hasRequiredIssues ? 'opacity-50 cursor-not-allowed' : '' }}"
-       {{ $hasRequiredIssues ? 'disabled' : '' }}>
-        {{ __('install.start_button') }}
-    </a>
+    <div class="flex justify-center">
+        <a href="{{ $hasRequiredIssues ? '#' : route('install.settings') }}"
+        class="block w-auto bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition text-center
+                {{ $hasRequiredIssues ? 'opacity-50 cursor-not-allowed' : '' }}"
+        {{ $hasRequiredIssues ? 'disabled' : '' }}>
+            {{ __('install.start_button') }}
+        </a>
+    </div>
     
     @if($hasRequiredIssues)
         <p class="text-sm text-red-600 mt-2">

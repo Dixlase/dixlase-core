@@ -159,9 +159,12 @@ return [
 
     //complete
     'complete_title' => 'Installation Complete!',
+    'complete_header' => 'Installation Complete',
     'complete_message' => 'The installation has been successfully completed! You can now access your site or the admin panel.',
     'go_to_site' => 'Go to Site',
     'go_to_admin' => 'Go to Admin Panel',
+    'site_url' => 'Site URL',
+    'admin_login_url' => 'Admin Login URL',
     //errors
     'password_strength_error' => 'Password must be at least 8 characters and include at least one uppercase letter, one lowercase letter, and one number.',
     'password_strength_weak' => 'Password is too weak.',
