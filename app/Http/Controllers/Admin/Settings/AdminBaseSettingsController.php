@@ -41,6 +41,7 @@ use DateTime;
 use DateTimeZone;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
 
 
 class AdminBaseSettingsController extends AdminLoggedInController
@@ -93,7 +94,6 @@ class AdminBaseSettingsController extends AdminLoggedInController
             // Other settings - config(.env) -> database -> default
             'maintenance_mode' => ConfigHelper::getMaintenanceMode(),
             'maintenance_message' => ConfigHelper::getMaintenanceMessage(),
-            'notification_enabled' => ConfigHelper::getNotificationEnabled(),
             'system_admin_email' => ConfigHelper::getNotificationEmail(),
             
             // Database-only settings (no .env equivalent)
@@ -155,9 +155,14 @@ class AdminBaseSettingsController extends AdminLoggedInController
             'mail_from_address',
             'maintenance_mode',
             'maintenance_message',
-            'notification_enabled',
-            'notification_email',
+            'system_admin_email',
+            'admin_url',
+            'force_ssl',
         ]);
+        
+        // チェックボックスのデフォルト値を設定（チェックされていない場合は0）
+        $allSettings['maintenance_mode'] = $request->has('maintenance_mode') ? 1 : 0;
+        $allSettings['force_ssl'] = $request->has('force_ssl') ? 1 : 0;
 
         // .envに保存するもの
         $envData = [
@@ -186,10 +191,11 @@ class AdminBaseSettingsController extends AdminLoggedInController
             'mail_password' => $allSettings['mail_password'],
             'mail_encryption' => $allSettings['mail_encryption'],
             'mail_from_address' => $allSettings['mail_from_address'],
-            'maintenance_mode' => $allSettings['maintenance_mode'] ? '1' : '0',
-            'maintenance_message' => $allSettings['maintenance_message'],
-            'notification_enabled' => $allSettings['notification_enabled'] ? '1' : '0',
-            'system_admin_email' => $allSettings['system_admin_email'],
+            'maintenance_mode' => ($allSettings['maintenance_mode'] ?? false) ? '1' : '0',
+            'maintenance_message' => $allSettings['maintenance_message'] ?? '',
+            'system_admin_email' => $allSettings['system_admin_email'] ?? '',
+            'admin_url' => $allSettings['admin_url'] ?? '',
+            'force_ssl' => ($allSettings['force_ssl'] ?? false) ? '1' : '0',
         ];
 
         // 空文字列をnullに変換（mail_username, mail_password, mail_encryption のみ）
@@ -265,8 +271,14 @@ class AdminBaseSettingsController extends AdminLoggedInController
 
         // 管理画面URLが変更された場合の特別な処理
         $currentAdminUrl = AdminHelper::getAdminUrl();
-        $newAdminUrl = $settings['admin_url'];
-        $forceSsl = (bool) $settings['force_ssl'];
+        
+        // デバッグ情報（開発時のみ）
+        if (config('app.debug')) {
+            Log::info('基本設定保存: admin_url=' . ($allSettings['admin_url'] ?? 'NOT_SET'));
+        }
+        
+        $newAdminUrl = $allSettings['admin_url'] ?? $currentAdminUrl;
+        $forceSsl = (bool) ($allSettings['force_ssl'] ?? false);
 
         if ($newAdminUrl !== $currentAdminUrl) {
             // ユーザーをログアウト
