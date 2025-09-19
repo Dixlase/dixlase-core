@@ -86,6 +86,9 @@
     </div>
     <p class="text-sm text-gray-500 mb-4">{{ __('install.preserve_database_help') }}</p>
 
+    <p id="db-test-result" class="text-center text-sm mt-2 text-red-500">
+        {{ __('install.db_test_required') }}
+    </p>
     <!-- ✅ DB接続テストボタン -->
     <div class="flex justify-center">
         <button type="button" onclick="testDatabaseConnection()"
@@ -94,9 +97,7 @@
         </button>
     </div>
 
-    <p id="db-test-result" class="text-sm mt-2 text-red-500">
-        {{ __('install.db_test_required') }}
-    </p>
+
 
     <!-- ✅ ナビゲーションボタン（戻る・次へ） -->
     <div class="flex justify-between mt-6">

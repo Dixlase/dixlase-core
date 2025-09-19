@@ -190,13 +190,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- システム管理者メールアドレス -->
         <div class="my-6">
             @include('components::form.label', [
-                'for' => 'notification_email',
+                'for' => 'system_admin_email',
                 'text' => __('admin.settings.base.admin_email'),
             ])
             @include('components::form.text', [
-                'id' => 'notification_email',
-                'name' => 'notification_email',
-                'value' => old('notification_email', $settings['notification_email']),
+                'id' => 'system_admin_email',
+                'name' => 'system_admin_email',
+                'value' => old('system_admin_email', $settings['system_admin_email']),
                 'type' => 'email',
             ])
             <p class="text-sm mt-1">{{ __('admin.settings.base.admin_email_help') }}</p>

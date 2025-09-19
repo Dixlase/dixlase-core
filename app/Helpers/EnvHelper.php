@@ -14,7 +14,7 @@ class EnvHelper
         'fallback_locale' => 'APP_FALLBACK_LOCALE',
         'faker_locale' => 'APP_FAKER_LOCALE',
         'timezone' => 'APP_TIMEZONE',
-        'system_email' => 'MAIL_FROM_ADDRESS',
+        'mail_from_address' => 'MAIL_FROM_ADDRESS',
         'mail_mailer' => 'MAIL_MAILER',
         'mail_host' => 'MAIL_HOST',
         'mail_port' => 'MAIL_PORT',

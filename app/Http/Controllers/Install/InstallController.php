@@ -949,12 +949,13 @@ class InstallController extends Controller
             'mail_username' => $data['mail_username'] ?? '',
             'mail_password' => $data['mail_password'] ?? '',
             'mail_encryption' => $data['mail_encryption'] ?? 'tls',
-            'system_email' => $data['mail_from_address'] ?? $data['admin_email'],
+            'mail_from_address' => $data['mail_from_address'] ?? $data['admin_email'],
             
             // Other settings
             'maintenance_mode' => '0', // デフォルト: 無効
             'maintenance_message' => '現在メンテナンス中です。しばらくお待ちください。',
             'notification_enabled' => '1', // デフォルト: 有効
+            'system_admin_email' => $data['admin_email'], // 管理者メールアドレスを設定
             
             // Legacy site_name for backward compatibility
             'site_name' => $data['site_name'],
@@ -1081,6 +1082,10 @@ class InstallController extends Controller
         Log::info('initializeDatabase - 管理者アカウント処理開始');
         $admin = DB::connection('mysql')->table('members')->where('email', $data['admin_email'])->first();
         
+        // インストール時に選択された言語を取得
+        $installLocale = $data['app_locale'] ?? session('install_locale', 'ja');
+        Log::info('initializeDatabase - インストール言語設定: ' . $installLocale);
+        
         if ($admin) {
             // 既存の管理者を更新 - 正しいロール値を使用
             Log::info('initializeDatabase - 既存管理者更新: ID=' . $admin->id);
@@ -1088,25 +1093,27 @@ class InstallController extends Controller
                 ->where('id', $admin->id)
                 ->update([
                     'name' => $data['admin_name'],
+                    'locale' => $installLocale, // インストール時の言語設定を反映
                     'password' => Hash::make($adminPassword),
                     'role' => 10, // super_admin
                     'status' => 1, // active
                     'updated_at' => now(),
                 ]);
-            Log::info('initializeDatabase - 既存管理者更新完了');
+            Log::info('initializeDatabase - 既存管理者更新完了（言語設定: ' . $installLocale . '）');
         } else {
             // 新しい管理者を作成
             Log::info('initializeDatabase - 新規管理者作成開始');
             $memberId = DB::connection('mysql')->table('members')->insertGetId([
                 'name' => $data['admin_name'],
                 'email' => $data['admin_email'],
+                'locale' => $installLocale, // インストール時の言語設定を反映
                 'role' => 10, // super_admin
                 'password' => Hash::make($adminPassword),
                 'status' => 1, // active
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-            Log::info('initializeDatabase - 新規管理者作成完了: ID=' . $memberId);
+            Log::info('initializeDatabase - 新規管理者作成完了: ID=' . $memberId . '（言語設定: ' . $installLocale . '）');
         }
         
         // 作成後の確認

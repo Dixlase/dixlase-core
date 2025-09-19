@@ -62,6 +62,7 @@ class Member extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'locale',
         'password',
         'role',
         'appearance',

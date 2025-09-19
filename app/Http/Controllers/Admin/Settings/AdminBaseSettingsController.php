@@ -94,7 +94,7 @@ class AdminBaseSettingsController extends AdminLoggedInController
             'maintenance_mode' => ConfigHelper::getMaintenanceMode(),
             'maintenance_message' => ConfigHelper::getMaintenanceMessage(),
             'notification_enabled' => ConfigHelper::getNotificationEnabled(),
-            'notification_email' => ConfigHelper::getNotificationEmail(),
+            'system_admin_email' => ConfigHelper::getNotificationEmail(),
             
             // Database-only settings (no .env equivalent)
             'admin_url' => BaseSetting::getValue('admin_url', config('admin.admin_url')),
@@ -170,7 +170,7 @@ class AdminBaseSettingsController extends AdminLoggedInController
             'mail_username' => $allSettings['mail_username'],
             'mail_password' => $allSettings['mail_password'],
             'mail_encryption' => $allSettings['mail_encryption'],
-            'system_email' => $allSettings['mail_from_address'], // EnvHelperのマッピングに合わせる
+            'mail_from_address' => $allSettings['mail_from_address'],
             'maintenance_mode' => $allSettings['maintenance_mode'] ? 'true' : 'false',
         ];
 
@@ -185,11 +185,11 @@ class AdminBaseSettingsController extends AdminLoggedInController
             'mail_username' => $allSettings['mail_username'],
             'mail_password' => $allSettings['mail_password'],
             'mail_encryption' => $allSettings['mail_encryption'],
-            'system_email' => $allSettings['mail_from_address'],
+            'mail_from_address' => $allSettings['mail_from_address'],
             'maintenance_mode' => $allSettings['maintenance_mode'] ? '1' : '0',
             'maintenance_message' => $allSettings['maintenance_message'],
             'notification_enabled' => $allSettings['notification_enabled'] ? '1' : '0',
-            'notification_email' => $allSettings['notification_email'],
+            'system_admin_email' => $allSettings['system_admin_email'],
         ];
 
         // 空文字列をnullに変換（mail_username, mail_password, mail_encryption のみ）

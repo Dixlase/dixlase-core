@@ -40,6 +40,10 @@ class BaseSettingsTableSeeder extends Seeder
             ['name' => 'locale', 'value' => config('app.locale', 'ja')],
             ['name' => 'timezone', 'value' => config('app.timezone', 'Asia/Tokyo')],
             
+            // メンテナンスモード
+            ['name' => 'maintenance_mode', 'value' => config('app.maintenance_mode', false) ? '1' : '0'],
+            ['name' => 'maintenance_message', 'value' => '現在メンテナンス中です。しばらくお待ちください。'],
+
             // Mail settings (フォールバック用)
             ['name' => 'mail_mailer', 'value' => config('mail.default', 'smtp')],
             ['name' => 'mail_host', 'value' => config('mail.mailers.smtp.host', 'smtp.example.com')],
@@ -47,11 +51,7 @@ class BaseSettingsTableSeeder extends Seeder
             ['name' => 'mail_username', 'value' => config('mail.mailers.smtp.username', '')],
             ['name' => 'mail_password', 'value' => config('mail.mailers.smtp.password', '')],
             ['name' => 'mail_encryption', 'value' => config('mail.mailers.smtp.encryption', 'tls')],
-            ['name' => 'system_email', 'value' => config('mail.from.address', 'no-reply@example.com')],
-            
-            // メンテナンスモード
-            ['name' => 'maintenance_mode', 'value' => config('app.maintenance_mode', false) ? '1' : '0'],
-            ['name' => 'maintenance_message', 'value' => '現在メンテナンス中です。しばらくお待ちください。'],
+            ['name' => 'mail_from_address', 'value' => config('mail.from.address', 'no-reply@example.com')],
             
             // メール接続テスト関連
             ['name' => 'mail_connection_tested', 'value' => 0],
@@ -62,9 +62,8 @@ class BaseSettingsTableSeeder extends Seeder
             ['name' => 'mail_receive_test_date', 'value' => null],
             ['name' => 'mail_verification_token', 'value' => null],
             
-            // システムエラー通知関連
-            ['name' => 'notification_enabled', 'value' => 0],
-            ['name' => 'notification_email', 'value' => ''],
+            // システム管理者メールアドレス
+            ['name' => 'system_admin_email', 'value' => ''],
         ];
 
         foreach ($settings as $setting) {
