@@ -37,22 +37,36 @@ class MypageController extends Controller
     protected $viewParams = [];
     protected $routeName = '';
     protected $settings = [];
+    protected $adminName;
+    protected $adminEmail;
 
     //初期設定を行う
     public function __construct()
     {
-        // データベースからサイト名を取得。取得できなかった場合は.envからデフォルト値を使用
-        $this->siteName = DB::table('base_settings')->where('name', 'site_name')->value('value')
-            ?? env('APP_NAME', 'Dixlase');
+        try {
+            // インストール前やデータベース接続エラーの場合はデフォルト値を使用
+            if (!file_exists(base_path('.env')) || !env('INSTALLED', false)) {
+                $this->siteName = env('APP_NAME', 'Dixlase');
+                $this->settings = [];
+            } else {
+                // データベースからサイト名を取得。取得できなかった場合は.envからデフォルト値を使用
+                $this->siteName = DB::table('base_settings')->where('name', 'site_name')->value('value')
+                    ?? env('APP_NAME', 'Dixlase');
+
+                // データベースからシステム設定を取得
+                $this->settings = DB::table('base_settings')->get()->keyBy('name')->toArray();
+            }
+        } catch (\Exception $e) {
+            // データベース接続エラーの場合はデフォルト値を使用
+            $this->siteName = env('APP_NAME', 'Dixlase');
+            $this->settings = [];
+        }
 
         //ログイン中の管理者情報を取得
-        $admin = auth('web')->user();
-
-        //ログイン中の管理者の外観モードをDBから取得
+        $admin = Auth::guard('member')->user();
+        $this->adminName = $admin->name ?? 'Guest';
+        $this->adminEmail = $admin->email ?? '';
         $this->appearance = $admin->appearance ?? 0;
-
-        // データベースからシステム設定を取得
-        $this->settings = DB::table('base_settings')->get()->keyBy('name')->toArray();
 
         //ビューパラメータにサイト名を設定する
         $this->viewParams['site_name'] = $this->siteName;

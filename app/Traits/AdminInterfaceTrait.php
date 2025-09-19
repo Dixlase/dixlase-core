@@ -21,7 +21,16 @@ trait AdminInterfaceTrait
      */
     public function initialize()
     {
-        if (!Schema::hasTable('base_settings')) {
+        // インストール前やデータベース接続エラーの場合はスキップ
+        if (!file_exists(base_path('.env')) || !env('INSTALLED', false)) {
+            return;
+        }
+
+        try {
+            if (!Schema::hasTable('base_settings')) {
+                return;
+            }
+        } catch (\Exception $e) {
             return;
         }
 

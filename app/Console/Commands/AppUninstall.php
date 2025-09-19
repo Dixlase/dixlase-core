@@ -16,7 +16,7 @@ class AppUninstall extends Command
      *
      * @var string
      */
-    protected $signature = 'app:uninstall';
+    protected $signature = 'app:uninstall {--force : 対話なしで即座にアンインストールを実行}';
 
     /**
      * コマンドの説明
@@ -30,25 +30,57 @@ class AppUninstall extends Command
      */
     public function handle()
     {
-        $this->warn('⚠️  注意: この操作はアプリケーションを完全に削除します！');
-        if (!$this->confirm('本当にアンインストールしますか？', false)) {
-            $this->info('アンインストールをキャンセルしました。');
-            return;
+        $force = $this->option('force');
+        
+        if (!$force) {
+            $this->warn('⚠️  注意: この操作はアプリケーションを完全に削除します！');
+            if (!$this->confirm('本当にアンインストールしますか？', false)) {
+                $this->info('アンインストールをキャンセルしました。');
+                return;
+            }
+        } else {
+            $this->warn('⚠️  --forceオプションが指定されました。対話なしでアンインストールを実行します。');
         }
 
-        // ✅ `.env` ファイルの処理
+        // ✅ 1. データベースの処理（優先）
+        if (!$force && $this->confirm('データベースをバックアップしますか？')) {
+            $dbName = env('DB_DATABASE');
+            $dumpFile = base_path("database/backups/{$dbName}_" . now()->format('Ymd_His') . ".sql");
+            $this->dumpDatabase($dumpFile);
+            $this->info("データベースをバックアップしました: {$dumpFile}");
+        } elseif ($force) {
+            $this->info('--forceオプション: データベースバックアップをスキップします。');
+        }
+
+        if (!$force && $this->confirm('データベースの全テーブルを削除しますか？')) {
+            $this->dropAllTables();
+            $this->info('データベースの全テーブルを削除しました。');
+        } elseif ($force) {
+            $this->dropAllTables();
+            $this->info('データベースの全テーブルを削除しました。');
+        }
+
+        // ✅ 2. シンボリックリンクの削除
+        $this->removeSymlinks();
+
+        // ✅ 3. キャッシュのクリア
+        $this->clearCache();
+
+        // ✅ 4. `.env` ファイルの処理（最後）
         $envPath = base_path('.env');
         
         if (File::exists($envPath)) {
-            
             $backupPath = base_path('.env.backup_' . now()->format('Ymd_His'));
-            if ($this->confirm('.env を削除せずにバックアップしますか？')) {
+            
+            if (!$force && $this->confirm('.env を削除せずにバックアップしますか？')) {
                 try {
                     File::copy($envPath, $backupPath);
                     $this->info("✅ .env をバックアップしました: {$backupPath}");
                 } catch (\Exception $e) {
                     $this->error("❌ バックアップエラー: " . $e->getMessage());
                 }
+            } elseif ($force) {
+                $this->info('--forceオプション: .envバックアップをスキップします。');
             }
             
             // アンインストール後は.envファイルを削除（完全なアンインストール）
@@ -85,26 +117,6 @@ class AppUninstall extends Command
         } else {
             $this->warn("⚠️ .env ファイルが存在しません。");
         }
-
-        // ✅ データベースの処理
-        if ($this->confirm('データベースをバックアップしますか？')) {
-            $dbName = env('DB_DATABASE');
-            $dumpFile = base_path("database/backups/{$dbName}_" . now()->format('Ymd_His') . ".sql");
-            $this->dumpDatabase($dumpFile);
-            $this->info("データベースをバックアップしました: {$dumpFile}");
-        }
-
-        if ($this->confirm('データベースの全テーブルを削除しますか？')) {
-            $this->dropAllTables();
-            $this->info('データベースの全テーブルを削除しました。');
-        }
-
-
-        // ✅ シンボリックリンクの削除
-        $this->removeSymlinks();
-
-        // ✅ キャッシュのクリア
-        $this->clearCache();
 
         // ✅ アンインストール完了
         $this->info('✅ アンインストールが完了しました！');
