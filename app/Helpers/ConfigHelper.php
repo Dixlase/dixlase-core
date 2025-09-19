@@ -66,8 +66,13 @@ class ConfigHelper
      * @param string $model
      * @return mixed|null
      */
-    private static function getFromDatabase(string $key, string $model)
+    private static function getFromDatabase(string $key, string $model = 'SecuritySetting')
     {
+        // インストール前やデータベース接続エラーの場合はnullを返す
+        if (!file_exists(base_path('.env')) || !env('INSTALLED', false)) {
+            return null;
+        }
+
         try {
             switch ($model) {
                 case 'BaseSetting':

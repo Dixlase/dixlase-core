@@ -44,6 +44,11 @@ class PluginServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // .envファイルが存在しない場合やデータベース接続ができない場合はスキップ
+        if (!file_exists(base_path('.env')) || !env('INSTALLED', false)) {
+            return;
+        }
+
         try {
             // Only proceed if the plugins table exists
             if (!\Illuminate\Support\Facades\Schema::hasTable('plugins')) {

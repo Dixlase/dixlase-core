@@ -35,12 +35,21 @@ class AdminHelper
 
     public static function getAdminUrl()
     {
-        if (Schema::hasTable('base_settings')) {
-            $adminUrl = BaseSetting::getValue('admin_url', config('admin.admin_url'));
-        } else {
-            $adminUrl = config('admin.admin_url');
+        // インストール前やデータベース接続エラーの場合はコンフィグ値を返す
+        if (!file_exists(base_path('.env')) || !env('INSTALLED', false)) {
+            return config('admin.admin_url');
         }
-        return $adminUrl;
+
+        try {
+            if (Schema::hasTable('base_settings')) {
+                $adminUrl = BaseSetting::getValue('admin_url', config('admin.admin_url'));
+            } else {
+                $adminUrl = config('admin.admin_url');
+            }
+            return $adminUrl;
+        } catch (\Exception $e) {
+            return config('admin.admin_url');
+        }
     }
 
 

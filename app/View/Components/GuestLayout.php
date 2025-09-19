@@ -41,14 +41,25 @@ class GuestLayout extends Component
      */
     public function render(): View
     {
+        try {
+            // インストール前やデータベース接続エラーの場合はデフォルト値を使用
+            if (!file_exists(base_path('.env')) || !env('INSTALLED', false)) {
+                $this->site_name = env('APP_NAME', 'Dixlase');
+                $this->theme = Config::get('admin.theme', 'light');
+            } else {
+                // データベースからサイト名を取得。取得できなかった場合は.envからデフォルト値を使用
+                $this->site_name = DB::table('base_settings')->where('name', 'site_name')->value('value')
+                    ?? env('APP_NAME', 'Dixlase');
 
-        // データベースからサイト名を取得。取得できなかった場合は.envからデフォルト値を使用
-        $this->site_name = DB::table('base_settings')->where('name', 'site_name')->value('value')
-            ?? env('APP_NAME', 'Dixlase');
-
-        // データベースからテーマ情報を取得。取得できなかった場合はコンフィグからデフォルト値を使用
-        $this->theme = DB::table('base_settings')->where('name', 'admin_theme')->value('value')
-            ?? Config::get('admin.theme', 'light'); // デフォルト値を 'light' に設定
+                // データベースからテーマ情報を取得。取得できなかった場合はコンフィグからデフォルト値を使用
+                $this->theme = DB::table('base_settings')->where('name', 'admin_theme')->value('value')
+                    ?? Config::get('admin.theme', 'light'); // デフォルト値を 'light' に設定
+            }
+        } catch (\Exception $e) {
+            // データベース接続エラーの場合はデフォルト値を使用
+            $this->site_name = env('APP_NAME', 'Dixlase');
+            $this->theme = Config::get('admin.theme', 'light');
+        }
 
         //テーマクラスを設定する
         if ($this->theme == 'light') {

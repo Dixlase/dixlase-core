@@ -61,21 +61,31 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot()
     {
-
-        //セキュリティ設定でSSLを矯正しているかどうかを判定
-        //security_settingsテーブルのforce_sslの値を取得
-        //テーブルが存在しているか確認
-
-        if (Schema::hasTable('security_settings')) {
-            $forceSsl = SecuritySetting::get('force_ssl', config('security.force_ssl'));
-        } else {
-            $forceSsl = config('security.force_ssl');
+        // .envファイルが存在しない場合やデータベース接続ができない場合はスキップ
+        if (!file_exists(base_path('.env')) || !env('INSTALLED', false)) {
+            return;
         }
 
-        if ($forceSsl) {
-            $this->app['request']->server->set('HTTPS', true);
-            URL::forceRootUrl(Config::get('app.url')); // ルートURLを設定
-            URL::forceScheme('https');
+        try {
+            //セキュリティ設定でSSLを矯正しているかどうかを判定
+            //security_settingsテーブルのforce_sslの値を取得
+            //テーブルが存在しているか確認
+
+            if (Schema::hasTable('security_settings')) {
+                $forceSsl = SecuritySetting::get('force_ssl', config('security.force_ssl'));
+            } else {
+                $forceSsl = config('security.force_ssl');
+            }
+
+            if ($forceSsl) {
+                $this->app['request']->server->set('HTTPS', true);
+                URL::forceRootUrl(Config::get('app.url')); // ルートURLを設定
+                URL::forceScheme('https');
+            }
+        } catch (\Exception $e) {
+            // データベース接続エラーなどの場合はログに記録してスキップ
+            \Log::warning('AppServiceProvider boot error (likely during installation): ' . $e->getMessage());
+            return;
         }
 
         // 言語の設定
