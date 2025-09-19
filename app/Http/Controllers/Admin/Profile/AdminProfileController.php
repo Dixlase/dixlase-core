@@ -100,6 +100,7 @@ class AdminProfileController extends AdminLoggedInController
 
         // 言語オプションの取得
         $this->viewParams['localeOptions'] = Locale::availableOptions();
+        
 
         // パスワード条件の取得
         $this->viewParams['passwordMinLength'] = (int) MemberSetting::getValue('password_min_length', 8);
@@ -287,13 +288,21 @@ class AdminProfileController extends AdminLoggedInController
             throw $e;
         }
 
-        $member->fill([
+        // プロフィール更新
+        $updateData = [
             'name' => $validated['name'],
             'description' => $validated['description'] ?? '',
             'email' => $validated['email'],
             'locale' => $validated['locale'] ?? null,
             'appearance' => (int) $validated['appearance'] ?? null,
-        ]);
+        ];
+        
+        $member->update($updateData);
+        
+        // 言語設定が変更された場合、即座に適用
+        if (isset($validated['locale']) && $validated['locale']) {
+            \Illuminate\Support\Facades\App::setLocale($validated['locale']);
+        }
 
         if (!empty($validated['password'])) {
             $member->password = Hash::make($validated['password']);

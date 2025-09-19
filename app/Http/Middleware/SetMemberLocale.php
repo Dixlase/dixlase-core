@@ -41,16 +41,36 @@ class SetMemberLocale
     public function handle(Request $request, Closure $next)
     {
         try {
-            // .envファイルが存在し、インストール済みかつ管理画面でログイン済みの場合のみ処理
-            if (file_exists(base_path('.env')) && env('INSTALLED', false) && $request->is('admin*') && Auth::guard('member')->check()) {
+            // .envファイルが存在し、インストール済みかつ管理画面の場合のみ処理
+            if (file_exists(base_path('.env')) && env('INSTALLED', false) && $request->is('admin*')) {
+                
+                // 認証状態を確認
+                $isAuthenticated = Auth::guard('member')->check();
                 $member = Auth::guard('member')->user();
                 
-                // メンバーの個別言語設定があればそれを使用、なければシステムデフォルト
-                $locale = $member->locale ?? ConfigHelper::getAppLocale();
                 
-                // 利用可能な言語かチェック
-                if (Locale::isValid($locale)) {
-                    App::setLocale($locale);
+                if ($isAuthenticated && $member) {
+                    // メンバーの個別言語設定を優先、nullまたは空の場合はシステムデフォルト
+                    $memberLocale = $member->locale;
+                    
+                    // Enumの場合は値を取得、文字列の場合はそのまま使用
+                    if ($memberLocale instanceof \App\Enums\Locale) {
+                        $locale = $memberLocale->value;
+                    } elseif (is_string($memberLocale) && !empty($memberLocale)) {
+                        $locale = $memberLocale;
+                    } else {
+                        // メンバー設定がない場合はシステムデフォルト
+                        $locale = ConfigHelper::getAppLocale();
+                    }
+                    
+                    // 利用可能な言語かチェック
+                    if (Locale::isValid($locale)) {
+                        App::setLocale($locale);
+                    } else {
+                        // 無効な言語の場合はシステムデフォルトにフォールバック
+                        $fallbackLocale = ConfigHelper::getAppLocale();
+                        App::setLocale($fallbackLocale);
+                    }
                 }
             } elseif ($request->is('install*')) {
                 // インストール画面の場合はセッションから言語を取得

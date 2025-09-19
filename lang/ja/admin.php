@@ -232,6 +232,7 @@ return [
     // プロフィール設定
     'profile' => [
         'title' => 'プロフィール',
+        'heading' => 'プロフィール設定',
         'name' => '名前',
         'description' => '説明',
         'email' => 'メールアドレス',
@@ -240,6 +241,10 @@ return [
         'language_help' => '個別の言語設定です。未選択の場合はシステムのデフォルト言語が使用されます。',
         'password_change_only' => 'パスワード（変更する場合のみ入力）',
         'appearance' => '外観モード',
+        'appearance_mode' => '外観モード',
+        'appearance_auto' => '自動',
+        'appearance_light' => 'ライト',
+        'appearance_dark' => 'ダーク',
         'login_notification' => 'ログイン通知',
         'two_factor_authentication' => '二段階認証',
         'two_factor_mode' => '二段階認証モード',

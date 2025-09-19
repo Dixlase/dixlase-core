@@ -232,6 +232,7 @@ return [
     // Profile Settings
     'profile' => [
         'title' => 'Profile',
+        'heading' => 'Profile Settings',
         'name' => 'Name',
         'description' => 'Description',
         'email' => 'Email Address',
@@ -240,6 +241,10 @@ return [
         'language_help' => 'Individual language setting. If not selected, the system default language will be used.',
         'password_change_only' => 'Password (Enter only if changing)',
         'appearance' => 'Appearance Mode',
+        'appearance_mode' => 'Appearance Mode',
+        'appearance_auto' => 'Auto',
+        'appearance_light' => 'Light',
+        'appearance_dark' => 'Dark',
         'login_notification' => 'Login Notification',
         'two_factor_authentication' => 'Two-Factor Authentication',
         'two_factor_mode' => 'Two-Factor Authentication Mode',
