@@ -954,7 +954,6 @@ class InstallController extends Controller
             // Other settings
             'maintenance_mode' => '0', // デフォルト: 無効
             'maintenance_message' => '現在メンテナンス中です。しばらくお待ちください。',
-            'notification_enabled' => '1', // デフォルト: 有効
             'system_admin_email' => $data['admin_email'], // 管理者メールアドレスを設定
             
             // Legacy site_name for backward compatibility
@@ -1027,23 +1026,6 @@ class InstallController extends Controller
         }
         Log::info('initializeDatabase - メールテスト結果保存完了');
 
-        // `notification_email` に管理者メールアドレスを設定
-        Log::info('initializeDatabase - notification_email設定開始: ' . $data['admin_email']);
-        if (!DB::connection('mysql')->table('base_settings')->where('name', 'notification_email')->exists()) {
-            DB::connection('mysql')->table('base_settings')->insert([
-                'name' => 'notification_email',
-                'value' => $data['admin_email'],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-            Log::info('initializeDatabase - notification_email新規作成: ' . $data['admin_email']);
-        } else {
-            // 既存の通知メールアドレスを更新
-            DB::connection('mysql')->table('base_settings')
-                ->where('name', 'notification_email')
-                ->update(['value' => $data['admin_email'], 'updated_at' => now()]);
-            Log::info('initializeDatabase - notification_email更新: ' . $data['admin_email']);
-        }
 
         // `security_settings` の各設定を更新または作成
         $securitySettings = [
