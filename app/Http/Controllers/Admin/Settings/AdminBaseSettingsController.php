@@ -160,9 +160,20 @@ class AdminBaseSettingsController extends AdminLoggedInController
             'force_ssl',
         ]);
         
-        // チェックボックスのデフォルト値を設定（チェックされていない場合は0）
-        $allSettings['maintenance_mode'] = $request->has('maintenance_mode') ? 1 : 0;
+        // ラジオボタンとチェックボックスの値を正しく設定
+        // maintenance_mode はラジオボタンなので値をそのまま使用
+        $allSettings['maintenance_mode'] = (int) ($allSettings['maintenance_mode'] ?? 0);
+        // force_ssl はチェックボックスなので has() で判定
         $allSettings['force_ssl'] = $request->has('force_ssl') ? 1 : 0;
+
+        // デバッグ情報: メンテナンスモードの処理
+        if (config('app.debug')) {
+            Log::info('メンテナンスモード保存デバッグ', [
+                'request_maintenance_mode' => $request->input('maintenance_mode'),
+                'processed_maintenance_mode' => $allSettings['maintenance_mode'],
+                'request_all' => $request->all(),
+            ]);
+        }
 
         // .envに保存するもの
         $envData = [
