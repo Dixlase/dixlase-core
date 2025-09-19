@@ -56,6 +56,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @enderror
         </div>
 
+        <!-- 言語設定 -->
+        <div class="mb-4">
+            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.profile.language') }}</label>
+            @include('components::form.select', [
+                'name' => 'locale',
+                'options' => $localeOptions,
+                'value' => old('locale', $member->locale),
+                'nullable' => true,
+                'nullLabel' => __('admin.profile.use_system_default'),
+                'class' => 'w-full'
+            ])
+            @error('locale')
+                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+            @enderror
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ __('admin.profile.language_help') }}</p>
+        </div>
+
         <!-- パスワード -->
         <div class="mb-4">
             <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">{{ __('admin.profile.password_change_only') }}</label>

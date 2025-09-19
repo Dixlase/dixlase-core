@@ -262,7 +262,7 @@ class ConfigHelper
      */
     public static function getNotificationEmail(): string
     {
-        return self::get('app.notification_email', 'notification_email', '', 'string', 'BaseSetting');
+        return BaseSetting::get('system_admin_email', '');
     }
 
     // ===== Mail Configuration Methods =====
@@ -334,7 +334,7 @@ class ConfigHelper
      */
     public static function getMailFromAddress(): string
     {
-        return self::get('mail.from.address', 'system_email', 'no-reply@example.com', 'string', 'BaseSetting');
+        return self::get('mail.from.address', 'mail_from_address', 'no-reply@example.com', 'string', 'BaseSetting');
     }
 
     // ===== Session Configuration Application =====

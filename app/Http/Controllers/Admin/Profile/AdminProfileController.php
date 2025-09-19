@@ -28,6 +28,7 @@ use App\Enums\AppearanceMode;
 use App\Enums\LoginNotificationMode;
 use App\Enums\TwoFactorMode;
 use App\Enums\TwoFactorMethod;
+use App\Enums\Locale;
 use App\Models\MemberSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -96,6 +97,9 @@ class AdminProfileController extends AdminLoggedInController
 
         // プロフィール画面だけアニメーションを有効にする
         $this->viewParams['transitionEnabled'] = true;
+
+        // 言語オプションの取得
+        $this->viewParams['localeOptions'] = Locale::availableOptions();
 
         // パスワード条件の取得
         $this->viewParams['passwordMinLength'] = (int) MemberSetting::getValue('password_min_length', 8);
@@ -248,6 +252,7 @@ class AdminProfileController extends AdminLoggedInController
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'email' => 'required|string|email|max:255|unique:members,email,' . $member->id,
+            'locale' => 'nullable|string|in:' . implode(',', Locale::values()),
             'password' => $passwordRules,
             'appearance' => ['nullable', new Enum(AppearanceMode::class)],
             'login_notification_mode' => ['nullable', new Enum(LoginNotificationMode::class)],
@@ -286,6 +291,7 @@ class AdminProfileController extends AdminLoggedInController
             'name' => $validated['name'],
             'description' => $validated['description'] ?? '',
             'email' => $validated['email'],
+            'locale' => $validated['locale'] ?? null,
             'appearance' => (int) $validated['appearance'] ?? null,
         ]);
 

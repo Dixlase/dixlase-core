@@ -38,15 +38,52 @@ class AppUninstall extends Command
 
         // ✅ `.env` ファイルの処理
         $envPath = base_path('.env');
+        
         if (File::exists($envPath)) {
+            
             $backupPath = base_path('.env.backup_' . now()->format('Ymd_His'));
             if ($this->confirm('.env を削除せずにバックアップしますか？')) {
-                File::move($envPath, $backupPath);
-                $this->info(".env をバックアップしました: {$backupPath}");
-            } else {
-                File::delete($envPath);
-                $this->info(".env を削除しました。");
+                try {
+                    File::copy($envPath, $backupPath);
+                    $this->info("✅ .env をバックアップしました: {$backupPath}");
+                } catch (\Exception $e) {
+                    $this->error("❌ バックアップエラー: " . $e->getMessage());
+                }
             }
+            
+            // アンインストール後は.envファイルを削除（完全なアンインストール）
+            $deleted = false;
+            
+            // 方法1: Laravel File::delete()
+            try {
+                $deleteResult = File::delete($envPath);
+                if ($deleteResult && !File::exists($envPath)) {
+                    $deleted = true;
+                }
+            } catch (\Exception $e) {
+                // File::delete()が失敗した場合はログに記録
+            }
+            
+            // 方法2: PHP unlink()（File::delete()が失敗した場合）
+            if (!$deleted && File::exists($envPath)) {
+                try {
+                    $unlinkResult = unlink($envPath);
+                    if ($unlinkResult && !File::exists($envPath)) {
+                        $deleted = true;
+                    }
+                } catch (\Exception $e) {
+                    // unlink()も失敗した場合
+                }
+            }
+            
+            if (!$deleted) {
+                $this->error("❌ .env の削除に失敗しました。手動で削除してください: {$envPath}");
+            } else {
+                $this->info("✅ .env ファイルを完全に削除しました。");
+                $this->info("ℹ️ インストール時に .env.example から新しい .env が作成されます。");
+            }
+        } else {
+            $this->warn("⚠️ .env ファイルが存在しません。");
         }
 
         // ✅ データベースの処理
@@ -71,6 +108,10 @@ class AppUninstall extends Command
 
         // ✅ アンインストール完了
         $this->info('✅ アンインストールが完了しました！');
+        $this->line('');
+        $this->info('📝 再インストール時の注意:');
+        $this->info('   すべてのキャッシュがクリアされているため、');
+        $this->info('   追加のコマンド実行なしで再インストールが可能です。');
     }
 
     /**
@@ -93,6 +134,7 @@ class AppUninstall extends Command
             $command = match ($dbConnection) {
                 'mysql' => "mysqldump -h {$dbHost} -P {$dbPort} -u {$dbUsername} --password={$dbPassword} {$dbDatabase} > {$dumpFile}",
                 'pgsql' => "PGPASSWORD={$dbPassword} pg_dump -h {$dbHost} -p {$dbPort} -U {$dbUsername} -F c -b -v -f {$dumpFile} {$dbDatabase}",
+                'sqlite' => "cp {$dbDatabase} {$dumpFile}",
                 default => null,
             };
 
@@ -131,6 +173,13 @@ class AppUninstall extends Command
                 $tables = DB::select("SELECT tablename FROM pg_tables WHERE schemaname = 'public'");
                 foreach ($tables as $table) {
                     DB::statement("DROP TABLE IF EXISTS {$table->tablename} CASCADE");
+                }
+            } elseif ($dbType === 'sqlite') {
+                // SQLiteの場合はデータベースファイル自体を削除
+                $dbPath = database_path('database.sqlite');
+                if (File::exists($dbPath)) {
+                    File::delete($dbPath);
+                    $this->info("SQLiteデータベースファイルを削除しました: {$dbPath}");
                 }
             } else {
                 throw new Exception("対応していないデータベースドライバ: {$dbType}");
@@ -188,17 +237,79 @@ class AppUninstall extends Command
         }
 
         try {
+            // 基本的なキャッシュクリア
             Artisan::call('config:clear');
             Artisan::call('cache:clear');
             Artisan::call('view:clear');
             Artisan::call('route:clear');
-            // アンインストール後は config:cache を実行しない（.envが不完全な状態のため）
-            $this->info('✔️ キャッシュをクリアしました。');
+            
+            // 追加のクリアコマンド（再インストール問題対策）
+            Artisan::call('clear-compiled');
+            Artisan::call('optimize:clear');
+            
+            $this->info('✔️ 基本キャッシュをクリアしました。');
+            
+            // Composer autoload の再生成
+            $this->info('🔄 Composer autoload を再生成中...');
+            $composerResult = shell_exec('composer dump-autoload 2>&1');
+            if ($composerResult !== null) {
+                $this->info('✔️ Composer autoload を再生成しました。');
+            } else {
+                $this->warn('⚠️ Composer autoload の再生成をスキップしました（composerコマンドが見つからない）。');
+            }
+            
+            // 最終的な設定キャッシュ生成（.envが完全な状態の場合のみ）
+            if ($this->isEnvComplete()) {
+                Artisan::call('config:cache');
+                $this->info('✔️ 設定キャッシュを再生成しました。');
+            } else {
+                $this->info('ℹ️ .envが不完全なため、config:cacheをスキップしました。');
+            }
+            
         } catch (\Exception $e) {
             $this->error('キャッシュのクリア中にエラーが発生しました: ' . $e->getMessage());
         }
 
         // ✅ 元のキャッシュドライバに戻す
         config(['cache.default' => $originalCacheDriver]);
+    }
+
+    /**
+     * .envファイルが完全かどうかをチェック
+     */
+    private function isEnvComplete(): bool
+    {
+        $requiredKeys = ['APP_KEY', 'DB_CONNECTION', 'DB_HOST', 'DB_DATABASE'];
+        
+        foreach ($requiredKeys as $key) {
+            if (empty(env($key))) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+    /**
+     * .envファイルの値を更新
+     */
+    private function updateEnvValue(string $key, string $value): void
+    {
+        $envPath = base_path('.env');
+        
+        if (!File::exists($envPath)) {
+            return;
+        }
+        
+        $envContent = File::get($envPath);
+        
+        // 既存のキーがある場合は更新、ない場合は追加
+        if (preg_match("/^{$key}=.*$/m", $envContent)) {
+            $envContent = preg_replace("/^{$key}=.*$/m", "{$key}={$value}", $envContent);
+        } else {
+            $envContent .= "\n{$key}={$value}";
+        }
+        
+        File::put($envPath, $envContent);
     }
 }
