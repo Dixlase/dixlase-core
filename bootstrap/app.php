@@ -19,6 +19,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append([
             \App\Http\Middleware\CheckInstallationReady::class, // インストール準備状況チェック + インストール状態チェック
             \App\Http\Middleware\ApplySessionConfig::class, // セッション設定の動的適用
+        ]);
+        
+        // 認証が必要なミドルウェアは後で実行
+        $middleware->appendToGroup('web', [
             \App\Http\Middleware\SetMemberLocale::class, // 管理メンバー個別言語設定
         ]);
 

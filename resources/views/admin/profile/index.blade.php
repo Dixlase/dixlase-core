@@ -62,7 +62,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @include('components::form.select', [
                 'name' => 'locale',
                 'options' => $localeOptions,
-                'value' => old('locale', $member->locale),
+                'value' => old('locale', $member->locale?->value),
                 'nullable' => true,
                 'nullLabel' => __('admin.profile.use_system_default'),
                 'class' => 'w-full'
@@ -383,6 +383,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('scripts')
+<script>
     document.addEventListener('DOMContentLoaded', function() {
         // フォーム送信成功時にグローバルテーマストアを更新
         @if(session('success'))
@@ -409,4 +410,5 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             });
         }
     });
+</script>
 @endsection

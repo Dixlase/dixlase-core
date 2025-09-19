@@ -32,6 +32,7 @@ use App\Enums\TwoFactorMode;
 use App\Enums\AppearanceMode;
 use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
+use App\Enums\Locale;
 
 
 class Member extends Authenticatable
@@ -50,7 +51,7 @@ class Member extends Authenticatable
         'status' => MemberStatus::class,
         'two_factor_mode' => TwoFactorMode::class,
         'appearance' => AppearanceMode::class,
-
+        'locale' => Locale::class,
     ];
 
 
