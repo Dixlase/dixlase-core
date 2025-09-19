@@ -23,6 +23,7 @@
 namespace App\Http\Controllers\Admin\Settings;
 
 use App\Helpers\AdminHelper;
+use App\Helpers\ConfigHelper;
 use App\Helpers\EnvHelper;
 use App\Helpers\TimezoneHelper;
 use App\Http\Controllers\Admin\AdminController;
@@ -74,26 +75,28 @@ class AdminBaseSettingsController extends AdminLoggedInController
         session()->forget('mail_test_results');
         
         $settings = [
-            // .env から読み取る設定
-            'app_name' => env('APP_NAME', 'MySoftware'),
-            'locale' => env('APP_LOCALE', 'ja'),
-            'timezone' => env('APP_TIMEZONE', 'Asia/Tokyo'),
+            // App settings - config(.env) -> database -> default
+            'app_name' => ConfigHelper::getAppName(),
+            'locale' => ConfigHelper::getAppLocale(),
+            'timezone' => ConfigHelper::getAppTimezone(),
 
-            'mail_mailer' => env('MAIL_MAILER', 'smtp'),
-            'mail_host' => env('MAIL_HOST', 'smtp.example.com'),
-            'mail_port' => env('MAIL_PORT', '587'),
-            'mail_username' => env('MAIL_USERNAME', ''),
-            'mail_password' => env('MAIL_PASSWORD', ''),
-            'mail_encryption' => env('MAIL_ENCRYPTION', 'tls'),
-            'mail_from_address' => env('MAIL_FROM_ADDRESS', 'no-reply@example.com'),
+            // Mail settings - config(.env) -> database -> default
+            'mail_mailer' => ConfigHelper::getMailMailer(),
+            'mail_host' => ConfigHelper::getMailHost(),
+            'mail_port' => ConfigHelper::getMailPort(),
+            'mail_username' => ConfigHelper::getMailUsername(),
+            'mail_password' => ConfigHelper::getMailPassword(),
+            'mail_encryption' => ConfigHelper::getMailEncryption(),
+            'mail_from_address' => ConfigHelper::getMailFromAddress(),
 
-            // メンテナンスモードのON/OFFも.envから読み取り
-            'maintenance_mode' => env('MAINTENANCE_MODE', 'false'),
+
+            // Other settings - config(.env) -> database -> default
+            'maintenance_mode' => ConfigHelper::getMaintenanceMode(),
+            'maintenance_message' => ConfigHelper::getMaintenanceMessage(),
+            'notification_enabled' => ConfigHelper::getNotificationEnabled(),
+            'notification_email' => ConfigHelper::getNotificationEmail(),
             
-            // データベースから読み取る設定
-            'maintenance_message' => BaseSetting::getValue('maintenance_message', '現在メンテナンス中です。しばらくお待ちください。'),
-            'notification_enabled' => (bool) BaseSetting::getValue('notification_enabled', false),
-            'notification_email' => BaseSetting::getValue('notification_email', ''),
+            // Database-only settings (no .env equivalent)
             'admin_url' => BaseSetting::getValue('admin_url', config('admin.admin_url')),
             'force_ssl' => (bool) BaseSetting::getValue('force_ssl', false),
         ];
@@ -138,15 +141,8 @@ class AdminBaseSettingsController extends AdminLoggedInController
     {
 
 
-        // DBに保存するもの
-        $settings = $request->only([
-            'maintenance_message',
-            'notification_enabled',
-            'notification_email',
-        ]);
-
-        // .envに保存するもの（メンテナンスモードのON/OFFも含む）
-        $envData = $request->only([
+        // 全ての設定を取得
+        $allSettings = $request->only([
             'app_name',
             'locale',
             'timezone',
@@ -158,7 +154,43 @@ class AdminBaseSettingsController extends AdminLoggedInController
             'mail_encryption',
             'mail_from_address',
             'maintenance_mode',
+            'maintenance_message',
+            'notification_enabled',
+            'notification_email',
         ]);
+
+        // .envに保存するもの
+        $envData = [
+            'app_name' => $allSettings['app_name'],
+            'locale' => $allSettings['locale'],
+            'timezone' => $allSettings['timezone'],
+            'mail_mailer' => $allSettings['mail_mailer'],
+            'mail_host' => $allSettings['mail_host'],
+            'mail_port' => $allSettings['mail_port'],
+            'mail_username' => $allSettings['mail_username'],
+            'mail_password' => $allSettings['mail_password'],
+            'mail_encryption' => $allSettings['mail_encryption'],
+            'system_email' => $allSettings['mail_from_address'], // EnvHelperのマッピングに合わせる
+            'maintenance_mode' => $allSettings['maintenance_mode'] ? 'true' : 'false',
+        ];
+
+        // DBにも保存（フォールバック用）
+        $dbSettings = [
+            'app_name' => $allSettings['app_name'],
+            'locale' => $allSettings['locale'],
+            'timezone' => $allSettings['timezone'],
+            'mail_mailer' => $allSettings['mail_mailer'],
+            'mail_host' => $allSettings['mail_host'],
+            'mail_port' => (string) $allSettings['mail_port'],
+            'mail_username' => $allSettings['mail_username'],
+            'mail_password' => $allSettings['mail_password'],
+            'mail_encryption' => $allSettings['mail_encryption'],
+            'system_email' => $allSettings['mail_from_address'],
+            'maintenance_mode' => $allSettings['maintenance_mode'] ? '1' : '0',
+            'maintenance_message' => $allSettings['maintenance_message'],
+            'notification_enabled' => $allSettings['notification_enabled'] ? '1' : '0',
+            'notification_email' => $allSettings['notification_email'],
+        ];
 
         // 空文字列をnullに変換（mail_username, mail_password, mail_encryption のみ）
         // mail_host と mail_port は空文字列のままで保存
@@ -199,20 +231,10 @@ class AdminBaseSettingsController extends AdminLoggedInController
             }
         }
 
-        // DBに保存するもの（メンテナンスメッセージ、admin_url、force_sslなど）
-        $settings = $request->only([
-            'maintenance_message',
-            'notification_enabled',
-            'notification_email',
-            'admin_url',
-            'force_ssl',
-        ]);
+        // DBに全ての設定を保存（フォールバック用）
+        BaseSetting::setMany($dbSettings);
         
-        // チェックボックスの場合、未チェック時は値が送信されないため、デフォルト値を設定
-        $settings['force_ssl'] = $settings['force_ssl'] ?? 0;
-        
-        BaseSetting::setMany($settings);
-        // .env に保存するもの（メンテナンスモードのON/OFFも含む）
+        // .envファイルに設定を保存
         EnvHelper::update($envData);
         
         if ($mailSettingsChanged) {

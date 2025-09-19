@@ -410,6 +410,10 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $loginAttemptLockoutDuration = (int) MemberSetting::getValue('login_attempt_lockout_duration', 30);
         $lockoutNotificationEnabled = (bool) MemberSetting::getValue('lockout_notification_enabled', true);
 
+        // 管理メンバー用セッション設定
+        $membersSessionLifetimeEnabled = (bool) MemberSetting::getValue('members_session_lifetime_enabled', false);
+        $membersSessionLifetime = (int) MemberSetting::getValue('members_session_lifetime', 120);
+
         // メールサーバー接続テスト状況
         $isMailServerTested = $this->isMailServerTested();
         $mailConnectionTestDate = BaseSetting::getValue('mail_connection_test_date');
@@ -431,6 +435,8 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['loginAttemptTimeWindow'] = $loginAttemptTimeWindow;
         $this->viewParams['loginAttemptLockoutDuration'] = $loginAttemptLockoutDuration;
         $this->viewParams['lockoutNotificationEnabled'] = $lockoutNotificationEnabled;
+        $this->viewParams['membersSessionLifetimeEnabled'] = $membersSessionLifetimeEnabled;
+        $this->viewParams['membersSessionLifetime'] = $membersSessionLifetime;
         $this->viewParams['isMailServerTested'] = $isMailServerTested;
         $this->viewParams['mailConnectionTestDate'] = $mailConnectionTestDate;
 
@@ -456,6 +462,10 @@ class AdminMembersSettingsController extends AdminLoggedInController
         MemberSetting::setValue('login_attempt_time_window', (string) $validated['login_attempt_time_window']);
         MemberSetting::setValue('login_attempt_lockout_duration', (string) $validated['login_attempt_lockout_duration']);
         MemberSetting::setValue('lockout_notification_enabled', $validated['lockout_notification_enabled'] ? '1' : '0');
+
+        // 管理メンバー用セッション設定
+        MemberSetting::setValue('members_session_lifetime_enabled', $validated['members_session_lifetime_enabled'] ? '1' : '0');
+        MemberSetting::setValue('members_session_lifetime', (string) $validated['members_session_lifetime']);
 
         // 二段階認証方法設定の保存
         $autoSelectedDefaultMethod = null;

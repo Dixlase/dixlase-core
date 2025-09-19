@@ -34,6 +34,8 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
+use App\Helpers\EnvHelper;
+use App\Helpers\ConfigHelper;
 
 
 
@@ -67,6 +69,10 @@ class AdminSecuritySettingsController extends AdminLoggedInController
             'allowed_front_ips' => SecuritySetting::get('allowed_front_ips', ''),
             'enable_blocked_front_ips' => filter_var(SecuritySetting::get('enable_blocked_front_ips', false), FILTER_VALIDATE_BOOLEAN),
             'blocked_front_ips' => SecuritySetting::get('blocked_front_ips', ''),
+            // Session settings - use base values for security settings form
+            'session_driver' => ConfigHelper::getSessionDriver(),
+            'session_encrypt' => ConfigHelper::getSessionEncrypt(),
+            'session_lifetime' => ConfigHelper::getSessionLifetime(),
             // reCAPTCHA settings
             'captcha_enabled' => filter_var(SecuritySetting::get('captcha_enabled', false), FILTER_VALIDATE_BOOLEAN),
             'captcha_driver' => SecuritySetting::get('captcha_driver', 'google'),
@@ -188,6 +194,22 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         SecuritySetting::set('allowed_front_ips', $request->input('allowed_front_ips'));
         SecuritySetting::set('enable_blocked_front_ips', $request->boolean('enable_blocked_front_ips'));
         SecuritySetting::set('blocked_front_ips', $request->input('blocked_front_ips'));
+        
+        // Save session settings
+        $sessionDriver = $request->input('session_driver', 'file');
+        $sessionEncrypt = $request->boolean('session_encrypt');
+        $sessionLifetime = $request->integer('session_lifetime', 120);
+        
+        SecuritySetting::set('session_driver', $sessionDriver);
+        SecuritySetting::set('session_encrypt', $sessionEncrypt);
+        SecuritySetting::set('session_lifetime', $sessionLifetime);
+        
+        // Update .env file with session settings
+        EnvHelper::update([
+            'session_driver' => $sessionDriver,
+            'session_encrypt' => $sessionEncrypt ? 'true' : 'false',
+            'session_lifetime' => (string) $sessionLifetime,
+        ]);
         
         // Save reCAPTCHA settings
         SecuritySetting::set('captcha_enabled', $request->boolean('captcha_enabled'));

@@ -67,6 +67,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <input type="hidden" id="captcha_validation_token" name="captcha_validation_token" value="{{ session('captcha_just_saved') ? 'saved_token' : '' }}">
         
+        
+        
         <!-- システムエラー通知設定 -->
         <div class="my-6 pt-6">
             <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.security.error_notification_settings') }}</h2>
@@ -143,7 +145,74 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endif
         </div>
 
-        <!-- reCAPTCHA設定 -->
+        <!-- セッション管理設定 -->
+        <div class="my-6 pt-6">
+            <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.security.session_management') }}</h2>
+            <p class="text-sm mb-4">
+                {{ __('admin.settings.security.session_management_description') }}
+            </p>
+
+            <!-- セッションドライバー -->
+            <div class="mt-4">
+                @include('components::form.label', [
+                    'text' => __('admin.settings.security.session_driver'),
+                ])
+                @include('components::form.select', [
+                    'name' => 'session_driver',
+                    'options' => [
+                        'file' => __('admin.settings.security.session_driver_file'),
+                        'database' => __('admin.settings.security.session_driver_database'),
+                        'redis' => __('admin.settings.security.session_driver_redis'),
+                        'memcached' => __('admin.settings.security.session_driver_memcached'),
+                        'cookie' => __('admin.settings.security.session_driver_cookie'),
+                        'array' => __('admin.settings.security.session_driver_array'),
+                    ],
+                    'value' => old('session_driver', $settings['session_driver']),
+                ])
+                <p class="text-sm mt-1">{{ __('admin.settings.security.session_driver_help') }}</p>
+            </div>
+
+            <!-- セッション暗号化 -->
+            <div class="mt-6">
+                @include('components::form.label', [
+                    'text' => __('admin.settings.security.session_encrypt'),
+                ])
+                @include('components::form.hidden', [
+                    'name' => 'session_encrypt',
+                    'value' => '0'
+                ])
+                @include('components::form.radio-group', [
+                    'name' => 'session_encrypt',
+                    'options' => [
+                        1 => __('admin.settings.security.yes'),
+                        0 => __('admin.settings.security.no')
+                    ],
+                    'value' => old('session_encrypt', (int) $settings['session_encrypt']),
+                ])
+                <p class="text-sm mt-1">{{ __('admin.settings.security.session_encrypt_help') }}</p>
+            </div>
+
+            <!-- デフォルトセッション有効時間 -->
+            <div class="mt-6">
+                @include('components::form.label', [
+                    'text' => __('admin.settings.security.session_lifetime'),
+                ])
+                <div class="flex items-center">
+                    @include('components::form.text', [
+                        'name' => 'session_lifetime',
+                        'type' => 'number',
+                        'min' => '1',
+                        'max' => '43200',
+                        'value' => old('session_lifetime', $settings['session_lifetime']),
+                        'class' => 'w-24'
+                    ])
+                    <span class="text-sm ml-2">{{ __('admin.settings.security.minutes') }}</span>
+                </div>
+                <p class="text-sm mt-1">{{ __('admin.settings.security.session_lifetime_help') }}</p>
+            </div>
+        </div>
+
+        <!-- CAPTCHA設定 -->
         <div class="my-6">
             <h2 class="{{ config('admin.appearance_class.heading.h2') }}">{{ __('admin.settings.security.recaptcha_settings') }}</h2>
             

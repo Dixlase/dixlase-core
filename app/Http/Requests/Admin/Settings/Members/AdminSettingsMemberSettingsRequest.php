@@ -39,6 +39,9 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
             'login_attempt_time_window' => 'required|integer|min:1|max:1440', // 最大24時間
             'login_attempt_lockout_duration' => 'required|integer|min:1|max:10080', // 最大1週間
             'lockout_notification_enabled' => 'required|boolean',
+            // 管理メンバー用セッション設定
+            'members_session_lifetime_enabled' => 'required|boolean',
+            'members_session_lifetime' => 'required|integer|min:1|max:43200', // 最大30日
         ];
 
         // 二段階認証方法の設定は無効時でも保存できるようにする

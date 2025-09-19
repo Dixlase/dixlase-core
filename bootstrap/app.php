@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register global middlewares
         $middleware->append([
             \App\Http\Middleware\CheckInstallationReady::class, // インストール準備状況チェック + インストール状態チェック
+            \App\Http\Middleware\ApplySessionConfig::class, // セッション設定の動的適用
         ]);
 
         // Register route middleware aliases

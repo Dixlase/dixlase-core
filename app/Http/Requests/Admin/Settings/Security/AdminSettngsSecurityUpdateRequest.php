@@ -51,6 +51,8 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
             'captcha_registration_form' => filter_var($this->input('captcha_registration_form'), FILTER_VALIDATE_BOOLEAN),
             'captcha_login_form' => filter_var($this->input('captcha_login_form'), FILTER_VALIDATE_BOOLEAN),
             'captcha_comment_form' => filter_var($this->input('captcha_comment_form'), FILTER_VALIDATE_BOOLEAN),
+            // Session settings
+            'session_encrypt' => filter_var($this->input('session_encrypt'), FILTER_VALIDATE_BOOLEAN),
             // Notification settings
             'notification_enabled' => filter_var($this->input('notification_enabled'), FILTER_VALIDATE_BOOLEAN),
             // CAPTCHA authentication result
@@ -75,6 +77,10 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
             'allowed_front_ips' => 'nullable|string|regex:/^(\d{1,3}\.){3}\d{1,3}(,\s*(\d{1,3}\.){3}\d{1,3})*$/',
             'enable_blocked_front_ips' => 'required|boolean',
             'blocked_front_ips' => 'nullable|string|regex:/^(\d{1,3}\.){3}\d{1,3}(,\s*(\d{1,3}\.){3}\d{1,3})*$/',
+            // Session validation rules
+            'session_driver' => 'required|string|in:file,database,redis,memcached,cookie,array',
+            'session_encrypt' => 'required|boolean',
+            'session_lifetime' => 'required|integer|min:1|max:43200',
             // reCAPTCHA validation rules
             'captcha_enabled' => 'required|boolean',
             'captcha_driver' => 'nullable|string|in:google,google_enterprise,turnstile',

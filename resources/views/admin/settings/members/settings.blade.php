@@ -232,7 +232,59 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </div>
 
+        <!-- 管理メンバー用セッション設定 -->
+        <div class="mt-8 border-t pt-6">
+            <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.members.settings.admin_session_settings') }}</h2>
+            <p class="text-sm mb-4">
+                {{ __('admin.settings.members.settings.admin_session_settings_description') }}
+            </p>
 
+            <!-- セッション有効時間カスタマイズ有効/無効 -->
+            <div class="mb-6">
+                <label class="block font-medium text-sm text-gray-700 dark:text-white mb-1">
+                    {{ __('admin.settings.members.settings.admin_session_lifetime_enabled') }}
+                </label>
+
+                @php
+                    $adminSessionLifetimeOptions = [
+                        '1' => __('admin.settings.members.settings.admin_session_lifetime_enabled_options.enabled'),
+                        '0' => __('admin.settings.members.settings.admin_session_lifetime_enabled_options.disabled'),
+                    ];
+                @endphp
+
+                @include('components.form.radio-group', [
+                    'name' => 'members_session_lifetime_enabled',
+                    'options' => $adminSessionLifetimeOptions,
+                    'value' => old('members_session_lifetime_enabled', (string) (int) $membersSessionLifetimeEnabled),
+                ])
+
+                <p class="mt-1 text-xs text-gray-500 dark:text-white">
+                    {{ __('admin.settings.members.settings.admin_session_lifetime_enabled_help') }}
+                </p>
+            </div>
+
+            <!-- 管理メンバー用セッション有効時間 -->
+            <div class="mt-6">
+                <label for="members_session_lifetime" class="block font-medium text-sm text-gray-700 dark:text-white mb-1">
+                    {{ __('admin.settings.members.settings.admin_session_lifetime') }}
+                </label>
+                <div class="flex items-center">
+                    <input
+                        type="number"
+                        id="members_session_lifetime"
+                        name="members_session_lifetime"
+                        value="{{ old('members_session_lifetime', $membersSessionLifetime) }}"
+                        min="1"
+                        max="43200"
+                        class="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    >
+                    <span class="text-sm ml-2">{{ __('admin.settings.members.settings.minutes') }}</span>
+                </div>
+                <p class="mt-1 text-xs text-gray-500 dark:text-white">
+                    {{ __('admin.settings.members.settings.admin_session_lifetime_help') }}
+                </p>
+            </div>
+        </div>
 
         <!-- パスワードリセット機能設定 -->
         <div class="mt-8 border-t pt-6">
