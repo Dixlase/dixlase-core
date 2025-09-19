@@ -26,6 +26,8 @@ use App\Models\SecuritySetting;
 use App\Models\MemberSetting;
 use App\Models\BaseSetting;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Log;
 
 class ConfigHelper
 {
@@ -66,15 +68,31 @@ class ConfigHelper
      */
     private static function getFromDatabase(string $key, string $model)
     {
-        switch ($model) {
-            case 'BaseSetting':
-                return BaseSetting::get($key, null);
-            case 'MemberSetting':
-                return MemberSetting::getValue($key, null);
-            case 'SecuritySetting':
-            default:
-                return SecuritySetting::get($key, null);
+        try {
+            switch ($model) {
+                case 'BaseSetting':
+                    if (Schema::hasTable('base_settings')) {
+                        return BaseSetting::get($key, null);
+                    }
+                    break;
+                case 'MemberSetting':
+                    if (Schema::hasTable('members_settings')) {
+                        return MemberSetting::getValue($key, null);
+                    }
+                    break;
+                case 'SecuritySetting':
+                default:
+                    if (Schema::hasTable('security_settings')) {
+                        return SecuritySetting::get($key, null);
+                    }
+                    break;
+            }
+        } catch (\Exception $e) {
+            // If there's any database error (e.g., during installation), return null
+            Log::debug("Database access failed for {$model}::{$key} during installation: " . $e->getMessage());
         }
+        
+        return null;
     }
 
     /**
@@ -116,11 +134,19 @@ class ConfigHelper
 
         // For admin members, check if custom session lifetime is enabled
         if ($guard === 'member') {
-            $membersSessionEnabled = (bool) MemberSetting::getValue('members_session_lifetime_enabled', false);
-            
-            if ($membersSessionEnabled) {
-                $membersSessionLifetime = (int) MemberSetting::getValue('members_session_lifetime', 120);
-                return $membersSessionLifetime;
+            try {
+                // Check if the members_settings table exists before querying
+                if (Schema::hasTable('members_settings')) {
+                    $membersSessionEnabled = (bool) MemberSetting::getValue('members_session_lifetime_enabled', false);
+                    
+                    if ($membersSessionEnabled) {
+                        $membersSessionLifetime = (int) MemberSetting::getValue('members_session_lifetime', 120);
+                        return $membersSessionLifetime;
+                    }
+                }
+            } catch (\Exception $e) {
+                // If there's any database error (e.g., during installation), fall back to security settings
+                Log::debug('MemberSetting access failed during installation: ' . $e->getMessage());
             }
         }
 
@@ -342,8 +368,16 @@ class ConfigHelper
         $membersSessionLifetime = null;
         
         if ($guard === 'member') {
-            $membersSessionEnabled = (bool) MemberSetting::getValue('members_session_lifetime_enabled', false);
-            $membersSessionLifetime = (int) MemberSetting::getValue('members_session_lifetime', 120);
+            try {
+                // Check if the members_settings table exists before querying
+                if (Schema::hasTable('members_settings')) {
+                    $membersSessionEnabled = (bool) MemberSetting::getValue('members_session_lifetime_enabled', false);
+                    $membersSessionLifetime = (int) MemberSetting::getValue('members_session_lifetime', 120);
+                }
+            } catch (\Exception $e) {
+                // If there's any database error (e.g., during installation), use default values
+                Log::debug('MemberSetting access failed during installation: ' . $e->getMessage());
+            }
         }
 
         return [

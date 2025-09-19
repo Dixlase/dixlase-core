@@ -64,6 +64,9 @@ Route::prefix('install')->name('install.')->middleware('install.steps')->group(
         Route::post('/confirm', [InstallController::class, 'confirmStore'])->name('confirm.store');
         //インストール完了画面
         Route::get('/complete', [InstallController::class, 'complete'])->name('complete');
+        
+        //インストール最終化
+        Route::post('/finalize', [InstallController::class, 'finalize'])->name('finalize');
 
         //データベース接続テスト
         Route::post('/test-db', [InstallController::class, 'testDatabaseConnection'])->name('install.test-db');

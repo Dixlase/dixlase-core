@@ -85,4 +85,16 @@ class BaseSetting extends Model
             self::setValue($key, $value);
         }
     }
+
+    /**
+     * ConfigHelperとの互換性のためのエイリアスメソッド
+     *
+     * @param string $name
+     * @param mixed $default
+     * @return mixed
+     */
+    public static function get($name, $default = null)
+    {
+        return self::getValue($name, $default);
+    }
 }

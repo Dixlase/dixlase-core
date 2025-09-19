@@ -87,10 +87,12 @@
     <p class="text-sm text-gray-500 mb-4">{{ __('install.preserve_database_help') }}</p>
 
     <!-- ✅ DB接続テストボタン -->
-    <button type="button" onclick="testDatabaseConnection()"
-        class="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition">
-        {{ __('install.test_db_connection') }}
-    </button>
+    <div class="flex justify-center">
+        <button type="button" onclick="testDatabaseConnection()"
+            class="w-auto bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition">
+            {{ __('install.test_db_connection') }}
+        </button>
+    </div>
 
     <p id="db-test-result" class="text-sm mt-2 text-red-500">
         {{ __('install.db_test_required') }}

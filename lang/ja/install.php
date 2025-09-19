@@ -125,7 +125,7 @@ return [
     'security_title' => 'セキュリティ設定',
     'security_header' => 'セキュリティ設定(任意)',
     'security_description' => '管理画面のURLやIP制限を設定します。<br>IP制限はインストール後に設定することも可能です。',
-    'site_url' => 'サイトのURL（管理画面）',
+    'site_url' => 'フロントページURL',
     'force_ssl' => 'SSL（HTTPS）を強制する',
     'ip_restrictions' => 'IPアドレス制限',
     'enable_allowed_admin_ips' => '特定のIPアドレスのみ管理画面へのアクセスを許可',
@@ -180,6 +180,7 @@ return [
 
     //complete
     'complete_title' => 'インストール完了！',
+    'complete_header' => 'インストール完了',
     'complete_message' => 'インストールが正常に完了しました！以下のリンクからサイトまたは管理画面にアクセスしてください。',
     'go_to_site' => 'サイトへ移動',
     'go_to_admin' => '管理画面へログイン',

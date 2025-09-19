@@ -87,15 +87,40 @@ class CheckInstallationReady
 
         // インストール状態チェック（.envの設定を優先）
         $installed = env('INSTALLED') ?? config('app.installed');
-        if ($installed !== true) {
+        $currentRoute = $request->route() ? $request->route()->getName() : 'unknown';
+        
+        // より厳密な判定
+        $isInstalled = ($installed === 'true' || $installed === true);
+        
+        // 完了画面表示後の猶予期間をチェック
+        $installCompleted = session('install_completed', false);
+        $gracePeriod = $installCompleted && !$isInstalled;
+        
+        Log::info('CheckInstallationReady: INSTALLED=' . var_export($installed, true) . ', isInstalled=' . var_export($isInstalled, true) . ', gracePeriod=' . var_export($gracePeriod, true) . ', Route=' . $currentRoute);
+        
+        if (!$isInstalled && !$gracePeriod) {
             // インストール関連のルート以外はインデックスにリダイレクト
             if (!$request->is('install*') && !$request->is('install/*')) {
+                Log::info('CheckInstallationReady: 未インストール - install.indexにリダイレクト');
                 return redirect()->route('install.index');
+            }
+        } elseif ($gracePeriod) {
+            // 猶予期間中は通常のアクセスを許可
+            Log::info('CheckInstallationReady: 猶予期間中 - アクセス許可');
+            
+            // ただし、インストール画面へのアクセスは制限
+            if ($request->is('install', 'install/*') && !$request->is('install/complete') && !$request->is('install/finalize')) {
+                Log::info('CheckInstallationReady: 猶予期間中 - インストール画面アクセス制限');
+                return redirect('/')->with('message', 'インストールは既に完了しています。');
             }
         } else {
             // インストール済みの場合、インストール画面にはアクセスできないようにする
-            if ($request->is('install', 'install/*') && !$request->is('install/finalize')) {
+            // ただし、完了画面は表示を許可する
+            if ($request->is('install', 'install/*') && !$request->is('install/finalize') && !$request->is('install/complete')) {
+                Log::info('CheckInstallationReady: インストール済み - フロントページにリダイレクト');
                 return redirect('/')->with('message', 'このアプリケーションは既にインストールされています。');
+            } elseif ($request->is('install/complete')) {
+                Log::info('CheckInstallationReady: 完了画面へのアクセスを許可');
             }
         }
 

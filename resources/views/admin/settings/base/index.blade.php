@@ -38,6 +38,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 'name' => 'app_name',
                 'value' => old('app_name', $settings['app_name']),
                 'required' => true,
+                'class' => 'w-full'
             ])
         </div>
 
@@ -83,6 +84,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 'name' => 'admin_url',
                 'value' => old('admin_url', $settings['admin_url']),
                 'required' => true,
+                'class' => 'w-full'
             ])
             <p class="text-sm mt-3">{!! __('admin.settings.base.admin_url_help') !!}</p>
         </div>
@@ -185,7 +187,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         @endif
 
-        <!-- 管理者メールアドレス -->
+        <!-- システム管理者メールアドレス -->
         <div class="my-6">
             @include('components::form.label', [
                 'for' => 'notification_email',
@@ -196,7 +198,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 'name' => 'notification_email',
                 'value' => old('notification_email', $settings['notification_email']),
                 'type' => 'email',
-                'placeholder' => 'admin@example.com',
             ])
             <p class="text-sm mt-1">{{ __('admin.settings.base.admin_email_help') }}</p>
             
@@ -224,7 +225,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
 @section('scripts')
-
+<script>
     // 管理画面用の追加JavaScript（メール設定変更監視など）
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('base-settings-form');
@@ -471,4 +472,5 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             }, 5000);
         }
     });
+</script>
 @endsection

@@ -190,9 +190,9 @@ class AppUninstall extends Command
         try {
             Artisan::call('config:clear');
             Artisan::call('cache:clear');
-            Artisan::call('config:cache');
             Artisan::call('view:clear');
             Artisan::call('route:clear');
+            // アンインストール後は config:cache を実行しない（.envが不完全な状態のため）
             $this->info('✔️ キャッシュをクリアしました。');
         } catch (\Exception $e) {
             $this->error('キャッシュのクリア中にエラーが発生しました: ' . $e->getMessage());
