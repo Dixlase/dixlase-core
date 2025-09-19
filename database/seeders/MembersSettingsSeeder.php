@@ -42,6 +42,10 @@ class MembersSettingsSeeder extends Seeder
             ['key' => 'login_attempt_lockout_duration', 'value' => '30'], // デフォルト: 30分
             ['key' => 'lockout_notification_enabled', 'value' => '1'], // デフォルト: 有効
 
+            // 管理メンバー用セッション設定
+            ['key' => 'members_session_lifetime_enabled', 'value' => '0'], // デフォルト: 無効（セキュリティ設定のデフォルト値を使用）
+            ['key' => 'members_session_lifetime', 'value' => '120'], // デフォルト: 120分
+
         ];
 
         foreach ($settings as $setting) {

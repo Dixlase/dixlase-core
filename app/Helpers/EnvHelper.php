@@ -22,6 +22,10 @@ class EnvHelper
         'mail_password' => 'MAIL_PASSWORD',
         'mail_encryption' => 'MAIL_ENCRYPTION',
         'maintenance_mode' => 'MAINTENANCE_MODE',
+        // Session settings
+        'session_driver' => 'SESSION_DRIVER',
+        'session_lifetime' => 'SESSION_LIFETIME',
+        'session_encrypt' => 'SESSION_ENCRYPT',
     ];
 
     public static function toEnvKey(string $snakeCaseKey): string

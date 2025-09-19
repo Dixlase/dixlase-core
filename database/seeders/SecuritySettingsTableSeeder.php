@@ -128,6 +128,21 @@ class SecuritySettingsTableSeeder extends Seeder
             ['value' => '']
         );
 
+        // Session management settings
+        SecuritySetting::updateOrCreate(
+            ['name' => 'session_driver'],
+            ['value' => config('session.driver', 'file')]
+        );
+
+        SecuritySetting::updateOrCreate(
+            ['name' => 'session_encrypt'],
+            ['value' => config('session.encrypt', false) ? '1' : '0']
+        );
+
+        SecuritySetting::updateOrCreate(
+            ['name' => 'session_lifetime'],
+            ['value' => (string) config('session.lifetime', 120)]
+        );
 
     }
 }
