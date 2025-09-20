@@ -112,9 +112,9 @@ return [
         'label' => 'Two-Factor Authentication Settings',
         'options' => [
             0 => 'Disabled',
-            1 => 'Use Member Profile Settings',
-            2 => 'Enabled only for different devices/IPs',
-            3 => 'Always enabled',
+            1 => 'Enabled only for different devices/IPs',
+            2 => 'Always enabled',
+            3 => 'Use Member Profile Settings',
         ]
     ],
     'two_factor_method' => [
@@ -130,9 +130,9 @@ return [
         'label' => 'Login Notification Settings',
         'options' => [
             0 => 'Disabled',
-            1 => 'Use Member Profile Settings',
-            2 => 'Enabled only for different devices/IPs',
-            3 => 'Always enabled',
+            1 => 'Enabled only for different devices/IPs',
+            2 => 'Always enabled',
+            3 => 'Use Member Profile Settings',
         ]
     ],
 
@@ -725,6 +725,7 @@ Clicking this link will complete the full mail function test.',
                     0 => 'Not required',
                 ],
                 'login_notification_global_setting' => 'Global Login Notification Email Settings',
+                'two_factor_mode_global_setting' => 'Global Two-Factor Authentication Settings',
                 'two_factor_methods_label' => 'Available Two-Factor Authentication Methods',
                 'two_factor_methods_help' => 'Select the two-factor authentication methods that users can use. At least one must be enabled.',
                 'password_reset_settings' => 'Password Reset Function Settings',

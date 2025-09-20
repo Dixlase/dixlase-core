@@ -145,8 +145,8 @@ class AdminProfileController extends AdminLoggedInController
         } else {
             // 従来通り（無効、有効のみ）
             $profileTwoFactorOptions = [
-                '0' => __('admin.settings.members.two_factor_mode.options.0'), // 無効
-                '1' => __('admin.settings.members.two_factor_mode.options.1'), // 有効
+                '0' => __('admin.two_factor_mode.options.0'), // 無効
+                '1' => __('admin.two_factor_mode.options.1'), // 有効
             ];
         }
 

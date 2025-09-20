@@ -131,7 +131,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- ログイン通知設定 -->
         @php
-            // 0 = 無効, 1 = プロフィール設定を反映, 2 = 異なる端末/IP時のみ有効, 3 = 常に有効
+            // 0 = 無効, 1 = 異なる端末/IP時のみ有効, 2 = 常に有効, 3 = プロフィール設定を反映
             $globalLoginNotification = (int) ($loginNoticeGlobal ?? 0);
             
             // 現在の通知モードを取得 (フォーム送信後の値 or 現在のユーザー設定 or デフォルト値 1 = 無効)
@@ -141,50 +141,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             $hideLoginNotificationSection = ($globalLoginNotification === 0);
             
             // 全体設定が「プロフィール設定を反映」の場合は設定を表示
-            $showLoginNotificationSettings = ($globalLoginNotification === 1);
+            $showLoginNotificationSettings = ($globalLoginNotification === 3);
         @endphp
 
         @unless($hideLoginNotificationSection)
             @if($showLoginNotificationSettings)
                 <div class="mb-6">
-                    <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">
+                    <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
                         {{ __('admin.profile.login_notification_mode') }}
                     </label>
-                    <div class="space-y-2">
-                        <div class="flex items-center">
-                            <input type="radio" id="login_notification_disabled" 
-                                   name="login_notification_mode" 
-                                   value="0" 
-                                   class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600"
-                                   @if($currentLoginNotificationMode == 0) checked @endif>
-                            <label for="login_notification_disabled" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                                {{ __('admin.login_notification_mode.options.0') }}
-                            </label>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="radio" id="login_notification_new_device" 
-                                   name="login_notification_mode" 
-                                   value="2" 
-                                   class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600"
-                                   @if($currentLoginNotificationMode == 2) checked @endif>
-                            <label for="login_notification_new_device" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                                {{ __('admin.login_notification_mode.options.2') }}
-                            </label>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="radio" id="login_notification_always" 
-                                   name="login_notification_mode" 
-                                   value="3" 
-                                   class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600"
-                                   @if($currentLoginNotificationMode == 3) checked @endif>
-                            <label for="login_notification_always" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                                {{ __('admin.login_notification_mode.options.3') }}
-                            </label>
-                        </div>
+
+                    @include('components.form.radio-group', [
+                        'name' => 'login_notification_mode',
+                        'options' => $loginNotificationOptions,
+                        'value' => old('login_notification_mode', (string) ($loginNotificationMode?->value ?? 0)),
+                    ])
+
+                    <div class="mt-1">
+                        <p class="text-xs">
+                            {{ __('admin.profile.login_notification_help') }}
+                        </p>
                     </div>
-                    <p class="mt-1 text-xs">
-                        {{ __('admin.profile.login_notification_help') }}
-                    </p>
                 </div>
             @else
                 <!-- 全体設定で固定されている場合の表示 -->
@@ -195,10 +172,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
                         <p class="text-sm text-gray-700 dark:text-gray-300">
                             <span class="font-medium">
-                                @if($globalLoginNotification === 2)
-                                    {{ __('admin.profile.login_notification_mode_options.only_new_device') }}
-                                @elseif($globalLoginNotification === 3)
-                                    {{ __('admin.profile.login_notification_mode_options.always') }}
+                                @if($globalLoginNotification === 1)
+                                    {{ __('admin.login_notification_mode.options.1') }}
+                                @elseif($globalLoginNotification === 2)
+                                    {{ __('admin.login_notification_mode.options.2') }}
                                 @endif
                             </span>
                         </p>
@@ -214,7 +191,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @if($force2fa === \App\Enums\TwoFactorMode::UseProfileSetting->value)
             <div class="mb-4">
                 <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
-                    {{ __('admin.profile.two_factor_mode') }}
+                    {{ __('admin.two_factor_mode.label') }}
                 </label>
 
                 @include('components.form.radio-group', [
@@ -233,15 +210,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <!-- 全体設定で固定されている場合の表示 -->
             <div class="mb-4">
                 <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
-                    {{ __('admin.two_factor_mode') }}
+                    {{ __('admin.two_factor_mode.label') }}
                 </label>
                 
                 <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
                     <p class="text-sm">
-                        {{ __('admin.two_factor_mode_options.' . $currentGlobalTwoFactorMode->value) }}
+                        {{ __('admin.two_factor_mode.options.' . $currentGlobalTwoFactorMode->value) }}
                     </p>
                     <p class="text-xs mt-1">
-                        {{ __('admin.two_factor_global_setting_fixed') }}
+                        {{ __('admin.profile.two_factor_global_setting_fixed') }}
                     </p>
                 </div>
             </div>
