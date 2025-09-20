@@ -270,10 +270,13 @@ class AppUninstall extends Command
                 $this->warn('⚠️ Composer autoload の再生成をスキップしました（composerコマンドが見つからない）。');
             }
             
-            // 最終的な設定キャッシュ生成（.envが完全な状態の場合のみ）
+            // アンインストール後はセッションドライバをfileに変更してからキャッシュ再生成
             if ($this->isEnvComplete()) {
+                // .envのセッションドライバをfileに変更
+                $this->updateEnvSessionDriver();
+                
                 Artisan::call('config:cache');
-                $this->info('✔️ 設定キャッシュを再生成しました。');
+                $this->info('✔️ 設定キャッシュを再生成しました（セッションドライバ: file）。');
             } else {
                 $this->info('ℹ️ .envが不完全なため、config:cacheをスキップしました。');
             }
@@ -284,6 +287,40 @@ class AppUninstall extends Command
 
         // ✅ 元のキャッシュドライバに戻す
         config(['cache.default' => $originalCacheDriver]);
+    }
+
+    /**
+     * .envファイルのセッションドライバをfileに変更
+     */
+    private function updateEnvSessionDriver()
+    {
+        $envPath = base_path('.env');
+        
+        if (!file_exists($envPath)) {
+            return;
+        }
+
+        try {
+            $envContent = file_get_contents($envPath);
+            
+            // SESSION_DRIVERをfileに変更
+            $envContent = preg_replace(
+                '/^SESSION_DRIVER=.*$/m',
+                'SESSION_DRIVER=file',
+                $envContent
+            );
+            
+            // SESSION_DRIVERが存在しない場合は追加
+            if (!preg_match('/^SESSION_DRIVER=/m', $envContent)) {
+                $envContent .= "\nSESSION_DRIVER=file\n";
+            }
+            
+            file_put_contents($envPath, $envContent);
+            $this->info('✔️ セッションドライバをfileに変更しました。');
+            
+        } catch (\Exception $e) {
+            $this->warn('⚠️ セッションドライバの変更に失敗しました: ' . $e->getMessage());
+        }
     }
 
     /**

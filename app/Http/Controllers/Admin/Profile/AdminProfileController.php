@@ -138,9 +138,9 @@ class AdminProfileController extends AdminLoggedInController
         // 全体設定が「プロフィール設定を反映」の場合は、無効/異なる端末時のみ/常に有効から選択可能
         if ($force2fa === TwoFactorMode::UseProfileSetting->value) {
             $profileTwoFactorOptions = [
-                TwoFactorMode::Disabled->value => __('admin.settings.members.two_factor_mode.options.' . TwoFactorMode::Disabled->value), // 無効
-                TwoFactorMode::OnlyNewDevice->value => __('admin.settings.members.two_factor_mode.options.' . TwoFactorMode::OnlyNewDevice->value), // 異なる端末/IP時のみ有効
-                TwoFactorMode::Always->value => __('admin.settings.members.two_factor_mode.options.' . TwoFactorMode::Always->value), // 常に有効
+                TwoFactorMode::Disabled->value => __('admin.two_factor_mode.options.' . TwoFactorMode::Disabled->value), // 無効
+                TwoFactorMode::OnlyNewDevice->value => __('admin.two_factor_mode.options.' . TwoFactorMode::OnlyNewDevice->value), // 異なる端末/IP時のみ有効
+                TwoFactorMode::Always->value => __('admin.two_factor_mode.options.' . TwoFactorMode::Always->value), // 常に有効
             ];
         } else {
             // 従来通り（無効、有効のみ）
