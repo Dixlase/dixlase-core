@@ -316,7 +316,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- ログイン通知設定 -->
         <div class="mt-8 pt-6">
-            <h2 class="border-b text-xl font-semibold mb-2">{{ __('admin.settings.members.settings.login_notification_settings') }}</h2>
+            <h2 class="border-b text-xl font-semibold mb-2">{{ __('admin.login_notification_mode.label') }}</h2>
 
             <div class="mb-6">
                 <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
@@ -325,7 +325,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             @php
                 $loginNotificationOptions = collect(config('admin.global_login_notification_mail_mode'))
-                    ->mapWithKeys(fn ($value) => [$value => __('admin.settings.members.login_notification_mode.options.' . $value)])
+                    ->mapWithKeys(fn ($value) => [$value => __('admin.login_notification_mode.options.' . $value)])
                     ->toArray();
             @endphp
 
@@ -343,12 +343,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <div class="mb-6">
                 <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
-                    {{ __('admin.settings.members.two_factor_mode.label') }}
+                    {{ __('admin.settings.members.settings.two_factor_mode_global_setting') }}
                 </label>
 
                 @php
                     $twoFactorOptions = collect(config('admin.global_two_factor_mode'))
-                        ->mapWithKeys(fn ($value) => [$value => __('admin.settings.members.two_factor_mode.options.' . $value)])
+                        ->mapWithKeys(fn ($value) => [$value => __('admin.two_factor_mode.options.' . $value)])
                         ->toArray();
                 @endphp
 
