@@ -74,6 +74,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('scripts')
+<script>
     document.addEventListener('DOMContentLoaded', function () {
         const saveModal = document.getElementById('confirmationModal');
         const forceLogoutModal = document.getElementById('forceLogoutModal');
@@ -91,5 +92,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             document.getElementById('delete-form').submit();
         });
     });
+</script>
 @endsection
 

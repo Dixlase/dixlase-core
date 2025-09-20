@@ -154,31 +154,31 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <div class="flex items-center">
                             <input type="radio" id="login_notification_disabled" 
                                    name="login_notification_mode" 
-                                   value="1" 
+                                   value="0" 
                                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600"
-                                   @if($currentLoginNotificationMode == 1) checked @endif>
+                                   @if($currentLoginNotificationMode == 0) checked @endif>
                             <label for="login_notification_disabled" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                                {{ __('admin.profile.login_notification_mode_options.disabled') }}
+                                {{ __('admin.login_notification_mode.options.0') }}
                             </label>
                         </div>
                         <div class="flex items-center">
                             <input type="radio" id="login_notification_new_device" 
                                    name="login_notification_mode" 
-                                   value="3" 
+                                   value="2" 
                                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600"
-                                   @if($currentLoginNotificationMode == 3) checked @endif>
+                                   @if($currentLoginNotificationMode == 2) checked @endif>
                             <label for="login_notification_new_device" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                                {{ __('admin.profile.login_notification_mode_options.only_new_device') }}
+                                {{ __('admin.login_notification_mode.options.2') }}
                             </label>
                         </div>
                         <div class="flex items-center">
                             <input type="radio" id="login_notification_always" 
                                    name="login_notification_mode" 
-                                   value="2" 
+                                   value="3" 
                                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600"
-                                   @if($currentLoginNotificationMode == 2) checked @endif>
+                                   @if($currentLoginNotificationMode == 3) checked @endif>
                             <label for="login_notification_always" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                                {{ __('admin.profile.login_notification_mode_options.always') }}
+                                {{ __('admin.login_notification_mode.options.3') }}
                             </label>
                         </div>
                     </div>
@@ -233,15 +233,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <!-- 全体設定で固定されている場合の表示 -->
             <div class="mb-4">
                 <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
-                    {{ __('admin.profile.two_factor_mode') }}
+                    {{ __('admin.two_factor_mode') }}
                 </label>
                 
                 <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
                     <p class="text-sm">
-                        {{ __('admin.profile.two_factor_mode_options.' . $currentGlobalTwoFactorMode->value) }}
+                        {{ __('admin.two_factor_mode_options.' . $currentGlobalTwoFactorMode->value) }}
                     </p>
                     <p class="text-xs mt-1">
-                        {{ __('admin.profile.two_factor_global_setting_fixed') }}
+                        {{ __('admin.two_factor_global_setting_fixed') }}
                     </p>
                 </div>
             </div>

@@ -107,6 +107,35 @@ return [
         'Inactive' => 'Inactive',
         'Active' => 'Active',
     ],
+
+    'two_factor_mode' => [
+        'label' => 'Two-Factor Authentication Settings',
+        'options' => [
+            0 => 'Disabled',
+            1 => 'Use Member Profile Settings',
+            2 => 'Enabled only for different devices/IPs',
+            3 => 'Always enabled',
+        ]
+    ],
+    'two_factor_method' => [
+        'label' => 'Two-Factor Authentication Method',
+        'options' => [
+            'email' => 'Email Authentication',
+            'device' => 'Device Authentication',
+            'biometric' => 'Biometric Authentication',
+            'use_profile_setting' => 'Use Member Profile Settings',
+        ]
+    ],
+    'login_notification_mode' => [
+        'label' => 'Login Notification Settings',
+        'options' => [
+            0 => 'Disabled',
+            1 => 'Use Member Profile Settings',
+            2 => 'Enabled only for different devices/IPs',
+            3 => 'Always enabled',
+        ]
+    ],
+
     'nav' => [
         'dashboard' => 'Dashboard',
         'front' => [
@@ -269,6 +298,8 @@ return [
             'only_new_device' => 'Only for New Devices/IPs',
             'always' => 'Always Enabled',
         ],
+        'login_notification_mode' => 'Login Notification Settings',
+        'login_notification_help' => 'Set when to send login notifications.',
         'two_factor_global_setting_fixed' => 'This setting is controlled by the global member settings and cannot be changed.',
         'two_factor_method_global_setting_fixed' => 'This authentication method is controlled by the global member settings and cannot be changed.',
         'submit' => 'Update Profile',
@@ -748,16 +779,6 @@ Clicking this link will complete the full mail function test.',
                 'confirm_message' => 'Do you want to update the permission settings?',
                 'confirm_label' => 'Update',
                 'cancel_label' => 'Cancel',
-            ],
-            'login_notification_mode' => [
-                'label' => 'Login Notification Settings',
-                'options' => [
-                    0 => 'Disabled',
-                    1 => 'Reflect member profile settings',
-                    2 => 'Enabled only for different devices/IPs',
-                    3 => 'Always enabled',
-                ]
-
             ],
             'two_factor_mode' => [
                 'label' => 'Two-Factor Authentication Settings',

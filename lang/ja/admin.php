@@ -107,6 +107,36 @@ return [
         'Inactive' => '無効',
         'Active' => '有効',
     ],
+
+    'two_factor_mode' => [
+        'label' => '2段階認証の設定',
+        'options' => [
+            0 => '無効',
+            1 => 'メンバーのプロフィール設定を反映',
+            2 => '異なる端末/IP時のみ有効',
+            3 => '常に有効',
+        ]
+    ],
+    'two_factor_method' => [
+        'label' => '2段階認証方法',
+        'options' => [
+            'email' => 'メール認証',
+            'device' => 'デバイス認証',
+            'biometric' => '生体認証',
+            'use_profile_setting' => 'メンバーのプロフィール設定を反映',
+        ]
+    ],
+    'login_notification_mode' => [
+        'label' => 'ログイン通知の設定',
+        'options' => [
+            0 => '無効',
+            1 => 'メンバーのプロフィール設定を反映',
+            2 => '異なる端末/IP時のみ有効',
+            3 => '常に有効',
+        ]
+    ],
+
+
     'nav' => [
         'dashboard' => 'ダッシュボード',
         'front' => [
@@ -268,6 +298,8 @@ return [
             'only_new_device' => '異なる端末/IP時のみ有効',
             'always' => '常に有効',
         ],
+        'login_notification_mode' => 'ログイン通知の設定',
+        'login_notification_help' => 'ログイン通知を送信するタイミングを設定します。',
         'two_factor_global_setting_fixed' => 'この設定はメンバー全体設定で制御されており、変更できません。',
         'two_factor_method_global_setting_fixed' => 'この認証方法はメンバー全体設定で制御されており、変更できません。',
         'submit' => 'プロフィールを更新',
@@ -750,34 +782,7 @@ return [
                 'confirm_label' => '更新',
                 'cancel_label' => 'キャンセル',
             ],
-            'login_notification_mode' => [
-                'label' => 'ログイン通知の設定',
-                'options' => [
-                    0 => '無効',
-                    1 => 'メンバーのプロフィール設定を反映',
-                    2 => '異なる端末/IP時のみ有効',
-                    3 => '常に有効',
-                ]
 
-            ],
-            'two_factor_mode' => [
-                'label' => '2段階認証の設定',
-                'options' => [
-                    0 => '無効',
-                    1 => 'メンバーのプロフィール設定を反映',
-                    2 => '異なる端末/IP時のみ有効',
-                    3 => '常に有効',
-                ]
-            ],
-            'two_factor_method' => [
-                'label' => '2段階認証方法',
-                'options' => [
-                    'email' => 'メール認証',
-                    'device' => 'デバイス認証',
-                    'biometric' => '生体認証',
-                    'use_profile_setting' => 'メンバーのプロフィール設定を反映',
-                ]
-            ],
             'validation' => [
                 'mail_server_not_tested' => 'ロックアウト通知機能、パスワードリセット機能、ログイン通知機能、2段階認証機能を使用するには、基本設定でメールサーバーの接続テストに合格する必要があります。',
                 'mail_server_warning' => 'メールサーバー未設定',
