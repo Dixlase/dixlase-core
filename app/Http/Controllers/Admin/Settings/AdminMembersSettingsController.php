@@ -403,6 +403,9 @@ class AdminMembersSettingsController extends AdminLoggedInController
         // パスワードリセット機能設定
         $passwordResetEnabled = (bool) MemberSetting::getValue('password_reset_enabled', true);
 
+        // パスワード辞書攻撃対策設定
+        $pwnedPasswordCheckEnabled = (bool) MemberSetting::getValue('pwned_password_check_enabled', false);
+
         // ログイン試行制限設定
         $loginAttemptLimitEnabled = (bool) MemberSetting::getValue('login_attempt_limit_enabled', false);
         $loginAttemptMaxAttempts = (int) MemberSetting::getValue('login_attempt_max_attempts', 5);
@@ -430,6 +433,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['defaultTwoFactorMethod'] = $defaultTwoFactorMethod;
         $this->viewParams['twoFactorMethodOptions'] = $twoFactorMethodOptions;
         $this->viewParams['passwordResetEnabled'] = $passwordResetEnabled;
+        $this->viewParams['pwnedPasswordCheckEnabled'] = $pwnedPasswordCheckEnabled;
         $this->viewParams['loginAttemptLimitEnabled'] = $loginAttemptLimitEnabled;
         $this->viewParams['loginAttemptMaxAttempts'] = $loginAttemptMaxAttempts;
         $this->viewParams['loginAttemptTimeWindow'] = $loginAttemptTimeWindow;
@@ -455,6 +459,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         MemberSetting::setValue('login_notification_mode', (int) $validated['login_notification_mode']);
         MemberSetting::setValue('force_2fa', (int) $validated['force_2fa']);
         MemberSetting::setValue('password_reset_enabled', (bool) $validated['password_reset_enabled']);
+        MemberSetting::setValue('pwned_password_check_enabled', (bool) $validated['pwned_password_check_enabled']);
         
         // ログイン試行制限設定
         MemberSetting::setValue('login_attempt_limit_enabled', $validated['login_attempt_limit_enabled'] ? '1' : '0');

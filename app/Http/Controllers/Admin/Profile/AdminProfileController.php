@@ -28,6 +28,7 @@ use App\Enums\AppearanceMode;
 use App\Enums\LoginNotificationMode;
 use App\Enums\TwoFactorMode;
 use App\Enums\TwoFactorMethod;
+use App\Rules\NotPwnedPassword;
 use App\Enums\Locale;
 use App\Models\MemberSetting;
 use Illuminate\Http\Request;
@@ -244,6 +245,10 @@ class AdminProfileController extends AdminLoggedInController
             if ($requireSymbol) {
                 $passwordRules[] = 'regex:/[!@#$%^&*(),.?":{}|<>]/'; // 記号
             }
+            
+            // パスワード辞書攻撃対策
+            $passwordRules[] = new NotPwnedPassword();
+            
             \Log::info('Password complexity rules added');
         }
 

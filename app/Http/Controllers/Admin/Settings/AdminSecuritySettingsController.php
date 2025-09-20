@@ -292,6 +292,7 @@ class AdminSecuritySettingsController extends AdminLoggedInController
             $formSetting->save();
         }
 
+
         // 保存成功後は認証状態をセッションに一時保存（次回ページ読み込み時用）
         if ($request->boolean('captcha_enabled') && $request->boolean('captcha_validation_status')) {
             session()->flash('captcha_just_saved', true);

@@ -25,6 +25,7 @@ namespace App\Http\Requests\Admin\Settings\Members;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Enums\MemberRole;
+use App\Rules\NotPwnedPassword;
 
 class AdminSettingsMemberStoreRequest extends FormRequest
 {
@@ -54,7 +55,9 @@ class AdminSettingsMemberStoreRequest extends FormRequest
                 'email',
                 Rule::unique('members', 'email')->ignore($this->route('member')),
             ],
-            'password' => $isUpdate ? 'nullable|string|min:8' : 'required|string|min:8',
+            'password' => $isUpdate 
+                ? ['nullable', 'string', 'min:8', new NotPwnedPassword()]
+                : ['required', 'string', 'min:8', new NotPwnedPassword()],
             'role' => ['required', Rule::in(array_column(MemberRole::cases(), 'value'))],
             'appearance' => 'required|numeric|in:0,1,2',
             'status' => 'required|numeric|in:0,1',
