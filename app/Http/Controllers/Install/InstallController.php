@@ -948,7 +948,7 @@ class InstallController extends Controller
             'mail_port' => (string) ($data['mail_port'] ?? 587),
             'mail_username' => $data['mail_username'] ?? '',
             'mail_password' => $data['mail_password'] ?? '',
-            'mail_encryption' => $data['mail_encryption'] ?? 'tls',
+            'mail_encryption' => $data['mail_encryption'] ?? '',
             'mail_from_address' => $data['mail_from_address'] ?? $data['admin_email'],
             
             // Other settings

@@ -242,4 +242,15 @@ return [
         'db_password' => 'Database Password',
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Password Dictionary Attack Protection Messages
+    |--------------------------------------------------------------------------
+    */
+
+    'pwned_password_found' => 'This password has been found :count times in data breaches and is not safe. Please choose a different password.',
+    'pwned_password_api_error' => 'An error occurred while checking password safety, but the password has been accepted.',
+    'password_uppercase_required' => 'The password must contain uppercase letters.',
+    'password_symbol_required' => 'The password must contain symbols.',
+
 ];

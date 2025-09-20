@@ -605,6 +605,14 @@ return [
             ],
             'yes' => '有効',
             'no' => '無効',
+            'enabled' => '有効',
+            'disabled' => '無効',
+            // パスワード辞書攻撃対策設定
+            'pwned_password_settings' => 'パスワード辞書攻撃対策設定',
+            'pwned_password_description' => 'パスワードが漏洩データベースに含まれていないかをチェックし、安全でないパスワードの使用を防ぎます。',
+            'pwned_password_check_enabled' => '辞書攻撃対策',
+            'pwned_password_help' => '有効にすると、メンバー作成・編集・パスワード変更時にHave I Been Pwned APIを使用してパスワードの安全性をチェックします。',
+            'pwned_password_api_info' => 'このチェックはHave I Been Pwned APIを使用します。パスワード自体は送信されず、ハッシュ化された情報のみが使用されるため安全です。',
             'validation' => [
                 'allowed_admin_ips_format' => 'IPアドレスはカンマ区切りの形式で入力してください (例: 192.168.1.1, 127.0.0.1)。',
                 'blocked_admin_ips_format' => 'IPアドレスはカンマ区切りの形式で入力してください (例: 192.168.1.1, 127.0.0.1)。',
@@ -739,6 +747,17 @@ return [
                     'disabled' => '無効',
                 ],
                 'password_reset_help' => '無効にした場合、管理画面のログイン画面でパスワードリセットリンクが非表示になり、パスワードリセット機能が利用できなくなります。<br>無効時にパスワードをリセットする場合は、管理画面のメンバー編集画面から行ってください。',
+                // パスワード辞書攻撃対策設定
+                'pwned_password_settings' => 'パスワード辞書攻撃対策設定',
+                'pwned_password_check_enabled' => '辞書攻撃対策',
+                'pwned_password_help' => '有効にすると、メンバー作成・編集・パスワード変更時にHave I Been Pwned APIを使用してパスワードの安全性をチェックします。<br>漏洩データベースに含まれているパスワードの使用を防ぎます。',
+                'pwned_password_api_info' => 'このチェックはHave I Been Pwned APIを使用します。パスワード自体は送信されず、ハッシュ化された情報のみが使用されるため安全です。',
+                'enabled' => '有効',
+                'disabled' => '無効',
+                // メール機能警告メッセージ
+                'password_reset_mail_test_required' => 'メールサーバーの設定とテストが完了していないので、パスワードリセット機能を有効にしても動作しません。<br>パスワードリセット機能を使用するには、<a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">基本設定</a>でメールサーバーの設定とテストを完了してください。',
+                'login_notification_mail_test_required' => 'メールサーバーの設定とテストが完了していないので、ログイン通知機能を有効にしても動作しません。<br>ログイン通知機能を使用するには、<a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">基本設定</a>でメールサーバーの設定とテストを完了してください。',
+                'two_factor_mail_test_required' => 'メールサーバーの設定とテストが完了していないので、二段階認証（メール認証）を有効にしても動作しません。<br>二段階認証機能を使用するには、<a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">基本設定</a>でメールサーバーの設定とテストを完了してください。',
                 'login_attempt_limit_settings' => 'ログイン試行制限設定',
                 'login_attempt_limit_enabled' => 'ログイン試行制限機能',
                 'login_attempt_limit_enabled_options' => [
@@ -756,9 +775,9 @@ return [
                     'enabled' => '有効',
                     'disabled' => '無効',
                 ],
-                'lockout_notification_help' => 'ログイン試行制限に達した際に、管理者にメール通知を送信します。<br>メールサーバーのテストが完了していない場合は、通知機能を有効にしても正常に動作しません。',
-                'lockout_notification_mail_test_required' => 'ロックアウト通知機能を使用するには、<a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">基本設定</a>でメールサーバーのテストを完了してください。',
-                'mail_server_test_warning' => 'メールサーバーのテストが完了していません。通知機能を有効にする前に、<a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">基本設定</a>でメールサーバーのテストを完了してください。',
+                'lockout_notification_help' => 'ログイン試行制限に達した際に、管理者にメール通知を送信します。',
+                'lockout_notification_mail_test_required' => 'メールサーバーの設定・テストが完了していないので、ロックアウト通知を有効にしても動作しません。<br>ロックアウト通知機能を使用するには、<a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">基本設定</a>でメールサーバーのテストを完了してください。',
+                'mail_server_test_warning' => 'メールサーバーの設定・テストが完了していません。<br>通知機能を有効にする前に、<a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">基本設定</a>でメールサーバーのテストを完了してください。',
                 'login_attempt_limit_help' => 'ブルートフォース攻撃を防ぐため、短時間内に連続してログインに失敗した場合、一定時間ログインを制限します。',
                 // 管理メンバー用セッション設定
                 'admin_session_settings' => '管理メンバー用セッション設定',

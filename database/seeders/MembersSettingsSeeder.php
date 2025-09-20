@@ -25,6 +25,9 @@ class MembersSettingsSeeder extends Seeder
             // パスワードリセット機能設定
             ['key' => 'password_reset_enabled', 'value' => '1'], // デフォルト: 有効
 
+            // パスワード辞書攻撃対策設定
+            ['key' => 'pwned_password_check_enabled', 'value' => '0'], // デフォルト: 無効
+
             // ログイン通知設定
             ['key' => 'login_notification_mode', 'value' => '0'], // 0 = UseProfileSetting（プロファイルに任せる）
             ['key' => 'send_login_notice_to_system', 'value' => '0'], // デフォルト: システム通知無効

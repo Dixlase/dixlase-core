@@ -34,6 +34,7 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
             'login_notification_mode' => ['required', new Enum(LoginNotificationMode::class)],
             'force_2fa' => ['required', new Enum(TwoFactorMode::class)],
             'password_reset_enabled' => 'required|boolean',
+            'pwned_password_check_enabled' => 'required|boolean',
             'login_attempt_limit_enabled' => 'required|boolean',
             'login_attempt_max_attempts' => 'required|integer|min:1|max:100',
             'login_attempt_time_window' => 'required|integer|min:1|max:1440', // 最大24時間

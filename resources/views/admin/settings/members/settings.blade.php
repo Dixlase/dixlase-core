@@ -88,26 +88,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
 
 
-        <!-- メールサーバー設定状況 -->
-        @if(!$isMailServerTested)
-            <div class="mt-8 mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg">
-                <div class="flex items-start">
-                    <i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400 mt-0.5 mr-3 flex-shrink-0"></i>
-                    <div class="text-sm">
-                        <p class="text-yellow-800 dark:text-yellow-200 font-medium">{{ __('admin.settings.members.validation.mail_server_warning') }}</p>
-                        <p class="text-yellow-700 dark:text-yellow-300 mt-1">
-                            {{ __('admin.settings.members.validation.mail_server_warning_message') }}<br>
-                            <a href="{{ route('admin.settings.base') }}" class="underline hover:no-underline ml-1">{{ __('admin.settings.base.heading') }}</a>{{ __('admin.settings.members.validation.please_configure_in') }}
-                        </p>
-                    </div>
-                </div>
-            </div>
-        @endif
 
         <!-- ログイン試行制限設定 -->
         <div class="mt-8 border-t pt-6">
             <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.members.settings.login_attempt_limit_settings') }}</h2>
-
+            @if(!$isMailServerTested)
+                <div class="my-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-yellow-400 text-sm"></i>
+                        </div>
+                        <div class="ml-2">
+                            <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                                {!! __('admin.settings.members.settings.lockout_notification_mail_test_required', ['url' => route('admin.settings.base')]) !!}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            @endif
             <!-- 機能有効/無効 -->
             <div class="mb-6">
                 <label class="block font-medium text-sm text-gray-700 dark:text-white mb-1">
@@ -214,20 +212,92 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         {!! __('admin.settings.members.settings.lockout_notification_help') !!}
                     </p>
 
-                    @if(!$isMailServerTested)
-                        <div class="mt-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-                            <div class="flex items-start">
-                                <div class="flex-shrink-0">
-                                    <i class="fas fa-exclamation-triangle text-yellow-400 text-sm"></i>
-                                </div>
-                                <div class="ml-2">
-                                    <p class="text-sm text-yellow-800 dark:text-yellow-200">
-                                        {!! __('admin.settings.members.settings.lockout_notification_mail_test_required', ['url' => route('admin.settings.base')]) !!}
-                                    </p>
-                                </div>
-                            </div>
+                    
+                </div>
+            </div>
+        </div>
+
+        <!-- パスワードリセット機能設定 -->
+        <div class="mt-8 border-t pt-6">
+            <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.members.settings.password_reset_settings') }}</h2>
+            @if(!$isMailServerTested)
+                <div class="my-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-yellow-400 text-sm"></i>
                         </div>
-                    @endif
+                        <div class="ml-2">
+                            <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                                {!! __('admin.settings.members.settings.password_reset_mail_test_required', ['url' => route('admin.settings.base')]) !!}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+            <div class="mb-6">
+                <label class="block font-medium text-sm text-gray-700 dark:text-white mb-1">
+                    {{ __('admin.settings.members.settings.password_reset_enabled') }}
+                </label>
+
+                @php
+                    $passwordResetOptions = [
+                        '1' => __('admin.settings.members.settings.password_reset_enabled_options.enabled'),
+                        '0' => __('admin.settings.members.settings.password_reset_enabled_options.disabled'),
+                    ];
+                @endphp
+
+                @include('components.form.radio-group', [
+                    'name' => 'password_reset_enabled',
+                    'options' => $passwordResetOptions,
+                    'value' => old('password_reset_enabled', (string) (int) $passwordResetEnabled),
+                ])
+
+                <p class="mt-1 text-xs text-gray-500 dark:text-white">
+                    {!! __('admin.settings.members.settings.password_reset_help') !!}
+                </p>
+
+               
+            </div>
+        </div>
+
+        <!-- パスワード辞書攻撃対策設定 -->
+        <div class="mt-8 border-t pt-6">
+            <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.members.settings.pwned_password_settings') }}</h2>
+
+            <div class="mb-6">
+                <label class="block font-medium text-sm text-gray-700 dark:text-white mb-1">
+                    {{ __('admin.settings.members.settings.pwned_password_check_enabled') }}
+                </label>
+
+                @php
+                    $pwnedPasswordOptions = [
+                        '1' => __('admin.settings.members.settings.enabled'),
+                        '0' => __('admin.settings.members.settings.disabled'),
+                    ];
+                @endphp
+
+                @include('components.form.radio-group', [
+                    'name' => 'pwned_password_check_enabled',
+                    'options' => $pwnedPasswordOptions,
+                    'value' => old('pwned_password_check_enabled', (string) (int) $pwnedPasswordCheckEnabled),
+                ])
+
+                <p class="mt-1 text-xs text-gray-500 dark:text-white">
+                    {!! __('admin.settings.members.settings.pwned_password_help') !!}
+                </p>
+
+                <!-- API情報 -->
+                <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-info-circle text-blue-400 text-sm"></i>
+                        </div>
+                        <div class="ml-2">
+                            <p class="text-sm text-blue-800 dark:text-blue-200">
+                                {{ __('admin.settings.members.settings.pwned_password_api_info') }}
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -286,34 +356,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </div>
 
-        <!-- パスワードリセット機能設定 -->
-        <div class="mt-8 border-t pt-6">
-            <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.members.settings.password_reset_settings') }}</h2>
-
-            <div class="mb-6">
-                <label class="block font-medium text-sm text-gray-700 dark:text-white mb-1">
-                    {{ __('admin.settings.members.settings.password_reset_enabled') }}
-                </label>
-
-                @php
-                    $passwordResetOptions = [
-                        '1' => __('admin.settings.members.settings.password_reset_enabled_options.enabled'),
-                        '0' => __('admin.settings.members.settings.password_reset_enabled_options.disabled'),
-                    ];
-                @endphp
-
-                @include('components.form.radio-group', [
-                    'name' => 'password_reset_enabled',
-                    'options' => $passwordResetOptions,
-                    'value' => old('password_reset_enabled', (string) (int) $passwordResetEnabled),
-                ])
-
-                <p class="mt-1 text-xs text-gray-500 dark:text-white">
-                    {!! __('admin.settings.members.settings.password_reset_help') !!}
-                </p>
-            </div>
-        </div>
-
         <!-- ログイン通知設定 -->
         <div class="mt-8 pt-6">
             <h2 class="border-b text-xl font-semibold mb-2">{{ __('admin.login_notification_mode.label') }}</h2>
@@ -334,6 +376,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     'options' => $loginNotificationOptions,
                     'value' => old('login_notification_mode', (string) $loginNotification),
                 ])
+
+                @if(!$isMailServerTested)
+                    <div class="mt-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-exclamation-triangle text-yellow-400 text-sm"></i>
+                            </div>
+                            <div class="ml-2">
+                                <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                                    {!! __('admin.settings.members.settings.login_notification_mail_test_required', ['url' => route('admin.settings.base')]) !!}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -341,6 +398,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="mt-8  pt-6">
             <h2 class="border-b text-xl font-semibold mb-2">{{ __('admin.settings.members.settings.two_factor_settings') }}</h2>
 
+            @if(!$isMailServerTested)
+                <div class="my-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-yellow-400 text-sm"></i>
+                        </div>
+                        <div class="ml-2">
+                            <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                                {!! __('admin.settings.members.settings.two_factor_mail_test_required', ['url' => route('admin.settings.base')]) !!}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            @endif
             <div class="mb-6">
                 <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
                     {{ __('admin.settings.members.settings.two_factor_mode_global_setting') }}
@@ -407,17 +478,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             </div>
                         </div>
                     </div>
-
-
-
-                <div class="mt-3 space-y-1">
-                    <p class="text-xs">
-                        {{ __('admin.settings.members.settings.enabled_two_factor_methods_help') }}
-                    </p>
-                    <p class="text-xs">
-                        {{ __('admin.settings.members.settings.default_two_factor_method_help') }}
-                    </p>
-                </div>
+                    <div class="mt-3 space-y-1">
+                        <p class="text-xs">
+                            {{ __('admin.settings.members.settings.enabled_two_factor_methods_help') }}
+                        </p>
+                        <p class="text-xs">
+                            {{ __('admin.settings.members.settings.default_two_factor_method_help') }}
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
