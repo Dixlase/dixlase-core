@@ -817,14 +817,20 @@ return [
                 'password_min' => 'パスワードは最低8文字必要です。',
                 'password_confirmed' => 'パスワード確認が一致しません。',
                 'role_required' => 'ロールを選択してください。',
-                'role_invalid' => '無効なロールが選択されています。',
+                'role_invalid' => '無効な権限が選択されました。',
                 'appearance_required' => '外観設定を選択してください。',
                 'appearance_invalid' => '無効な外観設定が選択されています。',
                 'status_required' => 'ステータスを選択してください。',
                 'status_invalid' => '無効なステータスが選択されています。',
             ],
-            'force_setting_1' => 'メンバー全体設定で',
-            'force_setting_2' => 'が選択されているため、個別設定は変更できません。',
+            'force_setting_1' => '個別設定は変更できません。',
+            'force_setting_2' => 'がメンバー全体設定で選択されているためです。',
+            // 管理操作
+            'admin_operations' => '管理操作',
+            'initial_admin_account' => '初期管理者アカウント',
+            'initial_admin_restriction' => 'このアカウントは初期管理者のため、削除や強制ログアウトはできません。システムの安全性を保つため、これらの操作は制限されています。',
+            'force_logout_button' => '強制ログアウト',
+            'delete_member_button' => 'メンバーを削除',
             'status' => 'ステータス',
             'status_options' => [
                 1 => '有効',
@@ -1057,5 +1063,19 @@ return [
                 'heading' => 'システム情報',
             ],
         ],
+    ],
+
+    // 共通のページネーション
+    'pagination' => [
+        'previous' => '← 前へ',
+        'next' => '次へ →',
+        'page' => 'ページ :current / :total',
+        'showing' => ':from - :to / :total 件',
+    ],
+
+    // 共通のログ関連
+    'logs' => [
+        'admin_logs_label' => '管理画面ログ:',
+        'front_logs_label' => 'フロントページログ:',
     ],
 ];

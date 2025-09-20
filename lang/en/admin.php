@@ -840,6 +840,12 @@ Clicking this link will complete the full mail function test.',
             ],
             'force_setting_1' => 'Individual settings cannot be changed because',
             'force_setting_2' => 'is selected in member global settings.',
+            // 管理操作
+            'admin_operations' => 'Admin Operations',
+            'initial_admin_account' => 'Initial Admin Account',
+            'initial_admin_restriction' => 'This account is the initial administrator, so deletion and forced logout are not allowed. These operations are restricted to maintain system security.',
+            'force_logout_button' => 'Force Logout',
+            'delete_member_button' => 'Delete Member',
             'status' => 'Status',
             'status_options' => [
                 1 => 'Active',
@@ -1072,6 +1078,20 @@ Clicking this link will complete the full mail function test.',
                 'heading' => 'System Information',
             ],
         ],
+    ],
+
+    // 共通のページネーション
+    'pagination' => [
+        'previous' => '← Previous',
+        'next' => 'Next →',
+        'page' => 'Page :current / :total',
+        'showing' => ':from - :to of :total entries',
+    ],
+
+    // 共通のログ関連
+    'logs' => [
+        'admin_logs_label' => 'Admin Logs:',
+        'front_logs_label' => 'Front Page Logs:',
     ],
 
     // Member force logout

@@ -364,7 +364,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @if(isset($member) && $member->exists)
     <div class="mb-6 pt-6 border-t border-gray-200 dark:border-gray-700">
         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
-            管理操作
+            {{ __('admin.settings.members.admin_operations') }}
         </h3>
         
         @if(isset($isInitialAdmin) && $isInitialAdmin)
@@ -378,10 +378,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
                     <div class="ml-3">
                         <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                            初期管理者アカウント
+                            {{ __('admin.settings.members.initial_admin_account') }}
                         </h3>
                         <div class="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
-                            <p>このアカウントは初期管理者のため、削除や強制ログアウトはできません。システムの安全性を保つため、これらの操作は制限されています。</p>
+                            <p>{{ __('admin.settings.members.initial_admin_restriction') }}</p>
                         </div>
                     </div>
                 </div>
@@ -391,7 +391,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <!-- 強制ログアウトボタン -->
                 @include('components::form.button', [
                     'type' => 'button',
-                    'label' => '強制ログアウト',
+                    'label' => __('admin.settings.members.force_logout_button'),
                     'class' => 'bg-orange-600 hover:bg-orange-700 text-white dark:bg-orange-500 dark:hover:bg-orange-600',
                     'onclick' => "openModal('forceLogoutModal')"
                 ])
@@ -399,7 +399,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <!-- 削除ボタン -->
                 @include('components::form.button', [
                     'type' => 'button',
-                    'label' => 'メンバーを削除',
+                    'label' => __('admin.settings.members.delete_member_button'),
                     'class' => 'bg-red-700 hover:bg-red-800 text-white dark:bg-red-600 dark:hover:bg-red-700',
                     'onclick' => "openModal('deleteModal')"
                 ])

@@ -66,7 +66,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div class="mx-auto py-6 px-4 sm:px-6 lg:px-8 mb-10 {{ config('admin.appearance_class.layout.title') }}">
                         <h2 class="font-semibold text-xl leading-tight {{ config('admin.appearance_class.layout.heading') }}">
                             <!-- ここにページタイトルを表示 -->
-                            {{__($heading)}}
+                            {{ __($heading) }}
                         </h2>
                     </div>
 
