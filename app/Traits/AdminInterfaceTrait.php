@@ -68,9 +68,9 @@ trait AdminInterfaceTrait
         array_shift($keys);
 
         $headingKey = implode('.', $keys) . '.heading';
-        $heading = Lang::get('admin.' . $headingKey);
-
-        $this->heading = $heading ?: 'No Heading';
+        
+        // 翻訳キーをそのまま渡し、ビューレベルで翻訳する
+        $this->heading = 'admin.' . $headingKey;
         $this->viewParams['heading'] = $this->heading;
     }
 }

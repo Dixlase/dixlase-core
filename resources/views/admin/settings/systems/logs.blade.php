@@ -40,7 +40,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <div class="mb-6">
         <!-- Admin Logs Row -->
         <div class="mb-3">
-            <span class="text-sm text-gray-600 dark:text-gray-400 mr-3">管理画面ログ:</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400 mr-3">{{ __('admin.logs.admin_logs_label') }}</span>
             @foreach (['activity', 'error', 'login', 'dixlase'] as $type)
                 <a href="{{ route('admin.settings.systems.logs', ['type' => $type]) }}"
                     class="inline-block px-3 py-2 rounded mr-2 text-white text-sm font-medium transition-colors duration-200 {{ $logType === $type ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-500 hover:bg-gray-600' }}
@@ -52,7 +52,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <!-- Front Logs Row -->
         <div class="mb-3">
-            <span class="text-sm text-gray-600 dark:text-gray-400 mr-3">フロントページログ:</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400 mr-3">{{ __('admin.logs.front_logs_label') }}</span>
             @foreach (['front_activity', 'front_error'] as $type)
                 <a href="{{ route('admin.settings.systems.logs', ['type' => $type]) }}"
                     class="inline-block px-3 py-2 rounded mr-2 text-white text-sm font-medium transition-colors duration-200 {{ $logType === $type ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-500 hover:bg-gray-600' }}
@@ -109,26 +109,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @if($pagination['prev_page'])
                     <a href="{{ route('admin.settings.systems.logs', ['type' => $logType, 'page' => $pagination['prev_page']]) }}" 
                        class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600 dark:text-gray-200">
-                        ← 前へ
+                        {{ __('admin.pagination.previous') }}
                     </a>
                 @else
                     <span class="px-3 py-2 text-sm text-gray-400 bg-gray-100 border border-gray-300 rounded-md dark:bg-gray-800 dark:border-gray-600 dark:text-gray-500">
-                        ← 前へ
+                        {{ __('admin.pagination.previous') }}
                     </span>
                 @endif
 
                 <span class="text-sm text-gray-600 dark:text-gray-400">
-                    ページ {{ $pagination['current_page'] }} / {{ $pagination['last_page'] }}
+                    {{ __('admin.pagination.page', ['current' => $pagination['current_page'], 'total' => $pagination['last_page']]) }}
                 </span>
 
                 @if($pagination['next_page'])
                     <a href="{{ route('admin.settings.systems.logs', ['type' => $logType, 'page' => $pagination['next_page']]) }}" 
                        class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600 dark:text-gray-200">
-                        次へ →
+                        {{ __('admin.pagination.next') }}
                     </a>
                 @else
                     <span class="px-3 py-2 text-sm text-gray-400 bg-gray-100 border border-gray-300 rounded-md dark:bg-gray-800 dark:border-gray-600 dark:text-gray-500">
-                        次へ →
+                        {{ __('admin.pagination.next') }}
                     </span>
                 @endif
             </div>
@@ -241,26 +241,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @if($pagination['prev_page'])
                     <a href="{{ route('admin.settings.systems.logs', ['type' => $logType, 'page' => $pagination['prev_page']]) }}" 
                        class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600 dark:text-gray-200">
-                        ← 前へ
+                        {{ __('admin.pagination.previous') }}
                     </a>
                 @else
                     <span class="px-3 py-2 text-sm text-gray-400 bg-gray-100 border border-gray-300 rounded-md dark:bg-gray-800 dark:border-gray-600 dark:text-gray-500">
-                        ← 前へ
+                        {{ __('admin.pagination.previous') }}
                     </span>
                 @endif
 
                 <span class="text-sm text-gray-600 dark:text-gray-400">
-                    ページ {{ $pagination['current_page'] }} / {{ $pagination['last_page'] }}
+                    {{ __('admin.pagination.page', ['current' => $pagination['current_page'], 'total' => $pagination['last_page']]) }}
                 </span>
 
                 @if($pagination['next_page'])
                     <a href="{{ route('admin.settings.systems.logs', ['type' => $logType, 'page' => $pagination['next_page']]) }}" 
                        class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600 dark:text-gray-200">
-                        次へ →
+                        {{ __('admin.pagination.next') }}
                     </a>
                 @else
                     <span class="px-3 py-2 text-sm text-gray-400 bg-gray-100 border border-gray-300 rounded-md dark:bg-gray-800 dark:border-gray-600 dark:text-gray-500">
-                        次へ →
+                        {{ __('admin.pagination.next') }}
                     </span>
                 @endif
             </div>
