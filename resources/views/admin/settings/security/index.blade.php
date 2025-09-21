@@ -82,12 +82,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <legend>{{ __('admin.settings.security.notification_enabled') }}</legend>
                 
-                @include('components.form.label', [
-                    'for' => 'notification_enabled',
-                    'text' => __('admin.settings.security.notification_enabled'),
-                    'class' => 'text-base font-medium'
-                ])
-                
                 @include('components.form.hidden', [
                     'name' => 'notification_enabled',
                     'value' => '0'
@@ -118,11 +112,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         ">
                 <legend>{{ __('admin.settings.security.notification_log_levels') }}</legend>
                 
-                @include('components.form.label', [
-                    'for' => 'notification_log_levels',
-                    'text' => __('admin.settings.security.notification_log_levels'),
-                    'class' => 'text-base font-medium'
-                ])
                 
                 <div class="mt-3" :class="{ 'opacity-50': !notificationEnabled }">
                     @php
@@ -190,7 +179,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         0 => __('admin.settings.security.no')
                     ],
                     'value' => old('session_encrypt', (int) $settings['session_encrypt']),
-                    'class' => 'mt-2'
+                    'class' => ''
                 ])
                 
                 <p>{{ __('admin.settings.security.session_encrypt_help') }}</p>
