@@ -24,7 +24,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 ])
 
 <div class="flex flex-col w-64">
-    <nav class="flex-1 px-4 py-4 space-y-1">
+    <nav class="flex-1 px-4 py-4 space-y-1" role="navigation" aria-label="Admin navigation menu">
         @foreach (config('admin.nav') as $key => $item)
             @php
                 // 現在のルート名を階層ごとに分割
@@ -41,15 +41,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @if (\App\Helpers\AdminHelper::canEditMenu($role_key) || \App\Helpers\AdminHelper::canViewMenu($role_key))
                     @if (isset($item['route']) && is_string($item['route']))
                         <a href="{{ route($item['route']) }}"
-                        class="{{ $button_class }} {{ $item['route'] === $route_name ? config('appearance.appearance_class.sidebar.active') : config('appearance.appearance_class.sidebar.normal') }}">
-                            <i class="{{ $item['icon'] }} mr-3"></i>
+                        class="{{ $button_class }} {{ $item['route'] === $route_name ? 'bg-gray-200 text-gray-900 font-bold border-blue-500 pl-3 rounded-md hover:bg-gray-300 hover:text-black dark:bg-gray-100 dark:text-black dark:hover:bg-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white' }} {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
+                        role="menuitem">
+                            <i class="{{ $item['icon'] }} mr-3" aria-hidden="true"></i>
                             <span>{{ __($item['text']) }}</span>
                         </a>
                     @else
-                        <button @click="{{ $open_key }} = !{{ $open_key }}" class="{{ $button_class }} {{ config('appearance.appearance_class.sidebar.normal') }}">
-                            <i class="{{ $item['icon'] }} mr-3"></i>
+                        <button @click="{{ $open_key }} = !{{ $open_key }}" 
+                        class="{{ $button_class }} text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
+                        aria-expanded="false"
+                        :aria-expanded="{{ $open_key }}.toString()">
+                            <i class="{{ $item['icon'] }} mr-3" aria-hidden="true"></i>
                             <span>{{ __($item['text']) }}</span>
-                            <svg class="{{ $arrow_class }}" :class="{ 'rotate-180': {{ $open_key }} }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg class="{{ $arrow_class }}" :class="{ 'rotate-180': {{ $open_key }} }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
@@ -57,13 +61,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
 
                 @if (isset($item['children']) && is_array($item['children']))
-                    <div x-show="{{ $open_key }}" x-collapse class="ml-2 space-y-1">
+                    <div x-show="{{ $open_key }}" x-collapse class="ml-2 space-y-1" role="menu">
                         @foreach ($item['children'] as $child_key => $child_item)
                             @if (\App\Helpers\AdminHelper::canEditMenu($role_key) || \App\Helpers\AdminHelper::canViewMenu($role_key))
                                 @if (isset($child_item['route']) && is_string($child_item['route']))
-
-                                    <a href="{{ route($child_item['route']) }}" class="{{ $button_class }} {{ $child_item['route'] === $route_name ? config('appearance.appearance_class.sidebar.active') : config('appearance.appearance_class.sidebar.normal') }}">
-                                        <i class="{{ $child_item['icon'] }} mr-3"></i>
+                                    <a href="{{ route($child_item['route']) }}" 
+                                    class="{{ $button_class }} {{ $child_item['route'] === $route_name ? 'bg-gray-200 text-gray-900 font-bold border-blue-500 pl-3 rounded-md hover:bg-gray-300 hover:text-black dark:bg-gray-100 dark:text-black dark:hover:bg-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white' }} {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
+                                    role="menuitem">
+                                        <i class="{{ $child_item['icon'] }} mr-3" aria-hidden="true"></i>
                                         <span>{{ __($child_item['text']) }}</span>
                                     </a>
 

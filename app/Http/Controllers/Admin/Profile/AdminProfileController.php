@@ -51,8 +51,8 @@ class AdminProfileController extends AdminLoggedInController
         // 外観モードのセッションをクリアして、保存された値に戻す
         session()->forget('appearance');
         
-        // プロフィール画面だけアニメーションを有効にする
-        $transition = 'transition-colors duration-300';
+        // プロフィール画面だけアニメーションを有効にする（統一された速度）
+        $transition = 'transition-colors duration-500';
 
         // layout クラスに transition を追加
         $appearanceClass = config('appearance.appearance_class');
@@ -98,6 +98,7 @@ class AdminProfileController extends AdminLoggedInController
         $htmlClass .= ''; // 必要があれば他のclassもここで
         // アニメーションを有効にするため disable-transition はつけない
         $this->viewParams['htmlClass'] = trim($htmlClass);
+        $this->viewParams['transitionEnabled'] = true;
 
         // ✅ 外観モードのオプションなど他の処理（そのままでOK）
         $this->viewParams['appearanceOptions'] = collect(AppearanceMode::cases())

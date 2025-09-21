@@ -50,31 +50,31 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <!-- Header -->
             @include('admin.partials.header', [
                 'site_name' => $site_name,
+                'transitionEnabled' => $transitionEnabled ?? null,
             ])
 
 
             <div class="min-h-screen flex pt-16">
-                 <!-- Side Bar -->
-                <aside class="md:fixed overflow-auto md:h-full hidden sm:block w-64 flex-shrink-0 {{ config('appearance.appearance_class.layout.aside') }}">
-                    @include('admin.partials.sidebar')
-                </aside>
+                 <!-- Navigation Sidebar -->
+                <nav class="md:fixed overflow-auto md:h-full hidden sm:block w-64 flex-shrink-0 bg-gray-100 dark:bg-gray-800 text-gray-900 border-r border-gray-300 dark:text-white dark:border-r dark:border-gray-700 {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}" role="navigation" aria-label="Main navigation">
+                    @include('admin.partials.sidebar', ['transitionEnabled' => $transitionEnabled ?? null])
+                </nav>
 
-                <!-- Main -->
-                <main class="ml-0 md:ml-64 md:pl-4 lg:pl-0 flex-1 {{ config('appearance.appearance_class.layout.main') }}">
+                <!-- Main Content Area -->
+                <main class="ml-0 md:ml-64 md:pl-4 lg:pl-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white" role="main">
 
-                    <!-- Page Heading -->
-                    <div class="mx-auto py-6 px-4 sm:px-6 lg:px-8 mb-10 {{ config('appearance.appearance_class.layout.title') }}">
-                        <h1 class="font-semibold text-xl leading-tight {{ config('appearance.appearance_class.layout.heading') }}">
-                            <!-- ここにページタイトルを表示 -->
+                    <!-- Page Header -->
+                    <header class="mx-auto py-6 px-4 sm:px-6 lg:px-8 mb-10 bg-gray-100 text-gray-800 border-b border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white">
+                        <h1 class="font-semibold text-xl leading-tight text-gray-800 dark:text-white">
                             {{ __($heading) }}
                         </h1>
-                    </div>
+                    </header>
 
-                    <div class="w-full p-6 sm:p-0 lg:px-8 pb-8">
+                    <!-- Page Content -->
+                    <article class="w-full p-6 sm:p-0 lg:px-8 pb-8">
                         @include('components::flash-message')
-                        <!-- Page Content -->
                         @yield('content')
-                    </div>
+                    </article>
 
                     @hasSection('save')
                         <div class="sticky bottom-0 z-30 backdrop-blur-sm bg-white/50 bg-white dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700 pl-6 sm:px-6 lg:px-8 py-3">

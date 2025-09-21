@@ -21,88 +21,97 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <header
     x-cloak
     x-data="{ openSidebar: false, openUserMenu: false }"
-    class="fixed top-0 z-50 w-full flex items-center h-16 border-b {{ config('appearance.appearance_class.layout.header') }}">
-    <!-- プライマリーナビゲーションメニュー -->
-    <div class="w-full mx-4 sm:mx-0 lg:px-4 flex items-center h-16">
+    class="fixed top-0 z-50 w-full flex items-center h-16 border-b bg-gray-200 dark:bg-gray-800 border-gray-300 dark:border-gray-700"
+    role="banner">
+    <!-- Primary Navigation Bar -->
+    <nav class="w-full mx-4 sm:mx-0 lg:px-4 flex items-center h-16" role="navigation" aria-label="Primary navigation">
 
-        <!-- 左：サイドメニュー（スマホ用のみ） -->
+        <!-- Mobile Menu Toggle -->
         <div class="w-1/3 flex items-center sm:hidden">
             <button @click="openSidebar = true"
-                    class="inline-flex items-center justify-start p-2 rounded-md {{ config('appearance.appearance_class.layout.button_hamburger') }} focus:outline-none transition duration-150 ease-in-out">
-                <i class="fa-solid fa-bars text-xl"></i>
+                    class="inline-flex items-center justify-start p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 focus:outline-none transition duration-150 ease-in-out"
+                    aria-label="Open sidebar menu">
+                <i class="fa-solid fa-bars text-xl" aria-hidden="true"></i>
             </button>
         </div>
 
-        <!-- 中央：ロゴ（スマホでは中央配置, PCでは左寄せ） -->
+        <!-- Brand/Logo Section -->
         <div class="w-1/3 flex justify-center sm:flex-1 sm:justify-start">
-            <a href="{{ route('admin.dashboard') }}" class="flex items-center">
+            <a href="{{ route('admin.dashboard') }}" class="flex items-center" aria-label="Go to dashboard">
                 @include('components::application-logo' ,[
-                    'class' => config('appearance.appearance_class.layout.logo'),
+                    'class' => 'text-gray-900 dark:text-white',
                     'site_name' => $site_name
                 ])
             </a>
 
-            <!-- サイト名（PCのみ表示） -->
-            <a href="{{ route('admin.dashboard') }}" class="hidden sm:flex items-center ml-4 text-gray-800 dark:text-white font-semibold">
+            <!-- Site Name (Desktop only) -->
+            <a href="{{ route('admin.dashboard') }}" class="hidden sm:flex items-center ml-4 text-gray-800 dark:text-white font-semibold" aria-label="Go to dashboard">
                 {{ $site_name ?? env('APP_NAME') }}
             </a>
         </div>
 
-        <!-- 右：プレビューボタン & ユーザーメニュー -->
+        <!-- Actions & User Menu -->
         <div class="w-1/3 flex items-center justify-end gap-2">
-            <!-- プレビュー（スマホはアイコンのみ） -->
+            <!-- Preview Site Link -->
             <a href="{{ url('/') }}" target="_blank"
-            class="inline-flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 {{ $transition }}">
-                <i class="fa-solid fa-eye text-lg sm:me-2"></i>
+            class="inline-flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
+            aria-label="Preview site in new tab">
+                <i class="fa-solid fa-eye text-lg sm:me-2" aria-hidden="true"></i>
                 <span class="hidden sm:inline">{{ __('common.preview') }}</span>
             </a>
 
-            <!-- ユーザーメニュー（スマホ用） -->
+            <!-- Mobile User Menu Toggle -->
             <button @click="openUserMenu = true"
-                    class="inline-flex items-center justify-center rounded-md sm:hidden {{ config('appearance.appearance_class.layout.button_hamburger') }} focus:outline-none transition duration-150 ease-in-out">
-                <i class="fa-solid fa-user-circle text-3xl text-gray-600 dark:text-gray-300"></i>
+                    class="inline-flex items-center justify-center rounded-md sm:hidden text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 focus:outline-none transition duration-150 ease-in-out"
+                    aria-label="Open user menu">
+                <i class="fa-solid fa-user-circle text-3xl text-gray-600 dark:text-gray-300" aria-hidden="true"></i>
             </button>
 
-            <!-- ユーザーメニュー（PC用） -->
+            <!-- Desktop User Menu -->
             <div class="hidden sm:flex sm:items-center relative" x-data="{ open: false }">
                 <button
                     @click="open = !open"
-                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md focus:outline-none transition ease-in-out duration-150 {{ config('admin.layout.button_admin_user') }}">
-                    <i class="fa-solid fa-user-circle text-3xl text-gray-600 dark:text-gray-300"></i>
+                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md focus:outline-none transition ease-in-out duration-150 text-gray-500 bg-white hover:text-gray-700 dark:text-gray-300 dark:bg-gray-800 dark:hover:text-white"
+                    aria-label="User menu"
+                    aria-expanded="false">
+                    <i class="fa-solid fa-user-circle text-3xl text-gray-600 dark:text-gray-300" aria-hidden="true"></i>
                     <div class="ml-2">{{ Auth::user()->name }}</div>
-                    <i class="fa-solid fa-chevron-down ms-2 text-xs"></i>
+                    <i class="fa-solid fa-chevron-down ms-2 text-xs" aria-hidden="true"></i>
                 </button>
 
-                <!-- ユーザードロップダウンメニュー -->
+                <!-- User Dropdown Menu -->
                 <div
                     x-show="open"
                     @click.away="open = false"
                     x-transition
-                    class="absolute right-[-1rem] top-full mt-2 w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg py-2 z-50">
-                    <div class="px-4 flex items-center space-x-3">
-                        <i class="fa-solid fa-user-circle text-3xl text-gray-600 dark:text-gray-300"></i>
+                    class="absolute right-[-1rem] top-full mt-2 w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg py-2 z-50"
+                    role="menu"
+                    aria-orientation="vertical">
+                    <!-- User Info -->
+                    <div class="px-4 flex items-center space-x-3" role="none">
+                        <i class="fa-solid fa-user-circle text-3xl text-gray-600 dark:text-gray-300" aria-hidden="true"></i>
                         <div>
                             <div class="font-medium text-base text-gray-900 dark:text-gray-100">{{ Auth::user()->name }}</div>
                             <div class="font-medium text-sm text-gray-600 dark:text-gray-400">{{ Auth::user()->email }}</div>
                         </div>
                     </div>
-                    <a href="{{ route('admin.profile') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 transition">
+                    <!-- Menu Items -->
+                    <a href="{{ route('admin.profile') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 transition" role="menuitem">
                         {{ __('admin.profile.heading') }}
                     </a>
-                    <form method="POST" action="{{ route('admin.logout') }}">
+                    <form method="POST" action="{{ route('admin.logout') }}" role="none">
                         @csrf
-                        <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 transition">
+                        <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 transition" role="menuitem">
                             {{ __('common.logout') }}
                         </button>
                     </form>
                 </div>
             </div>
         </div>
-    </div>
+    </nav>
 
-
-    <!-- スライドメニューのバックグラウンド -->
-    <div x-show="openSidebar || openUserMenu" @click="openSidebar = !true; openUserMenu = false" class="fixed inset-0 bg-transparent z-10 w-full h-full"></div>
+    <!-- Mobile Menu Overlay -->
+    <div x-show="openSidebar || openUserMenu" @click="openSidebar = false; openUserMenu = false" class="fixed inset-0 bg-black bg-opacity-50 z-10 w-full h-full" aria-hidden="true"></div>
 
     <!-- 左側スライドインメニュー -->
     <div x-cloak class="fixed inset-y-0 w-64 shadow-lg transform transition-transform duration-300 ease-in-out x-minus-full translate-x-minus-full z-20 text-gray-700 bg-gray-200 dark:text-gray-300 dark:bg-gray-900"
