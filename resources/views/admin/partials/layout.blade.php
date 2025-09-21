@@ -45,7 +45,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {!! load_active_assets() !!}
 
     </head>
-    <body  class="font-sans antialiased transition-colors duration-300 {{ config('admin.appearance_class.layout.body') }}">
+    <body  class="admin font-sans antialiased transition-colors duration-300 {{ config('admin.appearance_class.layout.body') }}">
         <div class="min-h-screen">
             <!-- Header -->
             @include('admin.partials.header', [
@@ -64,10 +64,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     <!-- Page Heading -->
                     <div class="mx-auto py-6 px-4 sm:px-6 lg:px-8 mb-10 {{ config('admin.appearance_class.layout.title') }}">
-                        <h2 class="font-semibold text-xl leading-tight {{ config('admin.appearance_class.layout.heading') }}">
+                        <h1 class="font-semibold text-xl leading-tight {{ config('admin.appearance_class.layout.heading') }}">
                             <!-- ここにページタイトルを表示 -->
                             {{ __($heading) }}
-                        </h2>
+                        </h1>
                     </div>
 
                     <div class="w-full p-6 sm:p-0 lg:px-8 pb-8">

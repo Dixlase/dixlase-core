@@ -130,18 +130,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <!-- メールサーバー設定の確認メッセージ -->
             @if(!($mailConnectionTested && $mailSendTested && $mailReceiveTested))
-                <div class="mt-4 p-3 bg-yellow-50 dark:bg-green-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-exclamation-triangle text-yellow-400 text-sm"></i>
-                        </div>
-                        <div class="ml-2">
-                            <p class="text-sm text-yellow-800 dark:text-yellow-200">
-                                {!! __('admin.settings.security.error_notification_mail_test_required', ['url' => route('admin.settings.base')]) !!}
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                @include('components.message', [
+                    'type' => 'warning',
+                    'message' => __('admin.settings.security.error_notification_mail_test_required', ['url' => route('admin.settings.base')])
+                ])
             @endif
         </div>
 

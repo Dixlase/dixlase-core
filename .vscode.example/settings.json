@@ -1,0 +1,16 @@
+{
+  "tailwindCSS.includeLanguages": {
+    "scss": "css",
+    "sass": "css"
+  },
+  "tailwindCSS.experimental.classRegex": [
+    ["@apply\\s+([^;]+);", "([^\\s]+)"]
+  ],
+  "css.validate": false,
+  "scss.validate": false,
+  "tailwindCSS.emmetCompletions": true,
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "css.customData": [".vscode/css_custom_data.json"]
+}

@@ -24,7 +24,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <form id="media-settings-form" action="{{ route('admin.media.settings.update') }}" method="POST">
         @csrf
         <div class="mb-6">
-            <h2 class="text-lg font-bold mb-2 text-gray-900 dark:text-gray-100">{{ __('admin.media.settings.allowed_file_types') }}</h2>
+            <h2>{{ __('admin.media.settings.allowed_file_types') }}</h2>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
                 @foreach($fileExtensions as $extension)
                     <label class="flex items-center space-x-2 cursor-pointer bg-gray-100 dark:bg-gray-700 p-2 rounded-lg shadow-sm hover:bg-gray-200 dark:hover:bg-gray-600">

@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "bradlc.vscode-tailwindcss",
+    "syler.sass-indented",
+    "ms-vscode.vscode-css-peek",
+    "zignd.html-css-class-completion"
+  ]
+}

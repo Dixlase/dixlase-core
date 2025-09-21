@@ -106,14 +106,14 @@
         @endif
     </p>
     <div class="flex space-x-3">
-        <button type="button" id="test-connection-btn" class="bg-green-500 hover:bg-green-600 {{ $isInstall ? '' : 'dark:bg-green-600 dark:hover:bg-green-700' }} text-white font-bold py-2 px-4 rounded transition-colors duration-200">
+        <button type="button" id="test-connection-btn" class="button-green {{ $isInstall ? '' : 'dark:bg-green-600 dark:hover:bg-green-700' }} text-white font-bold py-2 px-4 rounded transition-colors duration-200">
             {{ __('mail.settings.test_connection_button') }}
         </button>
         <button 
             type="button"
             id="test-mail-btn" 
             class="
-                px-4 py-2 rounded-lg font-medium transition-colors duration-200
+                rounded-lg
                 @if(($isInstall && $testStatus['connection_tested']) || (!$isInstall && (!$showStatus || $testStatus['connection_tested'])))
                     bg-blue-500 hover:bg-blue-600 {{ $isInstall ? '' : 'dark:bg-blue-600 dark:hover:bg-blue-700' }} text-white
                 @else
