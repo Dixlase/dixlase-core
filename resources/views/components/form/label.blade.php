@@ -26,6 +26,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
 
-<label for="{{ $for }}" class="block font-medium text-lg {{ config('appearance.appearance_class.form.label') }} {{ $class }}">
+<label for="{{ $for }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 {{ $class }}">
    {{ __($text) }}
 </label>
