@@ -263,6 +263,11 @@ return [
     'profile' => [
         'title' => 'プロフィール',
         'heading' => 'プロフィール設定',
+        'basic_info' => '基本情報',
+        'password_settings' => 'パスワード設定',
+        'appearance_settings' => '外観設定',
+        'login_notification_settings' => 'ログイン通知設定',
+        'two_factor_settings' => '二段階認証設定',
         'name' => '名前',
         'description' => '説明',
         'email' => 'メールアドレス',
