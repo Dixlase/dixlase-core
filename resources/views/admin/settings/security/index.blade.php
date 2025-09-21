@@ -50,18 +50,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <!-- Hidden field to track CAPTCHA authentication result -->
         <input type="hidden" id="captcha-authentication-result" name="captcha_authentication_result" value="{{ $captchaTestResult ? '1' : '0' }}">
-        
-        <!-- CAPTCHA test required notice for enabled CAPTCHA -->
-        @if($settings['captcha_enabled'] && !$captchaTestResult)
-            @include('components.message', [
-                'type' => 'warning',
-                'message' => __('admin.settings.security.captcha_test_required')
-            ])
-        @endif
-        
         <input type="hidden" id="captcha_validation_token" name="captcha_validation_token" value="{{ session('captcha_just_saved') ? 'saved_token' : '' }}">
-        
-        
         
         <!-- システムエラー通知設定 -->
         <section>
@@ -212,7 +201,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- CAPTCHA設定 -->
         <div class="my-6">
             <h2 class="{{ config('appearance.appearance_class.heading.h2') }}">{{ __('admin.settings.security.recaptcha_settings') }}</h2>
-            
+            <!-- CAPTCHA test required notice for enabled CAPTCHA -->
+            @if($settings['captcha_enabled'] && !$captchaTestResult)
+                @include('components.message', [
+                    'type' => 'warning',
+                    'message' => __('admin.settings.security.captcha_test_required')
+                ])
+            @endif
             @include('components::form.checkbox', [
                 'label' => __('admin.settings.security.captcha_enabled'),
                 'id' => 'captcha_enabled',

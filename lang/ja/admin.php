@@ -978,7 +978,7 @@ return [
             ],
             'logs' => [
                 'heading' => 'ログ情報',
-                'log_type_label' => 'ログ種別：',
+                'log_type_label' => 'ログ種別',
                 'no_logs_found' => 'ログが見つかりません。',
                 'activity' => '管理アクティビティ',
                 'error' => 'エラー',
@@ -1090,7 +1090,7 @@ return [
 
     // 共通のログ関連
     'logs' => [
-        'admin_logs_label' => '管理画面ログ:',
-        'front_logs_label' => 'フロントページログ:',
+        'admin_logs_label' => '管理画面ログ',
+        'front_logs_label' => 'フロントページログ',
     ],
 ];
