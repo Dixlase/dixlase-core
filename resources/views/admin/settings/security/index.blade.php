@@ -53,16 +53,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <!-- CAPTCHA test required notice for enabled CAPTCHA -->
         @if($settings['captcha_enabled'] && !$captchaTestResult)
-        <div class="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-            <div class="flex items-center">
-                <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                </svg>
-                <p class="text-sm text-yellow-800 dark:text-yellow-200 font-medium">
-                    {{ __('admin.settings.security.captcha_test_required') }}
-                </p>
-            </div>
-        </div>
+            @include('components.message', [
+                'type' => 'warning',
+                'message' => __('admin.settings.security.captcha_test_required')
+            ])
         @endif
         
         <input type="hidden" id="captcha_validation_token" name="captcha_validation_token" value="{{ session('captcha_just_saved') ? 'saved_token' : '' }}">
@@ -70,114 +64,100 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         
         <!-- システムエラー通知設定 -->
-        <section class="mb-8">
-            <header class="mb-6">
-                <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                    {{ __('admin.settings.security.error_notification_settings') }}
-                </h2>
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                    {{ __('admin.settings.security.error_notification_settings_description') }}
-                </p>
-            </header>
+        <section>
+            <h2>{{ __('admin.settings.security.error_notification_settings') }}</h2>
+            <p>{{ __('admin.settings.security.error_notification_settings_description') }}</p>
 
-            <div class="space-y-6">
-                <!-- エラー通知機能の有効/無効 -->
-                <fieldset class="space-y-3">
-                    <legend class="sr-only">{{ __('admin.settings.security.notification_enabled') }}</legend>
-                    
-                    @include('components.form.label', [
-                        'for' => 'notification_enabled',
-                        'text' => __('admin.settings.security.notification_enabled'),
-                        'class' => 'text-base font-medium'
+            <!-- メールサーバー設定の確認メッセージ -->
+            @if(!($mailConnectionTested && $mailSendTested && $mailReceiveTested))
+                <div class="mt-4">
+                    @include('components.message', [
+                        'type' => 'warning',
+                        'message' => __('admin.settings.security.error_notification_mail_test_required', ['url' => route('admin.settings.base')])
                     ])
-                    
-                    @include('components.form.hidden', [
-                        'name' => 'notification_enabled',
-                        'value' => '0'
-                    ])
-                    
-                    @include('components.form.radio-group', [
-                        'name' => 'notification_enabled',
-                        'options' => [
-                            1 => __('admin.settings.security.yes'),
-                            0 => __('admin.settings.security.no')
-                        ],
-                        'value' => $settings['notification_enabled'] ?? 0,
-                        'class' => 'mt-2'
-                    ])
-                    
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                        {{ __('admin.settings.security.notification_enabled_help') }}
-                    </p>
-                </fieldset>
+                </div>
+            @endif
 
-                <!-- 通知するログレベル -->
-                <fieldset class="space-y-3" 
-                         x-data="{ notificationEnabled: {{ ($settings['notification_enabled'] ?? 0) ? 'true' : 'false' }} }" 
-                         x-init="
-                             // ラジオボタンの変更を監視
-                             document.querySelectorAll('input[name=notification_enabled]').forEach(radio => {
-                                 radio.addEventListener('change', () => {
-                                     notificationEnabled = radio.value === '1';
-                                 });
-                             });
-                         ">
-                    <legend class="sr-only">{{ __('admin.settings.security.notification_log_levels') }}</legend>
-                    
-                    @include('components.form.label', [
-                        'for' => 'notification_log_levels',
-                        'text' => __('admin.settings.security.notification_log_levels'),
-                        'class' => 'text-base font-medium'
-                    ])
-                    
-                    <div class="mt-3" :class="{ 'opacity-50': !notificationEnabled }">
-                        @php
-                            $logLevelOptions = [];
-                            foreach (\App\Enums\LogLevel::getNotificationLevels() as $level) {
-                                $levelString = \App\Enums\LogLevel::from($level)->toString();
-                                $logLevelOptions[$level] = 'admin.settings.security.log_levels.' . $levelString;
-                            }
-                        @endphp
-                        
-                        @include('components.form.checkbox-group', [
-                            'name' => 'notification_log_levels',
-                            'options' => $logLevelOptions,
-                            'values' => $settings['notification_log_levels'] ?? \App\Enums\LogLevel::getDefaultNotificationLevels(),
-                            'disabled' => false,
-                            'class' => 'space-y-2'
-                        ])
-                    </div>
-                    
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                        {{ __('admin.settings.security.notification_log_levels_help') }}
-                    </p>
-                </fieldset>
+            <!-- エラー通知機能の有効/無効 -->
+            <fieldset>
+                <legend>{{ __('admin.settings.security.notification_enabled') }}</legend>
+                
+                @include('components.form.label', [
+                    'for' => 'notification_enabled',
+                    'text' => __('admin.settings.security.notification_enabled'),
+                    'class' => 'text-base font-medium'
+                ])
+                
+                @include('components.form.hidden', [
+                    'name' => 'notification_enabled',
+                    'value' => '0'
+                ])
+                
+                @include('components.form.radio-group', [
+                    'name' => 'notification_enabled',
+                    'options' => [
+                        1 => __('admin.settings.security.yes'),
+                        0 => __('admin.settings.security.no')
+                    ],
+                    'value' => $settings['notification_enabled'] ?? 0,
+                    'class' => ''
+                ])
+                
+                <p>{{ __('admin.settings.security.notification_enabled_help') }}</p>
+            </fieldset>
 
-                <!-- メールサーバー設定の確認メッセージ -->
-                @if(!($mailConnectionTested && $mailSendTested && $mailReceiveTested))
-                    <div class="mt-4">
-                        @include('components.message', [
-                            'type' => 'warning',
-                            'message' => __('admin.settings.security.error_notification_mail_test_required', ['url' => route('admin.settings.base')])
-                        ])
-                    </div>
-                @endif
-            </div>
+            <!-- 通知するログレベル -->
+            <fieldset x-data="{ notificationEnabled: {{ ($settings['notification_enabled'] ?? 0) ? 'true' : 'false' }} }" 
+                        x-init="
+                            // ラジオボタンの変更を監視
+                            document.querySelectorAll('input[name=notification_enabled]').forEach(radio => {
+                                radio.addEventListener('change', () => {
+                                    notificationEnabled = radio.value === '1';
+                                });
+                            });
+                        ">
+                <legend>{{ __('admin.settings.security.notification_log_levels') }}</legend>
+                
+                @include('components.form.label', [
+                    'for' => 'notification_log_levels',
+                    'text' => __('admin.settings.security.notification_log_levels'),
+                    'class' => 'text-base font-medium'
+                ])
+                
+                <div class="mt-3" :class="{ 'opacity-50': !notificationEnabled }">
+                    @php
+                        $logLevelOptions = [];
+                        foreach (\App\Enums\LogLevel::getNotificationLevels() as $level) {
+                            $levelString = \App\Enums\LogLevel::from($level)->toString();
+                            $logLevelOptions[$level] = 'admin.settings.security.log_levels.' . $levelString;
+                        }
+                    @endphp
+                    
+                    @include('components.form.checkbox-group', [
+                        'name' => 'notification_log_levels',
+                        'options' => $logLevelOptions,
+                        'values' => $settings['notification_log_levels'] ?? \App\Enums\LogLevel::getDefaultNotificationLevels(),
+                        'disabled' => false,
+                        'class' => 'space-y-2',
+                        'flexDirection' => 'col'
+                    ])
+                </div>
+                
+                <p>{{ __('admin.settings.security.notification_log_levels_help') }}</p>
+            </fieldset>
         </section>
 
         <!-- セッション管理設定 -->
-        <div class="my-6 pt-6">
-            <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.security.session_management') }}</h2>
-            <p class="text-sm mb-4">
-                {{ __('admin.settings.security.session_management_description') }}
-            </p>
+        <section>
+            <h2>{{ __('admin.settings.security.session_management') }}</h2>
+            <p>{{ __('admin.settings.security.session_management_description') }}</p>
 
             <!-- セッションドライバー -->
-            <div class="mt-4">
-                @include('components::form.label', [
-                    'text' => __('admin.settings.security.session_driver'),
-                ])
-                @include('components::form.select', [
+            <fieldset>
+                <legend>{{ __('admin.settings.security.session_driver') }}</legend>
+                                    
+                @include('components.form.select', [
+                    'id' => 'session_driver',
                     'name' => 'session_driver',
                     'options' => [
                         'file' => __('admin.settings.security.session_driver_file'),
@@ -188,49 +168,57 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         'array' => __('admin.settings.security.session_driver_array'),
                     ],
                     'value' => old('session_driver', $settings['session_driver']),
+                    'class' => 'mt-2'
                 ])
-                <p class="text-sm mt-1">{{ __('admin.settings.security.session_driver_help') }}</p>
-            </div>
+                
+                <p>{{ __('admin.settings.security.session_driver_help') }}</p>
+            </fieldset>
 
             <!-- セッション暗号化 -->
-            <div class="mt-6">
-                @include('components::form.label', [
-                    'text' => __('admin.settings.security.session_encrypt'),
-                ])
-                @include('components::form.hidden', [
+            <fieldset>
+                <legend>{{ __('admin.settings.security.session_encrypt') }}</legend>
+                
+                @include('components.form.hidden', [
                     'name' => 'session_encrypt',
                     'value' => '0'
                 ])
-                @include('components::form.radio-group', [
+                
+                @include('components.form.radio-group', [
                     'name' => 'session_encrypt',
                     'options' => [
                         1 => __('admin.settings.security.yes'),
                         0 => __('admin.settings.security.no')
                     ],
                     'value' => old('session_encrypt', (int) $settings['session_encrypt']),
+                    'class' => 'mt-2'
                 ])
-                <p class="text-sm mt-1">{{ __('admin.settings.security.session_encrypt_help') }}</p>
-            </div>
+                
+                <p>{{ __('admin.settings.security.session_encrypt_help') }}</p>
+            </fieldset>
 
             <!-- デフォルトセッション有効時間 -->
-            <div class="mt-6">
-                @include('components::form.label', [
-                    'text' => __('admin.settings.security.session_lifetime'),
-                ])
-                <div class="flex items-center">
-                    @include('components::form.text', [
+            <fieldset>
+                <legend>{{ __('admin.settings.security.session_lifetime') }}</legend>
+                
+                <div class="flex items-center space-x-3 mt-2">
+                    @include('components.form.text', [
+                        'id' => 'session_lifetime',
                         'name' => 'session_lifetime',
                         'type' => 'number',
                         'min' => '1',
                         'max' => '43200',
                         'value' => old('session_lifetime', $settings['session_lifetime']),
-                        'class' => 'w-24'
+                        'class' => 'w-32',
+                        'aria-describedby' => 'session_lifetime_unit session_lifetime_help'
                     ])
-                    <span class="text-sm ml-2">{{ __('admin.settings.security.minutes') }}</span>
+                    <span id="session_lifetime_unit" class="text-sm text-gray-700 dark:text-gray-300">
+                        {{ __('admin.settings.security.minutes') }}
+                    </span>
                 </div>
-                <p class="text-sm mt-1">{{ __('admin.settings.security.session_lifetime_help') }}</p>
-            </div>
-        </div>
+                
+                <p id="session_lifetime_help">{{ __('admin.settings.security.session_lifetime_help') }}</p>
+            </fieldset>
+        </section>
 
         <!-- CAPTCHA設定 -->
         <div class="my-6">
@@ -421,102 +409,137 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
         <!-- IPアクセス制御設定 -->
-        <div class="mt-8 border-t pt-6">
-            <h2 class="{{ config('appearance.appearance_class.heading.h2') }}">{{ __('admin.settings.security.ip_access_control') }}</h2>
-            <h3>{{ __('admin.settings.security.admin_ip_access_control') }}</h3>
-            <div>
-                <div class="my-4">
-                    <div class="my-4">
-                        @include('components::form.checkbox', [
-                            'label' => __('admin.settings.security.enable_allowed_admin_ips'),
-                            'id' => 'enable_allowed_admin_ips',
-                            'name' => 'enable_allowed_admin_ips',
-                            'value' => old('enable_allowed_admin_ips', $settings['enable_allowed_admin_ips']),
-                            'xModel' => 'enableAllowedIPs', // Alpine.jsに状態をバインド
-                            
-                        ])
-                    </div>
-            
-                    @include('components::form.textarea', [
+        <section>
+            <h2>{{ __('admin.settings.security.ip_access_control') }}</h2>
+            <p>{{ __('admin.settings.security.ip_access_control_description') }}</p>
+            <!-- 管理画面IP制御 -->
+            <section>
+                <h3>{{ __('admin.settings.security.admin_ip_access_control') }}</h3>
+                <!-- 許可IP設定 -->
+                <fieldset>
+                    
+                    @include('components.form.checkbox', [
+                        'label' => __('admin.settings.security.enable_allowed_admin_ips'),
+                        'id' => 'enable_allowed_admin_ips',
+                        'name' => 'enable_allowed_admin_ips',
+                        'value' => old('enable_allowed_admin_ips', $settings['enable_allowed_admin_ips']),
+                        'xModel' => 'enableAllowedIPs',
+                        'class' => ''
+                    ])
+
+                    @include('components.form.label', [
+                        'for' => 'allowed_admin_ips',
+                        'text' => __('admin.settings.security.allowed_admin_ips_list'),
+                        'class' => 'text-sm font-medium'
+                    ])
+                    
+                    @include('components.form.textarea', [
                         'id' => 'allowed_admin_ips',
                         'name' => 'allowed_admin_ips',
                         'value' => $settings['allowed_admin_ips'],
-                        'rows' => 10,
-                        'placeholder' => '',
-                        'class' => '',
+                        'rows' => 8,
+                        'placeholder' => __('admin.settings.security.ip_list_placeholder'),
+                        'class' => 'font-mono text-sm'
                     ])
-                </div>
+                    
+                    <p>{{ __('admin.settings.security.admin_ip_help') }}</p>
+                </fieldset>
 
-                <div class="my-4">
-                    <div class="my-4">
-                        @include('components::form.checkbox', [
-                            'label' => __('admin.settings.security.enable_blocked_admin_ips'),
-                            'id' => 'enable_blocked_admin_ips',
-                            'name' => 'enable_blocked_admin_ips',
-                            'value' => old('enable_blocked_admin_ips', $settings['enable_blocked_admin_ips']),
-                            'xModel' => 'blockedAdminIps', // Alpine.jsに状態をバインド
-                        ])
-                    </div>
+                <!-- ブロックIP設定 -->
+                <fieldset>
+                    
+                    @include('components.form.checkbox', [
+                        'label' => __('admin.settings.security.enable_blocked_admin_ips'),
+                        'id' => 'enable_blocked_admin_ips',
+                        'name' => 'enable_blocked_admin_ips',
+                        'value' => old('enable_blocked_admin_ips', $settings['enable_blocked_admin_ips']),
+                        'xModel' => 'blockedAdminIps',
+                        'class' => ''
+                    ])
 
-                    @include('components::form.textarea', [
+                    @include('components.form.label', [
+                        'for' => 'blocked_admin_ips',
+                        'text' => __('admin.settings.security.blocked_admin_ips_list'),
+                        'class' => 'text-sm font-medium'
+                    ])
+                    
+                    @include('components.form.textarea', [
                         'id' => 'blocked_admin_ips',
                         'name' => 'blocked_admin_ips',
                         'value' => $settings['blocked_admin_ips'],
-                        'rows' => 10,
-                        'placeholder' => '',
-                        'required' => false,
-                        'class' => '',
+                        'rows' => 8,
+                        'placeholder' => __('admin.settings.security.ip_list_placeholder'),
+                        'class' => 'font-mono text-sm'
                     ])
-                </div>
-            </div>
+                    
+                    <p>{{ __('admin.settings.security.admin_ip_help') }}</p>
+                </fieldset>
+            </section>
 
-            <h3>{{ __('admin.settings.security.front_ip_access_control') }}</h3>
-            <div>
-                <div class="my-4">
-                    <div class="my-4">
-                        @include('components::form.checkbox', [
-                            'label' => __('admin.settings.security.enable_allowed_front_ips'),
-                            'id' => 'enable_allowed_front_ips',
-                            'name' => 'enable_allowed_front_ips',
-                            'value' => old('enable_allowed_front_ips', $settings['enable_allowed_front_ips']),
-                            'xModel' => 'enableAllowedFrontIPs', // Alpine.jsに状態をバインド
-                        ])
-                    </div>
-                
+            <!-- フロントエンドIP制御 -->
+            <section>
+                <h3>{{ __('admin.settings.security.front_ip_access_control') }}</h3>
+                <!-- 許可IP設定 -->
+                <fieldset>
 
-                    @include('components::form.textarea', [
+                    @include('components.form.checkbox', [
+                        'label' => __('admin.settings.security.enable_allowed_front_ips'),
+                        'id' => 'enable_allowed_front_ips',
+                        'name' => 'enable_allowed_front_ips',
+                        'value' => old('enable_allowed_front_ips', $settings['enable_allowed_front_ips']),
+                        'xModel' => 'enableAllowedFrontIPs',
+                        'class' => 'mb-3'
+                    ])
+
+                    @include('components.form.label', [
+                        'for' => 'allowed_front_ips',
+                        'text' => __('admin.settings.security.allowed_front_ips_list'),
+                        'class' => 'text-sm font-medium'
+                    ])
+                    
+                    @include('components.form.textarea', [
                         'id' => 'allowed_front_ips',
                         'name' => 'allowed_front_ips',
                         'value' => $settings['allowed_front_ips'],
-                        'rows' => 10,
-                        'placeholder' => '',
-                        'class' => '',
+                        'rows' => 8,
+                        'placeholder' => __('admin.settings.security.ip_list_placeholder'),
+                        'class' => 'font-mono text-sm'
                     ])
-                </div>
+                    
+                    <p>{{ __('admin.settings.security.front_ip_help') }}</p>
+                </fieldset>
 
-                <div class="my-4">
-                    <div class="my-4">
-                        @include('components::form.checkbox', [
-                            'label' => __('admin.settings.security.enable_blocked_front_ips'),
-                            'id' => 'enable_blocked_front_ips',
-                            'name' => 'enable_blocked_front_ips',
-                            'value' => old('enable_blocked_front_ips', $settings['enable_blocked_front_ips']),
-                            'xModel' => 'enableBlockedFrontIps', // Alpine.jsに状態をバインド
-                        ])
-                    </div>
+                <!-- ブロックIP設定 -->
+                <fieldset>
 
-                    @include('components::form.textarea', [
+                    @include('components.form.checkbox', [
+                        'label' => __('admin.settings.security.enable_blocked_front_ips'),
+                        'id' => 'enable_blocked_front_ips',
+                        'name' => 'enable_blocked_front_ips',
+                        'value' => old('enable_blocked_front_ips', $settings['enable_blocked_front_ips']),
+                        'xModel' => 'enableBlockedFrontIps',
+                        'class' => ''
+                    ])
+
+                    @include('components.form.label', [
+                        'for' => 'blocked_front_ips',
+                        'text' => __('admin.settings.security.blocked_front_ips_list'),
+                        'class' => 'text-sm font-medium'
+                    ])
+                    
+                    @include('components.form.textarea', [
                         'id' => 'blocked_front_ips',
                         'name' => 'blocked_front_ips',
                         'value' => $settings['blocked_front_ips'],
-                        'rows' => 10,
-                        'placeholder' => '',
-                        'required' => false,
-                        'class' => '',
+                        'rows' => 8,
+                        'placeholder' => __('admin.settings.security.ip_list_placeholder'),
+                        'class' => 'font-mono text-sm'
                     ])
-                </div>
-            </div>
-        </div>
+                    
+                    <p>{{ __('admin.settings.security.front_ip_help') }}</p>
+                </fieldset>
+            </section>
+        </section>
     </form>
 </div>
 
