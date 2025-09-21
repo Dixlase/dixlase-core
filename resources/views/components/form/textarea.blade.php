@@ -36,7 +36,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     id="{{ $id }}"
     rows="{{ $rows }}"
     placeholder="{{ $placeholder }}"
-    class="block w-full px-3 py-2 bg-white text-gray-700 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-900 dark:text-white dark:border-gray-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-500 rounded-md shadow-sm focus:outline-none {{ $class }}"
+    class="block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-500 dark:text-white {{ $class }}"
 
 
     {{ $xBindReadonly ? "x-bind:readonly=$xBindReadonly" : '' }}

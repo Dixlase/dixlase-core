@@ -26,120 +26,92 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @method('PUT')
 
     <!-- サイト設定 -->
-    <div>
-        <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.base.site_settings') }}</h2>
-        <div>
-            @include('components::form.label', [
-                'for' => 'app_name',
-                'text' => __('admin.settings.base.app_name'),
-            ])
-            @include('components::form.text', [
-                'id' => 'app_name',
+    <section>
+        <h2>{{ __('admin.settings.base.site_settings') }}</h2>
+        
+        <fieldset>
+            <legend>{{ __('admin.settings.base.app_name') }}</legend>
+            @include('components.form.text', [
                 'name' => 'app_name',
                 'value' => old('app_name', $settings['app_name']),
                 'required' => true,
-                'class' => 'w-full'
             ])
-        </div>
+        </fieldset>
 
-        <!-- 言語設定 -->
-        <div class="mt-4">
-            @include('components::form.label', [
-                'for' => 'locale',
-                'text' => __('admin.settings.base.locale'),
-            ])
-
-            @include('components::form.select', [
-                'id' => 'locale',
+        <fieldset>
+            <legend>{{ __('admin.settings.base.locale') }}</legend>
+            @include('components.form.select', [
                 'name' => 'locale',
                 'options' => $locales,
                 'value' => old('locale', $settings['locale']),
                 'required' => true,
             ])
+        </fieldset>
 
-        </div>
-
-        <!-- タイムゾーン -->
-        <div class="mt-4">
-            @include('components::form.label', [
-                'for' => 'timezone',
-                'text' => __('admin.settings.base.timezone'),
-            ])
-            @include('components::form.select', [
-                'id' => 'timezone',
+        <fieldset>
+            <legend>{{ __('admin.settings.base.timezone') }}</legend>
+            @include('components.form.select', [
                 'name' => 'timezone',
                 'options' => $timezones,
                 'value' => $settings['timezone'],
             ])
-        </div>
+        </fieldset>
 
-        <!-- 管理画面URL -->
-        <div class="mt-4">
-            @include('components::form.label', [
-                'for' => 'admin_url',
-                'text' => __('admin.settings.base.admin_url'),
-            ])
-            @include('components::form.text', [
-                'id' => 'admin_url',
+        <fieldset>
+            <legend>{{ __('admin.settings.base.admin_url') }}</legend>
+            @include('components.form.text', [
                 'name' => 'admin_url',
                 'value' => old('admin_url', $settings['admin_url']),
                 'required' => true,
-                'class' => 'w-full'
             ])
-            <p class="text-sm mt-3">{!! __('admin.settings.base.admin_url_help') !!}</p>
-        </div>
+            <p>{!! __('admin.settings.base.admin_url_help') !!}</p>
+        </fieldset>
 
-        <!-- SSL強制設定 -->
-        <div class="mt-4">
-            @include('components::form.checkbox', [
+        <fieldset>
+            <legend>{{ __('admin.settings.base.force_ssl') }}</legend>
+            @include('components.form.checkbox', [
                 'label' => __('admin.settings.base.force_ssl'),
-                'id' => 'force_ssl',
                 'name' => 'force_ssl',
                 'value' => old('force_ssl', $settings['force_ssl']),
             ])
-            <p class="text-sm mt-1">{{ __('admin.settings.base.force_ssl_help') }}</p>
-        </div>
-    </div>
+            <p>{{ __('admin.settings.base.force_ssl_help') }}</p>
+        </fieldset>
+    </section>
 
     <!-- メンテナンスモード設定 -->
-    <div class="mt-6 border-t pt-6">
-        <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.base.maintenance_settings') }}</h2>
-        @include('components::form.label', [
-            'text' => __('admin.settings.base.maintenance_mode'),
-        ])
-        @include('components::form.hidden', [
-            'id' => 'maintenance_mode',
-            'name' => 'maintenance_mode',
-            'value' => '0'
-        ])
-        @include('components::form.radio-group', [
-            'name' => 'maintenance_mode',
-            'options' => [
-                1 => __('admin.settings.base.yes'),
-                0 => __('admin.settings.base.no')
-            ],
-            'value' => $settings['maintenance_mode'],
-        ])
-    </div>
+    <section>
+        <h2>{{ __('admin.settings.base.maintenance_settings') }}</h2>
+        
+        <fieldset>
+            <legend>{{ __('admin.settings.base.maintenance_mode') }}</legend>
+            @include('components.form.hidden', [
+                'name' => 'maintenance_mode',
+                'value' => '0'
+            ])
+            @include('components.form.radio-group', [
+                'name' => 'maintenance_mode',
+                'options' => [
+                    1 => __('admin.settings.base.yes'),
+                    0 => __('admin.settings.base.no')
+                ],
+                'value' => $settings['maintenance_mode'],
+            ])
+        </fieldset>
 
-    <!-- メンテナンス時のメッセージ -->
-    <div class="mt-6">
-        @include('components::form.label', [
-            'for' => 'maintenance_message',
-            'text' => __('admin.settings.base.maintenance_message'),
-        ])
-        @include('components::form.textarea', [
-            'id' => 'maintenance_message',
-            'name' => 'maintenance_message',
-            'value' => old('maintenance_message', $settings['maintenance_message']),
-            'rows' => 3,
-        ])
-        <p class="text-sm mt-1">{{ __('admin.settings.base.maintenance_message_help') }}</p>
-    </div>
+        <fieldset>
+            <legend>{{ __('admin.settings.base.maintenance_message') }}</legend>
+            @include('components.form.textarea', [
+                'name' => 'maintenance_message',
+                'value' => old('maintenance_message', $settings['maintenance_message']),
+                'rows' => 3,
+            ])
+            <p>{{ __('admin.settings.base.maintenance_message_help') }}</p>
+        </fieldset>
+    </section>
 
     <!-- メールサーバー設定 -->
-    <div class="mt-6 border-t pt-6">
-        <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.base.mail_server_settings') }}</h2>
+    <section>
+        <h2>{{ __('admin.settings.base.mail_server_settings') }}</h2>
 
         @include('components.mail-server-form', [
             'settings' => $settings,
@@ -162,47 +134,33 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 'receive_test_date' => $mailReceiveTestDate
             ]
         ])
-    </div>
+    </section>
 
     <!-- システム管理者メールアドレス -->
-    <div class="mt-6 border-t pt-6">
-        <h2 class="text-xl font-semibold mb-2">{{ __('admin.settings.base.admin_email_settings') }}</h2>
-        <p class="text-sm mb-4">
+    <section>
+        <h2>{{ __('admin.settings.base.admin_email_settings') }}</h2>
+        <p class="description-text">
             {{ __('admin.settings.base.admin_email_settings_description') }}
         </p>
 
         <!-- メールサーバー設定の確認メッセージ -->
         @if(!($mailConnectionTested && $mailSendTested && $mailReceiveTested))
-            <div class="mt-2 p-3 bg-yellow-50 dark:bg-green-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-                <div class="flex items-start">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-exclamation-triangle text-yellow-400 text-sm"></i>
-                    </div>
-                    <div class="ml-2">
-                        <p class="text-sm text-yellow-800 dark:text-yellow-200">
-                            {{ __('admin.settings.base.admin_email_mail_test_required') }}
-                        </p>
-                    </div>
-                </div>
-            </div>
+            @include('components.message', [
+                'type' => 'warning',
+                'message' => __('admin.settings.base.admin_email_mail_test_required')
+            ])
         @endif
 
-        <!-- システム管理者メールアドレス -->
-        <div class="my-6">
-            @include('components::form.label', [
-                'for' => 'system_admin_email',
-                'text' => __('admin.settings.base.admin_email'),
-            ])
-            @include('components::form.text', [
-                'id' => 'system_admin_email',
+        <fieldset>
+            <legend>{{ __('admin.settings.base.admin_email') }}</legend>
+            @include('components.form.text', [
+                'type' => 'email',
                 'name' => 'system_admin_email',
                 'value' => old('system_admin_email', $settings['system_admin_email']),
-                'type' => 'email',
             ])
-            <p class="text-sm mt-1">{{ __('admin.settings.base.admin_email_help') }}</p>
-            
-        </div>
-    </div>
+            <p>{{ __('admin.settings.base.admin_email_help') }}</p>
+        </fieldset>
+    </section>
 </form>
 
 

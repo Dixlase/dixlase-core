@@ -113,7 +113,8 @@
             type="button"
             id="test-mail-btn" 
             class="
-                rounded-lg
+                rounded
+                px-4
                 @if(($isInstall && $testStatus['connection_tested']) || (!$isInstall && (!$showStatus || $testStatus['connection_tested'])))
                     bg-blue-500 hover:bg-blue-600 {{ $isInstall ? '' : 'dark:bg-blue-600 dark:hover:bg-blue-700' }} text-white
                 @else
