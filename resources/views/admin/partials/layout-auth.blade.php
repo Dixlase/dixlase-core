@@ -1,11 +1,30 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title') | {{ config('app.name') }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js" crossorigin="anonymous"></script>
+
+    <!-- Dark Mode Detection Script -->
+    <script>
+        // デバイスの外観モードを検出してHTMLクラスに適用
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+        
+        // 外観モード変更の監視
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+            if (e.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+    </script>
 
     <!-- Scripts -->
     @if (app()->environment('local'))
@@ -19,20 +38,18 @@
         @vite(['resources/src/common/js/app.js', 'resources/src/common/scss/style.scss'], 'build')
     @endif
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+<body class="bg-gray-100 dark:bg-gray-900 flex items-center justify-center min-h-screen transition-colors duration-300">
     <div class="flex flex-col items-center w-full max-w-md min-w-[400px]">
 
         <!-- ロゴ -->
         <img src="{{ asset('assets/images/logo.svg') }}" alt="{{ config('app.name') }}" class="w-32 h-auto mx-auto mb-4">
 
-        <div class="bg-white shadow-lg rounded-lg p-8 max-w-md w-full mb-4">
-            <h1 class="text-2xl font-bold text-gray-800 mb-4 text-center">@yield('header')</h1>
-            <p class="text-gray-600 mb-6 text-center">@yield('description')</p>
+        <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8 max-w-md w-full mb-4 transition-colors duration-300">
+            <h1 class="text-2xl font-bold text-gray-800 dark:text-white mb-4 text-center">@yield('header')</h1>
+            <p class="text-gray-600 dark:text-gray-300 mb-6 text-center">@yield('description')</p>
             @include('components::flash-message')
             @yield('content')
         </div>
-
-
     </div>
 </body>
 </html>
