@@ -81,19 +81,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </fieldset>
 
             <!-- 設定詳細 -->
-            <div id="login-attempt-details">
+            <div>
                 <!-- 最大試行回数 -->
                 <fieldset>
                     <legend>{{ __('admin.settings.members.settings.login_attempt_max_attempts') }}</legend>
-                    <input
-                        type="number"
-                        id="login_attempt_max_attempts"
-                        name="login_attempt_max_attempts"
-                        value="{{ old('login_attempt_max_attempts', $loginAttemptMaxAttempts) }}"
-                        min="1"
-                        max="100"
-                        class="number-input-small"
-                    >
+                    @include('components.form.text', [
+                        'type' => 'number',
+                        'name' => 'login_attempt_max_attempts',
+                        'value' => old('login_attempt_max_attempts', $loginAttemptMaxAttempts),
+                        'min' => 1,
+                        'max' => 100,
+                        'class' => 'number-input-small'
+                    ])
                     <p>
                         {{ __('admin.settings.members.settings.login_attempt_max_attempts_help') }}
                     </p>
@@ -102,15 +101,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <!-- 時間窓 -->
                 <fieldset>
                     <legend>{{ __('admin.settings.members.settings.login_attempt_time_window') }}</legend>
-                    <input
-                        type="number"
-                        id="login_attempt_time_window"
-                        name="login_attempt_time_window"
-                        value="{{ old('login_attempt_time_window', $loginAttemptTimeWindow) }}"
-                        min="1"
-                        max="1440"
-                        class="number-input-small"
-                    >
+                    @include('components.form.text', [
+                        'type' => 'number',
+                        'name' => 'login_attempt_time_window',
+                        'value' => old('login_attempt_time_window', $loginAttemptTimeWindow),
+                        'min' => 1,
+                        'max' => 1440,
+                        'class' => 'number-input-small'
+                    ])
                     <p>
                         {{ __('admin.settings.members.settings.login_attempt_time_window_help') }}
                     </p>
@@ -119,15 +117,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <!-- ロックアウト時間 -->
                 <fieldset>
                     <legend>{{ __('admin.settings.members.settings.login_attempt_lockout_duration') }}</legend>
-                    <input
-                        type="number"
-                        id="login_attempt_lockout_duration"
-                        name="login_attempt_lockout_duration"
-                        value="{{ old('login_attempt_lockout_duration', $loginAttemptLockoutDuration) }}"
-                        min="1"
-                        max="10080"
-                        class="number-input-small"
-                    >
+                    @include('components.form.text', [
+                        'type' => 'number',
+                        'name' => 'login_attempt_lockout_duration',
+                        'value' => old('login_attempt_lockout_duration', $loginAttemptLockoutDuration),
+                        'min' => 1,
+                        'max' => 10080,
+                        'class' => 'number-input-small'
+                    ])
                     <p>
                         {{ __('admin.settings.members.settings.login_attempt_lockout_duration_help') }}
                     </p>
@@ -182,11 +179,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     'options' => $pwnedPasswordOptions,
                     'value' => old('pwned_password_check_enabled', (string) (int) $pwnedPasswordCheckEnabled),
                 ])
-
                 <p>
                     {!! __('admin.settings.members.settings.pwned_password_help') !!}
                 </p>
-
                 <!-- API情報 -->
                 @include('components.message', [
                     'type' => 'info',
@@ -198,7 +193,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- 管理メンバー用セッション設定 -->
         <section>
             <h2>{{ __('admin.settings.members.settings.admin_session_settings') }}</h2>
-            <p class="description-text">
+            <p>
                 {{ __('admin.settings.members.settings.admin_session_settings_description') }}
             </p>
 
@@ -210,7 +205,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     'options' => $adminSessionLifetimeOptions,
                     'value' => old('members_session_lifetime_enabled', (string) (int) $membersSessionLifetimeEnabled),
                 ])
-
                 <p>
                     {{ __('admin.settings.members.settings.admin_session_lifetime_enabled_help') }}
                 </p>
@@ -220,16 +214,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <legend>{{ __('admin.settings.members.settings.admin_session_lifetime') }}</legend>
                 <div class="flex items-center">
-                    <input
-                        type="number"
-                        id="members_session_lifetime"
-                        name="members_session_lifetime"
-                        value="{{ old('members_session_lifetime', $membersSessionLifetime) }}"
-                        min="1"
-                        max="43200"
-                        class="number-input-small"
-                    >
-                    <span class="text-sm ml-2">{{ __('admin.settings.members.settings.minutes') }}</span>
+                    @include('components.form.text', [
+                        'type' => 'number',
+                        'name' => 'members_session_lifetime',
+                        'value' => old('members_session_lifetime', $membersSessionLifetime),
+                        'min' => 1,
+                        'max' => 43200,
+                        'class' => 'number-input-small'
+                    ])
+                    <span class="text-sm ml-2 text-gray-700 dark:text-gray-300">{{ __('admin.settings.members.settings.minutes') }}</span>
                 </div>
                 <p>
                     {{ __('admin.settings.members.settings.admin_session_lifetime_help') }}
@@ -369,10 +362,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'cancel_label' => __('admin.settings.members.settings.force_logout_all_modal.cancel_label'),
         'form' => 'force-logout-all-form',
     ])
-
+@endsection
+@section('scripts')
     <script>
-
-
         // Close modal when clicking outside
         document.addEventListener('DOMContentLoaded', function() {
             const modals = document.querySelectorAll('[id$="Modal"]');
@@ -411,39 +403,47 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             const enabledCheckboxes = document.querySelectorAll('input[name="enabled_two_factor_methods[]"]');
             const defaultRadios = document.querySelectorAll('input[name="default_two_factor_method"]');
 
-            function updateDefaultMethodOptions() {
-                const enabledValues = Array.from(enabledCheckboxes)
-                    .filter(cb => cb.checked)
-                    .map(cb => cb.value);
+            // 要素が存在する場合のみ処理を実行
+            if (enabledCheckboxes.length > 0 && defaultRadios.length > 0) {
+                function updateDefaultMethodOptions() {
+                    const enabledValues = Array.from(enabledCheckboxes)
+                        .filter(cb => cb.checked)
+                        .map(cb => cb.value);
 
-                defaultRadios.forEach(radio => {
-                    const methodContainer = radio.closest('[data-method]');
-                    if (enabledValues.includes(radio.value)) {
-                        radio.disabled = false;
-                        methodContainer.style.opacity = '1';
-                    } else {
-                        radio.disabled = true;
-                        radio.checked = false;
-                        methodContainer.style.opacity = '0.5';
-                    }
-                });
+                    defaultRadios.forEach(radio => {
+                        const methodContainer = radio.closest('[data-method]') || radio.closest('.radio-option') || radio.parentElement;
+                        
+                        if (enabledValues.includes(radio.value)) {
+                            radio.disabled = false;
+                            if (methodContainer) {
+                                methodContainer.style.opacity = '1';
+                            }
+                        } else {
+                            radio.disabled = true;
+                            radio.checked = false;
+                            if (methodContainer) {
+                                methodContainer.style.opacity = '0.5';
+                            }
+                        }
+                    });
 
-                // 有効な方法が1つだけの場合、自動的にデフォルトに設定
-                if (enabledValues.length === 1) {
-                    const enabledRadio = document.querySelector(`input[name="default_two_factor_method"][value="${enabledValues[0]}"]`);
-                    if (enabledRadio) {
-                        enabledRadio.checked = true;
+                    // 有効な方法が1つだけの場合、自動的にデフォルトに設定
+                    if (enabledValues.length === 1) {
+                        const enabledRadio = document.querySelector(`input[name="default_two_factor_method"][value="${enabledValues[0]}"]`);
+                        if (enabledRadio) {
+                            enabledRadio.checked = true;
+                        }
                     }
                 }
+
+                // チェックボックスの変更を監視
+                enabledCheckboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', updateDefaultMethodOptions);
+                });
+
+                // 初期状態を設定
+                updateDefaultMethodOptions();
             }
-
-            // チェックボックスの変更を監視
-            enabledCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', updateDefaultMethodOptions);
-            });
-
-            // 初期状態を設定
-            updateDefaultMethodOptions();
         });
     </script>
 @endsection

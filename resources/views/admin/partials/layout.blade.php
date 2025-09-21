@@ -55,8 +55,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
             <div class="min-h-screen flex pt-16">
-                 <!-- Navigation Sidebar -->
-                <nav class="md:fixed overflow-auto md:h-full hidden sm:block w-64 flex-shrink-0 bg-gray-100 dark:bg-gray-800 text-gray-900 border-r border-gray-300 dark:text-white dark:border-r dark:border-gray-700 {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}" role="navigation" aria-label="Main navigation">
+                 <!-- Navigation Sidebar (PC only) -->
+                <nav class="md:fixed overflow-y-auto md:h-full hidden sm:block w-64 flex-shrink-0 bg-gray-100 dark:bg-gray-800 text-gray-900 border-r border-gray-300 dark:text-white dark:border-r dark:border-gray-700 {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}" role="navigation" aria-label="Main navigation">
                     @include('admin.partials.sidebar', ['transitionEnabled' => $transitionEnabled ?? null])
                 </nav>
 

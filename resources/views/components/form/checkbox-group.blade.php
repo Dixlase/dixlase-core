@@ -32,7 +32,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'flex-wrap',
     'gap-4',
     'flex-col' => $flexDirection == 'col',
-    'flex-row' => $flexDirection != 'col',
+    'flex-col sm:flex-row' => $flexDirection != 'col',
 ])>
     @foreach ($options as $option_value => $option_label)
         <label class="inline-flex items-center">
