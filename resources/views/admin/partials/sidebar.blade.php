@@ -41,12 +41,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @if (\App\Helpers\AdminHelper::canEditMenu($role_key) || \App\Helpers\AdminHelper::canViewMenu($role_key))
                     @if (isset($item['route']) && is_string($item['route']))
                         <a href="{{ route($item['route']) }}"
-                        class="{{ $button_class }} {{ $item['route'] === $route_name ? config('admin.appearance_class.sidebar.active') : config('admin.appearance_class.sidebar.normal') }}">
+                        class="{{ $button_class }} {{ $item['route'] === $route_name ? config('appearance.appearance_class.sidebar.active') : config('appearance.appearance_class.sidebar.normal') }}">
                             <i class="{{ $item['icon'] }} mr-3"></i>
                             <span>{{ __($item['text']) }}</span>
                         </a>
                     @else
-                        <button @click="{{ $open_key }} = !{{ $open_key }}" class="{{ $button_class }} {{ config('admin.appearance_class.sidebar.normal') }}">
+                        <button @click="{{ $open_key }} = !{{ $open_key }}" class="{{ $button_class }} {{ config('appearance.appearance_class.sidebar.normal') }}">
                             <i class="{{ $item['icon'] }} mr-3"></i>
                             <span>{{ __($item['text']) }}</span>
                             <svg class="{{ $arrow_class }}" :class="{ 'rotate-180': {{ $open_key }} }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -62,7 +62,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             @if (\App\Helpers\AdminHelper::canEditMenu($role_key) || \App\Helpers\AdminHelper::canViewMenu($role_key))
                                 @if (isset($child_item['route']) && is_string($child_item['route']))
 
-                                    <a href="{{ route($child_item['route']) }}" class="{{ $button_class }} {{ $child_item['route'] === $route_name ? config('admin.appearance_class.sidebar.active') : config('admin.appearance_class.sidebar.normal') }}">
+                                    <a href="{{ route($child_item['route']) }}" class="{{ $button_class }} {{ $child_item['route'] === $route_name ? config('appearance.appearance_class.sidebar.active') : config('appearance.appearance_class.sidebar.normal') }}">
                                         <i class="{{ $child_item['icon'] }} mr-3"></i>
                                         <span>{{ __($child_item['text']) }}</span>
                                     </a>
@@ -75,7 +75,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     @endphp
 
                                     <div x-data="{ {{ $open_child_key }}: {{ $is_open_child ? 'true' : 'false' }} }">
-                                        <button @click="{{ $open_child_key }} = !{{ $open_child_key }}" class="{{ $button_class }} {{ config('admin.appearance_class.sidebar.normal') }}">
+                                        <button @click="{{ $open_child_key }} = !{{ $open_child_key }}" class="{{ $button_class }} {{ config('appearance.appearance_class.sidebar.normal') }}">
                                             <i class="{{ $child_item['icon'] }} mr-3"></i>
                                             <span>{{ __($child_item['text']) }}</span>
                                             <svg class="{{ $arrow_class }}" :class="{ 'rotate-180': {{ $open_child_key }} }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -87,7 +87,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                 @foreach ($child_item['children'] as $grand_child_key => $grand_child_item)
                                                     @if (\App\Helpers\AdminHelper::canEditMenu($role_key) || \App\Helpers\AdminHelper::canViewMenu($role_key))
                                                         <a href="{{ route($grand_child_item['route']) }}"
-                                                        class="{{ $button_class }} {{ $grand_child_item['route'] === $route_name ? config('admin.appearance_class.sidebar.active') : config('admin.appearance_class.sidebar.normal') }}">
+                                                        class="{{ $button_class }} {{ $grand_child_item['route'] === $route_name ? config('appearance.appearance_class.sidebar.active') : config('appearance.appearance_class.sidebar.normal') }}">
                                                             <i class="{{ $grand_child_item['icon'] }} mr-3"></i>
                                                             <span>{{ __($grand_child_item['text']) }}</span>
                                                             @if (!\App\Helpers\AdminHelper::canEditMenu($child_key))

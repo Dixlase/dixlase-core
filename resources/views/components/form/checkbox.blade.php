@@ -35,7 +35,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 name="{{ $name }}"
                 value="1"
                 {{ $xModel ? "x-model=$xModel" : '' }}
-                class="{{ config('admin.appearance_class.form.checkbox') }} {{ $class }}"
+                class="{{ config('appearance.appearance_class.form.checkbox') }} {{ $class }}"
                 @if ($value || $checked) checked @endif>
             <span class="ml-2">{{ __($label) }}</span>
         </label>

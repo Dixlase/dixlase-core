@@ -21,14 +21,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <header
     x-cloak
     x-data="{ openSidebar: false, openUserMenu: false }"
-    class="fixed top-0 z-50 w-full flex items-center h-16 border-b {{ config('admin.appearance_class.layout.header') }}">
+    class="fixed top-0 z-50 w-full flex items-center h-16 border-b {{ config('appearance.appearance_class.layout.header') }}">
     <!-- プライマリーナビゲーションメニュー -->
     <div class="w-full mx-4 sm:mx-0 lg:px-4 flex items-center h-16">
 
         <!-- 左：サイドメニュー（スマホ用のみ） -->
         <div class="w-1/3 flex items-center sm:hidden">
             <button @click="openSidebar = true"
-                    class="inline-flex items-center justify-start p-2 rounded-md {{ config('admin.appearance_class.layout.button_hamburger') }} focus:outline-none transition duration-150 ease-in-out">
+                    class="inline-flex items-center justify-start p-2 rounded-md {{ config('appearance.appearance_class.layout.button_hamburger') }} focus:outline-none transition duration-150 ease-in-out">
                 <i class="fa-solid fa-bars text-xl"></i>
             </button>
         </div>
@@ -37,7 +37,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="w-1/3 flex justify-center sm:flex-1 sm:justify-start">
             <a href="{{ route('admin.dashboard') }}" class="flex items-center">
                 @include('components::application-logo' ,[
-                    'class' => config('admin.appearance_class.layout.logo'),
+                    'class' => config('appearance.appearance_class.layout.logo'),
                     'site_name' => $site_name
                 ])
             </a>
@@ -59,7 +59,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <!-- ユーザーメニュー（スマホ用） -->
             <button @click="openUserMenu = true"
-                    class="inline-flex items-center justify-center rounded-md sm:hidden {{ config('admin.appearance_class.layout.button_hamburger') }} focus:outline-none transition duration-150 ease-in-out">
+                    class="inline-flex items-center justify-center rounded-md sm:hidden {{ config('appearance.appearance_class.layout.button_hamburger') }} focus:outline-none transition duration-150 ease-in-out">
                 <i class="fa-solid fa-user-circle text-3xl text-gray-600 dark:text-gray-300"></i>
             </button>
 

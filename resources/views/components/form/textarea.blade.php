@@ -36,7 +36,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     id="{{ $id }}"
     rows="{{ $rows }}"
     placeholder="{{ $placeholder }}"
-    class="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline {{ config('admin.appearance_class.form.textarea') }} {{ $class }}"
+    class="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline {{ config('appearance.appearance_class.form.textarea') }} {{ $class }}"
 
 
     {{ $xBindReadonly ? "x-bind:readonly=$xBindReadonly" : '' }}

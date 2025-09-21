@@ -206,7 +206,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- CAPTCHA設定 -->
         <div class="my-6">
-            <h2 class="{{ config('admin.appearance_class.heading.h2') }}">{{ __('admin.settings.security.recaptcha_settings') }}</h2>
+            <h2 class="{{ config('appearance.appearance_class.heading.h2') }}">{{ __('admin.settings.security.recaptcha_settings') }}</h2>
             
             @include('components::form.checkbox', [
                 'label' => __('admin.settings.security.captcha_enabled'),
@@ -248,7 +248,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     'xModel' => 'captchaSiteKey'
                 ])
 
-                <label for="captcha_secret_key" class="block font-medium text-lg {{ config('admin.appearance_class.form.label') }}" 
+                <label for="captcha_secret_key" class="block font-medium text-lg {{ config('appearance.appearance_class.form.label') }}" 
                        x-text="captchaDriver === 'google_enterprise' ? '{{ __("admin.settings.security.captcha_google_enterprise_secret_key") }}' : '{{ __("admin.settings.security.captcha_secret_key") }}'">
                     {{ __('admin.settings.security.captcha_secret_key') }}
                 </label>
@@ -394,7 +394,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- IPアクセス制御設定 -->
         <div class="mt-8 border-t pt-6">
-            <h2 class="{{ config('admin.appearance_class.heading.h2') }}">{{ __('admin.settings.security.ip_access_control') }}</h2>
+            <h2 class="{{ config('appearance.appearance_class.heading.h2') }}">{{ __('admin.settings.security.ip_access_control') }}</h2>
             <h3>{{ __('admin.settings.security.admin_ip_access_control') }}</h3>
             <div>
                 <div class="my-4">

@@ -45,7 +45,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {!! load_active_assets() !!}
 
     </head>
-    <body  class="admin font-sans antialiased transition-colors duration-300 {{ config('admin.appearance_class.layout.body') }}">
+    <body  class="admin font-sans antialiased transition-colors duration-300 {{ config('appearance.appearance_class.layout.body') }}">
         <div class="min-h-screen">
             <!-- Header -->
             @include('admin.partials.header', [
@@ -55,16 +55,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <div class="min-h-screen flex pt-16">
                  <!-- Side Bar -->
-                <aside class="md:fixed overflow-auto md:h-full hidden sm:block w-64 flex-shrink-0 {{ config('admin.appearance_class.layout.aside') }}">
+                <aside class="md:fixed overflow-auto md:h-full hidden sm:block w-64 flex-shrink-0 {{ config('appearance.appearance_class.layout.aside') }}">
                     @include('admin.partials.sidebar')
                 </aside>
 
                 <!-- Main -->
-                <main class="ml-0 md:ml-64 md:pl-4 lg:pl-0 flex-1 {{ config('admin.appearance_class.layout.main') }}">
+                <main class="ml-0 md:ml-64 md:pl-4 lg:pl-0 flex-1 {{ config('appearance.appearance_class.layout.main') }}">
 
                     <!-- Page Heading -->
-                    <div class="mx-auto py-6 px-4 sm:px-6 lg:px-8 mb-10 {{ config('admin.appearance_class.layout.title') }}">
-                        <h1 class="font-semibold text-xl leading-tight {{ config('admin.appearance_class.layout.heading') }}">
+                    <div class="mx-auto py-6 px-4 sm:px-6 lg:px-8 mb-10 {{ config('appearance.appearance_class.layout.title') }}">
+                        <h1 class="font-semibold text-xl leading-tight {{ config('appearance.appearance_class.layout.heading') }}">
                             <!-- ここにページタイトルを表示 -->
                             {{ __($heading) }}
                         </h1>

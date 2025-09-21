@@ -55,23 +55,38 @@ class AdminProfileController extends AdminLoggedInController
         $transition = 'transition-colors duration-300';
 
         // layout クラスに transition を追加
-        $appearanceClass = config('admin.appearance_class');
+        $appearanceClass = config('appearance.appearance_class');
 
-        foreach ($appearanceClass['layout'] as $key => $value) {
-            $appearanceClass['layout'][$key] = $value . ' ' . $transition;
+        // 各セクションが存在する場合のみ処理
+        if (isset($appearanceClass['layout'])) {
+            foreach ($appearanceClass['layout'] as $key => $value) {
+                $appearanceClass['layout'][$key] = $value . ' ' . $transition;
+            }
         }
-        foreach ($appearanceClass['sidebar'] as $key => $value) {
-            $appearanceClass['sidebar'][$key] = $value . ' ' . $transition;
+        
+        if (isset($appearanceClass['sidebar'])) {
+            foreach ($appearanceClass['sidebar'] as $key => $value) {
+                $appearanceClass['sidebar'][$key] = $value . ' ' . $transition;
+            }
         }
-        foreach ($appearanceClass['table'] as $key => $value) {
-            $appearanceClass['table'][$key] = $value . ' ' . $transition;
+        
+        if (isset($appearanceClass['table'])) {
+            foreach ($appearanceClass['table'] as $key => $value) {
+                $appearanceClass['table'][$key] = $value . ' ' . $transition;
+            }
         }
-        $appearanceClass['link'] .= ' ' . $transition;
-        foreach ($appearanceClass['form'] as $key => $value) {
-            $appearanceClass['form'][$key] = $value . ' ' . $transition;
+        
+        if (isset($appearanceClass['link'])) {
+            $appearanceClass['link'] .= ' ' . $transition;
+        }
+        
+        if (isset($appearanceClass['form'])) {
+            foreach ($appearanceClass['form'] as $key => $value) {
+                $appearanceClass['form'][$key] = $value . ' ' . $transition;
+            }
         }
 
-        config(['admin.appearance_class' => $appearanceClass]);
+        config(['appearance.appearance_class' => $appearanceClass]);
 
         // ✅ 外観モードをもとにクラスを生成
         $appearance = (int) (old('appearance') ?? Auth::guard('member')->user()->appearance?->value ?? 0);
