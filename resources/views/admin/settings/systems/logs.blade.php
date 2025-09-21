@@ -110,66 +110,116 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @forelse ($logs as $log)
             @if ($log['parsed'])
                 <div class="border-b border-gray-200 dark:border-gray-700 p-2">
-                    <div class="space-y-2 text-sm break-all">
-                        <div>
-                            <strong class="font-semibold text-gray-700 dark:text-gray-300">操作:</strong>{{ $log['message'] }}
+                    <div class="text-sm space-y-2">
+                        <!-- 操作 (Action) - Blue -->
+                        <div class="bg-blue-50 dark:bg-blue-900/20 p-3 border-l-4 border-blue-400">
+                            <div class="flex items-start">
+                                <span class="inline-block w-2 h-2 bg-blue-500 mt-2 mr-2 flex-shrink-0"></span>
+                                <div class="flex-1 break-all">
+                                    <span class="font-semibold text-blue-700 dark:text-blue-300">操作:</span>
+                                    <span class="text-blue-600 dark:text-blue-200 ml-2">{{ $log['message'] }}</span>
+                                </div>
+                            </div>
                         </div>
                         
                         @if (!empty($log['context']))
-                            <dl class="mt-2">
-                                @if (isset($log['context']['id']))
-                                    <div class="flex flex-wrap">
-                                        <dt class="font-semibold text-gray-700 dark:text-gray-300 mr-1">ID:</dt>
-                                        <dd class="text-gray-600 dark:text-gray-400">{{ $log['context']['id'] }}@if(isset($log['context']['name'])), name:{{ $log['context']['name'] }}@endif</dd>
+                            <!-- ID - Green -->
+                            @if (isset($log['context']['id']))
+                                <div class="bg-green-50 dark:bg-green-900/20 p-3 border-l-4 border-green-400">
+                                    <div class="flex items-start">
+                                        <span class="inline-block w-2 h-2 bg-green-500 mt-2 mr-2 flex-shrink-0"></span>
+                                        <div class="flex-1 break-all">
+                                            <span class="font-semibold text-green-700 dark:text-green-300">ID:</span>
+                                            <span class="text-green-600 dark:text-green-200 ml-2">{{ $log['context']['id'] }}</span>
+                                        </div>
                                     </div>
-                                @endif
-                                
-                                @if (isset($log['context']['method']))
-                                    <div class="flex flex-wrap">
-                                        <dt class="font-semibold text-gray-700 dark:text-gray-300 mr-1">method:</dt>
-                                        <dd class="text-gray-600 dark:text-gray-400">{{ $log['context']['method'] }}</dd>
+                                </div>
+                            @endif
+                            
+                            <!-- Name - Emerald -->
+                            @if (isset($log['context']['name']))
+                                <div class="bg-emerald-50 dark:bg-emerald-900/20 p-3 border-l-4 border-emerald-400">
+                                    <div class="flex items-start">
+                                        <span class="inline-block w-2 h-2 bg-emerald-500 mt-2 mr-2 flex-shrink-0"></span>
+                                        <div class="flex-1 break-all">
+                                            <span class="font-semibold text-emerald-700 dark:text-emerald-300">Name:</span>
+                                            <span class="text-emerald-600 dark:text-emerald-200 ml-2">{{ $log['context']['name'] }}</span>
+                                        </div>
                                     </div>
-                                @endif
-                                
-                                @if (isset($log['context']['uri']))
-                                    <div class="flex flex-wrap">
-                                        <dt class="font-semibold text-gray-700 dark:text-gray-300 mr-1">uri:</dt>
-                                        <dd class="text-gray-600 dark:text-gray-400">{{ $log['context']['uri'] }}</dd>
+                                </div>
+                            @endif
+                            
+                            <!-- Technical Info - Purple -->
+                            @if (isset($log['context']['method']) || isset($log['context']['uri']) || isset($log['context']['route']) || isset($log['context']['controller']))
+                                <div class="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border-l-4 border-purple-400">
+                                    <div class="flex items-start">
+                                        <span class="inline-block w-2 h-2 bg-purple-500 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                                        <div class="flex-1 break-all space-y-1">
+                                            @if (isset($log['context']['method']))
+                                                <div>
+                                                    <span class="font-semibold text-purple-700 dark:text-purple-300">Method:</span>
+                                                    <span class="text-purple-600 dark:text-purple-200 ml-2">{{ $log['context']['method'] }}</span>
+                                                </div>
+                                            @endif
+                                            @if (isset($log['context']['uri']))
+                                                <div>
+                                                    <span class="font-semibold text-purple-700 dark:text-purple-300">URI:</span>
+                                                    <span class="text-purple-600 dark:text-purple-200 ml-2">{{ $log['context']['uri'] }}</span>
+                                                </div>
+                                            @endif
+                                            @if (isset($log['context']['route']))
+                                                <div>
+                                                    <span class="font-semibold text-purple-700 dark:text-purple-300">Route:</span>
+                                                    <span class="text-purple-600 dark:text-purple-200 ml-2">{{ $log['context']['route'] }}</span>
+                                                </div>
+                                            @endif
+                                            @if (isset($log['context']['controller']))
+                                                <div>
+                                                    <span class="font-semibold text-purple-700 dark:text-purple-300">Controller:</span>
+                                                    <span class="text-purple-600 dark:text-purple-200 ml-2">{{ $log['context']['controller'] }}</span>
+                                                </div>
+                                            @endif
+                                        </div>
                                     </div>
-                                @endif
-                                
-                                @if (isset($log['context']['route']))
-                                    <div class="flex flex-wrap">
-                                        <dt class="font-semibold text-gray-700 dark:text-gray-300 mr-1">route:</dt>
-                                        <dd class="text-gray-600 dark:text-gray-400">{{ $log['context']['route'] }}</dd>
+                                </div>
+                            @endif
+                            
+                            <!-- IP Address - Orange -->
+                            @if (isset($log['context']['ip']))
+                                <div class="bg-orange-50 dark:bg-orange-900/20 p-3 border-l-4 border-orange-400">
+                                    <div class="flex items-start">
+                                        <span class="inline-block w-2 h-2 bg-orange-500 mt-2 mr-2 flex-shrink-0"></span>
+                                        <div class="flex-1 break-all">
+                                            <span class="font-semibold text-orange-700 dark:text-orange-300">IP:</span>
+                                            <span class="text-orange-600 dark:text-orange-200 ml-2">{{ $log['context']['ip'] }}</span>
+                                        </div>
                                     </div>
-                                @endif
-                                
-                                @if (isset($log['context']['controller']))
-                                    <div class="flex flex-wrap">
-                                        <dt class="font-semibold text-gray-700 dark:text-gray-300 mr-1">controller:</dt>
-                                        <dd class="text-gray-600 dark:text-gray-400">{{ $log['context']['controller'] }}</dd>
+                                </div>
+                            @endif
+                            
+                            <!-- User Agent - Indigo -->
+                            @if (isset($log['context']['user_agent']))
+                                <div class="bg-indigo-50 dark:bg-indigo-900/20 p-3 border-l-4 border-indigo-400">
+                                    <div class="flex items-start">
+                                        <span class="inline-block w-2 h-2 bg-indigo-500 mt-2 mr-2 flex-shrink-0"></span>
+                                        <div class="flex-1 break-all">
+                                            <span class="font-semibold text-indigo-700 dark:text-indigo-300">User Agent:</span>
+                                            <span class="text-indigo-600 dark:text-indigo-200 ml-2">{{ $log['context']['user_agent'] }}</span>
+                                        </div>
                                     </div>
-                                @endif
-                                
-                                @if (isset($log['context']['ip']))
-                                    <div class="flex flex-wrap">
-                                        <dt class="font-semibold text-gray-700 dark:text-gray-300 mr-1">ip:</dt>
-                                        <dd class="text-gray-600 dark:text-gray-400">{{ $log['context']['ip'] }}</dd>
-                                    </div>
-                                @endif
-                                
-                                @if (isset($log['context']['user_agent']))
-                                    <div class="flex flex-wrap">
-                                        <dt class="font-semibold text-gray-700 dark:text-gray-300 mr-1">user_agent:</dt>
-                                        <dd class="text-gray-600 dark:text-gray-400">{{ $log['context']['user_agent'] }}</dd>
-                                    </div>
-                                @endif
-                            </dl>
+                                </div>
+                            @endif
                         @endif
                         
-                        <div>
-                            <strong class="font-semibold text-gray-700 dark:text-gray-300">time:</strong>{{ $log['timestamp'] }}
+                        <!-- Timestamp - Gray -->
+                        <div class="bg-gray-50 dark:bg-gray-800/50 p-3 border-l-4 border-gray-400">
+                            <div class="flex items-start">
+                                <span class="inline-block w-2 h-2 bg-gray-500 mt-2 mr-2 flex-shrink-0"></span>
+                                <div class="flex-1 break-all">
+                                    <span class="font-semibold text-gray-700 dark:text-gray-300">Time:</span>
+                                    <span class="text-gray-600 dark:text-gray-400 ml-2">{{ $log['timestamp'] }}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
