@@ -154,7 +154,7 @@
 
     // Action buttons (for operations like download, delete, etc.)
     .action-button {
-        @apply inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200;
+        @apply inline-block w-auto items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200;
 
         &--success {
             @apply bg-green-600 hover:bg-green-700 text-white;

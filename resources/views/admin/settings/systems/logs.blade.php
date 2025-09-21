@@ -42,9 +42,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <h2>{{ __('admin.settings.systems.logs.log_type_label') }}</h2>
         
         <!-- Admin Logs -->
-        <div class="flex items-center mb-4">
-            <h3 class="mr-2">{{ __('admin.logs.admin_logs_label') }}</h3>
-            <nav>
+        <div class="mb-4">
+            <h3 class="mb-2 md:mb-0 md:mr-2 md:inline-block text-center md:text-left">{{ __('admin.logs.admin_logs_label') }}</h3>
+            <nav class="flex flex-wrap gap-2 justify-center md:justify-start">
                 @foreach (['activity', 'error', 'login', 'dixlase'] as $type)
                     <a href="{{ route('admin.settings.systems.logs', ['type' => $type]) }}"
                         @class([
@@ -59,9 +59,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
         
         <!-- Front Logs -->
-        <div class="flex items-center">
-            <h3 class="mr-2">{{ __('admin.logs.front_logs_label') }}</h3>
-            <nav>
+        <div class="mb-4">
+            <h3 class="mb-2 md:mb-0 md:mr-2 md:inline-block text-center md:text-left">{{ __('admin.logs.front_logs_label') }}</h3>
+            <nav class="flex flex-wrap gap-2 justify-center md:justify-start">
                 @foreach (['front_activity', 'front_error'] as $type)
                     <a href="{{ route('admin.settings.systems.logs', ['type' => $type]) }}"
                         @class([
@@ -78,9 +78,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     
     <!-- Action Buttons -->
-    <nav class="flex items-center justify-end mb-4">
+    <nav class="flex flex-row items-center justify-center md:justify-end gap-2 mb-4">
         <!-- Download Button -->
-        <a href="{{ route('admin.settings.systems.logs.download', ['type' => $logType]) }}" class="action-button action-button--success mr-2">
+        <a href="{{ route('admin.settings.systems.logs.download', ['type' => $logType]) }}" class="action-button action-button--success flex-shrink-0">
             <i class="fas fa-download mr-2"></i>
             {{ __('admin.settings.systems.logs.download') }}
         </a>
@@ -89,7 +89,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <form method="POST" action="{{ route('admin.settings.systems.logs.clear', ['type' => $logType]) }}" 
             onsubmit="return confirm('{{ __('admin.settings.systems.logs.clear_confirm') }}')">
             @csrf
-            <button type="submit" class="action-button action-button--danger">
+            <button type="submit" class="action-button action-button--danger flex-shrink-0">
                 <i class="fas fa-trash mr-2"></i>
                 {{ __('admin.settings.systems.logs.clear') }}
             </button>
@@ -97,74 +97,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </nav>
 
     <!-- Pagination Controls -->
-    @if(isset($pagination) && $pagination['last_page'] > 1)
-        <nav aria-label="{{ __('admin.pagination.navigation') }}" class="flex justify-between items-center mb-4">
-            <!-- Left Side: Previous/Next Navigation -->
-            <div class="flex items-center space-x-2">
-                @if($pagination['prev_page'])
-                    <a href="{{ route('admin.settings.systems.logs', ['type' => $logType, 'page' => $pagination['prev_page']]) }}" 
-                       class="pagination-button pagination-button--prev">
-                        {{ __('admin.pagination.previous') }}
-                    </a>
-                @else
-                    <span class="pagination-button pagination-button--prev pagination-button--disabled">
-                        {{ __('admin.pagination.previous') }}
-                    </span>
-                @endif
-
-                <span class="pagination-info">
-                    {{ __('admin.pagination.page', ['current' => $pagination['current_page'], 'total' => $pagination['last_page']]) }}
-                </span>
-
-                @if($pagination['next_page'])
-                    <a href="{{ route('admin.settings.systems.logs', ['type' => $logType, 'page' => $pagination['next_page']]) }}" 
-                       class="pagination-button pagination-button--next">
-                        {{ __('admin.pagination.next') }}
-                    </a>
-                @else
-                    <span class="pagination-button pagination-button--next pagination-button--disabled">
-                        {{ __('admin.pagination.next') }}
-                    </span>
-                @endif
-            </div>
-
-            <!-- Right Side: Page Numbers -->
-            <div class="flex items-center space-x-1">
-                @php
-                    $start = max(1, $pagination['current_page'] - 2);
-                    $end = min($pagination['last_page'], $pagination['current_page'] + 2);
-                @endphp
-
-                @if($start > 1)
-                    <a href="{{ route('admin.settings.systems.logs', ['type' => $logType, 'page' => 1]) }}" 
-                       class="pagination-number">1</a>
-                    @if($start > 2)
-                        <span class="pagination-ellipsis">...</span>
-                    @endif
-                @endif
-
-                @for($i = $start; $i <= $end; $i++)
-                    @if($i == $pagination['current_page'])
-                        <span class="pagination-number pagination-number--current" aria-current="page">{{ $i }}</span>
-                    @else
-                        <a href="{{ route('admin.settings.systems.logs', ['type' => $logType, 'page' => $i]) }}" 
-                           class="pagination-number">{{ $i }}</a>
-                    @endif
-                @endfor
-
-                @if($end < $pagination['last_page'])
-                    @if($end < $pagination['last_page'] - 1)
-                        <span class="pagination-ellipsis">...</span>
-                    @endif
-                    <a href="{{ route('admin.settings.systems.logs', ['type' => $logType, 'page' => $pagination['last_page']]) }}" 
-                       class="pagination-number">{{ $pagination['last_page'] }}</a>
-                @endif
-            </div>
-        </nav>
-    @endif
+    @include('components.pagination', [
+        'pagination' => $pagination ?? null,
+        'route' => 'admin.settings.systems.logs',
+        'routeParams' => ['type' => $logType],
+        'mobilePageRange' => 1,
+        'desktopPageRange' => 2
+    ])
 
     <!-- Log Entries -->
-    <section class="w-full">
+    <section>
         @forelse ($logs as $log)
             @if ($log['parsed'])
                 <div class="border-b border-gray-200 dark:border-gray-700 p-2">
@@ -243,5 +185,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         @endforelse
     </section>
+
+    <!-- Pagination Controls -->
+    @include('components.pagination', [
+        'pagination' => $pagination ?? null,
+        'route' => 'admin.settings.systems.logs',
+        'routeParams' => ['type' => $logType],
+        'mobilePageRange' => 1,
+        'desktopPageRange' => 2
+    ])
 
 @endsection
