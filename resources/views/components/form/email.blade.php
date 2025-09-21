@@ -33,5 +33,5 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     value="{{ old($name, $value) }}"
     @if ($disabled) disabled @endif
     @if ($required) required @endif
-    class="mt-1 block w-full rounded-md shadow-sm text-lg {{ config('admin.appearance_class.form.text') }} {{ $class }}"
+    class="mt-1 block w-full rounded-md shadow-sm text-lg {{ config('appearance.appearance_class.form.text') }} {{ $class }}"
 >

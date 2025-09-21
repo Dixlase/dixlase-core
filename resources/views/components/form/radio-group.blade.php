@@ -41,7 +41,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 name="{{ $name }}"
                 value="{{ $option_value }}"
                 @if ($disabled) disabled @endif
-                class="{{ config('admin.appearance_class.form.radio') }} {{ $class }}"
+                class="{{ config('appearance.appearance_class.form.radio') }} {{ $class }}"
                 @if ($value == $option_value) checked @endif>
             <span class="ml-2">{{ __($option_label) }}</span>
         </label>

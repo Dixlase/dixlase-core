@@ -49,7 +49,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- Desktop Table -->
         <div class="hidden md:block overflow-x-auto">
             <table class="w-full text-sm text-left rtl:text-right">
-                <thead class="text-xs uppercase {{ config('admin.appearance_class.table.header') }}">
+                <thead class="text-xs uppercase {{ config('appearance.appearance_class.table.header') }}">
                     <tr>
                         <th class="border px-4 py-2">{{ __('admin.settings.members.index.table.id') }}</th>
                         <th class="border px-4 py-2">{{ __('admin.settings.members.index.table.name') }}</th>
@@ -60,14 +60,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </thead>
                 <tbody>
                     @foreach ($members as $member)
-                        <tr class="{{ config('admin.appearance_class.table.row') }}">
+                        <tr class="{{ config('appearance.appearance_class.table.row') }}">
                             <td class="border px-4 py-2">{{ $member->id }}</td>
                             <td class="border px-4 py-2">{{ $member->name }}</td>
                             <td class="border px-4 py-2">{{ $member->email }}</td>
                             <td class="border px-4 py-2">{{ $member->role->label() }}</td>
                             <td class="border px-4 py-2">
                                 <a href="{{ route('admin.settings.members.edit', ['member' => $member->id]) }}"
-                                    class="{{ config('admin.appearance_class.link') }}">
+                                    class="{{ config('appearance.appearance_class.link') }}">
                                     {{ __('admin.settings.members.index.table.edit') }}
                                 </a>
                             </td>
