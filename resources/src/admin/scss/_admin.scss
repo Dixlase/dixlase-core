@@ -2,8 +2,210 @@
     transition: none !important;
 }
 
-.sidebar_sp{
+.sidebar_sp {
     transform: translateX(-100%);
     z-index: 1000
 }
 
+.admin {
+
+    //タイトル
+    h1 {}
+
+    h2 {
+        font-size: 1.5rem;
+        @apply mb-3 text-lg font-semibold;
+    }
+
+    h3 {
+        @apply block font-medium text-sm text-gray-700 dark:text-gray-300 mb-2;
+    }
+
+    // セクション（設定ページなどで使用）
+    section {
+        @apply mb-8 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700;
+    }
+
+    // ヘルプテキスト（pタグにデフォルト適用）
+    p {
+        @apply mt-1 text-xs text-gray-500 dark:text-white;
+    }
+
+    // ヘルプテキスト用クラス（後方互換性のため残す）
+    .help-text {
+        @apply mt-1 text-xs text-gray-500 dark:text-white;
+    }
+
+    // カスタムテキストスタイル
+    .description-text {
+        @apply text-sm mb-4 text-gray-600 dark:text-gray-400;
+    }
+
+    .large-text {
+        @apply text-base text-gray-700 dark:text-gray-300;
+    }
+
+    // 数値入力フィールド（小さいサイズ）
+    .number-input-small {
+        @apply block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white;
+    }
+
+    // フィールドグループ
+    .field-group {
+        @apply mb-6;
+    }
+
+    // フィールドセット（自動でスタイル適用）
+    fieldset {
+        @apply border-0 p-0 m-0;
+
+        legend {
+            @apply block font-medium text-sm text-gray-700 dark:text-gray-300 mb-2 p-0;
+        }
+    }
+
+    //フォーム
+    label {
+        @apply block text-sm font-medium text-gray-700 dark:text-gray-300;
+    }
+
+    select {
+        @apply mt-1 block rounded-md shadow-sm block w-full px-3 py-3 bg-white dark:bg-gray-800 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="date"],
+    input[type="datetime"],
+    input[type="datetime-local"],
+    input[type="month"],
+    input[type="time"],
+    input[type="week"] {
+        @apply bg-white border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-500;
+    }
+
+    input[type="checkbox"] {
+        @apply text-gray-600 dark:text-gray-600;
+    }
+
+    input[type="radio"] {
+        @apply text-gray-600 dark:text-gray-600;
+    }
+
+    textarea {
+        @apply bg-white text-gray-700 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-900 dark:text-white dark:border-gray-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-500;
+    }
+
+    button {
+        @apply px-4 py-2;
+
+        &.button-save {
+            @apply px-4 py-2 bg-indigo-600 text-white rounded-md shadow-sm hover:bg-indigo-700;
+        }
+
+        &.button-red {
+            @apply px-4 py-2 bg-red-600 text-white rounded-md shadow-sm hover:bg-red-700;
+        }
+
+        &.button-blue {
+            @apply px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700;
+        }
+
+        &.button-green {
+            @apply px-4 py-2 bg-green-600 text-white rounded-md shadow-sm hover:bg-green-700;
+        }
+    }
+
+    .modal {
+        @apply bg-white dark:bg-gray-900;
+    }
+
+    .error {
+        @apply text-red-600 dark:text-red-400;
+    }
+
+    //テーブル
+    table {
+        @apply w-full text-sm text-left rtl:text-right mb-4;
+
+        thead {
+            @apply text-xs uppercase bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white;
+        }
+
+        tr {
+            @apply odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700;
+        }
+
+        td {
+            @apply px-4 py-4 border-b dark:border-gray-700;
+        }
+
+        tr:hover {
+            @apply bg-gray-100 dark:bg-gray-600;
+        }
+
+        tr.selected {
+            @apply bg-gray-200 dark:bg-gray-600;
+        }
+
+        tr.selected:hover {
+            @apply bg-gray-200 dark:bg-gray-600;
+        }
+
+        td.selected {
+            @apply border-b border-gray-200 dark:border-gray-700;
+        }
+
+        td.selected:hover {
+            @apply border-b border-gray-200 dark:border-gray-700;
+        }
+    }
+
+    .message {
+        @apply text-sm mt-4 p-3 bg-yellow-50 dark:bg-green-900/20 border rounded-lg flex items-start;
+
+        &.warning {
+            @apply border-yellow-200 dark:border-yellow-800;
+
+            p {
+                @apply text-yellow-800 dark:text-yellow-200;
+            }
+        }
+
+        &.success {
+            @apply border-green-200 dark:border-green-800;
+
+            p {
+                @apply text-green-800 dark:text-green-200;
+            }
+        }
+
+        &.error {
+            @apply border-red-200 dark:border-red-800;
+
+            p {
+                @apply text-red-800 dark:text-red-200;
+            }
+        }
+
+        &.notice,
+        &.info {
+            @apply border-blue-200 dark:border-blue-800;
+
+            p {
+                @apply text-blue-800 dark:text-blue-200;
+            }
+        }
+    }
+
+
+    /*
+    'cell'=>'border-b border-gray-200 dark:border-gray-700',
+    'cell_selected'=>'border-b border-gray-200 dark:border-gray-700',
+    'cell_selected_hover'=>'border-b border-gray-200 dark:border-gray-700',
+    ],
+    */
+
+}

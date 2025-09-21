@@ -23,10 +23,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'options' => [],   // 選択肢の配列
     'value' => '',     // 現在の選択値
     'disabled' => false, // 無効にする
+    'flexDirection' => 'row',
     'class' => '',     // カスタムクラス
 ])
 
-<div class="flex flex-col md:flex-row md:items-center md:space-x-4">
+<div @class([
+    'flex',
+    'flex-wrap',
+    'gap-4',
+    'mb-4',
+    'flex-col' => $flexDirection == 'col',
+    'flex-row' => $flexDirection != 'col',
+])>
     @foreach ($options as $option_value => $option_label)
         <label class="inline-flex items-center">
             <input type="radio"

@@ -367,10 +367,51 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $passwordMinLength = (int) MemberSetting::getValue('password_min_length', 8);
         $passwordRequireUppercase = (bool) MemberSetting::getValue('password_require_uppercase', true);
         $passwordRequireSymbol = (bool) MemberSetting::getValue('password_require_symbol', false);
+        
+        // パスワード条件設定の選択肢を準備
+        $minLengthOptions = collect(__('admin.settings.members.settings.password_min_length_options'))
+            ->mapWithKeys(fn($label, $key) => [$key => $label])
+            ->toArray();
+            
+        $uppercaseOptions = collect(__('admin.settings.members.settings.password_require_uppercase_options'))
+            ->mapWithKeys(fn($label, $key) => [$key => $label])
+            ->toArray();
+            
+        $symbolOptions = collect(__('admin.settings.members.settings.password_require_symbol_options'))
+            ->mapWithKeys(fn($label, $key) => [$key => $label])
+            ->toArray();
+
+        // その他の選択肢を準備
+        $loginAttemptLimitOptions = [
+            '1' => __('admin.settings.members.settings.login_attempt_limit_enabled_options.enabled'),
+            '0' => __('admin.settings.members.settings.login_attempt_limit_enabled_options.disabled'),
+        ];
+        
+        $lockoutNotificationOptions = [
+            '1' => __('admin.settings.members.settings.lockout_notification_enabled_options.enabled'),
+            '0' => __('admin.settings.members.settings.lockout_notification_enabled_options.disabled'),
+        ];
+        
+        $passwordResetOptions = [
+            '1' => __('admin.settings.members.settings.password_reset_enabled_options.enabled'),
+            '0' => __('admin.settings.members.settings.password_reset_enabled_options.disabled'),
+        ];
+        
+        $pwnedPasswordOptions = [
+            '1' => __('admin.settings.members.settings.enabled'),
+            '0' => __('admin.settings.members.settings.disabled'),
+        ];
+        
+        $adminSessionLifetimeOptions = [
+            '1' => __('admin.settings.members.settings.admin_session_lifetime_enabled_options.enabled'),
+            '0' => __('admin.settings.members.settings.admin_session_lifetime_enabled_options.disabled'),
+        ];
 
         // ログイン通知設定
         $loginNotification = (int) MemberSetting::getValue('login_notification_mode', LoginNotificationMode::UseProfileSetting->value);
-        $loginNotificationOptions = collect(config('admin.settings.members.login_notification_mode.options_global'));
+        $loginNotificationGlobalOptions = collect(config('admin.global_login_notification_mail_mode'))
+            ->mapWithKeys(fn ($value) => [$value => __('admin.login_notification_mode.options.' . $value)])
+            ->toArray();
 
         // 二段階認証設定
         $force2fa = (int) MemberSetting::getValue('force_2fa', TwoFactorMode::Disabled->value);
@@ -380,7 +421,9 @@ class AdminMembersSettingsController extends AdminLoggedInController
             $force2fa = (int) old('force_2fa');
         }
         
-        $twoFactorOptions = TwoFactorMode::options();
+        $twoFactorGlobalOptions = collect(config('admin.global_two_factor_mode'))
+            ->mapWithKeys(fn ($value) => [$value => __('admin.two_factor_mode.options.' . $value)])
+            ->toArray();
         
         // 有効な二段階認証方法を取得（複数選択可能）
         // バリデーションエラー時は old() の値を優先して使用
@@ -399,6 +442,17 @@ class AdminMembersSettingsController extends AdminLoggedInController
             $defaultTwoFactorMethod = (int) old('default_two_factor_method');
         }
         $twoFactorMethodOptions = TwoFactorMethod::forGlobalSettings();
+        
+        // コンポーネント用の配列を準備
+        $twoFactorMethodCheckboxOptions = collect($twoFactorMethodOptions)
+            ->mapWithKeys(fn($method) => [$method->value => $method->label()])
+            ->toArray();
+            
+        $twoFactorMethodRadioOptions = collect($twoFactorMethodOptions)
+            ->mapWithKeys(fn($method) => [$method->value => $method->label()])
+            ->toArray();
+            
+        $selectedDefaultMethod = $defaultTwoFactorMethod ?? TwoFactorMethod::EMAIL->value;
 
         // パスワードリセット機能設定
         $passwordResetEnabled = (bool) MemberSetting::getValue('password_reset_enabled', true);
@@ -425,13 +479,24 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['passwordMinLength'] = $passwordMinLength;
         $this->viewParams['passwordRequireUppercase'] = $passwordRequireUppercase;
         $this->viewParams['passwordRequireSymbol'] = $passwordRequireSymbol;
+        $this->viewParams['minLengthOptions'] = $minLengthOptions;
+        $this->viewParams['uppercaseOptions'] = $uppercaseOptions;
+        $this->viewParams['symbolOptions'] = $symbolOptions;
+        $this->viewParams['loginAttemptLimitOptions'] = $loginAttemptLimitOptions;
+        $this->viewParams['lockoutNotificationOptions'] = $lockoutNotificationOptions;
+        $this->viewParams['passwordResetOptions'] = $passwordResetOptions;
+        $this->viewParams['pwnedPasswordOptions'] = $pwnedPasswordOptions;
+        $this->viewParams['adminSessionLifetimeOptions'] = $adminSessionLifetimeOptions;
         $this->viewParams['loginNotification'] = $loginNotification;
-        $this->viewParams['loginNotificationOptions'] = $loginNotificationOptions;
+        $this->viewParams['loginNotificationGlobalOptions'] = $loginNotificationGlobalOptions;
         $this->viewParams['force2fa'] = $force2fa;
-        $this->viewParams['twoFactorOptions'] = $twoFactorOptions;
+        $this->viewParams['twoFactorGlobalOptions'] = $twoFactorGlobalOptions;
         $this->viewParams['enabledTwoFactorMethods'] = $enabledTwoFactorMethods;
         $this->viewParams['defaultTwoFactorMethod'] = $defaultTwoFactorMethod;
         $this->viewParams['twoFactorMethodOptions'] = $twoFactorMethodOptions;
+        $this->viewParams['twoFactorMethodCheckboxOptions'] = $twoFactorMethodCheckboxOptions;
+        $this->viewParams['twoFactorMethodRadioOptions'] = $twoFactorMethodRadioOptions;
+        $this->viewParams['selectedDefaultMethod'] = $selectedDefaultMethod;
         $this->viewParams['passwordResetEnabled'] = $passwordResetEnabled;
         $this->viewParams['pwnedPasswordCheckEnabled'] = $pwnedPasswordCheckEnabled;
         $this->viewParams['loginAttemptLimitEnabled'] = $loginAttemptLimitEnabled;
