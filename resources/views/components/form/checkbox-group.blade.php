@@ -43,7 +43,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @if ($disabled) disabled @endif
                 class="text-gray-600 dark:text-gray-600 {{ $class }}"
                 @if (in_array($option_value, $values)) checked @endif>
-            <span class="ml-2">{{ __($option_label) }}</span>
+            <span class="ml-2 text-sm">{{ __($option_label) }}</span>
         </label>
     @endforeach
 </div>
