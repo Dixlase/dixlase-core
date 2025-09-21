@@ -17,11 +17,19 @@
     'showConfirmation' => false,
 ])
 
-<div class="relative flex items-center">
-    <input type="password" name="{{ $name }}" id="{{ $id }}"
-        class="w-full text-gray-700 p-2 border rounded-lg pr-32 dark:bg-gray-800 dark:text-white"
-        @if ($required) required @endif
-        onkeyup="PasswordTools.checkPasswordStrength('{{ $id }}')">
+<div class="relative">
+    @include('components.form.text', [
+        'type' => 'password',
+        'name' => $name,
+        'id' => $id,
+        'required' => $required,
+        'class' => 'pr-32',
+    ])
+    <script>
+        document.getElementById('{{ $id }}').addEventListener('keyup', function() {
+            PasswordTools.checkPasswordStrength('{{ $id }}');
+        });
+    </script>
 
     <!-- 自動生成ボタン -->
     <div class="group absolute right-20">
@@ -61,14 +69,15 @@
 </div>
 
 @if($showConfirmation)
-    <div class="mt-4">
-        <label for="{{ $id }}_confirmation" class="block text-sm font-medium text-gray-700 dark:text-gray-200">
-            {{ __('admin.settings.members.form.password') }}（{{ __('common.confirm') }}）
-        </label>
-        <input type="password" name="{{ $name }}_confirmation" id="{{ $id }}_confirmation"
-            class="w-full mt-1 p-2 border rounded-lg bg-white text-gray-700 dark:bg-gray-800 dark:text-white"
-            @if ($required) required @endif>
-    </div>
+    <fieldset>
+        <legend>{{ __('admin.settings.members.form.password') }}（{{ __('common.confirm') }}）</legend>
+        @include('components.form.text', [
+            'type' => 'password',
+            'name' => $name . '_confirmation',
+            'id' => $id . '_confirmation',
+            'required' => $required,
+        ])
+    </fieldset>
 @endif
 
 
