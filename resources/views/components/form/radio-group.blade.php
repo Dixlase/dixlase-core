@@ -25,6 +25,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'disabled' => false, // 無効にする
     'flexDirection' => 'row',
     'class' => '',     // カスタムクラス
+    'xModel' => null,  // Alpine.jsのx-model属性
 ])
 
 <div @class([
@@ -41,6 +42,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 name="{{ $name }}"
                 value="{{ $option_value }}"
                 @if ($disabled) disabled @endif
+                @if ($xModel) x-model="{{ $xModel }}" @endif
                 class="text-gray-600 dark:text-gray-600 {{ $class }}"
                 @if ($value == $option_value) checked @endif>
             <span class="ml-2 text-sm">{{ __($option_label) }}</span>

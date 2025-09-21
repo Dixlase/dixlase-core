@@ -22,79 +22,92 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 
-    <form method="POST" action="{{ route('admin.profile.update') }}" id="profile-form" class="mb-8">
+    <form method="POST" action="{{ route('admin.profile.update') }}" id="profile-form">
         @csrf
 
-        <!-- 名前 -->
-        <div class="mb-4">
-            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300">{{ __('admin.profile.name') }}</label>
-            <input type="text" name="name" value="{{ old('name', $member->name) }}"
-                class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded px-3 py-2">
-            @error('name')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-            @enderror
-        </div>
+        <!-- 基本情報 -->
+        <section>
+            <h2>{{ __('admin.profile.basic_info') }}</h2>
+            
+            <fieldset>
+                <legend>{{ __('admin.profile.name') }}</legend>
+                @include('components.form.text', [
+                    'name' => 'name',
+                    'value' => old('name', $member->name),
+                    'required' => true
+                ])
+                @error('name')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </fieldset>
 
-        <!-- 説明 -->
-        <div class="mb-4">
-            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300">{{ __('admin.profile.description') }}</label>
-            <textarea name="description"
-                class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded px-3 py-2"
-                rows="3">{{ old('description', $member->description) }}</textarea>
-            @error('description')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-            @enderror
-        </div>
+            <fieldset>
+                <legend>{{ __('admin.profile.description') }}</legend>
+                @include('components.form.textarea', [
+                    'name' => 'description',
+                    'value' => old('description', $member->description),
+                    'rows' => 3
+                ])
+                @error('description')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </fieldset>
 
-        <!-- メールアドレス -->
-        <div class="mb-4">
-            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300">{{ __('admin.profile.email') }}</label>
-            <input type="email" name="email" value="{{ old('email', $member->email) }}"
-                class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded px-3 py-2">
-            @error('email')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-            @enderror
-        </div>
+            <fieldset>
+                <legend>{{ __('admin.profile.email') }}</legend>
+                @include('components.form.text', [
+                    'name' => 'email',
+                    'type' => 'email',
+                    'value' => old('email', $member->email),
+                    'required' => true
+                ])
+                @error('email')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </fieldset>
 
-        <!-- 言語設定 -->
-        <div class="mb-4">
-            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.profile.language') }}</label>
-            @include('components::form.select', [
-                'name' => 'locale',
-                'options' => $localeOptions,
-                'value' => old('locale', $member->locale?->value),
-                'nullable' => true,
-                'nullLabel' => __('admin.profile.use_system_default'),
-                'class' => 'w-full'
-            ])
-            @error('locale')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-            @enderror
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ __('admin.profile.language_help') }}</p>
-        </div>
+            <fieldset>
+                <legend>{{ __('admin.profile.language') }}</legend>
+                @include('components.form.select', [
+                    'name' => 'locale',
+                    'options' => $localeOptions,
+                    'value' => old('locale', $member->locale?->value),
+                    'nullable' => true,
+                    'nullLabel' => __('admin.profile.use_system_default')
+                ])
+                @error('locale')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+                <p>{{ __('admin.profile.language_help') }}</p>
+            </fieldset>
+        </section>
 
-        <!-- パスワード -->
-        <div class="mb-4">
-            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">{{ __('admin.profile.password_change_only') }}</label>
-            @include('components.form.password-tools', [
-                'name' => 'password',
-                'id' => 'profile_password',
-                'required' => false,
-                'minLength' => $passwordMinLength,
-                'requireUppercase' => $passwordRequireUppercase,
-                'requireLowercase' => true,
-                'requireNumber' => true,
-                'requireSymbol' => $passwordRequireSymbol,
-                'showConfirmation' => true
-            ])
-        </div>
+        <!-- パスワード設定 -->
+        <section>
+            <h2>{{ __('admin.profile.password_settings') }}</h2>
+            
+            <fieldset>
+                <legend>{{ __('admin.profile.password_change_only') }}</legend>
+                @include('components.form.password-tools', [
+                    'name' => 'password',
+                    'id' => 'profile_password',
+                    'required' => false,
+                    'minLength' => $passwordMinLength,
+                    'requireUppercase' => $passwordRequireUppercase,
+                    'requireLowercase' => true,
+                    'requireNumber' => true,
+                    'requireSymbol' => $passwordRequireSymbol,
+                    'showConfirmation' => true
+                ])
+            </fieldset>
+        </section>
 
-        <!-- 外観モードの設定 -->
+        <!-- 外観設定 -->
         @php
             $appearanceValue = old('appearance', (string) ($member->appearance->value ?? 0));
         @endphp
 
-        <div x-data="{
+        <section x-data="{
             localTheme: '{{ $appearanceValue }}',
             savedTheme: '{{ $appearanceValue }}',
             applyLocalTheme() {
@@ -110,24 +123,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             // 初期化時に保存された値でDOMをリセット
             resetToSavedTheme();
             $watch('localTheme', () => applyLocalTheme());
-        " class="mb-6" data-profile-theme>
-            <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">{{ __('admin.profile.appearance_mode') }}</label>
-
-            <div class="flex gap-4">
-                <label class="inline-flex items-center">
-                    <input type="radio" name="appearance" value="0" x-model="localTheme" class="form-radio text-indigo-600">
-                    <span class="ml-2">{{ __('admin.profile.appearance_auto') }}</span>
-                </label>
-                <label class="inline-flex items-center">
-                    <input type="radio" name="appearance" value="1" x-model="localTheme" class="form-radio text-indigo-600">
-                    <span class="ml-2">{{ __('admin.profile.appearance_light') }}</span>
-                </label>
-                <label class="inline-flex items-center">
-                    <input type="radio" name="appearance" value="2" x-model="localTheme" class="form-radio text-indigo-600">
-                    <span class="ml-2">{{ __('admin.profile.appearance_dark') }}</span>
-                </label>
-            </div>
-        </div>
+        " data-profile-theme>
+            <h2>{{ __('admin.profile.appearance_settings') }}</h2>
+            
+            <fieldset>
+                <legend>{{ __('admin.profile.appearance_mode') }}</legend>
+                @include('components.form.radio-group', [
+                    'name' => 'appearance',
+                    'options' => [
+                        '0' => __('admin.profile.appearance_auto'),
+                        '1' => __('admin.profile.appearance_light'),
+                        '2' => __('admin.profile.appearance_dark')
+                    ],
+                    'value' => $appearanceValue,
+                    'xModel' => 'localTheme'
+                ])
+            </fieldset>
+        </section>
 
         <!-- ログイン通知設定 -->
         @php
@@ -144,93 +156,76 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             $showLoginNotificationSettings = ($globalLoginNotification === 3);
         @endphp
 
+        <!-- ログイン通知設定 -->
         @unless($hideLoginNotificationSection)
-            @if($showLoginNotificationSettings)
-                <div class="mb-6">
-                    <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
-                        {{ __('admin.profile.login_notification_mode') }}
-                    </label>
-
-                    @include('components.form.radio-group', [
-                        'name' => 'login_notification_mode',
-                        'options' => $loginNotificationOptions,
-                        'value' => old('login_notification_mode', (string) ($loginNotificationMode?->value ?? 0)),
-                    ])
-
-                    <div class="mt-1">
-                        <p class="text-xs">
-                            {{ __('admin.profile.login_notification_help') }}
-                        </p>
-                    </div>
-                </div>
-            @else
-                <!-- 全体設定で固定されている場合の表示 -->
-                <div class="mb-6">
-                    <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
-                        {{ __('admin.profile.login_notification_mode') }}
-                    </label>
-                    <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
-                        <p class="text-sm text-gray-700 dark:text-gray-300">
-                            <span class="font-medium">
-                                @if($globalLoginNotification === 1)
-                                    {{ __('admin.login_notification_mode.options.1') }}
-                                @elseif($globalLoginNotification === 2)
-                                    {{ __('admin.login_notification_mode.options.2') }}
-                                @endif
-                            </span>
-                        </p>
-                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                            {{ __('admin.profile.login_notification_global_setting_help') }}
-                        </p>
-                    </div>
-                </div>
-            @endif
+            <section>
+                <h2>{{ __('admin.profile.login_notification_settings') }}</h2>
+                
+                @if($showLoginNotificationSettings)
+                    <fieldset>
+                        <legend>{{ __('admin.profile.login_notification_mode') }}</legend>
+                        @include('components.form.radio-group', [
+                            'name' => 'login_notification_mode',
+                            'options' => $loginNotificationOptions,
+                            'value' => old('login_notification_mode', (string) ($loginNotificationMode?->value ?? 0)),
+                        ])
+                        <p>{{ __('admin.profile.login_notification_help') }}</p>
+                    </fieldset>
+                @else
+                    <fieldset>
+                        <legend>{{ __('admin.profile.login_notification_mode') }}</legend>
+                        <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
+                            <p class="text-sm text-gray-700 dark:text-gray-300">
+                                <span class="font-medium">
+                                    @if($globalLoginNotification === 1)
+                                        {{ __('admin.login_notification_mode.options.1') }}
+                                    @elseif($globalLoginNotification === 2)
+                                        {{ __('admin.login_notification_mode.options.2') }}
+                                    @endif
+                                </span>
+                            </p>
+                            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                {{ __('admin.profile.login_notification_global_setting_help') }}
+                            </p>
+                        </div>
+                    </fieldset>
+                @endif
+            </section>
         @endunless
 
         <!-- 二段階認証設定 -->
-        @if($force2fa === \App\Enums\TwoFactorMode::UseProfileSetting->value)
-            <div class="mb-4">
-                <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
-                    {{ __('admin.two_factor_mode.label') }}
-                </label>
-
-                @include('components.form.radio-group', [
-                    'name' => 'two_factor_mode',
-                    'options' => $profileTwoFactorOptions,
-                    'value' => old('two_factor_mode', (string) ($twoFactorMode?->value ?? 0)),
-                ])
-
-                <div class="mt-1">
-                    <p class="text-xs">
-                        {{ __('admin.profile.two_factor_help') }}
-                    </p>
-                </div>
-            </div>
-        @elseif($currentGlobalTwoFactorMode)
-            <!-- 全体設定で固定されている場合の表示 -->
-            <div class="mb-4">
-                <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
-                    {{ __('admin.two_factor_mode.label') }}
-                </label>
+        @if($force2fa === \App\Enums\TwoFactorMode::UseProfileSetting->value || $currentGlobalTwoFactorMode)
+            <section>
+                <h2>{{ __('admin.profile.two_factor_settings') }}</h2>
                 
-                <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
-                    <p class="text-sm">
-                        {{ __('admin.two_factor_mode.options.' . $currentGlobalTwoFactorMode->value) }}
-                    </p>
-                    <p class="text-xs mt-1">
-                        {{ __('admin.profile.two_factor_global_setting_fixed') }}
-                    </p>
-                </div>
-            </div>
-        @endif
+                @if($force2fa === \App\Enums\TwoFactorMode::UseProfileSetting->value)
+                    <fieldset>
+                        <legend>{{ __('admin.two_factor_mode.label') }}</legend>
+                        @include('components.form.radio-group', [
+                            'name' => 'two_factor_mode',
+                            'options' => $profileTwoFactorOptions,
+                            'value' => old('two_factor_mode', (string) ($twoFactorMode?->value ?? 0)),
+                        ])
+                        <p>{{ __('admin.profile.two_factor_help') }}</p>
+                    </fieldset>
+                @elseif($currentGlobalTwoFactorMode)
+                    <fieldset>
+                        <legend>{{ __('admin.two_factor_mode.label') }}</legend>
+                        <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
+                            <p class="text-sm">
+                                {{ __('admin.two_factor_mode.options.' . $currentGlobalTwoFactorMode->value) }}
+                            </p>
+                            <p class="text-xs mt-1">
+                                {{ __('admin.profile.two_factor_global_setting_fixed') }}
+                            </p>
+                        </div>
+                    </fieldset>
+                @endif
 
         <!-- 二段階認証方法設定 -->
         @if($showMethodSelection && !empty($availableMethodOptions))
-            <div class="mb-4">
-                <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
-                    {{ __('admin.profile.two_factor_method') }}
-                </label>
-
+            <fieldset>
+                <legend>{{ __('admin.profile.two_factor_method') }}</legend>
                 @php
                     // 現在の認証方法が有効な方法に含まれているか確認
                     $currentMethodValid = array_key_exists($currentTwoFactorMethod, $availableMethodOptions);
@@ -240,114 +235,50 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     $currentMethod = $currentMethodValid ? $currentTwoFactorMethod : $defaultMethod;
                 @endphp
 
-
                 @if(count($availableMethodOptions) > 1)
-                    
-                    <div class="space-y-2">
-                        @foreach($availableMethodOptions as $methodValue => $methodLabel)
-                            <div class="flex items-start">
-                                <div class="flex items-center h-5">
-                                    <input type="radio" id="two_factor_method_{{ $methodValue }}" 
-                                           name="two_factor_method" 
-                                           value="{{ $methodValue }}" 
-                                           class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 mt-0.5"
-                                           @if((string)$currentMethod === (string)$methodValue) checked @endif
-                                           @if(!$showMethodSelection) disabled @endif>
-                                </div>
-                                <div class="ml-3 text-sm">
-                                    <label for="two_factor_method_{{ $methodValue }}" class="font-medium">
-                                        {{ $methodLabel }}
-                                        @if((int)$methodValue === (int)$defaultTwoFactorMethod)
-                                            <span class="ml-1 text-xs"></span>
-                                        @endif
-                                    </label>
-                                    @if($methodValue == \App\Enums\TwoFactorMethod::EMAIL->value)
-                                        <p class="text-xs mt-0.5">
-                                            {{ __('admin.profile.two_factor_method_email_help') }}
-                                        </p>
-                                    @elseif($methodValue == \App\Enums\TwoFactorMethod::DEVICE->value)
-                                        <p class="text-xs mt-0.5">
-                                            {{ __('admin.profile.two_factor_method_device_help') }}
-                                        </p>
-                                    @elseif($methodValue == \App\Enums\TwoFactorMethod::BIOMETRIC->value)
-                                        <p class="text-xs mt-0.5">
-                                            {{ __('admin.profile.two_factor_method_biometric_help') }}
-                                        </p>
-                                    @endif
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
+                    @include('components.form.radio-group', [
+                        'name' => 'two_factor_method',
+                        'options' => $availableMethodOptions,
+                        'value' => $currentMethod,
+                        'disabled' => !$showMethodSelection
+                    ])
                 @else
                     <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
                         <p class="text-sm text-gray-700 dark:text-gray-300">
                             {{ reset($availableMethodOptions) }}
-                            @if((int)key($availableMethodOptions) === (int)$defaultTwoFactorMethod)
-                                <span class="ml-1 text-xs text-primary-600 dark:text-primary-400"></span>
-                            @endif
                         </p>
-                        @if(isset($availableMethodOptions[\App\Enums\TwoFactorMethod::EMAIL->value]))
-                            <p class="text-xs mt-1">
-                                {{ __('admin.profile.two_factor_method_email_help') }}
-                            </p>
-                        @elseif(isset($availableMethodOptions[\App\Enums\TwoFactorMethod::DEVICE->value]))
-                            <p class="text-xs mt-1">
-                                {{ __('admin.profile.two_factor_method_device_help') }}
-                            </p>
-                        @elseif(isset($availableMethodOptions[\App\Enums\TwoFactorMethod::BIOMETRIC->value]))
-                            <p class="text-xs mt-1">
-                                {{ __('admin.profile.two_factor_method_biometric_help') }}
-                            </p>
-                        @endif
                         <input type="hidden" name="two_factor_method" value="{{ key($availableMethodOptions) }}">
                     </div>
                 @endif
 
-                @if($errors->has('two_factor_method'))
-                    <p class="mt-1 text-sm">
-                        {{ $errors->first('two_factor_method') }}
-                    </p>
-                @endif
+                @error('two_factor_method')
+                    <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                @enderror
 
-                <div class="mt-2">
-                    <p class="text-xs">
-                        {{ count($availableMethodOptions) > 1 ? 
-                            __('admin.profile.two_factor_method_help_multiple') : 
-                            __('admin.profile.two_factor_method_help_single') }}
-                    </p>
-                </div>
-            </div>
+                <p>
+                    {{ count($availableMethodOptions) > 1 ? 
+                        __('admin.profile.two_factor_method_help_multiple') : 
+                        __('admin.profile.two_factor_method_help_single') }}
+                </p>
+            </fieldset>
         @elseif($currentGlobalTwoFactorMode && !empty($availableMethodOptions))
-            <!-- 全体設定で固定されている場合の認証方法表示 -->
-            <div class="mb-4">
-                <label class="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
-                    {{ __('admin.profile.two_factor_method' )}}
-                    @if(count($availableMethodOptions) > 1)
-                        <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">
-                            ({{ count($availableMethodOptions) }} {{ __('admin.profile.available_methods') }})
-                        </span>
-                    @endif
-                </label>
-                
+            <fieldset>
+                <legend>{{ __('admin.profile.two_factor_method') }}</legend>
                 <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
                     <p class="text-sm text-gray-700 dark:text-gray-300">
-                        {{ $availableMethodOptions[$currentTwoFactorMethod] ?? __('admin.profile.two_factor_method_not_set') }}
-                        @if(isset($availableMethodOptions[$currentTwoFactorMethod]) && (int)$currentTwoFactorMethod === (int)$defaultTwoFactorMethod)
-                            <span class="ml-1 text-xs text-primary-600 dark:text-primary-400"></span>
-                        @endif
-                    </p>
-                    <p class="text-xs mt-1">
                         {{ __('admin.profile.two_factor_method_global_setting_fixed') }}
                     </p>
                 </div>
-            </div>
+            </fieldset>
+        @endif
+            </section>
         @endif
     </form>
 
 @endsection
 
 @section('save')
-    @include('components::form.save', [
+    @include('components.form.save', [
         'id' => 'confirmationModal',
         'label' => __('admin.profile.update_button'),
         'onclick' => "openModal('confirmProfileModal')",

@@ -262,6 +262,11 @@ return [
     'profile' => [
         'title' => 'Profile',
         'heading' => 'Profile Settings',
+        'basic_info' => 'Basic Information',
+        'password_settings' => 'Password Settings',
+        'appearance_settings' => 'Appearance Settings',
+        'login_notification_settings' => 'Login Notification Settings',
+        'two_factor_settings' => 'Two-Factor Authentication Settings',
         'name' => 'Name',
         'description' => 'Description',
         'email' => 'Email Address',
