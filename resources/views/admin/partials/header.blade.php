@@ -114,27 +114,34 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <div x-show="openSidebar || openUserMenu" @click="openSidebar = false; openUserMenu = false" class="fixed inset-0 bg-black bg-opacity-50 z-10 w-full h-full" aria-hidden="true"></div>
 
     <!-- 左側スライドインメニュー -->
-    <div x-cloak class="fixed inset-y-0 w-64 shadow-lg transform transition-transform duration-300 ease-in-out x-minus-full translate-x-minus-full z-20 text-gray-700 bg-gray-200 dark:text-gray-300 dark:bg-gray-900"
+    <div x-cloak class="fixed inset-y-0 w-64 shadow-lg transform transition-transform duration-300 ease-in-out x-minus-full translate-x-minus-full z-20 text-gray-700 bg-gray-200 dark:text-gray-300 dark:bg-gray-900 flex flex-col"
     :class="{ 'translate-x-minus-full': !openSidebar, 'translate-x-0': openSidebar }">
 
-    <button @click="openSidebar = !openSidebar" class="p-4 text-gray-700 dark:text-gray-300">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        </button>
-        <!-- スマホレイアウト用のサイト名 -->
-        <div class="px-4 py-2 border-b border-gray-300 dark:border-gray-700">
-            <a href="{{ route('admin.dashboard') }}" class="text-lg font-bold">
-                {{ $site_name ?? env('APP_NAME') }}
-            </a>
+        <!-- 固定ヘッダー部分 -->
+        <div class="flex-shrink-0">
+            <button @click="openSidebar = !openSidebar" class="p-4 text-gray-700 dark:text-gray-300">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <!-- スマホレイアウト用のサイト名 -->
+            <div class="px-4 py-2 border-b border-gray-300 dark:border-gray-700">
+                <a href="{{ route('admin.dashboard') }}" class="text-lg font-bold">
+                    {{ $site_name ?? env('APP_NAME') }}
+                </a>
+            </div>
         </div>
-        @include('admin::partials.sidebar')
+
+        <!-- スクロール可能なメニュー部分 -->
+        <div class="flex-1 overflow-y-auto">
+            @include('admin::partials.sidebar')
+        </div>
     </div>
 
 
     <!-- 右側スライドインメニュー -->
-    <div x-cloak class="sm:hidden fixed w-64 h-full shadow-lg transform transition-transform duration-300 ease-in-out z-20 translate-x-100vw text-gray-300 dark:text-gray-700 bg-gray-900 dark:bg-gray-200' }}"
-    :class="{ 'translate-x-100vw': !openUserMenu, 'translate-x-100vw-16': openUserMenu,'sm:block': openUserMenu, 'sm:hidden': ! openUserMenu }">
+    <div x-cloak class="sm:hidden fixed right-0 top-0 w-64 h-full shadow-lg transform transition-transform duration-300 ease-in-out z-20 bg-white dark:bg-gray-800"
+    :class="{ 'translate-x-full': !openUserMenu, 'translate-x-0': openUserMenu }">
 
         <!-- 閉じるボタン -->
         <button @click="openUserMenu = false" class="absolute top-4 right-4 p-2 text-gray-700 dark:text-gray-300">
@@ -144,8 +151,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </button>
 
         <!-- ユーザーメニュー(スマホ用) -->
-        <div class="pt-4 pb-2 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-            <div class="px-4 flex items-center space-x-3">
+        <div class="pt-16 px-4">
+            <!-- ユーザー情報 -->
+            <div class="flex items-center space-x-3 mb-6">
                 <i class="fa-solid fa-user-circle text-3xl text-gray-600 dark:text-gray-300"></i>
                 <div>
                     <div class="font-medium text-base text-gray-900 dark:text-gray-100">{{ Auth::user()->name }}</div>
@@ -153,18 +161,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
 
-            <div class="mt-3 space-y-1">
-                <a href="{{ route('admin.settings.members.profile') }}"
-                class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-                    <i class="fa-solid fa-user me-2"></i> {{ __('admin.settings.members.profile.heading') }}
+            <!-- メニュー項目 -->
+            <div class="space-y-2">
+                <a href="{{ route('admin.profile') }}"
+                class="flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition">
+                    <i class="fa-solid fa-user me-3"></i> {{ __('admin.profile.heading') }}
                 </a>
 
                 <!-- ログアウト -->
                 <form method="POST" action="{{ route('admin.logout') }}">
                     @csrf
                     <button type="submit"
-                            class="w-full flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-                        <i class="fa-solid fa-sign-out-alt me-2"></i> {{ __('common.logout') }}
+                            class="w-full flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition text-left">
+                        <i class="fa-solid fa-sign-out-alt me-3"></i> {{ __('common.logout') }}
                     </button>
                 </form>
             </div>
