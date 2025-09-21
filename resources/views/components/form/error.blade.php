@@ -21,7 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @props(['messages'])
 
 @if ($messages)
-    <ul {{ $attributes->merge(['class' => 'text-sm my-2 p-2 bg-red-100 border border-red-200 rounded-lg text-red-600' ]) }}>
+    <ul {{ $attributes->merge(['class' => 'text-sm my-2 p-2 bg-red-100 border border-red-200 rounded-lg text-red-600 dark:text-red-400' ]) }}>
         @foreach ((array) $messages as $message)
             <li>{{ $message }}</li>
         @endforeach

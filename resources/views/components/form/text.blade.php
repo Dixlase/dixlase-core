@@ -37,6 +37,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @if ($step) step="{{ $step }}" @endif
     @if ($min !== null) min="{{ $min }}" @endif
     @if ($max !== null) max="{{ $max }}" @endif
-    class="mt-1 block rounded-md shadow-sm text-lg {{ config('appearance.appearance_class.form.text') }} {{ $class }}"
+    class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-900 dark:border-gray-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-500 {{ $class }}"
     value="{{ old($name, $value) }}"
     >
