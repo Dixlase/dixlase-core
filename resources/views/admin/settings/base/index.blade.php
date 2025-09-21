@@ -139,9 +139,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- システム管理者メールアドレス -->
     <section>
         <h2>{{ __('admin.settings.base.admin_email_settings') }}</h2>
-        <p class="description-text">
-            {{ __('admin.settings.base.admin_email_settings_description') }}
-        </p>
+        <p>{{ __('admin.settings.base.admin_email_settings_description') }}</p>
 
         <!-- メールサーバー設定の確認メッセージ -->
         @if(!($mailConnectionTested && $mailSendTested && $mailReceiveTested))
