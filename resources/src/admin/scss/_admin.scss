@@ -9,9 +9,6 @@
 
 .admin {
 
-    //タイトル
-    h1 {}
-
     h2 {
         font-size: 1.5rem;
         @apply mb-3 text-lg font-semibold;
@@ -122,7 +119,92 @@
             @apply px-4 py-2 bg-green-600 text-white rounded-md shadow-sm hover:bg-green-700;
         }
     }
+
     */
+
+    // Navigation buttons (for tabs, filters, etc.)
+    .nav-button {
+        @apply inline-block px-3 py-2 rounded mr-2 text-white text-sm font-medium transition-colors duration-200;
+        @apply bg-gray-500 hover:bg-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600;
+
+        &--blue {
+            &.nav-button--active {
+                @apply bg-blue-500 hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-800;
+            }
+        }
+
+        &--green {
+            &.nav-button--active {
+                @apply bg-green-500 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-800;
+            }
+        }
+
+        &--red {
+            &.nav-button--active {
+                @apply bg-red-500 hover:bg-red-600 dark:bg-red-700 dark:hover:bg-red-800;
+            }
+        }
+
+        &--yellow {
+            &.nav-button--active {
+                @apply bg-yellow-500 hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-700;
+            }
+        }
+    }
+
+    // Action buttons (for operations like download, delete, etc.)
+    .action-button {
+        @apply inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200;
+
+        &--success {
+            @apply bg-green-600 hover:bg-green-700 text-white;
+        }
+
+        &--danger {
+            @apply bg-red-600 hover:bg-red-700 text-white;
+        }
+
+        &--primary {
+            @apply bg-blue-600 hover:bg-blue-700 text-white;
+        }
+
+        &--warning {
+            @apply bg-yellow-600 hover:bg-yellow-700 text-white;
+        }
+    }
+
+    // Pagination styles
+    .pagination-button {
+        @apply px-3 py-2 text-sm rounded-md transition-colors duration-200;
+        @apply bg-white border border-gray-300 hover:bg-gray-50;
+        @apply dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600 dark:text-gray-200;
+
+        &--disabled {
+            @apply text-gray-400 bg-gray-100 cursor-not-allowed;
+            @apply dark:bg-gray-800 dark:border-gray-600 dark:text-gray-500;
+        }
+    }
+
+    .pagination-info {
+        @apply text-sm text-gray-600 dark:text-gray-400;
+    }
+
+    .pagination-number {
+        @apply px-3 py-2 text-sm rounded-md transition-colors duration-200;
+        @apply bg-white border border-gray-300 hover:bg-gray-50;
+        @apply dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600 dark:text-gray-200;
+
+        &--current {
+            @apply bg-blue-500 text-white border-blue-500;
+            @apply dark:bg-blue-600 dark:border-blue-600;
+        }
+    }
+
+    .pagination-ellipsis {
+        @apply px-2 text-gray-500 dark:text-gray-400;
+    }
+
+
 
     .modal {
         @apply bg-white dark:bg-gray-900;
