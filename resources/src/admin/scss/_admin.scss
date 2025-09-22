@@ -188,7 +188,7 @@
     }
 
     .pagination-number {
-        @apply px-3 py-2 text-sm rounded-md transition-colors duration-200;
+        @apply px-2 md:px-3 py-2 text-sm rounded-md transition-colors duration-200;
         @apply bg-white border border-gray-300 hover:bg-gray-50;
         @apply dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600 dark:text-gray-200;
 
@@ -199,7 +199,7 @@
     }
 
     .pagination-ellipsis {
-        @apply px-2 text-gray-500 dark:text-gray-400;
+        @apply px-1 md:px-2 text-gray-500 dark:text-gray-400;
     }
 
 
@@ -218,34 +218,131 @@
 
         thead {
             @apply text-xs uppercase bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white;
+
+            tr {
+                th {
+                    @apply px-4 py-4 border-b dark:border-gray-700;
+                }
+            }
+
         }
 
-        tr {
-            @apply odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700;
+        tbody {
+            tr {
+                @apply odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700;
+            }
+
+            td {
+                @apply px-4 py-4 border-b dark:border-gray-700;
+            }
+
+
+            tr.selected {
+                @apply bg-gray-200 dark:bg-gray-600;
+            }
+
+            tr.selected:hover {
+                @apply bg-gray-200 dark:bg-gray-600;
+            }
+
+            td.selected {
+                @apply border-b border-gray-200 dark:border-gray-700;
+            }
         }
 
-        td {
-            @apply px-4 py-4 border-b dark:border-gray-700;
-        }
+    }
 
-        tr:hover {
-            @apply bg-gray-100 dark:bg-gray-600;
-        }
+    // レスポンシブテーブルのモバイル対応
+    .responsive-table {
+        @media (max-width: 768px) {
 
-        tr.selected {
-            @apply bg-gray-200 dark:bg-gray-600;
-        }
+            table,
+            thead,
+            tbody,
+            th,
+            td,
+            tr {
+                display: block;
+            }
 
-        tr.selected:hover {
-            @apply bg-gray-200 dark:bg-gray-600;
-        }
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
 
-        td.selected {
-            @apply border-b border-gray-200 dark:border-gray-700;
-        }
+            tr {
+                border-bottom: 1px solid #e5e7eb;
+                padding: 16px;
+                position: relative;
+                background: white;
 
-        td.selected:hover {
-            @apply border-b border-gray-200 dark:border-gray-700;
+                &:nth-child(odd) {
+                    background: #f9fafb;
+                }
+
+                .dark & {
+                    border-color: #374151;
+                    background: #1f2937;
+
+                    &:nth-child(odd) {
+                        background: #111827;
+                    }
+                }
+            }
+
+            td {
+                border: none;
+                padding: 0;
+                text-align: left;
+
+                &[data-label*="id"] {
+                    position: absolute;
+                    top: 16px;
+                    left: 16px;
+                    font-weight: bold;
+                    color: #6b7280;
+                    font-size: 0.875rem;
+
+                    .dark & {
+                        color: #9ca3af;
+                    }
+                }
+
+                &[data-label*="actions"] {
+                    position: absolute;
+                    top: 16px;
+                    right: 16px;
+                    z-index: 1;
+                }
+
+                &[data-label*="name"],
+                &[data-label*="email"],
+                &[data-label*="role"] {
+                    display: block;
+                    margin-top: 8px;
+                    margin-left: 60px;
+                    margin-right: 80px;
+
+                    &:before {
+                        content: attr(data-label) ": ";
+                        font-weight: bold;
+                        color: #374151;
+                        display: inline-block;
+                        min-width: 80px;
+
+                        .dark & {
+                            color: #d1d5db;
+                        }
+                    }
+                }
+
+                &[data-label*="name"] {
+                    margin-top: 40px;
+                    font-size: 1.125rem;
+                    font-weight: 600;
+                }
+            }
         }
     }
 

@@ -66,6 +66,8 @@ return [
     ],
 
     'common' => [
+        'per_page_label' => '表示件数',
+        'total_count' => '全:total件',
         'search' => '検索',
         'submit' => '更新',
         'install' => 'インストール',
@@ -654,6 +656,25 @@ return [
         ],
         // メンバー
         'members' => [
+            'index' => [
+                'search_title' => 'メンバー検索',
+                'search_placeholder' => 'メンバー名またはメールアドレスで検索',
+                'search_button' => '検索',
+                'heading' => 'メンバー一覧',
+                'table' => [
+                    'id' => 'ID',
+                    'name' => '名前',
+                    'email' => 'メールアドレス',
+                    'role' => 'ロール',
+                    'actions' => '操作',
+                    'edit' => '編集',
+                    'unknown_role' => '不明なロール',
+                    'caption' => 'メンバー一覧',
+                ],
+                'pagination_label' => 'メンバー一覧のページネーション',
+                'per_page_label' => '表示件数',
+                'total_count' => '全:total件',
+            ],
             'form' => [
                 'basic_info' => '基本情報',
                 'password_settings' => 'パスワード設定',
@@ -719,25 +740,7 @@ return [
                 ],
                 'cancel' => 'キャンセル',
             ],
-            'index' => [
-                'heading' => 'メンバーマスター',
-                'search_title' => '管理者検索',
-                'search_placeholder' => 'ユーザー名やメールアドレスで検索',
-                'search_button' => '検索',
-                'table' => [
-                    'id' => 'ID',
-                    'name' => '名前',
-                    'email' => 'メールアドレス',
-                    'role' => '権限',
-                    'actions' => '操作',
-                    'edit' => '編集',
-                    'unknown_role' => '不明',
-                ],
-            ],
             'create' => [
-                'heading' => '新規メンバー作成',
-                'name' => '名前',
-                'email' => 'メールアドレス',
                 'password' => 'パスワード',
                 'password_confirmation' => 'パスワード確認',
                 'role' => 'ロール',

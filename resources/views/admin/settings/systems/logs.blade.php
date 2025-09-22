@@ -96,12 +96,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </form>
     </nav>
 
+    <!-- ページネーション制御 -->
+    @include('components::pagination-controls', [
+        'paginator' => (object) [
+            'total' => $pagination['total'] ?? 0,
+            'currentPage' => $pagination['current_page'] ?? 1,
+            'lastPage' => $pagination['last_page'] ?? 1,
+            'perPage' => $pagination['per_page'] ?? 50
+        ],
+        'perPageOptions' => [25, 50, 100, 200],
+        'currentPerPage' => request('per_page', 50),
+        'totalLabel' => 'admin.common.total_count',
+        'perPageLabel' => 'admin.common.per_page_label'
+    ])
+
     <!-- Pagination Controls -->
     @include('components.pagination', [
         'pagination' => $pagination ?? null,
         'route' => 'admin.settings.systems.logs',
-        'routeParams' => ['type' => $logType],
-        'mobilePageRange' => 1,
+        'routeParams' => array_filter([
+            'type' => $logType,
+            'per_page' => request('per_page')
+        ]),
+        'mobilePageRange' => 0,
         'desktopPageRange' => 2
     ])
 
@@ -236,12 +253,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endforelse
     </section>
 
+    <!-- ページネーション制御 -->
+    @include('components::pagination-controls', [
+        'paginator' => (object) [
+            'total' => $pagination['total'] ?? 0,
+            'currentPage' => $pagination['current_page'] ?? 1,
+            'lastPage' => $pagination['last_page'] ?? 1,
+            'perPage' => $pagination['per_page'] ?? 50
+        ],
+        'perPageOptions' => [25, 50, 100, 200],
+        'currentPerPage' => request('per_page', 50),
+        'totalLabel' => 'admin.common.total_count',
+        'perPageLabel' => 'admin.common.per_page_label'
+    ])
+
     <!-- Pagination Controls -->
     @include('components.pagination', [
         'pagination' => $pagination ?? null,
         'route' => 'admin.settings.systems.logs',
-        'routeParams' => ['type' => $logType],
-        'mobilePageRange' => 1,
+        'routeParams' => array_filter([
+            'type' => $logType,
+            'per_page' => request('per_page')
+        ]),
+        'mobilePageRange' => 0,
         'desktopPageRange' => 2
     ])
 
