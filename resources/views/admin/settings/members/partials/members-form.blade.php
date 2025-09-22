@@ -332,115 +332,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </section>
     @endif
 
-    <!-- 条件チェック -->
-    <script>
-        console.log('=== CONDITION CHECK ===');
-        console.log('isset($member):', {{ isset($member) ? 'true' : 'false' }});
-        @if(isset($member))
-            console.log('$member->exists:', {{ $member->exists ? 'true' : 'false' }});
-            console.log('Member ID:', {{ $member->id ?? 'null' }});
-        @else
-            console.log('$member is not set');
-        @endif
-        console.log('isInitialAdmin:', {{ $isInitialAdmin ? 'true' : 'false' }});
-    </script>
-
-    @if(isset($member) && $member->exists)
-        <!-- デバッグ情報 -->
-        <script>
-            console.log('=== INSIDE IF CONDITION ===');
-            console.log('Creating modals and forms...');
-            
-            // DOM読み込み後にフォームの存在を確認
-            document.addEventListener('DOMContentLoaded', function() {
-                console.log('=== DOM DEBUGGING ===');
-                
-                // 全てのフォームを検索
-                const allForms = document.querySelectorAll('form');
-                console.log('Total forms found:', allForms.length);
-                
-                allForms.forEach((form, index) => {
-                    console.log(`Form ${index}: ID="${form.id}", action="${form.action}"`);
-                });
-                
-                // 特定のフォームを検索
-                const forceLogoutForm = document.getElementById('forceLogoutForm');
-                const deleteMemberForm = document.getElementById('deleteMemberForm');
-                
-                console.log('forceLogoutForm found:', forceLogoutForm ? 'YES' : 'NO');
-                console.log('deleteMemberForm found:', deleteMemberForm ? 'YES' : 'NO');
-                
-                // forceLogoutFormが見つからない場合、HTMLを検索
-                if (!forceLogoutForm) {
-                    const bodyHTML = document.body.innerHTML;
-                    const hasForceLogoutFormHTML = bodyHTML.includes('forceLogoutForm');
-                    console.log('forceLogoutForm in HTML:', hasForceLogoutFormHTML ? 'YES' : 'NO');
-                    
-                    if (hasForceLogoutFormHTML) {
-                        console.log('Form exists in HTML but not accessible via getElementById');
-                        // 別の方法で検索
-                        const formByName = document.querySelector('form[id="forceLogoutForm"]');
-                        console.log('Form found by querySelector:', formByName ? 'YES' : 'NO');
-                    }
-                }
-                
-                if (forceLogoutForm) {
-                    console.log('forceLogoutForm action:', forceLogoutForm.action);
-                }
-            });
-        </script>
-
-       
-
-        <!-- 隠しフォーム -->
-        @if(isset($member) && $member->id)
-            <!-- DEBUG: Creating forceLogoutForm for member ID {{ $member->id }} -->
-            <form id="forceLogoutForm-{{ $member->id }}" method="POST" action="{{ route('admin.settings.members.force-logout', $member->id) }}" style="display: none;">
-                @csrf
-            </form>
-            <script>
-                console.log('forceLogoutForm HTML created for member:', {{ $member->id }});
-                console.log('Route URL:', '{{ route('admin.settings.members.force-logout', $member->id) }}');
-                console.log('Form ID:', 'forceLogoutForm-{{ $member->id }}');
-            </script>
-
-            @if(!$isInitialAdmin)
-                <form id="deleteMemberForm-{{ $member->id }}" method="POST" action="{{ route('admin.settings.members.destroy', $member->id) }}" style="display: none;">
-                    @csrf
-                    @method('DELETE')
-                </form>
-            @endif
-        @endif
-
-         <!-- 強制ログアウトモーダル -->
-        @php
-            $forceLogoutFormId = 'forceLogoutForm-' . $member->id;
-        @endphp
-        @include('components::form.modal', [
-            'id' => 'forceLogoutModal',
-            'title' => __('admin.settings.members.modals.force_logout.title'),
-            'message' => __('admin.settings.members.modals.force_logout.message', ['name' => $member->name]),
-            'confirm_label' => __('admin.settings.members.modals.force_logout.confirm'),
-            'cancel_label' => __('admin.settings.members.modals.cancel'),
-            'form' => $forceLogoutFormId
-        ])
-
-        @if(!$isInitialAdmin)
-            <!-- メンバー削除モーダル -->
-            @php
-                $deleteMemberFormId = 'deleteMemberForm-' . $member->id;
-            @endphp
-            @include('components::form.modal', [
-                'id' => 'deleteMemberModal',
-                'title' => __('admin.settings.members.modals.delete.title'),
-                'message' => __('admin.settings.members.modals.delete.message', ['name' => $member->name]) . "\n\n" . __('admin.settings.members.modals.delete.warning'),
-                'confirm_label' => __('admin.settings.members.modals.delete.confirm'),
-                'cancel_label' => __('admin.settings.members.modals.cancel'),
-                'form' => $deleteMemberFormId
-            ])
-        @endif
-    @endif
-
 @if($includeForm && $formAction)
     </form>
 @endif
@@ -472,7 +363,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'confirm_label' => __('admin.settings.members.modals.force_logout.confirm'),
         'cancel_label' => __('admin.settings.members.modals.cancel'),
         'form' => $forceLogoutFormId
-    ])
+        ])
 
     @if(!$isInitialAdmin)
         @include('components::form.modal', [
@@ -485,3 +376,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         ])
     @endif
 @endif
+
+@if($includeForm && $formAction)
+    </form>
+@endif
+
