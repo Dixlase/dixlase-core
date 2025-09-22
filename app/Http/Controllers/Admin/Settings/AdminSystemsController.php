@@ -353,40 +353,40 @@ class AdminSystemsController extends AdminLoggedInController
                     $exitCode = Artisan::call('admin:cleanup-login-attempts', $options);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
-                    $message = __('admin.settings.systems.database_cleanup.cleanup_success', ['count' => $count]);
+                    $message = __('admin.settings.systems.database.cleanup_success', ['count' => $count]);
                     break;
                 case 'password_reset_tokens':
                     $options = $days === 0 ? ['--days' => $days, '--force' => true] : ['--days' => $days];
                     $exitCode = Artisan::call('admin:cleanup-password-reset-tokens', $options);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
-                    $message = __('admin.settings.systems.database_cleanup.cleanup_success', ['count' => $count]);
+                    $message = __('admin.settings.systems.database.cleanup_success', ['count' => $count]);
                     break;
                 case 'trusted_devices':
                     $options = $days === 0 ? ['--days' => $days, '--force' => true] : ['--days' => $days];
                     $exitCode = Artisan::call('admin:cleanup-trusted-devices', $options);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
-                    $message = __('admin.settings.systems.database_cleanup.cleanup_success', ['count' => $count]);
+                    $message = __('admin.settings.systems.database.cleanup_success', ['count' => $count]);
                     break;
                 case 'two_factor_tokens':
                     $options = $days === 0 ? ['--days' => $days, '--force' => true] : ['--days' => $days];
                     $exitCode = Artisan::call('admin:cleanup-two-factor-tokens', $options);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
-                    $message = __('admin.settings.systems.database_cleanup.cleanup_success', ['count' => $count]);
+                    $message = __('admin.settings.systems.database.cleanup_success', ['count' => $count]);
                     break;
                 case 'cache_data':
                     $exitCode = Artisan::call('admin:cleanup-cache', ['--force' => true]);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
-                    $message = __('admin.settings.systems.database_cleanup.cleanup_success', ['count' => $count]);
+                    $message = __('admin.settings.systems.database.cleanup_success', ['count' => $count]);
                     break;
                 case 'sessions':
                     $exitCode = Artisan::call('admin:cleanup-sessions', ['--days' => $days, '--force' => true]);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
-                    $message = __('admin.settings.systems.database_cleanup.cleanup_success', ['count' => $count]);
+                    $message = __('admin.settings.systems.database.cleanup_success', ['count' => $count]);
                     break;
                 case 'all':
                     $totalCount = 0;
@@ -405,21 +405,21 @@ class AdminSystemsController extends AdminLoggedInController
                         $totalCount += $this->extractCountFromOutput($output);
                     }
                     
-                    $message = __('admin.settings.systems.database_cleanup.cleanup_success', ['count' => $totalCount]);
+                    $message = __('admin.settings.systems.database.cleanup_success', ['count' => $totalCount]);
                     break;
                 default:
                     $success = false;
-                    $message = __('admin.settings.systems.database_cleanup.cleanup_error', ['error' => 'Invalid cleanup type']);
+                    $message = __('admin.settings.systems.database.cleanup_error', ['error' => 'Invalid cleanup type']);
             }
         } catch (\Exception $e) {
             $success = false;
-            $message = __('admin.settings.systems.database_cleanup.cleanup_error', ['error' => $e->getMessage()]);
+            $message = __('admin.settings.systems.database.cleanup_error', ['error' => $e->getMessage()]);
         }
 
         if ($success) {
-            return redirect()->route('admin.settings.systems.database_cleanup')->with('success', $message);
+            return redirect()->route('admin.settings.systems.database')->with('success', $message);
         } else {
-            return redirect()->route('admin.settings.systems.database_cleanup')->with('error', $message);
+            return redirect()->route('admin.settings.systems.database')->with('error', $message);
         }
     }
 

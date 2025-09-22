@@ -43,7 +43,7 @@
         @endif
         
         <div class="{{ $iconClass ? 'ml-2' : '' }} flex-1">
-            <p>{!! $message !!}</p>
+            {!! $message !!}
         </div>
         
         @if($dismissible)
