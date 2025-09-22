@@ -66,6 +66,8 @@ return [
     ],
 
     'common' => [
+        'per_page_label' => 'Items per page',
+        'total_count' => 'Total: :total items',
         'search' => 'Search',
         'submit' => 'Update',
         'install' => 'Install',
@@ -650,6 +652,25 @@ Clicking this link will complete the full mail function test.',
         ],
         // Members
         'members' => [
+            'index' => [
+                'search_title' => 'Member Search',
+                'search_placeholder' => 'Search by member name or email address',
+                'search_button' => 'Search',
+                'heading' => 'Member List',
+                'table' => [
+                    'id' => 'ID',
+                    'name' => 'Name',
+                    'email' => 'Email',
+                    'role' => 'Role',
+                    'actions' => 'Actions',
+                    'edit' => 'Edit',
+                    'unknown_role' => 'Unknown Role',
+                    'caption' => 'Member List',
+                ],
+                'pagination_label' => 'Member list pagination',
+                'per_page_label' => 'Items per page',
+                'total_count' => 'Total: :total items',
+            ],
             'form' => [
                 'basic_info' => 'Basic Information',
                 'password_settings' => 'Password Settings',

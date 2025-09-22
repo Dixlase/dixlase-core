@@ -84,7 +84,14 @@ class AdminSystemsController extends AdminLoggedInController
         }
 
         // Implement pagination
-        $perPage = 50;
+        $perPage = $request->input('per_page', 50);
+        
+        // 有効な表示件数かチェック
+        $allowedPerPage = [25, 50, 100, 200];
+        if (!in_array($perPage, $allowedPerPage)) {
+            $perPage = 50;
+        }
+        
         $currentPage = $request->get('page', 1);
         $offset = ($currentPage - 1) * $perPage;
         $totalLogs = count($parsedLogs);

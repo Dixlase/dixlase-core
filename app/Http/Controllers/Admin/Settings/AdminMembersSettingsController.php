@@ -63,6 +63,15 @@ class AdminMembersSettingsController extends AdminLoggedInController
 
         // 検索条件の取得
         $search = $request->input('search');
+        
+        // 表示件数の取得（デフォルト25件）
+        $perPage = $request->input('per_page', 25);
+        
+        // 有効な表示件数かチェック
+        $allowedPerPage = [10, 25, 50, 100];
+        if (!in_array($perPage, $allowedPerPage)) {
+            $perPage = 25;
+        }
 
         // ユーザーを検索
         $members = Member::query()
@@ -70,10 +79,26 @@ class AdminMembersSettingsController extends AdminLoggedInController
                 $query->where('name', 'like', '%' . $search . '%')
                     ->orWhere('email', 'like', '%' . $search . '%');
             })
-            ->paginate(10); // ページネーション
+            ->paginate($perPage); // 動的ページネーション
 
+        // ページネーションリンクにパラメータを追加
+        $members->appends($request->only(['search', 'per_page']));
+        
+        // カスタムページネーション情報を準備
+        $pagination = [
+            'current_page' => $members->currentPage(),
+            'last_page' => $members->lastPage(),
+            'prev_page' => $members->currentPage() > 1 ? $members->currentPage() - 1 : null,
+            'next_page' => $members->hasMorePages() ? $members->currentPage() + 1 : null,
+            'total' => $members->total(),
+            'per_page' => $members->perPage(),
+            'from' => $members->firstItem(),
+            'to' => $members->lastItem(),
+        ];
+        
         $this->viewParams['members'] = $members;
         $this->viewParams['search'] = $search;
+        $this->viewParams['pagination'] = $pagination;
 
         // ビューにデータを渡す
         return view('admin::settings.members.index', $this->viewParams);
