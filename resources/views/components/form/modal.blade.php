@@ -30,47 +30,64 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'checkbox_name' => 'remove_db_data', // name属性
     'checkbox_label' => 'データベースを削除する', // チェックボックスのラベル
     'form' => null,              // フォームのID
+    // ↓ 新しいカスタマイズパラメータ
+    'icon_type' => 'info',     // アイコンタイプ: warning, danger, info, success
+    'confirm_color' => 'blue',     // 確認ボタンの色: blue, red, green, yellow
 ])
 
-<div id="{{ $id }}" class="mt-0 fixed inset-0 z-[9999] flex items-center justify-center bg-opacity-50 dark:bg-opacity-70 opacity-0 pointer-events-none bg-gray-100 dark:bg-black modal-overlay">
-    <div class="relative transform overflow-hidden rounded-lg text-left shadow-xl sm:w-full sm:max-w-lg scale-95 bg-white dark:bg-gray-900 modal-content">
-        <div class="px-4 pb-4 pt-5 sm:p-6 sm:pb-4 bg-white dark:bg-gray-900">
-            <div class="sm:flex sm:items-start">
-                <div class="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                    <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
-                    </svg>
-                </div>
-                <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-                    <h3 class="text-base font-semibold text-gray-900 dark:text-white" id="modal-title">{{ $title }}</h3>
-                    <div class="mt-2">
-                        <p class="text-sm text-gray-900 dark:text-white">{{ $message }}</p>
-                    </div>
-
-                    <!-- チェックボックスを表示したい場合 -->
-                    @if($checkbox)
-                        <div class="mt-4">
-                            <label class="inline-flex items-center">
-                                <input type="checkbox" name="{{ $checkbox_name }}" value="1" class="mr-2 rounded" />
-                                <span class="text-sm text-gray-900 dark:text-white">
-                                    {{ $checkbox_label }}
-                                </span>
-                            </label>
-                        </div>
-                    @endif
-                </div>
+<div id="{{ $id }}" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full opacity-0 pointer-events-none z-50 modal-overlay transition-opacity duration-300" onclick="closeModal('{{ $id }}')">
+    <div class="relative top-20 mx-auto p-5 border dark:border-gray-600 w-96 shadow-lg rounded-md bg-white dark:bg-gray-800 scale-95 modal-content transition-transform duration-300" onclick="event.stopPropagation()">
+        <div class="mt-3 text-center">
+            @php
+                $iconConfig = [
+                    'warning' => ['bg' => 'bg-red-100 dark:bg-red-900/20', 'text' => 'text-red-600 dark:text-red-400', 'path' => 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z'],
+                    'danger' => ['bg' => 'bg-red-100 dark:bg-red-900/20', 'text' => 'text-red-600 dark:text-red-400', 'path' => 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z'],
+                    'info' => ['bg' => 'bg-blue-100 dark:bg-blue-900/20', 'text' => 'text-blue-600 dark:text-blue-400', 'path' => 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'],
+                    'success' => ['bg' => 'bg-green-100 dark:bg-green-900/20', 'text' => 'text-green-600 dark:text-green-400', 'path' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z']
+                ];
+                $currentIcon = $iconConfig[$icon_type] ?? $iconConfig['warning'];
+            @endphp
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full {{ $currentIcon['bg'] }}">
+                <svg class="h-6 w-6 {{ $currentIcon['text'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $currentIcon['path'] }}"></path>
+                </svg>
             </div>
+            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mt-4">{{ $title }}</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500 dark:text-gray-300">{{ $message }}</p>
+            </div>
+
+            <!-- チェックボックスを表示したい場合 -->
+            @if($checkbox)
+                <div class="mt-4">
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" name="{{ $checkbox_name }}" value="1" class="mr-2 rounded" />
+                        <span class="text-sm text-gray-900 dark:text-white">
+                            {{ $checkbox_label }}
+                        </span>
+                    </label>
+                </div>
+            @endif
         </div>
-        <div class="px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 bg-gray-50 dark:bg-gray-800">
-            <button type="button"
-                @if ($form) onclick="submitModalForm('{{ $form }}')" @else type="submit" @endif
-                class="inline-flex w-full justify-center rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 sm:ml-3 sm:w-auto">
-                {{ $confirm_label }}
-            </button>
-            <button type="button" onclick="closeModal('{{ $id }}')" class="mt-3 inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm ring-1 ring-inset  sm:mt-0 sm:w-auto bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-gray-900 dark:text-white dark:ring-gray-300 dark:hover:bg-gray-50">
-                {{ $cancel_label }}
-            </button>
-        </div>
+            <div class="flex items-center justify-center px-4 py-3">
+                @php
+                    $buttonConfig = [
+                        'blue' => ['bg' => 'bg-blue-500', 'hover' => 'hover:bg-blue-600'],
+                        'red' => ['bg' => 'bg-red-500', 'hover' => 'hover:bg-red-600'],
+                        'green' => ['bg' => 'bg-green-500', 'hover' => 'hover:bg-green-600'],
+                        'yellow' => ['bg' => 'bg-yellow-500', 'hover' => 'hover:bg-yellow-600']
+                    ];
+                    $currentButton = $buttonConfig[$confirm_color] ?? $buttonConfig['red'];
+                @endphp
+                <button type="button"
+                    @if ($form) onclick="submitModalForm('{{ $form }}')" @else type="submit" @endif
+                    class="px-4 py-2 {{ $currentButton['bg'] }} text-white text-base font-medium rounded-md w-24 mr-2 {{ $currentButton['hover'] }} focus:outline-none focus:ring-2 focus:ring-red-300">
+                    {{ $confirm_label }}
+                </button>
+                <button type="button" onclick="closeModal('{{ $id }}')" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white text-base font-medium rounded-md w-24 hover:bg-gray-400 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                    {{ $cancel_label }}
+                </button>
+            </div>
     </div>
 </div>
 
