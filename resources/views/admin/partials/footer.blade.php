@@ -18,7 +18,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-<footer id="page-footer" class="lg:ml-64 border-t py-4 text-center text-xs bg-gray-100 text-gray-500 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700">
+<footer id="page-footer" class="lg:ml-64 border-t py-4 text-center text-xs bg-white text-gray-500 border-gray-200 dark:bg-black dark:text-gray-400 dark:border-gray-700">
     <span class="font-semibold">{{ config('app.software_name', 'Dixlase') }}</span>
     v{{ config('app.version', '1.0.0') }} &middot;
     &copy; {{ date('Y') }} exc-D inc. &middot;

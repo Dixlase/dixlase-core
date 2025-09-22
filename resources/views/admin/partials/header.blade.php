@@ -21,7 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <header
     x-cloak
     x-data="{ openSidebar: false, openUserMenu: false }"
-    class="fixed top-0 z-50 w-full flex items-center h-16 border-b bg-gray-200 dark:bg-gray-800 border-gray-300 dark:border-gray-700"
+    class="fixed top-0 z-50 w-full flex items-center h-16 border-b bg-gray-100 dark:bg-gray-900 border-gray-300 dark:border-gray-700"
     role="banner">
     <!-- Primary Navigation Bar -->
     <nav class="w-full mx-4 sm:mx-0 lg:px-4 flex items-center h-16" role="navigation" aria-label="Primary navigation">

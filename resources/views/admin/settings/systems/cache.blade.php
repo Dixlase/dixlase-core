@@ -116,24 +116,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <!-- Individual Cache Clear Modals -->
 @foreach($cacheInfo as $type => $info)
-<x-form.modal 
-    id="clearCacheModal{{ ucfirst($type) }}"
-    title="{{ __('admin.settings.systems.cache.clear_confirm', ['name' => $info['name']]) }}"
-    message="{{ $info['description'] }}"
-    confirm_label="{{ __('admin.settings.systems.cache.clear_button') }}"
-    cancel_label="{{ __('admin.common.cancel') }}"
-    form="clearCacheForm{{ ucfirst($type) }}"
-/>
+@include('components::form.modal', [
+    'id' => 'clearCacheModal' . ucfirst($type),
+    'title' => __('admin.settings.systems.cache.clear_confirm', ['name' => $info['name']]),
+    'message' => $info['description'],
+    'confirm_label' => __('admin.settings.systems.cache.clear_button'),
+    'cancel_label' => __('admin.common.cancel'),
+    'form' => 'clearCacheForm' . ucfirst($type),
+    'icon_type' => 'info',
+    'confirm_color' => 'blue'
+])
 @endforeach
 
 <!-- Clear All Cache Modal -->
-<x-form.modal 
-    id="clearAllCacheModal"
-    title="{{ __('admin.settings.systems.cache.clear_all_title') }}"
-    message="{{ __('admin.settings.systems.cache.clear_all_description') }} {{ __('admin.settings.systems.cache.clear_all_warning') }}"
-    confirm_label="{{ __('admin.settings.systems.cache.clear_all_button') }}"
-    cancel_label="{{ __('admin.common.cancel') }}"
-    form="clearAllCacheForm"
-/>
+@include('components::form.modal', [
+    'id' => 'clearAllCacheModal',
+    'title' => __('admin.settings.systems.cache.clear_all_title'),
+    'message' => __('admin.settings.systems.cache.clear_all_description') . ' ' . __('admin.settings.systems.cache.clear_all_warning'),
+    'confirm_label' => __('admin.settings.systems.cache.clear_all_button'),
+    'cancel_label' => __('admin.common.cancel'),
+    'form' => 'clearAllCacheForm',
+    'icon_type' => 'warning',
+    'confirm_color' => 'yellow'
+])
 
 @endsection
