@@ -35,133 +35,140 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'confirm_color' => 'blue',     // 確認ボタンの色: blue, red, green, yellow
 ])
 
-<div id="{{ $id }}" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full opacity-0 pointer-events-none z-50 modal-overlay transition-opacity duration-300" onclick="closeModal('{{ $id }}')">
-    <div class="relative top-20 mx-auto p-5 border dark:border-gray-600 w-96 shadow-lg rounded-md bg-white dark:bg-gray-800 scale-95 modal-content transition-transform duration-300" onclick="event.stopPropagation()">
-        <div class="mt-3 text-center">
-            @php
-                $iconConfig = [
-                    'warning' => ['bg' => 'bg-red-100 dark:bg-red-900/20', 'text' => 'text-red-600 dark:text-red-400', 'path' => 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z'],
-                    'danger' => ['bg' => 'bg-red-100 dark:bg-red-900/20', 'text' => 'text-red-600 dark:text-red-400', 'path' => 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z'],
-                    'info' => ['bg' => 'bg-blue-100 dark:bg-blue-900/20', 'text' => 'text-blue-600 dark:text-blue-400', 'path' => 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'],
-                    'success' => ['bg' => 'bg-green-100 dark:bg-green-900/20', 'text' => 'text-green-600 dark:text-green-400', 'path' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z']
-                ];
-                $currentIcon = $iconConfig[$icon_type] ?? $iconConfig['warning'];
-            @endphp
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full {{ $currentIcon['bg'] }}">
-                <svg class="h-6 w-6 {{ $currentIcon['text'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $currentIcon['path'] }}"></path>
-                </svg>
-            </div>
-            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mt-4">{{ $title }}</h3>
-            <div class="mt-2 px-7 py-3">
-                <p class="text-sm text-gray-500 dark:text-gray-300">{{ $message }}</p>
-            </div>
+@php
+    $iconClasses = [
+        'warning' => 'fas fa-exclamation-triangle',
+        'danger' => 'fas fa-exclamation-triangle',
+        'info' => 'fas fa-info-circle',
+        'success' => 'fas fa-check-circle'
+    ];
+    $iconClass = $iconClasses[$icon_type] ?? $iconClasses['warning'];
+@endphp
 
-            <!-- チェックボックスを表示したい場合 -->
-            @if($checkbox)
-                <div class="mt-4">
-                    <label class="inline-flex items-center">
-                        <input type="checkbox" name="{{ $checkbox_name }}" value="1" class="mr-2 rounded" />
-                        <span class="text-sm text-gray-900 dark:text-white">
-                            {{ $checkbox_label }}
-                        </span>
-                    </label>
-                </div>
-            @endif
-        </div>
-            <div class="flex items-center justify-center px-4 py-3">
-                @php
-                    $buttonConfig = [
-                        'blue' => ['bg' => 'bg-blue-500', 'hover' => 'hover:bg-blue-600'],
-                        'red' => ['bg' => 'bg-red-500', 'hover' => 'hover:bg-red-600'],
-                        'green' => ['bg' => 'bg-green-500', 'hover' => 'hover:bg-green-600'],
-                        'yellow' => ['bg' => 'bg-yellow-500', 'hover' => 'hover:bg-yellow-600']
-                    ];
-                    $currentButton = $buttonConfig[$confirm_color] ?? $buttonConfig['red'];
-                @endphp
-                <button type="button"
-                    @if ($form) onclick="submitModalForm('{{ $form }}')" @else type="submit" @endif
-                    class="px-4 py-2 {{ $currentButton['bg'] }} text-white text-base font-medium rounded-md w-24 mr-2 {{ $currentButton['hover'] }} focus:outline-none focus:ring-2 focus:ring-red-300">
-                    {{ $confirm_label }}
-                </button>
-                <button type="button" onclick="closeModal('{{ $id }}')" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white text-base font-medium rounded-md w-24 hover:bg-gray-400 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300">
-                    {{ $cancel_label }}
-                </button>
+<div id="{{ $id }}" class="modal" onclick="closeModal('{{ $id }}')">
+    <div class="modal-overlay"></div>
+    <div class="modal-container" onclick="event.stopPropagation()">
+        <div class="modal-content">
+            <div class="modal-icon modal-icon--{{ $icon_type }}">
+                <i class="{{ $iconClass }}" aria-hidden="true"></i>
             </div>
+            
+            <div class="modal-body">
+                <h2 class="modal-title">{{ $title }}</h2>
+                <div class="modal-message">
+                    <p>{{ $message }}</p>
+                </div>
+
+                @if($checkbox)
+                    <div class="modal-checkbox">
+                        <label>
+                            <input type="checkbox" name="{{ $checkbox_name }}" value="1" />
+                            <span>{{ $checkbox_label }}</span>
+                        </label>
+                    </div>
+                @endif
+            </div>
+        </div>
+        
+        <div class="modal-actions">
+            <button type="button"
+                @if ($form) onclick="submitModalForm('{{ $form }}')" @else type="submit" @endif
+                class="modal-button modal-button--confirm {{ $confirm_color }}">
+                {{ $confirm_label }}
+            </button>
+            <button type="button" onclick="closeModal('{{ $id }}')" class="modal-button modal-button--cancel">
+                {{ $cancel_label }}
+            </button>
+        </div>
     </div>
 </div>
 
 @push('scripts')
-<style>
-/* モーダルのアニメーション制御 */
-.modal-overlay {
-    transition: none; /* 初期状態ではアニメーションなし */
-}
-
-.modal-overlay.modal-animate {
-    transition: opacity 300ms ease-in-out; /* アニメーション有効 */
-}
-
-.modal-content {
-    transition: none; /* 初期状態ではアニメーションなし */
-}
-
-.modal-content.modal-animate {
-    transition: transform 300ms ease-in-out; /* アニメーション有効 */
-}
-</style>
-
 <script>
-var modalId = '{{ $id }}';
+// デバッグモード（本番環境では false に設定）
+const MODAL_DEBUG = false;
 
-// モーダルウィンドウを開く
-function openModal(modalId) {
-    var modal = document.getElementById(modalId);
-    var modalContent = modal.querySelector('.modal-content');
-    
-    // アニメーションクラスを追加
-    modal.classList.add('modal-animate');
-    modalContent.classList.add('modal-animate');
-    
-    // 表示状態に変更
-    modal.classList.remove('opacity-0', 'pointer-events-none');
-    modalContent.classList.remove('scale-95');
-    modal.classList.add('opacity-100');
-    modalContent.classList.add('scale-100');
-}
+// モーダル関数をグローバルスコープで定義（名前空間を使用）
+window.ModalManager = window.ModalManager || {
+    // モーダルを開く関数
+    open: function(modalId) {
+        if (MODAL_DEBUG) console.log('ModalManager.open called with:', modalId);
+        
+        const modal = document.getElementById(modalId);
+        if (MODAL_DEBUG) console.log('Modal element found:', modal);
+        
+        if (modal) {
+            // アニメーションを有効化
+            modal.classList.add('modal--animate');
+            
+            // 少し遅延してから表示（アニメーション準備のため）
+            requestAnimationFrame(() => {
+                modal.classList.add('modal--visible');
+                if (MODAL_DEBUG) console.log('Added modal--visible class');
+            });
+        } else {
+            if (MODAL_DEBUG) console.error('Modal not found with ID:', modalId);
+        }
+    },
 
-// モーダルウィンドウを閉じる
-function closeModal(modalId) {
-    var modal = document.getElementById(modalId);
-    var modalContent = modal.querySelector('.modal-content');
-    
-    // 非表示状態に変更
-    modal.classList.remove('opacity-100');
-    modalContent.classList.remove('scale-100');
-    modal.classList.add('opacity-0');
-    modalContent.classList.add('scale-95');
-    
-    // アニメーション完了後にpointer-eventsを無効化
-    setTimeout(() => {
-        modal.classList.add('pointer-events-none');
-    }, 300);
-}
+    // モーダルを閉じる関数
+    close: function(modalId) {
+        if (MODAL_DEBUG) console.log('ModalManager.close called with:', modalId);
+        
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('modal--visible');
+            
+            // アニメーション完了後にアニメーションクラスを削除
+            setTimeout(() => {
+                modal.classList.remove('modal--animate');
+                if (MODAL_DEBUG) console.log('Modal closed and animation disabled');
+            }, 300); // transition duration と同じ時間
+        } else {
+            if (MODAL_DEBUG) console.error('Modal not found with ID:', modalId);
+        }
+    },
 
-// フォーム送信関数
-function submitModalForm(formId) {
-    const form = document.getElementById(formId);
-    if (form) {
-        form.submit();
-    } else {
-        console.error('Form with ID "' + formId + '" not found');
+    // フォーム送信関数
+    submitForm: function(formId) {
+        if (MODAL_DEBUG) console.log('ModalManager.submitForm called with:', formId);
+        
+        const form = document.getElementById(formId);
+        if (form) {
+            form.submit();
+        } else {
+            if (MODAL_DEBUG) console.error('Form not found with ID:', formId);
+        }
     }
+};
+
+// 後方互換性のための関数エイリアス
+function openModal(modalId) {
+    window.ModalManager.open(modalId);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    @if ($errors->any())
-        // モーダルを閉じる処理
-        closeModal(modalId);
-    @endif
+function closeModal(modalId) {
+    window.ModalManager.close(modalId);
+}
+
+function submitModalForm(formId) {
+    window.ModalManager.submitForm(formId);
+}
+
+// ESCキーでモーダルを閉じる（DOMContentLoaded後に設定）
+document.addEventListener('DOMContentLoaded', function() {
+    if (MODAL_DEBUG) console.log('Modal script loaded - DOMContentLoaded');
+    if (MODAL_DEBUG) console.log('ModalManager available:', typeof window.ModalManager);
+    
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            const visibleModal = document.querySelector('.modal--visible');
+            if (visibleModal && visibleModal.id) {
+                if (MODAL_DEBUG) console.log('ESC pressed, closing modal:', visibleModal.id);
+                window.ModalManager.close(visibleModal.id);
+            }
+        }
+    });
 });
 </script>
 @endpush
