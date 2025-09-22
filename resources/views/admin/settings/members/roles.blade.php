@@ -21,84 +21,56 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('admin::partials.layout')
 
 @section('content')
-    <form method="POST" action="{{ route('admin.settings.members.roles.update') }}" id="member-roles-form">
-        @csrf
 
-        <div class="space-y-8">
-            @php
-                function renderMenuPermissions($menuList, $permissions, $roles, $parentKey = '')
-                {
-                    foreach ($menuList as $key => $item) {
-                        $menuKey = $parentKey ? $parentKey . '.' . $key : $key;
-
-                        // ✨ 権限設定対象かどうか判定
-                        $isTarget = isset($item['route']) && !in_array($menuKey, ['dashboard', 'front', 'media', 'settings']);
-
-                        // ✨ 見出しだけ表示すべき親メニューかどうか
-                        $isHeadingOnly = !$isTarget && isset($item['children']) && !in_array($menuKey, ['dashboard']);
-
-                        if ($isHeadingOnly) {
-                            echo '<div class="mt-8 mb-4">';
-                            echo '<h3>' . __($item['text']) . '</h3>';
-                            echo '</div>';
-                        }
-
-                        if ($isTarget) {
-                            echo '<div class="border p-4 rounded">';
-                            echo '<h4>' . __($item['text']) . '（' . $menuKey . '）</h4>';
-
-                            echo '<div class="grid grid-cols-2 gap-6">';
-
-                            // 編集権限
-                            echo '<div>';
-                            echo '<h5 class="text-sm font-medium mb-2">' . __('admin.settings.members.roles.access_roles') . '</h5>';
-                            foreach ($roles as $role) {
-                                if ($role->value !== \App\Enums\MemberRole::SUPER_ADMIN->value) {
-                                    $checked = in_array($role->value, $permissions[$menuKey]->access_roles ?? []) ? 'checked' : '';
-                                    echo '<label class="inline-flex items-center mr-4 mb-2">';
-                                    echo '<input type="checkbox" name="permissions[' . $menuKey . '][access_roles][]" value="' . $role->value . '" ' . $checked . '>';
-                                    echo '<span class="ml-2">' . $role->label() . '</span>';
-                                    echo '</label>';
-                                }
-                            }
-                            echo '</div>';
-
-                            // 閲覧権限
-                            echo '<div>';
-                            echo '<h5 class="text-sm font-medium mb-2">' . __('admin.settings.members.roles.view_roles') . '</h5>';
-                            foreach ($roles as $role) {
-                                if ($role->value !== \App\Enums\MemberRole::SUPER_ADMIN->value) {
-                                    $checked = in_array($role->value, $permissions[$menuKey]->view_roles ?? []) ? 'checked' : '';
-                                    echo '<label class="inline-flex items-center mr-4 mb-2">';
-                                    echo '<input type="checkbox" name="permissions[' . $menuKey . '][view_roles][]" value="' . $role->value . '" ' . $checked . '>';
-                                    echo '<span class="ml-2">' . $role->label() . '</span>';
-                                    echo '</label>';
-                                }
-                            }
-                            echo '</div>';
-
-                            echo '</div>'; // grid
-
-                            echo '</div>'; // card
-                        }
-
-                        // 子メニューがあるなら必ず潜る
-                        if (isset($item['children'])) {
-                            renderMenuPermissions($item['children'], $permissions, $roles, $menuKey);
-                        }
-                    }
-                }
-            @endphp
-
-            {{-- 実行 --}}
-            @php
-                renderMenuPermissions($menuList, $permissions, $roles);
-            @endphp
-        </div>
-
-    </form>
+<form method="POST" action="{{ route('admin.settings.members.roles.update') }}" id="member-roles-form" class="permission-form" novalidate>
+    @csrf
+    <div class="permission-groups space-y-6 mb-10" x-data="{ openSections: {} }">
+        @php
+            $currentSection = null;
+            $sectionItems = [];
+        @endphp
+        
+        @foreach ($permissionItems as $index => $item)
+            @if ($item['type'] === 'heading')
+                {{-- 前のセクションがあれば出力 --}}
+                @if ($currentSection !== null)
+                    @include('admin.settings.members.partials.roles-permission-group', [
+                        'sectionTitle' => $currentSection,
+                        'sectionId' => 'section_' . md5($currentSection),
+                        'items' => $sectionItems,
+                        'permissions' => $permissions,
+                        'roles' => $roles
+                    ])
+                @endif
+                
+                {{-- 新しいセクションを開始 --}}
+                @php
+                    $currentSection = $item['title'];
+                    $sectionItems = [];
+                @endphp
+            @elseif ($item['type'] === 'permission')
+                {{-- セクション内のアイテムを収集 --}}
+                @php
+                    $sectionItems[] = $item;
+                @endphp
+            @endif
+        @endforeach
+        
+        {{-- 最後のセクションを出力 --}}
+        @if ($currentSection !== null)
+            @include('admin.settings.members.partials.roles-permission-group', [
+                'sectionTitle' => $currentSection,
+                'sectionId' => 'section_' . md5($currentSection),
+                'items' => $sectionItems,
+                'permissions' => $permissions,
+                'roles' => $roles
+            ])
+        @endif
+    </div>
+</form>
 
 @endsection
+
 
 @section('save')
     <!-- 更新ボタンとモーダル-->

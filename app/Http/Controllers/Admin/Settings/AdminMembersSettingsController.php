@@ -325,11 +325,60 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $roles = MemberRole::cases(); // Enumの一覧を取得
         $menuList = config('admin.nav'); // メニューリスト
 
+        // 権限アイテムを収集
+        $permissionItems = $this->collectMenuPermissions($menuList);
+
         $this->viewParams['permissions'] = $permissions;
         $this->viewParams['roles'] = $roles;
         $this->viewParams['menuList'] = $menuList;
+        $this->viewParams['permissionItems'] = $permissionItems;
 
         return view('admin.settings.members.roles', $this->viewParams);
+    }
+
+    /**
+     * メニューから権限設定用のアイテムを収集
+     */
+    private function collectMenuPermissions($menuList, $parentKey = '', &$currentSection = '')
+    {
+        $items = [];
+        
+        foreach ($menuList as $key => $item) {
+            $menuKey = $parentKey ? $parentKey . '.' . $key : $key;
+
+            // 権限設定対象かどうか判定
+            $isTarget = isset($item['route']) && !in_array($menuKey, ['dashboard', 'front', 'media', 'settings']);
+
+            // 見出しだけ表示すべき親メニューかどうか
+            $isHeadingOnly = !$isTarget && isset($item['children']) && !in_array($menuKey, ['dashboard']);
+
+            if ($isHeadingOnly) {
+                $sectionTitle = __($item['text']);
+                if ($currentSection !== $sectionTitle) {
+                    $currentSection = $sectionTitle;
+                    $items[] = [
+                        'type' => 'heading',
+                        'title' => $sectionTitle
+                    ];
+                }
+            }
+
+            if ($isTarget) {
+                $items[] = [
+                    'type' => 'permission',
+                    'title' => __($item['text']),
+                    'menuKey' => $menuKey
+                ];
+            }
+
+            // 子メニューがあれば再帰処理
+            if (isset($item['children'])) {
+                $childItems = $this->collectMenuPermissions($item['children'], $menuKey, $currentSection);
+                $items = array_merge($items, $childItems);
+            }
+        }
+        
+        return $items;
     }
 
     public function updateRoles(Request $request)

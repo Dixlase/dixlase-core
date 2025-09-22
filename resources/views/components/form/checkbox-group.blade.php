@@ -24,26 +24,37 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'values' => [],
     'disabled' => false,
     'class' => '',
-    'flexDirection' => 'row'
+    'flexDirection' => 'row',
+    'permissionStyle' => false // 権限グループ用のスタイリング
 ])
 
 <div @class([
     'flex',
     'flex-wrap',
-    'gap-4',
+    'gap-4' => !$permissionStyle,
+    'space-y-2' => $permissionStyle,
     'flex-col' => $flexDirection == 'col',
-    'flex-col sm:flex-row' => $flexDirection != 'col',
+    'flex-col sm:flex-row' => $flexDirection != 'col' && !$permissionStyle,
 ])>
     @foreach ($options as $option_value => $option_label)
-        <label class="inline-flex items-center">
+        <label @class([
+            'inline-flex items-center' => !$permissionStyle,
+            'permission-option flex items-center p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors' => $permissionStyle,
+        ])>
             <input type="checkbox"
                 id="{{ $name }}_{{ $option_value }}"
                 name="{{ $name }}[]"
                 value="{{ $option_value }}"
                 @if ($disabled) disabled @endif
-                class="text-gray-600 dark:text-gray-600 {{ $class }}"
+                @class([
+                    'text-gray-600 dark:text-gray-600' => !$permissionStyle,
+                    $class
+                ])
                 @if (in_array($option_value, $values)) checked @endif>
-            <span class="ml-2 text-sm">{{ __($option_label) }}</span>
+            <span @class([
+                'ml-2 text-sm' => !$permissionStyle,
+                'permission-option__label ml-3 text-sm text-gray-700 dark:text-gray-300' => $permissionStyle,
+            ])>{{ __($option_label) }}</span>
         </label>
     @endforeach
 </div>
