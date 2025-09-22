@@ -22,15 +22,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 
-    <p class="mb-4">{{ __('admin.settings.systems.cache.description') }}</p>
+    
 
-    <div>
+    <section>
+        <h2>{{ __('admin.settings.systems.cache.title') }}</h2>
         @foreach($cacheInfo as $type => $info)
         <section class="flex flex-col md:flex-row md:items-center justify-center md:justify-between">
             <div class="flex-1 mb-4 md:mb-0 md:mr-6">
-                <h2 class="text-center md:text-left">{{ $info['name'] }}</h2>
-                <p>{{ $info['description'] }}</p>
-                <code class="text-sm">php artisan {{ $info['command'] }}</code>
+                <h3 class="text-center md:text-left">{{ $info['name'] }}</h3>
+                <p class="mb-4">{{ $info['description'] }}</p>
+                <code class="text-sm rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-1">php artisan {{ $info['command'] }}</code>
             </div>
             
             <div class="flex justify-center md:justify-end flex-shrink-0">
@@ -91,7 +92,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </dl>
             </div>
         </section>
-    </div>
+    </section>
 
 
 <!-- Individual Cache Clear Modals -->
@@ -116,8 +117,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'confirm_label' => __('admin.settings.systems.cache.clear_all_button'),
     'cancel_label' => __('admin.common.cancel'),
     'form' => 'clearAllCacheForm',
-    'icon_type' => 'warning',
-    'confirm_color' => 'yellow'
+    'icon_type' => 'danger',
+    'confirm_color' => 'red'
 ])
 
 @endsection

@@ -25,7 +25,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     
     <!-- Page Header -->
     <div class="mb-8">
-        <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">{{ __('admin.settings.systems.database_cleanup.description') }}</p>
+        <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">{{ __('admin.settings.systems.database.description') }}</p>
     </div>
 
     <!-- Individual Database Cleanup Cards -->
@@ -42,23 +42,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </div>
                         @if($info['default_days'])
                         <div class="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-1 rounded-full inline-block">
-                            {{ __('admin.settings.systems.database_cleanup.' . $type . '.default_days') }}
+                            {{ __('admin.settings.systems.database.' . $type . '.default_days') }}
                         </div>
                         @else
                         <div class="text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-full inline-block">
-                            {{ __('admin.settings.systems.database_cleanup.' . $type . '.default_days') }}
+                            {{ __('admin.settings.systems.database.' . $type . '.default_days') }}
                         </div>
                         @endif
                     </div>
                 </div>
                 <div class="mt-6">
-                    <form id="cleanupForm{{ ucfirst($type) }}" action="{{ route('admin.settings.systems.database_cleanup.clean') }}" method="POST" class="space-y-4">
+                    <form id="cleanupForm{{ ucfirst($type) }}" action="{{ route('admin.settings.systems.database.clean') }}" method="POST" class="space-y-4">
                         @csrf
                         <input type="hidden" name="type" value="{{ $type }}">
                         @if($info['default_days'])
                         <div>
                             <label for="days_{{ $type }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                {{ __('admin.settings.systems.database_cleanup.days_label') }}
+                                {{ __('admin.settings.systems.database.days_label') }}
                             </label>
                             <input type="number" 
                                    id="days_{{ $type }}" 
@@ -73,7 +73,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <button type="button" 
                             class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 mt-4"
                             onclick="confirmCleanup('{{ $type }}', '{{ $info['name'] }}')">
-                        {{ __('admin.settings.systems.database_cleanup.cleanup_button') }}
+                        {{ __('admin.settings.systems.database.cleanup_button') }}
                     </button>
                 </div>
             </div>
@@ -86,17 +86,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="text-lg font-semibold text-white mb-2">{{ __('admin.settings.systems.database_cleanup.all_cleanup_button') }}</h3>
-                    <p class="text-red-100 text-sm">{{ __('admin.settings.systems.database_cleanup.all_cleanup_description') }}</p>
+                    <h3 class="text-lg font-semibold text-white mb-2">{{ __('admin.settings.systems.database.all_cleanup_button') }}</h3>
+                    <p class="text-red-100 text-sm">{{ __('admin.settings.systems.database.all_cleanup_description') }}</p>
                 </div>
-                <form id="cleanupAllForm" action="{{ route('admin.settings.systems.database_cleanup.clean') }}" method="POST" class="inline">
+                <form id="cleanupAllForm" action="{{ route('admin.settings.systems.database.clean') }}" method="POST" class="inline">
                     @csrf
                     <input type="hidden" name="type" value="all">
                 </form>
                 <button type="button" 
                         class="bg-white text-red-600 hover:bg-red-50 font-medium py-2 px-6 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-red-600"
                         onclick="confirmCleanup('all', translations.allTables)">
-                    {{ __('admin.settings.systems.database_cleanup.all_cleanup_button') }}
+                    {{ __('admin.settings.systems.database.all_cleanup_button') }}
                 </button>
             </div>
         </div>
@@ -109,13 +109,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                 </svg>
-                {{ __('admin.settings.systems.database_cleanup.info_panel.title') }}
+                {{ __('admin.settings.systems.database.info_panel.title') }}
             </h3>
             <ul class="text-sm text-blue-700 dark:text-blue-300 space-y-2">
-                <li>• {{ __('admin.settings.systems.database_cleanup.info_panel.notes.irreversible') }}</li>
-                <li>• {{ __('admin.settings.systems.database_cleanup.info_panel.notes.performance') }}</li>
-                <li>• {{ __('admin.settings.systems.database_cleanup.info_panel.notes.production') }}</li>
-                <li>• {{ __('admin.settings.systems.database_cleanup.info_panel.notes.defaults') }}</li>
+                <li>• {{ __('admin.settings.systems.database.info_panel.notes.irreversible') }}</li>
+                <li>• {{ __('admin.settings.systems.database.info_panel.notes.performance') }}</li>
+                <li>• {{ __('admin.settings.systems.database.info_panel.notes.production') }}</li>
+                <li>• {{ __('admin.settings.systems.database.info_panel.notes.defaults') }}</li>
             </ul>
         </div>
     </div>
@@ -130,18 +130,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                 </svg>
             </div>
-            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mt-4">{{ __('admin.settings.systems.database_cleanup.modal.title') }}</h3>
+            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mt-4">{{ __('admin.settings.systems.database.modal.title') }}</h3>
             <div class="mt-2 px-7 py-3">
                 <p class="text-sm text-gray-500 dark:text-gray-300" id="confirmationMessage">
-                    {{ __('admin.settings.systems.database_cleanup.modal.message') }}
+                    {{ __('admin.settings.systems.database.modal.message') }}
                 </p>
             </div>
             <div class="items-center px-4 py-3">
                 <button id="confirmButton" class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-24 mr-2 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300">
-                    {{ __('admin.settings.systems.database_cleanup.modal.execute') }}
+                    {{ __('admin.settings.systems.database.modal.execute') }}
                 </button>
                 <button id="cancelButton" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white text-base font-medium rounded-md w-24 hover:bg-gray-400 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300">
-                    {{ __('admin.settings.systems.database_cleanup.modal.cancel') }}
+                    {{ __('admin.settings.systems.database.modal.cancel') }}
                 </button>
             </div>
         </div>
@@ -153,8 +153,8 @@ let currentFormId = '';
 
 // Translation strings for JavaScript
 const translations = {
-    confirmMessage: @json(__('admin.settings.systems.database_cleanup.modal.confirm_message', ['name' => ':name'])),
-    allTables: @json(__('admin.settings.systems.database_cleanup.all_tables'))
+    confirmMessage: @json(__('admin.settings.systems.database.modal.confirm_message', ['name' => ':name'])),
+    allTables: @json(__('admin.settings.systems.database.all_tables'))
 };
 
 function confirmCleanup(type, name) {

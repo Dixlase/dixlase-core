@@ -183,9 +183,9 @@ Route::prefix($adminUrl)->name('admin.')
             Route::get('/settings/systems/cache', [AdminSystemsController::class, 'cache'])->name('settings.systems.cache');
             Route::post('/settings/systems/cache/clear', [AdminSystemsController::class, 'clearCache'])->name('settings.systems.cache.clear');
 
-            //データベースクリーンアップ
-            Route::get('/settings/systems/database-cleanup', [AdminSystemsController::class, 'databaseCleanup'])->name('settings.systems.database_cleanup');
-            Route::post('/settings/systems/database-cleanup/clean', [AdminSystemsController::class, 'cleanupDatabase'])->name('settings.systems.database_cleanup.clean');
+            //データベース管理
+            Route::get('/settings/systems/database', [AdminSystemsController::class, 'database'])->name('settings.systems.database');
+            Route::post('/settings/systems/database/clean', [AdminSystemsController::class, 'cleanupDatabase'])->name('settings.systems.database.clean');
             
             //ログ
             Route::get('/settings/system/logs/{type?}', [AdminSystemsController::class, 'logs'])->name('settings.systems.logs');
