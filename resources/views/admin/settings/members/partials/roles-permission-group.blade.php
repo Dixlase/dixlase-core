@@ -28,11 +28,11 @@ Usage:
         }"
     >
         {{-- 左側の開閉アイコン --}}
-        <i class="mt-3 fas fa-chevron-right w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform duration-300 mr-3 flex-shrink-0"
+        <i class="mb-2 fas fa-chevron-right w-2 h-2 text-gray-500 dark:text-gray-400 transition-transform duration-300 mr-3 flex-shrink-0"
            :class="{ 'rotate-90': openSections['{{ $sectionId }}'] }"
            style="transform-origin: center;"></i>
         
-        <h2 class="my-2 text-xl font-bold text-gray-900 dark:text-white flex-grow">
+        <h2 class="my-2 text-md font-bold text-gray-900 dark:text-white flex-grow">
             {{ $sectionTitle }}
         </h2>
     </button>

@@ -32,8 +32,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'form' => null,              // フォームのID
 ])
 
-<div id="{{ $id }}" class="mt-0 fixed inset-0 z-[9999] flex items-center justify-center bg-opacity-50 dark:bg-opacity-70 opacity-0 pointer-events-none transition-opacity duration-300 bg-gray-100 dark:bg-black">
-    <div class="relative transform overflow-hidden rounded-lg text-left shadow-xl transition-all sm:w-full sm:max-w-lg scale-95 bg-white dark:bg-gray-900">
+<div id="{{ $id }}" class="mt-0 fixed inset-0 z-[9999] flex items-center justify-center bg-opacity-50 dark:bg-opacity-70 opacity-0 pointer-events-none bg-gray-100 dark:bg-black modal-overlay">
+    <div class="relative transform overflow-hidden rounded-lg text-left shadow-xl sm:w-full sm:max-w-lg scale-95 bg-white dark:bg-gray-900 modal-content">
         <div class="px-4 pb-4 pt-5 sm:p-6 sm:pb-4 bg-white dark:bg-gray-900">
             <div class="sm:flex sm:items-start">
                 <div class="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
@@ -62,12 +62,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </div>
         <div class="px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 bg-gray-50 dark:bg-gray-800">
-            <button type="submit"
-                @if ($form) form="{{ $form }}" @endif
+            <button type="button"
+                @if ($form) onclick="submitModalForm('{{ $form }}')" @else type="submit" @endif
                 class="inline-flex w-full justify-center rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 sm:ml-3 sm:w-auto">
                 {{ $confirm_label }}
             </button>
-            <button type="button" onclick="closeModal('{{ $id }}')" class="mt-3 inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm ring-1 ring-inset  sm:mt-0 sm:w-auto bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-gray-900 dark:text-white dark:ring-gray-300 dark:hover:bg-gray-50' }}">
+            <button type="button" onclick="closeModal('{{ $id }}')" class="mt-3 inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm ring-1 ring-inset  sm:mt-0 sm:w-auto bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-gray-900 dark:text-white dark:ring-gray-300 dark:hover:bg-gray-50">
                 {{ $cancel_label }}
             </button>
         </div>
@@ -75,20 +75,69 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 </div>
 
 @push('scripts')
+<style>
+/* モーダルのアニメーション制御 */
+.modal-overlay {
+    transition: none; /* 初期状態ではアニメーションなし */
+}
+
+.modal-overlay.modal-animate {
+    transition: opacity 300ms ease-in-out; /* アニメーション有効 */
+}
+
+.modal-content {
+    transition: none; /* 初期状態ではアニメーションなし */
+}
+
+.modal-content.modal-animate {
+    transition: transform 300ms ease-in-out; /* アニメーション有効 */
+}
+</style>
+
 <script>
 var modalId = '{{ $id }}';
+
 // モーダルウィンドウを開く
 function openModal(modalId) {
     var modal = document.getElementById(modalId);
-    modal.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
-    modal.classList.add('opacity-100', 'scale-100');
+    var modalContent = modal.querySelector('.modal-content');
+    
+    // アニメーションクラスを追加
+    modal.classList.add('modal-animate');
+    modalContent.classList.add('modal-animate');
+    
+    // 表示状態に変更
+    modal.classList.remove('opacity-0', 'pointer-events-none');
+    modalContent.classList.remove('scale-95');
+    modal.classList.add('opacity-100');
+    modalContent.classList.add('scale-100');
 }
 
 // モーダルウィンドウを閉じる
 function closeModal(modalId) {
     var modal = document.getElementById(modalId);
-    modal.classList.remove('opacity-100', 'scale-100');
-    modal.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
+    var modalContent = modal.querySelector('.modal-content');
+    
+    // 非表示状態に変更
+    modal.classList.remove('opacity-100');
+    modalContent.classList.remove('scale-100');
+    modal.classList.add('opacity-0');
+    modalContent.classList.add('scale-95');
+    
+    // アニメーション完了後にpointer-eventsを無効化
+    setTimeout(() => {
+        modal.classList.add('pointer-events-none');
+    }, 300);
+}
+
+// フォーム送信関数
+function submitModalForm(formId) {
+    const form = document.getElementById(formId);
+    if (form) {
+        form.submit();
+    } else {
+        console.error('Form with ID "' + formId + '" not found');
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
