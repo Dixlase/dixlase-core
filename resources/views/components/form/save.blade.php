@@ -42,7 +42,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'disabled' => $disabled,
     'onclick' => "openModal('" . $id_confirmation . "')",
     'form' => $form,
-    'class' => 'button-save',
+    'variant' => 'primary',
 ])
 
 <!-- {{ __('common.form.save_confirmation_title') }} -->
