@@ -22,23 +22,80 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
     <!-- 検索セクション -->
-    <section>
-        <h2>{{ __('admin.settings.members.index.search_title') }}</h2>
+    <section class="mb-6">
+        <h2 class="text-lg font-semibold mb-4">{{ __('admin.settings.members.index.search_title') }}</h2>
         
-        <form action="{{ route('admin.settings.members.index') }}" method="GET">
+        <form action="{{ route('admin.settings.members.index') }}" method="GET" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
             <fieldset>
                 <legend class="sr-only">{{ __('admin.settings.members.index.search_title') }}</legend>
-                <div class="search-form">
-                    @include('components::form.text', [
-                        'name' => 'search',
-                        'placeholder' => __('admin.settings.members.index.search_placeholder'),
-                        'value' => $search,
-                    ])
+                
+                <!-- 検索フィールド -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                    <!-- キーワード検索 -->
+                    <div>
+                        <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            {{ __('admin.settings.members.index.search_keyword') }}
+                        </label>
+                        @include('components::form.text', [
+                            'id' => 'search',
+                            'name' => 'search',
+                            'placeholder' => __('admin.settings.members.index.search_placeholder'),
+                            'value' => $search,
+                        ])
+                    </div>
 
-                    @include('components::form.button', [
-                        'type' => 'submit',
-                        'label' => __('admin.settings.members.index.search_button'),
-                    ])
+                    <!-- 権限フィルター -->
+                    <div>
+                        <label for="role" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            {{ __('admin.settings.members.index.role_filter') }}
+                        </label>
+                        @include('components::form.select', [
+                            'id' => 'role',
+                            'name' => 'role',
+                            'options' => [
+                                '' => __('admin.settings.members.index.all_roles'),
+                                '0' => __('admin.common.roles.super_admin'),
+                                '1' => __('admin.common.roles.admin'),
+                                '2' => __('admin.common.roles.editor'),
+                                '3' => __('admin.common.roles.author'),
+                                '4' => __('admin.common.roles.contributor'),
+                                '5' => __('admin.common.roles.receptionist'),
+                            ],
+                            'value' => $roleFilter,
+                        ])
+                    </div>
+
+                    <!-- ステータスフィルター -->
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            {{ __('admin.settings.members.index.status_filter') }}
+                        </label>
+                        @include('components::form.select', [
+                            'id' => 'status',
+                            'name' => 'status',
+                            'options' => [
+                                '' => __('admin.settings.members.index.all_statuses'),
+                                '1' => __('admin.settings.members.index.status_active'),
+                                '0' => __('admin.settings.members.index.status_inactive'),
+                            ],
+                            'value' => $statusFilter,
+                        ])
+                    </div>
+
+                    <!-- 検索ボタン -->
+                    <div class="flex items-end">
+                        <div class="flex gap-2 w-full">
+                            @include('components::form.button', [
+                                'type' => 'submit',
+                                'label' => __('admin.settings.members.index.search_button'),
+                                'class' => 'flex-1'
+                            ])
+                            <a href="{{ route('admin.settings.members.index') }}" 
+                               class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 flex items-center justify-center">
+                                {{ __('admin.settings.members.index.clear_button') }}
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </fieldset>
         </form>
@@ -116,6 +173,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'route' => 'admin.settings.members.index',
             'routeParams' => array_filter([
                 'search' => request('search'),
+                'role' => request('role'),
+                'status' => request('status'),
                 'per_page' => request('per_page')
             ]),
             'mobilePageRange' => 0,

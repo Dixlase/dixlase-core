@@ -61,8 +61,15 @@ class AdminMembersSettingsController extends AdminLoggedInController
 
         $this->viewParams['members'] = Member::all();
 
-        // 検索条件の取得
+        // 検索条件の取得（デフォルト値設定）
         $search = $request->input('search');
+        $roleFilter = $request->input('role', ''); // 権限：デフォルトは全て（空文字）
+        
+        // ステータスフィルター：初回アクセス時のみデフォルトで有効（1）を設定
+        $statusFilter = $request->input('status');
+        if ($statusFilter === null && !$request->hasAny(['search', 'role', 'page', 'per_page'])) {
+            $statusFilter = '1'; // 初回アクセス時は有効のみ表示
+        }
         
         // 表示件数の取得（デフォルト25件）
         $perPage = $request->input('per_page', 25);
@@ -76,13 +83,22 @@ class AdminMembersSettingsController extends AdminLoggedInController
         // ユーザーを検索
         $members = Member::query()
             ->when($search, function ($query, $search) {
-                $query->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('email', 'like', '%' . $search . '%');
+                $query->where(function ($q) use ($search) {
+                    $q->where('id', 'like', '%' . $search . '%')
+                      ->orWhere('name', 'like', '%' . $search . '%')
+                      ->orWhere('email', 'like', '%' . $search . '%');
+                });
+            })
+            ->when($roleFilter, function ($query, $roleFilter) {
+                $query->where('role', $roleFilter);
+            })
+            ->when($statusFilter !== null, function ($query) use ($statusFilter) {
+                $query->where('status', $statusFilter);
             })
             ->paginate($perPage); // 動的ページネーション
 
         // ページネーションリンクにパラメータを追加
-        $members->appends($request->only(['search', 'per_page']));
+        $members->appends($request->only(['search', 'role', 'status', 'per_page']));
         
         // カスタムページネーション情報を準備
         $pagination = [
@@ -98,6 +114,8 @@ class AdminMembersSettingsController extends AdminLoggedInController
         
         $this->viewParams['members'] = $members;
         $this->viewParams['search'] = $search;
+        $this->viewParams['roleFilter'] = $roleFilter;
+        $this->viewParams['statusFilter'] = $statusFilter;
         $this->viewParams['pagination'] = $pagination;
 
         // ビューにデータを渡す
