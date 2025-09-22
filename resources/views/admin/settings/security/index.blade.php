@@ -71,6 +71,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <legend>{{ __('admin.settings.security.notification_enabled') }}</legend>
                 
+                <p>{{ __('admin.settings.security.notification_enabled_help') }}</p>
                 @include('components.form.hidden', [
                     'name' => 'notification_enabled',
                     'value' => '0'
@@ -86,7 +87,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     'class' => ''
                 ])
                 
-                <p>{{ __('admin.settings.security.notification_enabled_help') }}</p>
+                
             </fieldset>
 
             <!-- 通知するログレベル -->
@@ -101,6 +102,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         ">
                 <legend>{{ __('admin.settings.security.notification_log_levels') }}</legend>
                 
+                <p>{{ __('admin.settings.security.notification_log_levels_help') }}</p>
                 
                 <div class="mt-3" :class="{ 'opacity-50': !notificationEnabled }">
                     @php
@@ -121,7 +123,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     ])
                 </div>
                 
-                <p>{{ __('admin.settings.security.notification_log_levels_help') }}</p>
             </fieldset>
         </section>
 
@@ -133,7 +134,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <!-- セッションドライバー -->
             <fieldset>
                 <legend>{{ __('admin.settings.security.session_driver') }}</legend>
-                                    
+                         
+                <p>{{ __('admin.settings.security.session_driver_help') }}</p>
                 @include('components.form.select', [
                     'id' => 'session_driver',
                     'name' => 'session_driver',
@@ -149,13 +151,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     'class' => 'mt-2'
                 ])
                 
-                <p>{{ __('admin.settings.security.session_driver_help') }}</p>
+                
             </fieldset>
 
             <!-- セッション暗号化 -->
             <fieldset>
                 <legend>{{ __('admin.settings.security.session_encrypt') }}</legend>
                 
+                <p>{{ __('admin.settings.security.session_encrypt_help') }}</p>
                 @include('components.form.hidden', [
                     'name' => 'session_encrypt',
                     'value' => '0'
@@ -171,13 +174,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     'class' => ''
                 ])
                 
-                <p>{{ __('admin.settings.security.session_encrypt_help') }}</p>
+                
             </fieldset>
 
             <!-- デフォルトセッション有効時間 -->
             <fieldset>
                 <legend>{{ __('admin.settings.security.session_lifetime') }}</legend>
                 
+                <p id="session_lifetime_help">{{ __('admin.settings.security.session_lifetime_help') }}</p>
+
                 <div class="flex items-center space-x-3 mt-2">
                     @include('components.form.text', [
                         'id' => 'session_lifetime',
@@ -194,7 +199,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </span>
                 </div>
                 
-                <p id="session_lifetime_help">{{ __('admin.settings.security.session_lifetime_help') }}</p>
+                
             </fieldset>
         </section>
 

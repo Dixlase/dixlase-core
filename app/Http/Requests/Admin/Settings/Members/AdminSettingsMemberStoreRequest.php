@@ -61,7 +61,7 @@ class AdminSettingsMemberStoreRequest extends FormRequest
             'role' => ['required', Rule::in(array_column(MemberRole::cases(), 'value'))],
             'appearance' => 'required|numeric|in:0,1,2',
             'status' => 'required|numeric|in:0,1',
-            'login_notification_mode' => 'required|numeric|in:1,2,3',
+            'login_notification' => 'nullable|numeric|in:0,1',
             'two_factor_mode' => 'nullable|numeric|in:1,2,3',
             'two_factor_method' => 'nullable|numeric',
         ];

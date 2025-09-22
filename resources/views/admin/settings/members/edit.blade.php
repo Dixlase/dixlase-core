@@ -21,30 +21,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('admin::partials.layout')
 
 @section('content')
-    <form id="update-form" action="{{ route('admin.settings.members.update', ['member' => $member->id]) }}" method="POST" class="mb-48">
-        @csrf
-        @method('PATCH')
-        @include('components::form.hidden', [
-            'name' => 'id',
-            'value' => $member->id,
-        ])
-
-        <!-- フォーム -->
-        @include('admin::settings.members.partials.form',[
-            'require_password' => false,
-        ])
-    </form>
-
-        <!-- 削除用フォーム（ボタンは下部バーに出す） -->
-    <form id="delete-form" action="{{ route('admin.settings.members.destroy', ['member' => $member->id]) }}" method="POST">
-        @csrf
-        @method('DELETE')
-    </form>
-
-    <!-- 強制ログアウト用フォーム -->
-    <form id="force-logout-form" action="{{ route('admin.settings.members.force-logout', ['member' => $member->id]) }}" method="POST">
-        @csrf
-    </form>
+    @include('admin.settings.members.partials.members-form', [
+        'member' => $member,
+        'requirePassword' => false,
+        'passwordMinLength' => $passwordMinLength,
+        'passwordRequireUppercase' => $passwordRequireUppercase,
+        'passwordRequireSymbol' => $passwordRequireSymbol,
+        'roles' => $roles,
+        'twoFactorMode' => $twoFactorMode,
+        'enabledTwoFactorMethods' => $enabledTwoFactorMethods,
+        'defaultTwoFactorMethod' => $defaultTwoFactorMethod,
+        'isInitialAdmin' => $isInitialAdmin,
+        'isMailServerTested' => $isMailServerTested,
+        'formAction' => route('admin.settings.members.update', ['member' => $member->id]),
+        'formMethod' => 'PATCH',
+        'formId' => 'update-form',
+        'includeForm' => true
+    ])
 @endsection
 
 @section('save')
@@ -71,27 +64,5 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     ])
 
 
-@endsection
-
-@section('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const saveModal = document.getElementById('confirmationModal');
-        const forceLogoutModal = document.getElementById('forceLogoutModal');
-        const deleteModal = document.getElementById('deleteModal');
-
-        saveModal.querySelector('button[type="submit"]').addEventListener('click', () => {
-            document.getElementById('update-form').submit();
-        });
-
-        forceLogoutModal.querySelector('button[type="submit"]').addEventListener('click', () => {
-            document.getElementById('force-logout-form').submit();
-        });
-
-        deleteModal.querySelector('button[type="submit"]').addEventListener('click', () => {
-            document.getElementById('delete-form').submit();
-        });
-    });
-</script>
 @endsection
 

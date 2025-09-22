@@ -23,13 +23,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
 @section('content')
-
-    <form action="{{ route('admin.settings.members.store') }}" method="POST" class="mt-6 mb-12" id="create-form">
-        @csrf
-        @include('admin::settings.members.partials.form',[
-            'require_password' => true,
-        ])
-    </form>
+    @include('admin.settings.members.partials.members-form', [
+        'requirePassword' => true,
+        'passwordMinLength' => $passwordMinLength,
+        'passwordRequireUppercase' => $passwordRequireUppercase,
+        'passwordRequireSymbol' => $passwordRequireSymbol,
+        'roles' => $roles,
+        'twoFactorMode' => $twoFactorMode,
+        'enabledTwoFactorMethods' => $enabledTwoFactorMethods,
+        'defaultTwoFactorMethod' => $defaultTwoFactorMethod,
+        'isInitialAdmin' => false,
+        'isMailServerTested' => $isMailServerTested,
+        'formAction' => route('admin.settings.members.store'),
+        'formMethod' => 'POST',
+        'formId' => 'create-form',
+        'includeForm' => true
+    ])
 @endsection
 
 @section('save')

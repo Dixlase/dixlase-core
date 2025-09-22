@@ -88,6 +88,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['member'] = null;
 
         // 権限の選択肢をセット
+        $this->viewParams['roles'] = MemberRole::cases();
         $this->viewParams['roleOptions'] = MemberRole::translationOptions();
 
         // 他の初期値も同様にセット可能
@@ -139,7 +140,13 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['enabledTwoFactorMethods'] = $twoFactorMethodOptions;
         $this->viewParams['defaultTwoFactorMethod'] = (int) MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value);
 
-        return view('admin::settings.members.create', $this->viewParams);
+        // 二段階認証モード設定
+        $this->viewParams['twoFactorMode'] = TwoFactorMode::from($this->viewParams['force2fa']);
+
+        // メール設定テスト状況を取得
+        $this->viewParams['isMailServerTested'] = $this->isMailServerTested();
+
+        return view('admin.settings.members.create', $this->viewParams);
     }
 
     /**
@@ -156,7 +163,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $member = Member::create($validated);
 
         // リダイレクト
-        return redirect()->route('admin.settings.members.edit', ['member' => $member->id])->with('success', '新しいユーザーが作成されました！');
+        return redirect()->route('admin.settings.members.edit', ['member' => $member->id])->with('success', __('admin.settings.members.messages.created'));
     }
 
 
@@ -172,6 +179,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['isInitialAdmin'] = $isInitialAdmin;
 
         // 選択肢用の配列
+        $this->viewParams['roles'] = MemberRole::cases();
         $this->viewParams['roleOptions'] = MemberRole::translationOptions();
         $this->viewParams['appearanceOptions'] = AppearanceMode::translationOptions();
         
@@ -217,7 +225,13 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['enabledTwoFactorMethods'] = $twoFactorMethodOptions;
         $this->viewParams['defaultTwoFactorMethod'] = (int) MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value);
 
-        return view('admin::settings.members.edit', $this->viewParams);
+        // 二段階認証モード設定
+        $this->viewParams['twoFactorMode'] = TwoFactorMode::from($this->viewParams['force2fa']);
+
+        // メール設定テスト状況を取得
+        $this->viewParams['isMailServerTested'] = $this->isMailServerTested();
+
+        return view('admin.settings.members.edit', $this->viewParams);
     }
 
     /**
@@ -232,12 +246,12 @@ class AdminMembersSettingsController extends AdminLoggedInController
         if ($member->id === 1) {
             // 権限変更を防ぐ
             if (isset($validated['role']) && $validated['role'] !== MemberRole::SUPER_ADMIN->value) {
-                return redirect()->back()->withErrors(['role' => '初期管理者アカウントの権限は変更できません。']);
+                return redirect()->back()->withErrors(['role' => __('admin.settings.members.messages.initial_member_role_protected')]);
             }
             
             // ステータス無効化を防ぐ
             if (isset($validated['status']) && $validated['status'] !== MemberStatus::Active->value) {
-                return redirect()->back()->withErrors(['status' => '初期管理者アカウントは無効化できません。']);
+                return redirect()->back()->withErrors(['status' => __('admin.settings.members.messages.initial_member_status_protected')]);
             }
         }
 
@@ -257,7 +271,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $member->update($validated);
         $id = $member->id;
 
-        return redirect()->route('admin.settings.members.edit', ['member' => $id])->with('success', '管理者情報を更新しました！');
+        return redirect()->route('admin.settings.members.edit', ['member' => $id])->with('success', __('admin.settings.members.messages.updated'));
     }
 
     /**
@@ -267,12 +281,12 @@ class AdminMembersSettingsController extends AdminLoggedInController
     {
         // 初期管理者アカウント（ID=1）の削除を防ぐ
         if ($member->id === 1) {
-            return redirect()->back()->withErrors(['delete' => '初期管理者アカウントは削除できません。']);
+            return redirect()->back()->withErrors(['delete' => __('admin.settings.members.messages.initial_member_cannot_delete')]);
         }
 
         $member->delete();
 
-        return redirect()->route('admin.settings.members.index')->with('success', '管理者アカウントを削除しました！');
+        return redirect()->route('admin.settings.members.index')->with('success', __('admin.settings.members.messages.deleted'));
     }
 
     /**
@@ -292,7 +306,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         }
 
         return redirect()->route('admin.settings.members.edit', ['member' => $member->id])
-            ->with('success', __('admin.settings.members.force_logout_success', ['name' => $member->name]));
+            ->with('success', __('admin.settings.members.messages.force_logout_success'));
     }
 
     /**
@@ -398,13 +412,13 @@ class AdminMembersSettingsController extends AdminLoggedInController
             );
         }
 
-        return redirect()->back()->with('success', '権限設定を保存しました');
+        return redirect()->back()->with('success', __('admin.settings.members.messages.permissions_saved'));
     }
 
     protected function authorizeEdit(string $menuKey)
     {
         if (!\App\Helpers\AdminHelper::canEditMenu($menuKey)) {
-            abort(403, 'この操作を行う権限がありません');
+            abort(403, __('admin.settings.members.messages.insufficient_permissions'));
         }
     }
 
