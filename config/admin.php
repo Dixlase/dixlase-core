@@ -170,9 +170,9 @@ return [
                             'route' => 'admin.settings.systems.cache',
                             'icon' => 'fas fa-fw fa-trash-alt',
                         ],
-                        'database_cleanup' => [
-                            'text' => 'admin.nav.settings.systems.database_cleanup',
-                            'route' => 'admin.settings.systems.database_cleanup',
+                        'database' => [
+                            'text' => 'admin.nav.settings.systems.database',
+                            'route' => 'admin.settings.systems.database',
                             'icon' => 'fas fa-fw fa-database',
                         ],
                         'logs' => [

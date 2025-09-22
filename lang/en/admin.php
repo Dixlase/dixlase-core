@@ -179,7 +179,7 @@ return [
             'systems' => [
                 'text' => 'System',
                 'cache' => 'Cache',
-                'database_cleanup' => 'Database Cleanup',
+                'database' => 'Database',
                 'logs' => 'Log Information',
                 'info'  => 'System Information',
             ],
@@ -991,7 +991,7 @@ Clicking this link will complete the full mail function test.',
                 'systems' => [
                     'text' => 'System',
                     'cache' => 'Cache Management',
-                    'database_cleanup' => 'Database Cleanup',
+                    'database' => 'Database Management',
                     'logs' => 'System Logs',
                     'info' => 'System Information',
                 ],
@@ -1038,6 +1038,7 @@ Clicking this link will complete the full mail function test.',
         'systems' => [
             'cache' => [
                 'heading' => 'Cache Management',
+                'title' => 'Cache Clear',
                 'description' => 'Clear various application caches',
                 'config_cache' => [
                     'name' => 'Configuration Cache',
@@ -1115,8 +1116,8 @@ Clicking this link will complete the full mail function test.',
                     'file_not_found' => 'Log file does not exist: :filename',
                 ],
             ],
-            'database_cleanup' => [
-                'heading' => 'Database Cleanup',
+            'database' => [
+                'heading' => 'Database Management',
                 'description' => 'Clean up old database records to maintain system performance',
                 'all_cleanup_button' => 'Clean All',
                 'all_cleanup_description' => 'Clean up all database tables with default settings',

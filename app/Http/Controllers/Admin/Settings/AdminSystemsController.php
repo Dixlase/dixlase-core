@@ -287,43 +287,43 @@ class AdminSystemsController extends AdminLoggedInController
         }
     }
 
-    // データベースクリーンアップ管理画面
-    public function databaseCleanup()
+    // データベース管理画面
+    public function database()
     {
         $cleanupInfo = [
             'login_attempts' => [
-                'name' => __('admin.settings.systems.database_cleanup.login_attempts.name'),
-                'description' => __('admin.settings.systems.database_cleanup.login_attempts.description'),
+                'name' => __('admin.settings.systems.database.login_attempts.name'),
+                'description' => __('admin.settings.systems.database.login_attempts.description'),
                 'default_days' => 30,
                 'command' => 'admin:cleanup-login-attempts'
             ],
             'password_reset_tokens' => [
-                'name' => __('admin.settings.systems.database_cleanup.password_reset_tokens.name'),
-                'description' => __('admin.settings.systems.database_cleanup.password_reset_tokens.description'),
+                'name' => __('admin.settings.systems.database.password_reset_tokens.name'),
+                'description' => __('admin.settings.systems.database.password_reset_tokens.description'),
                 'default_days' => 30,
                 'command' => 'admin:cleanup-password-reset-tokens'
             ],
             'trusted_devices' => [
-                'name' => __('admin.settings.systems.database_cleanup.trusted_devices.name'),
-                'description' => __('admin.settings.systems.database_cleanup.trusted_devices.description'),
+                'name' => __('admin.settings.systems.database.trusted_devices.name'),
+                'description' => __('admin.settings.systems.database.trusted_devices.description'),
                 'default_days' => 90,
                 'command' => 'admin:cleanup-trusted-devices'
             ],
             'two_factor_tokens' => [
-                'name' => __('admin.settings.systems.database_cleanup.two_factor_tokens.name'),
-                'description' => __('admin.settings.systems.database_cleanup.two_factor_tokens.description'),
+                'name' => __('admin.settings.systems.database.two_factor_tokens.name'),
+                'description' => __('admin.settings.systems.database.two_factor_tokens.description'),
                 'default_days' => 7,
                 'command' => 'admin:cleanup-two-factor-tokens'
             ],
             'cache_data' => [
-                'name' => __('admin.settings.systems.database_cleanup.cache_data.name'),
-                'description' => __('admin.settings.systems.database_cleanup.cache_data.description'),
+                'name' => __('admin.settings.systems.database.cache_data.name'),
+                'description' => __('admin.settings.systems.database.cache_data.description'),
                 'default_days' => null, // 期限切れのみ
                 'command' => 'admin:cleanup-cache'
             ],
             'sessions' => [
-                'name' => __('admin.settings.systems.database_cleanup.sessions.name'),
-                'description' => __('admin.settings.systems.database_cleanup.sessions.description'),
+                'name' => __('admin.settings.systems.database.sessions.name'),
+                'description' => __('admin.settings.systems.database.sessions.description'),
                 'default_days' => 7,
                 'command' => 'admin:cleanup-sessions'
             ]
@@ -331,7 +331,7 @@ class AdminSystemsController extends AdminLoggedInController
 
         $this->viewParams['cleanupInfo'] = $cleanupInfo;
         
-        return view('admin::settings.systems.database_cleanup', $this->viewParams);
+        return view('admin::settings.systems.database', $this->viewParams);
     }
 
     // 個別データベースクリーンアップ

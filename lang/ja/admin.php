@@ -180,7 +180,7 @@ return [
             'systems' => [
                 'text' => 'システム',
                 'cache' => 'キャッシュ管理',
-                'database_cleanup' => 'データベースクリーンアップ',
+                'database' => 'データベース管理',
                 'logs' => 'ログ情報',
                 'info'  => 'システム情報',
             ],
@@ -958,7 +958,7 @@ return [
                 'systems' => [
                     'text' => 'システム',
                     'cache' => 'キャッシュ管理',
-                    'database_cleanup' => 'データベースクリーンアップ',
+                    'database' => 'データベース管理',
                     'logs' => 'システムログ',
                     'info' => 'システム情報',
                 ],
@@ -1005,6 +1005,7 @@ return [
         'systems' => [
             'cache' => [
                 'heading' => 'キャッシュ管理',
+                'title' => 'キャッシュクリア',
                 'description' => 'アプリケーションの各種キャッシュをクリアできます',
                 'config_cache' => [
                     'name' => '設定キャッシュ',
@@ -1082,8 +1083,8 @@ return [
                     'file_not_found' => 'ログファイルが存在しません：:filename',
                 ],
             ],
-            'database_cleanup' => [
-                'heading' => 'データベースクリーンアップ',
+            'database' => [
+                'heading' => 'データベース管理',
                 'description' => 'システムパフォーマンスを維持するために古いデータベースレコードをクリーンアップします',
                 'all_cleanup_button' => 'すべてクリーンアップ',
                 'all_cleanup_description' => 'すべてのデータベーステーブルをデフォルト設定でクリーンアップします',
