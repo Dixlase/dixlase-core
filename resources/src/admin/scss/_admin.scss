@@ -9,12 +9,12 @@
 
 .admin {
 
-    &>h2 {
+    h2 {
         font-size: 1.5rem;
         @apply mb-3 text-lg font-semibold;
     }
 
-    &>h3 {
+    h3 {
         @apply block font-medium text-sm text-gray-700 dark:text-gray-300 mb-2;
     }
 
@@ -26,6 +26,7 @@
             @apply dark:bg-gray-800/50 rounded-xl;
         }
     }
+
 
     // ヘルプテキスト（pタグにデフォルト適用）
     p {

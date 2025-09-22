@@ -71,14 +71,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
         
         <div class="modal-actions">
-            <button type="button"
-                @if ($form) onclick="submitModalForm('{{ $form }}')" @else type="submit" @endif
-                class="modal-button modal-button--confirm {{ $confirm_color }}">
-                {{ $confirm_label }}
-            </button>
-            <button type="button" onclick="closeModal('{{ $id }}')" class="modal-button modal-button--cancel">
-                {{ $cancel_label }}
-            </button>
+            @include('components::form.button', [
+                'type' => 'button',
+                'label' => $confirm_label,
+                'variant' => $confirm_color === 'blue' ? 'primary' : ($confirm_color === 'red' ? 'danger' : ($confirm_color === 'yellow' ? 'warning' : ($confirm_color === 'green' ? 'success' : 'primary'))),
+                'onclick' => $form ? "submitModalForm('$form')" : null,
+                'class' => 'mr-2'
+            ])
+            
+            @include('components::form.button', [
+                'type' => 'button',
+                'label' => $cancel_label,
+                'variant' => 'secondary',
+                'onclick' => "closeModal('$id')"
+            ])
         </div>
     </div>
 </div>
