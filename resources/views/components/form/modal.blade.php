@@ -38,7 +38,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @php
     $iconClasses = [
         'warning' => 'fas fa-exclamation-triangle',
-        'danger' => 'fas fa-exclamation-triangle',
+        'danger' => 'fas fa-times-circle',
         'info' => 'fas fa-info-circle',
         'success' => 'fas fa-check-circle'
     ];

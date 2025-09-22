@@ -315,7 +315,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 全メンバー強制ログアウト -->
     <section>
         <h2>{{ __('admin.settings.members.settings.force_logout_heading') }}</h2>
-        
+        <p class="mb-3">{{ __('admin.settings.members.settings.force_logout_description') }}</p>
         <!-- 全メンバー強制ログアウト用フォーム -->
         <form id="force-logout-all-form" action="{{ route('admin.settings.members.force-logout-all') }}" method="POST">
             @csrf
@@ -325,7 +325,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @include('components::form.button', [
             'type' => 'button',
             'label' => __('admin.settings.members.settings.force_logout_all_button'),
-            'class' => 'button-red',
+            'variant' => 'warning',
             'onclick' => "openModal('forceLogoutAllModal')"
         ])
     </section>
@@ -361,6 +361,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'confirm_label' => __('admin.settings.members.settings.force_logout_all_modal.confirm_label'),
         'cancel_label' => __('admin.settings.members.settings.force_logout_all_modal.cancel_label'),
         'form' => 'force-logout-all-form',
+        'icon_type' => 'warning',
+        'confirm_color' => 'yellow'
     ])
 @endsection
 @section('scripts')
