@@ -362,7 +362,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'message' => __('admin.settings.members.modals.force_logout.message', ['name' => $member->name]),
         'confirm_label' => __('admin.settings.members.modals.force_logout.confirm'),
         'cancel_label' => __('admin.settings.members.modals.cancel'),
-        'form' => $forceLogoutFormId
+        'form' => $forceLogoutFormId,
+        'icon_type' => 'warning',
+        'confirm_color' => 'yellow'
         ])
 
     @if(!$isInitialAdmin)
@@ -372,7 +374,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'message' => __('admin.settings.members.modals.delete.message', ['name' => $member->name]) . "\n\n" . __('admin.settings.members.modals.delete.warning'),
             'confirm_label' => __('admin.settings.members.modals.delete.confirm'),
             'cancel_label' => __('admin.settings.members.modals.cancel'),
-            'form' => $deleteMemberFormId
+            'form' => $deleteMemberFormId,
+            'icon_type' => 'danger',
+            'confirm_color' => 'red'
         ])
     @endif
 @endif
