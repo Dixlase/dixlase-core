@@ -18,21 +18,21 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-@extends('admin::partials.layout-auth')
+@extends('layouts.auth')
 @section('title', __('admin.auth.reset_password.title'))
 @section('header', __('admin.auth.reset_password.header'))
 @section('description', __('admin.auth.reset_password.description'))
 
 @section('content')
-    <x-auth.reset-password-form 
-        :action="route('admin.password.store')"
-        :token="$request->route('token')"
-        :email="$request->email"
-        :email-label="__('admin.auth.reset_password.email')"
-        :password-label="__('admin.auth.reset_password.password')"
-        :submit-text="__('admin.auth.reset_password.reset_password_button')"
-        :password-min-length="$passwordMinLength"
-        :password-require-uppercase="$passwordRequireUppercase"
-        :password-require-symbol="$passwordRequireSymbol"
-    />
+    @include('components.auth.reset-password', [
+        'action' => route('admin.password.store'),
+        'token' => $request->route('token'),
+        'email' => $request->email,
+        'emailLabel' => __('admin.auth.reset_password.email'),
+        'passwordLabel' => __('admin.auth.reset_password.password'),
+        'submitText' => __('admin.auth.reset_password.reset_password_button'),
+        'passwordMinLength' => $passwordMinLength,
+        'passwordRequireUppercase' => $passwordRequireUppercase,
+        'passwordRequireSymbol' => $passwordRequireSymbol
+    ])
 @endsection

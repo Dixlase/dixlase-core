@@ -18,7 +18,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-@extends('admin::partials.layout-auth')
+@extends('layouts.auth')
 @section('title', __('admin.auth.forgot_password.title'))
 @section('header', __('admin.auth.forgot_password.header'))
 @section('description')
@@ -26,11 +26,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('content')
-    <x-auth.forgot-password-form 
-        :action="route('admin.password.email')"
-        :email-label="__('admin.auth.forgot_password.email')"
-        :submit-text="__('admin.auth.forgot_password.send_reset_link')"
-        :back-text="__('admin.auth.forgot_password.back_to_login')"
-        :back-url="route('admin.login')"
-    />
+    @include('components.auth.forgot-password', [
+        'action' => route('admin.password.email'),
+        'emailLabel' => __('admin.auth.forgot_password.email'),
+        'submitText' => __('admin.auth.forgot_password.send_reset_link'),
+        'backText' => __('admin.auth.forgot_password.back_to_login'),
+        'backUrl' => route('admin.login')
+    ])
 @endsection

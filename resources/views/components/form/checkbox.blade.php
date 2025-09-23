@@ -28,7 +28,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'xModel' => null, // Alpine.jsのx-model属性
 ])
 
-<div class="flex flex-wrap gap-4 mb-3">
+<div class="flex flex-wrap gap-4 my-4">
         <label class="inline-flex items-center">
             <input type="checkbox"
                 id="{{ $id ?: $name }}"
@@ -37,6 +37,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 {{ $xModel ? "x-model=$xModel" : '' }}
                 class="{{ config('appearance.appearance_class.form.checkbox') }} {{ $class }}"
                 @if ($value || $checked) checked @endif>
-            <span class="ml-2 text-sm">{{ __($label) }}</span>
+            <span class="ml-2 text-sm dark:text-white">{{ __($label) }}</span>
         </label>
 </div>

@@ -1,4 +1,4 @@
-@extends('admin::partials.layout-auth')
+@extends('layouts.auth')
 
 @section('title', '2段階認証コード入力')
 
