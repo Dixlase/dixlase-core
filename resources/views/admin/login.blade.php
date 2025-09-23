@@ -28,8 +28,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @csrf
 
         @include('components.captcha', [
-            'action' => 'admin_login',
-            'formName' => 'admin_login'
+            'enabled' => $captchaEnabled ?? false,
+            'widget' => $captchaWidget ?? null
         ])
 
         <!-- メールアドレス -->

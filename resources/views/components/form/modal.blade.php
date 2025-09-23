@@ -73,17 +73,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="modal-actions">
             @include('components::form.button', [
                 'type' => 'button',
+                'label' => $cancel_label,
+                'variant' => 'secondary',
+                'onclick' => "closeModal('$id')",
+                'class' => 'mx-2'
+            ])
+            @include('components::form.button', [
+                'type' => 'button',
                 'label' => $confirm_label,
                 'variant' => $confirm_color === 'blue' ? 'primary' : ($confirm_color === 'red' ? 'danger' : ($confirm_color === 'yellow' ? 'warning' : ($confirm_color === 'green' ? 'success' : 'primary'))),
                 'onclick' => $form ? "submitModalForm('$form')" : null,
-                'class' => 'mr-2'
-            ])
-            
-            @include('components::form.button', [
-                'type' => 'button',
-                'label' => $cancel_label,
-                'variant' => 'secondary',
-                'onclick' => "closeModal('$id')"
+                'class' => 'mx-2'
+                
             ])
         </div>
     </div>

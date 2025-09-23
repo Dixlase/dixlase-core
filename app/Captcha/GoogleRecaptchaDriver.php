@@ -26,6 +26,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Models\SecuritySetting;
+use App\Helpers\CaptchaHelper;
 use Google\Cloud\RecaptchaEnterprise\V1\RecaptchaEnterpriseServiceClient;
 use Google\Cloud\RecaptchaEnterprise\V1\Event;
 use Google\Cloud\RecaptchaEnterprise\V1\Assessment;
@@ -37,29 +38,37 @@ class GoogleRecaptchaDriver implements CaptchaDriver
 
     public function __construct(array $config = [])
     {
-        $captchaDriver = SecuritySetting::get('captcha_driver', 'google');
+        $captchaDriver = CaptchaHelper::getDriver();
         
         if ($captchaDriver === 'google_enterprise') {
             $this->config = array_merge([
-                'site_key' => SecuritySetting::get('captcha_google_enterprise_site_key', ''),
-                'secret_key' => SecuritySetting::get('captcha_google_enterprise_secret_key', ''),
+                'site_key' => CaptchaHelper::getSiteKey(),
+                'secret_key' => CaptchaHelper::getSecretKey(),
                 'version' => 'v3', // Enterprise always uses v3
-                'min_score' => (float) SecuritySetting::get('captcha_google_min_score', 0.5),
+                'min_score' => CaptchaHelper::getGoogleMinScore(),
                 'verify_url' => 'https://www.google.com/recaptcha/api/siteverify',
-                'project_id' => SecuritySetting::get('captcha_google_project_id', ''),
+                'project_id' => CaptchaHelper::getGoogleProjectId(),
                 'use_enterprise' => true,
             ], $config);
         } else {
             $this->config = array_merge([
-                'site_key' => SecuritySetting::get('captcha_google_site_key', ''),
-                'secret_key' => SecuritySetting::get('captcha_google_secret_key', ''),
-                'version' => SecuritySetting::get('captcha_google_version', 'v3'),
-                'min_score' => (float) SecuritySetting::get('captcha_google_min_score', 0.5),
+                'site_key' => CaptchaHelper::getSiteKey(),
+                'secret_key' => CaptchaHelper::getSecretKey(),
+                'version' => CaptchaHelper::getGoogleVersion(),
+                'min_score' => CaptchaHelper::getGoogleMinScore(),
                 'verify_url' => 'https://www.google.com/recaptcha/api/siteverify',
                 'project_id' => '',
                 'use_enterprise' => false,
             ], $config);
         }
+        
+        // デバッグ用ログ
+        Log::info('GoogleRecaptchaDriver constructor debug', [
+            'captchaDriver' => $captchaDriver,
+            'site_key_from_helper' => CaptchaHelper::getSiteKey(),
+            'config_site_key' => $this->config['site_key'] ?? 'not_set',
+            'all_config' => $this->config
+        ]);
     }
 
     public function renderScript(): string
@@ -95,32 +104,60 @@ class GoogleRecaptchaDriver implements CaptchaDriver
         $callback = $options['callback'] ?? 'onRecaptchaCallback';
         $useEnterprise = $this->config['use_enterprise'] ?? false;
 
+        $scriptTag = $this->renderScript();
+        
+        // デバッグ用ログ
+        Log::info('GoogleRecaptchaDriver renderWidget debug', [
+            'siteKey' => $siteKey,
+            'version' => $version,
+            'action' => $action,
+            'useEnterprise' => $useEnterprise
+        ]);
+        
         if ($version === 'v3') {
             if ($useEnterprise) {
-                return "
+                return $scriptTag . "
+                    <input type=\"hidden\" id=\"g-recaptcha-response\" name=\"g-recaptcha-response\" value=\"\">
                     <script>
-                        grecaptcha.enterprise.ready(function() {
-                            grecaptcha.enterprise.execute('{$siteKey}', {action: '{$action}'}).then(function(token) {
-                                document.getElementById('g-recaptcha-response').value = token;
-                            });
+                        document.addEventListener('DOMContentLoaded', function() {
+                            if (typeof grecaptcha !== 'undefined' && grecaptcha.enterprise) {
+                                grecaptcha.enterprise.ready(function() {
+                                    grecaptcha.enterprise.execute('$siteKey', {action: '$action'}).then(function(token) {
+                                        document.getElementById('g-recaptcha-response').value = token;
+                                    });
+                                });
+                            } else {
+                                console.error('reCAPTCHA Enterprise script not loaded properly');
+                            }
                         });
                     </script>
-                    <input type=\"hidden\" id=\"g-recaptcha-response\" name=\"g-recaptcha-response\" value=\"\">
                 ";
             } else {
-                return "
+                return $scriptTag . "
+                    <input type=\"hidden\" id=\"g-recaptcha-response\" name=\"g-recaptcha-response\" value=\"\">
                     <script>
-                        grecaptcha.ready(function() {
-                            grecaptcha.execute('{$siteKey}', {action: '{$action}'}).then(function(token) {
-                                document.getElementById('g-recaptcha-response').value = token;
-                            });
+                        document.addEventListener('DOMContentLoaded', function() {
+                            console.log('CAPTCHA Debug - Site Key:', '$siteKey');
+                            console.log('CAPTCHA Debug - Action:', '$action');
+                            if (typeof grecaptcha !== 'undefined') {
+                                grecaptcha.ready(function() {
+                                    console.log('CAPTCHA Debug - About to execute with site key:', '$siteKey');
+                                    grecaptcha.execute('$siteKey', {action: '$action'}).then(function(token) {
+                                        console.log('CAPTCHA Debug - Token received:', token.substring(0, 20) + '...');
+                                        document.getElementById('g-recaptcha-response').value = token;
+                                    }).catch(function(error) {
+                                        console.error('CAPTCHA Debug - Execute failed:', error);
+                                    });
+                                });
+                            } else {
+                                console.error('reCAPTCHA v3 script not loaded properly');
+                            }
                         });
                     </script>
-                    <input type=\"hidden\" id=\"g-recaptcha-response\" name=\"g-recaptcha-response\" value=\"\">
                 ";
             }
         } else {
-            return "<div class=\"g-recaptcha\" data-sitekey=\"{$siteKey}\" data-callback=\"{$callback}\"></div>";
+            return $scriptTag . "<div class=\"g-recaptcha\" data-sitekey=\"$siteKey\" data-callback=\"$callback\"></div>";
         }
     }
 
@@ -303,12 +340,9 @@ class GoogleRecaptchaDriver implements CaptchaDriver
 
     public function isEnabled(): bool
     {
-        $captchaEnabled = SecuritySetting::get('captcha_enabled', false);
-        $captchaDriver = SecuritySetting::get('captcha_driver', '');
+        $captchaDriver = CaptchaHelper::getDriver();
         
-        return $captchaEnabled && 
-               ($captchaDriver === 'google' || $captchaDriver === 'google_enterprise') &&
-               !empty($this->config['site_key']) && 
-               !empty($this->config['secret_key']);
+        return CaptchaHelper::isEnabled() && 
+               ($captchaDriver === 'google' || $captchaDriver === 'google_enterprise');
     }
 }

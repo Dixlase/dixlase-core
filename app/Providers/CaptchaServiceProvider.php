@@ -24,7 +24,9 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use App\Captcha\CaptchaDriver;
-use App\Models\SecuritySetting;
+use App\Captcha\GoogleRecaptchaDriver;
+use App\Captcha\TurnstileCaptchaDriver;
+use App\Helpers\CaptchaHelper;
 
 class CaptchaServiceProvider extends ServiceProvider
 {
@@ -34,20 +36,17 @@ class CaptchaServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(CaptchaDriver::class, function ($app) {
-            $driver = SecuritySetting::get('captcha_driver', config('captcha.default', 'google'));
-            $config = config("captcha.drivers.{$driver}", []);
+            $driver = CaptchaHelper::getDriver();
             
-            if (empty($config) || !isset($config['class'])) {
-                throw new \InvalidArgumentException("Captcha driver [{$driver}] is not configured.");
+            switch ($driver) {
+                case 'google':
+                case 'google_enterprise':
+                    return new GoogleRecaptchaDriver();
+                case 'turnstile':
+                    return new TurnstileCaptchaDriver();
+                default:
+                    throw new \InvalidArgumentException("Captcha driver [{$driver}] is not supported.");
             }
-
-            $driverClass = $config['class'];
-            
-            if (!class_exists($driverClass)) {
-                throw new \InvalidArgumentException("Captcha driver class [{$driverClass}] does not exist.");
-            }
-
-            return new $driverClass($config);
         });
     }
 
