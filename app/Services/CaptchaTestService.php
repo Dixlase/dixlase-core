@@ -27,6 +27,7 @@ use App\Captcha\GoogleRecaptchaDriver;
 use App\Captcha\TurnstileCaptchaDriver;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Helpers\CaptchaHelper;
 use Carbon\Carbon;
 
 class CaptchaTestService
@@ -71,8 +72,8 @@ class CaptchaTestService
      */
     private function testGoogleRecaptcha(array $settings): array
     {
-        $siteKey = $settings['captcha_google_site_key'] ?? '';
-        $secretKey = $settings['captcha_google_secret_key'] ?? '';
+        $siteKey = $settings['captcha_site_key'] ?? CaptchaHelper::getSiteKey();
+        $secretKey = $settings['captcha_secret_key'] ?? CaptchaHelper::getSecretKey();
         $version = $settings['captcha_google_version'] ?? 'v3';
         
         Log::info('CAPTCHA Test Debug - Starting Google reCAPTCHA test', [

@@ -3,8 +3,9 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Captcha\GoogleRecaptchaDriver;
 use App\Models\SecuritySetting;
+use App\Captcha\GoogleRecaptchaDriver;
+use App\Helpers\CaptchaHelper;
 use Illuminate\Http\Request;
 
 class TestCaptchaCommand extends Command
@@ -46,18 +47,18 @@ class TestCaptchaCommand extends Command
         $captchaDriver = SecuritySetting::get('captcha_driver', 'google');
         $useEnterprise = $captchaDriver === 'google_enterprise';
         
-        if ($useEnterprise) {
-            $siteKey = SecuritySetting::get('captcha_google_enterprise_site_key', '');
-            $secretKey = SecuritySetting::get('captcha_google_enterprise_secret_key', '');
+        if ($captchaDriver === 'google_enterprise') {
+            $siteKey = CaptchaHelper::getSiteKey();
+            $secretKey = CaptchaHelper::getSecretKey();
             $version = 'v3'; // Enterprise always uses v3
         } else {
-            $siteKey = SecuritySetting::get('captcha_google_site_key', '');
-            $secretKey = SecuritySetting::get('captcha_google_secret_key', '');
-            $version = SecuritySetting::get('captcha_google_version', 'v3');
+            $siteKey = CaptchaHelper::getSiteKey();
+            $secretKey = CaptchaHelper::getSecretKey();
+            $version = CaptchaHelper::getGoogleVersion();
         }
         
-        $projectId = SecuritySetting::get('captcha_google_project_id', '');
-        $minScore = SecuritySetting::get('captcha_google_min_score', 0.5);
+        $projectId = CaptchaHelper::getGoogleProjectId();
+        $minScore = CaptchaHelper::getGoogleMinScore();
         
         $this->info("Site Key: " . ($siteKey ? 'Set (' . substr($siteKey, 0, 10) . '...)' : 'Not set'));
         $this->info("Secret Key: " . ($secretKey ? 'Set (' . substr($secretKey, 0, 10) . '...)' : 'Not set'));

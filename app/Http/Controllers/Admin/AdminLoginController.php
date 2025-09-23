@@ -38,6 +38,7 @@ use App\Services\MailServerValidatorService;
 use App\Models\SecuritySetting;
 use App\Models\CaptchaFormSetting;
 use App\Captcha\CaptchaDriver;
+use App\Helpers\CaptchaHelper;
 use Illuminate\Support\Facades\Log;
 
 
@@ -67,17 +68,28 @@ class AdminLoginController extends AdminController
         $this->viewParams['passwordResetEnabled'] = $passwordResetEnabled && MailServerValidatorService::canSendMail();
 
         // CAPTCHA設定を取得
-        $captchaEnabled = SecuritySetting::get('captcha_enabled', false);
-        $adminLoginCaptchaEnabled = CaptchaFormSetting::isEnabledFor('admin_login');
+        $captchaEnabled = CaptchaHelper::shouldShowCaptcha('admin_login');
         
-        if ($captchaEnabled && $adminLoginCaptchaEnabled) {
-            $captchaDriver = SecuritySetting::get('captcha_driver', 'google');
+        Log::info('AdminLoginController CAPTCHA debug', [
+            'captchaEnabled' => $captchaEnabled,
+            'siteKey' => CaptchaHelper::getSiteKey(),
+            'driver' => CaptchaHelper::getDriver()
+        ]);
+        
+        if ($captchaEnabled) {
             $this->viewParams['captchaEnabled'] = true;
-            $this->viewParams['captchaDriver'] = $captchaDriver;
+            $this->viewParams['captchaDriver'] = CaptchaHelper::getDriver();
             
             // CAPTCHAウィジェットを生成
             $captchaDriverInstance = app(CaptchaDriver::class);
-            $this->viewParams['captchaWidget'] = $captchaDriverInstance->renderWidget();
+            $widget = $captchaDriverInstance->renderWidget(['action' => 'admin_login']);
+            
+            Log::info('AdminLoginController widget debug', [
+                'widget_length' => strlen($widget),
+                'widget_preview' => substr($widget, 0, 200) . '...'
+            ]);
+            
+            $this->viewParams['captchaWidget'] = $widget;
         } else {
             $this->viewParams['captchaEnabled'] = false;
         }
@@ -94,10 +106,7 @@ class AdminLoginController extends AdminController
         $email = $request->email;
 
         // CAPTCHA検証
-        $captchaEnabled = SecuritySetting::get('captcha_enabled', false);
-        $adminLoginCaptchaEnabled = CaptchaFormSetting::isEnabledFor('admin_login');
-        
-        if ($captchaEnabled && $adminLoginCaptchaEnabled) {
+        if (CaptchaHelper::shouldShowCaptcha('admin_login')) {
             $captchaDriverInstance = app(CaptchaDriver::class);
             $captchaResult = $captchaDriverInstance->verify($request);
             

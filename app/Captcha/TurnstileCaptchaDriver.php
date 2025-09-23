@@ -26,6 +26,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Models\SecuritySetting;
+use App\Helpers\CaptchaHelper;
 
 class TurnstileCaptchaDriver implements CaptchaDriver
 {
@@ -34,8 +35,8 @@ class TurnstileCaptchaDriver implements CaptchaDriver
 
     public function __construct(array $config = [])
     {
-        $this->siteKey = $config['site_key'] ?? SecuritySetting::get('captcha_turnstile_site_key', '');
-        $this->secretKey = $config['secret_key'] ?? SecuritySetting::get('captcha_turnstile_secret_key', '');
+        $this->siteKey = $config['site_key'] ?? CaptchaHelper::getSiteKey();
+        $this->secretKey = $config['secret_key'] ?? CaptchaHelper::getSecretKey();
     }
 
     public function verify(Request $request): CaptchaResult
@@ -169,12 +170,9 @@ class TurnstileCaptchaDriver implements CaptchaDriver
 
     public function isEnabled(): bool
     {
-        $captchaEnabled = SecuritySetting::get('captcha_enabled', false);
-        $captchaDriver = SecuritySetting::get('captcha_driver', 'google');
+        $captchaDriver = CaptchaHelper::getDriver();
         
-        return $captchaEnabled && 
-               $captchaDriver === 'turnstile' && 
-               !empty($this->siteKey) && 
-               !empty($this->secretKey);
+        return CaptchaHelper::isEnabled() && 
+               $captchaDriver === 'turnstile';
     }
 }
