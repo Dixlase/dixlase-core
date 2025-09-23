@@ -18,7 +18,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-@extends('admin::partials.layout-auth')
+@extends('layouts.auth')
 @section('title', __('admin.login.title'))
 @section('header', __('admin.login.header'))
 @section('description', __('admin.login.description'))
@@ -27,48 +27,56 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <form method="POST" action="{{ route('admin.login') }}">
         @csrf
 
-        <x-captcha action="admin_login" form-name="admin_login" />
+        @include('components.captcha', [
+            'action' => 'admin_login',
+            'formName' => 'admin_login'
+        ])
 
         <!-- メールアドレス -->
-        <div class="mt-4">
-            <label for="email" class="block font-medium text-sm text-gray-700 dark:text-gray-300">{{ __('admin.login.email') }}</label>
-            <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username"
-                   class="mt-1 block w-full px-3 py-2 bg-white border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:border-gray-500 dark:text-white dark:focus:border-indigo-500 dark:focus:ring-indigo-500">
-            @error('email')
-                <p class="text-red-600 dark:text-red-400 text-sm mt-1">{{ $message }}</p>
-            @enderror
-        </div>
+        @include('components.auth.login-field', [
+            'id' => 'email',
+            'type' => 'email',
+            'name' => 'email',
+            'label' => __('admin.login.email'),
+            'value' => old('email'),
+            'required' => true,
+            'autofocus' => true,
+            'autocomplete' => 'username'
+        ])
 
         <!-- パスワード -->
-        <div class="mt-4">
-            <label for="password" class="block font-medium text-sm text-gray-700 dark:text-gray-300">{{ __('admin.login.password') }}</label>
-            <input id="password" type="password" name="password" required autocomplete="current-password"
-                   class="mt-1 block w-full px-3 py-2 bg-white border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:border-gray-500 dark:text-white dark:focus:border-indigo-500 dark:focus:ring-indigo-500">
-            @error('password')
-                <p class="text-red-600 dark:text-red-400 text-sm mt-1">{{ $message }}</p>
-            @enderror
-        </div>
-
-
+        @include('components.auth.login-field', [
+            'id' => 'password',
+            'type' => 'password',
+            'name' => 'password',
+            'label' => __('admin.login.password'),
+            'value' => '',
+            'required' => true,
+            'autofocus' => false,
+            'autocomplete' => 'current-password'
+        ])
 
         <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-500 dark:bg-gray-800 dark:text-indigo-400" name="remember">
-                <span class="ml-2 text-sm text-gray-600 dark:text-gray-300">{{ __('admin.login.remember_me') }}</span>
-            </label>
-        </div>
+        @include('components.form.checkbox', [
+            'id' => 'remember_me',
+            'name' => 'remember',
+            'label' => 'admin.login.remember_me',
+            'class' => 'rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-500 dark:bg-gray-800 dark:text-indigo-400'
+        ])
 
 
 
         <!-- ボタンとパスワードリセットリンク -->
         <div class="flex items-center justify-between mt-4">
-            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
-                {{ __('admin.login.login_button') }}
-            </button>
+            @include('components.form.button', [
+                'type' => 'submit',
+                'variant' => 'primary',
+                'label' => __('admin.login.login_button'),
+                'class' => 'dark:focus:ring-offset-gray-800'
+            ])
 
             @if (Route::has('admin.password.request') && ($passwordResetEnabled ?? true))
-                <a class="text-sm text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 hover:underline transition-colors duration-200" href="{{ route('admin.password.request') }}">
+                <a class="text-sm" href="{{ route('admin.password.request') }}">
                     {{ __('admin.login.forgot_password') }}
                 </a>
             @endif

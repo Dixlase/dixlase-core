@@ -74,7 +74,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md focus:outline-none transition ease-in-out duration-150 text-gray-500 bg-white hover:text-gray-700 dark:text-gray-300 dark:bg-gray-800 dark:hover:text-white"
                     aria-label="User menu"
                     aria-expanded="false">
-                    <i class="fa-solid fa-user-circle text-3xl text-gray-600 dark:text-gray-300" aria-hidden="true"></i>
+                    <i class="fa-solid fa-user-circle text-xl text-gray-600 dark:text-gray-300" aria-hidden="true"></i>
                     <div class="ml-2">{{ Auth::user()->name }}</div>
                     <i class="fa-solid fa-chevron-down ms-2 text-xs" aria-hidden="true"></i>
                 </button>
