@@ -107,8 +107,25 @@ class AdminLoginController extends AdminController
 
         // CAPTCHA検証
         if (CaptchaHelper::shouldShowCaptcha('admin_login')) {
+            Log::info('AdminLogin CAPTCHA verification start', [
+                'email' => $email,
+                'ip' => $request->ip(),
+                'driver' => CaptchaHelper::getDriver(),
+                'captcha_token_length' => strlen($request->input('g-recaptcha-response', ''))
+            ]);
+            
             $captchaDriverInstance = app(CaptchaDriver::class);
             $captchaResult = $captchaDriverInstance->verify($request);
+            
+            Log::info('AdminLogin CAPTCHA verification result', [
+                'email' => $email,
+                'ip' => $request->ip(),
+                'is_valid' => $captchaResult->isValid(),
+                'error_message' => $captchaResult->getErrorMessage(),
+                'score' => $captchaResult->getScore(),
+                'action' => $captchaResult->getAction(),
+                'metadata' => $captchaResult->getMetadata()
+            ]);
             
             if (!$captchaResult->isValid()) {
                 return back()->withErrors([

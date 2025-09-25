@@ -110,9 +110,15 @@ class CaptchaTestService
      */
     private function testGoogleRecaptchaEnterprise(array $settings): array
     {
-        $siteKey = $settings['captcha_google_enterprise_site_key'] ?? '';
-        $secretKey = $settings['captcha_google_enterprise_secret_key'] ?? '';
-        $projectId = $settings['captcha_google_project_id'] ?? '';
+        $siteKey = $settings['captcha_site_key'] ?? CaptchaHelper::getSiteKey();
+        $secretKey = $settings['captcha_secret_key'] ?? CaptchaHelper::getSecretKey();
+        $projectId = $settings['captcha_google_project_id'] ?? CaptchaHelper::getGoogleProjectId();
+        
+        Log::info('CAPTCHA Test Debug - Starting Google reCAPTCHA Enterprise test', [
+            'site_key' => substr($siteKey, 0, 10) . '...',
+            'secret_key' => substr($secretKey, 0, 10) . '...',
+            'project_id' => $projectId
+        ]);
         
         if (empty($siteKey) || empty($secretKey) || empty($projectId)) {
             return [
@@ -121,8 +127,30 @@ class CaptchaTestService
             ];
         }
         
+        // Google Cloud認証の確認
+        $credentialsPath = env('GOOGLE_APPLICATION_CREDENTIALS');
+        if (empty($credentialsPath) || !file_exists($credentialsPath)) {
+            Log::error('CAPTCHA Test Debug - Google Cloud credentials missing', [
+                'credentials_path' => $credentialsPath,
+                'file_exists' => $credentialsPath ? file_exists($credentialsPath) : false
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => 'Google Cloud認証情報が設定されていません。GOOGLE_APPLICATION_CREDENTIALSを設定してください。'
+            ];
+        }
+        
         // Enterprise APIの場合、Google Cloud SDKが必要
         try {
+            // RecaptchaEnterpriseServiceClientクラスの存在確認
+            if (!class_exists('Google\Cloud\RecaptchaEnterprise\V1\RecaptchaEnterpriseServiceClient')) {
+                return [
+                    'success' => false,
+                    'message' => 'Google Cloud reCAPTCHA Enterprise SDKがインストールされていません。composer require google/cloud-recaptcha-enterprise を実行してください。'
+                ];
+            }
+            
             $driver = new GoogleRecaptchaDriver([
                 'site_key' => $siteKey,
                 'secret_key' => $secretKey,
@@ -140,12 +168,17 @@ class CaptchaTestService
             
             return [
                 'success' => true,
-                'message' => __('admin.settings.security.captcha_test_enterprise_success')
+                'message' => 'Google reCAPTCHA Enterprise設定は正常です。実際のトークン検証にはGoogle Cloud認証が必要です。'
             ];
         } catch (\Exception $e) {
+            Log::error('CAPTCHA Test Debug - Enterprise test failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return [
                 'success' => false,
-                'message' => __('admin.settings.security.captcha_test_enterprise_api_failed') . ': ' . $e->getMessage()
+                'message' => __('admin.settings.security.captcha_api_connection_failed')
             ];
         }
     }
