@@ -25,8 +25,8 @@ namespace App\Captcha;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use App\Models\SecuritySetting;
 use App\Helpers\CaptchaHelper;
+use App\Models\SecuritySetting;
 use Google\Cloud\RecaptchaEnterprise\V1\RecaptchaEnterpriseServiceClient;
 use Google\Cloud\RecaptchaEnterprise\V1\Event;
 use Google\Cloud\RecaptchaEnterprise\V1\Assessment;
@@ -187,6 +187,24 @@ class GoogleRecaptchaDriver implements CaptchaDriver
     protected function verifyWithEnterpriseAPI(Request $request, string $token): CaptchaResult
     {
         try {
+            // Google Cloud認証の確認
+            $credentialsPath = env('GOOGLE_APPLICATION_CREDENTIALS');
+            Log::info('reCAPTCHA Enterprise verification attempt', [
+                'project_id' => $this->config['project_id'],
+                'site_key' => substr($this->config['site_key'], 0, 10) . '...',
+                'credentials_path' => $credentialsPath,
+                'credentials_exists' => $credentialsPath ? file_exists($credentialsPath) : false
+            ]);
+            
+            if (empty($credentialsPath) || !file_exists($credentialsPath)) {
+                throw new \Exception('Google Cloud認証情報が設定されていません。GOOGLE_APPLICATION_CREDENTIALSを設定してください。');
+            }
+            
+            // RecaptchaEnterpriseServiceClientクラスの存在確認
+            if (!class_exists('Google\Cloud\RecaptchaEnterprise\V1\RecaptchaEnterpriseServiceClient')) {
+                throw new \Exception('Google Cloud reCAPTCHA Enterprise SDKがインストールされていません。');
+            }
+            
             $client = new RecaptchaEnterpriseServiceClient();
             $projectName = $client->projectName($this->config['project_id']);
 
@@ -203,7 +221,21 @@ class GoogleRecaptchaDriver implements CaptchaDriver
                 ->setParent($projectName)
                 ->setAssessment($assessment);
 
+            Log::info('reCAPTCHA Enterprise API call', [
+                'project_name' => $projectName,
+                'site_key' => substr($this->config['site_key'], 0, 10) . '...',
+                'token_length' => strlen($token),
+                'user_ip' => $request->ip()
+            ]);
+            
             $response = $client->createAssessment($createRequest);
+            
+            Log::info('reCAPTCHA Enterprise API response', [
+                'token_valid' => $response->getTokenProperties()->getValid(),
+                'score' => $response->getRiskAnalysis()->getScore(),
+                'action' => $response->getTokenProperties()->getAction(),
+                'invalid_reason' => $response->getTokenProperties()->getValid() ? null : $response->getTokenProperties()->getInvalidReason()
+            ]);
 
             if (!$response->getTokenProperties()->getValid()) {
                 Log::warning('reCAPTCHA Enterprise verification failed', [
@@ -245,15 +277,21 @@ class GoogleRecaptchaDriver implements CaptchaDriver
         } catch (\Exception $e) {
             Log::error('reCAPTCHA Enterprise verification error', [
                 'error' => $e->getMessage(),
+                'error_class' => get_class($e),
+                'error_code' => $e->getCode(),
                 'ip' => $request->ip(),
+                'project_id' => $this->config['project_id'] ?? 'not_set',
+                'site_key' => substr($this->config['site_key'] ?? '', 0, 10) . '...',
+                'token_length' => strlen($token),
+                'trace' => $e->getTraceAsString()
             ]);
 
             return new CaptchaResult(
                 false,
                 null,
                 null,
-                ['captcha' => 'reCAPTCHA verification error'],
-                ['exception' => $e->getMessage()]
+                ['captcha' => 'reCAPTCHA verification error: ' . $e->getMessage()],
+                ['exception' => $e->getMessage(), 'exception_class' => get_class($e)]
             );
         }
     }
