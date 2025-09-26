@@ -150,7 +150,92 @@
         z-index: 1000
     }
 
+    // ステータスバッジ
+    .status-badge {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
 
+        &--enabled {
+            @apply bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100;
+        }
 
+        &--disabled {
+            @apply bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100;
+        }
+    }
+
+    // テキストリンク
+    .text-link {
+        @apply text-blue-600 underline hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200;
+    }
+
+    // アクションボタングループ
+    .action-buttons {
+        @apply flex flex-wrap gap-2 justify-center;
+
+        form {
+            @apply inline-block;
+        }
+
+        // モバイル表示時の調整
+        @media (max-width: 768px) {
+            @apply flex-col items-stretch;
+
+            form {
+                @apply block;
+            }
+        }
+    }
+
+    // 空の状態表示
+    .empty-state {
+        @apply flex flex-col items-center justify-center py-8 text-gray-500 dark:text-gray-400;
+
+        i {
+            @apply mb-4;
+        }
+
+        p {
+            @apply text-base font-medium;
+        }
+    }
+
+    // レスポンシブテーブル
+    .responsive-table {
+        @apply overflow-x-auto bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm;
+
+        table {
+            @apply min-w-full;
+
+            // モバイル表示時の調整
+            @media (max-width: 768px) {
+                thead {
+                    @apply sr-only;
+                }
+
+                tbody {
+                    tr {
+                        @apply block border border-gray-200 dark:border-gray-700 rounded-lg mb-4 p-4;
+                    }
+
+                    td {
+                        @apply block text-right border-0 py-2;
+
+                        &:before {
+                            content: attr(data-label) ": ";
+                            @apply float-left font-semibold text-gray-700 dark:text-gray-300;
+                        }
+
+                        &:last-child {
+                            @apply text-center;
+
+                            &:before {
+                                @apply sr-only;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
 }

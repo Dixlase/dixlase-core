@@ -44,9 +44,10 @@ class PluginFactory extends Command
      * --count= : 生成するレコード数 (デフォルト: 10)
      */
     protected $signature = 'plugin:factory
-                            {plugin : The name of the plugin (e.g. PagesPlugin)}
+                            {plugin : The name of the plugin (e.g. DixlasePages)}
                             {model : The model name (e.g. Page)}
-                            {--count=10 : Number of records to create}';
+                            {--count=10 : Number of records to create}
+                            {--force : Force the operation to run}';
 
     /**
      * The console command description.

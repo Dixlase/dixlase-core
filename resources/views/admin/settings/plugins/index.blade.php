@@ -21,82 +21,101 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('admin::partials.layout')
 
 @section('content')
-<div class="container mx-auto p-6">
-    <!-- プラグイン一覧テーブル -->
-    <div class="overflow-x-auto">
-        <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
-            <thead>
-                <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
-                    <th class="py-3 px-6 text-left">{{ __('admin.settings.plugins.index.table.id') }}</th>
-                    <th class="py-3 px-6 text-left">{{ __('admin.settings.plugins.index.table.name') }}</th>
-                    <th class="py-3 px-6 text-center">{{ __('admin.settings.plugins.index.table.status') }}</th>
-                    <th class="py-3 px-6 text-center">{{ __('admin.settings.plugins.index.table.actions') }}</th>
-                </tr>
-            </thead>
-            <tbody class="text-gray-700 text-sm font-medium">
-                @foreach ($plugins as $plugin)
-                    <tr class="border-b border-gray-200 hover:bg-gray-50">
-                        <td class="py-3 px-6">{{ $plugin->id }}</td>
-                        <td class="py-3 px-6">{{ $plugin->name }}</td>
-                        <td class="py-3 px-6 text-center">
-                            <span
-                                class="inline-block px-3 py-1 rounded-full text-xs font-semibold
-                                {{ $plugin->status === 'enabled' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}"
-                            >
-                                {{ $plugin->status === 1 ? __('admin.settings.plugins.index.status.enabled') : __('admin.settings.plugins.index.status.disabled') }}
-                            </span>
-                        </td>
-                        <td class="py-3 px-6 text-center flex justify-center space-x-2">
-                            @if ($plugin->status === 1)
-                                <form action="{{ route('admin.settings.plugins.disable', $plugin->id) }}" method="POST">
-                                    @csrf
-                                    <button
-                                        type="submit"
-                                        class="bg-yellow-500 hover:bg-yellow-600 text-white py-1 px-3 rounded-md text-sm"
-                                    >
-                                        {{ __('admin.settings.plugins.index.buttons.disable') }}
-                                    </button>
-                                </form>
-                            @else
-                                <form action="{{ route('admin.settings.plugins.enable', $plugin->id) }}" method="POST">
-                                    @csrf
-                                    <button
-                                        type="submit"
-                                        class="bg-green-500 hover:bg-green-600 text-white py-1 px-3 rounded-md text-sm"
-                                    >
-                                        {{ __('admin.settings.plugins.index.buttons.enable') }}
-                                    </button>
-                                </form>
-                            @endif
+    <!-- プラグイン一覧セクション -->
+    <section>
+        <h2 class="sr-only">{{ __('admin.settings.plugins.index.heading') }}</h2>
 
-                            <!-- 1) フォーム: uninstall.blade.php など（プラグイン一覧で繰り返し） -->
-                            <form action="{{ route('admin.settings.plugins.uninstall', $plugin->id) }}" method="POST">
-                                @csrf
-                                @include('components::form.button', [
-                                    'type' => 'button',
-                                    'label' => __('admin.settings.plugins.index.buttons.uninstall'),
-                                    'class' => 'bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded-md text-sm',
-                                    'onclick' => "openModal('uninstallModal-{$plugin->id}')",
-                                ])
-
-                                <!-- 確認画面のモーダルを表示 -->
-                                @include('components.form.modal', [
-                                    'id' => "uninstallModal-{$plugin->id}",
-                                    'title' => __('admin.settings.plugins.index.uninstall.confirm_title'),
-                                    'message' => str_replace('{name}', $plugin->name, __('admin.settings.plugins.index.uninstall.confirm_message')),
-                                    'confirm_label' => __('admin.settings.plugins.index.uninstall.confirm_button'),
-                                    'cancel_label'  => __('admin.settings.plugins.index.uninstall.cancel_button'),
-                                    // チェックボックスを使いたい場合
-                                    'checkbox' => true,
-                                    'checkbox_name' => 'remove_db_data',
-                                    'checkbox_label' => __('admin.settings.plugins.index.uninstall.remove_data_checkbox'),
-                                ])
-                            </form>
-                        </td>
+        <!-- レスポンシブテーブル -->
+        <div class="responsive-table">
+            <table>
+                <caption class="sr-only">{{ __('admin.settings.plugins.index.table.caption') }}</caption>
+                <thead>
+                    <tr>
+                        <th>{{ __('admin.settings.plugins.index.table.id') }}</th>
+                        <th>{{ __('admin.settings.plugins.index.table.name') }}</th>
+                        <th>{{ __('admin.settings.plugins.index.table.status') }}</th>
+                        <th>{{ __('admin.settings.plugins.index.table.actions') }}</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-</div>
+                </thead>
+                <tbody>
+                    @forelse ($plugins as $plugin)
+                        <tr>
+                            <td data-label="{{ __('admin.settings.plugins.index.table.id') }}">{{ $plugin->id }}</td>
+                            <td data-label="{{ __('admin.settings.plugins.index.table.name') }}">
+                                <strong>{{ $plugin->name }}</strong>
+                            </td>
+                            <td data-label="{{ __('admin.settings.plugins.index.table.status') }}">
+                                <span class="status-badge status-badge--{{ $plugin->status === 1 ? 'enabled' : 'disabled' }}">
+                                    {{ $plugin->status === 1 ? __('admin.settings.plugins.index.status.enabled') : __('admin.settings.plugins.index.status.disabled') }}
+                                </span>
+                            </td>
+                            <td data-label="{{ __('admin.settings.plugins.index.table.actions') }}">
+                                <div class="action-buttons">
+                                    @if ($plugin->status === 1)
+                                        <form action="{{ route('admin.settings.plugins.disable', $plugin->id) }}" method="POST" class="inline-block">
+                                            @csrf
+                                            @include('components::form.button', [
+                                                'type' => 'submit',
+                                                'label' => __('admin.settings.plugins.index.buttons.disable'),
+                                                'variant' => 'warning',
+                                                'size' => 'sm',
+                                                'icon' => 'fas fa-pause'
+                                            ])
+                                        </form>
+                                    @else
+                                        <form action="{{ route('admin.settings.plugins.enable', $plugin->id) }}" method="POST" class="inline-block">
+                                            @csrf
+                                            @include('components::form.button', [
+                                                'type' => 'submit',
+                                                'label' => __('admin.settings.plugins.index.buttons.enable'),
+                                                'variant' => 'success',
+                                                'size' => 'sm',
+                                                'icon' => 'fas fa-play'
+                                            ])
+                                        </form>
+                                    @endif
+
+                                    <form action="{{ route('admin.settings.plugins.uninstall', $plugin->id) }}" method="POST" class="inline-block" id="uninstallForm-{{ $plugin->id }}">
+                                        @csrf
+                                        @include('components::form.button', [
+                                            'type' => 'button',
+                                            'label' => __('admin.settings.plugins.index.buttons.uninstall'),
+                                            'variant' => 'danger',
+                                            'size' => 'sm',
+                                            'icon' => 'fas fa-trash',
+                                            'onclick' => "openModal('uninstallModal-{$plugin->id}')"
+                                        ])
+
+                                        <!-- 確認画面のモーダル -->
+                                        @include('components::form.modal', [
+                                            'id' => "uninstallModal-{$plugin->id}",
+                                            'title' => __('admin.settings.plugins.index.uninstall.confirm_title'),
+                                            'message' => str_replace('{name}', $plugin->name, __('admin.settings.plugins.index.uninstall.confirm_message')),
+                                            'confirm_label' => __('admin.settings.plugins.index.uninstall.confirm_button'),
+                                            'cancel_label' => __('admin.settings.plugins.index.uninstall.cancel_button'),
+                                            'checkbox' => true,
+                                            'checkbox_name' => 'remove_db_data',
+                                            'checkbox_label' => __('admin.settings.plugins.index.uninstall.remove_data_checkbox'),
+                                            'form' => "uninstallForm-{$plugin->id}",
+                                            'icon_type' => 'danger',
+                                            'confirm_color' => 'red'
+                                        ])
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="text-center py-8">
+                                <div class="empty-state">
+                                    <i class="fas fa-puzzle-piece text-4xl text-gray-400 mb-4"></i>
+                                    <p class="text-gray-500">{{ __('admin.settings.plugins.index.no_plugins') }}</p>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </section>
 @endsection
