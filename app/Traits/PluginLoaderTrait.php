@@ -136,6 +136,18 @@ trait PluginLoaderTrait
         foreach ($pluginConfigs as $key => $value) {
             config(["{$pluginSlug}.{$key}" => $value]);
         }
+
+        // admin.php ファイルが存在する場合、ナビゲーションをマージ
+        $adminConfigFile = $corePath . '/admin.php';
+        if (file_exists($adminConfigFile)) {
+            $this->mergeAdminNavConfig($adminConfigFile);
+        }
+
+        // カスタムのadmin.phpファイルも確認
+        $customAdminConfigFile = $customPath . '/admin.php';
+        if (file_exists($customAdminConfigFile)) {
+            $this->mergeAdminNavConfig($customAdminConfigFile);
+        }
     }
 
     /**

@@ -971,7 +971,9 @@ return [
                     'name' => 'プラグイン名',
                     'status' => '状態',
                     'actions' => '操作',
+                    'caption' => 'インストール済みプラグイン一覧',
                 ],
+                'no_plugins' => 'プラグインがインストールされていません。',
                 'buttons' => [
                     'enable' => '有効化',
                     'disable' => '無効化',

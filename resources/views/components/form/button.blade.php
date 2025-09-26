@@ -21,7 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @props([
     'type' => 'button',      // ボタンのタイプ (button, submit, reset)
     'variant' => 'primary',  // ボタンの色バリエーション (primary, secondary, success, warning, danger)
-    'size' => 'md',          // ボタンのサイズ (sm, md, lg)
+    'size' => 'md',          // ボタンのサイズ (xs, sm, md, lg)
     'class' => '',           // カスタムクラス
     'label' => 'Button',     // ボタンのテキスト
     'icon' => null,          // アイコンクラス (例: 'fas fa-save')
@@ -43,6 +43,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     
     // サイズに応じたクラス設定
     $sizeClasses = [
+        'xs' => 'px-2 py-1 text-xs',
         'sm' => 'px-3 py-1.5 text-sm',
         'md' => 'px-4 py-2 text-sm',
         'lg' => 'px-6 py-3 text-base',

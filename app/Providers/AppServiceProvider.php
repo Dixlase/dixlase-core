@@ -174,6 +174,8 @@ class AppServiceProvider extends ServiceProvider
             foreach ($fileTypes as $type => $typeConfig) {
                 $this->loadCustomFilesForType($customFilesPath, $typeConfig);
             }
+            // プラグインのナビゲーション設定を適用するため、設定の再配置を実行
+            $this->reorderAllConfig();
         });
     }
 }
