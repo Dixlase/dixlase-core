@@ -202,4 +202,12 @@ Route::prefix($adminUrl)->name('admin.')
             // ログアウト
             Route::post('/logout', [AdminLoginController::class, 'destroy'])->name('logout');
         });
+        
+        // プラグインの管理画面ルート（一時的に手動で読み込み）
+        if (file_exists(base_path('plugins/DixlaseInquiry/routes/admin.php'))) {
+            include base_path('plugins/DixlaseInquiry/routes/admin.php');
+        }
+        if (file_exists(base_path('plugins/DixlasePages/routes/admin.php'))) {
+            include base_path('plugins/DixlasePages/routes/admin.php');
+        }
     });

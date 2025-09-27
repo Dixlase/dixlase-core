@@ -38,7 +38,8 @@ class PluginMigrateRefresh extends Command
      */
     protected $signature = 'plugin:migrate:refresh
                             {plugin : The name of the plugin (e.g. EventsPlugin)}
-                            {--step= : Number of migrations to rollback}';
+                            {--step= : Number of migrations to rollback}
+                            {--force : Force the operation to run when in production}';
 
 
     /**
@@ -65,6 +66,7 @@ class PluginMigrateRefresh extends Command
         $force = $this->option('force');
         $options = [
             'step' => $this->option('step'),
+            'force' => $force,
         ];
 
         // プロセスオプションの共通処理

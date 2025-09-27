@@ -46,11 +46,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             </td>
                             <td data-label="{{ __('common.status') }}">
                                 <span class="status-badge status-badge--{{ $plugin->status === 1 ? 'enabled' : 'disabled' }}">
-                                    {{ $plugin->status === 1 ? __('common.status.enabled') : __('common.status.disabled') }}
+                                    {{ $plugin->status === 1 ? __('common.enabled') : __('common.disabled') }}
                                 </span>
                             </td>
                             <td data-label="{{ __('common.actions') }}">
                                 <div class="action-buttons">
+                                    <!-- 設定画面リンク -->
+                                    @if ($plugin->status === 1 && isset($plugin->has_settings) && $plugin->has_settings)
+                                        @php
+                                            $settingsUrl = app('App\Http\Controllers\Admin\Settings\AdminPluginsSettingsController')->getPluginSettingsUrl($plugin);
+                                        @endphp
+                                        @if ($settingsUrl)
+                                            <a href="{{ $settingsUrl }}" class="inline-block">
+                                                @include('components::form.button', [
+                                                    'type' => 'button',
+                                                    'label' => '設定',
+                                                    'variant' => 'primary',
+                                                    'size' => 'sm',
+                                                    'icon' => 'fas fa-cog'
+                                                ])
+                                            </a>
+                                        @endif
+                                    @endif
+
                                     @if ($plugin->status === 1)
                                         <form action="{{ route('admin.settings.plugins.disable', $plugin->id) }}" method="POST" class="inline-block">
                                             @csrf

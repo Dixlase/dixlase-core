@@ -65,6 +65,7 @@ class PluginMigrateRollback extends Command
         $force = $this->option('force');
         $options = [
             'step' => $this->option('step') ? (int) $this->option('step') : 1, // デフォルト値を設定
+            'force' => $force,
         ];
 
         // プロセスオプションの共通処理

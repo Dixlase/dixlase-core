@@ -40,7 +40,8 @@ class PluginMigrate extends Command
     protected $signature = 'plugin:migrate
                             {plugin : The name of the plugin (e.g. EventsPlugin)}
                             {--pretend : Dump the SQL queries that would be run}
-                            {--step= : Number of migrations to run}';
+                            {--step= : Number of migrations to run}
+                            {--force : Force the operation to run when in production}';
 
     /**
      * The console command description.
@@ -69,6 +70,7 @@ class PluginMigrate extends Command
         $options = [
             'pretend' => $this->option('pretend'),
             'step' => $this->option('step') ? (int) $this->option('step') : 1, // デフォルト値を 1 に設定
+            'force' => $force,
         ];
 
         // プロセスオプションの共通処理

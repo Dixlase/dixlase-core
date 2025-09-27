@@ -747,6 +747,7 @@ Clicking this link will complete the full mail function test.',
                     'info' => 'System Information',
                 ],
                 'table' => [
+                    'id' => 'ID',
                     'name' => 'Plugin Name',
                     'caption' => 'Installed Plugins List',
                 ],
