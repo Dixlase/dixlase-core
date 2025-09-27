@@ -83,6 +83,14 @@ return [
         'permissions' => '権限',
         'logout' => 'ログアウト',
         'cancel' => 'キャンセル',
+        'create' => '作成',
+        'update' => '更新',
+        'save' => '保存',
+        'back' => '戻る',
+        'confirm' => '確認',
+        'save_confirmation' => '保存の確認',
+        'update_confirmation' => '更新の確認',
+        'create_confirmation' => '作成の確認',
         'required' => ':attribute は必須です。',
         'email' => ':attribute は正しいメールアドレス形式で入力してください。',
         'unique' => ':attribute は既に存在しています。',
@@ -97,6 +105,14 @@ return [
             'auto' => '自動',
             'dark' => 'ダーク',
             'light' => 'ライト',
+        ],
+        'status' => [
+            'draft' => '下書き',
+            'published' => '公開',
+            'scheduled' => '日付指定',
+            'draft_description' => '下書き状態です。公開されません。',
+            'published_description' => '即座に公開されます。',
+            'scheduled_description' => '指定した日時に公開されます。',
         ],
     ],
 
@@ -954,7 +970,7 @@ return [
         // プラグイン
         'plugins' => [
             'index' => [
-                'heading' => 'プラグインマスター',
+                'heading' => 'プラグイン一覧',
                 'systems' => [
                     'text' => 'システム',
                     'cache' => 'キャッシュ管理',
@@ -984,7 +1000,7 @@ return [
                     'confirm_message' => 'プラグイン [{name}] をアンインストールしますか？',
                     'confirm_button' => 'アンインストール',
                     'cancel_button' => 'キャンセル',
-                    'remove_data_checkbox' => 'プラグインのインストール時に作成されたデータベースのテーブルを削除する。注意！テーブル削除するとプラグインで作成したデータが失われます！',
+                    'remove_data_checkbox' => 'プラグインのインストール時に作成されたデータベースのテーブルを削除する。<br><span class="text-red-600 font-semibold">注意！テーブル削除するとプラグインで作成したデータが失われます！</span>',
                 ],
             ],
             'install' => [

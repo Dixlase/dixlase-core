@@ -38,6 +38,12 @@ CLAUDE.md
 custom/*
 # プラグインを入れるディレクトリを除外
 plugins/*
+!plugins/DixlasePages
+!plugins/DixlaseInquiry
+# === プラグイン用動的除外設定 (自動管理) ===
+# 以下の行はプラグインシステムによって自動管理されます
+!plugins/DixlaseInquiry/
+# === プラグイン用動的除外設定終了 ===
 # テーマを入れるディレクトリを除外
 themes/**
 license-info.json

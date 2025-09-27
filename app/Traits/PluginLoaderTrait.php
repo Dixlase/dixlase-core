@@ -38,35 +38,90 @@ trait PluginLoaderTrait
      */
     public function loadActivePlugins()
     {
+        // コマンドライン引数から直接チェック
+        $pluginManagementFlag = $this->getUninstallingPluginFromArgs();
+        \Log::info("PluginLoaderTrait: loadActivePlugins called", [
+            'plugin_management_flag' => $pluginManagementFlag,
+            'argv' => $_SERVER['argv'] ?? 'not_available'
+        ]);
+
+        // プラグイン管理コマンド実行中はプラグインローダーをスキップ
+        if ($pluginManagementFlag === 'PLUGIN_MANAGEMENT_COMMAND') {
+            \Log::info("PluginLoaderTrait: Skipping plugin loading during plugin management command");
+            return;
+        }
 
         //Pluginテーブルのstatusが1のレコードを取得
         //テーブルが存在しているか確認
         if (Schema::hasTable('plugins')) {
-            $activePlugins = Plugin::where('status', 1)->get();
         } else {
             $activePlugins = [];
         }
 
+        $plugins = Plugin::where('status', 1)->get();
+        \Log::info("PluginLoaderTrait: Found active plugins", [
+            'count' => $plugins->count(),
+            'plugins' => $plugins->pluck('name')->toArray()
+        ]);
 
-        foreach ($activePlugins as $plugin) {
+        foreach ($plugins as $plugin) {
             $pluginName = $plugin->name;
             $pluginDirectory = $plugin->directory;
             $pluginSlug = $plugin->slug;
+            $pluginPath = base_path('plugins/' . $pluginDirectory);
+            $customPluginPath = base_path('custom/plugins/' . $pluginDirectory);
 
-            // プラグインのファイルを先にロード
-            $pluginPath = base_path("plugins/{$pluginDirectory}");
-            $customPluginPath = base_path("custom/plugins/{$pluginDirectory}");
+            \Log::info("PluginLoaderTrait: Processing plugin", [
+                'plugin_name' => $pluginName
+            ]);
 
+            // プラグインのファイルをロード
             $this->loadPluginFiles($pluginName, $pluginPath, $customPluginPath, $pluginSlug);
 
 
             // サービスプロバイダの登録 (プラグインのファイルをロードした後)
             $providerClass = $this->resolvePluginServiceProvider($pluginName, $pluginDirectory);
 
+            \Log::info("PluginLoaderTrait: ServiceProvider resolution", [
+                'plugin_name' => $pluginName,
+                'provider_class' => $providerClass,
+                'will_register' => !empty($providerClass)
+            ]);
+
             if ($providerClass) {
+                \Log::info("PluginLoaderTrait: Registering ServiceProvider", [
+                    'plugin_name' => $pluginName,
+                    'provider_class' => $providerClass
+                ]);
                 $this->app->register($providerClass);
+                \Log::info("PluginLoaderTrait: ServiceProvider registered successfully", [
+                    'plugin_name' => $pluginName
+                ]);
             }
         }
+    }
+
+    /**
+     * コマンドライン引数からプラグイン管理対象を取得
+     */
+    private function getUninstallingPluginFromArgs(): ?string
+    {
+        $argv = $_SERVER['argv'] ?? [];
+        
+        // プラグイン管理コマンドの場合はプラグインローダーをスキップ
+        if (count($argv) >= 2) {
+            $pluginCommands = [
+                'plugin:install',
+                'plugin:uninstall',
+                'plugin:enable',
+                'plugin:disable'
+            ];
+            if (in_array($argv[1], $pluginCommands)) {
+                return 'PLUGIN_MANAGEMENT_COMMAND';
+            }
+        }
+        
+        return null;
     }
 
     /**

@@ -168,8 +168,20 @@ class AppServiceProvider extends ServiceProvider
 
         // プラグインロード後にカスタムファイルをロード
         $this->app->booted(function () use ($customFilesPath, $fileTypes) {
-            // プラグインのロード
-            $this->loadActivePlugins();
+            // コマンドライン引数をチェックしてプラグイン管理コマンド実行中かを判定
+            $isPluginManagementCommand = $this->isPluginManagementCommand();
+            
+            \Log::info("AppServiceProvider: Boot check", [
+                'is_plugin_management_command' => $isPluginManagementCommand,
+                'argv' => $_SERVER['argv'] ?? 'not_available'
+            ]);
+            
+            if (!$isPluginManagementCommand) {
+                // プラグインのロード
+                $this->loadActivePlugins();
+            } else {
+                \Log::info("AppServiceProvider: Skipping plugin loading during plugin management command");
+            }
             // カスタムファイルのロード
             foreach ($fileTypes as $type => $typeConfig) {
                 $this->loadCustomFilesForType($customFilesPath, $typeConfig);
@@ -177,5 +189,42 @@ class AppServiceProvider extends ServiceProvider
             // プラグインのナビゲーション設定を適用するため、設定の再配置を実行
             $this->reorderAllConfig();
         });
+    }
+
+    /**
+     * プラグイン管理コマンドが実行中かをチェック
+     */
+    private function isPluginManagementCommand(): bool
+    {
+        // コマンドライン引数をチェック
+        $argv = $_SERVER['argv'] ?? [];
+        
+        // プラグイン管理コマンドかをチェック
+        if (count($argv) >= 2) {
+            $pluginCommands = [
+                'plugin:install',
+                'plugin:uninstall',
+                'plugin:enable',
+                'plugin:disable'
+            ];
+            return in_array($argv[1], $pluginCommands);
+        }
+        
+        return false;
+    }
+
+    /**
+     * アンインストール対象のプラグイン名を取得
+     */
+    private function getUninstallingPluginName(): ?string
+    {
+        $argv = $_SERVER['argv'] ?? [];
+        
+        // artisan plugin:uninstall PluginName の形式
+        if (count($argv) >= 3 && $argv[1] === 'plugin:uninstall') {
+            return $argv[2];
+        }
+        
+        return null;
     }
 }
