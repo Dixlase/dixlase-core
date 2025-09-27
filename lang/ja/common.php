@@ -23,42 +23,59 @@
  */
 
 return [
-    // 基本的なアクション
-    'save' => '保存',
-    'cancel' => 'キャンセル',
-    'delete' => '削除',
-    'edit' => '編集',
+
+    // 基本操作
     'create' => '作成',
     'add' => '追加',
+    'edit' => '編集',
     'update' => '更新',
+    'save' => '保存',
+    'delete' => '削除',
+    'copy' => 'コピー',
+    'copied' => 'コピー済み',
+
+    // フォーム操作
     'submit' => '送信',
     'reset' => 'リセット',
-    'search' => '検索',
     'clear' => 'クリア',
+    'cancel' => 'キャンセル',
+    'confirm' => '確認',
+
+    // ナビゲーション
     'back' => '戻る',
     'next' => '次へ',
     'close' => '閉じる',
-    'confirm' => '確認',
-    'yes' => 'はい',
-    'no' => 'いいえ',
-    'ok' => 'OK',
-    'required' => '必須',
-    'optional' => '任意',
     'finish' => '完了',
-    'logout' => 'ログアウト',
+    'index' => '一覧',
+
+    // 検索・表示
+    'search' => '検索',
     'preview' => 'プレビュー',
+
+    // ファイル操作
     'upload' => 'アップロード',
+    'download' => 'ダウンロード',
+
+    // システム操作
     'install' => 'インストール',
     'uninstall' => 'アンインストール',
     'enable' => '有効化',
     'disable' => '無効化',
-    'download' => 'ダウンロード',
     'execute' => '実行',
-    'copy' => 'コピー',
-    'copied' => 'コピー済み',
-    'index' => '一覧',
-    'default_method' => 'デフォルト',
+
+    // 認証
     'login' => 'ログイン',
+    'logout' => 'ログアウト',
+
+    // 確認・応答
+    'yes' => 'はい',
+    'no' => 'いいえ',
+    'ok' => 'OK',
+
+    // 状態・属性
+    'required' => '必須',
+    'optional' => '任意',
+    'default_method' => 'デフォルト',
     
     // テーマ
     'auto' => '自動',
@@ -106,51 +123,68 @@ return [
         'published_description' => '即座に公開されます。',
         'scheduled_description' => '指定した日時に公開されます。',
     ],
+
     // 基本的な属性
+    // 基本情報
     'id' => 'ID',
     'name' => '名前',
+    'title' => 'タイトル',
+    'description' => '説明',
     'value' => '値',
+    'status' => '状態',
+
+    // 認証情報
     'email' => 'メールアドレス',
     'password' => 'パスワード',
     'password_confirmation' => 'パスワード確認',
-    'description' => '説明',
-    'color' => 'カラー',
-    'font' => 'フォント',
-    'file_name' => 'ファイル名',
-    'file_type' => 'ファイルタイプ',
-    'title' => 'タイトル',
-    'url' => 'URL',
+
+    // 連絡先情報
     'address' => '住所',
     'phone' => '電話番号',
     'fax' => 'FAX',
+    'url' => 'URL',
+
+    // 個人情報
     'gender' => '性別',
     'birthday' => '誕生日',
+
+    // ファイル関連
+    'file_name' => 'ファイル名',
+    'file_type' => 'ファイルタイプ',
     'upload_date' => 'アップロード日時',
     'uploaded_by' => 'アップロードしたメンバー',
-    'unknown' => '不明',
-    'created_at' => '作成日時',
-    'updated_at' => '更新日時',
-    'deleted_at' => '削除日時',
-    
-    // 時間単位
-    'minutes' => '分',
-    'hours' => '時間',
-    'days' => '日',
-    
-    // 基本的な属性
-    'site_name' => 'サイト名',
-    'required_fields' => '必須項目',
+
+    // デザイン・表示
+    'color' => 'カラー',
+    'font' => 'フォント',
     'admin_theme' => '管理画面テーマ',
     'appearance_mode' => '外観モード',
+
+    // システム設定
+    'site_name' => 'サイト名',
     'locale' => '言語',
     'timezone' => 'タイムゾーン',
     'maintenance_mode' => 'メンテナンスモード',
     'maintenance_message' => 'メンテナンスメッセージ',
+
+    // UI要素
     'actions' => '操作',
-    'status' => '状態',
+    'required_fields' => '必須項目',
+
+    // メッセージ・状態
     'warning' => '注意',
     'info' => '情報',
     'error' => 'エラー',
+    'unknown' => '不明',
+    
+    // 時間単位
+    'created_at' => '作成日時',
+    'updated_at' => '更新日時',
+    'deleted_at' => '削除日時',
+    'minutes' => '分',
+    'hours' => '時間',
+    'days' => '日',
+
     
     // 検索・フィルター関連
     'search_keyword' => 'キーワード',
@@ -270,6 +304,7 @@ return [
     'update_confirmation' => '更新の確認',
     'create_confirmation' => '作成の確認',
     'delete_confirmation' => '削除の確認',
+    
     // 保存確認ダイアログ（詳細版）
     'save_confirmation_title' => '保存の確認',
     'save_confirmation_message' => '変更内容を保存しますか？',

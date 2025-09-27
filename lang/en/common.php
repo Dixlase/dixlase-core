@@ -20,49 +20,73 @@
  */
 
 return [
-    // Basic actions
-    'save' => 'Save',
-    'cancel' => 'Cancel',
-    'delete' => 'Delete',
-    'edit' => 'Edit',
+    // Basic Operations
     'create' => 'Create',
     'add' => 'Add',
+    'edit' => 'Edit',
     'update' => 'Update',
+    'save' => 'Save',
+    'delete' => 'Delete',
+    'copy' => 'Copy',
+    'copied' => 'Copied',
+
+    // Form Operations
     'submit' => 'Submit',
     'reset' => 'Reset',
-    'search' => 'Search',
     'clear' => 'Clear',
+    'cancel' => 'Cancel',
+    'confirm' => 'Confirm',
+
+    // Navigation
     'back' => 'Back',
     'next' => 'Next',
     'close' => 'Close',
-    'confirm' => 'Confirm',
-    'yes' => 'Yes',
-    'no' => 'No',
-    'ok' => 'OK',
-    'required' => 'Required',
-    'optional' => 'Optional',
     'finish' => 'Finish',
-    'logout' => 'Logout',
+    'index' => 'Index',
+
+    // Search & Display
+    'search' => 'Search',
     'preview' => 'Preview',
+
+    // File Operations
     'upload' => 'Upload',
+    'download' => 'Download',
+
+    // System Operations
     'install' => 'Install',
     'uninstall' => 'Uninstall',
     'enable' => 'Enable',
     'disable' => 'Disable',
-    'download' => 'Download',
     'execute' => 'Execute',
-    'copy' => 'Copy',
-    'copied' => 'Copied',
-    'index' => 'Index',
-    'default_method' => 'Default',
+
+    // Authentication
     'login' => 'Login',
+    'logout' => 'Logout',
+
+    // Confirmation & Response
+    'yes' => 'Yes',
+    'no' => 'No',
+    'ok' => 'OK',
+
+    // Status & Attributes
+    'required' => 'Required',
+    'optional' => 'Optional',
+    'default_method' => 'Default',
     
-    // Language & Theme
-    'light' => 'Light',
+    // Theme
     'auto' => 'Auto',
+    'light' => 'Light',
+    'dark' => 'Dark',
+
+    // Language
     'ja' => 'Japanese',
     'en' => 'English',
     
+    // Account Types
+    'account_types' => [
+        'member' => 'Member',
+        'user' => 'User',
+    ],
     // Roles & Permissions
     'roles' => [
         'super_admin' => 'Super Admin',
@@ -75,6 +99,7 @@ return [
     ],
     'permissions' => 'Permissions',
     'role' => 'Role',
+
     // Status
     'status' => [
         'active' => 'Active',
@@ -93,59 +118,74 @@ return [
         'published_description' => 'Published immediately.',
         'scheduled_description' => 'Published at specified date and time.',
     ],
-    // Basic attributes
+
+    // Basic Attributes
+    // Basic Information
     'id' => 'ID',
     'name' => 'Name',
+    'title' => 'Title',
+    'description' => 'Description',
     'value' => 'Value',
+    'status' => 'Status',
+
+    // Authentication Information
     'email' => 'Email',
     'password' => 'Password',
     'password_confirmation' => 'Password Confirmation',
+
+    // Contact Information
     'address' => 'Address',
     'phone' => 'Phone',
     'fax' => 'FAX',
+    'url' => 'URL',
+
+    // Personal Information
     'gender' => 'Gender',
     'birthday' => 'Birthday',
-    'description' => 'Description',
-    'color' => 'Color',
-    'font' => 'Font',
+
+    // File Related
     'file_name' => 'File Name',
     'file_type' => 'File Type',
     'upload_date' => 'Upload Date',
     'uploaded_by' => 'Uploaded By',
-    'unknown' => 'Unknown',
-    'created_at' => 'Created At',
-    'updated_at' => 'Updated At',
-    'deleted_at' => 'Deleted At',
-    
-    // Time units
-    'minutes' => 'minutes',
-    'hours' => 'hours',
-    'days' => 'days',
-    
-    // Basic Attributes
-    'site_name' => 'Site Name',
-    'required_fields' => 'Required Fields',
+
+    // Design & Display
+    'color' => 'Color',
+    'font' => 'Font',
     'admin_theme' => 'Admin Theme',
     'appearance_mode' => 'Appearance Mode',
+
+    // System Settings
+    'site_name' => 'Site Name',
     'locale' => 'Language',
     'timezone' => 'Timezone',
     'maintenance_mode' => 'Maintenance Mode',
     'maintenance_message' => 'Maintenance Message',
+
+    // UI Elements
     'actions' => 'Actions',
-    'status' => 'Status',
+    'required_fields' => 'Required Fields',
+
+    // Messages & Status
     'warning' => 'Warning',
     'info' => 'Information',
     'error' => 'Error',
+    'unknown' => 'Unknown',
     
+    // Time Units
+    'created_at' => 'Created At',
+    'updated_at' => 'Updated At',
+    'deleted_at' => 'Deleted At',
+    'minutes' => 'minutes',
+    'hours' => 'hours',
+    'days' => 'days',
     // Search & Filter Related
     'search_keyword' => 'Keyword',
     'role_filter' => 'Role',
     'status_filter' => 'Status',
     'clear_button' => 'Clear',
-    'title' => 'Title',
-    'url' => 'URL',
 
-    // Log related
+    // Log Related
     'operation' => 'Operation',
     'method' => 'Method',
     'uri' => 'URI',
@@ -191,24 +231,18 @@ return [
         ]
     ],
 
-    // Account Types
-    'account_types' => [
-        'member' => 'Member',
-        'user' => 'User',
-    ],
-
     // Confirmation Dialogs
     'save_confirmation' => 'Save Confirmation',
     'update_confirmation' => 'Update Confirmation',
     'create_confirmation' => 'Create Confirmation',
+    'delete_confirmation' => 'Delete Confirmation',
 
 
-    // Status Descriptions (Detailed)
-    'status_descriptions' => [
-        'draft_description' => 'Draft status. Not published.',
-        'published_description' => 'Published immediately.',
-        'scheduled_description' => 'Published at specified date and time.',
-    ],
+    // Save Confirmation Dialog (Detailed)
+    'save_confirmation_title' => 'Save Confirmation',
+    'save_confirmation_message' => 'Do you want to save the changes?',
+    'update_confirmation_title' => 'Update Confirmation',
+    'update_confirmation_message' => 'Do you want to update the settings with this content?',
 
     // Two-Factor Authentication Method Help Text (Generic)
     'two_factor_method_help' => [
@@ -260,10 +294,4 @@ return [
 
     // Authentication Method Related
     'available_methods' => 'available methods',
-
-    // Save Confirmation Dialog (Detailed)
-    'save_confirmation_title' => 'Save Confirmation',
-    'save_confirmation_message' => 'Do you want to save the changes?',
-    'update_confirmation_title' => 'Update Confirmation',
-    'update_confirmation_message' => 'Do you want to update the settings with this content?',
 ];
