@@ -84,6 +84,8 @@ class AdminSecuritySettingsController extends AdminLoggedInController
             // Notification settings
             'notification_enabled' => filter_var(SecuritySetting::get('notification_enabled', true), FILTER_VALIDATE_BOOLEAN),
             'notification_log_levels' => array_map('intval', array_filter(explode(',', SecuritySetting::get('notification_log_levels', implode(',', LogLevel::getDefaultNotificationLevels()))))),
+            // Password security settings
+            'pwned_password_check_enabled' => filter_var(SecuritySetting::get('pwned_password_check_enabled', false), FILTER_VALIDATE_BOOLEAN),
         ];
 
         // 動的reCAPTCHAフォーム設定を取得
@@ -263,6 +265,9 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         // Save notification settings
         $notificationEnabled = $request->boolean('notification_enabled');
         SecuritySetting::set('notification_enabled', $notificationEnabled);
+
+        // Save password security settings
+        SecuritySetting::set('pwned_password_check_enabled', $request->boolean('pwned_password_check_enabled'));
 
         // ログレベルは通知の有効/無効に関わらず保存できるようにする
         $submittedLevels = $request->input('notification_log_levels', null);

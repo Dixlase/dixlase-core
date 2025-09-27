@@ -34,7 +34,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <!-- キーワード検索 -->
                     <div>
                         <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ __('components.filters.search_keyword') }}
+                            {{ __('common.filters.search_keyword') }}
                         </label>
                         @include('components::form.text', [
                             'id' => 'search',
@@ -47,7 +47,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <!-- 権限フィルター -->
                     <div>
                         <label for="role" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ __('components.filters.role_filter') }}
+                            {{ __('common.filters.role_filter') }}
                         </label>
                         @include('components::form.select', [
                             'id' => 'role',
@@ -68,15 +68,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <!-- ステータスフィルター -->
                     <div>
                         <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ __('components.filters.status_filter') }}
+                            {{ __('common.filters.status_filter') }}
                         </label>
                         @include('components::form.select', [
                             'id' => 'status',
                             'name' => 'status',
                             'options' => [
                                 '' => __('common.filters.all_statuses'),
-                                '1' => __('common.status.active'),
-                                '0' => __('common.status.inactive'),
+                                '1' => __('components.status.active'),
+                                '0' => __('components.status.inactive'),
                             ],
                             'value' => $statusFilter,
                         ])
@@ -92,7 +92,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             ])
                             <a href="{{ route('admin.settings.members.index') }}" 
                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 flex items-center justify-center">
-                                {{ __('components.filters.clear_button') }}
+                                {{ __('common.filters.clear_button') }}
                             </a>
                         </div>
                     </div>
@@ -156,16 +156,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @endforeach
                 </tbody>
             </table>
-        </div>
-
-        <!-- ページネーション制御 -->
-        @include('components::pagination-controls', [
-            'paginator' => $members,
-            'currentPerPage' => request('per_page', 25),
-            'totalLabel' => 'components.pagination.total_count',
-            'perPageLabel' => 'components.pagination.per_page_label'
-        ])
-        
+        </div>        
 
         <!-- ページネーション -->
         @include('components::pagination', [

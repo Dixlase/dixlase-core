@@ -55,6 +55,8 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
             'session_encrypt' => filter_var($this->input('session_encrypt'), FILTER_VALIDATE_BOOLEAN),
             // Notification settings
             'notification_enabled' => filter_var($this->input('notification_enabled'), FILTER_VALIDATE_BOOLEAN),
+            // Password security settings
+            'pwned_password_check_enabled' => filter_var($this->input('pwned_password_check_enabled'), FILTER_VALIDATE_BOOLEAN),
             // CAPTCHA authentication result
             'captcha_authentication_result' => filter_var($this->input('captcha_authentication_result'), FILTER_VALIDATE_BOOLEAN),
         ]);
@@ -97,6 +99,8 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
             // Notification validation rules
             'notification_enabled' => 'required|boolean',
             'notification_log_levels' => 'nullable|array',
+            // Password security validation rules
+            'pwned_password_check_enabled' => 'required|boolean',
         ];
 
         // CAPTCHAが有効な場合の条件付きバリデーション

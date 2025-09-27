@@ -33,7 +33,6 @@ return [
         'per_page' => '表示件数',
         'per_page_label' => '1ページあたりの表示件数',
         'total_count' => '全:total件',
-        'total_items' => '全 :count 件',
         'total_pages' => '全 :count ページ',
         'no_results' => '該当するデータがありません',
     ],
@@ -59,12 +58,31 @@ return [
         ],
     ],
 
+    // フィルター関連
+    'filters' => [
+        'search_keyword' => 'キーワード',
+        'role_filter' => '権限フィルター',
+        'status_filter' => 'ステータスフィルター',
+        'clear_button' => 'クリア',
+    ],
+
     // ステータス関連
     'status' => [
+        'active' => '有効',
+        'inactive' => '無効',
+        'enabled' => '有効',
+        'disabled' => '無効',
+        'draft' => '下書き',
+        'published' => '公開',
         'scheduled' => '日付指定',
         'pending' => '保留中',
         'approved' => '承認済み',
         'rejected' => '却下',
+        'cancelled' => 'キャンセル',
+        // 説明
+        'draft_description' => '下書き状態です。公開されません。',
+        'published_description' => '即座に公開されます。',
+        'scheduled_description' => '指定した日時に公開されます。',
     ],
 
     // メッセージ関連

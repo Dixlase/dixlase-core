@@ -76,6 +76,9 @@ return [
     'required' => '必須',
     'optional' => '任意',
     'default_method' => 'デフォルト',
+    'enabled' => '有効',
+    'disabled' => '無効',
+    'available_methods' => '利用可能な方法',
     
     // テーマ
     'auto' => '自動',
@@ -105,24 +108,6 @@ return [
     'permissions' => '権限',
     'role' => '権限',
 
-    // ステータス
-    'status' => [
-        'active' => '有効',
-        'inactive' => '無効',
-        'enabled' => '有効',
-        'disabled' => '無効',
-        'draft' => '下書き',
-        'published' => '公開',
-        'scheduled' => '日付指定',
-        'pending' => '保留中',
-        'approved' => '承認済み',
-        'rejected' => '却下',
-        'cancelled' => 'キャンセル',
-        // 説明
-        'draft_description' => '下書き状態です。公開されません。',
-        'published_description' => '即座に公開されます。',
-        'scheduled_description' => '指定した日時に公開されます。',
-    ],
 
     // 基本的な属性
     // 基本情報
@@ -153,6 +138,11 @@ return [
     'file_type' => 'ファイルタイプ',
     'upload_date' => 'アップロード日時',
     'uploaded_by' => 'アップロードしたメンバー',
+
+    // コンテンツ関連
+    'content' => 'コンテンツ',
+    'slug' => 'スラッグ',
+    'published_at' => '公開日時',
 
     // デザイン・表示
     'color' => 'カラー',
@@ -185,33 +175,53 @@ return [
     'hours' => '時間',
     'days' => '日',
 
-    
-    // 検索・フィルター関連
     'search_keyword' => 'キーワード',
     'role_filter' => '権限',
     'status_filter' => 'ステータス',
     'clear_button' => 'クリア',
+    
+    // Filter Options
+    'filters' => [
+        'all_roles' => 'すべての権限',
+        'all_statuses' => 'すべてのステータス',
+        'search_keyword' => 'キーワード',
+        'role_filter' => '権限フィルター',
+        'status_filter' => 'ステータスフィルター',
+        'clear_button' => 'クリア',
+    ],
 
     // ログ関連
     'operation' => '操作',
     'method' => 'メソッド',
     'uri' => 'URI',
-    'route' => 'ルート',
     'controller' => 'コントローラー',
-    'ip' => 'IPアドレス',
     'user_agent' => 'ユーザーエージェント',
     'time' => '時間',
 
-    // 二段階認証・ログイン通知（汎用）
+    // ===========================================
+    // 二段階認証関連（統合セクション）
+    // ===========================================
+    'two_factor_authentication' => '二段階認証',
+    'two_factor_settings' => '二段階認証設定',
+    
+    // 二段階認証モード
     'two_factor_mode' => [
-        'label' => '2段階認証の設定',
         'options' => [
             0 => '無効',
-            1 => '異なる端末/IP時のみ有効',
+            1 => '新しいデバイスのみ',
             2 => '常に有効',
-            3 => ':account_typeのプロフィール設定を反映',
-        ]
+            3 => 'プロフィール設定に従う',
+        ],
     ],
+    
+    // 二段階認証モードオプション（プロフィール用）
+    'two_factor_mode_options' => [
+        'disabled' => '無効',
+        'only_new_device' => '異なる端末/IP時のみ有効',
+        'always' => '常に有効',
+    ],
+    
+    // 二段階認証方法
     'two_factor_method' => [
         'label' => '2段階認証方法',
         'options' => [
@@ -227,6 +237,21 @@ return [
             2 => '生体認証',
             3 => 'プロフィール設定に従う',
         ]
+    ],
+    
+    // 二段階認証ヘルプテキスト
+    'two_factor_help' => '二段階認証を使用するタイミングを設定します。',
+    'two_factor_method_help' => '二段階認証で使用する認証方法を選択してください。',
+    'two_factor_global_setting_fixed' => 'この設定は全体設定により固定されています。',
+    'two_factor_method_global_setting_fixed' => 'この認証方法は全体設定により固定されています。',
+    
+    // 二段階認証方法のヘルプテキスト（詳細）
+    'two_factor_method_help_detailed' => [
+        'single' => 'この認証方法が:account_type全体設定で有効になっています。',
+        'multiple' => '使用する認証方法を選択してください。:account_type全体設定で有効にされている方法から選択できます。',
+        'email' => '登録済みのメールアドレスに認証コードを送信します。',
+        'device' => '登録済みのデバイスで認証を行います。',
+        'biometric' => '指紋や顔認証などの生体認証を使用して認証を行います。',
     ],
     'login_notification_mode' => [
         'label' => 'ログイン通知の設定',
@@ -247,35 +272,10 @@ return [
     ],
 
 
-    // 二段階認証モードオプション（プロフィール用）
-    'two_factor_mode_options' => [
-        'disabled' => '無効',
-        'only_new_device' => '異なる端末/IP時のみ有効',
-        'always' => '常に有効',
-    ],
-
-    // 二段階認証方法のヘルプテキスト（汎用）
-    'two_factor_method_help' => [
-        'single' => 'この認証方法が:account_type全体設定で有効になっています。',
-        'multiple' => '使用する認証方法を選択してください。:account_type全体設定で有効にされている方法から選択できます。',
-        'email' => '登録済みのメールアドレスに認証コードを送信します。',
-        'device' => '登録済みのデバイスで認証を行います。',
-        'biometric' => '指紋や顔認証などの生体認証を使用して認証を行います。',
-    ],
-    // 二段階認証の汎用ヘルプテキスト
-    'two_factor_authentication' => '二段階認証',
-    'two_factor_settings' => '二段階認証設定',
-    'two_factor_method' => '二段階認証方法',
-    'two_factor_mode' => '二段階認証モード',
-    'two_factor_help' => '二段階認証を使用するタイミングを設定します。',
-    'two_factor_method_help' => '二段階認証で使用する認証方法を選択してください。',
-    'two_factor_global_setting_fixed' => 'この設定は全体設定により固定されています。',
-    'two_factor_method_global_setting_fixed' => 'この認証方法は全体設定により固定されています。',
     
     // ログイン通知の汎用ヘルプテキスト
     'login_notification' => 'ログイン通知',
     'notification_settings' => '通知設定',
-    'login_notification_settings' => 'ログイン通知設定',
     'login_notification_mode' => 'ログイン通知の設定',
     'login_notification_help' => 'ログイン通知を送信するタイミングを設定します。',
 

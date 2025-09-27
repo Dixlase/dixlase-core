@@ -96,7 +96,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <h2>{{ __('common.password_settings') }}</h2>
         
         <fieldset>
-            <legend>{{ $requirePassword ? __('common.password') : __('admin.settings.members.form.password_change_only') }}</legend>
+            <legend>{{ $requirePassword ? __('common.password') : __('admin.profile.password_change_only') }}</legend>
             @include('components::form.password-tools', [
                 'id' => 'password',
                 'name' => 'password',
@@ -140,7 +140,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- アカウントステータス -->
         <fieldset>
             <legend>
-                {{ __('common.status.status') }}
+                {{ __('common.status') }}
                 @if($isInitialAdmin)
                     <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">（初期管理者のため変更不可）</span>
                 @endif
@@ -153,8 +153,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @php
                     $statusValue = old('status', (string) ($member->status->value ?? 1));
                     $statusOptions = [
-                        '1' => 'common.status.active',
-                        '0' => 'common.status.inactive',
+                        '1' => 'components.status.active',
+                        '0' => 'components.status.inactive',
                     ];
                 @endphp
                 @include('components::form.radio-group', [
@@ -211,12 +211,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
         <!-- ログイン通知設定 -->
         <fieldset>
-            <legend>{{ __('admin.settings.members.form.login_notification') }}</legend>
+            <legend>{{ __('common.login_notification') }}</legend>
             @php
                 $loginNotificationValue = old('login_notification', (string) ($member->login_notification->value ?? 0));
                 $loginNotificationOptions = [
-                    '0' => 'common.status.disabled',
-                    '1' => 'common.status.enabled',
+                    '0' => 'common.disabled',
+                    '1' => 'common.enabled',
                 ];
             @endphp
             @include('components::form.radio-group', [
@@ -241,13 +241,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif   
         <!-- 二段階認証有効/無効 -->
         <fieldset>
-            <legend>{{ __('admin.settings.members.form.two_factor_mode') }}</legend>
+            <legend>{{ __('common.two_factor_authentication') }}</legend>
             @php
                 $twoFactorModeValue = old('two_factor_mode', $member->two_factor_mode->value ?? $twoFactorMode->value);
-                $twoFactorModeOptions = [];
-                foreach (\App\Enums\TwoFactorMode::cases() as $mode) {
-                    $twoFactorModeOptions[$mode->value] = $mode->label();
-                }
             @endphp
             @include('components::form.radio-group', [
                 'name' => 'two_factor_mode',
@@ -265,7 +261,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @if(!empty($enabledTwoFactorMethods))
             <fieldset>
                 <legend>
-                    {{ __('common.two_factor_method') }}
+                    {{ __('common.two_factor_method.label') }}
                     @if(count($enabledTwoFactorMethods) > 1)
                         <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">
                             ({{ count($enabledTwoFactorMethods) }} {{ __('common.available_methods') }})
@@ -290,7 +286,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <input type="hidden" name="two_factor_method" value="{{ $currentMethod }}">
                     <p class="description-text">
                         {{ __('admin.profile.single_method_available') }}: 
-                        <strong>{{ $enabledTwoFactorMethods[$currentMethod] }}</strong>
+                        <strong>{{ __($enabledTwoFactorMethods[$currentMethod]) }}</strong>
                     </p>
                 @endif
                 

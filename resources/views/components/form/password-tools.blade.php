@@ -90,7 +90,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @if($showConfirmation)
     <fieldset>
-        <legend>{{ __('admin.settings.members.form.password') }}（{{ __('common.confirm') }}）</legend>
+        <legend>{{ __('common.password') }}（{{ __('common.confirm') }}）</legend>
         @include('components.form.text', [
             'type' => 'password',
             'name' => $name . '_confirmation',

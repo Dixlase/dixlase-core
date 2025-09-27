@@ -61,10 +61,21 @@ return [
 
     // Status related
     'status' => [
+        'active' => 'Active',
+        'inactive' => 'Inactive',
+        'enabled' => 'Enabled',
+        'disabled' => 'Disabled',
+        'draft' => 'Draft',
+        'published' => 'Published',
         'scheduled' => 'Scheduled',
         'pending' => 'Pending',
         'approved' => 'Approved',
         'rejected' => 'Rejected',
+        'cancelled' => 'Cancelled',
+        // Descriptions
+        'draft_description' => 'Draft status. Not published.',
+        'published_description' => 'Published immediately.',
+        'scheduled_description' => 'Published at specified date and time.',
     ],
 
     // Message related
@@ -89,6 +100,10 @@ return [
     
     // Filter related
     'filters' => [
+        'search_keyword' => 'Keyword',
+        'role_filter' => 'Role Filter',
+        'status_filter' => 'Status Filter',
+        'clear_button' => 'Clear',
     ],
 
     // Modal related

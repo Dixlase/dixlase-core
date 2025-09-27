@@ -170,6 +170,7 @@ return [
         'password_change_only' => 'パスワード（変更する場合のみ入力）',
         'updated' => 'プロフィールを更新しました。',
         'login_notification_global_setting_help' => 'この設定はメンバー全体設定で制御されています。',
+        'single_method_available' => '利用可能な認証方法',
         'submit' => 'プロフィールを更新',
         'updated' => 'プロフィールが更新されました。',
         'confirm_title' => 'プロフィール更新の確認',
@@ -329,6 +330,11 @@ return [
             'session_encrypt_help' => 'セッションデータを暗号化して保存します。',
             'session_lifetime' => 'デフォルトセッション有効時間',
             'session_lifetime_help' => 'セッションの有効時間を分単位で設定してください（1-43200分）。',
+            // Password security
+            'password_security_settings' => 'パスワードセキュリティ設定',
+            'password_security_description' => 'パスワードに関するセキュリティ設定を管理します。',
+            'pwned_password_check' => 'パスワード漏洩チェック',
+            'pwned_password_check_help' => 'パスワード設定時に漏洩データベースとの照合を行います。',
             'recaptcha_settings' => 'CAPTCHA設定',
             'captcha_enabled' => 'CAPTCHAを有効にする',
             'captcha_driver' => 'CAPTCHAプロバイダー',
@@ -494,18 +500,29 @@ return [
         // メンバー
         'members' => [
             'index' => [
+                'heading' => 'メンバー管理',
+                'search_title' => 'メンバー検索',
                 'search_placeholder' => 'メンバー名またはメールアドレスで検索',
-                'heading' => 'メンバー一覧',
                 'table' => [
                     'unknown_role' => '不明なロール',
                     'caption' => 'メンバー一覧',
                 ],
             ],
+            'create' => [
+                'heading' => '新規メンバー作成',
+                'create_confirmation_title' => '作成確認',
+                'create_confirmation_message' => 'この内容でメンバーを作成しますか？',
+            ],
+            'edit' => [
+                'heading' => 'メンバー編集',
+            ],
             'form' => [
                 'password_change_only' => 'パスワード（変更する場合のみ）',
-                'initial_admin_status_fixed' => '初期管理者のため、ステータスは「有効」に固定されています。',
+                'login_notification' => 'ログイン通知',
+                'two_factor_mode' => '二段階認証モード',
+                'initial_admin_status_fixed' => 'このアカウントは初期管理者のため、ステータスは変更できません。',
                 'initial_admin_role_fixed' => '初期管理者のため、ロールは「スーパー管理者」に固定されています。',
-                'mail_server_not_tested' => 'メールサーバーのテストが完了していません。基本設定でメールサーバーのテストを実行してください。',
+                'mail_server_not_tested' => 'メールサーバーの設定・テストが完了していないため、この機能は動作しません。',
                 'force_logout' => '強制ログアウト',
                 'force_logout_description' => 'このメンバーを強制的にログアウトします。現在のセッションが削除されます。',
                 'force_logout_button' => '強制ログアウト実行',
@@ -513,36 +530,15 @@ return [
                 'delete_member_description' => 'このメンバーを完全に削除します。この操作は取り消せません。',
                 'delete_member_button' => 'メンバー削除',
             ],
-            'messages' => [
-                'created' => '新しいメンバーが作成されました。',
-                'updated' => 'メンバー情報を更新しました。',
-                'initial_member_role_protected' => '初期メンバーアカウントの権限は変更できません。',
-                'initial_member_status_protected' => '初期メンバーアカウントは無効化できません。',
-                'initial_member_cannot_delete' => '初期メンバーアカウントは削除できません。',
-                'permissions_saved' => '権限設定を保存しました。',
-                'insufficient_permissions' => 'この操作を行う権限がありません。',
-                'deleted' => 'メンバーアカウントを削除しました。',
-                'force_logout_success' => 'メンバーを強制ログアウトしました。',
+            'roles' => [
+                'heading' => '権限設定',
+                'access_roles' => '編集権限（access_roles）',
+                'view_roles' => '閲覧権限（view_roles）',
+                'confirm_title' => '権限設定更新の確認',
+                'confirm_message' => '権限設定を更新しますか？',
             ],
-            'modals' => [
-                'force_logout' => [
-                    'title' => '強制ログアウト確認',
-                    'message' => ':name を強制的にログアウトしますか？',
-                    'confirm' => '強制ログアウト実行',
-                ],
-                'delete' => [
-                    'title' => 'メンバー削除確認',
-                    'message' => ':name を完全に削除しますか？',
-                    'warning' => 'この操作は取り消せません。',
-                ],
-            ],
-            'create' => [
-                'create_confirmation_title' => '作成の確認',
-                'create_confirmation_message' => '新規管理者を作成しますか？',
-            ],
-            'edit' => [
-                'heading' => 'メンバー編集',
-            ],
+
+
             'settings' => [
                 'heading' => 'メンバー全体設定',
                 'password_conditions' => 'パスワードの条件',
@@ -612,14 +608,30 @@ return [
                 'admin_session_lifetime' => 'セッション有効時間',
                 'admin_session_lifetime_help' => '管理メンバーのセッション有効時間を分単位で設定してください（1-43200分）。',
             ],
-            'roles' => [
-                'heading' => '権限設定',
-                'access_roles' => '編集権限（access_roles）',
-                'view_roles' => '閲覧権限（view_roles）',
-                'confirm_title' => '権限設定更新の確認',
-                'confirm_message' => '権限設定を更新しますか？',
+            'modals' => [
+                'force_logout' => [
+                    'title' => '強制ログアウト確認',
+                    'message' => ':name を強制的にログアウトしますか？',
+                    'confirm' => '強制ログアウト実行',
+                ],
+                'delete' => [
+                    'title' => 'メンバー削除確認',
+                    'message' => ':name を完全に削除しますか？',
+                    'warning' => 'この操作は取り消せません。',
+                ],
             ],
-
+            'messages' => [
+                'created' => '新しいメンバーが作成されました。',
+                'updated' => 'メンバー情報を更新しました。',
+                'initial_member_role_protected' => '初期メンバーアカウントの権限は変更できません。',
+                'initial_member_status_protected' => '初期メンバーアカウントは無効化できません。',
+                'initial_member_cannot_delete' => '初期メンバーアカウントは削除できません。',
+                'permissions_saved' => '権限設定を保存しました。',
+                'insufficient_permissions' => 'この操作を行う権限がありません。',
+                'deleted' => 'メンバーアカウントを削除しました。',
+                'force_logout_success' => 'メンバーを強制ログアウトしました。',
+            ],
+            
             'validation' => [
                 'mail_server_not_tested' => 'ロックアウト通知機能、パスワードリセット機能、ログイン通知機能、2段階認証機能を使用するには、基本設定でメールサーバーの接続テストに合格する必要があります。',
                 'mail_server_warning' => 'メールサーバー未設定',
