@@ -49,7 +49,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </fieldset>
 
         <fieldset>
-            <legend>{{ __('admin.settings.base.timezone') }}</legend>
+            <legend>{{ __('common.timezone') }}</legend>
             @include('components.form.select', [
                 'name' => 'timezone',
                 'options' => $timezones,
@@ -171,8 +171,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'id' => 'confirmationModal',
         'label' => __('common.submit'),
         'onclick' => "openModal('confirmationModal')",
-        'title' => __('admin.settings.base.save_confirmation_title'),
-        'message' => __('admin.settings.base.save_confirmation_message'),
+        'title' => __('common.save_confirmation_title'),
+        'message' => __('common.save_confirmation_message'),
         'confirm_label' => __('common.form.save_button'),
         'cancel_label' => __('common.form.cancel_button'),
         'form' => 'base-settings-form',

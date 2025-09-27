@@ -27,7 +27,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- 基本情報 -->
         <section>
-            <h2>{{ __('admin.profile.basic_info') }}</h2>
+            <h2>{{ __('common.basic_info') }}</h2>
             
             <fieldset>
                 <legend>{{ __('admin.profile.name') }}</legend>
@@ -67,7 +67,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </fieldset>
 
             <fieldset>
-                <legend>{{ __('admin.profile.language') }}</legend>
+                <legend>{{ __('common.locale') }}</legend>
                 @include('components.form.select', [
                     'name' => 'locale',
                     'options' => $localeOptions,
@@ -84,7 +84,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- パスワード設定 -->
         <section>
-            <h2>{{ __('admin.profile.password_settings') }}</h2>
+            <h2>{{ __('common.password_settings') }}</h2>
             
             <fieldset>
                 <legend>{{ __('admin.profile.password_change_only') }}</legend>
@@ -123,10 +123,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             // 初期化時に保存された値でDOMをリセット
             resetToSavedTheme();
         " data-profile-theme>
-            <h2>{{ __('admin.profile.appearance_settings') }}</h2>
+            <h2>{{ __('common.appearance_settings') }}</h2>
             
             <fieldset>
-                <legend>{{ __('admin.profile.appearance_mode') }}</legend>
+                <legend>{{ __('common.appearance_mode') }}</legend>
                 @include('components::form.radio-group', [
                     'name' => 'appearance',
                     'options' => [
@@ -157,7 +157,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- ログイン通知設定 -->
         @unless($hideLoginNotificationSection)
             <section>
-                <h2>{{ __('admin.profile.login_notification_settings') }}</h2>
+                <h2>{{ __('common.login_notification_settings') }}</h2>
                 
                 @if($showLoginNotificationSettings)
                     <fieldset>
@@ -204,17 +204,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             'options' => $profileTwoFactorOptions,
                             'value' => old('two_factor_mode', (string) ($twoFactorMode?->value ?? 0)),
                         ])
-                        <p>{{ __('admin.profile.two_factor_help') }}</p>
+                        <p>{{ __('common.two_factor_help') }}</p>
                     </fieldset>
                 @elseif($currentGlobalTwoFactorMode)
                     <fieldset>
                         <legend>{{ __('admin.two_factor_mode.label') }}</legend>
                         <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
                             <p class="text-sm">
-                                {{ __('admin.two_factor_mode.options.' . $currentGlobalTwoFactorMode->value) }}
+                                {{ str_replace(':account_type', __('common.account_types.member'), __('common.two_factor_mode.options.' . $currentGlobalTwoFactorMode->value)) }}
                             </p>
                             <p class="text-xs mt-1">
-                                {{ __('admin.profile.two_factor_global_setting_fixed') }}
+                                {{ __('common.two_factor_global_setting_fixed') }}
                             </p>
                         </div>
                     </fieldset>
@@ -223,7 +223,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- 二段階認証方法設定 -->
         @if($showMethodSelection && !empty($availableMethodOptions))
             <fieldset>
-                <legend>{{ __('admin.profile.two_factor_method') }}</legend>
+                <legend>{{ __('common.two_factor_method') }}</legend>
                 @php
                     // 現在の認証方法が有効な方法に含まれているか確認
                     $currentMethodValid = array_key_exists($currentTwoFactorMethod, $availableMethodOptions);
@@ -255,16 +255,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 <p>
                     {{ count($availableMethodOptions) > 1 ? 
-                        __('admin.profile.two_factor_method_help_multiple') : 
-                        __('admin.profile.two_factor_method_help_single') }}
+                        str_replace(':account_type', __('common.account_types.member'), __('common.two_factor_method_help.multiple')) : 
+                        str_replace(':account_type', __('common.account_types.member'), __('common.two_factor_method_help.single')) }}
                 </p>
             </fieldset>
         @elseif($currentGlobalTwoFactorMode && !empty($availableMethodOptions))
             <fieldset>
-                <legend>{{ __('admin.profile.two_factor_method') }}</legend>
+                <legend>{{ __('common.two_factor_method') }}</legend>
                 <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
                     <p class="text-sm text-gray-700 dark:text-gray-300">
-                        {{ __('admin.profile.two_factor_method_global_setting_fixed') }}
+                        {{ __('common.two_factor_method_global_setting_fixed') }}
                     </p>
                 </div>
             </fieldset>

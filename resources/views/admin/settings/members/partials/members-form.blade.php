@@ -52,7 +52,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- 基本情報セクション -->
     <section>
-        <h2>{{ __('admin.settings.members.form.basic_info') }}</h2>
+        <h2>{{ __('common.basic_info') }}</h2>
         
         <fieldset>
             <legend>{{ __('common.name') }}</legend>
@@ -93,7 +93,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- パスワード設定セクション -->
     <section>
-        <h2>{{ __('admin.settings.members.form.password_settings') }}</h2>
+        <h2>{{ __('common.password_settings') }}</h2>
         
         <fieldset>
             <legend>{{ $requirePassword ? __('common.password') : __('admin.settings.members.form.password_change_only') }}</legend>
@@ -114,7 +114,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- アカウント設定セクション -->
     <section>
-        <h2>{{ __('admin.settings.members.form.account_settings') }}</h2>
+        <h2>{{ __('common.account_settings') }}</h2>
         
         <!-- 外観モード -->
         <fieldset data-member-theme>
@@ -202,7 +202,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- 通知設定セクション -->
     <section>
-        <h2>{{ __('admin.settings.members.form.notification_settings') }}</h2>
+        <h2>{{ __('common.notification_settings') }}</h2>
         @if(!$isMailServerTested)
             @include('components.message', [
                 'type' => 'warning',
@@ -232,7 +232,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- 二段階認証設定セクション -->
     <section>
-        <h2>{{ __('admin.settings.members.form.two_factor_settings') }}</h2>
+        <h2>{{ __('common.two_factor_settings') }}</h2>
         @if(!$isMailServerTested)
             @include('components.message', [
                 'type' => 'warning',
@@ -258,17 +258,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 'messages' => $errors->get('two_factor_mode')
             ])
             
-            <p>{{ __('admin.profile.two_factor_global_setting_fixed') }}</p>
+            <p>{{ __('common.two_factor_global_setting_fixed') }}</p>
         </fieldset>
         
         <!-- 二段階認証方法設定 -->
         @if(!empty($enabledTwoFactorMethods))
             <fieldset>
                 <legend>
-                    {{ __('admin.profile.two_factor_method') }}
+                    {{ __('common.two_factor_method') }}
                     @if(count($enabledTwoFactorMethods) > 1)
                         <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">
-                            ({{ count($enabledTwoFactorMethods) }} {{ __('admin.profile.available_methods') }})
+                            ({{ count($enabledTwoFactorMethods) }} {{ __('common.available_methods') }})
                         </span>
                     @endif
                 </legend>
@@ -304,7 +304,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @if(isset($member) && $member->exists)
         <!-- 管理操作セクション -->
         <section>
-            <h2>{{ __('admin.settings.members.form.management_operations') }}</h2>
+            <h2>{{ __('common.management_operations') }}</h2>
             
             <fieldset>
                 <legend>{{ __('admin.settings.members.form.force_logout') }}</legend>
@@ -372,7 +372,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'id' => 'deleteMemberModal',
             'title' => __('admin.settings.members.modals.delete.title'),
             'message' => __('admin.settings.members.modals.delete.message', ['name' => $member->name]) . "\n\n" . __('admin.settings.members.modals.delete.warning'),
-            'confirm_label' => __('admin.settings.members.modals.delete.confirm'),
+            'confirm_label' => __('common.delete'),
             'cancel_label' => __('admin.settings.members.modals.cancel'),
             'form' => $deleteMemberFormId,
             'icon_type' => 'danger',

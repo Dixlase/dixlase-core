@@ -260,7 +260,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- 二段階認証設定 -->
         <section>
-            <h2>{{ __('admin.settings.members.settings.two_factor_settings') }}</h2>
+            <h2>{{ __('common.two_factor_settings') }}</h2>
             @if(!$isMailServerTested)
                 @include('components.message', [
                     'type' => 'warning',
@@ -355,8 +355,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 更新確認モーダル -->
     @include('components::form.modal', [
         'id' => 'confirmationModal',
-        'title' => __('admin.settings.members.settings.confirm_title'),
-        'message' => __('admin.settings.members.settings.confirm_message'),
+        'title' => __('common.update_confirmation_title'),
+        'message' => __('common.update_confirmation_message'),
         'confirm_label' => __('common.update'),
         'cancel_label' => __('common.cancel'),
         'form' => 'member-settings-form',
@@ -368,7 +368,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'title' => __('admin.settings.members.settings.force_logout_all_modal.title'),
         'message' => __('admin.settings.members.settings.force_logout_all_modal.message'),
         'confirm_label' => __('admin.settings.members.settings.force_logout_all_modal.confirm_label'),
-        'cancel_label' => __('admin.settings.members.settings.force_logout_all_modal.cancel_label'),
+        'cancel_label' => __('common.cancel'),
         'form' => 'force-logout-all-form',
         'icon_type' => 'warning',
         'confirm_color' => 'yellow'
