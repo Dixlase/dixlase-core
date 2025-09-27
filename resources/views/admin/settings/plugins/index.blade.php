@@ -23,7 +23,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
     <!-- プラグイン一覧セクション -->
     <section>
-        <h2 class="sr-only">{{ __('admin.settings.plugins.index.heading') }}</h2>
+        <h2>{{ __('admin.settings.plugins.index.heading') }}</h2>
 
         <!-- レスポンシブテーブル -->
         <div class="responsive-table">

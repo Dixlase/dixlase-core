@@ -56,8 +56,6 @@ class PluginAutoloadSyncOnly extends Command
         'App\\' => 'app',
         'Database\\Factories\\' => 'database/factories',
         'Database\\Seeders\\'   => 'database/seeders',
-        'Database\\Seeders\\Dev\\'   => 'database/seeders/dev',
-        'Database\\Seeders\\Pro\\'   => 'database/seeders/pro',
     ];
 
     /**

@@ -63,7 +63,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div class="modal-checkbox">
                         <label>
                             <input type="checkbox" name="{{ $checkbox_name }}" value="1" />
-                            <span>{{ $checkbox_label }}</span>
+                            <span class="text-left">{!! $checkbox_label !!}</span>
                         </label>
                     </div>
                 @endif

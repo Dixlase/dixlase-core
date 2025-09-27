@@ -83,6 +83,14 @@ return [
         'permissions' => 'Permissions',
         'logout' => 'Logout',
         'cancel' => 'Cancel',
+        'create' => 'Create',
+        'update' => 'Update',
+        'save' => 'Save',
+        'back' => 'Back',
+        'confirm' => 'Confirm',
+        'save_confirmation' => 'Save Confirmation',
+        'update_confirmation' => 'Update Confirmation',
+        'create_confirmation' => 'Create Confirmation',
         'required' => 'The :attribute field is required.',
         'email' => 'The :attribute must be a valid email address.',
         'unique' => 'The :attribute has already been taken.',
@@ -97,6 +105,14 @@ return [
             'auto' => 'Auto',
             'dark' => 'Dark',
             'light' => 'Light',
+        ],
+        'status' => [
+            'draft' => 'Draft',
+            'published' => 'Published',
+            'scheduled' => 'Scheduled',
+            'draft_description' => 'Draft status. Not published.',
+            'published_description' => 'Published immediately.',
+            'scheduled_description' => 'Published at specified date and time.',
         ],
     ],
 
@@ -987,7 +1003,7 @@ Clicking this link will complete the full mail function test.',
         // Plugins
         'plugins' => [
             'index' => [
-                'heading' => 'Plugin Master',
+                'heading' => 'Plugin List',
                 'systems' => [
                     'text' => 'System',
                     'cache' => 'Cache Management',
@@ -1017,7 +1033,7 @@ Clicking this link will complete the full mail function test.',
                     'confirm_message' => 'Do you want to uninstall plugin [{name}]?',
                     'confirm_button' => 'Uninstall',
                     'cancel_button' => 'Cancel',
-                    'remove_data_checkbox' => 'Delete database tables created during plugin installation. Warning! Deleting tables will lose all data created by the plugin!',
+                    'remove_data_checkbox' => 'Delete database tables created during plugin installation.<br><span class="text-red-600 font-semibold">Warning! Deleting tables will lose all data created by the plugin!</span>',
                 ],
             ],
             'install' => [
