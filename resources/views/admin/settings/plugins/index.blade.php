@@ -33,8 +33,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <tr>
                         <th>{{ __('admin.settings.plugins.index.table.id') }}</th>
                         <th>{{ __('admin.settings.plugins.index.table.name') }}</th>
-                        <th>{{ __('admin.settings.plugins.index.table.status') }}</th>
-                        <th>{{ __('admin.settings.plugins.index.table.actions') }}</th>
+                        <th>{{ __('common.status') }}</th>
+                        <th>{{ __('common.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -44,19 +44,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <td data-label="{{ __('admin.settings.plugins.index.table.name') }}">
                                 <strong>{{ $plugin->name }}</strong>
                             </td>
-                            <td data-label="{{ __('admin.settings.plugins.index.table.status') }}">
+                            <td data-label="{{ __('common.status') }}">
                                 <span class="status-badge status-badge--{{ $plugin->status === 1 ? 'enabled' : 'disabled' }}">
-                                    {{ $plugin->status === 1 ? __('admin.settings.plugins.index.status.enabled') : __('admin.settings.plugins.index.status.disabled') }}
+                                    {{ $plugin->status === 1 ? __('common.status.enabled') : __('common.status.disabled') }}
                                 </span>
                             </td>
-                            <td data-label="{{ __('admin.settings.plugins.index.table.actions') }}">
+                            <td data-label="{{ __('common.actions') }}">
                                 <div class="action-buttons">
                                     @if ($plugin->status === 1)
                                         <form action="{{ route('admin.settings.plugins.disable', $plugin->id) }}" method="POST" class="inline-block">
                                             @csrf
                                             @include('components::form.button', [
                                                 'type' => 'submit',
-                                                'label' => __('admin.settings.plugins.index.buttons.disable'),
+                                                'label' => __('common.disable'),
                                                 'variant' => 'warning',
                                                 'size' => 'sm',
                                                 'icon' => 'fas fa-pause'
@@ -67,7 +67,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             @csrf
                                             @include('components::form.button', [
                                                 'type' => 'submit',
-                                                'label' => __('admin.settings.plugins.index.buttons.enable'),
+                                                'label' => __('common.enable'),
                                                 'variant' => 'success',
                                                 'size' => 'sm',
                                                 'icon' => 'fas fa-play'
@@ -79,7 +79,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         @csrf
                                         @include('components::form.button', [
                                             'type' => 'button',
-                                            'label' => __('admin.settings.plugins.index.buttons.uninstall'),
+                                            'label' => __('common.uninstall'),
                                             'variant' => 'danger',
                                             'size' => 'sm',
                                             'icon' => 'fas fa-trash',
@@ -91,8 +91,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             'id' => "uninstallModal-{$plugin->id}",
                                             'title' => __('admin.settings.plugins.index.uninstall.confirm_title'),
                                             'message' => str_replace('{name}', $plugin->name, __('admin.settings.plugins.index.uninstall.confirm_message')),
-                                            'confirm_label' => __('admin.settings.plugins.index.uninstall.confirm_button'),
-                                            'cancel_label' => __('admin.settings.plugins.index.uninstall.cancel_button'),
+                                            'confirm_label' => __('common.uninstall'),
+                                            'cancel_label' => __('common.cancel'),
                                             'checkbox' => true,
                                             'checkbox_name' => 'remove_db_data',
                                             'checkbox_label' => __('admin.settings.plugins.index.uninstall.remove_data_checkbox'),

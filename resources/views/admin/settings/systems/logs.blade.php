@@ -82,7 +82,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- Download Button -->
         <a href="{{ route('admin.settings.systems.logs.download', ['type' => $logType]) }}" class="action-button action-button--success flex-shrink-0">
             <i class="fas fa-download mr-2"></i>
-            {{ __('admin.settings.systems.logs.download') }}
+            {{ __('common.download') }}
         </a>
 
         <!-- Clear Button -->
@@ -106,8 +106,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         ],
         'perPageOptions' => [25, 50, 100, 200],
         'currentPerPage' => request('per_page', 50),
-        'totalLabel' => 'admin.common.total_count',
-        'perPageLabel' => 'admin.common.per_page_label'
+        'totalLabel' => 'components.pagination.total_count',
+        'perPageLabel' => 'components.pagination.per_page_label'
     ])
 
     <!-- Pagination Controls -->
@@ -133,7 +133,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <div class="flex items-start">
                                 <span class="inline-block w-2 h-2 bg-blue-500 mt-2 mr-2 flex-shrink-0"></span>
                                 <div class="flex-1 break-all">
-                                    <span class="font-semibold text-blue-700 dark:text-blue-300">操作:</span>
+                                    <span class="font-semibold text-blue-700 dark:text-blue-300">{{ __('common.operation') }}:</span>
                                     <span class="text-blue-600 dark:text-blue-200 ml-2">{{ $log['message'] }}</span>
                                 </div>
                             </div>
@@ -146,7 +146,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     <div class="flex items-start">
                                         <span class="inline-block w-2 h-2 bg-green-500 mt-2 mr-2 flex-shrink-0"></span>
                                         <div class="flex-1 break-all">
-                                            <span class="font-semibold text-green-700 dark:text-green-300">ID:</span>
+                                            <span class="font-semibold text-green-700 dark:text-green-300">{{ __('common.id') }}:</span>
                                             <span class="text-green-600 dark:text-green-200 ml-2">{{ $log['context']['id'] }}</span>
                                         </div>
                                     </div>
@@ -159,7 +159,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     <div class="flex items-start">
                                         <span class="inline-block w-2 h-2 bg-emerald-500 mt-2 mr-2 flex-shrink-0"></span>
                                         <div class="flex-1 break-all">
-                                            <span class="font-semibold text-emerald-700 dark:text-emerald-300">Name:</span>
+                                            <span class="font-semibold text-emerald-700 dark:text-emerald-300">{{ __('common.name') }}:</span>
                                             <span class="text-emerald-600 dark:text-emerald-200 ml-2">{{ $log['context']['name'] }}</span>
                                         </div>
                                     </div>
@@ -174,25 +174,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         <div class="flex-1 break-all space-y-1">
                                             @if (isset($log['context']['method']))
                                                 <div>
-                                                    <span class="font-semibold text-purple-700 dark:text-purple-300">Method:</span>
+                                                    <span class="font-semibold text-purple-700 dark:text-purple-300">{{ __('common.method') }}:</span>
                                                     <span class="text-purple-600 dark:text-purple-200 ml-2">{{ $log['context']['method'] }}</span>
                                                 </div>
                                             @endif
                                             @if (isset($log['context']['uri']))
                                                 <div>
-                                                    <span class="font-semibold text-purple-700 dark:text-purple-300">URI:</span>
+                                                    <span class="font-semibold text-purple-700 dark:text-purple-300">{{ __('common.uri') }}:</span>
                                                     <span class="text-purple-600 dark:text-purple-200 ml-2">{{ $log['context']['uri'] }}</span>
                                                 </div>
                                             @endif
                                             @if (isset($log['context']['route']))
                                                 <div>
-                                                    <span class="font-semibold text-purple-700 dark:text-purple-300">Route:</span>
+                                                    <span class="font-semibold text-purple-700 dark:text-purple-300">{{ __('common.route') }}:</span>
                                                     <span class="text-purple-600 dark:text-purple-200 ml-2">{{ $log['context']['route'] }}</span>
                                                 </div>
                                             @endif
                                             @if (isset($log['context']['controller']))
                                                 <div>
-                                                    <span class="font-semibold text-purple-700 dark:text-purple-300">Controller:</span>
+                                                    <span class="font-semibold text-purple-700 dark:text-purple-300">{{ __('common.controller') }}:</span>
                                                     <span class="text-purple-600 dark:text-purple-200 ml-2">{{ $log['context']['controller'] }}</span>
                                                 </div>
                                             @endif
@@ -207,7 +207,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     <div class="flex items-start">
                                         <span class="inline-block w-2 h-2 bg-orange-500 mt-2 mr-2 flex-shrink-0"></span>
                                         <div class="flex-1 break-all">
-                                            <span class="font-semibold text-orange-700 dark:text-orange-300">IP:</span>
+                                            <span class="font-semibold text-orange-700 dark:text-orange-300">{{ __('common.ip') }}:</span>
                                             <span class="text-orange-600 dark:text-orange-200 ml-2">{{ $log['context']['ip'] }}</span>
                                         </div>
                                     </div>
@@ -220,7 +220,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     <div class="flex items-start">
                                         <span class="inline-block w-2 h-2 bg-indigo-500 mt-2 mr-2 flex-shrink-0"></span>
                                         <div class="flex-1 break-all">
-                                            <span class="font-semibold text-indigo-700 dark:text-indigo-300">User Agent:</span>
+                                            <span class="font-semibold text-indigo-700 dark:text-indigo-300">{{ __('common.user_agent') }}:</span>
                                             <span class="text-indigo-600 dark:text-indigo-200 ml-2">{{ $log['context']['user_agent'] }}</span>
                                         </div>
                                     </div>
@@ -233,7 +233,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <div class="flex items-start">
                                 <span class="inline-block w-2 h-2 bg-gray-500 mt-2 mr-2 flex-shrink-0"></span>
                                 <div class="flex-1 break-all">
-                                    <span class="font-semibold text-gray-700 dark:text-gray-300">Time:</span>
+                                    <span class="font-semibold text-gray-700 dark:text-gray-300">{{ __('common.time') }}:</span>
                                     <span class="text-gray-600 dark:text-gray-400 ml-2">{{ $log['timestamp'] }}</span>
                                 </div>
                             </div>
@@ -263,8 +263,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         ],
         'perPageOptions' => [25, 50, 100, 200],
         'currentPerPage' => request('per_page', 50),
-        'totalLabel' => 'admin.common.total_count',
-        'perPageLabel' => 'admin.common.per_page_label'
+        'totalLabel' => 'components.pagination.total_count',
+        'perPageLabel' => 'components.pagination.per_page_label'
     ])
 
     <!-- Pagination Controls -->

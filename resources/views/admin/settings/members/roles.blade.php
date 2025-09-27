@@ -76,12 +76,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 更新ボタンとモーダル-->
     @include('components::form.save', [
         'id' => 'confirmationModal',
-        'label' => __('admin.settings.members.roles.confirm_label'),
+        'label' => __('common.update'),
         'onclick' => "openModal('confirmationModal')",
         'title' => __('admin.settings.members.roles.confirm_title'),
         'message' => __('admin.settings.members.roles.confirm_message'),
-        'confirm_label' => __('admin.settings.members.roles.confirm_label'),
-        'cancel_label' => __('admin.settings.members.roles.cancel_label'),
+        'confirm_label' => __('common.update'),
+        'cancel_label' => __('common.cancel'),
         'form' => 'member-roles-form',
     ])
 @endsection

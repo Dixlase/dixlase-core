@@ -2,8 +2,8 @@
     'paginator' => null, // ページネーターオブジェクト
     'perPageOptions' => [10, 25, 50, 100], // 表示件数オプション
     'currentPerPage' => 25, // 現在の表示件数
-    'totalLabel' => 'admin.common.total_count', // 総件数ラベルの翻訳キー
-    'perPageLabel' => 'admin.common.per_page_label', // 表示件数ラベルの翻訳キー
+    'totalLabel' => 'components.pagination.total_count', // 総件数ラベルの翻訳キー
+    'perPageLabel' => 'components.pagination.per_page_label', // 表示件数ラベルの翻訳キー
 ])
 
 <div class="mb-4 flex justify-between items-center">

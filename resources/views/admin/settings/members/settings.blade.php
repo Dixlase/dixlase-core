@@ -72,7 +72,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <legend>{{ __('admin.settings.members.settings.login_attempt_limit_enabled') }}</legend>
                 @include('components.form.radio-group', [
                     'name' => 'login_attempt_limit_enabled',
-                    'options' => $loginAttemptLimitOptions,
+                    'options' => [
+                        '1' => __('common.status.enabled'),
+                        '0' => __('common.status.disabled'),
+                    ],
                     'value' => old('login_attempt_limit_enabled', (string) (int) $loginAttemptLimitEnabled),
                 ])
                 <p>
@@ -129,18 +132,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         {{ __('admin.settings.members.settings.login_attempt_lockout_duration_help') }}
                     </p>
                 </fieldset>
-
                 <!-- ロックアウト通知設定 -->
                 <fieldset>
                     <legend>{{ __('admin.settings.members.settings.lockout_notification_enabled') }}</legend>
                     @include('components.form.radio-group', [
                         'name' => 'lockout_notification_enabled',
-                        'options' => $lockoutNotificationOptions,
+                    'options' => [
+                        '1' => __('common.status.enabled'),
+                        '0' => __('common.status.disabled'),
+                    ],
                         'value' => old('lockout_notification_enabled', (string) (int) $lockoutNotificationEnabled),
                     ])
 
                     <p>
                         {!! __('admin.settings.members.settings.lockout_notification_help') !!}
+{{ ... }}
                     </p>
                 </fieldset>
             </div>
@@ -202,7 +208,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <legend>{{ __('admin.settings.members.settings.admin_session_lifetime_enabled') }}</legend>
                 @include('components.form.radio-group', [
                     'name' => 'members_session_lifetime_enabled',
-                    'options' => $adminSessionLifetimeOptions,
+                    'options' => [
+                        '1' => __('common.status.enabled'),
+                        '0' => __('common.status.disabled') . ' (Use Default Value)',
+                    ],
                     'value' => old('members_session_lifetime_enabled', (string) (int) $membersSessionLifetimeEnabled),
                 ])
                 <p>
@@ -222,7 +231,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         'max' => 43200,
                         'class' => 'number-input-small'
                     ])
-                    <span class="text-sm ml-2 text-gray-700 dark:text-gray-300">{{ __('admin.settings.members.settings.minutes') }}</span>
+                    <span class="text-sm ml-2 text-gray-700 dark:text-gray-300">{{ __('common.minutes') }}</span>
                 </div>
                 <p>
                     {{ __('admin.settings.members.settings.admin_session_lifetime_help') }}
@@ -336,7 +345,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 更新ボタン -->
     @include('components::form.button', [
         'type' => 'button',
-        'label' => __('admin.settings.members.settings.update_button'),
+        'label' => __('common.update'),
         'class' => 'button-save',
         'onclick' => "openModal('confirmationModal')"
     ])
@@ -348,8 +357,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'id' => 'confirmationModal',
         'title' => __('admin.settings.members.settings.confirm_title'),
         'message' => __('admin.settings.members.settings.confirm_message'),
-        'confirm_label' => __('admin.settings.members.settings.confirm_label'),
-        'cancel_label' => __('admin.settings.members.settings.cancel_label'),
+        'confirm_label' => __('common.update'),
+        'cancel_label' => __('common.cancel'),
         'form' => 'member-settings-form',
     ])
 

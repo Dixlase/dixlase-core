@@ -42,7 +42,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 
                 @include('components::form.button', [
                     'type' => 'button',
-                    'label' => __('admin.settings.systems.cache.clear_button'),
+                    'label' => __('common.clear'),
                     'variant' => 'danger',
                     'icon' => 'fas fa-trash',
                     'onclick' => "openModal('clearCacheModal" . ucfirst($type) . "')"
@@ -55,7 +55,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex-1 mb-4 md:mb-0 md:mr-6">
                 <h2>{{ __('admin.settings.systems.cache.clear_all_title') }}</h2>
                 <p>{{ __('admin.settings.systems.cache.clear_all_description') }}</p>
-                <p>{{ __('admin.settings.systems.cache.warning') }} {{ __('admin.settings.systems.cache.clear_all_warning') }}</p>
+                <p>{{ __('common.warning') }}: {{ __('admin.settings.systems.cache.clear_all_warning') }}</p>
             </div>
             
             <div class="flex-shrink-0">
@@ -76,7 +76,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <section class="info-section">
             <div>
-                <h2>{{ __('admin.settings.systems.cache.info_title') }}</h2>
+                <h2>{{ __('common.info') }}</h2>
                 <dl class="text-sm">
                     <dt class="font-semibold">{{ __('admin.settings.systems.cache.config_cache.name') }}</dt>
                     <dd class="font-normal mb-2">{{ __('admin.settings.systems.cache.info_config') }}</dd>
@@ -91,34 +91,35 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <dd class="font-normal mb-2">{{ __('admin.settings.systems.cache.info_application') }}</dd>
                 </dl>
             </div>
-        </section>
     </section>
 
 
 <!-- Individual Cache Clear Modals -->
 @foreach($cacheInfo as $type => $info)
-@include('components::form.modal', [
-    'id' => 'clearCacheModal' . ucfirst($type),
-    'title' => __('admin.settings.systems.cache.clear_confirm', ['name' => $info['name']]),
-    'message' => $info['description'],
-    'confirm_label' => __('admin.settings.systems.cache.clear_button'),
-    'cancel_label' => __('admin.common.cancel'),
-    'form' => 'clearCacheForm' . ucfirst($type),
-    'icon_type' => 'danger',
-    'confirm_color' => 'red'
-])
+    @include('components::form.modal', [
+        'id' => 'clearCacheModal' . ucfirst($type),
+        'title' => __('admin.settings.systems.cache.clear_confirm', ['name' => $info['name']]),
+        'message' => $info['description'],
+        'confirm_label' => __('common.clear'),
+        'message' => $info['description'],
+        'confirm_label' => __('admin.settings.systems.cache.clear_button'),
+        'cancel_label' => __('common.cancel'),
+        'form' => 'clearCacheForm' . ucfirst($type),
+        'icon_type' => 'danger',
+        'confirm_color' => 'red'
+    ])
 @endforeach
 
 <!-- Clear All Cache Modal -->
-@include('components::form.modal', [
-    'id' => 'clearAllCacheModal',
-    'title' => __('admin.settings.systems.cache.clear_all_title'),
-    'message' => __('admin.settings.systems.cache.clear_all_description') . ' ' . __('admin.settings.systems.cache.clear_all_warning'),
-    'confirm_label' => __('admin.settings.systems.cache.clear_all_button'),
-    'cancel_label' => __('admin.common.cancel'),
-    'form' => 'clearAllCacheForm',
-    'icon_type' => 'danger',
-    'confirm_color' => 'red'
-])
+    @include('components::form.modal', [
+        'id' => 'clearAllCacheModal',
+        'title' => __('admin.settings.systems.cache.clear_all_title'),
+        'message' => __('admin.settings.systems.cache.clear_all_description') . ' ' . __('admin.settings.systems.cache.clear_all_warning'),
+        'confirm_label' => __('admin.settings.systems.cache.clear_all_button'),
+        'cancel_label' => __('common.cancel'),
+        'form' => 'clearAllCacheForm',
+        'icon_type' => 'danger',
+        'confirm_color' => 'red'
+    ])
 
 @endsection

@@ -32,6 +32,7 @@ return [
         'showing' => ':first から :last を表示（全 :total 件）',
         'per_page' => '表示件数',
         'per_page_label' => '1ページあたりの表示件数',
+        'total_count' => '全:total件',
         'total_items' => '全 :count 件',
         'total_pages' => '全 :count ページ',
         'no_results' => '該当するデータがありません',
@@ -53,8 +54,14 @@ return [
         'validation' => [
             'required' => 'この項目は必須です',
             'email' => '有効なメールアドレスを入力してください',
+            'unique' => 'この値は既に存在しています',
             'min_length' => '最低 :min 文字以上で入力してください',
             'max_length' => '最大 :max 文字以内で入力してください',
+            'confirmed' => 'パスワード確認が一致しません',
+        ],
+        'labels' => [
+            'required' => '必須',
+            'optional' => '任意',
         ],
     ],
 
@@ -93,6 +100,16 @@ return [
         'selected_count' => ':count 件選択中',
         'sort_asc' => '昇順でソート',
         'sort_desc' => '降順でソート',
+        'caption' => 'データ一覧',
+        'unknown_role' => '不明なロール',
+    ],
+    
+    // フィルター関連
+    'filters' => [
+        'search_keyword' => 'キーワード',
+        'role_filter' => '権限',
+        'status_filter' => 'ステータス',
+        'clear_button' => 'クリア',
     ],
 
     // モーダル関連
@@ -103,5 +120,41 @@ return [
         'save' => '保存',
         'delete_title' => '削除の確認',
         'delete_message' => 'この操作は取り消せません。本当に削除しますか？',
+    ],
+
+    // パスワードツール関連
+    'password_messages' => [
+        'strength' => [
+            'error' => 'パスワードが条件を満たしていません',
+            'normal' => '普通の強度',
+            'strong' => '強いパスワード',
+        ],
+        'tooltip' => [
+            'generate' => '自動生成',
+            'copy' => 'コピー',
+            'toggle' => '表示切替',
+        ],
+        'copied' => 'パスワードがコピーされました！',
+        'requirements' => [
+            // 表示用（固定文言）
+            'length' => '8文字以上',
+            'lowercase' => '小文字を1文字以上含む',
+            'number' => '数字を1文字以上含む',
+
+            // 可変メッセージ
+            'length_full' => ':min文字以上（推奨 :recommended 文字以上）',
+            'length_simple' => ':min文字以上',
+            'uppercase_required' => '大文字を1文字以上含む（必須）',
+            'uppercase_optional' => '大文字を含む（任意）',
+            'symbol_required' => '記号（!@#$%^&* など）を1文字以上含む（必須）',
+            'symbol_optional' => '記号（!@#$%^&* など）を含むと強度UP（任意）',
+
+            // 強度ラベル
+            'weak' => '弱い',
+            'normal' => '普通',
+            'strong' => '強い',
+            'very_strong' => '非常に強い',
+        ],
+        'error' => 'パスワードが条件を満たしていません。すべての条件を満たすパスワードを入力してください。',
     ],
 ];

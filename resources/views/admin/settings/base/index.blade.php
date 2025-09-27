@@ -91,8 +91,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @include('components.form.radio-group', [
                 'name' => 'maintenance_mode',
                 'options' => [
-                    1 => __('admin.settings.base.yes'),
-                    0 => __('admin.settings.base.no')
+                    1 => __('common.yes'),
+                    0 => __('common.no')
                 ],
                 'value' => $settings['maintenance_mode'],
             ])
@@ -169,12 +169,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 保存ボタンとモーダル -->
     @include('components::form.save', [
         'id' => 'confirmationModal',
-        'label' => __('admin.settings.base.submit'),
+        'label' => __('common.submit'),
         'onclick' => "openModal('confirmationModal')",
         'title' => __('admin.settings.base.save_confirmation_title'),
         'message' => __('admin.settings.base.save_confirmation_message'),
-        'confirm_label' => __('admin.settings.base.save_button'),
-        'cancel_label' => __('admin.settings.base.cancel_button'),
+        'confirm_label' => __('common.form.save_button'),
+        'cancel_label' => __('common.form.cancel_button'),
         'form' => 'base-settings-form',
     ])
 @endsection

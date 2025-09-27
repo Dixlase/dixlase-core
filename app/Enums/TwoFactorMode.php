@@ -12,10 +12,10 @@ enum TwoFactorMode: int
     public function label(): string
     {
         return match ($this) {
-            self::Disabled => __('admin.settings.members.two_factor_mode.options.0'),
-            self::OnlyNewDevice => __('admin.settings.members.two_factor_mode.options.1'),
-            self::Always => __('admin.settings.members.two_factor_mode.options.2'),
-            self::UseProfileSetting => __('admin.settings.members.two_factor_mode.options.3'),
+            self::Disabled => __('admin.two_factor_mode.options.0'),
+            self::OnlyNewDevice => __('admin.two_factor_mode.options.1'),
+            self::Always => __('admin.two_factor_mode.options.2'),
+            self::UseProfileSetting => __('admin.two_factor_mode.options.3'),
         };
     }
 

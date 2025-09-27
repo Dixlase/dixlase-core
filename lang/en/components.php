@@ -32,6 +32,7 @@ return [
         'showing' => 'Showing :first to :last of :total results',
         'per_page' => 'Per page',
         'per_page_label' => 'Items per page',
+        'total_count' => 'Total: :total items',
         'total_items' => 'Total :count items',
         'total_pages' => 'Total :count pages',
         'no_results' => 'No matching data found',
@@ -53,8 +54,14 @@ return [
         'validation' => [
             'required' => 'This field is required',
             'email' => 'Please enter a valid email address',
+            'unique' => 'This value already exists',
             'min_length' => 'Please enter at least :min characters',
             'max_length' => 'Please enter no more than :max characters',
+            'confirmed' => 'Password confirmation does not match',
+        ],
+        'labels' => [
+            'required' => 'Required',
+            'optional' => 'Optional',
         ],
     ],
 
@@ -93,6 +100,16 @@ return [
         'selected_count' => ':count selected',
         'sort_asc' => 'Sort ascending',
         'sort_desc' => 'Sort descending',
+        'caption' => 'Data list',
+        'unknown_role' => 'Unknown role',
+    ],
+    
+    // Filter related
+    'filters' => [
+        'search_keyword' => 'Keyword',
+        'role_filter' => 'Role',
+        'status_filter' => 'Status',
+        'clear_button' => 'Clear',
     ],
 
     // Modal related
@@ -103,5 +120,41 @@ return [
         'save' => 'Save',
         'delete_title' => 'Confirm Delete',
         'delete_message' => 'This action cannot be undone. Are you sure you want to delete this?',
+    ],
+
+    // Password tools related
+    'password_messages' => [
+        'strength' => [
+            'error' => 'Password does not meet requirements',
+            'normal' => 'Normal strength',
+            'strong' => 'Strong password',
+        ],
+        'tooltip' => [
+            'generate' => 'Generate',
+            'copy' => 'Copy',
+            'toggle' => 'Toggle visibility',
+        ],
+        'copied' => 'Password copied!',
+        'requirements' => [
+            // Static display items
+            'length' => '8 or more characters',
+            'lowercase' => 'Include at least 1 lowercase letter',
+            'number' => 'Include at least 1 number',
+
+            // Dynamic messages
+            'length_full' => ':min or more characters (recommended :recommended or more)',
+            'length_simple' => ':min or more characters',
+            'uppercase_required' => 'Include at least 1 uppercase letter (required)',
+            'uppercase_optional' => 'Include uppercase letters (optional)',
+            'symbol_required' => 'Include at least 1 symbol (!@#$%^&* etc.) (required)',
+            'symbol_optional' => 'Including symbols (!@#$%^&* etc.) makes passwords stronger (optional)',
+
+            // Strength labels
+            'weak' => 'Weak',
+            'normal' => 'Normal',
+            'strong' => 'Strong',
+            'very_strong' => 'Very Strong',
+        ],
+        'error' => 'Password does not meet requirements. Please enter a password that meets all conditions.',
     ],
 ];

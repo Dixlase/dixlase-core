@@ -34,12 +34,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <!-- キーワード検索 -->
                     <div>
                         <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ __('admin.settings.members.index.search_keyword') }}
+                            {{ __('components.filters.search_keyword') }}
                         </label>
                         @include('components::form.text', [
                             'id' => 'search',
                             'name' => 'search',
-                            'placeholder' => __('admin.settings.members.index.search_placeholder'),
+                            'placeholder' => __('components.forms.placeholder.search'),
                             'value' => $search,
                         ])
                     </div>
@@ -47,19 +47,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <!-- 権限フィルター -->
                     <div>
                         <label for="role" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ __('admin.settings.members.index.role_filter') }}
+                            {{ __('components.filters.role_filter') }}
                         </label>
                         @include('components::form.select', [
                             'id' => 'role',
                             'name' => 'role',
                             'options' => [
-                                '' => __('admin.settings.members.index.all_roles'),
-                                '0' => __('admin.common.roles.super_admin'),
-                                '1' => __('admin.common.roles.admin'),
-                                '2' => __('admin.common.roles.editor'),
-                                '3' => __('admin.common.roles.author'),
-                                '4' => __('admin.common.roles.contributor'),
-                                '5' => __('admin.common.roles.receptionist'),
+                                '' => __('common.filters.all_roles'),
+                                '0' => __('common.roles.super_admin'),
+                                '1' => __('common.roles.admin'),
+                                '2' => __('common.roles.editor'),
+                                '3' => __('common.roles.author'),
+                                '4' => __('common.roles.contributor'),
+                                '5' => __('common.roles.receptionist'),
                             ],
                             'value' => $roleFilter,
                         ])
@@ -68,15 +68,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <!-- ステータスフィルター -->
                     <div>
                         <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ __('admin.settings.members.index.status_filter') }}
+                            {{ __('components.filters.status_filter') }}
                         </label>
                         @include('components::form.select', [
                             'id' => 'status',
                             'name' => 'status',
                             'options' => [
-                                '' => __('admin.settings.members.index.all_statuses'),
-                                '1' => __('admin.settings.members.index.status_active'),
-                                '0' => __('admin.settings.members.index.status_inactive'),
+                                '' => __('common.filters.all_statuses'),
+                                '1' => __('common.status.active'),
+                                '0' => __('common.status.inactive'),
                             ],
                             'value' => $statusFilter,
                         ])
@@ -87,12 +87,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <div class="flex gap-2 w-full">
                             @include('components::form.button', [
                                 'type' => 'submit',
-                                'label' => __('admin.settings.members.index.search_button'),
+                                'label' => __('common.search'),
                                 'class' => 'flex-1'
                             ])
                             <a href="{{ route('admin.settings.members.index') }}" 
                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 flex items-center justify-center">
-                                {{ __('admin.settings.members.index.clear_button') }}
+                                {{ __('components.filters.clear_button') }}
                             </a>
                         </div>
                     </div>
@@ -109,8 +109,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @include('components::pagination-controls', [
             'paginator' => $members,
             'currentPerPage' => request('per_page', 25),
-            'totalLabel' => 'admin.common.total_count',
-            'perPageLabel' => 'admin.common.per_page_label'
+            'totalLabel' => 'components.pagination.total_count',
+            'perPageLabel' => 'components.pagination.per_page_label'
         ])
 
         <!-- ページネーション -->
@@ -131,23 +131,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <caption class="sr-only">{{ __('admin.settings.members.index.table.caption') }}</caption>
                 <thead>
                     <tr>
-                        <th>{{ __('admin.settings.members.index.table.id') }}</th>
-                        <th>{{ __('admin.settings.members.index.table.name') }}</th>
-                        <th>{{ __('admin.settings.members.index.table.email') }}</th>
-                        <th>{{ __('admin.settings.members.index.table.role') }}</th>
-                        <th>{{ __('admin.settings.members.index.table.actions') }}</th>
+                        <th>{{ __('common.id') }}</th>
+                        <th>{{ __('common.name') }}</th>
+                        <th>{{ __('common.email') }}</th>
+                        <th>{{ __('common.role') }}</th>
+                        <th>{{ __('common.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($members as $member)
                         <tr>
-                            <td data-label="{{ __('admin.settings.members.index.table.id') }}">{{ $member->id }}</td>
-                            <td data-label="{{ __('admin.settings.members.index.table.name') }}">{{ $member->name }}</td>
-                            <td data-label="{{ __('admin.settings.members.index.table.email') }}">{{ $member->email }}</td>
-                            <td data-label="{{ __('admin.settings.members.index.table.role') }}">{{ $member->role->label() }}</td>
-                            <td data-label="{{ __('admin.settings.members.index.table.actions') }}">
+                            <td data-label="{{ __('common.id') }}">{{ $member->id }}</td>
+                            <td data-label="{{ __('common.name') }}">{{ $member->name }}</td>
+                            <td data-label="{{ __('common.email') }}">{{ $member->email }}</td>
+                            <td data-label="{{ __('common.role') }}">{{ $member->role->label() }}</td>
+                            <td data-label="{{ __('common.actions') }}">
                                 <a href="{{ route('admin.settings.members.edit', ['member' => $member->id]) }}" 
-                                   title="{{ __('admin.settings.members.index.table.edit') }}"
+                                   title="{{ __('common.edit') }}"
                                    class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                                     <i class="fas fa-edit"></i>
                                 </a>
@@ -162,8 +162,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @include('components::pagination-controls', [
             'paginator' => $members,
             'currentPerPage' => request('per_page', 25),
-            'totalLabel' => 'admin.common.total_count',
-            'perPageLabel' => 'admin.common.per_page_label'
+            'totalLabel' => 'components.pagination.total_count',
+            'perPageLabel' => 'components.pagination.per_page_label'
         ])
         
 

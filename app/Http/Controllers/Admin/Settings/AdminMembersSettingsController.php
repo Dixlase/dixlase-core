@@ -489,23 +489,23 @@ class AdminMembersSettingsController extends AdminLoggedInController
 
         // その他の選択肢を準備
         $loginAttemptLimitOptions = [
-            '1' => __('admin.settings.members.settings.login_attempt_limit_enabled_options.enabled'),
-            '0' => __('admin.settings.members.settings.login_attempt_limit_enabled_options.disabled'),
+            '1' => __('common.status.enabled'),
+            '0' => __('common.status.disabled'),
         ];
         
         $lockoutNotificationOptions = [
-            '1' => __('admin.settings.members.settings.lockout_notification_enabled_options.enabled'),
-            '0' => __('admin.settings.members.settings.lockout_notification_enabled_options.disabled'),
+            '1' => __('common.status.enabled'),
+            '0' => __('common.status.disabled'),
         ];
         
         $passwordResetOptions = [
-            '1' => __('admin.settings.members.settings.password_reset_enabled_options.enabled'),
-            '0' => __('admin.settings.members.settings.password_reset_enabled_options.disabled'),
+            '1' => __('common.status.enabled'),
+            '0' => __('common.status.disabled'),
         ];
         
         $pwnedPasswordOptions = [
-            '1' => __('admin.settings.members.settings.enabled'),
-            '0' => __('admin.settings.members.settings.disabled'),
+            '1' => __('common.status.enabled'),
+            '0' => __('common.status.disabled'),
         ];
         
         $adminSessionLifetimeOptions = [
