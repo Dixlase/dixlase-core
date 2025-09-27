@@ -206,6 +206,7 @@ return [
     
     // 二段階認証モード
     'two_factor_mode' => [
+        'label' => '二段階認証設定',
         'options' => [
             0 => '無効',
             1 => '新しいデバイスのみ',
@@ -241,12 +242,11 @@ return [
     
     // 二段階認証ヘルプテキスト
     'two_factor_help' => '二段階認証を使用するタイミングを設定します。',
-    'two_factor_method_help' => '二段階認証で使用する認証方法を選択してください。',
     'two_factor_global_setting_fixed' => 'この設定は全体設定により固定されています。',
     'two_factor_method_global_setting_fixed' => 'この認証方法は全体設定により固定されています。',
     
     // 二段階認証方法のヘルプテキスト（詳細）
-    'two_factor_method_help_detailed' => [
+    'two_factor_method_help' => [
         'single' => 'この認証方法が:account_type全体設定で有効になっています。',
         'multiple' => '使用する認証方法を選択してください。:account_type全体設定で有効にされている方法から選択できます。',
         'email' => '登録済みのメールアドレスに認証コードを送信します。',
@@ -268,33 +268,40 @@ return [
     'status_descriptions' => [
         'draft_description' => '下書き状態です。公開されません。',
         'published_description' => '即座に公開されます。',
-        'scheduled_description' => '指定した日時に公開されます。',
     ],
 
-
-    
-    // ログイン通知の汎用ヘルプテキスト
+    // ログイン通知
     'login_notification' => 'ログイン通知',
+    'login_notification_mode' => [
+        'label' => 'ログイン通知モード',
+        'help' => 'ログイン時にメール通知を送信するタイミングを設定します。',
+        'options' => [
+            0 => '無効',
+            1 => '新しいデバイスのみ',
+            2 => '常に通知',
+            3 => 'プロフィール設定に従う',
+        ],
+    ],
     'notification_settings' => '通知設定',
-    'login_notification_mode' => 'ログイン通知の設定',
-    'login_notification_help' => 'ログイン通知を送信するタイミングを設定します。',
 
     // 全体設定による制御メッセージ（アカウント種別対応）
-    'global_setting_controlled' => [
+    'global_setting_fixed' => [
         'two_factor' => 'この設定は:account_type全体設定で制御されており、変更できません。',
         'two_factor_method' => 'この認証方法は:account_type全体設定で制御されており、変更できません。',
     ],
 
     // プロフィール・設定関連の汎用項目
 
-    // 設定セクション（汎用）
+    // 基本項目
     'basic_info' => '基本情報',
+    'name' => '名前',
+    'description' => '説明',
+    'email' => 'メールアドレス',
     'password_settings' => 'パスワード設定',
     'security_settings' => 'セキュリティ設定',
     'account_settings' => 'アカウント設定',
     'management_operations' => '管理操作',
     'appearance_settings' => '外観設定',
-    'language_settings' => '言語設定',
 
     // 認証方法関連
     'available_methods' => '利用可能な方法',

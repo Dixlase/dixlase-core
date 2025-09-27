@@ -31,7 +31,7 @@ return [
         'last' => '最後',
         'showing' => ':first から :last を表示（全 :total 件）',
         'per_page' => '表示件数',
-        'per_page_label' => '1ページあたりの表示件数',
+        'per_page_label' => '表示件数',
         'total_count' => '全:total件',
         'total_pages' => '全 :count ページ',
         'no_results' => '該当するデータがありません',

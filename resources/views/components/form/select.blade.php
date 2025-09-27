@@ -31,7 +31,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <select id="{{ $id }}"
         name="{{ $name }}"
-        class="block w-full p-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-white {{ $class }}"
+        class="block p-2 pr-10 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-white {{ $class }}"
         @if ($disabled) disabled @endif
         @if ($required) required @endif
         @if ($xModel) x-model="{{ $xModel }}" @endif>

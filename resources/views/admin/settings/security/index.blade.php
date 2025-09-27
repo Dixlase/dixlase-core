@@ -102,7 +102,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <legend>{{ __('admin.settings.security.notification_log_levels') }}</legend>
                 
                 
-                <div class="mt-3" :class="{ 'opacity-50': !notificationEnabled }">
+                <div class="my-3" :class="{ 'opacity-50': !notificationEnabled }">
                     @php
                         $logLevelOptions = [];
                         foreach (\App\Enums\LogLevel::getNotificationLevels() as $level) {

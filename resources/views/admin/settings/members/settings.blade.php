@@ -73,8 +73,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @include('components.form.radio-group', [
                     'name' => 'login_attempt_limit_enabled',
                     'options' => [
-                        '1' => __('common.status.enabled'),
-                        '0' => __('common.status.disabled'),
+                        '1' => __('common.enabled'),
+                        '0' => __('common.disabled'),
                     ],
                     'value' => old('login_attempt_limit_enabled', (string) (int) $loginAttemptLimitEnabled),
                 ])
@@ -138,15 +138,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @include('components.form.radio-group', [
                         'name' => 'lockout_notification_enabled',
                     'options' => [
-                        '1' => __('common.status.enabled'),
-                        '0' => __('common.status.disabled'),
+                        '1' => __('common.enabled'),
+                        '0' => __('common.disabled'),
                     ],
                         'value' => old('lockout_notification_enabled', (string) (int) $lockoutNotificationEnabled),
                     ])
 
                     <p>
                         {!! __('admin.settings.members.settings.lockout_notification_help') !!}
-{{ ... }}
                     </p>
                 </fieldset>
             </div>
@@ -209,8 +208,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @include('components.form.radio-group', [
                     'name' => 'members_session_lifetime_enabled',
                     'options' => [
-                        '1' => __('common.status.enabled'),
-                        '0' => __('common.status.disabled') . ' (Use Default Value)',
+                        '1' => __('common.enabled'),
+                        '0' => __('common.disabled') . ' (Use Default Value)',
                     ],
                     'value' => old('members_session_lifetime_enabled', (string) (int) $membersSessionLifetimeEnabled),
                 ])
@@ -241,7 +240,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- ログイン通知設定 -->
         <section>
-            <h2>{{ __('admin.login_notification_mode.label') }}</h2>
+            <h2>{{ __('common.login_notification_mode.label') }}</h2>
             @if(!$isMailServerTested)
                 @include('components.message', [
                     'type' => 'warning',
@@ -331,7 +330,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </form>
 
         <!-- 全メンバー強制ログアウトボタン -->
-        @include('components::form.button', [
+        @include('components.form.button', [
             'type' => 'button',
             'label' => __('admin.settings.members.settings.force_logout_all_button'),
             'variant' => 'warning',
@@ -343,7 +342,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('save')
     <!-- 更新ボタン -->
-    @include('components::form.button', [
+    @include('components.form.button', [
         'type' => 'button',
         'label' => __('common.update'),
         'class' => 'button-save',
@@ -353,7 +352,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('modals')
     <!-- 更新確認モーダル -->
-    @include('components::form.modal', [
+    @include('components.form.modal', [
         'id' => 'confirmationModal',
         'title' => __('common.update_confirmation_title'),
         'message' => __('common.update_confirmation_message'),
@@ -363,7 +362,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     ])
 
     <!-- 全メンバー強制ログアウト確認モーダル -->
-    @include('components::form.modal', [
+    @include('components.form.modal', [
         'id' => 'forceLogoutAllModal',
         'title' => __('admin.settings.members.settings.force_logout_all_modal.title'),
         'message' => __('admin.settings.members.settings.force_logout_all_modal.message'),
