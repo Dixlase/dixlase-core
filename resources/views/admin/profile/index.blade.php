@@ -30,7 +30,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <h2>{{ __('common.basic_info') }}</h2>
             
             <fieldset>
-                <legend>{{ __('admin.profile.name') }}</legend>
+                <legend>{{ __('common.name') }}</legend>
                 @include('components.form.text', [
                     'name' => 'name',
                     'value' => old('name', $member->name),
@@ -42,7 +42,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </fieldset>
 
             <fieldset>
-                <legend>{{ __('admin.profile.description') }}</legend>
+                <legend>{{ __('common.description') }}</legend>
                 @include('components.form.textarea', [
                     'name' => 'description',
                     'value' => old('description', $member->description),
@@ -54,7 +54,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </fieldset>
 
             <fieldset>
-                <legend>{{ __('admin.profile.email') }}</legend>
+                <legend>{{ __('common.email') }}</legend>
                 @include('components.form.text', [
                     'name' => 'email',
                     'type' => 'email',
@@ -157,28 +157,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- ログイン通知設定 -->
         @unless($hideLoginNotificationSection)
             <section>
-                <h2>{{ __('common.login_notification_settings') }}</h2>
+                <h2>{{ __('common.login_notification_mode.label') }}</h2>
                 
                 @if($showLoginNotificationSettings)
                     <fieldset>
-                        <legend>{{ __('admin.profile.login_notification_mode') }}</legend>
+                        <legend>{{ __('common.login_notification_mode.label') }}</legend>
                         @include('components.form.radio-group', [
                             'name' => 'login_notification_mode',
                             'options' => $loginNotificationOptions,
                             'value' => old('login_notification_mode', (string) ($loginNotificationMode?->value ?? 0)),
                         ])
-                        <p>{{ __('admin.profile.login_notification_help') }}</p>
+                        <p>{{ __('common.login_notification_mode.help') }}</p>
                     </fieldset>
                 @else
                     <fieldset>
-                        <legend>{{ __('admin.profile.login_notification_mode') }}</legend>
+                        <legend>{{ __('common.login_notification_mode.label') }}</legend>
                         <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
                             <p class="text-sm text-gray-700 dark:text-gray-300">
                                 <span class="font-medium">
                                     @if($globalLoginNotification === 1)
-                                        {{ __('admin.login_notification_mode.options.1') }}
+                                        {{ __('common.login_notification_mode.options.1') }}
                                     @elseif($globalLoginNotification === 2)
-                                        {{ __('admin.login_notification_mode.options.2') }}
+                                        {{ __('common.login_notification_mode.options.2') }}
                                     @endif
                                 </span>
                             </p>
@@ -194,11 +194,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- 二段階認証設定 -->
         @if($force2fa === \App\Enums\TwoFactorMode::UseProfileSetting->value || $currentGlobalTwoFactorMode)
             <section>
-                <h2>{{ __('admin.profile.two_factor_settings') }}</h2>
+                <h2>{{ __('common.two_factor_mode.label') }}</h2>
                 
                 @if($force2fa === \App\Enums\TwoFactorMode::UseProfileSetting->value)
                     <fieldset>
-                        <legend>{{ __('admin.two_factor_mode.label') }}</legend>
+                        <legend>{{ __('common.two_factor_mode.label') }}</legend>
                         @include('components.form.radio-group', [
                             'name' => 'two_factor_mode',
                             'options' => $profileTwoFactorOptions,
@@ -208,7 +208,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </fieldset>
                 @elseif($currentGlobalTwoFactorMode)
                     <fieldset>
-                        <legend>{{ __('admin.two_factor_mode.label') }}</legend>
+                        <legend>{{ __('common.two_factor_mode.label') }}</legend>
                         <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
                             <p class="text-sm">
                                 {{ str_replace(':account_type', __('common.account_types.member'), __('common.two_factor_mode.options.' . $currentGlobalTwoFactorMode->value)) }}
@@ -223,7 +223,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- 二段階認証方法設定 -->
         @if($showMethodSelection && !empty($availableMethodOptions))
             <fieldset>
-                <legend>{{ __('common.two_factor_method') }}</legend>
+                <legend>{{ __('common.two_factor_method.label') }}</legend>
                 @php
                     // 現在の認証方法が有効な方法に含まれているか確認
                     $currentMethodValid = array_key_exists($currentTwoFactorMethod, $availableMethodOptions);
@@ -261,7 +261,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </fieldset>
         @elseif($currentGlobalTwoFactorMode && !empty($availableMethodOptions))
             <fieldset>
-                <legend>{{ __('common.two_factor_method') }}</legend>
+                <legend>{{ __('common.two_factor_method.label') }}</legend>
                 <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
                     <p class="text-sm text-gray-700 dark:text-gray-300">
                         {{ __('common.two_factor_method_global_setting_fixed') }}

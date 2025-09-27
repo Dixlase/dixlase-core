@@ -491,23 +491,23 @@ class AdminMembersSettingsController extends AdminLoggedInController
 
         // その他の選択肢を準備
         $loginAttemptLimitOptions = [
-            '1' => __('common.status.enabled'),
-            '0' => __('common.status.disabled'),
+            '1' => __('common.enabled'),
+            '0' => __('common.disabled'),
         ];
         
         $lockoutNotificationOptions = [
-            '1' => __('common.status.enabled'),
-            '0' => __('common.status.disabled'),
+            '1' => __('common.enabled'),
+            '0' => __('common.disabled'),
         ];
         
         $passwordResetOptions = [
-            '1' => __('common.status.enabled'),
-            '0' => __('common.status.disabled'),
+            '1' => __('common.enabled'),
+            '0' => __('common.disabled'),
         ];
         
         $pwnedPasswordOptions = [
-            '1' => __('common.status.enabled'),
-            '0' => __('common.status.disabled'),
+            '1' => __('common.enabled'),
+            '0' => __('common.disabled'),
         ];
         
         $adminSessionLifetimeOptions = [
@@ -518,7 +518,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         // ログイン通知設定
         $loginNotification = (int) MemberSetting::getValue('login_notification_mode', LoginNotificationMode::UseProfileSetting->value);
         $loginNotificationGlobalOptions = collect(config('admin.global_login_notification_mail_mode'))
-            ->mapWithKeys(fn ($value) => [$value => __('admin.login_notification_mode.options.' . $value)])
+            ->mapWithKeys(fn ($value) => [$value => __('common.login_notification_mode.options.' . $value)])
             ->toArray();
 
         // 二段階認証設定

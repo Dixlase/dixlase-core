@@ -92,7 +92,7 @@ return [
             ],
             'themes' => [
                 'text' => 'Theme Settings',
-                'index' => 'List',
+                'index' => 'Theme Master',
                 'install' => 'Install',
             ],
             'plugins' => [
@@ -584,6 +584,7 @@ Clicking this link will complete the full mail function test.',
                 'default_two_factor_method_label' => 'Default Two-Factor Method',
                 'default_two_factor_method_help' => 'Select the default two-factor authentication method for new administrators. Must be selected from the enabled methods.',
                 'force_logout_heading' => 'Force Logout',
+                'force_logout_description' => 'Force logout all admin members. This will delete all sessions of currently logged-in members.',
                 'force_logout_all_button' => 'Force Logout All Members',
                 'force_logout_all_modal' => [
                     'title' => 'Force Logout All Members Confirmation',

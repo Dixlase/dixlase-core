@@ -31,7 +31,7 @@ return [
         'last' => 'Last',
         'showing' => 'Showing :first to :last of :total results',
         'per_page' => 'Per page',
-        'per_page_label' => 'Items per page',
+        'per_page_label' => 'Items',
         'total_count' => 'Total: :total items',
         'total_items' => 'Total :count items',
         'total_pages' => 'Total :count pages',

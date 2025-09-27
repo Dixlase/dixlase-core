@@ -202,7 +202,7 @@ return [
     
     // Two-Factor Authentication Mode
     'two_factor_mode' => [
-        'label' => 'Two-Factor Authentication Mode',
+        'label' => 'Two-Factor Authentication Settings',
         'options' => [
             0 => 'Disabled',
             1 => 'New Device Only',
@@ -238,20 +238,17 @@ return [
     
     // Two-Factor Authentication Help Text
     'two_factor_help' => 'Set when to use two-factor authentication.',
-    'two_factor_method_help' => 'Select the authentication method to use for two-factor authentication.',
     'two_factor_global_setting_fixed' => 'This setting is fixed by global settings.',
     'two_factor_method_global_setting_fixed' => 'This authentication method is fixed by global settings.',
     
     // Two-Factor Authentication Method Help Text (Detailed)
-    'two_factor_method_help_detailed' => [
-        'single' => 'This authentication method is enabled in :account_type global settings.',
-        'multiple' => 'Select the authentication method to use. You can choose from methods enabled in :account_type global settings.',
+    'two_factor_method_help' => [
+        'single' => 'This authentication method is enabled in the :account_type global settings.',
+        'multiple' => 'Please select the authentication method to use. You can choose from methods enabled in the :account_type global settings.',
         'email' => 'Send authentication code to registered email address.',
         'device' => 'Authenticate with registered device.',
         'biometric' => 'Use biometric authentication such as fingerprint or face recognition.',
     ],
-
-    // Confirmation Dialogs
     'save_confirmation' => 'Save Confirmation',
     'update_confirmation' => 'Update Confirmation',
     'create_confirmation' => 'Create Confirmation',
@@ -264,29 +261,36 @@ return [
     'update_confirmation_title' => 'Update Confirmation',
     'update_confirmation_message' => 'Do you want to update the settings with this content?',
 
-    'login_notification_mode' => 'Login Notification Settings',
-    'login_notification_help' => 'Set when to send login notifications.',
+    // Login notification
+    'login_notification' => 'Login Notification',
+    'login_notification_mode' => [
+        'label' => 'Login Notification Mode',
+        'options' => [
+            0 => 'Disabled',
+            1 => 'New devices only',
+            2 => 'Always notify',
+            3 => 'Follow profile settings',
+        ],
+    ],
 
     // Global Setting Control Messages (Account Type Support)
     'global_setting_controlled' => [
         'two_factor' => 'This setting is controlled by the :account_type global settings and cannot be changed.',
         'two_factor_method' => 'This authentication method is controlled by the :account_type global settings and cannot be changed.',
     ],
-
-    // Profile & Settings Generic Items
-    'login_notification' => 'Login Notification',
     'notification_settings' => 'Notification Settings',
     'login_notification_settings' => 'Login Notification Settings',
 
-    // Settings Sections (Generic)
+    // Settings Sections
     'basic_info' => 'Basic Information',
-    'password_settings' => 'Password Settings',
+    'name' => 'Name',
+    'description' => 'Description',
+    'email' => 'Email Address',
     'security_settings' => 'Security Settings',
     'account_settings' => 'Account Settings',
     'management_operations' => 'Management Operations',
     'appearance_settings' => 'Appearance Settings',
     'language_settings' => 'Language Settings',
-
     // Authentication Method Related
     'available_methods' => 'available methods',
 ];

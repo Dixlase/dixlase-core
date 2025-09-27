@@ -12,10 +12,10 @@ enum LoginNotificationMode: int
     public function label(): string
     {
         return match ($this) {
-            self::Disabled => __('admin.login_notification_mode.options.0'),
-            self::OnlyNewDevice => __('admin.login_notification_mode.options.1'),
-            self::Always => __('admin.login_notification_mode.options.2'),
-            self::UseProfileSetting => __('admin.login_notification_mode.options.3'),
+            self::Disabled => __('common.login_notification_mode.options.0'),
+            self::OnlyNewDevice => __('common.login_notification_mode.options.1'),
+            self::Always => __('common.login_notification_mode.options.2'),
+            self::UseProfileSetting => __('common.login_notification_mode.options.3'),
         };
     }
 

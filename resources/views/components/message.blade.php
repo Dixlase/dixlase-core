@@ -34,7 +34,7 @@
     $iconClass = $icon ?? $config['icon'];
 @endphp
 
-<div class="my-6 {{ $config['class'] }}">
+<div class="my-4 p-4 {{ $config['class'] }}">
     <div class="flex items-start">
         @if($iconClass)
             <div class="flex-shrink-0">

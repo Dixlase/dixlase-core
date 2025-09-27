@@ -89,6 +89,8 @@ return [
             ],
             'themes' => [
                 'text' => 'テーマ設定',
+                'index' => 'テーママスター',
+                'install'  => 'インストール',
             ],
             'plugins' => [
                 'text' => 'プラグイン設定',
@@ -547,6 +549,7 @@ return [
                 'default_two_factor_method_label' => 'デフォルトの二段階認証方法',
                 'default_two_factor_method_help' => '新規管理者のデフォルトとして使用される二段階認証方法を選択してください。有効な方法の中から選択する必要があります。',
                 'force_logout_heading' => '強制ログアウト',
+                'force_logout_description' => '全ての管理メンバーを強制的にログアウトします。現在ログイン中の全メンバーのセッションが削除されます。',
                 'force_logout_all_button' => '全メンバー強制ログアウト',
                 'force_logout_all_modal' => [
                     'title' => '全メンバー強制ログアウト確認',
