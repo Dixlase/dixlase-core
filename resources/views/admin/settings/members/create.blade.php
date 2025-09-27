@@ -43,7 +43,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('save')
     <!-- {{ __('admin.settings.members.create.create_confirmation_title') }} -->
-    @include('components::form.save', [
+    @include('components.save', [
         'id' => 'confirmationModal',
         'label' => __('common.create'),
         'onclick' => "openModal('confirmationModal')",

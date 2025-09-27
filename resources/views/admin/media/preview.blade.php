@@ -68,7 +68,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </button>
 
                         <!-- 削除モーダル -->
-                        @include('components::form.modal', [
+                        @include('components.modal', [
                             'id' => 'deleteModal',
                             'title' => __('admin.media.preview.delete_confirmation'),
                             'message' => __('admin.media.preview.delete_message'),

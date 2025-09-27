@@ -74,7 +74,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('save')
     <!-- 更新ボタンとモーダル-->
-    @include('components::form.save', [
+    @include('components.save', [
         'id' => 'confirmationModal',
         'label' => __('common.update'),
         'onclick' => "openModal('confirmationModal')",

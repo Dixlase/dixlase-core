@@ -352,7 +352,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('modals')
     <!-- 更新確認モーダル -->
-    @include('components.form.modal', [
+    @include('components.modal', [
         'id' => 'confirmationModal',
         'title' => __('common.update_confirmation_title'),
         'message' => __('common.update_confirmation_message'),
@@ -362,7 +362,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     ])
 
     <!-- 全メンバー強制ログアウト確認モーダル -->
-    @include('components.form.modal', [
+    @include('components.modal', [
         'id' => 'forceLogoutAllModal',
         'title' => __('admin.settings.members.settings.force_logout_all_modal.title'),
         'message' => __('admin.settings.members.settings.force_logout_all_modal.message'),

@@ -87,7 +87,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         ])
 
                                         <!-- 確認画面のモーダル -->
-                                        @include('components::form.modal', [
+                                        @include('components.modal', [
                                             'id' => "uninstallModal-{$plugin->id}",
                                             'title' => __('admin.settings.plugins.index.uninstall.confirm_title'),
                                             'message' => str_replace('{name}', $plugin->name, __('admin.settings.plugins.index.uninstall.confirm_message')),

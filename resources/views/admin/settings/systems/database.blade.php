@@ -148,7 +148,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @foreach($cleanupInfo as $type => $info)
-@include('components::form.modal', [
+@include('components.modal', [
     'id' => 'cleanupModal' . ucfirst($type),
     'title' => __('admin.settings.systems.database.modal.title'),
     'message' => __('admin.settings.systems.database.modal.message_single', ['name' => $info['name']]),
@@ -160,7 +160,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 ])
 @endforeach
 
-@include('components::form.modal', [
+@include('components.modal', [
     'id' => 'cleanupAllModal',
     'title' => __('admin.settings.systems.database.modal.title'),
     'message' => __('admin.settings.systems.database.modal.message_all'),
