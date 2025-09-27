@@ -72,6 +72,9 @@ return [
     'required' => 'Required',
     'optional' => 'Optional',
     'default_method' => 'Default',
+    'enabled' => 'Enabled',
+    'disabled' => 'Disabled',
+    'available_methods' => 'available methods',
     
     // Theme
     'auto' => 'Auto',
@@ -100,24 +103,6 @@ return [
     'permissions' => 'Permissions',
     'role' => 'Role',
 
-    // Status
-    'status' => [
-        'active' => 'Active',
-        'inactive' => 'Inactive',
-        'enabled' => 'Enabled',
-        'disabled' => 'Disabled',
-        'draft' => 'Draft',
-        'published' => 'Published',
-        'scheduled' => 'Scheduled',
-        'pending' => 'Pending',
-        'approved' => 'Approved',
-        'rejected' => 'Rejected',
-        'cancelled' => 'Cancelled',
-        // Descriptions
-        'draft_description' => 'Draft status. Not published.',
-        'published_description' => 'Published immediately.',
-        'scheduled_description' => 'Published at specified date and time.',
-    ],
 
     // Basic Attributes
     // Basic Information
@@ -148,6 +133,11 @@ return [
     'file_type' => 'File Type',
     'upload_date' => 'Upload Date',
     'uploaded_by' => 'Uploaded By',
+
+    // Content Related
+    'content' => 'Content',
+    'slug' => 'Slug',
+    'published_at' => 'Published At',
 
     // Design & Display
     'color' => 'Color',
@@ -184,6 +174,15 @@ return [
     'role_filter' => 'Role',
     'status_filter' => 'Status',
     'clear_button' => 'Clear',
+    
+    // Filter Options
+    'filters' => [
+        'all_roles' => 'All Roles',
+        'all_statuses' => 'All Statuses',
+        'role_filter' => 'Role Filter',
+        'status_filter' => 'Status Filter',
+        'clear_button' => 'Clear',
+    ],
 
     // Log Related
     'operation' => 'Operation',
@@ -195,16 +194,31 @@ return [
     'user_agent' => 'User Agent',
     'time' => 'Time',
 
-    // Two-Factor Authentication & Login Notification (Generic)
+    // ===========================================
+    // Two-Factor Authentication (Unified Section)
+    // ===========================================
+    'two_factor_authentication' => 'Two-Factor Authentication',
+    'two_factor_settings' => 'Two-Factor Authentication Settings',
+    
+    // Two-Factor Authentication Mode
     'two_factor_mode' => [
-        'label' => 'Two-Factor Authentication Settings',
+        'label' => 'Two-Factor Authentication Mode',
         'options' => [
             0 => 'Disabled',
-            1 => 'Only for Different Devices/IPs',
+            1 => 'New Device Only',
             2 => 'Always Enabled',
-            3 => 'Use :account_type Profile Settings',
-        ]
+            3 => 'Follow Profile Setting',
+        ],
     ],
+    
+    // Two-Factor Authentication Mode Options (for Profile)
+    'two_factor_mode_options' => [
+        'disabled' => 'Disabled',
+        'only_new_device' => 'Different Device/IP Only',
+        'always' => 'Always Enabled',
+    ],
+    
+    // Two-Factor Authentication Method
     'two_factor_method' => [
         'label' => 'Two-Factor Authentication Method',
         'options' => [
@@ -218,17 +232,23 @@ return [
             0 => 'Email Authentication',
             1 => 'Device Authentication',
             2 => 'Biometric Authentication',
-            3 => 'Follow Profile Settings',
+            3 => 'Use Profile Settings',
         ]
     ],
-    'login_notification_mode' => [
-        'label' => 'Login Notification Settings',
-        'options' => [
-            0 => 'Disabled',
-            1 => 'Only for Different Devices/IPs',
-            2 => 'Always Enabled',
-            3 => 'Use :account_type Profile Settings',
-        ]
+    
+    // Two-Factor Authentication Help Text
+    'two_factor_help' => 'Set when to use two-factor authentication.',
+    'two_factor_method_help' => 'Select the authentication method to use for two-factor authentication.',
+    'two_factor_global_setting_fixed' => 'This setting is fixed by global settings.',
+    'two_factor_method_global_setting_fixed' => 'This authentication method is fixed by global settings.',
+    
+    // Two-Factor Authentication Method Help Text (Detailed)
+    'two_factor_method_help_detailed' => [
+        'single' => 'This authentication method is enabled in :account_type global settings.',
+        'multiple' => 'Select the authentication method to use. You can choose from methods enabled in :account_type global settings.',
+        'email' => 'Send authentication code to registered email address.',
+        'device' => 'Authenticate with registered device.',
+        'biometric' => 'Use biometric authentication such as fingerprint or face recognition.',
     ],
 
     // Confirmation Dialogs
@@ -244,28 +264,6 @@ return [
     'update_confirmation_title' => 'Update Confirmation',
     'update_confirmation_message' => 'Do you want to update the settings with this content?',
 
-    // Two-Factor Authentication Method Help Text (Generic)
-    'two_factor_method_help' => [
-        'single' => 'This authentication method is enabled in :account_type global settings.',
-        'multiple' => 'Please select the authentication method to use. You can choose from methods enabled in :account_type global settings.',
-        'email' => 'An authentication code will be sent to your registered email address.',
-        'device' => 'Authenticate using your registered device.',
-        'biometric' => 'Use biometric authentication such as fingerprint or face recognition.',
-    ],
-
-    // Two-Factor Authentication Mode Options (Profile)
-    'two_factor_mode_options' => [
-        'disabled' => 'Disabled',
-        'only_new_device' => 'Only for New Devices/IPs',
-        'always' => 'Always Enabled',
-    ],
-
-    // Two-Factor Authentication & Login Notification Generic Help Text
-    'two_factor_help' => 'Set when to use two-factor authentication.',
-    'two_factor_method' => 'Two-Factor Authentication Method',
-    'two_factor_method_help' => 'Select the authentication method to use for two-factor authentication.',
-    'two_factor_global_setting_fixed' => 'This setting is fixed by global settings.',
-    'two_factor_method_global_setting_fixed' => 'This authentication method is fixed by global settings.',
     'login_notification_mode' => 'Login Notification Settings',
     'login_notification_help' => 'Set when to send login notifications.',
 
@@ -277,10 +275,7 @@ return [
 
     // Profile & Settings Generic Items
     'login_notification' => 'Login Notification',
-    'two_factor_authentication' => 'Two-Factor Authentication',
-    'two_factor_mode' => 'Two-Factor Authentication Mode',
     'notification_settings' => 'Notification Settings',
-    'two_factor_settings' => 'Two-Factor Authentication Settings',
     'login_notification_settings' => 'Login Notification Settings',
 
     // Settings Sections (Generic)

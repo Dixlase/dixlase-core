@@ -64,13 +64,25 @@ trait AdminInterfaceTrait
     protected function setHeading()
     {
         $routeName = Route::currentRouteName();
-        $keys = explode('.', $routeName);
-        array_shift($keys);
-
-        $headingKey = implode('.', $keys) . '.heading';
         
-        // 翻訳キーをそのまま渡し、ビューレベルで翻訳する
-        $this->heading = 'admin.' . $headingKey;
+        // プラグインのルートかどうかを判別（::が含まれている場合はプラグイン）
+        if (strpos($routeName, '::') !== false) {
+            // プラグインの場合: plugin-name::admin.controller.action
+            [$pluginNamespace, $route] = explode('::', $routeName, 2);
+            $keys = explode('.', $route);
+            array_shift($keys); // 'admin'を除去
+            
+            $headingKey = implode('.', $keys) . '.heading';
+            $this->heading = $pluginNamespace . '::admin.' . $headingKey;
+        } else {
+            // コアの場合: admin.controller.action
+            $keys = explode('.', $routeName);
+            array_shift($keys); // 'admin'を除去
+            
+            $headingKey = implode('.', $keys) . '.heading';
+            $this->heading = 'admin.' . $headingKey;
+        }
+        
         $this->viewParams['heading'] = $this->heading;
     }
 }

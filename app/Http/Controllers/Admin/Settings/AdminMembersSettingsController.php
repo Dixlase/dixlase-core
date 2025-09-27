@@ -169,13 +169,13 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $enabledTwoFactorMethodsString = MemberSetting::getValue('enabled_two_factor_methods', (string)TwoFactorMethod::EMAIL->value);
         $enabledTwoFactorMethods = ($enabledTwoFactorMethodsString !== null && $enabledTwoFactorMethodsString !== '') ? explode(',', $enabledTwoFactorMethodsString) : [];
         
-        // 二段階認証方法の選択肢を作成
+        // 二段階認証方法の選択肢を作成（翻訳キー版）
         $twoFactorMethodOptions = [];
         foreach ($enabledTwoFactorMethods as $methodValue) {
             if (is_numeric($methodValue)) {
                 $method = TwoFactorMethod::tryFrom((int)$methodValue);
                 if ($method) {
-                    $twoFactorMethodOptions[$methodValue] = $method->label();
+                    $twoFactorMethodOptions[$methodValue] = $method->translationKey();
                 }
             }
         }
@@ -185,6 +185,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
 
         // 二段階認証モード設定
         $this->viewParams['twoFactorMode'] = TwoFactorMode::from($this->viewParams['force2fa']);
+        $this->viewParams['twoFactorModeOptions'] = TwoFactorMode::translationOptions();
 
         // メール設定テスト状況を取得
         $this->viewParams['isMailServerTested'] = $this->isMailServerTested();
@@ -254,13 +255,13 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $enabledTwoFactorMethodsString = MemberSetting::getValue('enabled_two_factor_methods', (string)TwoFactorMethod::EMAIL->value);
         $enabledTwoFactorMethods = ($enabledTwoFactorMethodsString !== null && $enabledTwoFactorMethodsString !== '') ? explode(',', $enabledTwoFactorMethodsString) : [];
         
-        // 二段階認証方法の選択肢を作成
+        // 二段階認証方法の選択肢を作成（翻訳キー版）
         $twoFactorMethodOptions = [];
         foreach ($enabledTwoFactorMethods as $methodValue) {
             if (is_numeric($methodValue)) {
                 $method = TwoFactorMethod::tryFrom((int)$methodValue);
                 if ($method) {
-                    $twoFactorMethodOptions[$methodValue] = $method->label();
+                    $twoFactorMethodOptions[$methodValue] = $method->translationKey();
                 }
             }
         }
@@ -270,6 +271,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
 
         // 二段階認証モード設定
         $this->viewParams['twoFactorMode'] = TwoFactorMode::from($this->viewParams['force2fa']);
+        $this->viewParams['twoFactorModeOptions'] = TwoFactorMode::translationOptions();
 
         // メール設定テスト状況を取得
         $this->viewParams['isMailServerTested'] = $this->isMailServerTested();

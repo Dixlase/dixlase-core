@@ -74,35 +74,34 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @include('components.form.hidden', [
                     'name' => 'notification_enabled',
                 ])
+            </fieldset>
+        </section>
+
+        <!-- セッション管理設定 -->
+        <section>
+            <h2>{{ __('admin.settings.security.session_management') }}</h2>
+            <p>{{ __('admin.settings.security.session_management_description') }}</p>
+
+            <!-- セッション暗号化設定 -->
+            <fieldset>
+                <legend>{{ __('admin.settings.security.session_encrypt') }}</legend>
+                <p>{{ __('admin.settings.security.session_encrypt_help') }}</p>
                 
                 @include('components.form.radio-group', [
                     'name' => 'session_encrypt',
                     'options' => [
-                        1 => __('common.status.enabled'),
-                        0 => __('common.status.disabled')
+                        1 => __('common.enabled'),
+                        0 => __('common.disabled')
                     ],
                     'value' => old('session_encrypt', (int) $settings['session_encrypt']),
                     'class' => ''
                 ])
-                
-                @include('components.form.radio-group', [
-                    'name' => 'pwned_password_check_enabled',
-                    'options' => [
-                        1 => __('common.status.enabled'),
-                        0 => __('common.status.disabled')
-                    ],
-                    'value' => old('pwned_password_check_enabled', (int) $settings['pwned_password_check_enabled']),
-                    'class' => ''
-                ])
-                
-                
             </fieldset>
 
             <!-- デフォルトセッション有効時間 -->
             <fieldset>
                 <legend>{{ __('admin.settings.security.session_lifetime') }}</legend>
-                
-                <p id="session_lifetime_help">{{ __('admin.settings.security.session_lifetime_help') }}</p>
+                <p>{{ __('admin.settings.security.session_lifetime_help') }}</p>
 
                 <div class="flex items-center space-x-3 mt-2">
                     @include('components.form.text', [
@@ -119,8 +118,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         {{ __('admin.settings.security.minutes') }}
                     </span>
                 </div>
+            </fieldset>
+        </section>
+
+        <!-- パスワードセキュリティ設定 -->
+        <section>
+            <h2>{{ __('admin.settings.security.password_security_settings') }}</h2>
+            <p>{{ __('admin.settings.security.password_security_description') }}</p>
+
+            <!-- パスワード漏洩チェック -->
+            <fieldset>
+                <legend>{{ __('admin.settings.security.pwned_password_check') }}</legend>
+                <p>{{ __('admin.settings.security.pwned_password_check_help') }}</p>
                 
-                
+                @include('components.form.radio-group', [
+                    'name' => 'pwned_password_check_enabled',
+                    'options' => [
+                        1 => __('common.enabled'),
+                        0 => __('common.disabled')
+                    ],
+                    'value' => old('pwned_password_check_enabled', (int) $settings['pwned_password_check_enabled']),
+                    'class' => ''
+                ])
             </fieldset>
         </section>
 
