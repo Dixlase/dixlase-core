@@ -73,19 +73,94 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 
                 @include('components.form.hidden', [
                     'name' => 'notification_enabled',
+                    'value' => '0'
                 ])
+                
+                @include('components.form.radio-group', [
+                    'name' => 'notification_enabled',
+                    'options' => [
+                        1 => __('common.enabled'),
+                        0 => __('common.disabled')
+                    ],
+                    'value' => $settings['notification_enabled'] ?? 0,
+                    'class' => ''
+                ])
+                
+                <p>{{ __('admin.settings.security.notification_enabled_help') }}</p>
+            </fieldset>
+
+            <!-- 通知するログレベル -->
+            <fieldset x-data="{ notificationEnabled: {{ ($settings['notification_enabled'] ?? 0) ? 'true' : 'false' }} }" 
+                        x-init="
+                            // ラジオボタンの変更を監視
+                            document.querySelectorAll('input[name=notification_enabled]').forEach(radio => {
+                                radio.addEventListener('change', () => {
+                                    notificationEnabled = radio.value === '1';
+                                });
+                            });
+                        ">
+                <legend>{{ __('admin.settings.security.notification_log_levels') }}</legend>
+                
+                
+                <div class="mt-3" :class="{ 'opacity-50': !notificationEnabled }">
+                    @php
+                        $logLevelOptions = [];
+                        foreach (\App\Enums\LogLevel::getNotificationLevels() as $level) {
+                            $levelString = \App\Enums\LogLevel::from($level)->toString();
+                            $logLevelOptions[$level] = 'admin.settings.security.log_levels.' . $levelString;
+                        }
+                    @endphp
+                    
+                    @include('components.form.checkbox-group', [
+                        'name' => 'notification_log_levels',
+                        'options' => $logLevelOptions,
+                        'values' => $settings['notification_log_levels'] ?? \App\Enums\LogLevel::getDefaultNotificationLevels(),
+                        'disabled' => false,
+                        'class' => 'space-y-2',
+                        'flexDirection' => 'col'
+                    ])
+                </div>
+                
+                <p>{{ __('admin.settings.security.notification_log_levels_help') }}</p>
             </fieldset>
         </section>
+
 
         <!-- セッション管理設定 -->
         <section>
             <h2>{{ __('admin.settings.security.session_management') }}</h2>
             <p>{{ __('admin.settings.security.session_management_description') }}</p>
 
-            <!-- セッション暗号化設定 -->
+            <!-- セッションドライバー -->
+            <fieldset>
+                <legend>{{ __('admin.settings.security.session_driver') }}</legend>
+                                    
+                @include('components.form.select', [
+                    'id' => 'session_driver',
+                    'name' => 'session_driver',
+                    'options' => [
+                        'file' => __('admin.settings.security.session_driver_file'),
+                        'database' => __('admin.settings.security.session_driver_database'),
+                        'redis' => __('admin.settings.security.session_driver_redis'),
+                        'memcached' => __('admin.settings.security.session_driver_memcached'),
+                        'cookie' => __('admin.settings.security.session_driver_cookie'),
+                        'array' => __('admin.settings.security.session_driver_array'),
+                    ],
+                    'value' => old('session_driver', $settings['session_driver']),
+                    'class' => 'mt-2'
+                ])
+                
+                <p>{{ __('admin.settings.security.session_driver_help') }}</p>
+            </fieldset>
+
+            <!-- セッション暗号化 -->
             <fieldset>
                 <legend>{{ __('admin.settings.security.session_encrypt') }}</legend>
-                <p>{{ __('admin.settings.security.session_encrypt_help') }}</p>
+                
+                @include('components.form.hidden', [
+                    'name' => 'session_encrypt',
+                    'value' => '0'
+                ])
                 
                 @include('components.form.radio-group', [
                     'name' => 'session_encrypt',
@@ -96,13 +171,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     'value' => old('session_encrypt', (int) $settings['session_encrypt']),
                     'class' => ''
                 ])
+                
+                <p>{{ __('admin.settings.security.session_encrypt_help') }}</p>
             </fieldset>
 
             <!-- デフォルトセッション有効時間 -->
             <fieldset>
                 <legend>{{ __('admin.settings.security.session_lifetime') }}</legend>
-                <p>{{ __('admin.settings.security.session_lifetime_help') }}</p>
-
+                
                 <div class="flex items-center space-x-3 mt-2">
                     @include('components.form.text', [
                         'id' => 'session_lifetime',
@@ -115,9 +191,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         'aria-describedby' => 'session_lifetime_unit session_lifetime_help'
                     ])
                     <span id="session_lifetime_unit" class="text-sm text-gray-700 dark:text-gray-300">
-                        {{ __('admin.settings.security.minutes') }}
+                        {{ __('common.minutes') }}
                     </span>
                 </div>
+                
+                <p id="session_lifetime_help">{{ __('admin.settings.security.session_lifetime_help') }}</p>
             </fieldset>
         </section>
 
