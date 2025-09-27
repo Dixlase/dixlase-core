@@ -48,9 +48,13 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
     public function index()
     {
-
-
         $plugins = Plugin::all();
+        
+        // 各プラグインに設定画面があるかチェック
+        foreach ($plugins as $plugin) {
+            $plugin->has_settings = $this->checkPluginHasSettings($plugin);
+        }
+        
         $this->viewParams['plugins'] = $plugins;
         $this->viewParams['heading'] = 'プラグインマスター';
         return view('admin::settings.plugins.index', $this->viewParams);
@@ -338,5 +342,68 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 break;
         }
         return $value;
+    }
+
+    /**
+     * プラグインが設定画面を持っているかチェック
+     */
+    private function checkPluginHasSettings($plugin)
+    {
+        if ($plugin->status !== 1) {
+            return false; // 無効なプラグインは設定画面なし
+        }
+
+        // ルート名の規則に基づいてチェック
+        $settingsRouteName = 'admin.' . strtolower(str_replace(['Dixlase', 'Plugin'], '', $plugin->directory)) . '.settings';
+        
+        // 特定のプラグインの設定ルートをチェック（セキュアなadminプレフィックス付き）
+        $knownSettingsRoutes = [
+            'DixlaseInquiry' => 'admin.dixlase-inquiry::admin.inquiries.settings',
+            'DixlasePages' => 'admin.dixlase-pages::admin.pages.settings',
+        ];
+
+        $routeName = $knownSettingsRoutes[$plugin->directory] ?? $settingsRouteName;
+
+        try {
+            return \Route::has($routeName);
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * プラグインの設定画面URLを取得
+     */
+    public function getPluginSettingsUrl($plugin)
+    {
+        $knownSettingsRoutes = [
+            'DixlaseInquiry' => 'admin.dixlase-inquiry::admin.inquiries.settings',
+            'DixlasePages' => 'admin.dixlase-pages::admin.pages.settings',
+        ];
+
+        $routeName = $knownSettingsRoutes[$plugin->directory] ?? null;
+
+        \Log::info('Plugin settings URL generation', [
+            'plugin' => $plugin->directory,
+            'routeName' => $routeName,
+            'routeExists' => $routeName ? \Route::has($routeName) : false,
+            'allRoutes' => collect(\Route::getRoutes())->filter(function($route) {
+                return str_contains($route->getName() ?? '', 'inquiries');
+            })->map(function($route) {
+                return [
+                    'name' => $route->getName(),
+                    'uri' => $route->uri(),
+                    'methods' => $route->methods()
+                ];
+            })->values()->toArray()
+        ]);
+
+        if ($routeName && \Route::has($routeName)) {
+            $url = route($routeName);
+            \Log::info('Generated URL', ['url' => $url]);
+            return $url;
+        }
+
+        return null;
     }
 }

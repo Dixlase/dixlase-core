@@ -61,16 +61,41 @@ class PluginServiceProvider extends ServiceProvider
             foreach ($enabledPlugins as $plugin) {
                 $pluginPath = base_path("plugins/{$plugin->directory}");
                 
+                Log::info('Processing plugin config', ['plugin' => $plugin->directory, 'slug' => $plugin->slug]);
+                
                 // Load config files
-                $this->loadPluginConfigs($plugin, $pluginPath);
+                try {
+                    $this->loadPluginConfigs($plugin, $pluginPath);
+                } catch (\Exception $e) {
+                    Log::error('Error loading plugin config', [
+                        'plugin' => $plugin->directory,
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                }
                 
                 // Load language files
-                $this->loadPluginLanguages($plugin, $pluginPath);
+                try {
+                    $this->loadPluginLanguages($plugin, $pluginPath);
+                } catch (\Exception $e) {
+                    Log::error('Error loading plugin languages', [
+                        'plugin' => $plugin->directory,
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                }
             }
         } catch (\Exception $e) {
             // Log the error but don't break the application
-            Log::error('Failed to load plugin configurations: ' . $e->getMessage());
+            Log::error('Failed to load plugin configurations: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
         }
+        
+        // Load plugin routes (一時的に無効化)
+        // $this->loadPluginRoutes();
     }
 
     /**
@@ -112,32 +137,47 @@ class PluginServiceProvider extends ServiceProvider
         // Get all locale directories
         $locales = File::directories($langPath);
         
-        foreach ($locales as $localePath) {
-            $locale = basename($localePath);
+        // Add the entire language directory as a namespace
+        Lang::addNamespace($plugin->slug, $langPath);
+    }
+
+    /**
+     * Load plugin routes
+     */
+    protected function loadPluginRoutes(): void
+    {
+        if (!\Illuminate\Support\Facades\Schema::hasTable('plugins')) {
+            return;
+        }
+
+        // Get all enabled plugins
+        $enabledPlugins = Plugin::active()->get();
+
+        foreach ($enabledPlugins as $plugin) {
+            $pluginPath = base_path("plugins/{$plugin->directory}");
             
-            // Load PHP language files
-            foreach (File::files($localePath) as $file) {
-                if ($file->getExtension() === 'php') {
-                    $key = $file->getBasename('.php');
-                    $translations = require $file->getPathname();
-                    
-                    // Add translations to Laravel's translator
-                    Lang::addNamespace($plugin->slug, $localePath);
-                    
-                    // Also make translations available under the plugin's slug
-                    $fullKey = "{$plugin->slug}::{$key}";
-                    Lang::addLines($translations, $locale, $fullKey);
-                }
+            // Load web routes
+            $webRoutePath = "{$pluginPath}/routes/web.php";
+            if (File::exists($webRoutePath)) {
+                include $webRoutePath;
             }
             
-            // Load JSON language files if any
-            $jsonFile = "{$localePath}.json";
-            if (File::exists($jsonFile)) {
-                $translations = json_decode(File::get($jsonFile), true);
-                if (json_last_error() === JSON_ERROR_NONE) {
-                    Lang::addJsonPath($localePath);
-                }
+            // Load admin routes within the admin route group
+            $adminRoutePath = "{$pluginPath}/routes/admin.php";
+            if (File::exists($adminRoutePath)) {
+                // Get admin URL from helper
+                $adminUrl = \App\Helpers\AdminHelper::getAdminUrl();
+                
+                // Load admin routes within the secure admin group
+                \Route::prefix($adminUrl)->name('admin.')
+                    ->middleware(['admin.ip'])
+                    ->group(function () use ($adminRoutePath) {
+                        \Route::middleware(['auth:member'])->group(function () use ($adminRoutePath) {
+                            include $adminRoutePath;
+                        });
+                    });
             }
         }
     }
+
 }
