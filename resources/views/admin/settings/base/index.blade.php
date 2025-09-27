@@ -173,8 +173,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'onclick' => "openModal('confirmationModal')",
         'title' => __('common.save_confirmation_title'),
         'message' => __('common.save_confirmation_message'),
-        'confirm_label' => __('common.form.save_button'),
-        'cancel_label' => __('common.form.cancel_button'),
+        'confirm_label' => __('common.save'),
+        'cancel_label' => __('common.cancel'),
         'form' => 'base-settings-form',
     ])
 @endsection

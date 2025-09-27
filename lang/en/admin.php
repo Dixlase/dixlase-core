@@ -562,7 +562,6 @@ Clicking this link will complete the full mail function test.',
                     'title' => 'Delete Member Confirmation',
                     'message' => 'Do you want to completely delete :name?',
                     'warning' => 'This operation cannot be undone.',
-                    'confirm' => 'Delete',
                 ],
             ],
             'index' => [
