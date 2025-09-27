@@ -54,7 +54,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('modals')
     <!-- 保存モーダル -->
-    @include('components::form.modal', [
+    @include('components.modal', [
         'id' => 'confirmationModal',
         'title' => __('common.update_confirmation'),
         'message' => __('admin.settings.members.edit.confirm_message'),

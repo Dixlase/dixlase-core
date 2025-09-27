@@ -88,7 +88,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             
             <fieldset>
                 <legend>{{ __('admin.profile.password_change_only') }}</legend>
-                @include('components.form.password-tools', [
+                @include('components.password-tools', [
                     'name' => 'password',
                     'id' => 'profile_password',
                     'required' => false,
@@ -276,7 +276,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('save')
-    @include('components.form.save', [
+    @include('components.save', [
         'id' => 'confirmationModal',
         'label' => __('common.update'),
         'onclick' => "openModal('confirmProfileModal')",

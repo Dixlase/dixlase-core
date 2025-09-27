@@ -55,7 +55,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('save')
     <!-- 保存ボタンとモーダル -->
-    @include('components::form.save', [
+    @include('components.save', [
         'id' => 'confirmationModal',
         'label' => __('admin.media.settings.save_settings'),
         'onclick' => "openModal('confirmationModal')",

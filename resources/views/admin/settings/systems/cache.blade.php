@@ -96,7 +96,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <!-- Individual Cache Clear Modals -->
 @foreach($cacheInfo as $type => $info)
-    @include('components::form.modal', [
+    @include('components.modal', [
         'id' => 'clearCacheModal' . ucfirst($type),
         'title' => __('admin.settings.systems.cache.clear_confirm', ['name' => $info['name']]),
         'message' => $info['description'],
@@ -111,7 +111,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endforeach
 
 <!-- Clear All Cache Modal -->
-    @include('components::form.modal', [
+    @include('components.modal', [
         'id' => 'clearAllCacheModal',
         'title' => __('admin.settings.systems.cache.clear_all_title'),
         'message' => __('admin.settings.systems.cache.clear_all_description') . ' ' . __('admin.settings.systems.cache.clear_all_warning'),

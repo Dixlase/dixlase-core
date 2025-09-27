@@ -97,7 +97,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <fieldset>
             <legend>{{ $requirePassword ? __('common.password') : __('admin.profile.password_change_only') }}</legend>
-            @include('components::form.password-tools', [
+            @include('components.password-tools', [
                 'id' => 'password',
                 'name' => 'password',
                 'required' => $requirePassword,
@@ -352,7 +352,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         $deleteMemberFormId = 'deleteMemberForm-' . $member->id;
     @endphp
     
-    @include('components::form.modal', [
+    @include('components.modal', [
         'id' => 'forceLogoutModal',
         'title' => __('admin.settings.members.modals.force_logout.title'),
         'message' => __('admin.settings.members.modals.force_logout.message', ['name' => $member->name]),
@@ -364,7 +364,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         ])
 
     @if(!$isInitialAdmin)
-        @include('components::form.modal', [
+        @include('components.modal', [
             'id' => 'deleteMemberModal',
             'title' => __('admin.settings.members.modals.delete.title'),
             'message' => __('admin.settings.members.modals.delete.message', ['name' => $member->name]) . "\n\n" . __('admin.settings.members.modals.delete.warning'),
