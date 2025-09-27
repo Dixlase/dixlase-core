@@ -33,7 +33,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 $role_key = str_replace('admin.', '', $route_name);
                 // 開くべきアコーディオンを判定
                 $open_key = 'open_' . $key;
-                $is_open = isset($current_route_parts[1]) && $current_route_parts[1] === $key;
+                
+                // プラグインルートの場合の判定を改善
+                $is_open = false;
+                if (strpos($route_name, '::') !== false) {
+                    // プラグインルートの場合: admin.plugin-name::admin.controller.action
+                    if (strpos($route_name, 'admin.') === 0) {
+                        $without_admin = substr($route_name, 6); // 'admin.'を除去
+                        [$plugin_namespace, $plugin_route] = explode('::', $without_admin, 2);
+                        $plugin_parts = explode('.', $plugin_route);
+                        // admin.controller.action の controller部分を取得
+                        $is_open = isset($plugin_parts[1]) && $plugin_parts[1] === $key;
+                    } else {
+                        // 旧形式: plugin-name::admin.controller.action
+                        [$plugin_namespace, $plugin_route] = explode('::', $route_name, 2);
+                        $plugin_parts = explode('.', $plugin_route);
+                        $is_open = isset($plugin_parts[1]) && $plugin_parts[1] === $key;
+                    }
+                } else {
+                    // コアルートの場合: admin.controller.action
+                    $is_open = isset($current_route_parts[1]) && $current_route_parts[1] === $key;
+                }
             @endphp
 
 

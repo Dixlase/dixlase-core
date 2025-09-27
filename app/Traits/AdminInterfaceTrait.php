@@ -67,13 +67,23 @@ trait AdminInterfaceTrait
         
         // プラグインのルートかどうかを判別（::が含まれている場合はプラグイン）
         if (strpos($routeName, '::') !== false) {
-            // プラグインの場合: plugin-name::admin.controller.action
-            [$pluginNamespace, $route] = explode('::', $routeName, 2);
-            $keys = explode('.', $route);
-            array_shift($keys); // 'admin'を除去
-            
-            $headingKey = implode('.', $keys) . '.heading';
-            $this->heading = $pluginNamespace . '::admin.' . $headingKey;
+            // 新しい形式: admin.plugin-name::admin.controller.action
+            if (strpos($routeName, 'admin.') === 0) {
+                // admin.を除去してプラグイン部分を取得
+                $withoutAdminPrefix = substr($routeName, 6); // 'admin.'を除去
+                [$pluginNamespace, $route] = explode('::', $withoutAdminPrefix, 2);
+                
+                $headingKey = $route . '.heading';
+                $this->heading = $pluginNamespace . '::' . $headingKey;
+            } else {
+                // 旧形式: plugin-name::admin.controller.action
+                [$pluginNamespace, $route] = explode('::', $routeName, 2);
+                $keys = explode('.', $route);
+                array_shift($keys); // 'admin'を除去
+                
+                $headingKey = implode('.', $keys) . '.heading';
+                $this->heading = $pluginNamespace . '::admin.' . $headingKey;
+            }
         } else {
             // コアの場合: admin.controller.action
             $keys = explode('.', $routeName);
