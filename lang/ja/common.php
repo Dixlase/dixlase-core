@@ -42,6 +42,8 @@ return [
     'yes' => 'はい',
     'no' => 'いいえ',
     'ok' => 'OK',
+    'required' => '必須',
+    'optional' => '任意',
     'finish' => '完了',
     'logout' => 'ログアウト',
     'preview' => 'プレビュー',
@@ -56,15 +58,23 @@ return [
     'copied' => 'コピー済み',
     'index' => '一覧',
     'default_method' => 'デフォルト',
+    'login' => 'ログイン',
     
     // テーマ
     'auto' => '自動',
     'light' => 'ライト',
     'dark' => 'ダーク',
+
     // 言語
     'ja' => '日本語',
     'en' => '英語',
     
+    // アカウント種別
+    'account_types' => [
+        'member' => 'メンバー',
+        'user' => 'ユーザー',
+    ],
+
     // ロール・権限
     'roles' => [
         'super_admin' => '特権管理者',
@@ -77,6 +87,7 @@ return [
     ],
     'permissions' => '権限',
     'role' => '権限',
+
     // ステータス
     'status' => [
         'active' => '有効',
@@ -89,6 +100,7 @@ return [
         'pending' => '保留中',
         'approved' => '承認済み',
         'rejected' => '却下',
+        'cancelled' => 'キャンセル',
         // 説明
         'draft_description' => '下書き状態です。公開されません。',
         'published_description' => '即座に公開されます。',
@@ -124,32 +136,27 @@ return [
     'minutes' => '分',
     'hours' => '時間',
     'days' => '日',
-    'form' => [
-        'save_confirmation_title' => '保存の確認',
-        'save_confirmation_message' => 'この内容で保存しますか？',
-        'save_button' => '保存',
-        'cancel_button' => 'キャンセル',
-    ],
+    
+    // 基本的な属性
     'site_name' => 'サイト名',
-    'is_member_site' => '会員サイト',
-    'allow_external_registration' => '外部登録を許可',
-    'allow_guest_registration' => 'ゲスト登録を許可',
     'required_fields' => '必須項目',
     'admin_theme' => '管理画面テーマ',
     'appearance_mode' => '外観モード',
     'locale' => '言語',
+    'timezone' => 'タイムゾーン',
     'maintenance_mode' => 'メンテナンスモード',
     'maintenance_message' => 'メンテナンスメッセージ',
     'actions' => '操作',
     'status' => '状態',
-    'login_button' => 'ログイン',
-    'yes' => 'はい',
-    'no' => 'いいえ',
-    'submit' => '更新',
     'warning' => '注意',
     'info' => '情報',
-    'login' => 'ログイン',
     'error' => 'エラー',
+    
+    // 検索・フィルター関連
+    'search_keyword' => 'キーワード',
+    'role_filter' => '権限',
+    'status_filter' => 'ステータス',
+    'clear_button' => 'クリア',
 
     // ログ関連
     'operation' => '操作',
@@ -197,26 +204,20 @@ return [
         ]
     ],
 
-    // アカウント種別
-    'account_types' => [
-        'member' => 'メンバー',
-        'user' => 'ユーザー',
-    ],
-
-    // 確認ダイアログ
-    'save_confirmation' => '保存の確認',
-    'update_confirmation' => '更新の確認',
-    'create_confirmation' => '作成の確認',
-
-    // ページネーション
-    'per_page_label' => '1ページあたりの表示件数',
-    'total_count' => '合計: :total 件',
 
     // ステータス説明（詳細版）
     'status_descriptions' => [
         'draft_description' => '下書き状態です。公開されません。',
         'published_description' => '即座に公開されます。',
         'scheduled_description' => '指定した日時に公開されます。',
+    ],
+
+
+    // 二段階認証モードオプション（プロフィール用）
+    'two_factor_mode_options' => [
+        'disabled' => '無効',
+        'only_new_device' => '異なる端末/IP時のみ有効',
+        'always' => '常に有効',
     ],
 
     // 二段階認証方法のヘルプテキスト（汎用）
@@ -227,20 +228,20 @@ return [
         'device' => '登録済みのデバイスで認証を行います。',
         'biometric' => '指紋や顔認証などの生体認証を使用して認証を行います。',
     ],
-
-    // 二段階認証モードオプション（プロフィール用）
-    'two_factor_mode_options' => [
-        'disabled' => '無効',
-        'only_new_device' => '異なる端末/IP時のみ有効',
-        'always' => '常に有効',
-    ],
-
-    // 二段階認証・ログイン通知の汎用ヘルプテキスト
-    'two_factor_help' => '二段階認証を使用するタイミングを設定します。',
+    // 二段階認証の汎用ヘルプテキスト
+    'two_factor_authentication' => '二段階認証',
+    'two_factor_settings' => '二段階認証設定',
     'two_factor_method' => '二段階認証方法',
+    'two_factor_mode' => '二段階認証モード',
+    'two_factor_help' => '二段階認証を使用するタイミングを設定します。',
     'two_factor_method_help' => '二段階認証で使用する認証方法を選択してください。',
     'two_factor_global_setting_fixed' => 'この設定は全体設定により固定されています。',
     'two_factor_method_global_setting_fixed' => 'この認証方法は全体設定により固定されています。',
+    
+    // ログイン通知の汎用ヘルプテキスト
+    'login_notification' => 'ログイン通知',
+    'notification_settings' => '通知設定',
+    'login_notification_settings' => 'ログイン通知設定',
     'login_notification_mode' => 'ログイン通知の設定',
     'login_notification_help' => 'ログイン通知を送信するタイミングを設定します。',
 
@@ -251,15 +252,6 @@ return [
     ],
 
     // プロフィール・設定関連の汎用項目
-    'appearance' => '外観モード',
-    'appearance_mode' => '外観モード',
-    'login_notification' => 'ログイン通知',
-    'two_factor_authentication' => '二段階認証',
-    'two_factor_mode' => '二段階認証モード',
-    'timezone' => 'タイムゾーン',
-    'notification_settings' => '通知設定',
-    'two_factor_settings' => '二段階認証設定',
-    'login_notification_settings' => 'ログイン通知設定',
 
     // 設定セクション（汎用）
     'basic_info' => '基本情報',
@@ -272,8 +264,12 @@ return [
 
     // 認証方法関連
     'available_methods' => '利用可能な方法',
-    'single_method_available' => '利用可能な方法',
 
+    // 確認ダイアログ
+    'save_confirmation' => '保存の確認',
+    'update_confirmation' => '更新の確認',
+    'create_confirmation' => '作成の確認',
+    'delete_confirmation' => '削除の確認',
     // 保存確認ダイアログ（詳細版）
     'save_confirmation_title' => '保存の確認',
     'save_confirmation_message' => '変更内容を保存しますか？',

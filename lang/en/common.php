@@ -39,6 +39,8 @@ return [
     'yes' => 'Yes',
     'no' => 'No',
     'ok' => 'OK',
+    'required' => 'Required',
+    'optional' => 'Optional',
     'finish' => 'Finish',
     'logout' => 'Logout',
     'preview' => 'Preview',
@@ -53,6 +55,7 @@ return [
     'copied' => 'Copied',
     'index' => 'Index',
     'default_method' => 'Default',
+    'login' => 'Login',
     
     // Language & Theme
     'light' => 'Light',
@@ -84,6 +87,7 @@ return [
         'pending' => 'Pending',
         'approved' => 'Approved',
         'rejected' => 'Rejected',
+        'cancelled' => 'Cancelled',
         // Descriptions
         'draft_description' => 'Draft status. Not published.',
         'published_description' => 'Published immediately.',
@@ -117,31 +121,27 @@ return [
     'minutes' => 'minutes',
     'hours' => 'hours',
     'days' => 'days',
-    'form' => [
-        'save_confirmation_title' => 'Save Confirmation',
-        'save_confirmation_message' => 'Do you want to save this content?',
-        'save_button' => 'Save',
-        'cancel_button' => 'Cancel',
-    ],
+    
+    // Basic Attributes
     'site_name' => 'Site Name',
-    'is_member_site' => 'Is Member Site',
-    'allow_external_registration' => 'Allow External Registration',
-    'allow_guest_registration' => 'Allow Guest Registration',
+    'required_fields' => 'Required Fields',
     'admin_theme' => 'Admin Theme',
     'appearance_mode' => 'Appearance Mode',
-    'language' => 'Language',
+    'locale' => 'Language',
+    'timezone' => 'Timezone',
     'maintenance_mode' => 'Maintenance Mode',
     'maintenance_message' => 'Maintenance Message',
     'actions' => 'Actions',
     'status' => 'Status',
-    'login_button' => 'Log in',
-    'yes' => 'Yes',
-    'no' => 'No',
-    'submit' => 'Update',
     'warning' => 'Warning',
-    'info' => 'Info',
-    'login' => 'Login',
+    'info' => 'Information',
     'error' => 'Error',
+    
+    // Search & Filter Related
+    'search_keyword' => 'Keyword',
+    'role_filter' => 'Role',
+    'status_filter' => 'Status',
+    'clear_button' => 'Clear',
     'title' => 'Title',
     'url' => 'URL',
 
@@ -202,9 +202,6 @@ return [
     'update_confirmation' => 'Update Confirmation',
     'create_confirmation' => 'Create Confirmation',
 
-    // Pagination
-    'per_page_label' => 'Items per page',
-    'total_count' => 'Total: :total items',
 
     // Status Descriptions (Detailed)
     'status_descriptions' => [
@@ -245,12 +242,9 @@ return [
     ],
 
     // Profile & Settings Generic Items
-    'appearance' => 'Appearance Mode',
-    'appearance_mode' => 'Appearance Mode',
     'login_notification' => 'Login Notification',
     'two_factor_authentication' => 'Two-Factor Authentication',
     'two_factor_mode' => 'Two-Factor Authentication Mode',
-    'timezone' => 'Timezone',
     'notification_settings' => 'Notification Settings',
     'two_factor_settings' => 'Two-Factor Authentication Settings',
     'login_notification_settings' => 'Login Notification Settings',
@@ -266,7 +260,6 @@ return [
 
     // Authentication Method Related
     'available_methods' => 'available methods',
-    'single_method_available' => 'Available method',
 
     // Save Confirmation Dialog (Detailed)
     'save_confirmation_title' => 'Save Confirmation',

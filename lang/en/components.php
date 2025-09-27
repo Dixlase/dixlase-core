@@ -41,8 +41,6 @@ return [
 
     // Form related
     'forms' => [
-        'required' => 'Required',
-        'optional' => 'Optional',
         'placeholder' => [
             'search' => 'Enter search keywords...',
             'email' => 'Enter email address',
@@ -59,33 +57,19 @@ return [
             'max_length' => 'Please enter no more than :max characters',
             'confirmed' => 'Password confirmation does not match',
         ],
-        'labels' => [
-            'required' => 'Required',
-            'optional' => 'Optional',
-        ],
     ],
 
     // Status related
     'status' => [
-        'active' => 'Active',
-        'inactive' => 'Inactive',
-        'enabled' => 'Enabled',
-        'disabled' => 'Disabled',
-        'published' => 'Published',
-        'draft' => 'Draft',
         'scheduled' => 'Scheduled',
         'pending' => 'Pending',
         'approved' => 'Approved',
         'rejected' => 'Rejected',
-        'cancelled' => 'Cancelled',
     ],
 
     // Message related
     'messages' => [
         'success' => 'Operation completed successfully',
-        'error' => 'An error occurred',
-        'warning' => 'Warning',
-        'info' => 'Information',
         'loading' => 'Loading...',
         'no_data' => 'No data available',
         'confirm_delete' => 'Are you sure you want to delete this?',
@@ -94,7 +78,6 @@ return [
 
     // Table related
     'table' => [
-        'actions' => 'Actions',
         'no_data' => 'No data available',
         'select_all' => 'Select all',
         'selected_count' => ':count selected',
@@ -106,18 +89,10 @@ return [
     
     // Filter related
     'filters' => [
-        'search_keyword' => 'Keyword',
-        'role_filter' => 'Role',
-        'status_filter' => 'Status',
-        'clear_button' => 'Clear',
     ],
 
     // Modal related
     'modal' => [
-        'close' => 'Close',
-        'confirm' => 'Confirm',
-        'cancel' => 'Cancel',
-        'save' => 'Save',
         'delete_title' => 'Confirm Delete',
         'delete_message' => 'This action cannot be undone. Are you sure you want to delete this?',
     ],
@@ -131,7 +106,6 @@ return [
         ],
         'tooltip' => [
             'generate' => 'Generate',
-            'copy' => 'Copy',
             'toggle' => 'Toggle visibility',
         ],
         'copied' => 'Password copied!',

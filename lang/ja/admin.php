@@ -534,7 +534,6 @@ return [
                     'title' => 'メンバー削除確認',
                     'message' => ':name を完全に削除しますか？',
                     'warning' => 'この操作は取り消せません。',
-                    'confirm' => '削除',
                 ],
             ],
             'create' => [

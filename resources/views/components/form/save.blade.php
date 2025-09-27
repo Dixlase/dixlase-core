@@ -22,12 +22,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'type' => 'button',      // Button type (button, submit, reset)
     'disabled' => false,     // Disable button
     'class' => '',                          // Custom class
-    'label' => __('common.form.save_button'),                    // Button text
+    'label' => __('common.save'),                    // Button text
     'id' => 'confirmationModal',            // Modal ID
-    'title' => __('common.form.save_confirmation_title'),                  // Modal title
-    'message' => __('common.form.save_confirmation_message'),    // Modal message
-    'confirm_label' => __('common.form.save_button'),                  // Confirm button text
-    'cancel_label' => __('common.form.cancel_button'),                  // Cancel button text
+    'title' => __('common.save_confirmation_title'),                  // Modal title
+    'message' => __('common.save_confirmation_message'),    // Modal message
+    'confirm_label' => __('common.save'),                  // Confirm button text
+    'cancel_label' => __('common.cancel'),                  // Cancel button text
     'form' => null,                          // Form ID
     'id_confirmation' => 'confirmationModal',        // Modal ID
     'id_delete' => 'deleteModal',                  // Delete modal ID
@@ -35,7 +35,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 ])
 
-<!-- {{ __('common.form.save_button') }} -->
+<!-- {{ __('common.save') }} -->
 @include('components::form.button', [
     'type' => $type,
     'label' => $label,
@@ -45,7 +45,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'variant' => 'primary',
 ])
 
-<!-- {{ __('common.form.save_confirmation_title') }} -->
+<!-- {{ __('common.save_confirmation_title') }} -->
 @push('modals')
     @include('components::form.modal', [
     'id' => $id_confirmation,

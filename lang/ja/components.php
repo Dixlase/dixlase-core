@@ -41,8 +41,6 @@ return [
 
     // フォーム関連
     'forms' => [
-        'required' => '必須',
-        'optional' => '任意',
         'placeholder' => [
             'search' => '検索キーワードを入力...',
             'email' => 'メールアドレスを入力',
@@ -59,33 +57,19 @@ return [
             'max_length' => '最大 :max 文字以内で入力してください',
             'confirmed' => 'パスワード確認が一致しません',
         ],
-        'labels' => [
-            'required' => '必須',
-            'optional' => '任意',
-        ],
     ],
 
     // ステータス関連
     'status' => [
-        'active' => 'アクティブ',
-        'inactive' => '非アクティブ',
-        'enabled' => '有効',
-        'disabled' => '無効',
-        'published' => '公開',
-        'draft' => '下書き',
-        'scheduled' => '予約投稿',
+        'scheduled' => '日付指定',
         'pending' => '保留中',
         'approved' => '承認済み',
         'rejected' => '却下',
-        'cancelled' => 'キャンセル',
     ],
 
     // メッセージ関連
     'messages' => [
         'success' => '操作が正常に完了しました',
-        'error' => 'エラーが発生しました',
-        'warning' => '警告',
-        'info' => '情報',
         'loading' => '読み込み中...',
         'no_data' => 'データがありません',
         'confirm_delete' => '本当に削除しますか？',
@@ -94,7 +78,6 @@ return [
 
     // テーブル関連
     'table' => [
-        'actions' => '操作',
         'no_data' => 'データがありません',
         'select_all' => 'すべて選択',
         'selected_count' => ':count 件選択中',
@@ -103,21 +86,9 @@ return [
         'caption' => 'データ一覧',
         'unknown_role' => '不明なロール',
     ],
-    
-    // フィルター関連
-    'filters' => [
-        'search_keyword' => 'キーワード',
-        'role_filter' => '権限',
-        'status_filter' => 'ステータス',
-        'clear_button' => 'クリア',
-    ],
 
     // モーダル関連
     'modal' => [
-        'close' => '閉じる',
-        'confirm' => '確認',
-        'cancel' => 'キャンセル',
-        'save' => '保存',
         'delete_title' => '削除の確認',
         'delete_message' => 'この操作は取り消せません。本当に削除しますか？',
     ],
@@ -131,7 +102,6 @@ return [
         ],
         'tooltip' => [
             'generate' => '自動生成',
-            'copy' => 'コピー',
             'toggle' => '表示切替',
         ],
         'copied' => 'パスワードがコピーされました！',
