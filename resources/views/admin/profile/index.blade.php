@@ -122,24 +122,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         }" x-init="
             // 初期化時に保存された値でDOMをリセット
             resetToSavedTheme();
-            $watch('localTheme', () => applyLocalTheme());
         " data-profile-theme>
             <h2>{{ __('admin.profile.appearance_settings') }}</h2>
             
             <fieldset>
                 <legend>{{ __('admin.profile.appearance_mode') }}</legend>
-                @include('components.form.radio-group', [
+                @include('components::form.radio-group', [
                     'name' => 'appearance',
                     'options' => [
-                        '0' => __('admin.profile.appearance_auto'),
-                        '1' => __('admin.profile.appearance_light'),
-                        '2' => __('admin.profile.appearance_dark')
+                        '0' => __('common.auto'),
+                        '1' => __('common.light'),
+                        '2' => __('common.dark')
                     ],
                     'value' => $appearanceValue,
                     'xModel' => 'localTheme'
                 ])
             </fieldset>
-        </section>
 
         <!-- ログイン通知設定 -->
         @php
@@ -280,12 +278,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('save')
     @include('components.form.save', [
         'id' => 'confirmationModal',
-        'label' => __('admin.profile.update_button'),
+        'label' => __('common.update'),
         'onclick' => "openModal('confirmProfileModal')",
         'title' => __('admin.profile.confirm_title'),
         'message' => __('admin.profile.confirm_message'),
-        'confirm_label' => __('admin.profile.confirm_label'),
-        'cancel_label' => __('admin.profile.cancel_label'),
+        'confirm_label' => __('common.update'),
+        'cancel_label' => __('common.cancel'),
         'form' => 'profile-form',
     ])
 @endsection

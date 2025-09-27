@@ -45,12 +45,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- {{ __('admin.settings.members.create.create_confirmation_title') }} -->
     @include('components::form.save', [
         'id' => 'confirmationModal',
-        'label' => __('admin.settings.members.create.create_button'),
+        'label' => __('common.create'),
         'onclick' => "openModal('confirmationModal')",
         'title' => __('admin.settings.members.create.create_confirmation_title'),
         'message' => __('admin.settings.members.create.create_confirmation_message'),
-        'confirm_label' => __('admin.settings.members.create.create_button'),
-        'cancel_label' => __('admin.settings.members.create.back_button'),
+        'confirm_label' => __('common.create'),
+        'cancel_label' => __('common.back'),
         'form' => 'create-form', // 🔁 保存ボタンに form 属性を渡す（必要なら）
     ])
 @endsection

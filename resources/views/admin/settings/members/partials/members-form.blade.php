@@ -55,7 +55,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <h2>{{ __('admin.settings.members.form.basic_info') }}</h2>
         
         <fieldset>
-            <legend>{{ __('admin.settings.members.form.name') }}</legend>
+            <legend>{{ __('common.name') }}</legend>
             @include('components::form.text', [
                 'id' => 'name',
                 'name' => 'name',
@@ -68,7 +68,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </fieldset>
 
         <fieldset>
-            <legend>{{ __('admin.settings.members.form.description') }}</legend>
+            <legend>{{ __('common.description') }}</legend>
             <textarea name="description" id="description" rows="3" 
                 class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded px-3 py-2">{{ old('description', $member->description ?? '') }}</textarea>
             @include('components::form.error', [
@@ -77,7 +77,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </fieldset>
 
         <fieldset>
-            <legend>{{ __('admin.settings.members.form.email') }}</legend>
+            <legend>{{ __('common.email') }}</legend>
             @include('components::form.text', [
                 'type' => 'email',
                 'id' => 'email',
@@ -96,7 +96,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <h2>{{ __('admin.settings.members.form.password_settings') }}</h2>
         
         <fieldset>
-            <legend>{{ $requirePassword ? __('admin.settings.members.form.password') : __('admin.settings.members.form.password_change_only') }}</legend>
+            <legend>{{ $requirePassword ? __('common.password') : __('admin.settings.members.form.password_change_only') }}</legend>
             @include('components::form.password-tools', [
                 'id' => 'password',
                 'name' => 'password',
@@ -118,13 +118,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <!-- 外観モード -->
         <fieldset data-member-theme>
-            <legend>{{ __('admin.settings.members.form.appearance') }}</legend>
+            <legend>{{ __('common.appearance_mode') }}</legend>
             @php
                 $appearanceValue = old('appearance', (string) ($member->appearance->value ?? 0));
                 $appearanceOptions = [
-                    '0' => 'admin.profile.appearance_auto',
-                    '1' => 'admin.profile.appearance_light',
-                    '2' => 'admin.profile.appearance_dark',
+                    '0' => 'common.auto',
+                    '1' => 'common.light',
+                    '2' => 'common.dark',
                 ];
             @endphp
             @include('components::form.radio-group', [
@@ -140,7 +140,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- アカウントステータス -->
         <fieldset>
             <legend>
-                {{ __('admin.settings.members.form.status') }}
+                {{ __('common.status.status') }}
                 @if($isInitialAdmin)
                     <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">（初期管理者のため変更不可）</span>
                 @endif
@@ -153,8 +153,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @php
                     $statusValue = old('status', (string) ($member->status->value ?? 1));
                     $statusOptions = [
-                        '1' => 'admin.settings.members.form.status_active',
-                        '0' => 'admin.settings.members.form.status_inactive',
+                        '1' => 'common.status.active',
+                        '0' => 'common.status.inactive',
                     ];
                 @endphp
                 @include('components::form.radio-group', [
@@ -171,7 +171,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- 管理者ロール -->
         <fieldset>
             <legend>
-                {{ __('admin.settings.members.form.role') }}
+                {{ __('common.role') }}
                 @if($isInitialAdmin)
                     <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">（初期管理者のため変更不可）</span>
                 @endif
@@ -215,8 +215,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @php
                 $loginNotificationValue = old('login_notification', (string) ($member->login_notification->value ?? 0));
                 $loginNotificationOptions = [
-                    '0' => 'admin.settings.members.form.login_notification_disabled',
-                    '1' => 'admin.settings.members.form.login_notification_enabled',
+                    '0' => 'common.status.disabled',
+                    '1' => 'common.status.enabled',
                 ];
             @endphp
             @include('components::form.radio-group', [

@@ -152,8 +152,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'id' => 'cleanupModal' . ucfirst($type),
     'title' => __('admin.settings.systems.database.modal.title'),
     'message' => __('admin.settings.systems.database.modal.message_single', ['name' => $info['name']]),
-    'confirm_label' => __('admin.settings.systems.database.modal.execute'),
-    'cancel_label' => __('admin.settings.systems.database.modal.cancel'),
+    'confirm_label' => __('common.execute'),
+    'cancel_label' => __('common.cancel'),
     'icon_type' => 'danger',
     'confirm_color' => 'red',
     'form' => 'cleanupForm' . ucfirst($type)
@@ -164,8 +164,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'id' => 'cleanupAllModal',
     'title' => __('admin.settings.systems.database.modal.title'),
     'message' => __('admin.settings.systems.database.modal.message_all'),
-    'confirm_label' => __('admin.settings.systems.database.modal.execute'),
-    'cancel_label' => __('admin.settings.systems.database.modal.cancel'),
+    'confirm_label' => __('common.execute'),
+    'cancel_label' => __('common.cancel'),
     'icon_type' => 'danger',
     'confirm_color' => 'red',
     'form' => 'cleanupAllForm'

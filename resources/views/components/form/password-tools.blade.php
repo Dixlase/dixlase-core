@@ -59,7 +59,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </button>
         <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block
             text-xs rounded bg-gray-800 text-white px-2 py-1 whitespace-nowrap z-10">
-            {{ __('password.tooltip.generate') }}
+            {{ __('components.password_messages.tooltip.generate') }}
         </span>
     </div>
 
@@ -71,7 +71,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </button>
         <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block
             text-xs rounded bg-gray-800 text-white px-2 py-1 whitespace-nowrap z-10">
-            {{ __('password.tooltip.copy') }}
+            {{ __('components.password_messages.tooltip.copy') }}
         </span>
     </div>
 
@@ -83,7 +83,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </button>
         <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block
             text-xs rounded bg-gray-800 text-white px-2 py-1 whitespace-nowrap z-10">
-            {{ __('password.tooltip.toggle') }}
+            {{ __('components.password_messages.tooltip.toggle') }}
         </span>
     </div>
 </div>
@@ -104,16 +104,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @php
     $lengthText = $minLength < $recommendedLength
-        ? __('passwords.requirements.length_full', ['min' => $minLength, 'recommended' => $recommendedLength])
-        : __('passwords.requirements.length_simple', ['min' => $minLength]);
+        ? __('components.password_messages.requirements.length_full', ['min' => $minLength, 'recommended' => $recommendedLength])
+        : __('components.password_messages.requirements.length_simple', ['min' => $minLength]);
 
     $uppercaseText = $requireUppercase
-        ? __('passwords.requirements.uppercase_required')
-        : __('passwords.requirements.uppercase_optional');
+        ? __('components.password_messages.requirements.uppercase_required')
+        : __('components.password_messages.requirements.uppercase_optional');
 
     $symbolText = $requireSymbol
-        ? __('passwords.requirements.symbol_required')
-        : __('passwords.requirements.symbol_optional');
+        ? __('components.password_messages.requirements.symbol_required')
+        : __('components.password_messages.requirements.symbol_optional');
 @endphp
 
 <p id="password-strength-message" class="text-sm mt-1 text-gray-700 dark:text-gray-200 h-[1em]"></p>
@@ -124,13 +124,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <!-- 確認欄の表示制御 -->
 <ul id="password-requirements" class="text-sm mt-2 text-gray-600 dark:text-gray-300 space-y-1">
-    <li id="req-lowercase" data-text="{{ __('common.password_messages.requirements.lowercase') }}" class="flex items-center">
+    <li id="req-lowercase" data-text="{{ __('components.password_messages.requirements.lowercase') }}" class="flex items-center">
         <i class="fas fa-times-circle text-red-500 mr-2"></i>
-        <span>{{ __('passwords.requirements.lowercase') }}</span>
+        <span>{{ __('components.password_messages.requirements.lowercase') }}</span>
     </li>
-    <li id="req-number" data-text="{{ __('common.password_messages.requirements.number') }}" class="flex items-center">
+    <li id="req-number" data-text="{{ __('components.password_messages.requirements.number') }}" class="flex items-center">
         <i class="fas fa-times-circle text-red-500 mr-2"></i>
-        <span>{{ __('passwords.requirements.number') }}</span>
+        <span>{{ __('components.password_messages.requirements.number') }}</span>
     </li>
     <li id="req-length" data-text="{{ $lengthText }}" class="flex items-center">
         <i class="fas fa-times-circle text-red-500 mr-2"></i>
@@ -149,17 +149,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <script>
     window.PasswordMessages = {
-        error: @json(__('passwords.error')),
-        weak: @json(__('passwords.requirements.weak')),
-        normal: @json(__('passwords.requirements.normal')),
-        strong: @json(__('passwords.requirements.strong')),
-        veryStrong: @json(__('passwords.requirements.very_strong')),
+        error: @json(__('components.password_messages.error')),
+        weak: @json(__('components.password_messages.requirements.weak')),
+        normal: @json(__('components.password_messages.requirements.normal')),
+        strong: @json(__('components.password_messages.requirements.strong')),
+        veryStrong: @json(__('components.password_messages.requirements.very_strong')),
     };
 
     window.PasswordTooltips = {
-        generate: @json(__('passwords.tooltip.generate')),
-        copy: @json(__('passwords.tooltip.copy')),
-        toggle: @json(__('passwords.tooltip.toggle')),
+        generate: @json(__('components.password_messages.tooltip.generate')),
+        copy: @json(__('components.password_messages.tooltip.copy')),
+        toggle: @json(__('components.password_messages.tooltip.toggle')),
     };
 
     window.PasswordPolicy = {

@@ -45,7 +45,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- 保存ボタン -->
         @include('components::form.button', [
             'type' => 'button',
-            'label' => '更新',
+            'label' => __('common.update'),
             'class' => '',
             'onclick' => "openModal('confirmationModal')"
         ])
@@ -56,10 +56,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 保存モーダル -->
     @include('components::form.modal', [
         'id' => 'confirmationModal',
-        'title' => '更新の確認',
-        'message' => 'この内容でメンバー情報を更新しますか？',
-        'confirm_label' => '更新',
-        'cancel_label' => 'キャンセル',
+        'title' => __('common.update_confirmation'),
+        'message' => __('admin.settings.members.edit.confirm_message'),
+        'confirm_label' => __('common.update'),
+        'cancel_label' => __('common.cancel'),
         'form' => 'update-form',
     ])
 

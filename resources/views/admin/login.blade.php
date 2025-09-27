@@ -49,7 +49,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'id' => 'password',
             'type' => 'password',
             'name' => 'password',
-            'label' => __('admin.login.password'),
+            'label' => __('common.password'),
             'value' => '',
             'required' => true,
             'autofocus' => false,
@@ -71,7 +71,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @include('components.form.button', [
                 'type' => 'submit',
                 'variant' => 'primary',
-                'label' => __('admin.login.login_button'),
+                'label' => __('common.login_button'),
                 'class' => 'dark:focus:ring-offset-gray-800'
             ])
 

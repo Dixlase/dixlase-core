@@ -161,7 +161,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     type="submit"
                     class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-300"
                 >
-                    {{ __('admin.settings.plugins.install.upload_button') }}
+                    {{ __('common.upload') }}
                 </button>
             </div>
         </form>

@@ -71,106 +71,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <legend>{{ __('admin.settings.security.notification_enabled') }}</legend>
                 
-                <p>{{ __('admin.settings.security.notification_enabled_help') }}</p>
                 @include('components.form.hidden', [
                     'name' => 'notification_enabled',
-                    'value' => '0'
                 ])
                 
                 @include('components.form.radio-group', [
-                    'name' => 'notification_enabled',
+                    'name' => 'session_encrypt',
                     'options' => [
-                        1 => __('admin.settings.security.yes'),
-                        0 => __('admin.settings.security.no')
+                        1 => __('common.status.enabled'),
+                        0 => __('common.status.disabled')
                     ],
-                    'value' => $settings['notification_enabled'] ?? 0,
+                    'value' => old('session_encrypt', (int) $settings['session_encrypt']),
                     'class' => ''
                 ])
                 
-                
-            </fieldset>
-
-            <!-- 通知するログレベル -->
-            <fieldset x-data="{ notificationEnabled: {{ ($settings['notification_enabled'] ?? 0) ? 'true' : 'false' }} }" 
-                        x-init="
-                            // ラジオボタンの変更を監視
-                            document.querySelectorAll('input[name=notification_enabled]').forEach(radio => {
-                                radio.addEventListener('change', () => {
-                                    notificationEnabled = radio.value === '1';
-                                });
-                            });
-                        ">
-                <legend>{{ __('admin.settings.security.notification_log_levels') }}</legend>
-                
-                <p>{{ __('admin.settings.security.notification_log_levels_help') }}</p>
-                
-                <div class="mt-3" :class="{ 'opacity-50': !notificationEnabled }">
-                    @php
-                        $logLevelOptions = [];
-                        foreach (\App\Enums\LogLevel::getNotificationLevels() as $level) {
-                            $levelString = \App\Enums\LogLevel::from($level)->toString();
-                            $logLevelOptions[$level] = 'admin.settings.security.log_levels.' . $levelString;
-                        }
-                    @endphp
-                    
-                    @include('components.form.checkbox-group', [
-                        'name' => 'notification_log_levels',
-                        'options' => $logLevelOptions,
-                        'values' => $settings['notification_log_levels'] ?? \App\Enums\LogLevel::getDefaultNotificationLevels(),
-                        'disabled' => false,
-                        'class' => 'space-y-2',
-                        'flexDirection' => 'col'
-                    ])
-                </div>
-                
-            </fieldset>
-        </section>
-
-        <!-- セッション管理設定 -->
-        <section>
-            <h2>{{ __('admin.settings.security.session_management') }}</h2>
-            <p>{{ __('admin.settings.security.session_management_description') }}</p>
-
-            <!-- セッションドライバー -->
-            <fieldset>
-                <legend>{{ __('admin.settings.security.session_driver') }}</legend>
-                         
-                <p>{{ __('admin.settings.security.session_driver_help') }}</p>
-                @include('components.form.select', [
-                    'id' => 'session_driver',
-                    'name' => 'session_driver',
-                    'options' => [
-                        'file' => __('admin.settings.security.session_driver_file'),
-                        'database' => __('admin.settings.security.session_driver_database'),
-                        'redis' => __('admin.settings.security.session_driver_redis'),
-                        'memcached' => __('admin.settings.security.session_driver_memcached'),
-                        'cookie' => __('admin.settings.security.session_driver_cookie'),
-                        'array' => __('admin.settings.security.session_driver_array'),
-                    ],
-                    'value' => old('session_driver', $settings['session_driver']),
-                    'class' => 'mt-2'
-                ])
-                
-                
-            </fieldset>
-
-            <!-- セッション暗号化 -->
-            <fieldset>
-                <legend>{{ __('admin.settings.security.session_encrypt') }}</legend>
-                
-                <p>{{ __('admin.settings.security.session_encrypt_help') }}</p>
-                @include('components.form.hidden', [
-                    'name' => 'session_encrypt',
-                    'value' => '0'
-                ])
-                
                 @include('components.form.radio-group', [
-                    'name' => 'session_encrypt',
+                    'name' => 'pwned_password_check_enabled',
                     'options' => [
-                        1 => __('admin.settings.security.yes'),
-                        0 => __('admin.settings.security.no')
+                        1 => __('common.status.enabled'),
+                        0 => __('common.status.disabled')
                     ],
-                    'value' => old('session_encrypt', (int) $settings['session_encrypt']),
+                    'value' => old('pwned_password_check_enabled', (int) $settings['pwned_password_check_enabled']),
                     'class' => ''
                 ])
                 
@@ -541,12 +462,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 保存ボタンとモーダル -->
     @include('components::form.save', [
         'id' => 'confirmationModal',
-        'label' => __('admin.settings.security.save_button'),
+        'label' => __('common.save'),
         'onclick' => "validateBeforeSave()",
-        'title' => __('admin.settings.security.save_confirmation_title'),
-        'message' => __('admin.settings.security.save_confirmation_message'),
-        'confirm_label' => __('admin.settings.security.save_button'),
-        'cancel_label' => __('admin.settings.security.back_button'),
+        'title' => __('common.form.save_confirmation_title'),
+        'message' => __('common.form.save_confirmation_message'),
+        'confirm_label' => __('common.save'),
+        'cancel_label' => __('common.back'),
         'form' => 'security-settings-form',
     ])
 @endsection
