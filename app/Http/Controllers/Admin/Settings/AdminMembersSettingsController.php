@@ -528,7 +528,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         }
         
         $twoFactorGlobalOptions = collect(config('admin.global_two_factor_mode'))
-            ->mapWithKeys(fn ($value) => [$value => __('admin.two_factor_mode.options.' . $value)])
+            ->mapWithKeys(fn ($value) => [$value => str_replace(':account_type', __('common.account_types.member'), __('common.two_factor_mode.options.' . $value))])
             ->toArray();
         
         // 有効な二段階認証方法を取得（複数選択可能）

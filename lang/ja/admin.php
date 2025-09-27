@@ -60,47 +60,6 @@ return [
         ],
     ],
 
-    'common' => [
-        'save_confirmation' => '保存の確認',
-        'update_confirmation' => '更新の確認',
-        'create_confirmation' => '作成の確認',
-        'status' => [
-            'draft_description' => '下書き状態です。公開されません。',
-            'published_description' => '即座に公開されます。',
-            'scheduled_description' => '指定した日時に公開されます。',
-        ],
-    ],
-
-
-    'two_factor_mode' => [
-        'label' => '2段階認証の設定',
-        'options' => [
-            0 => '無効',
-            1 => '異なる端末/IP時のみ有効',
-            2 => '常に有効',
-            3 => 'メンバーのプロフィール設定を反映',
-        ]
-    ],
-    'two_factor_method' => [
-        'label' => '2段階認証方法',
-        'options' => [
-            'email' => 'メール認証',
-            'device' => 'デバイス認証',
-            'biometric' => '生体認証',
-            'use_profile_setting' => 'メンバーのプロフィール設定を反映',
-        ]
-    ],
-    'login_notification_mode' => [
-        'label' => 'ログイン通知の設定',
-        'options' => [
-            0 => '無効',
-            1 => '異なる端末/IP時のみ有効',
-            2 => '常に有効',
-            3 => 'メンバーのプロフィール設定を反映',
-        ]
-    ],
-
-
     'nav' => [
         'dashboard' => 'ダッシュボード',
         'front' => [
@@ -206,43 +165,11 @@ return [
     'profile' => [
         'title' => 'プロフィール',
         'heading' => 'プロフィール設定',
-        'basic_info' => '基本情報',
-        'password_settings' => 'パスワード設定',
-        'appearance_settings' => '外観設定',
-        'login_notification_settings' => 'ログイン通知設定',
-        'two_factor_settings' => '二段階認証設定',
-        'language' => '言語設定',
         'use_system_default' => 'システムデフォルトを使用',
         'language_help' => '個別の言語設定です。未選択の場合はシステムのデフォルト言語が使用されます。',
         'password_change_only' => 'パスワード（変更する場合のみ入力）',
-        'appearance' => '外観モード',
-        'appearance_mode' => '外観モード',
-        'login_notification' => 'ログイン通知',
-        'two_factor_authentication' => '二段階認証',
-        'two_factor_mode' => '二段階認証モード',
         'updated' => 'プロフィールを更新しました。',
         'login_notification_global_setting_help' => 'この設定はメンバー全体設定で制御されています。',
-        'two_factor_help' => '二段階認証を使用するタイミングを設定します。',
-        'two_factor_method' => '二段階認証方法',
-        'two_factor_method_help' => '二段階認証で使用する認証方法を選択してください。',
-        'two_factor_global_setting_fixed' => 'この設定は全体設定により固定されています。',
-        'two_factor_method_global_setting_fixed' => 'この認証方法は全体設定により固定されています。',
-        'available_methods' => '利用可能な方法',
-        'single_method_available' => '利用可能な方法',
-        'two_factor_method_help_single' => 'この認証方法がメンバー全体設定で有効になっています。',
-        'two_factor_method_help_multiple' => '使用する認証方法を選択してください。メンバー全体設定で有効にされている方法から選択できます。',
-        'two_factor_method_email_help' => '登録済みのメールアドレスに認証コードを送信します。',
-        'two_factor_method_device_help' => '登録済みのデバイスで認証を行います。',
-        'two_factor_method_biometric_help' => '指紋や顔認証などの生体認証を使用して認証を行います。',
-        'two_factor_mode_options' => [
-            'disabled' => '無効',
-            'only_new_device' => '異なる端末/IP時のみ有効',
-            'always' => '常に有効',
-        ],
-        'login_notification_mode' => 'ログイン通知の設定',
-        'login_notification_help' => 'ログイン通知を送信するタイミングを設定します。',
-        'two_factor_global_setting_fixed' => 'この設定はメンバー全体設定で制御されており、変更できません。',
-        'two_factor_method_global_setting_fixed' => 'この認証方法はメンバー全体設定で制御されており、変更できません。',
         'submit' => 'プロフィールを更新',
         'updated' => 'プロフィールが更新されました。',
         'confirm_title' => 'プロフィール更新の確認',
@@ -257,7 +184,6 @@ return [
             'site_settings' => 'サイト設定',
             'app_name' => 'アプリケーション名',
             'locale' => 'デフォルトの言語設定',
-            'timezone' => 'タイムゾーン',
             'admin_url' => '管理画面URL',
             'admin_url_help' => '管理画面にアクセスするためのURLパスを設定します。<br>本番環境では、「admin」など予測されやすいURLは避けることを推奨します。<br>注意！:管理画面URLを変更すると、一旦管理画面からログアウトされます。',
             'force_ssl' => 'SSL強制',
@@ -267,8 +193,6 @@ return [
             'maintenance_mode' => 'メンテナンスモード',
             'maintenance_message' => 'メンテナンス中の表示メッセージ',
             'maintenance_message_help' => '※メンテナンスモード有効時にフロント画面で表示されます。',
-            'save_confirmation_title' => '保存の確認',
-            'save_confirmation_message' => '変更内容を保存しますか？',
             'last_test_date' => '最終テスト日時',
             'mail_server_warning' => 'メールサーバー未設定',
             'mail_server_warning_message' => 'メールサーバーの設定とテストが未実行のため、メール送信機能が利用できません。',
@@ -520,8 +444,6 @@ return [
                 'v2_checkbox' => 'v2 チェックボックス',
                 'v2_invisible' => 'v2 非表示',
             ],
-            'save_confirmation_title' => '更新の確認',
-            'save_confirmation_message' => '変更内容を更新しますか？',
             // システムエラー通知設定
             'error_notification_settings' => 'システムエラー通知設定',
             'error_notification_settings_description' => 'システムエラーやアプリケーションの問題が発生した際の通知設定を行います。',
@@ -580,19 +502,10 @@ return [
                 ],
             ],
             'form' => [
-                'basic_info' => '基本情報',
-                'password_settings' => 'パスワード設定',
-                'security_settings' => 'セキュリティ設定',
-                'account_settings' => 'アカウント設定',
-                'notification_settings' => '通知設定',
-                'two_factor_settings' => '二段階認証設定',
-                'management_operations' => '管理操作',
                 'password_change_only' => 'パスワード（変更する場合のみ）',
                 'initial_admin_status_fixed' => '初期管理者のため、ステータスは「有効」に固定されています。',
                 'initial_admin_role_fixed' => '初期管理者のため、ロールは「スーパー管理者」に固定されています。',
-                'login_notification' => 'ログイン通知',
                 'mail_server_not_tested' => 'メールサーバーのテストが完了していません。基本設定でメールサーバーのテストを実行してください。',
-                'two_factor_mode' => '二段階認証モード',
                 'force_logout' => '強制ログアウト',
                 'force_logout_description' => 'このメンバーを強制的にログアウトします。現在のセッションが削除されます。',
                 'force_logout_button' => '強制ログアウト実行',
@@ -621,7 +534,7 @@ return [
                     'title' => 'メンバー削除確認',
                     'message' => ':name を完全に削除しますか？',
                     'warning' => 'この操作は取り消せません。',
-                    'confirm' => '削除実行',
+                    'confirm' => '削除',
                 ],
             ],
             'create' => [
@@ -634,16 +547,6 @@ return [
             'settings' => [
                 'heading' => 'メンバー全体設定',
                 'password_conditions' => 'パスワードの条件',
-                'login_notification_settings' => 'ログイン通知設定',
-                'two_factor_settings' => '二段階認証設定',
-                'two_factor_method' => [
-                    'options' => [
-                        0 => 'メール認証',
-                        1 => 'デバイス認証',
-                        2 => '生体認証',
-                        3 => 'プロフィール設定に従う',
-                    ],
-                ],
                 'enabled_two_factor_methods_label' => '有効な二段階認証方法',
                 'enabled_two_factor_methods_help' => '管理者が使用できる二段階認証方法を選択してください。複数選択可能です。',
                 'default_two_factor_method_label' => 'デフォルトの二段階認証方法',
@@ -654,10 +557,7 @@ return [
                     'title' => '全メンバー強制ログアウト確認',
                     'message' => '全てのメンバーを強制的にログアウトしますか？この操作により、現在ログイン中の全メンバーのセッションが削除されます。',
                     'confirm_label' => '強制ログアウト実行',
-                    'cancel_label' => 'キャンセル',
                 ],
-                'confirm_title' => '設定の更新',
-                'confirm_message' => 'この内容で設定を更新しますか？',
                 'updated' => 'メンバー全体設定を更新しました。',
                 'auto_selected_default_method' => 'デフォルトの二段階認証方法が自動的に「:method」に設定されました。',
                 'password_min_length' => 'パスワードの最小文字数',
@@ -856,6 +756,8 @@ return [
                 'front_error' => 'フロントエラー',
                 'clear' => 'ログ消去',
                 'clear_confirm' => 'ログファイルの内容を消去してもよろしいですか？この操作は元に戻せません。',
+                'admin_logs_label' => '管理画面ログ',
+                'front_logs_label' => 'フロントページログ',
                 'messages' => [
                     'download_error' => 'ログファイルが存在しません：:filename',
                     'clear_success' => 'ログファイルを消去しました：:filename',
@@ -935,9 +837,4 @@ return [
         ],
     ],
 
-    // 共通のログ関連
-    'logs' => [
-        'admin_logs_label' => '管理画面ログ',
-        'front_logs_label' => 'フロントページログ',
-    ],
 ];
