@@ -31,11 +31,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <caption class="sr-only">{{ __('admin.settings.plugins.index.table.caption') }}</caption>
                 <thead>
                     <tr>
+                        <th>{{ __('common.id') }}</th>
                         <th>{{ __('admin.settings.plugins.index.table.name') }}</th>
-                        <th>{{ __('common.description') }}</th>
-                        <th>{{ __('common.version') }}</th>
-                        <th>{{ __('common.author') }}</th>
-                        <th>{{ __('common.license') }}</th>
+                        <th>{{ __('common.details') }}</th>
                         <th>{{ __('common.status') }}</th>
                         <th>{{ __('common.actions') }}</th>
                     </tr>
@@ -43,41 +41,46 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <tbody>
                     @forelse ($plugins as $plugin)
                         <tr>
+                            <td data-label="{{ __('admin.settings.plugins.index.table.id') }}">
+                                <span class="text-sm font-mono px-2 py-1 rounded">{{ $plugin->id }}</span>
+                            </td>
                             <td data-label="{{ __('admin.settings.plugins.index.table.name') }}">
                                 <div>
                                     <strong class="text-lg">{{ $plugin->translated_name }}</strong>
-                                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">ID: {{ $plugin->id }}</div>
+                                    <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ $plugin->translated_description }}</div>
                                 </div>
                             </td>
-                            <td data-label="{{ __('common.description') }}">
-                                <span class="text-sm text-gray-600 dark:text-gray-400">{{ $plugin->translated_description }}</span>
-                            </td>
-                            <td data-label="{{ __('common.version') }}">
-                                <span class="text-sm font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">{{ $plugin->version }}</span>
-                            </td>
-                            <td data-label="{{ __('common.author') }}">
-                                <div class="text-sm">
-                                    @if($plugin->author)
-                                        <div class="font-medium">{{ $plugin->author }}</div>
-                                        @if($plugin->email)
-                                            <div class="text-xs text-gray-500 dark:text-gray-400">{{ $plugin->email }}</div>
+                            <td data-label="{{ __('common.details') }}">
+                                <div class="text-sm space-y-1">
+                                    <!-- 作者情報 -->
+                                    <div class="mb-2">
+                                        <span class="font-medium text-gray-700 dark:text-gray-300">{{ __('common.author') }}:</span>
+                                        @if($plugin->author)
+                                            <span>{{ $plugin->author }}</span>
+                                            @if($plugin->email)
+                                                <div class="text-xs text-gray-500 dark:text-gray-400">{{ $plugin->email }}</div>
+                                            @endif
+                                            @if($plugin->web)
+                                                <div class="text-xs">
+                                                    <a href="{{ $plugin->web }}" target="_blank" class="text-blue-600 hover:text-blue-800 dark:text-blue-400">{{ $plugin->web }}</a>
+                                                </div>
+                                            @endif
+                                        @else
+                                            <span class="text-gray-400">{{ __('common.unknown') }}</span>
                                         @endif
-                                        @if($plugin->web)
-                                            <div class="text-xs">
-                                                <a href="{{ $plugin->web }}" target="_blank" class="text-blue-600 hover:text-blue-800 dark:text-blue-400">{{ $plugin->web }}</a>
-                                            </div>
+                                    </div>
+                                    
+                                    <!-- バージョン情報 -->
+                                    <div class="inline-block font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs">{{ $plugin->version }}</div>
+                                    <!-- ライセンス情報 -->
+                                    <div>
+                                        @if($plugin->license)
+                                            <div class="inline-block bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded text-xs">{{ $plugin->license }}</div>
+                                        @else
+                                            <div class="inline-block text-gray-400">{{ __('common.unknown') }}</div>
                                         @endif
-                                    @else
-                                        <span class="text-gray-400">{{ __('common.unknown') }}</span>
-                                    @endif
+                                    </div>
                                 </div>
-                            </td>
-                            <td data-label="{{ __('common.license') }}">
-                                @if($plugin->license)
-                                    <span class="text-sm bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded">{{ $plugin->license }}</span>
-                                @else
-                                    <span class="text-gray-400">{{ __('common.unknown') }}</span>
-                                @endif
                             </td>
                             <td data-label="{{ __('common.status') }}">
                                 <span class="status-badge status-badge--{{ $plugin->status === 1 ? 'enabled' : 'disabled' }}">
