@@ -41,7 +41,6 @@ return new class extends Migration
             $table->string('directory'); // プラグインディレクトリ名
             $table->string('slug')->unique(); // スラッグ名（一意）
             $table->string('namespace'); // プラグインの名前空間
-            $table->text('description')->nullable(); // プラグインの説明
             $table->string('license')->nullable(); // ライセンス
             $table->string('author')->nullable(); // 作者
             $table->string('email')->nullable(); // 作者のメール

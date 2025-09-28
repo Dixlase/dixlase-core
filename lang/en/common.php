@@ -110,6 +110,10 @@ return [
     'name' => 'Name',
     'title' => 'Title',
     'description' => 'Description',
+    'version' => 'Version',
+    'author' => 'Author',
+    'license' => 'License',
+    'unknown' => 'Unknown',
     'value' => 'Value',
     'status' => 'Status',
 
