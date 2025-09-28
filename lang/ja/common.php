@@ -115,6 +115,7 @@ return [
     'name' => '名前',
     'title' => 'タイトル',
     'description' => '説明',
+    'details' => '詳細',
     'version' => 'バージョン',
     'author' => '作者',
     'license' => 'ライセンス',

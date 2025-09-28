@@ -138,6 +138,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     'xModel' => 'localTheme'
                 ])
             </fieldset>
+        </section>
 
         <!-- ログイン通知設定 -->
         @php
