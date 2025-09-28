@@ -99,10 +99,17 @@ class AdminMediaController extends AdminLoggedInController
 
     public function delete(Media $media)
     {
-
         $disk = config('admin.storageDisk', 'public');
         $mediaPath = config('admin.mediaPath', 'media');
-        $filePath = $mediaPath . '/' . $media->path;
+        
+        // pathフィールドがファイル名のみの場合とフルパスの場合を考慮
+        if (strpos($media->path, $mediaPath) === 0) {
+            // フルパスが保存されている場合
+            $filePath = $media->path;
+        } else {
+            // ファイル名のみが保存されている場合
+            $filePath = $mediaPath . '/' . $media->path;
+        }
 
         if (Storage::disk($disk)->exists($filePath)) {
             Storage::disk($disk)->delete($filePath);
@@ -117,7 +124,15 @@ class AdminMediaController extends AdminLoggedInController
     {
         $disk = config('admin.storageDisk', 'public');
         $mediaPath = config('admin.mediaPath', 'media');
-        $filePath = $mediaPath . '/' . $media->path;
+        
+        // pathフィールドがファイル名のみの場合とフルパスの場合を考慮
+        if (strpos($media->path, $mediaPath) === 0) {
+            // フルパスが保存されている場合
+            $filePath = $media->path;
+        } else {
+            // ファイル名のみが保存されている場合
+            $filePath = $mediaPath . '/' . $media->path;
+        }
 
         if (!Storage::disk($disk)->exists($filePath)) {
             abort(404, 'ファイルが存在しません');
@@ -131,7 +146,15 @@ class AdminMediaController extends AdminLoggedInController
         // メンバー情報を事前に読み込み
         $media->load('member');
         
-        $filePath = storage_path('app/' . config('admin.storageDisk') . '/' . config('admin.mediaPath') . '/' . $media->path);
+        // pathフィールドがファイル名のみの場合とフルパスの場合を考慮
+        $mediaPath = config('admin.mediaPath', 'media');
+        if (strpos($media->path, $mediaPath) === 0) {
+            // フルパスが保存されている場合
+            $filePath = storage_path('app/' . config('admin.storageDisk') . '/' . $media->path);
+        } else {
+            // ファイル名のみが保存されている場合
+            $filePath = storage_path('app/' . config('admin.storageDisk') . '/' . $mediaPath . '/' . $media->path);
+        }
 
         if (!file_exists($filePath)) {
             abort(404, 'ファイルが存在しません');
