@@ -50,6 +50,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         $plugin_parts = explode('.', $plugin_route);
                         $is_open = isset($plugin_parts[1]) && $plugin_parts[1] === $key;
                     }
+                    
+                    // プラグインの子項目の場合の特別判定
+                    if (!$is_open && isset($item['children'])) {
+                        foreach ($item['children'] as $child_item) {
+                            if (isset($child_item['route']) && $child_item['route'] === $route_name) {
+                                $is_open = true;
+                                break;
+                            }
+                        }
+                    }
                 } else {
                     // コアルートの場合: admin.controller.action
                     $is_open = isset($current_route_parts[1]) && $current_route_parts[1] === $key;
