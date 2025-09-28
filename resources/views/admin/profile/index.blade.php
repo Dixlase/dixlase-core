@@ -26,7 +26,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @csrf
 
         <!-- 基本情報 -->
-        <section>
+        <section class="transition-colors-unified">
             <h2>{{ __('common.basic_info') }}</h2>
             
             <fieldset>
@@ -83,7 +83,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </section>
 
         <!-- パスワード設定 -->
-        <section>
+        <section class="transition-colors-unified">
             <h2>{{ __('common.password_settings') }}</h2>
             
             <fieldset>
@@ -107,7 +107,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             $appearanceValue = old('appearance', (string) ($member->appearance->value ?? 0));
         @endphp
 
-        <section x-data="{
+        <section class="transition-colors-unified" x-data="{
             localTheme: '{{ $appearanceValue }}',
             savedTheme: '{{ $appearanceValue }}',
             applyLocalTheme() {
@@ -122,6 +122,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         }" x-init="
             // 初期化時に保存された値でDOMをリセット
             resetToSavedTheme();
+            $watch('localTheme', () => applyLocalTheme());
         " data-profile-theme>
             <h2>{{ __('common.appearance_settings') }}</h2>
             
@@ -157,7 +158,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- ログイン通知設定 -->
         @unless($hideLoginNotificationSection)
-            <section>
+            <section class="transition-colors-unified">
                 <h2>{{ __('common.login_notification_mode.label') }}</h2>
                 
                 @if($showLoginNotificationSettings)
@@ -194,7 +195,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- 二段階認証設定 -->
         @if($force2fa === \App\Enums\TwoFactorMode::UseProfileSetting->value || $currentGlobalTwoFactorMode)
-            <section>
+            <section class="transition-colors-unified">
                 <h2>{{ __('common.two_factor_mode.label') }}</h2>
                 
                 @if($force2fa === \App\Enums\TwoFactorMode::UseProfileSetting->value)
@@ -222,56 +223,57 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
 
         <!-- 二段階認証方法設定 -->
-        @if($showMethodSelection && !empty($availableMethodOptions))
-            <fieldset>
-                <legend>{{ __('common.two_factor_method.label') }}</legend>
-                @php
-                    // 現在の認証方法が有効な方法に含まれているか確認
-                    $currentMethodValid = array_key_exists($currentTwoFactorMethod, $availableMethodOptions);
-                    // デフォルトの認証方法を取得
-                    $defaultMethod = $defaultTwoFactorMethod ?? array_key_first($availableMethodOptions);
-                    // 現在の認証方法を決定（無効な場合はデフォルトを使用）
-                    $currentMethod = $currentMethodValid ? $currentTwoFactorMethod : $defaultMethod;
-                @endphp
+            @if($showMethodSelection && !empty($availableMethodOptions))
+                <fieldset>
+                    <legend>{{ __('common.two_factor_method.label') }}</legend>
+                    @php
+                        // 現在の認証方法が有効な方法に含まれているか確認
+                        $currentMethodValid = array_key_exists($currentTwoFactorMethod, $availableMethodOptions);
+                        // デフォルトの認証方法を取得
+                        $defaultMethod = $defaultTwoFactorMethod ?? array_key_first($availableMethodOptions);
+                        // 現在の認証方法を決定（無効な場合はデフォルトを使用）
+                        $currentMethod = $currentMethodValid ? $currentTwoFactorMethod : $defaultMethod;
+                    @endphp
 
-                @if(count($availableMethodOptions) > 1)
-                    @include('components.form.radio-group', [
-                        'name' => 'two_factor_method',
-                        'options' => $availableMethodOptions,
-                        'value' => $currentMethod,
-                        'disabled' => !$showMethodSelection
-                    ])
-                @else
+                    @if(count($availableMethodOptions) > 1)
+                        @include('components.form.radio-group', [
+                            'name' => 'two_factor_method',
+                            'options' => $availableMethodOptions,
+                            'value' => $currentMethod,
+                            'disabled' => !$showMethodSelection
+                        ])
+                    @else
+                        <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
+                            <p class="text-sm text-gray-700 dark:text-gray-300">
+                                {{ reset($availableMethodOptions) }}
+                            </p>
+                            <input type="hidden" name="two_factor_method" value="{{ key($availableMethodOptions) }}">
+                        </div>
+                    @endif
+
+                    @error('two_factor_method')
+                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                    @enderror
+
+                    <p>
+                        {{ count($availableMethodOptions) > 1 ? 
+                            str_replace(':account_type', __('common.account_types.member'), __('common.two_factor_method_help.multiple')) : 
+                            str_replace(':account_type', __('common.account_types.member'), __('common.two_factor_method_help.single')) }}
+                    </p>
+                </fieldset>
+            @elseif($currentGlobalTwoFactorMode && !empty($availableMethodOptions))
+                <fieldset>
+                    <legend>{{ __('common.two_factor_method.label') }}</legend>
                     <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
                         <p class="text-sm text-gray-700 dark:text-gray-300">
-                            {{ reset($availableMethodOptions) }}
+                            {{ __('common.two_factor_method_global_setting_fixed') }}
                         </p>
-                        <input type="hidden" name="two_factor_method" value="{{ key($availableMethodOptions) }}">
                     </div>
-                @endif
-
-                @error('two_factor_method')
-                    <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                @enderror
-
-                <p>
-                    {{ count($availableMethodOptions) > 1 ? 
-                        str_replace(':account_type', __('common.account_types.member'), __('common.two_factor_method_help.multiple')) : 
-                        str_replace(':account_type', __('common.account_types.member'), __('common.two_factor_method_help.single')) }}
-                </p>
-            </fieldset>
-        @elseif($currentGlobalTwoFactorMode && !empty($availableMethodOptions))
-            <fieldset>
-                <legend>{{ __('common.two_factor_method.label') }}</legend>
-                <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
-                    <p class="text-sm text-gray-700 dark:text-gray-300">
-                        {{ __('common.two_factor_method_global_setting_fixed') }}
-                    </p>
-                </div>
-            </fieldset>
+                </fieldset>
+            @endif
+            
         @endif
-            </section>
-        @endif
+        </section>
     </form>
 
 @endsection
@@ -290,6 +292,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('scripts')
+<!-- プロフィールページ専用のフォーム要素トランジション -->
+<style>
+    #profile-form input, 
+    #profile-form textarea, 
+    #profile-form select, 
+    #profile-form button, 
+    #profile-form fieldset, 
+    #profile-form legend {
+        transition: border-color var(--transition-duration) ease-in-out,
+                   box-shadow var(--transition-duration) ease-in-out,
+                   background-color var(--transition-duration) ease-in-out,
+                   color var(--transition-duration) ease-in-out;
+    }
+</style>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // フォーム送信成功時にグローバルテーマストアを更新

@@ -45,7 +45,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {!! load_active_assets() !!}
 
     </head>
-    <body  class="admin font-sans antialiased transition-colors duration-300 {{ config('appearance.appearance_class.layout.body') }}">
+    <body  class="admin font-sans antialiased transition-colors-unified {{ config('appearance.appearance_class.layout.body') }}">
         <div class="min-h-screen">
             <!-- Header -->
             @include('admin.partials.header', [
@@ -56,15 +56,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <div class="min-h-screen flex pt-16">
                  <!-- Navigation Sidebar (PC only) -->
-                <aside class="md:fixed overflow-y-auto md:h-full hidden sm:block w-64 flex-shrink-0 bg-white dark:bg-black text-gray-900 border-r border-gray-300 dark:text-white dark:border-r dark:border-gray-700 {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}" role="navigation" aria-label="Main navigation">
+                <aside class="md:fixed overflow-y-auto md:h-full hidden sm:block w-64 flex-shrink-0 bg-white dark:bg-black text-gray-900 border-r border-gray-300 dark:text-white dark:border-r dark:border-gray-700 {{ empty($transitionEnabled) ? '' : 'transition-colors-unified' }}" role="navigation" aria-label="Main navigation">
                     @include('admin.partials.sidebar', ['transitionEnabled' => $transitionEnabled ?? null])
                 </aside>
 
                 <!-- Main Content Area -->
-                <main class="ml-0 md:ml-64 md:pl-4 lg:pl-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white" role="main">
+                <main class="ml-0 md:ml-64 md:pl-4 lg:pl-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white {{ empty($transitionEnabled) ? '' : 'transition-colors-unified' }}" role="main">
 
                     <!-- Page Header -->
-                    <header class="mx-auto py-6 px-4 sm:px-6 lg:px-8 mb-10 bg-white text-gray-800 border-b border-gray-300 dark:border-gray-700 dark:bg-black dark:text-white">
+                    <header class="mx-auto py-6 px-4 sm:px-6 lg:px-8 mb-10 bg-white text-gray-800 border-b border-gray-300 dark:border-gray-700 dark:bg-black dark:text-white {{ empty($transitionEnabled) ? '' : 'transition-colors-unified' }}">
                         <h1 class="font-semibold text-xl leading-tight text-gray-800 dark:text-white">
                             {{ __($heading) }}
                         </h1>
