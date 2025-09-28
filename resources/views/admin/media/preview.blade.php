@@ -29,10 +29,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <p class="text-gray-700">{{ __('admin.media.preview.no_preview') }}</p>
             @endif
 
-            <p class="mt-4"><strong>{{ __('admin.media.preview.file_name') }}</strong> {{ $media->name }}</p>
-            <p><strong>{{ __('admin.media.preview.file_type') }}</strong> {{ $media->type }}</p>
-            <p><strong>{{ __('admin.media.preview.upload_date') }}</strong> {{ $media->created_at->format('Y-m-d H:i:s') }}</p>
-            <p><strong>{{ __('admin.media.preview.uploaded_by') }}</strong> {{ $media->member->name ?? __('admin.media.preview.unknown') }}</p>
+            <p class="mt-4"><strong>{{ __('common.file_name') }}</strong> {{ $media->name }}</p>
+            <p><strong>{{ __('common.file_type') }}</strong> {{ $media->type }}</p>
+            <p><strong>{{ __('common.upload_date') }}</strong> {{ $media->created_at->format('Y-m-d H:i:s') }}</p>
+            <p><strong>{{ __('common.uploaded_by') }}</strong> {{ $media->member->name ?? __('admin.media.preview.unknown') }}</p>
             
             <!-- メディアURL表示 -->
             <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
@@ -43,7 +43,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                            readonly>
                     <button onclick="copyToClipboard()" 
                             class="bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition dark:bg-green-600 dark:hover:bg-green-700 flex items-center gap-2">
-                        <i class="fas fa-copy"></i> {{ __('admin.media.preview.copy') }}
+                        <i class="fas fa-copy"></i> {{ __('common.copy') }}
                     </button>
                 </div>
                 <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">{{ __('admin.media.preview.url_description') }}</p>
@@ -51,12 +51,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <div class="flex items-center gap-2 mt-4 justify-between">
                 <a href="{{ route('admin.media.index') }}" class="bg-gray-500 text-white py-2 px-4 rounded flex items-center gap-2 hover:bg-gray-600 transition dark:bg-gray-600 dark:hover:bg-gray-700">
-                    <i class="fas fa-arrow-left"></i> {{ __('admin.media.preview.back') }}
+                    <i class="fas fa-arrow-left"></i> {{ __('common.back') }}
                 </a>
 
                 <div class="flex gap-2">
                     <a href="{{ route('admin.media.download', $media->id) }}" class="bg-blue-500 text-white py-2 px-4 rounded flex items-center gap-2 hover:bg-blue-600 transition dark:bg-blue-600 dark:hover:bg-blue-700">
-                        <i class="fas fa-download"></i> {{ __('admin.media.preview.download') }}
+                        <i class="fas fa-download"></i> {{ __('common.download') }}
                     </a>
 
                     <form action="{{ route('admin.media.delete', $media->id) }}" method="POST" class="inline">
@@ -64,7 +64,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         @method('DELETE')
                         <!-- 削除ボタン -->
                         <button type="button" onclick="openModal('deleteModal')" class="bg-red-500 text-white py-2 px-4 rounded flex items-center gap-2 hover:bg-red-600 transition dark:bg-red-600 dark:hover:bg-red-700">
-                            <i class="fas fa-trash-alt"></i> {{ __('admin.media.preview.delete') }}
+                            <i class="fas fa-trash-alt"></i> {{ __('common.delete') }}
                         </button>
 
                         <!-- 削除モーダル -->
@@ -72,8 +72,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             'id' => 'deleteModal',
                             'title' => __('admin.media.preview.delete_confirmation'),
                             'message' => __('admin.media.preview.delete_message'),
-                            'confirm_label' => __('admin.media.preview.delete'),
-                            'cancel_label' => __('admin.media.preview.cancel'),
+                            'confirm_label' => __('common.delete'),
+                            'cancel_label' => __('common.cancel'),
                         ])
                     </form>
 
@@ -90,19 +90,17 @@ function copyToClipboard() {
     const copyButton = event.target.closest('button');
     const originalText = copyButton.innerHTML;
     
-    // URLをクリップボードにコピー
     urlInput.select();
-    urlInput.setSelectionRange(0, 99999); // モバイル対応
+    urlInput.setSelectionRange(0, urlInput.value.length); // モバイル対応
     
     navigator.clipboard.writeText(urlInput.value).then(function() {
         // 成功時のフィードバック
-        copyButton.innerHTML = '<i class="fas fa-check"></i> {{ __('admin.media.preview.copied') }}';
+        copyButton.innerHTML = '<i class="fas fa-check"></i> {{ __('common.copied') }}';
         copyButton.classList.remove('bg-green-500', 'hover:bg-green-600', 'dark:bg-green-600', 'dark:hover:bg-green-700');
         copyButton.classList.add('bg-blue-500', 'hover:bg-blue-600', 'dark:bg-blue-600', 'dark:hover:bg-blue-700');
         
         // 2秒後に元に戻す
         setTimeout(function() {
-            copyButton.innerHTML = originalText;
             copyButton.classList.remove('bg-blue-500', 'hover:bg-blue-600', 'dark:bg-blue-600', 'dark:hover:bg-blue-700');
             copyButton.classList.add('bg-green-500', 'hover:bg-green-600', 'dark:bg-green-600', 'dark:hover:bg-green-700');
         }, 2000);
@@ -110,7 +108,7 @@ function copyToClipboard() {
         // エラー時のフォールバック（古いブラウザ対応）
         try {
             document.execCommand('copy');
-            copyButton.innerHTML = '<i class="fas fa-check"></i> {{ __('admin.media.preview.copied') }}';
+            copyButton.innerHTML = '<i class="fas fa-check"></i> {{ __('common.copied') }}';
             setTimeout(function() {
                 copyButton.innerHTML = originalText;
             }, 2000);

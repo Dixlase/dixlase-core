@@ -56,6 +56,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
 
         <div class="media-card__actions">
+            <button type="button" 
+                    class="action-btn action-btn--copy"
+                    title="{{ __('common.copy') }} URL" 
+                    aria-label="{{ __('common.copy') }} URL: {{ $file->name }}"
+                    onclick="copyMediaUrl('{{ asset('storage/' . $mediaPath . '/' . $file->path) }}', this)">
+                <i class="fas fa-copy" aria-hidden="true"></i>
+            </button>
+
             <a href="{{ route('admin.media.download', $file->id) }}" 
                class="action-btn action-btn--download"
                title="{{ __('admin.media.index.download') }}" 
