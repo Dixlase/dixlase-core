@@ -434,4 +434,154 @@ trait PluginLoaderTrait
 
         config([$configKey => $newConfig]);
     }
+
+    /**
+     * 管理画面のナビゲーション設定をマージ
+     * 
+     * @param string $pluginName プラグイン名（デバッグ用）
+     * @param string $configPath 設定ファイルのパス
+     */
+    protected function mergeAdminNavigation(string $pluginName = 'Unknown', string $configPath = null): void
+    {
+        \Log::info("=== {$pluginName}: mergeAdminNavigation START ===", [
+            'timestamp' => now()->toDateTimeString(),
+            'config_path' => $configPath
+        ]);
+        
+        $configFile = $configPath ?? __DIR__ . '/../../config/admin.php';
+        
+        if (!file_exists($configFile)) {
+            \Log::info("{$pluginName}: Config file not found", ['path' => $configFile]);
+            return;
+        }
+
+        $pluginConfig = require $configFile;
+        
+        if (!isset($pluginConfig['nav']) || !is_array($pluginConfig['nav'])) {
+            \Log::info("{$pluginName}: No nav config found");
+            return;
+        }
+
+        // 既存のナビゲーション設定を取得
+        $existingNav = config('admin.nav', []);
+        
+        // コアの設定が正しく読み込まれているかチェック
+        if (!isset($existingNav['settings']['children']) || 
+            !isset($existingNav['settings']['children']['base']) ||
+            !isset($existingNav['settings']['children']['security'])) {
+            
+            \Log::warning("{$pluginName}: Core admin.nav settings missing, forcing reload from config file");
+            
+            // コアの設定ファイルを直接読み込み
+            $coreConfigPath = config_path('admin.php');
+            if (file_exists($coreConfigPath)) {
+                $coreConfig = require $coreConfigPath;
+                if (isset($coreConfig['nav'])) {
+                    // コアの設定で初期化
+                    $existingNav = $coreConfig['nav'];
+                    config(['admin.nav' => $existingNav]);
+                    \Log::info("{$pluginName}: Core admin.nav settings reloaded", [
+                        'core_settings_children' => isset($existingNav['settings']['children']) ? array_keys($existingNav['settings']['children']) : 'none'
+                    ]);
+                }
+            }
+        }
+        
+        \Log::info("{$pluginName}: Before merge", [
+            'existing_nav_keys' => array_keys($existingNav),
+            'plugin_nav_keys' => array_keys($pluginConfig['nav']),
+            'existing_nav_full' => $existingNav,
+            'plugin_nav_full' => $pluginConfig['nav'],
+            'existing_settings' => isset($existingNav['settings']) ? [
+                'full_structure' => $existingNav['settings'],
+                'keys' => array_keys($existingNav['settings']),
+                'children' => isset($existingNav['settings']['children']) ? array_keys($existingNav['settings']['children']) : 'no_children'
+            ] : 'not_exists'
+        ]);
+        
+        // プラグインのナビゲーション設定をマージ
+        foreach ($pluginConfig['nav'] as $key => $value) {
+            \Log::info("{$pluginName}: Processing nav key '{$key}'", [
+                'has_children' => isset($value['children']),
+                'existing_key_exists' => isset($existingNav[$key])
+            ]);
+            
+            // _insert_after や _insert_before は無視して直接追加
+            unset($value['_insert_after'], $value['_insert_before']);
+            
+            // 既存の設定がある場合は子項目をマージ
+            if (isset($existingNav[$key])) {
+                \Log::info("{$pluginName}: Merging with existing key '{$key}'", [
+                    'existing_structure' => $existingNav[$key],
+                    'plugin_structure' => $value
+                ]);
+                
+                // 既存の設定を保持しつつ、子項目をマージ
+                if (isset($value['children']) && isset($existingNav[$key]['children'])) {
+                    \Log::info("{$pluginName}: Merging children for '{$key}'", [
+                        'existing_children_keys' => array_keys($existingNav[$key]['children']),
+                        'existing_children_full' => $existingNav[$key]['children'],
+                        'new_children_keys' => array_keys($value['children']),
+                        'new_children_full' => $value['children']
+                    ]);
+                    $existingNav[$key]['children'] = array_merge($existingNav[$key]['children'], $value['children']);
+                    \Log::info("{$pluginName}: After children merge for '{$key}'", [
+                        'merged_children' => $existingNav[$key]['children']
+                    ]);
+                } elseif (isset($value['children'])) {
+                    \Log::info("{$pluginName}: Adding children to existing '{$key}' (no existing children)", [
+                        'new_children' => array_keys($value['children']),
+                        'existing_had_children' => isset($existingNav[$key]['children'])
+                    ]);
+                    $existingNav[$key]['children'] = $value['children'];
+                }
+                
+                // その他のプロパティは既存の設定を優先（プラグインでは上書きしない）
+                foreach ($value as $prop => $propValue) {
+                    if ($prop !== 'children') {
+                        \Log::info("{$pluginName}: Skipping property '{$prop}' for '{$key}' (existing setting preserved)");
+                    }
+                }
+            } else {
+                \Log::info("{$pluginName}: Adding new nav key '{$key}'");
+                // 新しい項目として追加
+                $existingNav[$key] = $value;
+            }
+        }
+        
+        \Log::info("{$pluginName}: After merge", [
+            'final_nav_keys' => array_keys($existingNav),
+            'final_nav_full' => $existingNav,
+            'final_settings' => isset($existingNav['settings']) ? [
+                'full_structure' => $existingNav['settings'],
+                'keys' => array_keys($existingNav['settings']),
+                'children' => isset($existingNav['settings']['children']) ? [
+                    'keys' => array_keys($existingNav['settings']['children']),
+                    'full' => $existingNav['settings']['children']
+                ] : 'no_children'
+            ] : 'not_exists'
+        ]);
+        
+        // 設定を更新
+        config(['admin.nav' => $existingNav]);
+        
+        // マージ後の全体構造を詳細出力
+        \Log::info("=== {$pluginName}: COMPLETE NAVIGATION STRUCTURE AFTER MERGE ===", [
+            'timestamp' => now()->toDateTimeString(),
+            'complete_structure' => $existingNav
+        ]);
+        
+        // 特に設定項目の詳細を出力
+        if (isset($existingNav['settings'])) {
+            \Log::info("=== {$pluginName}: SETTINGS SECTION DETAIL ===", [
+                'settings_full' => $existingNav['settings'],
+                'settings_children_count' => isset($existingNav['settings']['children']) ? count($existingNav['settings']['children']) : 0,
+                'settings_children_keys' => isset($existingNav['settings']['children']) ? array_keys($existingNav['settings']['children']) : []
+            ]);
+        }
+        
+        \Log::info("=== {$pluginName}: mergeAdminNavigation END ===", [
+            'timestamp' => now()->toDateTimeString()
+        ]);
+    }
 }
