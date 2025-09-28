@@ -353,20 +353,31 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             return false; // 無効なプラグインは設定画面なし
         }
 
-        // ルート名の規則に基づいてチェック
-        $settingsRouteName = 'admin.' . strtolower(str_replace(['Dixlase', 'Plugin'], '', $plugin->directory)) . '.settings';
+        // プラグインの設定ファイルから設定画面ルート名を取得
+        $configPath = base_path("plugins/{$plugin->directory}/config/admin.php");
         
-        // 特定のプラグインの設定ルートをチェック（セキュアなadminプレフィックス付き）
-        $knownSettingsRoutes = [
-            'DixlaseInquiry' => 'admin.dixlase-inquiry::admin.inquiries.settings',
-            'DixlasePages' => 'admin.dixlase-pages::admin.pages.settings',
-        ];
-
-        $routeName = $knownSettingsRoutes[$plugin->directory] ?? $settingsRouteName;
+        if (!file_exists($configPath)) {
+            return false;
+        }
 
         try {
-            return \Route::has($routeName);
+            $pluginConfig = require $configPath;
+            $settingsRoute = $pluginConfig['settings_route'] ?? null;
+            
+            \Log::info('Plugin settings check', [
+                'plugin' => $plugin->directory,
+                'configPath' => $configPath,
+                'settingsRoute' => $settingsRoute,
+                'routeExists' => $settingsRoute ? \Route::has($settingsRoute) : false
+            ]);
+            
+            // settings_routeが定義されており、実際にルートが存在するかチェック
+            return !empty($settingsRoute) && \Route::has($settingsRoute);
         } catch (\Exception $e) {
+            \Log::error('Plugin settings check failed', [
+                'plugin' => $plugin->directory,
+                'error' => $e->getMessage()
+            ]);
             return false;
         }
     }
@@ -376,26 +387,21 @@ class AdminPluginsSettingsController extends AdminLoggedInController
      */
     public function getPluginSettingsUrl($plugin)
     {
-        $knownSettingsRoutes = [
-            'DixlaseInquiry' => 'admin.dixlase-inquiry::admin.inquiries.settings',
-            'DixlasePages' => 'admin.dixlase-pages::admin.pages.settings',
-        ];
-
-        $routeName = $knownSettingsRoutes[$plugin->directory] ?? null;
+        // プラグインの設定ファイルから設定画面ルート名を取得
+        $configPath = base_path("plugins/{$plugin->directory}/config/admin.php");
+        $routeName = null;
+        
+        if (file_exists($configPath)) {
+            $pluginConfig = require $configPath;
+            $routeName = $pluginConfig['settings_route'] ?? null;
+        }
 
         \Log::info('Plugin settings URL generation', [
             'plugin' => $plugin->directory,
+            'configPath' => $configPath,
+            'configExists' => file_exists($configPath),
             'routeName' => $routeName,
-            'routeExists' => $routeName ? \Route::has($routeName) : false,
-            'allRoutes' => collect(\Route::getRoutes())->filter(function($route) {
-                return str_contains($route->getName() ?? '', 'inquiries');
-            })->map(function($route) {
-                return [
-                    'name' => $route->getName(),
-                    'uri' => $route->uri(),
-                    'methods' => $route->methods()
-                ];
-            })->values()->toArray()
+            'routeExists' => $routeName ? \Route::has($routeName) : false
         ]);
 
         if ($routeName && \Route::has($routeName)) {
