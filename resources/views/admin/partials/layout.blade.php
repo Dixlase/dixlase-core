@@ -158,6 +158,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         </script>
 
+        {{-- Page-specific styles --}}
+        @hasSection('styles')
+            @yield('styles')
+        @endif
+        
+        {{-- Component styles from @push --}}
+        @stack('styles')
+
         {{-- Page-specific scripts --}}
         @hasSection('scripts')
             @yield('scripts')

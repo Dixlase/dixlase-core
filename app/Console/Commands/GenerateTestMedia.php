@@ -6,19 +6,20 @@ use App\Models\MemberLoginAttempt;
 use App\Models\TrustedDevice;
 use App\Models\MembersTwoFactorToken;
 use App\Models\Member;
+use App\Models\Media;
 use Database\Factories\MemberPasswordResetTokenFactory;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
-class GenerateTestData extends Command
+class GenerateTestMedia extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'admin:generate-test-data 
-                            {--type=all : Type of test data to generate (all, login_attempts, password_reset_tokens, trusted_devices, two_factor_tokens, cache, sessions)}
+    protected $signature = 'admin:generate-test-media 
+                            {--type=all : Type of test data to generate (all, login_attempts, password_reset_tokens, trusted_devices, two_factor_tokens, cache, sessions, media)}
                             {--count=50 : Number of records to generate}
                             {--old-ratio=0.3 : Ratio of old records (for cleanup testing)}';
 
@@ -27,7 +28,7 @@ class GenerateTestData extends Command
      *
      * @var string
      */
-    protected $description = 'Generate test data for database cleanup functionality testing';
+    protected $description = 'Generate test media files and other test data for development';
 
     /**
      * Execute the console command.
@@ -51,6 +52,7 @@ class GenerateTestData extends Command
                 $this->generateTwoFactorTokens($count, $oldRatio);
                 $this->generateCacheData($count);
                 $this->generateSessionData($count, $oldRatio);
+                $this->generateMediaData($count, $oldRatio);
                 break;
             case 'login_attempts':
                 $this->generateLoginAttempts($count, $oldRatio);
@@ -69,6 +71,9 @@ class GenerateTestData extends Command
                 break;
             case 'sessions':
                 $this->generateSessionData($count, $oldRatio);
+                break;
+            case 'media':
+                $this->generateMediaData($count, $oldRatio);
                 break;
             default:
                 $this->error("Invalid type: {$type}");
@@ -275,5 +280,69 @@ class GenerateTestData extends Command
         }
         
         $this->info("✓ Created {$count} session records");
+    }
+
+    private function generateMediaData(int $count, float $oldRatio): void
+    {
+        $oldCount = (int) ($count * $oldRatio);
+        $recentCount = $count - $oldCount;
+
+        $this->line("Creating {$count} media files...");
+        
+        // Get existing members or create a few if none exist
+        $members = \App\Models\Member::limit(10)->get();
+        if ($members->isEmpty()) {
+            $members = \App\Models\Member::factory()->count(3)->create();
+        }
+        
+        // Create old media files (日本語・英語ランダム)
+        $oldJapaneseCount = (int) ($oldCount * 0.6); // 60%を日本語
+        $oldEnglishCount = $oldCount - $oldJapaneseCount;
+        
+        // 古い日本語メディア
+        Media::factory()
+            ->count($oldJapaneseCount)
+            ->japanese()
+            ->old()
+            ->state(function () use ($members) {
+                return ['uploaded_by' => $members->random()->id];
+            })
+            ->create();
+            
+        // 古い英語メディア
+        Media::factory()
+            ->count($oldEnglishCount)
+            ->english()
+            ->old()
+            ->state(function () use ($members) {
+                return ['uploaded_by' => $members->random()->id];
+            })
+            ->create();
+        
+        // Create recent media files (日本語・英語ランダム)
+        $recentJapaneseCount = (int) ($recentCount * 0.6); // 60%を日本語
+        $recentEnglishCount = $recentCount - $recentJapaneseCount;
+        
+        // 最近の日本語メディア
+        Media::factory()
+            ->count($recentJapaneseCount)
+            ->japanese()
+            ->recent()
+            ->state(function () use ($members) {
+                return ['uploaded_by' => $members->random()->id];
+            })
+            ->create();
+            
+        // 最近の英語メディア
+        Media::factory()
+            ->count($recentEnglishCount)
+            ->english()
+            ->recent()
+            ->state(function () use ($members) {
+                return ['uploaded_by' => $members->random()->id];
+            })
+            ->create();
+            
+        $this->info("✓ Created {$count} media file records (Japanese: " . ($oldJapaneseCount + $recentJapaneseCount) . ", English: " . ($oldEnglishCount + $recentEnglishCount) . ")");
     }
 }

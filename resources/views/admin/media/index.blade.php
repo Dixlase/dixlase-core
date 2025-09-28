@@ -21,113 +21,120 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('admin::partials.layout')
 
 @section('content')
+    <header class="media-header">
+        <h1 class="sr-only">{{ __('admin.media.index.title') }}</h1>
+        
+        <nav class="media-header__actions">
+            @include('components.form.button', [
+                'type' => 'link',
+                'href' => route('admin.media.upload'),
+                'label' => __('admin.media.index.upload_new_file'),
+                'variant' => 'primary',
+                'icon' => 'fas fa-plus'
+            ])
+        </nav>
+    </header>
 
-<a href="{{ route('admin.media.upload') }}" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition duration-300">{{ __('admin.media.index.upload_new_file') }}</a>
-
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
-    @foreach($media as $file)
-        <div class="bg-white shadow-md rounded-lg p-4 dark:bg-gray-800">
-            <a href="{{ route('admin.media.preview', $file->id) }}" target="_blank">
-                @if(in_array($file->type, ['image/jpeg', 'image/png', 'image/gif']))
-                    <img src="{{ asset('storage/' . config('admin.mediaPath') . '/' . $file->path) }}" alt="{{ $file->name }}" class="w-full h-32 object-cover rounded">
-                @else
-                    <div class="flex items-center justify-center w-full h-32 bg-gray-200 rounded">
-                        <svg class="w-12 h-12 text-gray-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.75v14.5m-6-6h12"></path>
-                        </svg>
-                    </div>
-                @endif
-            </a>
-
-            <div class="mt-4">
-                <a href="{{ route('admin.media.preview', $file->id) }}" target="_blank" class="text-sm font-bold truncate">{{ $file->name }}</a>
-                <div class="flex gap-2 mt-2 justify-end">
-                    <a href="{{ route('admin.media.download', $file->id) }}" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-500" title="{{ __('admin.media.index.download') }}" aria-label="{{ __('admin.media.index.download') }}">
-                        <i class="fas fa-download"></i>
-                    </a>
-
-                    <a href="{{ route('admin.media.preview', $file->id) }}" target="_blank" class="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-500" title="{{ __('admin.media.index.preview') }}" aria-label="{{ __('admin.media.index.preview') }}">
-                        <i class="fas fa-eye"></i>
-                    </a>
-
-                    <button type="button" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-500" title="{{ __('admin.media.index.delete') }}" aria-label="{{ __('admin.media.index.delete') }}" onclick="openDeleteModal({{ $file->id }}, '{{ $file->name }}')">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </div>
-            </div>
+    <!-- 上部のページネーションと表示件数設定 -->
+    @if($media->hasPages() || $media->count() > 0)
+        <div class="media-controls">
+            @include('components.pagination-controls', [
+                'paginator' => $media,
+                'perPageOptions' => [10, 25, 50, 100],
+                'currentPerPage' => request('per_page', 25),
+                'totalLabel' => 'components.pagination.total_count',
+                'perPageLabel' => 'components.pagination.per_page_label'
+            ])
+            
+            @include('components.pagination', [
+                'pagination' => [
+                    'current_page' => $media->currentPage(),
+                    'last_page' => $media->lastPage(),
+                    'prev_page' => $media->currentPage() > 1 ? $media->currentPage() - 1 : null,
+                    'next_page' => $media->hasMorePages() ? $media->currentPage() + 1 : null,
+                ],
+                'route' => 'admin.media.index',
+                'routeParams' => request()->except('page')
+            ])
         </div>
-    @endforeach
-</div>
+    @endif
+
+    <div class="media-gallery">
+        @if($media->count() > 0)
+            <div class="media-grid">
+                @foreach($media as $file)
+                    @include('admin.media.partials.card', [
+                        'file' => $file,
+                        'mediaPath' => config('admin.mediaPath')
+                    ])
+                @endforeach
+            </div>
+        @else
+            <div class="empty-state">
+                <i class="fas fa-images text-6xl"></i>
+                <p>{{ __('admin.media.index.no_files') }}</p>
+                <p class="description-text">{{ __('admin.media.index.upload_first_file') }}</p>
+            </div>
+        @endif
+    </div>
+
+    <!-- 下部のページネーション -->
+    @if($media->hasPages())
+        <div class="media-controls media-controls--bottom">
+            @include('components.pagination', [
+                'pagination' => [
+                    'current_page' => $media->currentPage(),
+                    'last_page' => $media->lastPage(),
+                    'prev_page' => $media->currentPage() > 1 ? $media->currentPage() - 1 : null,
+                    'next_page' => $media->hasMorePages() ? $media->currentPage() + 1 : null,
+                ],
+                'route' => 'admin.media.index',
+                'routeParams' => request()->except('page')
+            ])
+        </div>
+    @endif
 
 <!-- 削除確認モーダル -->
-<div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
-        <div class="mt-3 text-center">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900">
-                <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 text-xl"></i>
-            </div>
-            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mt-4">{{ __('admin.media.preview.delete_confirmation') }}</h3>
-            <div class="mt-2 px-7 py-3">
-                <p class="text-sm text-gray-500 dark:text-gray-400">
-                    {{ __('admin.media.preview.delete_message') }}
-                </p>
-                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mt-2" id="fileNameDisplay"></p>
-            </div>
-            <div class="items-center px-4 py-3">
-                <button id="confirmDeleteBtn" class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-24 mr-2 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800">
-                    {{ __('admin.media.index.delete') }}
-                </button>
-                <button id="cancelDeleteBtn" class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-24 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800">
-                    {{ __('admin.media.preview.cancel') }}
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+@include('components.modal', [
+    'id' => 'deleteModal',
+    'title' => __('admin.media.preview.delete_confirmation'),
+    'message' => '',
+    'confirm_label' => __('common.delete'),
+    'cancel_label' => __('common.cancel'),
+    'icon_type' => 'danger',
+    'confirm_color' => 'red',
+    'form' => 'deleteForm'
+])
 
-<!-- 削除用の隠しフォーム -->
+<!-- 削除用フォーム -->
 <form id="deleteForm" method="POST" style="display: none;">
     @csrf
     @method('DELETE')
 </form>
 
+
+@push('scripts')
 <script>
 let currentFileId = null;
+let currentFileName = '';
 
 function openDeleteModal(fileId, fileName) {
     currentFileId = fileId;
-    document.getElementById('fileNameDisplay').textContent = fileName;
-    document.getElementById('deleteModal').classList.remove('hidden');
+    currentFileName = fileName;
+    
+    // モーダルのメッセージを動的に設定
+    const modal = document.getElementById('deleteModal');
+    const messageElement = modal.querySelector('.modal-message p');
+    messageElement.textContent = `「${fileName}」を削除しますか？この操作は取り消せません。`;
+    
+    // フォームのアクションを設定
+    const form = document.getElementById('deleteForm');
+    form.action = `{{ route('admin.media.delete', '') }}/${fileId}`;
+    
+    // モーダルを開く
+    openModal('deleteModal');
 }
-
-function closeDeleteModal() {
-    document.getElementById('deleteModal').classList.add('hidden');
-    currentFileId = null;
-}
-
-document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-    if (currentFileId) {
-        const form = document.getElementById('deleteForm');
-        form.action = `{{ route('admin.media.delete', '') }}/${currentFileId}`;
-        form.submit();
-    }
-});
-
-document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
-
-// モーダル外クリックで閉じる
-document.getElementById('deleteModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeDeleteModal();
-    }
-});
-
-// ESCキーで閉じる
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && !document.getElementById('deleteModal').classList.contains('hidden')) {
-        closeDeleteModal();
-    }
-});
 </script>
+@endpush
 
 @endsection
