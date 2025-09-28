@@ -34,10 +34,23 @@ class AdminMediaController extends AdminLoggedInController
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        // 1ページあたりの表示件数を取得（デフォルト: 25）
+        $perPage = $request->get('per_page', 25);
+        
+        // 有効な表示件数のみ許可
+        $allowedPerPage = [10, 25, 50, 100];
+        if (!in_array($perPage, $allowedPerPage)) {
+            $perPage = 25;
+        }
+
         //メディアをページネーションで読み込み（メンバー情報も事前読み込み）
-        $media = Media::with('member')->paginate(config('admin.perPage'));
+        $media = Media::with('member')
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage)
+            ->withQueryString(); // URLパラメータを保持
+            
         $this->viewParams['media'] = $media;
 
         return view('admin.media.index', $this->viewParams);
