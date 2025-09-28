@@ -115,6 +115,10 @@ return [
     'name' => '名前',
     'title' => 'タイトル',
     'description' => '説明',
+    'version' => 'バージョン',
+    'author' => '作者',
+    'license' => 'ライセンス',
+    'unknown' => '不明',
     'value' => '値',
     'status' => '状態',
 

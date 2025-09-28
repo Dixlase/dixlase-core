@@ -50,9 +50,11 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     {
         $plugins = Plugin::all();
         
-        // 各プラグインに設定画面があるかチェック
+        // 各プラグインに設定画面があるかチェック、翻訳された名前と説明を取得
         foreach ($plugins as $plugin) {
             $plugin->has_settings = $this->checkPluginHasSettings($plugin);
+            $plugin->translated_name = $this->getPluginName($plugin);
+            $plugin->translated_description = $this->getPluginDescription($plugin);
         }
         
         $this->viewParams['plugins'] = $plugins;
@@ -411,5 +413,51 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         }
 
         return null;
+    }
+
+    /**
+     * プラグインの翻訳された名前を取得
+     */
+    private function getPluginName($plugin)
+    {
+        try {
+            // プラグインの翻訳ファイルから名前を取得
+            $pluginSlug = strtolower(str_replace('Dixlase', 'dixlase-', $plugin->directory));
+            $translationKey = $pluginSlug . '::admin.plugin.name';
+            $name = __($translationKey);
+            
+            // 翻訳キーがそのまま返された場合は翻訳が見つからない
+            if ($name === $translationKey) {
+                return $plugin->name ?? 'プラグイン名なし';
+            }
+            
+            return $name;
+        } catch (\Exception $e) {
+            // 翻訳ファイルが存在しない場合はDBの名前またはデフォルト
+            return $plugin->name ?? 'プラグイン名なし';
+        }
+    }
+
+    /**
+     * プラグインの翻訳された説明を取得
+     */
+    private function getPluginDescription($plugin)
+    {
+        try {
+            // プラグインの翻訳ファイルから説明を取得
+            $pluginSlug = strtolower(str_replace('Dixlase', 'dixlase-', $plugin->directory));
+            $translationKey = $pluginSlug . '::admin.plugin.description';
+            $description = __($translationKey);
+            
+            // 翻訳キーがそのまま返された場合は翻訳が見つからない
+            if ($description === $translationKey) {
+                return $plugin->description ?? '説明がありません';
+            }
+            
+            return $description;
+        } catch (\Exception $e) {
+            // 翻訳ファイルが存在しない場合はDBの説明またはデフォルト
+            return $plugin->description ?? '説明がありません';
+        }
     }
 }
