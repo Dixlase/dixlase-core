@@ -44,6 +44,8 @@ class AdminBaseSettingsRequest extends FormRequest
         
         return [
             'app_name' => 'required|string|max:255',
+            'site_description' => 'nullable|string|max:500',
+            'site_keywords' => 'nullable|string|max:500',
             'locale' => ['required', Rule::in($availableLocales)],
             'timezone' => 'required|timezone',
             'mail_mailer' => ['required', Rule::in(array_keys(trans('mail.mailers')))],

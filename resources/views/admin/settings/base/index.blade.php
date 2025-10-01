@@ -39,6 +39,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </fieldset>
 
         <fieldset>
+            <legend>{{ __('admin.settings.base.site_description') }}</legend>
+            @include('components.form.textarea', [
+                'name' => 'site_description',
+                'value' => old('site_description', $settings['site_description']),
+                'rows' => 3,
+            ])
+            <p>{{ __('admin.settings.base.site_description_help') }}</p>
+        </fieldset>
+
+        <fieldset>
+            <legend>{{ __('admin.settings.base.site_keywords') }}</legend>
+            @include('components.form.text', [
+                'name' => 'site_keywords',
+                'value' => old('site_keywords', $settings['site_keywords']),
+            ])
+            <p>{{ __('admin.settings.base.site_keywords_help') }}</p>
+        </fieldset>
+
+        <fieldset>
             <legend>{{ __('admin.settings.base.locale') }}</legend>
             @include('components.form.select', [
                 'name' => 'locale',

@@ -76,8 +76,13 @@ class AdminBaseSettingsController extends AdminLoggedInController
         session()->forget('mail_test_results');
         
         $settings = [
-            // App settings - config(.env) -> database -> default
+            // サイト名
             'app_name' => ConfigHelper::getAppName(),
+
+            // サイトの説明
+            'site_description' => BaseSetting::getValue('site_description', ''),
+            'site_keywords' => BaseSetting::getValue('site_keywords', ''),
+
             // 基本設定では個人設定を無視してシステム設定を取得
             'locale' => $this->getSystemLocale(),
             'timezone' => ConfigHelper::getAppTimezone(),
@@ -100,6 +105,7 @@ class AdminBaseSettingsController extends AdminLoggedInController
             // Database-only settings (no .env equivalent)
             'admin_url' => BaseSetting::getValue('admin_url', config('admin.admin_url')),
             'force_ssl' => (bool) BaseSetting::getValue('force_ssl', false),
+
         ];
 
         // メールテスト状態を取得（DB優先、セッションは一時的な状態のみ）
@@ -181,6 +187,8 @@ class AdminBaseSettingsController extends AdminLoggedInController
         // 全ての設定を取得
         $allSettings = $request->only([
             'app_name',
+            'site_description',
+            'site_keywords',
             'locale',
             'timezone',
             'mail_mailer',
@@ -195,6 +203,7 @@ class AdminBaseSettingsController extends AdminLoggedInController
             'system_admin_email',
             'admin_url',
             'force_ssl',
+
         ]);
         
         // ラジオボタンとチェックボックスの値を正しく設定
@@ -222,6 +231,8 @@ class AdminBaseSettingsController extends AdminLoggedInController
         // DBにも保存（フォールバック用）
         $dbSettings = [
             'app_name' => $allSettings['app_name'],
+            'site_description' => $allSettings['site_description'] ?? '',
+            'site_keywords' => $allSettings['site_keywords'] ?? '',
             'locale' => $allSettings['locale'],
             'timezone' => $allSettings['timezone'],
             'mail_mailer' => $allSettings['mail_mailer'],
@@ -236,6 +247,7 @@ class AdminBaseSettingsController extends AdminLoggedInController
             'system_admin_email' => $allSettings['system_admin_email'] ?? '',
             'admin_url' => $allSettings['admin_url'] ?? '',
             'force_ssl' => ($allSettings['force_ssl'] ?? false) ? '1' : '0',
+
         ];
 
         // 空文字列をnullに変換（mail_username, mail_password, mail_encryption のみ）
