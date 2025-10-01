@@ -33,6 +33,9 @@ class Media extends Model
     protected $table = 'media';
     protected $fillable = [
         'name',
+        'caption',
+        'description',
+        'alt_text',
         'path',
         'type',
         'uploaded_by',

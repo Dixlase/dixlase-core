@@ -166,6 +166,27 @@ class AdminMediaController extends AdminLoggedInController
         return view('admin.media.preview', $this->viewParams);
     }
 
+    /**
+     * メディア情報を更新
+     */
+    public function updateMedia(Request $request, Media $media)
+    {
+        $request->validate([
+            'caption' => 'nullable|string|max:255',
+            'alt_text' => 'nullable|string|max:255',
+            'description' => 'nullable|string|max:1000',
+        ]);
+
+        $media->update([
+            'caption' => $request->input('caption'),
+            'alt_text' => $request->input('alt_text'),
+            'description' => $request->input('description'),
+        ]);
+
+        return redirect()->route('admin.media.preview', $media->id)
+            ->with('success', 'メディア情報が更新されました。');
+    }
+
 
     public function settings()
     {
@@ -182,6 +203,61 @@ class AdminMediaController extends AdminLoggedInController
         $this->viewParams['fileExtensions'] = $fileExtensions;
 
         return view('admin.media.settings', $this->viewParams);
+    }
+
+    /**
+     * API: メディア一覧を取得（モーダル用）
+     */
+    public function api(Request $request)
+    {
+        $perPage = $request->get('per_page', 20);
+        $search = $request->get('search');
+        $type = $request->get('type');
+        
+        $query = Media::with('member')->orderBy('created_at', 'desc');
+        
+        // 検索フィルター
+        if ($search) {
+            $query->where('name', 'like', '%' . $search . '%');
+        }
+        
+        // タイプフィルター
+        if ($type) {
+            switch ($type) {
+                case 'image':
+                    $query->where('type', 'like', 'image/%');
+                    break;
+                case 'video':
+                    $query->where('type', 'like', 'video/%');
+                    break;
+                case 'document':
+                    $query->whereNotIn('type', function($q) {
+                        $q->select('type')->from('media')
+                          ->where('type', 'like', 'image/%')
+                          ->orWhere('type', 'like', 'video/%');
+                    });
+                    break;
+            }
+        }
+        
+        $media = $query->paginate($perPage);
+        
+        // URLを追加
+        $mediaPath = config('admin.mediaPath', 'media');
+        $media->getCollection()->transform(function($item) use ($mediaPath) {
+            // pathフィールドがファイル名のみの場合とフルパスの場合を考慮
+            if (strpos($item->path, $mediaPath) === 0) {
+                $item->url = asset('storage/' . $item->path);
+            } else {
+                $item->url = asset('storage/' . $mediaPath . '/' . $item->path);
+            }
+            return $item;
+        });
+        
+        return response()->json([
+            'success' => true,
+            'media' => $media
+        ]);
     }
 
     /**

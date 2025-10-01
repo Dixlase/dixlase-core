@@ -34,6 +34,63 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <p><strong>{{ __('common.upload_date') }}</strong> {{ $media->created_at->format('Y-m-d H:i:s') }}</p>
             <p><strong>{{ __('common.uploaded_by') }}</strong> {{ $media->member->name ?? __('admin.media.preview.unknown') }}</p>
             
+            <!-- メディア情報編集フォーム -->
+            <form action="{{ route('admin.media.update', $media->id) }}" method="POST" class="mt-6 space-y-4">
+                @csrf
+                @method('PUT')
+                
+                <div>
+                    <label for="caption" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {{ __('common.caption') }}
+                    </label>
+                    <input type="text" 
+                           id="caption" 
+                           name="caption" 
+                           value="{{ old('caption', $media->caption) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="{{ __('common.caption_placeholder') }}">
+                    @error('caption')
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="alt_text" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {{ __('common.alt_text') }}
+                    </label>
+                    <input type="text" 
+                           id="alt_text" 
+                           name="alt_text" 
+                           value="{{ old('alt_text', $media->alt_text) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="{{ __('common.alt_text_placeholder') }}">
+                    @error('alt_text')
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {{ __('common.description') }}
+                    </label>
+                    <textarea id="description" 
+                              name="description" 
+                              rows="4"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="{{ __('common.description_placeholder') }}">{{ old('description', $media->description) }}</textarea>
+                    @error('description')
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit" 
+                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <i class="fas fa-save mr-2"></i>{{ __('common.save') }}
+                    </button>
+                </div>
+            </form>
+            
             <!-- メディアURL表示 -->
             <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                 <h3 class="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">{{ __('admin.media.preview.media_url') }}</h3>

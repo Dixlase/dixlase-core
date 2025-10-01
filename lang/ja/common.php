@@ -47,6 +47,9 @@ return [
     'close' => '閉じる',
     'finish' => '完了',
     'index' => '一覧',
+    'select' => '選択',
+    'search' => '検索',
+    'loading' => '読み込み中',
 
     // 検索・表示
     'search' => '検索',
@@ -143,6 +146,21 @@ return [
     'file_type' => 'ファイルタイプ',
     'upload_date' => 'アップロード日時',
     'uploaded_by' => 'アップロードしたメンバー',
+    
+    // メディア関連
+    'select_media' => 'メディアを選択',
+    'all_types' => 'すべてのタイプ',
+    'images' => '画像',
+    'videos' => '動画',
+    'documents' => 'ドキュメント',
+    'items_selected' => '件選択中',
+    'no_media_found' => 'メディアが見つかりません',
+    'error_loading_media' => 'メディアの読み込みに失敗しました',
+    'caption' => 'キャプション',
+    'caption_placeholder' => '画像のキャプションを入力',
+    'alt_text' => '代替テキスト',
+    'alt_text_placeholder' => '画像の代替テキストを入力（アクセシビリティ用）',
+    'description_placeholder' => 'メディアの詳細説明を入力',
 
     // コンテンツ関連
     'content' => 'コンテンツ',
