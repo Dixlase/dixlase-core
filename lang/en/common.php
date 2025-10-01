@@ -138,6 +138,21 @@ return [
     'file_type' => 'File Type',
     'upload_date' => 'Upload Date',
     'uploaded_by' => 'Uploaded By',
+    
+    // Media Related
+    'select_media' => 'Select Media',
+    'all_types' => 'All Types',
+    'images' => 'Images',
+    'videos' => 'Videos',
+    'documents' => 'Documents',
+    'items_selected' => 'items selected',
+    'no_media_found' => 'No media found',
+    'error_loading_media' => 'Failed to load media',
+    'caption' => 'Caption',
+    'caption_placeholder' => 'Enter image caption',
+    'alt_text' => 'Alt Text',
+    'alt_text_placeholder' => 'Enter alternative text for accessibility',
+    'description_placeholder' => 'Enter detailed description of the media',
 
     // Content Related
     'content' => 'Content',

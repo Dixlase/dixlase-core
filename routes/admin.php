@@ -99,6 +99,8 @@ Route::prefix($adminUrl)->name('admin.')
 
             //メディア管理
             Route::get('/media', [AdminMediaController::class, 'index'])->name('media.index');
+            //メディアAPI（モーダル用）
+            Route::get('/media/api', [AdminMediaController::class, 'api'])->name('media.api');
             //メディアアップロード
             Route::get('/media/upload', [AdminMediaController::class, 'upload'])->name('media.upload');
             Route::post('/media/upload/', [AdminMediaController::class, 'store'])->name('media.upload');
@@ -108,6 +110,8 @@ Route::prefix($adminUrl)->name('admin.')
             Route::get('/media/download/{media}', [AdminMediaController::class, 'download'])->name('media.download');
             //メディアプレビュー
             Route::get('/media/preview/{media}', [AdminMediaController::class, 'preview'])->name('media.preview');
+            //メディア情報更新
+            Route::put('/media/{media}', [AdminMediaController::class, 'updateMedia'])->name('media.update');
             //メディア設定
             Route::get('/media/settings', [AdminMediaController::class, 'settings'])->name('media.settings');
             Route::post('/media/settings', [AdminMediaController::class, 'update'])->name('media.settings.update');
