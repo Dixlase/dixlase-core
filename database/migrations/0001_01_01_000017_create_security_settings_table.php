@@ -39,6 +39,9 @@ return new class extends Migration
             $table->id();
             $table->string('name')->unique();
             $table->text('value')->nullable();
+            $table->timestamp('captcha_test_date')->nullable();
+            $table->boolean('captcha_test_passed')->default(false);
+            $table->text('captcha_test_error')->nullable();
             $table->timestamps();
         });
     }

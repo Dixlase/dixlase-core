@@ -41,8 +41,15 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->string("name", 255)->nullable();
             $table->text("value")->nullable();
+            $table->unsignedBigInteger('default_ogp_image_id')->nullable();
+            $table->string('site_description', 500)->nullable();
+            $table->string('site_keywords', 500)->nullable();
+            $table->string('twitter_card_type', 50)->default('summary_large_image');
             $table->timestamps();
             $table->softDeletes();
+            
+            // 外部キー制約
+            $table->foreign('default_ogp_image_id')->references('id')->on('media')->onDelete('set null');
         });
     }
 
