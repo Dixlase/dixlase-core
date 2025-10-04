@@ -181,6 +181,18 @@ return [
             'save_button' => 'Save',
             'cancel_button' => 'Cancel',
         ],
+        'search' => [
+            'heading' => 'Search & Filter',
+            'file_name_placeholder' => 'Search by file name',
+            'date_from' => 'Upload Date (From)',
+            'date_to' => 'Upload Date (To)',
+        ],
+        'types' => [
+            'image' => 'Image',
+            'video' => 'Video',
+            'audio' => 'Audio',
+            'document' => 'Document',
+        ],
 
     ],
 
@@ -932,6 +944,8 @@ Clicking this link will complete the full mail function test.',
             'select_ogp_image' => 'Select OGP Image',
             'remove_ogp_image' => 'Remove OGP Image',
             'settings_updated' => 'Front page settings have been updated.',
+            'save_confirmation_title' => 'Front Page Settings Save Confirmation',
+            'save_confirmation_message' => 'Do you want to save the front page settings?',
         ],
     ],
 

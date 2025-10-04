@@ -60,15 +60,67 @@ class AdminMediaController extends AdminLoggedInController
             $order = 'desc';
         }
 
+        // 検索パラメータを取得
+        $search = $request->get('search');
+        $fileType = $request->get('file_type');
+        $uploadedBy = $request->get('uploaded_by');
+        $dateFrom = $request->get('date_from');
+        $dateTo = $request->get('date_to');
+
         //メディアをページネーションで読み込み（メンバー情報も事前読み込み）
-        $media = Media::with('member')
-            ->orderBy($sort, $order)
+        $query = Media::with('member');
+
+        // 検索条件を適用
+        if ($search) {
+            $query->where('name', 'like', '%' . $search . '%');
+        }
+
+        // ファイルタイプフィルター
+        if ($fileType) {
+            switch ($fileType) {
+                case 'image':
+                    $query->where('type', 'like', 'image/%');
+                    break;
+                case 'video':
+                    $query->where('type', 'like', 'video/%');
+                    break;
+                case 'audio':
+                    $query->where('type', 'like', 'audio/%');
+                    break;
+                case 'document':
+                    $query->where(function($q) {
+                        $q->where('type', 'like', 'application/%')
+                          ->orWhere('type', 'like', 'text/%');
+                    });
+                    break;
+            }
+        }
+
+        // アップロードメンバーフィルター
+        if ($uploadedBy) {
+            $query->where('uploaded_by', $uploadedBy);
+        }
+
+        // 日付範囲フィルター
+        if ($dateFrom) {
+            $query->whereDate('created_at', '>=', $dateFrom);
+        }
+        if ($dateTo) {
+            $query->whereDate('created_at', '<=', $dateTo);
+        }
+
+        $media = $query->orderBy($sort, $order)
             ->paginate($perPage)
             ->withQueryString(); // URLパラメータを保持
             
         $this->viewParams['media'] = $media;
         $this->viewParams['currentSort'] = $sort;
         $this->viewParams['currentOrder'] = $order;
+        $this->viewParams['search'] = $search;
+        $this->viewParams['fileType'] = $fileType;
+        $this->viewParams['uploadedBy'] = $uploadedBy;
+        $this->viewParams['dateFrom'] = $dateFrom;
+        $this->viewParams['dateTo'] = $dateTo;
 
         return view('admin.media.index', $this->viewParams);
     }

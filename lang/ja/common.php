@@ -33,6 +33,8 @@ return [
     'delete' => '削除',
     'copy' => 'コピー',
     'copied' => 'コピー済み',
+    'all' => 'すべて',
+    'none' => 'なし',
 
     // フォーム操作
     'submit' => '送信',
@@ -182,6 +184,7 @@ return [
     // UI要素
     'actions' => '操作',
     'required_fields' => '必須項目',
+    'preview' => 'プレビュー',
 
     // メッセージ・状態
     'warning' => '注意',
