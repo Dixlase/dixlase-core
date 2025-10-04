@@ -28,6 +28,8 @@ return [
     'delete' => 'Delete',
     'copy' => 'Copy',
     'copied' => 'Copied',
+    'all' => 'All',
+    'none' => 'None',
 
     // System Operations
     'settings' => 'Settings',
@@ -175,6 +177,7 @@ return [
     // UI Elements
     'actions' => 'Actions',
     'required_fields' => 'Required Fields',
+    'preview' => 'Preview',
 
     // Messages & Status
     'warning' => 'Warning',

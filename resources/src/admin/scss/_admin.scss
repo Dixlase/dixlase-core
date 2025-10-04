@@ -155,24 +155,24 @@
     :root {
         --transition-duration: 500ms;
     }
-    
+
     // 統一トランジションクラス
     .transition-unified {
         transition: all var(--transition-duration) ease-in-out;
     }
-    
+
     .transition-colors-unified {
         transition: color var(--transition-duration) ease-in-out,
-                   background-color var(--transition-duration) ease-in-out,
-                   border-color var(--transition-duration) ease-in-out;
+            background-color var(--transition-duration) ease-in-out,
+            border-color var(--transition-duration) ease-in-out;
     }
-    
+
     // フォーム要素用トランジション（クラス指定で使用）
     .form-transition {
         transition: border-color var(--transition-duration) ease-in-out,
-                   box-shadow var(--transition-duration) ease-in-out,
-                   background-color var(--transition-duration) ease-in-out,
-                   color var(--transition-duration) ease-in-out;
+            box-shadow var(--transition-duration) ease-in-out,
+            background-color var(--transition-duration) ease-in-out,
+            color var(--transition-duration) ease-in-out;
     }
 
     // テキストリンク
@@ -251,13 +251,9 @@
     }
 
     // メディア管理
-    .media-header {
-        @apply flex items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-gray-700;
-    }
 
-    .media-header__actions {
-        @apply flex gap-3;
-    }
+
+
 
     .media-gallery {
         @apply min-h-96;
@@ -265,7 +261,7 @@
 
     .media-controls {
         @apply mb-6;
-        
+
         &--bottom {
             @apply mt-6 mb-0;
         }
@@ -273,25 +269,25 @@
 
     .media-grid {
         @apply grid gap-6;
-        
+
         /* モバイル: 1列 */
         grid-template-columns: 1fr;
-        
+
         /* タブレット: 2列 */
         @media (min-width: 640px) {
             grid-template-columns: repeat(2, 1fr);
         }
-        
+
         /* デスクトップ: 3列 */
         @media (min-width: 1024px) {
             grid-template-columns: repeat(3, 1fr);
         }
-        
+
         /* 大画面: 4列 */
         @media (min-width: 1280px) {
             grid-template-columns: repeat(4, 1fr);
         }
-        
+
         /* 特大画面: 5列 */
         @media (min-width: 1536px) {
             grid-template-columns: repeat(5, 1fr);
@@ -300,7 +296,7 @@
 
     // メディアカード (Flowbite inspired)
     .media-card {
-        @apply w-full bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 transition-all duration-200 hover:shadow-md;
+        @apply w-full bg-gray-50 dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md;
     }
 
     .media-card__preview {
@@ -314,7 +310,7 @@
 
     .media-card__placeholder {
         @apply flex items-center justify-center w-full h-full bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500;
-        
+
         i {
             @apply text-4xl;
         }
@@ -326,7 +322,7 @@
 
     .media-card__title {
         @apply mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white;
-        
+
         a {
             @apply hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200;
         }
@@ -354,23 +350,23 @@
 
     .action-btn {
         @apply inline-flex items-center justify-center w-8 h-8 text-sm rounded-full transition-all duration-200 focus:ring-2 focus:outline-none;
-        
+
         &--copy {
             @apply text-purple-700 bg-purple-50 hover:bg-purple-100 focus:ring-purple-300 dark:bg-purple-900/20 dark:text-purple-400 dark:hover:bg-purple-900/40 dark:focus:ring-purple-800;
         }
-        
+
         &--download {
             @apply text-blue-700 bg-blue-50 hover:bg-blue-100 focus:ring-blue-300 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40 dark:focus:ring-blue-800;
         }
-        
+
         &--preview {
             @apply text-green-700 bg-green-50 hover:bg-green-100 focus:ring-green-300 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/40 dark:focus:ring-green-800;
         }
-        
+
         &--delete {
             @apply text-red-700 bg-red-50 hover:bg-red-100 focus:ring-red-300 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 dark:focus:ring-red-800;
         }
-        
+
         &--success {
             @apply text-green-700 bg-green-50 hover:bg-green-100 focus:ring-green-300 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/40 dark:focus:ring-green-800;
         }

@@ -160,6 +160,18 @@ return [
             'save_confirmation_title' => 'メディア設定保存の確認',
             'save_confirmation_message' => 'メディア設定を保存しますか？',
         ],
+        'search' => [
+            'heading' => '検索・フィルター',
+            'file_name_placeholder' => 'ファイル名で検索',
+            'date_from' => 'アップロード日（開始）',
+            'date_to' => 'アップロード日（終了）',
+        ],
+        'types' => [
+            'image' => '画像',
+            'video' => '動画',
+            'audio' => '音声',
+            'document' => 'ドキュメント',
+        ],
 
     ],
 
@@ -873,6 +885,8 @@ return [
             'select_ogp_image' => 'OGP画像を選択',
             'remove_ogp_image' => 'OGP画像を削除',
             'settings_updated' => 'フロントページ設定が更新されました。',
+            'save_confirmation_title' => 'フロントページ設定保存の確認',
+            'save_confirmation_message' => 'フロントページ設定を保存しますか？',
         ],
     ],
 

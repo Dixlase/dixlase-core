@@ -21,19 +21,90 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('admin::partials.layout')
 
 @section('content')
-    <header class="media-header">
-        <h1 class="sr-only">{{ __('admin.media.index.title') }}</h1>
+
         
-        <nav class="media-header__actions">
-            @include('components.form.button', [
-                'type' => 'link',
-                'href' => route('admin.media.upload'),
-                'label' => __('admin.media.index.upload_new_file'),
-                'variant' => 'primary',
-                'icon' => 'fas fa-plus'
-            ])
-        </nav>
-    </header>
+    <div class="flex justify-end mb-4">
+        @include('components.form.button', [
+            'type' => 'link',
+            'href' => route('admin.media.upload'),
+            'label' => __('admin.media.index.upload_new_file'),
+            'variant' => 'primary',
+            'icon' => 'fas fa-plus'
+        ])
+    </div>
+
+    <!-- 検索フォーム -->
+    <section>
+        <h2>{{ __('admin.media.search.heading') }}</h2>
+        
+        <form method="GET" action="{{ route('admin.media.index') }}">
+            <fieldset>
+                <legend>{{ __('common.file_name') }}</legend>
+                @include('components.form.text', [
+                    'type' => 'text',
+                    'id' => 'search',
+                    'name' => 'search',
+                    'value' => $search ?? '',
+                    'placeholder' => __('admin.media.search.file_name_placeholder'),
+                ])
+            </fieldset>
+            <div class="flex gap-2 mb-4">
+
+                <fieldset>
+                    <legend>{{ __('common.file_type') }}</legend>
+                    @include('components.form.select', [
+                        'id' => 'file_type',
+                        'name' => 'file_type',
+                        'options' => [
+                            '' => 'common.all',
+                            'image' => 'admin.media.types.image',
+                            'video' => 'admin.media.types.video',
+                            'audio' => 'admin.media.types.audio',
+                            'document' => 'admin.media.types.document',
+                        ],
+                        'value' => $fileType ?? '',
+                    ])
+                </fieldset>
+
+                <fieldset>
+                    <legend>{{ __('admin.media.search.date_from') }}</legend>
+                    @include('components.form.text', [
+                        'type' => 'date',
+                        'id' => 'date_from',
+                        'name' => 'date_from',
+                        'value' => $dateFrom ?? '',
+                    ])
+                </fieldset>
+
+                <fieldset>
+                    <legend>{{ __('admin.media.search.date_to') }}</legend>
+                    @include('components.form.text', [
+                        'type' => 'date',
+                        'id' => 'date_to',
+                        'name' => 'date_to',
+                        'value' => $dateTo ?? '',
+                    ])
+                </fieldset>
+            </div>
+
+            <div class="flex gap-2">
+                @include('components.form.button', [
+                    'type' => 'submit',
+                    'variant' => 'primary',
+                    'label' => __('common.search'),
+                    'icon' => 'fas fa-search',
+                ])
+                
+                @include('components.form.button', [
+                    'type' => 'button',
+                    'variant' => 'secondary',
+                    'label' => __('common.reset'),
+                    'icon' => 'fas fa-redo',
+                    'onclick' => "window.location.href='" . route('admin.media.index') . "'",
+                ])
+            </div>
+        </form>
+    </section>
 
     <!-- 上部のページネーションと表示件数設定 -->
     @if($media->hasPages() || $media->count() > 0)

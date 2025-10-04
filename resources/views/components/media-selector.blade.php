@@ -115,7 +115,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 window.mediaSelectorData = window.mediaSelectorData || {};
 
 // モーダルを開く
-function openMediaSelector(modalId, inputId, previewId, multiple = false) {
+function openMediaSelector(modalId, inputId, previewId, multiple = false, aspectRatio = 'original') {
     const modal = document.getElementById(modalId);
     if (!modal) return;
     
@@ -125,6 +125,7 @@ function openMediaSelector(modalId, inputId, previewId, multiple = false) {
         inputId: inputId,
         previewId: previewId,
         multiple: multiple,
+        aspectRatio: aspectRatio,
         currentPage: 1
     };
     
@@ -281,6 +282,22 @@ function confirmMediaSelection(modalId, inputId, previewId, multiple) {
         return;
     }
     
+    const aspectRatio = data.aspectRatio || 'original';
+    
+    // アスペクト比に応じたクラスを取得
+    const getAspectClasses = () => {
+        switch(aspectRatio) {
+            case 'ogp': return 'aspect-[1.91/1] object-cover';
+            case 'square': return 'aspect-square object-cover';
+            case '16:9': return 'aspect-video object-cover';
+            case '4:3': return 'aspect-[4/3] object-cover';
+            case 'original': return 'h-auto object-contain';
+            default: return 'h-auto object-contain';
+        }
+    };
+    
+    const aspectClasses = getAspectClasses();
+    
     // 入力フィールドに値を設定
     const input = document.getElementById(inputId);
     if (input) {
@@ -310,10 +327,10 @@ function confirmMediaSelection(modalId, inputId, previewId, multiple) {
         } else {
             preview.innerHTML = `
                 <div class="relative inline-block">
-                    <img src="${selectedMedia.url}" alt="${selectedMedia.name}" class="w-32 h-32 object-cover rounded">
+                    <img src="${selectedMedia.url}" alt="${selectedMedia.name}" class="w-64 ${aspectClasses} rounded border border-gray-300 dark:border-gray-600">
                     <button type="button" onclick="removeMediaPreview('${inputId}', '${previewId}')" 
-                            class="absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full hover:bg-red-700">
-                        <i class="fas fa-times text-xs"></i>
+                            class="absolute -top-2 -right-2 w-8 h-8 bg-red-600 text-white rounded-full hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                        <i class="fas fa-times"></i>
                     </button>
                 </div>
             `;
