@@ -35,6 +35,12 @@ return [
         'total_count' => '全:total件',
         'total_pages' => '全 :count ページ',
         'no_results' => '該当するデータがありません',
+        'items_suffix' => '件',
+        'sort_by' => '並び替え',
+        'asc' => '昇順',
+        'desc' => '降順',
+        'ascending' => '昇順（小→大、古→新）',
+        'descending' => '降順（大→小、新→古）',
     ],
 
 

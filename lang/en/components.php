@@ -36,6 +36,12 @@ return [
         'total_items' => 'Total :count items',
         'total_pages' => 'Total :count pages',
         'no_results' => 'No matching data found',
+        'items_suffix' => ' items',
+        'sort_by' => 'Sort by',
+        'asc' => 'Asc',
+        'desc' => 'Desc',
+        'ascending' => 'Ascending (A-Z, Old-New)',
+        'descending' => 'Descending (Z-A, New-Old)',
     ],
 
 

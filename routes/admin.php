@@ -94,8 +94,8 @@ Route::prefix($adminUrl)->name('admin.')
             Route::get('/front/design', [AdminFrontController::class, 'design'])->name('front.design');
             Route::post('/front/design', [AdminFrontController::class, 'design'])->name('front.design.store');
             //フロントページ管理
-            Route::get('/front/settings', [AdminFrontController::class, 'index'])->name('front.settings');
-            Route::post('/front/settings', [AdminFrontController::class, 'index'])->name('front.settings.store');
+            Route::get('/front/settings', [AdminFrontController::class, 'settings'])->name('front.settings');
+            Route::post('/front/settings', [AdminFrontController::class, 'updateSettings'])->name('front.settings.store');
 
             //メディア管理
             Route::get('/media', [AdminMediaController::class, 'index'])->name('media.index');

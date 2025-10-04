@@ -82,6 +82,10 @@ class AdminBaseSettingsController extends AdminLoggedInController
             // サイトの説明
             'site_description' => BaseSetting::getValue('site_description', ''),
             'site_keywords' => BaseSetting::getValue('site_keywords', ''),
+            
+            // OGP設定
+            'default_ogp_image_id' => BaseSetting::getValue('default_ogp_image_id'),
+            'twitter_card_type' => BaseSetting::getValue('twitter_card_type', 'summary_large_image'),
 
             // 基本設定では個人設定を無視してシステム設定を取得
             'locale' => $this->getSystemLocale(),
@@ -120,6 +124,12 @@ class AdminBaseSettingsController extends AdminLoggedInController
         $mailReceiveTestDate = $sessionTestResults['mail_receive_test_date'] ?? BaseSetting::getValue('mail_receive_test_date', '');
 
         $timezones = TimezoneHelper::getTimezonesWithUtcOffset();
+        
+        // OGP画像のメディア情報を取得
+        $defaultOgpImage = null;
+        if ($settings['default_ogp_image_id']) {
+            $defaultOgpImage = \App\Models\Media::find($settings['default_ogp_image_id']);
+        }
 
         // デバッグ情報: フォーム表示時の言語設定
         if (config('app.debug')) {
@@ -147,6 +157,7 @@ class AdminBaseSettingsController extends AdminLoggedInController
         })->toArray();
         $this->viewParams['mailers'] = __('mail.mailers');
         $this->viewParams['encryptions'] = __('mail.encryptions');
+        $this->viewParams['defaultOgpImage'] = $defaultOgpImage;
 
         return view(
             'admin::settings.base.index',
@@ -203,6 +214,8 @@ class AdminBaseSettingsController extends AdminLoggedInController
             'system_admin_email',
             'admin_url',
             'force_ssl',
+            'default_ogp_image_id',
+            'twitter_card_type',
 
         ]);
         
@@ -247,6 +260,8 @@ class AdminBaseSettingsController extends AdminLoggedInController
             'system_admin_email' => $allSettings['system_admin_email'] ?? '',
             'admin_url' => $allSettings['admin_url'] ?? '',
             'force_ssl' => ($allSettings['force_ssl'] ?? false) ? '1' : '0',
+            'default_ogp_image_id' => $allSettings['default_ogp_image_id'] ?? null,
+            'twitter_card_type' => $allSettings['twitter_card_type'] ?? 'summary_large_image',
 
         ];
 

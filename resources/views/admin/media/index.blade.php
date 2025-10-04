@@ -43,7 +43,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 'perPageOptions' => [10, 25, 50, 100],
                 'currentPerPage' => request('per_page', 25),
                 'totalLabel' => 'components.pagination.total_count',
-                'perPageLabel' => 'components.pagination.per_page_label'
+                'perPageLabel' => 'components.pagination.per_page_label',
+                'showSort' => true,
+                'sortOptions' => [
+                    'name' => __('common.file_name'),
+                    'type' => __('common.file_type'),
+                    'created_at' => __('common.created_at'),
+                    'updated_at' => __('common.updated_at'),
+                ],
+                'currentSort' => $currentSort ?? 'created_at',
+                'currentOrder' => $currentOrder ?? 'desc',
             ])
             
             @include('components.pagination', [

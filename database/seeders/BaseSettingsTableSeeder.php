@@ -64,6 +64,12 @@ class BaseSettingsTableSeeder extends Seeder
             
             // システム管理者メールアドレス
             ['name' => 'system_admin_email', 'value' => ''],
+            
+            // OGP・SEO設定
+            ['name' => 'default_ogp_image_id', 'value' => null],
+            ['name' => 'site_description', 'value' => ''],
+            ['name' => 'site_keywords', 'value' => ''],
+            ['name' => 'twitter_card_type', 'value' => 'summary_large_image'],
         ];
 
         foreach ($settings as $setting) {

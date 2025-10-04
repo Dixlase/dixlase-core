@@ -61,6 +61,8 @@ class AdminBaseSettingsRequest extends FormRequest
             'system_admin_email' => 'nullable|email|max:255',
             'admin_url' => 'required|string|max:255',
             'force_ssl' => 'nullable|boolean',
+            'default_ogp_image_id' => 'nullable|exists:media,id',
+            'twitter_card_type' => ['nullable', Rule::in(['summary', 'summary_large_image', 'app', 'player'])],
         ];
     }
 
