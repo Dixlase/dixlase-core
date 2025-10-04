@@ -34,6 +34,15 @@ class FrontSettingsTableSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        $settings = [
+            ['name' => 'front_ogp_image_id', 'value' => null],
+        ];
+
+        foreach ($settings as $setting) {
+            FrontSetting::updateOrCreate(
+                ['name' => $setting['name']],
+                ['value' => $setting['value'], 'created_at' => now(), 'updated_at' => now()]
+            );
+        }
     }
 }

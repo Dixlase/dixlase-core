@@ -45,20 +45,19 @@ return [
     'back' => '戻る',
     'next' => '次へ',
     'close' => '閉じる',
-    'finish' => '完了',
     'index' => '一覧',
     'select' => '選択',
     'search' => '検索',
     'loading' => '読み込み中',
 
-    // 検索・表示
-    'search' => '検索',
-    'preview' => 'プレビュー',
+    // システム操作
+    'settings' => '設定',
+    'profile' => 'プロフィール',
+    'language_timezone' => '言語・タイムゾーン設定',
 
     // ファイル操作
     'upload' => 'アップロード',
     'download' => 'ダウンロード',
-
     // システム操作
     'install' => 'インストール',
     'uninstall' => 'アンインストール',

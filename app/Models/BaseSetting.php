@@ -28,6 +28,13 @@ use Illuminate\Support\Facades\Log;
 class BaseSetting extends Model
 {
     /**
+     * デフォルトOGP画像とのリレーション
+     */
+    public function defaultOgpImage()
+    {
+        return $this->belongsTo(Media::class, 'default_ogp_image_id');
+    }
+    /**
      * テーブル名
      *
      * @var string

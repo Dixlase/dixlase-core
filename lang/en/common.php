@@ -24,15 +24,15 @@ return [
     'create' => 'Create',
     'add' => 'Add',
     'edit' => 'Edit',
-    'update' => 'Update',
     'save' => 'Save',
     'delete' => 'Delete',
     'copy' => 'Copy',
     'copied' => 'Copied',
 
-    // Form Operations
-    'submit' => 'Submit',
-    'reset' => 'Reset',
+    // System Operations
+    'settings' => 'Settings',
+    'profile' => 'Profile',
+    'language_timezone' => 'Language & Timezone Settings',
     'clear' => 'Clear',
     'cancel' => 'Cancel',
     'confirm' => 'Confirm',

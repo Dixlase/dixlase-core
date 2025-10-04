@@ -57,6 +57,67 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <p>{{ __('admin.settings.base.site_keywords_help') }}</p>
         </fieldset>
 
+    </section>
+
+    <!-- OGP・SEO設定 -->
+    <section>
+        <h2>{{ __('admin.settings.base.ogp_seo_settings') }}</h2>
+
+        <fieldset>
+            <legend>{{ __('admin.settings.base.default_ogp_image') }}</legend>
+            
+            <!-- 隠しフィールド -->
+            <input type="hidden" id="default_ogp_image_id" name="default_ogp_image_id" value="{{ old('default_ogp_image_id', $settings['default_ogp_image_id']) }}">
+            
+            <!-- プレビュー表示 -->
+            <div id="default_ogp_image_preview" class="mb-4">
+                @if($defaultOgpImage)
+                    <div class="relative inline-block">
+                        <img src="{{ asset('storage/media/' . $defaultOgpImage->path) }}" 
+                             alt="{{ $defaultOgpImage->name }}" 
+                             class="w-64 h-auto object-cover rounded border border-gray-300 dark:border-gray-600">
+                        <button type="button" 
+                                onclick="removeMediaPreview('default_ogp_image_id', 'default_ogp_image_preview')" 
+                                class="absolute -top-2 -right-2 w-8 h-8 bg-red-600 text-white rounded-full hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                @endif
+            </div>
+            
+            <!-- 選択ボタン -->
+            <button type="button" 
+                    onclick="openMediaSelector('ogpImageSelector', 'default_ogp_image_id', 'default_ogp_image_preview', false)"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <i class="fas fa-image mr-2"></i>{{ __('admin.settings.base.select_ogp_image') }}
+            </button>
+            
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.base.default_ogp_image_help') }}</p>
+            
+            @error('default_ogp_image_id')
+                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+            @enderror
+        </fieldset>
+
+        <fieldset>
+            <legend>{{ __('admin.settings.base.twitter_card_type') }}</legend>
+            @include('components.form.select', [
+                'name' => 'twitter_card_type',
+                'options' => [
+                    'summary' => __('admin.settings.base.twitter_card_summary'),
+                    'summary_large_image' => __('admin.settings.base.twitter_card_summary_large'),
+                ],
+                'value' => old('twitter_card_type', $settings['twitter_card_type']),
+            ])
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.base.twitter_card_type_help') }}</p>
+        </fieldset>
+
+    </section>
+
+    <!-- 言語・タイムゾーン設定 -->
+    <section>
+        <h2>{{ __('common.language_timezone') }}</h2>
+
         <fieldset>
             <legend>{{ __('admin.settings.base.locale') }}</legend>
             @include('components.form.select', [
@@ -448,4 +509,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         }
     });
 </script>
+
+<!-- メディア選択モーダル -->
+@include('components.media-selector', [
+    'id' => 'ogpImageSelector',
+    'inputId' => 'default_ogp_image_id',
+    'previewId' => 'default_ogp_image_preview',
+    'multiple' => false
+])
 @endsection

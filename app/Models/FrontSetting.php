@@ -26,8 +26,38 @@ use Illuminate\Database\Eloquent\Model;
 
 class FrontSetting extends Model
 {
-    protected $table = 'setting_fronts';
+    protected $table = 'front_settings';
     protected $fillable = [
-        'title',
+        'name',
+        'value',
+        'front_ogp_image_id',
     ];
+    
+    /**
+     * フロントOGP画像とのリレーション
+     */
+    public function frontOgpImage()
+    {
+        return $this->belongsTo(Media::class, 'front_ogp_image_id');
+    }
+    
+    /**
+     * 設定値の取得
+     */
+    public static function getValue($name, $default = null)
+    {
+        $setting = self::where('name', $name)->first();
+        return $setting ? ($setting->value ?? $default) : $default;
+    }
+    
+    /**
+     * 設定値の保存
+     */
+    public static function setValue($name, $value)
+    {
+        self::updateOrCreate(
+            ['name' => $name],
+            ['value' => $value]
+        );
+    }
 }

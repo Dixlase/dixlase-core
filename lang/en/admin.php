@@ -216,6 +216,15 @@ return [
             'site_description_help' => 'Enter a description of your site. This will be displayed in search engine results. (Recommended: 120-160 characters)',
             'site_keywords' => 'Site Keywords',
             'site_keywords_help' => 'Enter keywords related to your site, separated by commas. (Example: CMS, Laravel, Website Management)',
+            'ogp_seo_settings' => 'OGP & SEO Settings',
+            'default_ogp_image' => 'Default OGP Image',
+            'default_ogp_image_help' => 'Set the default image displayed when shared on social media. Used when individual pages don\'t have a specific image set. (Recommended size: 1200x630px)',
+            'twitter_card_type' => 'Twitter Card Type',
+            'twitter_card_type_help' => 'Select the display format when shared on Twitter.',
+            'twitter_card_summary' => 'Summary (Small Image)',
+            'twitter_card_summary_large' => 'Summary (Large Image)',
+            'select_ogp_image' => 'Select OGP Image',
+            'remove_ogp_image' => 'Remove OGP Image',
             'locale' => 'Default Language Settings',
             'admin_url' => 'Admin URL',
             'admin_url_help' => 'Set the URL path for accessing the admin panel. <br>For production environments, it is recommended to avoid predictable URLs like "admin".<br>Warning: Changing the admin URL will log you out of the admin panel.',
@@ -912,6 +921,17 @@ Clicking this link will complete the full mail function test.',
             'info' => [
                 'heading' => 'System Information',
             ],
+        ],
+        
+        // Front Page Settings
+        'front' => [
+            'heading' => 'Front Page Settings',
+            'ogp_settings' => 'OGP Settings',
+            'front_ogp_image' => 'Front Page OGP Image',
+            'front_ogp_image_help' => 'Set a dedicated OGP image for the top page (front page). If not set, the default OGP image from basic settings will be used. (Recommended size: 1200x630px)',
+            'select_ogp_image' => 'Select OGP Image',
+            'remove_ogp_image' => 'Remove OGP Image',
+            'settings_updated' => 'Front page settings have been updated.',
         ],
     ],
 

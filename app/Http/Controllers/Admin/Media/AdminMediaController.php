@@ -44,14 +44,31 @@ class AdminMediaController extends AdminLoggedInController
         if (!in_array($perPage, $allowedPerPage)) {
             $perPage = 25;
         }
+        
+        // ソート設定を取得
+        $sort = $request->get('sort', 'created_at');
+        $order = $request->get('order', 'desc');
+        
+        // 有効なソートフィールドのみ許可
+        $allowedSorts = ['name', 'type', 'created_at', 'updated_at'];
+        if (!in_array($sort, $allowedSorts)) {
+            $sort = 'created_at';
+        }
+        
+        // 有効なソート順序のみ許可
+        if (!in_array($order, ['asc', 'desc'])) {
+            $order = 'desc';
+        }
 
         //メディアをページネーションで読み込み（メンバー情報も事前読み込み）
         $media = Media::with('member')
-            ->orderBy('created_at', 'desc')
+            ->orderBy($sort, $order)
             ->paginate($perPage)
             ->withQueryString(); // URLパラメータを保持
             
         $this->viewParams['media'] = $media;
+        $this->viewParams['currentSort'] = $sort;
+        $this->viewParams['currentOrder'] = $order;
 
         return view('admin.media.index', $this->viewParams);
     }

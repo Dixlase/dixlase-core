@@ -23,6 +23,8 @@
 namespace App\Http\Controllers\Admin\Front;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
+use App\Models\FrontSetting;
+use App\Models\Media;
 use Illuminate\Http\Request;
 
 class AdminFrontController extends AdminLoggedinController
@@ -41,9 +43,42 @@ class AdminFrontController extends AdminLoggedinController
         return view('admin::front/design', $this->viewParams);
     }
 
+    /**
+     * フロントページ設定画面
+     */
     public function settings()
     {
+        // 設定値を取得
+        $settings = [
+            'front_ogp_image_id' => FrontSetting::getValue('front_ogp_image_id'),
+        ];
+        
+        // OGP画像のメディア情報を取得
+        $frontOgpImage = null;
+        if ($settings['front_ogp_image_id']) {
+            $frontOgpImage = Media::find($settings['front_ogp_image_id']);
+        }
+        
+        $this->viewParams['settings'] = $settings;
+        $this->viewParams['frontOgpImage'] = $frontOgpImage;
+        
         return view('admin::front/settings', $this->viewParams);
+    }
+
+    /**
+     * フロントページ設定の保存
+     */
+    public function updateSettings(Request $request)
+    {
+        $request->validate([
+            'front_ogp_image_id' => 'nullable|exists:media,id',
+        ]);
+        
+        // 設定を保存
+        FrontSetting::setValue('front_ogp_image_id', $request->input('front_ogp_image_id'));
+        
+        return redirect()->route('admin.front.settings')
+            ->with('success', __('admin.settings.front.settings_updated'));
     }
 
     /**

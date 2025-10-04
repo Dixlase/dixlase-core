@@ -190,6 +190,15 @@ return [
             'site_description_help' => 'サイトの説明文を入力してください。検索エンジンの検索結果に表示されます。（推奨: 120-160文字）',
             'site_keywords' => 'サイトのキーワード',
             'site_keywords_help' => 'サイトに関連するキーワードをカンマ区切りで入力してください。（例: CMS, Laravel, ウェブサイト管理）',
+            'ogp_seo_settings' => 'OGP・SEO設定',
+            'default_ogp_image' => 'デフォルトOGP画像',
+            'default_ogp_image_help' => 'SNSでシェアされた際に表示されるデフォルト画像を設定します。個別ページで設定がない場合に使用されます。（推奨サイズ: 1200x630px）',
+            'twitter_card_type' => 'Twitterカードタイプ',
+            'twitter_card_type_help' => 'Twitterでシェアされた際の表示形式を選択します。',
+            'twitter_card_summary' => '概要（小さい画像）',
+            'twitter_card_summary_large' => '概要（大きい画像）',
+            'select_ogp_image' => 'OGP画像を選択',
+            'remove_ogp_image' => 'OGP画像を削除',
             'locale' => 'デフォルトの言語設定',
             'admin_url' => '管理画面URL',
             'admin_url_help' => '管理画面にアクセスするためのURLパスを設定します。<br>本番環境では、「admin」など予測されやすいURLは避けることを推奨します。<br>注意！:管理画面URLを変更すると、一旦管理画面からログアウトされます。',
@@ -853,6 +862,17 @@ return [
             'info' => [
                 'heading' => 'システム情報',
             ],
+        ],
+        
+        // フロントページ設定
+        'front' => [
+            'heading' => 'フロントページ設定',
+            'ogp_settings' => 'OGP設定',
+            'front_ogp_image' => 'フロントページOGP画像',
+            'front_ogp_image_help' => 'トップページ（フロントページ）専用のOGP画像を設定します。設定しない場合は基本設定のデフォルトOGP画像が使用されます。（推奨サイズ: 1200x630px）',
+            'select_ogp_image' => 'OGP画像を選択',
+            'remove_ogp_image' => 'OGP画像を削除',
+            'settings_updated' => 'フロントページ設定が更新されました。',
         ],
     ],
 
