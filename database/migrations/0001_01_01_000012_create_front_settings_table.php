@@ -41,8 +41,12 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->string("name", 255);
             $table->text("value");
+            $table->unsignedBigInteger('front_ogp_image_id')->nullable();
             $table->timestamps();
             $table->softDeletes();
+            
+            // 外部キー制約
+            $table->foreign('front_ogp_image_id')->references('id')->on('media')->onDelete('set null');
         });
     }
 

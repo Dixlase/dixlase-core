@@ -40,6 +40,9 @@ return new class extends Migration
         Schema::create($this->table, function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('caption')->nullable();
+            $table->text('description')->nullable();
+            $table->string('alt_text')->nullable();
             $table->string('path');
             $table->string('type');
             $table->foreignId('uploaded_by')->nullable()->constrained('members')->onDelete('set null');
