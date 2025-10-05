@@ -13,9 +13,8 @@ export default defineConfig({
         // ロールアップオプション
         rollupOptions: {
             input: {
-                // CSS
-                'variables': resolve(__dirname, 'resources/assets/css/variables.css'),
-                'style': resolve(__dirname, 'resources/assets/css/style.css'),
+                // SCSS (開発時)
+                'theme-style': resolve(__dirname, 'resources/src/front/scss/style.scss'),
                 
                 // JavaScript
                 'app': resolve(__dirname, 'resources/assets/js/app.js'),
