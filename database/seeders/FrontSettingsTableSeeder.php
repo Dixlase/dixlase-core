@@ -36,6 +36,9 @@ class FrontSettingsTableSeeder extends Seeder
     {
         $settings = [
             ['name' => 'front_ogp_image_id', 'value' => null],
+            ['name' => 'header_logo_id', 'value' => null],
+            ['name' => 'favicon_id', 'value' => null],
+            ['name' => 'front_description', 'value' => ''],
         ];
 
         foreach ($settings as $setting) {

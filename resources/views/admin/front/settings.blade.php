@@ -28,18 +28,58 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     @endif
 
-    <form action="{{ route('admin.front.settings.store') }}" method="POST" id="front-settings-form" class="space-y-6">
+    <form action="{{ route('admin.front.settings.store') }}" method="POST" id="front-settings-form">
         @csrf
 
-        <!-- OGP設定 -->
-        <section class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-            <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">{{ __('admin.settings.front.ogp_settings') }}</h2>
+        <!-- 基本設定 -->
+        <section>
+            <h2>{{ __('admin.settings.front.basic_settings') }}</h2>
 
-            <fieldset class="mb-6">
-                <legend class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {{ __('admin.settings.front.front_ogp_image') }}
-                </legend>
-                
+            <fieldset>
+                <legend>{{ __('admin.settings.front.front_description') }}</legend>
+                @include('components.form.textarea', [
+                    'name' => 'front_description',
+                    'value' => old('front_description', $settings['front_description']),
+                    'rows' => 3,
+                ])
+                <p>{!! __('admin.settings.front.front_description_help') !!}</p>
+            </fieldset>
+        </section>
+
+        <!-- ヘッダー・ファビコン設定 -->
+        <section>
+            <h2>{{ __('admin.settings.front.header_favicon_settings') }}</h2>
+
+            <fieldset>
+                <legend>{{ __('admin.settings.front.header_logo') }}</legend>
+                @include('components.media-picker', [
+                    'name' => 'header_logo_id',
+                    'value' => $settings['header_logo_id'],
+                    'media' => $headerLogo,
+                    'help' => __('admin.settings.front.header_logo_help'),
+                    'error' => $errors->first('header_logo_id'),
+                ])
+            </fieldset>
+
+            <fieldset>
+                <legend>{{ __('admin.settings.front.favicon') }}</legend>
+                @include('components.media-picker', [
+                    'name' => 'favicon_id',
+                    'value' => $settings['favicon_id'],
+                    'media' => $favicon,
+                    'help' => __('admin.settings.front.favicon_help'),
+                    'error' => $errors->first('favicon_id'),
+                    'aspectRatio' => 'square'
+                ])
+            </fieldset>
+        </section>
+
+        <!-- OGP設定 -->
+        <section>
+            <h2>{{ __('admin.settings.front.ogp_settings') }}</h2>
+
+            <fieldset>
+                <legend>{{ __('admin.settings.front.front_ogp_image') }}</legend>
                 @include('components.media-picker', [
                     'name' => 'front_ogp_image_id',
                     'value' => $settings['front_ogp_image_id'],

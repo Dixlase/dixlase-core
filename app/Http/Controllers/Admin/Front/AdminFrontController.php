@@ -51,16 +51,20 @@ class AdminFrontController extends AdminLoggedinController
         // 設定値を取得
         $settings = [
             'front_ogp_image_id' => FrontSetting::getValue('front_ogp_image_id'),
+            'header_logo_id' => FrontSetting::getValue('header_logo_id'),
+            'favicon_id' => FrontSetting::getValue('favicon_id'),
+            'front_description' => FrontSetting::getValue('front_description'),
         ];
         
-        // OGP画像のメディア情報を取得
-        $frontOgpImage = null;
-        if ($settings['front_ogp_image_id']) {
-            $frontOgpImage = Media::find($settings['front_ogp_image_id']);
-        }
+        // メディア情報を取得
+        $frontOgpImage = $settings['front_ogp_image_id'] ? Media::find($settings['front_ogp_image_id']) : null;
+        $headerLogo = $settings['header_logo_id'] ? Media::find($settings['header_logo_id']) : null;
+        $favicon = $settings['favicon_id'] ? Media::find($settings['favicon_id']) : null;
         
         $this->viewParams['settings'] = $settings;
         $this->viewParams['frontOgpImage'] = $frontOgpImage;
+        $this->viewParams['headerLogo'] = $headerLogo;
+        $this->viewParams['favicon'] = $favicon;
         
         return view('admin::front/settings', $this->viewParams);
     }
@@ -72,10 +76,16 @@ class AdminFrontController extends AdminLoggedinController
     {
         $request->validate([
             'front_ogp_image_id' => 'nullable|exists:media,id',
+            'header_logo_id' => 'nullable|exists:media,id',
+            'favicon_id' => 'nullable|exists:media,id',
+            'front_description' => 'nullable|string|max:1000',
         ]);
         
         // 設定を保存
         FrontSetting::setValue('front_ogp_image_id', $request->input('front_ogp_image_id'));
+        FrontSetting::setValue('header_logo_id', $request->input('header_logo_id'));
+        FrontSetting::setValue('favicon_id', $request->input('favicon_id'));
+        FrontSetting::setValue('front_description', $request->input('front_description'));
         
         return redirect()->route('admin.front.settings')
             ->with('success', __('admin.settings.front.settings_updated'));
