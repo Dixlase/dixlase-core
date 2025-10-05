@@ -34,9 +34,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </div>
 
     <!-- 検索フォーム -->
-    <section>
-        <h2>{{ __('admin.media.search.heading') }}</h2>
-        
+    <section>        
         <form method="GET" action="{{ route('admin.media.index') }}">
             <fieldset>
                 <legend>{{ __('common.file_name') }}</legend>

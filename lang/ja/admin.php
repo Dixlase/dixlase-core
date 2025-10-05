@@ -879,6 +879,16 @@ return [
         // フロントページ設定
         'front' => [
             'heading' => 'フロントページ設定',
+            'basic_settings' => '基本設定',
+            'front_title' => 'フロントページタイトル',
+            'front_title_help' => 'トップページ（フロントページ）専用のタイトルを設定します。設定しない場合は基本設定のサイト名が使用されます。',
+            'front_description' => 'フロントページ説明文',
+            'front_description_help' => 'トップページ（フロントページ）専用の説明文を設定します。検索エンジンの検索結果に表示されます。<br>空白の場合は基本設定の説明文が使用されます。',
+            'header_favicon_settings' => 'ヘッダー・ファビコン設定',
+            'header_logo' => 'ヘッダーロゴ',
+            'header_logo_help' => 'サイトヘッダーに表示するロゴ画像を設定します。',
+            'favicon' => 'ファビコン',
+            'favicon_help' => 'ブラウザのタブに表示されるアイコンを設定します。（推奨サイズ: 32x32px または 64x64px）',
             'ogp_settings' => 'OGP設定',
             'front_ogp_image' => 'フロントページOGP画像',
             'front_ogp_image_help' => 'トップページ（フロントページ）専用のOGP画像を設定します。設定しない場合は基本設定のデフォルトOGP画像が使用されます。（推奨サイズ: 1200x630px）',
