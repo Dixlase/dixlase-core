@@ -3,7 +3,7 @@
         <div class="flex items-center justify-between h-16">
             {{-- Site Logo --}}
             <div class="flex-shrink-0">
-                <x-site-logo />
+                <x-themes::site-logo />
             </div>
 
             {{-- Navigation --}}

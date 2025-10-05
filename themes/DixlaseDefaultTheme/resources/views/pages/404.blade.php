@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('themes::layouts.app')
 
 @section('title', ' - Page Not Found')
 

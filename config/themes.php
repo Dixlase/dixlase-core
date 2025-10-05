@@ -21,7 +21,7 @@
 
 return [
     'theme_directory' => 'themes', // テーマのディレクトリ
-    'active_theme' => env('APP_THEME', 'default-theme'), // アクティブなテーマ
-    'default_theme' => env('APP_THEME', 'default-theme'), // デフォルトのテーマ
+    'active_theme' => env('APP_THEME', 'DixlaseDefaultTheme'), // アクティブなテーマ
+    'default_theme' => env('APP_THEME', 'DixlaseDefaultTheme'), // デフォルトのテーマ
     'admin_theme' => 'admin', // 管理画面のテーマ
 ];

@@ -21,13 +21,13 @@
     @stack('styles')
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-    @include('partials.header')
+    @include('themes::partials.header')
 
     <main class="min-h-screen">
         @yield('content')
     </main>
 
-    @include('partials.footer')
+    @include('themes::partials.footer')
 
     {{-- Scripts --}}
     @vite([
