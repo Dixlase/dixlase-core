@@ -45,7 +45,9 @@ plugins/*
 !plugins/DixlaseInquiry/
 # === プラグイン用動的除外設定終了 ===
 # テーマを入れるディレクトリを除外
-themes/**
+themes/*
+# ただしデフォルトテーマはコアに含める
+!themes/DixlaseDefaultTheme/
 license-info.json
 license.txt
 
