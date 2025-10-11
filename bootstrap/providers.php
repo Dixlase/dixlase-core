@@ -7,4 +7,5 @@ return [
     App\Providers\PluginServiceProvider::class,
     App\Providers\PluginMigrationServiceProvider::class,
     App\Providers\ShortcodeServiceProvider::class,
+    Themes\DixlaseDefaultTheme\App\Providers\DixlaseDefaultThemeServiceProvider::class,
 ];

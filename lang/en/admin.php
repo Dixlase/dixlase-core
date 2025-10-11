@@ -94,6 +94,7 @@ return [
                 'text' => 'Theme Settings',
                 'index' => 'Theme Master',
                 'install' => 'Install',
+                'settings' => 'Theme Settings',
             ],
             'plugins' => [
                 'text' => 'Plugin Settings',
@@ -752,6 +753,9 @@ Clicking this link will complete the full mail function test.',
                 'currently_active' => 'Currently Active',
                 'activate_confirm' => 'Do you want to activate this theme?',
                 'delete_confirm' => 'Are you sure you want to delete this?',
+                'activate_button' => 'Activate',
+                'delete_button' => 'Delete',
+                'settings_button' => 'Settings',
             ],
             'install' => [
                 'heading' => 'Theme Installation',

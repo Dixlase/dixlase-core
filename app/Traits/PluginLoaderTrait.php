@@ -443,6 +443,17 @@ trait PluginLoaderTrait
      */
     protected function mergeAdminNavigation(string $pluginName = 'Unknown', string $configPath = null): void
     {
+        // デバッグ: 旧実装と新実装を比較
+        $useNewImplementation = true; // falseにすると旧実装を使用
+        
+        if ($useNewImplementation) {
+            // AdminHelperの共通メソッドを使用
+            \App\Helpers\AdminHelper::mergeAdminNavigation($pluginName, $configPath);
+            return;
+        }
+        
+        // 以下は旧実装（デバッグ用）
+        /*
         \Log::info("=== {$pluginName}: mergeAdminNavigation START ===", [
             'timestamp' => now()->toDateTimeString(),
             'config_path' => $configPath
@@ -583,5 +594,6 @@ trait PluginLoaderTrait
         \Log::info("=== {$pluginName}: mergeAdminNavigation END ===", [
             'timestamp' => now()->toDateTimeString()
         ]);
+        */
     }
 }

@@ -23,5 +23,6 @@ return [
     'theme_directory' => 'themes', // テーマのディレクトリ
     'active_theme' => env('APP_THEME', 'DixlaseDefaultTheme'), // アクティブなテーマ
     'default_theme' => env('APP_THEME', 'DixlaseDefaultTheme'), // デフォルトのテーマ
+    'default_theme_slug' => env('DEFAULT_THEME_SLUG', 'dixlase-default-theme'), // デフォルトテーマのスラッグ名
     'admin_theme' => 'admin', // 管理画面のテーマ
 ];

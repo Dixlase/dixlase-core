@@ -41,18 +41,60 @@ class AdminThemesSettingsController extends AdminLoggedInController
     {
 
         // デフォルトテーマを取得
-        $defaultTheme = Theme::where('slug', 'default')->first();
+        $defaultTheme = Theme::where('slug', config('themes.default_theme_slug', 'dixlase-default-theme'))->first();
 
         // 現在有効なテーマを取得
         $activeThemeId = DB::table('theme_settings')->value('active_theme_id');
 
         // 他のテーマを取得（デフォルトテーマ以外）
-        $themes = Theme::where('slug', '!=', 'default')->paginate(10); // 1ページあたり10件表示
+        $themes = Theme::where('slug', '!=', config('themes.default_theme_slug', 'dixlase-default-theme'))->paginate(10); // 1ページあたり10件表示
+
+        // テーマ設定機能の有無をチェック
+        $themesWithSettings = $this->checkThemeSettings($themes);
+        if ($defaultTheme) {
+            $defaultTheme->has_settings = $this->hasThemeSettings($defaultTheme);
+        }
 
         $this->viewParams['defaultTheme'] = $defaultTheme;
-        $this->viewParams['themes'] = $themes;
+        $this->viewParams['themes'] = $themesWithSettings;
         $this->viewParams['activeThemeId'] = $activeThemeId;
         return view('admin::settings.themes.index', $this->viewParams);
+    }
+
+    /**
+     * テーマに設定機能があるかチェック
+     */
+    private function hasThemeSettings($theme)
+    {
+        $themeSlug = $theme->slug;
+        $themeDirectory = $theme->directory;
+        
+        // ルートファイルの存在確認
+        $routeFile = base_path("themes/{$themeDirectory}/routes/admin.php");
+        
+        if (!file_exists($routeFile)) {
+            return false;
+        }
+        
+        // ルートファイルの内容を確認
+        $routeContent = file_get_contents($routeFile);
+        
+        // 設定ルートが定義されているかチェック（新しいルート構造に対応）
+        // '/settings/themes/settings' ルートと 'settings' メソッドの両方をチェック
+        return str_contains($routeContent, '/settings/themes/settings') 
+            && str_contains($routeContent, 'settings');
+    }
+
+    /**
+     * 複数テーマの設定機能チェック
+     */
+    private function checkThemeSettings($themes)
+    {
+        foreach ($themes as $theme) {
+            $theme->has_settings = $this->hasThemeSettings($theme);
+        }
+        
+        return $themes;
     }
 
     // テーマインストール
@@ -173,7 +215,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
         }
 
         // デフォルトテンプレートは削除禁止
-        if ($theme->slug === 'default') {
+        if ($theme->slug === config('themes.default_theme_slug', 'dixlase-default-theme')) {
             return redirect()->route('admin.settings.themes.index')->with('error', 'デフォルトテーマは削除できません。');
         }
 

@@ -107,6 +107,11 @@ class MemberRolePermissionSeeder extends Seeder
                 'access_roles' => '9',
                 'view_roles'  => '',
             ],
+            [
+                'menu_key' => 'settings.themes.settings',
+                'access_roles' => '9',
+                'view_roles'  => '',
+            ],
 
             // プラグイン設定
             [
