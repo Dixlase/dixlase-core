@@ -91,6 +91,7 @@ return [
                 'text' => 'テーマ設定',
                 'index' => 'テーママスター',
                 'install'  => 'インストール',
+                'settings' => 'テーマ設定',
             ],
             'plugins' => [
                 'text' => 'プラグイン設定',
@@ -698,6 +699,9 @@ return [
                 'currently_active' => '現在使用中',
                 'activate_confirm' => 'このテーマを有効化しますか？',
                 'delete_confirm' => '本当に削除しますか？',
+                'activate_button' => '有効化',
+                'delete_button' => '削除',
+                'settings_button' => '設定',
             ],
             'install' => [
                 'heading' => 'テーマインストール',
