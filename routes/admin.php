@@ -81,127 +81,194 @@ Route::prefix($adminUrl)->name('admin.')
         // 認証済みルート
         Route::middleware([
             'auth:member', 
-            'log.admin.activity',
-            'check.menu.access:menu_key', 
-            'check.menu.edit:menu_key'
+            'log.admin.activity'
         ])->group(function () {
 
-            // ダッシュボード
+            // ダッシュボード（全員アクセス可能）
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-            //フロントページマスター
-            Route::get('/front', [AdminFrontController::class, 'index'])->name('front.index');
-            //フロントページデザイン
-            Route::get('/front/design', [AdminFrontController::class, 'design'])->name('front.design');
-            Route::post('/front/design', [AdminFrontController::class, 'design'])->name('front.design.store');
-            //フロントページ管理
-            Route::get('/front/settings', [AdminFrontController::class, 'settings'])->name('front.settings');
-            Route::post('/front/settings', [AdminFrontController::class, 'updateSettings'])->name('front.settings.store');
+            
+            // フロントページ管理（権限チェック付き）
+            Route::middleware('check.menu.access:front')->group(function () {
+                //フロントページマスター
+                Route::get('/front', [AdminFrontController::class, 'index'])->name('front.index');
+                //フロントページデザイン
+                Route::get('/front/design', [AdminFrontController::class, 'design'])->name('front.design');
+                Route::post('/front/design', [AdminFrontController::class, 'design'])
+                    ->middleware('check.menu.edit:front')
+                    ->name('front.design.store');
+                //フロントページ設定
+                Route::get('/front/settings', [AdminFrontController::class, 'settings'])->name('front.settings');
+                Route::post('/front/settings', [AdminFrontController::class, 'updateSettings'])
+                    ->middleware('check.menu.edit:front')
+                    ->name('front.settings.store');
+            });
 
-            //メディア管理
-            Route::get('/media', [AdminMediaController::class, 'index'])->name('media.index');
-            //メディアAPI（モーダル用）
-            Route::get('/media/api', [AdminMediaController::class, 'api'])->name('media.api');
-            //メディアアップロード
-            Route::get('/media/upload', [AdminMediaController::class, 'upload'])->name('media.upload');
-            Route::post('/media/upload/', [AdminMediaController::class, 'store'])->name('media.upload');
-            //メディア削除
-            Route::delete('/media/delete/{media}', [AdminMediaController::class, 'delete'])->name('media.delete');
-            //メディアダウンロード
-            Route::get('/media/download/{media}', [AdminMediaController::class, 'download'])->name('media.download');
-            //メディアプレビュー
-            Route::get('/media/preview/{media}', [AdminMediaController::class, 'preview'])->name('media.preview');
-            //メディア情報更新
-            Route::put('/media/{media}', [AdminMediaController::class, 'updateMedia'])->name('media.update');
-            //メディア設定
-            Route::get('/media/settings', [AdminMediaController::class, 'settings'])->name('media.settings');
-            Route::post('/media/settings', [AdminMediaController::class, 'update'])->name('media.settings.update');
+            // メディア管理（権限チェック付き）
+            Route::middleware('check.menu.access:media')->group(function () {
+                Route::get('/media', [AdminMediaController::class, 'index'])->name('media.index');
+                //メディアAPI（モーダル用）
+                Route::get('/media/api', [AdminMediaController::class, 'api'])->name('media.api');
+                //メディアアップロード
+                Route::get('/media/upload', [AdminMediaController::class, 'upload'])->name('media.upload');
+                Route::post('/media/upload/', [AdminMediaController::class, 'store'])
+                    ->middleware('check.menu.edit:media')
+                    ->name('media.upload');
+                //メディア削除
+                Route::delete('/media/delete/{media}', [AdminMediaController::class, 'delete'])
+                    ->middleware('check.menu.edit:media')
+                    ->name('media.delete');
+                //メディアダウンロード
+                Route::get('/media/download/{media}', [AdminMediaController::class, 'download'])->name('media.download');
+                //メディアプレビュー
+                Route::get('/media/preview/{media}', [AdminMediaController::class, 'preview'])->name('media.preview');
+                //メディア情報更新
+                Route::put('/media/{media}', [AdminMediaController::class, 'updateMedia'])
+                    ->middleware('check.menu.edit:media')
+                    ->name('media.update');
+                //メディア設定
+                Route::get('/media/settings', [AdminMediaController::class, 'settings'])->name('media.settings');
+                Route::post('/media/settings', [AdminMediaController::class, 'update'])
+                    ->middleware('check.menu.edit:media')
+                    ->name('media.settings.update');
+            });
 
-            // プロフィール設定
+            // プロフィール設定（全員アクセス可能）
             Route::get('/profile', [AdminProfileController::class, 'index'])->name('profile');
             Route::post('/profile', [AdminProfileController::class, 'update'])->name('profile.update');
 
             // 全体設定
-            // 基本設定
-            Route::get('/settings/base', [AdminBaseSettingsController::class, 'index'])->name('settings.base');
-            Route::put('/settings/base', [AdminBaseSettingsController::class, 'update'])->name('settings.base.update');
-            Route::post('/settings/base/test-mail', [AdminBaseSettingsController::class, 'testMail'])->name('settings.base.test-mail');
-            Route::post('/settings/base/test-connection', [AdminBaseSettingsController::class, 'testConnection'])->name('settings.base.test-connection');
-            Route::post('/settings/base/clear-test-session', [AdminBaseSettingsController::class, 'clearTestSession'])->name('settings.base.clear-test-session');
-            Route::get('/settings/base/check-test-session', [AdminBaseSettingsController::class, 'checkTestSession'])->name('settings.base.check-test-session');
-            Route::get('/settings/base/verify-mail/{token}', [AdminBaseSettingsController::class, 'verifyMail'])->name('settings.base.verify-mail');
-            Route::get('/settings/base/mail-verification-success', [AdminBaseSettingsController::class, 'mailVerificationSuccess'])->name('settings.base.mail-verification-success');
+            // 基本設定（権限チェック付き）
+            Route::middleware('check.menu.access:settings.base')->group(function () {
+                Route::get('/settings/base', [AdminBaseSettingsController::class, 'index'])->name('settings.base');
+                Route::put('/settings/base', [AdminBaseSettingsController::class, 'update'])
+                    ->middleware('check.menu.edit:settings.base')
+                    ->name('settings.base.update');
+                Route::post('/settings/base/test-mail', [AdminBaseSettingsController::class, 'testMail'])->name('settings.base.test-mail');
+                Route::post('/settings/base/test-connection', [AdminBaseSettingsController::class, 'testConnection'])->name('settings.base.test-connection');
+                Route::post('/settings/base/clear-test-session', [AdminBaseSettingsController::class, 'clearTestSession'])->name('settings.base.clear-test-session');
+                Route::get('/settings/base/check-test-session', [AdminBaseSettingsController::class, 'checkTestSession'])->name('settings.base.check-test-session');
+                Route::get('/settings/base/verify-mail/{token}', [AdminBaseSettingsController::class, 'verifyMail'])->name('settings.base.verify-mail');
+                Route::get('/settings/base/mail-verification-success', [AdminBaseSettingsController::class, 'mailVerificationSuccess'])->name('settings.base.mail-verification-success');
+            });
 
-            // セキュリティ設定
-            Route::get('/settings/security', [AdminSecuritySettingsController::class, 'index'])->name('settings.security');
-            Route::post('/settings/security', [AdminSecuritySettingsController::class, 'update'])->name('settings.security.update');
-            Route::post('/settings/security/test-captcha', [AdminSecuritySettingsController::class, 'testCaptcha'])->name('settings.security.test-captcha');
-            Route::post('/settings/security/validate-captcha-widget', [AdminSecuritySettingsController::class, 'validateCaptchaWidget'])->name('settings.security.validate-captcha-widget');
-            Route::post('/settings/security/reset-captcha-test', [AdminSecuritySettingsController::class, 'resetCaptchaTest'])->name('settings.security.reset-captcha-test');
-            Route::post('/settings/security/clear-captcha-test', [AdminSecuritySettingsController::class, 'clearCaptchaTest'])->name('settings.security.clear-captcha-test');
+            // セキュリティ設定（権限チェック付き）
+            Route::middleware('check.menu.access:settings.security')->group(function () {
+                Route::get('/settings/security', [AdminSecuritySettingsController::class, 'index'])->name('settings.security');
+                Route::post('/settings/security', [AdminSecuritySettingsController::class, 'update'])
+                    ->middleware('check.menu.edit:settings.security')
+                    ->name('settings.security.update');
+                Route::post('/settings/security/test-captcha', [AdminSecuritySettingsController::class, 'testCaptcha'])->name('settings.security.test-captcha');
+                Route::post('/settings/security/validate-captcha-widget', [AdminSecuritySettingsController::class, 'validateCaptchaWidget'])->name('settings.security.validate-captcha-widget');
+                Route::post('/settings/security/reset-captcha-test', [AdminSecuritySettingsController::class, 'resetCaptchaTest'])->name('settings.security.reset-captcha-test');
+                Route::post('/settings/security/clear-captcha-test', [AdminSecuritySettingsController::class, 'clearCaptchaTest'])->name('settings.security.clear-captcha-test');
+            });
 
-            // メンバー管理
-            // メンバーマスター
-            Route::get('/settings/members', [AdminMembersSettingsController::class, 'index'])->name('settings.members.index');
-            // メンバー作成
-            Route::get('/settings/members/create', [AdminMembersSettingsController::class, 'create'])->name('settings.members.create');
-            // メンバー保存
-            Route::post('/settings/members/store', [AdminMembersSettingsController::class, 'store'])->name('settings.members.store');
-            // メンバー編集
-            Route::get('/settings/members/edit/{member}', [AdminMembersSettingsController::class, 'edit'])->name('settings.members.edit');
-            // メンバー更新
-            Route::patch('/settings/members/update/{member}', [AdminMembersSettingsController::class, 'update'])->name('settings.members.update');
-            // メンバー削除
-            Route::delete('/settings/members/destroy/{member}', [AdminMembersSettingsController::class, 'destroy'])->name('settings.members.destroy');
-            // メンバー強制ログアウト
-            Route::post('/settings/members/force-logout/{member}', [AdminMembersSettingsController::class, 'forceLogout'])->name('settings.members.force-logout');
-            // 全メンバー強制ログアウト
-            Route::post('/settings/members/force-logout-all', [AdminMembersSettingsController::class, 'forceLogoutAll'])->name('settings.members.force-logout-all');
-            // プロフィール
-            Route::get('/settings/members/profile', [AdminMembersSettingsController::class, 'profile'])->name('settings.members.profile');
-            Route::post('/settings/members/profile', [AdminMembersSettingsController::class, 'updateProfile'])->name('settings.members.profile.update');
+            // メンバー管理（権限チェック付き）
+            Route::middleware('check.menu.access:settings.members')->group(function () {
+                // メンバーマスター
+                Route::get('/settings/members', [AdminMembersSettingsController::class, 'index'])->name('settings.members.index');
+                // メンバー作成
+                Route::get('/settings/members/create', [AdminMembersSettingsController::class, 'create'])->name('settings.members.create');
+                // メンバー保存
+                Route::post('/settings/members/store', [AdminMembersSettingsController::class, 'store'])
+                    ->middleware('check.menu.edit:settings.members')
+                    ->name('settings.members.store');
+                // メンバー編集
+                Route::get('/settings/members/edit/{member}', [AdminMembersSettingsController::class, 'edit'])->name('settings.members.edit');
+                // メンバー更新
+                Route::patch('/settings/members/update/{member}', [AdminMembersSettingsController::class, 'update'])
+                    ->middleware('check.menu.edit:settings.members')
+                    ->name('settings.members.update');
+                // メンバー削除
+                Route::delete('/settings/members/destroy/{member}', [AdminMembersSettingsController::class, 'destroy'])
+                    ->middleware('check.menu.edit:settings.members')
+                    ->name('settings.members.destroy');
+                // メンバー強制ログアウト
+                Route::post('/settings/members/force-logout/{member}', [AdminMembersSettingsController::class, 'forceLogout'])
+                    ->middleware('check.menu.edit:settings.members')
+                    ->name('settings.members.force-logout');
+                // 全メンバー強制ログアウト
+                Route::post('/settings/members/force-logout-all', [AdminMembersSettingsController::class, 'forceLogoutAll'])
+                    ->middleware('check.menu.edit:settings.members')
+                    ->name('settings.members.force-logout-all');
+                // プロフィール
+                Route::get('/settings/members/profile', [AdminMembersSettingsController::class, 'profile'])->name('settings.members.profile');
+                Route::post('/settings/members/profile', [AdminMembersSettingsController::class, 'updateProfile'])->name('settings.members.profile.update');
 
-            // 権限設定
-            Route::get('/settings/members/roles/', [AdminMembersSettingsController::class, 'roles'])->name('settings.members.roles');
-            Route::post('/settings/members/roles/', [AdminMembersSettingsController::class, 'updateRoles'])->name('settings.members.roles.update');
+                // 権限設定
+                Route::get('/settings/members/roles/', [AdminMembersSettingsController::class, 'roles'])->name('settings.members.roles');
+                Route::post('/settings/members/roles/', [AdminMembersSettingsController::class, 'updateRoles'])
+                    ->middleware('check.menu.edit:settings.members')
+                    ->name('settings.members.roles.update');
 
-            // メンバー設定
-            Route::get('/settings/members/settings', [AdminMembersSettingsController::class, 'settings'])->name('settings.members.settings');
-            Route::post('/settings/members/settings', [AdminMembersSettingsController::class, 'updateSettings'])->name('settings.members.settings.update');
+                // メンバー設定
+                Route::get('/settings/members/settings', [AdminMembersSettingsController::class, 'settings'])->name('settings.members.settings');
+                Route::post('/settings/members/settings', [AdminMembersSettingsController::class, 'updateSettings'])
+                    ->middleware('check.menu.edit:settings.members')
+                    ->name('settings.members.settings.update');
+            });
 
-            // テーマ設定
-            Route::get('/settings/themes', [AdminThemesSettingsController::class, 'index'])->name('settings.themes.index');
-            Route::get('/settings/themes/install', [AdminThemesSettingsController::class, 'install'])->name('settings.themes.install');
-            Route::post('/settings/themes/upload', [AdminThemesSettingsController::class, 'upload'])->name('settings.themes.upload');
-            Route::post('/settings/themes/activate/{id}', [AdminThemesSettingsController::class, 'activate'])->name('settings.themes.activate');
-            Route::post('/settings/themes/delete/{id}', [AdminThemesSettingsController::class, 'delete'])->name('settings.themes.delete');
+            // テーマ設定（権限チェック付き）
+            Route::middleware('check.menu.access:settings.themes')->group(function () {
+                Route::get('/settings/themes', [AdminThemesSettingsController::class, 'index'])->name('settings.themes.index');
+                Route::get('/settings/themes/install', [AdminThemesSettingsController::class, 'install'])->name('settings.themes.install');
+                Route::post('/settings/themes/upload', [AdminThemesSettingsController::class, 'upload'])
+                    ->middleware('check.menu.edit:settings.themes')
+                    ->name('settings.themes.upload');
+                Route::post('/settings/themes/activate/{id}', [AdminThemesSettingsController::class, 'activate'])
+                    ->middleware('check.menu.edit:settings.themes')
+                    ->name('settings.themes.activate');
+                Route::post('/settings/themes/delete/{id}', [AdminThemesSettingsController::class, 'delete'])
+                    ->middleware('check.menu.edit:settings.themes')
+                    ->name('settings.themes.delete');
+            });
 
-            // プラグイン設定
-            Route::get('/settings/plugins', [AdminPluginsSettingsController::class, 'index'])->name('settings.plugins.index');
-            Route::get('/settings/plugins/install', [AdminPluginsSettingsController::class, 'install'])->name('settings.plugins.install');
-            Route::post('/settings/plugins/upload', [AdminPluginsSettingsController::class, 'upload'])->name('settings.plugins.upload');
-            Route::post('/settings/plugins/enable/{id}', [AdminPluginsSettingsController::class, 'enable'])->name('settings.plugins.enable');
-            Route::post('/settings/plugins/disable/{id}', [AdminPluginsSettingsController::class, 'disable'])->name('settings.plugins.disable');
-            Route::post('/settings/plugins/uninstall/{id}', [AdminPluginsSettingsController::class, 'uninstall'])->name('settings.plugins.uninstall');
+            // プラグイン設定（権限チェック付き）
+            Route::middleware('check.menu.access:settings.plugins')->group(function () {
+                Route::get('/settings/plugins', [AdminPluginsSettingsController::class, 'index'])->name('settings.plugins.index');
+                Route::get('/settings/plugins/install', [AdminPluginsSettingsController::class, 'install'])->name('settings.plugins.install');
+                Route::post('/settings/plugins/upload', [AdminPluginsSettingsController::class, 'upload'])
+                    ->middleware('check.menu.edit:settings.plugins')
+                    ->name('settings.plugins.upload');
+                Route::post('/settings/plugins/enable/{id}', [AdminPluginsSettingsController::class, 'enable'])
+                    ->middleware('check.menu.edit:settings.plugins')
+                    ->name('settings.plugins.enable');
+                Route::post('/settings/plugins/disable/{id}', [AdminPluginsSettingsController::class, 'disable'])
+                    ->middleware('check.menu.edit:settings.plugins')
+                    ->name('settings.plugins.disable');
+                Route::post('/settings/plugins/uninstall/{id}', [AdminPluginsSettingsController::class, 'uninstall'])
+                    ->middleware('check.menu.edit:settings.plugins')
+                    ->name('settings.plugins.uninstall');
+            });
 
-            //キャッシュ管理
-            Route::get('/settings/systems/cache', [AdminSystemsController::class, 'cache'])->name('settings.systems.cache');
-            Route::post('/settings/systems/cache/clear', [AdminSystemsController::class, 'clearCache'])->name('settings.systems.cache.clear');
+            // システム設定（権限チェック付き）
+            Route::middleware('check.menu.access:settings.systems')->group(function () {
+                //キャッシュ管理
+                Route::get('/settings/systems/cache', [AdminSystemsController::class, 'cache'])->name('settings.systems.cache');
+                Route::post('/settings/systems/cache/clear', [AdminSystemsController::class, 'clearCache'])
+                    ->middleware('check.menu.edit:settings.systems')
+                    ->name('settings.systems.cache.clear');
 
-            //データベース管理
-            Route::get('/settings/systems/database', [AdminSystemsController::class, 'database'])->name('settings.systems.database');
-            Route::post('/settings/systems/database/clean', [AdminSystemsController::class, 'cleanupDatabase'])->name('settings.systems.database.clean');
-            
-            //ログ
-            Route::get('/settings/system/logs/{type?}', [AdminSystemsController::class, 'logs'])->name('settings.systems.logs');
-            Route::get('/settings/system/logs/{type}/download', [AdminSystemsController::class, 'downloadLog'])->name('settings.systems.logs.download');
-            Route::post('/settings/system/logs/{type}/clear', [AdminSystemsController::class, 'clearLog'])->name('settings.systems.logs.clear');
-            Route::post('/settings/system/logs/test', [AdminSystemsController::class, 'testLogs'])->name('settings.systems.logs.test');
-            Route::post('/settings/system/logs/test-error', [AdminSystemsController::class, 'testErrorLog'])->name('settings.systems.logs.test_error');
-            Route::post('/settings/system/logs/test-front', [AdminSystemsController::class, 'testFrontLogs'])->name('settings.systems.logs.test_front');
-            Route::post('/settings/system/logs/test-front-error', [AdminSystemsController::class, 'testFrontErrorLog'])->name('settings.systems.logs.test_front_error');
-            
-            //システム情報
-            Route::get('/settings/systems/info', [AdminSystemsController::class, 'info'])->name('settings.systems.info');
+                //データベース管理
+                Route::get('/settings/systems/database', [AdminSystemsController::class, 'database'])->name('settings.systems.database');
+                Route::post('/settings/systems/database/clean', [AdminSystemsController::class, 'cleanupDatabase'])
+                    ->middleware('check.menu.edit:settings.systems')
+                    ->name('settings.systems.database.clean');
+                
+                //ログ
+                Route::get('/settings/system/logs/{type?}', [AdminSystemsController::class, 'logs'])->name('settings.systems.logs');
+                Route::get('/settings/system/logs/{type}/download', [AdminSystemsController::class, 'downloadLog'])->name('settings.systems.logs.download');
+                Route::post('/settings/system/logs/{type}/clear', [AdminSystemsController::class, 'clearLog'])
+                    ->middleware('check.menu.edit:settings.systems')
+                    ->name('settings.systems.logs.clear');
+                Route::post('/settings/system/logs/test', [AdminSystemsController::class, 'testLogs'])->name('settings.systems.logs.test');
+                Route::post('/settings/system/logs/test-error', [AdminSystemsController::class, 'testErrorLog'])->name('settings.systems.logs.test_error');
+                Route::post('/settings/system/logs/test-front', [AdminSystemsController::class, 'testFrontLogs'])->name('settings.systems.logs.test_front');
+                Route::post('/settings/system/logs/test-front-error', [AdminSystemsController::class, 'testFrontErrorLog'])->name('settings.systems.logs.test_front_error');
+                
+                //システム情報
+                Route::get('/settings/systems/info', [AdminSystemsController::class, 'info'])->name('settings.systems.info');
+            });
 
             // ログアウト
             Route::post('/logout', [AdminLoginController::class, 'destroy'])->name('logout');
@@ -213,5 +280,10 @@ Route::prefix($adminUrl)->name('admin.')
         }
         if (file_exists(base_path('plugins/DixlasePages/routes/admin.php'))) {
             include base_path('plugins/DixlasePages/routes/admin.php');
+        }
+        
+        // テーマの管理画面ルート
+        if (file_exists(base_path('themes/DixlaseDefaultTheme/routes/admin.php'))) {
+            include base_path('themes/DixlaseDefaultTheme/routes/admin.php');
         }
     });

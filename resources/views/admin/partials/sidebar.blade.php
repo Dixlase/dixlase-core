@@ -29,8 +29,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @php
                 // 現在のルート名を階層ごとに分割
                 $current_route_parts = explode('.', $route_name);
-                //権限判定用のキーを取得
-                $role_key = str_replace('admin.', '', $route_name);
+                // 権限判定用のキーを生成（このメニュー項目のキー）
+                $role_key = $key;
                 // 開くべきアコーディオンを判定
                 $open_key = 'open_' . $key;
                 
@@ -68,7 +68,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
             <div x-cloak x-data="{ {{ $open_key }} : {{ $is_open ? 'true' : 'false' }} }">
-                @if (\App\Helpers\AdminHelper::canEditMenu($role_key) || \App\Helpers\AdminHelper::canViewMenu($role_key))
+                @php
+                    // ダッシュボードとプロフィールは全員アクセス可能
+                    $is_public_menu = in_array($key, ['dashboard', 'profile']);
+                    
+                    // 親項目の権限チェック
+                    $has_permission = $is_public_menu || \App\Helpers\AdminHelper::canEditMenu($role_key) || \App\Helpers\AdminHelper::canViewMenu($role_key);
+                    
+                    // 親項目に権限がない場合、子項目の権限をチェック
+                    if (!$has_permission && isset($item['children']) && is_array($item['children'])) {
+                        foreach ($item['children'] as $child_key => $child_item) {
+                            $child_role_key = $key . '.' . $child_key;
+                            if (\App\Helpers\AdminHelper::canEditMenu($child_role_key) || \App\Helpers\AdminHelper::canViewMenu($child_role_key)) {
+                                $has_permission = true;
+                                break;
+                            }
+                        }
+                    }
+                @endphp
+                @if ($has_permission)
                     @if (isset($item['route']) && is_string($item['route']))
                         <a href="{{ route($item['route']) }}"
                         class="{{ $button_class }} {{ $item['route'] === $route_name ? 'bg-gray-200 text-gray-900 font-bold border-blue-500 pl-3 rounded-md hover:bg-gray-300 hover:text-black dark:bg-gray-100 dark:text-black dark:hover:bg-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white' }} {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
@@ -93,7 +111,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @if (isset($item['children']) && is_array($item['children']))
                     <div x-show="{{ $open_key }}" x-collapse class="ml-2 space-y-1" role="menu">
                         @foreach ($item['children'] as $child_key => $child_item)
-                            @if (\App\Helpers\AdminHelper::canEditMenu($role_key) || \App\Helpers\AdminHelper::canViewMenu($role_key))
+                            @php
+                                // 子項目の権限キーを生成（親キー.子キー）
+                                $child_role_key = $key . '.' . $child_key;
+                            @endphp
+                            @if (\App\Helpers\AdminHelper::canEditMenu($child_role_key) || \App\Helpers\AdminHelper::canViewMenu($child_role_key))
                                 @if (isset($child_item['route']) && is_string($child_item['route']))
                                     <a href="{{ route($child_item['route']) }}" 
                                     class="{{ $button_class }} {{ $child_item['route'] === $route_name ? 'bg-gray-200 text-gray-900 font-bold border-blue-500 pl-3 rounded-md hover:bg-gray-300 hover:text-black dark:bg-gray-100 dark:text-black dark:hover:bg-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white' }} {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
@@ -117,15 +139,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                             </svg>
                                         </button>
-                                        @if (isset($item['children']) && is_array($item['children']))
+                                        @if (isset($child_item['children']) && is_array($child_item['children']))
                                             <div x-show="{{ $open_child_key }}" x-collapse class="ml-2 space-y-1">
                                                 @foreach ($child_item['children'] as $grand_child_key => $grand_child_item)
-                                                    @if (\App\Helpers\AdminHelper::canEditMenu($role_key) || \App\Helpers\AdminHelper::canViewMenu($role_key))
+                                                    @php
+                                                        // 孫項目の権限キーを生成（親キー.子キー.孫キー）
+                                                        $grand_child_role_key = $key . '.' . $child_key . '.' . $grand_child_key;
+                                                    @endphp
+                                                    @if (\App\Helpers\AdminHelper::canEditMenu($grand_child_role_key) || \App\Helpers\AdminHelper::canViewMenu($grand_child_role_key))
                                                         <a href="{{ route($grand_child_item['route']) }}"
                                                         class="{{ $button_class }} {{ $grand_child_item['route'] === $route_name ? config('appearance.appearance_class.sidebar.active') : config('appearance.appearance_class.sidebar.normal') }}">
                                                             <i class="{{ $grand_child_item['icon'] }} mr-3"></i>
                                                             <span>{{ __($grand_child_item['text']) }}</span>
-                                                            @if (!\App\Helpers\AdminHelper::canEditMenu($child_key))
+                                                            @if (!\App\Helpers\AdminHelper::canEditMenu($grand_child_role_key))
                                                                 <span class="text-xs text-gray-400">(閲覧のみ)</span>
                                                             @endif
                                                         </a>
