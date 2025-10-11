@@ -4,7 +4,7 @@
  * This file is part of Dixlase.
  *
  * Copyright (C) 2025 exc-D inc.
- * https://exc-d.com
+ * Website: https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -22,26 +22,21 @@
 
 use Illuminate\Support\Facades\Route;
 use Themes\DixlaseDefaultTheme\App\Http\Controllers\Admin\Settings\AdminThemeSettingsController;
-use App\Helpers\AdminHelper;
 
-// 管理画面のURLを取得
-$adminUrl = AdminHelper::getAdminUrl();
+// このファイルはコアのroutes/admin.phpから読み込まれます
+// すでに admin.ip と auth:member, log.admin.activity ミドルウェアが適用されています
 
-// DixlaseDefaultTheme 設定ルート
-Route::prefix($adminUrl)->name('admin.')
-    ->middleware(['admin.ip']) // IPアドレスフィルタのみを先に適用
+// テーマ設定
+Route::prefix('settings/themes')
+    ->name('settings.themes.')
     ->group(function () {
-        // 認証済みルート
-        Route::middleware([
-            'auth:member',
-            'log.admin.activity',
-            'check.menu.access:themes',
-            'check.menu.edit:themes'
-        ])->group(function () {
-            Route::get('/settings/themes/settings', [AdminThemeSettingsController::class, 'settings'])
-                ->name('settings.themes.settings');
-            
-            Route::put('/settings/themes/settings', [AdminThemeSettingsController::class, 'update'])
-                ->name('settings.themes.settings.update');
-        });
+        // 表示は閲覧権限のみ
+        Route::get('/settings', [AdminThemeSettingsController::class, 'settings'])
+            ->middleware('check.menu.access:settings.themes.settings')
+            ->name('settings');
+        
+        // 更新は編集権限が必要
+        Route::put('/settings', [AdminThemeSettingsController::class, 'update'])
+            ->middleware(['check.menu.access:settings.themes.settings', 'check.menu.edit:settings.themes.settings'])
+            ->name('settings.update');
     });

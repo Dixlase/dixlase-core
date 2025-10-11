@@ -61,6 +61,85 @@ class AdminHelper
     public static function canAccessMenu(string $menuKey): bool
     {
         $user = Auth::user();
+        \Log::info('canAccessMenu: Start', [
+            'menu_key' => $menuKey,
+            'user_id' => $user?->id,
+            'user_role' => $user?->role?->value
+        ]);
+        
+        if (!$user) {
+            \Log::warning('canAccessMenu: No user');
+            return false;
+        }
+
+        if ($user->role->value === MemberRole::SUPER_ADMIN->value) {
+            \Log::info('canAccessMenu: Super admin access granted');
+            return true;
+        }
+
+        $permission = MemberRolePermission::where('menu_key', $menuKey)->first();
+        \Log::info('canAccessMenu: Permission lookup', [
+            'menu_key' => $menuKey,
+            'permission_found' => !is_null($permission),
+            'permission' => $permission ? [
+                'id' => $permission->id,
+                'menu_key' => $permission->menu_key,
+                'access_roles' => $permission->access_roles,
+                'view_roles' => $permission->view_roles
+            ] : null
+        ]);
+        
+        // 親項目の権限がない場合、子項目の権限をチェック
+        if (!$permission) {
+            \Log::info('canAccessMenu: Parent permission not found, checking children', ['menu_key' => $menuKey]);
+            
+            // 子項目の権限を検索（例: media -> media.%）
+            $childPermissions = MemberRolePermission::where('menu_key', 'LIKE', $menuKey . '.%')->get();
+            
+            if ($childPermissions->isEmpty()) {
+                \Log::warning('canAccessMenu: No permissions found (parent or children)', ['menu_key' => $menuKey]);
+                return false;
+            }
+            
+            // 子項目のいずれかに権限があるかチェック
+            foreach ($childPermissions as $childPermission) {
+                $accessRoles = is_array($childPermission->access_roles) ? $childPermission->access_roles : explode(',', $childPermission->access_roles);
+                $viewRoles = is_array($childPermission->view_roles) ? $childPermission->view_roles : explode(',', $childPermission->view_roles);
+                
+                if (in_array($user->role->value, $accessRoles) || in_array($user->role->value, $viewRoles)) {
+                    \Log::info('canAccessMenu: Access granted via child permission', [
+                        'parent_menu_key' => $menuKey,
+                        'child_menu_key' => $childPermission->menu_key
+                    ]);
+                    return true;
+                }
+            }
+            
+            \Log::warning('canAccessMenu: No child permissions match user role', ['menu_key' => $menuKey]);
+            return false;
+        }
+
+        // access_rolesとview_rolesは既にモデルのアクセサで配列に変換されている
+        $accessRoles = is_array($permission->access_roles) ? $permission->access_roles : explode(',', $permission->access_roles);
+        $viewRoles = is_array($permission->view_roles) ? $permission->view_roles : explode(',', $permission->view_roles);
+        $hasAccess = in_array($user->role->value, $accessRoles) || in_array($user->role->value, $viewRoles);
+        
+        \Log::info('canAccessMenu: Access check result', [
+            'user_role' => $user->role->value,
+            'access_roles' => $accessRoles,
+            'view_roles' => $viewRoles,
+            'has_access' => $hasAccess
+        ]);
+        
+        return $hasAccess;
+    }
+
+    /**
+     * メニューの閲覧権限をチェック（編集はできないが表示はできる）
+     */
+    public static function canViewMenu(string $menuKey): bool
+    {
+        $user = Auth::user();
         if (!$user) {
             return false;
         }
@@ -74,10 +153,14 @@ class AdminHelper
             return false;
         }
 
-        return in_array($user->role->value, explode(',', $permission->access_roles))
-            || in_array($user->role->value, explode(',', $permission->view_roles));
+        // access_rolesは既にモデルのアクセサで配列に変換されている
+        $accessRoles = is_array($permission->access_roles) ? $permission->access_roles : explode(',', $permission->access_roles);
+        return in_array($user->role->value, $accessRoles);
     }
 
+    /**
+     * メニューの編集権限をチェック
+     */
     public static function canEditMenu(string $menuKey): bool
     {
         $user = Auth::user();
@@ -94,7 +177,9 @@ class AdminHelper
             return false;
         }
 
-        return in_array($user->role->value, explode(',', $permission->access_roles));
+        // view_rolesは既にモデルのアクセサで配列に変換されている
+        $viewRoles = is_array($permission->view_roles) ? $permission->view_roles : explode(',', $permission->view_roles);
+        return in_array($user->role->value, $viewRoles);
     }
 
     /**

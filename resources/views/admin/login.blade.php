@@ -37,7 +37,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'id' => 'email',
             'type' => 'email',
             'name' => 'email',
-            'label' => __('admin.login.email'),
+            'label' => __('common.email'),
             'value' => old('email'),
             'required' => true,
             'autofocus' => true,
@@ -71,7 +71,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @include('components.form.button', [
                 'type' => 'submit',
                 'variant' => 'primary',
-                'label' => __('common.login_button'),
+                'label' => __('common.login'),
                 'class' => 'dark:focus:ring-offset-gray-800'
             ])
 
