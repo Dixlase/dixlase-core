@@ -25,6 +25,40 @@ class TwoFactorHelper
     }
 
     /**
+     * メール設定が完了しているかチェック
+     *
+     * @return bool メール設定が完了しているか
+     */
+    public function isMailConfigured(): bool
+    {
+        $mailer = config('mail.default');
+        
+        // メール設定が存在しない場合
+        if (!$mailer) {
+            return false;
+        }
+        
+        // SMTPの場合、必須設定をチェック
+        if ($mailer === 'smtp') {
+            $host = config('mail.mailers.smtp.host');
+            $port = config('mail.mailers.smtp.port');
+            $username = config('mail.mailers.smtp.username');
+            
+            if (empty($host) || empty($port)) {
+                return false;
+            }
+        }
+        
+        // 送信元アドレスが設定されているかチェック
+        $fromAddress = config('mail.from.address');
+        if (empty($fromAddress) || $fromAddress === 'hello@example.com') {
+            return false;
+        }
+        
+        return true;
+    }
+
+    /**
      * 二段階認証コードを生成してメール送信
      *
      * @param mixed $user ユーザーモデル
@@ -32,9 +66,16 @@ class TwoFactorHelper
      * @param int $expireMinutes 有効期限（分）
      * @param string $context コンテキスト（admin, user等）
      * @return string 生成されたコード
+     * @throws \Exception メール設定が未完了の場合
      */
     public function generateAndSendCode($user, string $mailClass, int $expireMinutes = null, string $context = 'admin'): string
     {
+        // メール設定チェック
+        if (!$this->isMailConfigured()) {
+            Log::error("[2FA] メール設定が未完了のため、二段階認証コードを送信できません");
+            throw new \Exception(__('admin.two_factor.mail_not_configured'));
+        }
+        
         $code = $this->generateTwoFactorCode($user, $expireMinutes);
 
         // メール送信
@@ -91,6 +132,12 @@ class TwoFactorHelper
      */
     public function isTwoFactorEnabled($user): bool
     {
+        // メール設定が未完了の場合は二段階認証を無効化
+        if (!$this->isMailConfigured()) {
+            Log::warning("[2FA] メール設定が未完了のため、二段階認証を無効化しています");
+            return false;
+        }
+        
         $systemSettings = $this->getSystemTwoFactorSettings();
         
         return $this->requiresTwoFactor(

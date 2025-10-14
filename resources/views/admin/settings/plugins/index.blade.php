@@ -135,7 +135,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         @csrf
                                         @include('components::form.button', [
                                             'type' => 'button',
-                                            'label' => __('common.uninstall'),
+                                            'label' => __('common.delete'),
                                             'variant' => 'danger',
                                             'size' => 'sm',
                                             'icon' => 'fas fa-trash',

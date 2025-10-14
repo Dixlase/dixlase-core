@@ -47,7 +47,8 @@
             "Themes\\DixlaseDefaultTheme\\App\\": "themes/DixlaseDefaultTheme/app"
         },
         "files": [
-            "app/Helpers/AssetHelper.php"
+            "app/Helpers/AssetHelper.php",
+            "app/helpers.php"
         ]
     },
     "autoload-dev": {
