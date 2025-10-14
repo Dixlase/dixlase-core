@@ -747,8 +747,7 @@ Clicking this link will complete the full mail function test.',
         // Themes
         'themes' => [
             'index' => [
-                'heading' => 'Theme Settings',
-                'title' => 'Theme Settings',
+                'heading' => 'Theme Management',
                 'available_themes' => 'Available Themes',
                 'currently_active' => 'Currently Active',
                 'activate_confirm' => 'Do you want to activate this theme?',
@@ -762,6 +761,9 @@ Clicking this link will complete the full mail function test.',
                 'upload_title' => 'Upload Theme',
                 'file_select_label' => 'Select File',
                 'name' => 'Theme Name',
+            ],
+            'settings' => [
+                'heading' => 'Theme Settings',
             ],
         ],
         // Plugins

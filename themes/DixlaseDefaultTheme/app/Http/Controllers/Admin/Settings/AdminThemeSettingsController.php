@@ -33,19 +33,45 @@ class AdminThemeSettingsController extends AdminLoggedInController
      */
     public function settings()
     {
-        // テーマ設定を取得（例: theme_settingsテーブルから）
+        // テーマ設定を取得
         $settings = DB::table('dixlase_default_theme_settings')->first();
         
         // 設定が存在しない場合はデフォルト値を使用
         if (!$settings) {
             $settings = (object)[
+                // Header
+                'logo_url' => null,
+                'logo_text' => config('app.name', 'Dixlase'),
+                
+                // Hero Section
+                'hero_background_image' => null,
+                'hero_main_title' => 'Welcome to ' . config('app.name', 'Dixlase'),
+                'hero_sub_title' => 'Modern CMS Platform for Building Amazing Websites',
+                'hero_button_text' => 'Get Started',
+                'hero_button_link' => '#',
+                'hero_button_secondary_text' => 'Learn More',
+                'hero_button_secondary_link' => '#features',
+                
+                // Footer
+                'footer_description' => 'Powered by Dixlase CMS',
+                'footer_links' => json_encode([]),
+                'footer_copyright' => '© ' . date('Y') . ' ' . config('app.name', 'Dixlase') . '. All rights reserved.',
+                'footer_sns_facebook' => null,
+                'footer_sns_twitter' => null,
+                'footer_sns_instagram' => null,
+                'footer_sns_linkedin' => null,
+                'footer_sns_youtube' => null,
+                
+                // Colors
                 'primary_color' => '#3b82f6',
                 'secondary_color' => '#6b7280',
                 'accent_color' => '#10b981',
-                'logo_text' => config('app.name', 'Dixlase'),
-                'show_search' => true,
-                'footer_text' => '© ' . date('Y') . ' ' . config('app.name', 'Dixlase'),
             ];
+        }
+        
+        // JSON文字列をデコード
+        if (isset($settings->footer_links) && is_string($settings->footer_links)) {
+            $settings->footer_links = json_decode($settings->footer_links, true) ?? [];
         }
         
         $this->viewParams['settings'] = $settings;
@@ -59,45 +85,56 @@ class AdminThemeSettingsController extends AdminLoggedInController
     public function update(Request $request)
     {
         $validated = $request->validate([
+            // Header
+            'logo_url' => 'nullable|string|max:500',
+            'logo_text' => 'required|string|max:255',
+            
+            // Hero Section
+            'hero_background_image' => 'nullable|string|max:500',
+            'hero_main_title' => 'required|string|max:255',
+            'hero_sub_title' => 'nullable|string|max:1000',
+            'hero_button_text' => 'nullable|string|max:100',
+            'hero_button_link' => 'nullable|string|max:500',
+            'hero_button_secondary_text' => 'nullable|string|max:100',
+            'hero_button_secondary_link' => 'nullable|string|max:500',
+            
+            // Footer
+            'footer_description' => 'nullable|string|max:1000',
+            'footer_links' => 'nullable|array',
+            'footer_links.*.title' => 'required|string|max:100',
+            'footer_links.*.url' => 'required|string|max:500',
+            'footer_copyright' => 'nullable|string|max:500',
+            'footer_sns_facebook' => 'nullable|url|max:500',
+            'footer_sns_twitter' => 'nullable|url|max:500',
+            'footer_sns_instagram' => 'nullable|url|max:500',
+            'footer_sns_linkedin' => 'nullable|url|max:500',
+            'footer_sns_youtube' => 'nullable|url|max:500',
+            
+            // Colors
             'primary_color' => 'required|string|max:7',
             'secondary_color' => 'required|string|max:7',
             'accent_color' => 'required|string|max:7',
-            'logo_text' => 'required|string|max:255',
-            'show_search' => 'boolean',
-            'footer_text' => 'nullable|string|max:500',
         ]);
         
-        // show_searchのチェックボックス処理
-        $validated['show_search'] = $request->has('show_search') ? 1 : 0;
+        // footer_linksをJSON文字列に変換
+        if (isset($validated['footer_links'])) {
+            $validated['footer_links'] = json_encode($validated['footer_links']);
+        }
         
         // 設定を更新または作成
         $exists = DB::table('dixlase_default_theme_settings')->exists();
         
+        $data = array_merge($validated, ['updated_at' => now()]);
+        
         if ($exists) {
-            DB::table('dixlase_default_theme_settings')->update([
-                'primary_color' => $validated['primary_color'],
-                'secondary_color' => $validated['secondary_color'],
-                'accent_color' => $validated['accent_color'],
-                'logo_text' => $validated['logo_text'],
-                'show_search' => $validated['show_search'],
-                'footer_text' => $validated['footer_text'],
-                'updated_at' => now(),
-            ]);
+            DB::table('dixlase_default_theme_settings')->update($data);
         } else {
-            DB::table('dixlase_default_theme_settings')->insert([
-                'primary_color' => $validated['primary_color'],
-                'secondary_color' => $validated['secondary_color'],
-                'accent_color' => $validated['accent_color'],
-                'logo_text' => $validated['logo_text'],
-                'show_search' => $validated['show_search'],
-                'footer_text' => $validated['footer_text'],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            $data['created_at'] = now();
+            DB::table('dixlase_default_theme_settings')->insert($data);
         }
         
         return redirect()
             ->route('admin.settings.themes.settings')
-            ->with('success', __('Theme settings updated successfully'));
+            ->with('success', __('themes::admin.settings.updated_successfully'));
     }
 }

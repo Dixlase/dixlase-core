@@ -18,11 +18,15 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-@props(['messages'])
+@props(['name' => null, 'messages' => null])
 
-@if ($messages)
+@php
+    $errorMessages = $messages ?? ($name ? $errors->get($name) : []);
+@endphp
+
+@if ($errorMessages && count($errorMessages) > 0)
     <ul {{ $attributes->merge(['class' => 'text-sm my-2 p-2 bg-red-100 border border-red-200 rounded-lg text-red-600 dark:text-red-400' ]) }}>
-        @foreach ((array) $messages as $message)
+        @foreach ((array) $errorMessages as $message)
             <li>{{ $message }}</li>
         @endforeach
     </ul>
