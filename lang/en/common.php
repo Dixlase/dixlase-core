@@ -45,6 +45,9 @@ return [
     'close' => 'Close',
     'finish' => 'Finish',
     'index' => 'Index',
+    'new' => 'New',
+    'view_site' => 'View Site',
+    'design' => 'Design',
 
     // Search & Display
     'search' => 'Search',

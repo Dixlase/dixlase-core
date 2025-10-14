@@ -51,6 +51,9 @@ return [
     'select' => '選択',
     'search' => '検索',
     'loading' => '読み込み中',
+    'new' => '新規作成',
+    'view_site' => 'サイトを表示',
+    'design' => 'デザイン',
 
     // システム操作
     'settings' => '設定',

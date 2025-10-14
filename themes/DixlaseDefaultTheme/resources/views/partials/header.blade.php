@@ -2,9 +2,10 @@
     $themeSettings = DB::table('dixlase_default_theme_settings')->first();
     $logoUrl = $themeSettings->logo_url ?? null;
     $logoText = $themeSettings->logo_text ?? config('app.name', 'Dixlase');
+    $hasAdminBar = auth('member')->check();
 @endphp
 
-<header class="fixed w-full z-50 transition-all duration-300 py-6">
+<header class="fixed w-full z-50 transition-all duration-300 py-6 {{ $hasAdminBar ? 'top-12' : 'top-0' }}">
     <div class="container mx-auto px-4 flex justify-between items-center">
         <div class="flex items-center justify-between w-full">
             {{-- Site Logo --}}
