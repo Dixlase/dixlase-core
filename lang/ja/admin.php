@@ -88,13 +88,13 @@ return [
                 'settings' => 'メンバー全体設定',
             ],
             'themes' => [
-                'text' => 'テーマ設定',
+                'text' => 'テーマ管理',
                 'index' => 'テーママスター',
                 'install'  => 'インストール',
                 'settings' => 'テーマ設定',
             ],
             'plugins' => [
-                'text' => 'プラグイン設定',
+                'text' => 'プラグイン管理',
                 'index' => 'プラグインマスター',
                 'install'  => 'インストール',
             ],
@@ -902,6 +902,10 @@ return [
             'save_confirmation_title' => 'フロントページ設定保存の確認',
             'save_confirmation_message' => 'フロントページ設定を保存しますか？',
         ],
+    ],
+
+    'two_factor' => [
+        'mail_not_configured' => 'メールサーバーの設定が完了していないため、二段階認証コードを送信できません。基本設定からメールサーバーを設定してください。',
     ],
 
 ];

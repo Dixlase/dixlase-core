@@ -8,9 +8,7 @@ use Illuminate\Support\Facades\Blade;
 class ShortcodeServiceProvider extends ServiceProvider
 {
     protected $shortcodes = [
-        // ショートコード名 => 処理クラス
-        'gallery' => \App\Shortcodes\GalleryShortcode::class,
-        'contact' => \App\Shortcodes\ContactFormShortcode::class,
+
     ];
 
     public function register()

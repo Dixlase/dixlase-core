@@ -91,13 +91,13 @@ return [
                 'settings' => 'Member Global Settings',
             ],
             'themes' => [
-                'text' => 'Theme Settings',
+                'text' => 'Theme Management',
                 'index' => 'Theme Master',
                 'install' => 'Install',
                 'settings' => 'Theme Settings',
             ],
             'plugins' => [
-                'text' => 'Plugin Settings',
+                'text' => 'Plugin Management',
                 'index' => 'Plugin Master',
                 'install'  => 'Install',
             ],
@@ -968,4 +968,8 @@ Clicking this link will complete the full mail function test.',
     'force_logout_success' => ':name has been forcibly logged out.',
     'force_logout_all_success' => 'All members have been forcibly logged out. (:count sessions deleted)',
     'force_logout_all_error' => 'Failed to force logout all members.',
+
+    'two_factor' => [
+        'mail_not_configured' => 'Cannot send two-factor authentication code because mail server is not configured. Please configure the mail server in basic settings.',
+    ],
 ];
