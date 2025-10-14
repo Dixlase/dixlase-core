@@ -18,7 +18,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-@extends('admin::partials.layout')
+@extends('layouts.admin')
 
 @section('content')
      <div class="max-w-5xl mx-auto px-4 py-8">
