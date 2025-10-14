@@ -25,6 +25,9 @@ use App\Http\Controllers\Front\FrontWelcomeController;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 
+// テーマ翻訳デバッグルート
+require __DIR__ . '/test-theme-translation.php';
+
 Route::get('/debug-locale', function() {
     return [
         'current_locale' => app()->getLocale(),

@@ -693,8 +693,8 @@ return [
         // テーマ
         'themes' => [
             'index' => [
-                'heading' => 'テーマ設定',
-                'title' => 'テーマ設定',
+                'heading' => 'テーマ管理',
+                'title' => 'テーマ',
                 'available_themes' => '利用可能なテーマ',
                 'currently_active' => '現在使用中',
                 'activate_confirm' => 'このテーマを有効化しますか？',
@@ -708,6 +708,9 @@ return [
                 'upload_title' => 'テーマをアップロード',
                 'file_select_label' => 'ファイルを選択',
                 'name' => 'テーマ名',
+            ],
+            'settings' => [
+                'heading' => 'テーマ設定',
             ],
         ],
         // プラグイン
