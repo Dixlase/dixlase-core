@@ -543,6 +543,7 @@ return [
             ],
             'edit' => [
                 'heading' => 'メンバー編集',
+                'confirm_message' => 'この内容でメンバー情報を更新しますか？',
             ],
             'form' => [
                 'password_change_only' => 'パスワード（変更する場合のみ）',

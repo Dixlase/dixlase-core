@@ -46,6 +46,10 @@ class AdminSettingsMemberStoreRequest extends FormRequest
     {
         // 管理者IDがリクエストされているかで判断
         $isUpdate = $this->route('member') !== null;
+        $member = $this->route('member');
+        
+        // 初期メンバー（ID=1）かどうか
+        $isInitialAdmin = $member && $member->id === 1;
 
         return [
             'name' => 'required|string|max:255',
@@ -58,7 +62,10 @@ class AdminSettingsMemberStoreRequest extends FormRequest
             'password' => $isUpdate 
                 ? ['nullable', 'string', 'min:8', new NotPwnedPassword()]
                 : ['required', 'string', 'min:8', new NotPwnedPassword()],
-            'role' => ['required', Rule::in(array_column(MemberRole::cases(), 'value'))],
+            // 初期メンバーの場合はroleを任意（フィールドが送信されないため）
+            'role' => $isInitialAdmin 
+                ? ['nullable', Rule::in(array_column(MemberRole::cases(), 'value'))]
+                : ['required', Rule::in(array_column(MemberRole::cases(), 'value'))],
             'appearance' => 'required|numeric|in:0,1,2',
             'status' => 'required|numeric|in:0,1',
             'login_notification' => 'nullable|numeric|in:0,1',

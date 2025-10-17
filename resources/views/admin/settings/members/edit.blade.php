@@ -1,5 +1,5 @@
 {{--
-This file is part of MySoftware.
+This file is part of Dixlase.
 
 Copyright (C) 2025 exc-D inc.
 https://exc-d.com
@@ -41,28 +41,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('save')
-    <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <!-- 保存ボタン -->
-        @include('components::form.button', [
-            'type' => 'button',
-            'label' => __('common.update'),
-            'class' => '',
-            'onclick' => "openModal('confirmationModal')"
-        ])
-    </div>
-@endsection
-
-@section('modals')
-    <!-- 保存モーダル -->
-    @include('components.modal', [
-        'id' => 'confirmationModal',
+    <!-- 保存ボタンとモーダル -->
+    @include('components.save', [
+        'id_confirmation' => 'confirmationModal',
+        'label' => __('common.update'),
         'title' => __('common.update_confirmation'),
         'message' => __('admin.settings.members.edit.confirm_message'),
         'confirm_label' => __('common.update'),
         'cancel_label' => __('common.cancel'),
         'form' => 'update-form',
     ])
-
-
 @endsection
 

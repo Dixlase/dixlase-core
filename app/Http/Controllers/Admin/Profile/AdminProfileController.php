@@ -288,8 +288,9 @@ class AdminProfileController extends AdminLoggedInController
         $force2faValue = (int) MemberSetting::getValue('force_2fa', TwoFactorMode::UseProfileSetting->value);
         $defaultTwoFactorMethod = (int) MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value);
         
-        // グローバル設定が有効な場合のみ認証方法選択をバリデーション
-        if (in_array($force2faValue, [TwoFactorMode::UseProfileSetting->value, TwoFactorMode::OnlyNewDevice->value, TwoFactorMode::Always->value]) && !empty($enabledTwoFactorMethods)) {
+        // フィールドが表示・編集可能な場合のみ認証方法選択をバリデーション
+        // UseProfileSettingの場合のみフィールドが編集可能（OnlyNewDevice/Alwaysの場合は表示のみまたは非表示）
+        if ($force2faValue === TwoFactorMode::UseProfileSetting->value && !empty($enabledTwoFactorMethods)) {
             // 有効な認証方法が1つだけの場合はその方法を強制
             if (count($enabledTwoFactorMethods) === 1) {
                 $rules['two_factor_method'] = 'required|integer|in:' . $enabledTwoFactorMethods[0];

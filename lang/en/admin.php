@@ -569,6 +569,7 @@ Clicking this link will complete the full mail function test.',
             ],
             'edit' => [
                 'heading' => 'Edit Member',
+                'confirm_message' => 'Do you want to update the member information with this content?',
             ],
             'form' => [
                 'password_change_only' => 'Password (only when changing)',

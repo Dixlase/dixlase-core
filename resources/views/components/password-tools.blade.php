@@ -1,5 +1,5 @@
 {{--
-This file is part of MySoftware.
+This file is part of Dixlase.
 
 Copyright (C) 2025 exc-D inc.
 https://exc-d.com
@@ -44,6 +44,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'id' => $id,
         'required' => $required,
         'class' => 'pr-32',
+        'autocomplete' => 'new-password',
     ])
 
     <!-- 自動生成ボタン -->
@@ -91,6 +92,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'name' => $name . '_confirmation',
             'id' => $id . '_confirmation',
             'required' => $required,
+            'autocomplete' => 'new-password',
         ])
     </fieldset>
 @endif

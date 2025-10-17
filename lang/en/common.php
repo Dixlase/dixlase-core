@@ -319,4 +319,22 @@ return [
     'language_settings' => 'Language Settings',
     // Authentication Method Related
     'available_methods' => 'available methods',
+
+    // Validation Attributes (common items used across pages)
+    'attributes' => [
+        'name' => 'name',
+        'email' => 'email address',
+        'password' => 'password',
+        'password_confirmation' => 'password confirmation',
+        'current_password' => 'current password',
+        'new_password' => 'new password',
+        'new_password_confirmation' => 'new password confirmation',
+        'appearance' => 'appearance settings',
+        'login_notification_mode' => 'login notification settings',
+        'two_factor_mode' => 'two-factor authentication settings',
+        'two_factor_method' => 'two-factor authentication method',
+        'title' => 'title',
+        'content' => 'content',
+        'description' => 'description',
+    ],
 ];
