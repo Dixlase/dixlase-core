@@ -47,5 +47,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'id' => null,
 ])
 
+<!-- {{ __('common.save_confirmation_title') }} -->
+@push('modals')
+    @include('components.modal', [
+        'id' => $id_confirmation,
+        'title' => $title,
+        'message' => $message,
+        'confirm_label' => $confirm_label,
+        'cancel_label' => $cancel_label,
+        'form' => $form,
+    ])
+@endpush
 
 

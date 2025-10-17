@@ -6,23 +6,7 @@ Copyright (C) 2025 exc-D inc.
 @extends('layouts.admin')
 
 @section('content')
-<div class="max-w-6xl mx-auto mt-12">
-    @if(session('success'))
-        <div class="mb-4 p-4 bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if($errors->any())
-        <div class="mb-4 p-4 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg">
-            <ul class="list-disc list-inside">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
+<div class="max-w-6xl mx-auto mt-6">
     <form id="theme-settings-form" action="{{ route('admin.settings.themes.settings.update') }}" method="POST" class="space-y-6" x-data="themeSettings()">
         @csrf
         @method('PUT')
@@ -319,7 +303,7 @@ Copyright (C) 2025 exc-D inc.
 @endsection
 
 @section('save')
-    <!-- 保存ボタン -->
+    <!-- 保存ボタンとモーダル -->
     @include('components.save', [
         'id_confirmation' => 'confirmationModal',
         'label' => __('common.save'),
@@ -330,17 +314,6 @@ Copyright (C) 2025 exc-D inc.
         'form' => 'theme-settings-form',
     ])
 @endsection
-
-@push('modals')
-    @include('components.modal', [
-        'id' => 'confirmationModal',
-        'title' => __('common.save_confirmation_title'),
-        'message' => __('common.save_confirmation_message'),
-        'confirm_label' => __('common.save'),
-        'cancel_label' => __('common.cancel'),
-        'form' => 'theme-settings-form',
-    ])
-@endpush
 
 @push('scripts')
 <script>
