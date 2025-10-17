@@ -764,27 +764,23 @@ class InstallController extends Controller
     {
         Log::channel('install')->info('=== InstallController::complete() 開始 ===');
         
-        // 現在の環境変数とセッション状態をログ出力
-        $installed = env('INSTALLED');
-        $installCompleted = session('install_completed', false);
+        // リダイレクトループ防止フラグをクリア
+        session()->forget('_redirect_to_complete');
         
+        // 現在の環境変数をログ出力
+        $installed = env('INSTALLED');
         Log::channel('install')->info('INSTALLED環境変数の値: ' . var_export($installed, true));
-        Log::channel('install')->info('install_completedセッション値: ' . var_export($installCompleted, true));
         
         // インストール状態の判定
-        $isInstalled = (env('INSTALLED') === 'true' || env('INSTALLED') === true);
+        $isInstalled = ($installed === 'true' || $installed === true);
         
-        if ($isInstalled && $installCompleted) {
-            Log::channel('install')->info('2回目以降のアクセス: フロントページにリダイレクト');
-            // 2回目以降のアクセスはフロントページにリダイレクト
+        if ($isInstalled) {
+            Log::channel('install')->info('INSTALLED=true: フロントページにリダイレクト');
+            // すでにINSTALLED=trueの場合はフロントページへ
             return redirect('/')->with('message', 'インストールは既に完了しています。');
-        } elseif ($isInstalled) {
-            Log::channel('install')->info('初回完了画面表示: セッションフラグを設定');
-            // 初回表示時のみセッションにフラグを設定
-            session(['install_completed' => true]);
-        } else {
-            Log::channel('install')->info('インストール未完了: 初回インストール完了処理');
         }
+        
+        Log::channel('install')->info('インストール完了画面を表示（ボタン押下待ち）');
 
         // ✅ セッションデータから管理画面URLを先に取得
         $adminSlug = session('install_data.admin_url', 'admin');
@@ -812,16 +808,12 @@ class InstallController extends Controller
         $adminUrl = rtrim($appUrl . '/' . $adminSlug, '/');
         $adminLoginUrl = $adminUrl . '/login';
 
-        // ✅ セッションデータを削除（install_completedは保持）
+        // ✅ セッションデータを削除
         session()->forget('install_data');
-
-        // 完了フラグを設定（初回表示時）
-        if (!$installCompleted) {
-            session(['install_completed' => true]);
-        }
 
         Log::channel('install')->info('完了画面を表示: appUrl=' . $appUrl . ', adminLoginUrl=' . $adminLoginUrl);
         Log::channel('install')->info('APP_URL取得結果: ' . $envAppUrl);
+        Log::channel('install')->info('リダイレクトフラグクリア完了');
         Log::channel('install')->info('=== InstallController::complete() 終了 ===');
         
         // 完了画面では INSTALLED=true を設定せず、表示のみ行う

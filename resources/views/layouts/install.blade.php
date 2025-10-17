@@ -160,25 +160,26 @@
             const availableLocales = @json($availableLocales);
             const currentLocale = '{{ $currentLocale }}';
             
-            // セッションが開始されているかチェック（セッションまたはクッキーに言語設定があるか）
-            const hasExistingSession = sessionStorage.getItem('language_manually_changed') || 
-                                     '{{ session("install_locale") }}' || 
-                                     document.cookie.includes('install_locale=');
-            
-            // セッションが存在しない初回のみブラウザ言語を自動検出
-            if (!hasExistingSession && currentLocale === '{{ config('app.fallback_locale') }}' && !new URLSearchParams(window.location.search).has('lang')) {
-                const detectedLang = detectBrowserLanguage(availableLocales);
-                if (detectedLang && detectedLang !== currentLocale) {
-                    // 初回のみAJAXで言語を変更
-                    changeLanguage(detectedLang);
-                }
-            }
-
-            // 言語切り替えフォームの送信処理
+            // 言語切り替えフォームとセレクタの取得
             const languageForm = document.getElementById('language-form');
             const languageSelector = document.getElementById('language-selector');
             
             if (languageForm && languageSelector) {
+                // セレクタが存在する場合のみ自動言語検出を実行
+                // セッションが開始されているかチェック（セッションまたはクッキーに言語設定があるか）
+                const hasExistingSession = sessionStorage.getItem('language_manually_changed') || 
+                                         '{{ session("install_locale") }}' || 
+                                         document.cookie.includes('install_locale=');
+                
+                // セッションが存在しない初回のみブラウザ言語を自動検出
+                if (!hasExistingSession && currentLocale === '{{ config('app.fallback_locale') }}' && !new URLSearchParams(window.location.search).has('lang')) {
+                    const detectedLang = detectBrowserLanguage(availableLocales);
+                    if (detectedLang && detectedLang !== currentLocale) {
+                        // 初回のみAJAXで言語を変更
+                        changeLanguage(detectedLang);
+                    }
+                }
+                
                 // セレクト変更で即時適用
                 languageSelector.addEventListener('change', function(e) {
                     e.preventDefault();
