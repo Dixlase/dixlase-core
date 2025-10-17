@@ -268,7 +268,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     'name' => 'captcha_site_key',
                     'value' => old('captcha_site_key', $settings['captcha_site_key'] ?? ''),
                     'type' => 'password',
-                    'xModel' => 'captchaSiteKey'
+                    'xModel' => 'captchaSiteKey',
+                    'autocomplete' => 'off'
                 ])
 
                 <label for="captcha_secret_key" class="block font-medium text-lg {{ config('appearance.appearance_class.form.label') }}" 
@@ -280,7 +281,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     'name' => 'captcha_secret_key',
                     'value' => old('captcha_secret_key', $settings['captcha_secret_key'] ?? ''),
                     'type' => 'password',
-                    'xModel' => 'captchaSecretKey'
+                    'xModel' => 'captchaSecretKey',
+                    'autocomplete' => 'off'
                 ])
 
                 <!-- Google reCAPTCHA Settings -->
@@ -556,9 +558,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
 @section('save')
-    <!-- 保存ボタンとモーダル -->
+    <!-- 保存ボタン -->
     @include('components.save', [
-        'id' => 'confirmationModal',
+        'id_confirmation' => 'confirmationModal',
         'label' => __('common.save'),
         'onclick' => "validateBeforeSave()",
         'title' => __('common.save_confirmation_title'),
@@ -568,6 +570,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'form' => 'security-settings-form',
     ])
 @endsection
+
+@push('modals')
+    @include('components.modal', [
+        'id' => 'confirmationModal',
+        'title' => __('common.save_confirmation_title'),
+        'message' => __('common.save_confirmation_message'),
+        'confirm_label' => __('common.save'),
+        'cancel_label' => __('common.back'),
+        'form' => 'security-settings-form',
+    ])
+@endpush
 
 
 @push('scripts')

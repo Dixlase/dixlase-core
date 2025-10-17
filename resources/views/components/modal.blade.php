@@ -76,14 +76,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 'label' => $cancel_label,
                 'variant' => 'secondary',
                 'onclick' => "closeModal('$id')",
-                'class' => 'mx-2'
+                'class' => 'mx-2',
+                'id' => null
             ])
             @include('components::form.button', [
                 'type' => 'button',
                 'label' => $confirm_label,
                 'variant' => $confirm_color === 'blue' ? 'primary' : ($confirm_color === 'red' ? 'danger' : ($confirm_color === 'yellow' ? 'warning' : ($confirm_color === 'green' ? 'success' : 'primary'))),
                 'onclick' => $form ? "submitModalForm('$form')" : null,
-                'class' => 'mx-2'
+                'class' => 'mx-2',
+                'id' => null
                 
             ])
         </div>

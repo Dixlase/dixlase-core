@@ -31,6 +31,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'form' => null,                          // Form ID
     'id_confirmation' => 'confirmationModal',        // Modal ID
     'id_delete' => 'deleteModal',                  // Delete modal ID
+    'onclick' => null,                       // Custom onclick function (optional)
 
 
 ])
@@ -40,22 +41,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'type' => $type,
     'label' => $label,
     'disabled' => $disabled,
-    'onclick' => "openModal('" . $id_confirmation . "')",
+    'onclick' => $onclick ?? "openModal('" . $id_confirmation . "')",
     'form' => $form,
     'variant' => 'primary',
+    'id' => null,
 ])
-
-<!-- {{ __('common.save_confirmation_title') }} -->
-@push('modals')
-    @include('components.modal', [
-    'id' => $id_confirmation,
-    'title' => $title,
-    'message' => $message,
-    'confirm_label' => $label,
-    'cancel_label' => $cancel_label,
-    'form' => $form,
-])
-@endpush
 
 
 

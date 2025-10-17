@@ -44,6 +44,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- アセットを読み込み -->
         {!! load_active_assets() !!}
 
+        {{-- 通知コンポーネント（他のスクリプトより先に読み込み） --}}
+        @include('components.notification')
+
     </head>
     <body  class="admin font-sans antialiased transition-colors-unified {{ config('appearance.appearance_class.layout.body') }}">
         <div class="min-h-screen">
