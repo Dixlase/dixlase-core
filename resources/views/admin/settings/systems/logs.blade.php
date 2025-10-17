@@ -43,7 +43,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <!-- Admin Logs -->
         <div class="mb-4">
-            <h3 class="mb-2 md:mb-0 md:mr-2 md:inline-block text-center md:text-left">{{ __('admin.logs.admin_logs_label') }}</h3>
+            <h3 class="mb-2 md:mb-0 md:mr-2 md:inline-block text-center md:text-left">{{ __('common.admin_logs') }}</h3>
             <nav class="flex flex-wrap gap-2 justify-center md:justify-start">
                 @foreach (['activity', 'error', 'login', 'dixlase'] as $type)
                     <a href="{{ route('admin.settings.systems.logs', ['type' => $type]) }}"
@@ -52,7 +52,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             'nav-button--blue',
                             'nav-button--active' => $logType === $type
                         ])>
-                        {{ __('admin.settings.systems.logs.' . $type) }}
+                        @if($type === 'error')
+                            {{ __('common.error_log') }}
+                        @elseif($type === 'login')
+                            {{ __('common.login_log') }}
+                        @else
+                            {{ __('admin.settings.systems.logs.' . $type) }}
+                        @endif
                     </a>
                 @endforeach
             </nav>
@@ -60,7 +66,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <!-- Front Logs -->
         <div class="mb-4">
-            <h3 class="mb-2 md:mb-0 md:mr-2 md:inline-block text-center md:text-left">{{ __('admin.logs.front_logs_label') }}</h3>
+            <h3 class="mb-2 md:mb-0 md:mr-2 md:inline-block text-center md:text-left">{{ __('common.front_logs') }}</h3>
             <nav class="flex flex-wrap gap-2 justify-center md:justify-start">
                 @foreach (['front_activity', 'front_error'] as $type)
                     <a href="{{ route('admin.settings.systems.logs', ['type' => $type]) }}"

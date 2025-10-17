@@ -219,6 +219,10 @@ return [
     'ip' => 'IP Address',
     'user_agent' => 'User Agent',
     'time' => 'Time',
+    'admin_logs' => 'Admin Logs',
+    'front_logs' => 'Front-end Logs',
+    'error_log' => 'Error Log',
+    'login_log' => 'Login Log',
 
     // ===========================================
     // Two-Factor Authentication (Unified Section)
