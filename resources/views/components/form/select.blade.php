@@ -39,7 +39,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     $finalClass = trim($defaultClass . ' ' . $class);
 @endphp
 
-<select id="{{ $id }}"
+<select @if($id) id="{{ $id }}" @endif
         name="{{ $name }}"
         class="{{ $finalClass }}"
         @if ($disabled) disabled @endif

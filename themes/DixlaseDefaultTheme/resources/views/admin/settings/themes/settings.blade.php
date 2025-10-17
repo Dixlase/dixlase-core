@@ -319,7 +319,7 @@ Copyright (C) 2025 exc-D inc.
 @endsection
 
 @section('save')
-    <!-- 保存ボタンとモーダル -->
+    <!-- 保存ボタン -->
     @include('components.save', [
         'id_confirmation' => 'confirmationModal',
         'label' => __('common.save'),
@@ -330,6 +330,17 @@ Copyright (C) 2025 exc-D inc.
         'form' => 'theme-settings-form',
     ])
 @endsection
+
+@push('modals')
+    @include('components.modal', [
+        'id' => 'confirmationModal',
+        'title' => __('common.save_confirmation_title'),
+        'message' => __('common.save_confirmation_message'),
+        'confirm_label' => __('common.save'),
+        'cancel_label' => __('common.cancel'),
+        'form' => 'theme-settings-form',
+    ])
+@endpush
 
 @push('scripts')
 <script>

@@ -67,11 +67,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('save')
-    <!-- 保存ボタンとモーダル -->
+    <!-- 保存ボタン -->
     @include('components.save', [
-        'id' => 'frontSettingsConfirmationModal',
+        'id_confirmation' => 'frontSettingsConfirmationModal',
         'label' => __('common.save'),
-        'onclick' => "openModal('frontSettingsConfirmationModal')",
         'title' => __('admin.settings.front.save_confirmation_title'),
         'message' => __('admin.settings.front.save_confirmation_message'),
         'confirm_label' => __('common.save'),
@@ -79,3 +78,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'form' => 'front-settings-form',
     ])
 @endsection
+
+@push('modals')
+    @include('components.modal', [
+        'id' => 'frontSettingsConfirmationModal',
+        'title' => __('admin.settings.front.save_confirmation_title'),
+        'message' => __('admin.settings.front.save_confirmation_message'),
+        'confirm_label' => __('common.save'),
+        'cancel_label' => __('common.cancel'),
+        'form' => 'front-settings-form',
+    ])
+@endpush
