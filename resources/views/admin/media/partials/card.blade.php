@@ -26,7 +26,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <div class="media-card">
     <div class="media-card__preview">
         <a href="{{ route('admin.media.preview', $file->id) }}" target="_blank" aria-label="{{ __('admin.media.index.preview') }} {{ $file->name }}">
-            @if(in_array($file->type, ['image/jpeg', 'image/png', 'image/gif', 'image/webp']))
+            @if(in_array($file->type, ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']))
                 <img src="{{ asset('storage/' . $mediaPath . '/' . $file->path) }}" 
                      alt="{{ $file->name }}" 
                      class="media-card__image">

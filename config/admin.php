@@ -317,11 +317,25 @@ return [
         'jpg',
         'png',
         'gif',
+        'svg',
         'mp4',
         'pdf',
         'docx',
         'zip',
         'txt'
+    ],
+    
+    // ファイル拡張子の表示名
+    'fileExtensionNames' => [
+        'jpg' => 'JPEG',
+        'png' => 'PNG',
+        'gif' => 'GIF',
+        'svg' => 'SVG',
+        'mp4' => 'MP4動画',
+        'pdf' => 'PDF',
+        'docx' => 'Word文書',
+        'zip' => 'ZIP圧縮',
+        'txt' => 'テキスト',
     ],
     'allowedFileTypes' => [
         'jpg',

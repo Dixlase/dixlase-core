@@ -27,10 +27,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <h2>{{ __('admin.media.settings.allowed_file_types') }}</h2>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
                 @foreach($fileExtensions as $extension)
-                    <label class="flex items-center space-x-2 cursor-pointer bg-gray-100 dark:bg-gray-700 p-2 rounded-lg shadow-sm hover:bg-gray-200 dark:hover:bg-gray-600">
+                    <label class="flex items-center space-x-2 cursor-pointer bg-gray-100 dark:bg-gray-700 p-3 rounded-lg shadow-sm hover:bg-gray-200 dark:hover:bg-gray-600">
                         <input type="checkbox" name="allowed_file_types[]" value="{{ $extension }}" class="form-checkbox h-5 w-5 text-blue-600 dark:text-blue-400"
                             {{ in_array($extension, $allowedFileTypes) ? 'checked' : '' }}>
-                        <span class="text-gray-800 dark:text-gray-200">.{{ $extension }}</span>
+                        <span class="text-sm text-gray-800 dark:text-gray-200">
+                            {{ $fileExtensionNames[$extension] ?? strtoupper($extension) }}(.{{ $extension }})
+                        </span>
+                        @if($extension === 'svg')
+                            <i class="fas fa-exclamation-triangle text-yellow-500 text-sm ml-1" title="SVGファイルはセキュリティリスクがあります"></i>
+                        @endif
                     </label>
                 @endforeach
             </div>

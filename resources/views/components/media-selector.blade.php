@@ -23,7 +23,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'inputId' => 'media_id',
     'previewId' => 'media_preview',
     'multiple' => false,
-    'allowedTypes' => ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    'allowedTypes' => ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']
 ])
 
 <!-- メディア選択モーダル -->
@@ -154,7 +154,7 @@ async function loadMediaForSelector(modalId, page = 1) {
     if (!grid) return;
     
     try {
-        const response = await fetch(`/admin/media/api?page=${page}&per_page=20`);
+        const response = await fetch(`{{ route('admin.media.api') }}?page=${page}&per_page=20`);
         const data = await response.json();
         
         if (data.success) {
@@ -291,6 +291,7 @@ function confirmMediaSelection(modalId, inputId, previewId, multiple) {
             case 'square': return 'aspect-square object-cover';
             case '16:9': return 'aspect-video object-cover';
             case '4:3': return 'aspect-[4/3] object-cover';
+            case 'hero': return 'aspect-[21/9] object-cover';
             case 'original': return 'h-auto object-contain';
             default: return 'h-auto object-contain';
         }
