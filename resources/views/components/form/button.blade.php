@@ -29,6 +29,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'onclick' => null,       // onclick属性を追加
     'disabled' => false,     // ボタンを無効にする
     'form' => null,          // フォームのID
+    'id' => null,            // ボタンのID
 ])
 
 @php
@@ -54,7 +55,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'font-semibold rounded-md shadow-sm',
         'focus:outline-none focus:ring-2 focus:ring-offset-2',
         'transition-colors duration-200',
-        'disabled:opacity-50 disabled:cursor-not-allowed',
+        'disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400',
         $variantClasses[$variant] ?? $variantClasses['primary'],
         $sizeClasses[$size] ?? $sizeClasses['md'],
         $class
@@ -62,6 +63,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endphp
 
 <button type="{{ $type }}"
+    @if ($id) id="{{ $id }}" @endif
     @if ($onclick) onclick="{{ $onclick }}" @endif
     @if ($form) form="{{ $form }}" @endif
     class="{{ implode(' ', $buttonClasses) }}"

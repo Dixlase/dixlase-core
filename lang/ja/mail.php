@@ -152,6 +152,7 @@ return [
         'title' => 'メール受信確認完了',
         'heading' => 'メール受信確認が完了しました',
         'description' => 'メール機能のテストが正常に完了しました。',
+        'actions' => 'アクション',
         'already_verified_heading' => 'メール受信確認済み',
         'already_verified_description' => 'このメールの受信確認は既に完了しています。',
         'next_steps_title' => '次の手順',
@@ -178,6 +179,7 @@ return [
         'verification_error_description' => 'メール受信確認の処理中にエラーが発生しました。',
         'general_error_description' => '予期しないエラーが発生しました。',
         'solution_title' => '対処方法',
+        'actions' => 'アクション',
         'solution_steps' => [
             'このウィンドウを閉じてください',
             '基本設定画面で新しいテストメールを送信してください',
@@ -283,6 +285,7 @@ return [
         'connection_test_error' => '接続テストでエラーが発生しました。',
         'mail_test_error' => 'メール送信テストでエラーが発生しました。',
         'mail_receive_test_completed' => 'メール受信テスト完了を検出',
+        'mail_receive_verified' => 'メール受信確認が完了しました',
     ],
 
     // 3段階メールテスト機能
@@ -293,6 +296,13 @@ return [
         'connection_test_not_supported' => ':mailer メーラーは接続テストをサポートしていません。',
         'connection_test_success' => 'メールサーバーへの接続に成功しました。',
         'connection_test_failed' => 'メールサーバーへの接続に失敗しました',
+        'smtp_connection_error' => '接続エラー: :error (エラーコード: :errno)',
+        'smtp_response_invalid' => 'SMTPサーバーからの応答が不正です: :response',
+        'smtp_starttls_failed' => 'STARTTLS の開始に失敗しました: :response',
+        'smtp_tls_crypto_failed' => 'TLS暗号化の有効化に失敗しました',
+        'smtp_auth_login_failed' => 'AUTH LOGIN コマンドが失敗しました: :response',
+        'smtp_username_auth_failed' => 'ユーザー名認証が失敗しました: :response',
+        'smtp_password_auth_failed' => 'パスワード認証が失敗しました: :response',
         'send_test_success' => 'テストメールを :email に送信しました。',
         'send_test_failed' => 'テストメールの送信に失敗しました',
         'verification_token_invalid' => 'メール確認トークンが無効です。',

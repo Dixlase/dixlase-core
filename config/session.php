@@ -105,11 +105,12 @@ return [
     | be used to store sessions. Of course, a sensible default is defined
     | for you; however, you're welcome to change this to another table.
     |
+    | Note: Do NOT include the DB_PREFIX here. Laravel's database session
+    | driver automatically applies the table prefix from database.php config.
+    |
     */
 
-    //'table' => env('SESSION_TABLE', 'sessions'),
-    'table' => 'sessions',
-    //'member_table' => env('MEMBER_SESSION_TABLE', 'members_sessions'),
+    'table' => env('SESSION_TABLE', 'sessions'),
     /*
     |--------------------------------------------------------------------------
     | Session Cache Store

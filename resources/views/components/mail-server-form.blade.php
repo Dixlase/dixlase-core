@@ -163,14 +163,16 @@ document.addEventListener('DOMContentLoaded', function() {
 @endif
 
 <!-- Mailer -->
-<div class="{{ $isInstall ? '' : 'mt-4' }}">
+<div class="mt-4">
     @if($isInstall)
-        <label for="mail_mailer" class="block text-gray-700">{{ __('mail.server_settings.mailer') }}</label>
-        <select name="mail_mailer" id="mail_mailer" class="w-full p-2 border rounded-lg mail-setting-input">
-            @foreach($mailers as $value => $label)
-                <option value="{{ $value }}" {{ old('mail_mailer', session('install_data.mail_mailer', 'smtp')) == $value ? 'selected' : '' }}>{{ $label }}</option>
-            @endforeach
-        </select>
+        <x-form.label for="mail_mailer" :text="__('mail.server_settings.mailer')" :required="true" />
+        <x-form.select
+            id="mail_mailer"
+            name="mail_mailer"
+            :options="$mailers"
+            :value="old('mail_mailer', session('install_data.mail_mailer', 'smtp'))"
+            class="w-full mail-setting-input"
+        />
     @else
         @include('components::form.label', [
             'for' => 'mail_mailer',
@@ -186,10 +188,15 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <!-- Host -->
-<div class="{{ $isInstall ? '' : 'mt-4' }}">
+<div class="mt-4">
     @if($isInstall)
-        <label for="mail_host" class="block text-gray-700">{{ __('mail.server_settings.mail_host') }}</label>
-        <input type="text" name="mail_host" id="mail_host" value="{{ old('mail_host', session('install_data.mail_host', 'mailpit')) }}" class="w-full p-2 border rounded-lg mail-setting-input">
+        <x-form.label for="mail_host" :text="__('mail.server_settings.mail_host')" :required="true" />
+        <x-form.text
+            name="mail_host"
+            id="mail_host"
+            :value="old('mail_host', session('install_data.mail_host', 'mailpit'))"
+            class="mail-setting-input"
+        />
     @else
         @include('components::form.label', [
             'for' => 'mail_host',
@@ -204,10 +211,16 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <!-- Port -->
-<div class="{{ $isInstall ? '' : 'mt-4' }}">
+<div class="mt-4">
     @if($isInstall)
-        <label for="mail_port" class="block text-gray-700">{{ __('mail.server_settings.mail_port') }}</label>
-        <input type="number" name="mail_port" id="mail_port" value="{{ old('mail_port', session('install_data.mail_port', '1025')) }}" class="w-full p-2 border rounded-lg mail-setting-input">
+        <x-form.label for="mail_port" :text="__('mail.server_settings.mail_port')" :required="true" />
+        <x-form.text
+            type="number"
+            name="mail_port"
+            id="mail_port"
+            :value="old('mail_port', session('install_data.mail_port', '1025'))"
+            class="mail-setting-input"
+        />
     @else
         @include('components::form.label', [
             'for' => 'mail_port',
@@ -222,10 +235,15 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <!-- Username -->
-<div class="{{ $isInstall ? '' : 'mt-4' }}">
+<div class="mt-4">
     @if($isInstall)
-        <label for="mail_username" class="block text-gray-700">{{ __('mail.server_settings.mail_username') }}</label>
-        <input type="text" name="mail_username" id="mail_username" value="{{ old('mail_username', session('install_data.mail_username')) }}" class="w-full p-2 border rounded-lg mail-setting-input">
+        <x-form.label for="mail_username" :text="__('mail.server_settings.mail_username')" />
+        <x-form.text
+            name="mail_username"
+            id="mail_username"
+            :value="old('mail_username', session('install_data.mail_username'))"
+            class="mail-setting-input"
+        />
     @else
         @include('components::form.label', [
             'for' => 'mail_username',
@@ -240,10 +258,16 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <!-- Password -->
-<div class="{{ $isInstall ? '' : 'mt-4' }}">
+<div class="mt-4">
     @if($isInstall)
-        <label for="mail_password" class="block text-gray-700">{{ __('mail.server_settings.mail_password') }}</label>
-        <input type="password" name="mail_password" id="mail_password" value="{{ old('mail_password') }}" class="w-full p-2 border rounded-lg mail-setting-input">
+        <x-form.label for="mail_password" :text="__('mail.server_settings.mail_password')" />
+        <x-form.text
+            type="password"
+            name="mail_password"
+            id="mail_password"
+            :value="old('mail_password')"
+            class="mail-setting-input"
+        />
     @else
         @include('components::form.label', [
             'for' => 'mail_password',
@@ -258,14 +282,16 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <!-- Encryption -->
-<div class="{{ $isInstall ? '' : 'mt-4' }}">
+<div class="mt-4">
     @if($isInstall)
-        <label for="mail_encryption" class="block text-gray-700">{{ __('mail.server_settings.mail_encryption') }}</label>
-        <select name="mail_encryption" id="mail_encryption" class="w-full p-2 border rounded-lg mail-setting-input">
-            @foreach($encryptions as $value => $label)
-                <option value="{{ $value }}" {{ old('mail_encryption', session('install_data.mail_encryption')) == $value ? 'selected' : '' }}>{{ $label }}</option>
-            @endforeach
-        </select>
+        <x-form.label for="mail_encryption" :text="__('mail.server_settings.mail_encryption')" :required="true" />
+        <x-form.select
+            id="mail_encryption"
+            name="mail_encryption"
+            :options="$encryptions"
+            :value="old('mail_encryption', session('install_data.mail_encryption'))"
+            class="w-full mail-setting-input"
+        />
     @else
         @include('components::form.label', [
             'for' => 'mail_encryption',
@@ -281,10 +307,16 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <!-- From Address -->
-<div class="{{ $isInstall ? '' : 'mt-4' }}">
+<div class="mt-4">
     @if($isInstall)
-        <label for="mail_from_address" class="block text-gray-700">{{ __('mail.server_settings.mail_from_address') }}</label>
-        <input type="email" name="mail_from_address" id="mail_from_address" value="{{ old('mail_from_address', session('install_data.mail_from_address', $admin_email ?? '')) }}" class="w-full p-2 border rounded-lg mail-setting-input">
+        <x-form.label for="mail_from_address" :text="__('mail.server_settings.mail_from_address')" :required="true" />
+        <x-form.text
+            type="email"
+            name="mail_from_address"
+            id="mail_from_address"
+            :value="old('mail_from_address', session('install_data.mail_from_address', $admin_email ?? ''))"
+            class="mail-setting-input"
+        />
     @else
         @include('components::form.label', [
             'for' => 'mail_from_address',

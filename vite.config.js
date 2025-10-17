@@ -26,6 +26,11 @@ export default defineConfig({
             __dirname + '/resources/src/**/*.js',
             __dirname + '/plugins/**/**/*.php',
             __dirname + '/plugins/**/**/*.js',
+            __dirname + '/plugins/**/**/*.scss',
+            __dirname + '/themes/**/**/*.php',
+            __dirname + '/themes/**/**/*.js',
+            __dirname + '/themes/**/**/*.scss',
+
         ]),
     ],
     build: {
