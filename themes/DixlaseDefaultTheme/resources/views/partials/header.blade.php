@@ -1,5 +1,5 @@
 @php
-    $themeSettings = DB::table('dixlase_default_theme_settings')->first();
+    // テーマ設定はServiceProviderから自動的に渡される
     $logoUrl = $themeSettings->logo_url ?? null;
     $logoText = $themeSettings->logo_text ?? config('app.name', 'Dixlase');
     $hasAdminBar = auth('member')->check();

@@ -37,6 +37,11 @@ class ApplySessionConfig
      */
     public function handle(Request $request, Closure $next, ?string $guard = null): Response
     {
+        // Skip session config during installation to avoid DB access before tables are created
+        if ($request->is('install/*') || $request->is('install')) {
+            return $next($request);
+        }
+
         // Determine the guard from the request context if not provided
         if ($guard === null) {
             // Check if this is an admin route
@@ -49,7 +54,12 @@ class ApplySessionConfig
         }
 
         // Apply session configuration based on the guard
-        ConfigHelper::applySessionConfig($guard);
+        try {
+            ConfigHelper::applySessionConfig($guard);
+        } catch (\Exception $e) {
+            // If session config fails (e.g., during database operations), continue with defaults
+            \Log::debug('Session config application failed: ' . $e->getMessage());
+        }
 
         return $next($request);
     }

@@ -33,18 +33,70 @@ Copyright (C) 2025 exc-D inc.
                 {{ __('themes::admin.settings.hero.title') }}
             </h3>
             <div class="space-y-4">
-                <x-form.text name="hero_background_image" :label="__('themes::admin.settings.hero.background_image')" :value="old('hero_background_image', $settings->hero_background_image ?? '')" :help="__('themes::admin.settings.hero.background_image_help')" />
-                <x-form.text name="hero_main_title" :label="__('themes::admin.settings.hero.main_title')" :value="old('hero_main_title', $settings->hero_main_title ?? '')" required :help="__('themes::admin.settings.hero.main_title_help')" />
-                <x-form.textarea name="hero_sub_title" :label="__('themes::admin.settings.hero.sub_title')" :value="old('hero_sub_title', $settings->hero_sub_title ?? '')" rows="2" :help="__('themes::admin.settings.hero.sub_title_help')" />
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-form.text name="hero_button_text" :label="__('themes::admin.settings.hero.button_text')" :value="old('hero_button_text', $settings->hero_button_text ?? '')" />
-                    <x-form.text name="hero_button_link" :label="__('themes::admin.settings.hero.button_link')" :value="old('hero_button_link', $settings->hero_button_link ?? '')" />
+                {{-- Basic Settings --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {{ __('themes::admin.settings.hero.basic_settings') }}
+                    </label>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+                                {{ __('themes::admin.settings.hero.background_section') }}
+                            </label>
+                            
+                            @include('components.media-picker', [
+                                'name' => 'hero_background_image_id',
+                                'value' => $settings->hero_background_image_id ?? null,
+                                'media' => $heroBackgroundImage ?? null,
+                                'label' => __('themes::admin.settings.hero.background_image'),
+                                'help' => __('themes::admin.settings.hero.background_image_help'),
+                                'error' => $errors->first('hero_background_image_id'),
+                                'aspectRatio' => 'hero',
+                                'buttonText' => __('themes::admin.settings.hero.select_background_image')
+                            ])
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+                                {{ __('themes::admin.settings.hero.content_section') }}
+                            </label>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-500 mb-1">
+                                        {{ __('themes::admin.settings.hero.main_title_label') }}
+                                    </label>
+                                    <x-form.text name="hero_main_title" :label="__('themes::admin.settings.hero.main_title')" :value="old('hero_main_title', $settings->hero_main_title ?? '')" required :help="__('themes::admin.settings.hero.main_title_help')" />
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-500 mb-1">
+                                        {{ __('themes::admin.settings.hero.sub_title_label') }}
+                                    </label>
+                                    <x-form.textarea name="hero_sub_title" :label="__('themes::admin.settings.hero.sub_title')" :value="old('hero_sub_title', $settings->hero_sub_title ?? '')" rows="2" :help="__('themes::admin.settings.hero.sub_title_help')" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-form.text name="hero_button_secondary_text" :label="__('themes::admin.settings.hero.button_secondary_text')" :value="old('hero_button_secondary_text', $settings->hero_button_secondary_text ?? '')" />
-                    <x-form.text name="hero_button_secondary_link" :label="__('themes::admin.settings.hero.button_secondary_link')" :value="old('hero_button_secondary_link', $settings->hero_button_secondary_link ?? '')" />
+                {{-- Primary Button --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {{ __('themes::admin.settings.hero.primary_button') }}
+                    </label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <x-form.text name="hero_button_text" :label="__('themes::admin.settings.hero.button_text')" :value="old('hero_button_text', $settings->hero_button_text ?? '')" />
+                        <x-form.text name="hero_button_link" :label="__('themes::admin.settings.hero.button_link')" :value="old('hero_button_link', $settings->hero_button_link ?? '')" />
+                    </div>
+                </div>
+                
+                {{-- Secondary Button --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {{ __('themes::admin.settings.hero.secondary_button') }}
+                    </label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <x-form.text name="hero_button_secondary_text" :label="__('themes::admin.settings.hero.button_secondary_text')" :value="old('hero_button_secondary_text', $settings->hero_button_secondary_text ?? '')" />
+                        <x-form.text name="hero_button_secondary_link" :label="__('themes::admin.settings.hero.button_secondary_link')" :value="old('hero_button_secondary_link', $settings->hero_button_secondary_link ?? '')" />
+                    </div>
                 </div>
             </div>
         </div>
@@ -78,19 +130,148 @@ Copyright (C) 2025 exc-D inc.
                     </button>
                 </div>
 
-                <x-form.text name="footer_copyright" :label="__('themes::admin.settings.footer.copyright')" :value="old('footer_copyright', $settings->footer_copyright ?? '')" :help="__('themes::admin.settings.footer.copyright_help')" />
+                {{-- Copyright --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {{ __('themes::admin.settings.footer.copyright_section') }}
+                    </label>
+                    <x-form.text name="footer_copyright" :label="__('themes::admin.settings.footer.copyright')" :value="old('footer_copyright', $settings->footer_copyright ?? '')" :help="__('themes::admin.settings.footer.copyright_help')" />
+                </div>
                 
                 {{-- SNS Links --}}
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                         {{ __('themes::admin.settings.footer.sns_title') }}
                     </label>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <x-form.text name="footer_sns_facebook" :label="__('themes::admin.settings.footer.sns_facebook')" :value="old('footer_sns_facebook', $settings->footer_sns_facebook ?? '')" type="url" />
-                        <x-form.text name="footer_sns_twitter" :label="__('themes::admin.settings.footer.sns_twitter')" :value="old('footer_sns_twitter', $settings->footer_sns_twitter ?? '')" type="url" />
-                        <x-form.text name="footer_sns_instagram" :label="__('themes::admin.settings.footer.sns_instagram')" :value="old('footer_sns_instagram', $settings->footer_sns_instagram ?? '')" type="url" />
-                        <x-form.text name="footer_sns_linkedin" :label="__('themes::admin.settings.footer.sns_linkedin')" :value="old('footer_sns_linkedin', $settings->footer_sns_linkedin ?? '')" type="url" />
-                        <x-form.text name="footer_sns_youtube" :label="__('themes::admin.settings.footer.sns_youtube')" :value="old('footer_sns_youtube', $settings->footer_sns_youtube ?? '')" type="url" />
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+                                {{ __('themes::admin.settings.footer.sns_social_media') }}
+                            </label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                                {{-- Instagram --}}
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">Instagram</label>
+                                    <div class="flex items-stretch">
+                                        <span class="inline-flex items-center w-30 mr-2 text-sm whitespace-nowrap">
+                                            instagram.com/
+                                        </span>
+                                        <input type="text" name="footer_sns_instagram" value="{{ old('footer_sns_instagram', $settings->footer_sns_instagram ?? '') }}" class="flex-1 min-w-0 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md" placeholder="{{ __('themes::admin.settings.footer.sns_username') }}">
+                                    </div>
+                                </div>
+                                
+                                {{-- X (Twitter) --}}
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">X (Twitter)</label>
+                                    <div class="flex items-stretch">
+                                        <span class="inline-flex items-center w-30 mr-2 text-sm whitespace-nowrap">
+                                            x.com/
+                                        </span>
+                                        <input type="text" name="footer_sns_x" value="{{ old('footer_sns_x', $settings->footer_sns_x ?? '') }}" class="flex-1 min-w-0 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md" placeholder="{{ __('themes::admin.settings.footer.sns_username') }}">
+                                    </div>
+                                </div>
+                                
+                                {{-- Facebook --}}
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">Facebook</label>
+                                    <div class="flex items-stretch">
+                                        <span class="inline-flex items-center w-30 mr-2 text-sm whitespace-nowrap">
+                                            facebook.com/
+                                        </span>
+                                        <input type="text" name="footer_sns_facebook" value="{{ old('footer_sns_facebook', $settings->footer_sns_facebook ?? '') }}" class="flex-1 min-w-0 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md" placeholder="{{ __('themes::admin.settings.footer.sns_username') }}">
+                                    </div>
+                                </div>
+                                
+                                {{-- TikTok --}}
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">TikTok</label>
+                                    <div class="flex items-stretch">
+                                        <span class="inline-flex items-center w-30 mr-2 text-sm whitespace-nowrap">
+                                            tiktok.com/@
+                                        </span>
+                                        <input type="text" name="footer_sns_tiktok" value="{{ old('footer_sns_tiktok', $settings->footer_sns_tiktok ?? '') }}" class="flex-1 min-w-0 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md" placeholder="{{ __('themes::admin.settings.footer.sns_username') }}">
+                                    </div>
+                                </div>
+                                
+                                {{-- Bluesky --}}
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">Bluesky</label>
+                                    <div class="flex items-stretch">
+                                        <span class="inline-flex items-center w-30 mr-2 text-sm whitespace-nowrap">
+                                            bsky.app/profile/
+                                        </span>
+                                        <input type="text" name="footer_sns_bluesky" value="{{ old('footer_sns_bluesky', $settings->footer_sns_bluesky ?? '') }}" class="flex-1 min-w-0 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md" placeholder="{{ __('themes::admin.settings.footer.sns_username') }}">
+                                    </div>
+                                </div>
+                                
+                                {{-- Threads --}}
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">Threads</label>
+                                    <div class="flex items-stretch">
+                                        <span class="inline-flex items-center w-30 mr-2 text-sm whitespace-nowrap">
+                                            threads.net/@
+                                        </span>
+                                        <input type="text" name="footer_sns_threads" value="{{ old('footer_sns_threads', $settings->footer_sns_threads ?? '') }}" class="flex-1 min-w-0 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md" placeholder="{{ __('themes::admin.settings.footer.sns_username') }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+                                {{ __('themes::admin.settings.footer.sns_professional') }}
+                            </label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                                {{-- LinkedIn --}}
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">LinkedIn</label>
+                                    <div class="flex items-stretch">
+                                        <span class="inline-flex items-center w-30 mr-2 text-sm whitespace-nowrap">
+                                            linkedin.com/in/
+                                        </span>
+                                        <input type="text" name="footer_sns_linkedin" value="{{ old('footer_sns_linkedin', $settings->footer_sns_linkedin ?? '') }}" class="flex-1 min-w-0 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md" placeholder="{{ __('themes::admin.settings.footer.sns_username') }}">
+                                    </div>
+                                </div>
+                                
+                                {{-- YouTube --}}
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">YouTube</label>
+                                    <div class="flex items-stretch">
+                                        <span class="inline-flex items-center w-30 mr-2 text-sm whitespace-nowrap">
+                                            youtube.com/@
+                                        </span>
+                                        <input type="text" name="footer_sns_youtube" value="{{ old('footer_sns_youtube', $settings->footer_sns_youtube ?? '') }}" class="flex-1 min-w-0 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md" placeholder="{{ __('themes::admin.settings.footer.sns_username') }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+                                {{ __('themes::admin.settings.footer.sns_other') }}
+                            </label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                                {{-- Pinterest --}}
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">Pinterest</label>
+                                    <div class="flex items-stretch">
+                                        <span class="inline-flex items-center w-30 mr-2 text-sm whitespace-nowrap">
+                                            pinterest.com/
+                                        </span>
+                                        <input type="text" name="footer_sns_pinterest" value="{{ old('footer_sns_pinterest', $settings->footer_sns_pinterest ?? '') }}" class="flex-1 min-w-0 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md" placeholder="{{ __('themes::admin.settings.footer.sns_username') }}">
+                                    </div>
+                                </div>
+                                
+                                {{-- Discord --}}
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">Discord</label>
+                                    <div class="flex items-stretch">
+                                        <span class="inline-flex items-center w-30 mr-2 text-sm whitespace-nowrap">
+                                            discord.gg/
+                                        </span>
+                                        <input type="text" name="footer_sns_discord" value="{{ old('footer_sns_discord', $settings->footer_sns_discord ?? '') }}" class="flex-1 min-w-0 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md" placeholder="{{ __('themes::admin.settings.footer.sns_invite_code') }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

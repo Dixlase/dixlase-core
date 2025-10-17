@@ -40,17 +40,13 @@ return new class extends Migration
         Schema::create($this->table, function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string("name", 255);
-            $table->text("value");
+            $table->text("value")->nullable();
             $table->unsignedBigInteger('front_ogp_image_id')->nullable();
             $table->unsignedBigInteger('header_logo_id')->nullable();
             $table->unsignedBigInteger('favicon_id')->nullable();
             $table->timestamps();
             $table->softDeletes();
             
-            // 外部キー制約
-            $table->foreign('front_ogp_image_id')->references('id')->on('media')->onDelete('set null');
-            $table->foreign('header_logo_id')->references('id')->on('media')->onDelete('set null');
-            $table->foreign('favicon_id')->references('id')->on('media')->onDelete('set null');
         });
     }
 

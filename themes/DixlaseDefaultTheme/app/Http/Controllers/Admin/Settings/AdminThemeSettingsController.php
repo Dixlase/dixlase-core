@@ -23,8 +23,9 @@
 namespace Themes\DixlaseDefaultTheme\App\Http\Controllers\Admin\Settings;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
-use Illuminate\Http\Request;
+use App\Models\Media;
 use Illuminate\Support\Facades\DB;
+use Themes\DixlaseDefaultTheme\App\Http\Requests\UpdateThemeSettingsRequest;
 
 class AdminThemeSettingsController extends AdminLoggedInController
 {
@@ -34,7 +35,7 @@ class AdminThemeSettingsController extends AdminLoggedInController
     public function settings()
     {
         // テーマ設定を取得
-        $settings = DB::table('dixlase_default_theme_settings')->first();
+        $settings = DB::table('thm_dixlase_default_theme_settings')->first();
         
         // 設定が存在しない場合はデフォルト値を使用
         if (!$settings) {
@@ -44,7 +45,7 @@ class AdminThemeSettingsController extends AdminLoggedInController
                 'logo_text' => config('app.name', 'Dixlase'),
                 
                 // Hero Section
-                'hero_background_image' => null,
+                'hero_background_image_id' => null,
                 'hero_main_title' => 'Welcome to ' . config('app.name', 'Dixlase'),
                 'hero_sub_title' => 'Modern CMS Platform for Building Amazing Websites',
                 'hero_button_text' => 'Get Started',
@@ -74,7 +75,14 @@ class AdminThemeSettingsController extends AdminLoggedInController
             $settings->footer_links = json_decode($settings->footer_links, true) ?? [];
         }
         
+        // ヒーロー背景画像のメディアを取得
+        $heroBackgroundImage = null;
+        if (isset($settings->hero_background_image_id)) {
+            $heroBackgroundImage = Media::find($settings->hero_background_image_id);
+        }
+        
         $this->viewParams['settings'] = $settings;
+        $this->viewParams['heroBackgroundImage'] = $heroBackgroundImage;
         
         return view('themes::admin.settings.themes.settings', $this->viewParams);
     }
@@ -82,55 +90,20 @@ class AdminThemeSettingsController extends AdminLoggedInController
     /**
      * テーマ設定を更新
      */
-    public function update(Request $request)
+    public function update(UpdateThemeSettingsRequest $request)
     {
-        $validated = $request->validate([
-            // Header
-            'logo_url' => 'nullable|string|max:500',
-            'logo_text' => 'required|string|max:255',
-            
-            // Hero Section
-            'hero_background_image' => 'nullable|string|max:500',
-            'hero_main_title' => 'required|string|max:255',
-            'hero_sub_title' => 'nullable|string|max:1000',
-            'hero_button_text' => 'nullable|string|max:100',
-            'hero_button_link' => 'nullable|string|max:500',
-            'hero_button_secondary_text' => 'nullable|string|max:100',
-            'hero_button_secondary_link' => 'nullable|string|max:500',
-            
-            // Footer
-            'footer_description' => 'nullable|string|max:1000',
-            'footer_links' => 'nullable|array',
-            'footer_links.*.title' => 'required|string|max:100',
-            'footer_links.*.url' => 'required|string|max:500',
-            'footer_copyright' => 'nullable|string|max:500',
-            'footer_sns_facebook' => 'nullable|url|max:500',
-            'footer_sns_twitter' => 'nullable|url|max:500',
-            'footer_sns_instagram' => 'nullable|url|max:500',
-            'footer_sns_linkedin' => 'nullable|url|max:500',
-            'footer_sns_youtube' => 'nullable|url|max:500',
-            
-            // Colors
-            'primary_color' => 'required|string|max:7',
-            'secondary_color' => 'required|string|max:7',
-            'accent_color' => 'required|string|max:7',
-        ]);
-        
-        // footer_linksをJSON文字列に変換
-        if (isset($validated['footer_links'])) {
-            $validated['footer_links'] = json_encode($validated['footer_links']);
-        }
+        $validated = $request->validated();
         
         // 設定を更新または作成
-        $exists = DB::table('dixlase_default_theme_settings')->exists();
+        $exists = DB::table('thm_dixlase_default_theme_settings')->exists();
         
         $data = array_merge($validated, ['updated_at' => now()]);
         
         if ($exists) {
-            DB::table('dixlase_default_theme_settings')->update($data);
+            DB::table('thm_dixlase_default_theme_settings')->update($data);
         } else {
             $data['created_at'] = now();
-            DB::table('dixlase_default_theme_settings')->insert($data);
+            DB::table('thm_dixlase_default_theme_settings')->insert($data);
         }
         
         return redirect()

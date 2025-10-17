@@ -1,6 +1,6 @@
 @php
-    $themeSettings = DB::table('dixlase_default_theme_settings')->first();
-    $heroBackground = $themeSettings->hero_background_image ?? null;
+    // テーマ設定はServiceProviderから自動的に渡される
+    $heroBackground = $themeSettings->hero_background_image_id ?? null;
     $heroMainTitle = $themeSettings->hero_main_title ?? 'Welcome to ' . config('app.name', 'Dixlase');
     $heroSubTitle = $themeSettings->hero_sub_title ?? 'Modern CMS Platform for Building Amazing Websites';
     $heroButtonText = $themeSettings->hero_button_text ?? 'Get Started';

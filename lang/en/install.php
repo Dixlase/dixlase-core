@@ -182,7 +182,14 @@ return [
     'confirm_title' => 'Confirm Installation Settings',
     'confirm_header' => 'Confirm Installation',
     'confirm_message' => 'Please review the settings before finalizing the installation.',
-    'confirm_description' => 'The installation will proceed with the above settings. Are you ready to continue?',
+    'confirm_description' => 'The installation will proceed with the above settings. <br>Are you ready to continue?',
+    'settings_review' => 'Settings Review',
+    'basic_settings' => 'Basic Settings',
+    'app_settings' => 'Application Settings',
+    'database_settings' => 'Database Settings',
+    'mail_settings' => 'Mail Settings',
+    'security_settings' => 'Security Settings',
+    'not_executed' => 'Not Executed',
 
     // サイト情報
     'site_name' => 'Site Name',

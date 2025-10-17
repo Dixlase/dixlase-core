@@ -48,8 +48,9 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
             
-            // 外部キー制約
-            $table->foreign('default_ogp_image_id')->references('id')->on('media')->onDelete('set null');
+            // 外部キー制約は不要（アプリケーションレベルで管理）
+            // NOTE: default_ogp_image_id は media テーブルを参照しますが、
+            // 設定の柔軟性を保つため、DBレベルの制約は設定しません
         });
     }
 

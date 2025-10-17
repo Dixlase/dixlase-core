@@ -20,10 +20,10 @@ return new class extends Migration
             $table->timestamp('attempted_at');
             $table->timestamps();
             
-            // インデックスを追加してクエリ性能を向上
-            $table->index(['identifier', 'attempted_at']);
-            $table->index(['ip_address', 'attempted_at']);
-            $table->index(['identifier', 'ip_address', 'attempted_at']);
+            // インデックスを追加してクエリ性能を向上（カスタム名で短縮）
+            $table->index(['identifier', 'attempted_at'], 'idx_login_identifier_time');
+            $table->index(['ip_address', 'attempted_at'], 'idx_login_ip_time');
+            $table->index(['identifier', 'ip_address', 'attempted_at'], 'idx_login_composite');
         });
     }
 

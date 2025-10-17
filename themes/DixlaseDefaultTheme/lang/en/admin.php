@@ -10,6 +10,7 @@ return [
     'settings' => [
         'title' => 'Theme Settings',
         'updated_successfully' => 'Theme settings updated successfully',
+        'select_image' => 'Select Image',
         
         // Header Section
         'header' => [
@@ -23,16 +24,24 @@ return [
         // Hero Section
         'hero' => [
             'title' => 'Hero Section Settings',
-            'background_image' => 'Background Image URL',
-            'background_image_help' => 'Full-screen hero area background image (leave empty for gradient)',
+            'basic_settings' => 'Basic Settings',
+            'background_section' => 'Background Settings',
+            'background_image' => 'Background Image',
+            'background_image_help' => 'Full-screen hero area background image (gradient will be displayed if not set)',
+            'select_background_image' => 'Select Background Image',
+            'content_section' => 'Content',
+            'main_title_label' => 'Main Title',
             'main_title' => 'Main Title',
             'main_title_help' => 'Hero area main heading',
+            'sub_title_label' => 'Sub Title',
             'sub_title' => 'Sub Title',
             'sub_title_help' => 'Hero area description text',
-            'button_text' => 'Primary Button Text',
-            'button_link' => 'Primary Button Link',
-            'button_secondary_text' => 'Secondary Button Text',
-            'button_secondary_link' => 'Secondary Button Link',
+            'primary_button' => 'Primary Button',
+            'button_text' => 'Button Text',
+            'button_link' => 'Button Link',
+            'secondary_button' => 'Secondary Button',
+            'button_secondary_text' => 'Button Text',
+            'button_secondary_link' => 'Button Link',
         ],
         
         // Footer Section
@@ -46,14 +55,25 @@ return [
             'link_url' => 'Link URL',
             'add_link' => 'Add Link',
             'remove_link' => 'Remove Link',
+            'copyright_section' => 'Copyright',
             'copyright' => 'Copyright',
             'copyright_help' => 'Copyright text displayed in footer',
             'sns_title' => 'SNS Links',
-            'sns_facebook' => 'Facebook URL',
-            'sns_twitter' => 'Twitter URL',
+            'sns_social_media' => 'Social Media',
+            'sns_professional' => 'Professional',
+            'sns_other' => 'Other',
+            'sns_username' => 'Username',
+            'sns_invite_code' => 'Invite Code',
             'sns_instagram' => 'Instagram URL',
+            'sns_x' => 'X (Twitter) URL',
+            'sns_facebook' => 'Facebook URL',
+            'sns_tiktok' => 'TikTok URL',
+            'sns_bluesky' => 'Bluesky URL',
+            'sns_threads' => 'Threads URL',
             'sns_linkedin' => 'LinkedIn URL',
             'sns_youtube' => 'YouTube URL',
+            'sns_pinterest' => 'Pinterest URL',
+            'sns_discord' => 'Discord URL',
         ],
         
         // Colors Section

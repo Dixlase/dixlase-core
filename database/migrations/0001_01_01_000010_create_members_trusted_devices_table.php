@@ -22,7 +22,7 @@ return new class extends Migration
             $table->timestamp('last_used_at')->nullable();
             $table->timestamps();
             
-            $table->index(['member_id', 'token']);
+            $table->index(['member_id', 'token'], 'idx_trusted_device_lookup');
         });
     }
 

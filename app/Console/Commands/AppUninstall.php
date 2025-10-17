@@ -43,7 +43,7 @@ class AppUninstall extends Command
         }
 
         // ✅ 1. データベースの処理（優先）
-        if (!$force && $this->confirm('データベースをバックアップしますか？')) {
+        if (!$force && $this->confirm('データベースをバックアップしますか？', true)) {
             $dbName = env('DB_DATABASE');
             $dumpFile = base_path("database/backups/{$dbName}_" . now()->format('Ymd_His') . ".sql");
             $this->dumpDatabase($dumpFile);
@@ -72,7 +72,7 @@ class AppUninstall extends Command
         if (File::exists($envPath)) {
             $backupPath = base_path('.env.backup_' . now()->format('Ymd_His'));
             
-            if (!$force && $this->confirm('.env を削除せずにバックアップしますか？')) {
+            if (!$force && $this->confirm('.env を削除せずにバックアップしますか？', true)) {
                 try {
                     File::copy($envPath, $backupPath);
                     $this->info("✅ .env をバックアップしました: {$backupPath}");

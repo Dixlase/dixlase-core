@@ -44,7 +44,9 @@
             "Plugins\\DixlaseUsers\\App\\": "plugins/DixlaseUsers/app",
             "Plugins\\DixlaseUsers\\Database\\Factories\\": "plugins/DixlaseUsers/database/factories",
             "Plugins\\DixlaseUsers\\Database\\Seeders\\": "plugins/DixlaseUsers/database/seeders",
-            "Themes\\DixlaseDefaultTheme\\App\\": "themes/DixlaseDefaultTheme/app"
+            "Themes\\DixlaseDefaultTheme\\App\\": "themes/DixlaseDefaultTheme/app",
+            "Themes\\DixlaseDefaultTheme\\Database\\Factories\\": "themes/DixlaseDefaultTheme/database/factories",
+            "Themes\\DixlaseDefaultTheme\\Database\\Seeders\\": "themes/DixlaseDefaultTheme/database/seeders"
         },
         "files": [
             "app/Helpers/AssetHelper.php",
