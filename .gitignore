@@ -68,3 +68,4 @@ license.txt
 .mcp.json
 themes/DixlaseDefaultTheme/database/seeders/ThemeSettingsSeeder.php
 themes/DixlaseDefaultTheme/app/Models/ThemeSetting.php
+settings.blade.php
