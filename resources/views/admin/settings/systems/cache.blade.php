@@ -102,7 +102,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'message' => $info['description'],
         'confirm_label' => __('common.clear'),
         'message' => $info['description'],
-        'confirm_label' => __('admin.settings.systems.cache.clear_button'),
+        'confirm_label' => __('common.clear'),
         'cancel_label' => __('common.cancel'),
         'form' => 'clearCacheForm' . ucfirst($type),
         'icon_type' => 'danger',
