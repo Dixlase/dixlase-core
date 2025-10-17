@@ -2,22 +2,44 @@
 
 @section('title', __('install.complete_title'))
 @section('header', __('install.complete_header'))
-@section('description', __('install.complete_message'))
+
+@section('description')
+    {!! __('install.complete_message') !!}
+@endsection
+
+@php
+    // 完了画面では言語切り替え機能を無効化
+    $availableLocales = null;
+    $currentLocale = null;
+@endphp
 
 @section('content')
 
-    <div class="flex flex-col justify-center items-center space-y-4">
+    <div class="flex flex-col justify-center items-center space-y-6">
         <!-- ✅ フロントページURL -->
-        <div class="flex flex-col justify-center items-center">
-            <p class="text-gray-700 font-semibold">{{ __('install.site_url') }}</p>
-            <a href="{{ $appUrl }}" class="text-blue-600 underline break-words">{{ $appUrl }}</a>
+        <div class="flex flex-col justify-center items-center space-y-2">
+            <p class="text-gray-700 dark:text-gray-300 font-semibold">{{ __('install.site_url') }}</p>
+            <div class="flex items-center space-x-2">
+                <strong id="site-url" class="text-blue-600 dark:text-white px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded break-words">{{ $appUrl }}</strong>
+                <button onclick="copyToClipboard('site-url')" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded transition" title="コピー">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                </button>
+            </div>
         </div>
 
         <!-- ✅ 管理者ログインページURL -->
-        
-        <div class="flex flex-col justify-center items-center">
-            <p class="text-gray-700 font-semibold">{{ __('install.admin_login_url') }}</p>
-            <a href="{{ $adminLoginUrl }}" class="text-red-600 underline break-words">{{ $adminLoginUrl }}</a>
+        <div class="flex flex-col justify-center items-center space-y-2">
+            <p class="text-gray-700 dark:text-gray-300 font-semibold">{{ __('install.admin_login_url') }}</p>
+            <div class="flex items-center space-x-2">
+                <strong id="admin-url" class="text-gray-600 dark:text-white px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded break-words">{{ $adminLoginUrl }}</strong>
+                <button onclick="copyToClipboard('admin-url')" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded transition" title="コピー">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -46,45 +68,29 @@
 
     </div>
 
-    <!-- 自動finalize処理 -->
+    <!-- URLコピー機能 -->
     <script>
-        let finalizeExecuted = false;
-        
-        // ページ離脱時にfinalizeを実行
-        function executeFinalizeIfNeeded() {
-            if (!finalizeExecuted) {
-                finalizeExecuted = true;
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                // コピー成功時の視覚的フィードバック
+                const button = element.nextElementSibling;
+                const originalHTML = button.innerHTML;
                 
-                // 非同期でfinalizeを実行
-                fetch('{{ route('install.finalize') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        redirect_to: null // リダイレクトなし
-                    })
-                }).catch(error => {
-                    console.log('Finalize request failed:', error);
-                });
-            }
+                button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>';
+                button.classList.add('bg-green-100', 'dark:bg-green-900');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalHTML;
+                    button.classList.remove('bg-green-100', 'dark:bg-green-900');
+                }, 2000);
+            }).catch(err => {
+                console.error('コピーに失敗しました:', err);
+                alert('コピーに失敗しました');
+            });
         }
-        
-        // ページ離脱前にfinalizeを実行
-        window.addEventListener('beforeunload', executeFinalizeIfNeeded);
-        
-        // 1分後に自動でfinalizeを実行
-        setTimeout(() => {
-            executeFinalizeIfNeeded();
-        }, 1 * 60 * 1000); // 1分
-        
-        // ページが非表示になった時にfinalizeを実行
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                executeFinalizeIfNeeded();
-            }
-        });
     </script>
 
 @endsection

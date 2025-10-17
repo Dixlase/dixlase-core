@@ -147,7 +147,8 @@ return [
     */
 
     'migrations' => [
-        'table' => env('DB_PREFIX', 'dxl_') . 'migrations',
+        // プレフィックスはDB接続設定で自動的に付与されるため、ここでは付けない
+        'table' => 'migrations',
         'update_date_on_publish' => true,
     ],
 

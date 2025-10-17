@@ -226,7 +226,7 @@ return [
     //complete
     'complete_title' => 'Installation Complete!',
     'complete_header' => 'Installation Complete',
-    'complete_message' => 'The installation has been successfully completed! You can now access your site or the admin panel.',
+    'complete_message' => 'The installation has been successfully completed!<br> You can now access your site or the admin panel.',
     'go_to_site' => 'Go to Site',
     'go_to_admin' => 'Go to Admin Panel',
     'site_url' => 'Site URL',

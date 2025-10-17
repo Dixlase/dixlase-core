@@ -232,7 +232,7 @@ return [
     //complete
     'complete_title' => 'インストール完了！',
     'complete_header' => 'インストール完了',
-    'complete_message' => 'インストールが正常に完了しました！以下のリンクからサイトまたは管理画面にアクセスしてください。',
+    'complete_message' => 'インストールが正常に完了しました！<br>以下のリンクからサイトまたは管理画面にアクセスしてください。',
     'go_to_site' => 'サイトへ移動',
     'go_to_admin' => '管理画面へログイン',
     'admin_login_url' => '管理画面ログインURL',
