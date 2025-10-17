@@ -223,7 +223,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('save')
-    <!-- 保存ボタン -->
+    <!-- 保存ボタンとモーダル -->
     @include('components.save', [
         'id_confirmation' => 'confirmationModal',
         'label' => __('common.save'),
@@ -234,17 +234,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'form' => 'base-settings-form',
     ])
 @endsection
-
-@push('modals')
-    @include('components.modal', [
-        'id' => 'confirmationModal',
-        'title' => __('common.save_confirmation_title'),
-        'message' => __('common.save_confirmation_message'),
-        'confirm_label' => __('common.save'),
-        'cancel_label' => __('common.cancel'),
-        'form' => 'base-settings-form',
-    ])
-@endpush
 
 @section('scripts')
 <script>

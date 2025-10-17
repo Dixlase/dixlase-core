@@ -280,9 +280,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('save')
     @include('components.save', [
-        'id' => 'confirmationModal',
+        'id_confirmation' => 'confirmProfileModal',
         'label' => __('common.update'),
-        'onclick' => "openModal('confirmProfileModal')",
         'title' => __('admin.profile.confirm_title'),
         'message' => __('admin.profile.confirm_message'),
         'confirm_label' => __('common.update'),
