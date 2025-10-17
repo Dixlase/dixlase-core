@@ -7,7 +7,7 @@
     'help' => null,
     'required' => false,
     'error' => null,
-    'aspectRatio' => 'original', // 'original', 'ogp' (1.91:1), 'square' (1:1), '16:9', '4:3'
+    'aspectRatio' => 'original', // 'original', 'ogp' (1.91:1), 'square' (1:1), '16:9', '4:3', 'hero' (21:9)
     'buttonText' => null, // ボタンのテキスト（指定しない場合はデフォルト）
 ])
 
@@ -22,6 +22,7 @@
         'square' => 'aspect-square object-cover',
         '16:9' => 'aspect-video object-cover',
         '4:3' => 'aspect-[4/3] object-cover',
+        'hero' => 'aspect-[21/9] object-cover',
         'original' => 'h-auto object-contain',
         default => 'h-auto object-contain',
     };
@@ -74,13 +75,11 @@
 </div>
 
 <!-- メディア選択モーダル -->
-@once
-    @push('modals')
-        @include('components.media-selector', [
-            'id' => $selectorId,
-            'inputId' => $inputId,
-            'previewId' => $previewId,
-            'multiple' => false
-        ])
-    @endpush
-@endonce
+@push('modals')
+    @include('components.media-selector', [
+        'id' => $selectorId,
+        'inputId' => $inputId,
+        'previewId' => $previewId,
+        'multiple' => false
+    ])
+@endpush

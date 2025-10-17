@@ -19,7 +19,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @props([
-    'type' => 'button',      // ボタンのタイプ (button, submit, reset)
+    'type' => 'button',      // ボタンのタイプ (button, submit, reset, link)
     'variant' => 'primary',  // ボタンの色バリエーション (primary, secondary, success, warning, danger)
     'size' => 'md',          // ボタンのサイズ (xs, sm, md, lg)
     'class' => '',           // カスタムクラス
@@ -30,6 +30,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'disabled' => false,     // ボタンを無効にする
     'form' => null,          // フォームのID
     'id' => null,            // ボタンのID
+    'href' => null,          // リンク先URL (type='link'の時に使用)
 ])
 
 @php
@@ -62,6 +63,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     ];
 @endphp
 
+@if ($type === 'link')
+<a href="{{ $href }}"
+    @if ($id) id="{{ $id }}" @endif
+    @if ($onclick) onclick="{{ $onclick }}" @endif
+    class="{{ implode(' ', $buttonClasses) }} {{ $disabled ? 'pointer-events-none' : '' }}"
+    >
+    @if ($icon && $iconPosition === 'left')
+        <i class="{{ $icon }} {{ $label ? 'mr-2' : '' }}"></i>
+    @endif
+    
+    @if ($label)
+        {{ $label }}
+    @endif
+    
+    @if ($icon && $iconPosition === 'right')
+        <i class="{{ $icon }} {{ $label ? 'ml-2' : '' }}"></i>
+    @endif
+</a>
+@else
 <button type="{{ $type }}"
     @if ($id) id="{{ $id }}" @endif
     @if ($onclick) onclick="{{ $onclick }}" @endif
@@ -81,3 +101,4 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <i class="{{ $icon }} {{ $label ? 'ml-2' : '' }}"></i>
     @endif
 </button>
+@endif

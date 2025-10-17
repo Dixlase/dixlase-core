@@ -266,10 +266,12 @@ class AdminMediaController extends AdminLoggedInController
         $maxFileSize = MediaSetting::where('name', 'max_file_size')->value('value') ?? '2048';
 
         $fileExtensions = config('admin.fileExtensions');
+        $fileExtensionNames = config('admin.fileExtensionNames');
 
         $this->viewParams['allowedFileTypes'] = $allowedFileTypes;
         $this->viewParams['maxFileSize'] = $maxFileSize;
         $this->viewParams['fileExtensions'] = $fileExtensions;
+        $this->viewParams['fileExtensionNames'] = $fileExtensionNames;
 
         return view('admin.media.settings', $this->viewParams);
     }

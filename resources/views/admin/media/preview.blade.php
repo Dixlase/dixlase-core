@@ -23,7 +23,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
     <div class="container mx-auto p-6">
         <div class="bg-white shadow-md rounded-lg p-6 dark:bg-gray-800">
-            @if(in_array($media->type, ['image/jpeg', 'image/png', 'image/gif']))
+            @if(in_array($media->type, ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']))
                 <img src="{{ asset('storage/' . config('admin.mediaPath') . '/' . $media->path) }}" alt="{{ $media->name }}" class="w-full h-auto object-cover rounded">
             @else
                 <p class="text-gray-700">{{ __('admin.media.preview.no_preview') }}</p>
