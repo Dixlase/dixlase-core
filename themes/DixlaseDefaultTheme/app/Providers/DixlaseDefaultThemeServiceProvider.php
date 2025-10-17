@@ -23,6 +23,9 @@
 namespace Themes\DixlaseDefaultTheme\App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\View;
 use App\Helpers\AdminHelper;
 
 class DixlaseDefaultThemeServiceProvider extends ServiceProvider
@@ -52,5 +55,100 @@ class DixlaseDefaultThemeServiceProvider extends ServiceProvider
         
         // Load translations
         $this->loadTranslationsFrom(__DIR__ . '/../../lang', 'dixlase-default-theme');
+        
+        // Load migrations
+        $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
+        
+        // Auto-seed theme settings if table exists but is empty
+        $this->autoSeedThemeSettings();
+        
+        // Share theme settings with all views
+        $this->shareThemeSettings();
+    }
+    
+    /**
+     * テーマ設定を自動的にシード
+     */
+    protected function autoSeedThemeSettings(): void
+    {
+        // コンソールコマンド実行時のみ、かつマイグレーション後にチェック
+        if ($this->app->runningInConsole()) {
+            // データベース接続を試みる
+            try {
+                // テーブルが存在し、かつデータが存在しない場合のみシード
+                if (DB::getSchemaBuilder()->hasTable('thm_dixlase_default_theme_settings')) {
+                    if (!DB::table('thm_dixlase_default_theme_settings')->exists()) {
+                        Artisan::call('db:seed', [
+                            '--class' => 'Themes\\DixlaseDefaultTheme\\Database\\Seeders\\DixlaseDefaultThemeSettingsSeeder'
+                        ]);
+                    }
+                }
+            } catch (\Exception $e) {
+                // マイグレーション前など、テーブルがまだ存在しない場合は無視
+            }
+        }
+    }
+    
+    /**
+     * テーマ設定を全ビューに共有
+     */
+    protected function shareThemeSettings(): void
+    {
+        // View Composerを使用して、テーマのすべてのビューにテーマ設定を渡す
+        // 'themes::*' はこのテーマの名前空間でロードされるすべてのビュー
+        // '*' は直接パスで呼ばれるすべてのビュー（フロントエンドページ含む）
+        View::composer('*', function ($view) {
+            try {
+                if (DB::getSchemaBuilder()->hasTable('thm_dixlase_default_theme_settings')) {
+                    $themeSettings = DB::table('thm_dixlase_default_theme_settings')->first();
+                    
+                    if ($themeSettings) {
+                        // テーマ設定をビュー変数として共有
+                        $view->with('themeSettings', $themeSettings);
+                    } else {
+                        // データが存在しない場合はデフォルト値を設定
+                        $view->with('themeSettings', $this->getDefaultThemeSettings());
+                    }
+                } else {
+                    // テーブルが存在しない場合はデフォルト値を使用
+                    $view->with('themeSettings', $this->getDefaultThemeSettings());
+                }
+            } catch (\Exception $e) {
+                // エラー時はデフォルト値を使用
+                $view->with('themeSettings', $this->getDefaultThemeSettings());
+            }
+        });
+    }
+    
+    /**
+     * デフォルトのテーマ設定を取得
+     */
+    protected function getDefaultThemeSettings(): object
+    {
+        return (object) [
+            'hero_background_image_id' => null,
+            'hero_main_title' => 'Welcome to ' . config('app.name', 'Dixlase'),
+            'hero_sub_title' => 'Modern CMS Platform for Building Amazing Websites',
+            'hero_button_text' => 'Get Started',
+            'hero_button_link' => '#',
+            'hero_button_secondary_text' => 'Learn More',
+            'hero_button_secondary_link' => '#features',
+            'footer_description' => 'Powered by Dixlase CMS',
+            'footer_links' => '[]',
+            'footer_copyright' => '© ' . date('Y') . ' ' . config('app.name', 'Dixlase') . '. All rights reserved.',
+            'footer_sns_instagram' => null,
+            'footer_sns_x' => null,
+            'footer_sns_facebook' => null,
+            'footer_sns_tiktok' => null,
+            'footer_sns_bluesky' => null,
+            'footer_sns_threads' => null,
+            'footer_sns_linkedin' => null,
+            'footer_sns_youtube' => null,
+            'footer_sns_pinterest' => null,
+            'footer_sns_discord' => null,
+            'primary_color' => '#3b82f6',
+            'secondary_color' => '#6b7280',
+            'accent_color' => '#10b981',
+        ];
     }
 }

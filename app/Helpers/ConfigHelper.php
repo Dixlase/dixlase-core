@@ -353,12 +353,24 @@ class ConfigHelper
      */
     public static function applySessionConfig(?string $guard = null): void
     {
-        // Update session configuration at runtime
-        config([
-            'session.lifetime' => self::getEffectiveSessionLifetime($guard),
-            'session.driver' => self::getSessionDriver(),
-            'session.encrypt' => self::getSessionEncrypt(),
-        ]);
+        try {
+            // Update session configuration at runtime
+            config([
+                'session.lifetime' => self::getEffectiveSessionLifetime($guard),
+                'session.driver' => self::getSessionDriver(),
+                'session.encrypt' => self::getSessionEncrypt(),
+            ]);
+        } catch (\Exception $e) {
+            // If there's any error (e.g., during installation or DB issues), use defaults
+            Log::debug('Failed to apply session config: ' . $e->getMessage());
+            
+            // Set safe defaults
+            config([
+                'session.lifetime' => config('session.lifetime', 120),
+                'session.driver' => 'file', // Use file driver as fallback
+                'session.encrypt' => false,
+            ]);
+        }
     }
 
     /**

@@ -46,7 +46,7 @@
     
     <!-- 基本設定 -->
     <article aria-labelledby="basic-settings-heading">
-        <h3 id="basic-settings-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">基本設定</h3>
+        <h3 id="basic-settings-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('install.basic_settings') }}</h3>
         <ul class="space-y-1 text-gray-700 dark:text-gray-300">
             <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.site_name') }}:</strong> {{ $data['site_name'] }}</li>
             <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.admin_name') }}:</strong> {{ $data['admin_name'] }}</li>
@@ -57,7 +57,7 @@
 
     <!-- アプリケーション設定 -->
     <article aria-labelledby="app-settings-heading">
-        <h3 id="app-settings-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">アプリケーション設定</h3>
+        <h3 id="app-settings-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('install.app_settings') }}</h3>
         <ul class="space-y-1 text-gray-700 dark:text-gray-300">
             <!-- ✅ アプリケーションURL（SSL反映） -->
             <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.app_url') }}:</strong> {{ $fullAppUrl }}</li>
@@ -70,7 +70,7 @@
 
     <!-- データベース設定 -->
     <article aria-labelledby="database-settings-heading">
-        <h3 id="database-settings-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">データベース設定</h3>
+        <h3 id="database-settings-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('install.database_settings') }}</h3>
         <ul class="space-y-1 text-gray-700 dark:text-gray-300">
             <!-- ✅ DB情報 -->
             <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.db_connection') }}:</strong> {{ ucfirst($data['db_connection']) }}</li>
@@ -84,7 +84,7 @@
 
     <!-- メール設定 -->
     <article aria-labelledby="mail-settings-heading">
-        <h3 id="mail-settings-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">メール設定</h3>
+        <h3 id="mail-settings-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('install.mail_settings') }}</h3>
         <ul class="space-y-1 text-gray-700 dark:text-gray-300">
             <!-- ✅ メールサーバー設定 -->
             <li><strong class="text-gray-900 dark:text-gray-100">{{ __('mail.server_settings.mailer') }}:</strong> {{ $data['mail_mailer'] ?? '' }}</li>
@@ -111,7 +111,7 @@
                                 @endif
                             @else
                                 <span class="text-gray-400 dark:text-gray-500">⚪</span>
-                                <span class="ml-2 text-gray-500 dark:text-gray-400">{{ __('install.mail_test_advanced.connection_test') }} - 未実行</span>
+                                <span class="ml-2 text-gray-500 dark:text-gray-400">{{ __('install.mail_test_advanced.connection_test') }} - {{ __('install.not_executed') }}</span>
                             @endif
                         </div>
                         
@@ -125,7 +125,7 @@
                                 @endif
                             @else
                                 <span class="text-gray-400 dark:text-gray-500">⚪</span>
-                                <span class="ml-2 text-gray-500 dark:text-gray-400">{{ __('install.mail_test_advanced.send_test') }} - 未実行</span>
+                                <span class="ml-2 text-gray-500 dark:text-gray-400">{{ __('install.mail_test_advanced.send_test') }} - {{ __('install.not_executed') }}</span>
                             @endif
                         </div>
                         
@@ -139,7 +139,7 @@
                                 @endif
                             @else
                                 <span class="text-gray-400 dark:text-gray-500">⚪</span>
-                                <span class="ml-2 text-gray-500 dark:text-gray-400">{{ __('install.mail_test_advanced.receive_test') }} - 未実行</span>
+                                <span class="ml-2 text-gray-500 dark:text-gray-400">{{ __('install.mail_test_advanced.receive_test') }} - {{ __('install.not_executed') }}</span>
                             @endif
                         </div>
                         
@@ -159,7 +159,7 @@
 
     <!-- セキュリティ設定 -->
     <article aria-labelledby="security-settings-heading">
-        <h3 id="security-settings-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">セキュリティ設定</h3>
+        <h3 id="security-settings-heading" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('install.security_settings') }}</h3>
         <ul class="space-y-1 text-gray-700 dark:text-gray-300">
             <!-- ✅ IP制限（管理画面 & フロント） -->
             <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.enable_allowed_admin_ips') }}:</strong> {{ isset($data['enable_allowed_admin_ips']) && $data['enable_allowed_admin_ips'] ? __('install.enabled') : __('install.disabled') }}</li>
@@ -182,7 +182,7 @@
 </section>
 
 <!-- 確認メッセージ -->
-<p class="text-center text-gray-700 dark:text-gray-300 mb-4">{{ __('install.confirm_description') }}</p>
+<p class="text-center text-gray-700 dark:text-gray-300 mb-4">{!! __('install.confirm_description') !!}</p>
 
 <!-- インストール実行フォーム -->
 <form action="{{ route('install.confirm.store') }}" method="POST" class="space-y-4">

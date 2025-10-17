@@ -1,5 +1,5 @@
 @php
-    $themeSettings = DB::table('dixlase_default_theme_settings')->first();
+    // テーマ設定はServiceProviderから自動的に渡される
     $footerDescription = $themeSettings->footer_description ?? 'Powered by Dixlase CMS';
     $footerLinks = $themeSettings->footer_links ?? '[]';
     if (is_string($footerLinks)) {
@@ -8,7 +8,7 @@
     $footerCopyright = $themeSettings->footer_copyright ?? '© ' . date('Y') . ' ' . config('app.name', 'Dixlase') . '. All rights reserved.';
     $snsLinks = [
         'facebook' => $themeSettings->footer_sns_facebook ?? null,
-        'twitter' => $themeSettings->footer_sns_twitter ?? null,
+        'twitter' => $themeSettings->footer_sns_x ?? null,
         'instagram' => $themeSettings->footer_sns_instagram ?? null,
         'linkedin' => $themeSettings->footer_sns_linkedin ?? null,
         'youtube' => $themeSettings->footer_sns_youtube ?? null,

@@ -599,6 +599,23 @@ class InstallController extends Controller
             Artisan::call('config:cache');
             Log::channel('install')->info('設定キャッシュ再構築完了');
 
+            // マイグレーション実行中はセッションドライバーを一時的にfileに変更
+            $envPath = base_path('.env');
+            $envContent = file_get_contents($envPath);
+            
+            // 元のSESSION_DRIVERを保存
+            preg_match('/SESSION_DRIVER=(.+)/', $envContent, $matches);
+            $originalSessionDriver = $matches[1] ?? 'database';
+            
+            // SESSION_DRIVERをfileに変更
+            $envContent = preg_replace('/SESSION_DRIVER=.+/', 'SESSION_DRIVER=file', $envContent);
+            file_put_contents($envPath, $envContent);
+            
+            // 設定を再読み込み
+            Artisan::call('config:clear');
+            Artisan::call('config:cache');
+            Log::channel('install')->info('セッションドライバーを一時的にfileに変更', ['original' => $originalSessionDriver]);
+
             // データベースをリセットするかどうかを確認
             if (empty($data['preserve_data'])) {
                 // データベースをリセットしてマイグレーションを実行
@@ -611,6 +628,16 @@ class InstallController extends Controller
                 Artisan::call('migrate', ['--force' => true]);
                 Log::channel('install')->info('マイグレーション完了（データ保持）');
             }
+
+            // セッションドライバーを元に戻す
+            $envContent = file_get_contents($envPath);
+            $envContent = preg_replace('/SESSION_DRIVER=.+/', 'SESSION_DRIVER=' . $originalSessionDriver, $envContent);
+            file_put_contents($envPath, $envContent);
+            
+            // 設定を再読み込み
+            Artisan::call('config:clear');
+            Artisan::call('config:cache');
+            Log::channel('install')->info('セッションドライバーを復元', ['driver' => $originalSessionDriver]);
             
             // 常にメンバーロールパーミッションシーダーを実行
             // 既存のデータを保持するため、テーブルが空の場合のみ実行
@@ -624,6 +651,19 @@ class InstallController extends Controller
                 Log::channel('install')->info('DatabaseSeeder実行完了');
             } else {
                 Log::channel('install')->info('members_role_permissionsテーブルが既に存在するため、シーダーをスキップ');
+            }
+
+            // テーマシーダーを実行
+            Log::channel('install')->info('テーマシーダー実行チェック開始');
+            if (!DB::table('thm_dixlase_default_theme_settings')->exists()) {
+                Log::channel('install')->info('DixlaseDefaultThemeSettingsSeeder実行開始');
+                Artisan::call('db:seed', [
+                    '--class' => 'Themes\\DixlaseDefaultTheme\\Database\\Seeders\\DixlaseDefaultThemeSettingsSeeder',
+                    '--force' => true
+                ]);
+                Log::channel('install')->info('DixlaseDefaultThemeSettingsSeeder実行完了');
+            } else {
+                Log::channel('install')->info('thm_dixlase_default_theme_settingsテーブルが既に存在するため、テーマシーダーをスキップ');
             }
 
             // 初期データの投入

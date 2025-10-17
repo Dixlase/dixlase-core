@@ -188,7 +188,14 @@ return [
     'confirm_title' => 'インストール設定の確認',
     'confirm_header' => 'インストールの確認',
     'confirm_message' => 'インストールを確定する前に、設定を確認してください。',
-    'confirm_description' => '上記の設定でインストールを行います。よろしいですか？',
+    'confirm_description' => '上記の設定でインストールを行います。<br>よろしいですか？',
+    'settings_review' => '設定確認',
+    'basic_settings' => '基本設定',
+    'app_settings' => 'アプリケーション設定',
+    'database_settings' => 'データベース設定',
+    'mail_settings' => 'メール設定',
+    'security_settings' => 'セキュリティ設定',
+    'not_executed' => '未実行',
 
     // サイト情報
     'site_name' => 'サイト名',
