@@ -207,10 +207,20 @@ return [
         'email' => 'メールアドレス',
         'password' => 'パスワード',
         'password_confirmation' => 'パスワード確認',
+        'current_password' => '現在のパスワード',
+        'new_password' => '新しいパスワード',
+        'new_password_confirmation' => '新しいパスワード確認',
         'name' => '名前',
         'title' => 'タイトル',
         'content' => '内容',
+        'description' => '説明',
         'token' => 'トークン',
+        
+        // プロフィール・セキュリティ関連
+        'appearance' => '外観設定',
+        'login_notification_mode' => 'ログイン通知設定',
+        'two_factor_mode' => '二段階認証設定',
+        'two_factor_method' => '二段階認証方法',
         
         // インストール関連
         'site_name' => 'サイト名',

@@ -345,4 +345,22 @@ return [
     'save_confirmation_message' => '変更内容を保存しますか？',
     'update_confirmation_title' => '更新の確認',
     'update_confirmation_message' => 'この内容で設定を更新しますか？',
+
+    // バリデーション用の属性名（他のページでも使用される汎用的な項目）
+    'attributes' => [
+        'name' => '名前',
+        'email' => 'メールアドレス',
+        'password' => 'パスワード',
+        'password_confirmation' => 'パスワード確認',
+        'current_password' => '現在のパスワード',
+        'new_password' => '新しいパスワード',
+        'new_password_confirmation' => '新しいパスワード確認',
+        'appearance' => '外観設定',
+        'login_notification_mode' => 'ログイン通知設定',
+        'two_factor_mode' => '二段階認証設定',
+        'two_factor_method' => '二段階認証方法',
+        'title' => 'タイトル',
+        'content' => '内容',
+        'description' => '説明',
+    ],
 ];

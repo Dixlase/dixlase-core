@@ -1,5 +1,5 @@
 {{--
-This file is part of MySoftware.
+This file is part of Dixlase.
 
 Copyright (C) 2025 exc-D inc.
 https://exc-d.com
@@ -37,7 +37,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 ])
 
 @if($includeForm && $formAction)
-    <form id="{{ $formId }}" action="{{ $formAction }}" method="{{ $formMethod }}" class="mb-10">
+    <form id="{{ $formId }}" action="{{ $formAction }}" method="POST" class="mb-10">
         @csrf
         @if($formMethod === 'PATCH' || $formMethod === 'PUT')
             @method($formMethod)
@@ -84,6 +84,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 'name' => 'email',
                 'value' => old('email', $member->email ?? ''),
                 'required' => true,
+                'autocomplete' => 'email',
             ])
             @include('components::form.error', [
                 'messages' => $errors->get('email')

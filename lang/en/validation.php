@@ -218,10 +218,20 @@ return [
         'email' => 'Email Address',
         'password' => 'Password',
         'password_confirmation' => 'Password Confirmation',
+        'current_password' => 'Current Password',
+        'new_password' => 'New Password',
+        'new_password_confirmation' => 'New Password Confirmation',
         'name' => 'Name',
         'title' => 'Title',
         'content' => 'Content',
+        'description' => 'Description',
         'token' => 'Token',
+        
+        // Profile & Security related
+        'appearance' => 'Appearance Settings',
+        'login_notification_mode' => 'Login Notification Settings',
+        'two_factor_mode' => 'Two-Factor Authentication Settings',
+        'two_factor_method' => 'Two-Factor Authentication Method',
         
         // Installation related
         'site_name' => 'Site Name',

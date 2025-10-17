@@ -287,21 +287,9 @@ class AdminMembersSettingsController extends AdminLoggedInController
         // バリデーション済みデータを取得
         $validated = $request->validated();
 
-        // 初期管理者アカウント（ID=1）の保護
+        // 初期管理者アカウント（ID=1）の保護と強制設定
         if ($member->id === 1) {
-            // 権限変更を防ぐ
-            if (isset($validated['role']) && $validated['role'] !== MemberRole::SUPER_ADMIN->value) {
-                return redirect()->back()->withErrors(['role' => __('admin.settings.members.messages.initial_member_role_protected')]);
-            }
-            
-            // ステータス無効化を防ぐ
-            if (isset($validated['status']) && $validated['status'] !== MemberStatus::Active->value) {
-                return redirect()->back()->withErrors(['status' => __('admin.settings.members.messages.initial_member_status_protected')]);
-            }
-        }
-
-        // 初期管理者の場合は権限とステータスを強制的に固定
-        if ($member->id === 1) {
+            // 権限とステータスを強制的に固定（フィールドが送信されても無視）
             $validated['role'] = MemberRole::SUPER_ADMIN->value;
             $validated['status'] = MemberStatus::Active->value;
         }
