@@ -1,17 +1,17 @@
 /.phpunit.cache
 /node_modules
 
-# --- ビルド成果物（Vite 出力）を除外 ---
+# --- ãã«ãææç©ï¼Vite åºåï¼ãé¤å¤ ---
 /public/assets/build
 /public/assets/plugins
 /public/assets/theme
 /public/hot
 /public/storage
 
-# ただし画像など手動管理アセットは残す
+# ãã ãç»åãªã©æåç®¡çã¢ã»ããã¯æ®ã
 !public/assets/images/
 
-# Laravel / PHP 関連
+# Laravel / PHP é¢é£
 /storage/*.key
 /vendor
 .env
@@ -33,20 +33,27 @@ yarn-error.log
 DS_Store
 CLAUDE.md
 
-# Dixlase カスタム
-# カスタムファイルを入れるディレクトリを除外
+# Dixlase ã«ã¹ã¿ã 
+# ã«ã¹ã¿ã ãã¡ã¤ã«ãå
+¥ãããã£ã¬ã¯ããªãé¤å¤
 custom/*
-# プラグインを入れるディレクトリを除外
+# ãã©ã°ã¤ã³ãå
+¥ãããã£ã¬ã¯ããªãé¤å¤
 plugins/*
 !plugins/DixlasePages
 !plugins/DixlaseInquiry
-# === プラグイン用動的除外設定 (自動管理) ===
-# 以下の行はプラグインシステムによって自動管理されます
-!plugins/DixlaseInquiry/
-# === プラグイン用動的除外設定終了 ===
-# テーマを入れるディレクトリを除外
+
 themes/*
-# ただしデフォルトテーマはコアに含める
+!themes/DixlaseDefaultTheme
+
+# === ãã©ã°ã¤ã³ç¨åçé¤å¤è¨­å® (èªåç®¡ç) ===
+# ä»¥ä¸ã®è¡ã¯ãã©ã°ã¤ã³ã·ã¹ãã ã«ãã£ã¦èªåç®¡çããã¾ã
+!plugins/DixlaseInquiry/
+# === ãã©ã°ã¤ã³ç¨åçé¤å¤è¨­å®çµäº ===
+# ãã¼ããå
+¥ãããã£ã¬ã¯ããªãé¤å¤
+themes/*
+# ãã ãããã©ã«ããã¼ãã¯ã³ã¢ã«å«ãã
 !themes/DixlaseDefaultTheme/
 license-info.json
 license.txt
@@ -59,3 +66,5 @@ license.txt
 .mcp.jsonvscode/mcp.json
 .mcp.jsonvscode/mcp.json
 .mcp.json
+themes/DixlaseDefaultTheme/database/seeders/ThemeSettingsSeeder.php
+themes/DixlaseDefaultTheme/app/Models/ThemeSetting.php

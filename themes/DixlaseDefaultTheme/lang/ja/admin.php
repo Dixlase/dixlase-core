@@ -10,15 +10,16 @@ return [
     'settings' => [
         'title' => 'テーマ設定',
         'updated_successfully' => 'テーマ設定が更新されました',
-        'select_image' => '画像を選択',
+        'select_logo_image' => 'ロゴ画像を選択',
+        'select_favicon_image' => 'ファビコンを選択',
         
         // Header Section
         'header' => [
-            'title' => 'ヘッダー設定',
-            'logo_url' => 'ロゴURL',
-            'logo_url_help' => 'ロゴ画像のURL（空欄の場合はテキストロゴを表示）',
-            'logo_text' => 'ロゴテキスト',
-            'logo_text_help' => 'サイト名として表示されるテキスト',
+            'title' => 'ヘッダー・ファビコン設定',
+            'header_logo' => 'ヘッダーロゴ',
+            'header_logo_help' => 'サイトヘッダーに表示するロゴ画像を設定します。',
+            'favicon' => 'ファビコン',
+            'favicon_help' => 'ブラウザのタブに表示されるアイコンを設定します。（推奨サイズ: 32x32px または 64x64px）',
         ],
         
         // Hero Section

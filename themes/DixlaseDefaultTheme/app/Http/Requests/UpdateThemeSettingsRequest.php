@@ -41,6 +41,10 @@ class UpdateThemeSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // Header & Favicon
+            'header_logo_id' => 'nullable|integer|exists:media,id',
+            'favicon_id' => 'nullable|integer|exists:media,id',
+            
             // Hero Section
             'hero_background_image_id' => 'nullable|integer|exists:media,id',
             'hero_main_title' => 'required|string|max:255',
@@ -98,6 +102,8 @@ class UpdateThemeSettingsRequest extends FormRequest
     public function attributes(): array
     {
         return [
+            'header_logo_id' => __('themes::admin.settings.header.header_logo'),
+            'favicon_id' => __('themes::admin.settings.header.favicon'),
             'hero_background_image_id' => __('themes::admin.settings.hero.background_image'),
             'hero_main_title' => __('themes::admin.settings.hero.main_title'),
             'hero_sub_title' => __('themes::admin.settings.hero.sub_title'),

@@ -10,15 +10,16 @@ return [
     'settings' => [
         'title' => 'Theme Settings',
         'updated_successfully' => 'Theme settings updated successfully',
-        'select_image' => 'Select Image',
+        'select_logo_image' => 'Select Logo Image',
+        'select_favicon_image' => 'Select Favicon Image',
         
         // Header Section
         'header' => [
-            'title' => 'Header Settings',
-            'logo_url' => 'Logo URL',
-            'logo_url_help' => 'Logo image URL (leave empty to display text logo)',
-            'logo_text' => 'Logo Text',
-            'logo_text_help' => 'Text displayed as site name',
+            'title' => 'Header & Favicon Settings',
+            'header_logo' => 'Header Logo',
+            'header_logo_help' => 'Set the logo image to be displayed in the site header.',
+            'favicon' => 'Favicon',
+            'favicon_help' => 'Set the icon to be displayed in the browser tab. (Recommended size: 32x32px or 64x64px)',
         ],
         
         // Hero Section

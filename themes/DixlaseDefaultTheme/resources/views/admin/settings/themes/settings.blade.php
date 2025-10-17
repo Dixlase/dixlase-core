@@ -27,6 +27,38 @@ Copyright (C) 2025 exc-D inc.
         @csrf
         @method('PUT')
 
+        {{-- Header & Favicon Settings --}}
+        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                {{ __('themes::admin.settings.header.title') }}
+            </h3>
+            <div class="space-y-4">
+                <div>
+                    @include('components.media-picker', [
+                        'name' => 'header_logo_id',
+                        'value' => $settings->header_logo_id ?? null,
+                        'media' => $headerLogo ?? null,
+                        'label' => __('themes::admin.settings.header.header_logo'),
+                        'help' => __('themes::admin.settings.header.header_logo_help'),
+                        'error' => $errors->first('header_logo_id'),
+                        'buttonText' => __('themes::admin.settings.select_logo_image')
+                    ])
+                </div>
+                <div>
+                    @include('components.media-picker', [
+                        'name' => 'favicon_id',
+                        'value' => $settings->favicon_id ?? null,
+                        'media' => $favicon ?? null,
+                        'label' => __('themes::admin.settings.header.favicon'),
+                        'help' => __('themes::admin.settings.header.favicon_help'),
+                        'error' => $errors->first('favicon_id'),
+                        'aspectRatio' => 'square',
+                        'buttonText' => __('themes::admin.settings.select_favicon_image')
+                    ])
+                </div>
+            </div>
+        </div>
+
         {{-- Hero Section --}}
         <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -35,15 +67,8 @@ Copyright (C) 2025 exc-D inc.
             <div class="space-y-4">
                 {{-- Basic Settings --}}
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {{ __('themes::admin.settings.hero.basic_settings') }}
-                    </label>
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
-                                {{ __('themes::admin.settings.hero.background_section') }}
-                            </label>
-                            
                             @include('components.media-picker', [
                                 'name' => 'hero_background_image_id',
                                 'value' => $settings->hero_background_image_id ?? null,
@@ -296,9 +321,8 @@ Copyright (C) 2025 exc-D inc.
 @section('save')
     <!-- 保存ボタンとモーダル -->
     @include('components.save', [
-        'id' => 'confirmationModal',
+        'id_confirmation' => 'confirmationModal',
         'label' => __('common.save'),
-        'onclick' => "openModal('confirmationModal')",
         'title' => __('common.save_confirmation_title'),
         'message' => __('common.save_confirmation_message'),
         'confirm_label' => __('common.save'),
