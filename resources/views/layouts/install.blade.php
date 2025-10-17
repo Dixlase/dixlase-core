@@ -1,7 +1,24 @@
 <!DOCTYPE html>
-<html lang="{{ $currentLocale ?? 'en' }}">
+<html lang="{{ $currentLocale ?? 'en' }}" x-data="installTheme()" x-init="init()" :class="{ 'dark': isDark, 'light': !isDark }">
 <head>
     <script>
+        // Alpine.js ダークモード検出関数
+        function installTheme() {
+            return {
+                isDark: false,
+                
+                init() {
+                    // PCのダークモード設定を検出
+                    this.isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    
+                    // ダークモード設定の変更を監視
+                    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+                        this.isDark = e.matches;
+                    });
+                }
+            }
+        }
+        
         // ブラウザの言語設定を取得して、利用可能な言語と照合する
         function detectBrowserLanguage(availableLocales) {
             // ブラウザの言語設定を取得
@@ -46,69 +63,88 @@
 
 
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-    <div class="flex flex-col items-center w-full max-w-xl min-w-[400px]">
+<body class="bg-gray-100 dark:bg-gray-900 flex items-center justify-center min-h-screen transition-colors duration-200">
+    <div class="flex flex-col items-center w-full max-w-xl min-w-[400px] my-10">
 
-        <img src="{{ asset('assets/images/logo.svg') }}" alt="{{ env('APP_NAME') }}" class="w-32 h-auto mx-auto mb-4">
+        <!-- Site Logo -->
+        <div class="mb-4">
+            <img src="{{ asset('assets/images/logo.svg') }}" alt="{{ env('APP_NAME') }}" class="w-32 h-auto mx-auto">
+        </div>
 
-    
-        <div class="bg-white shadow-lg rounded-lg p-8 max-w-xl w-full">
+        <!-- Main Installation Container -->
+        <main class="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8 max-w-xl w-full transition-colors duration-200" role="main">
 
-            <!-- Header with Step Counter and Language Selector -->
-            <div class="flex justify-between items-center w-full max-w-xl mb-4">
-                <!-- Step Counter -->
-                @if(isset($current_step) && isset($total_steps))
-                    <div class="text-gray-600">
-                        {{ __('install.step_of_total', ['current' => $current_step, 'total' => $total_steps]) }}
-                    </div>
-                @else
-                    <div></div> <!-- This empty div ensures the language selector stays on the right -->
-                @endif
+            <!-- Installation Header -->
+            <header class="mb-6">
+                <!-- Step Progress and Language Selector -->
+                <div class="flex justify-between items-center w-full max-w-xl mb-4">
+                    <!-- Step Progress Indicator -->
+                    @if(isset($current_step) && isset($total_steps))
+                        <nav aria-label="{{ __('install.installation_progress') }}" class="text-gray-600 dark:text-gray-300">
+                            {{ __('install.step_of_total', ['current' => $current_step, 'total' => $total_steps]) }}
+                        </nav>
+                    @else
+                        <div aria-hidden="true"></div>
+                    @endif
 
-                <!-- Language Selector -->
-                @if(isset($availableLocales) && isset($currentLocale))
-                    <div class="relative">
-                        <form id="language-form" action="{{ route('install.language', ['locale' => '__locale__']) }}" method="POST">
-                            @csrf
-                            <select 
-                                id="language-selector" 
-                                class="appearance-none bg-white border border-gray-300 rounded-lg py-2 px-4 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                style="-webkit-appearance: none; -moz-appearance: none; text-indent: 1px; text-overflow: ''; min-width: 150px;"
-                            >
-                                @foreach($availableLocales as $locale)
-                                    <option value="{{ $locale }}" {{ $currentLocale === $locale ? 'selected' : '' }}>
-                                        {{ __('install.languages.' . $locale) }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </form>
-                    </div>
-                @endif
-            </div>
-            
-            <h1 class="text-2xl font-bold text-gray-800 mb-4 text-center">@yield('header')</h1>
-            <p class="text-gray-600 mb-6 text-center">
-                @yield('description')
-            </p>
-
-            @if(session('error'))
-                <div class="bg-red-100 text-red-600 p-3 mb-4 rounded-lg">
-                    {{ session('error') }}
+                    <!-- Language Selector -->
+                    @if(isset($availableLocales) && isset($currentLocale))
+                        <div aria-label="{{ __('install.language_selection') }}">
+                            <form id="language-form" action="{{ route('install.language', ['locale' => '__locale__']) }}" method="POST">
+                                @csrf
+                                @php
+                                    $languageOptions = [];
+                                    foreach($availableLocales as $locale) {
+                                        $languageOptions[$locale] = 'install.languages.' . $locale;
+                                    }
+                                @endphp
+                                <x-form.select
+                                    id="language-selector"
+                                    name="locale"
+                                    :options="$languageOptions"
+                                    :value="$currentLocale"
+                                    :useDefaultClass="false"
+                                    class="appearance-none bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-4 pr-8 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400"
+                                    style="-webkit-appearance: none; -moz-appearance: none; text-indent: 1px; text-overflow: ''; min-width: 150px;"
+                                />
+                            </form>
+                        </div>
+                    @endif
                 </div>
+                
+                <!-- Page Title and Description -->
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800 dark:text-white mb-4 text-center">@yield('header')</h1>
+                    <p class="text-gray-600 dark:text-gray-300 text-center">
+                        @yield('description')
+                    </p>
+                </div>
+            </header>
+
+            <!-- Error Messages -->
+            @if(session('error'))
+                <aside class="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 mb-4 rounded-lg border border-red-200 dark:border-red-800" role="alert" aria-live="polite">
+                    <strong class="sr-only">{{ __('install.error') }}:</strong>
+                    {{ session('error') }}
+                </aside>
             @endif
 
             @if(isset($errors) && $errors->any())
-                <div class="bg-red-100 text-red-600 p-3 mb-4 rounded-lg">
-                    <ul class="list-disc list-inside">
+                <aside class="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 mb-4 rounded-lg border border-red-200 dark:border-red-800" role="alert" aria-live="polite">
+                    <strong class="font-semibold">{{ __('install.validation_errors') }}:</strong>
+                    <ul class="list-disc list-inside mt-2">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
                     </ul>
-                </div>
+                </aside>
             @endif
 
-            @yield('content')
-        </div>
+            <!-- Page Content -->
+            <article>
+                @yield('content')
+            </article>
+        </main>
     </div>
 
     @if(isset($availableLocales) && isset($currentLocale))

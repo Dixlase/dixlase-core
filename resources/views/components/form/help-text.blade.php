@@ -19,20 +19,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @props([
-    'for' => null,     // labelのfor属性
-    'text' => null,    // labelに表示するテキスト（翻訳済み）
-    'key' => null,     // 翻訳キー（textとkeyのどちらか一方を指定）
-    'class' => '',     // labelの追加クラス
-    'required' => false, // 必須マーク表示
+    'text' => '',      // ヘルプテキストの内容
+    'class' => '',     // カスタムクラス
+    'id' => null,      // ID属性（任意）
 ])
 
-<label for="{{ $for }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 {{ $class }}">
-    @if ($key)
-        {{ __($key) }}
-    @else
-        {{ $text }}
-    @endif
-    @if ($required)
-        <span class="text-red-500 ml-1" aria-label="required">*</span>
-    @endif
-</label>
+<p class="text-sm text-gray-500 dark:text-gray-400 mt-1 {{ $class }}" @if($id) id="{{ $id }}" @endif>
+    {!! $text !!}
+</p>

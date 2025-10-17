@@ -25,9 +25,63 @@ return [
     'settings_description' => 'Please enter the basic information to set up your site.',
     'step_of_total' => 'Step :current of :total',
     'site_name' => 'Site Name',
+    'admin_name' => 'Admin Username',
+    'admin_name_placeholder' => 'Enter alphanumeric characters (e.g., siteadmin2025)',
+    'admin_name_requirements' => 'Use 3-20 alphanumeric characters.<br>In production, avoid easily guessable names such as admin, administrator, root, user, test, demo, dixlase, manager, or webmaster.',
+    'validation' => [
+        'admin_name_required' => 'Please enter an admin username.',
+        'admin_name_alpha_num' => 'Admin username must contain only alphanumeric characters.',
+        'admin_name_length' => 'Admin username must be between 3 and 20 characters.',
+    ],
     'admin_email' => 'Admin Email',
     'admin_password' => 'Admin Password',
     'admin_password_confirmation' => 'Confirm Password',
+    'admin_password_confirmation_note' => 'Please re-enter the same password for confirmation.',
+    
+    // Semantic headings
+    'site_information' => 'Site Information',
+    'admin_account_information' => 'Administrator Account Information',
+    'admin_account_details' => 'Administrator Account Details',
+    'password_settings' => 'Password Settings',
+    'password_setup' => 'Password Setup',
+    'form_navigation' => 'Form Navigation',
+    'back_to_previous_step' => 'Back to previous step',
+    'password_paste_error' => 'Pasting is not allowed in the password confirmation field.',
+    
+    // Layout related
+    'installation_progress' => 'Installation Progress',
+    'language_selection' => 'Language Selection',
+    'error' => 'Error',
+    'validation_errors' => 'Validation Errors',
+    
+    // Environment settings related
+    'environment_settings' => 'Environment Settings',
+    'application_environment' => 'Application Environment',
+    'url_settings' => 'URL Settings',
+    'application_url_configuration' => 'Application URL Configuration',
+    'admin_url_configuration' => 'Admin URL Configuration',
+    'admin_panel_url' => 'Admin Panel URL',
+    'timezone_configuration' => 'Timezone Configuration',
+    'application_timezone' => 'Application Timezone',
+    
+    // Database settings related
+    'database_connection_settings' => 'Database Connection Settings',
+    'database_connection_details' => 'Database Connection Details',
+    'data_preservation_settings' => 'Data Preservation Settings',
+    'database_preservation_options' => 'Database Preservation Options',
+    'database_connection_test' => 'Database Connection Test',
+    
+    // Mail server settings related
+    'mail_server_settings' => 'Mail Server Settings',
+    'mail_connection_test' => 'Mail Connection Test',
+    
+    // Security settings related
+    'ip_address_format_instruction' => 'Enter one IP address per line. Example:',
+    'admin_panel_ip_restrictions' => 'Admin Panel IP Restrictions',
+    'front_panel_ip_restrictions' => 'Front Panel IP Restrictions',
+    
+    // Confirmation page related
+    'settings_review' => 'Settings Review',
     'next' => 'Next',
 
     //step 2
@@ -63,6 +117,10 @@ return [
     'test_db_connection' => 'Test Connection',
     'db_connection_success' => 'Database connection successful!',
     'db_connection_error' => 'Failed to connect to the database: :error',
+    'db_test_required' => '⚠️ Please test the database connection before proceeding to the next step.',
+    'db_test_success' => '✅ Database connection successful! You can proceed to the next step!',
+    'tooltip_test_db' => 'Please test the database connection.',
+    'db_password_required' => 'Database password is required.',
     'back' => 'Back',
     'next' => 'Next',
 
@@ -124,6 +182,7 @@ return [
     'confirm_title' => 'Confirm Installation Settings',
     'confirm_header' => 'Confirm Installation',
     'confirm_message' => 'Please review the settings before finalizing the installation.',
+    'confirm_description' => 'The installation will proceed with the above settings. Are you ready to continue?',
 
     // サイト情報
     'site_name' => 'Site Name',

@@ -29,8 +29,8 @@ return [
     'settings_description' => 'ソフトウェアの基本設定を行います。',
     'step_of_total' => ':current / :total ステップ',
     'admin_name' => '管理者名',
-    'admin_name_placeholder' => '半角英数字で入力（例: admin123）',
-    'admin_name_requirements' => '3〜20文字の半角英数字のみ使用可能',
+    'admin_name_placeholder' => '半角英数字で入力（例: siteadmin2025）',
+    'admin_name_requirements' => '3〜20文字の半角英数字を使用してください。<br>本番環境では安易に推測できる名前（admin、administrator、root、user、test、demo、dixlase、manager、webmasterなど）は避けてください。',
     'validation' => [
         'admin_name_required' => '管理者名を入力してください。',
         'admin_name_alpha_num' => '管理者名は半角英数字のみ使用できます。',
@@ -40,6 +40,50 @@ return [
     'admin_password' => '管理者パスワード',
     'admin_password_confirmation' => '管理者パスワード確認',
     'admin_password_confirmation_note' => '確認のため、同じパスワードを手入力してください。',
+    
+    // セマンティック見出し
+    'site_information' => 'サイト基本情報',
+    'admin_account_information' => '管理者アカウント情報',
+    'admin_account_details' => '管理者アカウントの詳細',
+    'password_settings' => 'パスワード設定',
+    'password_setup' => 'パスワードの設定',
+    'form_navigation' => 'フォーム操作',
+    'back_to_previous_step' => '前のステップに戻る',
+    
+    // レイアウト関連
+    'installation_progress' => 'インストール進捗',
+    'language_selection' => '言語選択',
+    'error' => 'エラー',
+    'validation_errors' => '入力エラー',
+    
+    // 環境設定関連
+    'environment_settings' => '環境設定',
+    'application_environment' => 'アプリケーション環境',
+    'url_settings' => 'URL設定',
+    'application_url_configuration' => 'アプリケーションURL設定',
+    'admin_url_configuration' => '管理画面URL設定',
+    'admin_panel_url' => '管理パネルURL',
+    'timezone_configuration' => 'タイムゾーン設定',
+    'application_timezone' => 'アプリケーションタイムゾーン',
+    
+    // データベース設定関連
+    'database_connection_settings' => 'データベース接続設定',
+    'database_connection_details' => 'データベース接続詳細',
+    'data_preservation_settings' => 'データ保持設定',
+    'database_preservation_options' => 'データベース保持オプション',
+    'database_connection_test' => 'データベース接続テスト',
+    
+    // メールサーバー設定関連
+    'mail_server_settings' => 'メールサーバー設定',
+    'mail_connection_test' => 'メール接続テスト',
+    
+    // セキュリティ設定関連
+    'ip_address_format_instruction' => 'IPアドレスは1行に1つずつ入力してください。例:',
+    'admin_panel_ip_restrictions' => '管理画面IP制限',
+    'front_panel_ip_restrictions' => 'フロント画面IP制限',
+    
+    // 確認画面関連
+    'settings_review' => '設定内容の確認',
     'password_requirements' => [
         'length' => '8文字以上',
         'uppercase' => '大文字を1文字以上含む',

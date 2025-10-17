@@ -198,6 +198,14 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
         ],
 
+        // インストール専用ログ
+        'install' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/install.log'),
+            'level' => 'debug',
+            'replace_placeholders' => true,
+        ],
+
     ],
 
 ];

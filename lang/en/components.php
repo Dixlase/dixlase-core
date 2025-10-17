@@ -149,7 +149,11 @@ return [
             'normal' => 'Normal',
             'strong' => 'Strong',
             'very_strong' => 'Very Strong',
+
+            // Labels
+            'required_label' => ' (required)',
+            'optional_label' => ' (optional)',
         ],
-        'error' => 'Password does not meet requirements. Please enter a password that meets all conditions.',
+        'error' => 'Password does not meet requirements.',
     ],
 ];

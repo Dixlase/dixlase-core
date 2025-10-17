@@ -45,11 +45,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'required' => $required,
         'class' => 'pr-32',
     ])
-    <script>
-        document.getElementById('{{ $id }}').addEventListener('keyup', function() {
-            PasswordTools.checkPasswordStrength('{{ $id }}');
-        });
-    </script>
 
     <!-- 自動生成ボタン -->
     <div class="group absolute top-0 right-20 h-full flex items-center">
@@ -79,7 +74,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <div class="group absolute top-0 right-2 h-full flex items-center">
         <button type="button" class="px-2 py-1 text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white"
             onclick="PasswordTools.togglePassword('{{ $id }}', '{{ $id }}_confirmation', '{{ $id }}-eye')">
-            <i id="password-eye" class="fa-solid fa-eye"></i>
+            <i id="{{ $id }}-eye" class="fa-solid fa-eye"></i>
         </button>
         <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block
             text-xs rounded bg-gray-800 text-white px-2 py-1 whitespace-nowrap z-10">
@@ -90,7 +85,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @if($showConfirmation)
     <fieldset>
-        <legend>{{ __('common.password') }}（{{ __('common.confirm') }}）</legend>
+        <legend class="text-gray-700 dark:text-gray-300">{{ __('common.password') }}（{{ __('common.confirm') }}）</legend>
         @include('components.form.text', [
             'type' => 'password',
             'name' => $name . '_confirmation',
@@ -116,31 +111,31 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         : __('components.password_messages.requirements.symbol_optional');
 @endphp
 
-<p id="password-strength-message" class="text-sm mt-1 text-gray-700 dark:text-gray-200 h-[1em]"></p>
+<p id="{{ $id }}-strength-message" class="text-sm mt-1 text-gray-700 dark:text-gray-300 h-[1em]"></p>
 
-<div id="password-strength-bar" class="h-2 w-32 bg-gray-200 dark:bg-gray-700 rounded-lg mt-2">
-    <div id="password-strength-fill" class="h-2 bg-red-500 rounded-lg transition-all" style="width: 0%;"></div>
+<div id="{{ $id }}-strength-bar" class="h-2 w-32 bg-gray-200 dark:bg-gray-700 rounded-lg mt-2">
+    <div id="{{ $id }}-strength-fill" class="h-2 bg-red-500 rounded-lg transition-all" style="width: 0%;"></div>
 </div>
 
 <!-- 確認欄の表示制御 -->
-<ul id="password-requirements" class="text-sm mt-2 text-gray-600 dark:text-gray-300 space-y-1">
-    <li id="req-lowercase" data-text="{{ __('components.password_messages.requirements.lowercase') }}" class="flex items-center">
+<ul id="{{ $id }}-requirements" class="text-sm mt-2 text-gray-700 dark:text-gray-300 space-y-1">
+    <li id="{{ $id }}-req-lowercase" data-text="{{ __('components.password_messages.requirements.lowercase') }}" class="flex items-center">
         <i class="fas fa-times-circle text-red-500 mr-2"></i>
         <span>{{ __('components.password_messages.requirements.lowercase') }}</span>
     </li>
-    <li id="req-number" data-text="{{ __('components.password_messages.requirements.number') }}" class="flex items-center">
+    <li id="{{ $id }}-req-number" data-text="{{ __('components.password_messages.requirements.number') }}" class="flex items-center">
         <i class="fas fa-times-circle text-red-500 mr-2"></i>
         <span>{{ __('components.password_messages.requirements.number') }}</span>
     </li>
-    <li id="req-length" data-text="{{ $lengthText }}" class="flex items-center">
+    <li id="{{ $id }}-req-length" data-text="{{ $lengthText }}" class="flex items-center">
         <i class="fas fa-times-circle text-red-500 mr-2"></i>
         <span>{{ $lengthText }}</span>
     </li>
-    <li id="req-uppercase" data-text="{{ $uppercaseText }}" class="flex items-center">
+    <li id="{{ $id }}-req-uppercase" data-text="{{ $uppercaseText }}" class="flex items-center">
         <i class="fas fa-times-circle text-red-500 mr-2"></i>
         <span>{{ $uppercaseText }}</span>
     </li>
-    <li id="req-symbol" data-text="{{ $symbolText }}" class="flex items-center">
+    <li id="{{ $id }}-req-symbol" data-text="{{ $symbolText }}" class="flex items-center">
         <i class="fas fa-times-circle text-red-500 mr-2"></i>
         <span>{{ $symbolText }}</span>
     </li>
@@ -154,6 +149,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         normal: @json(__('components.password_messages.requirements.normal')),
         strong: @json(__('components.password_messages.requirements.strong')),
         veryStrong: @json(__('components.password_messages.requirements.very_strong')),
+        requiredLabel: @json(__('components.password_messages.requirements.required_label')),
+        optionalLabel: @json(__('components.password_messages.requirements.optional_label')),
     };
 
     window.PasswordTooltips = {
@@ -244,7 +241,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 confirmInput.type = 'text';
             }
 
-            const eyeIcon = document.getElementById('password-eye');
+            const eyeIcon = document.getElementById(passwordId + '-eye');
             if (eyeIcon) eyeIcon.classList.replace('fa-eye', 'fa-eye-slash');
 
             this.checkPasswordStrength(passwordId);
@@ -261,9 +258,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         checkPasswordStrength: function(passwordId = 'password') {
             const password = document.getElementById(passwordId)?.value || '';
-            const strengthBar = document.getElementById('password-strength-fill');
-            const strengthMessage = document.getElementById('password-strength-message');
-            const errorMessage = document.getElementById('password-validation-error');
+            const strengthBar = document.getElementById(passwordId + '-strength-fill');
+            const strengthMessage = document.getElementById(passwordId + '-strength-message');
+            const errorMessage = document.getElementById(passwordId + '-validation-error');
 
             const hasUpper = /[A-Z]/.test(password);
             const hasLower = /[a-z]/.test(password);
@@ -281,11 +278,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             };
 
             // インジケーター更新
-            this.updateRequirementIndicator('req-length', length >= policy.minLength, true);
-            this.updateRequirementIndicator('req-lowercase', hasLower, policy.requireLowercase);
-            this.updateRequirementIndicator('req-number', hasNumber, policy.requireNumber);
-            this.updateRequirementIndicator('req-uppercase', hasUpper, policy.requireUppercase);
-            this.updateRequirementIndicator('req-symbol', hasSymbol, policy.requireSymbol);
+            this.updateRequirementIndicator(passwordId + '-req-length', length >= policy.minLength, true);
+            this.updateRequirementIndicator(passwordId + '-req-lowercase', hasLower, policy.requireLowercase);
+            this.updateRequirementIndicator(passwordId + '-req-number', hasNumber, policy.requireNumber);
+            this.updateRequirementIndicator(passwordId + '-req-uppercase', hasUpper, policy.requireUppercase);
+            this.updateRequirementIndicator(passwordId + '-req-symbol', hasSymbol, policy.requireSymbol);
 
             const allRequiredValid =
                 length >= policy.minLength &&
@@ -336,28 +333,64 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         updateRequirementIndicator: function(elementId, isValid, required = false, extraText = '') {
             const element = document.getElementById(elementId);
+            
             if (!element) return;
 
             const baseText = element.dataset.text || '';
-            const displayText = required ? baseText : `${baseText}`;
+            
+            // 必須/任意のラベルを追加
+            let statusLabel = '';
+            if (required) {
+                statusLabel = window.PasswordMessages.requiredLabel || '（必須）';
+            }
+            
+            const displayText = baseText + statusLabel;
             const suffix = extraText || '';
             
-            // FontAwesome アイコンを使用
-            const iconElement = element.querySelector('i');
-            const textElement = element.querySelector('span');
+            // firstElementChild と lastElementChild を使用（より確実）
+            const iconElement = element.firstElementChild;
+            const textElement = element.lastElementChild;
             
-            if (iconElement && textElement) {
+            // iconElementが<I>タグまたは<SVG>タグか確認（Font Awesomeが自動変換するため）
+            const iconTagName = iconElement ? iconElement.tagName.toUpperCase() : '';
+            const isIconElement = iconElement && (iconTagName === 'I' || iconTagName === 'SVG');
+            const isTextElement = textElement && textElement.tagName === 'SPAN';
+            
+            if (isIconElement && isTextElement) {
+                // outerHTMLで要素全体を置き換える（Font AwesomeのSVG変換をリセット）
                 if (isValid) {
                     // OK時: 緑のチェックアイコン
-                    iconElement.className = 'fas fa-check-circle text-green-500 mr-2';
+                    iconElement.outerHTML = '<i class="fas fa-check-circle text-green-500 mr-2"></i>';
                 } else {
                     // NG時: 赤のバツアイコン
-                    iconElement.className = 'fas fa-times-circle text-red-500 mr-2';
+                    iconElement.outerHTML = '<i class="fas fa-times-circle text-red-500 mr-2"></i>';
                 }
                 textElement.textContent = `${displayText}${suffix}`;
             }
         }
     };
+
+    // パスワード入力フィールドのイベントリスナーを設定
+    (function() {
+        const setupPasswordListener = function() {
+            const passwordInput = document.getElementById('{{ $id }}');
+            if (passwordInput && !passwordInput.hasAttribute('data-password-listener')) {
+                passwordInput.setAttribute('data-password-listener', 'true');
+                passwordInput.addEventListener('keyup', function() {
+                    PasswordTools.checkPasswordStrength('{{ $id }}');
+                });
+                // 初期チェック
+                PasswordTools.checkPasswordStrength('{{ $id }}');
+            }
+        };
+
+        // DOMがすでに読み込まれている場合はすぐに実行
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupPasswordListener);
+        } else {
+            setupPasswordListener();
+        }
+    })();
 </script>
 
 

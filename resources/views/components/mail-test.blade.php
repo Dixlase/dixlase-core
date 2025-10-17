@@ -93,11 +93,11 @@
 @endif
 
 <!-- メールテスト機能 -->
-<div class="mt-6 p-4 {{ $isInstall ? 'bg-gray-50 border border-gray-200' : 'bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700' }} rounded-lg">
-    <h3 class="text-lg font-medium {{ $isInstall ? 'text-gray-900' : 'text-gray-900 dark:text-gray-100' }} mb-2">
+<div class="mt-6 p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
         {{ __('mail.test.title') }}
     </h3>
-    <p class="text-sm {{ $isInstall ? 'text-gray-600' : 'text-gray-600 dark:text-gray-400' }} mb-4">
+    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
         {{ __('mail.settings.mail_test_description') }}<br>
         @if($isInstall)
             {{ __('mail.test.description_admin_email') }}
@@ -105,25 +105,25 @@
             {{ __('mail.settings.mail_test_description_2') }}
         @endif
     </p>
-    <div class="flex space-x-3">
-        <button type="button" id="test-connection-btn" class="button-green {{ $isInstall ? '' : 'dark:bg-green-600 dark:hover:bg-green-700' }} text-white font-bold py-2 px-4 rounded transition-colors duration-200">
-            {{ __('mail.settings.test_connection_button') }}
+    <div class="flex flex-wrap gap-3">
+        <button type="button" id="test-connection-btn" 
+            class="bg-green-600 dark:bg-green-500 hover:bg-green-700 dark:hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition-colors duration-200">
+            <i class="fas fa-plug mr-2"></i>{{ __('mail.settings.test_connection_button') }}
         </button>
         <button 
             type="button"
             id="test-mail-btn" 
             class="
-                rounded
-                px-4
+                font-bold py-2 px-4 rounded transition-colors duration-200
                 @if(($isInstall && $testStatus['connection_tested']) || (!$isInstall && (!$showStatus || $testStatus['connection_tested'])))
-                    bg-blue-500 hover:bg-blue-600 {{ $isInstall ? '' : 'dark:bg-blue-600 dark:hover:bg-blue-700' }} text-white
+                    bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white
                 @else
                     bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed
                 @endif
             "
             @if(($isInstall && !$testStatus['connection_tested']) || (!$isInstall && $showStatus && !$testStatus['connection_tested'])) disabled @endif
         >
-            {{ __('mail.settings.test_mail_button') }}
+            <i class="fas fa-envelope mr-2"></i>{{ __('mail.settings.test_mail_button') }}
         </button>
     </div>
     <div id="test-result" class="hidden mt-4"></div>
@@ -175,14 +175,17 @@
 </div>
 
 <script>
+    // 翻訳メッセージ
+    const mailTestMessages = {
+        mailReceiveVerified: @json(__('mail.js_messages.mail_receive_verified'))
+    };
+
     // ページ読み込み時の初期化
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOMContentLoaded - mail-test.blade.php');
         
         // インストール時はページロード時にテスト状態をクリア
         const isInstall = {{ $isInstall ? 'true' : 'false' }};
         if (isInstall) {
-            console.log('=== インストール時：テスト状態をクリア ===');
             sessionStorage.removeItem('mail_connection_tested');
             sessionStorage.removeItem('mail_send_tested');
             sessionStorage.removeItem('mail_receive_tested');
@@ -190,7 +193,6 @@
             sessionStorage.removeItem('mail_send_test_date');
             sessionStorage.removeItem('mail_receive_test_date');
             sessionStorage.removeItem('install_data');
-            console.log('✅ セッションストレージをクリアしました');
         }
         
         // ページ読み込み時にセッションストレージから受信テスト完了状態をチェック
@@ -200,94 +202,65 @@
         try {
             const channel = new BroadcastChannel('mail_test_channel');
             channel.addEventListener('message', function(event) {
-                console.log('=== BroadcastChannelメッセージ受信 ===');
-                console.log('受信データ:', event.data);
                 
                 if (event.data && event.data.type === 'mail_receive_test_completed') {
-                    console.log('✅ 受信テスト完了メッセージを受信（BroadcastChannel）');
                     
                     // 受信テストのステータスを更新
                     const testDate = new Date().toLocaleString();
                     updateTestStatus('receive', true, testDate);
-                    showNotification('success', 'メール受信確認が完了しました');
+                    showNotification('success', mailTestMessages.mailReceiveVerified);
                 }
             });
-            console.log('✅ BroadcastChannelリスナーを設定しました');
         } catch (e) {
-            console.error('❌ BroadcastChannelの設定に失敗しました:', e);
         }
         
         // 接続テストボタンのイベントリスナー
         const connectionTestBtn = document.getElementById('test-connection-btn');
-        console.log('接続テストボタン要素:', connectionTestBtn);
         if (connectionTestBtn) {
-            console.log('接続テストボタンが見つかりました');
             connectionTestBtn.addEventListener('click', function() {
-                console.log('接続テストボタンがクリックされました');
                 testConnection();
             });
         } else {
-            console.error('接続テストボタンが見つかりません - ID: test-connection-btn');
         }
         
         // メール送信テストボタンのイベントリスナー
         const mailTestBtn = document.getElementById('test-mail-btn');
-        console.log('メール送信テストボタン要素:', mailTestBtn);
         if (mailTestBtn) {
-            console.log('メール送信テストボタンが見つかりました');
             mailTestBtn.addEventListener('click', function() {
-                console.log('メール送信テストボタンがクリックされました');
                 testMail();
             });
         } else {
-            console.error('メール送信テストボタンが見つかりません - ID: test-mail-btn');
         }
         
         // メール受信確認完了メッセージを受信
         window.addEventListener('message', function(event) {
-            console.log('=== postMessage受信 ===');
-            console.log('event.data:', event.data);
-            console.log('event.origin:', event.origin);
-            console.log('event.source:', event.source);
-            console.log('データ型:', typeof event.data);
             
             // MetaMaskなどの不要なメッセージをフィルタリング
             if (event.data && typeof event.data === 'object' && event.data.target && event.data.target.includes('metamask')) {
-                console.log('MetaMaskメッセージを無視');
                 return;
             }
             
-            console.log('メッセージのtype:', event.data?.type);
             
             if (event.data && event.data.type === 'mail_receive_test_completed') {
-                console.log('✅ メール受信テスト完了メッセージを受信');
-                console.log('メッセージ内容:', event.data.message);
                 
                 // 受信テストのステータスを更新
-                console.log('updateTestStatus("receive", true)を実行...');
                 updateTestStatus('receive', true, new Date().toLocaleString());
                 showNotification('success', event.data.message);
             } else {
-                console.log('❌ 受信テスト完了メッセージではありません');
             }
-            console.log('=== postMessage処理終了 ===');
         });
         
     });
 
     // 受信テスト完了状態をチェックする関数
     function checkReceiveTestCompletion() {
-        console.log('=== 受信テスト完了状態をチェック ===');
         
         try {
             const receiveTestCompleted = sessionStorage.getItem('mail_receive_test_completed');
             const receiveTestDate = sessionStorage.getItem('mail_receive_test_date');
             
-            console.log('セッションストレージの受信テスト完了:', receiveTestCompleted);
-            console.log('セッションストレージの受信テスト日付:', receiveTestDate);
             
             if (receiveTestCompleted === 'true') {
-                console.log('✅ 受信テストが完了していることを検出');
                 
                 // 受信テストのステータスを更新
                 updateTestStatus('receive', true, receiveTestDate);
@@ -297,26 +270,20 @@
                 sessionStorage.removeItem('mail_receive_test_date');
                 
                 // 成功通知を表示
-                showNotification('success', 'メール受信確認が完了しました');
+                showNotification('success', mailTestMessages.mailReceiveVerified);
                 
-                console.log('✅ 受信テスト完了処理が完了しました');
             } else {
-                console.log('受信テストはまだ完了していません');
             }
         } catch (e) {
-            console.error('❌ 受信テスト完了状態のチェックに失敗しました:', e);
         }
     }
 
     // 接続テスト関数
     function testConnection() {
-        console.log('testConnection関数が呼び出されました');
         
         const connectionTestRoute = '{{ $connectionTestRoute ?? "" }}';
-        console.log('接続テストルート:', connectionTestRoute);
         
         if (!connectionTestRoute) {
-            console.error('{{ __('mail.js_messages.test_route_not_set') }}');
             showTestResult('error', '{{ __('mail.js_messages.test_route_not_set') }}');
             return;
         }
@@ -330,7 +297,6 @@
 
         // CSRF トークンを取得
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-        console.log('CSRFトークン:', csrfToken ? 'あり' : 'なし');
         
         // フォームからメール設定を取得
         const mailSettings = {
@@ -343,8 +309,6 @@
             mail_from_address: document.querySelector('input[name="mail_from_address"]')?.value || ''
         };
 
-        console.log('接続テスト開始:', connectionTestRoute);
-        console.log('送信するメール設定:', mailSettings);
 
         fetch(connectionTestRoute, {
             method: 'POST',
@@ -356,11 +320,9 @@
             body: JSON.stringify(mailSettings)
         })
         .then(response => {
-            console.log('接続テストレスポンス受信:', response.status);
             if (!response.ok) {
                 // エラーレスポンスの詳細を取得
                 return response.json().then(errorData => {
-                    console.error('バリデーションエラー詳細:', errorData);
                     throw new Error(`HTTP ${response.status}: ${response.statusText} - ${JSON.stringify(errorData)}`);
                 }).catch(() => {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -369,7 +331,6 @@
             return response.json();
         })
         .then(data => {
-            console.log('接続テスト結果:', data);
             
             if (data.success) {
                 updateTestStatus('connection', true, data.test_date);
@@ -382,7 +343,6 @@
             }
         })
         .catch(error => {
-            console.error('接続テストエラー:', error);
             const mainMessage = '{{ __('mail.js_messages.connection_test_error') }}';
             const noteMessage = '{{ __('mail.js_messages.mail_test_failed_side_note') }}';
             const errorDetails = ': ' + error.message;
@@ -399,11 +359,9 @@
 
     // メール送信テスト関数
     function testMail() {
-        console.log('testMail関数が呼び出されました');
         
         const mailTestRoute = '{{ $mailTestRoute ?? "" }}';
         if (!mailTestRoute) {
-            console.error('{{ __('mail.js_messages.mail_test_route_not_set') }}');
             showTestResult('error', '{{ __('mail.js_messages.mail_test_route_not_set') }}');
             return;
         }
@@ -440,8 +398,6 @@
             mail_from_name: document.querySelector('input[name="mail_from_name"]')?.value || ''
         };
 
-        console.log('メール送信テスト開始:', mailTestRoute);
-        console.log('送信するメール設定:', mailSettings);
 
         fetch(mailTestRoute, {
             method: 'POST',
@@ -453,11 +409,9 @@
             body: JSON.stringify(mailSettings)
         })
         .then(response => {
-            console.log('メール送信テストレスポンス受信:', response.status);
             if (!response.ok) {
                 // エラーレスポンスの詳細を取得
                 return response.json().then(errorData => {
-                    console.error('バリデーションエラー詳細:', errorData);
                     throw new Error(`HTTP ${response.status}: ${response.statusText} - ${JSON.stringify(errorData)}`);
                 }).catch(() => {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -466,7 +420,6 @@
             return response.json();
         })
         .then(data => {
-            console.log('メール送信テスト結果:', data);
             
             if (data.success) {
                 updateTestStatus('send', true, data.test_date);
@@ -478,7 +431,6 @@
             }
         })
         .catch(error => {
-            console.error('メール送信テストエラー:', error);
             const mainMessage = '{{ __('mail.js_messages.mail_test_error') }}';
             const noteMessage = '{{ __('mail.js_messages.mail_test_failed_side_note') }}';
             const errorDetails = ': ' + error.message;
@@ -497,7 +449,6 @@
     function showTestResult(type, message) {
         const resultDiv = document.getElementById('test-result');
         if (!resultDiv) {
-            console.log('test-result要素が見つかりません');
             return;
         }
 
@@ -513,14 +464,10 @@
 
     // テストステータス更新関数（グローバルスコープに定義）
     function updateTestStatus(testType, success, testDate) {
-        console.log(`updateTestStatus呼び出し: ${testType}, success: ${success}, date: ${testDate}`);
         
         // デバッグ: testTypeと構築されるIDを確認
-        console.log('testType:', testType);
-        console.log('構築されるID:', testType + '-test-icon');
         
         // 直接IDで要素を取得してテスト
-        console.log('connection-test-icon:', document.getElementById('connection-test-icon'));
         
         // コンテキストに関係なく要素を取得（存在する場合のみ更新）
         const icon = document.getElementById(testType + '-test-icon');
@@ -532,69 +479,48 @@
         const textMain = document.getElementById(testType + '-test-text-main');
         const dateSpanMain = document.getElementById(testType + '-test-date-main');
         
-        console.log('アイコン要素:', icon);
-        console.log('テキスト要素:', text);
-        console.log('日付要素:', dateSpan);
-        console.log('メインアイコン要素:', iconMain);
-        console.log('メインテキスト要素:', textMain);
-        console.log('メイン日付要素:', dateSpanMain);
-        
-        // DOM要素が見つからない場合の詳細デバッグ（開発時のみ）
-        if (!icon && !iconMain) console.warn(`両方のアイコン要素が見つかりません: ${testType}`);
-        if (!text && !textMain) console.warn(`両方のテキスト要素が見つかりません: ${testType}`);
-        if (!dateSpan && !dateSpanMain) console.warn(`両方の日付要素が見つかりません: ${testType}`);
-        
         if (success) {
             // 直接IDでアイコンを更新（確実に更新するため）
             if (testType === 'connection') {
                 const connectionIcon = document.getElementById('connection-test-icon');
                 if (connectionIcon) {
-                    console.log('接続テストアイコンを直接更新');
                     connectionIcon.outerHTML = '<i class="mr-2 fas fa-circle-check text-green-600" id="connection-test-icon"></i>';
                 }
             } else if (testType === 'send') {
                 const sendIcon = document.getElementById('send-test-icon');
                 if (sendIcon) {
-                    console.log('送信テストアイコンを直接更新');
                     sendIcon.outerHTML = '<i class="mr-2 fas fa-circle-check text-green-600" id="send-test-icon"></i>';
                 }
             } else if (testType === 'receive') {
                 const receiveIcon = document.getElementById('receive-test-icon');
                 if (receiveIcon) {
-                    console.log('受信テストアイコンを直接更新');
                     receiveIcon.outerHTML = '<i class="mr-2 fas fa-circle-check text-green-600" id="receive-test-icon"></i>';
                 }
             }
             
             // ステータス表示の要素を更新
             if (icon) {
-                console.log('アイコンを成功状態に更新');
                 icon.className = 'mr-2 fas fa-circle-check text-green-600';
             }
             
             if (text) {
-                console.log('テキストを成功状態に更新');
                 text.className = 'text-sm text-green-700 dark:text-green-300';
             }
             
             if (dateSpan && testDate) {
-                console.log('日付を更新:', testDate);
                 dateSpan.textContent = `(${testDate})`;
             }
             
             // メイン表示の要素も更新
             if (iconMain) {
-                console.log('メインアイコンを成功状態に更新');
                 iconMain.className = 'mr-2 fas fa-check-circle text-green-500';
             }
             
             if (textMain) {
-                console.log('メインテキストを成功状態に更新');
                 textMain.className = 'text-sm text-green-700 dark:text-green-300';
             }
             
             if (dateSpanMain && testDate) {
-                console.log('メイン日付を更新:', testDate);
                 dateSpanMain.textContent = `(${testDate})`;
             }
             
@@ -607,16 +533,12 @@
                     sessionStorage.setItem(`mail_${testType}_test_date`, testDate);
                 }
                 
-                console.log('=== セッションストレージ個別保存 ===');
-                console.log(`mail_${testType}_tested:`, sessionStorage.getItem(`mail_${testType}_tested`));
-                console.log(`mail_${testType}_test_date:`, sessionStorage.getItem(`mail_${testType}_test_date`));
                 
                 // 従来のinstall_dataも更新（互換性のため）
                 const installData = JSON.parse(sessionStorage.getItem('install_data') || '{}');
                 installData[`mail_${testType}_tested`] = true;
                 installData[`mail_${testType}_test_date`] = testDate;
                 sessionStorage.setItem('install_data', JSON.stringify(installData));
-                console.log('セッションストレージ更新:', installData);
             }
         }
         
@@ -631,18 +553,12 @@
 
     // メインステータス更新関数
     function updateInstallMainStatus() {
-        console.log('updateInstallMainStatus関数呼び出し');
         // メインステータス要素を取得
         const mainStatusDiv = document.getElementById('mail-test-status');
         const mainIcon = document.getElementById('status-icon');
         const mainTitle = document.getElementById('status-title');
         
-        console.log('=== メインステータス要素の詳細確認 ===');
-        console.log('mail-test-status要素:', mainStatusDiv);
-        console.log('status-icon要素:', mainIcon);
-        console.log('status-title要素:', mainTitle);
         
-        console.log('メインステータス要素:', { mainStatusDiv, mainIcon, mainTitle });
         
         // テスト完了状態をチェック
         const isInstall = {{ $isInstall ? 'true' : 'false' }};
@@ -650,10 +566,6 @@
         
         if (isInstall) {
             // インストール時はセッションストレージから現在のテスト状態を取得
-            console.log('=== セッションストレージの詳細確認 ===');
-            console.log('mail_connection_tested raw:', sessionStorage.getItem('mail_connection_tested'));
-            console.log('mail_send_tested raw:', sessionStorage.getItem('mail_send_tested'));
-            console.log('mail_receive_tested raw:', sessionStorage.getItem('mail_receive_tested'));
             
             const testData = {
                 mail_connection_tested: sessionStorage.getItem('mail_connection_tested') === 'true',
@@ -661,13 +573,10 @@
                 mail_receive_tested: sessionStorage.getItem('mail_receive_tested') === 'true'
             };
             allTestsComplete = testData.mail_connection_tested && testData.mail_send_tested && testData.mail_receive_tested;
-            console.log('インストール時のテスト状態（セッションストレージ）:', testData);
             
             // セッションストレージの全内容を確認
-            console.log('=== セッションストレージ全内容 ===');
             for (let i = 0; i < sessionStorage.length; i++) {
                 const key = sessionStorage.key(i);
-                console.log(`${key}: ${sessionStorage.getItem(key)}`);
             }
         } else {
             // 管理画面の場合は既存のロジックを使用
@@ -680,25 +589,15 @@
                               receiveIcon?.classList.contains('fa-circle-check');
         }
         
-        console.log('全テスト完了状態:', allTestsComplete);
         
         // メインステータス要素が存在しない場合はスキップ
         if (!mainStatusDiv || !mainIcon || !mainTitle) {
-            console.log('❌ メインステータス要素が見つからないため処理をスキップ');
-            console.log('mainStatusDiv存在:', !!mainStatusDiv);
-            console.log('mainIcon存在:', !!mainIcon);
-            console.log('mainTitle存在:', !!mainTitle);
             
             // 要素が見つからない場合、DOM全体を検索
-            console.log('=== DOM全体でのID検索 ===');
-            console.log('mail-test-status:', document.querySelector('#mail-test-status'));
-            console.log('status-icon:', document.querySelector('#status-icon'));
-            console.log('status-title:', document.querySelector('#status-title'));
             return;
         }    
         
         if (allTestsComplete) {
-            console.log('全テスト完了 - 緑のチェックマークに変更');
             mainStatusDiv.className = 'mt-6 p-4 border rounded-lg bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
             
             // メインアイコンを緑のチェックマークに変更
@@ -707,24 +606,20 @@
             mainTitle.className = 'text-sm font-medium text-green-800 dark:text-green-200';
             mainTitle.textContent = '{{ __('mail.test.three_stage_test_complete') }}';
         } else {
-            console.log('テスト未完了 - 黄色の警告マークに変更');
             mainStatusDiv.className = 'mt-6 p-4 border rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800';
             
             // メインアイコンをFontAwesomeクラス更新で変更
-            console.log('メインアイコンを黄色の警告マークに変更');
             mainIcon.className = 'fas fa-exclamation-triangle text-yellow-400 text-xl';
             
             mainTitle.className = 'text-sm font-medium text-yellow-800 dark:text-yellow-200';
             mainTitle.textContent = '{{ __('mail.test.three_stage_test_incomplete') }}';
         }
         
-        console.log('変更後のメインアイコンクラス:', mainIcon.className);
     }
 
     // メール受信テスト完了の監視（localStorage経由）
     window.addEventListener('storage', function(e) {
         if (e.key === 'mail_receive_test_completed' && e.newValue === 'true') {
-            console.log('{{ __('mail.js_messages.mail_receive_test_completed') }}');
             const testDate = localStorage.getItem('mail_receive_test_date');
             updateTestStatus('receive', true, testDate);
             
@@ -743,7 +638,6 @@
                 const now = Date.now();
                 // 5分以内のデータのみ有効とする
                 if (now - data.timestamp < 300000) {
-                    console.log('{{ __('mail.js_messages.mail_receive_test_completed') }}');
                     updateTestStatus('receive', true, null);
                     
                     // メインステータスも更新
@@ -771,7 +665,6 @@
                 }
             }
         } catch (e) {
-            console.log('localStorage確認エラー:', e);
         }
     }
 
@@ -789,44 +682,7 @@
             mailTestBtn.className = 'py-2 px-4 rounded transition-colors duration-200 font-bold bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white';
         }
     }
-    
-    
-    function showNotification(type, message) {
-        const existingNotification = document.getElementById('mail-test-notification');
-        if (existingNotification) {
-            existingNotification.remove();
-        }
-        
-        const notification = document.createElement('div');
-        notification.id = 'mail-test-notification';
-        notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm ${
-            type === 'success' 
-                ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200'
-                : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200'
-        }`;
-        
-        notification.innerHTML = `
-            <div class="flex items-start">
-                <div class="flex-shrink-0">
-                    <i class="${type === 'success' ? 'fas fa-check-circle text-green-400' : 'fas fa-times-circle text-red-400'} text-xl"></i>
-                </div>
-                <div class="ml-3">
-                    <p class="text-sm font-medium">${message}</p>
-                </div>
-                <div class="ml-auto pl-3">
-                    <button onclick="this.parentElement.parentElement.parentElement.remove()" class="inline-flex ${type === 'success' ? 'text-green-400 hover:text-green-500' : 'text-red-400 hover:text-red-500'}">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            if (notification.parentElement) {
-                notification.remove();
-            }
-        }, 5000);
-    }
 </script>
+
+<!-- 通知コンポーネントを読み込み -->
+@include('components.notification')

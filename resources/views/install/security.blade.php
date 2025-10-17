@@ -8,80 +8,130 @@
 
 @section('content')
 
-
-<form action="{{ route('install.security.store') }}" method="POST" class="space-y-4">
+<form action="{{ route('install.security.store') }}" method="POST" class="space-y-6">
     @csrf
 
-    <hr class="my-6">
-    <!-- ✅ IP制御のチェックボックス -->
-    <h2 class="text-lg font-bold mt-6">{{ __('install.ip_restrictions') }}</h2>
-
-    <p class="text-sm text-gray-500 mt-1">IPアドレスは1行に1つずつ入力してください。例:</p>
-        <pre class="text-xs bg-gray-100 p-2 rounded mt-1">127.0.0.1
+    <!-- IP制限設定セクション -->
+    <section aria-labelledby="ip-restrictions-heading">
+        <h2 id="ip-restrictions-heading" class="text-lg font-bold text-gray-900 dark:text-gray-100">
+            {{ __('install.ip_restrictions') }}
+        </h2>
+        
+        <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+            {{ __('install.ip_address_format_instruction') }}
+        </p>
+        <pre class="text-xs bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 p-3 rounded-lg mt-2 border border-gray-200 dark:border-gray-700">127.0.0.1
 192.168.1.1
 203.0.113.45</pre>
 
-    <div>
-        <label class="flex items-center">
-            <input type="checkbox" name="enable_allowed_admin_ips" id="enable_allowed_admin_ips" class="mr-2"
-                value="1" {{ old('enable_allowed_admin_ips', session('install_data.enable_allowed_admin_ips', '0')) == '1' ? 'checked' : '' }}>
-            {{ __('install.enable_allowed_admin_ips') }}
-        </label>
-        <textarea name="allowed_admin_ips" id="allowed_admin_ips" rows="3"
-            class="w-full p-2 border rounded-lg" placeholder="127.0.0.1"
-            {{ old('enable_allowed_admin_ips', session('install_data.enable_allowed_admin_ips', '0')) == '1' ? '' : 'disabled' }}>{{ old('allowed_admin_ips', session('install_data.allowed_admin_ips', '127.0.0.1')) }}</textarea>
+        <!-- 管理画面IP制限 -->
+        <fieldset class="mt-6 space-y-4">
+            <legend class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                {{ __('install.admin_panel_ip_restrictions') }}
+            </legend>
+            
+            <!-- 許可IPアドレス -->
+            <div class="space-y-2">
+                <div class="flex items-center">
+                    <input type="checkbox" 
+                        name="enable_allowed_admin_ips" 
+                        id="enable_allowed_admin_ips" 
+                        value="1"
+                        class="h-5 w-5 text-blue-600 dark:text-blue-500 rounded border-gray-300 dark:border-gray-600 focus:ring-blue-500 dark:focus:ring-blue-400"
+                        {{ old('enable_allowed_admin_ips', session('install_data.enable_allowed_admin_ips', '0')) == '1' ? 'checked' : '' }}>
+                    <x-form.label for="enable_allowed_admin_ips" :text="__('install.enable_allowed_admin_ips')" class="ml-2 mb-0" />
+                </div>
+                <x-form.textarea
+                    name="allowed_admin_ips"
+                    id="allowed_admin_ips"
+                    rows="3"
+                    :value="old('allowed_admin_ips', session('install_data.allowed_admin_ips', '127.0.0.1'))"
+                    placeholder="127.0.0.1"
+                    :disabled="old('enable_allowed_admin_ips', session('install_data.enable_allowed_admin_ips', '0')) != '1'"
+                />
+            </div>
 
-    </div>
+            <!-- ブロックIPアドレス -->
+            <div class="space-y-2">
+                <div class="flex items-center">
+                    <input type="checkbox" 
+                        name="enable_blocked_admin_ips" 
+                        id="enable_blocked_admin_ips" 
+                        value="1"
+                        class="h-5 w-5 text-blue-600 dark:text-blue-500 rounded border-gray-300 dark:border-gray-600 focus:ring-blue-500 dark:focus:ring-blue-400"
+                        {{ old('enable_blocked_admin_ips', session('install_data.enable_blocked_admin_ips', '0')) == '1' ? 'checked' : '' }}>
+                    <x-form.label for="enable_blocked_admin_ips" :text="__('install.enable_blocked_admin_ips')" class="ml-2 mb-0" />
+                </div>
+                <x-form.textarea
+                    name="blocked_admin_ips"
+                    id="blocked_admin_ips"
+                    rows="3"
+                    :value="old('blocked_admin_ips', session('install_data.blocked_admin_ips', ''))"
+                    :disabled="old('enable_blocked_admin_ips', session('install_data.enable_blocked_admin_ips', '0')) != '1'"
+                />
+            </div>
+        </fieldset>
 
-    <div>
-        <label class="flex items-center">
-            <input type="checkbox" name="enable_blocked_admin_ips" id="enable_blocked_admin_ips" class="mr-2"
-                value="1" {{ old('enable_blocked_admin_ips', session('install_data.enable_blocked_admin_ips', '0')) == '1' ? 'checked' : '' }}>
-            {{ __('install.enable_blocked_admin_ips') }}
-        </label>
-        <textarea name="blocked_admin_ips" id="blocked_admin_ips" rows="3"
-            class="w-full p-2 border rounded-lg"
-            {{ old('enable_blocked_admin_ips', session('install_data.enable_blocked_admin_ips', '0')) == '1' ? '' : 'disabled' }}>
-            {{ old('blocked_admin_ips', session('install_data.blocked_admin_ips', '')) }}
-        </textarea>
-    </div>
+        <!-- フロント画面IP制限 -->
+        <fieldset class="mt-6 space-y-4">
+            <legend class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                {{ __('install.front_panel_ip_restrictions') }}
+            </legend>
+            
+            <!-- 許可IPアドレス -->
+            <div class="space-y-2">
+                <div class="flex items-center">
+                    <input type="checkbox" 
+                        name="enable_allowed_front_ips" 
+                        id="enable_allowed_front_ips" 
+                        value="1"
+                        class="h-5 w-5 text-blue-600 dark:text-blue-500 rounded border-gray-300 dark:border-gray-600 focus:ring-blue-500 dark:focus:ring-blue-400"
+                        {{ old('enable_allowed_front_ips', session('install_data.enable_allowed_front_ips', '0')) == '1' ? 'checked' : '' }}>
+                    <x-form.label for="enable_allowed_front_ips" :text="__('install.enable_allowed_front_ips')" class="ml-2 mb-0" />
+                </div>
+                <x-form.textarea
+                    name="allowed_front_ips"
+                    id="allowed_front_ips"
+                    rows="3"
+                    :value="old('allowed_front_ips', session('install_data.allowed_front_ips', ''))"
+                    :disabled="old('enable_allowed_front_ips', session('install_data.enable_allowed_front_ips', '0')) != '1'"
+                />
+            </div>
 
-    <!-- ✅ フロント画面のIP制御 -->
-    <div>
-        <label class="flex items-center">
-            <input type="checkbox" name="enable_allowed_front_ips" id="enable_allowed_front_ips" class="mr-2"
-                value="1" {{ old('enable_allowed_front_ips', session('install_data.enable_allowed_front_ips', '0')) == '1' ? 'checked' : '' }}>
-            {{ __('install.enable_allowed_front_ips') }}
-        </label>
-        <textarea name="allowed_front_ips" id="allowed_front_ips" rows="3"
-            class="w-full p-2 border rounded-lg"
-            {{ old('enable_allowed_front_ips', session('install_data.enable_allowed_front_ips', '0')) == '1' ? '' : 'disabled' }}>
-            {{ old('allowed_front_ips', session('install_data.allowed_front_ips', '')) }}
-        </textarea>
-    </div>
+            <!-- ブロックIPアドレス -->
+            <div class="space-y-2">
+                <div class="flex items-center">
+                    <input type="checkbox" 
+                        name="enable_blocked_front_ips" 
+                        id="enable_blocked_front_ips" 
+                        value="1"
+                        class="h-5 w-5 text-blue-600 dark:text-blue-500 rounded border-gray-300 dark:border-gray-600 focus:ring-blue-500 dark:focus:ring-blue-400"
+                        {{ old('enable_blocked_front_ips', session('install_data.enable_blocked_front_ips', '0')) == '1' ? 'checked' : '' }}>
+                    <x-form.label for="enable_blocked_front_ips" :text="__('install.enable_blocked_front_ips')" class="ml-2 mb-0" />
+                </div>
+                <x-form.textarea
+                    name="blocked_front_ips"
+                    id="blocked_front_ips"
+                    rows="3"
+                    :value="old('blocked_front_ips', session('install_data.blocked_front_ips', ''))"
+                    :disabled="old('enable_blocked_front_ips', session('install_data.enable_blocked_front_ips', '0')) != '1'"
+                />
+            </div>
+        </fieldset>
+    </section>
 
-    <div>
-        <label class="flex items-center">
-            <input type="checkbox" name="enable_blocked_front_ips" id="enable_blocked_front_ips" class="mr-2"
-                value="1" {{ old('enable_blocked_front_ips', session('install_data.enable_blocked_front_ips', '0')) == '1' ? 'checked' : '' }}>
-            {{ __('install.enable_blocked_front_ips') }}
-        </label>
-        <textarea name="blocked_front_ips" id="blocked_front_ips" rows="3"
-            class="w-full p-2 border rounded-lg"
-            {{ old('enable_blocked_front_ips', session('install_data.enable_blocked_front_ips', '0')) == '1' ? '' : 'disabled' }}>
-            {{ old('blocked_front_ips', session('install_data.blocked_front_ips', '')) }}
-        </textarea>
-    </div>
-
-    <div class="flex justify-between mt-6">
+    <!-- フォームナビゲーション -->
+    <nav aria-label="{{ __('install.form_navigation') }}" class="flex justify-between mt-6">
         <a href="{{ route('install.mail') }}"
-            class="bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600">
+            class="bg-gray-500 dark:bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-700 transition">
             {{ __('install.back') }}
         </a>
-        <button type="submit" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700">
-            {{ __('install.next') }}
-        </button>
-    </div>
+        <x-form.button
+            type="submit"
+            variant="primary"
+            :label="__('install.next')"
+        />
+    </nav>
 </form>
 
 <script>

@@ -22,15 +22,6 @@ trait MailTestTrait
         $password = $mailSettings['mail_password'] ?? '';
         $encryption = $mailSettings['mail_encryption'] ?? '';
 
-        // デバッグ情報をログに記録
-        \Log::info('SMTP接続テスト開始', [
-            'host' => $host,
-            'port' => $port,
-            'encryption' => $encryption,
-            'username' => $username ? '***設定済み***' : '未設定',
-            'password' => $password ? '***設定済み***' : '未設定'
-        ]);
-
         // ソケット接続でSMTPサーバーに接続テスト
         $context = stream_context_create();
         
@@ -39,7 +30,6 @@ trait MailTestTrait
             $host = 'ssl://' . $host;
         }
 
-        \Log::info('SMTP接続試行', ['connection_string' => $host . ':' . $port]);
 
         $socket = @stream_socket_client(
             $host . ':' . $port,
@@ -51,26 +41,19 @@ trait MailTestTrait
         );
 
         if (!$socket) {
-            $errorMessage = "接続エラー: {$errstr} (エラーコード: {$errno})";
-            \Log::error('SMTP接続失敗', [
-                'host' => $originalHost,
-                'port' => $port,
-                'encryption' => $encryption,
-                'errno' => $errno,
-                'errstr' => $errstr,
-                'connection_string' => $host . ':' . $port
+            $errorMessage = __('mail.test_advanced.smtp_connection_error', [
+                'error' => $errstr,
+                'errno' => $errno
             ]);
             throw new \Exception($errorMessage);
         }
 
         // SMTPレスポンスを読み取り
         $response = fgets($socket);
-        \Log::info('SMTP初期応答', ['response' => trim($response)]);
         
         if (!$response || !str_starts_with($response, '220')) {
             fclose($socket);
-            \Log::error('SMTP初期応答エラー', ['response' => trim($response)]);
-            throw new \Exception('SMTPサーバーからの応答が不正です: ' . trim($response));
+            throw new \Exception(__('mail.test_advanced.smtp_response_invalid', ['response' => trim($response)]));
         }
 
         // STARTTLSが必要な場合
@@ -83,13 +66,13 @@ trait MailTestTrait
             
             if (!str_starts_with($response, '220')) {
                 fclose($socket);
-                throw new \Exception('STARTTLS の開始に失敗しました: ' . trim($response));
+                throw new \Exception(__('mail.test_advanced.smtp_starttls_failed', ['response' => trim($response)]));
             }
 
             // TLS暗号化を有効にする
             if (!stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
                 fclose($socket);
-                throw new \Exception('TLS暗号化の有効化に失敗しました');
+                throw new \Exception(__('mail.test_advanced.smtp_tls_crypto_failed'));
             }
         }
 
@@ -103,7 +86,7 @@ trait MailTestTrait
             
             if (!str_starts_with($response, '334')) {
                 fclose($socket);
-                throw new \Exception('AUTH LOGIN コマンドが失敗しました: ' . trim($response));
+                throw new \Exception(__('mail.test_advanced.smtp_auth_login_failed', ['response' => trim($response)]));
             }
 
             // ユーザー名を送信
@@ -112,7 +95,7 @@ trait MailTestTrait
             
             if (!str_starts_with($response, '334')) {
                 fclose($socket);
-                throw new \Exception('ユーザー名認証が失敗しました: ' . trim($response));
+                throw new \Exception(__('mail.test_advanced.smtp_username_auth_failed', ['response' => trim($response)]));
             }
 
             // パスワードを送信
@@ -121,7 +104,7 @@ trait MailTestTrait
             
             if (!str_starts_with($response, '235')) {
                 fclose($socket);
-                throw new \Exception('パスワード認証が失敗しました: ' . trim($response));
+                throw new \Exception(__('mail.test_advanced.smtp_password_auth_failed', ['response' => trim($response)]));
             }
         }
 
@@ -129,7 +112,6 @@ trait MailTestTrait
         fwrite($socket, "QUIT\r\n");
         fclose($socket);
         
-        \Log::info('SMTP接続テスト完了', ['status' => 'success']);
     }
 
     /**
@@ -152,20 +134,6 @@ trait MailTestTrait
      */
     protected function sendTestMail($toEmail, $mailSettings, $context = 'admin')
     {
-        \Log::info('=== MailTestTrait sendTestMail 開始 ===', [
-            'to_email' => $toEmail,
-            'context' => $context,
-            'mail_settings' => [
-                'mail_mailer' => $mailSettings['mail_mailer'] ?? 'null',
-                'mail_host' => $mailSettings['mail_host'] ?? 'null',
-                'mail_port' => $mailSettings['mail_port'] ?? 'null',
-                'mail_username' => $mailSettings['mail_username'] ?? 'null',
-                'mail_encryption' => $mailSettings['mail_encryption'] ?? 'null',
-                'mail_from_address' => $mailSettings['mail_from_address'] ?? 'null',
-                'mail_from_name' => $mailSettings['mail_from_name'] ?? 'null',
-            ]
-        ]);
-
         // 一時的にメール設定を変更
         Config::set('mail.default', $mailSettings['mail_mailer']);
         Config::set('mail.mailers.smtp.host', $mailSettings['mail_host']);
@@ -176,25 +144,20 @@ trait MailTestTrait
         Config::set('mail.from.address', $mailSettings['mail_from_address']);
         Config::set('mail.from.name', $mailSettings['mail_from_name'] ?? env('APP_NAME', 'Dixlase'));
         
-        \Log::info('メール設定を一時的に変更完了');
 
         // 検証トークンを生成
         $verificationToken = \Str::random(64);
-        \Log::info('検証トークン生成完了', ['token_length' => strlen($verificationToken)]);
         
         // コンテキストに応じて検証URLとセッションキーを設定
         if ($context === 'install') {
             $verificationUrl = route('install.mail.verify-mail', ['token' => $verificationToken]);
             session(['install_mail_verification_token' => $verificationToken]);
-            \Log::info('インストール用検証URL生成', ['url' => $verificationUrl]);
         } else {
             $verificationUrl = route('admin.settings.base.verify-mail', ['token' => $verificationToken]);
             session(['mail_verification_token' => $verificationToken]);
-            \Log::info('管理画面用検証URL生成', ['url' => $verificationUrl]);
         }
 
         // MailMessageフォーマットでテストメールを作成（パスワードリセットメールと同じ形式）
-        \Log::info('MailMessageフォーマットでメール作成開始...');
         $mailMessage = (new \Illuminate\Notifications\Messages\MailMessage)
             ->subject(__('mail.test_mail.subject'))
             ->greeting(__('mail.test_mail.greeting'))
@@ -207,18 +170,10 @@ trait MailTestTrait
             ->line($verificationUrl)
             ->salutation(__('mail.test_mail.regards') . ",\n\n" . config('app.name'));
 
-        \Log::info('MailMessage作成完了');
 
         // テストメールを送信
-        \Log::info('メール送信開始...');
         try {
             $fromName = $mailSettings['mail_from_name'] ?? env('APP_NAME', 'Dixlase');
-            \Log::info('メール送信パラメータ', [
-                'to' => $toEmail,
-                'from_address' => $mailSettings['mail_from_address'],
-                'from_name' => $fromName,
-                'subject' => __('mail.test_mail.subject')
-            ]);
             
             Mail::send([], [], function ($message) use ($toEmail, $mailSettings, $fromName, $mailMessage) {
                 $message->to($toEmail)
@@ -226,15 +181,7 @@ trait MailTestTrait
                         ->html((string) $mailMessage->render())
                         ->from($mailSettings['mail_from_address'], $fromName);
             });
-            \Log::info('メール送信完了');
         } catch (\Exception $e) {
-            \Log::error('メール送信エラー', [
-                'error_message' => $e->getMessage(),
-                'error_code' => $e->getCode(),
-                'error_file' => $e->getFile(),
-                'error_line' => $e->getLine(),
-                'stack_trace' => $e->getTraceAsString()
-            ]);
             throw $e;
         }
     }
@@ -245,7 +192,6 @@ trait MailTestTrait
     public function performConnectionTest($request, $context = 'admin')
     {
         try {
-            \Log::info('=== メール接続テスト開始 ===');
             
             // リクエストからメール設定を取得
             $mailSettings = $request->only([
@@ -258,18 +204,8 @@ trait MailTestTrait
                 'mail_from_address',
             ]);
 
-            \Log::info('メール設定:', [
-                'mail_mailer' => $mailSettings['mail_mailer'],
-                'mail_host' => $mailSettings['mail_host'],
-                'mail_port' => $mailSettings['mail_port'],
-                'mail_username' => $mailSettings['mail_username'],
-                'mail_encryption' => $mailSettings['mail_encryption'],
-                'mail_from_address' => $mailSettings['mail_from_address'],
-            ]);
-
             // SMTPのみサポート
             if ($mailSettings['mail_mailer'] !== 'smtp') {
-                \Log::warning('サポートされていないメーラー', ['mailer' => $mailSettings['mail_mailer']]);
                 return response()->json([
                     'success' => false,
                     'message' => __('mail.test_functions.mailer_not_supported', ['mailer' => $mailSettings['mail_mailer']])
@@ -288,10 +224,6 @@ trait MailTestTrait
                 session(['install_data' => $installData]);
                 session()->save(); // セッションを強制保存
                 
-                \Log::info('接続テスト成功 - セッションに保存', [
-                    'mail_connection_tested' => $installData['mail_connection_tested'],
-                    'session_id' => session()->getId()
-                ]);
             } else {
                 // 管理画面時はmail_test_resultsに保存（フォーム保存時にDBに反映）
                 session(['mail_test_results.mail_connection_tested' => 1]);
@@ -317,7 +249,6 @@ trait MailTestTrait
     public function performMailTest($request, $context = 'admin')
     {
         try {
-            \Log::info('=== メール送信テスト開始 ===');
             
             // 接続テストが完了しているかチェック
             if ($context === 'install') {
@@ -325,30 +256,15 @@ trait MailTestTrait
                 $installData = session('install_data', []);
                 $connectionTested = (bool) ($installData['mail_connection_tested'] ?? false);
                 
-                \Log::info('インストール時の接続テスト確認', [
-                    'install_data_keys' => array_keys($installData),
-                    'mail_connection_tested' => $installData['mail_connection_tested'] ?? 'not_set',
-                    'connection_tested_bool' => $connectionTested
-                ]);
             } else {
                 // 管理画面時はmail_test_resultsまたはDBから確認
                 $sessionTestResults = session('mail_test_results', []);
                 $connectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? BaseSetting::getValue('mail_connection_tested', false));
                 
-                \Log::info('管理画面時の接続テスト確認', [
-                    'session_test_results' => $sessionTestResults,
-                    'connection_tested_bool' => $connectionTested
-                ]);
             }
             
             if (!$connectionTested) {
-                \Log::warning('接続テストが未完了のためメール送信テストを拒否', [
-                    'context' => $context,
-                    'connection_tested' => $connectionTested
-                ]);
                 return response()->json([
-                    'success' => false,
-                    'message' => __('mail.test.connection_test_required')
                 ], 400);
             }
             
@@ -362,26 +278,15 @@ trait MailTestTrait
                 'mail_encryption',
                 'mail_from_address',
             ]);
-            
-            \Log::info('メール設定:', [
-                'mail_mailer' => $mailSettings['mail_mailer'],
-                'mail_host' => $mailSettings['mail_host'],
-                'mail_port' => $mailSettings['mail_port'],
-                'mail_username' => $mailSettings['mail_username'],
-                'mail_encryption' => $mailSettings['mail_encryption'],
-                'mail_from_address' => $mailSettings['mail_from_address'],
-            ]);
 
             // 一時的にメール設定を変更
             $this->applyMailSettings($mailSettings);
-            \Log::info('メール設定を一時的に変更完了');
 
             // テストメール送信先を設定
             if ($context === 'install') {
                 // インストール時はセッションから管理者メールアドレスを取得
                 $testEmail = session('install_data.admin_email');
                 if (!$testEmail) {
-                    \Log::error('インストール時の管理者メールアドレスが見つかりません');
                     return response()->json([
                         'success' => false,
                         'message' => __('install.admin_email_not_found')
@@ -391,7 +296,6 @@ trait MailTestTrait
                 // 管理画面では現在ログイン中のアカウントのメールアドレス
                 $testEmail = auth()->user()->email;
             }
-            \Log::info('テストメール送信先:', ['test_email' => $testEmail, 'context' => $context]);
 
             // 認証トークンを生成
             $verificationToken = bin2hex(random_bytes(32));
@@ -402,7 +306,6 @@ trait MailTestTrait
             } else {
                 BaseSetting::setValue('mail_verification_token', $verificationToken);
             }
-            \Log::info('認証トークン生成完了');
             
             // 認証リンクを生成
             if ($context === 'install') {
@@ -410,15 +313,12 @@ trait MailTestTrait
             } else {
                 $verificationUrl = route('admin.settings.base.verify-mail', ['token' => $verificationToken]);
             }
-            \Log::info('認証URL生成:', ['verification_url' => $verificationUrl]);
             
             // アプリケーション名を取得
             $appName = env('APP_NAME', 'Dixlase');
-            \Log::info('アプリケーション名:', ['app_name' => $appName]);
 
             // 多言語対応のメール内容を取得
             $subject = __('mail.test_mail.subject');
-            \Log::info('メール件名取得:', ['subject' => $subject]);
             
             // MailMessage形式でメールを作成（ログイン通知と同じ形式）
             $message = new MailMessage;
@@ -442,17 +342,14 @@ trait MailTestTrait
             
             $message->salutation(__('mail.test_mail.regards') . "\n\n" . $appName);
             
-            \Log::info('MailMessage作成完了');
 
             // テストメールを送信
-            \Log::info('メール送信開始...');
             Mail::send([], [], function ($mail) use ($testEmail, $message) {
                 $mail->to($testEmail)
                      ->subject($message->subject)
                      ->html((string) $message->render());
             });
             
-            \Log::info('メール送信完了');
 
             // 送信テスト成功時にセッションに保存
             if ($context === 'install') {
@@ -473,12 +370,6 @@ trait MailTestTrait
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('メール送信テストエラー', [
-                'error_message' => $e->getMessage(),
-                'error_code' => $e->getCode(),
-                'error_file' => $e->getFile(),
-                'error_line' => $e->getLine(),
-            ]);
             
             return response()->json([
                 'success' => false,
@@ -493,18 +384,12 @@ trait MailTestTrait
     public function performMailVerification($token, $context = 'admin')
     {
         try {
-            \Log::info('=== メール受信確認テスト開始 ===', ['token' => $token, 'context' => $context]);
             
             // コンテキストに応じてトークンを検証
             if ($context === 'install') {
                 $storedToken = session('install_mail_verification_token');
                 $installData = session('install_data', []);
                 $alreadyVerified = isset($installData['mail_receive_tested']) && $installData['mail_receive_tested'] == 1;
-                \Log::info('インストール時の確認', [
-                    'stored_token' => $storedToken,
-                    'install_data' => $installData,
-                    'already_verified' => $alreadyVerified
-                ]);
             } else {
                 $storedToken = BaseSetting::getValue('mail_verification_token');
                 $testResults = session('mail_test_results', []);
@@ -514,17 +399,10 @@ trait MailTestTrait
                 $alreadyVerified = (isset($testResults['mail_receive_tested']) && $testResults['mail_receive_tested'] == 1) 
                                 || ($dbMailReceiveTested == 1);
                 
-                \Log::info('管理画面時の確認', [
-                    'stored_token' => $storedToken,
-                    'test_results' => $testResults,
-                    'db_mail_receive_tested' => $dbMailReceiveTested,
-                    'already_verified' => $alreadyVerified
-                ]);
             }
             
             // 既に認証済みの場合
             if ($alreadyVerified && !$storedToken) {
-                \Log::info('既に認証済み - 専用画面を表示', ['context' => $context]);
                 return view('components.mail-verification-success', [
                     'isInstall' => $context === 'install',
                     'alreadyVerified' => true
@@ -532,16 +410,9 @@ trait MailTestTrait
             }
             
             if (!$storedToken || $storedToken !== $token) {
-                \Log::warning('無効な認証トークン', [
-                    'provided_token' => $token, 
-                    'stored_token' => $storedToken,
-                    'already_verified' => $alreadyVerified,
-                    'context' => $context
-                ]);
                 
                 // 既に認証済みかつトークンがnullの場合のみ（正常に完了済み）
                 if ($alreadyVerified && $storedToken === null) {
-                    \Log::info('認証済みでトークンもクリア済み - 専用画面を表示');
                     return view('components.mail-verification-success', [
                         'isInstall' => $context === 'install',
                         'alreadyVerified' => true
@@ -575,7 +446,6 @@ trait MailTestTrait
                 BaseSetting::setValue('mail_verification_token', null);
             }
             
-            \Log::info('メール受信確認テスト完了');
 
             // 共有コンポーネントを使用
             return view('components.mail-verification-success', [
@@ -583,12 +453,6 @@ trait MailTestTrait
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('メール受信確認テストエラー', [
-                'error_message' => $e->getMessage(),
-                'error_code' => $e->getCode(),
-                'error_file' => $e->getFile(),
-                'error_line' => $e->getLine(),
-            ]);
             
             return view('components.mail-verification-error', [
                 'errorType' => 'verification_error',

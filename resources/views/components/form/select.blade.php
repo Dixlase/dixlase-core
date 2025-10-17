@@ -19,22 +19,34 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @props([
-    'id' => null, // selectのid属性
-    'name' => null, // selectのname属性
-    'options' => [], // 選択肢の配列
-    'value' => null, // 初期選択値
-    'disabled' => false, // 無効フラグ
-    'class' => '', // 追加クラス
-    'required' => false, // 必須フラグ
-    'xModel' => null, // Alpine.js x-model属性
+    'id' => null,            // selectのid属性
+    'name' => null,          // selectのname属性
+    'options' => [],         // 選択肢の配列
+    'value' => null,         // 初期選択値
+    'disabled' => false,     // 無効フラグ
+    'class' => '',           // 追加クラス
+    'required' => false,     // 必須フラグ
+    'xModel' => null,        // Alpine.js x-model属性
+    'onchange' => null,      // onchangeイベント
+    'style' => null,         // インラインスタイル
+    'useDefaultClass' => true, // デフォルトクラスを使用するか
 ])
+
+@php
+    $defaultClass = $useDefaultClass 
+        ? 'block p-2 pr-10 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-white'
+        : '';
+    $finalClass = trim($defaultClass . ' ' . $class);
+@endphp
 
 <select id="{{ $id }}"
         name="{{ $name }}"
-        class="block p-2 pr-10 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-white {{ $class }}"
+        class="{{ $finalClass }}"
         @if ($disabled) disabled @endif
         @if ($required) required @endif
-        @if ($xModel) x-model="{{ $xModel }}" @endif>
+        @if ($xModel) x-model="{{ $xModel }}" @endif
+        @if ($onchange) onchange="{{ $onchange }}" @endif
+        @if ($style) style="{{ $style }}" @endif>
     @foreach ($options as $optionValue => $optionText)
         <option value="{{ $optionValue }}" {{ $value == $optionValue ? 'selected' : '' }}>
             {{ __($optionText) }}
