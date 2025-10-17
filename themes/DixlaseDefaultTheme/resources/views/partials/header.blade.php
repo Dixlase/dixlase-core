@@ -1,7 +1,8 @@
 @php
     // テーマ設定はServiceProviderから自動的に渡される
-    $logoUrl = $themeSettings->logo_url ?? null;
-    $logoText = $themeSettings->logo_text ?? config('app.name', 'Dixlase');
+    $headerLogoId = $themeSettings->header_logo_id ?? null;
+    $headerLogo = $headerLogoId ? \App\Models\Media::find($headerLogoId) : null;
+    $logoText = config('app.name', 'Dixlase');
     $hasAdminBar = auth('member')->check();
 @endphp
 
@@ -11,8 +12,8 @@
             {{-- Site Logo --}}
             <div class="flex-shrink-0">
                 <a href="{{ url('/') }}" class="flex items-center space-x-3 group">
-                    @if($logoUrl)
-                        <img src="{{ $logoUrl }}" alt="{{ $logoText }}" class="h-8 w-auto">
+                    @if($headerLogo)
+                        <img src="{{ asset('storage/' . $headerLogo->file_path) }}" alt="{{ $logoText }}" class="h-8 w-auto">
                     @else
                         <h1 class="text-2xl font-bold text-white">
                             {{ $logoText }}

@@ -46,34 +46,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </fieldset>
         </section>
 
-        <!-- ヘッダー・ファビコン設定 -->
-        <section>
-            <h2>{{ __('admin.settings.front.header_favicon_settings') }}</h2>
-
-            <fieldset>
-                <legend>{{ __('admin.settings.front.header_logo') }}</legend>
-                @include('components.media-picker', [
-                    'name' => 'header_logo_id',
-                    'value' => $settings['header_logo_id'],
-                    'media' => $headerLogo,
-                    'help' => __('admin.settings.front.header_logo_help'),
-                    'error' => $errors->first('header_logo_id'),
-                ])
-            </fieldset>
-
-            <fieldset>
-                <legend>{{ __('admin.settings.front.favicon') }}</legend>
-                @include('components.media-picker', [
-                    'name' => 'favicon_id',
-                    'value' => $settings['favicon_id'],
-                    'media' => $favicon,
-                    'help' => __('admin.settings.front.favicon_help'),
-                    'error' => $errors->first('favicon_id'),
-                    'aspectRatio' => 'square'
-                ])
-            </fieldset>
-        </section>
-
         <!-- OGP設定 -->
         <section>
             <h2>{{ __('admin.settings.front.ogp_settings') }}</h2>

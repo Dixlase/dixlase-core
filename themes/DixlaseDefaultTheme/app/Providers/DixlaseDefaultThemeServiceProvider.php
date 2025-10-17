@@ -23,9 +23,10 @@
 namespace Themes\DixlaseDefaultTheme\App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Artisan;
+use Themes\DixlaseDefaultTheme\App\Models\ThemeSetting;
 use App\Helpers\AdminHelper;
 
 class DixlaseDefaultThemeServiceProvider extends ServiceProvider
@@ -54,7 +55,7 @@ class DixlaseDefaultThemeServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'themes');
         
         // Load translations
-        $this->loadTranslationsFrom(__DIR__ . '/../../lang', 'dixlase-default-theme');
+        $this->loadTranslationsFrom(__DIR__ . '/../../lang', 'themes');
         
         // Load migrations
         $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
@@ -95,24 +96,18 @@ class DixlaseDefaultThemeServiceProvider extends ServiceProvider
     protected function shareThemeSettings(): void
     {
         // View Composerを使用して、テーマのすべてのビューにテーマ設定を渡す
-        // 'themes::*' はこのテーマの名前空間でロードされるすべてのビュー
-        // '*' は直接パスで呼ばれるすべてのビュー（フロントエンドページ含む）
+        // '*' はすべてのビュー（フロントエンドページ含む）
         View::composer('*', function ($view) {
             try {
-                if (DB::getSchemaBuilder()->hasTable('thm_dixlase_default_theme_settings')) {
-                    $themeSettings = DB::table('thm_dixlase_default_theme_settings')->first();
-                    
-                    if ($themeSettings) {
-                        // テーマ設定をビュー変数として共有
-                        $view->with('themeSettings', $themeSettings);
-                    } else {
-                        // データが存在しない場合はデフォルト値を設定
-                        $view->with('themeSettings', $this->getDefaultThemeSettings());
-                    }
-                } else {
-                    // テーブルが存在しない場合はデフォルト値を使用
-                    $view->with('themeSettings', $this->getDefaultThemeSettings());
+                // ThemeSettingモデルで全設定を取得
+                $themeSettings = ThemeSetting::getAllAsObject();
+                
+                // 設定が空の場合はデフォルト値を使用
+                if (!isset($themeSettings->hero_main_title)) {
+                    $themeSettings = $this->getDefaultThemeSettings();
                 }
+                
+                $view->with('themeSettings', $themeSettings);
             } catch (\Exception $e) {
                 // エラー時はデフォルト値を使用
                 $view->with('themeSettings', $this->getDefaultThemeSettings());
@@ -126,6 +121,8 @@ class DixlaseDefaultThemeServiceProvider extends ServiceProvider
     protected function getDefaultThemeSettings(): object
     {
         return (object) [
+            'header_logo_id' => null,
+            'favicon_id' => null,
             'hero_background_image_id' => null,
             'hero_main_title' => 'Welcome to ' . config('app.name', 'Dixlase'),
             'hero_sub_title' => 'Modern CMS Platform for Building Amazing Websites',

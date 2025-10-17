@@ -61,9 +61,9 @@ return [
         'database' => [
             'driver' => 'database',
             'connection' => env('DB_CACHE_CONNECTION'),
-            'table' => env('DB_CACHE_TABLE', env('DB_PREFIX', 'dxl_') . 'cache'),
+            'table' => env('DB_CACHE_TABLE', 'cache'),
             'lock_connection' => env('DB_CACHE_LOCK_CONNECTION'),
-            'lock_table' => env('DB_CACHE_LOCK_TABLE') ? env('DB_PREFIX', 'dxl_') . env('DB_CACHE_LOCK_TABLE') : null,
+            'lock_table' => env('DB_CACHE_LOCK_TABLE'),
         ],
 
         'file' => [
