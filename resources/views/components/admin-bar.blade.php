@@ -6,8 +6,12 @@
             {{-- 左側: サイト名とメニュー --}}
             <div class="flex items-center space-x-4">
                 {{-- サイト名/ロゴ --}}
-                <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-2 hover:text-blue-400 transition-colors">
-                    <i class="fas fa-tachometer-alt"></i>
+                <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+                    @include('components::application-logo', [
+                        'class' => 'text-white flex-shrink-0',
+                        'site_name' => config('app.name'),
+                        'size' => 'h-6 w-6'
+                    ])
                     <span class="font-semibold hidden sm:inline">{{ config('app.name') }}</span>
                 </a>
 
@@ -47,29 +51,44 @@
                 {{-- ユーザーメニュー --}}
                 <div class="relative" x-data="{ open: false }">
                     <button @click="open = !open" @click.away="open = false" class="flex items-center space-x-2 px-3 py-1.5 rounded hover:bg-gray-800 transition-colors">
-                        <i class="fas fa-user-circle text-lg"></i>
+                        <i class="fas fa-user-circle text-xl"></i>
                         <span class="text-sm hidden sm:inline">{{ auth('member')->user()->name }}</span>
                         <i class="fas fa-chevron-down text-xs"></i>
                     </button>
                     <div x-show="open"
+                         x-cloak
                          x-transition:enter="transition ease-out duration-100"
                          x-transition:enter-start="transform opacity-0 scale-95"
                          x-transition:enter-end="transform opacity-100 scale-100"
                          x-transition:leave="transition ease-in duration-75"
                          x-transition:leave-start="transform opacity-100 scale-100"
                          x-transition:leave-end="transform opacity-0 scale-95"
-                         class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50"
-                         style="display: none;">
-                        <a href="{{ route('admin.profile') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                            <i class="fas fa-user mr-2"></i>{{ __('admin.nav.profile') }}
-                        </a>
-                        <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
-                        <form method="POST" action="{{ route('admin.logout') }}">
-                            @csrf
-                            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                <i class="fas fa-sign-out-alt mr-2"></i>{{ __('auth.logout') }}
-                            </button>
-                        </form>
+                         class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg overflow-hidden z-50">
+                        {{-- ユーザー情報 --}}
+                        <div class="px-4 py-3 flex items-center space-x-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                            <i class="fas fa-user-circle text-3xl text-gray-600 dark:text-gray-400"></i>
+                            <div>
+                                <div class="font-medium text-base text-gray-900 dark:text-white">{{ auth('member')->user()->name }}</div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400">{{ auth('member')->user()->email }}</div>
+                            </div>
+                        </div>
+                        {{-- メニュー項目 --}}
+                        <div class="py-1">
+                            <a href="{{ route('admin.profile') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                                <i class="fas fa-user w-5 text-center mr-2 text-gray-500 dark:text-gray-400"></i>
+                                <span>{{ __('admin.nav.profile') }}</span>
+                            </a>
+                        </div>
+                        <div class="border-t border-gray-200 dark:border-gray-700"></div>
+                        <div class="py-1">
+                            <form method="POST" action="{{ route('admin.logout') }}">
+                                @csrf
+                                <button type="submit" class="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                                    <i class="fas fa-sign-out-alt w-5 text-center mr-2 text-gray-500 dark:text-gray-400"></i>
+                                    <span>{{ __('common.logout') }}</span>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
