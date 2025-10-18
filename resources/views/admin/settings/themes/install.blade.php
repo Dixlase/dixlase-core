@@ -62,7 +62,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endphp
 
 @section('content')
-<div class="container mx-auto p-6">
+<div class="max-w-4xl mx-auto">
     <!-- Flash message for success or error -->
     @if(session('success'))
         <div class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50">
@@ -98,7 +98,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     {{ __('admin.settings.plugins.install.file_select_label') }}
                 </label>
                 <div
-                    class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-blue-500 transition duration-300"
+                    class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-blue-500 transition duration-300 max-w-full"
                 >
                     <!-- ファイル入力 -->
                     <input
@@ -141,12 +141,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
             <!-- アップロードボタン -->
-            <div class="text-right">
+            <div class="flex justify-end">
                 <button
                     type="submit"
                     class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-300"
                 >
-                    {{ __('admin.settings.themes.install.upload_button') }}
+                    {{ __('common.upload') }}
                 </button>
             </div>
         </form>

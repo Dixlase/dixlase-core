@@ -21,6 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('layouts.admin')
 
 @section('content')
+<div class="max-w-4xl mx-auto">
     <!-- プラグイン一覧セクション -->
     <section>
         <h2>{{ __('admin.settings.plugins.index.heading') }}</h2>
@@ -174,4 +175,5 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </table>
         </div>
     </section>
+</div>
 @endsection

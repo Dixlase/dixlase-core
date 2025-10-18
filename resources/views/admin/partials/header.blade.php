@@ -133,7 +133,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
 
         <!-- スクロール可能なメニュー部分 -->
-        <div class="flex-1 overflow-y-auto">
+        <div class="flex-1">
             @include('admin::partials.sidebar')
         </div>
     </div>
