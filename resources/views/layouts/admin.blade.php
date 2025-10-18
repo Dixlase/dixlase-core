@@ -48,26 +48,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @include('components.notification')
 
     </head>
-    <body  class="admin font-sans antialiased transition-colors-unified {{ config('appearance.appearance_class.layout.body') }}">
+    <body class="admin font-sans antialiased transition-colors-unified dark:bg-black dark:text-white"
+          x-data="{ openSidebar: false, openUserMenu: false }">
         <div class="min-h-screen">
-            <!-- Header -->
-            @include('admin.partials.header', [
-                'site_name' => $site_name,
-                'transitionEnabled' => $transitionEnabled ?? null,
-            ])
+            <!-- Admin Bar (Header) -->
+            <x-admin-bar :isAdminLayout="true" />
 
 
-            <div class="min-h-screen flex pt-16">
-                 <!-- Navigation Sidebar (PC only) -->
+            <div class="min-h-screen flex">
+                <!-- Navigation Sidebar (Desktop only) -->
                 <aside class="md:fixed overflow-y-auto md:h-full hidden sm:block w-64 flex-shrink-0 bg-white dark:bg-black text-gray-900 border-r border-gray-300 dark:text-white dark:border-r dark:border-gray-700 {{ empty($transitionEnabled) ? '' : 'transition-colors-unified' }}" role="navigation" aria-label="Main navigation">
-                    @include('admin.partials.sidebar', ['transitionEnabled' => $transitionEnabled ?? null])
+                    @include('admin.partials.sidebar', [
+                        'transitionEnabled' => $transitionEnabled ?? null,
+                        'route_name' => Route::currentRouteName()
+                    ])
                 </aside>
 
                 <!-- Main Content Area -->
-                <main class="ml-0 md:ml-64 md:pl-4 lg:pl-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white {{ empty($transitionEnabled) ? '' : 'transition-colors-unified' }}" role="main">
+                <main class="mt-12 ml-0 md:ml-64 md:pl-4 lg:pl-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white {{ empty($transitionEnabled) ? '' : 'transition-colors-unified' }}" role="main">
 
                     <!-- Page Header -->
-                    <header class="mx-auto py-6 px-4 sm:px-6 lg:px-8 mb-10 bg-white text-gray-800 border-b border-gray-300 dark:border-gray-700 dark:bg-black dark:text-white {{ empty($transitionEnabled) ? '' : 'transition-colors-unified' }}">
+                    <header class="mx-auto py-6 px-8 sm:px-6 lg:px-8 mb-10 bg-white text-gray-800 border-b border-gray-300 dark:border-gray-700 dark:bg-black dark:text-white {{ empty($transitionEnabled) ? '' : 'transition-colors-unified' }}">
                         <h1 class="font-semibold text-xl leading-tight text-gray-800 dark:text-white">
                             {{ __($heading) }}
                         </h1>
@@ -80,7 +81,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </article>
 
                     @hasSection('save')
-                        <div class="sticky bottom-0 z-30 backdrop-blur-sm bg-white/50 bg-white dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700 pl-6 sm:px-6 lg:px-8 py-3">
+                        <div class="sticky bottom-0 z-30 backdrop-blur-sm bg-white/75 dark:bg-gray-900/75 border-t border-gray-200 dark:border-gray-700 pl-6 sm:px-6 lg:px-8 py-3">
                             <div class="w-full mx-auto">
                                 @yield('save')
                             </div>
