@@ -40,6 +40,7 @@ return [
         'remember_me' => 'ログイン状態を保持する',
         'forgot_password' => 'パスワードをお忘れですか？',
         'captcha' => 'セキュリティ認証',
+        'back_to_welcome' => 'サイトに戻る',
     ],
 
     'auth' => [
@@ -58,6 +59,7 @@ return [
             'password_confirmation' => 'パスワード確認',
             'reset_password_button' => 'パスワードをリセット',
         ],
+       
     ],
 
     'nav' => [
