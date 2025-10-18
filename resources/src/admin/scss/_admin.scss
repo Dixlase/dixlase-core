@@ -4,6 +4,11 @@
 
 .admin {
 
+    body {
+        @apply bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300;
+
+    }
+
     h2 {
         font-size: 1.5rem;
         @apply mb-3 text-lg font-semibold;
