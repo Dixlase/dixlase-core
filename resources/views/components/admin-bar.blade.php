@@ -5,7 +5,7 @@
 @auth('member')
 @props(['isAdminLayout' => false])
 
-<div @if(!$isAdminLayout) x-data="{ openSidebar: false, openUserMenu: false }" @endif id="admin-bar" class="fixed top-0 left-0 right-0 backdrop-blur-sm text-gray-700 dark:text-white bg-white/75 dark:bg-gray-900/75 border-b border-gray-200 dark:border-gray-700 shadow-lg" style="z-index: 9999;">
+<div @if(!$isAdminLayout) x-data="{ openSidebar: false, openUserMenu: false }" @endif id="admin-bar" class="fixed top-0 left-0 right-0 backdrop-blur-sm text-gray-700 dark:text-white bg-white/75 dark:bg-gray-900/75 border-b border-gray-300 dark:border-gray-700 shadow-md" style="z-index: 9999;">
     <div class="w-full mx-auto px-4">
         <div class="flex items-center justify-between h-12">
             {{-- 左側: サイト名とメニュー --}}
@@ -58,13 +58,13 @@
                 {{-- モバイル用ユーザーメニュートグル --}}
                 @if($isAdminLayout)
                     <button @click="openUserMenu = true"
-                            class="sm:hidden inline-flex items-center justify-center rounded-md text-gray-300 hover:text-white hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none transition"
+                            class="sm:hidden inline-flex items-center justify-center rounded-md hover:text-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none transition"
                             aria-label="Open user menu">
                         <i class="fas fa-user-circle text-2xl" aria-hidden="true"></i>
                     </button>
                 @else
                     <a href="{{ route('admin.profile') }}"
-                       class="sm:hidden inline-flex items-center justify-center rounded-md text-gray-300 hover:text-white hover:bg-gray-800 focus:outline-none transition"
+                       class="sm:hidden inline-flex items-center justify-center rounded-md text-gray-800 hover:text-gray-800 hover:bg-gray-800 focus:outline-none transition"
                        aria-label="Profile">
                         <i class="fas fa-user-circle text-2xl" aria-hidden="true"></i>
                     </a>
@@ -91,7 +91,7 @@
                             <i class="fas fa-user-circle text-3xl text-gray-600 dark:text-gray-400"></i>
                             <div>
                                 <div class="font-medium text-base text-gray-900 dark:text-white">{{ auth('member')->user()->name }}</div>
-                                <div class="text-sm text-gray-600 dark:text-gray-400">{{ auth('member')->user()->email }}</div>
+                                <div class="text-sm text-gray-900 dark:text-gray-400">{{ auth('member')->user()->email }}</div>
                             </div>
                         </div>
                         {{-- メニュー項目 --}}
@@ -128,7 +128,7 @@
 
     {{-- 左側スライドインサイドバー（モバイル） --}}
     <div x-cloak 
-         class="sm:hidden fixed h-full inset-y-12 left-0 shadow-lg transform transition-transform duration-300 ease-in-out z-50"
+         class="sm:hidden fixed h-full inset-y-12 left-0 transform transition-transform duration-300 ease-in-out z-50"
          :class="{ '-translate-x-64': !openSidebar, 'translate-x-0': openSidebar }">
         
         {{-- スクロール可能なメニュー部分（タブボタン含む） --}}

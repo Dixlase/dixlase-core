@@ -25,7 +25,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <div class="flex h-full sm:pt-12">
     {{-- サイドバー本体 --}}
-    <div class="flex flex-col w-64 h-full overflow-y-auto bg-white/75 dark:bg-gray-900/75 border-r border-gray-200 dark:border-gray-800 backdrop-blur-sm shadow-lg">
+    <div class="flex flex-col w-64 h-full overflow-y-auto bg-white/75 dark:bg-gray-900/75 border-r border-gray-200 dark:border-gray-800 backdrop-blur-sm shadow-md">
         <nav class="flex-1 px-4 py-4 space-y-1" role="navigation" aria-label="Admin navigation menu">
         @foreach (config('admin.nav') as $key => $item)
             @php
@@ -174,7 +174,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     {{-- タブボタン（モバイルのみ、サイドバーの右端） --}}
     <button @click="openSidebar = !openSidebar"
-            class="sm:hidden backdrop-blur-sm dark:bg-gray-900/75 bg-gray-200/75 text-white px-1.5 py-4 rounded-r-lg shadow-lg border border-l-0 border-gray-800 transition-colors self-start mt-2"
+            class="sm:hidden backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-blue-400 px-1.5 py-4 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 transition-colors self-start mt-2"
             aria-label="Toggle sidebar menu">
         <i class="fas text-sm" :class="openSidebar ? 'fa-chevron-left' : 'fa-chevron-right'"></i>
     </button>

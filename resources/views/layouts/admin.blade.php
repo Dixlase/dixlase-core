@@ -57,7 +57,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <div class="min-h-screen flex">
                 <!-- Navigation Sidebar (Desktop only) -->
-                <aside class="md:fixed overflow-y-auto md:h-full hidden sm:block w-64 flex-shrink-0 bg-white dark:bg-black text-gray-900 border-r border-gray-300 dark:text-white dark:border-r dark:border-gray-700 {{ empty($transitionEnabled) ? '' : 'transition-colors-unified' }}" role="navigation" aria-label="Main navigation">
+                <aside class="md:fixed md:h-full hidden sm:block w-64 flex-shrink- border-gray-300 {{ empty($transitionEnabled) ? '' : 'transition-colors-unified' }}" role="navigation" aria-label="Main navigation">
                     @include('admin.partials.sidebar', [
                         'transitionEnabled' => $transitionEnabled ?? null,
                         'route_name' => Route::currentRouteName()
