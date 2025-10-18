@@ -222,7 +222,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </fieldset>
                 @endif
 
-        <!-- 二段階認証方法設定 -->
+            <!-- 二段階認証方法設定 -->
             @if($showMethodSelection && !empty($availableMethodOptions))
                 <fieldset>
                     <legend>{{ __('common.two_factor_method.label') }}</legend>

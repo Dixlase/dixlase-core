@@ -21,8 +21,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @props([
     'site_name' => '',
     'class' => '',
+    'size' => 'h-6 w-6', // デフォルトサイズ
     ])
 
-<div class="block h-9 w-9 fill-current {{ $class }}">
-    <img src="{{ asset('assets/images/logo.svg') }}" alt="{{ $site_name }}" class="h-auto mx-auto mb-4">
+<div class="block {{ $size }} fill-current {{ $class }}">
+    <img src="{{ asset('assets/images/logo.svg') }}" alt="{{ $site_name }}" class="h-full w-full object-contain">
 </div>
