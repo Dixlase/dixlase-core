@@ -68,20 +68,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <main class="mt-12 ml-0 md:ml-64 md:pl-4 lg:pl-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white {{ empty($transitionEnabled) ? '' : 'transition-colors-unified' }}" role="main">
 
                     <!-- Page Header -->
-                    <header class="mx-auto py-6 px-8 sm:px-6 lg:px-8 mb-10 bg-white text-gray-800 border-b border-gray-300 dark:border-gray-700 dark:bg-black dark:text-white {{ empty($transitionEnabled) ? '' : 'transition-colors-unified' }}">
+                    <header class="mx-auto py-6 px-8 mb-10 bg-white text-gray-800 border-b border-gray-300 dark:border-gray-700 dark:bg-black dark:text-white {{ empty($transitionEnabled) ? '' : 'transition-colors-unified' }}">
                         <h1 class="font-semibold text-xl leading-tight text-gray-800 dark:text-white">
                             {{ __($heading) }}
                         </h1>
                     </header>
 
                     <!-- Page Content -->
-                    <article class="w-full p-6 sm:p-0 lg:px-8 pb-8">
+                    <article class="w-full px-6 lg:px-8 pb-8">
                         @include('components::flash-message')
                         @yield('content')
                     </article>
 
                     @hasSection('save')
-                        <div class="sticky bottom-0 z-30 backdrop-blur-sm bg-white/75 dark:bg-gray-900/75 border-t border-gray-200 dark:border-gray-700 pl-6 sm:px-6 lg:px-8 py-3">
+                        <div class="sticky bottom-0 z-30 backdrop-blur-sm bg-white/75 dark:bg-gray-900/75 border-t border-gray-200 dark:border-gray-700 px-4 sm:px-6 lg:px-8 py-3">
                             <div class="w-full mx-auto">
                                 @yield('save')
                             </div>

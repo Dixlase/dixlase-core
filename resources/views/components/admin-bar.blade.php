@@ -124,7 +124,7 @@
          :class="{ '-translate-x-64': !openSidebar, 'translate-x-0': openSidebar }">
         
         {{-- スクロール可能なメニュー部分（タブボタン含む） --}}
-        <div class="flex-1 overflow-y-auto h-full ">
+        <div class="flex-1 h-full ">
             @include('admin.partials.sidebar', [
                 'route_name' => Route::currentRouteName()
             ])

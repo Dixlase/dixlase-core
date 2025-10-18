@@ -25,7 +25,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <div class="flex h-full sm:pt-12">
     {{-- サイドバー本体 --}}
-    <div class="flex flex-col w-64 h-full bg-white/75 dark:bg-gray-900/75 border-r border-gray-700 dark:border-gray-800 backdrop-blur-sm shadow-lg">
+    <div class="flex flex-col w-64 h-full overflow-y-auto bg-white/75 dark:bg-gray-900/75 border-r border-gray-700 dark:border-gray-800 backdrop-blur-sm shadow-lg">
         <nav class="flex-1 px-4 py-4 space-y-1" role="navigation" aria-label="Admin navigation menu">
         @foreach (config('admin.nav') as $key => $item)
             @php

@@ -21,8 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('layouts.admin')
 
 @section('content')
-
-        
+<div class="max-w-4xl mx-auto">
     <div class="flex justify-end mb-4">
         @include('components.form.button', [
             'type' => 'link',
@@ -46,8 +45,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     'placeholder' => __('admin.media.search.file_name_placeholder'),
                 ])
             </fieldset>
-            <div class="flex gap-2 mb-4">
-
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                 <fieldset>
                     <legend>{{ __('common.file_type') }}</legend>
                     @include('components.form.select', [
@@ -85,7 +83,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </fieldset>
             </div>
 
-            <div class="flex gap-2">
+            <div class="flex flex-col sm:flex-row gap-2">
                 @include('components.form.button', [
                     'type' => 'submit',
                     'variant' => 'primary',
@@ -255,5 +253,6 @@ function copyMediaUrl(url, button) {
 }
 </script>
 @endpush
+</div>
 
 @endsection

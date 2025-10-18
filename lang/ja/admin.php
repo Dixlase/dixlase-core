@@ -708,6 +708,7 @@ return [
                 'heading' => 'テーマインストール',
                 'upload_title' => 'テーマをアップロード',
                 'file_select_label' => 'ファイルを選択',
+                'upload_button' => 'アップロードしてインストール',
                 'name' => 'テーマ名',
             ],
             'settings' => [
@@ -821,6 +822,7 @@ return [
                 'all_cleanup_description' => 'すべてのデータベーステーブルをデフォルト設定でクリーンアップします',
                 'all_cleanup_warning' => 'この操作は元に戻すことができません。',
                 'all_tables' => 'すべてのテーブル',
+                'info_title' => 'クリーンアップ対象の説明',
                 'info_login_attempts' => 'ログイン試行履歴の古いレコードを削除します。',
                 'info_password_reset' => 'パスワードリセットトークンの期限切れレコードを削除します。',
                 'info_trusted_devices' => '信頼済みデバイスの古いレコードを削除します。',

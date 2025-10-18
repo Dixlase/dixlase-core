@@ -63,7 +63,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
 @section('content')
-<div class="container mx-auto p-6">
+<div class="max-w-4xl mx-auto">
 
     <!-- Flash message for success or error -->
     @if(session('success'))
@@ -114,7 +114,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     {{ __('admin.settings.plugins.install.file_select_label') }}
                 </label>
                 <div
-                    class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-blue-500 transition duration-300"
+                    class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-blue-500 transition duration-300 max-w-full"
                 >
                     <!-- ファイル入力 -->
                     <input
@@ -156,7 +156,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
 
             <!-- アップロードボタン -->
-            <div class="text-right">
+            <div class="flex justify-end">
                 <button
                     type="submit"
                     class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-300"

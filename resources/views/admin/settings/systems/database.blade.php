@@ -21,7 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('layouts.admin')
 
 @section('content')
-
+<div class="max-w-4xl mx-auto">
 <section>
     <h2>{{ __('admin.settings.systems.database.heading') }}</h2>
     
@@ -30,7 +30,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex-1 mb-4 md:mb-0 md:mr-6">
                 <h3 class="text-center md:text-left">{{ $info['name'] }}</h3>
                 <p class="mb-4">{{ $info['description'] }}</p>
-                <code class="text-sm rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-1">php artisan {{ $info['command'] }}</code>
+                <code class="text-sm rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-1 inline-block max-w-full overflow-x-auto">php artisan {{ $info['command'] }}</code>
                 
                 @if($info['default_days'])
                 <div class="mt-2">
@@ -83,11 +83,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </section>
     @endforeach
 
-    <section class="flex flex-col md:flex-row md:items-center md:justify-between">
+    <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div class="flex-1 mb-4 md:mb-0 md:mr-6">
             <h2>{{ __('admin.settings.systems.database.all_cleanup_button') }}</h2>
             <p>{{ __('admin.settings.systems.database.all_cleanup_description') }}</p>
-            <p>{{ __('admin.settings.systems.database.warning') }} {{ __('admin.settings.systems.database.all_cleanup_warning') }}</p>
+            <p><strong>{{ __('common.warning') }}:</strong> {{ __('admin.settings.systems.database.all_cleanup_warning') }}</p>
         </div>
         
         <div class="flex-shrink-0">
@@ -131,6 +131,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </section>
 </section>
+</div>
 
 @include('components::message', [
     'type' => 'info',
