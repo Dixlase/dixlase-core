@@ -33,45 +33,65 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <form method="POST" action="{{ $action }}">
     @csrf
 
-    <!-- Password Reset Token -->
-    <input type="hidden" name="token" value="{{ $token }}">
+    @include('components::form.hidden', [
+        'name' => 'token',
+        'value' => $token
+    ])
 
-    <!-- Email Address -->
-    <div>
-        <label for="email" class="block font-medium text-sm text-gray-700">{{ $emailLabel }}</label>
-        <input id="email" type="email" name="email" value="{{ old('email', $email) }}" required autofocus autocomplete="username"
-               class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-        @error('email')
-            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-        @enderror
-    </div>
+    <section>
+        <fieldset>
+            <legend class="sr-only">{{ $emailLabel }}</legend>
+            
+            @include('components::form.text', [
+                'type' => 'email',
+                'id' => 'email',
+                'name' => 'email',
+                'value' => old('email', $email),
+                'required' => true,
+                'autocomplete' => 'username',
+                'ariaLabel' => $emailLabel,
+                'placeholder' => $emailLabel
+            ])
+            
+            @include('components::form.error', [
+                'messages' => $errors->get('email')
+            ])
+        </fieldset>
+    </section>
 
-    <!-- Password -->
-    <div class="mt-4">
-        <label for="password" class="block font-medium text-sm text-gray-700 dark:text-gray-200">{{ $passwordLabel }}</label>
-        <x-form.password-tools 
-            name="password" 
-            id="password" 
-            :required="true"
-            :minLength="$passwordMinLength"
-            :requireUppercase="$passwordRequireUppercase"
-            :requireLowercase="true"
-            :requireNumber="true"
-            :requireSymbol="$passwordRequireSymbol"
-            :showConfirmation="true"
-        />
-        @error('password')
-            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-        @enderror
-        @error('password_confirmation')
-            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-        @enderror
-    </div>
+    <section class="mt-6">
+        <fieldset>
+            <legend class="block font-medium text-sm text-gray-700 dark:text-gray-200 mb-2">{{ $passwordLabel }}</legend>
+            
+            <x-password-tools 
+                name="password" 
+                id="password" 
+                :required="true"
+                :minLength="$passwordMinLength"
+                :requireUppercase="$passwordRequireUppercase"
+                :requireLowercase="true"
+                :requireNumber="true"
+                :requireSymbol="$passwordRequireSymbol"
+                :showConfirmation="true"
+            />
+            
+            @include('components::form.error', [
+                'messages' => $errors->get('password')
+            ])
+            
+            @include('components::form.error', [
+                'messages' => $errors->get('password_confirmation')
+            ])
+        </fieldset>
+    </section>
 
-    <!-- Submit Button -->
-    <div class="flex items-center justify-center mt-4">
-        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-            {{ $submitText }}
-        </button>
-    </div>
+    <section class="flex items-center justify-center mt-6">
+        @include('components::form.button', [
+            'type' => 'submit',
+            'variant' => 'primary',
+            'size' => 'md',
+            'label' => $submitText,
+            'class' => 'w-full'
+        ])
+    </section>
 </form>

@@ -22,7 +22,7 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -35,7 +35,7 @@ use App\Enums\MemberStatus;
 use App\Enums\Locale;
 
 
-class Member extends Authenticatable
+class Member extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable, SoftDeletes, TwoFactorAuthenticatable;
 
@@ -63,12 +63,16 @@ class Member extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'email_verified_at',
         'locale',
         'password',
         'role',
         'appearance',
         'status',
-
+        'login_notification',
+        'two_factor_mode',
+        'two_factor_method',
+        'description',
     ];
 
     /**
@@ -96,5 +100,15 @@ class Member extends Authenticatable
     {
         // カスタムパスワードリセット通知を作成
         $this->notify(new \App\Notifications\AdminResetPasswordNotification($token));
+    }
+
+    /**
+     * Send the email verification notification.
+     *
+     * @return void
+     */
+    public function sendEmailVerificationNotification()
+    {
+        $this->notify(new \App\Notifications\MemberVerifyEmailNotification());
     }
 }

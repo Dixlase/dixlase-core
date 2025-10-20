@@ -168,7 +168,11 @@ class AdminLoginController extends AdminController
         }
         // 2FA 判定（有効な場合だけ進める）
         $twoFactor = app(AdminTwoFactorService::class);
-        if ($twoFactor->has($member)) {
+        
+        // メールサーバーのテストが完了していない場合は2FAをスキップ
+        $mailServerTested = \App\Services\MailServerValidatorService::isMailServerTested();
+        
+        if ($twoFactor->has($member) && $mailServerTested) {
             session([
                 'login.id' => $member->getAuthIdentifier(),
                 'login.remember' => $request->boolean('remember'),
@@ -178,6 +182,13 @@ class AdminLoginController extends AdminController
 
             return redirect()->route('admin.two-factor.login'); // ← 入力画面へ遷移
         } else {
+            // メールサーバー未テスト時はログに記録
+            if ($twoFactor->has($member) && !$mailServerTested) {
+                \Illuminate\Support\Facades\Log::info('Two-factor authentication skipped due to incomplete mail server tests', [
+                    'member_id' => $member->id,
+                    'email' => $member->email,
+                ]);
+            }
             // 成功したログインを記録（失敗記録をクリア）
             $lockoutService->handleSuccessfulLogin($email);
 

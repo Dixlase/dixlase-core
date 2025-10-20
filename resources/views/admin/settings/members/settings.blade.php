@@ -64,7 +64,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @if(!$isMailServerTested)
                 @include('components.message', [
                     'type' => 'warning',
-                    'message' => __('admin.settings.members.settings.lockout_notification_mail_test_required', ['url' => route('admin.settings.base')])
+                    'message' => __('admin.settings.members.settings.mail_server_test_warning', ['url' => route('admin.settings.base')])
                 ])
             @endif
             <!-- 機能有効/無効 -->
@@ -244,7 +244,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @if(!$isMailServerTested)
                 @include('components.message', [
                     'type' => 'warning',
-                    'message' => __('admin.settings.members.settings.login_notification_mail_test_required', ['url' => route('admin.settings.base')])
+                    'message' => __('admin.settings.members.settings.mail_server_test_warning', ['url' => route('admin.settings.base')])
                 ])
             @endif
             <fieldset>

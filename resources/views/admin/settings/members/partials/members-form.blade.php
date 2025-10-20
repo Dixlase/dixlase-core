@@ -117,6 +117,84 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <section>
         <h2>{{ __('common.account_settings') }}</h2>
         
+        <!-- アカウント認証設定 -->
+        <fieldset>
+            <legend>{{ __('admin.settings.members.form.account_verification') }}</legend>
+            
+            @if(!$isMailServerTested)
+                @include('components.message', [
+                    'type' => 'info',
+                    'message' => __('admin.settings.members.form.account_verification_disabled')
+                ])
+                <input type="hidden" name="email_verified" value="1">
+            @else
+                @if(!isset($member) || !$member->exists)
+                    {{-- 新規作成時 --}}
+                    @php
+                        $emailVerifiedValue = old('email_verified', '1');
+                        $emailVerificationOptions = [
+                            '1' => 'admin.settings.members.form.account_verified',
+                            '0' => 'admin.settings.members.form.account_verified_send_email',
+                        ];
+                    @endphp
+                    @include('components::form.radio-group', [
+                        'name' => 'email_verified',
+                        'options' => $emailVerificationOptions,
+                        'value' => $emailVerifiedValue
+                    ])
+                    <p class="description-text">{{ __('admin.settings.members.form.account_verification_help_create') }}</p>
+                @else
+                    {{-- 編集時 --}}
+                    @php
+                        $emailVerifiedValue = old('email_verified', $member->hasVerifiedEmail() ? '1' : '0');
+                        $emailVerificationOptionsEdit = [
+                            '1' => 'admin.settings.members.form.account_verified',
+                            '0' => 'admin.settings.members.form.account_unverified',
+                        ];
+                    @endphp
+                    @include('components::form.radio-group', [
+                        'name' => 'email_verified',
+                        'options' => $emailVerificationOptionsEdit,
+                        'value' => $emailVerifiedValue
+                    ])
+                    <p class="description-text">{{ __('admin.settings.members.form.account_verification_help_edit') }}</p>
+                    
+                    {{-- 認証メール送信ボタン --}}
+                    <div class="mt-4">
+                        @include('components::form.button', [
+                            'type' => 'button',
+                            'variant' => 'secondary',
+                            'size' => 'sm',
+                            'label' => __('admin.settings.members.form.send_verification_email_button'),
+                            'icon' => 'fas fa-envelope',
+                            'id' => 'send-verification-email-btn',
+                            'onclick' => 'sendVerificationEmail(' . $member->id . ')'
+                        ])
+                    </div>
+                @endif
+            @endif
+            
+            @include('components::form.error', [
+                'messages' => $errors->get('email_verified')
+            ])
+        </fieldset>
+        
+        <!-- 言語設定 -->
+        <fieldset>
+            <legend>{{ __('common.locale') }}</legend>
+            @include('components.form.select', [
+                'name' => 'locale',
+                'options' => $localeOptions,
+                'value' => old('locale', $member->locale?->value ?? null),
+                'nullable' => true,
+                'nullLabel' => __('admin.profile.use_system_default')
+            ])
+            @include('components::form.error', [
+                'messages' => $errors->get('locale')
+            ])
+            <p class="description-text">{{ __('admin.profile.language_help') }}</p>
+        </fieldset>
+        
         <!-- 外観モード -->
         <fieldset data-member-theme>
             <legend>{{ __('common.appearance_mode') }}</legend>
@@ -179,11 +257,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </legend>
             
             @if($isInitialAdmin)
-                <input type="hidden" name="role" value="{{ \App\Enums\MemberRole::SUPER_ADMIN->value }}">
+                <input type="hidden" name="role" value="{{ $roleSuperAdminValue }}">
                 <p class="description-text">{{ __('admin.settings.members.form.initial_admin_role_fixed') }}</p>
             @else
                 @php
-                    $roleValue = old('role', $member->role->value ?? \App\Enums\MemberRole::ADMIN->value);
+                    $roleValue = old('role', $member->role->value ?? $roleAdminValue);
                     $roleOptions = [];
                     foreach ($roles as $role) {
                         $roleOptions[$role->value] = $role->label();
@@ -210,25 +288,32 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 'message' => __('admin.settings.members.form.mail_server_not_tested')
             ])
         @endif
+        
         <!-- ログイン通知設定 -->
-        <fieldset>
-            <legend>{{ __('common.login_notification') }}</legend>
-            @php
-                $loginNotificationValue = old('login_notification', (string) ($member->login_notification->value ?? 0));
-                $loginNotificationOptions = [
-                    '0' => 'common.disabled',
-                    '1' => 'common.enabled',
-                ];
-            @endphp
-            @include('components::form.radio-group', [
-                'name' => 'login_notification',
-                'options' => $loginNotificationOptions,
-                'value' => $loginNotificationValue
-            ])
-            @include('components::form.error', [
-                'messages' => $errors->get('login_notification')
-            ])
-        </fieldset>
+        @if($loginNotificationMode === $loginNotificationUseProfileSettingValue)
+            <fieldset>
+                <legend>{{ __('common.login_notification') }}</legend>
+                @php
+                    $loginNotificationValue = old('login_notification', (string) ($member->login_notification->value ?? 0));
+                    $loginNotificationOptions = [
+                        '0' => 'common.disabled',
+                        '1' => 'common.enabled',
+                    ];
+                @endphp
+                @include('components::form.radio-group', [
+                    'name' => 'login_notification',
+                    'options' => $loginNotificationOptions,
+                    'value' => $loginNotificationValue
+                ])
+                @include('components::form.error', [
+                    'messages' => $errors->get('login_notification')
+                ])
+            </fieldset>
+        @else
+            <fieldset>
+                <p class="description-text">{!! __('admin.settings.members.form.login_notification_global_fixed', ['setting' => $loginNotificationModeLabel]) !!}</p>
+            </fieldset>
+        @endif
     </section>
 
     <!-- 二段階認証設定セクション -->
@@ -240,27 +325,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 'message' => __('admin.settings.members.form.mail_server_not_tested')
             ])
         @endif   
-        <!-- 二段階認証有効/無効 -->
-        <fieldset>
-            <legend>{{ __('common.two_factor_authentication') }}</legend>
-            @php
-                $twoFactorModeValue = old('two_factor_mode', $member->two_factor_mode->value ?? $twoFactorMode->value);
-            @endphp
-            @include('components::form.radio-group', [
-                'name' => 'two_factor_mode',
-                'options' => $twoFactorModeOptions,
-                'value' => $twoFactorModeValue
-            ])
-            @include('components::form.error', [
-                'messages' => $errors->get('two_factor_mode')
-            ])
-            
-            <p>{{ __('common.two_factor_global_setting_fixed') }}</p>
-        </fieldset>
         
-        <!-- 二段階認証方法設定 -->
-        @if(!empty($enabledTwoFactorMethods))
+        @if($force2fa === $twoFactorUseProfileSettingValue)
+            <!-- 二段階認証有効/無効 -->
             <fieldset>
+                <legend>{{ __('common.two_factor_authentication') }}</legend>
+                @php
+                    $twoFactorModeValue = old('two_factor_mode', $member->two_factor_mode->value ?? $twoFactorMode->value);
+                @endphp
+                @include('components::form.radio-group', [
+                    'name' => 'two_factor_mode',
+                    'options' => $twoFactorModeOptions,
+                    'value' => $twoFactorModeValue
+                ])
+                @include('components::form.error', [
+                    'messages' => $errors->get('two_factor_mode')
+                ])
+            </fieldset>
+            
+            <!-- 二段階認証方法設定 -->
+            @if(!empty($enabledTwoFactorMethods))
+                <fieldset>
                 <legend>
                     {{ __('common.two_factor_method.label') }}
                     @if(count($enabledTwoFactorMethods) > 1)
@@ -294,6 +379,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @include('components::form.error', [
                     'messages' => $errors->get('two_factor_method')
                 ])
+            </fieldset>
+        @endif
+        @else
+            <fieldset>
+                <p class="description-text">{!! __('admin.settings.members.form.two_factor_global_fixed', ['setting' => $twoFactorModeLabel]) !!}</p>
             </fieldset>
         @endif
     </section>

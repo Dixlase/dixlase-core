@@ -76,7 +76,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             ])
 
             @if (Route::has('admin.password.request') && ($passwordResetEnabled ?? true))
-                <a class="text-sm" href="{{ route('admin.password.request') }}">
+                <a class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 hover:underline" href="{{ route('admin.password.request') }}">
                     {{ __('admin.login.forgot_password') }}
                 </a>
             @endif

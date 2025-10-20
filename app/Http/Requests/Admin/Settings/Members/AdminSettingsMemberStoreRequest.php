@@ -66,8 +66,10 @@ class AdminSettingsMemberStoreRequest extends FormRequest
             'role' => $isInitialAdmin 
                 ? ['nullable', Rule::in(array_column(MemberRole::cases(), 'value'))]
                 : ['required', Rule::in(array_column(MemberRole::cases(), 'value'))],
+            'locale' => 'nullable|string|in:ja,en',
             'appearance' => 'required|numeric|in:0,1,2',
             'status' => 'required|numeric|in:0,1',
+            'email_verified' => 'nullable|numeric|in:0,1',
             'login_notification' => 'nullable|numeric|in:0,1',
             'two_factor_mode' => 'nullable|numeric|in:1,2,3',
             'two_factor_method' => 'nullable|numeric',

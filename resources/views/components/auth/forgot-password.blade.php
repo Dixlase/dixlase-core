@@ -29,26 +29,41 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <form method="POST" action="{{ $action }}">
     @csrf
     
-    <!-- Email Address -->
-    <div>
-        <label for="email" class="block font-medium text-sm text-gray-700">{{ $emailLabel }}</label>
-        <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus
-               class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-        @error('email')
-            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-        @enderror
-    </div>
+    <section>
+        <fieldset>
+            <legend class="sr-only">{{ $emailLabel }}</legend>
+            
+            @include('components::form.text', [
+                'type' => 'email',
+                'id' => 'email',
+                'name' => 'email',
+                'value' => old('email'),
+                'required' => true,
+                'autocomplete' => 'email',
+                'ariaLabel' => $emailLabel,
+                'placeholder' => $emailLabel
+            ])
+            
+            @include('components::form.error', [
+                'messages' => $errors->get('email')
+            ])
+        </fieldset>
+    </section>
 
-    <!-- Submit Button and Back Link -->
-    <div class="flex items-center flex-col justify-between mt-4">
-        <button type="submit" class="my-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-            {{ $submitText }}
-        </button>
+    <section class="flex items-center flex-col justify-between mt-6">
+        @include('components::form.button', [
+            'type' => 'submit',
+            'variant' => 'primary',
+            'size' => 'md',
+            'label' => $submitText,
+            'class' => 'w-full'
+        ])
 
         @if($backText && $backUrl)
-            <a class="text-sm text-indigo-600 hover:underline" href="{{ $backUrl }}">
+            <a class="mt-4 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 hover:underline" 
+               href="{{ $backUrl }}">
                 {{ $backText }}
             </a>
         @endif
-    </div>
+    </section>
 </form>
