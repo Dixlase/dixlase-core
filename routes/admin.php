@@ -191,6 +191,10 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/settings/members/force-logout-all', [AdminMembersSettingsController::class, 'forceLogoutAll'])
                     ->middleware('check.menu.edit:settings.members')
                     ->name('settings.members.force-logout-all');
+                // 認証メール送信
+                Route::post('/settings/members/{member}/send-verification-email', [AdminMembersSettingsController::class, 'sendVerificationEmail'])
+                    ->middleware('check.menu.edit:settings.members')
+                    ->name('settings.members.send-verification-email');
                 // プロフィール
                 Route::get('/settings/members/profile', [AdminMembersSettingsController::class, 'profile'])->name('settings.members.profile');
                 Route::post('/settings/members/profile', [AdminMembersSettingsController::class, 'updateProfile'])->name('settings.members.profile.update');

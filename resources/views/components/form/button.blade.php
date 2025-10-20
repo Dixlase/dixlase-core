@@ -37,7 +37,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     // バリエーションに応じたクラス設定
     $variantClasses = [
         'primary' => 'bg-blue-600 text-white hover:bg-blue-900 focus:ring-blue-500',
-        'secondary' => 'bg-gray-500 text-white hover:bg-gray-700 focus:ring-gray-500',
+        'secondary' => 'bg-gray-200 dark:bg-gray-500 text-gray-900 dark:text-white hover:bg-gray-700 focus:ring-gray-500',
         'success' => 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500',
         'warning' => 'bg-yellow-600 text-white hover:bg-yellow-700 focus:ring-yellow-500',
         'danger' => 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',

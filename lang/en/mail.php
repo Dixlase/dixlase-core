@@ -345,4 +345,15 @@ Clicking this link will complete the full mail functionality test.',
         'action_required' => 'For security reasons, please review this login lockout and take appropriate action as necessary.',
         'thanks' => 'Thank you for your attention',
     ],
+
+    // Email Verification
+    'member_verify_email' => [
+        'subject' => 'Verify Your Email Address',
+        'greeting' => 'Hello :name!',
+        'message' => 'Your account has been successfully registered. Please click the button below to verify your email address.',
+        'action' => 'Verify Email Address',
+        'manual_verification' => 'If you cannot click the button, please copy and paste the following URL into your browser:',
+        'expiration' => 'This verification link will expire in :minutes minutes.',
+        'regards' => 'Best regards',
+    ],
 ];

@@ -1111,6 +1111,7 @@ class InstallController extends Controller
                     'password' => Hash::make($adminPassword),
                     'role' => 10, // super_admin
                     'status' => 1, // active
+                    'email_verified_at' => now(), // インストール時は自動的に認証済み
                     'updated_at' => now(),
                 ]);
             Log::channel('install')->info('initializeDatabase - 既存管理者更新完了（言語設定: ' . $installLocale . '）');
@@ -1120,6 +1121,7 @@ class InstallController extends Controller
             $memberId = DB::connection('mysql')->table('members')->insertGetId([
                 'name' => $data['admin_name'],
                 'email' => $data['admin_email'],
+                'email_verified_at' => now(), // インストール時は自動的に認証済み
                 'locale' => $installLocale, // インストール時の言語設定を反映
                 'role' => 10, // super_admin
                 'password' => Hash::make($adminPassword),

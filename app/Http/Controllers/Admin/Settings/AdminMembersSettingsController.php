@@ -40,6 +40,7 @@ use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
 use Illuminate\Support\Facades\Hash;
 use App\Helpers\AdminHelper;
+use App\Services\MailServerValidatorService;
 
 
 
@@ -130,15 +131,24 @@ class AdminMembersSettingsController extends AdminLoggedInController
         // フォームの初期値をセット
         $this->viewParams['member'] = null;
 
-        // 権限の選択肢をセット
+        // 選択肢用の配列
         $this->viewParams['roles'] = MemberRole::cases();
         $this->viewParams['roleOptions'] = MemberRole::translationOptions();
+
+        // Enum値の定数
+        $this->viewParams['roleAdminValue'] = MemberRole::ADMIN->value;
+        $this->viewParams['roleSuperAdminValue'] = MemberRole::SUPER_ADMIN->value;
+        $this->viewParams['loginNotificationUseProfileSettingValue'] = LoginNotificationMode::UseProfileSetting->value;
+        $this->viewParams['twoFactorUseProfileSettingValue'] = TwoFactorMode::UseProfileSetting->value;
 
         // 他の初期値も同様にセット可能
         $this->viewParams['roleValue'] = (int) request()->old('role', MemberRole::ADMIN->value);
 
         // 外観の選択肢をセット
         $this->viewParams['appearanceOptions'] = AppearanceMode::translationOptions();
+        
+        // 言語オプションの取得
+        $this->viewParams['localeOptions'] = \App\Enums\Locale::availableOptions();
 
         $this->viewParams['statusOptions'] = MemberStatus::options();
 
@@ -162,8 +172,21 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['passwordRequireUppercase'] = (bool) MemberSetting::getValue('password_require_uppercase', true);
         $this->viewParams['passwordRequireSymbol'] = (bool) MemberSetting::getValue('password_require_symbol', false);
 
+        // ログイン通知設定
+        $loginNotificationMode = (int) MemberSetting::getValue('login_notification_mode', LoginNotificationMode::UseProfileSetting->value);
+        $this->viewParams['loginNotificationMode'] = $loginNotificationMode;
+        
+        // ログイン通知設定のラベルを取得（全体設定が固定されている場合に表示用）
+        $loginNotificationEnum = LoginNotificationMode::tryFrom($loginNotificationMode);
+        $this->viewParams['loginNotificationModeLabel'] = $loginNotificationEnum ? $loginNotificationEnum->label() : '';
+
         // 二段階認証設定
-        $this->viewParams['force2fa'] = (int) MemberSetting::getValue('force_2fa', TwoFactorMode::Disabled->value);
+        $force2fa = (int) MemberSetting::getValue('force_2fa', TwoFactorMode::Disabled->value);
+        $this->viewParams['force2fa'] = $force2fa;
+        
+        // 二段階認証設定のラベルを取得（全体設定が固定されている場合に表示用）
+        $twoFactorEnum = TwoFactorMode::tryFrom($force2fa);
+        $this->viewParams['twoFactorModeLabel'] = $twoFactorEnum ? $twoFactorEnum->label() : '';
         
         // 有効な二段階認証方法を取得
         $enabledTwoFactorMethodsString = MemberSetting::getValue('enabled_two_factor_methods', (string)TwoFactorMethod::EMAIL->value);
@@ -203,11 +226,45 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $validated = $request->validated();
         $validated['password'] = Hash::make($validated['password']);
 
+        // メール認証の処理
+        $isMailServerTested = MailServerValidatorService::isMailServerTested();
+        $emailVerified = (string) $request->input('email_verified', $isMailServerTested ? '0' : '1');
+        
+        if (!$isMailServerTested) {
+            // メールサーバー未テストの場合は自動的に認証済みに設定
+            $validated['email_verified_at'] = now();
+        } elseif ($emailVerified === '1') {
+            // 認証済みに設定する場合
+            $validated['email_verified_at'] = now();
+        } else {
+            // 未認証に設定（email_verified_at = null）
+            $validated['email_verified_at'] = null;
+        }
+        
+        // email_verified は一時的な値なので、データベース作成前に削除
+        unset($validated['email_verified']);
+
         // 新しい管理者を作成
         $member = Member::create($validated);
 
+        // メールサーバーがテスト済みで、かつ未認証の場合は認証メールを送信
+        if ($isMailServerTested && $emailVerified === '0') {
+            try {
+                $member->sendEmailVerificationNotification();
+                $message = __('admin.settings.members.messages.created_with_verification_email');
+            } catch (\Exception $e) {
+                \Log::error('Failed to send verification email', [
+                    'member_id' => $member->id,
+                    'error' => $e->getMessage()
+                ]);
+                $message = __('admin.settings.members.messages.created_but_email_failed');
+            }
+        } else {
+            $message = __('admin.settings.members.messages.created');
+        }
+
         // リダイレクト
-        return redirect()->route('admin.settings.members.edit', ['member' => $member->id])->with('success', __('admin.settings.members.messages.created'));
+        return redirect()->route('admin.settings.members.edit', ['member' => $member->id])->with('success', $message);
     }
 
 
@@ -226,6 +283,15 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['roles'] = MemberRole::cases();
         $this->viewParams['roleOptions'] = MemberRole::translationOptions();
         $this->viewParams['appearanceOptions'] = AppearanceMode::translationOptions();
+        
+        // 言語オプションの取得
+        $this->viewParams['localeOptions'] = \App\Enums\Locale::availableOptions();
+        
+        // Enum値の定数
+        $this->viewParams['roleAdminValue'] = MemberRole::ADMIN->value;
+        $this->viewParams['roleSuperAdminValue'] = MemberRole::SUPER_ADMIN->value;
+        $this->viewParams['loginNotificationUseProfileSettingValue'] = LoginNotificationMode::UseProfileSetting->value;
+        $this->viewParams['twoFactorUseProfileSettingValue'] = TwoFactorMode::UseProfileSetting->value;
         
         // 初期管理者の場合はステータス選択肢を制限
         if ($isInitialAdmin) {
@@ -248,8 +314,21 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['passwordRequireUppercase'] = (bool) MemberSetting::getValue('password_require_uppercase', true);
         $this->viewParams['passwordRequireSymbol'] = (bool) MemberSetting::getValue('password_require_symbol', false);
 
+        // ログイン通知設定
+        $loginNotificationMode = (int) MemberSetting::getValue('login_notification_mode', LoginNotificationMode::UseProfileSetting->value);
+        $this->viewParams['loginNotificationMode'] = $loginNotificationMode;
+        
+        // ログイン通知設定のラベルを取得（全体設定が固定されている場合に表示用）
+        $loginNotificationEnum = LoginNotificationMode::tryFrom($loginNotificationMode);
+        $this->viewParams['loginNotificationModeLabel'] = $loginNotificationEnum ? $loginNotificationEnum->label() : '';
+
         // 二段階認証設定
-        $this->viewParams['force2fa'] = (int) MemberSetting::getValue('force_2fa', TwoFactorMode::Disabled->value);
+        $force2fa = (int) MemberSetting::getValue('force_2fa', TwoFactorMode::Disabled->value);
+        $this->viewParams['force2fa'] = $force2fa;
+        
+        // 二段階認証設定のラベルを取得（全体設定が固定されている場合に表示用）
+        $twoFactorEnum = TwoFactorMode::tryFrom($force2fa);
+        $this->viewParams['twoFactorModeLabel'] = $twoFactorEnum ? $twoFactorEnum->label() : '';
         
         // 有効な二段階認証方法を取得
         $enabledTwoFactorMethodsString = MemberSetting::getValue('enabled_two_factor_methods', (string)TwoFactorMethod::EMAIL->value);
@@ -301,10 +380,55 @@ class AdminMembersSettingsController extends AdminLoggedInController
             unset($validated['password']); // パスワードが空の場合は更新しない
         }
 
+        // メール認証の処理
+        $isMailServerTested = MailServerValidatorService::isMailServerTested();
+        $emailVerified = (string) $request->input('email_verified', $isMailServerTested ? null : '1');
+        $wasVerified = $member->hasVerifiedEmail();
+        $emailChanged = $request->input('email') !== $member->email;
+        
+        if (!$isMailServerTested) {
+            // メールサーバー未テストの場合は自動的に認証済みに設定
+            $validated['email_verified_at'] = now();
+        } elseif ($emailVerified === '1') {
+            // 認証済みに設定する場合
+            $validated['email_verified_at'] = now();
+        } elseif ($emailVerified === '0') {
+            // 未認証に設定する場合
+            $validated['email_verified_at'] = null;
+        } elseif ($emailChanged && $wasVerified) {
+            // メールアドレスが変更された場合、認証をリセット
+            $validated['email_verified_at'] = null;
+        }
+        
+        // email_verified は一時的な値なので、データベース更新前に削除
+        unset($validated['email_verified']);
+
         $member->update($validated);
         $id = $member->id;
 
-        return redirect()->route('admin.settings.members.edit', ['member' => $id])->with('success', __('admin.settings.members.messages.updated'));
+        // メールサーバーがテスト済みで、かつメール送信が必要な場合
+        $shouldSendEmail = $isMailServerTested && (
+            ($emailVerified === '0' && !$wasVerified) || // 新規作成時に未認証
+            ($emailVerified === '0' && $wasVerified) ||  // 認証済みから未認証に変更
+            ($emailChanged && $wasVerified)               // メールアドレス変更時
+        );
+        
+        if ($shouldSendEmail && !$member->hasVerifiedEmail()) {
+            try {
+                $member->sendEmailVerificationNotification();
+                $message = __('admin.settings.members.messages.updated_with_verification_email');
+            } catch (\Exception $e) {
+                \Log::error('Failed to send verification email', [
+                    'member_id' => $member->id,
+                    'error' => $e->getMessage()
+                ]);
+                $message = __('admin.settings.members.messages.updated_but_email_failed');
+            }
+        } else {
+            $message = __('admin.settings.members.messages.updated');
+        }
+
+        return redirect()->route('admin.settings.members.edit', ['member' => $id])->with('success', $message);
     }
 
     /**
@@ -365,6 +489,41 @@ class AdminMembersSettingsController extends AdminLoggedInController
             ->with('error', __('admin.settings.members.force_logout_all_error'));
     }
 
+    /**
+     * Send verification email to member.
+     */
+    public function sendVerificationEmail(Member $member)
+    {
+        try {
+            // メールサーバーテスト状況を確認
+            if (!$this->isMailServerTested()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('admin.settings.members.form.mail_server_not_tested')
+                ], 400);
+            }
+
+            // 認証状態を未認証に変更
+            $member->email_verified_at = null;
+            $member->save();
+
+            // 認証メールを送信
+            $member->sendEmailVerificationNotification();
+
+            return response()->json([
+                'success' => true,
+                'message' => __('admin.settings.members.messages.verification_email_sent'),
+                'redirect' => route('admin.settings.members.edit', ['member' => $member->id])
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to send verification email: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => __('admin.settings.members.messages.verification_email_failed')
+            ], 500);
+        }
+    }
 
     public function roles()
     {
