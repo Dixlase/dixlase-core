@@ -43,6 +43,12 @@ return [
     'cancel' => 'Cancel',
     'confirm' => 'Confirm',
 
+    // Form Operations
+    'submit' => 'Submit',
+    'send' => 'Send',
+    'sending' => 'Sending',
+    'reset' => 'Reset',
+
     // Navigation
     'back' => 'Back',
     'next' => 'Next',
@@ -76,6 +82,7 @@ return [
     'yes' => 'Yes',
     'no' => 'No',
     'ok' => 'OK',
+    'error_occurred' => 'An error occurred',
 
     // Status & Attributes
     'required' => 'Required',

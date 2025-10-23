@@ -293,13 +293,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 requireSymbol: false,
             };
 
-            // デバッグログ
-            console.log('=== Password Check Debug ===');
-            console.log('Password:', password);
-            console.log('hasSymbol:', hasSymbol);
-            console.log('requireSymbol:', policy.requireSymbol);
-            console.log('Symbol element ID:', passwordId + '-req-symbol');
-
             // インジケーター更新
             this.updateRequirementIndicator(passwordId + '-req-length', length >= policy.minLength, true);
             this.updateRequirementIndicator(passwordId + '-req-lowercase', hasLower, policy.requireLowercase);
@@ -374,12 +367,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         updateRequirementIndicator: function(elementId, isValid, required = false, extraText = '') {
             const element = document.getElementById(elementId);
             
-            console.log(`--- updateRequirementIndicator: ${elementId} ---`);
-            console.log('element:', element);
-            console.log('isValid:', isValid);
-            
             if (!element) {
-                console.log('ERROR: Element not found!');
                 return;
             }
 
@@ -391,13 +379,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             const iconElement = element.querySelector('i');
             const textElement = element.querySelector('span');
             
-            console.log('iconElement:', iconElement);
-            console.log('textElement:', textElement);
-            console.log('displayText:', displayText);
-            
             if (iconElement && textElement) {
                 // クラスを変更してアイコンを更新（DOM参照を維持）
-                const oldClass = iconElement.className;
                 if (isValid) {
                     // OK時: 緑のチェックアイコン
                     iconElement.className = 'fas fa-check-circle text-green-500 mr-2';
@@ -405,10 +388,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     // NG時: 赤のバツアイコン
                     iconElement.className = 'fas fa-times-circle text-red-500 mr-2';
                 }
-                console.log('Class changed from:', oldClass, 'to:', iconElement.className);
                 textElement.textContent = `${displayText}${suffix}`;
-            } else {
-                console.log('ERROR: iconElement or textElement not found!');
             }
         }
     };

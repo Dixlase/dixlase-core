@@ -106,11 +106,17 @@ class Member extends Authenticatable implements MustVerifyEmail
     /**
      * Send the email verification notification.
      *
+     * @param string|null $context 'create', 'email_change', または 'resend'。null の場合は pending_email の有無で自動判定
      * @return void
      */
-    public function sendEmailVerificationNotification()
+    public function sendEmailVerificationNotification(?string $context = null)
     {
-        $this->notify(new \App\Notifications\MemberVerifyEmailNotification());
+        // コンテキストが指定されていない場合は pending_email の有無で判定
+        if ($context === null) {
+            $context = $this->pending_email ? 'email_change' : 'create';
+        }
+        
+        $this->notify(new \App\Notifications\MemberVerifyEmailNotification($context));
     }
 
     /**

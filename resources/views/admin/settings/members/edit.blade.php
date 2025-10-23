@@ -38,6 +38,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'formId' => 'update-form',
         'includeForm' => true
     ])
+
+    <!-- 認証メール送信確認モーダル -->
+    @include('components.modal', [
+        'id' => 'verificationEmailModal',
+        'title' => __('admin.settings.members.form.send_verification_email_title'),
+        'message' => __('admin.settings.members.form.send_verification_email_confirm'),
+        'confirm_label' => __('common.send'),
+        'cancel_label' => __('common.cancel'),
+        'icon_type' => 'info',
+        'confirm_color' => 'blue',
+    ])
 @endsection
 
 @section('save')
@@ -55,21 +66,36 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @push('scripts')
 <script>
+let currentMemberId = null;
+
 function sendVerificationEmail(memberId) {
-    const button = document.getElementById('send-verification-email-btn');
-    const buttonText = button.querySelector('span') || button;
-    const originalText = buttonText.textContent;
-    
-    // 確認ダイアログ
-    if (!confirm('{{ __("admin.settings.members.form.send_verification_email_confirm") }}')) {
+    // メンバーIDを保存
+    currentMemberId = memberId;
+    // モーダルを開く
+    window.ModalManager.open('verificationEmailModal');
+}
+
+function confirmSendVerificationEmail() {
+    if (!currentMemberId) {
         return;
     }
+
+    const button = document.getElementById('send-verification-email-btn');
+    const buttonText = button ? (button.querySelector('span') || button) : null;
+    const originalText = buttonText ? buttonText.textContent : '';
+    
+    // モーダルを閉じる
+    window.ModalManager.close('verificationEmailModal');
     
     // ボタンを無効化
-    button.disabled = true;
-    buttonText.textContent = '{{ __("common.sending") }}...';
+    if (button) {
+        button.disabled = true;
+        if (buttonText) {
+            buttonText.textContent = '{{ __("common.sending") }}...';
+        }
+    }
     
-    fetch(`/admin/settings/members/${memberId}/send-verification-email`, {
+    fetch(`/admin/settings/members/${currentMemberId}/send-verification-email`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -80,65 +106,52 @@ function sendVerificationEmail(memberId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // 成功メッセージをセッションストレージに保存
-            sessionStorage.setItem('verificationEmailSuccess', data.message);
-            // ページをリロード
+            // リダイレクト（フラッシュメッセージを表示）
             window.location.href = data.redirect;
         } else {
             // エラーメッセージを表示
-            showMessage('error', data.message || '{{ __("admin.settings.members.messages.verification_email_failed") }}');
-            button.disabled = false;
-            buttonText.textContent = originalText;
+            alert(data.message || '{{ __("admin.settings.members.messages.verification_email_failed") }}');
+            if (button) {
+                button.disabled = false;
+                if (buttonText) {
+                    buttonText.textContent = originalText;
+                }
+            }
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showMessage('error', '{{ __("common.error_occurred") }}');
-        button.disabled = false;
-        buttonText.textContent = originalText;
+        alert('{{ __("common.error_occurred") }}');
+        if (button) {
+            button.disabled = false;
+            if (buttonText) {
+                buttonText.textContent = originalText;
+            }
+        }
     });
+    
+    currentMemberId = null;
 }
 
-// メッセージ表示関数
-function showMessage(type, message) {
-    // 既存のメッセージを削除
-    const existingMessage = document.querySelector('.verification-message');
-    if (existingMessage) {
-        existingMessage.remove();
-    }
-    
-    // メッセージ要素を作成
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `verification-message alert alert-${type} mb-4`;
-    messageDiv.style.cssText = 'padding: 1rem; margin-bottom: 1rem; border-radius: 0.375rem;';
-    
-    if (type === 'success') {
-        messageDiv.style.backgroundColor = '#d1fae5';
-        messageDiv.style.color = '#065f46';
-        messageDiv.style.border = '1px solid #6ee7b7';
-    } else {
-        messageDiv.style.backgroundColor = '#fee2e2';
-        messageDiv.style.color = '#991b1b';
-        messageDiv.style.border = '1px solid #fca5a5';
-    }
-    
-    messageDiv.textContent = message;
-    
-    // フォームの前に挿入
-    const form = document.querySelector('form');
-    if (form) {
-        form.parentNode.insertBefore(messageDiv, form);
-        // メッセージまでスクロール
-        messageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-}
-
-// ページロード時にセッションストレージのメッセージを確認
+// モーダルの確認ボタンにイベントリスナーを追加
 document.addEventListener('DOMContentLoaded', function() {
-    const successMessage = sessionStorage.getItem('verificationEmailSuccess');
-    if (successMessage) {
-        showMessage('success', successMessage);
-        sessionStorage.removeItem('verificationEmailSuccess');
+    const modal = document.getElementById('verificationEmailModal');
+    if (modal) {
+        // モーダル内の全てのボタンを検索
+        const buttons = modal.querySelectorAll('button');
+        
+        // 2番目のボタン（確認ボタン）を取得
+        // モーダルコンポーネントではキャンセルボタンが最初、確認ボタンが2番目
+        const confirmButton = buttons[1];
+        
+        if (confirmButton) {
+            // 既存のonclick属性を削除して新しいイベントリスナーを追加
+            confirmButton.removeAttribute('onclick');
+            confirmButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                confirmSendVerificationEmail();
+            });
+        }
     }
 });
 </script>

@@ -42,6 +42,8 @@ return [
 
     // フォーム操作
     'submit' => '送信',
+    'send' => '送信',
+    'sending' => '送信中',
     'reset' => 'リセット',
     'clear' => 'クリア',
     'cancel' => 'キャンセル',
@@ -82,6 +84,7 @@ return [
     'yes' => 'はい',
     'no' => 'いいえ',
     'ok' => 'OK',
+    'error_occurred' => 'エラーが発生しました',
 
     // 状態・属性
     'required' => '必須',
