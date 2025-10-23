@@ -133,8 +133,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @php
                         $emailVerifiedValue = old('email_verified', '1');
                         $emailVerificationOptions = [
-                            '1' => 'admin.settings.members.form.account_verified',
                             '0' => 'admin.settings.members.form.account_verified_send_email',
+                            '1' => 'admin.settings.members.form.account_verified',
                         ];
                     @endphp
                     @include('components::form.radio-group', [
@@ -148,8 +148,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @php
                         $emailVerifiedValue = old('email_verified', $member->hasVerifiedEmail() ? '1' : '0');
                         $emailVerificationOptionsEdit = [
-                            '1' => 'admin.settings.members.form.account_verified',
                             '0' => 'admin.settings.members.form.account_unverified',
+                            '1' => 'admin.settings.members.form.account_verified',
                         ];
                     @endphp
                     @include('components::form.radio-group', [

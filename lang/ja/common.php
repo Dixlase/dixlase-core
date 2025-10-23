@@ -35,6 +35,10 @@ return [
     'copied' => 'コピー済み',
     'all' => 'すべて',
     'none' => 'なし',
+    
+    // ラベル
+    'required' => '必須',
+    'optional' => '任意',
 
     // フォーム操作
     'submit' => '送信',

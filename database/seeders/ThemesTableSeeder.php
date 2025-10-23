@@ -35,9 +35,9 @@ class ThemesTableSeeder extends Seeder
     public function run(): void
     {
         Theme::create([
-            'name' => 'DefaultTheme',
-            'slug' => 'DefaultTheme',
-            'directory' => 'DefaultTheme',
+            'name' => 'DixlaseDefaultTheme',
+            'slug' => 'DixlaseDefaultTheme',
+            'directory' => 'DixlaseDefaultTheme',
             'version' => '1.0.0',
             'created_at' => now(),
             'updated_at' => now()

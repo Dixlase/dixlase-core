@@ -58,11 +58,11 @@ trait ThemeLoaderTrait
         if (Schema::hasTable('themes')) {
             $theme = Theme::find($activeThemeId);
             if ($theme) {
-                return $theme->directory ?? config('themes.default_theme', env('APP_THEME', 'DefaultTheme'));
+                return $theme->directory ?? config('themes.default_theme', env('APP_THEME', 'DixlaseDefaultTheme'));
             }
         }
         
-        return config('themes.default_theme', env('APP_THEME', 'DefaultTheme'));
+        return config('themes.default_theme', env('APP_THEME', 'DixlaseDefaultTheme'));
     }
 
     /**

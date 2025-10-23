@@ -135,24 +135,22 @@ return [
             'length' => '8 or more characters',
             'lowercase' => 'Include at least 1 lowercase letter',
             'number' => 'Include at least 1 number',
+            'uppercase' => 'Include at least 1 uppercase letter',
+            'symbol' => 'Include at least 1 symbol (!@#$%^&* etc.)',
 
-            // Dynamic messages
+            // Dynamic messages (with parameters)
             'length_full' => ':min or more characters (recommended :recommended or more)',
             'length_simple' => ':min or more characters',
-            'uppercase_required' => 'Include at least 1 uppercase letter (required)',
-            'uppercase_optional' => 'Include uppercase letters (optional)',
-            'symbol_required' => 'Include at least 1 symbol (!@#$%^&* etc.) (required)',
-            'symbol_optional' => 'Including symbols (!@#$%^&* etc.) makes passwords stronger (optional)',
+
+            // Special messages for optional cases
+            'uppercase_optional_note' => 'Include uppercase letters',
+            'symbol_optional_note' => 'Including symbols（!@#$%^&*-_=+ etc.)',
 
             // Strength labels
             'weak' => 'Weak',
             'normal' => 'Normal',
             'strong' => 'Strong',
             'very_strong' => 'Very Strong',
-
-            // Labels
-            'required_label' => ' (required)',
-            'optional_label' => ' (optional)',
         ],
         'error' => 'Password does not meet requirements.',
     ],
