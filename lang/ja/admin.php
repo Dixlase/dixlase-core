@@ -192,8 +192,17 @@ return [
         'single_method_available' => '利用可能な認証方法',
         'submit' => 'プロフィールを更新',
         'updated' => 'プロフィールが更新されました。',
+        'updated_with_email_verification' => 'プロフィールが更新されました。<br>新しいメールアドレスに認証メールを送信しました。<br>メールを確認してメールアドレスの変更を完了してください。',
         'confirm_title' => 'プロフィール更新の確認',
         'confirm_message' => 'プロフィールを更新しますか？',
+        'email_verification_success' => 'メールアドレスの変更が完了しました。',
+        'email_verification_invalid' => '認証リンクが無効です。',
+        'email_already_verified' => 'このメールアドレスは既に認証済みです。',
+        'pending_email_notice' => ':email への変更待ちです。送信された認証メールを確認して認証を完了してください。<br>メールが届いていない場合は、メールアドレスに間違いがないか、迷惑メールに入っていないか、ご確認ください。',
+        'current_email' => '現在のメールアドレス: :email',
+        'email_change_help' => 'メールアドレスを変更した場合、新しいメールアドレスに認証メールが送信されます。<br>認証が完了するまで変更は反映されません。',
+        'email_change_help_no_mail' => 'メールアドレスを変更した場合、即時反映されます。',
+        'updated_email_immediate' => 'プロフィールが更新されました。メールアドレスが変更されました。',
     ],
 
     // 設定

@@ -31,6 +31,7 @@ use App\Enums\TwoFactorMethod;
 use App\Rules\NotPwnedPassword;
 use App\Enums\Locale;
 use App\Models\MemberSetting;
+use App\Services\MailServerValidatorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -215,6 +216,13 @@ class AdminProfileController extends AdminLoggedInController
         $this->viewParams['showMethodSelection'] = $showMethodSelection;
         $this->viewParams['currentGlobalTwoFactorMode'] = $currentGlobalTwoFactorMode;
 
+        // pending_email がある場合の情報を渡す
+        $this->viewParams['hasPendingEmail'] = !empty(Auth::guard('member')->user()->pending_email);
+        $this->viewParams['pendingEmail'] = Auth::guard('member')->user()->pending_email;
+
+        // メールサーバー設定状態を渡す
+        $this->viewParams['isMailServerTested'] = MailServerValidatorService::isMailServerTested();
+
         return view('admin.profile.index', $this->viewParams);
     }
 
@@ -310,16 +318,55 @@ class AdminProfileController extends AdminLoggedInController
             throw $e;
         }
 
+        // メールアドレスの変更を検知
+        $emailChanged = $member->email !== $validated['email'];
+        
+        // メールサーバー設定状態を確認
+        $isMailServerTested = MailServerValidatorService::isMailServerTested();
+        
         // プロフィール更新
         $updateData = [
             'name' => $validated['name'],
             'description' => $validated['description'] ?? '',
-            'email' => $validated['email'],
             'locale' => $validated['locale'] ?? null,
             'appearance' => (int) $validated['appearance'] ?? null,
         ];
         
+        // メールアドレス変更の処理
+        if ($emailChanged) {
+            if ($isMailServerTested) {
+                // メールサーバー設定済み：pending_emailに一時保存
+                $updateData['pending_email'] = $validated['email'];
+                // email自体は変更しない（認証完了まで現在のメールアドレスを維持）
+            } else {
+                // メールサーバー未設定：即時反映
+                $updateData['email'] = $validated['email'];
+                $updateData['pending_email'] = null;
+                $updateData['email_verified_at'] = now(); // 自動的に認証済み
+            }
+        } else {
+            // メールアドレスが変更されていない場合、pending_emailをクリア
+            $updateData['pending_email'] = null;
+        }
+        
         $member->update($updateData);
+        
+        // メールアドレス変更時に認証メールを送信（メールサーバー設定済みの場合のみ）
+        if ($emailChanged && $isMailServerTested) {
+            try {
+                // 認証メールを新しいメールアドレス（pending_email）に送信
+                $member->sendEmailVerificationNotification();
+                \Log::info('Email verification sent', [
+                    'member_id' => $member->id,
+                    'pending_email' => $member->pending_email
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Failed to send email verification', [
+                    'member_id' => $member->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
         
         // 言語設定が変更された場合、即座に適用
         if (isset($validated['locale']) && $validated['locale']) {
@@ -367,7 +414,71 @@ class AdminProfileController extends AdminLoggedInController
 
         $member->save();
 
+        // メールアドレス変更時のメッセージ
+        if ($emailChanged && $isMailServerTested) {
+            // メールサーバー設定済み：認証メール送信を通知
+            $message = __('admin.profile.updated_with_email_verification');
+        } elseif ($emailChanged && !$isMailServerTested) {
+            // メールサーバー未設定：即時反映を通知
+            $message = __('admin.profile.updated_email_immediate');
+        } else {
+            // メールアドレス変更なし
+            $message = __('admin.profile.updated');
+        }
+
         return redirect()->route('admin.profile')
-            ->with('success', __('admin.profile.updated'));
+            ->with('success', $message);
+    }
+
+    /**
+     * メール認証処理
+     */
+    public function verifyEmail(Request $request, $id, $hash)
+    {
+        // IDからメンバーを取得
+        $member = \App\Models\Member::findOrFail($id);
+
+        // ハッシュの検証
+        if (!hash_equals((string) $hash, sha1($member->getEmailForVerification()))) {
+            return redirect()->route('admin.login')
+                ->with('error', __('admin.profile.email_verification_invalid'));
+        }
+
+        // pending_email がある場合は、メールアドレスを変更する処理
+        if ($member->pending_email) {
+            // 新しいメールアドレスに変更
+            $member->email = $member->pending_email;
+            $member->pending_email = null;
+            $member->email_verified_at = now();
+            $member->save();
+
+            \Log::info('Email verified and updated successfully', [
+                'member_id' => $member->id,
+                'new_email' => $member->email
+            ]);
+
+            // 自動ログイン
+            \Auth::guard('member')->login($member);
+
+            return redirect()->route('admin.profile')
+                ->with('success', __('admin.profile.email_verification_success'));
+        }
+
+        // 既に認証済みの場合（pending_emailがない場合）
+        if ($member->hasVerifiedEmail()) {
+            return redirect()->route('admin.login')
+                ->with('info', __('admin.profile.email_already_verified'));
+        }
+
+        // 通常の認証処理（新規アカウントなど）
+        $member->markEmailAsVerified();
+
+        \Log::info('Email verified successfully', [
+            'member_id' => $member->id,
+            'email' => $member->email
+        ]);
+
+        return redirect()->route('admin.login')
+            ->with('success', __('admin.profile.email_verification_success'));
     }
 }

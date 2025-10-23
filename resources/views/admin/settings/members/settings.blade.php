@@ -73,8 +73,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @include('components.form.radio-group', [
                     'name' => 'login_attempt_limit_enabled',
                     'options' => [
-                        '1' => __('common.enabled'),
                         '0' => __('common.disabled'),
+                        '1' => __('common.enabled'),
                     ],
                     'value' => old('login_attempt_limit_enabled', (string) (int) $loginAttemptLimitEnabled),
                 ])
@@ -138,8 +138,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @include('components.form.radio-group', [
                         'name' => 'lockout_notification_enabled',
                     'options' => [
-                        '1' => __('common.enabled'),
                         '0' => __('common.disabled'),
+                        '1' => __('common.enabled'),
                     ],
                         'value' => old('lockout_notification_enabled', (string) (int) $lockoutNotificationEnabled),
                     ])
@@ -209,7 +209,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     'name' => 'members_session_lifetime_enabled',
                     'options' => [
                         '1' => __('common.enabled'),
-                        '0' => __('common.disabled') . ' (Use Default Value)',
+                        '0' => __('common.disabled')
                     ],
                     'value' => old('members_session_lifetime_enabled', (string) (int) $membersSessionLifetimeEnabled),
                 ])

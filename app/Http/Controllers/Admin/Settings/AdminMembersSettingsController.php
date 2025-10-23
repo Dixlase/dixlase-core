@@ -638,28 +638,30 @@ class AdminMembersSettingsController extends AdminLoggedInController
 
         // その他の選択肢を準備
         $loginAttemptLimitOptions = [
-            '1' => __('common.enabled'),
             '0' => __('common.disabled'),
+            '1' => __('common.enabled'),
         ];
         
         $lockoutNotificationOptions = [
-            '1' => __('common.enabled'),
             '0' => __('common.disabled'),
+            '1' => __('common.enabled'),
+
         ];
         
         $passwordResetOptions = [
-            '1' => __('common.enabled'),
             '0' => __('common.disabled'),
+            '1' => __('common.enabled'),
+
         ];
         
         $pwnedPasswordOptions = [
-            '1' => __('common.enabled'),
             '0' => __('common.disabled'),
+            '1' => __('common.enabled'),
         ];
         
         $adminSessionLifetimeOptions = [
-            '1' => __('admin.settings.members.settings.admin_session_lifetime_enabled_options.enabled'),
             '0' => __('admin.settings.members.settings.admin_session_lifetime_enabled_options.disabled'),
+            '1' => __('admin.settings.members.settings.admin_session_lifetime_enabled_options.enabled'),
         ];
 
         // ログイン通知設定
