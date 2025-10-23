@@ -30,6 +30,10 @@ return [
     'copied' => 'Copied',
     'all' => 'All',
     'none' => 'None',
+    
+    // Labels
+    'required' => 'required',
+    'optional' => 'optional',
 
     // System Operations
     'settings' => 'Settings',

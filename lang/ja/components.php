@@ -134,24 +134,22 @@ return [
             'length' => '8文字以上',
             'lowercase' => '小文字を1文字以上含む',
             'number' => '数字を1文字以上含む',
+            'uppercase' => '大文字を1文字以上含む',
+            'symbol' => '記号（!@#$%^&* など）を1文字以上含む',
 
-            // 可変メッセージ
+            // 可変メッセージ（パラメータ付き）
             'length_full' => ':min文字以上（推奨 :recommended 文字以上）',
             'length_simple' => ':min文字以上',
-            'uppercase_required' => '大文字を1文字以上含む（必須）',
-            'uppercase_optional' => '大文字を含む（任意）',
-            'symbol_required' => '記号（!@#$%^&* など）を1文字以上含む（必須）',
-            'symbol_optional' => '記号（!@#$%^&* など）を含むと強度UP（任意）',
+
+            // 任意の場合の特別メッセージ
+            'uppercase_optional_note' => '大文字を含む',
+            'symbol_optional_note' => '記号（!@#$%^&*-_=+など）',
 
             // 強度ラベル
             'weak' => '弱い',
             'normal' => '普通',
             'strong' => '強い',
             'very_strong' => '非常に強い',
-
-            // ラベル
-            'required_label' => '（必須）',
-            'optional_label' => '（任意）',
         ],
         'error' => 'パスワードが条件を満たしていません。',
     ],

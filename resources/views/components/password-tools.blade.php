@@ -100,17 +100,31 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
 @php
-    $lengthText = $minLength < $recommendedLength
+    // 長さの要件（常に必須）
+    $lengthBase = $minLength < $recommendedLength
         ? __('components.password_messages.requirements.length_full', ['min' => $minLength, 'recommended' => $recommendedLength])
         : __('components.password_messages.requirements.length_simple', ['min' => $minLength]);
+    $lengthText = $lengthBase . '（' . __('common.required') . '）';
 
-    $uppercaseText = $requireUppercase
-        ? __('components.password_messages.requirements.uppercase_required')
-        : __('components.password_messages.requirements.uppercase_optional');
+    // 小文字の要件（常に必須）
+    $lowercaseText = __('components.password_messages.requirements.lowercase') . '（' . __('common.required') . '）';
 
-    $symbolText = $requireSymbol
-        ? __('components.password_messages.requirements.symbol_required')
-        : __('components.password_messages.requirements.symbol_optional');
+    // 数字の要件（常に必須）
+    $numberText = __('components.password_messages.requirements.number') . '（' . __('common.required') . '）';
+
+    // 大文字の要件（必須 or 任意）
+    if ($requireUppercase) {
+        $uppercaseText = __('components.password_messages.requirements.uppercase') . '（' . __('common.required') . '）';
+    } else {
+        $uppercaseText = __('components.password_messages.requirements.uppercase_optional_note') . '（' . __('common.optional') . '）';
+    }
+
+    // 記号の要件（必須 or 任意）
+    if ($requireSymbol) {
+        $symbolText = __('components.password_messages.requirements.symbol') . '（' . __('common.required') . '）';
+    } else {
+        $symbolText = __('components.password_messages.requirements.symbol_optional_note') . '（' . __('common.optional') . '）';
+    }
 @endphp
 
 <p id="{{ $id }}-strength-message" class="text-sm mt-1 text-gray-700 dark:text-gray-300 h-[1em]"></p>
@@ -119,15 +133,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <div id="{{ $id }}-strength-fill" class="h-2 bg-red-500 rounded-lg transition-all" style="width: 0%;"></div>
 </div>
 
-<!-- 確認欄の表示制御 -->
+<!-- パスワード要件リスト -->
 <ul id="{{ $id }}-requirements" class="text-sm mt-2 text-gray-700 dark:text-gray-300 space-y-1">
-    <li id="{{ $id }}-req-lowercase" data-text="{{ __('components.password_messages.requirements.lowercase') }}" class="flex items-center">
+    <li id="{{ $id }}-req-lowercase" data-text="{{ $lowercaseText }}" class="flex items-center">
         <i class="fas fa-times-circle text-red-500 mr-2"></i>
-        <span>{{ __('components.password_messages.requirements.lowercase') }}</span>
+        <span>{{ $lowercaseText }}</span>
     </li>
-    <li id="{{ $id }}-req-number" data-text="{{ __('components.password_messages.requirements.number') }}" class="flex items-center">
+    <li id="{{ $id }}-req-number" data-text="{{ $numberText }}" class="flex items-center">
         <i class="fas fa-times-circle text-red-500 mr-2"></i>
-        <span>{{ __('components.password_messages.requirements.number') }}</span>
+        <span>{{ $numberText }}</span>
     </li>
     <li id="{{ $id }}-req-length" data-text="{{ $lengthText }}" class="flex items-center">
         <i class="fas fa-times-circle text-red-500 mr-2"></i>
@@ -192,7 +206,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
             const lowercase = 'abcdefghijklmnopqrstuvwxyz';
             const numbers = '0123456789';
-            const symbols = '!@#$%^&*()';
+            const symbols = '!@#$%^&*()_-+=[]{}|:;"<>,.?/~';
             const allChars = uppercase + lowercase + numbers + symbols;
 
             const policy = window.PasswordPolicy || {
@@ -267,7 +281,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             const hasUpper = /[A-Z]/.test(password);
             const hasLower = /[a-z]/.test(password);
             const hasNumber = /[0-9]/.test(password);
-            const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+            const hasSymbol = /[!@#$%^&*()_\-+=\[\]{}|\\:;"'<>,.?/~`]/.test(password);
             const length = password.length;
 
             const policy = window.PasswordPolicy || {
@@ -278,6 +292,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 requireNumber: true,
                 requireSymbol: false,
             };
+
+            // デバッグログ
+            console.log('=== Password Check Debug ===');
+            console.log('Password:', password);
+            console.log('hasSymbol:', hasSymbol);
+            console.log('requireSymbol:', policy.requireSymbol);
+            console.log('Symbol element ID:', passwordId + '-req-symbol');
 
             // インジケーター更新
             this.updateRequirementIndicator(passwordId + '-req-length', length >= policy.minLength, true);
@@ -305,21 +326,38 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             } else {
                 errorMessage?.classList.add('hidden');
 
+                // 大文字・小文字・数字・記号の全てを含むか
                 const hasAllTypes = hasUpper && hasLower && hasNumber && hasSymbol;
+                // 記号以外の3タイプ（大文字・小文字・数字）を含むか
+                const hasThreeTypes = hasUpper && hasLower && hasNumber;
 
-                if (length >= 16 && hasAllTypes) {
+                if (hasAllTypes && length >= 16) {
+                    // 全タイプ + 16文字以上 → 非常に強い
                     message = window.PasswordMessages.veryStrong;
                     barWidth = '100%';
                     barColor = 'bg-blue-500';
-                } else if (length >= 12 && hasAllTypes) {
+                } else if (hasAllTypes && length >= 12) {
+                    // 全タイプ + 12文字以上 → 強い
                     message = window.PasswordMessages.strong;
                     barWidth = '80%';
                     barColor = 'bg-green-500';
+                } else if (hasAllTypes && length < 12) {
+                    // 全タイプだが12文字未満 → 普通
+                    message = window.PasswordMessages.normal;
+                    barWidth = '60%';
+                    barColor = 'bg-yellow-500';
+                } else if (!policy.requireSymbol && hasThreeTypes && length >= policy.minLength) {
+                    // 記号が任意 かつ 3タイプ（大文字・小文字・数字）+ 最小文字数以上 → 普通
+                    message = window.PasswordMessages.normal;
+                    barWidth = '60%';
+                    barColor = 'bg-yellow-500';
                 } else if (length >= 12) {
+                    // 12文字以上（但し条件不足）→ 普通
                     message = window.PasswordMessages.normal;
                     barWidth = '60%';
                     barColor = 'bg-yellow-500';
                 } else {
+                    // その他（必須条件のみ満たす）→ 弱い
                     message = window.PasswordMessages.weak;
                     barWidth = '40%';
                     barColor = 'bg-orange-400';
@@ -336,38 +374,41 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         updateRequirementIndicator: function(elementId, isValid, required = false, extraText = '') {
             const element = document.getElementById(elementId);
             
-            if (!element) return;
-
-            const baseText = element.dataset.text || '';
+            console.log(`--- updateRequirementIndicator: ${elementId} ---`);
+            console.log('element:', element);
+            console.log('isValid:', isValid);
             
-            // 必須/任意のラベルを追加
-            let statusLabel = '';
-            if (required) {
-                statusLabel = window.PasswordMessages.requiredLabel || '（必須）';
+            if (!element) {
+                console.log('ERROR: Element not found!');
+                return;
             }
-            
-            const displayText = baseText + statusLabel;
+
+            // data-text属性の値をそのまま使用（Blade側で既に必須/任意が含まれている）
+            const displayText = element.dataset.text || '';
             const suffix = extraText || '';
             
-            // firstElementChild と lastElementChild を使用（より確実）
-            const iconElement = element.firstElementChild;
-            const textElement = element.lastElementChild;
+            // アイコンとテキスト要素を取得
+            const iconElement = element.querySelector('i');
+            const textElement = element.querySelector('span');
             
-            // iconElementが<I>タグまたは<SVG>タグか確認（Font Awesomeが自動変換するため）
-            const iconTagName = iconElement ? iconElement.tagName.toUpperCase() : '';
-            const isIconElement = iconElement && (iconTagName === 'I' || iconTagName === 'SVG');
-            const isTextElement = textElement && textElement.tagName === 'SPAN';
+            console.log('iconElement:', iconElement);
+            console.log('textElement:', textElement);
+            console.log('displayText:', displayText);
             
-            if (isIconElement && isTextElement) {
-                // outerHTMLで要素全体を置き換える（Font AwesomeのSVG変換をリセット）
+            if (iconElement && textElement) {
+                // クラスを変更してアイコンを更新（DOM参照を維持）
+                const oldClass = iconElement.className;
                 if (isValid) {
                     // OK時: 緑のチェックアイコン
-                    iconElement.outerHTML = '<i class="fas fa-check-circle text-green-500 mr-2"></i>';
+                    iconElement.className = 'fas fa-check-circle text-green-500 mr-2';
                 } else {
                     // NG時: 赤のバツアイコン
-                    iconElement.outerHTML = '<i class="fas fa-times-circle text-red-500 mr-2"></i>';
+                    iconElement.className = 'fas fa-times-circle text-red-500 mr-2';
                 }
+                console.log('Class changed from:', oldClass, 'to:', iconElement.className);
                 textElement.textContent = `${displayText}${suffix}`;
+            } else {
+                console.log('ERROR: iconElement or textElement not found!');
             }
         }
     };
