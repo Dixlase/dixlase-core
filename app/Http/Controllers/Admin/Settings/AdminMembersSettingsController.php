@@ -170,7 +170,8 @@ class AdminMembersSettingsController extends AdminLoggedInController
         // パスワード設定を取得
         $this->viewParams['passwordMinLength'] = (int) MemberSetting::getValue('password_min_length', 8);
         $this->viewParams['passwordRequireUppercase'] = (bool) MemberSetting::getValue('password_require_uppercase', true);
-        $this->viewParams['passwordRequireSymbol'] = (bool) MemberSetting::getValue('password_require_symbol', false);
+        $this->viewParams['passwordRequireNumber'] = (bool) MemberSetting::getValue('password_require_number', true);
+        $this->viewParams['passwordRequireSymbol'] = (bool) MemberSetting::getValue('password_require_symbol', true);
 
         // ログイン通知設定
         $loginNotificationMode = (int) MemberSetting::getValue('login_notification_mode', LoginNotificationMode::UseProfileSetting->value);
@@ -312,7 +313,8 @@ class AdminMembersSettingsController extends AdminLoggedInController
         // パスワード設定を取得
         $this->viewParams['passwordMinLength'] = (int) MemberSetting::getValue('password_min_length', 8);
         $this->viewParams['passwordRequireUppercase'] = (bool) MemberSetting::getValue('password_require_uppercase', true);
-        $this->viewParams['passwordRequireSymbol'] = (bool) MemberSetting::getValue('password_require_symbol', false);
+        $this->viewParams['passwordRequireNumber'] = (bool) MemberSetting::getValue('password_require_number', true);
+        $this->viewParams['passwordRequireSymbol'] = (bool) MemberSetting::getValue('password_require_symbol', true);
 
         // ログイン通知設定
         $loginNotificationMode = (int) MemberSetting::getValue('login_notification_mode', LoginNotificationMode::UseProfileSetting->value);
@@ -626,7 +628,8 @@ class AdminMembersSettingsController extends AdminLoggedInController
         // 既存の設定を取得
         $passwordMinLength = (int) MemberSetting::getValue('password_min_length', 8);
         $passwordRequireUppercase = (bool) MemberSetting::getValue('password_require_uppercase', true);
-        $passwordRequireSymbol = (bool) MemberSetting::getValue('password_require_symbol', false);
+        $passwordRequireNumber = (bool) MemberSetting::getValue('password_require_number', true);
+        $passwordRequireSymbol = (bool) MemberSetting::getValue('password_require_symbol', true);
         
         // パスワード条件設定の選択肢を準備
         $minLengthOptions = collect(__('admin.settings.members.settings.password_min_length_options'))
@@ -634,6 +637,10 @@ class AdminMembersSettingsController extends AdminLoggedInController
             ->toArray();
             
         $uppercaseOptions = collect(__('admin.settings.members.settings.password_require_uppercase_options'))
+            ->mapWithKeys(fn($label, $key) => [$key => $label])
+            ->toArray();
+            
+        $numberOptions = collect(__('admin.settings.members.settings.password_require_number_options'))
             ->mapWithKeys(fn($label, $key) => [$key => $label])
             ->toArray();
             
@@ -740,9 +747,11 @@ class AdminMembersSettingsController extends AdminLoggedInController
         // ビューに渡すデータをセット
         $this->viewParams['passwordMinLength'] = $passwordMinLength;
         $this->viewParams['passwordRequireUppercase'] = $passwordRequireUppercase;
+        $this->viewParams['passwordRequireNumber'] = $passwordRequireNumber;
         $this->viewParams['passwordRequireSymbol'] = $passwordRequireSymbol;
         $this->viewParams['minLengthOptions'] = $minLengthOptions;
         $this->viewParams['uppercaseOptions'] = $uppercaseOptions;
+        $this->viewParams['numberOptions'] = $numberOptions;
         $this->viewParams['symbolOptions'] = $symbolOptions;
         $this->viewParams['loginAttemptLimitOptions'] = $loginAttemptLimitOptions;
         $this->viewParams['lockoutNotificationOptions'] = $lockoutNotificationOptions;
@@ -782,6 +791,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
 
         MemberSetting::setValue('password_min_length', (int) $validated['password_min_length']);
         MemberSetting::setValue('password_require_uppercase', (int) $validated['password_require_uppercase']);
+        MemberSetting::setValue('password_require_number', (int) $validated['password_require_number']);
         MemberSetting::setValue('password_require_symbol', (int) $validated['password_require_symbol']);
         MemberSetting::setValue('login_notification_mode', (int) $validated['login_notification_mode']);
         MemberSetting::setValue('force_2fa', (int) $validated['force_2fa']);

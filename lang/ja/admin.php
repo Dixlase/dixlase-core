@@ -622,6 +622,11 @@ return [
                     1 => '含める',
                     0 => '含めない',
                 ],
+                'password_require_number' => '数字を含める',
+                'password_require_number_options' => [
+                    1 => '含める',
+                    0 => '含めない',
+                ],
                 'password_require_symbol' => '記号を含める',
                 'password_require_symbol_options' => [
                     1 => '含める',

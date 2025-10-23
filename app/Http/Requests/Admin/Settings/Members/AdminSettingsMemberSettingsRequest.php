@@ -30,6 +30,7 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
         $rules = [
             'password_min_length' => 'required|integer|min:6|max:32',
             'password_require_uppercase' => 'required|boolean',
+            'password_require_number' => 'required|boolean',
             'password_require_symbol' => 'required|boolean',
             'login_notification_mode' => ['required', new Enum(LoginNotificationMode::class)],
             'force_2fa' => ['required', new Enum(TwoFactorMode::class)],
