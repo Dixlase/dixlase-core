@@ -131,7 +131,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @if(!isset($member) || !$member->exists)
                     {{-- 新規作成時 --}}
                     @php
-                        $emailVerifiedValue = old('email_verified', '1');
+                        $emailVerifiedValue = old('email_verified', '0');
                         $emailVerificationOptions = [
                             '0' => 'admin.settings.members.form.account_verified_send_email',
                             '1' => 'admin.settings.members.form.account_verified',
@@ -219,7 +219,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- アカウントステータス -->
         <fieldset>
             <legend>
-                {{ __('common.status') }}
+                {{ __('admin.settings.members.create.account_status') }}
                 @if($isInitialAdmin)
                     <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">（初期管理者のため変更不可）</span>
                 @endif

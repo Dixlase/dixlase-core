@@ -355,7 +355,7 @@ class AdminProfileController extends AdminLoggedInController
         if ($emailChanged && $isMailServerTested) {
             try {
                 // 認証メールを新しいメールアドレス（pending_email）に送信
-                $member->sendEmailVerificationNotification();
+                $member->sendEmailVerificationNotification('email_change');
                 \Log::info('Email verification sent', [
                     'member_id' => $member->id,
                     'pending_email' => $member->pending_email

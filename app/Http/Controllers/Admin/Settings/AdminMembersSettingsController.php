@@ -250,7 +250,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         // メールサーバーがテスト済みで、かつ未認証の場合は認証メールを送信
         if ($isMailServerTested && $emailVerified === '0') {
             try {
-                $member->sendEmailVerificationNotification();
+                $member->sendEmailVerificationNotification('create');
                 $message = __('admin.settings.members.messages.created_with_verification_email');
             } catch (\Exception $e) {
                 \Log::error('Failed to send verification email', [
@@ -415,7 +415,9 @@ class AdminMembersSettingsController extends AdminLoggedInController
         
         if ($shouldSendEmail && !$member->hasVerifiedEmail()) {
             try {
-                $member->sendEmailVerificationNotification();
+                // メールアドレス変更時は 'email_change'、それ以外は 'create'
+                $context = ($emailChanged && $wasVerified) ? 'email_change' : 'create';
+                $member->sendEmailVerificationNotification($context);
                 $message = __('admin.settings.members.messages.updated_with_verification_email');
             } catch (\Exception $e) {
                 \Log::error('Failed to send verification email', [
@@ -507,12 +509,15 @@ class AdminMembersSettingsController extends AdminLoggedInController
             $member->email_verified_at = null;
             $member->save();
 
-            // 認証メールを送信
-            $member->sendEmailVerificationNotification();
+            // 認証メールを送信（再送信時のメッセージ）
+            $member->sendEmailVerificationNotification('resend');
 
+            // フラッシュメッセージをセッションに保存
+            session()->flash('success', __('admin.settings.members.messages.verification_email_sent'));
+
+            // リダイレクトURLを返す
             return response()->json([
                 'success' => true,
-                'message' => __('admin.settings.members.messages.verification_email_sent'),
                 'redirect' => route('admin.settings.members.edit', ['member' => $member->id])
             ]);
         } catch (\Exception $e) {

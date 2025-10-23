@@ -34,6 +34,21 @@ class MemberVerifyEmailNotification extends Notification
     use Queueable;
 
     /**
+     * @var string コンテキスト（'create', 'email_change', または 'resend'）
+     */
+    protected $context;
+
+    /**
+     * Create a new notification instance.
+     *
+     * @param string $context 'create', 'email_change', または 'resend'
+     */
+    public function __construct(string $context = 'create')
+    {
+        $this->context = $context;
+    }
+
+    /**
      * Get the notification's delivery channels.
      *
      * @return array<int, string>
@@ -50,11 +65,23 @@ class MemberVerifyEmailNotification extends Notification
     {
         $verificationUrl = $this->verificationUrl($notifiable);
 
+        // コンテキストに応じてメッセージを切り替え
+        $messageKey = match($this->context) {
+            'email_change' => 'mail.member_verify_email.message_email_change',
+            'resend' => 'mail.member_verify_email.message_resend',
+            default => 'mail.member_verify_email.message_create',
+        };
+
+        // コンテキストに応じてボタンラベルを切り替え
+        $actionKey = $this->context === 'email_change' 
+            ? 'mail.member_verify_email.action_change_email'
+            : 'mail.member_verify_email.action_verify_account';
+
         return (new MailMessage)
             ->subject(__('mail.member_verify_email.subject'))
             ->greeting(__('mail.member_verify_email.greeting', ['name' => $notifiable->name]))
-            ->line(__('mail.member_verify_email.message'))
-            ->action(__('mail.member_verify_email.action'), $verificationUrl)
+            ->line(__($messageKey))
+            ->action(__($actionKey), $verificationUrl)
             ->line(__('mail.member_verify_email.manual_verification'))
             ->line($verificationUrl)
             ->line(__('mail.member_verify_email.expiration', ['minutes' => Config::get('auth.verification.expire', 60)]))
