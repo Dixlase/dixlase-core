@@ -41,6 +41,7 @@ return new class extends Migration
             $table->string('description')->nullable();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable(); // メール認証日時
+            $table->string('pending_email')->nullable(); // 認証待ちの新メールアドレス
             $table->string('locale')->nullable(); // 個別言語設定（nullの場合はシステムデフォルト）
             $table->integer('role')->default(1);   // 1=admin, 2=super_admin, 3=editor, 4=author, 5=contributor
             $table->integer('appearance')->default(0); // 0= auto, 1 = light, 2 = dark

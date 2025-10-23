@@ -64,6 +64,7 @@ class Member extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'email_verified_at',
+        'pending_email',
         'locale',
         'password',
         'role',
@@ -110,5 +111,16 @@ class Member extends Authenticatable implements MustVerifyEmail
     public function sendEmailVerificationNotification()
     {
         $this->notify(new \App\Notifications\MemberVerifyEmailNotification());
+    }
+
+    /**
+     * Get the email address that should be used for verification.
+     *
+     * @return string
+     */
+    public function getEmailForVerification()
+    {
+        // pending_email がある場合はそちらを使用、なければ通常のemail
+        return $this->pending_email ?? $this->email;
     }
 }

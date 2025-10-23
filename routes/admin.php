@@ -135,6 +135,11 @@ Route::prefix($adminUrl)->name('admin.')
             // プロフィール設定（全員アクセス可能）
             Route::get('/profile', [AdminProfileController::class, 'index'])->name('profile');
             Route::post('/profile', [AdminProfileController::class, 'update'])->name('profile.update');
+            
+            // メール認証（認証不要）
+            Route::get('/verify-mail/{id}/{hash}', [AdminProfileController::class, 'verifyEmail'])
+                ->name('verification.verify')
+                ->withoutMiddleware(['auth:member']);
 
             // 全体設定
             // 基本設定（権限チェック付き）

@@ -23,7 +23,7 @@ class MembersSettingsSeeder extends Seeder
             ['key' => 'password_require_symbol', 'value' => '0'], // デフォルト: 記号は含めない
 
             // パスワードリセット機能設定
-            ['key' => 'password_reset_enabled', 'value' => '1'], // デフォルト: 有効
+            ['key' => 'password_reset_enabled', 'value' => '0'], // デフォルト: 無効
 
             // パスワード辞書攻撃対策設定
             ['key' => 'pwned_password_check_enabled', 'value' => '0'], // デフォルト: 無効
@@ -34,7 +34,7 @@ class MembersSettingsSeeder extends Seeder
             ['key' => 'system_login_notice_email', 'value' => ''], // デフォルト: 空（管理者メールアドレス）
 
             // 二段階認証設定
-            ['key' => 'force_2fa', 'value' => '1'], // 1 = メンバーのプロフィール設定を反映
+            ['key' => 'force_2fa', 'value' => '1'], // 0 = 無効, 1 = 新しいデバイスのみ, 2 = 常に有効, 3 = プロフィール設定を反映
             ['key' => 'enabled_two_factor_methods', 'value' => '0'], // メール認証のみ有効
             ['key' => 'default_two_factor_method', 'value' => '0'], // デフォルトの認証方法はメール認証
 

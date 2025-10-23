@@ -64,6 +64,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @error('email')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
+                
+                @if($hasPendingEmail)
+                    <div class="mt-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
+                        <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            {!! __('admin.profile.pending_email_notice', ['email' => $pendingEmail]) !!}
+                        </p>
+                        <p class="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
+                            {{ __('admin.profile.current_email', ['email' => $member->email]) }}
+                        </p>
+                    </div>
+                @else
+                    <p class="description-text">
+                        @if($isMailServerTested)
+                            {!! __('admin.profile.email_change_help') !!}
+                        @else
+                            {!! __('admin.profile.email_change_help_no_mail') !!}
+                        @endif
+                    </p>
+                @endif
             </fieldset>
 
             <fieldset>

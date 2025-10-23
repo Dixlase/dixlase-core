@@ -216,8 +216,17 @@ return [
         'single_method_available' => 'Available Authentication Method',
         'submit' => 'Update Profile',
         'updated' => 'Profile has been updated.',
+        'updated_with_email_verification' => 'Profile has been updated. A verification email has been sent to your new email address. Please check your email and complete the verification.',
         'confirm_title' => 'Profile Update Confirmation',
         'confirm_message' => 'Do you want to update your profile?',
+        'email_verification_success' => 'Email address change has been completed.',
+        'email_verification_invalid' => 'The verification link is invalid.',
+        'email_already_verified' => 'This email address has already been verified.',
+        'pending_email_notice' => 'Pending change to :email. Please check the verification email sent and complete the verification.',
+        'current_email' => 'Current email address: :email',
+        'email_change_help' => 'If you change your email address, a verification email will be sent to the new address. The change will not take effect until verification is complete.',
+        'email_change_help_no_mail' => 'If you change your email address, it will be updated immediately.',
+        'updated_email_immediate' => 'Profile has been updated. Email address has been changed.',
     ],
 
     // Settings
