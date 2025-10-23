@@ -47,6 +47,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 ])
             </fieldset>
 
+            <!-- 数字 -->
+            <fieldset>
+                <legend>{{ __('admin.settings.members.settings.password_require_number') }}</legend>
+                @include('components.form.radio-group', [
+                    'name' => 'password_require_number',
+                    'options' => $numberOptions,
+                    'value' => old('password_require_number', (string) (int) $passwordRequireNumber),
+                ])
+            </fieldset>
+
             <!-- 記号 -->
             <fieldset>
                 <legend>{{ __('admin.settings.members.settings.password_require_symbol') }}</legend>

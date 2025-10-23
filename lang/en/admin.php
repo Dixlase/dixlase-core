@@ -657,6 +657,11 @@ Clicking this link will complete the full mail function test.',
                     1 => 'Required',
                     0 => 'Not required',
                 ],
+                'password_require_number' => 'Require numbers',
+                'password_require_number_options' => [
+                    1 => 'Required',
+                    0 => 'Not required',
+                ],
                 'password_require_symbol' => 'Require symbols',
                 'password_require_symbol_options' => [
                     1 => 'Required',

@@ -20,7 +20,8 @@ class MembersSettingsSeeder extends Seeder
             // パスワード条件の設定
             ['key' => 'password_min_length', 'value' => '8'], // デフォルト: 8文字
             ['key' => 'password_require_uppercase', 'value' => '1'], // デフォルト: 大文字を含める
-            ['key' => 'password_require_symbol', 'value' => '0'], // デフォルト: 記号は含めない
+            ['key' => 'password_require_number', 'value' => '1'], // デフォルト: 数字を含める
+            ['key' => 'password_require_symbol', 'value' => '1'], // デフォルト: 記号を含める
 
             // パスワードリセット機能設定
             ['key' => 'password_reset_enabled', 'value' => '0'], // デフォルト: 無効

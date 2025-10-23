@@ -448,7 +448,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'title' => __('admin.settings.members.modals.force_logout.title'),
         'message' => __('admin.settings.members.modals.force_logout.message', ['name' => $member->name]),
         'confirm_label' => __('admin.settings.members.modals.force_logout.confirm'),
-        'cancel_label' => __('admin.settings.members.modals.cancel'),
+        'cancel_label' => __('common.cancel'),
         'form' => $forceLogoutFormId,
         'icon_type' => 'warning',
         'confirm_color' => 'yellow'
@@ -460,7 +460,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'title' => __('admin.settings.members.modals.delete.title'),
             'message' => __('admin.settings.members.modals.delete.message', ['name' => $member->name]) . "\n\n" . __('admin.settings.members.modals.delete.warning'),
             'confirm_label' => __('common.delete'),
-            'cancel_label' => __('admin.settings.members.modals.cancel'),
+            'cancel_label' => __('common.cancel'),
             'form' => $deleteMemberFormId,
             'icon_type' => 'danger',
             'confirm_color' => 'red'

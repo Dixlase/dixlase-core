@@ -82,7 +82,7 @@
                     :requireUppercase="true"
                     :requireLowercase="true"
                     :requireNumber="true"
-                    :requireSymbol="false"
+                    :requireSymbol="true"
                     :recommendedLength="12"
                 />
             </div>
