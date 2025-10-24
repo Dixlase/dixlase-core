@@ -40,5 +40,6 @@ return [
     'ip_lockout' => 'Login attempts from this IP address are temporarily restricted.',
     'password' => 'The provided password is incorrect.',
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
+    'email_not_verified' => 'This account has not completed email verification. Please check the verification email sent to your registered email address and complete account verification.',
 
 ];

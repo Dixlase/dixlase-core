@@ -357,6 +357,7 @@ Clicking this link will complete the full mail functionality test.',
         'action_change_email' => 'Change Email Address',
         'manual_verification' => 'If you cannot click the button, please copy and paste the following URL into your browser:',
         'expiration' => 'This verification link will expire in :minutes minutes.',
+        'security_notice' => '【IMPORTANT】If you did not request this email, please ignore it. Your account will not be activated unless you click the verification link. A third party may have mistakenly registered using this email address, but your personal information will not be compromised.',
         'regards' => 'Best regards',
     ],
 ];

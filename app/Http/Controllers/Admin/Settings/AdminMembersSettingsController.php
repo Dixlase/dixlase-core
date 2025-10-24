@@ -511,6 +511,15 @@ class AdminMembersSettingsController extends AdminLoggedInController
             $member->email_verified_at = null;
             $member->save();
 
+            // メンバーを強制ログアウト
+            $sessionTable = config('session.table', 'sessions');
+            if ($sessionTable && \DB::getSchemaBuilder()->hasTable($sessionTable)) {
+                // データベースセッションの場合
+                \DB::table($sessionTable)
+                    ->where('user_id', $member->id)
+                    ->delete();
+            }
+
             // 認証メールを送信（再送信時のメッセージ）
             $member->sendEmailVerificationNotification('resend');
 

@@ -143,15 +143,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @foreach ($members as $member)
                         <tr>
                             <td data-label="{{ __('common.id') }}">{{ $member->id }}</td>
-                            <td data-label="{{ __('common.name') }}">{{ $member->name }}</td>
+                            <td data-label="{{ __('common.name') }}">
+                                <a href="{{ route('admin.settings.members.edit', ['member' => $member->id]) }}" 
+                                   class="hover:underline">
+                                    {{ $member->name }}
+                                </a>
+                            </td>
                             <td data-label="{{ __('common.email') }}">{{ $member->email }}</td>
                             <td data-label="{{ __('common.role') }}">{{ $member->role->label() }}</td>
                             <td data-label="{{ __('common.actions') }}">
-                                <a href="{{ route('admin.settings.members.edit', ['member' => $member->id]) }}" 
-                                   title="{{ __('common.edit') }}"
-                                   class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-                                    <i class="fas fa-edit"></i>
-                                </a>
+                                @include('components.form.button', [
+                                    'type' => 'button',
+                                    'variant' => 'secondary',
+                                    'size' => 'sm',
+                                    'label' => __('common.edit'),
+                                    'icon' => 'fas fa-edit',
+                                    'onclick' => "window.location.href='" . route('admin.settings.members.edit', ['member' => $member->id]) . "'",
+                                ])
                             </td>
                         </tr>
                     @endforeach

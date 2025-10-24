@@ -39,7 +39,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('description')->nullable();
-            $table->string('email')->unique();
+            $table->string('email'); 
             $table->timestamp('email_verified_at')->nullable(); // メール認証日時
             $table->string('pending_email')->nullable(); // 認証待ちの新メールアドレス
             $table->string('locale')->nullable(); // 個別言語設定（nullの場合はシステムデフォルト）
@@ -57,6 +57,9 @@ return new class extends Migration
 
             $table->timestamps();
             $table->softDeletes();
+            
+            // 検索パフォーマンス向上のためのインデックス（ユニーク制約なし）
+            $table->index('email');
         });
     }
 

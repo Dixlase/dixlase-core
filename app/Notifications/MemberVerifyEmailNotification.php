@@ -85,6 +85,8 @@ class MemberVerifyEmailNotification extends Notification
             ->line(__('mail.member_verify_email.manual_verification'))
             ->line($verificationUrl)
             ->line(__('mail.member_verify_email.expiration', ['minutes' => Config::get('auth.verification.expire', 60)]))
+            ->line('') // 空白行
+            ->line(__('mail.member_verify_email.security_notice'))
             ->salutation(__('mail.member_verify_email.regards'));
     }
 

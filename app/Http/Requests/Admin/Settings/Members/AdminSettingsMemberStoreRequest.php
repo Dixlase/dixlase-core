@@ -57,7 +57,9 @@ class AdminSettingsMemberStoreRequest extends FormRequest
             'email' => [
                 'required',
                 'email',
-                Rule::unique('members', 'email')->ignore($this->route('member')),
+                Rule::unique('members', 'email')
+                    ->ignore($this->route('member'))
+                    ->whereNull('deleted_at'), // 削除されていないメンバーのみをチェック
             ],
             'password' => $isUpdate 
                 ? ['nullable', 'string', 'min:8', new NotPwnedPassword()]

@@ -196,6 +196,7 @@ return [
         'confirm_title' => 'プロフィール更新の確認',
         'confirm_message' => 'プロフィールを更新しますか？',
         'email_verification_success' => 'メールアドレスの変更が完了しました。',
+        'account_verification_success' => 'アカウントの認証が完了しました。',
         'email_verification_invalid' => '認証リンクが無効です。',
         'email_already_verified' => 'このメールアドレスは既に認証済みです。',
         'pending_email_notice' => ':email への変更待ちです。送信された認証メールを確認して認証を完了してください。<br>メールが届いていない場合は、メールアドレスに間違いがないか、迷惑メールに入っていないか、ご確認ください。',
@@ -683,7 +684,7 @@ return [
             ],
             'messages' => [
                 'created' => '新しいメンバーを作成しました。',
-                'created_with_verification_email' => '新しいメンバーを作成しました。認証メールを送信しました。',
+                'created_with_verification_email' => '新しいメンバーアカウントを作成しました。<br>アカウントのメールアドレスに認証メールを送信しました。<br>メンバー様にアカウントの認証を済ませていただくようお知らせください。',
                 'created_but_email_failed' => '新しいメンバーを作成しましたが、認証メールの送信に失敗しました。',
                 'updated' => 'メンバー情報を更新しました。',
                 'updated_with_verification_email' => 'メンバー情報を更新しました。認証メールを送信しました。',
