@@ -149,7 +149,10 @@ class AdminLoginController extends AdminController
             ]);
         }
 
-        $member = Member::where('email', $email)->first();
+        // emailまたはpending_emailでメンバーを検索（メールアドレス変更待ちの場合に対応）
+        $member = Member::where('email', $email)
+            ->orWhere('pending_email', $email)
+            ->first();
 
         if (!$member || !Hash::check($request->password, $member->password)) {
             // 失敗したログインを記録

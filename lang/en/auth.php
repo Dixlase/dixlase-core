@@ -42,6 +42,7 @@ return [
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
     'email_not_verified' => 'This account has not completed email verification. Please check the verification email sent to your registered email address and complete account verification.',
     'verify_email_login_required' => 'Please log in to complete account verification. Verification will be completed automatically after login.',
+    'verify_email_change_login_required' => 'Please log in to complete email address change. The change will be completed automatically after login.',
     'verification_required' => 'Email Verification Required',
     'verification_notice_message' => 'This account has not completed email verification. To use the admin panel, please click the link in the verification email sent to your registered email address and log in.',
     'verification_link_sent' => 'A new verification link has been sent to your email address.',
