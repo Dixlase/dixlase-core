@@ -478,9 +478,14 @@ class AdminProfileController extends AdminLoggedInController
         // セッション保存を確実にする
         session()->save();
 
+        // コンテキストに応じたメッセージを選択
+        $messageKey = $member->pending_email 
+            ? 'auth.verify_email_change_login_required'
+            : 'auth.verify_email_login_required';
+
         // ログイン画面にリダイレクト
         return redirect()->route('admin.login')
-            ->with('info', __('auth.verify_email_login_required'));
+            ->with('info', __($messageKey));
     }
     
     /**

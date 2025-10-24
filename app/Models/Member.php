@@ -129,4 +129,15 @@ class Member extends Authenticatable implements MustVerifyEmail
         // pending_email がある場合はそちらを使用、なければ通常のemail
         return $this->pending_email ?? $this->email;
     }
+
+    /**
+     * Route notifications for the mail channel.
+     *
+     * @return string
+     */
+    public function routeNotificationForMail()
+    {
+        // メール通知の送信先をpending_emailに変更（メールアドレス変更時）
+        return $this->pending_email ?? $this->email;
+    }
 }
