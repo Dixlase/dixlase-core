@@ -53,6 +53,16 @@ class AdminPasswordResetLinkController extends Controller
         
         $request->validate($this->getPasswordResetLinkValidationRules());
 
+        // メールアドレスに対応するメンバーを確認
+        $member = \App\Models\Member::where('email', $request->email)->first();
+        
+        // メンバーが存在し、メール認証が未完了の場合はエラー
+        if ($member && !$member->hasVerifiedEmail()) {
+            return back()
+                ->withInput($request->only('email'))
+                ->withErrors(['email' => __('auth.email_not_verified')]);
+        }
+
         // We will send the password reset link to this user. Once we have attempted
         // to send the link, we will examine the response then see the message we
         // need to show to the user. Finally, we'll send out a proper response.

@@ -51,7 +51,7 @@ class AdminSettingsMemberStoreRequest extends FormRequest
         // 初期メンバー（ID=1）かどうか
         $isInitialAdmin = $member && $member->id === 1;
 
-        return [
+        $rules = [
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'email' => [
@@ -76,6 +76,17 @@ class AdminSettingsMemberStoreRequest extends FormRequest
             'two_factor_mode' => 'nullable|numeric|in:1,2,3',
             'two_factor_method' => 'nullable|numeric',
         ];
+
+        // メールアドレス確認のバリデーション
+        if (!$isUpdate) {
+            // 新規作成時は必須
+            $rules['email_confirmation'] = 'required|email|same:email';
+        } else if ($member && $this->input('email') !== $member->email) {
+            // 編集時にメールアドレスが変更された場合も必須
+            $rules['email_confirmation'] = 'required|email|same:email';
+        }
+
+        return $rules;
     }
 
     /**

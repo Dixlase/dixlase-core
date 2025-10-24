@@ -577,6 +577,8 @@ return [
                 'send_verification_email_button' => '認証メールを送信',
                 'send_verification_email_title' => '認証メール送信確認',
                 'send_verification_email_confirm' => '認証メールを送信しますか？アカウントは未認証状態に変更されます。',
+                'email_confirmation' => 'メールアドレス（確認用）',
+                'email_confirmation_help' => 'メールアドレスを再度入力してください。入力ミスを防ぐため、上記と同じメールアドレスを入力する必要があります。',
                 'login_notification_global_fixed' => 'ログイン通知設定はメンバー全体設定で「:setting」に固定されています。<br>変更する場合は、メンバー全体設定で「プロフィール設定に従う」に変更してください。',
                 'two_factor_global_fixed' => '二段階認証設定はメンバー全体設定で「:setting」に固定されています。<br>変更する場合は、メンバー全体設定で「プロフィール設定に従う」に変更してください。',
                 'force_logout' => '強制ログアウト',

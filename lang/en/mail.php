@@ -360,4 +360,12 @@ Clicking this link will complete the full mail functionality test.',
         'security_notice' => '【IMPORTANT】If you did not request this email, please ignore it. Your account will not be activated unless you click the verification link. A third party may have mistakenly registered using this email address, but your personal information will not be compromised.',
         'regards' => 'Best regards',
     ],
+
+    // Admin notifications
+    'admin_notification' => [
+        'member_verified' => [
+            'subject' => 'Member Account Verification Completed',
+            'body' => "A member account verification has been completed.\n\n【Member Information】\nName: :member_name\nEmail Address: :member_email\nVerified At: :verified_at\n\nThis member can now log in.",
+        ],
+    ],
 ];

@@ -90,6 +90,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 'messages' => $errors->get('email')
             ])
         </fieldset>
+
+        {{-- メールアドレス確認フィールド（新規作成時 or 編集時にメールアドレス変更） --}}
+        <fieldset id="email-confirmation-field" style="display: none;">
+            <legend>{{ __('admin.settings.members.form.email_confirmation') }}</legend>
+            @include('components::form.text', [
+                'type' => 'email',
+                'id' => 'email_confirmation',
+                'name' => 'email_confirmation',
+                'value' => old('email_confirmation'),
+                'required' => false,
+                'autocomplete' => 'off',
+                'onpaste' => 'return false',
+                'oncopy' => 'return false',
+                'oncut' => 'return false',
+            ])
+            <p class="help-text">{{ __('admin.settings.members.form.email_confirmation_help') }}</p>
+            @include('components::form.error', [
+                'messages' => $errors->get('email_confirmation')
+            ])
+        </fieldset>
     </section>
 
     <!-- パスワード設定セクション -->
@@ -161,15 +181,30 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     
                     {{-- 認証メール送信ボタン --}}
                     <div class="mt-4">
-                        @include('components::form.button', [
-                            'type' => 'button',
-                            'variant' => 'secondary',
-                            'size' => 'sm',
-                            'label' => __('admin.settings.members.form.send_verification_email_button'),
-                            'icon' => 'fas fa-envelope',
-                            'id' => 'send-verification-email-btn',
-                            'onclick' => 'sendVerificationEmail(' . $member->id . ')'
-                        ])
+                        @if($isMailServerTested)
+                            @include('components::form.button', [
+                                'type' => 'button',
+                                'variant' => 'secondary',
+                                'size' => 'sm',
+                                'label' => __('admin.settings.members.form.send_verification_email_button'),
+                                'icon' => 'fas fa-envelope',
+                                'id' => 'send-verification-email-btn',
+                                'onclick' => 'sendVerificationEmail(' . $member->id . ')'
+                            ])
+                        @else
+                            @include('components::form.button', [
+                                'type' => 'button',
+                                'variant' => 'secondary',
+                                'size' => 'sm',
+                                'label' => __('admin.settings.members.form.send_verification_email_button'),
+                                'icon' => 'fas fa-envelope',
+                                'disabled' => true
+                            ])
+                            <p class="text-sm text-yellow-600 dark:text-yellow-400 mt-2">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>
+                                {{ __('admin.settings.members.form.mail_server_not_tested') }}
+                            </p>
+                        @endif
                     </div>
                 @endif
             @endif
@@ -471,4 +506,41 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @if($includeForm && $formAction)
     </form>
 @endif
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const emailInput = document.getElementById('email');
+    const emailConfirmationField = document.getElementById('email-confirmation-field');
+    const emailConfirmationInput = document.getElementById('email_confirmation');
+    
+    @if(!isset($member) || !$member->exists)
+        // 新規作成時は常に表示
+        emailConfirmationField.style.display = 'block';
+        emailConfirmationInput.required = true;
+    @else
+        // 編集時は元のメールアドレスを保存
+        const originalEmail = '{{ $member->email ?? '' }}';
+        
+        // バリデーションエラーがある場合、または old値がある場合は初期表示
+        @if($errors->has('email_confirmation') || old('email_confirmation'))
+            emailConfirmationField.style.display = 'block';
+            emailConfirmationInput.required = true;
+        @endif
+        
+        // メールアドレスの変更を監視
+        emailInput.addEventListener('input', function() {
+            if (this.value !== originalEmail && this.value !== '') {
+                // メールアドレスが変更された場合は確認フィールドを表示
+                emailConfirmationField.style.display = 'block';
+                emailConfirmationInput.required = true;
+            } else {
+                // 元に戻した場合は確認フィールドを非表示
+                emailConfirmationField.style.display = 'none';
+                emailConfirmationInput.required = false;
+                emailConfirmationInput.value = '';
+            }
+        });
+    @endif
+});
+</script>
 
