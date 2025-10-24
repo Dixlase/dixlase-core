@@ -479,6 +479,6 @@ class AdminProfileController extends AdminLoggedInController
         ]);
 
         return redirect()->route('admin.login')
-            ->with('success', __('admin.profile.email_verification_success'));
+            ->with('success', __('admin.profile.account_verification_success'));
     }
 }

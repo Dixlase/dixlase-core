@@ -48,6 +48,14 @@ class FortifyServiceProvider extends ServiceProvider
             $member = Member::where('email', $request->email)->first();
 
             if ($member && Hash::check($request->password, $member->password)) {
+                // メール認証済みかチェック
+                if (!$member->hasVerifiedEmail()) {
+                    // 未認証の場合はログインを拒否
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        Fortify::username() => [__('auth.email_not_verified')],
+                    ]);
+                }
+                
                 return $member;
             }
 
