@@ -205,6 +205,7 @@ return [
     'attributes' => [
         // 基本フィールド
         'email' => 'メールアドレス',
+        'email_confirmation' => 'メールアドレス（確認用）',
         'password' => 'パスワード',
         'password_confirmation' => 'パスワード確認',
         'current_password' => '現在のパスワード',

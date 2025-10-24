@@ -57,6 +57,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <legend>{{ __('common.email') }}</legend>
                 @include('components.form.text', [
                     'name' => 'email',
+                    'id' => 'profile_email',
                     'type' => 'email',
                     'value' => old('email', $member->email),
                     'required' => true
@@ -84,6 +85,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         @endif
                     </p>
                 @endif
+            </fieldset>
+
+            {{-- メールアドレス確認フィールド（メールアドレス変更時のみ表示） --}}
+            <fieldset id="profile-email-confirmation-field" style="display: none;">
+                <legend>{{ __('admin.settings.members.form.email_confirmation') }}</legend>
+                @include('components.form.text', [
+                    'type' => 'email',
+                    'id' => 'profile_email_confirmation',
+                    'name' => 'email_confirmation',
+                    'value' => old('email_confirmation'),
+                    'required' => false,
+                    'autocomplete' => 'off',
+                    'onpaste' => 'return false',
+                    'oncopy' => 'return false',
+                    'oncut' => 'return false',
+                ])
+                <p class="description-text">{{ __('admin.settings.members.form.email_confirmation_help') }}</p>
+                @error('email_confirmation')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
             </fieldset>
 
             <fieldset>
@@ -336,6 +357,34 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 window.themeStore.applyTheme();
             }
         @endif
+
+        // メールアドレス変更の監視
+        const emailInput = document.getElementById('profile_email');
+        const emailConfirmationField = document.getElementById('profile-email-confirmation-field');
+        const emailConfirmationInput = document.getElementById('profile_email_confirmation');
+        const originalEmail = '{{ $member->email }}';
+        
+        if (emailInput && emailConfirmationField && emailConfirmationInput) {
+            // バリデーションエラーがある場合、または old値がある場合は初期表示
+            @if($errors->has('email_confirmation') || old('email_confirmation'))
+                emailConfirmationField.style.display = 'block';
+                emailConfirmationInput.required = true;
+            @endif
+            
+            // メールアドレスの変更を監視
+            emailInput.addEventListener('input', function() {
+                if (this.value !== originalEmail && this.value !== '') {
+                    // メールアドレスが変更された場合は確認フィールドを表示
+                    emailConfirmationField.style.display = 'block';
+                    emailConfirmationInput.required = true;
+                } else {
+                    // 元に戻した場合は確認フィールドを非表示
+                    emailConfirmationField.style.display = 'none';
+                    emailConfirmationInput.required = false;
+                    emailConfirmationInput.value = '';
+                }
+            });
+        }
 
         // フォーム送信前にパスワード確認フィールドの処理
         const profileForm = document.getElementById('profile-form');

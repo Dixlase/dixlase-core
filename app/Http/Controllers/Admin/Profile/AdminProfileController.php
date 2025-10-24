@@ -290,6 +290,11 @@ class AdminProfileController extends AdminLoggedInController
             'two_factor_method' => 'nullable|integer',
         ];
 
+        // メールアドレスが変更された場合は確認フィールドを必須に
+        if ($request->input('email') !== $member->email) {
+            $rules['email_confirmation'] = 'required|email|same:email';
+        }
+
         // 二段階認証方法のバリデーション（有効な方法の中から選択されているかチェック）
         $enabledTwoFactorMethodsString = MemberSetting::getValue('enabled_two_factor_methods', '0');
         $enabledTwoFactorMethods = $enabledTwoFactorMethodsString ? array_map('intval', explode(',', $enabledTwoFactorMethodsString)) : [0];
@@ -477,6 +482,25 @@ class AdminProfileController extends AdminLoggedInController
             'member_id' => $member->id,
             'email' => $member->email
         ]);
+
+        // 管理者に認証完了通知を送信
+        try {
+            $notificationService = app(\App\Services\SystemNotificationService::class);
+            $notificationService->sendNotification(
+                __('mail.admin_notification.member_verified.subject'),
+                __('mail.admin_notification.member_verified.body', [
+                    'member_name' => $member->name,
+                    'member_email' => $member->email,
+                    'verified_at' => now()->format('Y-m-d H:i:s'),
+                ])
+            );
+        } catch (\Exception $e) {
+            \Log::error('Failed to send verification notification to admin', [
+                'member_id' => $member->id,
+                'error' => $e->getMessage()
+            ]);
+            // エラーが発生してもログインは継続
+        }
 
         return redirect()->route('admin.login')
             ->with('success', __('admin.profile.account_verification_success'));
