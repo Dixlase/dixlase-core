@@ -41,5 +41,14 @@ return [
     'password' => 'The provided password is incorrect.',
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
     'email_not_verified' => 'This account has not completed email verification. Please check the verification email sent to your registered email address and complete account verification.',
+    'verify_email_login_required' => 'Please log in to complete account verification. Verification will be completed automatically after login.',
+    'verification_required' => 'Email Verification Required',
+    'verification_notice_message' => 'This account has not completed email verification. To use the admin panel, please click the link in the verification email sent to your registered email address and log in.',
+    'verification_link_sent' => 'A new verification link has been sent to your email address.',
+    'resend_verification_email' => 'Resend Verification Email',
+    'verification_token_expired' => 'The verification token has expired. Please request a new verification email.',
+    'verification_member_mismatch' => 'The logged-in account does not match the account pending verification.',
+    'verification_invalid' => 'The verification token is invalid.',
+    'verification_failed' => 'Email verification failed. Please try again.',
 
 ];

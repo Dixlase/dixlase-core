@@ -50,14 +50,26 @@ class EnsureEmailIsVerified
      */
     public function handle($request, Closure $next, $redirectToRoute = null)
     {
+        // 管理画面の場合はmemberガードを使用
+        $guard = $request->is('admin/*') ? 'member' : null;
+        $user = auth($guard)->user();
+        
         if (
-            ! $request->user() ||
-            ($request->user() instanceof MustVerifyEmail &&
-                ! $request->user()->hasVerifiedEmail())
+            ! $user ||
+            ($user instanceof MustVerifyEmail &&
+                ! $user->hasVerifiedEmail())
         ) {
-            return $request->expectsJson()
-                ? abort(403, 'Your email address is not verified.')
-                : Redirect::guest(URL::route($redirectToRoute ?: 'mypage.verification.notice'));
+            // 未認証の場合
+            if ($request->expectsJson()) {
+                return abort(403, 'Your email address is not verified.');
+            }
+            
+            // 管理画面の場合は専用の未認証ページへ
+            if ($request->is('admin/*')) {
+                return redirect()->route('admin.verification.notice');
+            }
+            
+            return Redirect::guest(URL::route($redirectToRoute ?: 'mypage.verification.notice'));
         }
 
         return $next($request);
