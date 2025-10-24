@@ -77,10 +77,21 @@ Route::prefix($adminUrl)->name('admin.')
         Route::get('/reset-password/{token}', [AdminNewPasswordController::class, 'create'])->name('password.reset');
         Route::post('/reset-password', [AdminNewPasswordController::class, 'store'])->name('password.store');
 
+        // メール認証（認証不要・署名付きURL）
+        Route::get('/verify-mail/{id}/{hash}', [AdminProfileController::class, 'verifyEmail'])
+            ->name('verification.verify')
+            ->middleware('signed');
+
+        // メール認証通知（ログイン済み・未認証ユーザー向け）
+        Route::middleware('auth:member')->group(function () {
+            Route::get('/email/verify', [AdminEmailVerificationPromptController::class, '__invoke'])->name('verification.notice');
+            Route::post('/email/verification-notification', [AdminEmailVerificationNotificationController::class, 'store'])->name('verification.send');
+        });
 
         // 認証済みルート
         Route::middleware([
-            'auth:member', 
+            'auth:member',
+            'verified',
             'log.admin.activity'
         ])->group(function () {
 
@@ -135,11 +146,6 @@ Route::prefix($adminUrl)->name('admin.')
             // プロフィール設定（全員アクセス可能）
             Route::get('/profile', [AdminProfileController::class, 'index'])->name('profile');
             Route::post('/profile', [AdminProfileController::class, 'update'])->name('profile.update');
-            
-            // メール認証（認証不要）
-            Route::get('/verify-mail/{id}/{hash}', [AdminProfileController::class, 'verifyEmail'])
-                ->name('verification.verify')
-                ->withoutMiddleware(['auth:member']);
 
             // 全体設定
             // 基本設定（権限チェック付き）

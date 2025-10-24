@@ -65,6 +65,11 @@ class MemberVerifyEmailNotification extends Notification
     {
         $verificationUrl = $this->verificationUrl($notifiable);
 
+        // コンテキストに応じて件名を切り替え
+        $subjectKey = $this->context === 'email_change'
+            ? 'mail.member_verify_email.subject'
+            : 'mail.member_verify_email.subject_account';
+
         // コンテキストに応じてメッセージを切り替え
         $messageKey = match($this->context) {
             'email_change' => 'mail.member_verify_email.message_email_change',
@@ -78,7 +83,7 @@ class MemberVerifyEmailNotification extends Notification
             : 'mail.member_verify_email.action_verify_account';
 
         return (new MailMessage)
-            ->subject(__('mail.member_verify_email.subject'))
+            ->subject(__($subjectKey))
             ->greeting(__('mail.member_verify_email.greeting', ['name' => $notifiable->name]))
             ->line(__($messageKey))
             ->action(__($actionKey), $verificationUrl)
@@ -95,7 +100,7 @@ class MemberVerifyEmailNotification extends Notification
      */
     protected function verificationUrl(object $notifiable): string
     {
-        return URL::temporarySignedRoute(
+        $url = URL::temporarySignedRoute(
             'admin.verification.verify',
             Carbon::now()->addMinutes(Config::get('auth.verification.expire', 60)),
             [
@@ -103,5 +108,14 @@ class MemberVerifyEmailNotification extends Notification
                 'hash' => sha1($notifiable->getEmailForVerification()),
             ]
         );
+        
+        \Log::info('Email verification URL generated', [
+            'member_id' => $notifiable->getKey(),
+            'email' => $notifiable->getEmailForVerification(),
+            'url' => $url,
+            'context' => $this->context
+        ]);
+        
+        return $url;
     }
 }

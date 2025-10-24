@@ -34,12 +34,16 @@ class AdminEmailVerificationNotificationController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        if ($request->user('members')->hasVerifiedEmail()) {
-            return redirect()->intended('/admin' . RouteServiceProvider::HOME);
+        $member = $request->user('member');
+        
+        if ($member && $member->hasVerifiedEmail()) {
+            return redirect()->intended(route('admin.dashboard'));
         }
 
-        $request->user()->sendEmailVerificationNotification();
+        if ($member) {
+            $member->sendEmailVerificationNotification('resend');
+        }
 
-        return back()->with('status', 'verification-link-sent');
+        return back()->with('resent', true);
     }
 }

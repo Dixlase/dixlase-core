@@ -24,6 +24,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('description', __('admin.login.description'))
 
 @section('content')
+    {{-- メール認証待ちメッセージ --}}
+    @if(session('email_verification_pending') || session('info'))
+        @include('components.message', [
+            'type' => 'info',
+            'message' => session('info') ?? __('auth.verify_email_login_required')
+        ])
+    @endif
+
     <form method="POST" action="{{ route('admin.login') }}">
         @csrf
 

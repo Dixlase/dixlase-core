@@ -9,24 +9,24 @@
     // タイプに応じたクラスとアイコンの設定
     $typeConfig = [
         'success' => [
-            'class' => 'message success',
-            'icon' => 'fas fa-check-circle text-green-400'
+            'class' => 'message success bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200',
+            'icon' => 'fas fa-check-circle text-green-500 dark:text-green-400'
         ],
         'warning' => [
-            'class' => 'message warning',
-            'icon' => 'fas fa-exclamation-triangle text-yellow-400'
+            'class' => 'message warning bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-200',
+            'icon' => 'fas fa-exclamation-triangle text-yellow-500 dark:text-yellow-400'
         ],
         'error' => [
-            'class' => 'message error',
-            'icon' => 'fas fa-times-circle text-red-400'
+            'class' => 'message error bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200',
+            'icon' => 'fas fa-times-circle text-red-500 dark:text-red-400'
         ],
         'notice' => [
-            'class' => 'message notice',
-            'icon' => 'fas fa-info-circle text-blue-400'
+            'class' => 'message notice bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-200',
+            'icon' => 'fas fa-info-circle text-blue-500 dark:text-blue-400'
         ],
         'info' => [
-            'class' => 'message info',
-            'icon' => 'fas fa-info-circle text-blue-400'
+            'class' => 'message info bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-200',
+            'icon' => 'fas fa-info-circle text-blue-500 dark:text-blue-400'
         ]
     ];
 
@@ -34,7 +34,7 @@
     $iconClass = $icon ?? $config['icon'];
 @endphp
 
-<div class="my-4 p-4 {{ $config['class'] }}">
+<div class="my-4 p-4 rounded-lg {{ $config['class'] }}">
     <div class="flex items-start">
         @if($iconClass)
             <div class="flex-shrink-0">

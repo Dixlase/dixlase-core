@@ -436,7 +436,7 @@ class AdminProfileController extends AdminLoggedInController
     }
 
     /**
-     * メール認証処理
+     * メール認証処理（セキュリティ強化版：ログイン後に認証）
      */
     public function verifyEmail(Request $request, $id, $hash)
     {
@@ -449,60 +449,105 @@ class AdminProfileController extends AdminLoggedInController
                 ->with('error', __('admin.profile.email_verification_invalid'));
         }
 
-        // pending_email がある場合は、メールアドレスを変更する処理
-        if ($member->pending_email) {
-            // 新しいメールアドレスに変更
-            $member->email = $member->pending_email;
-            $member->pending_email = null;
-            $member->email_verified_at = now();
-            $member->save();
-
-            \Log::info('Email verified and updated successfully', [
-                'member_id' => $member->id,
-                'new_email' => $member->email
-            ]);
-
-            // 自動ログイン
-            \Auth::guard('member')->login($member);
-
-            return redirect()->route('admin.profile')
-                ->with('success', __('admin.profile.email_verification_success'));
-        }
-
         // 既に認証済みの場合（pending_emailがない場合）
-        if ($member->hasVerifiedEmail()) {
+        if ($member->hasVerifiedEmail() && !$member->pending_email) {
             return redirect()->route('admin.login')
                 ->with('info', __('admin.profile.email_already_verified'));
         }
 
-        // 通常の認証処理（新規アカウントなど）
-        $member->markEmailAsVerified();
+        // ログイン状態をチェック
+        $currentUser = \Auth::guard('member')->user();
+        
+        // ログイン済みで、認証対象のメンバーと一致する場合は即座に処理
+        if ($currentUser && $currentUser->id === $member->id) {
+            return $this->processEmailVerificationImmediately($member, $hash);
+        }
 
-        \Log::info('Email verified successfully', [
-            'member_id' => $member->id,
-            'email' => $member->email
+        // 未ログインまたは別のユーザーでログイン中の場合
+        // 認証トークン情報をセッションに保存
+        session([
+            'email_verification_pending' => [
+                'member_id' => $member->id,
+                'hash' => $hash,
+                'email' => $member->pending_email ?? $member->email,
+                'is_email_change' => (bool) $member->pending_email,
+                'expires_at' => now()->addMinutes(30)->timestamp,
+            ]
         ]);
+        
+        // セッション保存を確実にする
+        session()->save();
 
-        // 管理者に認証完了通知を送信
+        // ログイン画面にリダイレクト
+        return redirect()->route('admin.login')
+            ->with('info', __('auth.verify_email_login_required'));
+    }
+    
+    /**
+     * ログイン済みの場合、即座にメール認証を処理
+     */
+    protected function processEmailVerificationImmediately($member, $hash)
+    {
         try {
-            $notificationService = app(\App\Services\SystemNotificationService::class);
-            $notificationService->sendNotification(
-                __('mail.admin_notification.member_verified.subject'),
-                __('mail.admin_notification.member_verified.body', [
-                    'member_name' => $member->name,
-                    'member_email' => $member->email,
-                    'verified_at' => now()->format('Y-m-d H:i:s'),
-                ])
-            );
+            if ($member->pending_email) {
+                // メールアドレス変更の認証
+                $member->email = $member->pending_email;
+                $member->pending_email = null;
+                $member->email_verified_at = now();
+                $member->save();
+                
+                \Log::info('Email change verified immediately (logged in)', [
+                    'member_id' => $member->id,
+                    'new_email' => $member->email
+                ]);
+                
+                return redirect()->route('admin.profile')
+                    ->with('success', __('admin.profile.email_verification_success'));
+            } else {
+                // 新規アカウントの認証
+                $member->markEmailAsVerified();
+                
+                \Log::info('Account verified immediately (logged in)', [
+                    'member_id' => $member->id,
+                    'email' => $member->email
+                ]);
+                
+                // メールサーバー設定済みの場合のみ管理者に通知
+                if (\App\Services\MailServerValidatorService::isMailServerTested()) {
+                    try {
+                        $notificationService = app(\App\Services\SystemNotificationService::class);
+                        $notificationService->sendNotification(
+                            __('mail.admin_notification.member_verified.subject'),
+                            __('mail.admin_notification.member_verified.body', [
+                                'member_name' => $member->name,
+                                'member_email' => $member->email,
+                                'verified_at' => now()->format('Y-m-d H:i:s'),
+                            ])
+                        );
+                        
+                        \Log::info('Verification notification sent to admin (immediate)', [
+                            'member_id' => $member->id,
+                            'admin_email' => $notificationService->getNotificationEmail()
+                        ]);
+                    } catch (\Exception $e) {
+                        \Log::error('Failed to send verification notification to admin', [
+                            'member_id' => $member->id,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
+                
+                return redirect()->route('admin.dashboard')
+                    ->with('success', __('admin.profile.account_verification_success'));
+            }
         } catch (\Exception $e) {
-            \Log::error('Failed to send verification notification to admin', [
+            \Log::error('Email verification failed (immediate)', [
                 'member_id' => $member->id,
                 'error' => $e->getMessage()
             ]);
-            // エラーが発生してもログインは継続
+            
+            return redirect()->route('admin.profile')
+                ->with('error', __('auth.verification_failed'));
         }
-
-        return redirect()->route('admin.login')
-            ->with('success', __('admin.profile.account_verification_success'));
     }
 }

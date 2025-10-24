@@ -349,8 +349,9 @@ Clicking this link will complete the full mail functionality test.',
     // Email Verification
     'member_verify_email' => [
         'subject' => 'Verify Your Email Address',
+        'subject_account' => 'Verify Your Member Account',
         'greeting' => 'Hello :name!',
-        'message_create' => 'Your account has been successfully created. Please click the button below to complete your account verification.',
+        'message_create' => 'Your member account has been successfully created. Please click the button below to complete your account verification.',
         'message_email_change' => 'Your account email address has been changed. Please click the button below to complete the email address change.',
         'message_resend' => 'Your account verification is required. Please click the button below to complete your account verification.',
         'action_verify_account' => 'Verify Account',

@@ -40,6 +40,15 @@ return [
     'password' => '提供されたパスワードが正しくありません。',
     'throttle' => 'ログイン試行が多すぎます。:seconds 秒後に再試行してください。',
     'email_not_verified' => 'このアカウントはメール認証が完了していません。登録されたメールアドレスに送信された認証メールを確認し、アカウントの認証を完了してください。',
+    'verify_email_login_required' => 'アカウントの認証を完了するには、ログインしてください。ログイン後、自動的に認証が完了します。',
+    'verification_required' => 'メール認証が必要です',
+    'verification_notice_message' => 'このアカウントはメール認証が完了していません。管理画面を使用するには、登録されたメールアドレスに送信された認証メールのリンクをクリックし、ログインしてください。',
+    'verification_link_sent' => '新しい認証リンクをメールアドレスに送信しました。',
+    'resend_verification_email' => '認証メールを再送信',
+    'verification_token_expired' => '認証トークンの有効期限が切れています。新しい認証メールをリクエストしてください。',
+    'verification_member_mismatch' => 'ログインしたアカウントと認証待ちのアカウントが一致しません。',
+    'verification_invalid' => '認証トークンが無効です。',
+    'verification_failed' => 'メール認証に失敗しました。もう一度お試しください。',
     'two_factor' => [
         'prompt' => <<<TEXT
 認証コードが書かれたメールを送信しました。

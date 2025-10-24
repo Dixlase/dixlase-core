@@ -198,7 +198,108 @@ class AdminLoginController extends AdminController
             // 2FA不要なら即ログイン
             Auth::guard('member')->login($member, $request->boolean('remember'));
             $request->session()->regenerate(true);
+            
+            // ログイン後にメール認証トークンをチェック
+            $this->processEmailVerificationIfPending($member, $request);
+            
             return redirect()->intended(route('admin.dashboard'));
+        }
+    }
+    
+    /**
+     * ログイン後にメール認証が待機中の場合、認証処理を実行
+     */
+    protected function processEmailVerificationIfPending($member, $request)
+    {
+        $verificationData = session('email_verification_pending');
+        
+        if (!$verificationData) {
+            return;
+        }
+        
+        // トークンの有効期限チェック
+        if ($verificationData['expires_at'] < now()->timestamp) {
+            session()->forget('email_verification_pending');
+            session()->flash('error', __('auth.verification_token_expired'));
+            return;
+        }
+        
+        // ログインしたメンバーと認証待ちのメンバーが一致するかチェック
+        if ($member->id !== $verificationData['member_id']) {
+            session()->forget('email_verification_pending');
+            session()->flash('error', __('auth.verification_member_mismatch'));
+            return;
+        }
+        
+        // ハッシュを再検証
+        $expectedHash = sha1($verificationData['email']);
+        if (!hash_equals((string) $verificationData['hash'], $expectedHash)) {
+            session()->forget('email_verification_pending');
+            session()->flash('error', __('auth.verification_invalid'));
+            return;
+        }
+        
+        try {
+            if ($verificationData['is_email_change']) {
+                // メールアドレス変更の認証
+                $member->email = $member->pending_email;
+                $member->pending_email = null;
+                $member->email_verified_at = now();
+                $member->save();
+                
+                \Log::info('Email change verified after login', [
+                    'member_id' => $member->id,
+                    'new_email' => $member->email
+                ]);
+                
+                session()->flash('success', __('admin.profile.email_verification_success'));
+            } else {
+                // 新規アカウントの認証
+                $member->markEmailAsVerified();
+                
+                \Log::info('Account verified after login', [
+                    'member_id' => $member->id,
+                    'email' => $member->email
+                ]);
+                
+                session()->flash('success', __('admin.profile.account_verification_success'));
+                
+                // メールサーバー設定済みの場合のみ管理者に通知
+                if (\App\Services\MailServerValidatorService::isMailServerTested()) {
+                    try {
+                        $notificationService = app(\App\Services\SystemNotificationService::class);
+                        $notificationService->sendAdminNotification(
+                            __('mail.admin_notification.member_verified.subject'),
+                            __('mail.admin_notification.member_verified.body', [
+                                'member_name' => $member->name,
+                                'member_email' => $member->email,
+                                'verified_at' => now()->format('Y-m-d H:i:s'),
+                            ])
+                        );
+                        
+                        \Log::info('Verification notification sent to admin after login', [
+                            'member_id' => $member->id,
+                            'admin_email' => $notificationService->getNotificationEmail()
+                        ]);
+                    } catch (\Exception $e) {
+                        \Log::error('Failed to send verification notification to admin', [
+                            'member_id' => $member->id,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
+            }
+            
+            // 認証完了後、セッションから削除
+            session()->forget('email_verification_pending');
+            
+        } catch (\Exception $e) {
+            \Log::error('Email verification failed after login', [
+                'member_id' => $member->id,
+                'error' => $e->getMessage()
+            ]);
+            session()->forget('email_verification_pending');
+            session()->flash('error', __('auth.verification_failed'));
         }
     }
 
@@ -250,6 +351,9 @@ class AdminLoginController extends AdminController
         Auth::guard('member')->login($member, session('login.remember', false));
         session()->forget(['login.id', 'login.remember']);
         $request->session()->regenerate(true);
+        
+        // ログイン後にメール認証トークンをチェック
+        $this->processEmailVerificationIfPending($member, $request);
 
         return redirect()->intended(route('admin.dashboard'));
     }
