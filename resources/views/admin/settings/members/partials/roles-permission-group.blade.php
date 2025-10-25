@@ -28,7 +28,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     {{-- アコーディオンヘッダー --}}
     <button 
         type="button"
-        class="accordion-header w-full px-6 py-2 text-left flex items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        class="accordion-header w-full px-6 py-1 text-left flex items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         @click="openSections['{{ $sectionId }}'] = !openSections['{{ $sectionId }}']"
         :class="{ 
             'border-b border-gray-200 dark:border-gray-600 rounded-t-lg rounded-b-none': openSections['{{ $sectionId }}']
