@@ -2,8 +2,8 @@
 
 @section('title', 'デバイス認証')
 @section('icon', 'fas fa-mobile-alt')
-@section('header', __('auth.two_factor.device.title'))
-@section('description', __('auth.two_factor.device.prompt'))
+@section('header', __('two-factor.device.title'))
+@section('description', __('two-factor.device.prompt'))
 
 @section('content')
 <div class="text-center">
@@ -12,11 +12,11 @@
     </div>
     
     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-        {{ __('auth.two_factor.device.waiting_title') }}
+        {{ __('two-factor.device.waiting_title') }}
     </h3>
     
     <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
-        {{ __('auth.two_factor.device.waiting_message') }}
+        {{ __('two-factor.device.waiting_message') }}
     </p>
     
     <div id="status-message" class="mb-6 p-4 rounded-lg bg-gray-50 dark:bg-gray-800">
@@ -27,18 +27,20 @@
     </div>
     
     @if(!empty($availableMethods))
-        <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                別の認証方法を使用:
-            </p>
-            @foreach($availableMethods as $method)
-                <a href="{{ $method['url'] }}" 
-                   class="inline-block px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:underline">
-                    {{ $method['label'] }}
-                </a>
-            @endforeach
+        <div class="mt-6 text-center">
+            <x-two-factor.alternative-methods
+                :methods="$availableMethods"
+                :current-method="$currentMethod"
+                context="admin"
+            />
         </div>
     @endif
+
+    <div class="mt-6 text-center">
+        <a href="{{ route('admin.login') }}" class="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
+            ← {{ __('two-factor.back_to_login') }}
+        </a>
+    </div>
 </div>
 
 <script>

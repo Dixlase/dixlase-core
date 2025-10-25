@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\MemberLoginAttempt;
-use App\Models\TrustedDevice;
+use App\Models\MembersTrustedDevice;
 use App\Models\MembersTwoFactorToken;
 use App\Models\Member;
 use Illuminate\Console\Command;
@@ -38,7 +38,7 @@ class TestFactories extends Command
             $this->line("  - Generated data: {$loginAttempt->identifier}, {$loginAttempt->ip_address}");
 
             // Test TrustedDevice factory
-            $trustedDevice = TrustedDevice::factory()->make();
+            $trustedDevice = MembersTrustedDevice::factory()->make();
             $this->info('✓ TrustedDevice factory works');
             $this->line("  - Generated data: {$trustedDevice->device_name}, {$trustedDevice->token}");
 

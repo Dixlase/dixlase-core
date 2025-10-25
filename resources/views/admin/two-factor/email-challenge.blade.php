@@ -1,18 +1,18 @@
 @extends('layouts.auth')
 
-@section('title', __('auth.two_factor.title'))
+@section('title', __('two-factor.email.title'))
 @section('icon', 'fas fa-envelope')
-@section('header', __('auth.two_factor.title'))
-@section('description', __('auth.two_factor.prompt'))
+@section('header', __('two-factor.email.title'))
+@section('description', __('two-factor.email.prompt'))
 
 @section('content')
     <x-two-factor.email-challenge
         :action="route('admin.two-factor.confirm')"
         :resend-action="route('admin.two-factor.resend')"
-        :title="__('auth.two_factor.code_title')"
-        :prompt="__('auth.two_factor.code_prompt')"
-        :submit-text="__('auth.two_factor.verify')"
-        :resend-text="__('auth.two_factor.resend')"
+        :title="__('two-factor.email.code_title')"
+        :prompt="__('two-factor.email.code_prompt')"
+        :submit-text="__('two-factor.email.verify')"
+        :resend-text="__('two-factor.email.resend')"
         context="admin"
     />
 
@@ -25,4 +25,10 @@
             />
         </div>
     @endif
+
+    <div class="mt-6 text-center">
+        <a href="{{ route('admin.login') }}" class="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
+            ← {{ __('two-factor.back_to_login') }}
+        </a>
+    </div>
 @endsection

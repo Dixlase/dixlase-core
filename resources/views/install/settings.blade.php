@@ -116,8 +116,29 @@
 </form>
 
 <script>
-    // パスワード確認欄でコピー＆ペーストを禁止
+    // === デバッグ用コード（問題解決後に削除） ===
+    console.log('=== Password Tools Debug ===');
+    console.log('1. Script loaded, PasswordTools exists:', typeof window.PasswordTools);
+    
+    // 100ms後に再確認（コンポーネントのsetTimeout後）
+    setTimeout(function() {
+        console.log('2. After 100ms, PasswordTools exists:', typeof window.PasswordTools);
+        console.log('3. PasswordPolicy:', window.PasswordPolicy);
+        console.log('4. PasswordMessages:', window.PasswordMessages);
+        
+        const passwordInput = document.getElementById('admin_password');
+        console.log('5. Password input element:', passwordInput);
+        console.log('6. Has listener attribute:', passwordInput?.hasAttribute('data-password-listener'));
+        
+        // 手動でテスト実行
+        if (typeof PasswordTools !== 'undefined' && passwordInput) {
+            console.log('7. Manually testing checkPasswordStrength');
+            PasswordTools.checkPasswordStrength('admin_password');
+        }
+    }, 100);
+    
     document.addEventListener('DOMContentLoaded', function() {
+        // パスワード確認欄でコピー＆ペーストを禁止
         const confirmInput = document.getElementById("admin_password_confirmation");
         
         if (confirmInput) {
