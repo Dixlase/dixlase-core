@@ -26,6 +26,13 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+        
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    
     protected $table = 'members_two_factor_devices';
 
     /**

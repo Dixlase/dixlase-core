@@ -27,30 +27,22 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+
+    protected $table = 'base_settings';
+
     /**
      * Run the migrations.
      *
      * @return void
      */
-
-    protected $table = 'base_settings';
-
     public function up()
     {
         Schema::create($this->table, function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string("name", 255)->nullable();
             $table->text("value")->nullable();
-            $table->unsignedBigInteger('default_ogp_image_id')->nullable();
-            $table->string('site_description', 500)->nullable();
-            $table->string('site_keywords', 500)->nullable();
-            $table->string('twitter_card_type', 50)->default('summary_large_image');
             $table->timestamps();
             $table->softDeletes();
-            
-            // 外部キー制約は不要（アプリケーションレベルで管理）
-            // NOTE: default_ogp_image_id は media テーブルを参照しますが、
-            // 設定の柔軟性を保つため、DBレベルの制約は設定しません
         });
     }
 

@@ -27,12 +27,12 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    protected $table = 'cache';
+    protected $lockTable = 'cache_locks';
+
     /**
      * Run the migrations.
      */
-
-    protected $table = 'cache';
-
     public function up(): void
     {
         Schema::create($this->table, function (Blueprint $table) {
@@ -41,7 +41,7 @@ return new class extends Migration
             $table->integer('expiration');
         });
 
-        Schema::create('cache_locks', function (Blueprint $table) {
+        Schema::create($this->lockTable, function (Blueprint $table) {
             $table->string('key')->primary();
             $table->string('owner');
             $table->integer('expiration');
@@ -53,7 +53,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists($this->lockTable);
         Schema::dropIfExists($this->table);
-        Schema::dropIfExists('cache_locks');
     }
 };
