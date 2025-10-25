@@ -51,14 +51,19 @@ return [
     'verification_invalid' => '認証トークンが無効です。',
     'verification_failed' => 'メール認証に失敗しました。もう一度お試しください。',
     'two_factor' => [
+        'title' => '二段階認証',
         'prompt' => <<<TEXT
 認証コードが書かれたメールを送信しました。
 メールに書かれている6桁の認証コードを入力してください。
 TEXT,
+        'code_title' => '認証コード入力',
+        'code_prompt' => 'メールに記載された6桁の認証コードを入力してください。',
         'code_label' => '認証コード',
         'expire_notice' => '認証コードは :minutes 分間有効です。',
         'submit' => '認証してログイン',
+        'verify' => '認証する',
         'resend' => '認証コードを再送信する',
+        'invalid' => '認証コードが間違っているか、有効期限が切れています。',
         'invalid_code' => '認証コードが間違っているか、有効期限が切れています。',
         'resend_success' => 'メールを再送信しました。',
     ],

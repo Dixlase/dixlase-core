@@ -150,12 +150,30 @@ class TwoFactorHelper
         }
         
         $systemSettings = $this->getSystemTwoFactorSettings();
+        $force2fa = $systemSettings['force_2fa'] ?? 0;
         
-        return match ($force2fa) {
-            1 => true, // 常に有効
-            2 => (bool) ($user->two_factor_mode ?? false), // プロフィール設定を反映
-            default => false, // 無効
-        };
+        // 全体設定: 0=無効, 1=異なる端末/IP時のみ, 2=常に有効, 3=プロフィール設定を反映
+        
+        // 無効の場合
+        if ($force2fa === 0) {
+            return false;
+        }
+        
+        // 全体設定で強制されている場合
+        if ($force2fa === 1 || $force2fa === 2) {
+            return true; // 1=異なる端末/IP時のみ, 2=常に有効
+        }
+        
+        // プロフィール設定を使用する場合（force_2fa = 3）
+        $userMode = $user->two_factor_mode;
+        
+        // TwoFactorMode Enumの場合
+        if ($userMode instanceof \App\Enums\TwoFactorMode) {
+            return $userMode->value > 0; // Disabled(0)以外は有効
+        }
+        
+        // 整数値の場合
+        return (int)$userMode > 0;
     }
 
     /**
@@ -170,18 +188,29 @@ class TwoFactorHelper
         $defaultMethod = (int) \App\Models\MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value);
         $enabledMethods = $this->getEnabledTwoFactorMethods();
 
+        Log::info('[2FA] getEffectiveAuthMethod', [
+            'user_id' => $user->id,
+            'user_method' => $userMethod,
+            'default_method' => $defaultMethod,
+            'enabled_methods' => $enabledMethods,
+        ]);
+
         // ユーザーの設定方法が有効な方法に含まれている場合はそれを使用
-        if ($userMethod && in_array((int)$userMethod, $enabledMethods, true)) {
+        if ($userMethod !== null && in_array((int)$userMethod, $enabledMethods, true)) {
+            Log::info('[2FA] Using user method', ['method' => (int)$userMethod]);
             return (int)$userMethod;
         }
 
         // デフォルト方法が有効な場合はそれを使用
         if (in_array($defaultMethod, $enabledMethods, true)) {
+            Log::info('[2FA] Using default method', ['method' => $defaultMethod]);
             return $defaultMethod;
         }
 
         // 有効な方法の最初のものを使用
-        return !empty($enabledMethods) ? $enabledMethods[0] : TwoFactorMethod::EMAIL->value;
+        $fallbackMethod = !empty($enabledMethods) ? $enabledMethods[0] : TwoFactorMethod::EMAIL->value;
+        Log::info('[2FA] Using fallback method', ['method' => $fallbackMethod]);
+        return $fallbackMethod;
     }
 
     /**

@@ -39,12 +39,12 @@
     @endif
 </head>
 <body class="bg-gray-100 dark:bg-black flex items-center justify-center min-h-screen transition-colors duration-300">
-    <div class="flex flex-col items-center w-full max-w-md min-w-[400px]">
+    <div class="flex flex-col items-center w-full max-w-lg min-w-[400px]">
 
         <!-- ロゴ -->
         <img src="{{ asset('assets/images/logo.svg') }}" alt="{{ config('app.name') }}" class="w-32 h-auto mx-auto mb-4">
 
-        <div class="bg-white dark:bg-gray-900 shadow-lg rounded-lg p-8 max-w-md w-full mb-4 transition-colors duration-300">
+        <div class="bg-white dark:bg-gray-900 shadow-lg rounded-lg p-12 w-full mb-4 transition-colors duration-300">
             <h1 class="text-2xl font-bold text-gray-800 dark:text-white mb-4 text-center">@yield('header')</h1>
             <p class="text-gray-600 dark:text-gray-300 mb-6 text-center">@yield('description')</p>
             @include('components::flash-message')

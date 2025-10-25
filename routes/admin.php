@@ -70,6 +70,14 @@ Route::prefix($adminUrl)->name('admin.')
         Route::get('/two-factor-challenge', [AdminLoginController::class, 'showTwoFactorForm'])->name('two-factor.login');
         Route::post('/two-factor-challenge', [AdminLoginController::class, 'confirmTwoFactor'])->name('two-factor.confirm');
         Route::post('/two-factor-resend', [AdminLoginController::class, 'resendTwoFactorCode'])->name('two-factor.resend');
+        
+        // デバイス認証
+        Route::get('/two-factor-device', [AdminLoginController::class, 'showDeviceChallengeForm'])->name('two-factor.device.challenge');
+        Route::post('/two-factor-device', [AdminLoginController::class, 'confirmDeviceAuth'])->name('two-factor.device.verify');
+        
+        // 生体認証
+        Route::get('/two-factor-biometric', [AdminLoginController::class, 'showBiometricChallengeForm'])->name('two-factor.biometric.challenge');
+        Route::post('/two-factor-biometric', [AdminLoginController::class, 'confirmBiometricAuth'])->name('two-factor.biometric.verify');
 
         // パスワードリセット
         Route::get('/forgot-password', [AdminPasswordResetLinkController::class, 'create'])->name('password.request');
