@@ -19,19 +19,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @if (session('status'))
-    <div class="mb-6 p-4 font-semibold text-blue-800 bg-blue-100 border border-blue-200 rounded-xl">
+    <div class="mb-6 p-4 font-semibold text-blue-800 bg-blue-100 border border-blue-200 rounded-xl dark:text-blue-200 dark:bg-blue-900 dark:border-blue-700">
         {!! session('status') !!}
     </div>
 @endif
 
 @if (session('success'))
-    <div class="mb-6 p-4 font-semibold text-green-800 bg-green-100 border border-green-200 rounded-xl">
+    <div class="mb-6 p-4 font-semibold text-green-800 bg-green-100 border border-green-200 rounded-xl dark:text-green-200 dark:bg-green-900 dark:border-green-700">
         {!! session('success') !!}
     </div>
 @endif
 
 @if ($errors->any())
-    <div class="mb-6 p-4 font-semibold text-red-800 bg-red-100 border border-red-200 rounded-xl">
+    <div class="mb-6 p-4 font-semibold text-red-800 bg-red-100 border border-red-200 rounded-xl dark:text-red-200 dark:bg-red-900 dark:border-red-700">
         <ul class="list-disc list-inside">
             @foreach ($errors->all() as $error)
                 <li>{!! $error !!}</li>

@@ -39,6 +39,6 @@ class AdminEmailVerificationPromptController extends Controller
         
         return $member && $member->hasVerifiedEmail()
             ? redirect()->intended(route('admin.dashboard'))
-            : view('admin::verification-notice');
+            : view('admin::auth.verification-notice');
     }
 }

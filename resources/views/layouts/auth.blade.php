@@ -45,6 +45,11 @@
         <img src="{{ asset('assets/images/logo.svg') }}" alt="{{ config('app.name') }}" class="w-32 h-auto mx-auto mb-4">
 
         <div class="bg-white dark:bg-gray-900 shadow-lg rounded-lg p-12 w-full mb-4 transition-colors duration-300">
+            @hasSection('icon')
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 dark:bg-blue-900 mb-6">
+                    <i class="@yield('icon') text-2xl text-blue-600 dark:text-blue-400"></i>
+                </div>
+            @endif
             <h1 class="text-2xl font-bold text-gray-800 dark:text-white mb-4 text-center">@yield('header')</h1>
             <p class="text-gray-600 dark:text-gray-300 mb-6 text-center">@yield('description')</p>
             @include('components::flash-message')

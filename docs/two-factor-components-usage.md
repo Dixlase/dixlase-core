@@ -1,12 +1,12 @@
-{{--
-二段階認証コンポーネントの使用例
+# 二段階認証コンポーネントの使用例
 
-このファイルは、ユーザー管理プラグインなどで二段階認証コンポーネントを
-使用する際の参考例として作成されています。
+このドキュメントは、ユーザー管理プラグインなどで二段階認証コンポーネントを使用する際の参考例です。
 
 ## 基本的な使用方法
 
 ### 1. メール認証のみ
+
+```blade
 <x-two-factor.auth-layout 
     title="二段階認証"
     subtitle="メールに送信された認証コードを入力してください"
@@ -20,8 +20,11 @@
         context="user"
     />
 </x-two-factor.auth-layout>
+```
 
 ### 2. デバイス認証のみ
+
+```blade
 <x-two-factor.auth-layout 
     title="デバイス認証"
     subtitle="登録済みデバイスで認証を承認してください"
@@ -35,8 +38,11 @@
         context="user"
     />
 </x-two-factor.auth-layout>
+```
 
 ### 3. 生体認証のみ
+
+```blade
 <x-two-factor.auth-layout 
     title="生体認証"
     subtitle="生体認証を使用してログインしてください"
@@ -50,8 +56,11 @@
         context="user"
     />
 </x-two-factor.auth-layout>
+```
 
 ### 4. 複数認証方法（代替方法付き）
+
+```blade
 <x-two-factor.auth-layout 
     title="二段階認証"
     subtitle="認証方法を選択してください"
@@ -84,55 +93,83 @@
         />
     </x-slot>
 </x-two-factor.auth-layout>
+```
 
 ## プロパティ一覧
 
 ### auth-layout コンポーネント
-- title: ページタイトル（デフォルト: "二段階認証"）
-- subtitle: サブタイトル（オプション）
-- context: コンテキスト（"admin", "user", "plugin"）
+
+| プロパティ | 型 | デフォルト | 説明 |
+|-----------|-----|-----------|------|
+| `title` | string | "二段階認証" | ページタイトル |
+| `subtitle` | string | null | サブタイトル（オプション） |
+| `context` | string | "admin" | コンテキスト（"admin", "user", "plugin"） |
 
 ### email-challenge コンポーネント
-- action: フォーム送信先URL（必須）
-- resend-action: 再送信URL（オプション）
-- title: チャレンジタイトル（デフォルト: "認証コード入力"）
-- prompt: プロンプトメッセージ
-- submit-text: 送信ボタンテキスト（デフォルト: "認証"）
-- resend-text: 再送信ボタンテキスト（デフォルト: "再送信"）
-- expire-minutes: 有効期限（分）（デフォルト: 10）
-- code-length: コード桁数（デフォルト: 6）
-- auto-submit: 自動送信（デフォルト: true）
-- show-expire-time: 有効期限表示（デフォルト: true）
-- show-resend: 再送信ボタン表示（デフォルト: true）
-- context: コンテキスト（デフォルト: "admin"）
+
+| プロパティ | 型 | デフォルト | 説明 |
+|-----------|-----|-----------|------|
+| `action` | string | **必須** | フォーム送信先URL |
+| `resend-action` | string | null | 再送信URL（オプション） |
+| `title` | string | "認証コード入力" | チャレンジタイトル |
+| `prompt` | string | null | プロンプトメッセージ |
+| `submit-text` | string | "認証" | 送信ボタンテキスト |
+| `resend-text` | string | "再送信" | 再送信ボタンテキスト |
+| `expire-minutes` | int | 10 | 有効期限（分） |
+| `code-length` | int | 6 | コード桁数 |
+| `auto-submit` | bool | true | 自動送信 |
+| `show-expire-time` | bool | true | 有効期限表示 |
+| `show-resend` | bool | true | 再送信ボタン表示 |
+| `context` | string | "admin" | コンテキスト |
 
 ### device-challenge コンポーネント
-- challenge-action: チャレンジ開始URL（必須）
-- verify-action: 認証確認URL（必須）
-- title: チャレンジタイトル（デフォルト: "デバイス認証"）
-- prompt: プロンプトメッセージ
-- context: コンテキスト（デフォルト: "admin"）
-- poll-interval: ポーリング間隔（ミリ秒）（デフォルト: 2000）
-- max-retries: 最大リトライ回数（デフォルト: 30）
+
+| プロパティ | 型 | デフォルト | 説明 |
+|-----------|-----|-----------|------|
+| `challenge-action` | string | **必須** | チャレンジ開始URL |
+| `verify-action` | string | **必須** | 認証確認URL |
+| `title` | string | "デバイス認証" | チャレンジタイトル |
+| `prompt` | string | null | プロンプトメッセージ |
+| `context` | string | "admin" | コンテキスト |
+| `poll-interval` | int | 2000 | ポーリング間隔（ミリ秒） |
+| `max-retries` | int | 30 | 最大リトライ回数 |
 
 ### biometric-challenge コンポーネント
-- challenge-action: チャレンジ開始URL（必須）
-- verify-action: 認証確認URL（必須）
-- title: チャレンジタイトル（デフォルト: "生体認証"）
-- prompt: プロンプトメッセージ
-- context: コンテキスト（デフォルト: "admin"）
+
+| プロパティ | 型 | デフォルト | 説明 |
+|-----------|-----|-----------|------|
+| `challenge-action` | string | **必須** | チャレンジ開始URL |
+| `verify-action` | string | **必須** | 認証確認URL |
+| `title` | string | "生体認証" | チャレンジタイトル |
+| `prompt` | string | null | プロンプトメッセージ |
+| `context` | string | "admin" | コンテキスト |
 
 ### alternative-methods コンポーネント
-- methods: 代替認証方法の配列（必須）
-  - value: 認証方法の値
-  - label: 表示ラベル
-  - url: リンク先URL
-- current-method: 現在の認証方法（オプション）
-- context: コンテキスト（デフォルト: "admin"）
+
+| プロパティ | 型 | デフォルト | 説明 |
+|-----------|-----|-----------|------|
+| `methods` | array | **必須** | 代替認証方法の配列 |
+| `current-method` | string | null | 現在の認証方法（オプション） |
+| `context` | string | "admin" | コンテキスト |
+
+#### methods配列の構造
+
+```php
+[
+    [
+        'value' => 'email',      // 認証方法の値
+        'label' => 'メール認証',  // 表示ラベル
+        'url' => route('...')    // リンク先URL
+    ],
+    // ...
+]
+```
 
 ## カスタマイズ例
 
 ### 独自レイアウトでの使用
+
+```blade
 @extends('your-layout')
 
 @section('content')
@@ -148,12 +185,19 @@
     />
 </div>
 @endsection
+```
 
 ### 動的な代替方法
+
+```blade
 <x-two-factor.alternative-methods
     :methods="$availableMethods"
     :current-method="$currentMethod"
     context="user"
 />
+```
 
---}}
+## 関連ドキュメント
+
+- [二段階認証システム概要](./two-factor-authentication-usage.md)
+- [旧コンポーネント使用例](./two-factor-challenge-component-usage.md)
