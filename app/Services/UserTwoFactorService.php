@@ -9,7 +9,14 @@ use App\Services\BiometricAuthenticationService;
 use App\Enums\TwoFactorMethod;
 use Illuminate\Support\Facades\Log;
 
-class AdminTwoFactorService
+/**
+ * ユーザー管理プラグイン用の二段階認証サービス
+ * 
+ * このクラスは、ユーザー管理プラグインで二段階認証機能を使用する際の
+ * サンプル実装です。プラグイン独自の設定システムを使用する場合は、
+ * 必要に応じてカスタマイズしてください。
+ */
+class UserTwoFactorService
 {
     protected TwoFactorHelper $helper;
     protected EmailAuthenticationService $emailAuth;
@@ -37,7 +44,7 @@ class AdminTwoFactorService
      */
     public function generate($user, int $method = null)
     {
-        $effectiveMethod = $method ?? $this->helper->getEffectiveAuthMethod($user);
+        $effectiveMethod = $method ?? $this->getEffectiveAuthMethod($user);
         
         return match ($effectiveMethod) {
             TwoFactorMethod::EMAIL->value => $this->generateEmailCode($user),
@@ -57,7 +64,7 @@ class AdminTwoFactorService
      */
     public function validate($user, $input, int $method = null): bool
     {
-        $effectiveMethod = $method ?? $this->helper->getEffectiveAuthMethod($user);
+        $effectiveMethod = $method ?? $this->getEffectiveAuthMethod($user);
         
         return match ($effectiveMethod) {
             TwoFactorMethod::EMAIL->value => $this->validateEmailCode($user, $input),
@@ -70,44 +77,14 @@ class AdminTwoFactorService
     /**
      * 二段階認証が必要かどうかを判定
      *
-     * @param mixed $member ユーザーモデル
+     * @param mixed $user ユーザーモデル
      * @return bool 2FAが必要かどうか
      */
-    public function has($member): bool
+    public function has($user): bool
     {
-        return $this->helper->isTwoFactorEnabled($member);
-    }
-
-    /**
-     * 異なる環境からのアクセスかどうかを判定
-     *
-     * @param mixed $member ユーザーモデル
-     * @return bool 異なる環境かどうか
-     */
-    public function isDifferentEnvironment($member): bool
-    {
-        return $this->helper->isDifferentEnvironment($member);
-    }
-
-    /**
-     * 二段階認証が必要かどうかを判定
-     *
-     * @param mixed $user ユーザーモデル
-     * @return bool
-     */
-    public function isRequired($user): bool
-    {
+        // プラグイン独自の設定システムを使用する場合は、
+        // ここでプラグインの設定を取得するロジックを実装
         return $this->helper->isTwoFactorEnabled($user);
-    }
-
-    /**
-     * システム設定を取得
-     *
-     * @return array
-     */
-    public function getSystemSettings(): array
-    {
-        return $this->helper->getSystemTwoFactorSettings();
     }
 
     /**
@@ -118,10 +95,21 @@ class AdminTwoFactorService
      */
     public function getEffectiveAuthMethod($user): int
     {
+        // プラグイン独自の設定がある場合は、ここでカスタマイズ
         return $this->helper->getEffectiveAuthMethod($user);
     }
 
-
+    /**
+     * デバイスを信頼済みとして登録
+     *
+     * @param mixed $user ユーザーモデル
+     * @param string|null $deviceName デバイス名
+     * @return string トークン
+     */
+    public function registerTrustedDevice($user, string $deviceName = null): string
+    {
+        return $this->deviceAuth->registerTrustedDevice($user, $deviceName);
+    }
 
     /**
      * 利用可能な認証方法を取得
@@ -131,6 +119,8 @@ class AdminTwoFactorService
      */
     public function getAvailableMethods($user): array
     {
+        // プラグイン独自の設定システムを使用する場合は、
+        // ここでプラグインの設定を取得するロジックを実装
         $systemSettings = $this->getSystemSettings();
         $methods = [];
 
@@ -155,15 +145,24 @@ class AdminTwoFactorService
     }
 
     /**
-     * 信頼済みデバイスとして登録
+     * システムの二段階認証設定を取得
+     * 
+     * プラグイン独自の設定システムを使用する場合は、
+     * このメソッドをオーバーライドしてください。
      *
-     * @param mixed $user ユーザーモデル
-     * @param string|null $deviceName デバイス名
-     * @return string トークン
+     * @return array 設定配列
      */
-    public function registerTrustedDevice($user, string $deviceName = null): string
+    protected function getSystemSettings(): array
     {
-        return $this->deviceAuth->registerTrustedDevice($user, $deviceName);
+        // 例：プラグイン独自の設定を取得
+        // return [
+        //     'force_2fa' => (int) PluginSetting::get('user_force_2fa', 0),
+        //     'enabled_methods' => json_decode(PluginSetting::get('user_enabled_2fa_methods', '[0]'), true),
+        //     'default_method' => (int) PluginSetting::get('user_default_2fa_method', 0),
+        // ];
+        
+        // デフォルトはシステム設定を使用
+        return $this->helper->getSystemTwoFactorSettings();
     }
 
     /**
@@ -191,7 +190,7 @@ class AdminTwoFactorService
      */
     private function generateEmailCode($user): string
     {
-        return $this->emailAuth->generateAndSendCode($user, 'admin');
+        return $this->emailAuth->generateAndSendCode($user, 'user');
     }
 
     /**
@@ -250,5 +249,27 @@ class AdminTwoFactorService
     private function validateBiometricAuth($user, array $assertionData): bool
     {
         return $this->biometricAuth->verifyAssertion($user, $assertionData);
+    }
+
+    /**
+     * 異なる環境からのアクセスかどうかを判定
+     *
+     * @param mixed $user ユーザーモデル
+     * @return bool 異なる環境かどうか
+     */
+    public function isDifferentEnvironment($user): bool
+    {
+        return $this->helper->isDifferentEnvironment($user);
+    }
+
+    /**
+     * 信頼済みデバイスからのアクセスかどうかを判定
+     *
+     * @param mixed $user ユーザーモデル
+     * @return bool 信頼済みデバイスかどうか
+     */
+    public function isFromTrustedDevice($user): bool
+    {
+        return $this->deviceAuth->isTrustedDevice($user);
     }
 }
