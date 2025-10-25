@@ -14,14 +14,9 @@
 ])
 
 <div class="text-center">
-    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900 mb-4">
-        <svg class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-        </svg>
-    </div>
-    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+    <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
         {{ $title }}
-    </h3>
+    </h2>
     <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
         {{ $prompt }}
     </p>
@@ -98,6 +93,34 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let resendCountdown = 0;
     let countdownInterval = null;
+
+    // フラッシュメッセージ表示関数（既存のflash-messageコンポーネントと同じスタイル）
+    function showFlashMessage(message, type = 'success') {
+        // 既存のメッセージを削除
+        const existingMessage = document.querySelector('.flash-message-dynamic');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+
+        // メッセージ要素を作成
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `flash-message-dynamic mb-6 p-4 font-semibold rounded-xl ${
+            type === 'success' 
+                ? 'text-green-800 bg-green-100 border border-green-200 dark:text-green-200 dark:bg-green-900 dark:border-green-700' 
+                : 'text-red-800 bg-red-100 border border-red-200 dark:text-red-200 dark:bg-red-900 dark:border-red-700'
+        }`;
+        messageDiv.textContent = message;
+
+        // フォームの前に挿入
+        form.parentNode.insertBefore(messageDiv, form);
+
+        // 5秒後に自動削除
+        setTimeout(() => {
+            messageDiv.style.transition = 'opacity 0.5s';
+            messageDiv.style.opacity = '0';
+            setTimeout(() => messageDiv.remove(), 500);
+        }, 5000);
+    }
 
     // コード入力処理
     inputs.forEach((input, index) => {
@@ -178,6 +201,9 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                // 成功メッセージを表示
+                showFlashMessage(data.message, 'success');
+                
                 startResendCountdown(60); // 60秒間再送信を無効化
                 // 入力フィールドをクリア
                 inputs.forEach(input => input.value = '');
@@ -185,12 +211,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateHiddenInput();
                 updateSubmitButton();
             } else {
-                alert(data.message || 'コードの再送信に失敗しました');
+                showFlashMessage(data.message || 'コードの再送信に失敗しました', 'error');
             }
         })
         .catch(error => {
             console.error('Resend error:', error);
-            alert('ネットワークエラーが発生しました');
+            showFlashMessage('ネットワークエラーが発生しました', 'error');
         });
     };
 

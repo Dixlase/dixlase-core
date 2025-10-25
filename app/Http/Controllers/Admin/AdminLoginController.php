@@ -356,7 +356,54 @@ class AdminLoginController extends AdminController
             return redirect()->route('admin.login');
         }
 
-        return view('admin::two_factor_challenge');
+        $memberId = session('login.id');
+        $member = Member::find($memberId);
+
+        if (!$member) {
+            return redirect()->route('admin.login');
+        }
+
+        // TwoFactorHelperを使用して有効な認証方法を取得
+        $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
+        $enabledMethods = $twoFactorHelper->getEnabledTwoFactorMethods();
+        $currentMethod = $twoFactorHelper->getEffectiveAuthMethod($member);
+
+        // 認証方法の翻訳キーマッピング
+        $methodLabels = [
+            0 => __('common.two_factor_method.options.email'),
+            1 => __('common.two_factor_method.options.device'),
+            2 => __('common.two_factor_method.options.biometric'),
+        ];
+
+        // 有効な認証方法のリストを作成
+        $availableMethods = [];
+        foreach ($enabledMethods as $method) {
+            if ($method !== $currentMethod) { // 現在の方法は除外
+                $availableMethods[] = [
+                    'value' => $method,
+                    'label' => $methodLabels[$method] ?? '',
+                    'url' => $this->getTwoFactorMethodRoute($method),
+                ];
+            }
+        }
+
+        return view('admin::two-factor.email-challenge', [
+            'availableMethods' => $availableMethods,
+            'currentMethod' => $currentMethod,
+        ]);
+    }
+
+    /**
+     * 認証方法に応じたルートを取得
+     */
+    protected function getTwoFactorMethodRoute(int $method): string
+    {
+        return match($method) {
+            0 => route('admin.two-factor.login'), // EMAIL
+            1 => route('admin.two-factor.device.challenge'), // DEVICE
+            2 => route('admin.two-factor.biometric.challenge'), // BIOMETRIC
+            default => route('admin.two-factor.login'),
+        };
     }
 
     public function confirmTwoFactor(Request $request)
@@ -397,18 +444,27 @@ class AdminLoginController extends AdminController
     public function resendTwoFactorCode(Request $request)
     {
         if (!session()->has('login.id')) {
-            return redirect()->route('admin.login');
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.failed')
+            ], 401);
         }
 
         $member = Member::find(session('login.id'));
 
         if (!$member) {
-            return redirect()->route('admin.login');
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.failed')
+            ], 401);
         }
 
         $twoFactor = app(AdminTwoFactorService::class);
         $twoFactor->generate($member); // ← DB保存 & メール送信
 
-        return back()->with('status', __('auth.two_factor.resend_success'));
+        return response()->json([
+            'success' => true,
+            'message' => __('auth.two_factor.resend_success')
+        ]);
     }
 }
