@@ -175,13 +175,29 @@ class AdminLoginController extends AdminController
         // メールサーバーのテストが完了していない場合は2FAをスキップ
         $mailServerTested = \App\Services\MailServerValidatorService::isMailServerTested();
         
+        Log::info('[2FA Login] 二段階認証チェック', [
+            'member_id' => $member->id,
+            'email' => $member->email,
+            'has_2fa' => $twoFactor->has($member),
+            'mail_server_tested' => $mailServerTested,
+            'two_factor_mode' => $member->two_factor_mode,
+            'two_factor_method' => $member->two_factor_method,
+        ]);
+        
         if ($twoFactor->has($member) && $mailServerTested) {
             session([
                 'login.id' => $member->getAuthIdentifier(),
                 'login.remember' => $request->boolean('remember'),
             ]);
 
+            Log::info('[2FA Login] コード生成開始', [
+                'member_id' => $member->id,
+                'effective_method' => $twoFactor->getEffectiveAuthMethod($member),
+            ]);
+
             $twoFactor->generate($member); // ← ここでコード生成 + メール送信
+            
+            Log::info('[2FA Login] コード生成完了、リダイレクト');
 
             return redirect()->route('admin.two-factor.login'); // ← 入力画面へ遷移
         } else {

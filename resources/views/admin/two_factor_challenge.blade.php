@@ -9,7 +9,7 @@
     context="admin"
 >
     <x-two-factor.email-challenge
-        :action="route('admin.two-factor.verify')"
+        :action="route('admin.two-factor.confirm')"
         :resend-action="route('admin.two-factor.resend')"
         :title="__('auth.two_factor.code_title')"
         :prompt="__('auth.two_factor.code_prompt')"
