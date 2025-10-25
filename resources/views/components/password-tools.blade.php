@@ -368,7 +368,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             const element = document.getElementById(elementId);
             
             if (!element) {
-                console.warn('updateRequirementIndicator: Element not found:', elementId);
                 return;
             }
 
@@ -418,12 +417,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 }
                 
                 textElement.textContent = `${displayText}${suffix}`;
-            } else {
-                console.error('updateRequirementIndicator: Icon or text element not found', {
-                    elementId,
-                    iconElement,
-                    textElement
-                });
             }
         }
     };

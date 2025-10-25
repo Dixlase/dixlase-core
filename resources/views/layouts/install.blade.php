@@ -124,12 +124,13 @@
             <!-- Error Messages -->
             @if(session('error'))
                 <aside class="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 mb-4 rounded-lg border border-red-200 dark:border-red-800" role="alert" aria-live="polite">
-                    <strong class="sr-only">{{ __('install.error') }}:</strong>
                     @if(is_array(session('error')))
+                        <strong class="sr-only">{{ __('install.error_label') }}:</strong>
                         @foreach(session('error') as $error)
                             <div>{{ $error }}</div>
                         @endforeach
                     @else
+                        <strong class="sr-only">{{ __('install.error_label') }}:</strong>
                         {{ session('error') }}
                     @endif
                 </aside>

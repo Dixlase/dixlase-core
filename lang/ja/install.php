@@ -53,7 +53,7 @@ return [
     // レイアウト関連
     'installation_progress' => 'インストール進捗',
     'language_selection' => '言語選択',
-    'error' => 'エラー',
+    'error_label' => 'エラー',
     'validation_errors' => '入力エラー',
     
     // 環境設定関連
