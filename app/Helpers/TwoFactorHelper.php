@@ -143,7 +143,6 @@ class TwoFactorHelper
      */
     public function isTwoFactorEnabled($user): bool
     {
-<<<<<<< HEAD
         // メール設定が未完了の場合は二段階認証を無効化
         if (!$this->isMailConfigured()) {
             Log::warning("[2FA] メール設定が未完了のため、二段階認証を無効化しています");
@@ -151,9 +150,6 @@ class TwoFactorHelper
         }
         
         $systemSettings = $this->getSystemTwoFactorSettings();
-=======
-        $force2fa = (int) \App\Models\MemberSetting::getValue('force_2fa', 0);
->>>>>>> v0.0093_2fa
         
         return match ($force2fa) {
             1 => true, // 常に有効

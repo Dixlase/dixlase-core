@@ -35,26 +35,10 @@ return new class extends Migration
      * @return void
      */
 
-    protected $table = 'base_settings';
 
     public function up()
     {
         Schema::create($this->table, function (Blueprint $table) {
-<<<<<<<< HEAD:database/migrations/0001_01_01_000013_create_base_settings_table.php
-            $table->bigIncrements('id');
-            $table->string("name", 255)->nullable();
-            $table->text("value")->nullable();
-            $table->unsignedBigInteger('default_ogp_image_id')->nullable();
-            $table->string('site_description', 500)->nullable();
-            $table->string('site_keywords', 500)->nullable();
-            $table->string('twitter_card_type', 50)->default('summary_large_image');
-            $table->timestamps();
-            $table->softDeletes();
-            
-            // 外部キー制約は不要（アプリケーションレベルで管理）
-            // NOTE: default_ogp_image_id は media テーブルを参照しますが、
-            // 設定の柔軟性を保つため、DBレベルの制約は設定しません
-========
             $table->id();
             $table->foreignId('member_id')->constrained('members')->onDelete('cascade');
             $table->string('credential_id')->unique();
@@ -64,9 +48,6 @@ return new class extends Migration
             $table->json('transports')->nullable(); // ['usb', 'nfc', 'ble', 'internal']
             $table->timestamp('last_used_at')->nullable();
             $table->timestamps();
-            
-            $table->index(['member_id', 'credential_id']);
->>>>>>>> v0.0093_2fa:database/migrations/0001_01_01_000011_create_members_two_factor_biometric_table.php
         });
     }
 

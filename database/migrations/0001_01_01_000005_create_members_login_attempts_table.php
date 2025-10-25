@@ -6,12 +6,14 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    protected $table = 'members_login_attempts';
+
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('members_login_attempts', function (Blueprint $table) {
+        Schema::create($this->table, function (Blueprint $table) {
             $table->id();
             $table->string('identifier')->index(); // email or username
             $table->string('ip_address', 45)->index(); // IPv4 or IPv6
@@ -32,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('members_login_attempts');
+        Schema::dropIfExists($this->table);
     }
 };
