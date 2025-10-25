@@ -26,13 +26,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-        
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    
     protected $table = 'members_two_factor_devices';
 
     /**
@@ -40,23 +33,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create($this->table, function (Blueprint $table) {
+        $prefix = config('database.connections.' . config('database.default') . '.prefix', '');
+        $tableName = $prefix . $this->table;
+
+        Schema::create($tableName, function (Blueprint $table) {
             $table->id();
             $table->foreignId('member_id')->constrained('members')->onDelete('cascade');
-            $table->string('device_name')->nullable();
-            $table->string('token')->unique();
+            $table->string('token', 255)->unique();
             $table->string('ip_address', 45)->nullable();
-            $table->string('user_agent')->nullable();
-            $table->string('device_type')->default('unknown'); // mobile, desktop, tablet, unknown
-            $table->string('platform')->nullable(); // iOS, Android, Windows, macOS, Linux
-            $table->string('browser')->nullable(); // Chrome, Safari, Firefox, Edge
-            $table->boolean('is_trusted')->default(true);
-            $table->timestamp('last_used_at')->nullable();
-            $table->timestamp('expires_at')->nullable(); // デバイス信頼の有効期限
+            $table->text('user_agent')->nullable();
+            $table->boolean('approved')->default(false);
+            $table->timestamp('approved_at')->nullable();
+            $table->timestamp('expires_at');
             $table->timestamps();
             
-            $table->index(['member_id', 'token']);
-            $table->index(['member_id', 'is_trusted']);
+            $table->index(['token', 'expires_at']);
+            $table->index(['member_id', 'approved']);
         });
     }
 
@@ -65,6 +57,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists($this->table);
+        $prefix = config('database.connections.' . config('database.default') . '.prefix', '');
+        $tableName = $prefix . $this->table;
+        
+        Schema::dropIfExists($tableName);
     }
 };

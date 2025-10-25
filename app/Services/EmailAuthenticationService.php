@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Helpers\TwoFactorHelper;
-use App\Mail\TwoFactorLoginCodeMail;
+use App\Mail\MembersTwoFactorCodeMail;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 
@@ -28,7 +28,7 @@ class EmailAuthenticationService
     {
         return $this->helper->generateAndSendCode(
             $user,
-            TwoFactorLoginCodeMail::class,
+            MembersTwoFactorCodeMail::class,
             $expireMinutes,
             $context
         );

@@ -64,6 +64,22 @@ return [
         'invalid' => 'The authentication code is incorrect or has expired.',
         'invalid_code' => 'The authentication code is incorrect or has expired.',
         'resend_success' => 'Email has been resent.',
+        
+        // Device Authentication
+        'device' => [
+            'title' => 'Device Authentication',
+            'prompt' => 'Please approve the authentication on your registered device.',
+            'waiting_title' => 'Waiting for Device Authentication',
+            'waiting_message' => 'Please approve the authentication request on your device.',
+        ],
+        
+        // Biometric Authentication
+        'biometric' => [
+            'title' => 'Biometric Authentication',
+            'prompt' => 'Please use biometric authentication to log in.',
+            'waiting_title' => 'Waiting for Biometric Authentication',
+            'waiting_message' => 'Please use Touch ID, Face ID, or fingerprint authentication.',
+        ],
     ],
 
 ];

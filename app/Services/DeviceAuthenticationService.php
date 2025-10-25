@@ -4,8 +4,11 @@ namespace App\Services;
 
 use App\Models\Member;
 use App\Models\MembersTrustedDevice;
+use App\Models\MembersTwoFactorDevice;
+use App\Mail\MembersTwoFactorDeviceMail;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class DeviceAuthenticationService
@@ -154,51 +157,139 @@ class DeviceAuthenticationService
     }
     
     /**
-     * デバイス認証チャレンジを生成
+     * デバイス認証チャレンジを生成してメール送信
      *
      * @param Member $member
-     * @return array
+     * @return MembersTwoFactorDevice
      */
-    public function generateDeviceChallenge(Member $member): array
+    public function generateDeviceChallenge(Member $member): MembersTwoFactorDevice
     {
-        $challenge = [
-            'challenge_id' => Str::uuid(),
-            'timestamp' => now()->timestamp,
+        // ランダムトークンを生成
+        $token = Str::random(64);
+        $hashedToken = hash('sha256', $token);
+        
+        // データベースに保存
+        $challenge = MembersTwoFactorDevice::create([
             'member_id' => $member->id,
+            'token' => $hashedToken,
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
-        ];
+            'expires_at' => now()->addMinutes(10),
+        ]);
         
-        // セッションに保存
-        session(['device_challenge' => $challenge]);
+        // セッションにチャレンジIDを保存
+        session(['device_challenge_id' => $challenge->id]);
+        
+        // 承認メールを送信
+        Mail::to($member->email)->send(
+            new MembersTwoFactorDeviceMail(
+                $token,
+                $member,
+                request()->ip(),
+                request()->userAgent()
+            )
+        );
+        
+        Log::info("[Device Auth] チャレンジ生成: ユーザーID {$member->id}, チャレンジID {$challenge->id}");
         
         return $challenge;
     }
     
     /**
-     * デバイス認証チャレンジを検証
+     * デバイス認証チャレンジの承認状態を確認
      *
-     * @param array $response
+     * @return array|null
+     */
+    public function checkChallengeStatus(): ?array
+    {
+        $challengeId = session('device_challenge_id');
+        
+        if (!$challengeId) {
+            return null;
+        }
+        
+        $challenge = MembersTwoFactorDevice::find($challengeId);
+        
+        if (!$challenge) {
+            return null;
+        }
+        
+        if ($challenge->isExpired()) {
+            return ['status' => 'expired'];
+        }
+        
+        if ($challenge->approved) {
+            return [
+                'status' => 'approved',
+                'member_id' => $challenge->member_id,
+            ];
+        }
+        
+        return ['status' => 'pending'];
+    }
+    
+    /**
+     * トークンでチャレンジを承認
+     *
+     * @param string $token
      * @return bool
      */
-    public function verifyDeviceChallenge(array $response): bool
+    public function approveChallenge(string $token): bool
     {
-        $challenge = session('device_challenge');
+        $hashedToken = hash('sha256', $token);
+        
+        $challenge = MembersTwoFactorDevice::where('token', $hashedToken)
+            ->where('expires_at', '>', now())
+            ->where('approved', false)
+            ->first();
         
         if (!$challenge) {
             return false;
         }
         
-        // 基本的な検証（実際の実装では、より複雑な検証を行う）
-        $isValid = isset($response['challenge_id']) &&
-                   $response['challenge_id'] === $challenge['challenge_id'] &&
-                   isset($response['timestamp']) &&
-                   abs($response['timestamp'] - $challenge['timestamp']) < 300; // 5分以内
+        $challenge->update([
+            'approved' => true,
+            'approved_at' => now(),
+        ]);
         
-        if ($isValid) {
-            session()->forget('device_challenge');
+        Log::info("[Device Auth] チャレンジ承認: チャレンジID {$challenge->id}");
+        
+        return true;
+    }
+    
+    /**
+     * トークンでチャレンジを拒否（削除）
+     *
+     * @param string $token
+     * @return bool
+     */
+    public function denyChallenge(string $token): bool
+    {
+        $hashedToken = hash('sha256', $token);
+        
+        $challenge = MembersTwoFactorDevice::where('token', $hashedToken)
+            ->where('expires_at', '>', now())
+            ->first();
+        
+        if (!$challenge) {
+            return false;
         }
         
-        return $isValid;
+        $challengeId = $challenge->id;
+        $challenge->delete();
+        
+        Log::info("[Device Auth] チャレンジ拒否: チャレンジID {$challengeId}");
+        
+        return true;
+    }
+    
+    /**
+     * 期限切れのチャレンジをクリーンアップ
+     *
+     * @return int 削除された件数
+     */
+    public function cleanupExpiredChallenges(): int
+    {
+        return MembersTwoFactorDevice::where('expires_at', '<', now())->delete();
     }
 }

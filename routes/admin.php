@@ -73,7 +73,9 @@ Route::prefix($adminUrl)->name('admin.')
         
         // デバイス認証
         Route::get('/two-factor-device', [AdminLoginController::class, 'showDeviceChallengeForm'])->name('two-factor.device.challenge');
-        Route::post('/two-factor-device', [AdminLoginController::class, 'confirmDeviceAuth'])->name('two-factor.device.verify');
+        Route::get('/device-auth/check', [AdminLoginController::class, 'checkDeviceAuth'])->name('device-auth.check');
+        Route::get('/device-auth/approve/{token}', [AdminLoginController::class, 'approveDeviceAuth'])->name('device-auth.approve');
+        Route::get('/device-auth/deny/{token}', [AdminLoginController::class, 'denyDeviceAuth'])->name('device-auth.deny');
         
         // 生体認証
         Route::get('/two-factor-biometric', [AdminLoginController::class, 'showBiometricChallengeForm'])->name('two-factor.biometric.challenge');
