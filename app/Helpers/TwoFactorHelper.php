@@ -97,17 +97,28 @@ class TwoFactorHelper
     }
 
     /**
-     * システム全体の二段階認証設定を取得
+     * システム設定から二段階認証設定を取得
      *
-     * @return array 設定配列
+     * @return array
      */
     public function getSystemTwoFactorSettings(): array
     {
         return [
-            'force_2fa' => (int) $this->getSettingValue('force_2fa', 0),
+            'force_2fa' => (int) \App\Models\MemberSetting::getValue('force_2fa', 0),
             'enabled_methods' => $this->getEnabledTwoFactorMethods(),
-            'default_method' => (int) $this->getSettingValue('default_two_factor_method', TwoFactorMethod::EMAIL->value),
+            'default_method' => (int) \App\Models\MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value),
         ];
+    }
+
+    /**
+     * 有効な二段階認証方法を取得
+     *
+     * @return array
+     */
+    public function getEnabledTwoFactorMethods(): array
+    {
+        $enabledString = \App\Models\MemberSetting::getValue('enabled_two_factor_methods', (string)TwoFactorMethod::EMAIL->value);
+        return $enabledString ? array_map('intval', explode(',', $enabledString)) : [TwoFactorMethod::EMAIL->value];
     }
 
     /**
@@ -125,13 +136,14 @@ class TwoFactorHelper
     }
 
     /**
-     * 二段階認証が有効かどうかを判定（システム設定とユーザー設定を考慮）
+     * 二段階認証が有効かどうかを判定
      *
      * @param mixed $user ユーザーモデル
-     * @return bool 2FAが有効かどうか
+     * @return bool
      */
     public function isTwoFactorEnabled($user): bool
     {
+<<<<<<< HEAD
         // メール設定が未完了の場合は二段階認証を無効化
         if (!$this->isMailConfigured()) {
             Log::warning("[2FA] メール設定が未完了のため、二段階認証を無効化しています");
@@ -139,12 +151,15 @@ class TwoFactorHelper
         }
         
         $systemSettings = $this->getSystemTwoFactorSettings();
+=======
+        $force2fa = (int) \App\Models\MemberSetting::getValue('force_2fa', 0);
+>>>>>>> v0.0093_2fa
         
-        return $this->requiresTwoFactor(
-            $user,
-            $systemSettings['force_2fa'],
-            $systemSettings['enabled_methods']
-        );
+        return match ($force2fa) {
+            1 => true, // 常に有効
+            2 => (bool) ($user->two_factor_mode ?? false), // プロフィール設定を反映
+            default => false, // 無効
+        };
     }
 
     /**
@@ -155,19 +170,22 @@ class TwoFactorHelper
      */
     public function getEffectiveAuthMethod($user): int
     {
-        $systemSettings = $this->getSystemTwoFactorSettings();
-        $userSettings = $this->getUserTwoFactorSettings($user);
+        $userMethod = $user->two_factor_method ?? null;
+        $defaultMethod = (int) \App\Models\MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value);
+        $enabledMethods = $this->getEnabledTwoFactorMethods();
 
-        // ユーザーが個別に設定している場合
-        if ($userSettings['method'] !== null && $userSettings['method'] !== TwoFactorMethod::USE_PROFILE_SETTING->value) {
-            // ユーザーの設定が有効な方法に含まれているかチェック
-            if (in_array($userSettings['method'], $systemSettings['enabled_methods'])) {
-                return $userSettings['method'];
-            }
+        // ユーザーの設定方法が有効な方法に含まれている場合はそれを使用
+        if ($userMethod && in_array((int)$userMethod, $enabledMethods, true)) {
+            return (int)$userMethod;
         }
 
-        // システムのデフォルト方法を使用
-        return $systemSettings['default_method'];
+        // デフォルト方法が有効な場合はそれを使用
+        if (in_array($defaultMethod, $enabledMethods, true)) {
+            return $defaultMethod;
+        }
+
+        // 有効な方法の最初のものを使用
+        return !empty($enabledMethods) ? $enabledMethods[0] : TwoFactorMethod::EMAIL->value;
     }
 
     /**

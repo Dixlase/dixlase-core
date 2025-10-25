@@ -63,11 +63,14 @@ return [
         ],
         'user' => [
             'subject' => '[:app_name] User Two-Factor Authentication Code',
+            'title' => 'User Two-Factor Authentication Code',
             'greeting' => 'Hello!',
             'message' => 'Here is your two-factor authentication code for user login.',
-            'instructions' => 'Please enter this code on the login screen. The code expires in 10 minutes.',
+            'code_label' => 'Authentication Code',
+            'instructions' => 'Please enter this code on the login screen.',
+            'expire_notice' => 'The code expires in :minutes minutes.',
             'security_notice' => 'If you do not recognize this login attempt, please change your password immediately.',
-            'regards' => 'Regards',
+            'thanks' => 'Regards',
         ],
     ],
 
