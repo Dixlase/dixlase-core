@@ -368,6 +368,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             const element = document.getElementById(elementId);
             
             if (!element) {
+                console.warn('updateRequirementIndicator: Element not found:', elementId);
                 return;
             }
 
@@ -375,44 +376,94 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             const displayText = element.dataset.text || '';
             const suffix = extraText || '';
             
-            // アイコンとテキスト要素を取得
-            const iconElement = element.querySelector('i');
-            const textElement = element.querySelector('span');
+            // アイコンとテキスト要素を取得（子要素として直接取得）
+            const children = element.children;
+            let iconElement = null;
+            let textElement = null;
+            
+            // 子要素を順に確認
+            // FontAwesome 6は <i> を <svg> に変換するため、両方をチェック
+            for (let i = 0; i < children.length; i++) {
+                const child = children[i];
+                
+                // アイコン要素: <i> または <svg> (FontAwesome変換後)
+                if (child.tagName === 'I' || child.tagName === 'SVG' || child.tagName === 'svg') {
+                    iconElement = child;
+                } else if (child.tagName === 'SPAN') {
+                    textElement = child;
+                }
+            }
             
             if (iconElement && textElement) {
-                // クラスを変更してアイコンを更新（DOM参照を維持）
+                // アイコンのクラスを更新（FontAwesomeのSVG変換に対応）
+                // 既存のクラスを保持しながら、アイコンと色のクラスのみを変更
+                
+                // 古いアイコンと色のクラスを削除
+                iconElement.classList.remove('fa-times-circle', 'fa-check-circle');
+                iconElement.classList.remove('text-red-500', 'text-green-500');
+                
+                // 新しいアイコンと色のクラスを追加
                 if (isValid) {
-                    // OK時: 緑のチェックアイコン
-                    iconElement.className = 'fas fa-check-circle text-green-500 mr-2';
+                    iconElement.classList.add('fa-check-circle', 'text-green-500');
                 } else {
-                    // NG時: 赤のバツアイコン
-                    iconElement.className = 'fas fa-times-circle text-red-500 mr-2';
+                    iconElement.classList.add('fa-times-circle', 'text-red-500');
                 }
+                
+                // 必須のクラスが存在することを確認（FontAwesome変換後も維持）
+                if (!iconElement.classList.contains('fas')) {
+                    iconElement.classList.add('fas');
+                }
+                if (!iconElement.classList.contains('mr-2')) {
+                    iconElement.classList.add('mr-2');
+                }
+                
                 textElement.textContent = `${displayText}${suffix}`;
+            } else {
+                console.error('updateRequirementIndicator: Icon or text element not found', {
+                    elementId,
+                    iconElement,
+                    textElement
+                });
             }
         }
     };
 
     // パスワード入力フィールドのイベントリスナーを設定
     (function() {
+        const passwordId = '{{ $id }}';
+        
         const setupPasswordListener = function() {
-            const passwordInput = document.getElementById('{{ $id }}');
+            const passwordInput = document.getElementById(passwordId);
             if (passwordInput && !passwordInput.hasAttribute('data-password-listener')) {
                 passwordInput.setAttribute('data-password-listener', 'true');
                 passwordInput.addEventListener('keyup', function() {
-                    PasswordTools.checkPasswordStrength('{{ $id }}');
+                    if (typeof PasswordTools !== 'undefined' && typeof PasswordTools.checkPasswordStrength === 'function') {
+                        PasswordTools.checkPasswordStrength(passwordId);
+                    }
                 });
                 // 初期チェック
-                PasswordTools.checkPasswordStrength('{{ $id }}');
+                if (typeof PasswordTools !== 'undefined' && typeof PasswordTools.checkPasswordStrength === 'function') {
+                    PasswordTools.checkPasswordStrength(passwordId);
+                }
             }
         };
 
-        // DOMがすでに読み込まれている場合はすぐに実行
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', setupPasswordListener);
-        } else {
-            setupPasswordListener();
-        }
+        // DOMとPasswordToolsの両方が準備できるまで待つ
+        const initListener = function() {
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', setupPasswordListener);
+            } else {
+                // DOMは既に読み込まれているが、PasswordToolsが定義されているか確認
+                if (typeof PasswordTools !== 'undefined') {
+                    setupPasswordListener();
+                } else {
+                    // PasswordToolsの定義を少し待つ
+                    setTimeout(setupPasswordListener, 50);
+                }
+            }
+        };
+        
+        initListener();
     })();
 </script>
 

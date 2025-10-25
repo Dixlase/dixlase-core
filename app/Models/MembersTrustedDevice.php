@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class TrustedDevice extends Model
+class MembersTrustedDevice extends Model
 {
     use HasFactory;
     

@@ -422,7 +422,7 @@ class AdminLoginController extends AdminController
 
         $twoFactor = app(AdminTwoFactorService::class);
         if (!$twoFactor->validate($member, $request->code)) {
-            return back()->withErrors(['code' => __('auth.two_factor.invalid')]);
+            return back()->withErrors(['code' => __('two-factor.email.invalid')]);
         }
 
         // 成功したログインを記録（失敗記録をクリア）
@@ -464,7 +464,7 @@ class AdminLoginController extends AdminController
 
         return response()->json([
             'success' => true,
-            'message' => __('auth.two_factor.resend_success')
+            'message' => __('two-factor.email.resend_success')
         ]);
     }
 

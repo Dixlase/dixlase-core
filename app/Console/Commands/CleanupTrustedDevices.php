@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\TrustedDevice;
+use App\Models\MembersTrustedDevice;
 use Illuminate\Console\Command;
 
 class CleanupTrustedDevices extends Command
@@ -52,7 +52,7 @@ class CleanupTrustedDevices extends Command
             }
             
             $this->info(__('admin.cleanup_trusted_devices.deleting_all'));
-            $deletedCount = TrustedDevice::query()->delete();
+            $deletedCount = MembersTrustedDevice::query()->delete();
             
             if ($deletedCount > 0) {
                 $this->info(__('admin.cleanup_trusted_devices.deleted_all_success', ['count' => $deletedCount]));
@@ -72,7 +72,7 @@ class CleanupTrustedDevices extends Command
 
         $this->info(__('admin.cleanup_trusted_devices.cleaning_up', ['days' => $days]));
 
-        $deletedCount = TrustedDevice::where('last_used_at', '<', now()->subDays($days))
+        $deletedCount = MembersTrustedDevice::where('last_used_at', '<', now()->subDays($days))
             ->orWhere(function ($query) use ($days) {
                 $query->whereNull('last_used_at')
                       ->where('created_at', '<', now()->subDays($days));

@@ -51,35 +51,4 @@ return [
     'verification_member_mismatch' => 'The logged-in account does not match the account pending verification.',
     'verification_invalid' => 'The verification token is invalid.',
     'verification_failed' => 'Email verification failed. Please try again.',
-    'two_factor' => [
-        'title' => 'Two-Factor Authentication',
-        'prompt' => 'We have sent you an email with an authentication code. Please enter the 6-digit code from the email.',
-        'code_title' => 'Enter Authentication Code',
-        'code_prompt' => 'Please enter the 6-digit authentication code from the email.',
-        'code_label' => 'Authentication Code',
-        'expire_notice' => 'The authentication code is valid for :minutes minutes.',
-        'submit' => 'Authenticate and Login',
-        'verify' => 'Verify',
-        'resend' => 'Resend Authentication Code',
-        'invalid' => 'The authentication code is incorrect or has expired.',
-        'invalid_code' => 'The authentication code is incorrect or has expired.',
-        'resend_success' => 'Email has been resent.',
-        
-        // Device Authentication
-        'device' => [
-            'title' => 'Device Authentication',
-            'prompt' => 'Please approve the authentication on your registered device.',
-            'waiting_title' => 'Waiting for Device Authentication',
-            'waiting_message' => 'Please approve the authentication request on your device.',
-        ],
-        
-        // Biometric Authentication
-        'biometric' => [
-            'title' => 'Biometric Authentication',
-            'prompt' => 'Please use biometric authentication to log in.',
-            'waiting_title' => 'Waiting for Biometric Authentication',
-            'waiting_message' => 'Please use Touch ID, Face ID, or fingerprint authentication.',
-        ],
-    ],
-
 ];

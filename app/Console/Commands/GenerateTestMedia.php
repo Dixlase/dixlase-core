@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\MemberLoginAttempt;
-use App\Models\TrustedDevice;
+use App\Models\MembersTrustedDevice;
 use App\Models\MembersTwoFactorToken;
 use App\Models\Member;
 use App\Models\Media;
@@ -166,7 +166,7 @@ class GenerateTestMedia extends Command
         }
         
         // Create old trusted devices using existing members
-        TrustedDevice::factory()
+        MembersTrustedDevice::factory()
             ->count($oldCount)
             ->old()
             ->state(function () use ($members) {
@@ -175,7 +175,7 @@ class GenerateTestMedia extends Command
             ->create();
             
         // Create recent trusted devices using existing members
-        TrustedDevice::factory()
+        MembersTrustedDevice::factory()
             ->count($recentCount)
             ->recent()
             ->state(function () use ($members) {

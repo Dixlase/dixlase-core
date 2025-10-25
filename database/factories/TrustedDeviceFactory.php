@@ -22,7 +22,7 @@
 
 namespace Database\Factories;
 
-use App\Models\TrustedDevice;
+use App\Models\MembersTrustedDevice;
 use App\Models\Member;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -37,7 +37,7 @@ class TrustedDeviceFactory extends Factory
      *
      * @var string
      */
-    protected $model = TrustedDevice::class;
+    protected $model = MembersTrustedDevice::class;
 
     /**
      * Define the model's default state.
