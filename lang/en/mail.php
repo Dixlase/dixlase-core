@@ -362,11 +362,39 @@ Clicking this link will complete the full mail functionality test.',
         'regards' => 'Best regards',
     ],
 
+    // Member verification completed notification
+    'member_verification_completed' => [
+        'subject' => 'Account Verification Completed',
+        'greeting' => 'Hello :name!',
+        'message' => 'Your member account verification has been completed.',
+        'member_info' => '【Member Information】',
+        'name' => 'Name',
+        'email' => 'Email Address',
+        'login_info' => 'You can now log in to the admin panel using the URL below.',
+        'url_info' => '【URL Information】',
+        'front_url' => 'Front Page URL',
+        'admin_url' => 'Admin Panel URL',
+        'thanks' => 'Thank you for using our service.',
+        'regards' => 'Best regards',
+    ],
+
     // Admin notifications
     'admin_notification' => [
         'member_verified' => [
             'subject' => 'Member Account Verification Completed',
-            'body' => "A member account verification has been completed.\n\n【Member Information】\nName: :member_name\nEmail Address: :member_email\nVerified At: :verified_at\n\nThis member can now log in.",
+            'greeting' => 'System Administrator',
+            'title' => 'Member Account Verification Completed',
+            'message' => 'A member account verification has been completed.',
+            'member_info' => '【Member Information】',
+            'name' => 'Name',
+            'email' => 'Email Address',
+            'verified_at' => 'Verified At',
+            'login_available' => 'This member can now log in.',
+            'urls' => '【URL Information】',
+            'front_url' => 'Front Page URL',
+            'admin_url' => 'Admin Panel URL',
+            'notification_time' => 'Notification Time',
+            'regards' => 'Best regards',
         ],
     ],
 ];

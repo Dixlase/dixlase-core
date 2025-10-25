@@ -267,23 +267,40 @@ class AdminLoginController extends AdminController
                 
                 session()->flash('success', __('admin.profile.account_verification_success'));
                 
-                // メールサーバー設定済みの場合のみ管理者に通知
+                // メールサーバー設定済みの場合のみ通知を送信
                 if (\App\Services\MailServerValidatorService::isMailServerTested()) {
                     try {
-                        $notificationService = app(\App\Services\SystemNotificationService::class);
-                        $notificationService->sendAdminNotification(
-                            __('mail.admin_notification.member_verified.subject'),
-                            __('mail.admin_notification.member_verified.body', [
-                                'member_name' => $member->name,
-                                'member_email' => $member->email,
-                                'verified_at' => now()->format('Y-m-d H:i:s'),
-                            ])
-                        );
+                        // メンバー本人に認証完了メールを送信
+                        $member->notify(new \App\Notifications\MemberVerificationCompletedNotification());
                         
-                        \Log::info('Verification notification sent to admin after login', [
+                        \Log::info('Verification completed notification sent to member', [
                             'member_id' => $member->id,
-                            'admin_email' => $notificationService->getNotificationEmail()
+                            'email' => $member->email
                         ]);
+                    } catch (\Exception $e) {
+                        \Log::error('Failed to send verification completed notification to member', [
+                            'member_id' => $member->id,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                    
+                    try {
+                        // 管理者に通知
+                        $adminEmail = \App\Models\BaseSetting::getValue('system_admin_email') 
+                            ?? \App\Models\BaseSetting::getValue('notification_email');
+                        
+                        if ($adminEmail) {
+                            \Illuminate\Support\Facades\Notification::route('mail', $adminEmail)
+                                ->notify(new \App\Notifications\AdminMemberVerifiedNotification(
+                                    $member,
+                                    now()->format('Y-m-d H:i:s')
+                                ));
+                            
+                            \Log::info('Verification notification sent to admin after login', [
+                                'member_id' => $member->id,
+                                'admin_email' => $adminEmail
+                            ]);
+                        }
                     } catch (\Exception $e) {
                         \Log::error('Failed to send verification notification to admin', [
                             'member_id' => $member->id,

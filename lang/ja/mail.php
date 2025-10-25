@@ -362,11 +362,39 @@ return [
         'regards' => 'よろしくお願いいたします',
     ],
 
+    // メンバー本人への認証完了通知
+    'member_verification_completed' => [
+        'subject' => 'アカウント認証が完了しました',
+        'greeting' => ':nameさん、こんにちは！',
+        'message' => 'あなたのメンバーアカウントの認証が完了しました。',
+        'member_info' => '【メンバー情報】',
+        'name' => '名前',
+        'email' => 'メールアドレス',
+        'login_info' => '以下のURLから管理画面にログインできます。',
+        'url_info' => '【URL情報】',
+        'front_url' => 'フロントページURL',
+        'admin_url' => '管理画面URL',
+        'thanks' => 'ご利用ありがとうございます。',
+        'regards' => 'よろしくお願いいたします',
+    ],
+
     // 管理者向け通知
     'admin_notification' => [
         'member_verified' => [
             'subject' => 'メンバーアカウントの認証完了通知',
-            'body' => "メンバーアカウントの認証が完了しました。\n\n【メンバー情報】\n名前: :member_name\nメールアドレス: :member_email\n認証完了日時: :verified_at\n\nこのメンバーはログイン可能な状態になりました。",
+            'greeting' => 'システム管理者様',
+            'title' => 'メンバーアカウントの認証完了通知',
+            'message' => 'メンバーアカウントの認証が完了しました。',
+            'member_info' => '【メンバー情報】',
+            'name' => '名前',
+            'email' => 'メールアドレス',
+            'verified_at' => '認証完了日時',
+            'login_available' => 'このメンバーはログイン可能な状態になりました。',
+            'urls' => '【URL情報】',
+            'front_url' => 'フロントページURL',
+            'admin_url' => '管理画面URL',
+            'notification_time' => '通知日時',
+            'regards' => 'よろしくお願いします。',
         ],
     ],
 ];
