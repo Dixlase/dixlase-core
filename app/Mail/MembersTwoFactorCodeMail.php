@@ -9,7 +9,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class TwoFactorLoginCodeMail extends Mailable
+class MembersTwoFactorCodeMail extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -33,27 +33,19 @@ class TwoFactorLoginCodeMail extends Mailable
 
     public function envelope(): Envelope
     {
-        $subjectKey = match ($this->context) {
-            'admin' => 'mail.two_factor.admin.subject',
-            'user' => 'mail.two_factor.user.subject',
-            default => 'mail.two_factor.default.subject',
-        };
-
         return new Envelope(
-            subject: __($subjectKey, ['app_name' => $this->appName]),
+            subject: __('mail.two_factor.email.subject', ['app_name' => $this->appName]),
         );
     }
 
     public function content(): Content
     {
-        $template = match ($this->context) {
-            'admin' => 'emails.members_two_factor_code',
-            'user' => 'emails.members_two_factor_code',
-            default => 'emails.members_two_factor_code',
-        };
-
         return new Content(
-            markdown: $template,
+            markdown: 'emails.members_two_factor_code',
+            with: [
+                'code' => $this->code,
+                'appName' => $this->appName,
+            ],
         );
     }
 

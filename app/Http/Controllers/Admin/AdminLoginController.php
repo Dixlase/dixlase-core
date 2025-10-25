@@ -467,4 +467,194 @@ class AdminLoginController extends AdminController
             'message' => __('auth.two_factor.resend_success')
         ]);
     }
+
+    /**
+     * デバイス認証画面を表示
+     */
+    public function showDeviceChallengeForm(Request $request)
+    {
+        if (!session()->has('login.id')) {
+            return redirect()->route('admin.login');
+        }
+
+        $memberId = session('login.id');
+        $member = Member::find($memberId);
+
+        if (!$member) {
+            return redirect()->route('admin.login');
+        }
+
+        // デバイス認証チャレンジを生成
+        $deviceService = app(\App\Services\DeviceAuthenticationService::class);
+        $challenge = $deviceService->generateDeviceChallenge($member);
+
+        // TwoFactorHelperを使用して有効な認証方法を取得
+        $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
+        $enabledMethods = $twoFactorHelper->getEnabledTwoFactorMethods();
+        $currentMethod = 1; // DEVICE
+
+        // 認証方法の翻訳キーマッピング
+        $methodLabels = [
+            0 => __('common.two_factor_method.options.email'),
+            1 => __('common.two_factor_method.options.device'),
+            2 => __('common.two_factor_method.options.biometric'),
+        ];
+
+        // 有効な認証方法のリストを作成
+        $availableMethods = [];
+        foreach ($enabledMethods as $method) {
+            if ($method !== $currentMethod) {
+                $availableMethods[] = [
+                    'value' => $method,
+                    'label' => $methodLabels[$method] ?? '',
+                    'url' => $this->getTwoFactorMethodRoute($method),
+                ];
+            }
+        }
+
+        return view('admin::two-factor.device-challenge', [
+            'availableMethods' => $availableMethods,
+            'currentMethod' => $currentMethod,
+            'challenge' => $challenge,
+        ]);
+    }
+
+    /**
+     * 生体認証画面を表示
+     */
+    public function showBiometricChallengeForm(Request $request)
+    {
+        if (!session()->has('login.id')) {
+            return redirect()->route('admin.login');
+        }
+
+        $memberId = session('login.id');
+        $member = Member::find($memberId);
+
+        if (!$member) {
+            return redirect()->route('admin.login');
+        }
+
+        // TwoFactorHelperを使用して有効な認証方法を取得
+        $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
+        $enabledMethods = $twoFactorHelper->getEnabledTwoFactorMethods();
+        $currentMethod = 2; // BIOMETRIC
+
+        // 認証方法の翻訳キーマッピング
+        $methodLabels = [
+            0 => __('common.two_factor_method.options.email'),
+            1 => __('common.two_factor_method.options.device'),
+            2 => __('common.two_factor_method.options.biometric'),
+        ];
+
+        // 有効な認証方法のリストを作成
+        $availableMethods = [];
+        foreach ($enabledMethods as $method) {
+            if ($method !== $currentMethod) {
+                $availableMethods[] = [
+                    'value' => $method,
+                    'label' => $methodLabels[$method] ?? '',
+                    'url' => $this->getTwoFactorMethodRoute($method),
+                ];
+            }
+        }
+
+        return view('admin::two-factor.biometric-challenge', [
+            'availableMethods' => $availableMethods,
+            'currentMethod' => $currentMethod,
+        ]);
+    }
+
+    /**
+     * デバイス認証の承認状態をチェック（ポーリング用）
+     */
+    public function checkDeviceAuth(Request $request)
+    {
+        if (!session()->has('login.id')) {
+            return response()->json([
+                'success' => false,
+                'status' => 'error',
+                'message' => __('auth.failed')
+            ], 401);
+        }
+
+        $deviceService = app(\App\Services\DeviceAuthenticationService::class);
+        $status = $deviceService->checkChallengeStatus();
+
+        if (!$status) {
+            return response()->json([
+                'success' => false,
+                'status' => 'error',
+                'message' => 'チャレンジが見つかりません'
+            ]);
+        }
+
+        if ($status['status'] === 'approved') {
+            $member = Member::find($status['member_id']);
+
+            if ($member && $member->id == session('login.id')) {
+                // 認証成功 - ログイン処理
+                Auth::guard('member')->login($member);
+                $request->session()->regenerate();
+
+                // セッションクリーンアップ
+                session()->forget(['login.id', 'login.remember', 'device_challenge_id']);
+
+                return response()->json([
+                    'success' => true,
+                    'status' => 'approved',
+                    'redirect' => route('admin.dashboard')
+                ]);
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'status' => $status['status']
+        ]);
+    }
+
+    /**
+     * デバイス認証を承認（メールリンクから）
+     */
+    public function approveDeviceAuth(string $token)
+    {
+        $deviceService = app(\App\Services\DeviceAuthenticationService::class);
+
+        if ($deviceService->approveChallenge($token)) {
+            return view('admin::two-factor.device-approved');
+        }
+
+        return view('admin::two-factor.device-error', [
+            'message' => 'このリンクは無効または期限切れです。'
+        ]);
+    }
+
+    /**
+     * デバイス認証を拒否（メールリンクから）
+     */
+    public function denyDeviceAuth(string $token)
+    {
+        $deviceService = app(\App\Services\DeviceAuthenticationService::class);
+
+        if ($deviceService->denyChallenge($token)) {
+            return view('admin::two-factor.device-denied');
+        }
+
+        return view('admin::two-factor.device-error', [
+            'message' => 'このリンクは無効または期限切れです。'
+        ]);
+    }
+
+    /**
+     * 生体認証の確認
+     */
+    public function confirmBiometricAuth(Request $request)
+    {
+        // TODO: 生体認証の実装
+        return response()->json([
+            'success' => false,
+            'message' => '生体認証は現在実装中です'
+        ]);
+    }
 }

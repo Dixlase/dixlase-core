@@ -1,4 +1,4 @@
-@extends('admin::partials.layout-auth')
+@extends('layouts.auth')
 
 @section('title', '生体認証')
 
@@ -16,23 +16,14 @@
         context="admin"
     />
 
-    <x-slot name="alternatives">
-        <x-two-factor.alternative-methods
-            :methods="[
-                [
-                    'value' => 'email',
-                    'label' => 'メール認証',
-                    'url' => route('admin.two-factor.challenge')
-                ],
-                [
-                    'value' => 'device',
-                    'label' => 'デバイス認証',
-                    'url' => route('admin.two-factor.device.challenge')
-                ]
-            ]"
-            current-method="biometric"
-            context="admin"
-        />
-    </x-slot>
+    @if(!empty($availableMethods))
+        <x-slot name="alternatives">
+            <x-two-factor.alternative-methods
+                :methods="$availableMethods"
+                :current-method="$currentMethod"
+                context="admin"
+            />
+        </x-slot>
+    @endif
 </x-two-factor.auth-layout>
 @endsection
