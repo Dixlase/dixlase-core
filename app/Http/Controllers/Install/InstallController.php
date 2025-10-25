@@ -653,15 +653,15 @@ class InstallController extends Controller
                 Log::channel('install')->info('members_role_permissionsテーブルが既に存在するため、シーダーをスキップ');
             }
 
-            // テーマシーダーを実行
+            // テーマシーダーを実行（DatabaseSeederで全てのシーダーを実行）
             Log::channel('install')->info('テーマシーダー実行チェック開始');
             if (!DB::table('thm_dixlase_default_theme_settings')->exists()) {
-                Log::channel('install')->info('DixlaseDefaultThemeSettingsSeeder実行開始');
+                Log::channel('install')->info('DixlaseDefaultTheme DatabaseSeeder実行開始');
                 Artisan::call('db:seed', [
-                    '--class' => 'Themes\\DixlaseDefaultTheme\\Database\\Seeders\\DixlaseDefaultThemeSettingsSeeder',
+                    '--class' => 'Themes\\DixlaseDefaultTheme\\Database\\Seeders\\DatabaseSeeder',
                     '--force' => true
                 ]);
-                Log::channel('install')->info('DixlaseDefaultThemeSettingsSeeder実行完了');
+                Log::channel('install')->info('DixlaseDefaultTheme DatabaseSeeder実行完了（設定 + 権限）');
             } else {
                 Log::channel('install')->info('thm_dixlase_default_theme_settingsテーブルが既に存在するため、テーマシーダーをスキップ');
             }

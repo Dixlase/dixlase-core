@@ -19,122 +19,122 @@ class MemberRolePermissionSeeder extends Seeder
             // ダッシュボード
             [
                 'menu_key' => 'dashboard',
-                'access_roles' => '6,7,8,9',  // CONTRIBUTOR以上編集可
-                'view_roles'  => '5,1',       // RECEPTIONIST, GUEST閲覧可
+                'access_roles' => '6,7,8,9',
+                'view_roles'  => '5,1',
             ],
 
             // フロントページ管理
             [
                 'menu_key' => 'front.index',
-                'access_roles' => '6,7,8,9',
-                'view_roles'  => '5,1',
+                'access_roles' => '9,8',
+                'view_roles'  => '9,8',
             ],
             [
                 'menu_key' => 'front.design',
-                'access_roles' => '7,8,9',    // AUTHOR以上
-                'view_roles'  => '6,5,1',
+                'access_roles' => '9,8',
+                'view_roles'  => '9,8',
             ],
             [
                 'menu_key' => 'front.settings',
-                'access_roles' => '8,9',      // EDITOR以上
-                'view_roles'  => '7,6,5,1',
+                'access_roles' => '9',
+                'view_roles'  => '9',
             ],
 
             // メディア管理
             [
                 'menu_key' => 'media.index',
-                'access_roles' => '6,7,8,9',
-                'view_roles'  => '5,1',
+                'access_roles' => '9,8,7,6',
+                'view_roles'  => '9,8,7,6',
             ],
             [
                 'menu_key' => 'media.upload',
-                'access_roles' => '7,8,9',
-                'view_roles'  => '6,5,1',
+                'access_roles' => '9,8,7,6',
+                'view_roles'  => '9,8,7,6',
             ],
             [
                 'menu_key' => 'media.settings',
-                'access_roles' => '9',        // ADMINのみ
-                'view_roles'  => '8,7,6,5,1',
+                'access_roles' => '9',
+                'view_roles'  => '9',
             ],
 
             // 全体設定
             [
                 'menu_key' => 'settings.base',
                 'access_roles' => '9',
-                'view_roles'  => '',
+                'view_roles'  => '9',
             ],
             [
                 'menu_key' => 'settings.security',
                 'access_roles' => '9',
-                'view_roles'  => '',
+                'view_roles'  => '9',
             ],
 
             // メンバー管理
             [
                 'menu_key' => 'settings.members.index',
                 'access_roles' => '9',
-                'view_roles'  => '8',
+                'view_roles'  => '9',
             ],
             [
                 'menu_key' => 'settings.members.create',
                 'access_roles' => '9',
-                'view_roles'  => '',
-            ],
-            [
-                'menu_key' => 'settings.members.profile',
-                'access_roles' => '6,7,8,9',
-                'view_roles'  => '5,1',
+                'view_roles'  => '9',
             ],
             [
                 'menu_key' => 'settings.members.roles',
                 'access_roles' => '9',
-                'view_roles'  => '',
+                'view_roles'  => '9',
             ],
             [
                 'menu_key' => 'settings.members.settings',
                 'access_roles' => '9',
-                'view_roles'  => '',
+                'view_roles'  => '9',
             ],
 
-            // テーマ設定
+            // テーマ管理（コア機能）
             [
                 'menu_key' => 'settings.themes.index',
                 'access_roles' => '9',
-                'view_roles'  => '',
+                'view_roles'  => '9',
             ],
             [
                 'menu_key' => 'settings.themes.install',
                 'access_roles' => '9',
-                'view_roles'  => '',
-            ],
-            [
-                'menu_key' => 'settings.themes.settings',
-                'access_roles' => '9',
-                'view_roles'  => '',
+                'view_roles'  => '9',
             ],
 
             // プラグイン設定
             [
                 'menu_key' => 'settings.plugins.index',
                 'access_roles' => '9',
-                'view_roles'  => '',
+                'view_roles'  => '9',
             ],
             [
                 'menu_key' => 'settings.plugins.install',
                 'access_roles' => '9',
-                'view_roles'  => '',
+                'view_roles'  => '9',
             ],
 
             // システム
             [
                 'menu_key' => 'settings.systems.logs',
                 'access_roles' => '9',
-                'view_roles'  => '',
+                'view_roles'  => '9',
             ],
             [
                 'menu_key' => 'settings.systems.info',
                 'access_roles' => '9',
-                'view_roles'  => '8',
+                'view_roles'  => '9',
+            ],
+            [
+                'menu_key' => 'settings.systems.cache',
+                'access_roles' => '9',
+                'view_roles'  => '9',
+            ],
+            [
+                'menu_key' => 'settings.systems.database',
+                'access_roles' => '9',
+                'view_roles'  => '9',
             ],
         ]);
     }

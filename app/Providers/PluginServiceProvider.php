@@ -94,8 +94,8 @@ class PluginServiceProvider extends ServiceProvider
             ]);
         }
         
-        // Load plugin routes (一時的に無効化)
-        // $this->loadPluginRoutes();
+        // Load plugin routes
+        $this->loadPluginRoutes();
     }
 
     /**
@@ -172,7 +172,7 @@ class PluginServiceProvider extends ServiceProvider
                 \Route::prefix($adminUrl)->name('admin.')
                     ->middleware(['admin.ip'])
                     ->group(function () use ($adminRoutePath) {
-                        \Route::middleware(['auth:member'])->group(function () use ($adminRoutePath) {
+                        \Route::middleware(['auth:member', 'verified', 'log.admin.activity'])->group(function () use ($adminRoutePath) {
                             include $adminRoutePath;
                         });
                     });

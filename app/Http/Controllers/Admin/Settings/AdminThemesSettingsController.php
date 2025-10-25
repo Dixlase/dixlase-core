@@ -190,6 +190,9 @@ class AdminThemesSettingsController extends AdminLoggedInController
                         'version' => $themeData['version'] ?? '1.0',
                     ]);
 
+                    // テーマのシーダーを実行（権限設定など）
+                    $this->runThemeSeeder($directoryName);
+
                     return redirect()->route('admin.settings.themes.index')->with('success', 'テーマがインストールされました！');
                 } else {
                     // theme.json が見つからない場合
@@ -271,5 +274,37 @@ class AdminThemesSettingsController extends AdminLoggedInController
 
 
         return redirect()->route('admin.settings.themes.index')->with('success', "テーマ '{$theme->name}' が有効化されました。");
+    }
+
+    /**
+     * テーマのシーダーを実行
+     */
+    protected function runThemeSeeder(string $themeDirectory): void
+    {
+        try {
+            $seederClass = "Themes\\{$themeDirectory}\\Database\\Seeders\\DatabaseSeeder";
+            
+            // シーダークラスが存在するか確認
+            if (class_exists($seederClass)) {
+                $seeder = new $seederClass();
+                $seeder->run();
+                
+                \Log::info("Theme seeder executed successfully", [
+                    'theme' => $themeDirectory,
+                    'seeder' => $seederClass
+                ]);
+            } else {
+                \Log::info("Theme seeder not found (optional)", [
+                    'theme' => $themeDirectory,
+                    'seeder' => $seederClass
+                ]);
+            }
+        } catch (\Exception $e) {
+            // シーダーの実行に失敗してもインストールは続行
+            \Log::warning("Theme seeder execution failed", [
+                'theme' => $themeDirectory,
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 }

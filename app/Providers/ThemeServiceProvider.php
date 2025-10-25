@@ -114,6 +114,9 @@ class ThemeServiceProvider extends ServiceProvider
                 'line' => $e->getLine()
             ]);
         }
+        
+        // Load theme routes
+        $this->loadThemeRoutes();
     }
 
     /**
@@ -186,5 +189,60 @@ class ThemeServiceProvider extends ServiceProvider
             'namespace' => 'themes',
             'path' => $viewsPath
         ]);
+    }
+
+    /**
+     * Load theme routes
+     */
+    protected function loadThemeRoutes(): void
+    {
+        if (!\Illuminate\Support\Facades\Schema::hasTable('themes') || 
+            !\Illuminate\Support\Facades\Schema::hasTable('theme_settings')) {
+            return;
+        }
+
+        // Get the active theme
+        $themeSetting = \DB::table('theme_settings')->first();
+        if (!$themeSetting || !$themeSetting->active_theme_id) {
+            return;
+        }
+        
+        $activeTheme = Theme::find($themeSetting->active_theme_id);
+        if (!$activeTheme) {
+            return;
+        }
+
+        $themePath = base_path("themes/{$activeTheme->directory}");
+        
+        // Load web routes
+        $webRoutePath = "{$themePath}/routes/web.php";
+        if (File::exists($webRoutePath)) {
+            include $webRoutePath;
+            Log::info('Theme web routes loaded', [
+                'theme' => $activeTheme->directory,
+                'path' => $webRoutePath
+            ]);
+        }
+        
+        // Load admin routes within the admin route group
+        $adminRoutePath = "{$themePath}/routes/admin.php";
+        if (File::exists($adminRoutePath)) {
+            // Get admin URL from helper
+            $adminUrl = \App\Helpers\AdminHelper::getAdminUrl();
+            
+            // Load admin routes within the secure admin group
+            \Route::prefix($adminUrl)->name('admin.')
+                ->middleware(['admin.ip'])
+                ->group(function () use ($adminRoutePath) {
+                    \Route::middleware(['auth:member', 'verified', 'log.admin.activity'])->group(function () use ($adminRoutePath) {
+                        include $adminRoutePath;
+                    });
+                });
+            
+            Log::info('Theme admin routes loaded', [
+                'theme' => $activeTheme->directory,
+                'path' => $adminRoutePath
+            ]);
+        }
     }
 }
