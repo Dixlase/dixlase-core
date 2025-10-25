@@ -51,7 +51,7 @@ return [
     // Layout related
     'installation_progress' => 'Installation Progress',
     'language_selection' => 'Language Selection',
-    'error' => 'Error',
+    'error_label' => 'Error',
     'validation_errors' => 'Validation Errors',
     
     // Environment settings related
