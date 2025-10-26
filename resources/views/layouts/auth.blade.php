@@ -46,8 +46,21 @@
 
         <div class="bg-white dark:bg-gray-900 shadow-lg rounded-lg p-12 w-full mb-4 transition-colors duration-300">
             @hasSection('icon')
-                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 dark:bg-blue-900 mb-6">
-                    <i class="@yield('icon') text-2xl text-blue-600 dark:text-blue-400"></i>
+                @php
+                    $iconSection = trim(View::yieldContent('icon'));
+                    // アイコンが配列形式（JSON）かチェック
+                    $icons = json_decode($iconSection, true);
+                    if (!is_array($icons)) {
+                        // 配列でない場合は単一アイコンとして扱う
+                        $icons = [$iconSection];
+                    }
+                @endphp
+                <div class="mx-auto flex items-center justify-center gap-2 mb-6">
+                    @foreach($icons as $icon)
+                        <div class="flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 dark:bg-blue-900">
+                            <i class="{{ $icon }} text-2xl text-blue-600 dark:text-blue-400"></i>
+                        </div>
+                    @endforeach
                 </div>
             @endif
             <h1 class="text-2xl font-bold text-gray-800 dark:text-white mb-4 text-center">@yield('header')</h1>

@@ -92,6 +92,14 @@ class Member extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Get the WebAuthn credentials for the member.
+     */
+    public function webauthnCredentials()
+    {
+        return $this->hasMany(WebauthnCredential::class);
+    }
+
+    /**
      * Send the password reset notification.
      *
      * @param  string  $token

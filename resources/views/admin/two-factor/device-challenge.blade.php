@@ -1,7 +1,9 @@
 @extends('layouts.auth')
 
 @section('title', 'デバイス認証')
-@section('icon', 'fas fa-mobile-alt')
+@section('icon')
+["fas fa-mobile-alt", "fas fa-laptop"]
+@endsection
 @section('header', __('two-factor.device.title'))
 @section('description')
     {!! __('two-factor.device.prompt') !!}
