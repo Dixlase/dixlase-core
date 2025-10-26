@@ -189,7 +189,7 @@ return [
     */
 
     'two_factor' => [
-        'email_code_expire' => env('TWO_FACTOR_EMAIL_EXPIRE', 10), // 分
+        'email_code_expire' => env('TWO_FACTOR_EMAIL_EXPIRE', 5), // 分
     ],
 
     /*
