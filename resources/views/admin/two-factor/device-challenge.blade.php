@@ -12,14 +12,14 @@
     <div id="status-message" class="mb-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-800">
         <p class="text-sm text-gray-700 dark:text-gray-300">
             <i class="fas fa-spinner fa-spin mr-2"></i>
-            承認待機中...
+            {{ __('two-factor.awaiting_approval') }}
         </p>
     </div>
 
     <!-- 有効期限表示 -->
     <div class="mb-4">
         <p class="text-xs text-gray-500 dark:text-gray-400">
-            有効期限: <span id="expire-time">10分</span>
+            {{ __('two-factor.device.expire_label') }}: <span id="expire-time">10分</span>
         </p>
     </div>
 
@@ -31,7 +31,7 @@
             class="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             onclick="resendDeviceAuth()"
         >
-            認証メールを再送信
+            {{ __('two-factor.device.resend_button') }}
         </button>
         <span id="resend-countdown" class="text-xs text-gray-500 dark:text-gray-400 ml-2 hidden"></span>
     </div>
@@ -45,13 +45,13 @@
             />
         </div>
     @endif
-
-    <div class="mt-6 text-center">
-        <a href="{{ route('admin.login') }}" class="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
-            ← {{ __('two-factor.back_to_login') }}
-        </a>
-    </div>
 </div>
+@endsection
+
+@section('back_link')
+    <a href="{{ route('admin.login') }}" class="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
+        ← {{ __('two-factor.back_to_login') }}
+    </a>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -205,7 +205,7 @@ function resendDeviceAuth() {
     }
     
     resendButton.disabled = true;
-    resendButton.textContent = '送信中...';
+    resendButton.textContent = '{{ __('two-factor.device.sending') }}';
     
     fetch('{{ route('admin.device-auth.resend') }}', {
         method: 'POST',
@@ -220,16 +220,16 @@ function resendDeviceAuth() {
             // 成功メッセージを表示
             showFlashMessage(data.message, 'success');
             
-            resendButton.textContent = '認証メールを再送信';
+            resendButton.textContent = '{{ __('two-factor.device.resend_button') }}';
             // 60秒のクールダウン
             let countdown = 60;
-            resendCountdown.textContent = `(${countdown}秒後に再送信可能)`;
+            resendCountdown.textContent = `(${countdown}{{ __('two-factor.device.seconds_suffix') }}後に再送信可能)`;
             resendCountdown.classList.remove('hidden');
             
             const countdownInterval = setInterval(() => {
                 countdown--;
                 if (countdown > 0) {
-                    resendCountdown.textContent = `(${countdown}秒後に再送信可能)`;
+                    resendCountdown.textContent = `(${countdown}{{ __('two-factor.device.seconds_suffix') }}後に再送信可能)`;
                 } else {
                     clearInterval(countdownInterval);
                     resendCountdown.classList.add('hidden');
@@ -237,16 +237,16 @@ function resendDeviceAuth() {
                 }
             }, 1000);
         } else {
-            resendButton.textContent = '認証メールを再送信';
+            resendButton.textContent = '{{ __('two-factor.device.resend_button') }}';
             resendButton.disabled = false;
-            showFlashMessage(data.message || '再送信に失敗しました', 'error');
+            showFlashMessage(data.message || '{{ __('two-factor.email.resend_failed') }}', 'error');
         }
     })
     .catch(error => {
         console.error('Resend error:', error);
-        resendButton.textContent = '認証メールを再送信';
+        resendButton.textContent = '{{ __('two-factor.device.resend_button') }}';
         resendButton.disabled = false;
-        showFlashMessage('ネットワークエラーが発生しました', 'error');
+        showFlashMessage('{{ __('two-factor.email.network_error') }}', 'error');
     });
 }
 </script>

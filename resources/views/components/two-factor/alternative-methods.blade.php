@@ -7,7 +7,7 @@
 @if(count($methods) > 0)
 <div class="text-center">
     <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
-        別の認証方法を使用しますか？
+        {{ __('two-factor.alternative_methods_prompt') }}
     </p>
     <div class="space-x-4">
         @foreach($methods as $method)

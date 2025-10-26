@@ -18,11 +18,11 @@
             {!! $prompt !!}
         </p>
         <button id="start-device-auth" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
-            認証を開始
+            {{ __('two-factor.device.start_button') }}
         </button>
         <div class="mt-4 bg-gray-50 dark:bg-gray-700 rounded-md p-4">
             <p class="text-xs text-gray-500 dark:text-gray-400">
-                メールに記載されたリンクから認証を承認してください。
+                {{ __('two-factor.device.help_text') }}
             </p>
         </div>
     </div>
@@ -33,7 +33,7 @@
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
         </div>
         <p class="text-xs text-gray-500 dark:text-gray-400 mt-4">
-            残り時間: <span id="countdown">60</span>秒
+            {{ __('two-factor.device.remaining_time') }}: <span id="countdown">60</span>{{ __('two-factor.device.seconds_suffix') }}
         </p>
     </div>
 
@@ -45,10 +45,10 @@
             </svg>
         </div>
         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-            認証成功
+            {{ __('two-factor.device.success_title') }}
         </h3>
         <p class="text-sm text-gray-600 dark:text-gray-400">
-            デバイス認証が完了しました。リダイレクトしています...
+            {{ __('two-factor.device.success_message') }}
         </p>
     </div>
 
@@ -60,13 +60,13 @@
             </svg>
         </div>
         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-            認証失敗
+            {{ __('two-factor.device.error_title') }}
         </h3>
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-4" id="device-error-message">
-            デバイス認証に失敗しました。再試行してください。
+            {{ __('two-factor.device.error_message') }}
         </p>
         <button id="retry-device-auth" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
-            再試行
+            {{ __('two-factor.device.retry_button') }}
         </button>
     </div>
 
@@ -78,13 +78,13 @@
             </svg>
         </div>
         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-            認証タイムアウト
+            {{ __('two-factor.device.timeout_title') }}
         </h3>
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            認証の時間制限を超過しました。再試行してください。
+            {{ __('two-factor.device.timeout_message') }}
         </p>
         <button id="retry-timeout-auth" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
-            再試行
+            {{ __('two-factor.device.retry_button') }}
         </button>
     </div>
 </div>
@@ -117,12 +117,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 startPolling();
                 startCountdown();
             } else {
-                showError(data.message || 'チャレンジの開始に失敗しました');
+                showError(data.message || '{{ __('two-factor.device.challenge_start_failed') }}');
             }
         })
         .catch(error => {
             console.error('Device challenge error:', error);
-            showError('ネットワークエラーが発生しました');
+            showError('{{ __('two-factor.device.network_error') }}');
         });
     }
 
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else if (data.status === 'failed') {
                         stopPolling();
                         stopCountdown();
-                        showError(data.message || '認証が拒否されました');
+                        showError(data.message || '{{ __('two-factor.device.auth_denied') }}');
                     } else if (data.status === 'expired') {
                         stopPolling();
                         stopCountdown();
@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (retryCount >= {{ $maxRetries }}) {
                     stopPolling();
                     stopCountdown();
-                    showError('ネットワークエラーが発生しました');
+                    showError('{{ __('two-factor.device.network_error') }}');
                 }
             });
         }, {{ $pollInterval }});

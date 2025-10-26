@@ -29,8 +29,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @include('components.auth.forgot-password', [
         'action' => route('admin.password.email'),
         'emailLabel' => __('admin.auth.forgot_password.email'),
-        'submitText' => __('admin.auth.forgot_password.send_reset_link'),
-        'backText' => __('admin.auth.forgot_password.back_to_login'),
-        'backUrl' => route('admin.login')
+        'submitText' => __('admin.auth.forgot_password.send_reset_link')
     ])
+@endsection
+
+@section('back_link')
+    <a class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 hover:underline" href="{{ route('admin.login') }}">
+        {{ __('admin.auth.forgot_password.back_to_login') }}
+    </a>
 @endsection
