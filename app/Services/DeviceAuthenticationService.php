@@ -170,26 +170,61 @@ class DeviceAuthenticationService
     public function isTrustedDevice(Member $member): bool
     {
         $deviceToken = request()->cookie('trusted_device_token');
+        $trustedDevice = null;
         
-        if (!$deviceToken) {
-            return false;
+        // 方法1: Cookieトークンで検証（最も安全）
+        if ($deviceToken) {
+            $hashedToken = hash('sha256', $deviceToken);
+            
+            $trustedDevice = \App\Models\MembersTrustedDevice::where('member_id', $member->id)
+                ->where('token', $hashedToken)
+                ->first();
+            
+            if ($trustedDevice) {
+                Log::info("[Device Auth] Cookie認証成功: ユーザーID {$member->id}, デバイスID: {$trustedDevice->id}");
+            }
         }
         
-        $hashedToken = hash('sha256', $deviceToken);
-        
-        // トークンが一致する信頼済みデバイスを検索
-        $trustedDevice = \App\Models\MembersTrustedDevice::where('member_id', $member->id)
-            ->where('token', $hashedToken)
-            ->first();
+        // 方法2: Cookieがない場合、IP + User Agentで検証（フォールバック）
+        if (!$trustedDevice) {
+            $ipAddress = request()->ip();
+            $userAgent = request()->userAgent();
+            
+            $trustedDevice = \App\Models\MembersTrustedDevice::where('member_id', $member->id)
+                ->where('ip_address', $ipAddress)
+                ->where('user_agent', $userAgent)
+                ->orderBy('last_used_at', 'desc')
+                ->first();
+            
+            if ($trustedDevice) {
+                Log::info("[Device Auth] IP+UA認証成功: ユーザーID {$member->id}, デバイスID: {$trustedDevice->id}");
+                
+                // Cookieを再設定（次回からCookie認証を使用）
+                $newToken = Str::random(64);
+                $hashedToken = hash('sha256', $newToken);
+                $trustedDevice->update(['token' => $hashedToken]);
+                
+                cookie()->queue(
+                    'trusted_device_token',
+                    $newToken,
+                    60 * 24 * 30,
+                    '/',
+                    null,
+                    true,
+                    true,
+                    false,
+                    'strict'
+                );
+            }
+        }
         
         if (!$trustedDevice) {
+            Log::info("[Device Auth] 信頼済みデバイスなし: ユーザーID {$member->id}");
             return false;
         }
         
         // 最終使用日時を更新
         $trustedDevice->update(['last_used_at' => now()]);
-        
-        Log::info("[Device Auth] 信頼済みデバイス確認: ユーザーID {$member->id}, デバイスID: {$trustedDevice->id}");
         
         return true;
     }

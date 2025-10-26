@@ -194,6 +194,48 @@ class AdminLoginController extends AdminController
             // 有効な認証方法を取得
             $effectiveMethod = $twoFactor->getEffectiveAuthMethod($member);
             
+            Log::info('[2FA Login] 認証方法確認', [
+                'member_id' => $member->id,
+                'effective_method' => $effectiveMethod,
+            ]);
+
+            // デバイス認証がデフォルトメソッドの場合、信頼済みデバイスかチェック
+            Log::info('[2FA Login] デバイス認証チェック', [
+                'effective_method' => $effectiveMethod,
+                'DEVICE_value' => \App\Enums\TwoFactorMethod::DEVICE->value,
+                'is_device_auth' => $effectiveMethod === \App\Enums\TwoFactorMethod::DEVICE->value,
+            ]);
+            
+            if ($effectiveMethod === \App\Enums\TwoFactorMethod::DEVICE->value) {
+                $deviceService = app(\App\Services\DeviceAuthenticationService::class);
+                
+                Log::info('[Device Auth] isTrustedDevice呼び出し前', [
+                    'member_id' => $member->id,
+                    'has_cookie' => request()->cookie('trusted_device_token') !== null,
+                    'ip' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                ]);
+                
+                if ($deviceService->isTrustedDevice($member)) {
+                    Log::info('[Device Auth] 信頼済みデバイスからのアクセス、2FAスキップ');
+                    
+                    // 成功したログインを記録
+                    $lockoutService->handleSuccessfulLogin($email);
+                    
+                    // ログイン環境を記録、通知
+                    app(AdminLoginNotificationService::class)->handle($member, $request);
+                    
+                    // 即ログイン
+                    Auth::guard('member')->login($member, $request->boolean('remember'));
+                    $request->session()->regenerate(true);
+                    
+                    // ログイン後にメール認証トークンをチェック
+                    $this->processEmailVerificationIfPending($member, $request);
+                    
+                    return redirect()->intended(route('admin.dashboard'));
+                }
+            }
+            
             Log::info('[2FA Login] コード生成開始', [
                 'member_id' => $member->id,
                 'effective_method' => $effectiveMethod,
@@ -508,8 +550,40 @@ class AdminLoginController extends AdminController
             return redirect()->route('admin.login');
         }
 
-        // デバイス認証チャレンジを生成
+        // デバイス認証サービスを取得
         $deviceService = app(\App\Services\DeviceAuthenticationService::class);
+        
+        // 信頼済みデバイスかチェック
+        Log::info('[Device Challenge] デバイス認証画面表示 - 信頼済みデバイスチェック', [
+            'member_id' => $member->id,
+            'has_cookie' => request()->cookie('trusted_device_token') !== null,
+            'ip' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+        
+        if ($deviceService->isTrustedDevice($member)) {
+            Log::info('[Device Challenge] 信頼済みデバイスからのアクセス、2FAスキップ');
+            
+            // 成功したログインを記録
+            app(AdminLoginLockoutService::class)->handleSuccessfulLogin($member->email);
+            
+            // ログイン環境を記録、通知
+            app(AdminLoginNotificationService::class)->handle($member, $request);
+            
+            // 即ログイン
+            Auth::guard('member')->login($member, session('login.remember', false));
+            session()->forget(['login.id', 'login.remember']);
+            $request->session()->regenerate(true);
+            
+            // ログイン後にメール認証トークンをチェック
+            $this->processEmailVerificationIfPending($member, $request);
+            
+            return redirect()->intended(route('admin.dashboard'));
+        }
+        
+        Log::info('[Device Challenge] 信頼済みデバイスではない、チャレンジ生成');
+        
+        // デバイス認証チャレンジを生成
         $challenge = $deviceService->generateDeviceChallenge($member);
 
         // TwoFactorHelperを使用して有効な認証方法を取得
