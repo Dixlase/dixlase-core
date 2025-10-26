@@ -327,6 +327,58 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
                 </div>
             </fieldset>
+
+            <!-- 二段階認証の有効期限設定 -->
+            <fieldset>
+                <legend>{{ __('admin.settings.members.settings.two_factor_expire_settings') }}</legend>
+                
+                <div class="space-y-4">
+                    <!-- 認証の有効期限（メール・デバイス共通） -->
+                    <div>
+                        <label for="two_factor_expire_minutes" class="block text-sm font-medium">
+                            {{ __('admin.settings.members.settings.two_factor_expire_minutes') }}
+                        </label>
+                        <div class="mt-1 flex items-center space-x-2">
+                            <input 
+                                type="number" 
+                                id="two_factor_expire_minutes" 
+                                name="two_factor_expire_minutes" 
+                                value="{{ old('two_factor_expire_minutes', $twoFactorExpireMinutes) }}"
+                                min="1"
+                                max="60"
+                                class="w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            >
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.members.settings.minutes') }}</span>
+                        </div>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            {{ __('admin.settings.members.settings.two_factor_expire_minutes_help') }}
+                        </p>
+                    </div>
+
+                    <!-- 認証メール再送信間隔 -->
+                    <div>
+                        <label for="two_factor_resend_interval_seconds" class="block text-sm font-medium">
+                            {{ __('admin.settings.members.settings.two_factor_resend_interval_seconds') }}
+                        </label>
+                        <div class="mt-1 flex items-center space-x-2">
+                            <input 
+                                type="number" 
+                                id="two_factor_resend_interval_seconds" 
+                                name="two_factor_resend_interval_seconds" 
+                                value="{{ old('two_factor_resend_interval_seconds', $twoFactorResendIntervalSeconds) }}"
+                                min="60"
+                                max="600"
+                                step="60"
+                                class="w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            >
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.members.settings.seconds') }}</span>
+                        </div>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            {{ __('admin.settings.members.settings.two_factor_resend_interval_seconds_help') }}
+                        </p>
+                    </div>
+                </div>
+            </fieldset>
         </section>
     </form>
 

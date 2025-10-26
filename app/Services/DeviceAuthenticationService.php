@@ -168,13 +168,16 @@ class DeviceAuthenticationService
         $token = Str::random(64);
         $hashedToken = hash('sha256', $token);
         
+        // 有効期限をMemberSettingから取得
+        $expireMinutes = (int) \App\Models\MemberSetting::getValue('two_factor_expire_minutes', 10);
+        
         // データベースに保存
         $challenge = MembersTwoFactorDevice::create([
             'member_id' => $member->id,
             'token' => $hashedToken,
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
-            'expires_at' => now()->addMinutes(10),
+            'expires_at' => now()->addMinutes($expireMinutes),
         ]);
         
         // セッションにチャレンジIDを保存

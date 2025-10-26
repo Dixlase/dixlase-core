@@ -19,7 +19,7 @@
     <!-- 有効期限表示 -->
     <div class="mb-4">
         <p class="text-xs text-gray-500 dark:text-gray-400">
-            {{ __('two-factor.device.expire_label') }}: <span id="expire-time">10分</span>
+            {{ __('two-factor.device.expire_label') }}: <span id="expire-time">{{ $expireMinutes }}分</span>
         </p>
     </div>
 
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const resendCountdown = document.getElementById('resend-countdown');
     const expireTimeElement = document.getElementById('expire-time');
     let pollInterval;
-    let expireTime = 600; // 10分 = 600秒
+    let expireTime = {{ $expireMinutes }} * 60; // 設定値（分）を秒に変換
     let resendCooldown = 0;
 
     // フラッシュメッセージ表示関数（既存のflash-messageコンポーネントと同じスタイル）
@@ -221,8 +221,8 @@ function resendDeviceAuth() {
             showFlashMessage(data.message, 'success');
             
             resendButton.textContent = '{{ __('two-factor.device.resend_button') }}';
-            // 60秒のクールダウン
-            let countdown = 60;
+            // 設定値のクールダウン
+            let countdown = {{ $resendIntervalSeconds }};
             resendCountdown.textContent = `(${countdown}{{ __('two-factor.device.seconds_suffix') }}後に再送信可能)`;
             resendCountdown.classList.remove('hidden');
             
