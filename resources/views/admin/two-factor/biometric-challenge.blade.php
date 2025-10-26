@@ -1,16 +1,16 @@
 @extends('layouts.auth')
 
 @section('title', '生体認証')
-@section('icon', 'fas fa-fingerprint')
+@section('icon')
+["fas fa-fingerprint", "fas fa-face-smile"]
+@endsection
 @section('header', '生体認証')
-@section('description', '生体認証を使用してログインしてください')
+@section('description', '生体認証(Touch ID、Face ID、Windows Hello、または指紋認証など)を使用してログインしてください')
 
 @section('content')
     <x-two-factor.biometric-challenge
         :challenge-action="route('admin.two-factor.biometric.challenge')"
         :verify-action="route('admin.two-factor.biometric.verify')"
-        :title="'生体認証待機中'"
-        :prompt="'Touch ID、Face ID、または指紋認証を使用してください。'"
         context="admin"
     />
 
