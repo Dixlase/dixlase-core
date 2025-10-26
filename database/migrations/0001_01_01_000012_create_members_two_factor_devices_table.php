@@ -33,12 +33,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $prefix = config('database.connections.' . config('database.default') . '.prefix', '');
-        $tableName = $prefix . $this->table;
-
-        Schema::create($tableName, function (Blueprint $table) {
+        Schema::create($this->table, function (Blueprint $table) {
             $table->id();
-            $table->foreignId('member_id')->constrained('members')->onDelete('cascade');
+            $table->foreignId('member_id')->constrained()->onDelete('cascade');
             $table->string('token', 255)->unique();
             $table->string('ip_address', 45)->nullable();
             $table->text('user_agent')->nullable();
@@ -57,9 +54,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        $prefix = config('database.connections.' . config('database.default') . '.prefix', '');
-        $tableName = $prefix . $this->table;
-        
-        Schema::dropIfExists($tableName);
+        Schema::dropIfExists($this->table);
     }
 };

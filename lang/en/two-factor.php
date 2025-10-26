@@ -23,9 +23,9 @@ TEXT,
     // Device Authentication
     'device' => [
         'title' => 'Device Authentication',
-        'prompt' => 'Please approve authentication on your registered device.',
+        'prompt' => 'A device authentication email has been sent to your member account email address.<br>Please approve the authentication request from the email.',
         'waiting_title' => 'Waiting for Device Authentication',
-        'waiting_message' => 'Please approve the authentication request on your device.',
+        'waiting_message' => 'Please approve the authentication request from the email.',
     ],
     
     // Biometric Authentication
