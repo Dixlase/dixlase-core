@@ -186,20 +186,6 @@ trait TwoFactorTrait
 
 
     /**
-     * 信頼済みデバイスからのアクセスかどうかを判定
-     *
-     * @param mixed $user ユーザーモデル
-     * @return bool 信頼済みデバイスかどうか
-     */
-    public function isFromTrustedDevice($user): bool
-    {
-        $trustedDeviceToken = request()->cookie('trusted_device');
-        return $trustedDeviceToken && $user->trustedDevices()
-            ->where('token', hash('sha256', $trustedDeviceToken))
-            ->exists();
-    }
-
-    /**
      * 設定値を取得する（継承先で実装）
      *
      * @param string $key 設定キー

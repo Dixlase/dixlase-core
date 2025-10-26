@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\MemberLoginAttempt;
-use App\Models\MembersTrustedDevice;
+use App\Models\MembersTwoFactorDevice;
 use App\Models\MembersTwoFactorToken;
 use App\Models\Member;
 use Illuminate\Console\Command;
@@ -37,10 +37,10 @@ class TestFactories extends Command
             $this->info('✓ MemberLoginAttempt factory works');
             $this->line("  - Generated data: {$loginAttempt->identifier}, {$loginAttempt->ip_address}");
 
-            // Test TrustedDevice factory
-            $trustedDevice = MembersTrustedDevice::factory()->make();
-            $this->info('✓ TrustedDevice factory works');
-            $this->line("  - Generated data: {$trustedDevice->device_name}, {$trustedDevice->token}");
+            // Test MembersTwoFactorDevice factory
+            $twoFactorDevice = MembersTwoFactorDevice::factory()->make();
+            $this->info('✓ MembersTwoFactorDevice factory works');
+            $this->line("  - Generated data: {$twoFactorDevice->token}, Approved: " . ($twoFactorDevice->approved ? 'Yes' : 'No'));
 
             // Test MembersTwoFactorToken factory
             $twoFactorToken = MembersTwoFactorToken::factory()->make();
