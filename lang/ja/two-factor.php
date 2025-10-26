@@ -2,13 +2,13 @@
 
 return [
     // メール認証
+    'title' => '二段階認証',
     'email' => [
-        'title' => '二段階認証',
         'prompt' => <<<TEXT
 認証コードが書かれたメールを送信しました。
 メールに書かれている6桁の認証コードを入力してください。
 TEXT,
-        'code_title' => '認証コード入力',
+        'code_title' => 'メール認証',
         'code_prompt' => 'メールに記載された6桁の認証コードを入力してください。',
         'code_label' => '認証コード',
         'expire_notice' => '認証コードは :minutes 分間有効です。',
