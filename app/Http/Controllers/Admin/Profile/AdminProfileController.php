@@ -223,6 +223,14 @@ class AdminProfileController extends AdminLoggedInController
         // メールサーバー設定状態を渡す
         $this->viewParams['isMailServerTested'] = MailServerValidatorService::isMailServerTested();
 
+        // 信頼済みデバイス一覧を取得
+        $deviceService = app(\App\Services\DeviceAuthenticationService::class);
+        $this->viewParams['trustedDevices'] = $deviceService->getDevices($user);
+
+        // 生体認証デバイス一覧を取得
+        $biometricService = app(\App\Services\BiometricAuthenticationService::class);
+        $this->viewParams['biometricCredentials'] = $biometricService->getCredentials($user);
+
         return view('admin.profile.index', $this->viewParams);
     }
 
@@ -570,6 +578,145 @@ class AdminProfileController extends AdminLoggedInController
             
             return redirect()->route('admin.profile')
                 ->with('error', __('auth.verification_failed'));
+        }
+    }
+
+    /**
+     * 生体認証の登録チャレンジを生成
+     */
+    public function generateBiometricChallenge(Request $request)
+    {
+        $member = Auth::guard('member')->user();
+        
+        try {
+            $biometricService = app(\App\Services\BiometricAuthenticationService::class);
+
+            // 生体認証が利用可能かチェック
+            if (!$biometricService->isAvailable()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'HTTPS接続が必要です'
+                ], 400);
+            }
+
+            // 登録チャレンジを生成
+            $challenge = $biometricService->generateRegistrationChallenge($member);
+
+            \Log::info("[Biometric Registration] チャレンジ生成: ユーザーID {$member->id}");
+
+            return response()->json([
+                'success' => true,
+                'challenge' => $challenge
+            ]);
+        } catch (\Exception $e) {
+            \Log::error("[Biometric Registration] チャレンジ生成エラー: " . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'チャレンジの生成に失敗しました'
+            ], 500);
+        }
+    }
+
+    /**
+     * 生体認証を登録
+     */
+    public function registerBiometric(Request $request)
+    {
+        $member = Auth::guard('member')->user();
+
+        $request->validate([
+            'credential' => 'required|array',
+            'device_name' => 'nullable|string|max:255',
+        ]);
+
+        try {
+            $biometricService = app(\App\Services\BiometricAuthenticationService::class);
+            $credential = $request->input('credential');
+            $deviceName = $request->input('device_name');
+
+            // 認証情報を登録
+            $biometricService->registerCredential($member, $credential, $deviceName);
+
+            \Log::info("[Biometric Registration] 登録成功: ユーザーID {$member->id}");
+
+            return response()->json([
+                'success' => true,
+                'message' => '生体認証を登録しました'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error("[Biometric Registration] 登録エラー: " . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => '生体認証の登録に失敗しました'
+            ], 500);
+        }
+    }
+
+    /**
+     * 生体認証を削除
+     */
+    public function revokeBiometric(Request $request, string $credentialId)
+    {
+        $member = Auth::guard('member')->user();
+
+        try {
+            $biometricService = app(\App\Services\BiometricAuthenticationService::class);
+
+            if ($biometricService->revokeCredential($member, $credentialId)) {
+                \Log::info("[Biometric Registration] 削除成功: ユーザーID {$member->id}, 認証情報ID: {$credentialId}");
+
+                return response()->json([
+                    'success' => true,
+                    'message' => '生体認証を削除しました'
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => '生体認証が見つかりません'
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            \Log::error("[Biometric Registration] 削除エラー: " . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => '生体認証の削除に失敗しました'
+            ], 500);
+        }
+    }
+
+    /**
+     * 信頼済みデバイスを削除
+     */
+    public function revokeTrustedDevice(Request $request, int $deviceId)
+    {
+        $member = Auth::guard('member')->user();
+
+        try {
+            $deviceService = app(\App\Services\DeviceAuthenticationService::class);
+
+            if ($deviceService->revokeDevice($member, $deviceId)) {
+                \Log::info("[Device Auth] 削除成功: ユーザーID {$member->id}, デバイスID: {$deviceId}");
+
+                return response()->json([
+                    'success' => true,
+                    'message' => '信頼済みデバイスを削除しました'
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'デバイスが見つかりません'
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            \Log::error("[Device Auth] 削除エラー: " . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'デバイスの削除に失敗しました'
+            ], 500);
         }
     }
 }

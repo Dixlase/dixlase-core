@@ -79,8 +79,9 @@ Route::prefix($adminUrl)->name('admin.')
         Route::get('/device-auth/deny/{token}', [AdminLoginController::class, 'denyDeviceAuth'])->name('device-auth.deny');
         
         // 生体認証
-        Route::get('/two-factor-biometric', [AdminLoginController::class, 'showBiometricChallengeForm'])->name('two-factor.biometric.challenge');
-        Route::post('/two-factor-biometric', [AdminLoginController::class, 'confirmBiometricAuth'])->name('two-factor.biometric.verify');
+        Route::get('/two-factor-biometric', [AdminLoginController::class, 'showBiometricChallengeForm'])->name('two-factor.biometric.show');
+        Route::post('/two-factor-biometric/challenge', [AdminLoginController::class, 'confirmBiometricAuth'])->name('two-factor.biometric.challenge');
+        Route::post('/two-factor-biometric/verify', [AdminLoginController::class, 'verifyBiometricAuth'])->name('two-factor.biometric.verify');
 
         // パスワードリセット
         Route::get('/forgot-password', [AdminPasswordResetLinkController::class, 'create'])->name('password.request');
@@ -157,6 +158,14 @@ Route::prefix($adminUrl)->name('admin.')
             // プロフィール設定（全員アクセス可能）
             Route::get('/profile', [AdminProfileController::class, 'index'])->name('profile');
             Route::post('/profile', [AdminProfileController::class, 'update'])->name('profile.update');
+            
+            // 生体認証管理
+            Route::post('/profile/biometric/challenge', [AdminProfileController::class, 'generateBiometricChallenge'])->name('profile.biometric.challenge');
+            Route::post('/profile/biometric/register', [AdminProfileController::class, 'registerBiometric'])->name('profile.biometric.register');
+            Route::delete('/profile/biometric/{credentialId}', [AdminProfileController::class, 'revokeBiometric'])->name('profile.biometric.revoke');
+            
+            // 信頼済みデバイス管理
+            Route::delete('/profile/trusted-device/{deviceId}', [AdminProfileController::class, 'revokeTrustedDevice'])->name('profile.trusted-device.revoke');
 
             // 全体設定
             // 基本設定（権限チェック付き）

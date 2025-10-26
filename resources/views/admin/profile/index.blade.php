@@ -317,6 +317,82 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </section>
     </form>
 
+    <!-- デバイス管理セクション -->
+    <section class="mt-8 transition-colors-unified">
+        <h2>{{ __('admin.profile.device_management') }}</h2>
+
+        <!-- 信頼済みデバイス -->
+        <div class="mb-8">
+            <h3 class="text-lg font-semibold mb-4">{{ __('admin.profile.trusted_devices') }}</h3>
+            
+            @if($trustedDevices->isEmpty())
+                <p class="text-gray-600 dark:text-gray-400">{{ __('admin.profile.no_trusted_devices') }}</p>
+            @else
+                <div class="space-y-4">
+                    @foreach($trustedDevices as $device)
+                        <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4 flex items-start justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center mb-2">
+                                    <i class="fas fa-desktop text-blue-600 dark:text-blue-400 mr-2"></i>
+                                    <h4 class="font-semibold">{{ $device->device_name }}</h4>
+                                </div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                                    <p><strong>IP:</strong> {{ $device->ip_address }}</p>
+                                    <p><strong>{{ __('admin.profile.last_used') }}:</strong> {{ $device->last_used_at ? $device->last_used_at->format('Y-m-d H:i') : '-' }}</p>
+                                </div>
+                            </div>
+                            <button 
+                                type="button"
+                                onclick="revokeTrustedDevice({{ $device->id }})"
+                                class="ml-4 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
+                                {{ __('common.delete') }}
+                            </button>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+
+        <!-- 生体認証デバイス -->
+        <div>
+            <h3 class="text-lg font-semibold mb-4">{{ __('admin.profile.biometric_devices') }}</h3>
+            
+            @if($biometricCredentials->isEmpty())
+                <p class="text-gray-600 dark:text-gray-400 mb-4">{{ __('admin.profile.no_biometric_devices') }}</p>
+            @else
+                <div class="space-y-4 mb-4">
+                    @foreach($biometricCredentials as $credential)
+                        <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4 flex items-start justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center mb-2">
+                                    <i class="fas fa-fingerprint text-green-600 dark:text-green-400 mr-2"></i>
+                                    <h4 class="font-semibold">{{ $credential->name }}</h4>
+                                </div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400">
+                                    <p><strong>{{ __('admin.profile.registered_at') }}:</strong> {{ $credential->created_at->format('Y-m-d H:i') }}</p>
+                                </div>
+                            </div>
+                            <button 
+                                type="button"
+                                onclick="revokeBiometric('{{ $credential->credential_id }}')"
+                                class="ml-4 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
+                                {{ __('common.delete') }}
+                            </button>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+
+            <!-- 新しい生体認証を追加 -->
+            <button 
+                type="button"
+                id="add-biometric-btn"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
+                <i class="fas fa-plus mr-2"></i>{{ __('admin.profile.add_biometric') }}
+            </button>
+        </div>
+    </section>
+
 @endsection
 
 @section('save')
@@ -397,6 +473,154 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 if (passwordField && confirmationField) {
                     if (!passwordField.value.trim()) {
                         confirmationField.remove();
+                    }
+                }
+            });
+        }
+
+        // 信頼済みデバイス削除
+        window.revokeTrustedDevice = function(deviceId) {
+            if (!confirm('{{ __('admin.profile.confirm_delete_device') }}')) {
+                return;
+            }
+
+            fetch(`/admin/profile/trusted-device/${deviceId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('{{ __('admin.profile.delete_device_error') }}');
+            });
+        };
+
+        // 生体認証削除
+        window.revokeBiometric = function(credentialId) {
+            if (!confirm('{{ __('admin.profile.confirm_delete_biometric') }}')) {
+                return;
+            }
+
+            fetch(`/admin/profile/biometric/${credentialId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('{{ __('admin.profile.delete_biometric_error') }}');
+            });
+        };
+
+        // 生体認証追加
+        const addBiometricBtn = document.getElementById('add-biometric-btn');
+        if (addBiometricBtn) {
+            addBiometricBtn.addEventListener('click', async function() {
+                try {
+                    // WebAuthn対応チェック
+                    if (!window.PublicKeyCredential) {
+                        alert('{{ __('admin.profile.webauthn_not_supported') }}');
+                        return;
+                    }
+
+                    // チャレンジ生成
+                    const challengeResponse = await fetch('/admin/profile/biometric/challenge', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    const challengeData = await challengeResponse.json();
+                    if (!challengeData.success) {
+                        alert(challengeData.message);
+                        return;
+                    }
+
+                    const challenge = challengeData.challenge;
+
+                    // Base64URLデコード
+                    const challengeBuffer = Uint8Array.from(atob(challenge.challenge.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+                    const userIdBuffer = Uint8Array.from(atob(challenge.user.id.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+
+                    // WebAuthn登録
+                    const credential = await navigator.credentials.create({
+                        publicKey: {
+                            challenge: challengeBuffer,
+                            rp: challenge.rp,
+                            user: {
+                                id: userIdBuffer,
+                                name: challenge.user.name,
+                                displayName: challenge.user.displayName
+                            },
+                            pubKeyCredParams: challenge.pubKeyCredParams,
+                            timeout: challenge.timeout,
+                            attestation: challenge.attestation,
+                            authenticatorSelection: challenge.authenticatorSelection
+                        }
+                    });
+
+                    // デバイス名を入力
+                    const deviceName = prompt('{{ __('admin.profile.enter_device_name') }}', '');
+
+                    // 登録
+                    const registerResponse = await fetch('/admin/profile/biometric/register', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            credential: {
+                                id: credential.id,
+                                rawId: btoa(String.fromCharCode(...new Uint8Array(credential.rawId))),
+                                response: {
+                                    attestationObject: btoa(String.fromCharCode(...new Uint8Array(credential.response.attestationObject))),
+                                    clientDataJSON: btoa(String.fromCharCode(...new Uint8Array(credential.response.clientDataJSON)))
+                                },
+                                type: credential.type
+                            },
+                            device_name: deviceName
+                        })
+                    });
+
+                    const registerData = await registerResponse.json();
+                    if (registerData.success) {
+                        alert(registerData.message);
+                        location.reload();
+                    } else {
+                        alert(registerData.message);
+                    }
+                } catch (error) {
+                    console.error('Biometric registration error:', error);
+                    if (error.name === 'NotAllowedError') {
+                        alert('{{ __('admin.profile.biometric_cancelled') }}');
+                    } else {
+                        alert('{{ __('admin.profile.biometric_registration_error') }}');
                     }
                 }
             });

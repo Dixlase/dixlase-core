@@ -424,7 +424,7 @@ class AdminLoginController extends AdminController
         return match($method) {
             0 => route('admin.two-factor.login'), // EMAIL
             1 => route('admin.two-factor.device.challenge'), // DEVICE
-            2 => route('admin.two-factor.biometric.challenge'), // BIOMETRIC
+            2 => route('admin.two-factor.biometric.show'), // BIOMETRIC (GET用)
             default => route('admin.two-factor.login'),
         };
     }
@@ -726,14 +726,143 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * 生体認証の確認
+     * 生体認証チャレンジを生成
      */
     public function confirmBiometricAuth(Request $request)
     {
-        // TODO: 生体認証の実装
-        return response()->json([
-            'success' => false,
-            'message' => '生体認証は現在実装中です'
-        ]);
+        if (!session()->has('login.id')) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.failed')
+            ], 401);
+        }
+
+        $memberId = session('login.id');
+        $member = Member::find($memberId);
+
+        if (!$member) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.failed')
+            ], 401);
+        }
+
+        try {
+            $biometricService = app(\App\Services\BiometricAuthenticationService::class);
+
+            // 生体認証が利用可能かチェック
+            if (!$biometricService->isAvailable()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'HTTPS接続が必要です'
+                ], 400);
+            }
+
+            // メンバーが生体認証を登録しているかチェック
+            if (!$biometricService->hasCredentials($member)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => '生体認証が登録されていません'
+                ], 400);
+            }
+
+            // 認証チャレンジを生成
+            $challenge = $biometricService->generateAuthenticationChallenge($member);
+
+            // チャレンジIDをセッションに保存
+            $challengeId = Str::random(32);
+            session(['biometric_challenge_id' => $challengeId]);
+
+            Log::info("[Biometric Auth] チャレンジ生成: ユーザーID {$member->id}");
+
+            return response()->json([
+                'success' => true,
+                'challenge' => [
+                    'id' => $challengeId,
+                    'challenge' => $challenge['challenge'],
+                    'timeout' => $challenge['timeout'],
+                    'rpId' => $challenge['rpId'],
+                    'allowCredentials' => $challenge['allowCredentials'],
+                    'userVerification' => $challenge['userVerification'],
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error("[Biometric Auth] チャレンジ生成エラー: " . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'チャレンジの生成に失敗しました'
+            ], 500);
+        }
+    }
+
+    /**
+     * 生体認証を検証
+     */
+    public function verifyBiometricAuth(Request $request)
+    {
+        if (!session()->has('login.id')) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.failed')
+            ], 401);
+        }
+
+        $memberId = session('login.id');
+        $member = Member::find($memberId);
+
+        if (!$member) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.failed')
+            ], 401);
+        }
+
+        // チャレンジIDの検証
+        $challengeId = $request->input('challenge_id');
+        if (!$challengeId || $challengeId !== session('biometric_challenge_id')) {
+            return response()->json([
+                'success' => false,
+                'message' => '無効なチャレンジです'
+            ], 400);
+        }
+
+        try {
+            $biometricService = app(\App\Services\BiometricAuthenticationService::class);
+            $response = $request->input('response');
+
+            // 認証レスポンスを検証
+            $isValid = $biometricService->verifyAssertion($member, $response);
+
+            if ($isValid) {
+                // 認証成功 - ログイン処理
+                Auth::guard('member')->login($member, session('login.remember', false));
+                $request->session()->regenerate();
+
+                // セッションクリーンアップ
+                session()->forget(['login.id', 'login.remember', 'biometric_challenge_id']);
+
+                Log::info("[Biometric Auth] 認証成功: ユーザーID {$member->id}");
+
+                return response()->json([
+                    'success' => true,
+                    'redirect' => route('admin.dashboard')
+                ]);
+            } else {
+                Log::warning("[Biometric Auth] 認証失敗: ユーザーID {$member->id}");
+
+                return response()->json([
+                    'success' => false,
+                    'message' => '生体認証に失敗しました'
+                ], 401);
+            }
+        } catch (\Exception $e) {
+            Log::error("[Biometric Auth] 検証エラー: " . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => '認証の検証に失敗しました'
+            ], 500);
+        }
     }
 }

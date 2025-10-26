@@ -228,6 +228,26 @@ return [
         'email_change_help' => 'If you change your email address, a verification email will be sent to the new address. The change will not take effect until verification is complete.',
         'email_change_help_no_mail' => 'If you change your email address, it will be updated immediately.',
         'updated_email_immediate' => 'Profile has been updated. Email address has been changed.',
+        
+        // Device Management
+        'device_management' => 'Device Management',
+        'trusted_devices' => 'Trusted Devices',
+        'no_trusted_devices' => 'No trusted devices',
+        'last_used' => 'Last Used',
+        'confirm_delete_device' => 'Are you sure you want to delete this trusted device?',
+        'delete_device_error' => 'Failed to delete device',
+        
+        // Biometric Authentication
+        'biometric_devices' => 'Biometric Devices',
+        'no_biometric_devices' => 'No biometric devices registered',
+        'registered_at' => 'Registered',
+        'add_biometric' => 'Add New Biometric Authentication',
+        'confirm_delete_biometric' => 'Are you sure you want to delete this biometric authentication?',
+        'delete_biometric_error' => 'Failed to delete biometric authentication',
+        'webauthn_not_supported' => 'Your browser does not support biometric authentication',
+        'enter_device_name' => 'Enter device name',
+        'biometric_cancelled' => 'Biometric authentication was cancelled',
+        'biometric_registration_error' => 'Failed to register biometric authentication',
     ],
 
     // Settings
@@ -677,13 +697,14 @@ Clicking this link will complete the full mail function test.',
                     1 => 'Required',
                     0 => 'Not required',
                 ],
+                'password_security_warning' => 'Please note that lowering the requirements increases security risks.',
                 'login_notification_global_setting' => 'Global Login Notification Email Settings',
                 'two_factor_mode_global_setting' => 'Global Two-Factor Authentication Settings',
                 'two_factor_methods_label' => 'Available Two-Factor Authentication Methods',
                 'two_factor_methods_help' => 'Select the two-factor authentication methods that users can use. At least one must be enabled.',
                 'password_reset_settings' => 'Password Reset Function Settings',
                 'password_reset_enabled' => 'Password Reset Function',
-                'password_reset_help' => 'When disabled, the password reset link will be hidden on the admin login screen and the password reset function will not be available. To reset passwords when disabled, please use the member edit screen in the admin panel.',
+                'password_reset_help' => 'Please note that enabling this feature may increase security risks.<br>When disabled, the password reset link will be hidden on the admin login screen and the password reset function will not be available.<br>To reset passwords when disabled, please use the member edit screen in the member management.',
                 // Password dictionary attack protection settings
                 'pwned_password_settings' => 'Password Dictionary Attack Protection',
                 'pwned_password_check_enabled' => 'Dictionary Attack Protection',

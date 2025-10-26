@@ -186,6 +186,18 @@ trait TwoFactorTrait
 
 
     /**
+     * 信頼済みデバイスからのアクセスかチェック
+     *
+     * @param mixed $user ユーザーモデル
+     * @return bool 信頼済みデバイスの場合true
+     */
+    protected function isFromTrustedDevice($user): bool
+    {
+        $deviceService = app(\App\Services\DeviceAuthenticationService::class);
+        return $deviceService->isTrustedDevice($user);
+    }
+
+    /**
      * 設定値を取得する（継承先で実装）
      *
      * @param string $key 設定キー
