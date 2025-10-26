@@ -1,9 +1,9 @@
 @extends('layouts.auth')
 
-@section('title', 'エラー')
+@section('title', __('two-factor.device.error_page_title'))
 @section('icon', 'fas fa-exclamation-triangle')
-@section('header', 'エラー')
-@section('description', 'リクエストの処理中にエラーが発生しました。')
+@section('header', __('two-factor.device.error_page_title'))
+@section('description', __('two-factor.device.error_page_description'))
 
 @section('content')
 <div class="text-center">
@@ -12,11 +12,11 @@
     </div>
     
     <p class="text-gray-700 dark:text-gray-300 mb-6">
-        {{ $message ?? 'リクエストの処理中にエラーが発生しました。' }}
+        {{ $message ?? __('two-factor.device.error_page_message') }}
     </p>
     
     <p class="text-sm text-gray-500 dark:text-gray-400">
-        このウィンドウは閉じても問題ありません。
+        {{ __('two-factor.device.error_page_close') }}
     </p>
 </div>
 @endsection

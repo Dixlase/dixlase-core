@@ -1,9 +1,9 @@
 @extends('layouts.auth')
 
-@section('title', 'ログイン承認完了')
+@section('title', __('two-factor.device.approved_title'))
 @section('icon', 'fas fa-check-circle')
-@section('header', 'ログイン承認完了')
-@section('description', 'ログインが承認されました。')
+@section('header', __('two-factor.device.approved_title'))
+@section('description', __('two-factor.device.approved_description'))
 
 @section('content')
 <div class="text-center">
@@ -12,12 +12,11 @@
     </div>
     
     <p class="text-gray-700 dark:text-gray-300 mb-6">
-        ログインリクエストが承認されました。<br>
-        ログイン画面に戻って、自動的にログインが完了します。
+        {!! __('two-factor.device.approved_message') !!}
     </p>
     
     <p class="text-sm text-gray-500 dark:text-gray-400">
-        このウィンドウは閉じても問題ありません。
+        {{ __('two-factor.device.approved_close') }}
     </p>
 </div>
 @endsection

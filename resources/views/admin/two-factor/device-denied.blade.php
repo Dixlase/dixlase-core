@@ -1,9 +1,9 @@
 @extends('layouts.auth')
 
-@section('title', 'ログイン拒否')
+@section('title', __('two-factor.device.denied_title'))
 @section('icon', 'fas fa-times-circle')
-@section('header', 'ログイン拒否')
-@section('description', 'ログインリクエストが拒否されました。')
+@section('header', __('two-factor.device.denied_title'))
+@section('description', __('two-factor.device.denied_description'))
 
 @section('content')
 <div class="text-center">
@@ -12,12 +12,11 @@
     </div>
     
     <p class="text-gray-700 dark:text-gray-300 mb-6">
-        ログインリクエストが拒否されました。<br>
-        ログイン試行は無効になりました。
+        {!! __('two-factor.device.denied_message') !!}
     </p>
     
     <p class="text-sm text-gray-500 dark:text-gray-400">
-        このウィンドウは閉じても問題ありません。
+        {{ __('two-factor.device.denied_close') }}
     </p>
 </div>
 @endsection

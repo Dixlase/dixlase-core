@@ -49,7 +49,7 @@
         @if($showExpireTime)
             <div class="mb-4">
                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                    コードの有効期限: <span id="expire-time">{{ $expireMinutes }}分</span>
+                    {{ __('two-factor.email.expire_label') }}: <span id="expire-time">{{ $expireMinutes }}分</span>
                 </p>
             </div>
         @endif
@@ -211,12 +211,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateHiddenInput();
                 updateSubmitButton();
             } else {
-                showFlashMessage(data.message || 'コードの再送信に失敗しました', 'error');
+                showFlashMessage(data.message || '{{ __('two-factor.email.resend_failed') }}', 'error');
             }
         })
         .catch(error => {
             console.error('Resend error:', error);
-            showFlashMessage('ネットワークエラーが発生しました', 'error');
+            showFlashMessage('{{ __('two-factor.email.network_error') }}', 'error');
         });
     };
 
@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         countdownInterval = setInterval(() => {
             resendCountdown--;
-            document.getElementById('resend-countdown').textContent = `(${resendCountdown}秒)`;
+            document.getElementById('resend-countdown').textContent = `(${resendCountdown}{{ __('two-factor.email.seconds_suffix') }})`;
             
             if (resendCountdown <= 0) {
                 clearInterval(countdownInterval);
@@ -250,11 +250,11 @@ document.addEventListener('DOMContentLoaded', function() {
         expireTime--;
         const minutes = Math.floor(expireTime / 60);
         const seconds = expireTime % 60;
-        expireElement.textContent = `${minutes}分${seconds.toString().padStart(2, '0')}秒`;
+        expireElement.textContent = `${minutes}分${seconds.toString().padStart(2, '0')}{{ __('two-factor.email.seconds_suffix') }}`;
         
         if (expireTime <= 0) {
             clearInterval(expireInterval);
-            expireElement.textContent = '期限切れ';
+            expireElement.textContent = '{{ __('two-factor.email.expired') }}';
             inputs.forEach(input => input.disabled = true);
             submitButton.disabled = true;
         }

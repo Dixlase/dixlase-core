@@ -21,9 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @props([
     'action',
     'emailLabel',
-    'submitText',
-    'backText' => null,
-    'backUrl' => null
+    'submitText'
 ])
 
 <form method="POST" action="{{ $action }}">
@@ -58,12 +56,5 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'label' => $submitText,
             'class' => 'w-full'
         ])
-
-        @if($backText && $backUrl)
-            <a class="mt-4 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 hover:underline" 
-               href="{{ $backUrl }}">
-                {{ $backText }}
-            </a>
-        @endif
     </section>
 </form>

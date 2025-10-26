@@ -55,6 +55,12 @@
             @include('components::flash-message')
             @yield('content')
         </div>
+
+        @hasSection('back_link')
+            <div class="mt-4 text-center">
+                @yield('back_link')
+            </div>
+        @endif
     </div>
 </body>
 </html>
