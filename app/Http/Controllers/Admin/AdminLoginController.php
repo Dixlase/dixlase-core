@@ -191,16 +191,21 @@ class AdminLoginController extends AdminController
                 'login.remember' => $request->boolean('remember'),
             ]);
 
+            // 有効な認証方法を取得
+            $effectiveMethod = $twoFactor->getEffectiveAuthMethod($member);
+            
             Log::info('[2FA Login] コード生成開始', [
                 'member_id' => $member->id,
-                'effective_method' => $twoFactor->getEffectiveAuthMethod($member),
+                'effective_method' => $effectiveMethod,
             ]);
 
             $twoFactor->generate($member); // ← ここでコード生成 + メール送信
             
             Log::info('[2FA Login] コード生成完了、リダイレクト');
 
-            return redirect()->route('admin.two-factor.login'); // ← 入力画面へ遷移
+            // デフォルト認証方法に応じて適切なルートにリダイレクト
+            $redirectRoute = $this->getTwoFactorMethodRoute($effectiveMethod);
+            return redirect($redirectRoute);
         } else {
             // メールサーバー未テスト時はログに記録
             if ($twoFactor->has($member) && !$mailServerTested) {
