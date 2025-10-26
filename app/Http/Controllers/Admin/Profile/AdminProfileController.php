@@ -702,12 +702,12 @@ class AdminProfileController extends AdminLoggedInController
 
                 return response()->json([
                     'success' => true,
-                    'message' => '信頼済みデバイスを削除しました'
+                    'message' => __('admin.profile.device_deleted_successfully')
                 ]);
             } else {
                 return response()->json([
                     'success' => false,
-                    'message' => 'デバイスが見つかりません'
+                    'message' => __('admin.profile.device_not_found')
                 ], 404);
             }
         } catch (\Exception $e) {
@@ -715,7 +715,59 @@ class AdminProfileController extends AdminLoggedInController
             
             return response()->json([
                 'success' => false,
-                'message' => 'デバイスの削除に失敗しました'
+                'message' => __('admin.profile.delete_device_error')
+            ], 500);
+        }
+    }
+
+    /**
+     * すべての信頼済みデバイスを削除
+     */
+    public function revokeAllTrustedDevices(Request $request)
+    {
+        $member = Auth::guard('member')->user();
+
+        try {
+            $count = \App\Models\MembersTrustedDevice::where('member_id', $member->id)->delete();
+            
+            \Log::info("[Device Auth] 一括削除成功: ユーザーID {$member->id}, 削除数: {$count}");
+
+            return response()->json([
+                'success' => true,
+                'message' => __('admin.profile.all_devices_deleted_successfully', ['count' => $count])
+            ]);
+        } catch (\Exception $e) {
+            \Log::error("[Device Auth] 一括削除エラー: " . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => __('admin.profile.delete_all_devices_error')
+            ], 500);
+        }
+    }
+
+    /**
+     * すべての生体認証を削除
+     */
+    public function revokeAllBiometric(Request $request)
+    {
+        $member = Auth::guard('member')->user();
+
+        try {
+            $count = \App\Models\MembersTwoFactorDevice::where('member_id', $member->id)->delete();
+            
+            \Log::info("[Biometric Auth] 一括削除成功: ユーザーID {$member->id}, 削除数: {$count}");
+
+            return response()->json([
+                'success' => true,
+                'message' => __('admin.profile.all_biometric_deleted_successfully', ['count' => $count])
+            ]);
+        } catch (\Exception $e) {
+            \Log::error("[Biometric Auth] 一括削除エラー: " . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => __('admin.profile.delete_all_biometric_error')
             ], 500);
         }
     }

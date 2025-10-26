@@ -27,7 +27,7 @@ The `two-factor-challenge` component provides a reusable UI for two-factor authe
 | `prompt` | string | `__('auth.two_factor.prompt')` | Instruction text for user |
 | `submitText` | string | `__('auth.two_factor.submit')` | Submit button text |
 | `resendText` | string | `__('auth.two_factor.resend')` | Resend button text |
-| `expireMinutes` | int | `config('app.two_factor.email_code_expire', 10)` | Code expiration time |
+| `expireMinutes` | int | `config('two-factor.code_expiration', 5)` | Code expiration time |
 | `codeLength` | int | 6 | Number of code digits |
 | `autoSubmit` | bool | true | Auto-submit when all digits entered |
 | `showExpireTime` | bool | true | Show expiration time message |

@@ -749,9 +749,10 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $membersSessionLifetimeEnabled = (bool) MemberSetting::getValue('members_session_lifetime_enabled', false);
         $membersSessionLifetime = (int) MemberSetting::getValue('members_session_lifetime', 120);
 
-        // 二段階認証の有効期限設定
-        $twoFactorExpireMinutes = (int) MemberSetting::getValue('two_factor_expire_minutes', 10);
-        $twoFactorResendIntervalSeconds = (int) MemberSetting::getValue('two_factor_resend_interval_seconds', 60);
+        // 二段階認証の有効期限設定（メンバー設定 > コンフィグ）
+        $twoFactorExpireMinutes = (int) MemberSetting::getValue('two_factor_expire_minutes', config('two-factor.code_expiration', 5));
+        $twoFactorResendIntervalSeconds = (int) MemberSetting::getValue('two_factor_resend_interval_seconds', config('two-factor.resend_interval', 60));
+        $trustedDeviceExpireDays = (int) MemberSetting::getValue('trusted_device_expire_days', config('two-factor.device_expiration_days', 30));
 
         // メールサーバー接続テスト状況
         $isMailServerTested = $this->isMailServerTested();
@@ -792,6 +793,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['membersSessionLifetime'] = $membersSessionLifetime;
         $this->viewParams['twoFactorExpireMinutes'] = $twoFactorExpireMinutes;
         $this->viewParams['twoFactorResendIntervalSeconds'] = $twoFactorResendIntervalSeconds;
+        $this->viewParams['trustedDeviceExpireDays'] = $trustedDeviceExpireDays;
         $this->viewParams['isMailServerTested'] = $isMailServerTested;
         $this->viewParams['mailConnectionTestDate'] = $mailConnectionTestDate;
 
@@ -827,6 +829,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         // 二段階認証の有効期限設定
         MemberSetting::setValue('two_factor_expire_minutes', (string) $validated['two_factor_expire_minutes']);
         MemberSetting::setValue('two_factor_resend_interval_seconds', (string) $validated['two_factor_resend_interval_seconds']);
+        MemberSetting::setValue('trusted_device_expire_days', (string) $validated['trusted_device_expire_days']);
 
         // 二段階認証方法設定の保存
         $autoSelectedDefaultMethod = null;

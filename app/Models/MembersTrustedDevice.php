@@ -18,11 +18,6 @@ class MembersTrustedDevice extends Model
         'token',
         'ip_address',
         'user_agent',
-        'last_used_at',
-    ];
-
-    protected $casts = [
-        'last_used_at' => 'datetime',
     ];
 
     /**

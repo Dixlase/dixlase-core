@@ -157,6 +157,16 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Force SSL
+    |--------------------------------------------------------------------------
+    |
+    | This value determines whether the application should force SSL connections.
+    | This is used to ensure that all connections are secure.
+    */
+    'force_ssl' => env('FORCE_SSL', false), // `.env` から取得
+
+    /*
+    |--------------------------------------------------------------------------
     | Installed
     |-------------------------------------------------------------------------
     |
@@ -167,41 +177,4 @@ return [
     */
 
     'installed' => env('INSTALLED', false),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Force SSL
-    |--------------------------------------------------------------------------
-    |
-    | This value determines whether the application should force SSL connections.
-    | This is used to ensure that all connections are secure.
-    |
-    */
-    'force_ssl' => env('FORCE_SSL', false), // `.env` から取得
-
-    /*
-    |--------------------------------------------------------------------------
-    | Two Factor
-    |--------------------------------------------------------------------------
-    |
-    | This value determines the configuration of two-factor authentication.
-    |
-    */
-
-    'two_factor' => [
-        'email_code_expire' => env('TWO_FACTOR_EMAIL_EXPIRE', 5), // 分
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Installation Status
-    |--------------------------------------------------------------------------
-    |
-    | This value determines whether the application has been installed.
-    | When cached, this ensures the INSTALLED status is properly recognized.
-    |
-    */
-
-    'installed' => env('INSTALLED', false),
-
 ];
