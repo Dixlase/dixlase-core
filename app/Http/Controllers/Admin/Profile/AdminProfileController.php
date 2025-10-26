@@ -198,8 +198,8 @@ class AdminProfileController extends AdminLoggedInController
             $user->save();
         }
 
-        // 認証方法選択を表示するかどうか（プロフィール設定を反映の場合、または複数の認証方法が有効な場合）
-        $showMethodSelection = ($force2fa === TwoFactorMode::UseProfileSetting->value || count($availableMethodOptions) > 1);
+        // 認証方法選択を表示するかどうか（プロフィール設定に従う場合のみ）
+        $showMethodSelection = ($force2fa === TwoFactorMode::UseProfileSetting->value);
         
         // 全体設定が OnlyNewDevice または Always の場合は現在の設定を表示用として取得
         $currentGlobalTwoFactorMode = null;

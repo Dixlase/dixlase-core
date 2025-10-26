@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Log;
 use App\Traits\TwoFactorTrait;
 use App\Models\MemberSetting;
 use App\Enums\TwoFactorMethod;
+use App\Enums\TwoFactorMode;
 
 class TwoFactorHelper
 {
@@ -187,15 +188,25 @@ class TwoFactorHelper
         $userMethod = $user->two_factor_method ?? null;
         $defaultMethod = (int) \App\Models\MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value);
         $enabledMethods = $this->getEnabledTwoFactorMethods();
+        $globalTwoFactorMode = (int) \App\Models\MemberSetting::getValue('force_2fa', TwoFactorMode::OnlyNewDevice->value);
 
         Log::info('[2FA] getEffectiveAuthMethod', [
             'user_id' => $user->id,
             'user_method' => $userMethod,
             'default_method' => $defaultMethod,
+            'global_mode' => $globalTwoFactorMode,
             'enabled_methods' => $enabledMethods,
         ]);
 
-        // ユーザーの設定方法が有効な方法に含まれている場合はそれを使用
+        // グローバル設定が「プロフィール設定に従う」(3)以外の場合は、デフォルト認証方法を強制
+        if ($globalTwoFactorMode !== TwoFactorMode::UseProfileSetting->value) {
+            if (in_array($defaultMethod, $enabledMethods, true)) {
+                Log::info('[2FA] Using global default method (forced)', ['method' => $defaultMethod, 'global_mode' => $globalTwoFactorMode]);
+                return $defaultMethod;
+            }
+        }
+
+        // グローバル設定が「プロフィール設定に従う」(3)の場合のみ、ユーザー設定を考慮
         if ($userMethod !== null && in_array((int)$userMethod, $enabledMethods, true)) {
             Log::info('[2FA] Using user method', ['method' => (int)$userMethod]);
             return (int)$userMethod;

@@ -198,9 +198,9 @@ class AdminTwoFactorService
      * デバイス認証チャレンジを生成
      *
      * @param mixed $user ユーザーモデル
-     * @return array チャレンジデータ
+     * @return \App\Models\MembersTwoFactorDevice チャレンジデータ
      */
-    private function generateDeviceChallenge($user): array
+    private function generateDeviceChallenge($user): \App\Models\MembersTwoFactorDevice
     {
         return $this->deviceAuth->generateDeviceChallenge($user);
     }
