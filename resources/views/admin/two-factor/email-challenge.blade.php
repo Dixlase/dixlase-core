@@ -1,10 +1,10 @@
 @extends('layouts.auth')
 
-@section('title', __('two-factor.email.title'))
+@section('title', __('two-factor.title'))
 @section('icon')
 ["fas fa-envelope", "fas fa-key"]
 @endsection
-@section('header', __('two-factor.email.title'))
+@section('header', __('two-factor.title'))
 @section('description', __('two-factor.email.prompt'))
 
 @section('content')

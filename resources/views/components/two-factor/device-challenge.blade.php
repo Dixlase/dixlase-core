@@ -1,30 +1,31 @@
 @props([
     'challengeAction',
     'verifyAction',
+    'resendAction' => null,
     'title' => 'デバイス認証',
     'prompt' => 'デバイスでの認証を確認してください',
     'context' => 'admin',
     'pollInterval' => 2000,
-    'maxRetries' => 30
+    'maxRetries' => 30,
+    'autoStart' => false,
+    'expireMinutes' => 10,
+    'resendIntervalSeconds' => 60
 ])
 
 <div id="device-auth-container">
-    <!-- 認証待機状態 -->
-    <div id="device-waiting" class="text-center">
-        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+    <div class="text-center">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
             {{ $title }}
-        </h3>
+        </h2>
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
             {!! $prompt !!}
         </p>
+    </div>
+    <!-- 認証待機状態 -->
+    <div id="device-waiting" class="text-center">
         <button id="start-device-auth" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
             {{ __('two-factor.device.start_button') }}
         </button>
-        <div class="mt-4 bg-gray-50 dark:bg-gray-700 rounded-md p-4">
-            <p class="text-xs text-gray-500 dark:text-gray-400">
-                {{ __('two-factor.device.help_text') }}
-            </p>
-        </div>
     </div>
 
     <!-- 認証進行中状態 -->
@@ -33,8 +34,22 @@
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
         </div>
         <p class="text-xs text-gray-500 dark:text-gray-400 mt-4">
-            {{ __('two-factor.device.remaining_time') }}: <span id="countdown">60</span>{{ __('two-factor.device.seconds_suffix') }}
+            {{ __('two-factor.device.expire_label') }}: <span id="expire-time">{{ $expireMinutes }}分</span>
         </p>
+        
+        @if($resendAction)
+        <!-- 再送信ボタン -->
+        <div class="mt-4">
+            <button 
+                type="button" 
+                id="resend-device-button"
+                class="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+                {{ __('two-factor.device.resend_button') }}
+            </button>
+            <span id="resend-device-countdown" class="text-xs text-gray-500 dark:text-gray-400 ml-2 hidden"></span>
+        </div>
+        @endif
     </div>
 
     <!-- 認証成功状態 -->
@@ -94,8 +109,12 @@ document.addEventListener('DOMContentLoaded', function() {
     let challengeId = null;
     let pollInterval = null;
     let countdownInterval = null;
+    let expireInterval = null;
     let retryCount = 0;
-    let remainingTime = 60;
+    let expireTime = {{ $expireMinutes }} * 60; // 設定値（分）を秒に変換
+    const resendButton = document.getElementById('resend-device-button');
+    const resendCountdown = document.getElementById('resend-device-countdown');
+    const expireTimeElement = document.getElementById('expire-time');
 
     // デバイス認証チャレンジを開始
     function startDeviceChallenge() {
@@ -129,51 +148,32 @@ document.addEventListener('DOMContentLoaded', function() {
     // 認証状態をポーリング
     function startPolling() {
         pollInterval = setInterval(() => {
-            if (!challengeId) return;
-
             fetch('{{ $verifyAction }}', {
-                method: 'POST',
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    challenge_id: challengeId
-                })
+                }
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    if (data.status === 'completed') {
-                        stopPolling();
-                        stopCountdown();
-                        showSuccess();
-                        // 認証成功後、適切なページにリダイレクト
-                        setTimeout(() => {
-                            @if($context === 'admin')
-                            window.location.href = '{{ route("admin.dashboard") }}';
-                            @else
-                            window.location.reload();
-                            @endif
-                        }, 2000);
-                    } else if (data.status === 'failed') {
-                        stopPolling();
-                        stopCountdown();
-                        showError(data.message || '{{ __('two-factor.device.auth_denied') }}');
-                    } else if (data.status === 'expired') {
-                        stopPolling();
-                        stopCountdown();
-                        showTimeout();
-                    }
-                    // pending状態の場合は継続してポーリング
-                } else {
-                    retryCount++;
-                    if (retryCount >= {{ $maxRetries }}) {
-                        stopPolling();
-                        stopCountdown();
-                        showTimeout();
-                    }
+                if (data.success && data.status === 'approved') {
+                    // 承認された
+                    stopPolling();
+                    stopCountdown();
+                    showSuccess();
+                    
+                    // ダッシュボードにリダイレクト
+                    setTimeout(() => {
+                        window.location.href = data.redirect;
+                    }, 1000);
+                } else if (data.status === 'expired') {
+                    // 期限切れ
+                    stopPolling();
+                    stopCountdown();
+                    showTimeout();
                 }
+                // pending状態の場合は継続してポーリング
             })
             .catch(error => {
                 console.error('Polling error:', error);
@@ -187,16 +187,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }, {{ $pollInterval }});
     }
 
-    // カウントダウン開始
+    // 有効期限のカウントダウン開始
     function startCountdown() {
-        const countdownElement = document.getElementById('countdown');
-        countdownInterval = setInterval(() => {
-            remainingTime--;
-            if (countdownElement) {
-                countdownElement.textContent = remainingTime;
+        expireInterval = setInterval(() => {
+            expireTime--;
+            const minutes = Math.floor(expireTime / 60);
+            const seconds = expireTime % 60;
+            if (expireTimeElement) {
+                expireTimeElement.textContent = `${minutes}分${seconds}秒`;
             }
             
-            if (remainingTime <= 0) {
+            if (expireTime <= 0) {
                 stopPolling();
                 stopCountdown();
                 showTimeout();
@@ -214,9 +215,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // カウントダウン停止
     function stopCountdown() {
-        if (countdownInterval) {
-            clearInterval(countdownInterval);
-            countdownInterval = null;
+        if (expireInterval) {
+            clearInterval(expireInterval);
+            expireInterval = null;
         }
     }
 
@@ -255,6 +256,60 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('device-timeout').classList.add('hidden');
     }
 
+    // 再送信機能
+    @if($resendAction)
+    function resendDeviceAuth() {
+        if (!resendButton) return;
+        
+        resendButton.disabled = true;
+        resendButton.textContent = '{{ __('two-factor.device.sending') }}';
+        
+        fetch('{{ $resendAction }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                resendButton.textContent = '{{ __('two-factor.device.resend_button') }}';
+                
+                // 再送信クールダウン
+                let countdown = {{ $resendIntervalSeconds }};
+                resendCountdown.textContent = `(${countdown}{{ __('two-factor.device.seconds_suffix') }}後に再送信可能)`;
+                resendCountdown.classList.remove('hidden');
+                
+                const countdownInterval = setInterval(() => {
+                    countdown--;
+                    if (countdown > 0) {
+                        resendCountdown.textContent = `(${countdown}{{ __('two-factor.device.seconds_suffix') }}後に再送信可能)`;
+                    } else {
+                        clearInterval(countdownInterval);
+                        resendCountdown.classList.add('hidden');
+                        resendButton.disabled = false;
+                    }
+                }, 1000);
+            } else {
+                resendButton.textContent = '{{ __('two-factor.device.resend_button') }}';
+                resendButton.disabled = false;
+                alert(data.message || '再送信に失敗しました');
+            }
+        })
+        .catch(error => {
+            console.error('Resend error:', error);
+            resendButton.textContent = '{{ __('two-factor.device.resend_button') }}';
+            resendButton.disabled = false;
+            alert('ネットワークエラーが発生しました');
+        });
+    }
+    
+    if (resendButton) {
+        resendButton.addEventListener('click', resendDeviceAuth);
+    }
+    @endif
+
     // イベントリスナー
     document.getElementById('start-device-auth').addEventListener('click', startDeviceChallenge);
     document.getElementById('retry-device-auth').addEventListener('click', function() {
@@ -273,6 +328,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // 初期状態は待機状態
+    @if($autoStart)
+    // 自動開始モード：画面表示時に自動的にポーリングを開始（チャレンジは既に生成済み）
+    showProcessing();
+    startPolling();
+    startCountdown();
+    @else
     showWaiting();
+    @endif
 });
 </script>

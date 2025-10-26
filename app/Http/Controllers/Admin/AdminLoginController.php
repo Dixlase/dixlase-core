@@ -369,10 +369,21 @@ class AdminLoginController extends AdminController
             return redirect()->route('admin.login');
         }
 
+        // メール認証コードを生成・送信（認証方法切り替え時も対応）
+        Log::info('[Email Challenge] メール認証画面表示 - コード生成開始', [
+            'member_id' => $member->id,
+            'email' => $member->email,
+        ]);
+        
+        $twoFactor = app(AdminTwoFactorService::class);
+        $twoFactor->generate($member, 0); // 明示的にEMAIL認証を指定
+        
+        Log::info('[Email Challenge] コード生成完了');
+
         // TwoFactorHelperを使用して有効な認証方法を取得
         $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
         $enabledMethods = $twoFactorHelper->getEnabledTwoFactorMethods();
-        $currentMethod = $twoFactorHelper->getEffectiveAuthMethod($member);
+        $currentMethod = 0; // EMAIL
 
         // 認証方法の翻訳キーマッピング
         $methodLabels = [
@@ -433,7 +444,8 @@ class AdminLoginController extends AdminController
 
 
         $twoFactor = app(AdminTwoFactorService::class);
-        if (!$twoFactor->validate($member, $request->code)) {
+        // メール認証コードを検証（明示的にEMAIL認証を指定）
+        if (!$twoFactor->validate($member, $request->code, 0)) {
             return back()->withErrors(['code' => __('two-factor.email.invalid')]);
         }
 
