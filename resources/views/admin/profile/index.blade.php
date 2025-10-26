@@ -323,7 +323,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- 信頼済みデバイス -->
         <div class="mb-8">
-            <h3 class="text-lg font-semibold mb-4">{{ __('admin.profile.trusted_devices') }}</h3>
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold">{{ __('admin.profile.trusted_devices') }}</h3>
+                @if(!$trustedDevices->isEmpty())
+                    <button 
+                        type="button"
+                        onclick="openModal('deleteAllTrustedDevicesModal')"
+                        class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
+                        <i class="fas fa-trash-alt mr-1"></i>{{ __('admin.profile.delete_all_devices') }}
+                    </button>
+                @endif
+            </div>
             
             @if($trustedDevices->isEmpty())
                 <p class="text-gray-600 dark:text-gray-400">{{ __('admin.profile.no_trusted_devices') }}</p>
@@ -338,12 +348,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 </div>
                                 <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                                     <p><strong>IP:</strong> {{ $device->ip_address }}</p>
-                                    <p><strong>{{ __('admin.profile.last_used') }}:</strong> {{ $device->last_used_at ? $device->last_used_at->format('Y-m-d H:i') : '-' }}</p>
+                                    <p><strong>{{ __('admin.profile.last_used') }}:</strong> {{ $device->updated_at ? $device->updated_at->format('Y-m-d H:i') : '-' }}</p>
                                 </div>
                             </div>
                             <button 
                                 type="button"
-                                onclick="revokeTrustedDevice({{ $device->id }})"
+                                onclick="openDeleteTrustedDeviceModal({{ $device->id }}, '{{ addslashes($device->device_name) }}')"
                                 class="ml-4 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
                                 {{ __('common.delete') }}
                             </button>
@@ -355,7 +365,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- 生体認証デバイス -->
         <div>
-            <h3 class="text-lg font-semibold mb-4">{{ __('admin.profile.biometric_devices') }}</h3>
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold">{{ __('admin.profile.biometric_devices') }}</h3>
+                @if(!$biometricCredentials->isEmpty())
+                    <button 
+                        type="button"
+                        onclick="openModal('deleteAllBiometricModal')"
+                        class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
+                        <i class="fas fa-trash-alt mr-1"></i>{{ __('admin.profile.delete_all_biometric') }}
+                    </button>
+                @endif
+            </div>
             
             @if($biometricCredentials->isEmpty())
                 <p class="text-gray-600 dark:text-gray-400 mb-4">{{ __('admin.profile.no_biometric_devices') }}</p>
@@ -374,7 +394,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             </div>
                             <button 
                                 type="button"
-                                onclick="revokeBiometric('{{ $credential->credential_id }}')"
+                                onclick="openDeleteBiometricModal('{{ $credential->credential_id }}', '{{ addslashes($credential->name) }}')"
                                 class="ml-4 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
                                 {{ __('common.delete') }}
                             </button>
@@ -392,6 +412,105 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </button>
         </div>
     </section>
+
+    <!-- 信頼済みデバイス削除モーダル -->
+    @push('scripts')
+    <script>
+        // モーダルの確認ボタンにイベントリスナーを追加
+        document.addEventListener('DOMContentLoaded', function() {
+            // 信頼済みデバイス削除
+            const deleteTrustedDeviceBtn = document.querySelector('#deleteTrustedDeviceModal .modal-actions button[type="button"]:last-child');
+            if (deleteTrustedDeviceBtn) {
+                deleteTrustedDeviceBtn.addEventListener('click', revokeTrustedDevice);
+            }
+
+            // 信頼済みデバイス一括削除
+            const deleteAllTrustedDevicesBtn = document.querySelector('#deleteAllTrustedDevicesModal .modal-actions button[type="button"]:last-child');
+            if (deleteAllTrustedDevicesBtn) {
+                deleteAllTrustedDevicesBtn.addEventListener('click', revokeAllTrustedDevices);
+            }
+
+            // 生体認証削除
+            const deleteBiometricBtn = document.querySelector('#deleteBiometricModal .modal-actions button[type="button"]:last-child');
+            if (deleteBiometricBtn) {
+                deleteBiometricBtn.addEventListener('click', revokeBiometric);
+            }
+
+            // 生体認証一括削除
+            const deleteAllBiometricBtn = document.querySelector('#deleteAllBiometricModal .modal-actions button[type="button"]:last-child');
+            if (deleteAllBiometricBtn) {
+                deleteAllBiometricBtn.addEventListener('click', revokeAllBiometric);
+            }
+
+            // フラッシュメッセージの表示
+            const flashSuccess = sessionStorage.getItem('flash_success');
+            const flashError = sessionStorage.getItem('flash_error');
+            
+            if (flashSuccess) {
+                // 成功メッセージを表示（既存のフラッシュメッセージ機能を使用）
+                const flashContainer = document.querySelector('.flash-message-container');
+                if (flashContainer) {
+                    const successDiv = document.createElement('div');
+                    successDiv.className = 'alert alert-success';
+                    successDiv.textContent = flashSuccess;
+                    flashContainer.appendChild(successDiv);
+                }
+                sessionStorage.removeItem('flash_success');
+            }
+            
+            if (flashError) {
+                const flashContainer = document.querySelector('.flash-message-container');
+                if (flashContainer) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'alert alert-error';
+                    errorDiv.textContent = flashError;
+                    flashContainer.appendChild(errorDiv);
+                }
+                sessionStorage.removeItem('flash_error');
+            }
+        });
+    </script>
+    @endpush
+
+    <x-modal 
+        id="deleteTrustedDeviceModal"
+        :title="__('admin.profile.confirm_delete_device_title')"
+        :message="__('admin.profile.confirm_delete_device_message')"
+        :confirm_label="__('common.delete')"
+        :cancel_label="__('common.cancel')"
+        icon_type="danger"
+        confirm_color="red"
+    />
+
+    <x-modal 
+        id="deleteAllTrustedDevicesModal"
+        :title="__('admin.profile.confirm_delete_all_devices_title')"
+        :message="__('admin.profile.confirm_delete_all_devices_message')"
+        :confirm_label="__('common.delete')"
+        :cancel_label="__('common.cancel')"
+        icon_type="danger"
+        confirm_color="red"
+    />
+
+    <x-modal 
+        id="deleteBiometricModal"
+        :title="__('admin.profile.confirm_delete_biometric_title')"
+        :message="__('admin.profile.confirm_delete_biometric_message')"
+        :confirm_label="__('common.delete')"
+        :cancel_label="__('common.cancel')"
+        icon_type="danger"
+        confirm_color="red"
+    />
+
+    <x-modal 
+        id="deleteAllBiometricModal"
+        :title="__('admin.profile.confirm_delete_all_biometric_title')"
+        :message="__('admin.profile.confirm_delete_all_biometric_message')"
+        :confirm_label="__('common.delete')"
+        :cancel_label="__('common.cancel')"
+        icon_type="danger"
+        confirm_color="red"
+    />
 
 @endsection
 
@@ -478,13 +597,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             });
         }
 
-        // 信頼済みデバイス削除
-        window.revokeTrustedDevice = function(deviceId) {
-            if (!confirm('{{ __('admin.profile.confirm_delete_device') }}')) {
-                return;
+        // 信頼済みデバイス削除モーダルを開く
+        let currentDeviceId = null;
+        window.openDeleteTrustedDeviceModal = function(deviceId, deviceName) {
+            currentDeviceId = deviceId;
+            // モーダルのメッセージを動的に更新
+            const modal = document.getElementById('deleteTrustedDeviceModal');
+            const messageElement = modal.querySelector('.modal-message p');
+            if (messageElement) {
+                messageElement.textContent = `{{ __('admin.profile.confirm_delete_device_message') }}\n\n${deviceName}`;
             }
+            openModal('deleteTrustedDeviceModal');
+        };
 
-            fetch(`/admin/profile/trusted-device/${deviceId}`, {
+        // 信頼済みデバイス削除実行
+        window.revokeTrustedDevice = function() {
+            if (!currentDeviceId) return;
+
+            fetch(`/admin/profile/trusted-device/${currentDeviceId}`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -493,26 +623,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             })
             .then(response => response.json())
             .then(data => {
+                closeModal('deleteTrustedDeviceModal');
                 if (data.success) {
-                    alert(data.message);
+                    // フラッシュメッセージをセッションに設定してリロード
+                    sessionStorage.setItem('flash_success', data.message);
                     location.reload();
                 } else {
-                    alert(data.message);
+                    sessionStorage.setItem('flash_error', data.message);
+                    location.reload();
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('{{ __('admin.profile.delete_device_error') }}');
+                closeModal('deleteTrustedDeviceModal');
+                sessionStorage.setItem('flash_error', '{{ __('admin.profile.delete_device_error') }}');
+                location.reload();
             });
         };
 
-        // 生体認証削除
-        window.revokeBiometric = function(credentialId) {
-            if (!confirm('{{ __('admin.profile.confirm_delete_biometric') }}')) {
-                return;
-            }
-
-            fetch(`/admin/profile/biometric/${credentialId}`, {
+        // 信頼済みデバイス一括削除実行
+        window.revokeAllTrustedDevices = function() {
+            fetch('/admin/profile/trusted-device/all', {
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -521,16 +652,91 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             })
             .then(response => response.json())
             .then(data => {
+                closeModal('deleteAllTrustedDevicesModal');
                 if (data.success) {
-                    alert(data.message);
+                    sessionStorage.setItem('flash_success', data.message);
                     location.reload();
                 } else {
-                    alert(data.message);
+                    sessionStorage.setItem('flash_error', data.message);
+                    location.reload();
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('{{ __('admin.profile.delete_biometric_error') }}');
+                closeModal('deleteAllTrustedDevicesModal');
+                sessionStorage.setItem('flash_error', '{{ __('admin.profile.delete_all_devices_error') }}');
+                location.reload();
+            });
+        };
+
+        // 生体認証削除モーダルを開く
+        let currentCredentialId = null;
+        window.openDeleteBiometricModal = function(credentialId, credentialName) {
+            currentCredentialId = credentialId;
+            // モーダルのメッセージを動的に更新
+            const modal = document.getElementById('deleteBiometricModal');
+            const messageElement = modal.querySelector('.modal-message p');
+            if (messageElement) {
+                messageElement.textContent = `{{ __('admin.profile.confirm_delete_biometric_message') }}\n\n${credentialName}`;
+            }
+            openModal('deleteBiometricModal');
+        };
+
+        // 生体認証削除実行
+        window.revokeBiometric = function() {
+            if (!currentCredentialId) return;
+
+            fetch(`/admin/profile/biometric/${currentCredentialId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                closeModal('deleteBiometricModal');
+                if (data.success) {
+                    sessionStorage.setItem('flash_success', data.message);
+                    location.reload();
+                } else {
+                    sessionStorage.setItem('flash_error', data.message);
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                closeModal('deleteBiometricModal');
+                sessionStorage.setItem('flash_error', '{{ __('admin.profile.delete_biometric_error') }}');
+                location.reload();
+            });
+        };
+
+        // 生体認証一括削除実行
+        window.revokeAllBiometric = function() {
+            fetch('/admin/profile/biometric/all', {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                closeModal('deleteAllBiometricModal');
+                if (data.success) {
+                    sessionStorage.setItem('flash_success', data.message);
+                    location.reload();
+                } else {
+                    sessionStorage.setItem('flash_error', data.message);
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                closeModal('deleteAllBiometricModal');
+                sessionStorage.setItem('flash_error', '{{ __('admin.profile.delete_all_biometric_error') }}');
+                location.reload();
             });
         };
 

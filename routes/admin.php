@@ -166,6 +166,10 @@ Route::prefix($adminUrl)->name('admin.')
             
             // 信頼済みデバイス管理
             Route::delete('/profile/trusted-device/{deviceId}', [AdminProfileController::class, 'revokeTrustedDevice'])->name('profile.trusted-device.revoke');
+            Route::delete('/profile/trusted-device/all', [AdminProfileController::class, 'revokeAllTrustedDevices'])->name('profile.trusted-device.revoke-all');
+            
+            // 生体認証一括削除
+            Route::delete('/profile/biometric/all', [AdminProfileController::class, 'revokeAllBiometric'])->name('profile.biometric.revoke-all');
 
             // 全体設定
             // 基本設定（権限チェック付き）

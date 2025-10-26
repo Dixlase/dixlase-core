@@ -40,11 +40,11 @@ return new class extends Migration
             $table->string('token', 255)->unique();
             $table->string('ip_address', 45)->nullable();
             $table->string('user_agent')->nullable();
-            $table->timestamp('last_used_at')->nullable();
             $table->timestamps();
             
             $table->index(['member_id', 'token']);
-            $table->index(['member_id', 'last_used_at']);
+            $table->index(['member_id', 'device_name']);
+            $table->index(['member_id', 'updated_at']);
         });
     }
 

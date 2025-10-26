@@ -20,11 +20,12 @@ class DeviceAuthenticationService
     public function generateDeviceChallenge(Member $member): MembersTwoFactorDevice
     {
         // ランダムトークンを生成
-        $token = Str::random(64);
+        $tokenLength = config('two-factor.device_token_length', 64);
+        $token = Str::random($tokenLength);
         $hashedToken = hash('sha256', $token);
         
-        // 有効期限をMemberSettingから取得
-        $expireMinutes = (int) \App\Models\MemberSetting::getValue('two_factor_expire_minutes', 10);
+        // 有効期限をMemberSettingから取得（メンバー設定 > コンフィグ）
+        $expireMinutes = (int) \App\Models\MemberSetting::getValue('two_factor_expire_minutes', config('two-factor.code_expiration', 5));
         
         // データベースに保存
         $challenge = MembersTwoFactorDevice::create([
@@ -120,6 +121,7 @@ class DeviceAuthenticationService
     
     /**
      * 承認されたチャレンジを信頼済みデバイスとして保存
+     * 同じデバイス名（ブラウザ+OS）の既存レコードがあれば更新、なければ新規作成
      *
      * @param MembersTwoFactorDevice $challenge
      * @return \App\Models\MembersTrustedDevice
@@ -130,33 +132,50 @@ class DeviceAuthenticationService
         $deviceName = $this->generateDeviceName($challenge->user_agent);
         
         // 新しいデバイストークンを生成（セキュリティ強化）
-        $deviceToken = Str::random(64);
+        $tokenLength = config('two-factor.device_token_length', 64);
+        $deviceToken = Str::random($tokenLength);
         $hashedToken = hash('sha256', $deviceToken);
         
-        // 信頼済みデバイスとして保存
-        $trustedDevice = \App\Models\MembersTrustedDevice::create([
-            'member_id' => $challenge->member_id,
-            'device_name' => $deviceName,
-            'token' => $hashedToken,
-            'ip_address' => $challenge->ip_address,
-            'user_agent' => $challenge->user_agent,
-            'last_used_at' => now(),
-        ]);
+        // 同じデバイス名の既存レコードを検索
+        $trustedDevice = \App\Models\MembersTrustedDevice::where('member_id', $challenge->member_id)
+            ->where('device_name', $deviceName)
+            ->first();
         
-        // デバイストークンをHTTPOnly Cookieに保存（30日間有効）
+        if ($trustedDevice) {
+            // 既存レコードを更新（IP、UA、トークンを上書き）
+            $trustedDevice->update([
+                'token' => $hashedToken,
+                'ip_address' => $challenge->ip_address,
+                'user_agent' => $challenge->user_agent,
+            ]);
+            
+            Log::info("[Device Auth] 信頼済みデバイス更新: ユーザーID {$challenge->member_id}, デバイスID: {$trustedDevice->id}, デバイス名: {$deviceName}");
+        } else {
+            // 新規レコードを作成
+            $trustedDevice = \App\Models\MembersTrustedDevice::create([
+                'member_id' => $challenge->member_id,
+                'device_name' => $deviceName,
+                'token' => $hashedToken,
+                'ip_address' => $challenge->ip_address,
+                'user_agent' => $challenge->user_agent,
+            ]);
+            
+            Log::info("[Device Auth] 信頼済みデバイス新規作成: ユーザーID {$challenge->member_id}, デバイスID: {$trustedDevice->id}, デバイス名: {$deviceName}");
+        }
+        
+        // デバイストークンをHTTPOnly Cookieに保存
+        $cookieConfig = config('two-factor.device_cookie', []);
         cookie()->queue(
-            'trusted_device_token',
+            $cookieConfig['name'] ?? 'trusted_device_token',
             $deviceToken,
-            60 * 24 * 30, // 30日
-            '/',
-            null,
-            true, // secure (HTTPS only)
-            true, // httpOnly
+            $cookieConfig['lifetime'] ?? 60 * 24 * 30,
+            $cookieConfig['path'] ?? '/',
+            $cookieConfig['domain'] ?? null,
+            $cookieConfig['secure'] ?? true,
+            $cookieConfig['http_only'] ?? true,
             false,
-            'strict' // sameSite
+            $cookieConfig['same_site'] ?? 'strict'
         );
-        
-        Log::info("[Device Auth] 信頼済みデバイス保存: ユーザーID {$challenge->member_id}, デバイスID: {$trustedDevice->id}");
         
         return $trustedDevice;
     }
@@ -193,27 +212,29 @@ class DeviceAuthenticationService
             $trustedDevice = \App\Models\MembersTrustedDevice::where('member_id', $member->id)
                 ->where('ip_address', $ipAddress)
                 ->where('user_agent', $userAgent)
-                ->orderBy('last_used_at', 'desc')
+                ->orderBy('updated_at', 'desc')
                 ->first();
             
             if ($trustedDevice) {
                 Log::info("[Device Auth] IP+UA認証成功: ユーザーID {$member->id}, デバイスID: {$trustedDevice->id}");
                 
                 // Cookieを再設定（次回からCookie認証を使用）
-                $newToken = Str::random(64);
+                $tokenLength = config('two-factor.device_token_length', 64);
+                $newToken = Str::random($tokenLength);
                 $hashedToken = hash('sha256', $newToken);
                 $trustedDevice->update(['token' => $hashedToken]);
                 
+                $cookieConfig = config('two-factor.device_cookie', []);
                 cookie()->queue(
-                    'trusted_device_token',
+                    $cookieConfig['name'] ?? 'trusted_device_token',
                     $newToken,
-                    60 * 24 * 30,
-                    '/',
-                    null,
-                    true,
-                    true,
+                    $cookieConfig['lifetime'] ?? 60 * 24 * 30,
+                    $cookieConfig['path'] ?? '/',
+                    $cookieConfig['domain'] ?? null,
+                    $cookieConfig['secure'] ?? true,
+                    $cookieConfig['http_only'] ?? true,
                     false,
-                    'strict'
+                    $cookieConfig['same_site'] ?? 'strict'
                 );
             }
         }
@@ -223,8 +244,21 @@ class DeviceAuthenticationService
             return false;
         }
         
-        // 最終使用日時を更新
-        $trustedDevice->update(['last_used_at' => now()]);
+        // 有効期限チェック（メンバー設定 > コンフィグ）
+        $expirationDays = (int) \App\Models\MemberSetting::getValue(
+            'trusted_device_expire_days',
+            config('two-factor.device_expiration_days', 30)
+        );
+        
+        $expirationDate = $trustedDevice->updated_at->addDays($expirationDays);
+        
+        if (now()->greaterThan($expirationDate)) {
+            Log::info("[Device Auth] デバイス有効期限切れ: ユーザーID {$member->id}, デバイスID: {$trustedDevice->id}, 最終更新: {$trustedDevice->updated_at}");
+            return false;
+        }
+        
+        // updated_atは自動更新されないため、touch()で更新
+        $trustedDevice->touch();
         
         return true;
     }
@@ -238,35 +272,42 @@ class DeviceAuthenticationService
     protected function generateDeviceName(?string $userAgent): string
     {
         if (!$userAgent) {
-            return 'Unknown Device';
+            return config('two-factor.device_detection.defaults.device', 'Unknown Device');
         }
         
-        // ブラウザ検出
-        $browser = 'Unknown Browser';
-        if (preg_match('/Chrome/i', $userAgent)) {
-            $browser = 'Chrome';
-        } elseif (preg_match('/Firefox/i', $userAgent)) {
-            $browser = 'Firefox';
-        } elseif (preg_match('/Safari/i', $userAgent) && !preg_match('/Chrome/i', $userAgent)) {
-            $browser = 'Safari';
-        } elseif (preg_match('/Edge/i', $userAgent)) {
-            $browser = 'Edge';
+        // コンフィグからブラウザパターンを取得
+        $browserPatterns = config('two-factor.device_detection.browsers', []);
+        $browser = config('two-factor.device_detection.defaults.browser', 'Unknown Browser');
+        
+        foreach ($browserPatterns as $name => $pattern) {
+            if (preg_match($pattern, $userAgent)) {
+                // 除外パターンをチェック
+                $exclusions = config("two-factor.device_detection.exclusions.{$name}", []);
+                $excluded = false;
+                
+                foreach ($exclusions as $exclusionPattern) {
+                    if (preg_match($exclusionPattern, $userAgent)) {
+                        $excluded = true;
+                        break;
+                    }
+                }
+                
+                if (!$excluded) {
+                    $browser = $name;
+                    break;
+                }
+            }
         }
         
-        // OS検出
-        $os = 'Unknown OS';
-        if (preg_match('/Windows/i', $userAgent)) {
-            $os = 'Windows';
-        } elseif (preg_match('/Macintosh|Mac OS X/i', $userAgent)) {
-            $os = 'macOS';
-        } elseif (preg_match('/Linux/i', $userAgent)) {
-            $os = 'Linux';
-        } elseif (preg_match('/iPhone/i', $userAgent)) {
-            $os = 'iPhone';
-        } elseif (preg_match('/iPad/i', $userAgent)) {
-            $os = 'iPad';
-        } elseif (preg_match('/Android/i', $userAgent)) {
-            $os = 'Android';
+        // コンフィグからOSパターンを取得
+        $osPatterns = config('two-factor.device_detection.operating_systems', []);
+        $os = config('two-factor.device_detection.defaults.os', 'Unknown OS');
+        
+        foreach ($osPatterns as $name => $pattern) {
+            if (preg_match($pattern, $userAgent)) {
+                $os = $name;
+                break;
+            }
         }
         
         return "{$browser} on {$os}";
@@ -317,7 +358,7 @@ class DeviceAuthenticationService
     public function getDevices(Member $member)
     {
         return \App\Models\MembersTrustedDevice::where('member_id', $member->id)
-            ->orderBy('last_used_at', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->get();
     }
 

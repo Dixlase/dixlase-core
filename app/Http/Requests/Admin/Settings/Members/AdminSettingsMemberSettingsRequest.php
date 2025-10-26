@@ -47,6 +47,7 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
             // 二段階認証の有効期限設定
             'two_factor_expire_minutes' => 'required|integer|min:1|max:60', // 1-60分（メール・デバイス共通）
             'two_factor_resend_interval_seconds' => 'required|integer|min:60|max:600', // 60-600秒（1-10分）
+            'trusted_device_expire_days' => 'required|integer|min:1|max:30', // 1-30日
         ];
 
         // 二段階認証方法の設定は無効時でも保存できるようにする

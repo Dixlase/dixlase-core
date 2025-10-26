@@ -446,9 +446,9 @@ class AdminLoginController extends AdminController
             }
         }
 
-        // 二段階認証の設定値を取得
-        $twoFactorExpireMinutes = (int) \App\Models\MemberSetting::getValue('two_factor_expire_minutes', 10);
-        $twoFactorResendIntervalSeconds = (int) \App\Models\MemberSetting::getValue('two_factor_resend_interval_seconds', 60);
+        // 二段階認証の設定値を取得（メンバー設定 > コンフィグ）
+        $twoFactorExpireMinutes = (int) \App\Models\MemberSetting::getValue('two_factor_expire_minutes', config('two-factor.code_expiration', 5));
+        $twoFactorResendIntervalSeconds = (int) \App\Models\MemberSetting::getValue('two_factor_resend_interval_seconds', config('two-factor.resend_interval', 60));
 
         return view('admin::two-factor.email-challenge', [
             'availableMethods' => $availableMethods,
@@ -610,9 +610,9 @@ class AdminLoginController extends AdminController
             }
         }
 
-        // 二段階認証の設定値を取得
-        $twoFactorExpireMinutes = (int) \App\Models\MemberSetting::getValue('two_factor_expire_minutes', 10);
-        $twoFactorResendIntervalSeconds = (int) \App\Models\MemberSetting::getValue('two_factor_resend_interval_seconds', 60);
+        // 二段階認証の設定値を取得（メンバー設定 > コンフィグ）
+        $twoFactorExpireMinutes = (int) \App\Models\MemberSetting::getValue('two_factor_expire_minutes', config('two-factor.code_expiration', 5));
+        $twoFactorResendIntervalSeconds = (int) \App\Models\MemberSetting::getValue('two_factor_resend_interval_seconds', config('two-factor.resend_interval', 60));
 
         return view('admin::two-factor.device-challenge', [
             'availableMethods' => $availableMethods,
