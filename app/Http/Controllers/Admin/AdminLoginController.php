@@ -30,6 +30,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Member;
 use App\Models\MemberSetting;
+use App\Models\MembersTwoFactorDevice;
 use Illuminate\Support\Facades\Hash;
 use App\Services\AdminTwoFactorService;
 use App\Services\AdminLoginNotificationService;
@@ -612,6 +613,55 @@ class AdminLoginController extends AdminController
             'success' => true,
             'status' => $status['status']
         ]);
+    }
+
+    /**
+     * デバイス認証メールを再送信
+     */
+    public function resendDeviceAuth(Request $request)
+    {
+        if (!session()->has('login.id')) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.failed')
+            ], 401);
+        }
+
+        $memberId = session('login.id');
+        $member = Member::find($memberId);
+
+        if (!$member) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.failed')
+            ], 401);
+        }
+
+        try {
+            // 既存のチャレンジを削除
+            $challengeId = session('device_challenge_id');
+            if ($challengeId) {
+                MembersTwoFactorDevice::where('id', $challengeId)->delete();
+            }
+
+            // 新しいチャレンジを生成してメール送信
+            $deviceService = app(\App\Services\DeviceAuthenticationService::class);
+            $challenge = $deviceService->generateDeviceChallenge($member);
+
+            Log::info("[Device Auth] 再送信成功: ユーザーID {$member->id}, チャレンジID {$challenge->id}");
+
+            return response()->json([
+                'success' => true,
+                'message' => '認証メールを再送信しました'
+            ]);
+        } catch (\Exception $e) {
+            Log::error("[Device Auth] 再送信エラー: " . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'メールの再送信に失敗しました'
+            ], 500);
+        }
     }
 
     /**

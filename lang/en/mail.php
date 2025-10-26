@@ -45,29 +45,32 @@ return [
 
     // Two-Factor Authentication Email
     'two_factor' => [
+        // Common Messages
+        'security_notice' => 'If you did not attempt to log in, a third party may have tried to access your account.  
+There is a risk of unauthorized access, so please change your password immediately or contact your system administrator.',
+        'regards' => 'Regards',
+        'details_title' => 'Login Attempt Details',
+        'ip_address' => 'IP Address',
+        'user_agent' => 'Browser/Device',
+        'timestamp' => 'Date & Time',
+        
+        // Email Authentication
         'email' => [
             'subject' => '[:app_name] Two-Factor Authentication Code',
             'greeting' => 'Hello!',
             'message' => 'Here is your two-factor authentication code for login.',
             'instructions' => 'Please enter this code on the login screen. The code expires in 10 minutes.',
-            'security_notice' => 'If you do not recognize this login attempt, please change your password immediately.',
-            'regards' => 'Regards',
         ],
+        
         // Device Authentication Approval Email
         'device' => [
             'subject' => 'Login Approval Request',
             'title' => 'Login Approval Required',
             'greeting' => 'Hello :name,',
             'message' => 'A login attempt has been made to your account. If you want to approve this login, please click the button below.',
-            'details_title' => 'Login Attempt Details',
-            'ip_address' => 'IP Address',
-            'user_agent' => 'Browser/Device',
-            'timestamp' => 'Date & Time',
             'action_prompt' => 'Do you want to approve this login?',
             'approve_button' => 'Approve Login',
             'deny_button' => 'Deny Login',
-            'ignore_notice' => 'If you did not attempt to log in, please ignore this email. It will automatically expire in 10 minutes.',
-            'thanks' => 'Thank you for using our service.',
         ],
     ],
 

@@ -11,8 +11,8 @@
 
 {{ __('mail.two_factor.email.instructions') }}
 
-{{ __('mail.two_factor.email.security_notice') }}
+{{ __('mail.two_factor.security_notice') }}
 
-{{ __('mail.two_factor.email.regards') }}<br>
+{{ __('mail.two_factor.regards') }}<br><br>
 {{ $appName }}
 </x-mail::message>

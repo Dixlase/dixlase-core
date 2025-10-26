@@ -5,11 +5,11 @@
 
 {{ __('mail.two_factor.device.message') }}
 
-## {{ __('mail.two_factor.device.details_title') }}
+## {{ __('mail.two_factor.details_title') }}
 
-- **{{ __('mail.two_factor.device.ip_address') }}**: {{ $ipAddress }}
-- **{{ __('mail.two_factor.device.user_agent') }}**: {{ $userAgent }}
-- **{{ __('mail.two_factor.device.timestamp') }}**: {{ $timestamp }}
+- **{{ __('mail.two_factor.ip_address') }}**: {{ $ipAddress }}
+- **{{ __('mail.two_factor.user_agent') }}**: {{ $userAgent }}
+- **{{ __('mail.two_factor.timestamp') }}**: {{ $timestamp }}
 
 {{ __('mail.two_factor.device.action_prompt') }}
 
@@ -21,8 +21,8 @@
 {{ __('mail.two_factor.device.deny_button') }}
 </x-mail::button>
 
-{{ __('mail.two_factor.device.ignore_notice') }}
+{{ __('mail.two_factor.security_notice') }}
 
-{{ __('mail.two_factor.device.thanks') }}<br>
+{{ __('mail.two_factor.regards') }}<br><br>
 {{ config('app.name') }}
 </x-mail::message>
