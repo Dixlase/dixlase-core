@@ -38,6 +38,8 @@ class MembersSettingsSeeder extends Seeder
             ['key' => 'force_2fa', 'value' => '1'], // 0 = 無効, 1 = 新しいデバイスのみ, 2 = 常に有効, 3 = プロフィール設定を反映
             ['key' => 'enabled_two_factor_methods', 'value' => '0'], // メール認証のみ有効
             ['key' => 'default_two_factor_method', 'value' => '0'], // デフォルトの認証方法はメール認証
+            ['key' => 'two_factor_expire_minutes', 'value' => '10'], // デフォルト: 10分（メール・デバイス共通）
+            ['key' => 'two_factor_resend_interval_seconds', 'value' => '60'], // デフォルト: 60秒
 
             // ログイン試行制限設定
             ['key' => 'login_attempt_limit_enabled', 'value' => '1'], // デフォルト: 有効

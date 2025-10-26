@@ -13,6 +13,8 @@
         :prompt="__('two-factor.email.code_prompt')"
         :submit-text="__('two-factor.email.verify')"
         :resend-text="__('two-factor.email.resend')"
+        :expire-minutes="$expireMinutes"
+        :resend-interval-seconds="$resendIntervalSeconds"
         context="admin"
     />
 

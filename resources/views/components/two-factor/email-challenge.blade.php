@@ -6,6 +6,7 @@
     'submitText' => '認証',
     'resendText' => '再送信',
     'expireMinutes' => 10,
+    'resendIntervalSeconds' => 60,
     'codeLength' => 6,
     'autoSubmit' => true,
     'showExpireTime' => true,
@@ -204,7 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 成功メッセージを表示
                 showFlashMessage(data.message, 'success');
                 
-                startResendCountdown(60); // 60秒間再送信を無効化
+                startResendCountdown({{ $resendIntervalSeconds }}); // 設定値の秒数間再送信を無効化
                 // 入力フィールドをクリア
                 inputs.forEach(input => input.value = '');
                 inputs[0].focus();

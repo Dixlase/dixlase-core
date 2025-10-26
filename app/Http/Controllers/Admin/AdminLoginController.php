@@ -388,9 +388,15 @@ class AdminLoginController extends AdminController
             }
         }
 
+        // 二段階認証の設定値を取得
+        $twoFactorExpireMinutes = (int) \App\Models\MemberSetting::getValue('two_factor_expire_minutes', 10);
+        $twoFactorResendIntervalSeconds = (int) \App\Models\MemberSetting::getValue('two_factor_resend_interval_seconds', 60);
+
         return view('admin::two-factor.email-challenge', [
             'availableMethods' => $availableMethods,
             'currentMethod' => $currentMethod,
+            'expireMinutes' => $twoFactorExpireMinutes,
+            'resendIntervalSeconds' => $twoFactorResendIntervalSeconds,
         ]);
     }
 
@@ -513,10 +519,16 @@ class AdminLoginController extends AdminController
             }
         }
 
+        // 二段階認証の設定値を取得
+        $twoFactorExpireMinutes = (int) \App\Models\MemberSetting::getValue('two_factor_expire_minutes', 10);
+        $twoFactorResendIntervalSeconds = (int) \App\Models\MemberSetting::getValue('two_factor_resend_interval_seconds', 60);
+
         return view('admin::two-factor.device-challenge', [
             'availableMethods' => $availableMethods,
             'currentMethod' => $currentMethod,
             'challenge' => $challenge,
+            'expireMinutes' => $twoFactorExpireMinutes,
+            'resendIntervalSeconds' => $twoFactorResendIntervalSeconds,
         ]);
     }
 

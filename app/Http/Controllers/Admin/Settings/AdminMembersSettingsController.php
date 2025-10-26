@@ -749,6 +749,10 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $membersSessionLifetimeEnabled = (bool) MemberSetting::getValue('members_session_lifetime_enabled', false);
         $membersSessionLifetime = (int) MemberSetting::getValue('members_session_lifetime', 120);
 
+        // 二段階認証の有効期限設定
+        $twoFactorExpireMinutes = (int) MemberSetting::getValue('two_factor_expire_minutes', 10);
+        $twoFactorResendIntervalSeconds = (int) MemberSetting::getValue('two_factor_resend_interval_seconds', 60);
+
         // メールサーバー接続テスト状況
         $isMailServerTested = $this->isMailServerTested();
         $mailConnectionTestDate = BaseSetting::getValue('mail_connection_test_date');
@@ -786,6 +790,8 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['lockoutNotificationEnabled'] = $lockoutNotificationEnabled;
         $this->viewParams['membersSessionLifetimeEnabled'] = $membersSessionLifetimeEnabled;
         $this->viewParams['membersSessionLifetime'] = $membersSessionLifetime;
+        $this->viewParams['twoFactorExpireMinutes'] = $twoFactorExpireMinutes;
+        $this->viewParams['twoFactorResendIntervalSeconds'] = $twoFactorResendIntervalSeconds;
         $this->viewParams['isMailServerTested'] = $isMailServerTested;
         $this->viewParams['mailConnectionTestDate'] = $mailConnectionTestDate;
 
@@ -817,6 +823,10 @@ class AdminMembersSettingsController extends AdminLoggedInController
         // 管理メンバー用セッション設定
         MemberSetting::setValue('members_session_lifetime_enabled', $validated['members_session_lifetime_enabled'] ? '1' : '0');
         MemberSetting::setValue('members_session_lifetime', (string) $validated['members_session_lifetime']);
+
+        // 二段階認証の有効期限設定
+        MemberSetting::setValue('two_factor_expire_minutes', (string) $validated['two_factor_expire_minutes']);
+        MemberSetting::setValue('two_factor_resend_interval_seconds', (string) $validated['two_factor_resend_interval_seconds']);
 
         // 二段階認証方法設定の保存
         $autoSelectedDefaultMethod = null;

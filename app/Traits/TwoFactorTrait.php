@@ -24,9 +24,9 @@ trait TwoFactorTrait
     {
         $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         
-        // デフォルトの有効期限設定
+        // デフォルトの有効期限設定（MemberSettingから取得）
         if ($expireMinutes === null) {
-            $expireMinutes = (int) config('app.two_factor.email_code_expire', 10);
+            $expireMinutes = (int) \App\Models\MemberSetting::getValue('two_factor_expire_minutes', 10);
         }
 
         // 古いコードを削除

@@ -44,6 +44,9 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
             // 管理メンバー用セッション設定
             'members_session_lifetime_enabled' => 'required|boolean',
             'members_session_lifetime' => 'required|integer|min:1|max:43200', // 最大30日
+            // 二段階認証の有効期限設定
+            'two_factor_expire_minutes' => 'required|integer|min:1|max:60', // 1-60分（メール・デバイス共通）
+            'two_factor_resend_interval_seconds' => 'required|integer|min:60|max:600', // 60-600秒（1-10分）
         ];
 
         // 二段階認証方法の設定は無効時でも保存できるようにする
