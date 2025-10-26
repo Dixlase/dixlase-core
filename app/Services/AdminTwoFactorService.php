@@ -155,18 +155,6 @@ class AdminTwoFactorService
     }
 
     /**
-     * 信頼済みデバイスとして登録
-     *
-     * @param mixed $user ユーザーモデル
-     * @param string|null $deviceName デバイス名
-     * @return string トークン
-     */
-    public function registerTrustedDevice($user, string $deviceName = null): string
-    {
-        return $this->deviceAuth->registerTrustedDevice($user, $deviceName);
-    }
-
-    /**
      * 認証方法のセットアップが必要かどうかを判定
      *
      * @param mixed $user ユーザーモデル
@@ -177,7 +165,7 @@ class AdminTwoFactorService
     {
         return match ($method) {
             TwoFactorMethod::EMAIL->value => false, // メール認証は常に利用可能
-            TwoFactorMethod::DEVICE->value => !$this->deviceAuth->isTrustedDevice($user),
+            TwoFactorMethod::DEVICE->value => false, // デバイス認証は常に利用可能（チャレンジ方式）
             TwoFactorMethod::BIOMETRIC->value => !$this->biometricAuth->hasCredentials($user),
             default => true,
         };

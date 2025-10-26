@@ -22,22 +22,22 @@
 
 namespace Database\Factories;
 
-use App\Models\MembersTrustedDevice;
+use App\Models\MembersTwoFactorDevice;
 use App\Models\Member;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\TrustedDevice>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\MembersTwoFactorDevice>
  */
-class TrustedDeviceFactory extends Factory
+class MembersTwoFactorDeviceFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = MembersTrustedDevice::class;
+    protected $model = MembersTwoFactorDevice::class;
 
     /**
      * Define the model's default state.
@@ -48,48 +48,65 @@ class TrustedDeviceFactory extends Factory
     {
         return [
             'member_id' => Member::factory(),
-            'token' => Str::random(40),
-            'device_name' => fake()->randomElement([
-                'Chrome on Windows',
-                'Safari on iPhone',
-                'Firefox on macOS',
-                'Edge on Windows',
-                'Chrome on Android',
-                'Safari on iPad'
-            ]),
+            'token' => hash('sha256', Str::random(64)),
             'ip_address' => fake()->ipv4(),
             'user_agent' => fake()->userAgent(),
-            'last_used_at' => fake()->dateTimeBetween('-30 days', 'now'),
+            'approved' => false,
+            'approved_at' => null,
+            'expires_at' => now()->addMinutes(10),
         ];
     }
 
     /**
-     * Create old trusted devices (for cleanup testing).
+     * Create approved device challenges.
      */
-    public function old(int $daysAgo = 95): static
+    public function approved(): static
     {
         return $this->state(fn (array $attributes) => [
-            'last_used_at' => fake()->dateTimeBetween("-{$daysAgo} days", "-90 days"),
+            'approved' => true,
+            'approved_at' => fake()->dateTimeBetween('-10 minutes', 'now'),
         ]);
     }
 
     /**
-     * Create recently used trusted devices.
+     * Create expired device challenges (for cleanup testing).
      */
-    public function recent(int $daysAgo = 30): static
+    public function expired(): static
     {
         return $this->state(fn (array $attributes) => [
-            'last_used_at' => fake()->dateTimeBetween("-{$daysAgo} days", 'now'),
+            'expires_at' => fake()->dateTimeBetween('-1 hour', '-1 minute'),
         ]);
     }
 
     /**
-     * Create trusted devices that have never been used (only created_at).
+     * Create old expired device challenges (for cleanup testing).
      */
-    public function neverUsed(): static
+    public function old(int $daysAgo = 10): static
     {
         return $this->state(fn (array $attributes) => [
-            'last_used_at' => null,
+            'expires_at' => fake()->dateTimeBetween("-{$daysAgo} days", "-7 days"),
+        ]);
+    }
+
+    /**
+     * Create recently created device challenges.
+     */
+    public function recent(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'expires_at' => fake()->dateTimeBetween('now', '+10 minutes'),
+        ]);
+    }
+
+    /**
+     * Create pending device challenges (not yet approved).
+     */
+    public function pending(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'approved' => false,
+            'approved_at' => null,
+            'expires_at' => now()->addMinutes(10),
         ]);
     }
 }

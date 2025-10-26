@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\MemberLoginAttempt;
-use App\Models\MembersTrustedDevice;
+use App\Models\MembersTwoFactorDevice;
 use App\Models\MembersTwoFactorToken;
 use App\Models\Member;
 use App\Models\Media;
@@ -19,7 +19,7 @@ class GenerateTestMedia extends Command
      * @var string
      */
     protected $signature = 'admin:generate-test-media 
-                            {--type=all : Type of test data to generate (all, login_attempts, password_reset_tokens, trusted_devices, two_factor_tokens, cache, sessions, media)}
+                            {--type=all : Type of test data to generate (all, login_attempts, password_reset_tokens, two_factor_devices, two_factor_tokens, cache, sessions, media)}
                             {--count=50 : Number of records to generate}
                             {--old-ratio=0.3 : Ratio of old records (for cleanup testing)}';
 
@@ -48,7 +48,7 @@ class GenerateTestMedia extends Command
             case 'all':
                 $this->generateLoginAttempts($count, $oldRatio);
                 $this->generatePasswordResetTokens($count, $oldRatio);
-                $this->generateTrustedDevices($count, $oldRatio);
+                $this->generateTwoFactorDevices($count, $oldRatio);
                 $this->generateTwoFactorTokens($count, $oldRatio);
                 $this->generateCacheData($count);
                 $this->generateSessionData($count, $oldRatio);
@@ -60,8 +60,8 @@ class GenerateTestMedia extends Command
             case 'password_reset_tokens':
                 $this->generatePasswordResetTokens($count, $oldRatio);
                 break;
-            case 'trusted_devices':
-                $this->generateTrustedDevices($count, $oldRatio);
+            case 'two_factor_devices':
+                $this->generateTwoFactorDevices($count, $oldRatio);
                 break;
             case 'two_factor_tokens':
                 $this->generateTwoFactorTokens($count, $oldRatio);
@@ -152,12 +152,12 @@ class GenerateTestMedia extends Command
         $this->info("✓ Created {$count} password reset token records");
     }
 
-    private function generateTrustedDevices(int $count, float $oldRatio): void
+    private function generateTwoFactorDevices(int $count, float $oldRatio): void
     {
         $oldCount = (int) ($count * $this->option('old-ratio'));
         $recentCount = $count - $oldCount;
 
-        $this->line("Creating {$count} trusted devices...");
+        $this->line("Creating {$count} two-factor device challenges...");
         
         // Get existing members or create a few if none exist
         $members = \App\Models\Member::limit(10)->get();
@@ -165,25 +165,25 @@ class GenerateTestMedia extends Command
             $members = \App\Models\Member::factory()->count(3)->create();
         }
         
-        // Create old trusted devices using existing members
-        MembersTrustedDevice::factory()
+        // Create old/expired device challenges using existing members
+        MembersTwoFactorDevice::factory()
             ->count($oldCount)
-            ->old()
+            ->expired()
             ->state(function () use ($members) {
                 return ['member_id' => $members->random()->id];
             })
             ->create();
             
-        // Create recent trusted devices using existing members
-        MembersTrustedDevice::factory()
+        // Create recent/pending device challenges using existing members
+        MembersTwoFactorDevice::factory()
             ->count($recentCount)
-            ->recent()
+            ->pending()
             ->state(function () use ($members) {
                 return ['member_id' => $members->random()->id];
             })
             ->create();
             
-        $this->info("✓ Created {$count} trusted device records");
+        $this->info("✓ Created {$count} two-factor device challenge records");
     }
 
     private function generateTwoFactorTokens(int $count, float $oldRatio): void

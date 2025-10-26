@@ -33,3 +33,9 @@
         </div>
     @endif
 @endsection
+
+@section('back_link')
+    <a href="{{ route('admin.login') }}" class="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
+        ← {{ __('two-factor.back_to_login') }}
+    </a>
+@endsection
