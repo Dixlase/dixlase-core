@@ -204,6 +204,26 @@ return [
         'email_change_help' => 'メールアドレスを変更した場合、新しいメールアドレスに認証メールが送信されます。<br>認証が完了するまで変更は反映されません。',
         'email_change_help_no_mail' => 'メールアドレスを変更した場合、即時反映されます。',
         'updated_email_immediate' => 'プロフィールが更新されました。メールアドレスが変更されました。',
+        
+        // デバイス管理
+        'device_management' => 'デバイス管理',
+        'trusted_devices' => '信頼済みデバイス',
+        'no_trusted_devices' => '信頼済みデバイスはありません',
+        'last_used' => '最終使用',
+        'confirm_delete_device' => 'この信頼済みデバイスを削除しますか？',
+        'delete_device_error' => 'デバイスの削除に失敗しました',
+        
+        // 生体認証
+        'biometric_devices' => '生体認証デバイス',
+        'no_biometric_devices' => '生体認証デバイスはありません',
+        'registered_at' => '登録日',
+        'add_biometric' => '新しい生体認証を追加',
+        'confirm_delete_biometric' => 'この生体認証を削除しますか？',
+        'delete_biometric_error' => '生体認証の削除に失敗しました',
+        'webauthn_not_supported' => 'お使いのブラウザは生体認証に対応していません',
+        'enter_device_name' => 'デバイス名を入力してください',
+        'biometric_cancelled' => '生体認証がキャンセルされました',
+        'biometric_registration_error' => '生体認証の登録に失敗しました',
     ],
 
     // 設定
@@ -642,13 +662,14 @@ return [
                     1 => '含める',
                     0 => '含めない',
                 ],
+                'password_security_warning' => '条件を下げるとセキュリティリスクが高まりますので、ご注意ください。',
                 'login_notification_global_setting' => 'ログイン通知メールの全体設定',
                 'two_factor_mode_global_setting' => '二段階認証の全体設定',
                 'two_factor_methods_label' => '利用可能な二段階認証の方法',
                 'two_factor_methods_help' => 'ユーザーが利用できる二段階認証の方法を選択してください。最低1つは有効にする必要があります。',
                 'password_reset_settings' => 'パスワードリセット機能設定',
                 'password_reset_enabled' => 'ログイン画面でのパスワードリセット機能',
-                'password_reset_help' => '無効にした場合、管理画面のログイン画面でパスワードリセットリンクが非表示になり、パスワードリセット機能が利用できなくなります。<br>無効時にパスワードをリセットする場合は、管理画面のメンバー編集画面から行ってください。',
+                'password_reset_help' => '有効にした場合にはセキュリティリスクが高まる恐れがあるのでご注意ください。<br>無効にした場合、管理画面のログイン画面でパスワードリセットリンクが非表示になり、パスワードリセット機能が利用できなくなります。<br>無効時にパスワードをリセットする場合は、メンバー管理の編集画面から行ってください。',
                 // パスワード辞書攻撃対策設定
                 'pwned_password_settings' => 'パスワード辞書攻撃対策設定',
                 'pwned_password_check_enabled' => '辞書攻撃対策',

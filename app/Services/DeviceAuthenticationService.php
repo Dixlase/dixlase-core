@@ -110,9 +110,131 @@ class DeviceAuthenticationService
             'approved_at' => now(),
         ]);
         
+        // 信頼済みデバイスとして保存
+        $this->saveTrustedDevice($challenge);
+        
         Log::info("[Device Auth] チャレンジ承認: チャレンジID {$challenge->id}");
         
         return true;
+    }
+    
+    /**
+     * 承認されたチャレンジを信頼済みデバイスとして保存
+     *
+     * @param MembersTwoFactorDevice $challenge
+     * @return \App\Models\MembersTrustedDevice
+     */
+    protected function saveTrustedDevice(MembersTwoFactorDevice $challenge)
+    {
+        // デバイス名を生成（User Agentから）
+        $deviceName = $this->generateDeviceName($challenge->user_agent);
+        
+        // 新しいデバイストークンを生成（セキュリティ強化）
+        $deviceToken = Str::random(64);
+        $hashedToken = hash('sha256', $deviceToken);
+        
+        // 信頼済みデバイスとして保存
+        $trustedDevice = \App\Models\MembersTrustedDevice::create([
+            'member_id' => $challenge->member_id,
+            'device_name' => $deviceName,
+            'token' => $hashedToken,
+            'ip_address' => $challenge->ip_address,
+            'user_agent' => $challenge->user_agent,
+            'last_used_at' => now(),
+        ]);
+        
+        // デバイストークンをHTTPOnly Cookieに保存（30日間有効）
+        cookie()->queue(
+            'trusted_device_token',
+            $deviceToken,
+            60 * 24 * 30, // 30日
+            '/',
+            null,
+            true, // secure (HTTPS only)
+            true, // httpOnly
+            false,
+            'strict' // sameSite
+        );
+        
+        Log::info("[Device Auth] 信頼済みデバイス保存: ユーザーID {$challenge->member_id}, デバイスID: {$trustedDevice->id}");
+        
+        return $trustedDevice;
+    }
+    
+    /**
+     * 現在のデバイスが信頼済みかチェック
+     *
+     * @param Member $member
+     * @return bool
+     */
+    public function isTrustedDevice(Member $member): bool
+    {
+        $deviceToken = request()->cookie('trusted_device_token');
+        
+        if (!$deviceToken) {
+            return false;
+        }
+        
+        $hashedToken = hash('sha256', $deviceToken);
+        
+        // トークンが一致する信頼済みデバイスを検索
+        $trustedDevice = \App\Models\MembersTrustedDevice::where('member_id', $member->id)
+            ->where('token', $hashedToken)
+            ->first();
+        
+        if (!$trustedDevice) {
+            return false;
+        }
+        
+        // 最終使用日時を更新
+        $trustedDevice->update(['last_used_at' => now()]);
+        
+        Log::info("[Device Auth] 信頼済みデバイス確認: ユーザーID {$member->id}, デバイスID: {$trustedDevice->id}");
+        
+        return true;
+    }
+    
+    /**
+     * User Agentからデバイス名を生成
+     *
+     * @param string|null $userAgent
+     * @return string
+     */
+    protected function generateDeviceName(?string $userAgent): string
+    {
+        if (!$userAgent) {
+            return 'Unknown Device';
+        }
+        
+        // ブラウザ検出
+        $browser = 'Unknown Browser';
+        if (preg_match('/Chrome/i', $userAgent)) {
+            $browser = 'Chrome';
+        } elseif (preg_match('/Firefox/i', $userAgent)) {
+            $browser = 'Firefox';
+        } elseif (preg_match('/Safari/i', $userAgent) && !preg_match('/Chrome/i', $userAgent)) {
+            $browser = 'Safari';
+        } elseif (preg_match('/Edge/i', $userAgent)) {
+            $browser = 'Edge';
+        }
+        
+        // OS検出
+        $os = 'Unknown OS';
+        if (preg_match('/Windows/i', $userAgent)) {
+            $os = 'Windows';
+        } elseif (preg_match('/Macintosh|Mac OS X/i', $userAgent)) {
+            $os = 'macOS';
+        } elseif (preg_match('/Linux/i', $userAgent)) {
+            $os = 'Linux';
+        } elseif (preg_match('/iPhone/i', $userAgent)) {
+            $os = 'iPhone';
+        } elseif (preg_match('/iPad/i', $userAgent)) {
+            $os = 'iPad';
+        } elseif (preg_match('/Android/i', $userAgent)) {
+            $os = 'Android';
+        }
+        
+        return "{$browser} on {$os}";
     }
     
     /**
@@ -149,5 +271,38 @@ class DeviceAuthenticationService
     public function cleanupExpiredChallenges(): int
     {
         return MembersTwoFactorDevice::where('expires_at', '<', now())->delete();
+    }
+
+    /**
+     * メンバーの信頼済みデバイス一覧を取得
+     *
+     * @param Member $member
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getDevices(Member $member)
+    {
+        return \App\Models\MembersTrustedDevice::where('member_id', $member->id)
+            ->orderBy('last_used_at', 'desc')
+            ->get();
+    }
+
+    /**
+     * 信頼済みデバイスを削除
+     *
+     * @param Member $member
+     * @param int $deviceId
+     * @return bool
+     */
+    public function revokeDevice(Member $member, int $deviceId): bool
+    {
+        $deleted = \App\Models\MembersTrustedDevice::where('member_id', $member->id)
+            ->where('id', $deviceId)
+            ->delete();
+
+        if ($deleted) {
+            Log::info("[Device Auth] 信頼済みデバイス削除: ユーザーID {$member->id}, デバイスID: {$deviceId}");
+        }
+
+        return $deleted > 0;
     }
 }

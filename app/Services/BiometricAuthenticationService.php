@@ -19,14 +19,19 @@ class BiometricAuthenticationService
      */
     public function registerCredential(Member $member, array $credentialData, string $deviceName = null): WebauthnCredential
     {
+        // WebAuthnレスポンスからpublic keyを抽出
+        // 実際の実装では、attestationObjectをパースしてpublic keyを取得する
+        // ここでは簡略化のため、credential IDをpublic keyとして保存
+        $publicKey = $credentialData['publicKey'] ?? $credentialData['id'];
+        
         $credential = WebauthnCredential::create([
             'member_id' => $member->id,
             'credential_id' => $credentialData['id'],
-            'public_key' => $credentialData['publicKey'],
+            'public_key' => $publicKey,
             'name' => $deviceName ?? $this->generateDeviceName(),
         ]);
         
-        Log::info("[Biometric Auth] 認証情報登録: ユーザーID {$member->id}, デバイス: {$deviceName}");
+        Log::info("[Biometric Auth] 認証情報登録: ユーザーID {$member->id}, デバイス: " . ($deviceName ?? $this->generateDeviceName()));
         
         return $credential;
     }
@@ -45,6 +50,15 @@ class BiometricAuthenticationService
             ->first();
             
         if (!$credential) {
+            Log::warning("[Biometric Auth] 認証情報が見つかりません: ユーザーID {$member->id}, 認証情報ID: {$assertionData['id']}");
+            return false;
+        }
+        
+        // レスポンスデータの取得
+        $response = $assertionData['response'] ?? [];
+        
+        if (empty($response['signature']) || empty($response['authenticatorData']) || empty($response['clientDataJSON'])) {
+            Log::warning("[Biometric Auth] 不完全なレスポンスデータ: ユーザーID {$member->id}");
             return false;
         }
         
@@ -52,9 +66,9 @@ class BiometricAuthenticationService
         // ここでは簡略化した検証を行う
         $isValid = $this->verifySignature(
             $credential->public_key,
-            $assertionData['signature'],
-            $assertionData['authenticatorData'],
-            $assertionData['clientDataJSON']
+            $response['signature'],
+            $response['authenticatorData'],
+            $response['clientDataJSON']
         );
         
         if ($isValid) {
@@ -210,22 +224,45 @@ class BiometricAuthenticationService
         // 実際の実装では、WebAuthn仕様に従った詳細な署名検証を行う
         // ここでは簡略化した検証を行う
         
-        // チャレンジの検証
-        $storedChallenge = session('webauthn_challenge');
-        if (!$storedChallenge) {
+        try {
+            // チャレンジの検証
+            $storedChallenge = session('webauthn_challenge');
+            if (!$storedChallenge) {
+                Log::warning("[Biometric Auth] セッションにチャレンジが存在しません");
+                return false;
+            }
+            
+            // clientDataJSONをデコード
+            $clientData = json_decode(base64_decode($clientDataJSON), true);
+            if (!$clientData) {
+                Log::warning("[Biometric Auth] clientDataJSONのデコードに失敗");
+                return false;
+            }
+            
+            // チャレンジの比較（Base64URL形式を考慮）
+            $receivedChallenge = $clientData['challenge'] ?? '';
+            
+            // Base64とBase64URLの変換を考慮
+            $normalizedStored = str_replace(['+', '/', '='], ['-', '_', ''], $storedChallenge);
+            $normalizedReceived = str_replace(['+', '/', '='], ['-', '_', ''], $receivedChallenge);
+            
+            if ($normalizedStored !== $normalizedReceived) {
+                Log::warning("[Biometric Auth] チャレンジが一致しません");
+                return false;
+            }
+            
+            // セッションからチャレンジを削除
+            session()->forget('webauthn_challenge');
+            
+            Log::info("[Biometric Auth] 署名検証成功（簡略版）");
+            
+            // 実際の署名検証はWebAuthnライブラリを使用することを推奨
+            // 本番環境では、webauthn-lib/webauthn-lib などのライブラリを使用してください
+            return true;
+        } catch (\Exception $e) {
+            Log::error("[Biometric Auth] 署名検証エラー: " . $e->getMessage());
             return false;
         }
-        
-        $clientData = json_decode(base64_decode($clientDataJSON), true);
-        if (!$clientData || $clientData['challenge'] !== $storedChallenge) {
-            return false;
-        }
-        
-        // セッションからチャレンジを削除
-        session()->forget('webauthn_challenge');
-        
-        // 実際の署名検証はWebAuthnライブラリを使用することを推奨
-        return true;
     }
     
     /**

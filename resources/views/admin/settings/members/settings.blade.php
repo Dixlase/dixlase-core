@@ -66,6 +66,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     'value' => old('password_require_symbol', (string) (int) $passwordRequireSymbol),
                 ])
             </fieldset>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                {{ __('admin.settings.members.settings.password_security_warning') }}
+            </p>
         </section>
 
         <!-- ログイン試行制限設定 -->
