@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MemberPasskey extends Model
 {
+    protected $table = 'members_2fa_passkeys';
+
     protected $fillable = [
         'member_id',
         'credential_id',

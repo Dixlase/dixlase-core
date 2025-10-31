@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    protected $table = 'members_two_factor_tokens';
+    protected $table = 'members_2fa_tokens';
     /**
      * Run the migrations.
      */
