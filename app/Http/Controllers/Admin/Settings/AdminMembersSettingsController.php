@@ -703,34 +703,14 @@ class AdminMembersSettingsController extends AdminLoggedInController
             ->mapWithKeys(fn ($value) => [$value => str_replace(':account_type', __('common.account_types.member'), __('common.two_factor_mode.options.' . $value))])
             ->toArray();
         
-        // 有効な二段階認証方法を取得（複数選択可能）
-        // バリデーションエラー時は old() の値を優先して使用
-        $enabledTwoFactorMethodsString = MemberSetting::getValue('enabled_two_factor_methods', (string)TwoFactorMethod::EMAIL->value);
-        $enabledTwoFactorMethods = ($enabledTwoFactorMethodsString !== null && $enabledTwoFactorMethodsString !== '') ? explode(',', $enabledTwoFactorMethodsString) : [];
+        // Passkey有効/無効設定を取得
+        // メール認証は常に有効なので設定不要
+        $passkeyEnabled = (bool) MemberSetting::getValue('passkey_enabled', false);
         
         // old() の値がある場合はそれを優先（バリデーションエラー後の再表示時）
-        if (old('enabled_two_factor_methods')) {
-            $enabledTwoFactorMethods = old('enabled_two_factor_methods');
+        if (old('passkey_enabled') !== null) {
+            $passkeyEnabled = (bool) old('passkey_enabled');
         }
-        
-        $defaultTwoFactorMethod = (int) MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value);
-        
-        // old() の値がある場合はそれを優先（バリデーションエラー後の再表示時）
-        if (old('default_two_factor_method')) {
-            $defaultTwoFactorMethod = (int) old('default_two_factor_method');
-        }
-        $twoFactorMethodOptions = TwoFactorMethod::forGlobalSettings();
-        
-        // コンポーネント用の配列を準備
-        $twoFactorMethodCheckboxOptions = collect($twoFactorMethodOptions)
-            ->mapWithKeys(fn($method) => [$method->value => $method->label()])
-            ->toArray();
-            
-        $twoFactorMethodRadioOptions = collect($twoFactorMethodOptions)
-            ->mapWithKeys(fn($method) => [$method->value => $method->label()])
-            ->toArray();
-            
-        $selectedDefaultMethod = $defaultTwoFactorMethod ?? TwoFactorMethod::EMAIL->value;
 
         // パスワードリセット機能設定
         $passwordResetEnabled = (bool) MemberSetting::getValue('password_reset_enabled', true);
@@ -792,12 +772,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['loginNotificationGlobalOptions'] = $loginNotificationGlobalOptions;
         $this->viewParams['force2fa'] = $force2fa;
         $this->viewParams['twoFactorGlobalOptions'] = $twoFactorGlobalOptions;
-        $this->viewParams['enabledTwoFactorMethods'] = $enabledTwoFactorMethods;
-        $this->viewParams['defaultTwoFactorMethod'] = $defaultTwoFactorMethod;
-        $this->viewParams['twoFactorMethodOptions'] = $twoFactorMethodOptions;
-        $this->viewParams['twoFactorMethodCheckboxOptions'] = $twoFactorMethodCheckboxOptions;
-        $this->viewParams['twoFactorMethodRadioOptions'] = $twoFactorMethodRadioOptions;
-        $this->viewParams['selectedDefaultMethod'] = $selectedDefaultMethod;
+        $this->viewParams['passkeyEnabled'] = $passkeyEnabled;
         $this->viewParams['passwordResetEnabled'] = $passwordResetEnabled;
         $this->viewParams['pwnedPasswordCheckEnabled'] = $pwnedPasswordCheckEnabled;
         $this->viewParams['loginAttemptLimitEnabled'] = $loginAttemptLimitEnabled;
@@ -871,46 +846,12 @@ class AdminMembersSettingsController extends AdminLoggedInController
         MemberSetting::setValue('2fa_lockout_duration', (string) $validated['2fa_lockout_duration']);
         MemberSetting::setValue('2fa_lockout_notification_enabled', $validated['2fa_lockout_notification_enabled'] ? '1' : '0');
 
-        // 二段階認証方法設定の保存
-        $autoSelectedDefaultMethod = null;
-        if (array_key_exists('enabled_two_factor_methods', $validated)) {
-            $enabledMethods = $validated['enabled_two_factor_methods'] ?? [];
-            $enabledMethodsString = !empty($enabledMethods) ? implode(',', $enabledMethods) : '';
-            MemberSetting::setValue('enabled_two_factor_methods', $enabledMethodsString);
-
-            // デフォルト認証方法の自動選択ロジック
-            $defaultMethod = $validated['default_two_factor_method'] ?? null;
-            
-            if (!empty($enabledMethods)) {
-                // 有効な方法が1つだけの場合、自動的にデフォルトに設定
-                if (count($enabledMethods) === 1) {
-                    $autoSelectedDefaultMethod = $enabledMethods[0];
-                    MemberSetting::setValue('default_two_factor_method', $autoSelectedDefaultMethod);
-                }
-                // 有効な方法が複数ある場合
-                else {
-                    // デフォルトが指定されていない、または指定されたデフォルトが有効な方法に含まれていない場合
-                    if (!$defaultMethod || !in_array($defaultMethod, $enabledMethods)) {
-                        $autoSelectedDefaultMethod = $enabledMethods[0]; // 最初の有効な方法を選択
-                        MemberSetting::setValue('default_two_factor_method', $autoSelectedDefaultMethod);
-                    } else {
-                        MemberSetting::setValue('default_two_factor_method', $defaultMethod);
-                    }
-                }
-            }
-        } elseif (array_key_exists('default_two_factor_method', $validated)) {
-            MemberSetting::setValue('default_two_factor_method', $validated['default_two_factor_method']);
-        }
-
-        // 成功メッセージの準備
-        $successMessage = __('admin.settings.members.settings.updated');
-        if ($autoSelectedDefaultMethod) {
-            $methodLabel = \App\Enums\TwoFactorMethod::from((int)$autoSelectedDefaultMethod)->label();
-            $successMessage .= ' ' . __('admin.settings.members.settings.auto_selected_default_method', ['method' => $methodLabel]);
-        }
+        // Passkey有効/無効設定の保存
+        // メール認証は常に有効なので設定不要
+        MemberSetting::setValue('passkey_enabled', isset($validated['passkey_enabled']) && $validated['passkey_enabled'] ? '1' : '0');
 
         return redirect()->route('admin.settings.members.settings')
-            ->with('success', $successMessage);
+            ->with('success', __('admin.settings.members.settings.updated'));
     }
 
     private function isMailServerTested(): bool
