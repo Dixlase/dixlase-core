@@ -246,9 +246,8 @@ return [
         'label' => 'Two-Factor Authentication Settings',
         'options' => [
             0 => 'Disabled',
-            1 => 'New Device Only',
-            2 => 'Always Enabled',
-            3 => 'Follow Profile Setting',
+            1 => 'Enabled',
+            2 => 'Follow Profile Setting',
         ],
     ],
     
@@ -264,16 +263,12 @@ return [
         'label' => 'Two-Factor Authentication Method',
         'options' => [
             'email' => 'Email Authentication',
-            'device' => 'Device Authentication',
-            'biometric' => 'Biometric Authentication',
-            'use_profile_setting' => 'Use :account_type Profile Settings',
+            'passkey' => 'Passkey (Biometric)',
         ],
         // Numbered options (for admin settings)
         'numbered_options' => [
             0 => 'Email Authentication',
-            1 => 'Device Authentication',
-            2 => 'Biometric Authentication',
-            3 => 'Use Profile Settings',
+            1 => 'Passkey (Biometric)',
         ]
     ],
     

@@ -186,6 +186,22 @@ class AdminLoginController extends AdminController
         ]);
         
         if ($twoFactor->has($member) && $mailServerTested) {
+            // 2FAロックアウトチェック
+            $lockoutStatus = $twoFactor->checkLockout($member);
+            
+            if ($lockoutStatus['locked_out']) {
+                Log::warning('[2FA Login] User is locked out from 2FA', [
+                    'member_id' => $member->id,
+                    'remaining_minutes' => $lockoutStatus['remaining_minutes'],
+                ]);
+                
+                return back()->withErrors([
+                    'email' => __('auth.2fa_locked_out', [
+                        'minutes' => $lockoutStatus['remaining_minutes']
+                    ]),
+                ]);
+            }
+
             session([
                 'login.id' => $member->getAuthIdentifier(),
                 'login.remember' => $request->boolean('remember'),
@@ -199,42 +215,8 @@ class AdminLoginController extends AdminController
                 'effective_method' => $effectiveMethod,
             ]);
 
-            // デバイス認証がデフォルトメソッドの場合、信頼済みデバイスかチェック
-            Log::info('[2FA Login] デバイス認証チェック', [
-                'effective_method' => $effectiveMethod,
-                'DEVICE_value' => \App\Enums\TwoFactorMethod::DEVICE->value,
-                'is_device_auth' => $effectiveMethod === \App\Enums\TwoFactorMethod::DEVICE->value,
-            ]);
-            
-            if ($effectiveMethod === \App\Enums\TwoFactorMethod::DEVICE->value) {
-                $deviceService = app(\App\Services\DeviceAuthenticationService::class);
-                
-                Log::info('[Device Auth] isTrustedDevice呼び出し前', [
-                    'member_id' => $member->id,
-                    'has_cookie' => request()->cookie('trusted_device_token') !== null,
-                    'ip' => request()->ip(),
-                    'user_agent' => request()->userAgent(),
-                ]);
-                
-                if ($deviceService->isTrustedDevice($member)) {
-                    Log::info('[Device Auth] 信頼済みデバイスからのアクセス、2FAスキップ');
-                    
-                    // 成功したログインを記録
-                    $lockoutService->handleSuccessfulLogin($email);
-                    
-                    // ログイン環境を記録、通知
-                    app(AdminLoginNotificationService::class)->handle($member, $request);
-                    
-                    // 即ログイン
-                    Auth::guard('member')->login($member, $request->boolean('remember'));
-                    $request->session()->regenerate(true);
-                    
-                    // ログイン後にメール認証トークンをチェック
-                    $this->processEmailVerificationIfPending($member, $request);
-                    
-                    return redirect()->intended(route('admin.dashboard'));
-                }
-            }
+            // Passkey認証の場合は専用フローへ（将来実装）
+            // 現在はメール認証のみ対応
             
             Log::info('[2FA Login] コード生成開始', [
                 'member_id' => $member->id,
@@ -465,8 +447,7 @@ class AdminLoginController extends AdminController
     {
         return match($method) {
             0 => route('admin.two-factor.login'), // EMAIL
-            1 => route('admin.two-factor.device.challenge'), // DEVICE
-            2 => route('admin.two-factor.biometric.show'), // BIOMETRIC (GET用)
+            1 => route('admin.two-factor.passkey.show'), // PASSKEY
             default => route('admin.two-factor.login'),
         };
     }

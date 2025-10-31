@@ -4,8 +4,9 @@ namespace App\Services;
 
 use App\Helpers\TwoFactorHelper;
 use App\Services\EmailAuthenticationService;
-use App\Services\DeviceAuthenticationService;
-use App\Services\BiometricAuthenticationService;
+use App\Services\PasskeyAuthenticationService;
+use App\Services\RecoveryCodeService;
+use App\Services\TwoFactorAttemptService;
 use App\Enums\TwoFactorMethod;
 use Illuminate\Support\Facades\Log;
 
@@ -13,19 +14,22 @@ class AdminTwoFactorService
 {
     protected TwoFactorHelper $helper;
     protected EmailAuthenticationService $emailAuth;
-    protected DeviceAuthenticationService $deviceAuth;
-    protected BiometricAuthenticationService $biometricAuth;
+    protected PasskeyAuthenticationService $passkeyAuth;
+    protected RecoveryCodeService $recoveryCode;
+    protected TwoFactorAttemptService $attemptService;
 
     public function __construct(
         TwoFactorHelper $helper,
         EmailAuthenticationService $emailAuth,
-        DeviceAuthenticationService $deviceAuth,
-        BiometricAuthenticationService $biometricAuth
+        PasskeyAuthenticationService $passkeyAuth,
+        RecoveryCodeService $recoveryCode,
+        TwoFactorAttemptService $attemptService
     ) {
         $this->helper = $helper;
         $this->emailAuth = $emailAuth;
-        $this->deviceAuth = $deviceAuth;
-        $this->biometricAuth = $biometricAuth;
+        $this->passkeyAuth = $passkeyAuth;
+        $this->recoveryCode = $recoveryCode;
+        $this->attemptService = $attemptService;
     }
 
     /**
@@ -41,8 +45,7 @@ class AdminTwoFactorService
         
         return match ($effectiveMethod) {
             TwoFactorMethod::EMAIL->value => $this->generateEmailCode($user),
-            TwoFactorMethod::DEVICE->value => $this->generateDeviceChallenge($user),
-            TwoFactorMethod::BIOMETRIC->value => $this->generateBiometricChallenge($user),
+            TwoFactorMethod::PASSKEY->value => $this->generatePasskeyChallenge($user),
             default => $this->generateEmailCode($user),
         };
     }
@@ -61,8 +64,7 @@ class AdminTwoFactorService
         
         return match ($effectiveMethod) {
             TwoFactorMethod::EMAIL->value => $this->validateEmailCode($user, $input),
-            TwoFactorMethod::DEVICE->value => $this->validateDeviceAuth($user, $input),
-            TwoFactorMethod::BIOMETRIC->value => $this->validateBiometricAuth($user, $input),
+            TwoFactorMethod::PASSKEY->value => $this->validatePasskeyAuth($user, $input),
             default => $this->validateEmailCode($user, $input),
         };
     }
@@ -137,8 +139,7 @@ class AdminTwoFactorService
         foreach ($systemSettings['enabled_methods'] as $method) {
             $available = match ($method) {
                 TwoFactorMethod::EMAIL->value => true,
-                TwoFactorMethod::DEVICE->value => true,
-                TwoFactorMethod::BIOMETRIC->value => $this->biometricAuth->isAvailable(),
+                TwoFactorMethod::PASSKEY->value => $this->passkeyAuth->isAvailable(),
                 default => false,
             };
 
@@ -165,17 +166,13 @@ class AdminTwoFactorService
     {
         return match ($method) {
             TwoFactorMethod::EMAIL->value => false, // メール認証は常に利用可能
-            TwoFactorMethod::DEVICE->value => false, // デバイス認証は常に利用可能（チャレンジ方式）
-            TwoFactorMethod::BIOMETRIC->value => !$this->biometricAuth->hasCredentials($user),
+            TwoFactorMethod::PASSKEY->value => !$this->passkeyAuth->hasCredentials($user),
             default => true,
         };
     }
 
     /**
      * メール認証コードを生成
-     *
-     * @param mixed $user ユーザーモデル
-     * @return string 生成されたコード
      */
     private function generateEmailCode($user): string
     {
@@ -183,60 +180,97 @@ class AdminTwoFactorService
     }
 
     /**
-     * デバイス認証チャレンジを生成
-     *
-     * @param mixed $user ユーザーモデル
-     * @return \App\Models\MembersTwoFactorDevice チャレンジデータ
+     * Passkeyチャレンジを生成
      */
-    private function generateDeviceChallenge($user): \App\Models\MembersTwoFactorDevice
+    private function generatePasskeyChallenge($user): array
     {
-        return $this->deviceAuth->generateDeviceChallenge($user);
-    }
-
-    /**
-     * 生体認証チャレンジを生成
-     *
-     * @param mixed $user ユーザーモデル
-     * @return array チャレンジデータ
-     */
-    private function generateBiometricChallenge($user): array
-    {
-        return $this->biometricAuth->generateAuthenticationChallenge($user);
+        return $this->passkeyAuth->generatePasskeyChallenge($user);
     }
 
     /**
      * メール認証コードを検証
-     *
-     * @param mixed $user ユーザーモデル
-     * @param string $inputCode 入力されたコード
-     * @return bool 検証結果
      */
     private function validateEmailCode($user, string $inputCode): bool
     {
-        return $this->emailAuth->validateCode($user, $inputCode);
+        $result = $this->emailAuth->validateCode($user, $inputCode);
+        
+        // 試行を記録
+        $this->attemptService->recordAttempt($user, 'email', $result);
+        
+        return $result;
     }
 
     /**
-     * デバイス認証を検証
-     *
-     * @param mixed $user ユーザーモデル
-     * @param array $response 認証レスポンス
-     * @return bool 検証結果
+     * Passkey認証を検証
      */
-    private function validateDeviceAuth($user, array $response): bool
+    private function validatePasskeyAuth($user, $input): bool
     {
-        return $this->deviceAuth->verifyDeviceChallenge($response);
+        $result = $this->passkeyAuth->validatePasskeyAuth($user, $input);
+        
+        // 試行を記録
+        $this->attemptService->recordAttempt($user, 'passkey', $result);
+        
+        return $result;
     }
 
     /**
-     * 生体認証を検証
-     *
-     * @param mixed $user ユーザーモデル
-     * @param array $assertionData 認証データ
-     * @return bool 検証結果
+     * 回復コードを検証
      */
-    private function validateBiometricAuth($user, array $assertionData): bool
+    public function validateRecoveryCode($user, string $code): bool
     {
-        return $this->biometricAuth->verifyAssertion($user, $assertionData);
+        // ロックアウトチェック
+        if ($this->attemptService->isLockedOut($user)) {
+            Log::warning('[2FA] Recovery code validation blocked - locked out', [
+                'member_id' => $user->id,
+            ]);
+            return false;
+        }
+
+        $result = $this->recoveryCode->validate($user, $code);
+        
+        // 試行を記録
+        $this->attemptService->recordAttempt($user, 'recovery_code', $result);
+        
+        if ($result) {
+            // 残数を取得
+            $remaining = $this->recoveryCode->getRemainingCount($user);
+            
+            Log::info('[2FA] Recovery code used', [
+                'member_id' => $user->id,
+                'remaining_codes' => $remaining,
+            ]);
+        }
+        
+        return $result;
+    }
+
+    /**
+     * ロックアウト状態をチェック
+     */
+    public function checkLockout($user): array
+    {
+        $isLockedOut = $this->attemptService->isLockedOut($user);
+        
+        if ($isLockedOut) {
+            $remainingTime = $this->attemptService->getRemainingLockoutTime($user);
+            
+            return [
+                'locked_out' => true,
+                'remaining_minutes' => $remainingTime,
+            ];
+        }
+
+        // 試行回数制限チェック
+        if ($this->attemptService->hasReachedMaxAttempts($user)) {
+            return [
+                'locked_out' => true,
+                'remaining_minutes' => $this->attemptService->getRemainingLockoutTime($user),
+            ];
+        }
+
+        return [
+            'locked_out' => false,
+            'remaining_attempts' => $this->attemptService->getRemainingAttempts($user),
+        ];
     }
 }
