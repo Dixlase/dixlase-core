@@ -244,6 +244,27 @@ return [
     'two_factor_settings' => '二段階認証設定',
     'two_factor_global_setting_fixed' => 'この設定は全体設定により固定されています。',
     'two_factor_method_global_setting_fixed' => 'この認証方法は全体設定により固定されています。',
+    
+    // 二段階認証モード（数値キー版）
+    'two_factor_mode' => [
+        'label' => '二段階認証設定',
+        'options' => [
+            0 => '無効',
+            1 => '有効',
+            2 => 'プロフィール設定に従う',
+            3 => ':account_typeのプロフィール設定を反映',
+        ]
+    ],
+    
+    // 二段階認証方法（数値キー版）
+    'two_factor_method' => [
+        'label' => '二段階認証方法',
+        'numbered_options' => [
+            0 => 'メール認証',
+            1 => 'Passkey（生体認証）',
+        ]
+    ],
+    
     'login_notification_mode' => [
         'label' => 'ログイン通知の設定',
         'options' => [

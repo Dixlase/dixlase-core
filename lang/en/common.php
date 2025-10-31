@@ -236,14 +236,33 @@ return [
     'login_log' => 'Login Log',
 
     // ===========================================
-    // Two-Factor Authentication (Unified Section)
-    // ===========================================
     // Two-Factor Authentication (Site-wide common only)
     // ===========================================
     'two_factor_authentication' => 'Two-Factor Authentication',
     'two_factor_settings' => 'Two-Factor Authentication Settings',
     'two_factor_global_setting_fixed' => 'This setting is fixed by global settings.',
     'two_factor_method_global_setting_fixed' => 'This authentication method is fixed by global settings.',
+    
+    // Two-Factor Authentication Mode (Numbered keys)
+    'two_factor_mode' => [
+        'label' => 'Two-Factor Authentication Settings',
+        'options' => [
+            0 => 'Disabled',
+            1 => 'Enabled',
+            2 => 'Follow Profile Settings',
+            3 => 'Follow :account_type Profile Settings',
+        ]
+    ],
+    
+    // Two-Factor Authentication Method (Numbered keys)
+    'two_factor_method' => [
+        'label' => 'Two-Factor Authentication Method',
+        'numbered_options' => [
+            0 => 'Email Authentication',
+            1 => 'Passkey (Biometric)',
+        ]
+    ],
+    
     'save_confirmation' => 'Save Confirmation',
     'update_confirmation' => 'Update Confirmation',
     'create_confirmation' => 'Create Confirmation',
