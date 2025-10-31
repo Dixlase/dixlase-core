@@ -294,38 +294,34 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <legend>{{ __('admin.settings.members.settings.enabled_two_factor_methods_label') }}</legend>
                 
                 <div class="space-y-6">
-                    <!-- 認証方法選択とデフォルト設定 -->
-                    <div class="flex justify-start">
-                        <!-- 有効な認証方法 -->
-                        <fieldset class="flex-1">
-                            <legend class="text-sm font-medium">認証方法</legend>
-                            @include('components.form.checkbox-group', [
-                                'name' => 'enabled_two_factor_methods',
-                                'options' => $twoFactorMethodCheckboxOptions,
-                                'values' => $enabledTwoFactorMethods ?? [],
-                                'flexDirection' => 'col',
-                            ])
-                        </fieldset>
+                    <!-- 認証方法一覧 -->
+                    <div class="space-y-3">
+                        <!-- メール認証（常に有効） -->
+                        <div class="flex items-center space-x-3">
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle text-green-600 dark:text-green-400 mr-2"></i>
+                                <span class="text-sm font-medium">{{ __('common.two_factor_method.numbered_options.0') }}</span>
+                            </div>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">（常に有効）</span>
+                        </div>
 
-                        <!-- デフォルト認証方法 -->
-                        <fieldset class="flex-1">
-                            <legend class="text-sm font-medium text-left">デフォルト</legend>
-                            @include('components.form.radio-group', [
-                                'name' => 'default_two_factor_method',
-                                'options' => $twoFactorMethodRadioOptions,
-                                'value' => $selectedDefaultMethod,
-                                'flexDirection' => 'col',
+                        <!-- Passkey認証（有効/無効選択可能） -->
+                        <div class="flex items-center space-x-3">
+                            @include('components.form.checkbox', [
+                                'name' => 'passkey_enabled',
+                                'label' => __('common.two_factor_method.numbered_options.1'),
+                                'checked' => $passkeyEnabled ?? false,
                             ])
-                        </fieldset>
+                        </div>
                     </div>
                     
                     <!-- ヘルプテキスト -->
                     <div class="space-y-1">
-                        <p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
                             {{ __('admin.settings.members.settings.enabled_two_factor_methods_help') }}
                         </p>
-                        <p>
-                            {{ __('admin.settings.members.settings.default_two_factor_method_help') }}
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            {{ __('admin.settings.members.settings.email_always_enabled_note') }}
                         </p>
                     </div>
                 </div>
@@ -475,51 +471,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 }
             }
 
-            // 二段階認証方法の動的制御
-            const enabledCheckboxes = document.querySelectorAll('input[name="enabled_two_factor_methods[]"]');
-            const defaultRadios = document.querySelectorAll('input[name="default_two_factor_method"]');
-
-            // 要素が存在する場合のみ処理を実行
-            if (enabledCheckboxes.length > 0 && defaultRadios.length > 0) {
-                function updateDefaultMethodOptions() {
-                    const enabledValues = Array.from(enabledCheckboxes)
-                        .filter(cb => cb.checked)
-                        .map(cb => cb.value);
-
-                    defaultRadios.forEach(radio => {
-                        const methodContainer = radio.closest('[data-method]') || radio.closest('.radio-option') || radio.parentElement;
-                        
-                        if (enabledValues.includes(radio.value)) {
-                            radio.disabled = false;
-                            if (methodContainer) {
-                                methodContainer.style.opacity = '1';
-                            }
-                        } else {
-                            radio.disabled = true;
-                            radio.checked = false;
-                            if (methodContainer) {
-                                methodContainer.style.opacity = '0.5';
-                            }
-                        }
-                    });
-
-                    // 有効な方法が1つだけの場合、自動的にデフォルトに設定
-                    if (enabledValues.length === 1) {
-                        const enabledRadio = document.querySelector(`input[name="default_two_factor_method"][value="${enabledValues[0]}"]`);
-                        if (enabledRadio) {
-                            enabledRadio.checked = true;
-                        }
-                    }
-                }
-
-                // チェックボックスの変更を監視
-                enabledCheckboxes.forEach(checkbox => {
-                    checkbox.addEventListener('change', updateDefaultMethodOptions);
-                });
-
-                // 初期状態を設定
-                updateDefaultMethodOptions();
-            }
+            // 二段階認証方法の動的制御は不要（メール認証は常に有効、Passkeyは単純なチェックボックス）
         });
     </script>
 @endsection

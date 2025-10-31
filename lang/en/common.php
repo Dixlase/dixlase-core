@@ -247,10 +247,9 @@ return [
     'two_factor_mode' => [
         'label' => 'Two-Factor Authentication Settings',
         'options' => [
-            0 => 'Disabled',
-            1 => 'Enabled',
-            2 => 'Follow Profile Settings',
-            3 => 'Follow :account_type Profile Settings',
+            0 => 'Disabled (No 2FA)',
+            1 => 'Always Enabled (Required for all members)',
+            2 => 'Follow Member Profile Settings',
         ]
     ],
     

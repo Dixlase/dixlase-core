@@ -62,19 +62,8 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
             '2fa_lockout_notification_enabled' => 'required|boolean'
         ];
 
-        // 二段階認証方法の設定は無効時でも保存できるようにする
-        $force2fa = $this->input('force_2fa');
-        if ($force2fa && $force2fa != TwoFactorMode::Disabled->value && $force2fa != TwoFactorMode::UseProfileSetting->value) {
-            // 強制有効時は認証方法の選択を必須にする
-            $rules['enabled_two_factor_methods'] = 'required|array|min:1';
-            $rules['enabled_two_factor_methods.*'] = 'required|in:' . implode(',', array_column(TwoFactorMethod::forGlobalSettings(), 'value'));
-            $rules['default_two_factor_method'] = 'nullable|in:' . implode(',', array_column(TwoFactorMethod::forGlobalSettings(), 'value'));
-        } else {
-            // 無効時やプロフィール設定時でも認証方法設定は保存可能
-            $rules['enabled_two_factor_methods'] = 'nullable|array';
-            $rules['enabled_two_factor_methods.*'] = 'nullable|in:' . implode(',', array_column(TwoFactorMethod::forGlobalSettings(), 'value'));
-            $rules['default_two_factor_method'] = 'nullable|in:' . implode(',', array_column(TwoFactorMethod::forGlobalSettings(), 'value'));
-        }
+        // Passkey有効/無効設定（メール認証は常に有効）
+        $rules['passkey_enabled'] = 'nullable|boolean';
 
         return $rules;
     }
@@ -85,9 +74,7 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'enabled_two_factor_methods.required' => '二段階認証を強制有効にしている場合は、いずれかの認証方法を選択してください。',
-            'enabled_two_factor_methods.min' => '二段階認証を強制有効にしている場合は、最低1つの認証方法を選択してください。',
-            'default_two_factor_method.required' => '二段階認証を強制有効にしている場合は、デフォルトの認証方法を選択してください。',
+            // メッセージは不要（Passkeyは単純なチェックボックス）
         ];
     }
 
@@ -96,38 +83,6 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
      */
     public function withValidator($validator)
     {
-        $validator->after(function ($validator) {
-            $force2fa = $this->input('force_2fa');
-            $enabledMethods = $this->input('enabled_two_factor_methods', []);
-            $defaultMethod = $this->input('default_two_factor_method');
-            
-            // 有効な認証方法が1つだけの場合は、デフォルト方法のバリデーションをスキップ
-            // （コントローラー側で自動的に設定されるため）
-            if (!empty($enabledMethods) && count($enabledMethods) === 1) {
-                return; // バリデーションエラーを出さずに通す
-            }
-            
-            // 二段階認証が強制有効な場合のみバリデーション
-            if ($force2fa && $force2fa != TwoFactorMode::Disabled->value && $force2fa != TwoFactorMode::UseProfileSetting->value) {
-                // デフォルトの二段階認証方法が有効な方法の中に含まれているかチェック
-                if ($defaultMethod && !in_array($defaultMethod, $enabledMethods)) {
-                    $validator->errors()->add('default_two_factor_method', 
-                        'デフォルトの二段階認証方法は、有効な認証方法の中から選択してください。');
-                }
-            }
-            
-            // 無効時でも認証方法が選択されている場合はデフォルト方法の整合性をチェック
-            if (($force2fa == TwoFactorMode::Disabled->value || $force2fa == TwoFactorMode::UseProfileSetting->value) && !empty($enabledMethods) && $defaultMethod) {
-                if (!in_array($defaultMethod, $enabledMethods)) {
-                    $validator->errors()->add('default_two_factor_method', 
-                        'デフォルトの二段階認証方法は、有効な認証方法の中から選択してください。');
-                }
-            }
-            
-            // Mail server validation has been relaxed for all features
-            // All mail-dependent features (password reset, login notifications, 2FA) 
-            // can now be configured regardless of mail server test status
-            // Features will display warnings but allow configuration
-        });
+        // バリデーション後の追加チェックは不要（メール認証は常に有効、Passkeyは単純なチェックボックス）
     }
 }
