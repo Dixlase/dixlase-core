@@ -6,12 +6,15 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+
+    protected $table = 'members_2fa_recovery_codes';
+
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('members_recovery_codes', function (Blueprint $table) {
+        Schema::create($this->table, function (Blueprint $table) {
             $table->id();
             $table->foreignId('member_id')->constrained('members')->onDelete('cascade');
             $table->string('code'); // ハッシュ化された回復コード
@@ -29,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('members_recovery_codes');
+        Schema::dropIfExists($this->table);
     }
 };
