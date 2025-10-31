@@ -35,11 +35,20 @@ class MembersSettingsSeeder extends Seeder
             ['key' => 'system_login_notice_email', 'value' => ''], // デフォルト: 空（管理者メールアドレス）
 
             // 二段階認証設定
-            ['key' => 'force_2fa', 'value' => '1'], // 0 = 無効, 1 = 新しいデバイスのみ, 2 = 常に有効, 3 = プロフィール設定を反映
+            ['key' => 'force_2fa', 'value' => '0'], // 0 = 無効, 1 = 有効, 2 = プロフィール設定を反映
             ['key' => 'enabled_two_factor_methods', 'value' => '0'], // メール認証のみ有効
             ['key' => 'default_two_factor_method', 'value' => '0'], // デフォルトの認証方法はメール認証
-            ['key' => 'two_factor_expire_minutes', 'value' => '5'], // デフォルト: 5分（メール・デバイス共通）
+            ['key' => 'two_factor_expire_minutes', 'value' => '5'], // デフォルト: 5分（メール認証）
             ['key' => 'two_factor_resend_interval_seconds', 'value' => '60'], // デフォルト: 60秒
+            ['key' => 'passkey_enabled', 'value' => '1'], // Passkey機能有効/無効
+            ['key' => 'max_passkey_devices', 'value' => '3'], // Passkey最大登録数（1-5）
+            ['key' => 'recovery_codes_count', 'value' => '5'], // 回復コード生成個数（1-5）
+            ['key' => 'recovery_code_regenerate_interval', 'value' => '24'], // 回復コード再生成間隔（時間）
+            ['key' => 'two_factor_verification_timeout', 'value' => '10'], // 2FA認証待ち画面タイムアウト（5-60分）
+            ['key' => '2fa_max_attempts', 'value' => '5'], // 2FA試行制限（1-10回）
+            ['key' => '2fa_attempt_window', 'value' => '15'], // 2FA試行制限時間枠（5-60分）
+            ['key' => '2fa_lockout_duration', 'value' => '30'], // 2FAロックアウト時間（5-1440分）
+            ['key' => '2fa_lockout_notification_enabled', 'value' => '1'], // 2FAロックアウト通知有効/無効
 
             // ログイン試行制限設定
             ['key' => 'login_attempt_limit_enabled', 'value' => '1'], // デフォルト: 有効

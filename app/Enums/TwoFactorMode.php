@@ -5,17 +5,15 @@ namespace App\Enums;
 enum TwoFactorMode: int
 {
     case Disabled = 0;
-    case OnlyNewDevice = 1;
-    case Always = 2;
-    case UseProfileSetting = 3; // ← 全体設定専用
+    case Always = 1;
+    case UseProfileSetting = 2; // ← 全体設定専用
 
     public function label(): string
     {
         return match ($this) {
             self::Disabled => __('common.two_factor_mode.options.0'),
-            self::OnlyNewDevice => __('common.two_factor_mode.options.1'),
-            self::Always => __('common.two_factor_mode.options.2'),
-            self::UseProfileSetting => __('common.two_factor_mode.options.3'),
+            self::Always => __('common.two_factor_mode.options.1'),
+            self::UseProfileSetting => __('common.two_factor_mode.options.2'),
         };
     }
 
@@ -41,9 +39,8 @@ enum TwoFactorMode: int
     {
         return match ($this) {
             self::Disabled => 'common.two_factor_mode.options.0',
-            self::OnlyNewDevice => 'common.two_factor_mode.options.1',
-            self::Always => 'common.two_factor_mode.options.2',
-            self::UseProfileSetting => 'common.two_factor_mode.options.3',
+            self::Always => 'common.two_factor_mode.options.1',
+            self::UseProfileSetting => 'common.two_factor_mode.options.2',
         };
     }
 

@@ -114,19 +114,13 @@ trait TwoFactorTrait
         $modeValue = $this->getEffectiveTwoFactorMode($user, $forceSetting);
         $mode = TwoFactorMode::tryFrom($modeValue);
 
-        // デバイス認証が有効で、信頼済みデバイスからのアクセスの場合は2FAをスキップ
-        if (in_array(TwoFactorMethod::DEVICE->value, $enabledMethods) && $this->isFromTrustedDevice($user)) {
-            return false;
-        }
-
-        // 生体認証が有効な場合は常に2FAを要求
-        if (in_array(TwoFactorMethod::BIOMETRIC->value, $enabledMethods)) {
+        // Passkeyが有効な場合は常に2FAを要求
+        if (in_array(TwoFactorMethod::PASSKEY->value, $enabledMethods)) {
             return true;
         }
 
         return match ($mode) {
             TwoFactorMode::Always => true,
-            TwoFactorMode::OnlyNewDevice => $this->isDifferentEnvironment($user),
             default => false,
         };
     }
@@ -148,10 +142,6 @@ trait TwoFactorTrait
         // システム設定で強制されている場合
         if ($forceSetting === TwoFactorMode::Always->value) {
             return TwoFactorMode::Always->value;
-        }
-
-        if ($forceSetting === TwoFactorMode::OnlyNewDevice->value) {
-            return TwoFactorMode::OnlyNewDevice->value;
         }
 
         // プロフィール設定を使用する場合
@@ -179,7 +169,6 @@ trait TwoFactorTrait
 
         return match ($mode) {
             TwoFactorMode::Always => TwoFactorMode::Always->value,
-            TwoFactorMode::OnlyNewDevice => TwoFactorMode::OnlyNewDevice->value,
             default => TwoFactorMode::Disabled->value,
         };
     }

@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
 
-    protected $table = 'webauthn_credentials';
+    protected $table = 'members_passkeys';
 
     /**
      * Run the migrations.
@@ -40,8 +40,13 @@ return new class extends Migration
             $table->foreignId('member_id')->constrained('members')->onDelete('cascade');
             $table->string('credential_id')->unique();
             $table->text('public_key');
-            $table->string('name')->nullable(); // デバイス名
+            $table->string('name'); // デバイス名（必須）
+            $table->timestamp('last_used_at')->nullable(); // 最終使用日時
             $table->timestamps();
+            
+            // インデックス
+            $table->index('member_id');
+            $table->index('credential_id', 'idx_credential_id');
         });
     }
 

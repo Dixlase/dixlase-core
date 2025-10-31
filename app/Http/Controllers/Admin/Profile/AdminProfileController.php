@@ -157,8 +157,7 @@ class AdminProfileController extends AdminLoggedInController
         if ($force2fa === TwoFactorMode::UseProfileSetting->value) {
             $profileTwoFactorOptions = [
                 TwoFactorMode::Disabled->value => __('common.two_factor_mode.options.' . TwoFactorMode::Disabled->value), // 無効
-                TwoFactorMode::OnlyNewDevice->value => __('common.two_factor_mode.options.' . TwoFactorMode::OnlyNewDevice->value), // 異なる端末/IP時のみ有効
-                TwoFactorMode::Always->value => __('common.two_factor_mode.options.' . TwoFactorMode::Always->value), // 常に有効
+                TwoFactorMode::Always->value => __('common.two_factor_mode.options.' . TwoFactorMode::Always->value), // 有効
             ];
         } else {
             // 従来通り（無効、有効のみ）
@@ -201,9 +200,9 @@ class AdminProfileController extends AdminLoggedInController
         // 認証方法選択を表示するかどうか（プロフィール設定に従う場合のみ）
         $showMethodSelection = ($force2fa === TwoFactorMode::UseProfileSetting->value);
         
-        // 全体設定が OnlyNewDevice または Always の場合は現在の設定を表示用として取得
+        // 全体設定が Always の場合は現在の設定を表示用として取得
         $currentGlobalTwoFactorMode = null;
-        if (in_array($force2fa, [TwoFactorMode::OnlyNewDevice->value, TwoFactorMode::Always->value], true)) {
+        if ($force2fa === TwoFactorMode::Always->value) {
             $currentGlobalTwoFactorMode = TwoFactorMode::from($force2fa);
         }
 
@@ -310,7 +309,7 @@ class AdminProfileController extends AdminLoggedInController
         $defaultTwoFactorMethod = (int) MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value);
         
         // フィールドが表示・編集可能な場合のみ認証方法選択をバリデーション
-        // UseProfileSettingの場合のみフィールドが編集可能（OnlyNewDevice/Alwaysの場合は表示のみまたは非表示）
+        // UseProfileSettingの場合のみフィールドが編集可能（Alwaysの場合は表示のみまたは非表示）
         if ($force2faValue === TwoFactorMode::UseProfileSetting->value && !empty($enabledTwoFactorMethods)) {
             // 有効な認証方法が1つだけの場合はその方法を強制
             if (count($enabledTwoFactorMethods) === 1) {
@@ -403,7 +402,7 @@ class AdminProfileController extends AdminLoggedInController
         }
 
         // two_factor_method の処理
-        if (in_array($force2fa, [TwoFactorMode::UseProfileSetting->value, TwoFactorMode::OnlyNewDevice->value, TwoFactorMode::Always->value])) {
+        if (in_array($force2fa, [TwoFactorMode::UseProfileSetting->value, TwoFactorMode::Always->value])) {
             // 有効な認証方法を再度取得
             $enabledTwoFactorMethodsString = MemberSetting::getValue('enabled_two_factor_methods', '0');
             $enabledTwoFactorMethods = $enabledTwoFactorMethodsString ? array_map('intval', explode(',', $enabledTwoFactorMethodsString)) : [0];

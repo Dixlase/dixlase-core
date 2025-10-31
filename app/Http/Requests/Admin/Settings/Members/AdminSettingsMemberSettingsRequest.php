@@ -45,9 +45,21 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
             'members_session_lifetime_enabled' => 'required|boolean',
             'members_session_lifetime' => 'required|integer|min:1|max:43200', // 最大30日
             // 二段階認証の有効期限設定
-            'two_factor_expire_minutes' => 'required|integer|min:1|max:60', // 1-60分（メール・デバイス共通）
+            'two_factor_expire_minutes' => 'required|integer|min:1|max:60', // 1-60分（メール認証）
             'two_factor_resend_interval_seconds' => 'required|integer|min:60|max:600', // 60-600秒（1-10分）
-            'trusted_device_expire_days' => 'required|integer|min:1|max:30', // 1-30日
+            // Passkey設定
+            'passkey_enabled' => 'required|boolean',
+            'max_passkey_devices' => 'required|integer|min:1|max:5', // 1-5台
+            // 回復コード設定
+            'recovery_codes_count' => 'required|integer|min:1|max:5', // 1-5個
+            'recovery_code_regenerate_interval' => 'required|integer|min:1|max:168', // 1-168時間（1週間）
+            // 2FA認証待ち画面設定
+            'two_factor_verification_timeout' => 'required|integer|min:5|max:60', // 5-60分
+            // 2FA試行制限設定
+            '2fa_max_attempts' => 'required|integer|min:1|max:10', // 1-10回
+            '2fa_attempt_window' => 'required|integer|min:5|max:60', // 5-60分
+            '2fa_lockout_duration' => 'required|integer|min:5|max:1440', // 5-1440分（1日）
+            '2fa_lockout_notification_enabled' => 'required|boolean'
         ];
 
         // 二段階認証方法の設定は無効時でも保存できるようにする

@@ -188,7 +188,7 @@ class TwoFactorHelper
         $userMethod = $user->two_factor_method ?? null;
         $defaultMethod = (int) \App\Models\MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value);
         $enabledMethods = $this->getEnabledTwoFactorMethods();
-        $globalTwoFactorMode = (int) \App\Models\MemberSetting::getValue('force_2fa', TwoFactorMode::OnlyNewDevice->value);
+        $globalTwoFactorMode = (int) \App\Models\MemberSetting::getValue('force_2fa', TwoFactorMode::Disabled->value);
 
         Log::info('[2FA] getEffectiveAuthMethod', [
             'user_id' => $user->id,
