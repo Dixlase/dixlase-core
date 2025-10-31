@@ -70,8 +70,69 @@ TEXT,
         'waiting_message' => 'Touch ID、Face ID、または指紋認証を使用してください。',
     ],
 
+    // Passkey認証
+    'passkey' => [
+        'title' => 'Passkey認証',
+        'prompt' => 'Passkeyを使用してログインしてください。',
+        'waiting_title' => 'Passkey認証待機中',
+        'waiting_message' => 'Touch ID、Face ID、または登録済みのPasskeyを使用してください。',
+    ],
+
+    // 回復コード
+    'recovery_code' => [
+        'title' => '回復コード',
+        'prompt' => '回復コードを入力してください。',
+        'code_label' => '回復コード',
+        'submit' => '認証してログイン',
+        'invalid' => '回復コードが無効です。',
+    ],
+
     // 共通
     'back_to_login' => 'ログイン画面に戻る',
     'alternative_methods_prompt' => '別の認証方法を使用しますか？',
     'awaiting_approval' => '承認待機中...',
+    
+    // 2FA設定（汎用）
+    'settings' => [
+        'title' => '二段階認証設定',
+        'mode_label' => '二段階認証',
+        'method_label' => '認証方法',
+        'help' => '二段階認証を使用するタイミングを設定します。',
+    ],
+    
+    // 2FAモード
+    'mode' => [
+        'disabled' => '無効',
+        'enabled' => '有効',
+        'use_profile' => 'プロフィール設定に従う',
+        'always' => '常に有効',
+    ],
+    
+    // 2FA方法
+    'method' => [
+        'email' => 'メール認証',
+        'passkey' => 'Passkey（生体認証）',
+    ],
+    
+    // デバイス管理
+    'devices' => [
+        'passkey_devices' => 'Passkeyデバイス',
+        'no_devices' => 'デバイスが登録されていません',
+        'add_device' => 'デバイスを追加',
+        'delete_device' => 'デバイスを削除',
+        'delete_all' => '全て削除',
+        'registered_at' => '登録日時',
+        'last_used' => '最終使用',
+    ],
+    
+    // 回復コード管理
+    'recovery_codes' => [
+        'title' => '回復コード',
+        'remaining' => '残り:count個の回復コードがあります',
+        'none' => '回復コードが生成されていません',
+        'generate' => '回復コードを生成',
+        'regenerate' => '回復コードを再生成',
+        'download' => '回復コードをダウンロード',
+        'warning' => '回復コードは安全な場所に保管してください。',
+    ],
 ];

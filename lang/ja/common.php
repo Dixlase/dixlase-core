@@ -238,55 +238,12 @@ return [
     'login_log' => 'ログインログ',
 
     // ===========================================
-    // 二段階認証関連（統合セクション）
+    // 二段階認証関連（サイト全体で汎用的なもののみ）
     // ===========================================
     'two_factor_authentication' => '二段階認証',
     'two_factor_settings' => '二段階認証設定',
-    
-    // 二段階認証モード
-    'two_factor_mode' => [
-        'label' => '二段階認証設定',
-        'options' => [
-            0 => '無効',
-            1 => '有効',
-            2 => 'プロフィール設定に従う',
-        ],
-    ],
-    
-    // 二段階認証モードオプション（プロフィール用）
-    'two_factor_mode_options' => [
-        'disabled' => '無効',
-        'only_new_device' => '異なる端末/IP時のみ有効',
-        'always' => '常に有効',
-    ],
-    
-    // 二段階認証方法
-    'two_factor_method' => [
-        'label' => '2段階認証方法',
-        'options' => [
-            'email' => 'メール認証',
-            'passkey' => 'Passkey（生体認証）',
-        ],
-        // 数値キー版（管理画面設定用）
-        'numbered_options' => [
-            0 => 'メール認証',
-            1 => 'Passkey（生体認証）',
-        ]
-    ],
-    
-    // 二段階認証ヘルプテキスト
-    'two_factor_help' => '二段階認証を使用するタイミングを設定します。',
     'two_factor_global_setting_fixed' => 'この設定は全体設定により固定されています。',
     'two_factor_method_global_setting_fixed' => 'この認証方法は全体設定により固定されています。',
-    
-    // 二段階認証方法のヘルプテキスト（詳細）
-    'two_factor_method_help' => [
-        'single' => 'この認証方法が:account_type全体設定で有効になっています。',
-        'multiple' => '使用する認証方法を選択してください。:account_type全体設定で有効にされている方法から選択できます。',
-        'email' => '登録済みのメールアドレスに認証コードを送信します。',
-        'device' => '登録済みのデバイスで認証を行います。',
-        'biometric' => '指紋や顔認証などの生体認証を使用して認証を行います。',
-    ],
     'login_notification_mode' => [
         'label' => 'ログイン通知の設定',
         'options' => [

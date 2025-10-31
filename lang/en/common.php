@@ -238,53 +238,12 @@ return [
     // ===========================================
     // Two-Factor Authentication (Unified Section)
     // ===========================================
+    // Two-Factor Authentication (Site-wide common only)
+    // ===========================================
     'two_factor_authentication' => 'Two-Factor Authentication',
     'two_factor_settings' => 'Two-Factor Authentication Settings',
-    
-    // Two-Factor Authentication Mode
-    'two_factor_mode' => [
-        'label' => 'Two-Factor Authentication Settings',
-        'options' => [
-            0 => 'Disabled',
-            1 => 'Enabled',
-            2 => 'Follow Profile Setting',
-        ],
-    ],
-    
-    // Two-Factor Authentication Mode Options (for Profile)
-    'two_factor_mode_options' => [
-        'disabled' => 'Disabled',
-        'only_new_device' => 'Different Device/IP Only',
-        'always' => 'Always Enabled',
-    ],
-    
-    // Two-Factor Authentication Method
-    'two_factor_method' => [
-        'label' => 'Two-Factor Authentication Method',
-        'options' => [
-            'email' => 'Email Authentication',
-            'passkey' => 'Passkey (Biometric)',
-        ],
-        // Numbered options (for admin settings)
-        'numbered_options' => [
-            0 => 'Email Authentication',
-            1 => 'Passkey (Biometric)',
-        ]
-    ],
-    
-    // Two-Factor Authentication Help Text
-    'two_factor_help' => 'Set when to use two-factor authentication.',
     'two_factor_global_setting_fixed' => 'This setting is fixed by global settings.',
     'two_factor_method_global_setting_fixed' => 'This authentication method is fixed by global settings.',
-    
-    // Two-Factor Authentication Method Help Text (Detailed)
-    'two_factor_method_help' => [
-        'single' => 'This authentication method is enabled in the :account_type global settings.',
-        'multiple' => 'Please select the authentication method to use. You can choose from methods enabled in the :account_type global settings.',
-        'email' => 'Send authentication code to registered email address.',
-        'device' => 'Authenticate with registered device.',
-        'biometric' => 'Use biometric authentication such as fingerprint or face recognition.',
-    ],
     'save_confirmation' => 'Save Confirmation',
     'update_confirmation' => 'Update Confirmation',
     'create_confirmation' => 'Create Confirmation',
