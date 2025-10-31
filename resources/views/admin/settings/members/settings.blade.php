@@ -381,27 +381,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </p>
                     </div>
 
-                    <!-- 信頼済みデバイスの有効期限 -->
-                    <div>
-                        <label for="trusted_device_expire_days" class="block text-sm font-medium">
-                            {{ __('admin.settings.members.settings.trusted_device_expire_days') }}
-                        </label>
-                        <div class="mt-1 flex items-center space-x-2">
-                            <input 
-                                type="number" 
-                                id="trusted_device_expire_days" 
-                                name="trusted_device_expire_days" 
-                                value="{{ old('trusted_device_expire_days', $trustedDeviceExpireDays) }}"
-                                min="1"
-                                max="30"
-                                class="w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                            >
-                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.members.settings.days') }}</span>
-                        </div>
-                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            {{ __('admin.settings.members.settings.trusted_device_expire_days_help') }}
-                        </p>
-                    </div>
                 </div>
             </fieldset>
         </section>
