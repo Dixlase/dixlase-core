@@ -222,13 +222,14 @@ class AdminProfileController extends AdminLoggedInController
         // メールサーバー設定状態を渡す
         $this->viewParams['isMailServerTested'] = MailServerValidatorService::isMailServerTested();
 
-        // 信頼済みデバイス一覧を取得
-        $deviceService = app(\App\Services\DeviceAuthenticationService::class);
-        $this->viewParams['trustedDevices'] = $deviceService->getDevices($user);
+        // Passkeyデバイス一覧を取得
+        $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
+        $this->viewParams['passkeyDevices'] = $passkeyService->getDevices($user);
 
-        // 生体認証デバイス一覧を取得
-        $biometricService = app(\App\Services\BiometricAuthenticationService::class);
-        $this->viewParams['biometricCredentials'] = $biometricService->getCredentials($user);
+        // 回復コード情報を取得
+        $recoveryCodeService = app(\App\Services\RecoveryCodeService::class);
+        $this->viewParams['recoveryCodesCount'] = $recoveryCodeService->getRemainingCount($user);
+        $this->viewParams['hasRecoveryCodes'] = $recoveryCodeService->hasRecoveryCodes($user);
 
         return view('admin.profile.index', $this->viewParams);
     }

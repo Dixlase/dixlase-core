@@ -317,98 +317,84 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </section>
     </form>
 
-    <!-- デバイス管理セクション -->
+    <!-- 2FA管理セクション -->
     <section class="mt-8 transition-colors-unified">
-        <h2>{{ __('admin.profile.device_management') }}</h2>
+        <h2>{{ __('admin.profile.2fa_management') }}</h2>
 
-        <!-- 信頼済みデバイス -->
+        <!-- 回復コード -->
         <div class="mb-8">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold">{{ __('admin.profile.trusted_devices') }}</h3>
-                @if(!$trustedDevices->isEmpty())
-                    <button 
-                        type="button"
-                        onclick="openModal('deleteAllTrustedDevicesModal')"
-                        class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
-                        <i class="fas fa-trash-alt mr-1"></i>{{ __('admin.profile.delete_all_devices') }}
-                    </button>
-                @endif
+                <h3 class="text-lg font-semibold">{{ __('admin.profile.recovery_codes') }}</h3>
             </div>
             
-            @if($trustedDevices->isEmpty())
-                <p class="text-gray-600 dark:text-gray-400">{{ __('admin.profile.no_trusted_devices') }}</p>
-            @else
-                <div class="space-y-4">
-                    @foreach($trustedDevices as $device)
-                        <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4 flex items-start justify-between">
-                            <div class="flex-1">
-                                <div class="flex items-center mb-2">
-                                    <i class="fas fa-desktop text-blue-600 dark:text-blue-400 mr-2"></i>
-                                    <h4 class="font-semibold">{{ $device->device_name }}</h4>
-                                </div>
-                                <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                                    <p><strong>IP:</strong> {{ $device->ip_address }}</p>
-                                    <p><strong>{{ __('admin.profile.last_used') }}:</strong> {{ $device->updated_at ? $device->updated_at->format('Y-m-d H:i') : '-' }}</p>
-                                </div>
-                            </div>
-                            <button 
-                                type="button"
-                                onclick="openDeleteTrustedDeviceModal({{ $device->id }}, '{{ addslashes($device->device_name) }}')"
-                                class="ml-4 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
-                                {{ __('common.delete') }}
-                            </button>
-                        </div>
-                    @endforeach
+            @if($hasRecoveryCodes)
+                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+                    <p class="text-sm text-blue-800 dark:text-blue-200">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        残り{{ $recoveryCodesCount }}個の回復コードがあります
+                    </p>
                 </div>
+                <button 
+                    type="button"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
+                    <i class="fas fa-sync-alt mr-2"></i>回復コードを再生成
+                </button>
+            @else
+                <p class="text-gray-600 dark:text-gray-400 mb-4">回復コードが生成されていません</p>
+                <button 
+                    type="button"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
+                    <i class="fas fa-plus mr-2"></i>回復コードを生成
+                </button>
             @endif
         </div>
 
-        <!-- 生体認証デバイス -->
+        <!-- Passkeyデバイス -->
         <div>
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold">{{ __('admin.profile.biometric_devices') }}</h3>
-                @if(!$biometricCredentials->isEmpty())
+                <h3 class="text-lg font-semibold">Passkeyデバイス</h3>
+                @if(!$passkeyDevices->isEmpty())
                     <button 
                         type="button"
-                        onclick="openModal('deleteAllBiometricModal')"
                         class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
-                        <i class="fas fa-trash-alt mr-1"></i>{{ __('admin.profile.delete_all_biometric') }}
+                        <i class="fas fa-trash-alt mr-1"></i>全て削除
                     </button>
                 @endif
             </div>
             
-            @if($biometricCredentials->isEmpty())
-                <p class="text-gray-600 dark:text-gray-400 mb-4">{{ __('admin.profile.no_biometric_devices') }}</p>
+            @if($passkeyDevices->isEmpty())
+                <p class="text-gray-600 dark:text-gray-400 mb-4">Passkeyデバイスが登録されていません</p>
             @else
                 <div class="space-y-4 mb-4">
-                    @foreach($biometricCredentials as $credential)
+                    @foreach($passkeyDevices as $device)
                         <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4 flex items-start justify-between">
                             <div class="flex-1">
                                 <div class="flex items-center mb-2">
-                                    <i class="fas fa-fingerprint text-green-600 dark:text-green-400 mr-2"></i>
-                                    <h4 class="font-semibold">{{ $credential->name }}</h4>
+                                    <i class="fas fa-key text-green-600 dark:text-green-400 mr-2"></i>
+                                    <h4 class="font-semibold">{{ $device->name }}</h4>
                                 </div>
                                 <div class="text-sm text-gray-600 dark:text-gray-400">
-                                    <p><strong>{{ __('admin.profile.registered_at') }}:</strong> {{ $credential->created_at->format('Y-m-d H:i') }}</p>
+                                    <p><strong>登録日時:</strong> {{ $device->created_at->format('Y-m-d H:i') }}</p>
+                                    @if($device->last_used_at)
+                                        <p><strong>最終使用:</strong> {{ $device->last_used_at->format('Y-m-d H:i') }}</p>
+                                    @endif
                                 </div>
                             </div>
                             <button 
                                 type="button"
-                                onclick="openDeleteBiometricModal('{{ $credential->credential_id }}', '{{ addslashes($credential->name) }}')"
                                 class="ml-4 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
-                                {{ __('common.delete') }}
+                                削除
                             </button>
                         </div>
                     @endforeach
                 </div>
             @endif
 
-            <!-- 新しい生体認証を追加 -->
+            <!-- 新しいPasskeyを追加 -->
             <button 
                 type="button"
-                id="add-biometric-btn"
                 class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
-                <i class="fas fa-plus mr-2"></i>{{ __('admin.profile.add_biometric') }}
+                <i class="fas fa-plus mr-2"></i>Passkeyを追加
             </button>
         </div>
     </section>

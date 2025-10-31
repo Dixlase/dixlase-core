@@ -70,8 +70,69 @@ TEXT,
         'waiting_message' => 'Please use Touch ID, Face ID, or fingerprint authentication.',
     ],
 
+    // Passkey Authentication
+    'passkey' => [
+        'title' => 'Passkey Authentication',
+        'prompt' => 'Please log in using your Passkey.',
+        'waiting_title' => 'Waiting for Passkey Authentication',
+        'waiting_message' => 'Please use Touch ID, Face ID, or your registered Passkey.',
+    ],
+
+    // Recovery Code
+    'recovery_code' => [
+        'title' => 'Recovery Code',
+        'prompt' => 'Please enter your recovery code.',
+        'code_label' => 'Recovery Code',
+        'submit' => 'Authenticate and Login',
+        'invalid' => 'Invalid recovery code.',
+    ],
+
     // Common
     'back_to_login' => 'Back to Login',
     'alternative_methods_prompt' => 'Use a different authentication method?',
     'awaiting_approval' => 'Awaiting approval...',
+    
+    // 2FA Settings (Common)
+    'settings' => [
+        'title' => 'Two-Factor Authentication Settings',
+        'mode_label' => 'Two-Factor Authentication',
+        'method_label' => 'Authentication Method',
+        'help' => 'Configure when to use two-factor authentication.',
+    ],
+    
+    // 2FA Mode
+    'mode' => [
+        'disabled' => 'Disabled',
+        'enabled' => 'Enabled',
+        'use_profile' => 'Follow Profile Settings',
+        'always' => 'Always Enabled',
+    ],
+    
+    // 2FA Method
+    'method' => [
+        'email' => 'Email Authentication',
+        'passkey' => 'Passkey (Biometric)',
+    ],
+    
+    // Device Management
+    'devices' => [
+        'passkey_devices' => 'Passkey Devices',
+        'no_devices' => 'No devices registered',
+        'add_device' => 'Add Device',
+        'delete_device' => 'Delete Device',
+        'delete_all' => 'Delete All',
+        'registered_at' => 'Registered',
+        'last_used' => 'Last Used',
+    ],
+    
+    // Recovery Code Management
+    'recovery_codes' => [
+        'title' => 'Recovery Codes',
+        'remaining' => ':count recovery codes remaining',
+        'none' => 'No recovery codes generated',
+        'generate' => 'Generate Recovery Codes',
+        'regenerate' => 'Regenerate Recovery Codes',
+        'download' => 'Download Recovery Codes',
+        'warning' => 'Please store recovery codes in a safe place.',
+    ],
 ];
