@@ -43,51 +43,66 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'success' => 'fas fa-check-circle'
     ];
     $iconClass = $iconClasses[$icon_type] ?? $iconClasses['warning'];
+    
+    // slotが使用されているかチェック
+    $hasCustomContent = !empty(trim($slot ?? ''));
+    $hasCustomFooter = isset($footer) && !empty(trim($footer ?? ''));
 @endphp
 
-<div id="{{ $id }}" class="modal" onclick="closeModal('{{ $id }}')">
-    <div class="modal-overlay"></div>
+<div id="{{ $id }}" class="modal">
+    <div class="modal-overlay" onclick="closeModal('{{ $id }}')"></div>
     <div class="modal-container" onclick="event.stopPropagation()">
         <div class="modal-content">
-            <div class="modal-icon modal-icon--{{ $icon_type }}">
-                <i class="{{ $iconClass }}" aria-hidden="true"></i>
-            </div>
-            
-            <div class="modal-body">
-                <h2 class="modal-title">{{ $title }}</h2>
-                <div class="modal-message">
-                    <p>{{ $message }}</p>
+            @if(!$hasCustomContent)
+                {{-- 標準モード：既存の確認ダイアログ --}}
+                <div class="modal-icon modal-icon--{{ $icon_type }}">
+                    <i class="{{ $iconClass }}" aria-hidden="true"></i>
                 </div>
-
-                @if($checkbox)
-                    <div class="modal-checkbox">
-                        <label>
-                            <input type="checkbox" name="{{ $checkbox_name }}" value="1" />
-                            <span class="text-left">{!! $checkbox_label !!}</span>
-                        </label>
+                
+                <div class="modal-body">
+                    <h2 class="modal-title">{{ $title }}</h2>
+                    <div class="modal-message">
+                        <p>{{ $message }}</p>
                     </div>
-                @endif
-            </div>
+
+                    @if($checkbox)
+                        <div class="modal-checkbox">
+                            <label>
+                                <input type="checkbox" name="{{ $checkbox_name }}" value="1" />
+                                <span class="text-left">{!! $checkbox_label !!}</span>
+                            </label>
+                        </div>
+                    @endif
+                </div>
+            @else
+                {{-- カスタムモード：slotコンテンツを使用 --}}
+                {{ $slot }}
+            @endif
         </div>
         
         <div class="modal-actions">
-            @include('components::form.button', [
-                'type' => 'button',
-                'label' => $cancel_label,
-                'variant' => 'secondary',
-                'onclick' => "closeModal('$id')",
-                'class' => 'mx-2',
-                'id' => null
-            ])
-            @include('components::form.button', [
-                'type' => 'button',
-                'label' => $confirm_label,
-                'variant' => $confirm_color === 'blue' ? 'primary' : ($confirm_color === 'red' ? 'danger' : ($confirm_color === 'yellow' ? 'warning' : ($confirm_color === 'green' ? 'success' : 'primary'))),
-                'onclick' => $form ? "submitModalForm('$form')" : null,
-                'class' => 'mx-2',
-                'id' => null
-                
-            ])
+            @if(!$hasCustomFooter)
+                {{-- 標準フッター --}}
+                @include('components::form.button', [
+                    'type' => 'button',
+                    'label' => $cancel_label,
+                    'variant' => 'secondary',
+                    'onclick' => "closeModal('$id')",
+                    'class' => 'mx-2',
+                    'id' => null
+                ])
+                @include('components::form.button', [
+                    'type' => 'button',
+                    'label' => $confirm_label,
+                    'variant' => $confirm_color === 'blue' ? 'primary' : ($confirm_color === 'red' ? 'danger' : ($confirm_color === 'yellow' ? 'warning' : ($confirm_color === 'green' ? 'success' : 'primary'))),
+                    'onclick' => $form ? "submitModalForm('$form')" : null,
+                    'class' => 'mx-2',
+                    'id' => null
+                ])
+            @else
+                {{-- カスタムフッター --}}
+                {{ $footer }}
+            @endif
         </div>
     </div>
 </div>

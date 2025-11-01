@@ -321,8 +321,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <section class="mt-8 transition-colors-unified">
         <h2>{{ __('admin.profile.2fa_management') }}</h2>
 
-        
-
         <!-- Passkeyデバイス -->
         <div>
             <div class="flex items-center justify-between mb-4">
@@ -364,17 +362,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             @endif
             <!-- 新しいPasskeyを追加 -->
-            <div class="my-3">
-                <button 
-                    type="button"
-                    onclick="alert('Passkey登録機能は現在開発中です。\n\nWebAuthn APIを使用した生体認証（Touch ID、Face ID、Windows Hello等）の実装が必要です。')"
-                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
-                    <i class="fas fa-plus mr-2"></i>Passkeyを追加
-                </button>
-            </div>
+            <button 
+                type="button"
+                onclick="alert('Passkey登録機能は現在開発中です。\n\nWebAuthn APIを使用した生体認証（Touch ID、Face ID、Windows Hello等）の実装が必要です。')"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
+                <i class="fas fa-plus mr-2"></i>Passkeyを追加
+            </button>
 
             <!-- Passkeyの説明 -->
-            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+            <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
                 <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
                     <i class="fas fa-info-circle mr-2"></i>{{ __('admin.profile.passkey_info_title') }}
                 </h4>
@@ -402,29 +398,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </p>
                 </div>
                 
-                <form method="POST" action="{{ route('admin.profile.recovery-codes.regenerate') }}" id="regenerateRecoveryCodesForm">
-                    @csrf
-                    <button 
-                        type="submit"
-                        class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
-                        <i class="fas fa-sync-alt mr-2"></i>{{ __('two-factor.recovery_codes.regenerate') }}
-                    </button>
-                </form>
+                <button 
+                    type="button"
+                    onclick="openModal('regenerateRecoveryCodesConfirmModal')"
+                    class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                    <i class="fas fa-sync-alt mr-2"></i>{{ __('two-factor.recovery_codes.regenerate') }}
+                </button>
             @else
                 <p class="text-gray-600 dark:text-gray-400 mb-4">{{ __('two-factor.recovery_codes.none') }}</p>
                 
-                <form method="POST" action="{{ route('admin.profile.recovery-codes.generate') }}" id="generateRecoveryCodesForm">
-                    @csrf
-                    <button 
-                        type="submit"
-                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        <i class="fas fa-plus mr-2"></i>{{ __('two-factor.recovery_codes.generate') }}
-                    </button>
-                </form>
+                <button 
+                    type="button"
+                    onclick="openModal('generateRecoveryCodesConfirmModal')"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <i class="fas fa-plus mr-2"></i>{{ __('two-factor.recovery_codes.generate') }}
+                </button>
             @endif
             
             <!-- 回復コードの説明 -->
-            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+            <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
                 <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
                     <i class="fas fa-info-circle mr-2"></i>{{ __('admin.profile.recovery_codes_info_title') }}
                 </h4>
@@ -455,16 +447,40 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 deleteAllTrustedDevicesBtn.addEventListener('click', revokeAllTrustedDevices);
             }
 
-            // 生体認証削除
+            // Passkey削除
             const deleteBiometricBtn = document.querySelector('#deleteBiometricModal .modal-actions button[type="button"]:last-child');
             if (deleteBiometricBtn) {
-                deleteBiometricBtn.addEventListener('click', revokeBiometric);
+                deleteBiometricBtn.addEventListener('click', revokePasskey);
             }
 
-            // 生体認証一括削除
+            // Passkey一括削除
             const deleteAllBiometricBtn = document.querySelector('#deleteAllBiometricModal .modal-actions button[type="button"]:last-child');
             if (deleteAllBiometricBtn) {
-                deleteAllBiometricBtn.addEventListener('click', revokeAllBiometric);
+                deleteAllBiometricBtn.addEventListener('click', revokeAllPasskeys);
+            }
+
+            // 回復コード生成確認
+            const generateRecoveryCodesBtn = document.querySelector('#generateRecoveryCodesConfirmModal .modal-actions button[type="button"]:last-child');
+            if (generateRecoveryCodesBtn) {
+                console.log('[DEBUG] Found generate recovery codes button');
+                generateRecoveryCodesBtn.addEventListener('click', function() {
+                    console.log('[DEBUG] Generate button clicked');
+                    confirmGenerateRecoveryCodes();
+                });
+            } else {
+                console.error('[DEBUG] Generate recovery codes button not found');
+            }
+
+            // 回復コード再生成確認
+            const regenerateRecoveryCodesBtn = document.querySelector('#regenerateRecoveryCodesConfirmModal .modal-actions button[type="button"]:last-child');
+            if (regenerateRecoveryCodesBtn) {
+                console.log('[DEBUG] Found regenerate recovery codes button');
+                regenerateRecoveryCodesBtn.addEventListener('click', function() {
+                    console.log('[DEBUG] Regenerate button clicked');
+                    confirmRegenerateRecoveryCodes();
+                });
+            } else {
+                console.error('[DEBUG] Regenerate recovery codes button not found');
             }
 
             // フラッシュメッセージの表示
@@ -568,6 +584,280 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 </style>
 
 <script>
+    // === グローバル関数（モーダルから呼び出される） ===
+    
+    // 信頼済みデバイス管理
+    let currentDeviceId = null;
+    
+    window.openDeleteTrustedDeviceModal = function(deviceId, deviceName) {
+        currentDeviceId = deviceId;
+        const modal = document.getElementById('deleteTrustedDeviceModal');
+        const messageElement = modal.querySelector('.modal-message p');
+        if (messageElement) {
+            messageElement.textContent = `{{ __('admin.profile.confirm_delete_device_message') }}\n\n${deviceName}`;
+        }
+        openModal('deleteTrustedDeviceModal');
+    };
+
+    window.revokeTrustedDevice = function() {
+        if (!currentDeviceId) return;
+
+        fetch(`/admin/profile/trusted-device/${currentDeviceId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            closeModal('deleteTrustedDeviceModal');
+            if (data.success) {
+                sessionStorage.setItem('flash_success', data.message);
+                location.reload();
+            } else {
+                sessionStorage.setItem('flash_error', data.message);
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            closeModal('deleteTrustedDeviceModal');
+            sessionStorage.setItem('flash_error', '{{ __('admin.profile.delete_device_error') }}');
+            location.reload();
+        });
+    };
+
+    window.revokeAllTrustedDevices = function() {
+        fetch('/admin/profile/trusted-device/all', {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            closeModal('deleteAllTrustedDevicesModal');
+            if (data.success) {
+                sessionStorage.setItem('flash_success', data.message);
+                location.reload();
+            } else {
+                sessionStorage.setItem('flash_error', data.message);
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            closeModal('deleteAllTrustedDevicesModal');
+            sessionStorage.setItem('flash_error', '{{ __('admin.profile.delete_all_devices_error') }}');
+            location.reload();
+        });
+    };
+    
+    // Passkey（生体認証）管理
+    let currentCredentialId = null;
+    
+    window.openDeletePasskeyModal = function(credentialId, credentialName) {
+        currentCredentialId = credentialId;
+        const modal = document.getElementById('deleteBiometricModal');
+        const messageElement = modal.querySelector('.modal-message p');
+        if (messageElement) {
+            messageElement.textContent = `{{ __('admin.profile.confirm_delete_biometric_message') }}\n\n${credentialName}`;
+        }
+        openModal('deleteBiometricModal');
+    };
+
+    window.revokePasskey = function() {
+        if (!currentCredentialId) return;
+
+        fetch(`/admin/profile/biometric/${currentCredentialId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            closeModal('deleteBiometricModal');
+            if (data.success) {
+                sessionStorage.setItem('flash_success', data.message);
+                location.reload();
+            } else {
+                sessionStorage.setItem('flash_error', data.message);
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            closeModal('deleteBiometricModal');
+            sessionStorage.setItem('flash_error', '{{ __('admin.profile.delete_biometric_error') }}');
+            location.reload();
+        });
+    };
+
+    window.revokeAllPasskeys = function() {
+        fetch('/admin/profile/biometric/all', {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            closeModal('deleteAllBiometricModal');
+            if (data.success) {
+                sessionStorage.setItem('flash_success', data.message);
+                location.reload();
+            } else {
+                sessionStorage.setItem('flash_error', data.message);
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            closeModal('deleteAllBiometricModal');
+            sessionStorage.setItem('flash_error', '{{ __('admin.profile.delete_all_biometric_error') }}');
+            location.reload();
+        });
+    };
+    
+    // 回復コード管理
+    let generatedRecoveryCodes = [];
+
+    // 回復コード生成確認
+    async function confirmGenerateRecoveryCodes() {
+        console.log('[DEBUG] confirmGenerateRecoveryCodes called');
+        closeModal('generateRecoveryCodesConfirmModal');
+        
+        try {
+            console.log('[DEBUG] Fetching recovery codes...');
+            const response = await fetch('{{ route("admin.profile.recovery-codes.generate") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
+            
+            console.log('[DEBUG] Response status:', response.status);
+            const data = await response.json();
+            console.log('[DEBUG] Response data:', data);
+            
+            if (data.success) {
+                generatedRecoveryCodes = data.codes;
+                console.log('[DEBUG] Generated codes:', generatedRecoveryCodes);
+                displayRecoveryCodes(data.codes);
+                openModal('recoveryCodesModal');
+            } else {
+                console.error('[DEBUG] Generation failed:', data.message);
+                alert(data.message || '{{ __("common.error") }}');
+            }
+        } catch (error) {
+            console.error('[DEBUG] Recovery codes generation error:', error);
+            alert('{{ __("common.error") }}');
+        }
+    }
+
+    // 回復コード再生成確認
+    async function confirmRegenerateRecoveryCodes() {
+        closeModal('regenerateRecoveryCodesConfirmModal');
+        
+        try {
+            const response = await fetch('{{ route("admin.profile.recovery-codes.generate") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                generatedRecoveryCodes = data.codes;
+                displayRecoveryCodes(data.codes);
+                openModal('recoveryCodesModal');
+            } else {
+                alert(data.message || '{{ __("common.error") }}');
+            }
+        } catch (error) {
+            console.error('Recovery codes regeneration error:', error);
+            alert('{{ __("common.error") }}');
+        }
+    }
+
+    // 回復コードを表示
+    function displayRecoveryCodes(codes) {
+        const container = document.getElementById('recoveryCodesList');
+        container.innerHTML = codes.map(code => 
+            `<div class="p-2 bg-white dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600 text-center">${formatRecoveryCode(code)}</div>`
+        ).join('');
+    }
+
+    // 回復コードをフォーマット（5桁ごとにハイフン）
+    function formatRecoveryCode(code) {
+        return code.match(/.{1,5}/g).join('-');
+    }
+
+    // 回復コードをダウンロード
+    function downloadRecoveryCodes() {
+        const text = generatedRecoveryCodes.map(code => formatRecoveryCode(code)).join('\n');
+        const blob = new Blob([text], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'recovery-codes-' + new Date().toISOString().split('T')[0] + '.txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // 回復コードをコピー
+    function copyRecoveryCodes() {
+        const text = generatedRecoveryCodes.map(code => formatRecoveryCode(code)).join('\n');
+        const copyBtn = event.currentTarget;
+        const originalHTML = copyBtn.innerHTML;
+        
+        navigator.clipboard.writeText(text).then(() => {
+            // コピー成功：チェックアイコンを表示
+            copyBtn.innerHTML = '<i class="fas fa-check mr-2"></i>{{ __("common.copied") }}';
+            copyBtn.classList.remove('bg-gray-600', 'hover:bg-gray-700');
+            copyBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+            
+            // 2秒後に元に戻す
+            setTimeout(() => {
+                copyBtn.innerHTML = originalHTML;
+                copyBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                copyBtn.classList.add('bg-gray-600', 'hover:bg-gray-700');
+            }, 2000);
+        }).catch(err => {
+            console.error('Copy failed:', err);
+            alert('{{ __("common.copy_failed") }}');
+        });
+    }
+    
+    // 回復コード保管確認チェックボックスの状態を監視
+    function checkRecoveryCodesSaved() {
+        const checkbox = document.getElementById('recoveryCodesSavedCheckbox');
+        const closeBtn = document.getElementById('recoveryCodesCloseBtn');
+        
+        if (checkbox && closeBtn) {
+            closeBtn.disabled = !checkbox.checked;
+            
+            if (checkbox.checked) {
+                closeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                closeBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         // フォーム送信成功時にグローバルテーマストアを更新
         @if(session('success'))
@@ -622,150 +912,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             });
         }
 
-        // 信頼済みデバイス削除モーダルを開く
-        let currentDeviceId = null;
-        window.openDeleteTrustedDeviceModal = function(deviceId, deviceName) {
-            currentDeviceId = deviceId;
-            // モーダルのメッセージを動的に更新
-            const modal = document.getElementById('deleteTrustedDeviceModal');
-            const messageElement = modal.querySelector('.modal-message p');
-            if (messageElement) {
-                messageElement.textContent = `{{ __('admin.profile.confirm_delete_device_message') }}\n\n${deviceName}`;
-            }
-            openModal('deleteTrustedDeviceModal');
-        };
-
-        // 信頼済みデバイス削除実行
-        window.revokeTrustedDevice = function() {
-            if (!currentDeviceId) return;
-
-            fetch(`/admin/profile/trusted-device/${currentDeviceId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                closeModal('deleteTrustedDeviceModal');
-                if (data.success) {
-                    // フラッシュメッセージをセッションに設定してリロード
-                    sessionStorage.setItem('flash_success', data.message);
-                    location.reload();
-                } else {
-                    sessionStorage.setItem('flash_error', data.message);
-                    location.reload();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                closeModal('deleteTrustedDeviceModal');
-                sessionStorage.setItem('flash_error', '{{ __('admin.profile.delete_device_error') }}');
-                location.reload();
-            });
-        };
-
-        // 信頼済みデバイス一括削除実行
-        window.revokeAllTrustedDevices = function() {
-            fetch('/admin/profile/trusted-device/all', {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                closeModal('deleteAllTrustedDevicesModal');
-                if (data.success) {
-                    sessionStorage.setItem('flash_success', data.message);
-                    location.reload();
-                } else {
-                    sessionStorage.setItem('flash_error', data.message);
-                    location.reload();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                closeModal('deleteAllTrustedDevicesModal');
-                sessionStorage.setItem('flash_error', '{{ __('admin.profile.delete_all_devices_error') }}');
-                location.reload();
-            });
-        };
-
-        // 生体認証削除モーダルを開く
-        let currentCredentialId = null;
-        window.openDeleteBiometricModal = function(credentialId, credentialName) {
-            currentCredentialId = credentialId;
-            // モーダルのメッセージを動的に更新
-            const modal = document.getElementById('deleteBiometricModal');
-            const messageElement = modal.querySelector('.modal-message p');
-            if (messageElement) {
-                messageElement.textContent = `{{ __('admin.profile.confirm_delete_biometric_message') }}\n\n${credentialName}`;
-            }
-            openModal('deleteBiometricModal');
-        };
-
-        // 生体認証削除実行
-        window.revokeBiometric = function() {
-            if (!currentCredentialId) return;
-
-            fetch(`/admin/profile/biometric/${currentCredentialId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                closeModal('deleteBiometricModal');
-                if (data.success) {
-                    sessionStorage.setItem('flash_success', data.message);
-                    location.reload();
-                } else {
-                    sessionStorage.setItem('flash_error', data.message);
-                    location.reload();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                closeModal('deleteBiometricModal');
-                sessionStorage.setItem('flash_error', '{{ __('admin.profile.delete_biometric_error') }}');
-                location.reload();
-            });
-        };
-
-        // 生体認証一括削除実行
-        window.revokeAllBiometric = function() {
-            fetch('/admin/profile/biometric/all', {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                closeModal('deleteAllBiometricModal');
-                if (data.success) {
-                    sessionStorage.setItem('flash_success', data.message);
-                    location.reload();
-                } else {
-                    sessionStorage.setItem('flash_error', data.message);
-                    location.reload();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                closeModal('deleteAllBiometricModal');
-                sessionStorage.setItem('flash_error', '{{ __('admin.profile.delete_all_biometric_error') }}');
-                location.reload();
-            });
-        };
-
-        // 生体認証追加
+        // Passkey追加
         const addBiometricBtn = document.getElementById('add-biometric-btn');
         if (addBiometricBtn) {
             addBiometricBtn.addEventListener('click', async function() {
@@ -857,155 +1004,86 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             });
         }
     });
-
-    // === 回復コード管理 ===
-    let generatedRecoveryCodes = [];
-
-    // 回復コード生成フォーム送信
-    document.getElementById('generateRecoveryCodesForm')?.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        if (!confirm('{{ __("admin.profile.recovery_codes_generate_confirm") }}')) {
-            return;
-        }
-        
-        try {
-            const response = await fetch(this.action, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                }
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                generatedRecoveryCodes = data.codes;
-                displayRecoveryCodes(data.codes);
-                openModal('recoveryCodesModal');
-            } else {
-                alert(data.message || '{{ __("common.error") }}');
-            }
-        } catch (error) {
-            console.error('Recovery codes generation error:', error);
-            alert('{{ __("common.error") }}');
-        }
-    });
-
-    // 回復コード再生成フォーム送信
-    document.getElementById('regenerateRecoveryCodesForm')?.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        if (!confirm('{{ __("admin.profile.recovery_codes_regenerate_confirm") }}')) {
-            return;
-        }
-        
-        try {
-            const response = await fetch(this.action, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                }
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                generatedRecoveryCodes = data.codes;
-                displayRecoveryCodes(data.codes);
-                openModal('recoveryCodesModal');
-            } else {
-                alert(data.message || '{{ __("common.error") }}');
-            }
-        } catch (error) {
-            console.error('Recovery codes regeneration error:', error);
-            alert('{{ __("common.error") }}');
-        }
-    });
-
-    // 回復コードを表示
-    function displayRecoveryCodes(codes) {
-        const container = document.getElementById('recoveryCodesList');
-        container.innerHTML = codes.map(code => 
-            `<div class="p-2 bg-white dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600 text-center">${formatRecoveryCode(code)}</div>`
-        ).join('');
-    }
-
-    // 回復コードをフォーマット（5桁ごとにハイフン）
-    function formatRecoveryCode(code) {
-        return code.match(/.{1,5}/g).join('-');
-    }
-
-    // 回復コードをダウンロード
-    function downloadRecoveryCodes() {
-        const text = generatedRecoveryCodes.map(code => formatRecoveryCode(code)).join('\n');
-        const blob = new Blob([text], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'recovery-codes-' + new Date().toISOString().split('T')[0] + '.txt';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
-
-    // 回復コードをコピー
-    function copyRecoveryCodes() {
-        const text = generatedRecoveryCodes.map(code => formatRecoveryCode(code)).join('\n');
-        navigator.clipboard.writeText(text).then(() => {
-            alert('{{ __("common.copied") }}');
-        }).catch(err => {
-            console.error('Copy error:', err);
-            alert('{{ __("common.copy_failed") }}');
-        });
-    }
 </script>
 @endpush
 
 
-<!-- 回復コード表示モーダル -->
-<x-modal id="recoveryCodesModal" :title="__('two-factor.recovery_codes.title')">
-    <div class="space-y-4">
-        <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-            <p class="text-sm text-yellow-800 dark:text-yellow-200">
-                <i class="fas fa-exclamation-triangle mr-2"></i>
-                {{ __('two-factor.recovery_codes.warning') }}
-            </p>
-        </div>
+<!-- 回復コード表示モーダル（slot対応） -->
+<x-modal id="recoveryCodesModal" :title="__('two-factor.recovery_codes.title')" icon_type="warning">
+    <div class="modal-icon modal-icon--warning">
+        <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+    </div>
+    
+    <div class="modal-body">
+        <h2 class="modal-title">{{ __('two-factor.recovery_codes.title') }}</h2>
         
-        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-            <div id="recoveryCodesList" class="space-y-2 font-mono text-sm">
-                <!-- JavaScriptで動的に追加 -->
+        <div class="space-y-4 mt-4">
+            <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    {{ __('two-factor.recovery_codes.warning') }}
+                </p>
             </div>
-        </div>
-        
-        <div class="flex gap-2">
-            <button 
-                type="button"
-                onclick="downloadRecoveryCodes()"
-                class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                <i class="fas fa-download mr-2"></i>{{ __('two-factor.recovery_codes.download') }}
-            </button>
-            <button 
-                type="button"
-                onclick="copyRecoveryCodes()"
-                class="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-                <i class="fas fa-copy mr-2"></i>{{ __('common.copy') }}
-            </button>
+            
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                <div id="recoveryCodesList" class="space-y-2 font-mono text-sm">
+                    <!-- JavaScriptで動的に追加 -->
+                </div>
+            </div>
+            
+            <div class="flex gap-2">
+                <button 
+                    type="button"
+                    onclick="downloadRecoveryCodes()"
+                    class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <i class="fas fa-download mr-2"></i>{{ __('two-factor.recovery_codes.download') }}
+                </button>
+                <button 
+                    type="button"
+                    onclick="copyRecoveryCodes()"
+                    class="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                    <i class="fas fa-copy mr-2"></i>{{ __('common.copy') }}
+                </button>
+            </div>
+            
+            <!-- 保管確認チェックボックス -->
+            <div class="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <label class="flex items-start cursor-pointer">
+                    <input 
+                        type="checkbox" 
+                        id="recoveryCodesSavedCheckbox"
+                        onchange="checkRecoveryCodesSaved()"
+                        class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <span class="ml-3 text-sm text-red-800 dark:text-red-200 font-semibold">
+                        <i class="fas fa-exclamation-circle mr-1"></i>
+                        {{ __('two-factor.recovery_codes.confirm_saved') }}
+                    </span>
+                </label>
+            </div>
         </div>
     </div>
     
     <x-slot name="footer">
         <button 
             type="button"
-            onclick="closeModal('recoveryCodesModal')"
-            class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+            id="recoveryCodesCloseBtn"
+            onclick="location.reload()"
+            disabled
+            class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 opacity-50 cursor-not-allowed">
             {{ __('common.close') }}
         </button>
     </x-slot>
 </x-modal>
+
+
+<!-- 回復コード再生成確認モーダル -->
+<x-modal 
+    id="regenerateRecoveryCodesConfirmModal" 
+    :title="__('two-factor.recovery_codes.regenerate')"
+    :message="__('admin.profile.recovery_codes_regenerate_confirm')"
+    confirm_label="{{ __('common.ok') }}"
+    cancel_label="{{ __('common.cancel') }}"
+    icon_type="warning"
+    confirm_color="yellow"
+    form="regenerate-recovery-codes-form"
+/>
