@@ -94,6 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let resendCountdown = 0;
     let countdownInterval = null;
+    let expireInterval = null;
 
     // フラッシュメッセージ表示関数（既存のflash-messageコンポーネントと同じスタイル）
     function showFlashMessage(message, type = 'success') {
@@ -187,6 +188,33 @@ document.addEventListener('DOMContentLoaded', function() {
         submitButton.disabled = code.length !== {{ $codeLength }};
     }
 
+    // 有効期限タイマーを開始する関数
+    @if($showExpireTime)
+    function startExpireTimer() {
+        // 既存のタイマーをクリア
+        if (expireInterval) {
+            clearInterval(expireInterval);
+        }
+        
+        let expireTime = {{ $expireMinutes }} * 60; // 秒に変換
+        const expireElement = document.getElementById('expire-time');
+        
+        expireInterval = setInterval(() => {
+            expireTime--;
+            const minutes = Math.floor(expireTime / 60);
+            const seconds = expireTime % 60;
+            expireElement.textContent = `${minutes}分${seconds.toString().padStart(2, '0')}{{ __('two-factor.email.seconds_suffix') }}`;
+            
+            if (expireTime <= 0) {
+                clearInterval(expireInterval);
+                expireElement.textContent = '{{ __('two-factor.email.expired') }}';
+                inputs.forEach(input => input.disabled = true);
+                submitButton.disabled = true;
+            }
+        }, 1000);
+    }
+    @endif
+
     // 再送信機能
     @if($showResend && $resendAction)
     window.resendCode = function() {
@@ -206,8 +234,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 showFlashMessage(data.message, 'success');
                 
                 startResendCountdown({{ $resendIntervalSeconds }}); // 設定値の秒数間再送信を無効化
-                // 入力フィールドをクリア
-                inputs.forEach(input => input.value = '');
+                
+                // 有効期限タイマーをリセット
+                @if($showExpireTime)
+                startExpireTimer();
+                @endif
+                
+                // 入力フィールドをクリアして有効化
+                inputs.forEach(input => {
+                    input.value = '';
+                    input.disabled = false;
+                });
                 inputs[0].focus();
                 updateHiddenInput();
                 updateSubmitButton();
@@ -242,24 +279,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // 最初の入力フィールドにフォーカス
     inputs[0].focus();
 
-    // 有効期限カウントダウン
+    // 有効期限カウントダウンを開始
     @if($showExpireTime)
-    let expireTime = {{ $expireMinutes }} * 60; // 秒に変換
-    const expireElement = document.getElementById('expire-time');
-    
-    const expireInterval = setInterval(() => {
-        expireTime--;
-        const minutes = Math.floor(expireTime / 60);
-        const seconds = expireTime % 60;
-        expireElement.textContent = `${minutes}分${seconds.toString().padStart(2, '0')}{{ __('two-factor.email.seconds_suffix') }}`;
-        
-        if (expireTime <= 0) {
-            clearInterval(expireInterval);
-            expireElement.textContent = '{{ __('two-factor.email.expired') }}';
-            inputs.forEach(input => input.disabled = true);
-            submitButton.disabled = true;
-        }
-    }, 1000);
+    startExpireTimer();
     @endif
 });
 </script>
