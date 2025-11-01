@@ -19,6 +19,7 @@ TEXT,
         'resend' => 'Resend Authentication Code',
         'invalid' => 'The authentication code is incorrect or has expired.',
         'invalid_code' => 'The authentication code is incorrect or has expired.',
+        'invalid_with_attempts' => 'The authentication code is incorrect. Remaining attempts: :attempts',
         'resend_success' => 'Email has been resent.',
         'resend_failed' => 'Failed to resend code',
         'network_error' => 'A network error occurred',
@@ -128,11 +129,17 @@ TEXT,
     // Recovery Code Management
     'recovery_codes' => [
         'title' => 'Recovery Codes',
-        'remaining' => ':count recovery codes remaining',
-        'none' => 'No recovery codes generated',
+        'remaining' => 'You have :count recovery codes remaining',
+        'none' => 'No recovery codes have been generated',
         'generate' => 'Generate Recovery Codes',
         'regenerate' => 'Regenerate Recovery Codes',
         'download' => 'Download Recovery Codes',
-        'warning' => 'Please store recovery codes in a safe place.',
+        'warning' => 'Please store your recovery codes in a safe place.',
+    ],
+    
+    // Lockout
+    'lockout' => [
+        'message' => 'Maximum two-factor authentication attempts reached. Please try again in :minutes minutes.',
+        'locked' => 'Maximum two-factor authentication attempts reached. You will be locked out for :minutes minutes.',
     ],
 ];

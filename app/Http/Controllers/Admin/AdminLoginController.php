@@ -393,16 +393,35 @@ class AdminLoginController extends AdminController
             return redirect()->route('admin.login');
         }
 
-        // メール認証コードを生成・送信（認証方法切り替え時も対応）
-        Log::info('[Email Challenge] メール認証画面表示 - コード生成開始', [
-            'member_id' => $member->id,
-            'email' => $member->email,
-        ]);
-        
-        $twoFactor = app(AdminTwoFactorService::class);
-        $twoFactor->generate($member, 0); // 明示的にEMAIL認証を指定
-        
-        Log::info('[Email Challenge] コード生成完了');
+        // ロックアウトチェック
+        $attemptService = app(\App\Services\TwoFactorAttemptService::class);
+        if ($attemptService->isLockedOut($member)) {
+            $remainingMinutes = $attemptService->getRemainingLockoutTime($member);
+            return redirect()->route('admin.login')
+                ->withErrors(['email' => __('two-factor.lockout.message', ['minutes' => $remainingMinutes])]);
+        }
+
+        // 既存の有効なコードがあるかチェック
+        $hasValidToken = \App\Models\MembersTwoFactorToken::where('member_id', $member->id)
+            ->where('expires_at', '>', now())
+            ->exists();
+
+        // 有効なコードがない場合のみ新規生成
+        if (!$hasValidToken) {
+            Log::info('[Email Challenge] メール認証画面表示 - コード生成開始', [
+                'member_id' => $member->id,
+                'email' => $member->email,
+            ]);
+            
+            $twoFactor = app(AdminTwoFactorService::class);
+            $twoFactor->generate($member, 0); // 明示的にEMAIL認証を指定
+            
+            Log::info('[Email Challenge] コード生成完了');
+        } else {
+            Log::info('[Email Challenge] 既存の有効なコードを再利用', [
+                'member_id' => $member->id,
+            ]);
+        }
 
         // TwoFactorHelperを使用して有効な認証方法を取得
         $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
@@ -465,15 +484,39 @@ class AdminLoginController extends AdminController
             return redirect()->route('admin.login');
         }
 
+        // ロックアウトチェック
+        $attemptService = app(\App\Services\TwoFactorAttemptService::class);
+        if ($attemptService->isLockedOut($member)) {
+            $remainingMinutes = $attemptService->getRemainingLockoutTime($member);
+            session()->forget(['login.id', 'login.remember']);
+            return redirect()->route('admin.login')
+                ->withErrors(['email' => __('two-factor.lockout.message', ['minutes' => $remainingMinutes])]);
+        }
 
         $twoFactor = app(AdminTwoFactorService::class);
         // メール認証コードを検証（明示的にEMAIL認証を指定）
-        if (!$twoFactor->validate($member, $request->code, 0)) {
-            return back()->withErrors(['code' => __('two-factor.email.invalid')]);
+        // 注: AdminTwoFactorService内で既に試行記録されるため、ここでは記録しない
+        $isValid = $twoFactor->validate($member, $request->code, 0);
+        
+        if (!$isValid) {
+            // 最大試行回数に達したかチェック
+            if ($attemptService->hasReachedMaxAttempts($member)) {
+                $lockoutDuration = (int) \App\Models\MemberSetting::getValue('2fa_lockout_duration', 30);
+                session()->forget(['login.id', 'login.remember']);
+                return redirect()->route('admin.login')
+                    ->withErrors(['email' => __('two-factor.lockout.locked', ['minutes' => $lockoutDuration])]);
+            }
+            
+            // 残り試行回数を取得
+            $remainingAttempts = $attemptService->getRemainingAttempts($member);
+            return back()->withErrors([
+                'code' => __('two-factor.email.invalid_with_attempts', ['attempts' => $remainingAttempts])
+            ]);
         }
 
         // 成功したログインを記録（失敗記録をクリア）
         app(AdminLoginLockoutService::class)->handleSuccessfulLogin($member->email);
+        $attemptService->handleSuccess($member);
 
         // ログイン環境を記録、通知
         app(AdminLoginNotificationService::class)->handle($member, $request);
