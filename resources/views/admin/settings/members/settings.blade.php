@@ -380,6 +380,97 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 </div>
             </fieldset>
+
+            <!-- 二段階認証試行制限設定 -->
+            <fieldset>
+                <legend>{{ __('admin.settings.members.settings.2fa_attempt_limit_settings') }}</legend>
+                
+                <div class="space-y-4">
+                    <!-- 最大試行回数 -->
+                    <div>
+                        <label for="2fa_max_attempts" class="block text-sm font-medium">
+                            {{ __('admin.settings.members.settings.2fa_max_attempts') }}
+                        </label>
+                        <div class="mt-1 flex items-center space-x-2">
+                            <input 
+                                type="number" 
+                                id="2fa_max_attempts" 
+                                name="2fa_max_attempts" 
+                                value="{{ old('2fa_max_attempts', $twoFaMaxAttempts) }}"
+                                min="1"
+                                max="10"
+                                class="w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            >
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.members.settings.times') }}</span>
+                        </div>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            {{ __('admin.settings.members.settings.2fa_max_attempts_help') }}
+                        </p>
+                    </div>
+
+                    <!-- 試行制限の時間枠 -->
+                    <div>
+                        <label for="2fa_attempt_window" class="block text-sm font-medium">
+                            {{ __('admin.settings.members.settings.2fa_attempt_window') }}
+                        </label>
+                        <div class="mt-1 flex items-center space-x-2">
+                            <input 
+                                type="number" 
+                                id="2fa_attempt_window" 
+                                name="2fa_attempt_window" 
+                                value="{{ old('2fa_attempt_window', $twoFaAttemptWindow) }}"
+                                min="5"
+                                max="60"
+                                class="w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            >
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.members.settings.minutes') }}</span>
+                        </div>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            {{ __('admin.settings.members.settings.2fa_attempt_window_help') }}
+                        </p>
+                    </div>
+
+                    <!-- ロックアウト時間 -->
+                    <div>
+                        <label for="2fa_lockout_duration" class="block text-sm font-medium">
+                            {{ __('admin.settings.members.settings.2fa_lockout_duration') }}
+                        </label>
+                        <div class="mt-1 flex items-center space-x-2">
+                            <input 
+                                type="number" 
+                                id="2fa_lockout_duration" 
+                                name="2fa_lockout_duration" 
+                                value="{{ old('2fa_lockout_duration', $twoFaLockoutDuration) }}"
+                                min="5"
+                                max="1440"
+                                class="w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            >
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.members.settings.minutes') }}</span>
+                        </div>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            {{ __('admin.settings.members.settings.2fa_lockout_duration_help') }}
+                        </p>
+                    </div>
+
+                    <!-- ロックアウト通知 -->
+                    <div>
+                        <label class="block text-sm font-medium mb-2">
+                            {{ __('admin.settings.members.settings.2fa_lockout_notification') }}
+                        </label>
+                        @include('components.form.radio-group', [
+                            'name' => '2fa_lockout_notification_enabled',
+                            'options' => [
+                                '1' => __('common.enabled'),
+                                '0' => __('common.disabled'),
+                            ],
+                            'value' => old('2fa_lockout_notification_enabled', $twoFaLockoutNotificationEnabled ? '1' : '0'),
+                        ])
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            {{ __('admin.settings.members.settings.2fa_lockout_notification_help') }}
+                        </p>
+                    </div>
+                </div>
+            </fieldset>
         </section>
     </form>
 

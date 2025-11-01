@@ -222,6 +222,10 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/settings/members/force-logout/{member}', [AdminMembersSettingsController::class, 'forceLogout'])
                     ->middleware('check.menu.edit:settings.members')
                     ->name('settings.members.force-logout');
+                // 2FAロックアウト解除
+                Route::post('/settings/members/unlock-2fa/{member}', [AdminMembersSettingsController::class, 'unlock2fa'])
+                    ->middleware('check.menu.edit:settings.members')
+                    ->name('settings.members.unlock-2fa');
                 // 全メンバー強制ログアウト
                 Route::post('/settings/members/force-logout-all', [AdminMembersSettingsController::class, 'forceLogoutAll'])
                     ->middleware('check.menu.edit:settings.members')
