@@ -350,7 +350,7 @@ class TwoFactorHelper
     public function hasNoRecoveryCodes($user): bool
     {
         $recoveryCodeService = app(\App\Services\RecoveryCodeService::class);
-        return $recoveryCodeService->getCount($user) === 0;
+        return $recoveryCodeService->getRemainingCount($user) === 0;
     }
 
     // ========================================

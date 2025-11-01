@@ -75,13 +75,6 @@ Route::prefix($adminUrl)->name('admin.')
         Route::get('/two-factor-recovery', [AdminLoginController::class, 'showRecoveryCodeForm'])->name('two-factor.recovery-code.show');
         Route::post('/two-factor-recovery', [AdminLoginController::class, 'confirmRecoveryCode'])->name('two-factor.recovery-code.confirm');
         
-        // デバイス認証
-        Route::get('/two-factor-device', [AdminLoginController::class, 'showDeviceChallengeForm'])->name('two-factor.device.challenge');
-        Route::get('/device-auth/check', [AdminLoginController::class, 'checkDeviceAuth'])->name('device-auth.check');
-        Route::post('/device-auth/resend', [AdminLoginController::class, 'resendDeviceAuth'])->name('device-auth.resend');
-        Route::get('/device-auth/approve/{token}', [AdminLoginController::class, 'approveDeviceAuth'])->name('device-auth.approve');
-        Route::get('/device-auth/deny/{token}', [AdminLoginController::class, 'denyDeviceAuth'])->name('device-auth.deny');
-        
         // 生体認証
         Route::get('/two-factor-biometric', [AdminLoginController::class, 'showBiometricChallengeForm'])->name('two-factor.biometric.show');
         Route::post('/two-factor-biometric/challenge', [AdminLoginController::class, 'confirmBiometricAuth'])->name('two-factor.biometric.challenge');

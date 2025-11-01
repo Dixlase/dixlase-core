@@ -4,7 +4,10 @@ namespace App\Services;
 
 use App\Models\Member;
 use App\Models\MemberPasskey;
+use App\Models\WebauthnCredential;
+use App\Models\MembersTrustedDevice;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class PasskeyAuthenticationService
 {
