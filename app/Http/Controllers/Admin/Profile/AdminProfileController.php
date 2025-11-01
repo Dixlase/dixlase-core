@@ -157,13 +157,6 @@ class AdminProfileController extends AdminLoggedInController
         }
         
         $defaultTwoFactorMethod = (int) MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value);
-        
-        \Log::info('プロフィール2FA設定デバッグ', [
-            'force2fa' => $force2fa,
-            'passkey_enabled' => $passkeyEnabled,
-            'enabled_methods' => $enabledTwoFactorMethods,
-            'default_method' => $defaultTwoFactorMethod,
-        ]);
 
         // プロフィール用の二段階認証オプション
         // 全体設定が「プロフィール設定を反映」の場合は、無効/異なる端末時のみ/常に有効から選択可能
@@ -220,13 +213,6 @@ class AdminProfileController extends AdminLoggedInController
         if ($force2fa === TwoFactorMode::Always->value) {
             $currentGlobalTwoFactorMode = TwoFactorMode::from($force2fa);
         }
-        
-        \Log::info('プロフィール2FA表示デバッグ', [
-            'available_method_options' => $availableMethodOptions,
-            'available_method_count' => count($availableMethodOptions),
-            'show_method_selection' => $showMethodSelection,
-            'current_method' => $currentTwoFactorMethod,
-        ]);
 
         $this->viewParams['force2fa'] = $force2fa;
         $this->viewParams['twoFactorMode'] = $twoFactorMode;
@@ -326,8 +312,11 @@ class AdminProfileController extends AdminLoggedInController
         }
 
         // 二段階認証方法のバリデーション（有効な方法の中から選択されているかチェック）
-        $enabledTwoFactorMethodsString = MemberSetting::getValue('enabled_two_factor_methods', '0');
-        $enabledTwoFactorMethods = $enabledTwoFactorMethodsString ? array_map('intval', explode(',', $enabledTwoFactorMethodsString)) : [0];
+        $passkeyEnabledForValidation = MemberSetting::getValue('passkey_enabled', '0') === '1';
+        $enabledTwoFactorMethods = [TwoFactorMethod::EMAIL->value];
+        if ($passkeyEnabledForValidation) {
+            $enabledTwoFactorMethods[] = TwoFactorMethod::PASSKEY->value;
+        }
         $force2faValue = (int) MemberSetting::getValue('force_2fa', TwoFactorMode::UseProfileSetting->value);
         $defaultTwoFactorMethod = (int) MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value);
         
@@ -427,8 +416,11 @@ class AdminProfileController extends AdminLoggedInController
         // two_factor_method の処理
         if (in_array($force2fa, [TwoFactorMode::UseProfileSetting->value, TwoFactorMode::Always->value])) {
             // 有効な認証方法を再度取得
-            $enabledTwoFactorMethodsString = MemberSetting::getValue('enabled_two_factor_methods', '0');
-            $enabledTwoFactorMethods = $enabledTwoFactorMethodsString ? array_map('intval', explode(',', $enabledTwoFactorMethodsString)) : [0];
+            $passkeyEnabledForSave = MemberSetting::getValue('passkey_enabled', '0') === '1';
+            $enabledTwoFactorMethods = [TwoFactorMethod::EMAIL->value];
+            if ($passkeyEnabledForSave) {
+                $enabledTwoFactorMethods[] = TwoFactorMethod::PASSKEY->value;
+            }
             $defaultTwoFactorMethod = (int) MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value);
             
             // 送信された値が有効な方法かチェック

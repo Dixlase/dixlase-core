@@ -708,14 +708,6 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $passkeyDbValue = MemberSetting::getValue('passkey_enabled', '0');
         $passkeyEnabled = $passkeyDbValue === '1';
         
-        \Log::info('Passkey読み込みデバッグ', [
-            'db_value' => $passkeyDbValue,
-            'db_value_type' => gettype($passkeyDbValue),
-            'comparison_result' => $passkeyDbValue === '1',
-            'final_enabled' => $passkeyEnabled,
-            'old_value' => old('passkey_enabled'),
-        ]);
-        
         // old() の値がある場合はそれを優先（バリデーションエラー後の再表示時）
         if (old('passkey_enabled') !== null) {
             $passkeyEnabled = (bool) old('passkey_enabled');
@@ -815,12 +807,6 @@ class AdminMembersSettingsController extends AdminLoggedInController
         
         // Passkey有効/無効設定の保存（メール認証は常に有効）
         $passkeyValue = isset($validated['passkey_enabled']) && $validated['passkey_enabled'] ? '1' : '0';
-        \Log::info('Passkey保存デバッグ', [
-            'validated_has_passkey' => isset($validated['passkey_enabled']),
-            'validated_passkey_value' => $validated['passkey_enabled'] ?? 'not set',
-            'saving_value' => $passkeyValue,
-            'all_validated_keys' => array_keys($validated),
-        ]);
         MemberSetting::setValue('passkey_enabled', $passkeyValue);
 
         return redirect()->route('admin.settings.members.settings')
