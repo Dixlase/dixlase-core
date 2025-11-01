@@ -366,10 +366,10 @@ class TwoFactorHelper
     public function generateBiometricChallenge($user): array
     {
         try {
-            $biometricService = app(\App\Services\BiometricAuthenticationService::class);
+            $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
 
             // 生体認証が利用可能かチェック
-            if (!$biometricService->isAvailable()) {
+            if (!$passkeyService->isAvailable()) {
                 return [
                     'success' => false,
                     'challenge' => null,
@@ -378,7 +378,7 @@ class TwoFactorHelper
             }
 
             // 登録チャレンジを生成
-            $challenge = $biometricService->generateRegistrationChallenge($user);
+            $challenge = $passkeyService->generateRegistrationChallenge($user);
 
             Log::info("[Biometric Registration] チャレンジ生成: ユーザーID {$user->id}");
 
@@ -409,10 +409,10 @@ class TwoFactorHelper
     public function registerBiometric($user, array $credential, ?string $deviceName = null): array
     {
         try {
-            $biometricService = app(\App\Services\BiometricAuthenticationService::class);
+            $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
 
             // 認証情報を登録
-            $biometricService->registerCredential($user, $credential, $deviceName);
+            $passkeyService->registerCredential($user, $credential, $deviceName);
 
             Log::info("[Biometric Registration] 登録成功: ユーザーID {$user->id}");
 
@@ -440,9 +440,9 @@ class TwoFactorHelper
     public function revokeBiometric($user, string $credentialId): array
     {
         try {
-            $biometricService = app(\App\Services\BiometricAuthenticationService::class);
+            $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
 
-            if ($biometricService->revokeCredential($user, $credentialId)) {
+            if ($passkeyService->revokeCredential($user, $credentialId)) {
                 Log::info("[Biometric Registration] 削除成功: ユーザーID {$user->id}, 認証情報ID: {$credentialId}");
 
                 return [
@@ -508,9 +508,9 @@ class TwoFactorHelper
     public function revokeTrustedDevice($user, int $deviceId): array
     {
         try {
-            $deviceService = app(\App\Services\DeviceAuthenticationService::class);
+            $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
 
-            if ($deviceService->revokeDevice($user, $deviceId)) {
+            if ($passkeyService->revokeDevice($user, $deviceId)) {
                 Log::info("[Device Auth] 削除成功: ユーザーID {$user->id}, デバイスID: {$deviceId}");
 
                 return [

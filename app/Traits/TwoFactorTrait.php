@@ -182,8 +182,8 @@ trait TwoFactorTrait
      */
     protected function isFromTrustedDevice($user): bool
     {
-        $deviceService = app(\App\Services\DeviceAuthenticationService::class);
-        return $deviceService->isTrustedDevice($user);
+        $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
+        return $passkeyService->isTrustedDevice($user);
     }
 
     /**
