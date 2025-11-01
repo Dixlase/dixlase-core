@@ -321,33 +321,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <section class="mt-8 transition-colors-unified">
         <h2>{{ __('admin.profile.2fa_management') }}</h2>
 
-        <!-- 回復コード -->
-        <div class="mb-8">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold">{{ __('admin.profile.recovery_codes') }}</h3>
-            </div>
-            
-            @if($hasRecoveryCodes)
-                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
-                    <p class="text-sm text-blue-800 dark:text-blue-200">
-                        <i class="fas fa-info-circle mr-2"></i>
-                        残り{{ $recoveryCodesCount }}個の回復コードがあります
-                    </p>
-                </div>
-                <button 
-                    type="button"
-                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
-                    <i class="fas fa-sync-alt mr-2"></i>回復コードを再生成
-                </button>
-            @else
-                <p class="text-gray-600 dark:text-gray-400 mb-4">回復コードが生成されていません</p>
-                <button 
-                    type="button"
-                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
-                    <i class="fas fa-plus mr-2"></i>回復コードを生成
-                </button>
-            @endif
-        </div>
+        
 
         <!-- Passkeyデバイス -->
         <div>
@@ -393,9 +367,40 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <!-- 新しいPasskeyを追加 -->
             <button 
                 type="button"
+                onclick="alert('Passkey登録機能は現在開発中です。\n\nWebAuthn APIを使用した生体認証（Touch ID、Face ID、Windows Hello等）の実装が必要です。')"
                 class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
                 <i class="fas fa-plus mr-2"></i>Passkeyを追加
             </button>
+        </div>
+
+        <!-- 回復コード -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold">{{ __('admin.profile.recovery_codes') }}</h3>
+            </div>
+            
+            @if($hasRecoveryCodes)
+                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+                    <p class="text-sm text-blue-800 dark:text-blue-200">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        残り{{ $recoveryCodesCount }}個の回復コードがあります
+                    </p>
+                </div>
+                <button 
+                    type="button"
+                    onclick="alert('回復コード再生成機能は現在開発中です。')"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
+                    <i class="fas fa-sync-alt mr-2"></i>回復コードを再生成
+                </button>
+            @else
+                <p class="text-gray-600 dark:text-gray-400 mb-4">回復コードが生成されていません</p>
+                <button 
+                    type="button"
+                    onclick="alert('回復コード生成機能は現在開発中です。')"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
+                    <i class="fas fa-plus mr-2"></i>回復コードを生成
+                </button>
+            @endif
         </div>
     </section>
 

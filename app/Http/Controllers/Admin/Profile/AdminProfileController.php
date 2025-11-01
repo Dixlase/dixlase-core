@@ -148,9 +148,22 @@ class AdminProfileController extends AdminLoggedInController
         $twoFactorMode = Auth::guard('member')->user()->two_factor_mode;
 
         // グローバル設定で有効な二段階認証方法を取得
-        $enabledTwoFactorMethodsString = MemberSetting::getValue('enabled_two_factor_methods', '0');
-        $enabledTwoFactorMethods = $enabledTwoFactorMethodsString ? array_map('intval', explode(',', $enabledTwoFactorMethodsString)) : [0];
+        $passkeyEnabled = MemberSetting::getValue('passkey_enabled', '0') === '1';
+        
+        // メール認証は常に有効、Passkeyは設定に応じて
+        $enabledTwoFactorMethods = [TwoFactorMethod::EMAIL->value];
+        if ($passkeyEnabled) {
+            $enabledTwoFactorMethods[] = TwoFactorMethod::PASSKEY->value;
+        }
+        
         $defaultTwoFactorMethod = (int) MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value);
+        
+        \Log::info('プロフィール2FA設定デバッグ', [
+            'force2fa' => $force2fa,
+            'passkey_enabled' => $passkeyEnabled,
+            'enabled_methods' => $enabledTwoFactorMethods,
+            'default_method' => $defaultTwoFactorMethod,
+        ]);
 
         // プロフィール用の二段階認証オプション
         // 全体設定が「プロフィール設定を反映」の場合は、無効/異なる端末時のみ/常に有効から選択可能
@@ -197,14 +210,23 @@ class AdminProfileController extends AdminLoggedInController
             $user->save();
         }
 
-        // 認証方法選択を表示するかどうか（プロフィール設定に従う場合のみ）
-        $showMethodSelection = ($force2fa === TwoFactorMode::UseProfileSetting->value);
+        // 認証方法選択を表示するかどうか
+        // プロフィール設定に従う場合、または常に有効の場合は表示
+        $showMethodSelection = ($force2fa === TwoFactorMode::UseProfileSetting->value) || 
+                               ($force2fa === TwoFactorMode::Always->value);
         
         // 全体設定が Always の場合は現在の設定を表示用として取得
         $currentGlobalTwoFactorMode = null;
         if ($force2fa === TwoFactorMode::Always->value) {
             $currentGlobalTwoFactorMode = TwoFactorMode::from($force2fa);
         }
+        
+        \Log::info('プロフィール2FA表示デバッグ', [
+            'available_method_options' => $availableMethodOptions,
+            'available_method_count' => count($availableMethodOptions),
+            'show_method_selection' => $showMethodSelection,
+            'current_method' => $currentTwoFactorMethod,
+        ]);
 
         $this->viewParams['force2fa'] = $force2fa;
         $this->viewParams['twoFactorMode'] = $twoFactorMode;
