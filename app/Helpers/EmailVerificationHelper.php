@@ -1,0 +1,313 @@
+<?php
+
+namespace App\Helpers;
+
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
+use App\Services\MailServerValidatorService;
+
+class EmailVerificationHelper
+{
+    /**
+     * メール認証ハッシュを生成
+     *
+     * @param mixed $user ユーザーモデル
+     * @return string ハッシュ値
+     */
+    public function generateVerificationHash($user): string
+    {
+        return sha1($user->getEmailForVerification());
+    }
+
+    /**
+     * メール認証ハッシュを検証
+     *
+     * @param mixed $user ユーザーモデル
+     * @param string $hash 検証するハッシュ
+     * @return bool 検証結果
+     */
+    public function verifyHash($user, string $hash): bool
+    {
+        return hash_equals((string) $hash, $this->generateVerificationHash($user));
+    }
+
+    /**
+     * メール認証が必要かチェック
+     *
+     * @param mixed $user ユーザーモデル
+     * @return array ['needs_verification' => bool, 'is_email_change' => bool]
+     */
+    public function needsVerification($user): array
+    {
+        $isEmailChange = !empty($user->pending_email);
+        $needsVerification = !$user->hasVerifiedEmail() || $isEmailChange;
+
+        return [
+            'needs_verification' => $needsVerification,
+            'is_email_change' => $isEmailChange,
+        ];
+    }
+
+    /**
+     * メール認証を即座に処理（ログイン済みの場合）
+     *
+     * @param mixed $user ユーザーモデル
+     * @param string $context コンテキスト（admin, user等）
+     * @return array ['success' => bool, 'message' => string, 'redirect' => string]
+     */
+    public function processVerificationImmediately($user, string $context = 'admin'): array
+    {
+        try {
+            if ($user->pending_email) {
+                // メールアドレス変更の認証
+                $oldEmail = $user->email;
+                $user->email = $user->pending_email;
+                $user->pending_email = null;
+                $user->email_verified_at = now();
+                $user->save();
+                
+                Log::info('[Email Verification] Email change verified immediately', [
+                    'user_id' => $user->id,
+                    'old_email' => $oldEmail,
+                    'new_email' => $user->email,
+                    'context' => $context,
+                ]);
+                
+                return [
+                    'success' => true,
+                    'message' => __("{$context}.profile.email_verification_success"),
+                    'redirect' => route("{$context}.profile"),
+                ];
+            } else {
+                // 新規アカウントの認証
+                $user->markEmailAsVerified();
+                
+                Log::info('[Email Verification] Account verified immediately', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'context' => $context,
+                ]);
+                
+                // 認証完了通知を送信
+                $this->sendVerificationNotifications($user, $context);
+                
+                return [
+                    'success' => true,
+                    'message' => __("{$context}.profile.account_verification_success"),
+                    'redirect' => route("{$context}.dashboard"),
+                ];
+            }
+        } catch (\Exception $e) {
+            Log::error('[Email Verification] Verification failed (immediate)', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+                'context' => $context,
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => __('auth.verification_failed'),
+                'redirect' => route("{$context}.profile"),
+            ];
+        }
+    }
+
+    /**
+     * メール認証情報をセッションに保存（未ログイン時）
+     *
+     * @param mixed $user ユーザーモデル
+     * @param string $hash 認証ハッシュ
+     * @param int $expiresMinutes 有効期限（分）
+     * @return array セッションに保存されたデータ
+     */
+    public function storeVerificationInSession($user, string $hash, int $expiresMinutes = 30): array
+    {
+        $data = [
+            'member_id' => $user->id,
+            'hash' => $hash,
+            'email' => $user->pending_email ?? $user->email,
+            'is_email_change' => (bool) $user->pending_email,
+            'expires_at' => now()->addMinutes($expiresMinutes)->timestamp,
+        ];
+
+        session(['email_verification_pending' => $data]);
+        session()->save();
+
+        Log::info('[Email Verification] Verification info stored in session', [
+            'user_id' => $user->id,
+            'is_email_change' => $data['is_email_change'],
+            'expires_at' => date('Y-m-d H:i:s', $data['expires_at']),
+        ]);
+
+        return $data;
+    }
+
+    /**
+     * セッションからメール認証情報を取得
+     *
+     * @return array|null 認証情報または null
+     */
+    public function getVerificationFromSession(): ?array
+    {
+        $data = session('email_verification_pending');
+
+        if (!$data) {
+            return null;
+        }
+
+        // 有効期限チェック
+        if (isset($data['expires_at']) && now()->timestamp > $data['expires_at']) {
+            session()->forget('email_verification_pending');
+            Log::warning('[Email Verification] Session data expired', [
+                'expired_at' => date('Y-m-d H:i:s', $data['expires_at']),
+            ]);
+            return null;
+        }
+
+        return $data;
+    }
+
+    /**
+     * セッションからメール認証情報を削除
+     *
+     * @return void
+     */
+    public function clearVerificationFromSession(): void
+    {
+        session()->forget('email_verification_pending');
+    }
+
+    /**
+     * 認証完了通知を送信
+     *
+     * @param mixed $user ユーザーモデル
+     * @param string $context コンテキスト（admin, user等）
+     * @return void
+     */
+    protected function sendVerificationNotifications($user, string $context = 'admin'): void
+    {
+        // メールサーバー設定済みの場合のみ通知を送信
+        if (!MailServerValidatorService::isMailServerTested()) {
+            Log::info('[Email Verification] Mail server not configured, skipping notifications');
+            return;
+        }
+
+        // ユーザー本人に認証完了メールを送信
+        $this->sendUserNotification($user, $context);
+
+        // 管理者に通知
+        $this->sendAdminNotification($user, $context);
+    }
+
+    /**
+     * ユーザー本人に認証完了通知を送信
+     *
+     * @param mixed $user ユーザーモデル
+     * @param string $context コンテキスト
+     * @return void
+     */
+    protected function sendUserNotification($user, string $context): void
+    {
+        try {
+            $notificationClass = $this->getVerificationCompletedNotificationClass($context);
+            
+            if (class_exists($notificationClass)) {
+                $user->notify(new $notificationClass());
+                
+                Log::info('[Email Verification] Verification completed notification sent to user', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'context' => $context,
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('[Email Verification] Failed to send verification completed notification to user', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+                'context' => $context,
+            ]);
+        }
+    }
+
+    /**
+     * 管理者に認証完了通知を送信
+     *
+     * @param mixed $user ユーザーモデル
+     * @param string $context コンテキスト
+     * @return void
+     */
+    protected function sendAdminNotification($user, string $context): void
+    {
+        try {
+            $adminEmail = \App\Models\BaseSetting::getValue('system_admin_email') 
+                ?? \App\Models\BaseSetting::getValue('notification_email');
+            
+            if (!$adminEmail) {
+                Log::info('[Email Verification] No admin email configured, skipping admin notification');
+                return;
+            }
+
+            $notificationClass = $this->getAdminVerifiedNotificationClass($context);
+            
+            if (class_exists($notificationClass)) {
+                Notification::route('mail', $adminEmail)
+                    ->notify(new $notificationClass($user, now()->format('Y-m-d H:i:s')));
+                
+                Log::info('[Email Verification] Verification notification sent to admin', [
+                    'user_id' => $user->id,
+                    'admin_email' => $adminEmail,
+                    'context' => $context,
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('[Email Verification] Failed to send verification notification to admin', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+                'context' => $context,
+            ]);
+        }
+    }
+
+    /**
+     * コンテキストに応じた認証完了通知クラスを取得
+     *
+     * @param string $context コンテキスト
+     * @return string 通知クラス名
+     */
+    protected function getVerificationCompletedNotificationClass(string $context): string
+    {
+        return match ($context) {
+            'admin' => \App\Notifications\MemberVerificationCompletedNotification::class,
+            'user' => \App\Notifications\UserVerificationCompletedNotification::class,
+            default => \App\Notifications\MemberVerificationCompletedNotification::class,
+        };
+    }
+
+    /**
+     * コンテキストに応じた管理者通知クラスを取得
+     *
+     * @param string $context コンテキスト
+     * @return string 通知クラス名
+     */
+    protected function getAdminVerifiedNotificationClass(string $context): string
+    {
+        return match ($context) {
+            'admin' => \App\Notifications\AdminMemberVerifiedNotification::class,
+            'user' => \App\Notifications\AdminUserVerifiedNotification::class,
+            default => \App\Notifications\AdminMemberVerifiedNotification::class,
+        };
+    }
+
+    /**
+     * メール認証リンクのメッセージキーを取得
+     *
+     * @param bool $isEmailChange メールアドレス変更かどうか
+     * @return string メッセージキー
+     */
+    public function getLoginRequiredMessageKey(bool $isEmailChange): string
+    {
+        return $isEmailChange 
+            ? 'auth.verify_email_change_login_required'
+            : 'auth.verify_email_login_required';
+    }
+}

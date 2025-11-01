@@ -133,17 +133,42 @@ TEXT,
     // Recovery Code Management
     'recovery_codes' => [
         'title' => 'Recovery Codes',
-        'remaining' => 'You have :count recovery codes remaining',
-        'none' => 'No recovery codes have been generated',
         'generate' => 'Generate Recovery Codes',
         'regenerate' => 'Regenerate Recovery Codes',
-        'download' => 'Download Recovery Codes',
-        'warning' => 'Please store your recovery codes in a safe place.',
+        'none' => 'No recovery codes have been generated yet.',
+        'remaining' => 'You have :count recovery codes remaining.',
+        'warning' => 'These codes will only be shown once. Please store them in a safe place.',
+        'download' => 'Download',
+        'copy' => 'Copy',
+        'auto_generated_title' => 'Recovery Codes Auto-Generated',
+        'auto_generated_message' => 'Recovery codes have been automatically generated for emergency use after your first successful two-factor authentication. These codes will not be shown again, so please save them securely.',
     ],
     
     // Lockout
     'lockout' => [
         'message' => 'Maximum two-factor authentication attempts reached. Please try again in :minutes minutes.',
         'locked' => 'Maximum two-factor authentication attempts reached. You will be locked out for :minutes minutes.',
+    ],
+    
+    // Biometric (Passkey)
+    'biometric' => [
+        'https_required' => 'HTTPS connection is required.',
+        'challenge_generation_failed' => 'Failed to generate challenge.',
+        'registered_successfully' => 'Biometric authentication has been registered.',
+        'registration_failed' => 'Failed to register biometric authentication.',
+        'revoked_successfully' => 'Biometric authentication has been deleted.',
+        'not_found' => 'Biometric authentication not found.',
+        'revocation_failed' => 'Failed to delete biometric authentication.',
+        'all_revoked_successfully' => 'All biometric authentications have been deleted (:count items).',
+        'revoke_all_failed' => 'Failed to delete all biometric authentications.',
+    ],
+    
+    // Trusted Device
+    'trusted_device' => [
+        'revoked_successfully' => 'Trusted device has been deleted.',
+        'not_found' => 'Trusted device not found.',
+        'revocation_failed' => 'Failed to delete trusted device.',
+        'all_revoked_successfully' => 'All trusted devices have been deleted (:count items).',
+        'revoke_all_failed' => 'Failed to delete all trusted devices.',
     ],
 ];

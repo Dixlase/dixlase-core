@@ -217,6 +217,19 @@ return [
         'recovery_codes_regenerated' => '回復コードが再生成されました。',
         'recovery_codes_generation_error' => '回復コードの生成に失敗しました。',
         'recovery_codes_regenerate_too_soon' => '回復コードは :time まで再生成できません。',
+        
+        // Passkey説明
+        'passkey_info_title' => 'Passkeyについて',
+        'passkey_info_1' => 'デバイスを登録すると、二段階認証で認証コードを入力する必要がなくなります。',
+        'passkey_info_2' => '生体認証（指紋認証、顔認証など）またはデバイスのPINでログインできます。',
+        'passkey_info_3' => 'Touch ID、Face ID、Windows Helloなどに対応しています。',
+        
+        // 回復コード説明
+        'recovery_codes_info_title' => '回復コードについて',
+        'recovery_codes_info_1' => '回復コードは二段階認証デバイスにアクセスできない場合の緊急手段です。',
+        'recovery_codes_info_2' => 'コードは生成時のみ表示され、その後は表示されません。',
+        'recovery_codes_info_3' => 'コードは1回のみ使用可能で、使用後は無効になります。',
+        'recovery_codes_info_4' => 'コードは安全な場所に保管し、他人と共有しないでください。',
     ],
 
     // 設定

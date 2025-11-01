@@ -133,17 +133,42 @@ TEXT,
     // 回復コード管理
     'recovery_codes' => [
         'title' => '回復コード',
-        'remaining' => '残り:count個の回復コードがあります',
-        'none' => '回復コードが生成されていません',
         'generate' => '回復コードを生成',
         'regenerate' => '回復コードを再生成',
-        'download' => '回復コードをダウンロード',
-        'warning' => '回復コードは安全な場所に保管してください。',
+        'none' => '回復コードはまだ生成されていません。',
+        'remaining' => '残り :count 個の回復コードがあります。',
+        'warning' => 'これらのコードは一度しか表示されません。安全な場所に保管してください。',
+        'download' => 'ダウンロード',
+        'copy' => 'コピー',
+        'auto_generated_title' => '回復コードが自動生成されました',
+        'auto_generated_message' => '二段階認証の初回クリア後、緊急時のために回復コードが自動生成されました。これらのコードは今後表示されませんので、必ず保管してください。',
     ],
     
     // ロックアウト
     'lockout' => [
         'message' => '二段階認証の試行回数が上限に達しました。:minutes分後に再度お試しください。',
         'locked' => '二段階認証の試行回数が上限に達しました。:minutes分間ロックされます。',
+    ],
+    
+    // 生体認証（Passkey）
+    'biometric' => [
+        'https_required' => 'HTTPS接続が必要です。',
+        'challenge_generation_failed' => 'チャレンジの生成に失敗しました。',
+        'registered_successfully' => '生体認証を登録しました。',
+        'registration_failed' => '生体認証の登録に失敗しました。',
+        'revoked_successfully' => '生体認証を削除しました。',
+        'not_found' => '生体認証が見つかりません。',
+        'revocation_failed' => '生体認証の削除に失敗しました。',
+        'all_revoked_successfully' => 'すべての生体認証を削除しました（:count件）。',
+        'revoke_all_failed' => '生体認証の一括削除に失敗しました。',
+    ],
+    
+    // 信頼済みデバイス
+    'trusted_device' => [
+        'revoked_successfully' => '信頼済みデバイスを削除しました。',
+        'not_found' => '信頼済みデバイスが見つかりません。',
+        'revocation_failed' => '信頼済みデバイスの削除に失敗しました。',
+        'all_revoked_successfully' => 'すべての信頼済みデバイスを削除しました（:count件）。',
+        'revoke_all_failed' => '信頼済みデバイスの一括削除に失敗しました。',
     ],
 ];
