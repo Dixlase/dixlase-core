@@ -785,4 +785,73 @@ class AdminProfileController extends AdminLoggedInController
             ], 500);
         }
     }
+
+    /**
+     * 回復コードを生成
+     */
+    public function generateRecoveryCodes(Request $request)
+    {
+        $member = Auth::guard('member')->user();
+        $recoveryCodeService = app(\App\Services\RecoveryCodeService::class);
+
+        try {
+            // 回復コードを生成
+            $codes = $recoveryCodeService->generate($member);
+            
+            \Log::info("[Recovery Codes] 生成成功: ユーザーID {$member->id}, コード数: " . count($codes));
+
+            return response()->json([
+                'success' => true,
+                'codes' => $codes,
+                'message' => __('admin.profile.recovery_codes_generated')
+            ]);
+        } catch (\Exception $e) {
+            \Log::error("[Recovery Codes] 生成エラー: " . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => __('admin.profile.recovery_codes_generation_error')
+            ], 500);
+        }
+    }
+
+    /**
+     * 回復コードを再生成
+     */
+    public function regenerateRecoveryCodes(Request $request)
+    {
+        $member = Auth::guard('member')->user();
+        $recoveryCodeService = app(\App\Services\RecoveryCodeService::class);
+
+        try {
+            // 再生成可能かチェック
+            if (!$recoveryCodeService->canRegenerate($member)) {
+                $nextTime = $recoveryCodeService->getNextRegenerateTime($member);
+                return response()->json([
+                    'success' => false,
+                    'message' => __('admin.profile.recovery_codes_regenerate_too_soon', [
+                        'time' => $nextTime->format('Y-m-d H:i')
+                    ])
+                ], 429);
+            }
+
+            // 回復コードを再生成
+            $codes = $recoveryCodeService->generate($member);
+            
+            \Log::info("[Recovery Codes] 再生成成功: ユーザーID {$member->id}, コード数: " . count($codes));
+
+            return response()->json([
+                'success' => true,
+                'codes' => $codes,
+                'message' => __('admin.profile.recovery_codes_regenerated')
+            ]);
+        } catch (\Exception $e) {
+            \Log::error("[Recovery Codes] 再生成エラー: " . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => __('admin.profile.recovery_codes_generation_error')
+            ], 500);
+        }
+    }
 }

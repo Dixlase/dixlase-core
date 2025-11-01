@@ -209,6 +209,14 @@ return [
         '2fa_management' => '二段階認証管理',
         'recovery_codes' => '回復コード',
         'passkey_devices' => 'Passkey(生体認証)デバイス',
+        
+        // 回復コード管理
+        'recovery_codes_generate_confirm' => '回復コードを生成しますか？生成されたコードは安全な場所に保管してください。',
+        'recovery_codes_regenerate_confirm' => '回復コードを再生成しますか？既存の回復コードは全て無効になります。',
+        'recovery_codes_generated' => '回復コードが生成されました。',
+        'recovery_codes_regenerated' => '回復コードが再生成されました。',
+        'recovery_codes_generation_error' => '回復コードの生成に失敗しました。',
+        'recovery_codes_regenerate_too_soon' => '回復コードは :time まで再生成できません。',
     ],
 
     // 設定

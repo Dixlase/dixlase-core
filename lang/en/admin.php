@@ -232,7 +232,15 @@ return [
         // 2FA Management (Profile-specific)
         '2fa_management' => 'Two-Factor Authentication Management',
         'recovery_codes' => 'Recovery Codes',
-        'passkey_devices' => 'Passkey(Biometric) Devices',
+        'passkey_devices' => 'Passkey (Biometric) Devices',
+        
+        // Recovery Codes Management
+        'recovery_codes_generate_confirm' => 'Generate recovery codes? Please store the generated codes in a safe place.',
+        'recovery_codes_regenerate_confirm' => 'Regenerate recovery codes? All existing recovery codes will be invalidated.',
+        'recovery_codes_generated' => 'Recovery codes have been generated.',
+        'recovery_codes_regenerated' => 'Recovery codes have been regenerated.',
+        'recovery_codes_generation_error' => 'Failed to generate recovery codes.',
+        'recovery_codes_regenerate_too_soon' => 'Recovery codes cannot be regenerated until :time.',
     ],
 
     // Settings

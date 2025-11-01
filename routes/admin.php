@@ -71,6 +71,10 @@ Route::prefix($adminUrl)->name('admin.')
         Route::post('/two-factor-challenge', [AdminLoginController::class, 'confirmTwoFactor'])->name('two-factor.confirm');
         Route::post('/two-factor-resend', [AdminLoginController::class, 'resendTwoFactorCode'])->name('two-factor.resend');
         
+        // 回復コード
+        Route::get('/two-factor-recovery', [AdminLoginController::class, 'showRecoveryCodeForm'])->name('two-factor.recovery-code.show');
+        Route::post('/two-factor-recovery', [AdminLoginController::class, 'confirmRecoveryCode'])->name('two-factor.recovery-code.confirm');
+        
         // デバイス認証
         Route::get('/two-factor-device', [AdminLoginController::class, 'showDeviceChallengeForm'])->name('two-factor.device.challenge');
         Route::get('/device-auth/check', [AdminLoginController::class, 'checkDeviceAuth'])->name('device-auth.check');
@@ -170,6 +174,10 @@ Route::prefix($adminUrl)->name('admin.')
             
             // 生体認証一括削除
             Route::delete('/profile/biometric/all', [AdminProfileController::class, 'revokeAllBiometric'])->name('profile.biometric.revoke-all');
+            
+            // 回復コード管理
+            Route::post('/profile/recovery-codes/generate', [AdminProfileController::class, 'generateRecoveryCodes'])->name('profile.recovery-codes.generate');
+            Route::post('/profile/recovery-codes/regenerate', [AdminProfileController::class, 'regenerateRecoveryCodes'])->name('profile.recovery-codes.regenerate');
 
             // 全体設定
             // 基本設定（権限チェック付き）
