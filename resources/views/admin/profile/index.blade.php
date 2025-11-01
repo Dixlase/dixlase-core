@@ -363,14 +363,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @endforeach
                 </div>
             @endif
-
             <!-- 新しいPasskeyを追加 -->
-            <button 
-                type="button"
-                onclick="alert('Passkey登録機能は現在開発中です。\n\nWebAuthn APIを使用した生体認証（Touch ID、Face ID、Windows Hello等）の実装が必要です。')"
-                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
-                <i class="fas fa-plus mr-2"></i>Passkeyを追加
-            </button>
+            <div class="my-3">
+                <button 
+                    type="button"
+                    onclick="alert('Passkey登録機能は現在開発中です。\n\nWebAuthn APIを使用した生体認証（Touch ID、Face ID、Windows Hello等）の実装が必要です。')"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
+                    <i class="fas fa-plus mr-2"></i>Passkeyを追加
+                </button>
+            </div>
+
+            <!-- Passkeyの説明 -->
+            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+                <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                    <i class="fas fa-info-circle mr-2"></i>{{ __('admin.profile.passkey_info_title') }}
+                </h4>
+                <ul class="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-disc list-inside">
+                    <li>{{ __('admin.profile.passkey_info_1') }}</li>
+                    <li>{{ __('admin.profile.passkey_info_2') }}</li>
+                    <li>{{ __('admin.profile.passkey_info_3') }}</li>
+                </ul>
+            </div>
+
+
         </div>
 
         <!-- 回復コード -->
@@ -378,14 +393,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold">{{ __('two-factor.recovery_codes.title') }}</h3>
             </div>
-            
-            <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
-                <p class="text-sm text-yellow-800 dark:text-yellow-200">
-                    <i class="fas fa-exclamation-triangle mr-2"></i>
-                    {{ __('two-factor.recovery_codes.warning') }}
-                </p>
-            </div>
-            
+
             @if($hasRecoveryCodes)
                 <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
                     <p class="text-sm text-blue-800 dark:text-blue-200">
@@ -414,6 +422,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </button>
                 </form>
             @endif
+            
+            <!-- 回復コードの説明 -->
+            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+                <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                    <i class="fas fa-info-circle mr-2"></i>{{ __('admin.profile.recovery_codes_info_title') }}
+                </h4>
+                <ul class="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-disc list-inside">
+                    <li>{{ __('admin.profile.recovery_codes_info_1') }}</li>
+                    <li>{{ __('admin.profile.recovery_codes_info_2') }}</li>
+                    <li>{{ __('admin.profile.recovery_codes_info_3') }}</li>
+                    <li>{{ __('admin.profile.recovery_codes_info_4') }}</li>
+                </ul>
+            </div>            
         </div>
     </section>
 

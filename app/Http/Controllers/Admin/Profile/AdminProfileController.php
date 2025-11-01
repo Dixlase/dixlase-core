@@ -462,17 +462,20 @@ class AdminProfileController extends AdminLoggedInController
      */
     public function verifyEmail(Request $request, $id, $hash)
     {
+        $emailVerificationHelper = app(\App\Helpers\EmailVerificationHelper::class);
+        
         // IDからメンバーを取得
         $member = \App\Models\Member::findOrFail($id);
 
         // ハッシュの検証
-        if (!hash_equals((string) $hash, sha1($member->getEmailForVerification()))) {
+        if (!$emailVerificationHelper->verifyHash($member, $hash)) {
             return redirect()->route('admin.login')
                 ->with('error', __('admin.profile.email_verification_invalid'));
         }
 
-        // 既に認証済みの場合（pending_emailがない場合）
-        if ($member->hasVerifiedEmail() && !$member->pending_email) {
+        // 認証が必要かチェック
+        $verificationStatus = $emailVerificationHelper->needsVerification($member);
+        if (!$verificationStatus['needs_verification']) {
             return redirect()->route('admin.login')
                 ->with('info', __('admin.profile.email_already_verified'));
         }
@@ -482,117 +485,24 @@ class AdminProfileController extends AdminLoggedInController
         
         // ログイン済みで、認証対象のメンバーと一致する場合は即座に処理
         if ($currentUser && $currentUser->id === $member->id) {
-            return $this->processEmailVerificationImmediately($member, $hash);
+            $result = $emailVerificationHelper->processVerificationImmediately($member, 'admin');
+            return redirect($result['redirect'])->with(
+                $result['success'] ? 'success' : 'error',
+                $result['message']
+            );
         }
 
         // 未ログインまたは別のユーザーでログイン中の場合
         // 認証トークン情報をセッションに保存
-        session([
-            'email_verification_pending' => [
-                'member_id' => $member->id,
-                'hash' => $hash,
-                'email' => $member->pending_email ?? $member->email,
-                'is_email_change' => (bool) $member->pending_email,
-                'expires_at' => now()->addMinutes(30)->timestamp,
-            ]
-        ]);
-        
-        // セッション保存を確実にする
-        session()->save();
+        $emailVerificationHelper->storeVerificationInSession($member, $hash);
 
         // コンテキストに応じたメッセージを選択
-        $messageKey = $member->pending_email 
-            ? 'auth.verify_email_change_login_required'
-            : 'auth.verify_email_login_required';
+        $messageKey = $emailVerificationHelper->getLoginRequiredMessageKey(
+            $verificationStatus['is_email_change']
+        );
 
         // ログイン画面にリダイレクト
-        return redirect()->route('admin.login')
-            ->with('info', __($messageKey));
-    }
-    
-    /**
-     * ログイン済みの場合、即座にメール認証を処理
-     */
-    protected function processEmailVerificationImmediately($member, $hash)
-    {
-        try {
-            if ($member->pending_email) {
-                // メールアドレス変更の認証
-                $member->email = $member->pending_email;
-                $member->pending_email = null;
-                $member->email_verified_at = now();
-                $member->save();
-                
-                \Log::info('Email change verified immediately (logged in)', [
-                    'member_id' => $member->id,
-                    'new_email' => $member->email
-                ]);
-                
-                return redirect()->route('admin.profile')
-                    ->with('success', __('admin.profile.email_verification_success'));
-            } else {
-                // 新規アカウントの認証
-                $member->markEmailAsVerified();
-                
-                \Log::info('Account verified immediately (logged in)', [
-                    'member_id' => $member->id,
-                    'email' => $member->email
-                ]);
-                
-                // メールサーバー設定済みの場合のみ通知を送信
-                if (\App\Services\MailServerValidatorService::isMailServerTested()) {
-                    try {
-                        // メンバー本人に認証完了メールを送信
-                        $member->notify(new \App\Notifications\MemberVerificationCompletedNotification());
-                        
-                        \Log::info('Verification completed notification sent to member (immediate)', [
-                            'member_id' => $member->id,
-                            'email' => $member->email
-                        ]);
-                    } catch (\Exception $e) {
-                        \Log::error('Failed to send verification completed notification to member', [
-                            'member_id' => $member->id,
-                            'error' => $e->getMessage()
-                        ]);
-                    }
-                    
-                    try {
-                        // 管理者に通知
-                        $adminEmail = \App\Models\BaseSetting::getValue('system_admin_email') 
-                            ?? \App\Models\BaseSetting::getValue('notification_email');
-                        
-                        if ($adminEmail) {
-                            \Illuminate\Support\Facades\Notification::route('mail', $adminEmail)
-                                ->notify(new \App\Notifications\AdminMemberVerifiedNotification(
-                                    $member,
-                                    now()->format('Y-m-d H:i:s')
-                                ));
-                            
-                            \Log::info('Verification notification sent to admin (immediate)', [
-                                'member_id' => $member->id,
-                                'admin_email' => $adminEmail
-                            ]);
-                        }
-                    } catch (\Exception $e) {
-                        \Log::error('Failed to send verification notification to admin', [
-                            'member_id' => $member->id,
-                            'error' => $e->getMessage()
-                        ]);
-                    }
-                }
-                
-                return redirect()->route('admin.dashboard')
-                    ->with('success', __('admin.profile.account_verification_success'));
-            }
-        } catch (\Exception $e) {
-            \Log::error('Email verification failed (immediate)', [
-                'member_id' => $member->id,
-                'error' => $e->getMessage()
-            ]);
-            
-            return redirect()->route('admin.profile')
-                ->with('error', __('auth.verification_failed'));
-        }
+        return redirect()->route('admin.login')->with('info', __($messageKey));
     }
 
     /**
@@ -601,35 +511,21 @@ class AdminProfileController extends AdminLoggedInController
     public function generateBiometricChallenge(Request $request)
     {
         $member = Auth::guard('member')->user();
+        $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
         
-        try {
-            $biometricService = app(\App\Services\BiometricAuthenticationService::class);
-
-            // 生体認証が利用可能かチェック
-            if (!$biometricService->isAvailable()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'HTTPS接続が必要です'
-                ], 400);
-            }
-
-            // 登録チャレンジを生成
-            $challenge = $biometricService->generateRegistrationChallenge($member);
-
-            \Log::info("[Biometric Registration] チャレンジ生成: ユーザーID {$member->id}");
-
-            return response()->json([
-                'success' => true,
-                'challenge' => $challenge
-            ]);
-        } catch (\Exception $e) {
-            \Log::error("[Biometric Registration] チャレンジ生成エラー: " . $e->getMessage());
-            
+        $result = $twoFactorHelper->generateBiometricChallenge($member);
+        
+        if (!$result['success']) {
             return response()->json([
                 'success' => false,
-                'message' => 'チャレンジの生成に失敗しました'
-            ], 500);
+                'message' => $result['message']
+            ], 400);
         }
+
+        return response()->json([
+            'success' => true,
+            'challenge' => $result['challenge']
+        ]);
     }
 
     /**
@@ -644,28 +540,17 @@ class AdminProfileController extends AdminLoggedInController
             'device_name' => 'nullable|string|max:255',
         ]);
 
-        try {
-            $biometricService = app(\App\Services\BiometricAuthenticationService::class);
-            $credential = $request->input('credential');
-            $deviceName = $request->input('device_name');
+        $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
+        $result = $twoFactorHelper->registerBiometric(
+            $member,
+            $request->input('credential'),
+            $request->input('device_name')
+        );
 
-            // 認証情報を登録
-            $biometricService->registerCredential($member, $credential, $deviceName);
-
-            \Log::info("[Biometric Registration] 登録成功: ユーザーID {$member->id}");
-
-            return response()->json([
-                'success' => true,
-                'message' => '生体認証を登録しました'
-            ]);
-        } catch (\Exception $e) {
-            \Log::error("[Biometric Registration] 登録エラー: " . $e->getMessage());
-            
-            return response()->json([
-                'success' => false,
-                'message' => '生体認証の登録に失敗しました'
-            ], 500);
-        }
+        return response()->json([
+            'success' => $result['success'],
+            'message' => $result['message']
+        ], $result['success'] ? 200 : 500);
     }
 
     /**
@@ -674,31 +559,18 @@ class AdminProfileController extends AdminLoggedInController
     public function revokeBiometric(Request $request, string $credentialId)
     {
         $member = Auth::guard('member')->user();
+        $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
+        
+        $result = $twoFactorHelper->revokeBiometric($member, $credentialId);
+        
+        $statusCode = $result['success'] ? 200 : (
+            str_contains($result['message'], 'not_found') ? 404 : 500
+        );
 
-        try {
-            $biometricService = app(\App\Services\BiometricAuthenticationService::class);
-
-            if ($biometricService->revokeCredential($member, $credentialId)) {
-                \Log::info("[Biometric Registration] 削除成功: ユーザーID {$member->id}, 認証情報ID: {$credentialId}");
-
-                return response()->json([
-                    'success' => true,
-                    'message' => '生体認証を削除しました'
-                ]);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => '生体認証が見つかりません'
-                ], 404);
-            }
-        } catch (\Exception $e) {
-            \Log::error("[Biometric Registration] 削除エラー: " . $e->getMessage());
-            
-            return response()->json([
-                'success' => false,
-                'message' => '生体認証の削除に失敗しました'
-            ], 500);
-        }
+        return response()->json([
+            'success' => $result['success'],
+            'message' => $result['message']
+        ], $statusCode);
     }
 
     /**
@@ -707,31 +579,18 @@ class AdminProfileController extends AdminLoggedInController
     public function revokeTrustedDevice(Request $request, int $deviceId)
     {
         $member = Auth::guard('member')->user();
+        $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
+        
+        $result = $twoFactorHelper->revokeTrustedDevice($member, $deviceId);
+        
+        $statusCode = $result['success'] ? 200 : (
+            str_contains($result['message'], 'not_found') ? 404 : 500
+        );
 
-        try {
-            $deviceService = app(\App\Services\DeviceAuthenticationService::class);
-
-            if ($deviceService->revokeDevice($member, $deviceId)) {
-                \Log::info("[Device Auth] 削除成功: ユーザーID {$member->id}, デバイスID: {$deviceId}");
-
-                return response()->json([
-                    'success' => true,
-                    'message' => __('admin.profile.device_deleted_successfully')
-                ]);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('admin.profile.device_not_found')
-                ], 404);
-            }
-        } catch (\Exception $e) {
-            \Log::error("[Device Auth] 削除エラー: " . $e->getMessage());
-            
-            return response()->json([
-                'success' => false,
-                'message' => __('admin.profile.delete_device_error')
-            ], 500);
-        }
+        return response()->json([
+            'success' => $result['success'],
+            'message' => $result['message']
+        ], $statusCode);
     }
 
     /**
@@ -740,24 +599,14 @@ class AdminProfileController extends AdminLoggedInController
     public function revokeAllTrustedDevices(Request $request)
     {
         $member = Auth::guard('member')->user();
+        $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
+        
+        $result = $twoFactorHelper->revokeAllTrustedDevices($member);
 
-        try {
-            $count = \App\Models\MembersTrustedDevice::where('member_id', $member->id)->delete();
-            
-            \Log::info("[Device Auth] 一括削除成功: ユーザーID {$member->id}, 削除数: {$count}");
-
-            return response()->json([
-                'success' => true,
-                'message' => __('admin.profile.all_devices_deleted_successfully', ['count' => $count])
-            ]);
-        } catch (\Exception $e) {
-            \Log::error("[Device Auth] 一括削除エラー: " . $e->getMessage());
-            
-            return response()->json([
-                'success' => false,
-                'message' => __('admin.profile.delete_all_devices_error')
-            ], 500);
-        }
+        return response()->json([
+            'success' => $result['success'],
+            'message' => $result['message']
+        ], $result['success'] ? 200 : 500);
     }
 
     /**
@@ -766,24 +615,14 @@ class AdminProfileController extends AdminLoggedInController
     public function revokeAllBiometric(Request $request)
     {
         $member = Auth::guard('member')->user();
+        $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
+        
+        $result = $twoFactorHelper->revokeAllBiometric($member);
 
-        try {
-            $count = \App\Models\MembersTwoFactorDevice::where('member_id', $member->id)->delete();
-            
-            \Log::info("[Biometric Auth] 一括削除成功: ユーザーID {$member->id}, 削除数: {$count}");
-
-            return response()->json([
-                'success' => true,
-                'message' => __('admin.profile.all_biometric_deleted_successfully', ['count' => $count])
-            ]);
-        } catch (\Exception $e) {
-            \Log::error("[Biometric Auth] 一括削除エラー: " . $e->getMessage());
-            
-            return response()->json([
-                'success' => false,
-                'message' => __('admin.profile.delete_all_biometric_error')
-            ], 500);
-        }
+        return response()->json([
+            'success' => $result['success'],
+            'message' => $result['message']
+        ], $result['success'] ? 200 : 500);
     }
 
     /**
@@ -792,13 +631,11 @@ class AdminProfileController extends AdminLoggedInController
     public function generateRecoveryCodes(Request $request)
     {
         $member = Auth::guard('member')->user();
-        $recoveryCodeService = app(\App\Services\RecoveryCodeService::class);
+        $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
 
         try {
-            // 回復コードを生成
-            $codes = $recoveryCodeService->generate($member);
-            
-            \Log::info("[Recovery Codes] 生成成功: ユーザーID {$member->id}, コード数: " . count($codes));
+            // 回復コードを生成（手動生成）
+            $codes = $twoFactorHelper->generateRecoveryCodes($member, false);
 
             return response()->json([
                 'success' => true,
@@ -806,8 +643,6 @@ class AdminProfileController extends AdminLoggedInController
                 'message' => __('admin.profile.recovery_codes_generated')
             ]);
         } catch (\Exception $e) {
-            \Log::error("[Recovery Codes] 生成エラー: " . $e->getMessage());
-            
             return response()->json([
                 'success' => false,
                 'message' => __('admin.profile.recovery_codes_generation_error')
@@ -821,37 +656,22 @@ class AdminProfileController extends AdminLoggedInController
     public function regenerateRecoveryCodes(Request $request)
     {
         $member = Auth::guard('member')->user();
-        $recoveryCodeService = app(\App\Services\RecoveryCodeService::class);
+        $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
 
-        try {
-            // 再生成可能かチェック
-            if (!$recoveryCodeService->canRegenerate($member)) {
-                $nextTime = $recoveryCodeService->getNextRegenerateTime($member);
-                return response()->json([
-                    'success' => false,
-                    'message' => __('admin.profile.recovery_codes_regenerate_too_soon', [
-                        'time' => $nextTime->format('Y-m-d H:i')
-                    ])
-                ], 429);
-            }
+        $result = $twoFactorHelper->regenerateRecoveryCodes($member);
 
-            // 回復コードを再生成
-            $codes = $recoveryCodeService->generate($member);
-            
-            \Log::info("[Recovery Codes] 再生成成功: ユーザーID {$member->id}, コード数: " . count($codes));
-
-            return response()->json([
-                'success' => true,
-                'codes' => $codes,
-                'message' => __('admin.profile.recovery_codes_regenerated')
-            ]);
-        } catch (\Exception $e) {
-            \Log::error("[Recovery Codes] 再生成エラー: " . $e->getMessage());
-            
+        if (!$result['success']) {
+            $statusCode = isset($result['next_time']) ? 429 : 500;
             return response()->json([
                 'success' => false,
-                'message' => __('admin.profile.recovery_codes_generation_error')
-            ], 500);
+                'message' => $result['message']
+            ], $statusCode);
         }
+
+        return response()->json([
+            'success' => true,
+            'codes' => $result['codes'],
+            'message' => $result['message']
+        ]);
     }
 }

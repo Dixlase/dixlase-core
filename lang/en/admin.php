@@ -241,6 +241,19 @@ return [
         'recovery_codes_regenerated' => 'Recovery codes have been regenerated.',
         'recovery_codes_generation_error' => 'Failed to generate recovery codes.',
         'recovery_codes_regenerate_too_soon' => 'Recovery codes cannot be regenerated until :time.',
+        
+        // Passkey Information
+        'passkey_info_title' => 'About Passkey',
+        'passkey_info_1' => 'Once registered, you won\'t need to enter authentication codes for two-factor authentication.',
+        'passkey_info_2' => 'You can log in using biometric authentication (fingerprint, face recognition) or device PIN.',
+        'passkey_info_3' => 'Compatible with Touch ID, Face ID, Windows Hello, and more.',
+        
+        // Recovery Codes Information
+        'recovery_codes_info_title' => 'About Recovery Codes',
+        'recovery_codes_info_1' => 'Recovery codes are an emergency backup method when you cannot access your two-factor authentication device.',
+        'recovery_codes_info_2' => 'Codes are only displayed when generated and will not be shown again.',
+        'recovery_codes_info_3' => 'Each code can only be used once and becomes invalid after use.',
+        'recovery_codes_info_4' => 'Store recovery codes in a safe place and do not share with others.',
     ],
 
     // Settings

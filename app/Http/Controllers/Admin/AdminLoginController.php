@@ -518,6 +518,19 @@ class AdminLoginController extends AdminController
         app(AdminLoginLockoutService::class)->handleSuccessfulLogin($member->email);
         $attemptService->handleSuccess($member);
 
+        // 回復コードが未生成の場合は自動生成
+        $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
+        if ($twoFactorHelper->hasNoRecoveryCodes($member)) {
+            try {
+                $codes = $twoFactorHelper->generateRecoveryCodes($member, true);
+                // セッションに保存してダッシュボードで表示
+                session(['auto_generated_recovery_codes' => $codes]);
+                \Log::info("[Recovery Codes] 2FA初回クリア後に自動生成: ユーザーID {$member->id}");
+            } catch (\Exception $e) {
+                \Log::error("[Recovery Codes] 自動生成失敗: " . $e->getMessage());
+            }
+        }
+
         // ログイン環境を記録、通知
         app(AdminLoginNotificationService::class)->handle($member, $request);
 
