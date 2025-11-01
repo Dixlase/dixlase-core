@@ -731,10 +731,10 @@ class AdminLoginController extends AdminController
         }
 
         try {
-            $biometricService = app(\App\Services\BiometricAuthenticationService::class);
+            $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
 
             // 生体認証が利用可能かチェック
-            if (!$biometricService->isAvailable()) {
+            if (!$passkeyService->isAvailable()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'HTTPS接続が必要です'
@@ -742,7 +742,7 @@ class AdminLoginController extends AdminController
             }
 
             // メンバーが生体認証を登録しているかチェック
-            if (!$biometricService->hasCredentials($member)) {
+            if (!$passkeyService->hasCredentials($member)) {
                 return response()->json([
                     'success' => false,
                     'message' => '生体認証が登録されていません'
@@ -750,7 +750,7 @@ class AdminLoginController extends AdminController
             }
 
             // 認証チャレンジを生成
-            $challenge = $biometricService->generateAuthenticationChallenge($member);
+            $challenge = $passkeyService->generateAuthenticationChallenge($member);
 
             // チャレンジIDをセッションに保存
             $challengeId = Str::random(32);
@@ -811,11 +811,11 @@ class AdminLoginController extends AdminController
         }
 
         try {
-            $biometricService = app(\App\Services\BiometricAuthenticationService::class);
+            $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
             $response = $request->input('response');
 
             // 認証レスポンスを検証
-            $isValid = $biometricService->verifyAssertion($member, $response);
+            $isValid = $passkeyService->verifyAssertion($member, $response);
 
             if ($isValid) {
                 // 認証成功 - ログイン処理
