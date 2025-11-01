@@ -153,19 +153,19 @@ class TwoFactorHelper
         $systemSettings = $this->getSystemTwoFactorSettings();
         $force2fa = $systemSettings['force_2fa'] ?? 0;
         
-        // 全体設定: 0=無効, 1=異なる端末/IP時のみ, 2=常に有効, 3=プロフィール設定を反映
+        // 全体設定: 0=Disabled（無効）, 1=Always（常に有効）, 2=UseProfileSetting（プロフィール設定に従う）
         
         // 無効の場合
-        if ($force2fa === 0) {
+        if ($force2fa === TwoFactorMode::Disabled->value) {
             return false;
         }
         
-        // 全体設定で強制されている場合
-        if ($force2fa === 1 || $force2fa === 2) {
-            return true; // 1=異なる端末/IP時のみ, 2=常に有効
+        // 全体設定で常に有効の場合
+        if ($force2fa === TwoFactorMode::Always->value) {
+            return true;
         }
         
-        // プロフィール設定を使用する場合（force_2fa = 3）
+        // プロフィール設定を使用する場合（force_2fa = UseProfileSetting）
         $userMode = $user->two_factor_mode;
         
         // TwoFactorMode Enumの場合
