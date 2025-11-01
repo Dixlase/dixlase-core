@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Member2faAttempt extends Model
 {
+    protected $table = 'members_2fa_attempts';
+    
     public $timestamps = false;
 
     protected $fillable = [

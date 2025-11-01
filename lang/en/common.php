@@ -262,6 +262,13 @@ return [
         ]
     ],
     
+    // Two-Factor Authentication Help Text
+    'two_factor_help' => 'When two-factor authentication is enabled, additional authentication will be required at login. Even if your password is compromised, it prevents unauthorized access by third parties and significantly improves account security.',
+    'two_factor_method_help' => [
+        'single' => 'The authentication method is fixed by :account_type global settings.',
+        'multiple' => 'You can choose from available authentication methods set by :account_type global settings.',
+    ],
+    
     'save_confirmation' => 'Save Confirmation',
     'update_confirmation' => 'Update Confirmation',
     'create_confirmation' => 'Create Confirmation',
@@ -282,7 +289,7 @@ return [
             0 => 'Disabled',
             1 => 'New devices only',
             2 => 'Always notify',
-            3 => 'Follow profile settings',
+            3 => 'Follow profile of member settings',
         ],
     ],
 
