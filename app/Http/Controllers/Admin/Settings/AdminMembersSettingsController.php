@@ -471,6 +471,21 @@ class AdminMembersSettingsController extends AdminLoggedInController
     }
 
     /**
+     * Unlock 2FA lockout for the specified member.
+     */
+    public function unlock2fa(Member $member)
+    {
+        // 2FA試行記録を削除
+        \App\Models\Member2faAttempt::where('member_id', $member->id)->delete();
+
+        // ログイン試行記録も削除（identifierカラムはメールアドレス）
+        \App\Models\MemberLoginAttempt::where('identifier', $member->email)->delete();
+
+        return redirect()->route('admin.settings.members.edit', ['member' => $member->id])
+            ->with('success', __('admin.settings.members.messages.unlock_lockout_success'));
+    }
+
+    /**
      * Force logout all members except current user.
      */
     public function forceLogoutAll()
@@ -734,6 +749,12 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $twoFactorExpireMinutes = (int) MemberSetting::getValue('two_factor_expire_minutes', config('two-factor.code_expiration', 5));
         $twoFactorResendIntervalSeconds = (int) MemberSetting::getValue('two_factor_resend_interval_seconds', config('two-factor.resend_interval', 60));
 
+        // 二段階認証試行制限設定
+        $twoFaMaxAttempts = (int) MemberSetting::getValue('2fa_max_attempts', 5);
+        $twoFaAttemptWindow = (int) MemberSetting::getValue('2fa_attempt_window', 15);
+        $twoFaLockoutDuration = (int) MemberSetting::getValue('2fa_lockout_duration', 30);
+        $twoFaLockoutNotificationEnabled = (bool) MemberSetting::getValue('2fa_lockout_notification_enabled', true);
+
         // メールサーバー接続テスト状況
         $isMailServerTested = $this->isMailServerTested();
         $mailConnectionTestDate = BaseSetting::getValue('mail_connection_test_date');
@@ -769,6 +790,10 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['twoFactorExpireMinutes'] = $twoFactorExpireMinutes;
         $this->viewParams['twoFactorResendIntervalSeconds'] = $twoFactorResendIntervalSeconds;
         $this->viewParams['passkeyEnabled'] = $passkeyEnabled;
+        $this->viewParams['twoFaMaxAttempts'] = $twoFaMaxAttempts;
+        $this->viewParams['twoFaAttemptWindow'] = $twoFaAttemptWindow;
+        $this->viewParams['twoFaLockoutDuration'] = $twoFaLockoutDuration;
+        $this->viewParams['twoFaLockoutNotificationEnabled'] = $twoFaLockoutNotificationEnabled;
         $this->viewParams['isMailServerTested'] = $isMailServerTested;
         $this->viewParams['mailConnectionTestDate'] = $mailConnectionTestDate;
 
@@ -808,6 +833,12 @@ class AdminMembersSettingsController extends AdminLoggedInController
         // Passkey有効/無効設定の保存（メール認証は常に有効）
         $passkeyValue = isset($validated['passkey_enabled']) && $validated['passkey_enabled'] ? '1' : '0';
         MemberSetting::setValue('passkey_enabled', $passkeyValue);
+
+        // 二段階認証試行制限設定
+        MemberSetting::setValue('2fa_max_attempts', (string) $validated['2fa_max_attempts']);
+        MemberSetting::setValue('2fa_attempt_window', (string) $validated['2fa_attempt_window']);
+        MemberSetting::setValue('2fa_lockout_duration', (string) $validated['2fa_lockout_duration']);
+        MemberSetting::setValue('2fa_lockout_notification_enabled', $validated['2fa_lockout_notification_enabled'] ? '1' : '0');
 
         return redirect()->route('admin.settings.members.settings')
             ->with('success', __('admin.settings.members.settings.updated'));

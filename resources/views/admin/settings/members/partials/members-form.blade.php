@@ -428,6 +428,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <section>
             <h2>{{ __('common.management_operations') }}</h2>
             
+
+
+            <fieldset>
+                <legend>{{ __('admin.settings.members.form.unlock_lockout') }}</legend>
+                <p class="mb-4">{{ __('admin.settings.members.form.unlock_lockout_description') }}</p>
+                @include('components::form.button', [
+                    'variant' => 'info',
+                    'icon' => 'fas fa-unlock',
+                    'label' => __('admin.settings.members.form.unlock_lockout_button'),
+                    'onclick' => "openModal('unlockLockoutModal')",
+                ])
+            </fieldset>
+            
             <fieldset>
                 <legend>{{ __('admin.settings.members.form.force_logout') }}</legend>
                 <p class="mb-4">{{ __('admin.settings.members.form.force_logout_description') }}</p>
@@ -465,6 +478,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @csrf
     </form>
 
+    <form id="unlockLockoutForm-{{ $member->id }}" method="POST" action="{{ route('admin.settings.members.unlock-2fa', $member->id) }}" style="display: none;">
+        @csrf
+    </form>
+
     @if(!$isInitialAdmin)
         <form id="deleteMemberForm-{{ $member->id }}" method="POST" action="{{ route('admin.settings.members.destroy', $member->id) }}" style="display: none;">
             @csrf
@@ -475,6 +492,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- モーダル -->
     @php
         $forceLogoutFormId = 'forceLogoutForm-' . $member->id;
+        $unlockLockoutFormId = 'unlockLockoutForm-' . $member->id;
         $deleteMemberFormId = 'deleteMemberForm-' . $member->id;
     @endphp
     
@@ -487,6 +505,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'form' => $forceLogoutFormId,
         'icon_type' => 'warning',
         'confirm_color' => 'yellow'
+        ])
+
+    @include('components.modal', [
+        'id' => 'unlockLockoutModal',
+        'title' => __('admin.settings.members.modals.unlock_lockout.title'),
+        'message' => __('admin.settings.members.modals.unlock_lockout.message', ['name' => $member->name]),
+        'confirm_label' => __('admin.settings.members.modals.unlock_lockout.confirm'),
+        'cancel_label' => __('common.cancel'),
+        'form' => $unlockLockoutFormId,
+        'icon_type' => 'info',
+        'confirm_color' => 'blue'
         ])
 
     @if(!$isInitialAdmin)
