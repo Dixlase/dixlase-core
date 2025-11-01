@@ -232,7 +232,7 @@ return [
         // 2FA Management (Profile-specific)
         '2fa_management' => 'Two-Factor Authentication Management',
         'recovery_codes' => 'Recovery Codes',
-        'passkey_devices' => 'Passkey Devices',
+        'passkey_devices' => 'Passkey(Biometric) Devices',
     ],
 
     // Settings

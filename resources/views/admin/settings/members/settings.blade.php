@@ -21,7 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('layouts.admin')
 
 @section('content')
-
+<div class="max-w-7xl mx-auto">
     <form method="POST" action="{{ route('admin.settings.members.settings.update') }}" id="member-settings-form">
         @csrf
 
@@ -310,6 +310,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             @include('components.form.checkbox', [
                                 'name' => 'passkey_enabled',
                                 'label' => __('common.two_factor_method.numbered_options.1'),
+                                'value' => $passkeyEnabled ? 1 : 0,
                                 'checked' => $passkeyEnabled ?? false,
                             ])
                         </div>
@@ -399,7 +400,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'onclick' => "openModal('forceLogoutAllModal')"
         ])
     </section>
-
+</div>
 @endsection
 
 @section('save')

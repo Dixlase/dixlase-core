@@ -705,7 +705,16 @@ class AdminMembersSettingsController extends AdminLoggedInController
         
         // Passkey有効/無効設定を取得
         // メール認証は常に有効なので設定不要
-        $passkeyEnabled = (bool) MemberSetting::getValue('passkey_enabled', false);
+        $passkeyDbValue = MemberSetting::getValue('passkey_enabled', '0');
+        $passkeyEnabled = $passkeyDbValue === '1';
+        
+        \Log::info('Passkey読み込みデバッグ', [
+            'db_value' => $passkeyDbValue,
+            'db_value_type' => gettype($passkeyDbValue),
+            'comparison_result' => $passkeyDbValue === '1',
+            'final_enabled' => $passkeyEnabled,
+            'old_value' => old('passkey_enabled'),
+        ]);
         
         // old() の値がある場合はそれを優先（バリデーションエラー後の再表示時）
         if (old('passkey_enabled') !== null) {
@@ -732,23 +741,6 @@ class AdminMembersSettingsController extends AdminLoggedInController
         // 二段階認証の有効期限設定（メンバー設定 > コンフィグ）
         $twoFactorExpireMinutes = (int) MemberSetting::getValue('two_factor_expire_minutes', config('two-factor.code_expiration', 5));
         $twoFactorResendIntervalSeconds = (int) MemberSetting::getValue('two_factor_resend_interval_seconds', config('two-factor.resend_interval', 60));
-        
-        // Passkey設定
-        $passkeyEnabled = (bool) MemberSetting::getValue('passkey_enabled', true);
-        $maxPasskeyDevices = (int) MemberSetting::getValue('max_passkey_devices', 3);
-        
-        // 回復コード設定
-        $recoveryCodesCount = (int) MemberSetting::getValue('recovery_codes_count', 5);
-        $recoveryCodeRegenerateInterval = (int) MemberSetting::getValue('recovery_code_regenerate_interval', 24);
-        
-        // 2FA認証待ち画面設定
-        $twoFactorVerificationTimeout = (int) MemberSetting::getValue('two_factor_verification_timeout', 10);
-        
-        // 2FA試行制限設定
-        $twoFaMaxAttempts = (int) MemberSetting::getValue('2fa_max_attempts', 5);
-        $twoFaAttemptWindow = (int) MemberSetting::getValue('2fa_attempt_window', 15);
-        $twoFaLockoutDuration = (int) MemberSetting::getValue('2fa_lockout_duration', 30);
-        $twoFaLockoutNotificationEnabled = (bool) MemberSetting::getValue('2fa_lockout_notification_enabled', true);
 
         // メールサーバー接続テスト状況
         $isMailServerTested = $this->isMailServerTested();
@@ -785,14 +777,6 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['twoFactorExpireMinutes'] = $twoFactorExpireMinutes;
         $this->viewParams['twoFactorResendIntervalSeconds'] = $twoFactorResendIntervalSeconds;
         $this->viewParams['passkeyEnabled'] = $passkeyEnabled;
-        $this->viewParams['maxPasskeyDevices'] = $maxPasskeyDevices;
-        $this->viewParams['recoveryCodesCount'] = $recoveryCodesCount;
-        $this->viewParams['recoveryCodeRegenerateInterval'] = $recoveryCodeRegenerateInterval;
-        $this->viewParams['twoFactorVerificationTimeout'] = $twoFactorVerificationTimeout;
-        $this->viewParams['twoFaMaxAttempts'] = $twoFaMaxAttempts;
-        $this->viewParams['twoFaAttemptWindow'] = $twoFaAttemptWindow;
-        $this->viewParams['twoFaLockoutDuration'] = $twoFaLockoutDuration;
-        $this->viewParams['twoFaLockoutNotificationEnabled'] = $twoFaLockoutNotificationEnabled;
         $this->viewParams['isMailServerTested'] = $isMailServerTested;
         $this->viewParams['mailConnectionTestDate'] = $mailConnectionTestDate;
 
@@ -829,26 +813,15 @@ class AdminMembersSettingsController extends AdminLoggedInController
         MemberSetting::setValue('two_factor_expire_minutes', (string) $validated['two_factor_expire_minutes']);
         MemberSetting::setValue('two_factor_resend_interval_seconds', (string) $validated['two_factor_resend_interval_seconds']);
         
-        // Passkey設定
-        MemberSetting::setValue('passkey_enabled', $validated['passkey_enabled'] ? '1' : '0');
-        MemberSetting::setValue('max_passkey_devices', (string) $validated['max_passkey_devices']);
-        
-        // 回復コード設定
-        MemberSetting::setValue('recovery_codes_count', (string) $validated['recovery_codes_count']);
-        MemberSetting::setValue('recovery_code_regenerate_interval', (string) $validated['recovery_code_regenerate_interval']);
-        
-        // 2FA認証待ち画面設定
-        MemberSetting::setValue('two_factor_verification_timeout', (string) $validated['two_factor_verification_timeout']);
-        
-        // 2FA試行制限設定
-        MemberSetting::setValue('2fa_max_attempts', (string) $validated['2fa_max_attempts']);
-        MemberSetting::setValue('2fa_attempt_window', (string) $validated['2fa_attempt_window']);
-        MemberSetting::setValue('2fa_lockout_duration', (string) $validated['2fa_lockout_duration']);
-        MemberSetting::setValue('2fa_lockout_notification_enabled', $validated['2fa_lockout_notification_enabled'] ? '1' : '0');
-
-        // Passkey有効/無効設定の保存
-        // メール認証は常に有効なので設定不要
-        MemberSetting::setValue('passkey_enabled', isset($validated['passkey_enabled']) && $validated['passkey_enabled'] ? '1' : '0');
+        // Passkey有効/無効設定の保存（メール認証は常に有効）
+        $passkeyValue = isset($validated['passkey_enabled']) && $validated['passkey_enabled'] ? '1' : '0';
+        \Log::info('Passkey保存デバッグ', [
+            'validated_has_passkey' => isset($validated['passkey_enabled']),
+            'validated_passkey_value' => $validated['passkey_enabled'] ?? 'not set',
+            'saving_value' => $passkeyValue,
+            'all_validated_keys' => array_keys($validated),
+        ]);
+        MemberSetting::setValue('passkey_enabled', $passkeyValue);
 
         return redirect()->route('admin.settings.members.settings')
             ->with('success', __('admin.settings.members.settings.updated'));

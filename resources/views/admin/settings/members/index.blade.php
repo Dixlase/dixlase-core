@@ -21,7 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('layouts.admin')
 
 @section('content')
-<div class="max-w-4xl mx-auto">
+<div class="max-w-7xl mx-auto">
     <!-- 検索セクション -->
     <section class="mb-6">
         <h2 class="text-lg font-semibold mb-4">{{ __('admin.settings.members.index.search_title') }}</h2>
