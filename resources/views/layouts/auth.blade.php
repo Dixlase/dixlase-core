@@ -75,5 +75,12 @@
             </div>
         @endif
     </div>
+    
+    <!-- Page Scripts -->
+    @hasSection('scripts')
+        @yield('scripts')
+    @endif
+    
+    @stack('scripts')
 </body>
 </html>

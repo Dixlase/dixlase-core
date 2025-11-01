@@ -82,10 +82,14 @@ TEXT,
     // Recovery Code
     'recovery_code' => [
         'title' => 'Recovery Code',
-        'prompt' => 'Please enter your recovery code.',
+        'prompt' => 'Please enter your recovery code. If you cannot access your device, you can use a recovery code to log in.',
         'code_label' => 'Recovery Code',
+        'format_hint' => 'Enter 20 digits (with or without hyphens)',
         'submit' => 'Authenticate and Login',
         'invalid' => 'Invalid recovery code.',
+        'invalid_with_attempts' => 'Invalid recovery code. Remaining attempts: :attempts',
+        'use_recovery_code' => 'Use Recovery Code',
+        'back_to_2fa' => 'Back to Two-Factor Authentication',
     ],
 
     // Common

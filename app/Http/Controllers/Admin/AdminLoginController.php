@@ -559,6 +559,97 @@ class AdminLoginController extends AdminController
     }
 
     /**
+     * 回復コード入力画面を表示
+     */
+    public function showRecoveryCodeForm()
+    {
+        if (!session()->has('login.id')) {
+            return redirect()->route('admin.login');
+        }
+
+        $memberId = session('login.id');
+        $member = Member::find($memberId);
+
+        if (!$member) {
+            return redirect()->route('admin.login');
+        }
+
+        // ロックアウトチェック
+        $attemptService = app(\App\Services\TwoFactorAttemptService::class);
+        if ($attemptService->isLockedOut($member)) {
+            $remainingMinutes = $attemptService->getRemainingLockoutTime($member);
+            return redirect()->route('admin.login')
+                ->withErrors(['email' => __('two-factor.lockout.message', ['minutes' => $remainingMinutes])]);
+        }
+
+        return view('admin::two-factor.recovery-code-challenge');
+    }
+
+    /**
+     * 回復コードを検証
+     */
+    public function confirmRecoveryCode(Request $request)
+    {
+        $request->validate([
+            'recovery_code' => 'required|string',
+        ]);
+
+        $memberId = session('login.id');
+        $member = Member::find($memberId);
+
+        if (!$member) {
+            return redirect()->route('admin.login');
+        }
+
+        // ロックアウトチェック
+        $attemptService = app(\App\Services\TwoFactorAttemptService::class);
+        if ($attemptService->isLockedOut($member)) {
+            $remainingMinutes = $attemptService->getRemainingLockoutTime($member);
+            session()->forget(['login.id', 'login.remember']);
+            return redirect()->route('admin.login')
+                ->withErrors(['email' => __('two-factor.lockout.message', ['minutes' => $remainingMinutes])]);
+        }
+
+        $recoveryCodeService = app(\App\Services\RecoveryCodeService::class);
+        $isValid = $recoveryCodeService->validate($member, $request->recovery_code);
+
+        // 試行を記録
+        $attemptService->recordAttempt($member, 'recovery_code', $isValid);
+
+        if (!$isValid) {
+            // 最大試行回数に達したかチェック
+            if ($attemptService->hasReachedMaxAttempts($member)) {
+                $lockoutDuration = (int) \App\Models\MemberSetting::getValue('2fa_lockout_duration', 30);
+                session()->forget(['login.id', 'login.remember']);
+                return redirect()->route('admin.login')
+                    ->withErrors(['email' => __('two-factor.lockout.locked', ['minutes' => $lockoutDuration])]);
+            }
+
+            // 残り試行回数を取得
+            $remainingAttempts = $attemptService->getRemainingAttempts($member);
+            return back()->withErrors([
+                'recovery_code' => __('two-factor.recovery_code.invalid_with_attempts', ['attempts' => $remainingAttempts])
+            ]);
+        }
+
+        // 成功したログインを記録（失敗記録をクリア）
+        app(AdminLoginLockoutService::class)->handleSuccessfulLogin($member->email);
+        $attemptService->handleSuccess($member);
+
+        // ログイン環境を記録、通知
+        app(AdminLoginNotificationService::class)->handle($member, $request);
+
+        Auth::guard('member')->login($member, session('login.remember', false));
+        session()->forget(['login.id', 'login.remember']);
+        $request->session()->regenerate(true);
+
+        // ログイン後にメール認証トークンをチェック
+        $this->processEmailVerificationIfPending($member, $request);
+
+        return redirect()->intended(route('admin.dashboard'));
+    }
+
+    /**
      * デバイス認証画面を表示
      */
     public function showDeviceChallengeForm(Request $request)

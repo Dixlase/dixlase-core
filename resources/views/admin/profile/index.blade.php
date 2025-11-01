@@ -376,30 +376,43 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- 回復コード -->
         <div class="mb-8">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold">{{ __('admin.profile.recovery_codes') }}</h3>
+                <h3 class="text-lg font-semibold">{{ __('two-factor.recovery_codes.title') }}</h3>
+            </div>
+            
+            <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
+                <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    {{ __('two-factor.recovery_codes.warning') }}
+                </p>
             </div>
             
             @if($hasRecoveryCodes)
                 <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
                     <p class="text-sm text-blue-800 dark:text-blue-200">
                         <i class="fas fa-info-circle mr-2"></i>
-                        残り{{ $recoveryCodesCount }}個の回復コードがあります
+                        {{ __('two-factor.recovery_codes.remaining', ['count' => $recoveryCodesCount]) }}
                     </p>
                 </div>
-                <button 
-                    type="button"
-                    onclick="alert('回復コード再生成機能は現在開発中です。')"
-                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
-                    <i class="fas fa-sync-alt mr-2"></i>回復コードを再生成
-                </button>
+                
+                <form method="POST" action="{{ route('admin.profile.recovery-codes.regenerate') }}" id="regenerateRecoveryCodesForm">
+                    @csrf
+                    <button 
+                        type="submit"
+                        class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                        <i class="fas fa-sync-alt mr-2"></i>{{ __('two-factor.recovery_codes.regenerate') }}
+                    </button>
+                </form>
             @else
-                <p class="text-gray-600 dark:text-gray-400 mb-4">回復コードが生成されていません</p>
-                <button 
-                    type="button"
-                    onclick="alert('回復コード生成機能は現在開発中です。')"
-                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
-                    <i class="fas fa-plus mr-2"></i>回復コードを生成
-                </button>
+                <p class="text-gray-600 dark:text-gray-400 mb-4">{{ __('two-factor.recovery_codes.none') }}</p>
+                
+                <form method="POST" action="{{ route('admin.profile.recovery-codes.generate') }}" id="generateRecoveryCodesForm">
+                    @csrf
+                    <button 
+                        type="submit"
+                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <i class="fas fa-plus mr-2"></i>{{ __('two-factor.recovery_codes.generate') }}
+                    </button>
+                </form>
             @endif
         </div>
     </section>
@@ -517,7 +530,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     ])
 @endsection
 
-@section('scripts')
+@push('scripts')
 <!-- プロフィールページ専用のフォーム要素トランジション -->
 <style>
     #profile-form input, 
@@ -823,5 +836,155 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             });
         }
     });
+
+    // === 回復コード管理 ===
+    let generatedRecoveryCodes = [];
+
+    // 回復コード生成フォーム送信
+    document.getElementById('generateRecoveryCodesForm')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        if (!confirm('{{ __("admin.profile.recovery_codes_generate_confirm") }}')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch(this.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                generatedRecoveryCodes = data.codes;
+                displayRecoveryCodes(data.codes);
+                openModal('recoveryCodesModal');
+            } else {
+                alert(data.message || '{{ __("common.error") }}');
+            }
+        } catch (error) {
+            console.error('Recovery codes generation error:', error);
+            alert('{{ __("common.error") }}');
+        }
+    });
+
+    // 回復コード再生成フォーム送信
+    document.getElementById('regenerateRecoveryCodesForm')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        if (!confirm('{{ __("admin.profile.recovery_codes_regenerate_confirm") }}')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch(this.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                generatedRecoveryCodes = data.codes;
+                displayRecoveryCodes(data.codes);
+                openModal('recoveryCodesModal');
+            } else {
+                alert(data.message || '{{ __("common.error") }}');
+            }
+        } catch (error) {
+            console.error('Recovery codes regeneration error:', error);
+            alert('{{ __("common.error") }}');
+        }
+    });
+
+    // 回復コードを表示
+    function displayRecoveryCodes(codes) {
+        const container = document.getElementById('recoveryCodesList');
+        container.innerHTML = codes.map(code => 
+            `<div class="p-2 bg-white dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600 text-center">${formatRecoveryCode(code)}</div>`
+        ).join('');
+    }
+
+    // 回復コードをフォーマット（5桁ごとにハイフン）
+    function formatRecoveryCode(code) {
+        return code.match(/.{1,5}/g).join('-');
+    }
+
+    // 回復コードをダウンロード
+    function downloadRecoveryCodes() {
+        const text = generatedRecoveryCodes.map(code => formatRecoveryCode(code)).join('\n');
+        const blob = new Blob([text], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'recovery-codes-' + new Date().toISOString().split('T')[0] + '.txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // 回復コードをコピー
+    function copyRecoveryCodes() {
+        const text = generatedRecoveryCodes.map(code => formatRecoveryCode(code)).join('\n');
+        navigator.clipboard.writeText(text).then(() => {
+            alert('{{ __("common.copied") }}');
+        }).catch(err => {
+            console.error('Copy error:', err);
+            alert('{{ __("common.copy_failed") }}');
+        });
+    }
 </script>
-@endsection
+@endpush
+
+
+<!-- 回復コード表示モーダル -->
+<x-modal id="recoveryCodesModal" :title="__('two-factor.recovery_codes.title')">
+    <div class="space-y-4">
+        <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+            <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                {{ __('two-factor.recovery_codes.warning') }}
+            </p>
+        </div>
+        
+        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+            <div id="recoveryCodesList" class="space-y-2 font-mono text-sm">
+                <!-- JavaScriptで動的に追加 -->
+            </div>
+        </div>
+        
+        <div class="flex gap-2">
+            <button 
+                type="button"
+                onclick="downloadRecoveryCodes()"
+                class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <i class="fas fa-download mr-2"></i>{{ __('two-factor.recovery_codes.download') }}
+            </button>
+            <button 
+                type="button"
+                onclick="copyRecoveryCodes()"
+                class="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                <i class="fas fa-copy mr-2"></i>{{ __('common.copy') }}
+            </button>
+        </div>
+    </div>
+    
+    <x-slot name="footer">
+        <button 
+            type="button"
+            onclick="closeModal('recoveryCodesModal')"
+            class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+            {{ __('common.close') }}
+        </button>
+    </x-slot>
+</x-modal>

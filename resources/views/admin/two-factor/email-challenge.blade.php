@@ -29,6 +29,13 @@
             />
         </div>
     @endif
+
+    <!-- 回復コードリンク -->
+    <div class="mt-4 text-center">
+        <a href="{{ route('admin.two-factor.recovery-code.show') }}" class="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
+            {{ __('two-factor.recovery_code.use_recovery_code') }}
+        </a>
+    </div>
 @endsection
 
 @section('back_link')
