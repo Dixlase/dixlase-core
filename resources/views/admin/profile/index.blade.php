@@ -397,23 +397,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         {{ __('two-factor.recovery_codes.remaining', ['count' => $recoveryCodesCount]) }}
                     </p>
                 </div>
-                
-                <button 
-                    type="button"
-                    onclick="openModal('regenerateRecoveryCodesConfirmModal')"
-                    class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
-                    <i class="fas fa-sync-alt mr-2"></i>{{ __('two-factor.recovery_codes.regenerate') }}
-                </button>
             @else
                 <p class="text-gray-600 dark:text-gray-400 mb-4">{{ __('two-factor.recovery_codes.none') }}</p>
-                
-                <button 
-                    type="button"
-                    onclick="openModal('generateRecoveryCodesConfirmModal')"
-                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    <i class="fas fa-plus mr-2"></i>{{ __('two-factor.recovery_codes.generate') }}
-                </button>
             @endif
+            
+            <button 
+                type="button"
+                onclick="openModal('recoveryCodesConfirmModal')"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <i class="fas fa-{{ $hasRecoveryCodes ? 'sync-alt' : 'plus' }} mr-2"></i>{{ __('two-factor.recovery_codes.' . ($hasRecoveryCodes ? 'regenerate' : 'generate')) }}
+            </button>
             
             <!-- 回復コードの説明 -->
             <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
@@ -460,28 +453,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 deleteAllBiometricBtn.addEventListener('click', revokeAllPasskeys);
             }
 
-            // 回復コード生成確認
-            const generateRecoveryCodesBtn = document.querySelector('#generateRecoveryCodesConfirmModal .modal-actions button[type="button"]:last-child');
-            if (generateRecoveryCodesBtn) {
-                console.log('[DEBUG] Found generate recovery codes button');
-                generateRecoveryCodesBtn.addEventListener('click', function() {
-                    console.log('[DEBUG] Generate button clicked');
+            // 回復コード生成/再生成確認
+            const recoveryCodesConfirmBtn = document.querySelector('#recoveryCodesConfirmModal .modal-actions button[type="button"]:last-child');
+            if (recoveryCodesConfirmBtn) {
+                console.log('[DEBUG] Found recovery codes confirm button');
+                recoveryCodesConfirmBtn.addEventListener('click', function() {
+                    console.log('[DEBUG] Recovery codes confirm button clicked');
                     confirmGenerateRecoveryCodes();
                 });
             } else {
-                console.error('[DEBUG] Generate recovery codes button not found');
-            }
-
-            // 回復コード再生成確認
-            const regenerateRecoveryCodesBtn = document.querySelector('#regenerateRecoveryCodesConfirmModal .modal-actions button[type="button"]:last-child');
-            if (regenerateRecoveryCodesBtn) {
-                console.log('[DEBUG] Found regenerate recovery codes button');
-                regenerateRecoveryCodesBtn.addEventListener('click', function() {
-                    console.log('[DEBUG] Regenerate button clicked');
-                    confirmRegenerateRecoveryCodes();
-                });
-            } else {
-                console.error('[DEBUG] Regenerate recovery codes button not found');
+                console.error('[DEBUG] Recovery codes confirm button not found');
             }
 
             // フラッシュメッセージの表示
@@ -894,9 +875,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     });
 
 
-    // 回復コード生成・再生成の共通処理
-    async function fetchAndDisplayRecoveryCodes(confirmModalId) {
-        closeModal(confirmModalId);
+    // 回復コード生成/再生成確認
+    async function confirmGenerateRecoveryCodes() {
+        closeModal('recoveryCodesConfirmModal');
         
         try {
             const response = await fetch('{{ route("admin.profile.recovery-codes.generate") }}', {
@@ -911,25 +892,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             const data = await response.json();
             
             if (data.success) {
+                // 成功：回復コードを表示
                 displayRecoveryCodesInModal('manualRecoveryCodesModal', data.codes);
                 openModal('manualRecoveryCodesModal');
             } else {
-                alert(data.message || '{{ __("common.error") }}');
+                // エラー：エラーメッセージを表示
+                displayRecoveryCodesError('manualRecoveryCodesModal', data.message || '{{ __("common.error") }}');
+                openModal('manualRecoveryCodesModal');
             }
         } catch (error) {
             console.error('Recovery codes error:', error);
-            alert('{{ __("common.error") }}');
+            // エラー：エラーメッセージを表示
+            displayRecoveryCodesError('manualRecoveryCodesModal', '{{ __("common.error") }}');
+            openModal('manualRecoveryCodesModal');
         }
-    }
-
-    // 回復コード生成確認
-    function confirmGenerateRecoveryCodes() {
-        fetchAndDisplayRecoveryCodes('generateRecoveryCodesConfirmModal');
-    }
-
-    // 回復コード再生成確認
-    function confirmRegenerateRecoveryCodes() {
-        fetchAndDisplayRecoveryCodes('regenerateRecoveryCodesConfirmModal');
     }
 </script>
 @endpush
@@ -946,7 +922,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 />
 @endif
 
-<!-- 回復コード表示モーダル（手動生成用） -->
+<!-- 回復コード表示モーダル（手動生成用・エラー表示兼用） -->
 <x-recovery-codes-modal
     modalId="manualRecoveryCodesModal"
     :title="__('two-factor.recovery_codes.title')"
@@ -955,14 +931,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 />
 
 
-<!-- 回復コード再生成確認モーダル -->
+<!-- 回復コード生成/再生成確認モーダル -->
 <x-modal 
-    id="regenerateRecoveryCodesConfirmModal" 
-    :title="__('two-factor.recovery_codes.regenerate')"
-    :message="__('admin.profile.recovery_codes_regenerate_confirm')"
+    id="recoveryCodesConfirmModal" 
+    :title="__('two-factor.recovery_codes.generate')"
+    :message="__('admin.profile.recovery_codes_generate_confirm')"
     confirm_label="{{ __('common.ok') }}"
     cancel_label="{{ __('common.cancel') }}"
     icon_type="warning"
-    confirm_color="yellow"
-    form="regenerate-recovery-codes-form"
+    confirm_color="blue"
 />
