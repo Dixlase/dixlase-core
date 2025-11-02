@@ -54,6 +54,9 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
             '2fa_attempt_window' => 'required|integer|min:5|max:60',
             '2fa_lockout_duration' => 'required|integer|min:5|max:1440',
             '2fa_lockout_notification_enabled' => 'required|boolean',
+            // 回復コード設定
+            'recovery_codes_count' => 'required|integer|min:1|max:10',
+            'recovery_code_regenerate_interval' => 'required|integer|min:1|max:168', // 1-168時間（1時間-7日間）
         ];
 
         return $rules;

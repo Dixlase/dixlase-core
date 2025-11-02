@@ -471,6 +471,57 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
                 </div>
             </fieldset>
+
+            <!-- 回復コード設定 -->
+            <fieldset>
+                <legend>{{ __('admin.settings.members.settings.recovery_code_settings') }}</legend>
+                
+                <div class="space-y-4">
+                    <!-- 回復コード生成個数 -->
+                    <div>
+                        <label for="recovery_codes_count" class="block text-sm font-medium">
+                            {{ __('admin.settings.members.settings.recovery_codes_count') }}
+                        </label>
+                        <div class="mt-1 flex items-center space-x-2">
+                            <input 
+                                type="number" 
+                                id="recovery_codes_count" 
+                                name="recovery_codes_count" 
+                                value="{{ old('recovery_codes_count', $recoveryCodesCount ?? 5) }}"
+                                min="1"
+                                max="10"
+                                class="w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            >
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.members.settings.codes') }}</span>
+                        </div>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            {{ __('admin.settings.members.settings.recovery_codes_count_help') }}
+                        </p>
+                    </div>
+
+                    <!-- 回復コード再生成間隔 -->
+                    <div>
+                        <label for="recovery_code_regenerate_interval" class="block text-sm font-medium">
+                            {{ __('admin.settings.members.settings.recovery_code_regenerate_interval') }}
+                        </label>
+                        <div class="mt-1 flex items-center space-x-2">
+                            <input 
+                                type="number" 
+                                id="recovery_code_regenerate_interval" 
+                                name="recovery_code_regenerate_interval" 
+                                value="{{ old('recovery_code_regenerate_interval', $recoveryCodeRegenerateInterval ?? 24) }}"
+                                min="1"
+                                max="168"
+                                class="w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            >
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.members.settings.hours') }}</span>
+                        </div>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            {{ __('admin.settings.members.settings.recovery_code_regenerate_interval_help') }}
+                        </p>
+                    </div>
+                </div>
+            </fieldset>
         </section>
     </form>
 
