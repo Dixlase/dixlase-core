@@ -755,6 +755,10 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $twoFaLockoutDuration = (int) MemberSetting::getValue('2fa_lockout_duration', 30);
         $twoFaLockoutNotificationEnabled = (bool) MemberSetting::getValue('2fa_lockout_notification_enabled', true);
 
+        // 回復コード設定
+        $recoveryCodesCount = (int) MemberSetting::getValue('recovery_codes_count', 5);
+        $recoveryCodeRegenerateInterval = (int) MemberSetting::getValue('recovery_code_regenerate_interval', 24);
+
         // メールサーバー接続テスト状況
         $isMailServerTested = $this->isMailServerTested();
         $mailConnectionTestDate = BaseSetting::getValue('mail_connection_test_date');
@@ -794,6 +798,8 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['twoFaAttemptWindow'] = $twoFaAttemptWindow;
         $this->viewParams['twoFaLockoutDuration'] = $twoFaLockoutDuration;
         $this->viewParams['twoFaLockoutNotificationEnabled'] = $twoFaLockoutNotificationEnabled;
+        $this->viewParams['recoveryCodesCount'] = $recoveryCodesCount;
+        $this->viewParams['recoveryCodeRegenerateInterval'] = $recoveryCodeRegenerateInterval;
         $this->viewParams['isMailServerTested'] = $isMailServerTested;
         $this->viewParams['mailConnectionTestDate'] = $mailConnectionTestDate;
 
@@ -839,6 +845,10 @@ class AdminMembersSettingsController extends AdminLoggedInController
         MemberSetting::setValue('2fa_attempt_window', (string) $validated['2fa_attempt_window']);
         MemberSetting::setValue('2fa_lockout_duration', (string) $validated['2fa_lockout_duration']);
         MemberSetting::setValue('2fa_lockout_notification_enabled', $validated['2fa_lockout_notification_enabled'] ? '1' : '0');
+
+        // 回復コード設定
+        MemberSetting::setValue('recovery_codes_count', (string) $validated['recovery_codes_count']);
+        MemberSetting::setValue('recovery_code_regenerate_interval', (string) $validated['recovery_code_regenerate_interval']);
 
         return redirect()->route('admin.settings.members.settings')
             ->with('success', __('admin.settings.members.settings.updated'));

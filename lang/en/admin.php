@@ -253,7 +253,8 @@ return [
         'recovery_codes_info_1' => 'Recovery codes are an emergency backup method when you cannot access your two-factor authentication device.',
         'recovery_codes_info_2' => 'Codes are only displayed when generated and will not be shown again.',
         'recovery_codes_info_3' => 'Each code can only be used once and becomes invalid after use.',
-        'recovery_codes_info_4' => 'Store recovery codes in a safe place and do not share with others.',
+        'recovery_codes_info_4' => 'Do not share codes with others.',
+        'recovery_codes_info_5' => 'Save the generated codes in a safe place by downloading, copying, taking a screenshot, photographing, or printing them.',
     ],
 
     // Settings

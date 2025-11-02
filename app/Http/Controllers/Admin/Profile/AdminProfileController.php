@@ -632,9 +632,15 @@ class AdminProfileController extends AdminLoggedInController
     {
         $member = Auth::guard('member')->user();
         $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
+        $recoveryCodeService = app(\App\Services\RecoveryCodeService::class);
+
+        // 既に回復コードが存在する場合は再生成として扱う
+        if ($recoveryCodeService->hasRecoveryCodes($member)) {
+            return $this->regenerateRecoveryCodes($request);
+        }
 
         try {
-            // 回復コードを生成（手動生成）
+            // 回復コードを生成（初回生成）
             $codes = $twoFactorHelper->generateRecoveryCodes($member, false);
 
             return response()->json([
