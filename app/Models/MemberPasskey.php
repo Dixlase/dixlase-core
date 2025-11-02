@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MemberPasskey extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'members_2fa_passkeys';
 
     protected $fillable = [
@@ -19,6 +22,7 @@ class MemberPasskey extends Model
 
     protected $casts = [
         'last_used_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     /**

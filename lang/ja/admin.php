@@ -942,21 +942,25 @@ return [
             'database' => [
                 'heading' => 'データベース管理',
                 'description' => 'システムパフォーマンスを維持するために古いデータベースレコードをクリーンアップします',
-                'all_cleanup_button' => 'すべてクリーンアップ',
-                'all_cleanup_description' => 'すべてのデータベーステーブルをデフォルト設定でクリーンアップします',
+                'all_cleanup_button' => '全種類クリーンアップ',
+                'all_cleanup_description' => 'すべてのデータベーステーブルを共通の保持日数でクリーンアップします',
                 'all_cleanup_warning' => 'この操作は元に戻すことができません。',
                 'all_tables' => 'すべてのテーブル',
+                'all_days_label' => '共通保持日数',
+                'all_days_help' => '0日を指定するとすべてのレコードを削除します。個別に日数を指定したい場合は各項目のクリーンアップを実行してください。',
                 'info_title' => 'クリーンアップ対象の説明',
                 'info_login_attempts' => 'ログイン試行履歴の古いレコードを削除します。',
                 'info_password_reset' => 'パスワードリセットトークンの期限切れレコードを削除します。',
-                'info_trusted_devices' => '信頼済みデバイスの古いレコードを削除します。',
-                'info_two_factor' => '二段階認証トークンの期限切れレコードを削除します。',
+                'info_two_factor_attempts' => '二段階認証試行履歴の古いレコードを削除します。',
+                'info_two_factor_tokens' => '二段階認証トークンの期限切れレコードを削除します。',
+                'info_recovery_codes' => '使用済みの古い回復コードを削除します。',
+                'info_passkeys' => '削除済みの古いPASSKEYを完全に削除します。',
                 'info_cache' => 'キャッシュデータの期限切れレコードを削除します。',
                 'info_sessions' => 'セッションの古いレコードを削除します。',
                 'login_attempts' => [
                     'name' => 'ログイン試行履歴',
                     'description' => '古いログイン試行記録をクリーンアップします',
-                    'default_days' => '30日',
+                    'invalid_days' => '日数は0以上の整数である必要があります。',
                 ],
                 'info_panel' => [
                     'title' => '重要な注意事項',
@@ -976,17 +980,27 @@ return [
                 'password_reset_tokens' => [
                     'name' => 'パスワードリセットトークン',
                     'description' => '古いパスワードリセットトークン記録をクリーンアップします',
-                    'default_days' => '30日',
+                    'invalid_days' => '日数は0以上の整数である必要があります。',
                 ],
-                'trusted_devices' => [
-                    'name' => '信頼されたデバイス',
-                    'description' => '古い信頼されたデバイス記録をクリーンアップします',
-                    'default_days' => '90日',
+                'two_factor_attempts' => [
+                    'name' => '二段階認証試行履歴',
+                    'description' => '古い二段階認証試行履歴をクリーンアップします',
+                    'invalid_days' => '日数は0以上の整数である必要があります。',
                 ],
                 'two_factor_tokens' => [
-                    'name' => '二段階認証トークン',
-                    'description' => '古い二段階認証トークン記録をクリーンアップします',
+                    'name' => '二段階認証トークン(メール認証)',
+                    'description' => '期限切れの二段階認証(メール認証)の認証コードをクリーンアップします',
                     'default_days' => '7日',
+                ],
+                'recovery_codes' => [
+                    'name' => '回復コード',
+                    'description' => '使用済み・無効化された回復コードをクリーンアップします',
+                    'default_days' => '90日',
+                ],
+                'passkeys' => [
+                    'name' => '二段階認証用PASSKEY(生体認証)',
+                    'description' => '削除済みの古い二段階認証用PASSKEY(生体認証)をクリーンアップします',
+                    'default_days' => '90日',
                 ],
                 'cache_data' => [
                     'name' => 'キャッシュデータ',
@@ -1002,6 +1016,7 @@ return [
                 'cleanup_error' => 'クリーンアップ中にエラーが発生しました: :error',
                 'confirm_cleanup' => ':type のレコードをクリーンアップしてもよろしいですか？',
                 'days_label' => '保持日数',
+                'days_zero_info' => '0日を指定するとすべてのレコードを削除します',
                 'cleanup_button' => 'クリーンアップ',
                 'all_cleanup_button' => '全種類クリーンアップ',
             ],
@@ -1036,6 +1051,59 @@ return [
 
     'two_factor' => [
         'mail_not_configured' => 'メールサーバーの設定が完了していないため、二段階認証コードを送信できません。基本設定からメールサーバーを設定してください。',
+    ],
+
+    // データベースクリーンアップコマンド用翻訳
+    'cleanup_two_factor_attempts' => [
+        'days_zero_warning' => '--days=0 が指定されました。すべての二段階認証試行履歴を削除します。',
+        'confirm_delete_all' => 'すべての二段階認証試行履歴を削除してもよろしいですか？',
+        'operation_cancelled' => '操作がキャンセルされました。',
+        'deleting_all' => 'すべての二段階認証試行履歴を削除しています...',
+        'deleted_all_success' => ':count 件の二段階認証試行履歴を削除しました。',
+        'no_records_found' => '削除する二段階認証試行履歴が見つかりませんでした。',
+        'invalid_days' => '日数は0以上である必要があります。',
+        'cleaning_up' => ':days 日より古い二段階認証試行履歴をクリーンアップしています...',
+        'deleted_old_success' => ':count 件の古い二段階認証試行履歴を削除しました。',
+        'no_old_records_found' => '削除する古い二段階認証試行履歴が見つかりませんでした。',
+    ],
+
+    'cleanup_two_factor_tokens' => [
+        'days_zero_warning' => '--days=0 が指定されました。すべての二段階認証トークンを削除します。',
+        'confirm_delete_all' => 'すべての二段階認証トークンを削除してもよろしいですか？',
+        'operation_cancelled' => '操作がキャンセルされました。',
+        'deleting_all' => 'すべての二段階認証トークンを削除しています...',
+        'deleted_all_success' => ':count 件の二段階認証トークンを削除しました。',
+        'no_records_found' => '削除する二段階認証トークンが見つかりませんでした。',
+        'invalid_days' => '日数は0以上である必要があります。',
+        'cleaning_up' => ':days 日より古い二段階認証トークンをクリーンアップしています...',
+        'deleted_old_success' => ':count 件の古い二段階認証トークンを削除しました。',
+        'no_old_records_found' => '削除する古い二段階認証トークンが見つかりませんでした。',
+    ],
+
+    'cleanup_recovery_codes' => [
+        'days_zero_warning' => '--days=0 が指定されました。すべての回復コードを削除します。',
+        'confirm_delete_all' => 'すべての回復コードを削除してもよろしいですか？',
+        'operation_cancelled' => '操作がキャンセルされました。',
+        'deleting_all' => 'すべての回復コードを削除しています...',
+        'deleted_all_success' => ':count 件の回復コードを削除しました。',
+        'no_records_found' => '削除する回復コードが見つかりませんでした。',
+        'invalid_days' => '日数は0以上である必要があります。',
+        'cleaning_up' => ':days 日より古い使用済み回復コードをクリーンアップしています...',
+        'deleted_old_success' => ':count 件の古い使用済み回復コードを削除しました。',
+        'no_old_records_found' => '削除する古い使用済み回復コードが見つかりませんでした。',
+    ],
+
+    'cleanup_passkeys' => [
+        'days_zero_warning' => '--days=0 が指定されました。すべてのPASSKEYを削除します。',
+        'confirm_delete_all' => 'すべてのPASSKEYを削除してもよろしいですか？',
+        'operation_cancelled' => '操作がキャンセルされました。',
+        'deleting_all' => 'すべてのPASSKEYを削除しています...',
+        'deleted_all_success' => ':count 件のPASSKEYを削除しました。',
+        'no_records_found' => '削除するPASSKEYが見つかりませんでした。',
+        'invalid_days' => '日数は0以上である必要があります。',
+        'cleaning_up' => ':days 日より古い削除済みPASSKEYをクリーンアップしています...',
+        'deleted_old_success' => ':count 件の古い削除済みPASSKEYを完全に削除しました。',
+        'no_old_records_found' => '削除する古い削除済みPASSKEYが見つかりませんでした。',
     ],
 
 ];
