@@ -452,7 +452,7 @@
             return;
         }
 
-        resultDiv.className = `mt-4 p-4 rounded-lg ${type === 'success' ? 'bg-green-100 text-green-800 border border-green-300' : 'bg-red-100 text-red-800 border border-red-300'}`;
+        resultDiv.className = `mt-4 p-4 rounded-xl font-semibold border ${type === 'success' ? 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-200 dark:border-green-700' : 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900 dark:text-red-200 dark:border-red-700'}`;
         resultDiv.textContent = message;
         resultDiv.classList.remove('hidden');
 

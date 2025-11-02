@@ -37,6 +37,13 @@ class AdminDashboardController extends AdminLoggedInController
     //
     public function index()
     {
+        // デバッグ: セッションの状態を確認
+        Log::info('[Dashboard Index] Session check', [
+            'has_auto_generated_recovery_codes' => session()->has('auto_generated_recovery_codes'),
+            'auto_generated_recovery_codes' => session('auto_generated_recovery_codes'),
+            'all_session_keys' => array_keys(session()->all()),
+        ]);
+        
         /*
         Log::info('管理者情報:', [
             'ID' => $this->member->id,
@@ -47,6 +54,14 @@ class AdminDashboardController extends AdminLoggedInController
             'ステータス' => $this->member->status,
         ]);
         */
+
+        // 回復コード情報を取得
+        $user = Auth::guard('member')->user();
+        $recoveryCodeService = app(\App\Services\RecoveryCodeService::class);
+        $this->viewParams['recoveryCodesCount'] = $recoveryCodeService->getRemainingCount($user);
+        $this->viewParams['hasRecoveryCodes'] = $recoveryCodeService->hasRecoveryCodes($user);
+        $this->viewParams['canRegenerateRecoveryCodes'] = $recoveryCodeService->canRegenerate($user);
+        $this->viewParams['nextRegenerateTime'] = $recoveryCodeService->getNextRegenerateTime($user);
 
         return view('admin::dashboard', $this->viewParams);
     }

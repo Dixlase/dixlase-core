@@ -265,7 +265,7 @@ class TwoFactorHelper
      */
     public function cleanupExpiredTokens(): int
     {
-        return \App\Models\MembersTwoFactorToken::where('expires_at', '<', now())->delete();
+        return \App\Models\Member2faToken::where('expires_at', '<', now())->delete();
     }
 
     /**

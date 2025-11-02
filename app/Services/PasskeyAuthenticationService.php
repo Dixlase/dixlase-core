@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\Member;
-use App\Models\MemberPasskey;
+use App\Models\Member2faPasskey;
 use App\Models\WebauthnCredential;
 use App\Models\MembersTrustedDevice;
 use Illuminate\Support\Facades\Log;
@@ -30,7 +30,7 @@ class PasskeyAuthenticationService
      */
     public function hasCredentials($user): bool
     {
-        return MemberPasskey::where('member_id', $user->id)->exists();
+        return Member2faPasskey::where('member_id', $user->id)->exists();
     }
 
     /**
@@ -65,9 +65,9 @@ class PasskeyAuthenticationService
     /**
      * Passkeyデバイスを登録
      */
-    public function register($user, string $credentialId, string $publicKey, string $name): MemberPasskey
+    public function register($user, string $credentialId, string $publicKey, string $name): Member2faPasskey
     {
-        return MemberPasskey::create([
+        return Member2faPasskey::create([
             'member_id' => $user->id,
             'credential_id' => $credentialId,
             'public_key' => $publicKey,
@@ -80,7 +80,7 @@ class PasskeyAuthenticationService
      */
     public function updateName($user, int $passkeyId, string $name): bool
     {
-        $passkey = MemberPasskey::where('member_id', $user->id)
+        $passkey = Member2faPasskey::where('member_id', $user->id)
             ->where('id', $passkeyId)
             ->first();
 
@@ -97,7 +97,7 @@ class PasskeyAuthenticationService
      */
     public function delete($user, int $passkeyId): bool
     {
-        return MemberPasskey::where('member_id', $user->id)
+        return Member2faPasskey::where('member_id', $user->id)
             ->where('id', $passkeyId)
             ->delete() > 0;
     }
@@ -107,7 +107,7 @@ class PasskeyAuthenticationService
      */
     public function getDevices($user)
     {
-        return MemberPasskey::where('member_id', $user->id)
+        return Member2faPasskey::where('member_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->get();
     }
@@ -125,7 +125,7 @@ class PasskeyAuthenticationService
      */
     public function hasReachedMaxDevices($user): bool
     {
-        $currentCount = MemberPasskey::where('member_id', $user->id)->count();
+        $currentCount = Member2faPasskey::where('member_id', $user->id)->count();
         return $currentCount >= $this->getMaxDevices();
     }
 

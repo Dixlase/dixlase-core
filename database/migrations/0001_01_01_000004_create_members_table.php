@@ -47,7 +47,7 @@ return new class extends Migration
             $table->integer('appearance')->default(0); // 0= auto, 1 = light, 2 = dark
             $table->string('password'); // Hashed
             $table->integer('login_notification_mode')->default(2); // 0= Disabled, 2= OnlyNewDevice, 3= Always
-            $table->integer('two_factor_mode')->default(2); // 0= Disabled, 2= OnlyNewDevice, 3= Always
+            $table->integer('two_factor_mode')->default(0); // 0= Disabled, 1= Enabled
             $table->integer('two_factor_method')->default(0); // 0= EMAIL, 1= DEVICE, 2= BIOMETRIC
             $table->string('last_login_ip')->nullable();
             $table->text('last_login_ua')->nullable();
