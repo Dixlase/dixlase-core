@@ -43,6 +43,7 @@ return new class extends Migration
             $table->string('name'); // デバイス名（必須）
             $table->timestamp('last_used_at')->nullable(); // 最終使用日時
             $table->timestamps();
+            $table->softDeletes(); // ソフトデリート対応
             
             // インデックス
             $table->index('member_id');

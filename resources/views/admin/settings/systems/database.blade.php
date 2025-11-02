@@ -58,9 +58,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             id="days_{{ $type }}" 
                             name="days" 
                             value="{{ $info['default_days'] }}" 
-                            min="1" 
+                            min="0" 
                             max="365"
                             class="number-input-small">
+                        @if($info['default_days'])
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            {{ __('admin.settings.systems.database.days_zero_info') }}
+                        </p>
+                        @endif
                     </form>
                 </div>
                 @else
@@ -88,14 +94,31 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <h2>{{ __('admin.settings.systems.database.all_cleanup_button') }}</h2>
             <p>{{ __('admin.settings.systems.database.all_cleanup_description') }}</p>
             <p><strong>{{ __('common.warning') }}:</strong> {{ __('admin.settings.systems.database.all_cleanup_warning') }}</p>
+            
+            <form id="cleanupAllForm" action="{{ route('admin.settings.systems.database.clean') }}" method="POST" class="mt-4">
+                @csrf
+                <input type="hidden" name="type" value="all">
+                
+                <div>
+                    <label for="all_days" class="block text-sm font-medium mb-1">
+                        {{ __('admin.settings.systems.database.all_days_label') }}
+                    </label>
+                    <input type="number" 
+                        id="all_days" 
+                        name="all_days" 
+                        value="30" 
+                        min="0" 
+                        max="365"
+                        class="number-input-small">
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        {{ __('admin.settings.systems.database.all_days_help') }}
+                    </p>
+                </div>
+            </form>
         </div>
         
         <div class="flex-shrink-0">
-            <form id="cleanupAllForm" action="{{ route('admin.settings.systems.database.clean') }}" method="POST">
-                @csrf
-                <input type="hidden" name="type" value="all">
-            </form>
-            
             @include('components::form.button', [
                 'type' => 'button',
                 'label' => __('admin.settings.systems.database.all_cleanup_button'),
@@ -116,11 +139,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <dt class="font-semibold">{{ __('admin.settings.systems.database.password_reset_tokens.name') }}</dt>
                 <dd class="font-normal mb-2">{{ __('admin.settings.systems.database.info_password_reset') }}</dd>
                 
-                <dt class="font-semibold">{{ __('admin.settings.systems.database.trusted_devices.name') }}</dt>
-                <dd class="font-normal mb-2">{{ __('admin.settings.systems.database.info_trusted_devices') }}</dd>
+                <dt class="font-semibold">{{ __('admin.settings.systems.database.two_factor_attempts.name') }}</dt>
+                <dd class="font-normal mb-2">{{ __('admin.settings.systems.database.info_two_factor_attempts') }}</dd>
                 
                 <dt class="font-semibold">{{ __('admin.settings.systems.database.two_factor_tokens.name') }}</dt>
-                <dd class="font-normal mb-2">{{ __('admin.settings.systems.database.info_two_factor') }}</dd>
+                <dd class="font-normal mb-2">{{ __('admin.settings.systems.database.info_two_factor_tokens') }}</dd>
+                
+                <dt class="font-semibold">{{ __('admin.settings.systems.database.recovery_codes.name') }}</dt>
+                <dd class="font-normal mb-2">{{ __('admin.settings.systems.database.info_recovery_codes') }}</dd>
+                
+                <dt class="font-semibold">{{ __('admin.settings.systems.database.passkeys.name') }}</dt>
+                <dd class="font-normal mb-2">{{ __('admin.settings.systems.database.info_passkeys') }}</dd>
                 
                 <dt class="font-semibold">{{ __('admin.settings.systems.database.cache_data.name') }}</dt>
                 <dd class="font-normal mb-2">{{ __('admin.settings.systems.database.info_cache') }}</dd>
