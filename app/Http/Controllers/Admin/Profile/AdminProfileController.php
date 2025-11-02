@@ -458,7 +458,6 @@ class AdminProfileController extends AdminLoggedInController
 
         // 二段階認証が有効化された場合、回復コードを自動生成
         $shouldGenerateRecoveryCodes = false;
-        $recoveryCodeError = null;
         
         \Log::info('[Profile] Recovery code generation check', [
             'force2fa' => $force2fa,
@@ -509,22 +508,12 @@ class AdminProfileController extends AdminLoggedInController
                         ]);
                     }
                 } else {
-                    \Log::info('[Profile] Recovery codes already exist, checking regeneration', [
+                    \Log::info('[Profile] Recovery codes already exist on 2FA activation', [
                         'member_id' => $member->id,
                     ]);
                     
-                    // 回復コードが既に存在する場合、再生成可能かチェック
-                    if (!$recoveryCodeService->canRegenerate($member)) {
-                        $nextTime = $recoveryCodeService->getNextRegenerateTime($member);
-                        $recoveryCodeError = __('admin.profile.recovery_codes_regenerate_too_soon', [
-                            'time' => $nextTime->format('Y-m-d H:i')
-                        ]);
-                        
-                        \Log::warning('[Profile] Recovery codes regeneration blocked - too soon', [
-                            'member_id' => $member->id,
-                            'next_time' => $nextTime->format('Y-m-d H:i:s')
-                        ]);
-                    }
+                    // 2FA有効化時は既存の回復コードがあればそのまま使用
+                    // 間隔チェックは行わない（手動再生成時のみチェック）
                 }
             }
         }
@@ -555,11 +544,6 @@ class AdminProfileController extends AdminLoggedInController
                 'shouldGenerateRecoveryCodes' => $shouldGenerateRecoveryCodes,
                 'codes_isset' => isset($codes),
             ]);
-        }
-        
-        // 回復コード再生成エラーがある場合はセッションに保存
-        if ($recoveryCodeError) {
-            $redirect->with('recovery_code_error', $recoveryCodeError);
         }
 
         return $redirect;
