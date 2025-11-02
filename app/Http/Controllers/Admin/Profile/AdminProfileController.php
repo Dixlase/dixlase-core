@@ -441,6 +441,54 @@ class AdminProfileController extends AdminLoggedInController
 
         $member->save();
 
+        // 二段階認証が有効化された場合、回復コードを自動生成
+        $shouldGenerateRecoveryCodes = false;
+        $recoveryCodeError = null;
+        
+        if ($force2fa === TwoFactorMode::UseProfileSetting->value && array_key_exists('two_factor_mode', $validated)) {
+            $oldTwoFactorMode = $member->getOriginal('two_factor_mode');
+            $newTwoFactorMode = (int) $validated['two_factor_mode'];
+            
+            // 無効→有効（OnlyNewDevice or Always）に変更された場合
+            if ($oldTwoFactorMode === TwoFactorMode::Disabled->value && 
+                in_array($newTwoFactorMode, [TwoFactorMode::OnlyNewDevice->value, TwoFactorMode::Always->value])) {
+                
+                $recoveryCodeService = app(\App\Services\RecoveryCodeService::class);
+                
+                // 回復コードが存在しない場合は生成
+                if (!$recoveryCodeService->hasRecoveryCodes($member)) {
+                    try {
+                        $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
+                        $codes = $twoFactorHelper->generateRecoveryCodes($member, true);
+                        $shouldGenerateRecoveryCodes = true;
+                        
+                        \Log::info('[Profile] Recovery codes auto-generated on 2FA activation', [
+                            'member_id' => $member->id,
+                            'codes_count' => count($codes)
+                        ]);
+                    } catch (\Exception $e) {
+                        \Log::error('[Profile] Failed to auto-generate recovery codes', [
+                            'member_id' => $member->id,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                } else {
+                    // 回復コードが既に存在する場合、再生成可能かチェック
+                    if (!$recoveryCodeService->canRegenerate($member)) {
+                        $nextTime = $recoveryCodeService->getNextRegenerateTime($member);
+                        $recoveryCodeError = __('admin.profile.recovery_codes_regenerate_too_soon', [
+                            'time' => $nextTime->format('Y-m-d H:i')
+                        ]);
+                        
+                        \Log::warning('[Profile] Recovery codes regeneration blocked - too soon', [
+                            'member_id' => $member->id,
+                            'next_time' => $nextTime->format('Y-m-d H:i:s')
+                        ]);
+                    }
+                }
+            }
+        }
+
         // メールアドレス変更時のメッセージ
         if ($emailChanged && $isMailServerTested) {
             // メールサーバー設定済み：認証メール送信を通知
@@ -453,8 +501,19 @@ class AdminProfileController extends AdminLoggedInController
             $message = __('admin.profile.updated');
         }
 
-        return redirect()->route('admin.profile')
-            ->with('success', $message);
+        $redirect = redirect()->route('admin.profile')->with('success', $message);
+        
+        // 回復コードが生成された場合はセッションに保存
+        if ($shouldGenerateRecoveryCodes && isset($codes)) {
+            $redirect->with('auto_generated_recovery_codes', $codes);
+        }
+        
+        // 回復コード再生成エラーがある場合はセッションに保存
+        if ($recoveryCodeError) {
+            $redirect->with('recovery_code_error', $recoveryCodeError);
+        }
+
+        return $redirect;
     }
 
     /**
