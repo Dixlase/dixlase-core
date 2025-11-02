@@ -178,6 +178,42 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         }
     }
     
+    // エラーメッセージを動的に表示（JavaScript用）
+    function displayRecoveryCodesError(modalId, errorMessage) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+        
+        // モーダルの内容を取得
+        const modalContent = modal.querySelector('.space-y-4');
+        if (!modalContent) return;
+        
+        // エラー表示用HTMLを作成
+        const errorHTML = `
+            <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                <p class="text-sm text-red-800 dark:text-red-200">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    ${errorMessage}
+                </p>
+            </div>
+        `;
+        
+        // モーダルの内容を置き換え
+        modalContent.innerHTML = errorHTML;
+        
+        // モーダルタイトルをエラーに変更
+        const modalTitle = modal.querySelector('h3');
+        if (modalTitle) {
+            modalTitle.textContent = '{{ __("common.error") }}';
+        }
+        
+        // 閉じるボタンを有効化
+        const closeBtn = document.getElementById(modalId + '-close-btn');
+        if (closeBtn) {
+            closeBtn.disabled = false;
+            closeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+    }
+    
     // 回復コードをダウンロード
     function downloadRecoveryCodesFromModal(modalId) {
         const codes = window.recoveryCodesData[modalId] || [];
