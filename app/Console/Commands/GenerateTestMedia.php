@@ -200,7 +200,7 @@ class GenerateTestMedia extends Command
         }
         
         // Create old two-factor tokens using existing members
-        MembersTwoFactorToken::factory()
+        Member2faToken::factory()
             ->count($oldCount)
             ->old()
             ->state(function () use ($members) {
@@ -209,7 +209,7 @@ class GenerateTestMedia extends Command
             ->create();
             
         // Create valid two-factor tokens using existing members
-        MembersTwoFactorToken::factory()
+        Member2faToken::factory()
             ->count($recentCount)
             ->valid()
             ->state(function () use ($members) {

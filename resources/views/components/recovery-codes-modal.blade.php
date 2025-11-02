@@ -26,6 +26,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'autoOpen' => false,
     'isDynamic' => false, // JavaScriptで動的に表示する場合
     'error' => null, // エラーメッセージ（エラー表示モード）
+    'clearSessionRoute' => null, // セッションクリア用ルート（自動生成時のみ）
 ])
 
 <x-modal :id="$modalId" :title="$error ? __('common.error') : ($title ?? __('two-factor.recovery_codes.title'))" :icon_type="$error ? 'danger' : 'warning'">
@@ -121,6 +122,35 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     // モーダルを自動表示
     document.addEventListener('DOMContentLoaded', function() {
         openModal('{{ $modalId }}');
+    });
+</script>
+@endpush
+@endif
+
+@if($clearSessionRoute)
+@push('scripts')
+<script>
+    // 自動生成モーダルを閉じるときにセッションをクリア
+    document.addEventListener('DOMContentLoaded', function() {
+        const closeBtn = document.getElementById('{{ $modalId }}-close-btn');
+        
+        if (closeBtn) {
+            closeBtn.addEventListener('click', async function() {
+                try {
+                    await fetch('{{ $clearSessionRoute }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        }
+                    });
+                    console.log('[{{ $modalId }}] Recovery codes session cleared');
+                } catch (error) {
+                    console.error('[{{ $modalId }}] Failed to clear session:', error);
+                }
+            });
+        }
     });
 </script>
 @endpush

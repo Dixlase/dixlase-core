@@ -49,6 +49,16 @@ class AdminProfileController extends AdminLoggedInController
      */
     public function index()
     {
+        // デバッグ: セッションの状態を確認
+        \Log::info('[Profile Index] Session check', [
+            'has_auto_generated_recovery_codes' => session()->has('auto_generated_recovery_codes'),
+            'auto_generated_recovery_codes' => session('auto_generated_recovery_codes'),
+            'all_session_keys' => array_keys(session()->all()),
+        ]);
+        
+        // 回復コードセッションは一度表示したらクリア（モーダルを閉じた後は表示しない）
+        // ただし、このリクエストでは表示するため、ビューに渡した後にクリア
+        
         // 外観モードのセッションをクリアして、保存された値に戻す
         session()->forget('appearance');
         
@@ -238,6 +248,8 @@ class AdminProfileController extends AdminLoggedInController
         $recoveryCodeService = app(\App\Services\RecoveryCodeService::class);
         $this->viewParams['recoveryCodesCount'] = $recoveryCodeService->getRemainingCount($user);
         $this->viewParams['hasRecoveryCodes'] = $recoveryCodeService->hasRecoveryCodes($user);
+        $this->viewParams['canRegenerateRecoveryCodes'] = $recoveryCodeService->canRegenerate($user);
+        $this->viewParams['nextRegenerateTime'] = $recoveryCodeService->getNextRegenerateTime($user);
 
         return view('admin.profile.index', $this->viewParams);
     }
@@ -407,6 +419,9 @@ class AdminProfileController extends AdminLoggedInController
             $member->login_notification_mode = (int) $validated['login_notification_mode'];
         }
 
+        // 二段階認証モードの変更を検出するため、保存前の値を取得（整数値として）
+        $oldTwoFactorMode = is_int($member->two_factor_mode) ? $member->two_factor_mode : $member->two_factor_mode->value;
+        
         // two_factor_mode は全体設定が UseProfileSetting のときだけ上書き
         $force2fa = (int) MemberSetting::getValue('force_2fa', TwoFactorMode::UseProfileSetting->value);
         if ($force2fa === TwoFactorMode::UseProfileSetting->value && array_key_exists('two_factor_mode', $validated)) {
@@ -445,18 +460,39 @@ class AdminProfileController extends AdminLoggedInController
         $shouldGenerateRecoveryCodes = false;
         $recoveryCodeError = null;
         
+        \Log::info('[Profile] Recovery code generation check', [
+            'force2fa' => $force2fa,
+            'force2fa_expected' => TwoFactorMode::UseProfileSetting->value,
+            'has_two_factor_mode_in_validated' => array_key_exists('two_factor_mode', $validated),
+            'oldTwoFactorMode' => $oldTwoFactorMode,
+            'newTwoFactorMode' => isset($validated['two_factor_mode']) ? (int) $validated['two_factor_mode'] : null,
+        ]);
+        
         if ($force2fa === TwoFactorMode::UseProfileSetting->value && array_key_exists('two_factor_mode', $validated)) {
-            $oldTwoFactorMode = $member->getOriginal('two_factor_mode');
             $newTwoFactorMode = (int) $validated['two_factor_mode'];
             
-            // 無効→有効（OnlyNewDevice or Always）に変更された場合
+            \Log::info('[Profile] Inside 2FA check block', [
+                'oldTwoFactorMode' => $oldTwoFactorMode,
+                'newTwoFactorMode' => $newTwoFactorMode,
+                'Disabled_value' => TwoFactorMode::Disabled->value,
+                'Always_value' => TwoFactorMode::Always->value,
+            ]);
+            
+            // 無効→有効に変更された場合
             if ($oldTwoFactorMode === TwoFactorMode::Disabled->value && 
-                in_array($newTwoFactorMode, [TwoFactorMode::OnlyNewDevice->value, TwoFactorMode::Always->value])) {
+                $newTwoFactorMode === TwoFactorMode::Always->value) {
                 
                 $recoveryCodeService = app(\App\Services\RecoveryCodeService::class);
                 
                 // 回復コードが存在しない場合は生成
-                if (!$recoveryCodeService->hasRecoveryCodes($member)) {
+                $hasRecoveryCodes = $recoveryCodeService->hasRecoveryCodes($member);
+                
+                \Log::info('[Profile] Recovery codes existence check', [
+                    'member_id' => $member->id,
+                    'has_recovery_codes' => $hasRecoveryCodes,
+                ]);
+                
+                if (!$hasRecoveryCodes) {
                     try {
                         $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
                         $codes = $twoFactorHelper->generateRecoveryCodes($member, true);
@@ -473,6 +509,10 @@ class AdminProfileController extends AdminLoggedInController
                         ]);
                     }
                 } else {
+                    \Log::info('[Profile] Recovery codes already exist, checking regeneration', [
+                        'member_id' => $member->id,
+                    ]);
+                    
                     // 回復コードが既に存在する場合、再生成可能かチェック
                     if (!$recoveryCodeService->canRegenerate($member)) {
                         $nextTime = $recoveryCodeService->getNextRegenerateTime($member);
@@ -505,7 +545,16 @@ class AdminProfileController extends AdminLoggedInController
         
         // 回復コードが生成された場合はセッションに保存
         if ($shouldGenerateRecoveryCodes && isset($codes)) {
+            \Log::info('[Profile Update] Setting auto_generated_recovery_codes in session', [
+                'codes_count' => count($codes),
+                'member_id' => $member->id,
+            ]);
             $redirect->with('auto_generated_recovery_codes', $codes);
+        } else {
+            \Log::info('[Profile Update] NOT setting auto_generated_recovery_codes', [
+                'shouldGenerateRecoveryCodes' => $shouldGenerateRecoveryCodes,
+                'codes_isset' => isset($codes),
+            ]);
         }
         
         // 回復コード再生成エラーがある場合はセッションに保存
@@ -737,6 +786,22 @@ class AdminProfileController extends AdminLoggedInController
             'success' => true,
             'codes' => $result['codes'],
             'message' => $result['message']
+        ]);
+    }
+
+    /**
+     * 回復コードセッションをクリア
+     */
+    public function clearRecoveryCodesSession(Request $request)
+    {
+        session()->forget('auto_generated_recovery_codes');
+        
+        \Log::info('[Profile] Recovery codes session cleared', [
+            'member_id' => Auth::guard('member')->user()->id,
+        ]);
+
+        return response()->json([
+            'success' => true
         ]);
     }
 }

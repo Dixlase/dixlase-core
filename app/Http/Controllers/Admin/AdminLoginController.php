@@ -402,7 +402,7 @@ class AdminLoginController extends AdminController
         }
 
         // 既存の有効なコードがあるかチェック
-        $hasValidToken = \App\Models\MembersTwoFactorToken::where('member_id', $member->id)
+        $hasValidToken = \App\Models\Member2faToken::where('member_id', $member->id)
             ->where('expires_at', '>', now())
             ->exists();
 

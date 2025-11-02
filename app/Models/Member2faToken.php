@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class MembersTwoFactorToken extends Model
+class Member2faToken extends Model
 {
     use HasFactory;
 

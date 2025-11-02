@@ -43,7 +43,7 @@ class TestFactories extends Command
             $this->line("  - Generated data: {$twoFactorDevice->token}, Approved: " . ($twoFactorDevice->approved ? 'Yes' : 'No'));
 
             // Test MembersTwoFactorToken factory
-            $twoFactorToken = MembersTwoFactorToken::factory()->make();
+            $twoFactorToken = Member2faToken::factory()->make();
             $this->info('✓ MembersTwoFactorToken factory works');
             $this->line("  - Generated data: {$twoFactorToken->code}, {$twoFactorToken->expires_at->format('Y-m-d H:i:s')}");
 

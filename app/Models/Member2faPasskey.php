@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class MemberPasskey extends Model
+class Member2faPasskey extends Model
 {
     use SoftDeletes;
 

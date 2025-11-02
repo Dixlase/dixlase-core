@@ -22,21 +22,21 @@
 
 namespace Database\Factories;
 
-use App\Models\MembersTwoFactorToken;
+use App\Models\Member2faToken;
 use App\Models\Member;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\MembersTwoFactorToken>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Member2faToken>
  */
-class MembersTwoFactorTokenFactory extends Factory
+class Member2faTokenFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = MembersTwoFactorToken::class;
+    protected $model = Member2faToken::class;
 
     /**
      * Define the model's default state.

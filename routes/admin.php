@@ -171,6 +171,7 @@ Route::prefix($adminUrl)->name('admin.')
             // 回復コード管理
             Route::post('/profile/recovery-codes/generate', [AdminProfileController::class, 'generateRecoveryCodes'])->name('profile.recovery-codes.generate');
             Route::post('/profile/recovery-codes/regenerate', [AdminProfileController::class, 'regenerateRecoveryCodes'])->name('profile.recovery-codes.regenerate');
+            Route::post('/profile/recovery-codes/clear-session', [AdminProfileController::class, 'clearRecoveryCodesSession'])->name('profile.recovery-codes.clear-session');
 
             // 全体設定
             // 基本設定（権限チェック付き）

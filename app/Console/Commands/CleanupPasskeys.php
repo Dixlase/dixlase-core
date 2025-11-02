@@ -22,7 +22,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\MemberPasskey;
+use App\Models\Member2faPasskey;
 use Illuminate\Console\Command;
 
 class CleanupPasskeys extends Command
@@ -71,9 +71,9 @@ class CleanupPasskeys extends Command
             $this->info(__('admin.cleanup_passkeys.deleting_all'));
             
             // ソフトデリート済みのレコード数を取得してから削除
-            $deletedCount = MemberPasskey::onlyTrashed()->count();
+            $deletedCount = Member2faPasskey::onlyTrashed()->count();
             if ($deletedCount > 0) {
-                MemberPasskey::onlyTrashed()->forceDelete();
+                Member2faPasskey::onlyTrashed()->forceDelete();
                 $this->info(__('admin.cleanup_passkeys.deleted_all_success', ['count' => $deletedCount]));
                 $this->line("DELETED_COUNT: {$deletedCount}");
             } else {
@@ -92,7 +92,7 @@ class CleanupPasskeys extends Command
         $this->info(__('admin.cleanup_passkeys.cleaning_up', ['days' => $days]));
 
         // ソフトデリート済みで古いpasskeyを完全削除
-        $query = MemberPasskey::onlyTrashed()
+        $query = Member2faPasskey::onlyTrashed()
             ->where('deleted_at', '<', now()->subDays($days));
         
         $deletedCount = $query->count();
