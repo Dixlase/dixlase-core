@@ -419,6 +419,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <li>{{ __('admin.profile.recovery_codes_info_3') }}</li>
                     <li>{{ __('admin.profile.recovery_codes_info_4') }}</li>
                     <li>{{ __('admin.profile.recovery_codes_info_5') }}</li>
+                    <li>{{ __('admin.profile.recovery_codes_info_6') }}</li>
                 </ul>
             </div>            
         </div>

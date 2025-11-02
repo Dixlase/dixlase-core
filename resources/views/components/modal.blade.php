@@ -62,7 +62,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div class="modal-body">
                     <h2 class="modal-title">{{ $title }}</h2>
                     <div class="modal-message">
-                        <p>{{ $message }}</p>
+                        <p>{!! $message !!}</p>
                     </div>
 
                     @if($checkbox)

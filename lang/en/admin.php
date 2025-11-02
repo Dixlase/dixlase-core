@@ -235,7 +235,7 @@ return [
         'passkey_devices' => 'Passkey (Biometric) Devices',
         
         // Recovery Codes Management
-        'recovery_codes_generate_confirm' => 'Generate recovery codes? Please store the generated codes in a safe place.',
+        'recovery_codes_generate_confirm' => 'Generate recovery codes?<br>Please store the generated codes in a safe place.',
         'recovery_codes_regenerate_confirm' => 'Regenerate recovery codes? All existing recovery codes will be invalidated.',
         'recovery_codes_generated' => 'Recovery codes have been generated.',
         'recovery_codes_regenerated' => 'Recovery codes have been regenerated.',
@@ -251,10 +251,11 @@ return [
         // Recovery Codes Information
         'recovery_codes_info_title' => 'About Recovery Codes',
         'recovery_codes_info_1' => 'Recovery codes are an emergency backup method when you cannot access your two-factor authentication device.',
-        'recovery_codes_info_2' => 'Codes are only displayed when generated and will not be shown again.',
-        'recovery_codes_info_3' => 'Each code can only be used once and becomes invalid after use.',
-        'recovery_codes_info_4' => 'Do not share codes with others.',
-        'recovery_codes_info_5' => 'Save the generated codes in a safe place by downloading, copying, taking a screenshot, photographing, or printing them.',
+        'recovery_codes_info_2' => 'Recovery codes are only displayed when generated and will not be shown again.',
+        'recovery_codes_info_3' => 'Each generated recovery code can only be used once and becomes invalid after use.',
+        'recovery_codes_info_4' => 'Once recovery codes are generated, they cannot be regenerated for a certain period of time.',
+        'recovery_codes_info_5' => 'Do not share recovery codes with others.',
+        'recovery_codes_info_6' => 'Save the generated recovery codes in a safe place by downloading, copying, taking a screenshot, photographing, or printing them.',
     ],
 
     // Settings

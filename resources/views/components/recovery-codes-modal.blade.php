@@ -53,7 +53,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
                 <p class="text-sm text-yellow-800 dark:text-yellow-200">
                     <i class="fas fa-exclamation-triangle mr-2"></i>
-                    {{ __('two-factor.recovery_codes.warning') }}
+                    {!! __('two-factor.recovery_codes.warning') !!}
                 </p>
             </div>
             

@@ -211,7 +211,7 @@ return [
         'passkey_devices' => 'Passkey(生体認証)デバイス',
         
         // 回復コード管理
-        'recovery_codes_generate_confirm' => '回復コードを生成しますか？生成されたコードは安全な場所に保管してください。',
+        'recovery_codes_generate_confirm' => '回復コードを生成しますか？<br>生成されたコードは安全な場所に保管してください。',
         'recovery_codes_regenerate_confirm' => '回復コードを再生成しますか？既存の回復コードは全て無効になります。',
         'recovery_codes_generated' => '回復コードが生成されました。',
         'recovery_codes_regenerated' => '回復コードが再生成されました。',
@@ -227,10 +227,11 @@ return [
         // 回復コード説明
         'recovery_codes_info_title' => '回復コードについて',
         'recovery_codes_info_1' => '回復コードは二段階認証デバイスにアクセスできない場合の緊急手段です。',
-        'recovery_codes_info_2' => 'コードは生成時のみ表示され、その後は表示されません。',
-        'recovery_codes_info_3' => 'コードは1回のみ使用可能で、使用後は無効になります。',
-        'recovery_codes_info_4' => 'コードは他人と共有しないでください。',
-        'recovery_codes_info_5' => '生成されたコードはダウンロード、コピー、スクリーンショット、写真撮影、印刷などの方法で安全な場所に保管してください。',
+        'recovery_codes_info_2' => '回復コードは生成時のみ表示され、その後は表示されません。',
+        'recovery_codes_info_3' => '生成された各回復コードは1回のみ使用可能で、使用後は無効になります。',
+        'recovery_codes_info_4' => '一度回復コードを生成すると一定時間の間は再生成できません。',
+        'recovery_codes_info_5' => '回復コードは他人と共有しないでください。',
+        'recovery_codes_info_6' => '生成された回復コードはダウンロード、コピー、スクリーンショット、写真撮影、印刷などの方法で安全な場所に保管してください。',
     ],
 
     // 設定
