@@ -248,6 +248,25 @@ return [
         'passkey_info_2' => 'You can log in using biometric authentication (fingerprint, face recognition) or device PIN.',
         'passkey_info_3' => 'Compatible with Touch ID, Face ID, Windows Hello, and more.',
         
+        // Passkey Management
+        'passkey_not_supported' => 'Your browser does not support Passkey.',
+        'passkey_device_name_prompt' => 'Enter a name for this device (e.g., iPhone, MacBook Pro)',
+        'passkey_registered' => 'Passkey has been registered.',
+        'passkey_register_error' => 'Failed to register Passkey.',
+        'passkey_register_options_error' => 'Failed to get Passkey registration options.',
+        'passkey_cancelled' => 'Passkey registration was cancelled.',
+        'passkey_already_registered' => 'This Passkey is already registered.',
+        'passkey_deleted' => 'Passkey has been deleted.',
+        'passkey_not_found' => 'Passkey not found.',
+        'passkey_delete_error' => 'Failed to delete Passkey.',
+        'passkey_delete_all_error' => 'Failed to delete all Passkeys.',
+        'no_passkeys_to_delete' => 'No Passkeys to delete.',
+        'all_passkeys_deleted' => 'All Passkeys (:count) have been deleted.',
+        'confirm_delete_passkey_title' => 'Confirm Passkey Deletion',
+        'confirm_delete_passkey_message' => 'Are you sure you want to delete this Passkey?',
+        'confirm_delete_all_passkeys_title' => 'Confirm Delete All Passkeys',
+        'confirm_delete_all_passkeys_message' => 'Are you sure you want to delete all Passkeys? This action cannot be undone.',
+        
         // Recovery Codes Information
         'recovery_codes_info_title' => 'About Recovery Codes',
         'recovery_codes_info_1' => 'Recovery codes are an emergency backup method when you cannot access your two-factor authentication device.',

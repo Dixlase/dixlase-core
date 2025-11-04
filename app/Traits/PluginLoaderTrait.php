@@ -51,11 +51,17 @@ trait PluginLoaderTrait
             return;
         }
 
+        // app:uninstall コマンド実行中もスキップ
+        if (isset($_SERVER['argv']) && in_array('app:uninstall', $_SERVER['argv'])) {
+            \Log::info("PluginLoaderTrait: Skipping plugin loading during app:uninstall command");
+            return;
+        }
+
         //Pluginテーブルのstatusが1のレコードを取得
         //テーブルが存在しているか確認
-        if (Schema::hasTable('plugins')) {
-        } else {
-            $activePlugins = [];
+        if (!Schema::hasTable('plugins')) {
+            \Log::info("PluginLoaderTrait: plugins table does not exist, skipping plugin loading");
+            return;
         }
 
         $plugins = Plugin::where('status', 1)->get();

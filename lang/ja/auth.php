@@ -48,6 +48,13 @@ return [
     'verify_email_login_required' => 'アカウントの認証を完了するには、ログインしてください。ログイン後、自動的に認証が完了します。',
     'verify_email_change_login_required' => 'メールアドレスの変更を完了するには、ログインしてください。ログイン後、自動的に変更が完了します。',
     'verification_required' => 'メール認証が必要です',
+    
+    // Passkey認証
+    'passkey_https_required' => 'Passkey認証にはHTTPS接続が必要です。',
+    'passkey_not_registered' => 'Passkeyが登録されていません。',
+    'passkey_challenge_error' => 'Passkey認証チャレンジの生成に失敗しました。',
+    'passkey_verification_failed' => 'Passkey認証に失敗しました。',
+    'passkey_verification_error' => 'Passkey認証の検証中にエラーが発生しました。',
     'verification_notice_message' => 'このアカウントはメール認証が完了していません。管理画面を使用するには、登録されたメールアドレスに送信された認証メールのリンクをクリックし、ログインしてください。',
     'verification_link_sent' => '新しい認証リンクをメールアドレスに送信しました。',
     'resend_verification_email' => '認証メールを再送信',

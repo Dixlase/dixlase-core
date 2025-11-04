@@ -224,6 +224,25 @@ return [
         'passkey_info_2' => '生体認証（指紋認証、顔認証など）またはデバイスのPINでログインできます。',
         'passkey_info_3' => 'Touch ID、Face ID、Windows Helloなどに対応しています。',
         
+        // Passkey管理
+        'passkey_not_supported' => 'お使いのブラウザはPasskeyに対応していません。',
+        'passkey_device_name_prompt' => 'このデバイスの名前を入力してください（例: iPhone、MacBook Pro）',
+        'passkey_registered' => 'Passkeyを登録しました。',
+        'passkey_register_error' => 'Passkeyの登録に失敗しました。',
+        'passkey_register_options_error' => 'Passkey登録オプションの取得に失敗しました。',
+        'passkey_cancelled' => 'Passkey登録がキャンセルされました。',
+        'passkey_already_registered' => 'このPasskeyは既に登録されています。',
+        'passkey_deleted' => 'Passkeyを削除しました。',
+        'passkey_not_found' => 'Passkeyが見つかりません。',
+        'passkey_delete_error' => 'Passkeyの削除に失敗しました。',
+        'passkey_delete_all_error' => 'Passkeyの一括削除に失敗しました。',
+        'no_passkeys_to_delete' => '削除するPasskeyがありません。',
+        'all_passkeys_deleted' => '全てのPasskey（:count件）を削除しました。',
+        'confirm_delete_passkey_title' => 'Passkey削除の確認',
+        'confirm_delete_passkey_message' => 'このPasskeyを削除してもよろしいですか？',
+        'confirm_delete_all_passkeys_title' => '全Passkey削除の確認',
+        'confirm_delete_all_passkeys_message' => '全てのPasskeyを削除してもよろしいですか？この操作は取り消せません。',
+        
         // 回復コード説明
         'recovery_codes_info_title' => '回復コードについて',
         'recovery_codes_info_1' => '回復コードは二段階認証デバイスにアクセスできない場合の緊急手段です。',
