@@ -663,9 +663,9 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * 生体認証画面を表示
+     * Passkey認証フォームを表示
      */
-    public function showBiometricChallengeForm(Request $request)
+    public function showPasskeyForm(Request $request)
     {
         if (!session()->has('login.id')) {
             return redirect()->route('admin.login');
@@ -678,40 +678,34 @@ class AdminLoginController extends AdminController
             return redirect()->route('admin.login');
         }
 
-        // TwoFactorHelperを使用して有効な認証方法を取得
-        $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
-        $enabledMethods = $twoFactorHelper->getEnabledTwoFactorMethods();
-        $currentMethod = 2; // BIOMETRIC
-
-        // 認証方法の翻訳キーマッピング
-        $methodLabels = [
-            0 => __('common.two_factor_method.options.email'),
-            1 => __('common.two_factor_method.options.device'),
-            2 => __('common.two_factor_method.options.biometric'),
-        ];
-
-        // 有効な認証方法のリストを作成
+        // 利用可能な認証方法を取得
+        $twoFactorService = app(AdminTwoFactorService::class);
         $availableMethods = [];
+        $currentMethod = $member->two_factor_method;
+
+        // 有効な認証方法を取得
+        $enabledMethods = $twoFactorService->getEnabledAuthMethods();
+
         foreach ($enabledMethods as $method) {
-            if ($method !== $currentMethod) {
+            if ($method !== 1) { // PASSKEY以外
                 $availableMethods[] = [
                     'value' => $method,
-                    'label' => $methodLabels[$method] ?? '',
+                    'label' => __('common.two_factor_method.options.' . $method),
                     'url' => $this->getTwoFactorMethodRoute($method),
                 ];
             }
         }
 
-        return view('admin::two-factor.biometric-challenge', [
+        return view('admin::two-factor.passkey', [
             'availableMethods' => $availableMethods,
             'currentMethod' => $currentMethod,
         ]);
     }
 
     /**
-     * 生体認証チャレンジを生成
+     * Passkey認証オプションを取得
      */
-    public function confirmBiometricAuth(Request $request)
+    public function getPasskeyOptions(Request $request)
     {
         if (!session()->has('login.id')) {
             return response()->json([
@@ -733,56 +727,52 @@ class AdminLoginController extends AdminController
         try {
             $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
 
-            // 生体認証が利用可能かチェック
+            // Passkey認証が利用可能かチェック
             if (!$passkeyService->isAvailable()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'HTTPS接続が必要です'
+                    'message' => __('auth.passkey_https_required')
                 ], 400);
             }
 
-            // メンバーが生体認証を登録しているかチェック
-            if (!$passkeyService->hasCredentials($member)) {
+            // メンバーがPasskeyを登録しているかチェック
+            $credentials = $passkeyService->getCredentials($member);
+            if ($credentials->isEmpty()) {
                 return response()->json([
                     'success' => false,
-                    'message' => '生体認証が登録されていません'
+                    'message' => __('auth.passkey_not_registered')
                 ], 400);
             }
 
             // 認証チャレンジを生成
-            $challenge = $passkeyService->generateAuthenticationChallenge($member);
+            $options = $passkeyService->generateAuthenticationChallenge($member);
 
-            // チャレンジIDをセッションに保存
-            $challengeId = Str::random(32);
-            session(['biometric_challenge_id' => $challengeId]);
-
-            Log::info("[Biometric Auth] チャレンジ生成: ユーザーID {$member->id}");
+            Log::info('[Passkey Auth] チャレンジ生成成功', [
+                'member_id' => $member->id,
+                'credentials_count' => $credentials->count()
+            ]);
 
             return response()->json([
                 'success' => true,
-                'challenge' => [
-                    'id' => $challengeId,
-                    'challenge' => $challenge['challenge'],
-                    'timeout' => $challenge['timeout'],
-                    'rpId' => $challenge['rpId'],
-                    'allowCredentials' => $challenge['allowCredentials'],
-                    'userVerification' => $challenge['userVerification'],
-                ]
+                'options' => $options
             ]);
         } catch (\Exception $e) {
-            Log::error("[Biometric Auth] チャレンジ生成エラー: " . $e->getMessage());
+            Log::error('[Passkey Auth] チャレンジ生成エラー', [
+                'member_id' => $member->id,
+                'error' => $e->getMessage()
+            ]);
             
             return response()->json([
                 'success' => false,
-                'message' => 'チャレンジの生成に失敗しました'
+                'message' => __('auth.passkey_challenge_error')
             ], 500);
         }
     }
 
     /**
-     * 生体認証を検証
+     * Passkey認証を検証
      */
-    public function verifyBiometricAuth(Request $request)
+    public function verifyPasskey(Request $request)
     {
         if (!session()->has('login.id')) {
             return response()->json([
@@ -801,50 +791,60 @@ class AdminLoginController extends AdminController
             ], 401);
         }
 
-        // チャレンジIDの検証
-        $challengeId = $request->input('challenge_id');
-        if (!$challengeId || $challengeId !== session('biometric_challenge_id')) {
-            return response()->json([
-                'success' => false,
-                'message' => '無効なチャレンジです'
-            ], 400);
-        }
+        $request->validate([
+            'credential' => 'required|array',
+            'credential.id' => 'required|string',
+            'credential.response' => 'required|array',
+        ]);
 
         try {
             $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
-            $response = $request->input('response');
+            $credentialData = $request->input('credential');
 
             // 認証レスポンスを検証
-            $isValid = $passkeyService->verifyAssertion($member, $response);
+            $isValid = $passkeyService->verifyAssertion($member, $credentialData);
 
             if ($isValid) {
                 // 認証成功 - ログイン処理
+                $lockoutService = app(AdminLoginLockoutService::class);
+                $lockoutService->handleSuccessfulLogin($member->email);
+
+                // ログイン環境を記録、通知
+                app(AdminLoginNotificationService::class)->handle($member, $request);
+
                 Auth::guard('member')->login($member, session('login.remember', false));
                 $request->session()->regenerate();
 
                 // セッションクリーンアップ
-                session()->forget(['login.id', 'login.remember', 'biometric_challenge_id']);
+                session()->forget(['login.id', 'login.remember']);
 
-                Log::info("[Biometric Auth] 認証成功: ユーザーID {$member->id}");
+                Log::info('[Passkey Auth] 認証成功', [
+                    'member_id' => $member->id
+                ]);
 
                 return response()->json([
                     'success' => true,
                     'redirect' => route('admin.dashboard')
                 ]);
             } else {
-                Log::warning("[Biometric Auth] 認証失敗: ユーザーID {$member->id}");
+                Log::warning('[Passkey Auth] 認証失敗', [
+                    'member_id' => $member->id
+                ]);
 
                 return response()->json([
                     'success' => false,
-                    'message' => '生体認証に失敗しました'
+                    'message' => __('auth.passkey_verification_failed')
                 ], 401);
             }
         } catch (\Exception $e) {
-            Log::error("[Biometric Auth] 検証エラー: " . $e->getMessage());
+            Log::error('[Passkey Auth] 検証エラー', [
+                'member_id' => $member->id,
+                'error' => $e->getMessage()
+            ]);
             
             return response()->json([
                 'success' => false,
-                'message' => '認証の検証に失敗しました'
+                'message' => __('auth.passkey_verification_error')
             ], 500);
         }
     }

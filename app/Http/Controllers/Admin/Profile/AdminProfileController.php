@@ -598,71 +598,116 @@ class AdminProfileController extends AdminLoggedInController
     }
 
     /**
-     * 生体認証の登録チャレンジを生成
+     * Passkey登録用のWebAuthnチャレンジを生成
      */
-    public function generateBiometricChallenge(Request $request)
+    public function passkeyRegisterOptions(Request $request)
     {
         $member = Auth::guard('member')->user();
-        $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
+        $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
         
-        $result = $twoFactorHelper->generateBiometricChallenge($member);
-        
-        if (!$result['success']) {
+        try {
+            // WebAuthn登録チャレンジを生成
+            $options = $passkeyService->generateRegistrationChallenge($member);
+            
+            return response()->json([
+                'success' => true,
+                'options' => $options
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('[Passkey] 登録チャレンジ生成エラー', [
+                'member_id' => $member->id,
+                'error' => $e->getMessage()
+            ]);
+            
             return response()->json([
                 'success' => false,
-                'message' => $result['message']
-            ], 400);
+                'message' => __('admin.profile.passkey_register_options_error')
+            ], 500);
         }
-
-        return response()->json([
-            'success' => true,
-            'challenge' => $result['challenge']
-        ]);
     }
 
     /**
-     * 生体認証を登録
+     * Passkeyを登録
      */
-    public function registerBiometric(Request $request)
+    public function passkeyRegister(Request $request)
     {
         $member = Auth::guard('member')->user();
 
         $request->validate([
             'credential' => 'required|array',
+            'credential.id' => 'required|string',
+            'credential.rawId' => 'required|string',
+            'credential.response' => 'required|array',
+            'credential.type' => 'required|string',
             'device_name' => 'nullable|string|max:255',
         ]);
 
-        $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
-        $result = $twoFactorHelper->registerBiometric(
-            $member,
-            $request->input('credential'),
-            $request->input('device_name')
-        );
+        $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
+        
+        try {
+            // WebAuthn認証情報を登録
+            $credential = $passkeyService->registerCredential(
+                $member,
+                $request->input('credential'),
+                $request->input('device_name')
+            );
 
-        return response()->json([
-            'success' => $result['success'],
-            'message' => $result['message']
-        ], $result['success'] ? 200 : 500);
+            return response()->json([
+                'success' => true,
+                'message' => __('admin.profile.passkey_registered'),
+                'credential' => [
+                    'id' => $credential->id,
+                    'name' => $credential->name,
+                    'created_at' => $credential->created_at->format('Y-m-d H:i')
+                ]
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('[Passkey] 登録エラー', [
+                'member_id' => $member->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => __('admin.profile.passkey_register_error')
+            ], 500);
+        }
     }
 
     /**
-     * 生体認証を削除
+     * Passkeyを削除
      */
-    public function revokeBiometric(Request $request, string $credentialId)
+    public function revokePasskey(Request $request, string $credentialId)
     {
         $member = Auth::guard('member')->user();
-        $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
+        $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
         
-        $result = $twoFactorHelper->revokeBiometric($member, $credentialId);
-        
-        $statusCode = $result['success'] ? 200 : (
-            str_contains($result['message'], 'not_found') ? 404 : 500
-        );
+        try {
+            $deleted = $passkeyService->revokeCredential($member, $credentialId);
+            
+            if (!$deleted) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('admin.profile.passkey_not_found')
+                ], 404);
+            }
 
-        return response()->json([
-            'success' => $result['success'],
-            'message' => $result['message']
-        ], $statusCode);
+            return response()->json([
+                'success' => true,
+                'message' => __('admin.profile.passkey_deleted')
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('[Passkey] 削除エラー', [
+                'member_id' => $member->id,
+                'credential_id' => $credentialId,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => __('admin.profile.passkey_delete_error')
+            ], 500);
+        }
     }
 
     /**
@@ -702,19 +747,46 @@ class AdminProfileController extends AdminLoggedInController
     }
 
     /**
-     * すべての生体認証を削除
+     * すべてのPasskeyを削除
      */
-    public function revokeAllBiometric(Request $request)
+    public function revokeAllPasskeys(Request $request)
     {
         $member = Auth::guard('member')->user();
-        $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
+        $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
         
-        $result = $twoFactorHelper->revokeAllBiometric($member);
+        try {
+            // すべてのPasskeyを取得して削除
+            $credentials = $passkeyService->getCredentials($member);
+            $deletedCount = 0;
+            
+            foreach ($credentials as $credential) {
+                if ($passkeyService->revokeCredential($member, $credential->credential_id)) {
+                    $deletedCount++;
+                }
+            }
+            
+            if ($deletedCount === 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('admin.profile.no_passkeys_to_delete')
+                ], 404);
+            }
 
-        return response()->json([
-            'success' => $result['success'],
-            'message' => $result['message']
-        ], $result['success'] ? 200 : 500);
+            return response()->json([
+                'success' => true,
+                'message' => __('admin.profile.all_passkeys_deleted', ['count' => $deletedCount])
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('[Passkey] 一括削除エラー', [
+                'member_id' => $member->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => __('admin.profile.passkey_delete_all_error')
+            ], 500);
+        }
     }
 
     /**

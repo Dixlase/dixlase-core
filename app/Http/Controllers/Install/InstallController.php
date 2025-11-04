@@ -832,8 +832,8 @@ class InstallController extends Controller
         // INSTALLED=trueを設定
         Log::channel('install')->info('INSTALLED=trueを設定中...');
         $this->updateEnv(['INSTALLED' => 'true']);
-        Artisan::call('config:cache');
         Artisan::call('config:clear');
+        Artisan::call('config:cache');
         Log::channel('install')->info('INSTALLED=true設定完了');
         
         Log::channel('install')->info('=== InstallController::finalize() 終了 ===');

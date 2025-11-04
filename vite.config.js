@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import path from 'path';
+import fs from 'fs';
 import laravel from 'laravel-vite-plugin';
 import liveReload from 'vite-plugin-live-reload'
 
@@ -69,6 +70,10 @@ export default defineConfig({
         host: '0.0.0.0',        // Docker コンテナ内で全てのインターフェースをバインド
         port: 5173,
         strictPort: true,       // ポートが使用中なら失敗する
+        https: {
+            key: fs.readFileSync('/etc/ssl/private/localhost.key'),
+            cert: fs.readFileSync('/etc/ssl/private/localhost.crt'),
+        },
         watch: {
             usePolling: true,     // ポーリングでファイル変更を検知
             interval: 100,        // ポーリングの間隔（お好みで調整）
@@ -77,7 +82,7 @@ export default defineConfig({
         hmr: {
             host: 'localhost',    // ブラウザがアクセスするホスト(ホストOSから見た名前)
             port: 5173,
-            // protocol: 'wss',    // HTTPS/WSS を使いたい場合は有効化
+            protocol: 'wss',      // HTTPS/WSS を使用
         },
     },
     resolve: {

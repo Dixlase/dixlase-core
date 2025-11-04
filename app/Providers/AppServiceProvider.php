@@ -61,8 +61,15 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot()
     {
-        // .envファイルが存在しない場合やデータベース接続ができない場合はスキップ
-        if (!file_exists(base_path('.env')) || !env('INSTALLED', false)) {
+        // .envファイルが存在しない場合はスキップ
+        if (!file_exists(base_path('.env'))) {
+            return;
+        }
+
+        // インストール済みかどうかをチェック（config経由で取得することでキャッシュに対応）
+        // env()は本番環境でキャッシュされると更新されないため、config()を使用
+        $isInstalled = config('app.installed', false) ?: env('INSTALLED', false);
+        if (!$isInstalled) {
             return;
         }
 

@@ -75,10 +75,10 @@ Route::prefix($adminUrl)->name('admin.')
         Route::get('/two-factor-recovery', [AdminLoginController::class, 'showRecoveryCodeForm'])->name('two-factor.recovery-code.show');
         Route::post('/two-factor-recovery', [AdminLoginController::class, 'confirmRecoveryCode'])->name('two-factor.recovery-code.confirm');
         
-        // 生体認証
-        Route::get('/two-factor-biometric', [AdminLoginController::class, 'showBiometricChallengeForm'])->name('two-factor.biometric.show');
-        Route::post('/two-factor-biometric/challenge', [AdminLoginController::class, 'confirmBiometricAuth'])->name('two-factor.biometric.challenge');
-        Route::post('/two-factor-biometric/verify', [AdminLoginController::class, 'verifyBiometricAuth'])->name('two-factor.biometric.verify');
+        // Passkey認証
+        Route::get('/two-factor-passkey', [AdminLoginController::class, 'showPasskeyForm'])->name('two-factor.passkey.show');
+        Route::post('/two-factor-passkey/options', [AdminLoginController::class, 'getPasskeyOptions'])->name('two-factor.passkey.options');
+        Route::post('/two-factor-passkey/verify', [AdminLoginController::class, 'verifyPasskey'])->name('two-factor.passkey.verify');
 
         // パスワードリセット
         Route::get('/forgot-password', [AdminPasswordResetLinkController::class, 'create'])->name('password.request');
@@ -132,7 +132,7 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::get('/media/upload', [AdminMediaController::class, 'upload'])->name('media.upload');
                 Route::post('/media/upload/', [AdminMediaController::class, 'store'])
                     ->middleware('check.menu.edit:media')
-                    ->name('media.upload');
+                    ->name('media.store');
                 //メディア削除
                 Route::delete('/media/delete/{media}', [AdminMediaController::class, 'delete'])
                     ->middleware('check.menu.edit:media')
@@ -156,17 +156,15 @@ Route::prefix($adminUrl)->name('admin.')
             Route::get('/profile', [AdminProfileController::class, 'index'])->name('profile');
             Route::post('/profile', [AdminProfileController::class, 'update'])->name('profile.update');
             
-            // 生体認証管理
-            Route::post('/profile/biometric/challenge', [AdminProfileController::class, 'generateBiometricChallenge'])->name('profile.biometric.challenge');
-            Route::post('/profile/biometric/register', [AdminProfileController::class, 'registerBiometric'])->name('profile.biometric.register');
-            Route::delete('/profile/biometric/{credentialId}', [AdminProfileController::class, 'revokeBiometric'])->name('profile.biometric.revoke');
+            // Passkey管理
+            Route::post('/profile/passkey/register-options', [AdminProfileController::class, 'passkeyRegisterOptions'])->name('profile.passkey.register-options');
+            Route::post('/profile/passkey/register', [AdminProfileController::class, 'passkeyRegister'])->name('profile.passkey.register');
+            Route::delete('/profile/passkey/{credentialId}', [AdminProfileController::class, 'revokePasskey'])->name('profile.passkey.revoke');
+            Route::delete('/profile/passkey/all', [AdminProfileController::class, 'revokeAllPasskeys'])->name('profile.passkey.revoke-all');
             
             // 信頼済みデバイス管理
             Route::delete('/profile/trusted-device/{deviceId}', [AdminProfileController::class, 'revokeTrustedDevice'])->name('profile.trusted-device.revoke');
             Route::delete('/profile/trusted-device/all', [AdminProfileController::class, 'revokeAllTrustedDevices'])->name('profile.trusted-device.revoke-all');
-            
-            // 生体認証一括削除
-            Route::delete('/profile/biometric/all', [AdminProfileController::class, 'revokeAllBiometric'])->name('profile.biometric.revoke-all');
             
             // 回復コード管理
             Route::post('/profile/recovery-codes/generate', [AdminProfileController::class, 'generateRecoveryCodes'])->name('profile.recovery-codes.generate');

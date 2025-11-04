@@ -328,6 +328,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @if(!$passkeyDevices->isEmpty())
                     <button 
                         type="button"
+                        onclick="openModal('deleteAllPasskeysModal')"
                         class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
                         <i class="fas fa-trash-alt mr-1"></i>全て削除
                     </button>
@@ -354,6 +355,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             </div>
                             <button 
                                 type="button"
+                                onclick="openDeletePasskeyModal('{{ $device->credential_id }}', '{{ $device->name }}')"
                                 class="ml-4 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
                                 削除
                             </button>
@@ -364,7 +366,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <!-- 新しいPasskeyを追加 -->
             <button 
                 type="button"
-                onclick="alert('Passkey登録機能は現在開発中です。\n\nWebAuthn APIを使用した生体認証（Touch ID、Face ID、Windows Hello等）の実装が必要です。')"
+                onclick="registerPasskey()"
                 class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
                 <i class="fas fa-plus mr-2"></i>Passkeyを追加
             </button>
@@ -443,15 +445,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             }
 
             // Passkey削除
-            const deleteBiometricBtn = document.querySelector('#deleteBiometricModal .modal-actions button[type="button"]:last-child');
-            if (deleteBiometricBtn) {
-                deleteBiometricBtn.addEventListener('click', revokePasskey);
+            const deletePasskeyBtn = document.querySelector('#deletePasskeyModal .modal-actions button[type="button"]:last-child');
+            if (deletePasskeyBtn) {
+                deletePasskeyBtn.addEventListener('click', revokePasskey);
             }
 
             // Passkey一括削除
-            const deleteAllBiometricBtn = document.querySelector('#deleteAllBiometricModal .modal-actions button[type="button"]:last-child');
-            if (deleteAllBiometricBtn) {
-                deleteAllBiometricBtn.addEventListener('click', revokeAllPasskeys);
+            const deleteAllPasskeysBtn = document.querySelector('#deleteAllPasskeysModal .modal-actions button[type="button"]:last-child');
+            if (deleteAllPasskeysBtn) {
+                deleteAllPasskeysBtn.addEventListener('click', revokeAllPasskeys);
             }
 
             // 回復コード生成/再生成確認
@@ -517,9 +519,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     />
 
     <x-modal 
-        id="deleteBiometricModal"
-        :title="__('admin.profile.confirm_delete_biometric_title')"
-        :message="__('admin.profile.confirm_delete_biometric_message')"
+        id="deletePasskeyModal"
+        :title="__('admin.profile.confirm_delete_passkey_title')"
+        :message="__('admin.profile.confirm_delete_passkey_message')"
         :confirm_label="__('common.delete')"
         :cancel_label="__('common.cancel')"
         icon_type="danger"
@@ -527,9 +529,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     />
 
     <x-modal 
-        id="deleteAllBiometricModal"
-        :title="__('admin.profile.confirm_delete_all_biometric_title')"
-        :message="__('admin.profile.confirm_delete_all_biometric_message')"
+        id="deleteAllPasskeysModal"
+        :title="__('admin.profile.confirm_delete_all_passkeys_title')"
+        :message="__('admin.profile.confirm_delete_all_passkeys_message')"
         :confirm_label="__('common.delete')"
         :cancel_label="__('common.cancel')"
         icon_type="danger"
@@ -658,23 +660,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         });
     };
     
-    // Passkey（生体認証）管理
+    // Passkey管理
     let currentCredentialId = null;
     
     window.openDeletePasskeyModal = function(credentialId, credentialName) {
         currentCredentialId = credentialId;
-        const modal = document.getElementById('deleteBiometricModal');
+        const modal = document.getElementById('deletePasskeyModal');
         const messageElement = modal.querySelector('.modal-message p');
         if (messageElement) {
-            messageElement.textContent = `{{ __('admin.profile.confirm_delete_biometric_message') }}\n\n${credentialName}`;
+            messageElement.textContent = `{{ __('admin.profile.confirm_delete_passkey_message') }}\n\n${credentialName}`;
         }
-        openModal('deleteBiometricModal');
+        openModal('deletePasskeyModal');
     };
 
     window.revokePasskey = function() {
         if (!currentCredentialId) return;
 
-        fetch(`/admin/profile/biometric/${currentCredentialId}`, {
+        fetch(`/admin/profile/passkey/${currentCredentialId}`, {
             method: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -683,7 +685,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         })
         .then(response => response.json())
         .then(data => {
-            closeModal('deleteBiometricModal');
+            closeModal('deletePasskeyModal');
             if (data.success) {
                 sessionStorage.setItem('flash_success', data.message);
                 location.reload();
@@ -694,14 +696,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         })
         .catch(error => {
             console.error('Error:', error);
-            closeModal('deleteBiometricModal');
-            sessionStorage.setItem('flash_error', '{{ __('admin.profile.delete_biometric_error') }}');
+            closeModal('deletePasskeyModal');
+            sessionStorage.setItem('flash_error', '{{ __('admin.profile.passkey_delete_error') }}');
             location.reload();
         });
     };
 
     window.revokeAllPasskeys = function() {
-        fetch('/admin/profile/biometric/all', {
+        fetch('/admin/profile/passkey/all', {
             method: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -710,7 +712,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         })
         .then(response => response.json())
         .then(data => {
-            closeModal('deleteAllBiometricModal');
+            closeModal('deleteAllPasskeysModal');
             if (data.success) {
                 sessionStorage.setItem('flash_success', data.message);
                 location.reload();
@@ -721,12 +723,155 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         })
         .catch(error => {
             console.error('Error:', error);
-            closeModal('deleteAllBiometricModal');
-            sessionStorage.setItem('flash_error', '{{ __('admin.profile.delete_all_biometric_error') }}');
+            closeModal('deleteAllPasskeysModal');
+            sessionStorage.setItem('flash_error', '{{ __('admin.profile.passkey_delete_all_error') }}');
             location.reload();
         });
     };
     
+    // Passkey登録機能
+    window.registerPasskey = async function() {
+        try {
+            // WebAuthn対応チェック
+            if (!window.PublicKeyCredential) {
+                alert('{{ __('admin.profile.passkey_not_supported') }}');
+                return;
+            }
+
+            console.log('[Passkey] 登録開始');
+
+            // サーバーから登録チャレンジを取得
+            const optionsResponse = await fetch('/admin/profile/passkey/register-options', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!optionsResponse.ok) {
+                throw new Error('チャレンジの取得に失敗しました');
+            }
+
+            const { success, options } = await optionsResponse.json();
+            
+            if (!success || !options) {
+                throw new Error('チャレンジの取得に失敗しました');
+            }
+
+            console.log('[Passkey] チャレンジ取得成功', options);
+
+            // Base64文字列をArrayBufferに変換
+            const challengeBuffer = base64urlToBuffer(options.challenge);
+            const userIdBuffer = base64urlToBuffer(options.user.id);
+
+            // WebAuthn登録オプションを準備
+            const publicKeyCredentialCreationOptions = {
+                challenge: challengeBuffer,
+                rp: options.rp,
+                user: {
+                    id: userIdBuffer,
+                    name: options.user.name,
+                    displayName: options.user.displayName
+                },
+                pubKeyCredParams: options.pubKeyCredParams,
+                timeout: options.timeout,
+                attestation: options.attestation,
+                authenticatorSelection: options.authenticatorSelection
+            };
+
+            console.log('[Passkey] WebAuthn登録開始');
+
+            // WebAuthn APIで認証情報を作成
+            const credential = await navigator.credentials.create({
+                publicKey: publicKeyCredentialCreationOptions
+            });
+
+            if (!credential) {
+                throw new Error('認証情報の作成に失敗しました');
+            }
+
+            console.log('[Passkey] 認証情報作成成功', credential);
+
+            // デバイス名を入力
+            const deviceName = prompt('{{ __('admin.profile.passkey_device_name_prompt') }}', '');
+            
+            if (deviceName === null) {
+                console.log('[Passkey] ユーザーがキャンセルしました');
+                return;
+            }
+
+            // 認証情報をサーバーに送信
+            const credentialData = {
+                id: credential.id,
+                rawId: bufferToBase64url(credential.rawId),
+                response: {
+                    clientDataJSON: bufferToBase64url(credential.response.clientDataJSON),
+                    attestationObject: bufferToBase64url(credential.response.attestationObject)
+                },
+                type: credential.type
+            };
+
+            console.log('[Passkey] サーバーに送信', credentialData);
+
+            const registerResponse = await fetch('/admin/profile/passkey/register', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    credential: credentialData,
+                    device_name: deviceName || null
+                })
+            });
+
+            const result = await registerResponse.json();
+
+            if (result.success) {
+                sessionStorage.setItem('flash_success', result.message);
+                location.reload();
+            } else {
+                alert(result.message || '{{ __('admin.profile.passkey_register_error') }}');
+            }
+
+        } catch (error) {
+            console.error('[Passkey] 登録エラー:', error);
+            
+            if (error.name === 'NotAllowedError') {
+                alert('{{ __('admin.profile.passkey_cancelled') }}');
+            } else if (error.name === 'InvalidStateError') {
+                alert('{{ __('admin.profile.passkey_already_registered') }}');
+            } else {
+                alert('{{ __('admin.profile.passkey_register_error') }}\n\n' + error.message);
+            }
+        }
+    };
+
+    // Base64URL文字列をArrayBufferに変換
+    function base64urlToBuffer(base64url) {
+        const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+        const binary = atob(base64);
+        const buffer = new ArrayBuffer(binary.length);
+        const bytes = new Uint8Array(buffer);
+        for (let i = 0; i < binary.length; i++) {
+            bytes[i] = binary.charCodeAt(i);
+        }
+        return buffer;
+    }
+
+    // ArrayBufferをBase64URL文字列に変換
+    function bufferToBase64url(buffer) {
+        const bytes = new Uint8Array(buffer);
+        let binary = '';
+        for (let i = 0; i < bytes.byteLength; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        const base64 = btoa(binary);
+        return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    }
 
     document.addEventListener('DOMContentLoaded', function() {
         // フォーム送信成功時にグローバルテーマストアを更新

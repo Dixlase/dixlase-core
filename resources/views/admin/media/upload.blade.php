@@ -22,7 +22,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
     <div class="bg-white shadow-md rounded-lg p-6 dark:bg-gray-800">
-        <form action="{{ route('admin.media.upload') }}" method="POST" enctype="multipart/form-data" class="space-y-6" x-data="{ fileName: '' }">
+        <form action="{{ route('admin.media.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6" x-data="{ fileName: '' }">
             @csrf
             <div class="flex flex-col gap-2">
                 <label for="media_file" class="font-medium">{{ __('admin.media.upload.select_file') }}</label>
