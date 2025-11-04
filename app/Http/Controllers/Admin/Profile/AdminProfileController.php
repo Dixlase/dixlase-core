@@ -760,7 +760,7 @@ class AdminProfileController extends AdminLoggedInController
             $deletedCount = 0;
             
             foreach ($credentials as $credential) {
-                if ($passkeyService->revokeCredential($member, $credential->credential_id)) {
+                if ($passkeyService->revokeCredential($member, $credential->id)) {
                     $deletedCount++;
                 }
             }
