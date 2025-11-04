@@ -62,9 +62,6 @@ class AdminDashboardController extends AdminLoggedInController
         $this->viewParams['hasRecoveryCodes'] = $recoveryCodeService->hasRecoveryCodes($user);
         $this->viewParams['canRegenerateRecoveryCodes'] = $recoveryCodeService->canRegenerate($user);
         $this->viewParams['nextRegenerateTime'] = $recoveryCodeService->getNextRegenerateTime($user);
-        
-        // ページヘッダーのタイトルを設定
-        $this->viewParams['heading'] = 'admin.nav.dashboard';
 
         return view('admin::dashboard', $this->viewParams);
     }

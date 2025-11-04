@@ -21,8 +21,14 @@ trait AdminInterfaceTrait
      */
     public function initialize()
     {
-        // インストール前やデータベース接続エラーの場合はスキップ
-        if (!file_exists(base_path('.env')) || !env('INSTALLED', false)) {
+        // インストール前の場合はスキップ
+        if (!file_exists(base_path('.env'))) {
+            return;
+        }
+
+        // インストール済みかどうかをチェック（config経由で取得することでキャッシュに対応）
+        $isInstalled = config('app.installed', false) ?: env('INSTALLED', false);
+        if (!$isInstalled) {
             return;
         }
 

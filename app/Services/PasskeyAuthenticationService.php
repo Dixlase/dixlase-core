@@ -107,7 +107,7 @@ class PasskeyAuthenticationService
      */
     public function getDevices($user)
     {
-        return Member2faPasskey::where('member_id', $user->id)
+        return WebauthnCredential::where('member_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->get();
     }
@@ -141,10 +141,12 @@ class PasskeyAuthenticationService
         $publicKey = $credentialData['publicKey'] ?? $credentialData['id'];
         
         $credential = WebauthnCredential::create([
+            'id' => $credentialData['id'],
             'member_id' => $member->id,
-            'credential_id' => $credentialData['id'],
             'public_key' => $publicKey,
             'name' => $deviceName ?? $this->generateDeviceName(),
+            'rp_id' => request()->getHost(),
+            'origin' => request()->getSchemeAndHttpHost(),
         ]);
         
         Log::info("[Passkey] 認証情報登録: ユーザーID {$member->id}, デバイス: " . ($deviceName ?? $this->generateDeviceName()));
@@ -158,7 +160,7 @@ class PasskeyAuthenticationService
     public function verifyAssertion(Member $member, array $assertionData): bool
     {
         $credential = WebauthnCredential::where('member_id', $member->id)
-            ->where('credential_id', $assertionData['id'])
+            ->where('id', $assertionData['id'])
             ->first();
             
         if (!$credential) {
@@ -205,7 +207,7 @@ class PasskeyAuthenticationService
     public function revokeCredential(Member $member, string $credentialId): bool
     {
         $deleted = WebauthnCredential::where('member_id', $member->id)
-            ->where('credential_id', $credentialId)
+            ->where('id', $credentialId)
             ->delete();
             
         if ($deleted) {

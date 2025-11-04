@@ -473,25 +473,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             const flashError = sessionStorage.getItem('flash_error');
             
             if (flashSuccess) {
-                // 成功メッセージを表示（既存のフラッシュメッセージ機能を使用）
-                const flashContainer = document.querySelector('.flash-message-container');
-                if (flashContainer) {
-                    const successDiv = document.createElement('div');
-                    successDiv.className = 'alert alert-success';
-                    successDiv.textContent = flashSuccess;
-                    flashContainer.appendChild(successDiv);
-                }
+                alert(flashSuccess);
                 sessionStorage.removeItem('flash_success');
             }
             
             if (flashError) {
-                const flashContainer = document.querySelector('.flash-message-container');
-                if (flashContainer) {
-                    const errorDiv = document.createElement('div');
-                    errorDiv.className = 'alert alert-error';
-                    errorDiv.textContent = flashError;
-                    flashContainer.appendChild(errorDiv);
-                }
+                alert(flashError);
                 sessionStorage.removeItem('flash_error');
             }
         });

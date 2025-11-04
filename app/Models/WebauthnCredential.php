@@ -2,14 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Laragear\WebAuthn\Models\WebAuthnCredential as BaseWebAuthnCredential;
 
-class WebauthnCredential extends Model
+class WebauthnCredential extends BaseWebAuthnCredential
 {
-    use HasFactory;
-
     /**
      * The table associated with the model.
      *
@@ -23,47 +20,44 @@ class WebauthnCredential extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'id',
         'member_id',
-        'credential_id',
+        'alias',
+        'counter',
+        'rp_id',
+        'origin',
+        'transports',
+        'aaguid',
         'public_key',
+        'attestation_format',
+        'certificates',
+        'disabled_at',
         'name',
     ];
 
     /**
-     * The attributes that should be cast.
+     * Get the name of the user ID column.
      *
-     * @var array<string, string>
+     * @return string
      */
-    protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
+    public function getUserIdColumn(): string
+    {
+        return 'member_id';
+    }
 
     /**
      * Get the member that owns the credential.
      */
     public function member(): BelongsTo
     {
-        return $this->belongsTo(Member::class);
+        return $this->belongsTo(Member::class, 'member_id');
     }
 
     /**
-     * Get the credential ID in base64url format.
-     *
-     * @return string
+     * Get the authenticatable entity (member).
      */
-    public function getCredentialIdAttribute($value): string
+    public function user(): BelongsTo
     {
-        return $value;
-    }
-
-    /**
-     * Get the public key in base64url format.
-     *
-     * @return string
-     */
-    public function getPublicKeyAttribute($value): string
-    {
-        return $value;
+        return $this->member();
     }
 }
