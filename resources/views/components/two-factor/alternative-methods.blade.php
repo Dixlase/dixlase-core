@@ -1,22 +1,36 @@
 @props([
     'methods' => [],
     'currentMethod' => null,
-    'context' => 'admin'
+    'context' => 'admin',
+    'showRecoveryCode' => true
 ])
-
-@if(count($methods) > 0)
-<div class="text-center">
-    <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
-        {{ __('two-factor.alternative_methods_prompt') }}
-    </p>
-    <div class="space-x-4">
-        @foreach($methods as $method)
-            @if($method['value'] !== $currentMethod)
-                <a href="{{ $method['url'] }}" class="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium">
+<p class="my-4 text-center text-gray-800 dark:text-white">{{ __('two-factor.switch_method_prompt') }}</p>
+<div class="mt-4 text-center space-y-2">
+    @php
+        // 利用可能な認証方法（現在の方法を除く）
+        $availableMethods = collect($methods)->filter(fn($method) => $method['value'] !== $currentMethod);
+    @endphp
+    
+    @if($availableMethods->isNotEmpty())
+        @foreach($availableMethods as $method)
+            <div>
+                <a href="{{ $method['url'] }}" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                    @if($method['value'] === 0)
+                        <i class="fas fa-envelope mr-1"></i>
+                    @elseif($method['value'] === 1)
+                        <i class="fas fa-key mr-1"></i>
+                    @endif
                     {{ $method['label'] }}
                 </a>
-            @endif
+            </div>
         @endforeach
-    </div>
+    @endif
+    
+    @if($showRecoveryCode)
+        <div>
+            <a href="{{ route($context . '.two-factor.recovery-code.show') }}" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                <i class="fas fa-life-ring mr-1"></i>{{ __('two-factor.recovery_code.use_recovery_code') }}
+            </a>
+        </div>
+    @endif
 </div>
-@endif

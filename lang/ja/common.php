@@ -264,7 +264,7 @@ return [
         ],
         'options' => [
             'email' => 'メール認証',
-            'passkey' => 'Passkey認証',
+            'passkey' => 'Passkey認証(生体認証)',
         ]
     ],
     
