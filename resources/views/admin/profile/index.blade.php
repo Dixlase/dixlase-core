@@ -355,7 +355,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             </div>
                             <button 
                                 type="button"
-                                onclick="openDeletePasskeyModal('{{ $device->credential_id }}', '{{ $device->name }}')"
+                                onclick="openDeletePasskeyModal('{{ $device->id }}', '{{ $device->name }}')"
                                 class="ml-4 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
                                 削除
                             </button>
@@ -661,28 +661,45 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     };
 
     window.revokePasskey = function() {
-        if (!currentCredentialId) return;
+        console.log('[Passkey Delete] Function called');
+        console.log('[Passkey Delete] currentCredentialId:', currentCredentialId);
+        
+        if (!currentCredentialId) {
+            console.error('[Passkey Delete] No credential ID found');
+            return;
+        }
 
-        fetch(`/admin/profile/passkey/${currentCredentialId}`, {
+        const url = `/admin/profile/passkey/${currentCredentialId}`;
+        console.log('[Passkey Delete] Sending DELETE request to:', url);
+
+        fetch(url, {
             method: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
                 'Accept': 'application/json'
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('[Passkey Delete] Response status:', response.status);
+            console.log('[Passkey Delete] Response headers:', response.headers);
+            return response.json();
+        })
         .then(data => {
+            console.log('[Passkey Delete] Response data:', data);
             closeModal('deletePasskeyModal');
             if (data.success) {
+                console.log('[Passkey Delete] Success - reloading page');
                 sessionStorage.setItem('flash_success', data.message);
                 location.reload();
             } else {
+                console.log('[Passkey Delete] Failed:', data.message);
                 sessionStorage.setItem('flash_error', data.message);
                 location.reload();
             }
         })
         .catch(error => {
-            console.error('Error:', error);
+            console.error('[Passkey Delete] Error:', error);
+            console.error('[Passkey Delete] Error stack:', error.stack);
             closeModal('deletePasskeyModal');
             sessionStorage.setItem('flash_error', '{{ __('admin.profile.passkey_delete_error') }}');
             location.reload();

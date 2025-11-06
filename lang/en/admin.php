@@ -257,6 +257,7 @@ return [
         'passkey_cancelled' => 'Passkey registration was cancelled.',
         'passkey_already_registered' => 'This Passkey is already registered.',
         'passkey_deleted' => 'Passkey has been deleted.',
+        'passkey_deleted_all' => 'All Passkeys (:count) have been deleted.',
         'passkey_not_found' => 'Passkey not found.',
         'passkey_delete_error' => 'Failed to delete Passkey.',
         'passkey_delete_all_error' => 'Failed to delete all Passkeys.',

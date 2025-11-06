@@ -23,6 +23,7 @@
 namespace App\Http\Controllers\Admin\Profile;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
+use App\Http\Requests\Admin\Profile\ProfileUpdateRequest;
 
 use App\Enums\AppearanceMode;
 use App\Enums\LoginNotificationMode;
@@ -255,105 +256,12 @@ class AdminProfileController extends AdminLoggedInController
         return view('admin.profile.index', $this->viewParams);
     }
 
-    public function update(Request $request)
+    public function update(ProfileUpdateRequest $request)
     {
         $member = Auth::guard('member')->user();
-
-        // 確認欄を表示するか（プロフィール画面では常に true）
-        $showConfirmation = true;
-
-        // 🔽 パスワード条件を全体設定から取得
-        $minLength = (int) MemberSetting::getValue('password_min_length', 8);
-        $requireUppercase = (bool) MemberSetting::getValue('password_require_uppercase', true);
-        $requireSymbol = (bool) MemberSetting::getValue('password_require_symbol', false);
-
-        // デバッグ用ログ出力
-        \Log::info('Profile Update Debug', [
-            'password_filled' => $request->filled('password'),
-            'password_value' => $request->input('password') ? '[HIDDEN]' : 'null/empty',
-            'password_confirmation_filled' => $request->filled('password_confirmation'),
-            'password_confirmation_value' => $request->input('password_confirmation') ? '[HIDDEN]' : 'null/empty',
-            'all_inputs' => array_keys($request->all())
-        ]);
-
-        // 🔽 パスワードのルールを動的に構築
-        $passwordRules = ['nullable', "min:$minLength"];
-
-        // パスワードが入力されている場合のみ確認を必須にする
-        if ($showConfirmation && $request->filled('password') && $request->filled('password_confirmation')) {
-            $passwordRules[] = 'confirmed';
-            \Log::info('Password confirmation rule added');
-        }
-
-        // パスワードが入力されている場合のみ複雑性チェックを適用
-        if ($request->filled('password')) {
-            // 常に小文字と数字を必須にする
-            $passwordRules[] = 'regex:/[a-z]/'; // 小文字
-            $passwordRules[] = 'regex:/[0-9]/'; // 数字
-
-            // 条件に応じて大文字と記号を追加
-            if ($requireUppercase) {
-                $passwordRules[] = 'regex:/[A-Z]/'; // 大文字
-            }
-            if ($requireSymbol) {
-                $passwordRules[] = 'regex:/[!@#$%^&*(),.?":{}|<>]/'; // 記号
-            }
-            
-            // パスワード辞書攻撃対策
-            $passwordRules[] = new NotPwnedPassword();
-            
-            \Log::info('Password complexity rules added');
-        }
-
-        \Log::info('Final password rules', ['rules' => $passwordRules]);
-
-        $rules = [
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
-            'email' => 'required|string|email|max:255|unique:members,email,' . $member->id,
-            'locale' => 'nullable|string|in:' . implode(',', Locale::values()),
-            'password' => $passwordRules,
-            'appearance' => ['nullable', new Enum(AppearanceMode::class)],
-            'login_notification_mode' => ['nullable', new Enum(LoginNotificationMode::class)],
-            'two_factor_mode' => ['nullable', new Enum(TwoFactorMode::class)],
-            'two_factor_method' => 'nullable|integer',
-        ];
-
-        // メールアドレスが変更された場合は確認フィールドを必須に
-        if ($request->input('email') !== $member->email) {
-            $rules['email_confirmation'] = 'required|email|same:email';
-        }
-
-        // 二段階認証方法のバリデーション（有効な方法の中から選択されているかチェック）
-        $passkeyEnabledForValidation = MemberSetting::getValue('enabled_2fa_passkey', '0') === '1';
-        $enabledTwoFactorMethods = [TwoFactorMethod::EMAIL->value];
-        if ($passkeyEnabledForValidation) {
-            $enabledTwoFactorMethods[] = TwoFactorMethod::PASSKEY->value;
-        }
-        $force2faValue = (int) MemberSetting::getValue('force_2fa', TwoFactorMode::UseProfileSetting->value);
-        $defaultTwoFactorMethod = (int) MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value);
         
-        // フィールドが表示・編集可能な場合のみ認証方法選択をバリデーション
-        // UseProfileSettingの場合のみフィールドが編集可能（Alwaysの場合は表示のみまたは非表示）
-        if ($force2faValue === TwoFactorMode::UseProfileSetting->value && !empty($enabledTwoFactorMethods)) {
-            // 有効な認証方法が1つだけの場合はその方法を強制
-            if (count($enabledTwoFactorMethods) === 1) {
-                $rules['two_factor_method'] = 'required|integer|in:' . $enabledTwoFactorMethods[0];
-            } else {
-                $rules['two_factor_method'] = 'required|integer|in:' . implode(',', $enabledTwoFactorMethods);
-            }
-        }
-
-        try {
-            $validated = $request->validate($rules);
-            \Log::info('Validation passed');
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            \Log::error('Validation failed', [
-                'errors' => $e->errors(),
-                'rules_applied' => $rules
-            ]);
-            throw $e;
-        }
+        // バリデーション済みデータを取得
+        $validated = $request->validated();
 
         // メールアドレスの変更を検知
         $emailChanged = $member->email !== $validated['email'];
@@ -680,28 +588,57 @@ class AdminProfileController extends AdminLoggedInController
      */
     public function revokePasskey(Request $request, string $credentialId)
     {
+        \Log::info('[Passkey Delete] Controller method called', [
+            'credential_id' => $credentialId,
+            'request_method' => $request->method(),
+            'request_path' => $request->path(),
+        ]);
+        
         $member = Auth::guard('member')->user();
+        \Log::info('[Passkey Delete] Member authenticated', [
+            'member_id' => $member->id,
+            'member_name' => $member->name,
+        ]);
+        
         $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
         
         try {
+            // 一括削除の場合
+            if ($credentialId === 'all') {
+                \Log::info('[Passkey Delete] Deleting all passkeys');
+                $deletedCount = $passkeyService->revokeAllCredentials($member);
+                \Log::info('[Passkey Delete] All passkeys deleted', ['count' => $deletedCount]);
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => __('admin.profile.passkey_deleted_all', ['count' => $deletedCount])
+                ]);
+            }
+            
+            // 個別削除の場合
+            \Log::info('[Passkey Delete] Calling revokeCredential service');
             $deleted = $passkeyService->revokeCredential($member, $credentialId);
+            \Log::info('[Passkey Delete] Service returned', ['deleted' => $deleted]);
             
             if (!$deleted) {
+                \Log::warning('[Passkey Delete] Credential not found');
                 return response()->json([
                     'success' => false,
                     'message' => __('admin.profile.passkey_not_found')
                 ], 404);
             }
 
+            \Log::info('[Passkey Delete] Successfully deleted');
             return response()->json([
                 'success' => true,
                 'message' => __('admin.profile.passkey_deleted')
             ]);
         } catch (\Exception $e) {
-            \Log::error('[Passkey] 削除エラー', [
+            \Log::error('[Passkey Delete] Exception caught', [
                 'member_id' => $member->id,
                 'credential_id' => $credentialId,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
             
             return response()->json([

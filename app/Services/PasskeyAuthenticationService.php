@@ -218,6 +218,21 @@ class PasskeyAuthenticationService
     }
 
     /**
+     * すべてのWebAuthn認証情報を削除
+     */
+    public function revokeAllCredentials(Member $member): int
+    {
+        $count = WebauthnCredential::where('member_id', $member->id)->count();
+        $deleted = WebauthnCredential::where('member_id', $member->id)->delete();
+        
+        if ($deleted) {
+            Log::info("[Passkey] すべての認証情報削除: ユーザーID {$member->id}, 削除数: {$count}");
+        }
+        
+        return $count;
+    }
+
+    /**
      * WebAuthn登録チャレンジを生成
      */
     public function generateRegistrationChallenge(Member $member): array
