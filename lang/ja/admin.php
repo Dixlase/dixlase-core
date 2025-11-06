@@ -233,6 +233,7 @@ return [
         'passkey_cancelled' => 'Passkey登録がキャンセルされました。',
         'passkey_already_registered' => 'このPasskeyは既に登録されています。',
         'passkey_deleted' => 'Passkeyを削除しました。',
+        'passkey_deleted_all' => '全てのPasskey（:count件）を削除しました。',
         'passkey_not_found' => 'Passkeyが見つかりません。',
         'passkey_delete_error' => 'Passkeyの削除に失敗しました。',
         'passkey_delete_all_error' => 'Passkeyの一括削除に失敗しました。',
