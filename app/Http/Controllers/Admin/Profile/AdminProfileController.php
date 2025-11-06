@@ -158,7 +158,7 @@ class AdminProfileController extends AdminLoggedInController
         $twoFactorMode = Auth::guard('member')->user()->two_factor_mode;
 
         // グローバル設定で有効な二段階認証方法を取得
-        $passkeyEnabled = MemberSetting::getValue('passkey_enabled', '0') === '1';
+        $passkeyEnabled = MemberSetting::getValue('enabled_2fa_passkey', '0') === '1';
         
         // メール認証は常に有効、Passkeyは設定に応じて
         $enabledTwoFactorMethods = [TwoFactorMethod::EMAIL->value];
@@ -214,9 +214,10 @@ class AdminProfileController extends AdminLoggedInController
         }
 
         // 認証方法選択を表示するかどうか
-        // プロフィール設定に従う場合、または常に有効の場合は表示
-        $showMethodSelection = ($force2fa === TwoFactorMode::UseProfileSetting->value) || 
-                               ($force2fa === TwoFactorMode::Always->value);
+        // 二段階認証が有効で、かつ複数の認証方法がある場合のみ選択可能
+        $is2FAEnabled = ($force2fa === TwoFactorMode::Always->value) || 
+                        ($force2fa === TwoFactorMode::UseProfileSetting->value && $twoFactorMode !== TwoFactorMode::Disabled->value);
+        $showMethodSelection = $is2FAEnabled && count($availableMethodOptions) > 1;
         
         // 全体設定が Always の場合は現在の設定を表示用として取得
         $currentGlobalTwoFactorMode = null;
@@ -324,7 +325,7 @@ class AdminProfileController extends AdminLoggedInController
         }
 
         // 二段階認証方法のバリデーション（有効な方法の中から選択されているかチェック）
-        $passkeyEnabledForValidation = MemberSetting::getValue('passkey_enabled', '0') === '1';
+        $passkeyEnabledForValidation = MemberSetting::getValue('enabled_2fa_passkey', '0') === '1';
         $enabledTwoFactorMethods = [TwoFactorMethod::EMAIL->value];
         if ($passkeyEnabledForValidation) {
             $enabledTwoFactorMethods[] = TwoFactorMethod::PASSKEY->value;
@@ -431,7 +432,7 @@ class AdminProfileController extends AdminLoggedInController
         // two_factor_method の処理
         if (in_array($force2fa, [TwoFactorMode::UseProfileSetting->value, TwoFactorMode::Always->value])) {
             // 有効な認証方法を再度取得
-            $passkeyEnabledForSave = MemberSetting::getValue('passkey_enabled', '0') === '1';
+            $passkeyEnabledForSave = MemberSetting::getValue('enabled_2fa_passkey', '0') === '1';
             $enabledTwoFactorMethods = [TwoFactorMethod::EMAIL->value];
             if ($passkeyEnabledForSave) {
                 $enabledTwoFactorMethods[] = TwoFactorMethod::PASSKEY->value;
