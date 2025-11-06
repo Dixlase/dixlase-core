@@ -259,6 +259,10 @@ return [
         'numbered_options' => [
             0 => 'Email Authentication',
             1 => 'Passkey (Biometric)',
+        ],
+        'options' => [
+            'email' => 'Email Authentication',
+            'passkey' => 'Passkey Authentication',
         ]
     ],
     

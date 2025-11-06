@@ -75,9 +75,21 @@ TEXT,
     'passkey' => [
         'title' => 'Passkey Authentication',
         'prompt' => 'Please log in using your Passkey.',
+        'start_auth' => 'Start Authentication',
         'waiting_title' => 'Waiting for Passkey Authentication',
         'waiting_message' => 'Please use Touch ID, Face ID, or your registered Passkey.',
+        'success_title' => 'Authentication Successful',
+        'success_message' => 'Passkey authentication completed. Redirecting...',
+        'error_title' => 'Authentication Failed',
+        'error_message' => 'Passkey authentication failed. Please try again.',
+        'retry' => 'Retry',
+        'unsupported_title' => 'Passkey Not Supported',
+        'unsupported_message' => 'Your device or browser does not support Passkey authentication.',
     ],
+    
+    // Authentication Method Switching
+    'switch_to_passkey' => 'Switch to Passkey Authentication',
+    'switch_to_email' => 'Switch to Email Authentication',
 
     // Recovery Code
     'recovery_code' => [

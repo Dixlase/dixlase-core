@@ -77,7 +77,7 @@ Route::prefix($adminUrl)->name('admin.')
         
         // Passkey認証
         Route::get('/two-factor-passkey', [AdminLoginController::class, 'showPasskeyForm'])->name('two-factor.passkey.show');
-        Route::post('/two-factor-passkey/options', [AdminLoginController::class, 'getPasskeyOptions'])->name('two-factor.passkey.options');
+        Route::post('/two-factor-passkey/challenge', [AdminLoginController::class, 'getPasskeyChallenge'])->name('two-factor.passkey.challenge');
         Route::post('/two-factor-passkey/verify', [AdminLoginController::class, 'verifyPasskey'])->name('two-factor.passkey.verify');
 
         // パスワードリセット

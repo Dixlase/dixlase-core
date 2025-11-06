@@ -261,6 +261,10 @@ return [
         'numbered_options' => [
             0 => 'メール認証',
             1 => 'Passkey（生体認証）',
+        ],
+        'options' => [
+            'email' => 'メール認証',
+            'passkey' => 'Passkey認証',
         ]
     ],
     
