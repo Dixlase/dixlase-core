@@ -265,7 +265,8 @@ class PasskeyAuthenticationService
         $allowCredentials = $credentials->map(function ($credential) {
             return [
                 'type' => 'public-key',
-                'id' => $credential->credential_id,
+                'id' => $credential->id, // credential_idではなくid
+                'transports' => json_decode($credential->transports ?? '["internal","hybrid"]', true),
             ];
         })->toArray();
         

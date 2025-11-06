@@ -88,6 +88,7 @@ TEXT,
     ],
     
     // Authentication Method Switching
+    'switch_method_prompt' => 'Switch to another authentication method',
     'switch_to_passkey' => 'Switch to Passkey Authentication',
     'switch_to_email' => 'Switch to Email Authentication',
 

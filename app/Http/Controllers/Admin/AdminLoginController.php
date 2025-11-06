@@ -812,14 +812,14 @@ class AdminLoginController extends AdminController
         }
 
         $request->validate([
-            'credential' => 'required|array',
-            'credential.id' => 'required|string',
-            'credential.response' => 'required|array',
+            'response' => 'required|array',
+            'response.id' => 'required|string',
+            'response.response' => 'required|array',
         ]);
 
         try {
             $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
-            $credentialData = $request->input('credential');
+            $credentialData = $request->input('response');
 
             // 認証レスポンスを検証
             $isValid = $passkeyService->verifyAssertion($member, $credentialData);

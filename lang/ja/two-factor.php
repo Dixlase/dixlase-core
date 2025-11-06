@@ -73,13 +73,13 @@ TEXT,
 
     // Passkey認証
     'passkey' => [
-        'title' => 'Passkey認証',
-        'prompt' => 'Passkeyを使用してログインしてください。',
+        'title' => 'Passkey認証(生体認証)',
+        'prompt' => 'Passkey(生体認証)を使用してログインしてください。',
         'start_auth' => '認証を開始',
-        'waiting_title' => 'Passkey認証待機中',
+        'waiting_title' => 'Passkey認証(生体認証)待機中',
         'waiting_message' => 'Touch ID、Face ID、または登録済みのPasskeyを使用してください。',
         'success_title' => '認証成功',
-        'success_message' => 'Passkey認証が完了しました。リダイレクトしています...',
+        'success_message' => 'Passkey認証(生体認証)が完了しました。リダイレクトしています...',
         'error_title' => '認証失敗',
         'error_message' => 'Passkey認証に失敗しました。再試行してください。',
         'retry' => '再試行',
@@ -88,6 +88,7 @@ TEXT,
     ],
     
     // 認証方法切り替え
+    'switch_method_prompt' => '別の認証方法に切り替える',
     'switch_to_passkey' => 'Passkey認証に切り替える',
     'switch_to_email' => 'メール認証に切り替える',
 
@@ -100,7 +101,7 @@ TEXT,
         'submit' => '認証してログイン',
         'invalid' => '回復コードが無効です。',
         'invalid_with_attempts' => '回復コードが無効です。残り試行回数: :attempts回',
-        'use_recovery_code' => '回復コードを使用',
+        'use_recovery_code' => '回復コード',
         'back_to_2fa' => '二段階認証に戻る',
     ],
 
