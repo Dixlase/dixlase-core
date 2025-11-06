@@ -40,7 +40,17 @@ use App\Models\SecuritySetting;
 use App\Models\CaptchaFormSetting;
 use App\Captcha\CaptchaDriver;
 use App\Helpers\CaptchaHelper;
+use App\Helpers\TwoFactorHelper;
+use App\Enums\TwoFactorMethod;
+use App\Models\BaseSetting;
+use App\Models\Member2faToken;
+use App\Services\TwoFactorAttemptService;
+use App\Services\PasskeyAuthenticationService;
+use App\Services\RecoveryCodeService;
+use App\Notifications\MemberVerificationCompletedNotification;
+use App\Notifications\AdminMemberVerifiedNotification;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 
 
 
@@ -174,7 +184,7 @@ class AdminLoginController extends AdminController
         $twoFactor = app(AdminTwoFactorService::class);
         
         // メールサーバーのテストが完了していない場合は2FAをスキップ
-        $mailServerTested = \App\Services\MailServerValidatorService::isMailServerTested();
+        $mailServerTested = MailServerValidatorService::isMailServerTested();
         
         Log::info('[2FA Login] 二段階認証チェック', [
             'member_id' => $member->id,
@@ -215,17 +225,22 @@ class AdminLoginController extends AdminController
                 'effective_method' => $effectiveMethod,
             ]);
 
-            // Passkey認証の場合は専用フローへ（将来実装）
-            // 現在はメール認証のみ対応
-            
-            Log::info('[2FA Login] コード生成開始', [
-                'member_id' => $member->id,
-                'effective_method' => $effectiveMethod,
-            ]);
+            // メール認証の場合のみコード生成
+            if ($effectiveMethod === TwoFactorMethod::EMAIL->value) {
+                Log::info('[2FA Login] メール認証コード生成開始', [
+                    'member_id' => $member->id,
+                    'effective_method' => $effectiveMethod,
+                ]);
 
-            $twoFactor->generate($member); // ← ここでコード生成 + メール送信
-            
-            Log::info('[2FA Login] コード生成完了、リダイレクト');
+                $twoFactor->generate($member); // ← ここでコード生成 + メール送信
+                
+                Log::info('[2FA Login] コード生成完了、リダイレクト');
+            } else {
+                Log::info('[2FA Login] Passkey認証へリダイレクト', [
+                    'member_id' => $member->id,
+                    'effective_method' => $effectiveMethod,
+                ]);
+            }
 
             // デフォルト認証方法に応じて適切なルートにリダイレクト
             $redirectRoute = $this->getTwoFactorMethodRoute($effectiveMethod);
@@ -314,10 +329,10 @@ class AdminLoginController extends AdminController
                 session()->flash('success', __('admin.profile.account_verification_success'));
                 
                 // メールサーバー設定済みの場合のみ通知を送信
-                if (\App\Services\MailServerValidatorService::isMailServerTested()) {
+                if (MailServerValidatorService::isMailServerTested()) {
                     try {
                         // メンバー本人に認証完了メールを送信
-                        $member->notify(new \App\Notifications\MemberVerificationCompletedNotification());
+                        $member->notify(new MemberVerificationCompletedNotification());
                         
                         \Log::info('Verification completed notification sent to member', [
                             'member_id' => $member->id,
@@ -332,12 +347,12 @@ class AdminLoginController extends AdminController
                     
                     try {
                         // 管理者に通知
-                        $adminEmail = \App\Models\BaseSetting::getValue('system_admin_email') 
-                            ?? \App\Models\BaseSetting::getValue('notification_email');
+                        $adminEmail = BaseSetting::getValue('system_admin_email') 
+                            ?? BaseSetting::getValue('notification_email');
                         
                         if ($adminEmail) {
-                            \Illuminate\Support\Facades\Notification::route('mail', $adminEmail)
-                                ->notify(new \App\Notifications\AdminMemberVerifiedNotification(
+                            Notification::route('mail', $adminEmail)
+                                ->notify(new AdminMemberVerifiedNotification(
                                     $member,
                                     now()->format('Y-m-d H:i:s')
                                 ));
@@ -394,7 +409,7 @@ class AdminLoginController extends AdminController
         }
 
         // ロックアウトチェック
-        $attemptService = app(\App\Services\TwoFactorAttemptService::class);
+        $attemptService = app(TwoFactorAttemptService::class);
         if ($attemptService->isLockedOut($member)) {
             $remainingMinutes = $attemptService->getRemainingLockoutTime($member);
             return redirect()->route('admin.login')
@@ -402,7 +417,7 @@ class AdminLoginController extends AdminController
         }
 
         // 既存の有効なコードがあるかチェック
-        $hasValidToken = \App\Models\Member2faToken::where('member_id', $member->id)
+        $hasValidToken = Member2faToken::where('member_id', $member->id)
             ->where('expires_at', '>', now())
             ->exists();
 
@@ -424,32 +439,38 @@ class AdminLoginController extends AdminController
         }
 
         // TwoFactorHelperを使用して有効な認証方法を取得
-        $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
+        $twoFactorHelper = app(TwoFactorHelper::class);
         $enabledMethods = $twoFactorHelper->getEnabledTwoFactorMethods();
-        $currentMethod = 0; // EMAIL
+        $currentMethod = TwoFactorMethod::EMAIL->value;
 
-        // 認証方法の翻訳キーマッピング
-        $methodLabels = [
-            0 => __('common.two_factor_method.options.email'),
-            1 => __('common.two_factor_method.options.device'),
-            2 => __('common.two_factor_method.options.biometric'),
-        ];
+        // Passkeyが有効かチェック
+        $passkeyEnabled = MemberSetting::getValue('enabled_2fa_passkey', '0') === '1';
+        
+        // メンバーがPasskeyを登録しているかチェック
+        $passkeyService = app(PasskeyAuthenticationService::class);
+        $hasPasskey = $passkeyService->getCredentials($member)->isNotEmpty();
 
         // 有効な認証方法のリストを作成
         $availableMethods = [];
         foreach ($enabledMethods as $method) {
             if ($method !== $currentMethod) { // 現在の方法は除外
+                // Passkeyの場合は、有効かつ登録済みの場合のみ表示
+                if ($method === TwoFactorMethod::PASSKEY->value && (!$passkeyEnabled || !$hasPasskey)) {
+                    continue;
+                }
+                
+                $methodEnum = TwoFactorMethod::from($method);
                 $availableMethods[] = [
                     'value' => $method,
-                    'label' => $methodLabels[$method] ?? '',
+                    'label' => $methodEnum->label(),
                     'url' => $this->getTwoFactorMethodRoute($method),
                 ];
             }
         }
 
         // 二段階認証の設定値を取得（メンバー設定 > コンフィグ）
-        $twoFactorExpireMinutes = (int) \App\Models\MemberSetting::getValue('two_factor_expire_minutes', config('two-factor.code_expiration', 5));
-        $twoFactorResendIntervalSeconds = (int) \App\Models\MemberSetting::getValue('two_factor_resend_interval_seconds', config('two-factor.resend_interval', 60));
+        $twoFactorExpireMinutes = (int) MemberSetting::getValue('two_factor_expire_minutes', config('two-factor.code_expiration', 5));
+        $twoFactorResendIntervalSeconds = (int) MemberSetting::getValue('two_factor_resend_interval_seconds', config('two-factor.resend_interval', 60));
 
         return view('admin::two-factor.email-challenge', [
             'availableMethods' => $availableMethods,
@@ -465,8 +486,8 @@ class AdminLoginController extends AdminController
     protected function getTwoFactorMethodRoute(int $method): string
     {
         return match($method) {
-            0 => route('admin.two-factor.login'), // EMAIL
-            1 => route('admin.two-factor.passkey.show'), // PASSKEY
+            TwoFactorMethod::EMAIL->value => route('admin.two-factor.login'),
+            TwoFactorMethod::PASSKEY->value => route('admin.two-factor.passkey.show'),
             default => route('admin.two-factor.login'),
         };
     }
@@ -485,7 +506,7 @@ class AdminLoginController extends AdminController
         }
 
         // ロックアウトチェック
-        $attemptService = app(\App\Services\TwoFactorAttemptService::class);
+        $attemptService = app(TwoFactorAttemptService::class);
         if ($attemptService->isLockedOut($member)) {
             $remainingMinutes = $attemptService->getRemainingLockoutTime($member);
             session()->forget(['login.id', 'login.remember']);
@@ -501,7 +522,7 @@ class AdminLoginController extends AdminController
         if (!$isValid) {
             // 最大試行回数に達したかチェック
             if ($attemptService->hasReachedMaxAttempts($member)) {
-                $lockoutDuration = (int) \App\Models\MemberSetting::getValue('2fa_lockout_duration', 30);
+                $lockoutDuration = (int) MemberSetting::getValue('2fa_lockout_duration', 30);
                 session()->forget(['login.id', 'login.remember']);
                 return redirect()->route('admin.login')
                     ->withErrors(['email' => __('two-factor.lockout.locked', ['minutes' => $lockoutDuration])]);
@@ -519,7 +540,7 @@ class AdminLoginController extends AdminController
         $attemptService->handleSuccess($member);
 
         // 回復コードが未生成の場合は自動生成
-        $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
+        $twoFactorHelper = app(TwoFactorHelper::class);
         if ($twoFactorHelper->hasNoRecoveryCodes($member)) {
             try {
                 $codes = $twoFactorHelper->generateRecoveryCodes($member, true);
@@ -588,7 +609,7 @@ class AdminLoginController extends AdminController
         }
 
         // ロックアウトチェック
-        $attemptService = app(\App\Services\TwoFactorAttemptService::class);
+        $attemptService = app(TwoFactorAttemptService::class);
         if ($attemptService->isLockedOut($member)) {
             $remainingMinutes = $attemptService->getRemainingLockoutTime($member);
             return redirect()->route('admin.login')
@@ -615,7 +636,7 @@ class AdminLoginController extends AdminController
         }
 
         // ロックアウトチェック
-        $attemptService = app(\App\Services\TwoFactorAttemptService::class);
+        $attemptService = app(TwoFactorAttemptService::class);
         if ($attemptService->isLockedOut($member)) {
             $remainingMinutes = $attemptService->getRemainingLockoutTime($member);
             session()->forget(['login.id', 'login.remember']);
@@ -623,7 +644,7 @@ class AdminLoginController extends AdminController
                 ->withErrors(['email' => __('two-factor.lockout.message', ['minutes' => $remainingMinutes])]);
         }
 
-        $recoveryCodeService = app(\App\Services\RecoveryCodeService::class);
+        $recoveryCodeService = app(RecoveryCodeService::class);
         $isValid = $recoveryCodeService->validate($member, $request->recovery_code);
 
         // 試行を記録
@@ -632,7 +653,7 @@ class AdminLoginController extends AdminController
         if (!$isValid) {
             // 最大試行回数に達したかチェック
             if ($attemptService->hasReachedMaxAttempts($member)) {
-                $lockoutDuration = (int) \App\Models\MemberSetting::getValue('2fa_lockout_duration', 30);
+                $lockoutDuration = (int) MemberSetting::getValue('2fa_lockout_duration', 30);
                 session()->forget(['login.id', 'login.remember']);
                 return redirect()->route('admin.login')
                     ->withErrors(['email' => __('two-factor.lockout.locked', ['minutes' => $lockoutDuration])]);
@@ -679,33 +700,32 @@ class AdminLoginController extends AdminController
         }
 
         // 利用可能な認証方法を取得
-        $twoFactorService = app(AdminTwoFactorService::class);
+        $twoFactorHelper = app(TwoFactorHelper::class);
+        $enabledMethods = $twoFactorHelper->getEnabledTwoFactorMethods();
         $availableMethods = [];
-        $currentMethod = $member->two_factor_method;
-
-        // 有効な認証方法を取得
-        $enabledMethods = $twoFactorService->getEnabledAuthMethods();
+        $currentMethod = TwoFactorMethod::PASSKEY->value;
 
         foreach ($enabledMethods as $method) {
-            if ($method !== 1) { // PASSKEY以外
+            if ($method !== $currentMethod) { // PASSKEY以外
+                $methodEnum = TwoFactorMethod::from($method);
                 $availableMethods[] = [
                     'value' => $method,
-                    'label' => __('common.two_factor_method.options.' . $method),
+                    'label' => $methodEnum->label(),
                     'url' => $this->getTwoFactorMethodRoute($method),
                 ];
             }
         }
 
-        return view('admin::two-factor.passkey', [
+        return view('admin.two-factor.passkey-challenge', [
             'availableMethods' => $availableMethods,
             'currentMethod' => $currentMethod,
         ]);
     }
 
     /**
-     * Passkey認証オプションを取得
+     * Passkey認証チャレンジを取得
      */
-    public function getPasskeyOptions(Request $request)
+    public function getPasskeyChallenge(Request $request)
     {
         if (!session()->has('login.id')) {
             return response()->json([
@@ -754,7 +774,7 @@ class AdminLoginController extends AdminController
 
             return response()->json([
                 'success' => true,
-                'options' => $options
+                'challenge' => $options
             ]);
         } catch (\Exception $e) {
             Log::error('[Passkey Auth] チャレンジ生成エラー', [

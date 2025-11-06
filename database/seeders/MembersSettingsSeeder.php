@@ -36,11 +36,10 @@ class MembersSettingsSeeder extends Seeder
 
             // 二段階認証設定
             ['key' => 'force_2fa', 'value' => '0'], // 0 = 無効, 1 = 有効, 2 = プロフィール設定を反映
-            ['key' => 'enabled_two_factor_methods', 'value' => '0'], // メール認証のみ有効
             ['key' => 'default_two_factor_method', 'value' => '0'], // デフォルトの認証方法はメール認証
             ['key' => 'two_factor_expire_minutes', 'value' => '5'], // デフォルト: 5分（メール認証）
             ['key' => 'two_factor_resend_interval_seconds', 'value' => '60'], // デフォルト: 60秒
-            ['key' => 'passkey_enabled', 'value' => '1'], // Passkey機能有効/無効
+            ['key' => 'enabled_2fa_passkey', 'value' => '0'], // Passkey機能有効/無効（デフォルト: 無効）
             ['key' => 'max_passkey_devices', 'value' => '3'], // Passkey最大登録数（1-5）
             ['key' => 'recovery_codes_count', 'value' => '5'], // 回復コード生成個数（1-5）
             ['key' => 'recovery_code_regenerate_interval', 'value' => '24'], // 回復コード再生成間隔（時間）

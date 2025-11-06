@@ -1,22 +1,16 @@
 @extends('layouts.auth')
 
-@section('title', __('two-factor.title'))
+@section('title', __('two-factor.passkey.title'))
 @section('icon')
-["fas fa-envelope", "fas fa-key"]
+["fas fa-key", "fas fa-fingerprint"]
 @endsection
-@section('header', __('two-factor.title'))
-@section('description', __('two-factor.email.prompt'))
+@section('header', __('two-factor.passkey.title'))
+@section('description', __('two-factor.passkey.prompt'))
 
 @section('content')
-    <x-two-factor.email-challenge
-        :action="route('admin.two-factor.confirm')"
-        :resend-action="route('admin.two-factor.resend')"
-        :title="__('two-factor.email.code_title')"
-        :prompt="__('two-factor.email.code_prompt')"
-        :submit-text="__('two-factor.email.verify')"
-        :resend-text="__('two-factor.email.resend')"
-        :expire-minutes="$expireMinutes"
-        :resend-interval-seconds="$resendIntervalSeconds"
+    <x-two-factor.passkey-challenge
+        :challenge-action="route('admin.two-factor.passkey.challenge')"
+        :verify-action="route('admin.two-factor.passkey.verify')"
         context="admin"
     />
 
@@ -33,13 +27,13 @@
     <!-- 別の認証方法へのリンク -->
     <div class="mt-4 text-center space-y-2">
         @php
-            $passkeyMethod = collect($availableMethods)->firstWhere('value', 1);
+            $emailMethod = collect($availableMethods)->firstWhere('value', 0);
         @endphp
         
-        @if($passkeyMethod)
+        @if($emailMethod)
             <div>
-                <a href="{{ $passkeyMethod['url'] }}" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-                    <i class="fas fa-key mr-1"></i>{{ __('two-factor.switch_to_passkey') }}
+                <a href="{{ $emailMethod['url'] }}" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                    <i class="fas fa-envelope mr-1"></i>{{ __('two-factor.switch_to_email') }}
                 </a>
             </div>
         @endif

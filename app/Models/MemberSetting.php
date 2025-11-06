@@ -29,8 +29,9 @@ class MemberSetting extends Model
         // DB更新
         $record = static::updateOrCreate(['key' => $key], ['value' => $value]);
 
-        // キャッシュ削除
+        // キャッシュ削除（個別キャッシュと全体キャッシュ）
         Cache::forget("member_setting_{$key}");
+        Cache::forget('members_settings_all');
 
         return $record;
     }

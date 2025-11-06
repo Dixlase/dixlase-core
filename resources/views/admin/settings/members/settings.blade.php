@@ -308,7 +308,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <!-- Passkey認証（有効/無効選択可能） -->
                         <div class="flex items-center space-x-3">
                             @include('components.form.checkbox', [
-                                'name' => 'passkey_enabled',
+                                'name' => 'enabled_2fa_passkey',
                                 'label' => __('common.two_factor_method.numbered_options.1'),
                                 'value' => $passkeyEnabled ? 1 : 0,
                                 'checked' => $passkeyEnabled ?? false,

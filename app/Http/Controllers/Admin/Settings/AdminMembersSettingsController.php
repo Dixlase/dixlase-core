@@ -720,12 +720,12 @@ class AdminMembersSettingsController extends AdminLoggedInController
         
         // Passkey有効/無効設定を取得
         // メール認証は常に有効なので設定不要
-        $passkeyDbValue = MemberSetting::getValue('passkey_enabled', '0');
+        $passkeyDbValue = MemberSetting::getValue('enabled_2fa_passkey', '0');
         $passkeyEnabled = $passkeyDbValue === '1';
         
         // old() の値がある場合はそれを優先（バリデーションエラー後の再表示時）
-        if (old('passkey_enabled') !== null) {
-            $passkeyEnabled = (bool) old('passkey_enabled');
+        if (old('enabled_2fa_passkey') !== null) {
+            $passkeyEnabled = (bool) old('enabled_2fa_passkey');
         }
 
         // パスワードリセット機能設定
@@ -837,8 +837,8 @@ class AdminMembersSettingsController extends AdminLoggedInController
         MemberSetting::setValue('two_factor_resend_interval_seconds', (string) $validated['two_factor_resend_interval_seconds']);
         
         // Passkey有効/無効設定の保存（メール認証は常に有効）
-        $passkeyValue = isset($validated['passkey_enabled']) && $validated['passkey_enabled'] ? '1' : '0';
-        MemberSetting::setValue('passkey_enabled', $passkeyValue);
+        $passkeyValue = isset($validated['enabled_2fa_passkey']) && $validated['enabled_2fa_passkey'] ? '1' : '0';
+        MemberSetting::setValue('enabled_2fa_passkey', $passkeyValue);
 
         // 二段階認証試行制限設定
         MemberSetting::setValue('2fa_max_attempts', (string) $validated['2fa_max_attempts']);

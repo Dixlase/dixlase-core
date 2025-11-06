@@ -75,9 +75,21 @@ TEXT,
     'passkey' => [
         'title' => 'Passkey認証',
         'prompt' => 'Passkeyを使用してログインしてください。',
+        'start_auth' => '認証を開始',
         'waiting_title' => 'Passkey認証待機中',
         'waiting_message' => 'Touch ID、Face ID、または登録済みのPasskeyを使用してください。',
+        'success_title' => '認証成功',
+        'success_message' => 'Passkey認証が完了しました。リダイレクトしています...',
+        'error_title' => '認証失敗',
+        'error_message' => 'Passkey認証に失敗しました。再試行してください。',
+        'retry' => '再試行',
+        'unsupported_title' => 'Passkey未対応',
+        'unsupported_message' => 'お使いのデバイスまたはブラウザはPasskeyに対応していません。',
     ],
+    
+    // 認証方法切り替え
+    'switch_to_passkey' => 'Passkey認証に切り替える',
+    'switch_to_email' => 'メール認証に切り替える',
 
     // 回復コード
     'recovery_code' => [

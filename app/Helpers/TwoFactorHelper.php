@@ -113,13 +113,22 @@ class TwoFactorHelper
 
     /**
      * 有効な二段階認証方法を取得
+     * メール認証は常に有効、Passkeyはenabled_2fa_passkey設定で制御
      *
      * @return array
      */
     public function getEnabledTwoFactorMethods(): array
     {
-        $enabledString = \App\Models\MemberSetting::getValue('enabled_two_factor_methods', (string)TwoFactorMethod::EMAIL->value);
-        return $enabledString ? array_map('intval', explode(',', $enabledString)) : [TwoFactorMethod::EMAIL->value];
+        // メール認証は常に有効
+        $enabledMethods = [TwoFactorMethod::EMAIL->value];
+        
+        // Passkeyが有効な場合は追加
+        $passkeyEnabled = \App\Models\MemberSetting::getValue('enabled_2fa_passkey', '0');
+        if ($passkeyEnabled === '1') {
+            $enabledMethods[] = TwoFactorMethod::PASSKEY->value;
+        }
+        
+        return $enabledMethods;
     }
 
     /**

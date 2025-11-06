@@ -48,7 +48,7 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
             'two_factor_expire_minutes' => 'required|integer|min:1|max:60', // 1-60分（メール認証）
             'two_factor_resend_interval_seconds' => 'required|integer|min:60|max:600', // 60-600秒（1-10分）
             // Passkey有効/無効設定（メール認証は常に有効）
-            'passkey_enabled' => 'nullable|boolean',
+            'enabled_2fa_passkey' => 'nullable|boolean',
             // 二段階認証試行制限設定
             '2fa_max_attempts' => 'required|integer|min:1|max:10',
             '2fa_attempt_window' => 'required|integer|min:5|max:60',
