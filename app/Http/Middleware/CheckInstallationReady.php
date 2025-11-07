@@ -30,7 +30,7 @@ class CheckInstallationReady
                     $copied = copy($envExamplePath, $envPath);
                     if ($copied) {
                         chmod($envPath, 0664);
-                        Log::info('.env file was created from .env.example');
+                        Log::channel('install')->info('.env file was created from .env.example');
                     } else {
                         Log::error('Failed to copy .env.example to .env');
                         throw new \RuntimeException('Failed to create .env file');
@@ -74,7 +74,7 @@ class CheckInstallationReady
                     throw new \RuntimeException('Failed to update APP_KEY in .env file');
                 }
                 
-                Log::info('APP_KEY was generated and saved to .env');
+                Log::channel('install')->info('APP_KEY was generated and saved to .env');
                 
                 // 設定をリフレッシュ
                 if (function_exists('opcache_invalidate')) {
@@ -97,8 +97,8 @@ class CheckInstallationReady
         $debugInfo = [];
         $isMigrated = $this->checkMigrationCompleted($debugInfo);
         
-        Log::info('CheckInstallationReady: INSTALLED=' . var_export($installed, true) . ', isInstalled=' . var_export($isInstalled, true) . ', isMigrated=' . var_export($isMigrated, true) . ', Route=' . $currentRoute);
-        Log::info('CheckInstallationReady: Debug Info=' . json_encode($debugInfo, JSON_UNESCAPED_UNICODE));
+        Log::channel('install')->info('CheckInstallationReady: INSTALLED=' . var_export($installed, true) . ', isInstalled=' . var_export($isInstalled, true) . ', isMigrated=' . var_export($isMigrated, true) . ', Route=' . $currentRoute);
+        Log::channel('install')->info('CheckInstallationReady: Debug Info=' . json_encode($debugInfo, JSON_UNESCAPED_UNICODE));
         
         if (!$isInstalled) {
             // 未インストール状態の処理
@@ -110,11 +110,11 @@ class CheckInstallationReady
                     // 完了画面へのアクセス
                     if (!$isMigrated) {
                         // マイグレーション未完了なのに完了画面にアクセス → 初期画面へ
-                        Log::info('CheckInstallationReady: マイグレーション未完了 - install.indexにリダイレクト');
+                        Log::channel('install')->info('CheckInstallationReady: マイグレーション未完了 - install.indexにリダイレクト');
                         return redirect()->route('install.index');
                     }
                     // マイグレーション完了済みなら完了画面表示を許可
-                    Log::info('CheckInstallationReady: 完了画面表示を許可');
+                    Log::channel('install')->info('CheckInstallationReady: 完了画面表示を許可');
                     if ($request->hasSession()) {
                         session(['install_process_completed' => true]);
                     }
@@ -122,18 +122,18 @@ class CheckInstallationReady
                     
                 } elseif ($request->is('install/finalize')) {
                     // finalize処理は常に許可（POSTリクエスト）
-                    Log::info('CheckInstallationReady: finalize処理を許可');
+                    Log::channel('install')->info('CheckInstallationReady: finalize処理を許可');
                     
                 } else {
                     // その他のインストールフロー（index, environment, settings, database, confirm）
                     if ($isMigrated) {
                         // マイグレーション完了済み → 完了画面へリダイレクト
-                        Log::info('CheckInstallationReady: マイグレーション完了済み - 完了画面にリダイレクト');
+                        Log::channel('install')->info('CheckInstallationReady: マイグレーション完了済み - 完了画面にリダイレクト');
                         session(['install_process_completed' => true]);
                         return redirect()->route('install.complete');
                     }
                     // マイグレーション未完了ならインストールフロー続行を許可
-                    Log::info('CheckInstallationReady: インストールフロー続行を許可');
+                    Log::channel('install')->info('CheckInstallationReady: インストールフロー続行を許可');
                 }
                 
             } else {
@@ -144,21 +144,21 @@ class CheckInstallationReady
                     // ただし、既に完了画面へのリダイレクト中でなければ
                     // セッションが利用可能な場合のみチェック
                     if ($request->hasSession() && !$request->session()->has('_redirect_to_complete')) {
-                        Log::info('CheckInstallationReady: マイグレーション完了 - 完了画面にリダイレクト');
+                        Log::channel('install')->info('CheckInstallationReady: マイグレーション完了 - 完了画面にリダイレクト');
                         session(['install_process_completed' => true]);
                         $request->session()->put('_redirect_to_complete', true);
                         return redirect()->route('install.complete');
                     } elseif ($request->hasSession()) {
                         // リダイレクトループ防止: すでにリダイレクト済みの場合は通過
-                        Log::info('CheckInstallationReady: リダイレクトループ防止 - 通過');
+                        Log::channel('install')->info('CheckInstallationReady: リダイレクトループ防止 - 通過');
                     } else {
                         // セッションが利用できない場合はリダイレクト
-                        Log::info('CheckInstallationReady: セッション未開始 - 完了画面にリダイレクト');
+                        Log::channel('install')->info('CheckInstallationReady: セッション未開始 - 完了画面にリダイレクト');
                         return redirect()->route('install.complete');
                     }
                 } else {
                     // マイグレーション未完了 → インストール開始画面へ
-                    Log::info('CheckInstallationReady: 未インストール - install.indexにリダイレクト');
+                    Log::channel('install')->info('CheckInstallationReady: 未インストール - install.indexにリダイレクト');
                     return redirect()->route('install.index');
                 }
             }
@@ -166,7 +166,7 @@ class CheckInstallationReady
         } else {
             // インストール済みの場合、インストール画面にはアクセスできないようにする
             if ($request->is('install*') || $request->is('install/*')) {
-                Log::info('CheckInstallationReady: インストール済み - フロントページにリダイレクト');
+                Log::channel('install')->info('CheckInstallationReady: インストール済み - フロントページにリダイレクト');
                 return redirect('/')->with('message', 'このアプリケーションは既にインストールされています。');
             }
         }
@@ -189,7 +189,7 @@ class CheckInstallationReady
             $debugInfo['step1_db_connection'] = $dbName ? "OK ({$dbName})" : 'NG';
             
             if (!$dbName) {
-                Log::info('CheckInstallationReady: データベース接続なし');
+                Log::channel('install')->info('CheckInstallationReady: データベース接続なし');
                 return false;
             }
             
@@ -247,11 +247,11 @@ class CheckInstallationReady
             $debugInfo['step5_admin_users'] = "{$adminCount}人";
             
             if ($adminCount === 0) {
-                Log::info('CheckInstallationReady: 管理者ユーザーが存在しません（初期データ未投入）');
+                Log::channel('install')->info('CheckInstallationReady: 管理者ユーザーが存在しません（初期データ未投入）');
                 return false;
             }
             
-            Log::info('CheckInstallationReady: 管理者ユーザー存在確認');
+            Log::channel('install')->info('CheckInstallationReady: 管理者ユーザー存在確認');
             
             // ステップ6: base_settingsに基本データが存在するかチェック（さらなる確認）
             $hasSiteName = DB::table('base_settings')
@@ -260,17 +260,17 @@ class CheckInstallationReady
             $debugInfo['step6_site_name'] = $hasSiteName ? 'OK' : 'NG';
             
             if (!$hasSiteName) {
-                Log::info('CheckInstallationReady: base_settingsに初期データが存在しません');
+                Log::channel('install')->info('CheckInstallationReady: base_settingsに初期データが存在しません');
                 return false;
             }
             
             $debugInfo['result'] = '✅ ALL PASSED';
-            Log::info('CheckInstallationReady: ✅ マイグレーション完了を確認（全チェック通過）');
+            Log::channel('install')->info('CheckInstallationReady: ✅ マイグレーション完了を確認（全チェック通過）');
             return true;
             
         } catch (\Exception $e) {
             $debugInfo['error'] = $e->getMessage();
-            Log::info('CheckInstallationReady: マイグレーションチェックエラー - ' . $e->getMessage());
+            Log::channel('install')->info('CheckInstallationReady: マイグレーションチェックエラー - ' . $e->getMessage());
             return false;
         }
     }
