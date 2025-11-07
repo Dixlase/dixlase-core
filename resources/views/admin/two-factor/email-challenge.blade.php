@@ -9,8 +9,8 @@
 
 @section('content')
     <x-two-factor.email-challenge
-        :action="route('admin.two-factor.confirm')"
-        :resend-action="route('admin.two-factor.resend')"
+        :action="route('admin.two-factor.email.verify')"
+        :resend-action="route('admin.two-factor.email.resend')"
         :title="__('two-factor.email.code_title')"
         :prompt="__('two-factor.email.code_prompt')"
         :submit-text="__('two-factor.email.verify')"

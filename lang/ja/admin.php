@@ -228,22 +228,32 @@ return [
         // Passkey管理
         'passkey_not_supported' => 'お使いのブラウザはPasskeyに対応していません。',
         'passkey_device_name_prompt' => 'このデバイスの名前を入力してください（例: iPhone、MacBook Pro）',
+        'passkey_register_success' => 'Passkeyを登録しました。',
         'passkey_registered' => 'Passkeyを登録しました。',
+        'passkey_register_success_title' => 'Passkey登録完了',
         'passkey_register_error' => 'Passkeyの登録に失敗しました。',
         'passkey_register_options_error' => 'Passkey登録オプションの取得に失敗しました。',
         'passkey_cancelled' => 'Passkey登録がキャンセルされました。',
         'passkey_already_registered' => 'このPasskeyは既に登録されています。',
         'passkey_deleted' => 'Passkeyを削除しました。',
+        'passkey_delete_success_title' => 'Passkey削除完了',
         'passkey_deleted_all' => '全てのPasskey（:count件）を削除しました。',
         'passkey_not_found' => 'Passkeyが見つかりません。',
         'passkey_delete_error' => 'Passkeyの削除に失敗しました。',
         'passkey_delete_all_error' => 'Passkeyの一括削除に失敗しました。',
+        'device_delete_success_title' => 'デバイス削除完了',
         'no_passkeys_to_delete' => '削除するPasskeyがありません。',
         'all_passkeys_deleted' => '全てのPasskey（:count件）を削除しました。',
         'confirm_delete_passkey_title' => 'Passkey削除の確認',
         'confirm_delete_passkey_message' => 'このPasskeyを削除してもよろしいですか？',
         'confirm_delete_all_passkeys_title' => '全Passkey削除の確認',
         'confirm_delete_all_passkeys_message' => '全てのPasskeyを削除してもよろしいですか？この操作は取り消せません。',
+        
+        // Passkeyデバイス名入力
+        'passkey_device_name_title' => 'デバイス名の入力',
+        'passkey_device_name_message' => 'このPasskeyデバイスに識別しやすい名前を付けてください。',
+        'passkey_device_name_label' => 'デバイス名',
+        'passkey_device_name_prompt' => 'デバイス名を入力してください（例: iPhone 15、MacBook Pro）',
         
         // 回復コード説明
         'recovery_codes_info_title' => '回復コードについて',
@@ -645,6 +655,7 @@ return [
                 'confirm_delete_recovery_codes_title' => '回復コード削除の確認',
                 'confirm_delete_recovery_codes_message' => 'このメンバーの全ての回復コードを削除してもよろしいですか？削除後はメンバー本人のみが再生成できます。',
                 'recovery_codes_deleted' => '回復コード（:count件）を削除しました。',
+                'recovery_codes_delete_success_title' => '回復コード削除完了',
                 'recovery_codes_delete_error' => '回復コードの削除に失敗しました。',
             ],
             'roles' => [
