@@ -174,7 +174,8 @@ class AdminProfileController extends AdminLoggedInController
         if ($force2fa === TwoFactorMode::UseProfileSetting->value) {
             $profileTwoFactorOptions = [
                 TwoFactorMode::Disabled->value => __('common.two_factor_mode.options.' . TwoFactorMode::Disabled->value), // 無効
-                TwoFactorMode::Always->value => __('common.two_factor_mode.options.' . TwoFactorMode::Always->value), // 有効
+                TwoFactorMode::DifferentDevice->value => __('common.two_factor_mode.options.' . TwoFactorMode::DifferentDevice->value), // 異なるデバイス・IP時のみ
+                TwoFactorMode::Always->value => __('common.two_factor_mode.options.' . TwoFactorMode::Always->value), // 常に有効
             ];
         } else {
             // 従来通り（無効、有効のみ）

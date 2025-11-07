@@ -248,8 +248,9 @@ return [
         'label' => 'Two-Factor Authentication Settings',
         'options' => [
             0 => 'Disabled (No 2FA)',
-            1 => 'Always Enabled (Required for all members)',
-            2 => 'Follow Member Profile Settings',
+            1 => 'Only for Different Device/IP',
+            2 => 'Always Enabled (Required for all members)',
+            3 => 'Follow Member Profile Settings',
         ]
     ],
     
