@@ -400,7 +400,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </p>
                 </div>
             @else
-                <p class="text-gray-600 dark:text-gray-400 mb-4">{{ __('two-factor.recovery_codes.none') }}</p>
+                <p class="text-gray-600 dark:text-gray-400 mb-4">{{ __('two-factor.recovery_codes.not_generated') }}</p>
             @endif
             
             <button 

@@ -911,6 +911,33 @@ class AdminMembersSettingsController extends AdminLoggedInController
         }
     }
 
+    /**
+     * メンバーの回復コードを削除
+     */
+    public function revokeRecoveryCodes(Request $request, Member $member)
+    {
+        $recoveryCodeService = app(\App\Services\RecoveryCodeService::class);
+        
+        try {
+            $deletedCount = $recoveryCodeService->revokeAll($member);
+            
+            return response()->json([
+                'success' => true,
+                'message' => __('admin.settings.members.form.recovery_codes_deleted', ['count' => $deletedCount])
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('[Member Recovery Code Delete] Exception caught', [
+                'member_id' => $member->id,
+                'error' => $e->getMessage(),
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => __('admin.settings.members.form.recovery_codes_delete_error')
+            ], 500);
+        }
+    }
+
     private function isMailServerTested(): bool
     {
         $connectionTested = (bool) BaseSetting::getValue('mail_connection_tested', false);

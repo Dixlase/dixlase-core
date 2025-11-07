@@ -534,22 +534,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
             @if($hasRecoveryCodes)
                 <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
-                    <p class="text-sm text-blue-800 dark:text-blue-200">
-                        <i class="fas fa-info-circle mr-2"></i>
-                        {{ __('two-factor.recovery_codes.remaining', ['count' => $recoveryCodesCount]) }}
-                    </p>
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm text-blue-800 dark:text-blue-200">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            {{ __('two-factor.recovery_codes.remaining', ['count' => $recoveryCodesCount]) }}
+                        </p>
+                        <button type="button" 
+                                onclick="openModal('deleteRecoveryCodesModal')"
+                                class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                            <i class="fas fa-trash mr-1"></i>
+                            {{ __('admin.settings.members.form.delete_recovery_codes') }}
+                        </button>
+                    </div>
                 </div>
             @else
-                <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
-                    <p class="text-sm text-yellow-800 dark:text-yellow-200">
-                        <i class="fas fa-exclamation-triangle mr-2"></i>
-                        {{ __('two-factor.recovery_codes.not_generated') }}
-                    </p>
-                </div>
+                <p class="text-gray-600 dark:text-gray-400 mb-4">{{ __('two-factor.recovery_codes.not_generated') }}</p>
             @endif
 
             <!-- 回復コードの説明 -->
-            <div class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+            <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
                 <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
                     <i class="fas fa-info-circle mr-2"></i>{{ __('admin.profile.recovery_codes_info_title') }}
                 </h4>
