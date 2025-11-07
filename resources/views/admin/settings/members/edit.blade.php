@@ -49,6 +49,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'icon_type' => 'info',
         'confirm_color' => 'blue',
     ])
+
+    <!-- Passkey削除確認モーダル -->
+    <x-modal 
+        id="deletePasskeyModal"
+        :title="__('admin.profile.confirm_delete_passkey_title')"
+        message=""
+        :confirm_label="__('common.delete')"
+        :cancel_label="__('common.cancel')"
+    />
+
+    <!-- Passkey一括削除確認モーダル -->
+    <x-modal 
+        id="deleteAllPasskeysModal"
+        :title="__('admin.profile.confirm_delete_all_passkeys_title')"
+        :message="__('admin.profile.confirm_delete_all_passkeys_message')"
+        :confirm_label="__('common.delete')"
+        :cancel_label="__('common.cancel')"
+    />
 @endsection
 
 @section('save')
@@ -67,6 +85,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @push('scripts')
 <script>
 let currentMemberId = null;
+let currentCredentialId = null;
+let currentPasskeyName = '';
 
 function sendVerificationEmail(memberId) {
     // メンバーIDを保存
@@ -133,24 +153,118 @@ function confirmSendVerificationEmail() {
     currentMemberId = null;
 }
 
+// Passkey削除モーダルを開く
+function openDeletePasskeyModal(credentialId, name) {
+    currentCredentialId = credentialId;
+    currentPasskeyName = name;
+    
+    // モーダルのメッセージを更新
+    const modal = document.getElementById('deletePasskeyModal');
+    if (modal) {
+        const messageElement = modal.querySelector('.modal-message');
+        if (messageElement) {
+            messageElement.textContent = `「${name}」を削除してもよろしいですか？`;
+        }
+    }
+    
+    openModal('deletePasskeyModal');
+}
+
+// Passkey削除実行
+window.revokePasskey = function() {
+    if (!currentCredentialId) return;
+
+    const memberId = {{ $member->id }};
+    const url = `/admin/settings/members/${memberId}/passkey/${currentCredentialId}`;
+
+    fetch(url, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        closeModal('deletePasskeyModal');
+        if (data.success) {
+            sessionStorage.setItem('flash_success', data.message);
+            location.reload();
+        } else {
+            sessionStorage.setItem('flash_error', data.message);
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        closeModal('deletePasskeyModal');
+        sessionStorage.setItem('flash_error', '{{ __('admin.profile.passkey_delete_error') }}');
+        location.reload();
+    });
+};
+
+// Passkey一括削除実行
+window.revokeAllPasskeys = function() {
+    const memberId = {{ $member->id }};
+    
+    fetch(`/admin/settings/members/${memberId}/passkey/all`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        closeModal('deleteAllPasskeysModal');
+        if (data.success) {
+            sessionStorage.setItem('flash_success', data.message);
+            location.reload();
+        } else {
+            sessionStorage.setItem('flash_error', data.message);
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        closeModal('deleteAllPasskeysModal');
+        sessionStorage.setItem('flash_error', '{{ __('admin.profile.passkey_delete_all_error') }}');
+        location.reload();
+    });
+};
+
 // モーダルの確認ボタンにイベントリスナーを追加
 document.addEventListener('DOMContentLoaded', function() {
-    const modal = document.getElementById('verificationEmailModal');
-    if (modal) {
-        // モーダル内の全てのボタンを検索
-        const buttons = modal.querySelectorAll('button');
-        
-        // 2番目のボタン（確認ボタン）を取得
-        // モーダルコンポーネントではキャンセルボタンが最初、確認ボタンが2番目
+    // 認証メール送信モーダル
+    const verificationModal = document.getElementById('verificationEmailModal');
+    if (verificationModal) {
+        const buttons = verificationModal.querySelectorAll('button');
         const confirmButton = buttons[1];
         
         if (confirmButton) {
-            // 既存のonclick属性を削除して新しいイベントリスナーを追加
             confirmButton.removeAttribute('onclick');
             confirmButton.addEventListener('click', function(e) {
                 e.preventDefault();
                 confirmSendVerificationEmail();
             });
+        }
+    }
+
+    // Passkey削除モーダル
+    const deletePasskeyModal = document.getElementById('deletePasskeyModal');
+    if (deletePasskeyModal) {
+        const buttons = deletePasskeyModal.querySelectorAll('.modal-actions button');
+        if (buttons.length >= 2) {
+            buttons[1].addEventListener('click', revokePasskey);
+        }
+    }
+
+    // Passkey一括削除モーダル
+    const deleteAllPasskeysModal = document.getElementById('deleteAllPasskeysModal');
+    if (deleteAllPasskeysModal) {
+        const buttons = deleteAllPasskeysModal.querySelectorAll('.modal-actions button');
+        if (buttons.length >= 2) {
+            buttons[1].addEventListener('click', revokeAllPasskeys);
         }
     }
 });

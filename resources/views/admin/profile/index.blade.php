@@ -322,6 +322,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <h2>{{ __('admin.profile.2fa_management') }}</h2>
 
         <!-- Passkeyデバイス -->
+        @if($passkeyEnabled)
         <div>
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold">Passkeyデバイス</h3>
@@ -382,9 +383,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <li>{{ __('admin.profile.passkey_info_3') }}</li>
                 </ul>
             </div>
-
-
         </div>
+        @endif
 
         <!-- 回復コード -->
         <div class="mb-8">

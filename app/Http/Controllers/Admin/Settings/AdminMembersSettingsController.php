@@ -357,6 +357,17 @@ class AdminMembersSettingsController extends AdminLoggedInController
         // メール設定テスト状況を取得
         $this->viewParams['isMailServerTested'] = $this->isMailServerTested();
 
+        // Passkeyデバイス一覧を取得
+        $passkeyEnabled = MemberSetting::getValue('enabled_2fa_passkey', '0') === '1';
+        $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
+        $this->viewParams['passkeyDevices'] = $passkeyService->getDevices($member);
+        $this->viewParams['passkeyEnabled'] = $passkeyEnabled;
+
+        // 回復コード情報を取得
+        $recoveryCodeService = app(\App\Services\RecoveryCodeService::class);
+        $this->viewParams['recoveryCodesCount'] = $recoveryCodeService->getRemainingCount($member);
+        $this->viewParams['hasRecoveryCodes'] = $recoveryCodeService->hasRecoveryCodes($member);
+
         return view('admin.settings.members.edit', $this->viewParams);
     }
 
@@ -852,6 +863,52 @@ class AdminMembersSettingsController extends AdminLoggedInController
 
         return redirect()->route('admin.settings.members.settings')
             ->with('success', __('admin.settings.members.settings.updated'));
+    }
+
+    /**
+     * メンバーのPasskeyを削除
+     */
+    public function revokePasskey(Request $request, Member $member, string $credentialId)
+    {
+        $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
+        
+        try {
+            // 一括削除の場合
+            if ($credentialId === 'all') {
+                $deletedCount = $passkeyService->revokeAllCredentials($member);
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => __('admin.profile.passkey_deleted_all', ['count' => $deletedCount])
+                ]);
+            }
+            
+            // 個別削除の場合
+            $deleted = $passkeyService->revokeCredential($member, $credentialId);
+            
+            if (!$deleted) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('admin.profile.passkey_not_found')
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('admin.profile.passkey_deleted')
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('[Member Passkey Delete] Exception caught', [
+                'member_id' => $member->id,
+                'credential_id' => $credentialId,
+                'error' => $e->getMessage(),
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => __('admin.profile.passkey_delete_error')
+            ], 500);
+        }
     }
 
     private function isMailServerTested(): bool

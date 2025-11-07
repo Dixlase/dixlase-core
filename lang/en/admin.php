@@ -662,6 +662,7 @@ Clicking this link will complete the full mail function test.',
                 'delete_member' => 'Delete Member',
                 'delete_member_description' => 'Completely delete this member. This operation cannot be undone.',
                 'delete_member_button' => 'Delete Member',
+                'recovery_codes_admin_note' => 'Administrators cannot generate or regenerate recovery codes. Only the user can perform this action.',
             ],
             'roles' => [
                 'heading' => 'Permission Settings',

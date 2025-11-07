@@ -248,6 +248,7 @@ return [
         'recovery_codes_info_title' => '回復コードについて',
         'recovery_codes_info_1' => '回復コードは二段階認証デバイスにアクセスできない場合の緊急手段です。',
         'recovery_codes_info_2' => '回復コードは生成時のみ表示され、その後は表示されません。',
+        'recovery_codes_admin_note' => '管理者は回復コードの生成・再生成はできません。メンバー本人のみが実行できます。',
         'recovery_codes_info_3' => '生成された各回復コードは1回のみ使用可能で、使用後は無効になります。',
         'recovery_codes_info_4' => '一度回復コードを生成すると一定時間の間は再生成できません。',
         'recovery_codes_info_5' => '回復コードは他人と共有しないでください。',
@@ -638,6 +639,7 @@ return [
                 'delete_member' => 'メンバー削除',
                 'delete_member_description' => 'このメンバーを完全に削除します。この操作は取り消せません。',
                 'delete_member_button' => 'メンバー削除',
+                'recovery_codes_admin_note' => '管理者は回復コードの生成・再生成はできません。メンバー本人のみが実行できます。',
             ],
             'roles' => [
                 'heading' => '権限設定',
