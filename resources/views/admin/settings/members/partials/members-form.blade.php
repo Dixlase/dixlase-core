@@ -520,6 +520,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <li>{{ __('admin.profile.passkey_info_1') }}</li>
                     <li>{{ __('admin.profile.passkey_info_2') }}</li>
                     <li>{{ __('admin.profile.passkey_info_3') }}</li>
+                    <li class="text-red-600 dark:text-red-400 font-semibold">{{ __('admin.profile.passkey_info_4') }}</li>
                 </ul>
             </div>
         </div>
