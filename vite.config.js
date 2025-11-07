@@ -77,6 +77,11 @@ export default defineConfig({
         watch: {
             usePolling: true,     // ポーリングでファイル変更を検知
             interval: 100,        // ポーリングの間隔（お好みで調整）
+            ignored: [
+                '**/node_modules/**',
+                '**/.git/**',
+                '**/.env',        // .envファイルの監視を無効化（インストール中の頻繁な更新でクラッシュ防止）
+            ],
         },
         // HMRの設定
         hmr: {

@@ -36,18 +36,29 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create($this->table, function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('member_id')->constrained('members')->onDelete('cascade');
-            $table->string('credential_id')->unique();
+            // WebAuthn標準フィールド
+            $table->string('id', 510)->primary(); // credential_id
+            $table->unsignedBigInteger('member_id');
+            $table->string('alias')->nullable();
+            $table->unsignedBigInteger('counter')->nullable();
+            $table->string('rp_id');
+            $table->string('origin');
+            $table->json('transports')->nullable();
+            $table->uuid('aaguid')->nullable();
             $table->text('public_key');
-            $table->string('name'); // デバイス名（必須）
-            $table->timestamp('last_used_at')->nullable(); // 最終使用日時
+            $table->string('attestation_format')->default('none');
+            $table->json('certificates')->nullable();
+            $table->timestamp('disabled_at')->nullable();
             $table->timestamps();
-            $table->softDeletes(); // ソフトデリート対応
+            
+            // カスタムフィールド
+            $table->string('name'); // デバイス名（必須）
+            
+            // 外部キー制約
+            $table->foreign('member_id')->references('id')->on('members')->onDelete('cascade');
             
             // インデックス
             $table->index('member_id');
-            $table->index('credential_id', 'idx_credential_id');
         });
     }
 
