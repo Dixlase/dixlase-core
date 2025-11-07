@@ -171,11 +171,31 @@ function openDeletePasskeyModal(credentialId, name) {
 }
 
 // Passkey削除実行
-window.revokePasskey = function() {
-    if (!currentCredentialId) return;
+window.revokePasskey = function(event) {
+    console.log('[Member Passkey Delete] Function called', {
+        currentCredentialId: currentCredentialId,
+        event: event
+    });
+    
+    // イベントのデフォルト動作を防止
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
+    if (!currentCredentialId) {
+        console.error('[Member Passkey Delete] No credential ID');
+        return;
+    }
 
     const memberId = {{ $member->id }};
-    const url = `/admin/settings/members/${memberId}/passkey/${currentCredentialId}`;
+    const url = `/admin/settings/members/passkey/${memberId}/${currentCredentialId}`;
+    
+    console.log('[Member Passkey Delete] Sending DELETE request', {
+        url: url,
+        memberId: memberId,
+        credentialId: currentCredentialId
+    });
 
     fetch(url, {
         method: 'DELETE',
@@ -184,8 +204,15 @@ window.revokePasskey = function() {
             'Accept': 'application/json'
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('[Member Passkey Delete] Response received', {
+            status: response.status,
+            ok: response.ok
+        });
+        return response.json();
+    })
     .then(data => {
+        console.log('[Member Passkey Delete] Response data', data);
         closeModal('deletePasskeyModal');
         if (data.success) {
             sessionStorage.setItem('flash_success', data.message);
@@ -196,7 +223,7 @@ window.revokePasskey = function() {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        console.error('[Member Passkey Delete] Error:', error);
         closeModal('deletePasskeyModal');
         sessionStorage.setItem('flash_error', '{{ __('admin.profile.passkey_delete_error') }}');
         location.reload();
@@ -204,18 +231,39 @@ window.revokePasskey = function() {
 };
 
 // Passkey一括削除実行
-window.revokeAllPasskeys = function() {
-    const memberId = {{ $member->id }};
+window.revokeAllPasskeys = function(event) {
+    console.log('[Member Passkey Delete All] Function called', { event: event });
     
-    fetch(`/admin/settings/members/${memberId}/passkey/all`, {
+    // イベントのデフォルト動作を防止
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
+    const memberId = {{ $member->id }};
+    const url = `/admin/settings/members/passkey/${memberId}/all`;
+    
+    console.log('[Member Passkey Delete All] Sending DELETE request', {
+        url: url,
+        memberId: memberId
+    });
+    
+    fetch(url, {
         method: 'DELETE',
         headers: {
             'X-CSRF-TOKEN': '{{ csrf_token() }}',
             'Accept': 'application/json'
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('[Member Passkey Delete All] Response received', {
+            status: response.status,
+            ok: response.ok
+        });
+        return response.json();
+    })
     .then(data => {
+        console.log('[Member Passkey Delete All] Response data', data);
         closeModal('deleteAllPasskeysModal');
         if (data.success) {
             sessionStorage.setItem('flash_success', data.message);
@@ -226,7 +274,7 @@ window.revokeAllPasskeys = function() {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        console.error('[Member Passkey Delete All] Error:', error);
         closeModal('deleteAllPasskeysModal');
         sessionStorage.setItem('flash_error', '{{ __('admin.profile.passkey_delete_all_error') }}');
         location.reload();
@@ -235,6 +283,20 @@ window.revokeAllPasskeys = function() {
 
 // モーダルの確認ボタンにイベントリスナーを追加
 document.addEventListener('DOMContentLoaded', function() {
+    // フラッシュメッセージの表示
+    const flashSuccess = sessionStorage.getItem('flash_success');
+    const flashError = sessionStorage.getItem('flash_error');
+    
+    if (flashSuccess) {
+        alert(flashSuccess);
+        sessionStorage.removeItem('flash_success');
+    }
+    
+    if (flashError) {
+        alert(flashError);
+        sessionStorage.removeItem('flash_error');
+    }
+
     // 認証メール送信モーダル
     const verificationModal = document.getElementById('verificationEmailModal');
     if (verificationModal) {
@@ -251,21 +313,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Passkey削除モーダル
-    const deletePasskeyModal = document.getElementById('deletePasskeyModal');
-    if (deletePasskeyModal) {
-        const buttons = deletePasskeyModal.querySelectorAll('.modal-actions button');
-        if (buttons.length >= 2) {
-            buttons[1].addEventListener('click', revokePasskey);
-        }
+    const deletePasskeyBtn = document.querySelector('#deletePasskeyModal .modal-actions button[type="button"]:last-child');
+    if (deletePasskeyBtn) {
+        deletePasskeyBtn.addEventListener('click', revokePasskey);
     }
 
     // Passkey一括削除モーダル
-    const deleteAllPasskeysModal = document.getElementById('deleteAllPasskeysModal');
-    if (deleteAllPasskeysModal) {
-        const buttons = deleteAllPasskeysModal.querySelectorAll('.modal-actions button');
-        if (buttons.length >= 2) {
-            buttons[1].addEventListener('click', revokeAllPasskeys);
-        }
+    const deleteAllPasskeysBtn = document.querySelector('#deleteAllPasskeysModal .modal-actions button[type="button"]:last-child');
+    if (deleteAllPasskeysBtn) {
+        deleteAllPasskeysBtn.addEventListener('click', revokeAllPasskeys);
     }
 });
 </script>

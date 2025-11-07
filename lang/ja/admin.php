@@ -223,6 +223,7 @@ return [
         'passkey_info_1' => 'デバイスを登録すると、二段階認証で認証コードを入力する必要がなくなります。',
         'passkey_info_2' => '生体認証（指紋認証、顔認証など）またはデバイスのPINでログインできます。',
         'passkey_info_3' => 'Touch ID、Face ID、Windows Helloなどに対応しています。',
+        'passkey_info_4' => '管理者はPasskeyデバイスの追加はできません。メンバー本人のみが実行できます。',
         
         // Passkey管理
         'passkey_not_supported' => 'お使いのブラウザはPasskeyに対応していません。',
