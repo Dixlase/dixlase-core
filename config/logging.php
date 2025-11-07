@@ -74,11 +74,18 @@ return [
 
         'stack' => [
             'driver' => 'stack',
-            'channels' => explode(',', env('LOG_STACK', 'single,admin_error,notification')),
+            'channels' => explode(',', env('LOG_STACK', 'dixlase,admin_error,notification')),
             'ignore_exceptions' => false,
         ],
 
         'single' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/dixlase.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'replace_placeholders' => true,
+        ],
+        
+        'dixlase' => [
             'driver' => 'single',
             'path' => storage_path('logs/dixlase.log'),
             'level' => env('LOG_LEVEL', 'debug'),

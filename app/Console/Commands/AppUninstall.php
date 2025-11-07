@@ -180,7 +180,7 @@ class AppUninstall extends Command
             }
         } catch (Exception $e) {
             $this->error($e->getMessage());
-            Log::error($e->getMessage());
+            Log::channel('install')->error('データベースダンプ中のエラー: ' . $e->getMessage());
         }
     }
 
@@ -218,7 +218,7 @@ class AppUninstall extends Command
             }
         } catch (Exception $e) {
             $this->error($e->getMessage());
-            Log::error($e->getMessage());
+            Log::channel('install')->error('アンインストール中のデータベースエラー: ' . $e->getMessage());
         }
     }
 
