@@ -423,56 +423,191 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
     </section>
 
-    @if(isset($member) && $member->exists)
-        <!-- 管理操作セクション -->
-        <section>
-            <h2>{{ __('common.management_operations') }}</h2>
-            
 
 
-            <fieldset>
-                <legend>{{ __('admin.settings.members.form.unlock_lockout') }}</legend>
-                <p class="mb-4">{{ __('admin.settings.members.form.unlock_lockout_description') }}</p>
-                @include('components::form.button', [
-                    'variant' => 'info',
-                    'icon' => 'fas fa-unlock',
-                    'label' => __('admin.settings.members.form.unlock_lockout_button'),
-                    'onclick' => "openModal('unlockLockoutModal')",
-                ])
-            </fieldset>
-            
-            <fieldset>
-                <legend>{{ __('admin.settings.members.form.force_logout') }}</legend>
-                <p class="mb-4">{{ __('admin.settings.members.form.force_logout_description') }}</p>
-                @include('components::form.button', [
-                    'variant' => 'warning',
-                    'icon' => 'fas fa-sign-out-alt',
-                    'label' => __('admin.settings.members.form.force_logout_button'),
-                    'onclick' => "openModal('forceLogoutModal')",
-                ])
-            </fieldset>
-
-            @if(!$isInitialAdmin)
-                <fieldset>
-                    <legend>{{ __('admin.settings.members.form.delete_member') }}</legend>
-                    <p class="mb-4">{{ __('admin.settings.members.form.delete_member_description') }}</p>
-                    @include('components::form.button', [
-                        'variant' => 'danger',
-                        'icon' => 'fas fa-trash',
-                        'label' => __('admin.settings.members.form.delete_member_button'),
-                        'onclick' => "openModal('deleteMemberModal')"
-                    ])
-                </fieldset>
-            @endif
-        </section>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const emailInput = document.getElementById('email');
+    const emailConfirmationField = document.getElementById('email-confirmation-field');
+    const emailConfirmationInput = document.getElementById('email_confirmation');
+    
+    @if(!isset($member) || !$member->exists)
+        // 新規作成時は常に表示
+        emailConfirmationField.style.display = 'block';
+        emailConfirmationInput.required = true;
+    @else
+        // 編集時は元のメールアドレスを保存
+        const originalEmail = '{{ $member->email ?? '' }}';
+        
+        // バリデーションエラーがある場合、または old値がある場合は初期表示
+        @if($errors->has('email_confirmation') || old('email_confirmation'))
+            emailConfirmationField.style.display = 'block';
+            emailConfirmationInput.required = true;
+        @endif
+        
+        // メールアドレスの変更を監視
+        emailInput.addEventListener('input', function() {
+            if (this.value !== originalEmail && this.value !== '') {
+                // メールアドレスが変更された場合は確認フィールドを表示
+                emailConfirmationField.style.display = 'block';
+                emailConfirmationInput.required = true;
+            } else {
+                // 元に戻した場合は確認フィールドを非表示
+                emailConfirmationField.style.display = 'none';
+                emailConfirmationInput.required = false;
+                emailConfirmationInput.value = '';
+            }
+        });
     @endif
+});
+</script>
+
+@if(isset($member) && $member->exists)
+    <!-- 2FA管理セクション -->
+    <section class="mt-8">
+        <h2>{{ __('admin.profile.2fa_management') }}</h2>
+
+        <!-- Passkeyデバイス -->
+        @if($passkeyEnabled)
+        <div class="mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold">Passkeyデバイス</h3>
+                @if(!$passkeyDevices->isEmpty())
+                    <button 
+                        type="button"
+                        onclick="openModal('deleteAllPasskeysModal')"
+                        class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
+                        <i class="fas fa-trash-alt mr-1"></i>全て削除
+                    </button>
+                @endif
+            </div>
+            
+            @if($passkeyDevices->isEmpty())
+                <p class="text-gray-600 dark:text-gray-400 mb-4">Passkeyデバイスが登録されていません</p>
+            @else
+                <div class="space-y-4 mb-4">
+                    @foreach($passkeyDevices as $device)
+                        <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4 flex items-start justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center mb-2">
+                                    <i class="fas fa-key text-green-600 dark:text-green-400 mr-2"></i>
+                                    <h4 class="font-semibold">{{ $device->name }}</h4>
+                                </div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400">
+                                    <p><strong>登録日時:</strong> {{ $device->created_at->format('Y-m-d H:i') }}</p>
+                                    @if($device->last_used_at)
+                                        <p><strong>最終使用:</strong> {{ $device->last_used_at->format('Y-m-d H:i') }}</p>
+                                    @endif
+                                </div>
+                            </div>
+                            <button 
+                                type="button"
+                                onclick="openDeletePasskeyModal('{{ $device->id }}', '{{ $device->name }}')"
+                                class="ml-4 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
+                                削除
+                            </button>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+
+            <!-- Passkeyの説明 -->
+            <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+                <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                    <i class="fas fa-info-circle mr-2"></i>{{ __('admin.profile.passkey_info_title') }}
+                </h4>
+                <ul class="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-disc list-inside">
+                    <li>{{ __('admin.profile.passkey_info_1') }}</li>
+                    <li>{{ __('admin.profile.passkey_info_2') }}</li>
+                    <li>{{ __('admin.profile.passkey_info_3') }}</li>
+                </ul>
+            </div>
+        </div>
+        @endif
+
+        <!-- 回復コード -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold">{{ __('two-factor.recovery_codes.title') }}</h3>
+            </div>
+
+            @if($hasRecoveryCodes)
+                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+                    <p class="text-sm text-blue-800 dark:text-blue-200">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        {{ __('two-factor.recovery_codes.remaining', ['count' => $recoveryCodesCount]) }}
+                    </p>
+                </div>
+            @else
+                <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
+                    <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        {{ __('two-factor.recovery_codes.not_generated') }}
+                    </p>
+                </div>
+            @endif
+
+            <!-- 回復コードの説明 -->
+            <div class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                    <i class="fas fa-info-circle mr-2"></i>{{ __('admin.profile.recovery_codes_info_title') }}
+                </h4>
+                <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-1 list-disc list-inside">
+                    <li>{{ __('admin.profile.recovery_codes_info_1') }}</li>
+                    <li>{{ __('admin.profile.recovery_codes_info_2') }}</li>
+                    <li>{{ __('admin.profile.recovery_codes_info_3') }}</li>
+                    <li class="text-red-600 dark:text-red-400 font-semibold">{{ __('admin.settings.members.form.recovery_codes_admin_note') }}</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- 管理操作セクション -->
+    <section>
+        <h2>{{ __('common.management_operations') }}</h2>
+
+        <fieldset>
+            <legend>{{ __('admin.settings.members.form.unlock_lockout') }}</legend>
+            <p class="mb-4">{{ __('admin.settings.members.form.unlock_lockout_description') }}</p>
+            @include('components::form.button', [
+                'variant' => 'info',
+                'icon' => 'fas fa-unlock',
+                'label' => __('admin.settings.members.form.unlock_lockout_button'),
+                'onclick' => "openModal('unlockLockoutModal')",
+            ])
+        </fieldset>
+        
+        <fieldset>
+            <legend>{{ __('admin.settings.members.form.force_logout') }}</legend>
+            <p class="mb-4">{{ __('admin.settings.members.form.force_logout_description') }}</p>
+            @include('components::form.button', [
+                'variant' => 'warning',
+                'icon' => 'fas fa-sign-out-alt',
+                'label' => __('admin.settings.members.form.force_logout_button'),
+                'onclick' => "openModal('forceLogoutModal')",
+            ])
+        </fieldset>
+
+        @if(!$isInitialAdmin)
+            <fieldset>
+                <legend>{{ __('admin.settings.members.form.delete_member') }}</legend>
+                <p class="mb-4">{{ __('admin.settings.members.form.delete_member_description') }}</p>
+                @include('components::form.button', [
+                    'variant' => 'danger',
+                    'icon' => 'fas fa-trash',
+                    'label' => __('admin.settings.members.form.delete_member_button'),
+                    'onclick' => "openModal('deleteMemberModal')"
+                ])
+            </fieldset>
+        @endif
+    </section>
+@endif
 
 @if($includeForm && $formAction)
     </form>
 @endif
 
-<!-- 編集時のみ：モーダルと隠しフォーム（フォーム外に配置） -->
-@if(isset($member) && $member->id)
+@if(isset($member) && $member->exists)
     <!-- 隠しフォーム -->
     <form id="forceLogoutForm-{{ $member->id }}" method="POST" action="{{ route('admin.settings.members.force-logout', $member->id) }}" style="display: none;">
         @csrf
@@ -535,41 +670,3 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @if($includeForm && $formAction)
     </form>
 @endif
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const emailInput = document.getElementById('email');
-    const emailConfirmationField = document.getElementById('email-confirmation-field');
-    const emailConfirmationInput = document.getElementById('email_confirmation');
-    
-    @if(!isset($member) || !$member->exists)
-        // 新規作成時は常に表示
-        emailConfirmationField.style.display = 'block';
-        emailConfirmationInput.required = true;
-    @else
-        // 編集時は元のメールアドレスを保存
-        const originalEmail = '{{ $member->email ?? '' }}';
-        
-        // バリデーションエラーがある場合、または old値がある場合は初期表示
-        @if($errors->has('email_confirmation') || old('email_confirmation'))
-            emailConfirmationField.style.display = 'block';
-            emailConfirmationInput.required = true;
-        @endif
-        
-        // メールアドレスの変更を監視
-        emailInput.addEventListener('input', function() {
-            if (this.value !== originalEmail && this.value !== '') {
-                // メールアドレスが変更された場合は確認フィールドを表示
-                emailConfirmationField.style.display = 'block';
-                emailConfirmationInput.required = true;
-            } else {
-                // 元に戻した場合は確認フィールドを非表示
-                emailConfirmationField.style.display = 'none';
-                emailConfirmationInput.required = false;
-                emailConfirmationInput.value = '';
-            }
-        });
-    @endif
-});
-</script>
-

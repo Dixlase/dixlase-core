@@ -245,6 +245,7 @@ class AdminProfileController extends AdminLoggedInController
         // Passkeyデバイス一覧を取得
         $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
         $this->viewParams['passkeyDevices'] = $passkeyService->getDevices($user);
+        $this->viewParams['passkeyEnabled'] = $passkeyEnabled;
 
         // 回復コード情報を取得
         $recoveryCodeService = app(\App\Services\RecoveryCodeService::class);
