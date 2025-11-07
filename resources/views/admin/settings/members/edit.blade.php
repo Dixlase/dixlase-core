@@ -67,6 +67,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :confirm_label="__('common.delete')"
         :cancel_label="__('common.cancel')"
     />
+
+    <!-- 回復コード削除確認モーダル -->
+    <x-modal 
+        id="deleteRecoveryCodesModal"
+        :title="__('admin.settings.members.form.confirm_delete_recovery_codes_title')"
+        :message="__('admin.settings.members.form.confirm_delete_recovery_codes_message')"
+        :confirm_label="__('common.delete')"
+        :cancel_label="__('common.cancel')"
+        confirm_variant="danger"
+    />
 @endsection
 
 @section('save')
@@ -323,6 +333,63 @@ document.addEventListener('DOMContentLoaded', function() {
     if (deleteAllPasskeysBtn) {
         deleteAllPasskeysBtn.addEventListener('click', revokeAllPasskeys);
     }
+
+    // 回復コード削除モーダル
+    const deleteRecoveryCodesBtn = document.querySelector('#deleteRecoveryCodesModal .modal-actions button[type="button"]:last-child');
+    if (deleteRecoveryCodesBtn) {
+        deleteRecoveryCodesBtn.addEventListener('click', revokeRecoveryCodes);
+    }
 });
+
+// 回復コード削除実行
+window.revokeRecoveryCodes = function(event) {
+    console.log('[Member Recovery Code Delete] Function called', { event: event });
+    
+    // イベントのデフォルト動作を防止
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
+    const memberId = {{ $member->id }};
+    const url = `/admin/settings/members/recovery-codes/${memberId}`;
+    
+    console.log('[Member Recovery Code Delete] Sending DELETE request', {
+        url: url,
+        memberId: memberId
+    });
+    
+    fetch(url, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => {
+        console.log('[Member Recovery Code Delete] Response received', {
+            status: response.status,
+            ok: response.ok
+        });
+        return response.json();
+    })
+    .then(data => {
+        console.log('[Member Recovery Code Delete] Response data', data);
+        closeModal('deleteRecoveryCodesModal');
+        if (data.success) {
+            sessionStorage.setItem('flash_success', data.message);
+            location.reload();
+        } else {
+            sessionStorage.setItem('flash_error', data.message);
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('[Member Recovery Code Delete] Error:', error);
+        closeModal('deleteRecoveryCodesModal');
+        sessionStorage.setItem('flash_error', '{{ __('admin.settings.members.form.recovery_codes_delete_error') }}');
+        location.reload();
+    });
+};
 </script>
 @endpush

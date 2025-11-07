@@ -641,6 +641,11 @@ return [
                 'delete_member_description' => 'このメンバーを完全に削除します。この操作は取り消せません。',
                 'delete_member_button' => 'メンバー削除',
                 'recovery_codes_admin_note' => '管理者は回復コードの生成・再生成はできません。メンバー本人のみが実行できます。',
+                'delete_recovery_codes' => '回復コードを削除',
+                'confirm_delete_recovery_codes_title' => '回復コード削除の確認',
+                'confirm_delete_recovery_codes_message' => 'このメンバーの全ての回復コードを削除してもよろしいですか？削除後はメンバー本人のみが再生成できます。',
+                'recovery_codes_deleted' => '回復コード（:count件）を削除しました。',
+                'recovery_codes_delete_error' => '回復コードの削除に失敗しました。',
             ],
             'roles' => [
                 'heading' => '権限設定',

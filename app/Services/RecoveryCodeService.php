@@ -170,4 +170,27 @@ class RecoveryCodeService
         $blocks = str_split($code, 5);
         return implode('-', $blocks);
     }
+
+    /**
+     * 全ての回復コードを削除（無効化）
+     * 
+     * @param Member $member
+     * @return int 削除された回復コード数
+     */
+    public function revokeAll(Member $member): int
+    {
+        $count = Member2faRecoveryCode::where('member_id', $member->id)
+            ->where('disabled', false)
+            ->count();
+
+        Member2faRecoveryCode::where('member_id', $member->id)
+            ->update(['disabled' => true]);
+
+        Log::info('[Recovery Code] All codes revoked by admin', [
+            'member_id' => $member->id,
+            'count' => $count,
+        ]);
+
+        return $count;
+    }
 }

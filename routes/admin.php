@@ -218,6 +218,10 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::delete('/settings/members/passkey/{member}/{credentialId}', [AdminMembersSettingsController::class, 'revokePasskey'])
                     ->middleware('check.menu.edit:settings.members')
                     ->name('settings.members.passkey.revoke');
+                // 回復コード削除
+                Route::delete('/settings/members/recovery-codes/{member}', [AdminMembersSettingsController::class, 'revokeRecoveryCodes'])
+                    ->middleware('check.menu.edit:settings.members')
+                    ->name('settings.members.recovery-codes.revoke');
                 // メンバー削除
                 Route::delete('/settings/members/destroy/{member}', [AdminMembersSettingsController::class, 'destroy'])
                     ->middleware('check.menu.edit:settings.members')
