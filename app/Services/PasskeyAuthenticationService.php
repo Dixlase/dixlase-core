@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Member;
 use App\Models\Member2faPasskey;
-use App\Models\WebauthnCredential;
 use App\Models\MembersTrustedDevice;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -107,7 +106,7 @@ class PasskeyAuthenticationService
      */
     public function getDevices($user)
     {
-        return WebauthnCredential::where('member_id', $user->id)
+        return Member2faPasskey::where('member_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->get();
     }
@@ -136,11 +135,11 @@ class PasskeyAuthenticationService
     /**
      * WebAuthn認証情報を登録
      */
-    public function registerCredential(Member $member, array $credentialData, string $deviceName = null): WebauthnCredential
+    public function registerCredential(Member $member, array $credentialData, string $deviceName = null): Member2faPasskey
     {
         $publicKey = $credentialData['publicKey'] ?? $credentialData['id'];
         
-        $credential = WebauthnCredential::create([
+        $credential = Member2faPasskey::create([
             'id' => $credentialData['id'],
             'member_id' => $member->id,
             'public_key' => $publicKey,
@@ -159,7 +158,7 @@ class PasskeyAuthenticationService
      */
     public function verifyAssertion(Member $member, array $assertionData): bool
     {
-        $credential = WebauthnCredential::where('member_id', $member->id)
+        $credential = Member2faPasskey::where('member_id', $member->id)
             ->where('id', $assertionData['id'])
             ->first();
             
@@ -196,7 +195,7 @@ class PasskeyAuthenticationService
      */
     public function getCredentials(Member $member)
     {
-        return WebauthnCredential::where('member_id', $member->id)
+        return Member2faPasskey::where('member_id', $member->id)
             ->orderBy('created_at', 'desc')
             ->get();
     }
@@ -206,7 +205,7 @@ class PasskeyAuthenticationService
      */
     public function revokeCredential(Member $member, string $credentialId): bool
     {
-        $deleted = WebauthnCredential::where('member_id', $member->id)
+        $deleted = Member2faPasskey::where('member_id', $member->id)
             ->where('id', $credentialId)
             ->delete();
             
@@ -222,8 +221,8 @@ class PasskeyAuthenticationService
      */
     public function revokeAllCredentials(Member $member): int
     {
-        $count = WebauthnCredential::where('member_id', $member->id)->count();
-        $deleted = WebauthnCredential::where('member_id', $member->id)->delete();
+        $count = Member2faPasskey::where('member_id', $member->id)->count();
+        $deleted = Member2faPasskey::where('member_id', $member->id)->delete();
         
         if ($deleted) {
             Log::info("[Passkey] すべての認証情報削除: ユーザーID {$member->id}, 削除数: {$count}");

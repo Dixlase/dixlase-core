@@ -539,6 +539,10 @@ class AdminLoginController extends AdminController
         app(AdminLoginLockoutService::class)->handleSuccessfulLogin($member->email);
         $attemptService->handleSuccess($member);
 
+        // 最後に使用した二段階認証方法を更新
+        $member->last_2fa_method = TwoFactorMethod::EMAIL->value;
+        $member->save();
+
         // 回復コードが未生成の場合は自動生成
         $twoFactorHelper = app(TwoFactorHelper::class);
         if ($twoFactorHelper->hasNoRecoveryCodes($member)) {
@@ -877,6 +881,10 @@ class AdminLoginController extends AdminController
                 // 認証成功 - ログイン処理
                 $lockoutService = app(AdminLoginLockoutService::class);
                 $lockoutService->handleSuccessfulLogin($member->email);
+
+                // 最後に使用した二段階認証方法を更新
+                $member->last_2fa_method = TwoFactorMethod::PASSKEY->value;
+                $member->save();
 
                 // 回復コードが未生成の場合は自動生成
                 $twoFactorHelper = app(TwoFactorHelper::class);

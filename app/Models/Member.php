@@ -73,6 +73,7 @@ class Member extends Authenticatable implements MustVerifyEmail
         'login_notification',
         'two_factor_mode',
         'two_factor_method',
+        'last_2fa_method',
         'description',
     ];
 
@@ -92,11 +93,11 @@ class Member extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Get the WebAuthn credentials for the member.
+     * WebAuthn認証情報とのリレーション
      */
     public function webauthnCredentials()
     {
-        return $this->hasMany(WebauthnCredential::class);
+        return $this->hasMany(Member2faPasskey::class);
     }
 
     /**

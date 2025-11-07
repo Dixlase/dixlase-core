@@ -814,6 +814,14 @@ class InstallController extends Controller
         Log::channel('install')->info('完了画面を表示: appUrl=' . $appUrl . ', adminLoginUrl=' . $adminLoginUrl);
         Log::channel('install')->info('APP_URL取得結果: ' . $envAppUrl);
         Log::channel('install')->info('リダイレクトフラグクリア完了');
+        
+        // セッションを明示的に開始してCSRFトークンを生成
+        if (!session()->isStarted()) {
+            session()->start();
+        }
+        session()->regenerateToken();
+        Log::channel('install')->info('セッション開始とCSRFトークン生成完了');
+        
         Log::channel('install')->info('=== InstallController::complete() 終了 ===');
         
         // 完了画面では INSTALLED=true を設定せず、表示のみ行う

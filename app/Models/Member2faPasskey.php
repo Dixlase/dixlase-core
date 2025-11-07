@@ -2,35 +2,63 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Laragear\WebAuthn\Models\WebAuthnCredential as BaseWebAuthnCredential;
 
-class Member2faPasskey extends Model
+class Member2faPasskey extends BaseWebAuthnCredential
 {
-    use SoftDeletes;
-
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
     protected $table = 'members_2fa_passkeys';
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
+        'id',
         'member_id',
-        'credential_id',
+        'alias',
+        'counter',
+        'rp_id',
+        'origin',
+        'transports',
+        'aaguid',
         'public_key',
+        'attestation_format',
+        'certificates',
+        'disabled_at',
         'name',
-        'last_used_at',
-    ];
-
-    protected $casts = [
-        'last_used_at' => 'datetime',
-        'deleted_at' => 'datetime',
     ];
 
     /**
-     * メンバーとのリレーション
+     * Get the name of the user ID column.
+     *
+     * @return string
+     */
+    public function getUserIdColumn(): string
+    {
+        return 'member_id';
+    }
+
+    /**
+     * Get the member that owns the credential.
      */
     public function member(): BelongsTo
     {
-        return $this->belongsTo(Member::class);
+        return $this->belongsTo(Member::class, 'member_id');
+    }
+
+    /**
+     * Get the authenticatable entity (member).
+     */
+    public function user(): BelongsTo
+    {
+        return $this->member();
     }
 
     /**
