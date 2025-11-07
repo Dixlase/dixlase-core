@@ -486,13 +486,13 @@ class AdminLoginController extends AdminController
     protected function getTwoFactorMethodRoute(int $method): string
     {
         return match($method) {
-            TwoFactorMethod::EMAIL->value => route('admin.two-factor.login'),
+            TwoFactorMethod::EMAIL->value => route('admin.two-factor.email.show'),
             TwoFactorMethod::PASSKEY->value => route('admin.two-factor.passkey.show'),
-            default => route('admin.two-factor.login'),
+            default => route('admin.two-factor.email.show'),
         };
     }
 
-    public function confirmTwoFactor(Request $request)
+    public function verifyEmail(Request $request)
     {
         $request->validate([
             'code' => 'required|string',
@@ -565,7 +565,7 @@ class AdminLoginController extends AdminController
         return redirect()->intended(route('admin.dashboard'));
     }
 
-    public function resendTwoFactorCode(Request $request)
+    public function resendEmailCode(Request $request)
     {
         if (!session()->has('login.id')) {
             return response()->json([
@@ -584,7 +584,7 @@ class AdminLoginController extends AdminController
         }
 
         $twoFactor = app(AdminTwoFactorService::class);
-        $twoFactor->generate($member); // ← DB保存 & メール送信
+        $twoFactor->generate($member, TwoFactorMethod::EMAIL->value);
 
         return response()->json([
             'success' => true,
@@ -681,6 +681,55 @@ class AdminLoginController extends AdminController
         $this->processEmailVerificationIfPending($member, $request);
 
         return redirect()->intended(route('admin.dashboard'));
+    }
+
+    /**
+     * メール認証フォームを表示
+     */
+    public function showEmailForm(Request $request)
+    {
+        if (!session()->has('login.id')) {
+            return redirect()->route('admin.login');
+        }
+
+        $memberId = session('login.id');
+        $member = Member::find($memberId);
+
+        if (!$member) {
+            return redirect()->route('admin.login');
+        }
+
+        // メール認証コードを生成・送信
+        $twoFactor = app(AdminTwoFactorService::class);
+        $twoFactor->generate($member, TwoFactorMethod::EMAIL->value);
+
+        // 利用可能な認証方法を取得
+        $twoFactorHelper = app(TwoFactorHelper::class);
+        $enabledMethods = $twoFactorHelper->getEnabledTwoFactorMethods();
+        $availableMethods = [];
+        $currentMethod = TwoFactorMethod::EMAIL->value;
+
+        foreach ($enabledMethods as $method) {
+            if ($method !== $currentMethod) { // EMAIL以外
+                $methodEnum = TwoFactorMethod::from($method);
+                $availableMethods[] = [
+                    'value' => $method,
+                    'label' => $methodEnum->label(),
+                    'url' => $this->getTwoFactorMethodRoute($method),
+                ];
+            }
+        }
+
+        // 二段階認証の設定値を取得（メンバー設定 > コンフィグ）
+        $twoFactorExpireMinutes = (int) MemberSetting::getValue('two_factor_expire_minutes', config('two-factor.code_expiration', 5));
+        $twoFactorResendIntervalSeconds = (int) MemberSetting::getValue('two_factor_resend_interval_seconds', config('two-factor.resend_interval', 60));
+
+        return view('admin.two-factor.email-challenge', [
+            'availableMethods' => $availableMethods,
+            'currentMethod' => $currentMethod,
+            'expireMinutes' => $twoFactorExpireMinutes,
+            'resendIntervalSeconds' => $twoFactorResendIntervalSeconds,
+        ]);
     }
 
     /**
@@ -828,6 +877,19 @@ class AdminLoginController extends AdminController
                 // 認証成功 - ログイン処理
                 $lockoutService = app(AdminLoginLockoutService::class);
                 $lockoutService->handleSuccessfulLogin($member->email);
+
+                // 回復コードが未生成の場合は自動生成
+                $twoFactorHelper = app(TwoFactorHelper::class);
+                if ($twoFactorHelper->hasNoRecoveryCodes($member)) {
+                    try {
+                        $codes = $twoFactorHelper->generateRecoveryCodes($member, true);
+                        // セッションに保存してダッシュボードで表示
+                        session(['auto_generated_recovery_codes' => $codes]);
+                        \Log::info("[Recovery Codes] Passkey認証後に自動生成: ユーザーID {$member->id}");
+                    } catch (\Exception $e) {
+                        \Log::error("[Recovery Codes] Passkey認証後の自動生成失敗: " . $e->getMessage());
+                    }
+                }
 
                 // ログイン環境を記録、通知
                 app(AdminLoginNotificationService::class)->handle($member, $request);

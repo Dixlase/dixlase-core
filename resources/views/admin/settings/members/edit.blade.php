@@ -77,6 +77,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :cancel_label="__('common.cancel')"
         confirm_variant="danger"
     />
+
+    <!-- Passkey結果表示モーダル -->
+    <x-two-factor.passkey-result-modal modalId="passkeyResultModal" />
 @endsection
 
 @section('save')
@@ -225,18 +228,28 @@ window.revokePasskey = function(event) {
         console.log('[Member Passkey Delete] Response data', data);
         closeModal('deletePasskeyModal');
         if (data.success) {
-            sessionStorage.setItem('flash_success', data.message);
-            location.reload();
+            window.PasskeyResultModal.showSuccess(
+                'passkeyResultModal',
+                '{{ __('admin.profile.passkey_delete_success_title') }}',
+                data.message,
+                () => location.reload()
+            );
         } else {
-            sessionStorage.setItem('flash_error', data.message);
-            location.reload();
+            window.PasskeyResultModal.showError(
+                'passkeyResultModal',
+                '{{ __('common.error') }}',
+                data.message
+            );
         }
     })
     .catch(error => {
         console.error('[Member Passkey Delete] Error:', error);
         closeModal('deletePasskeyModal');
-        sessionStorage.setItem('flash_error', '{{ __('admin.profile.passkey_delete_error') }}');
-        location.reload();
+        window.PasskeyResultModal.showError(
+            'passkeyResultModal',
+            '{{ __('common.error') }}',
+            '{{ __('admin.profile.passkey_delete_error') }}'
+        );
     });
 };
 
@@ -276,36 +289,46 @@ window.revokeAllPasskeys = function(event) {
         console.log('[Member Passkey Delete All] Response data', data);
         closeModal('deleteAllPasskeysModal');
         if (data.success) {
-            sessionStorage.setItem('flash_success', data.message);
-            location.reload();
+            window.PasskeyResultModal.showSuccess(
+                'passkeyResultModal',
+                '{{ __('admin.profile.passkey_delete_success_title') }}',
+                data.message,
+                () => location.reload()
+            );
         } else {
-            sessionStorage.setItem('flash_error', data.message);
-            location.reload();
+            window.PasskeyResultModal.showError(
+                'passkeyResultModal',
+                '{{ __('common.error') }}',
+                data.message
+            );
         }
     })
     .catch(error => {
         console.error('[Member Passkey Delete All] Error:', error);
         closeModal('deleteAllPasskeysModal');
-        sessionStorage.setItem('flash_error', '{{ __('admin.profile.passkey_delete_all_error') }}');
-        location.reload();
+        window.PasskeyResultModal.showError(
+            'passkeyResultModal',
+            '{{ __('common.error') }}',
+            '{{ __('admin.profile.passkey_delete_all_error') }}'
+        );
     });
 };
 
 // モーダルの確認ボタンにイベントリスナーを追加
 document.addEventListener('DOMContentLoaded', function() {
-    // フラッシュメッセージの表示
-    const flashSuccess = sessionStorage.getItem('flash_success');
-    const flashError = sessionStorage.getItem('flash_error');
-    
-    if (flashSuccess) {
-        alert(flashSuccess);
-        sessionStorage.removeItem('flash_success');
-    }
-    
-    if (flashError) {
-        alert(flashError);
-        sessionStorage.removeItem('flash_error');
-    }
+    // フラッシュメッセージの表示（削除機能はモーダルに移行したため不要）
+    // const flashSuccess = sessionStorage.getItem('flash_success');
+    // const flashError = sessionStorage.getItem('flash_error');
+    // 
+    // if (flashSuccess) {
+    //     alert(flashSuccess);
+    //     sessionStorage.removeItem('flash_success');
+    // }
+    // 
+    // if (flashError) {
+    //     alert(flashError);
+    //     sessionStorage.removeItem('flash_error');
+    // }
 
     // 認証メール送信モーダル
     const verificationModal = document.getElementById('verificationEmailModal');
@@ -377,18 +400,28 @@ window.revokeRecoveryCodes = function(event) {
         console.log('[Member Recovery Code Delete] Response data', data);
         closeModal('deleteRecoveryCodesModal');
         if (data.success) {
-            sessionStorage.setItem('flash_success', data.message);
-            location.reload();
+            window.PasskeyResultModal.showSuccess(
+                'passkeyResultModal',
+                '{{ __('admin.settings.members.form.recovery_codes_delete_success_title') }}',
+                data.message,
+                () => location.reload()
+            );
         } else {
-            sessionStorage.setItem('flash_error', data.message);
-            location.reload();
+            window.PasskeyResultModal.showError(
+                'passkeyResultModal',
+                '{{ __('common.error') }}',
+                data.message
+            );
         }
     })
     .catch(error => {
         console.error('[Member Recovery Code Delete] Error:', error);
         closeModal('deleteRecoveryCodesModal');
-        sessionStorage.setItem('flash_error', '{{ __('admin.settings.members.form.recovery_codes_delete_error') }}');
-        location.reload();
+        window.PasskeyResultModal.showError(
+            'passkeyResultModal',
+            '{{ __('common.error') }}',
+            '{{ __('admin.settings.members.form.recovery_codes_delete_error') }}'
+        );
     });
 };
 </script>

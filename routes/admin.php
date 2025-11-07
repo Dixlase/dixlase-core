@@ -66,19 +66,21 @@ Route::prefix($adminUrl)->name('admin.')
         Route::get('/login', [AdminLoginController::class, 'create'])->name('login');
         Route::post('/login', [AdminLoginController::class, 'store'])->name('login.store');
 
-        // 二段階認証
-        Route::get('/two-factor-challenge', [AdminLoginController::class, 'showTwoFactorForm'])->name('two-factor.login');
-        Route::post('/two-factor-challenge', [AdminLoginController::class, 'confirmTwoFactor'])->name('two-factor.confirm');
-        Route::post('/two-factor-resend', [AdminLoginController::class, 'resendTwoFactorCode'])->name('two-factor.resend');
-        
-        // 回復コード
-        Route::get('/two-factor-recovery', [AdminLoginController::class, 'showRecoveryCodeForm'])->name('two-factor.recovery-code.show');
-        Route::post('/two-factor-recovery', [AdminLoginController::class, 'confirmRecoveryCode'])->name('two-factor.recovery-code.confirm');
+        // 二段階認証（メール）
+        Route::get('/two-factor-email', [AdminLoginController::class, 'showEmailForm'])->name('two-factor.email.show');
+        Route::post('/two-factor-email/verify', [AdminLoginController::class, 'verifyEmail'])->name('two-factor.email.verify');
+        Route::post('/two-factor-email/resend', [AdminLoginController::class, 'resendEmailCode'])->name('two-factor.email.resend');
         
         // Passkey認証
         Route::get('/two-factor-passkey', [AdminLoginController::class, 'showPasskeyForm'])->name('two-factor.passkey.show');
         Route::post('/two-factor-passkey/challenge', [AdminLoginController::class, 'getPasskeyChallenge'])->name('two-factor.passkey.challenge');
         Route::post('/two-factor-passkey/verify', [AdminLoginController::class, 'verifyPasskey'])->name('two-factor.passkey.verify');
+        
+        // 回復コード
+        Route::get('/two-factor-recovery', [AdminLoginController::class, 'showRecoveryCodeForm'])->name('two-factor.recovery-code.show');
+        Route::post('/two-factor-recovery', [AdminLoginController::class, 'confirmRecoveryCode'])->name('two-factor.recovery-code.confirm');
+        
+
 
         // パスワードリセット
         Route::get('/forgot-password', [AdminPasswordResetLinkController::class, 'create'])->name('password.request');
