@@ -522,24 +522,25 @@ class InstallController extends Controller
             if (empty($data)) {
                 Log::channel('install')->error('セッションデータが空です - 確認画面にリダイレクト');
                 return redirect()->route('install.confirm')
-                    ->with('error', 'セッションデータが失われました。再度お試しください。');
+                    ->with('error', '');
             }
 
-            // ✅ 暗号化された管理者パスワードを取得して復号化
-            $adminPassword = isset($data['admin_password']) ? Crypt::decryptString($data['admin_password']) : null;
+            // ✅ 管理者パスワードを復号化
+            $adminPassword = Crypt::decryptString($data['admin_password']);
             Log::channel('install')->info('管理者パスワード復号化完了');
 
-            // ✅ DBパスワードを復号化
-            $dbPassword = isset($data['db_password']) ? Crypt::decryptString($data['db_password']) : null;
+            // ✅ DBパスワードを復号化（空文字列の場合は復号化しない）
+            $dbPassword = (!empty($data['db_password'])) ? Crypt::decryptString($data['db_password']) : '';
             Log::channel('install')->info('DBパスワード復号化完了');
 
-            // ✅ メールパスワードを復号化
-            $mailPassword = isset($data['mail_password']) ? Crypt::decryptString($data['mail_password']) : null;
+            // ✅ メールパスワードを復号化（空文字列の場合は復号化しない）
+            $mailPassword = (!empty($data['mail_password'])) ? Crypt::decryptString($data['mail_password']) : '';
             Log::channel('install')->info('メールパスワード復号化完了');
 
             // ✅ `force_ssl` の値を取得（チェックなしなら false）
             $forceSslBool = !empty($data['force_ssl']);
 
+            // 
             // ✅ `force_ssl` に基づいて `APP_URL` のプロトコルを決定
             $protocol = $forceSslBool ? 'https://' : 'http://';
             $appUrl = $protocol . $data['app_url'];
@@ -594,10 +595,6 @@ class InstallController extends Controller
             Log::channel('install')->info('設定キャッシュクリア開始');
             Artisan::call('config:clear');
             Log::channel('install')->info('設定キャッシュクリア完了');
-            
-            Log::channel('install')->info('設定キャッシュ再構築開始');
-            Artisan::call('config:cache');
-            Log::channel('install')->info('設定キャッシュ再構築完了');
 
             // マイグレーション実行中はセッションドライバーを一時的にfileに変更
             $envPath = base_path('.env');
@@ -613,7 +610,6 @@ class InstallController extends Controller
             
             // 設定を再読み込み
             Artisan::call('config:clear');
-            Artisan::call('config:cache');
             Log::channel('install')->info('セッションドライバーを一時的にfileに変更', ['original' => $originalSessionDriver]);
 
             // データベースをリセットするかどうかを確認
@@ -636,7 +632,6 @@ class InstallController extends Controller
             
             // 設定を再読み込み
             Artisan::call('config:clear');
-            Artisan::call('config:cache');
             Log::channel('install')->info('セッションドライバーを復元', ['driver' => $originalSessionDriver]);
             
             // 常にメンバーロールパーミッションシーダーを実行
@@ -815,18 +810,9 @@ class InstallController extends Controller
         Log::channel('install')->info('APP_URL取得結果: ' . $envAppUrl);
         Log::channel('install')->info('リダイレクトフラグクリア完了');
         
-        // セッションを明示的に開始してCSRFトークンを生成
-        if (!session()->isStarted()) {
-            session()->start();
-        }
-        session()->regenerateToken();
-        Log::channel('install')->info('セッション開始とCSRFトークン生成完了');
-        
         Log::channel('install')->info('=== InstallController::complete() 終了 ===');
         
-        // 完了画面では INSTALLED=true を設定せず、表示のみ行う
-        // INSTALLED=true の設定は finalize メソッドで行う
-        
+        // 完了画面を表示（INSTALLED=trueの設定はfinalizeメソッドで行う）
         return view('install.complete', compact('appUrl', 'adminUrl', 'adminLoginUrl'));
     }
 
@@ -840,22 +826,39 @@ class InstallController extends Controller
         // INSTALLED=trueを設定
         Log::channel('install')->info('INSTALLED=trueを設定中...');
         $this->updateEnv(['INSTALLED' => 'true']);
-        Artisan::call('config:clear');
-        Artisan::call('config:cache');
-        Log::channel('install')->info('INSTALLED=true設定完了');
         
-        Log::channel('install')->info('=== InstallController::finalize() 終了 ===');
+        // 環境変数を即座に反映（putenvで現在のプロセスに反映）
+        putenv('INSTALLED=true');
+        $_ENV['INSTALLED'] = 'true';
+        $_SERVER['INSTALLED'] = 'true';
+        
+        // Artisanコマンドは実行しない（APP_KEY再生成とセッション破壊を防ぐため）
+        Log::channel('install')->info('INSTALLED=true設定完了', [
+            'env_INSTALLED' => env('INSTALLED'),
+            'putenv_check' => getenv('INSTALLED')
+        ]);
         
         // リダイレクト先を取得
         $redirectTo = $request->input('redirect_to');
         
+        Log::channel('install')->info('finalize: リダイレクト先', [
+            'redirect_to' => $redirectTo,
+            'request_all' => $request->all(),
+            'has_session' => $request->hasSession(),
+            'session_id' => $request->hasSession() ? $request->session()->getId() : 'no session'
+        ]);
+        
         if ($redirectTo) {
             // リダイレクト先が指定されている場合
+            Log::channel('install')->info('finalize: リダイレクト実行', ['url' => $redirectTo]);
             return redirect($redirectTo)->with('message', 'インストールが完了しました。');
         } else {
             // AJAX呼び出しの場合はJSONレスポンス
+            Log::channel('install')->info('finalize: JSONレスポンス返却');
             return response()->json(['success' => true, 'message' => 'インストールが完了しました。']);
         }
+        
+        Log::channel('install')->info('=== InstallController::finalize() 終了 ===');
     }
 
      /**

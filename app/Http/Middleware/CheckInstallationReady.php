@@ -15,6 +15,12 @@ class CheckInstallationReady
      */
     public function handle(Request $request, Closure $next): Response
     {
+        Log::channel('install')->info('=== CheckInstallationReady::handle() START ===', [
+            'url' => $request->url(),
+            'method' => $request->method(),
+            'route' => $request->route() ? $request->route()->getName() : 'no route'
+        ]);
+        
         // セッションから言語を設定
         if (session()->has('install_locale')) {
             app()->setLocale(session('install_locale'));
@@ -102,8 +108,10 @@ class CheckInstallationReady
         
         if (!$isInstalled) {
             // 未インストール状態の処理
+            Log::channel('install')->info('CheckInstallationReady: 未インストール状態');
             
             if ($request->is('install*') || $request->is('install/*')) {
+                Log::channel('install')->info('CheckInstallationReady: installルート内');
                 // installルート内でのアクセス
                 
                 if ($request->is('install/complete')) {
@@ -120,7 +128,7 @@ class CheckInstallationReady
                     }
                     // 完了画面自体なので、そのまま通過させる
                     
-                } elseif ($request->is('install/finalize')) {
+                } elseif ($request->is('install/finalize') || $currentRoute === 'install.finalize') {
                     // finalize処理は常に許可（POSTリクエスト）
                     Log::channel('install')->info('CheckInstallationReady: finalize処理を許可');
                     
@@ -138,6 +146,7 @@ class CheckInstallationReady
                 
             } else {
                 // install以外のルート（フロントページなど）へのアクセス
+                Log::channel('install')->info('CheckInstallationReady: install以外のルート');
                 
                 if ($isMigrated) {
                     // マイグレーション完了 → 完了画面へ
@@ -165,12 +174,14 @@ class CheckInstallationReady
             
         } else {
             // インストール済みの場合、インストール画面にはアクセスできないようにする
+            Log::channel('install')->info('CheckInstallationReady: インストール済み状態');
             if ($request->is('install*') || $request->is('install/*')) {
                 Log::channel('install')->info('CheckInstallationReady: インストール済み - フロントページにリダイレクト');
                 return redirect('/')->with('message', 'このアプリケーションは既にインストールされています。');
             }
         }
-
+        
+        Log::channel('install')->info('CheckInstallationReady: ミドルウェア通過 - next()');
         return $next($request);
     }
     

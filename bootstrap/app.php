@@ -16,7 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         // Register global middlewares
-        $middleware->append([
+        $middleware->use([
             \App\Http\Middleware\CheckInstallationReady::class, // インストール準備状況チェック + インストール状態チェック
             \App\Http\Middleware\ApplySessionConfig::class, // セッション設定の動的適用
         ]);
