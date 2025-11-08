@@ -33,19 +33,14 @@ class PluginGitignoreHelper
     private static string $gitignorePath;
 
     /**
-     * プラグイン設定ファイルのパス
-     */
-    private static string $pluginConfigPath;
-
-    /**
      * プラグイン用動的除外設定の開始マーカー
      */
-    private const PLUGIN_SECTION_START = '# === プラグイン用動的除外設定 (自動管理) ===';
+    private const PLUGIN_SECTION_START = '# === プラグイン用除外設定（自動管理） ===';
 
     /**
      * プラグイン用動的除外設定の終了マーカー
      */
-    private const PLUGIN_SECTION_END = '# === プラグイン用動的除外設定終了 ===';
+    private const PLUGIN_SECTION_END = '# === プラグイン用除外設定終了 ===';
 
     /**
      * 初期化
@@ -53,7 +48,6 @@ class PluginGitignoreHelper
     private static function init(): void
     {
         self::$gitignorePath = base_path('.gitignore');
-        self::$pluginConfigPath = base_path('.gitignore.plugins');
     }
 
     /**
@@ -67,11 +61,20 @@ class PluginGitignoreHelper
         self::init();
 
         try {
-            // .gitignore.pluginsファイルを更新
-            self::updatePluginConfig($pluginName, 'add');
+            // プラグインリストを取得
+            $plugins = self::getPluginList();
+
+            // 既に存在する場合はスキップ
+            if (in_array($pluginName, $plugins)) {
+                return true;
+            }
+
+            // プラグインを追加
+            $plugins[] = $pluginName;
+            sort($plugins); // アルファベット順にソート
 
             // .gitignoreファイルを更新
-            self::updateGitignore();
+            self::updateGitignore($plugins);
 
             Log::info("Plugin '{$pluginName}' added to .gitignore exclusions");
             return true;
@@ -93,11 +96,15 @@ class PluginGitignoreHelper
         self::init();
 
         try {
-            // .gitignore.pluginsファイルを更新
-            self::updatePluginConfig($pluginName, 'remove');
+            // プラグインリストを取得
+            $plugins = self::getPluginList();
+
+            // プラグインを削除
+            $plugins = array_filter($plugins, fn($plugin) => $plugin !== $pluginName);
+            $plugins = array_values($plugins); // インデックスを再構築
 
             // .gitignoreファイルを更新
-            self::updateGitignore();
+            self::updateGitignore($plugins);
 
             Log::info("Plugin '{$pluginName}' removed from .gitignore exclusions");
             return true;
@@ -109,39 +116,11 @@ class PluginGitignoreHelper
     }
 
     /**
-     * .gitignore.pluginsファイルを更新
-     *
-     * @param string $pluginName プラグイン名
-     * @param string $action 'add' または 'remove'
-     */
-    private static function updatePluginConfig(string $pluginName, string $action): void
-    {
-        $plugins = self::getPluginList();
-
-        if ($action === 'add') {
-            if (!in_array($pluginName, $plugins)) {
-                $plugins[] = $pluginName;
-            }
-        } elseif ($action === 'remove') {
-            $plugins = array_filter($plugins, fn($plugin) => $plugin !== $pluginName);
-        }
-
-        // .gitignore.pluginsファイルに書き込み
-        $content = "# プラグイン用動的除外設定\n";
-        $content .= "# このファイルはプラグインのインストール/アンインストール時に自動更新されます\n\n";
-        $content .= "# 開発中のプラグイン（除外解除）\n";
-
-        foreach ($plugins as $plugin) {
-            $content .= "!plugins/{$plugin}/\n";
-        }
-
-        File::put(self::$pluginConfigPath, $content);
-    }
-
-    /**
      * .gitignoreファイルのプラグインセクションを更新
+     *
+     * @param array $plugins プラグインリスト
      */
-    private static function updateGitignore(): void
+    private static function updateGitignore(array $plugins): void
     {
         if (!File::exists(self::$gitignorePath)) {
             return;
@@ -168,10 +147,15 @@ class PluginGitignoreHelper
             array_splice($lines, $startIndex, $endIndex - $startIndex + 1);
 
             // 新しいプラグインセクションを挿入
-            $pluginSection = self::generatePluginSection();
+            $pluginSection = self::generatePluginSection($plugins);
             array_splice($lines, $startIndex, 0, $pluginSection);
 
             // ファイルに書き戻し
+            File::put(self::$gitignorePath, implode("\n", $lines));
+        } else {
+            // プラグインセクションが存在しない場合は追加
+            $pluginSection = self::generatePluginSection($plugins);
+            $lines = array_merge($lines, [''], $pluginSection);
             File::put(self::$gitignorePath, implode("\n", $lines));
         }
     }
@@ -179,18 +163,21 @@ class PluginGitignoreHelper
     /**
      * プラグインセクションを生成
      *
+     * @param array $plugins プラグインリスト
      * @return array
      */
-    private static function generatePluginSection(): array
+    private static function generatePluginSection(array $plugins): array
     {
-        $plugins = self::getPluginList();
         $section = [];
 
         $section[] = self::PLUGIN_SECTION_START;
-        $section[] = '# 以下の行はプラグインシステムによって自動管理されます';
-
-        foreach ($plugins as $plugin) {
-            $section[] = "!plugins/{$plugin}/";
+        
+        if (empty($plugins)) {
+            $section[] = '# プラグインが追加されると、ここに自動的に除外設定が追加されます';
+        } else {
+            foreach ($plugins as $plugin) {
+                $section[] = "!plugins/{$plugin}";
+            }
         }
 
         $section[] = self::PLUGIN_SECTION_END;
@@ -199,23 +186,37 @@ class PluginGitignoreHelper
     }
 
     /**
-     * .gitignore.pluginsファイルからプラグインリストを取得
+     * .gitignoreファイルからプラグインリストを取得
      *
      * @return array
      */
     private static function getPluginList(): array
     {
-        if (!File::exists(self::$pluginConfigPath)) {
+        if (!File::exists(self::$gitignorePath)) {
             return [];
         }
 
-        $content = File::get(self::$pluginConfigPath);
+        $content = File::get(self::$gitignorePath);
         $lines = explode("\n", $content);
         $plugins = [];
+        $inPluginSection = false;
 
         foreach ($lines as $line) {
-            $line = trim($line);
-            if (preg_match('/^!plugins\/([^\/]+)\/$/', $line, $matches)) {
+            $trimmed = trim($line);
+            
+            // プラグインセクションの開始
+            if ($trimmed === self::PLUGIN_SECTION_START) {
+                $inPluginSection = true;
+                continue;
+            }
+            
+            // プラグインセクションの終了
+            if ($trimmed === self::PLUGIN_SECTION_END) {
+                break;
+            }
+            
+            // プラグインセクション内のプラグイン行を抽出
+            if ($inPluginSection && preg_match('/^!plugins\/([^\/\s]+)/', $trimmed, $matches)) {
                 $plugins[] = $matches[1];
             }
         }

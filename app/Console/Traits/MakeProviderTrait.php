@@ -59,8 +59,26 @@ trait MakeProviderTrait
      */
     protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '')
     {
+        // プラグイン用のフラグを設定
+        if (!empty($pluginName)) {
+            $options['plugin'] = true;
+        }
+        
         // スタブの取得
         $stub = $this->renderStub($options);
+        
+        // プレースホルダーを準備
+        $placeholders = [];
+        if (!empty($pluginName)) {
+            // プラグイン名からスラッグと設定ファイル名を生成
+            $pluginSlug = Str::kebab($pluginName);
+            $configFileName = Str::snake($pluginName);
+            
+            $placeholders = [
+                'pluginSlug' => $pluginSlug,
+                'configFileName' => $configFileName,
+            ];
+        }
                 
         // ファイル生成
         $this->makeFiler(
@@ -71,7 +89,7 @@ trait MakeProviderTrait
             subDirs: $subDirs,
             stub: $stub,
             pluginName: $pluginName,
-            placeholders: [],
+            placeholders: $placeholders,
             licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
         );
         

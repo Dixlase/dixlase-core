@@ -29,6 +29,7 @@ use Illuminate\Support\Str;
 use App\Models\Plugin;
 use App\Console\Traits\MakeLicenseTrait;
 use App\Console\Traits\MakeFileTrait;
+use App\Helpers\PluginGitignoreHelper;
 
 class MakeNewPlugin extends Command
 {
@@ -193,6 +194,13 @@ class MakeNewPlugin extends Command
         }
 
         $this->call('plugin:autoload:sync');
+
+        // .gitignoreにプラグインを追加
+        if (PluginGitignoreHelper::addPlugin($pluginDirName)) {
+            $this->info("✓ プラグイン '{$pluginDirName}' を .gitignore の除外リストに追加しました");
+        } else {
+            $this->warn("⚠ プラグイン '{$pluginDirName}' の .gitignore への追加に失敗しました");
+        }
 
         $this->info(__('command.make_plugin.success', ['pluginName' => $pluginName]));
         return Command::SUCCESS;
@@ -382,17 +390,20 @@ class MakeNewPlugin extends Command
      */
     protected function createRoutes(string $pluginName, string $pluginDir, array $placeholders, array $licenseInfo)
     {
+        // プラグイン名をStudlyCaseに変換
+        $pluginDirName = Str::studly($pluginName);
+        
         //フロント用のルートファイルを作成        
         Artisan::call('make:plugin:route', [
             'className' => "web",
-            'pluginName' => $pluginName,
+            'pluginName' => $pluginDirName,
             'routeType' => 'web',
         ]);
 
         //管理画面用のルートファイルを作成
         Artisan::call('make:plugin:route', [
             'className' => "admin",
-            'pluginName' => $pluginName,
+            'pluginName' => $pluginDirName,
             'routeType' => 'admin',
         ]);
 
@@ -407,13 +418,16 @@ class MakeNewPlugin extends Command
      */
     protected function createConfigFile(string $pluginName, string $pluginDir, array $placeholders, array $licenseInfo)
     {
+        // プラグイン名をStudlyCaseに変換
+        $pluginDirName = Str::studly($pluginName);
+        
         // Convert plugin name to snake_case for the config file name
         $configFileName = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $pluginName));
 
         // フロント用のコンフィグファイルを作成        
         Artisan::call('make:plugin:config', [
             'className' => $configFileName,
-            'pluginName' => $pluginName,
+            'pluginName' => $pluginDirName,
         ]);
 
         $this->info(__('command.make_plugin.files.config', ['pluginName' => $pluginName]));
@@ -424,20 +438,23 @@ class MakeNewPlugin extends Command
      */
     protected function createLangFiles(string $pluginName, string $pluginDir, array $placeholders, array $licenseInfo)
     {
+        // プラグイン名をStudlyCaseに変換
+        $pluginDirName = Str::studly($pluginName);
+        
         // Convert plugin name to snake_case for the language file name
         $langFileName = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $pluginName));
 
         // 英語の言語ファイルを作成        
         Artisan::call('make:plugin:lang', [
             'className' => $langFileName,
-            'pluginName' => $pluginName,
+            'pluginName' => $pluginDirName,
             'lang' => 'en',
         ]);
 
         // 日本語の言語ファイルを作成
         Artisan::call('make:plugin:lang', [
             'className' => $langFileName,
-            'pluginName' => $pluginName,
+            'pluginName' => $pluginDirName,
             'lang' => 'ja',
         ]);
 
@@ -494,7 +511,7 @@ class MakeNewPlugin extends Command
 
         $params = [
             'className' => $providerName,
-            'pluginName' => $pluginName,
+            'pluginName' => $pluginDirName, // StudlyCase形式のディレクトリ名を使用
         ];
         
         Artisan::call('make:plugin:provider', $params);

@@ -130,21 +130,34 @@ trait MakeRouteTrait
      *        string $options['routeType'] ルートタイプ (web, api, admin)
      *        bool $options['api'] APIルートの場合はtrue
      *        bool $options['admin'] 管理画面ルートの場合はtrue
+     *        bool $options['isPlugin'] プラグイン用の場合はtrue
      * @return string|false スタブファイルの内容、または失敗時はfalse
      */
     protected function renderStub(array $options = []): string|false
     {
         // ルートタイプを決定（後方互換性のため古いオプションもサポート）
         $routeType = $options['routeType'] ?? 'web';
+        $isPlugin = $options['isPlugin'] ?? false;
         
         // カスタムスタブディレクトリを確認
         $customStubDir = config('command.custom_stub_directory');
         if ($customStubDir && is_dir($customStubDir)) {
+            // プラグイン用のスタブファイルを優先
+            if ($isPlugin) {
+                $stubPath = $customStubDir . '/routes.plugin.' . $routeType . '.stub';
+                if (file_exists($stubPath)) {
+                    return File::get($stubPath);
+                }
+            }
+            
+            // 通常のスタブファイル
             $stubPath = $customStubDir . '/routes.' . $routeType . '.stub';
             if (file_exists($stubPath)) {
                 return File::get($stubPath);
             }
         }
+        
+        return false;
     }
 
     /**

@@ -84,10 +84,11 @@ class PluginUninstall extends Command
         $this->info("DEBUG: Plugin status after disable: " . ($updatedPlugin ? $updatedPlugin->status : 'NOT FOUND'));
         
         // .gitignore除外リストからプラグインを削除（早期実行）
-        if (PluginGitignoreHelper::removePlugin($pluginName)) {
-            $this->info("Plugin '{$pluginName}' removed from .gitignore exclusions");
+        // ディレクトリ名を使用（プラグイン名ではなく）
+        if (PluginGitignoreHelper::removePlugin($plugin->directory)) {
+            $this->info("✓ プラグイン '{$plugin->directory}' を .gitignore の除外リストから削除しました");
         } else {
-            $this->warn("Failed to remove plugin '{$pluginName}' from .gitignore exclusions");
+            $this->warn("⚠ プラグイン '{$plugin->directory}' の .gitignore からの削除に失敗しました");
         }
 
         // マイグレーションのロールバック

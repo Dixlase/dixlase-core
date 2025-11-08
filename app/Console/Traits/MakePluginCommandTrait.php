@@ -136,6 +136,9 @@ trait MakePluginCommandTrait
             $options = array_merge($options, ['scope' => $scope]);
         }
 
+        // プラグイン用のフラグを追加
+        $options['isPlugin'] = true;
+
         // ファイル生成
         $this->makeFile(
             $className,
