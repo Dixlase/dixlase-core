@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\File;
 use App\Services\PluginMigrator;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Filesystem\Filesystem;
-use App\Helpers\PluginGitignoreHelper;
+use App\Helpers\GitExcludeHelper;
+use App\Helpers\ComposerLocalHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -83,12 +84,12 @@ class PluginUninstall extends Command
         $updatedPlugin = DB::table('plugins')->where('name', $pluginName)->first();
         $this->info("DEBUG: Plugin status after disable: " . ($updatedPlugin ? $updatedPlugin->status : 'NOT FOUND'));
         
-        // .gitignore除外リストからプラグインを削除（早期実行）
+        // .git/info/exclude除外リストからプラグインを削除
         // ディレクトリ名を使用（プラグイン名ではなく）
-        if (PluginGitignoreHelper::removePlugin($plugin->directory)) {
-            $this->info("✓ プラグイン '{$plugin->directory}' を .gitignore の除外リストから削除しました");
+        if (GitExcludeHelper::removePluginExclusion($plugin->directory)) {
+            $this->info("✓ プラグイン '{$plugin->directory}' を .git/info/exclude の除外リストから削除しました");
         } else {
-            $this->warn("⚠ プラグイン '{$plugin->directory}' の .gitignore からの削除に失敗しました");
+            $this->warn("⚠ プラグイン '{$plugin->directory}' の .git/info/exclude からの削除に失敗しました");
         }
 
         // マイグレーションのロールバック
@@ -126,6 +127,10 @@ class PluginUninstall extends Command
         // データベースからプラグインを削除
         DB::table('plugins')->where('name', $pluginName)->delete();
         $this->info(__('command.plugin_uninstall.database_removed', ['pluginName' => $pluginName]));
+
+        // composer.local.jsonを更新（ディレクトリ削除後に実行）
+        ComposerLocalHelper::syncAutoload();
+        $this->info("✓ composer.local.jsonを更新しました");
 
         // オートロードを更新
         $this->updateAutoload();

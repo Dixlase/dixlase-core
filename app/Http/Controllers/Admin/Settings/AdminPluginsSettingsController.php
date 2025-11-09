@@ -36,6 +36,7 @@ use App\Services\PluginMigrator;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Log;
+use App\Helpers\GitExcludeHelper;
 
 class AdminPluginsSettingsController extends AdminLoggedInController
 {
@@ -235,6 +236,9 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             // artisanコマンドでPSR-4オートロードを更新
             Artisan::call('plugin:autoload:sync', ['--cleanup' => true]);
 
+            // .git/info/excludeにプラグインの除外ルールを追加
+            GitExcludeHelper::addPluginExclusion($pluginDir);
+
             return redirect()->route('admin.settings.plugins.index')
                 ->with('success', 'プラグインが正常にインストールされました。')
                 ->with('installed_plugin_id', $pluginId);
@@ -315,6 +319,8 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         // artisanコマンドでPSR-4オートロードを更新
         Artisan::call('plugin:autoload:sync', ['--cleanup' => true]);
 
+        // .git/info/excludeからプラグインの除外ルールを削除
+        GitExcludeHelper::removePluginExclusion($pluginDir);
 
         return redirect()->route('admin.settings.plugins.index')
             ->with('success', 'プラグインをアンインストールしました');
