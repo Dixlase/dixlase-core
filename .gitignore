@@ -39,10 +39,11 @@ CLAUDE.md
 custom/*
 
 # プラグインとテーマのディレクトリを除外
-# 各プラグイン/テーマは個別のリポジトリとして管理
-# SourceTreeでは .git/info/exclude の設定により追跡可能
+# プラグイン: 個別のリポジトリとして管理（.git/info/excludeで追跡）
+# テーマ: DixlaseDefaultThemeはGit Submoduleとしてコアに同梱
 plugins/*
 themes/*
+!themes/DixlaseDefaultTheme/
 
 license-info.json
 license.txt

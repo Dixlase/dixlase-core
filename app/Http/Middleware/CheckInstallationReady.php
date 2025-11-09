@@ -15,11 +15,18 @@ class CheckInstallationReady
      */
     public function handle(Request $request, Closure $next): Response
     {
-        Log::channel('install')->info('=== CheckInstallationReady::handle() START ===', [
-            'url' => $request->url(),
-            'method' => $request->method(),
-            'route' => $request->route() ? $request->route()->getName() : 'no route'
-        ]);
+        // インストール状態を事前チェック（ログ出力を最小限にするため）
+        $installed = env('INSTALLED') ?? config('app.installed');
+        $isInstalled = ($installed === 'true' || $installed === true);
+        
+        // インストール完了後はログを出力しない
+        if (!$isInstalled) {
+            Log::channel('install')->info('=== CheckInstallationReady::handle() START ===', [
+                'url' => $request->url(),
+                'method' => $request->method(),
+                'route' => $request->route() ? $request->route()->getName() : 'no route'
+            ]);
+        }
         
         // セッションから言語を設定
         if (session()->has('install_locale')) {
@@ -93,18 +100,18 @@ class CheckInstallationReady
         }
 
         // インストール状態チェック（.envの設定を優先）
-        $installed = env('INSTALLED') ?? config('app.installed');
+        // 既に上でチェック済みなので再利用
         $currentRoute = $request->route() ? $request->route()->getName() : 'unknown';
         
-        // より厳密な判定
-        $isInstalled = ($installed === 'true' || $installed === true);
-        
-        // マイグレーション完了チェック
+        // マイグレーション完了チェック（未インストール時のみログ出力）
         $debugInfo = [];
-        $isMigrated = $this->checkMigrationCompleted($debugInfo);
+        $isMigrated = $this->checkMigrationCompleted($debugInfo, !$isInstalled);
         
-        Log::channel('install')->info('CheckInstallationReady: INSTALLED=' . var_export($installed, true) . ', isInstalled=' . var_export($isInstalled, true) . ', isMigrated=' . var_export($isMigrated, true) . ', Route=' . $currentRoute);
-        Log::channel('install')->info('CheckInstallationReady: Debug Info=' . json_encode($debugInfo, JSON_UNESCAPED_UNICODE));
+        // インストール完了後はログを出力しない
+        if (!$isInstalled) {
+            Log::channel('install')->info('CheckInstallationReady: INSTALLED=' . var_export($installed, true) . ', isInstalled=' . var_export($isInstalled, true) . ', isMigrated=' . var_export($isMigrated, true) . ', Route=' . $currentRoute);
+            Log::channel('install')->info('CheckInstallationReady: Debug Info=' . json_encode($debugInfo, JSON_UNESCAPED_UNICODE));
+        }
         
         if (!$isInstalled) {
             // 未インストール状態の処理
@@ -174,14 +181,11 @@ class CheckInstallationReady
             
         } else {
             // インストール済みの場合、インストール画面にはアクセスできないようにする
-            Log::channel('install')->info('CheckInstallationReady: インストール済み状態');
             if ($request->is('install*') || $request->is('install/*')) {
-                Log::channel('install')->info('CheckInstallationReady: インストール済み - フロントページにリダイレクト');
                 return redirect('/')->with('message', 'このアプリケーションは既にインストールされています。');
             }
         }
         
-        Log::channel('install')->info('CheckInstallationReady: ミドルウェア通過 - next()');
         return $next($request);
     }
     
@@ -191,8 +195,9 @@ class CheckInstallationReady
      * 提案1（migrationsテーブル）+ 提案3（管理者チェック）の統合版
      * 
      * @param array $debugInfo デバッグ情報を格納する配列（参照渡し）
+     * @param bool $logToInstall インストールログに出力するか（デフォルト: false）
      */
-    private function checkMigrationCompleted(array &$debugInfo = []): bool
+    private function checkMigrationCompleted(array &$debugInfo = [], bool $logToInstall = false): bool
     {
         try {
             // ステップ1: データベース接続をチェック
@@ -200,7 +205,9 @@ class CheckInstallationReady
             $debugInfo['step1_db_connection'] = $dbName ? "OK ({$dbName})" : 'NG';
             
             if (!$dbName) {
-                Log::channel('install')->info('CheckInstallationReady: データベース接続なし');
+                if ($logToInstall) {
+                    Log::channel('install')->info('CheckInstallationReady: データベース接続なし');
+                }
                 return false;
             }
             
@@ -219,19 +226,27 @@ class CheckInstallationReady
                     $debugInfo['step3_migration_count'] = "{$migrationCount}件 (必要: {$minRequiredMigrations})";
                     
                     if ($migrationCount < $minRequiredMigrations) {
-                        Log::info("CheckInstallationReady: マイグレーション数不足 (実行済み: {$migrationCount}, 必要: {$minRequiredMigrations})");
+                        if ($logToInstall) {
+                            Log::info("CheckInstallationReady: マイグレーション数不足 (実行済み: {$migrationCount}, 必要: {$minRequiredMigrations})");
+                        }
                         return false;
                     }
                     
-                    Log::info("CheckInstallationReady: マイグレーション実行確認 ({$migrationCount}件)");
+                    if ($logToInstall) {
+                        Log::info("CheckInstallationReady: マイグレーション実行確認 ({$migrationCount}件)");
+                    }
                 } catch (\Exception $e) {
                     // テーブル名の問題などでエラーが発生した場合はスキップ
                     $debugInfo['step3_migration_count'] = 'ERROR: ' . $e->getMessage();
-                    Log::info("CheckInstallationReady: migrationsテーブルアクセスエラー - 他のチェックで判定");
+                    if ($logToInstall) {
+                        Log::info("CheckInstallationReady: migrationsテーブルアクセスエラー - 他のチェックで判定");
+                    }
                 }
             } else {
                 $debugInfo['step3_migration_count'] = 'SKIP (migrationsテーブル不在)';
-                Log::info("CheckInstallationReady: migrationsテーブル不在 - 他のチェックで判定");
+                if ($logToInstall) {
+                    Log::info("CheckInstallationReady: migrationsテーブル不在 - 他のチェックで判定");
+                }
             }
             
             // ステップ4: 主要テーブルの存在チェック（念のため）
@@ -243,7 +258,9 @@ class CheckInstallationReady
                 $tableStatus[$table] = $exists ? 'OK' : 'NG';
                 
                 if (!$exists) {
-                    Log::info("CheckInstallationReady: 主要テーブル '{$table}' が存在しません");
+                    if ($logToInstall) {
+                        Log::info("CheckInstallationReady: 主要テーブル '{$table}' が存在しません");
+                    }
                     $debugInfo['step4_tables'] = $tableStatus;
                     return false;
                 }
@@ -258,11 +275,15 @@ class CheckInstallationReady
             $debugInfo['step5_admin_users'] = "{$adminCount}人";
             
             if ($adminCount === 0) {
-                Log::channel('install')->info('CheckInstallationReady: 管理者ユーザーが存在しません（初期データ未投入）');
+                if ($logToInstall) {
+                    Log::channel('install')->info('CheckInstallationReady: 管理者ユーザーが存在しません（初期データ未投入）');
+                }
                 return false;
             }
             
-            Log::channel('install')->info('CheckInstallationReady: 管理者ユーザー存在確認');
+            if ($logToInstall) {
+                Log::channel('install')->info('CheckInstallationReady: 管理者ユーザー存在確認');
+            }
             
             // ステップ6: base_settingsに基本データが存在するかチェック（さらなる確認）
             $hasSiteName = DB::table('base_settings')
@@ -271,17 +292,23 @@ class CheckInstallationReady
             $debugInfo['step6_site_name'] = $hasSiteName ? 'OK' : 'NG';
             
             if (!$hasSiteName) {
-                Log::channel('install')->info('CheckInstallationReady: base_settingsに初期データが存在しません');
+                if ($logToInstall) {
+                    Log::channel('install')->info('CheckInstallationReady: base_settingsに初期データが存在しません');
+                }
                 return false;
             }
             
             $debugInfo['result'] = '✅ ALL PASSED';
-            Log::channel('install')->info('CheckInstallationReady: ✅ マイグレーション完了を確認（全チェック通過）');
+            if ($logToInstall) {
+                Log::channel('install')->info('CheckInstallationReady: ✅ マイグレーション完了を確認（全チェック通過）');
+            }
             return true;
             
         } catch (\Exception $e) {
             $debugInfo['error'] = $e->getMessage();
-            Log::channel('install')->info('CheckInstallationReady: マイグレーションチェックエラー - ' . $e->getMessage());
+            if ($logToInstall) {
+                Log::channel('install')->info('CheckInstallationReady: マイグレーションチェックエラー - ' . $e->getMessage());
+            }
             return false;
         }
     }
