@@ -31,11 +31,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             
             <fieldset>
                 <legend>{{ __('common.name') }}</legend>
-                @include('components.form.text', [
-                    'name' => 'name',
-                    'value' => old('name', $member->name),
-                    'required' => true
-                ])
+                <x-form.text
+                    name="name"
+                    :value="old('name', $member->name)"
+                    :required="true"
+                />
                 @error('name')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
@@ -43,11 +43,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <fieldset>
                 <legend>{{ __('common.description') }}</legend>
-                @include('components.form.textarea', [
-                    'name' => 'description',
-                    'value' => old('description', $member->description),
-                    'rows' => 3
-                ])
+                <x-form.textarea
+                    name="description"
+                    :value="old('description', $member->description)"
+                    :rows="3"
+                />
                 @error('description')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
@@ -55,13 +55,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <fieldset>
                 <legend>{{ __('common.email') }}</legend>
-                @include('components.form.text', [
-                    'name' => 'email',
-                    'id' => 'profile_email',
-                    'type' => 'email',
-                    'value' => old('email', $member->email),
-                    'required' => true
-                ])
+                <x-form.text
+                    name="email"
+                    id="profile_email"
+                    type="email"
+                    :value="old('email', $member->email)"
+                    :required="true"
+                />
                 @error('email')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
@@ -90,17 +90,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             {{-- メールアドレス確認フィールド（メールアドレス変更時のみ表示） --}}
             <fieldset id="profile-email-confirmation-field" style="display: none;">
                 <legend>{{ __('admin.settings.members.form.email_confirmation') }}</legend>
-                @include('components.form.text', [
-                    'type' => 'email',
-                    'id' => 'profile_email_confirmation',
-                    'name' => 'email_confirmation',
-                    'value' => old('email_confirmation'),
-                    'required' => false,
-                    'autocomplete' => 'off',
-                    'onpaste' => 'return false',
-                    'oncopy' => 'return false',
-                    'oncut' => 'return false',
-                ])
+                <x-form.text
+                    type="email"
+                    id="profile_email_confirmation"
+                    name="email_confirmation"
+                    :value="old('email_confirmation')"
+                    :required="false"
+                    autocomplete="off"
+                    onpaste="return false"
+                    oncopy="return false"
+                    oncut="return false"
+                />
                 <p class="description-text">{{ __('admin.settings.members.form.email_confirmation_help') }}</p>
                 @error('email_confirmation')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -109,13 +109,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <fieldset>
                 <legend>{{ __('common.locale') }}</legend>
-                @include('components.form.select', [
-                    'name' => 'locale',
-                    'options' => $localeOptions,
-                    'value' => old('locale', $member->locale?->value),
-                    'nullable' => true,
-                    'nullLabel' => __('admin.profile.use_system_default')
-                ])
+                <x-form.select
+                    name="locale"
+                    :options="$localeOptions"
+                    :value="old('locale', $member->locale?->value)"
+                    :nullable="true"
+                    :nullLabel="__('admin.profile.use_system_default')"
+                />
                 @error('locale')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
@@ -129,17 +129,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             
             <fieldset>
                 <legend>{{ __('admin.profile.password_change_only') }}</legend>
-                @include('components.password-tools', [
-                    'name' => 'password',
-                    'id' => 'profile_password',
-                    'required' => false,
-                    'minLength' => $passwordMinLength,
-                    'requireUppercase' => $passwordRequireUppercase,
-                    'requireLowercase' => true,
-                    'requireNumber' => true,
-                    'requireSymbol' => $passwordRequireSymbol,
-                    'showConfirmation' => true
-                ])
+                <x-password-tools
+                    name="password"
+                    id="profile_password"
+                    :required="false"
+                    :minLength="$passwordMinLength"
+                    :requireUppercase="$passwordRequireUppercase"
+                    :requireLowercase="true"
+                    :requireNumber="true"
+                    :requireSymbol="$passwordRequireSymbol"
+                    :showConfirmation="true"
+                />
             </fieldset>
         </section>
 
@@ -169,16 +169,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             
             <fieldset>
                 <legend>{{ __('common.appearance_mode') }}</legend>
-                @include('components::form.radio-group', [
-                    'name' => 'appearance',
-                    'options' => [
+                <x-form.radio-group
+                    name="appearance"
+                    :options="[
                         '0' => __('common.auto'),
                         '1' => __('common.light'),
                         '2' => __('common.dark')
-                    ],
-                    'value' => $appearanceValue,
-                    'xModel' => 'localTheme'
-                ])
+                    ]"
+                    :value="$appearanceValue"
+                    xModel="localTheme"
+                />
             </fieldset>
         </section>
 
@@ -205,11 +205,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @if($showLoginNotificationSettings)
                     <fieldset>
                         <legend>{{ __('common.login_notification_mode.label') }}</legend>
-                        @include('components.form.radio-group', [
-                            'name' => 'login_notification_mode',
-                            'options' => $loginNotificationOptions,
-                            'value' => old('login_notification_mode', (string) ($loginNotificationMode?->value ?? 0)),
-                        ])
+                        <x-form.radio-group
+                            name="login_notification_mode"
+                            :options="$loginNotificationOptions"
+                            :value="old('login_notification_mode', (string) ($loginNotificationMode?->value ?? 0))"
+                        />
                         <p>{{ __('common.login_notification_mode.help') }}</p>
                     </fieldset>
                 @else
@@ -242,11 +242,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @if($force2fa === \App\Enums\TwoFactorMode::UseProfileSetting->value)
                     <fieldset>
                         <legend>{{ __('common.two_factor_mode.label') }}</legend>
-                        @include('components.form.radio-group', [
-                            'name' => 'two_factor_mode',
-                            'options' => $profileTwoFactorOptions,
-                            'value' => old('two_factor_mode', (string) ($twoFactorMode?->value ?? 0)),
-                        ])
+                        <x-form.radio-group
+                            name="two_factor_mode"
+                            :options="$profileTwoFactorOptions"
+                            :value="old('two_factor_mode', (string) ($twoFactorMode?->value ?? 0))"
+                        />
                         <p>{!! __('common.two_factor_help') !!}</p>
                     </fieldset>
                 @elseif($currentGlobalTwoFactorMode)
@@ -277,12 +277,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @endphp
 
                     @if(count($availableMethodOptions) > 1)
-                        @include('components.form.radio-group', [
-                            'name' => 'two_factor_method',
-                            'options' => $availableMethodOptions,
-                            'value' => $currentMethod,
-                            'disabled' => !$showMethodSelection
-                        ])
+                        <x-form.radio-group
+                            name="two_factor_method"
+                            :options="$availableMethodOptions"
+                            :value="$currentMethod"
+                            :disabled="!$showMethodSelection"
+                        />
                     @else
                         <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
                             <p class="text-sm text-gray-700 dark:text-gray-300">
@@ -580,15 +580,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('save')
-    @include('components.save', [
-        'id_confirmation' => 'confirmProfileModal',
-        'label' => __('common.update'),
-        'title' => __('admin.profile.confirm_title'),
-        'message' => __('admin.profile.confirm_message'),
-        'confirm_label' => __('common.update'),
-        'cancel_label' => __('common.cancel'),
-        'form' => 'profile-form',
-    ])
+    <x-save
+        id_confirmation="confirmProfileModal"
+        :label="__('common.update')"
+        :title="__('admin.profile.confirm_title')"
+        :message="__('admin.profile.confirm_message')"
+        :confirm_label="__('common.update')"
+        :cancel_label="__('common.cancel')"
+        form="profile-form"
+    />
 @endsection
 
 @push('scripts')

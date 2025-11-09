@@ -30,41 +30,41 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <h2>{{ __('admin.settings.members.settings.password_conditions') }}</h2>
             <fieldset>
                 <legend>{{ __('admin.settings.members.settings.password_min_length') }}</legend>
-                @include('components.form.radio-group', [
-                    'name' => 'password_min_length',
-                    'options' => $minLengthOptions,
-                    'value' => old('password_min_length', (string) $passwordMinLength),
-                ])
+                <x-form.radio-group
+                    name="password_min_length"
+                    :options="$minLengthOptions"
+                    :value="old('password_min_length', (string) $passwordMinLength)"
+                />
             </fieldset>
 
             <!-- 大文字 -->
             <fieldset>
                 <legend>{{ __('admin.settings.members.settings.password_require_uppercase') }}</legend>
-                @include('components.form.radio-group', [
-                    'name' => 'password_require_uppercase',
-                    'options' => $uppercaseOptions,
-                    'value' => old('password_require_uppercase', (string) (int) $passwordRequireUppercase),
-                ])
+                <x-form.radio-group
+                    name="password_require_uppercase"
+                    :options="$uppercaseOptions"
+                    :value="old('password_require_uppercase', (string) (int) $passwordRequireUppercase)"
+                />
             </fieldset>
 
             <!-- 数字 -->
             <fieldset>
                 <legend>{{ __('admin.settings.members.settings.password_require_number') }}</legend>
-                @include('components.form.radio-group', [
-                    'name' => 'password_require_number',
-                    'options' => $numberOptions,
-                    'value' => old('password_require_number', (string) (int) $passwordRequireNumber),
-                ])
+                <x-form.radio-group
+                    name="password_require_number"
+                    :options="$numberOptions"
+                    :value="old('password_require_number', (string) (int) $passwordRequireNumber)"
+                />
             </fieldset>
 
             <!-- 記号 -->
             <fieldset>
                 <legend>{{ __('admin.settings.members.settings.password_require_symbol') }}</legend>
-                @include('components.form.radio-group', [
-                    'name' => 'password_require_symbol',
-                    'options' => $symbolOptions,
-                    'value' => old('password_require_symbol', (string) (int) $passwordRequireSymbol),
-                ])
+                <x-form.radio-group
+                    name="password_require_symbol"
+                    :options="$symbolOptions"
+                    :value="old('password_require_symbol', (string) (int) $passwordRequireSymbol)"
+                />
             </fieldset>
             <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
                 {{ __('admin.settings.members.settings.password_security_warning') }}
@@ -83,14 +83,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <!-- 機能有効/無効 -->
             <fieldset>
                 <legend>{{ __('admin.settings.members.settings.login_attempt_limit_enabled') }}</legend>
-                @include('components.form.radio-group', [
-                    'name' => 'login_attempt_limit_enabled',
-                    'options' => [
+                <x-form.radio-group
+                    name="login_attempt_limit_enabled"
+                    :options="[
                         '0' => __('common.disabled'),
                         '1' => __('common.enabled'),
-                    ],
-                    'value' => old('login_attempt_limit_enabled', (string) (int) $loginAttemptLimitEnabled),
-                ])
+                    ]"
+                    :value="old('login_attempt_limit_enabled', (string) (int) $loginAttemptLimitEnabled)"
+                />
                 <p>
                     {{ __('admin.settings.members.settings.login_attempt_limit_help') }}
                 </p>

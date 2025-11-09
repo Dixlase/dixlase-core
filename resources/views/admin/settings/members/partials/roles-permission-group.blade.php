@@ -89,14 +89,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     }
                                 @endphp
                                 
-                                @include('components.form.checkbox-group', [
-                                    'name' => "permissions[{$item['menuKey']}][access_roles]",
-                                    'options' => $accessOptions,
-                                    'values' => $accessRoles,
-                                    'flexDirection' => 'col',
-                                    'permissionStyle' => true,
-                                    'class' => 'permission-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700'
-                                ])
+                                <x-form.checkbox-group
+                                    :name="'permissions[' . $item['menuKey'] . '][access_roles][]'"
+                                    :options="$accessOptions"
+                                    :values="$accessRoles"
+                                    :columns="3"
+                                    permissionStyle="true"
+                                    class="permission-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700"
+                                />
                             </div>
                         </fieldset>
 
@@ -116,14 +116,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     }
                                 @endphp
                                 
-                                @include('components.form.checkbox-group', [
-                                    'name' => "permissions[{$item['menuKey']}][view_roles]",
-                                    'options' => $viewOptions,
-                                    'values' => $viewRoles,
-                                    'flexDirection' => 'col',
-                                    'permissionStyle' => true,
-                                    'class' => 'permission-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700'
-                                ])
+                                <x-form.checkbox-group
+                                    :name="'permissions[' . $item['menuKey'] . '][view_roles]'"
+                                    :options="$viewOptions"
+                                    :values="$viewRoles"
+                                    flexDirection="col"
+                                    :permissionStyle="true"
+                                    class="permission-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700"
+                                />
                             </div>
                         </fieldset>
                     </div>

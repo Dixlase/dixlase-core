@@ -38,14 +38,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 ])
 
 <div class="relative">
-    @include('components.form.text', [
-        'type' => 'password',
-        'name' => $name,
-        'id' => $id,
-        'required' => $required,
-        'class' => 'pr-32',
-        'autocomplete' => 'new-password',
-    ])
+    <x-form.text
+        type="password"
+        :id="$id"
+        :name="$name"
+        value=""
+        :required="$required"
+        autocomplete="new-password"
+        class="password-input"
+        xModel="password"
+        xOn:input="validatePassword"
+    />
 
     <!-- 自動生成ボタン -->
     <div class="group absolute top-0 right-20 h-full flex items-center">
@@ -87,13 +90,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @if($showConfirmation)
     <fieldset>
         <legend class="text-gray-700 dark:text-gray-300">{{ __('common.password') }}（{{ __('common.confirm') }}）</legend>
-        @include('components.form.text', [
-            'type' => 'password',
-            'name' => $name . '_confirmation',
-            'id' => $id . '_confirmation',
-            'required' => $required,
-            'autocomplete' => 'new-password',
-        ])
+        <x-form.text
+            type="password"
+            :id="$id . '_confirmation'"
+            :name="$name . '_confirmation'"
+            value=""
+            :required="$required"
+            autocomplete="new-password"
+            class="password-confirmation-input"
+        />
     </fieldset>
 @endif
 

@@ -97,13 +97,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         @endphp
                                         @if ($settingsUrl)
                                             <a href="{{ $settingsUrl }}" class="inline-block">
-                                                @include('components::form.button', [
-                                                    'type' => 'button',
-                                                    'label' => '設定',
-                                                    'variant' => 'primary',
-                                                    'size' => 'sm',
-                                                    'icon' => 'fas fa-cog'
-                                                ])
+                                                <x-form.button
+                                                    type="button"
+                                                    label="設定"
+                                                    variant="primary"
+                                                    size="sm"
+                                                    icon="fas fa-cog"
+                                                />
                                             </a>
                                         @endif
                                     @endif
@@ -111,52 +111,52 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     @if ($plugin->status === 1)
                                         <form action="{{ route('admin.settings.plugins.disable', $plugin->id) }}" method="POST" class="inline-block">
                                             @csrf
-                                            @include('components::form.button', [
-                                                'type' => 'submit',
-                                                'label' => __('common.disable'),
-                                                'variant' => 'warning',
-                                                'size' => 'sm',
-                                                'icon' => 'fas fa-pause'
-                                            ])
+                                            <x-form.button
+                                                type="submit"
+                                                :label="__('common.disable')"
+                                                variant="warning"
+                                                size="sm"
+                                                icon="fas fa-pause"
+                                            />
                                         </form>
                                     @else
                                         <form action="{{ route('admin.settings.plugins.enable', $plugin->id) }}" method="POST" class="inline-block">
                                             @csrf
-                                            @include('components::form.button', [
-                                                'type' => 'submit',
-                                                'label' => __('common.enable'),
-                                                'variant' => 'success',
-                                                'size' => 'sm',
-                                                'icon' => 'fas fa-play'
-                                            ])
+                                            <x-form.button
+                                                type="submit"
+                                                :label="__('common.enable')"
+                                                variant="success"
+                                                size="sm"
+                                                icon="fas fa-play"
+                                            />
                                         </form>
                                     @endif
 
                                     <form action="{{ route('admin.settings.plugins.uninstall', $plugin->id) }}" method="POST" class="inline-block" id="uninstallForm-{{ $plugin->id }}">
                                         @csrf
-                                        @include('components::form.button', [
-                                            'type' => 'button',
-                                            'label' => __('common.delete'),
-                                            'variant' => 'danger',
-                                            'size' => 'sm',
-                                            'icon' => 'fas fa-trash',
-                                            'onclick' => "openModal('uninstallModal-{$plugin->id}')"
-                                        ])
+                                        <x-form.button
+                                            type="button"
+                                            :label="__('common.delete')"
+                                            variant="danger"
+                                            size="sm"
+                                            icon="fas fa-trash"
+                                            onclick="openModal('uninstallModal-{{ $plugin->id }}')"
+                                        />
 
                                         <!-- 確認画面のモーダル -->
-                                        @include('components.modal', [
-                                            'id' => "uninstallModal-{$plugin->id}",
-                                            'title' => __('admin.settings.plugins.index.uninstall.confirm_title'),
-                                            'message' => str_replace('{name}', $plugin->name, __('admin.settings.plugins.index.uninstall.confirm_message')),
-                                            'confirm_label' => __('common.uninstall'),
-                                            'cancel_label' => __('common.cancel'),
-                                            'checkbox' => true,
-                                            'checkbox_name' => 'remove_db_data',
-                                            'checkbox_label' => __('admin.settings.plugins.index.uninstall.remove_data_checkbox'),
-                                            'form' => "uninstallForm-{$plugin->id}",
-                                            'icon_type' => 'danger',
-                                            'confirm_color' => 'red'
-                                        ])
+                                        <x-modal
+                                            id="uninstallModal-{{ $plugin->id }}"
+                                            :title="__('admin.settings.plugins.index.uninstall.confirm_title')"
+                                            :message="str_replace('{name}', $plugin->name, __('admin.settings.plugins.index.uninstall.confirm_message'))"
+                                            :confirm_label="__('common.uninstall')"
+                                            :cancel_label="__('common.cancel')"
+                                            :checkbox="true"
+                                            checkbox_name="remove_db_data"
+                                            :checkbox_label="__('admin.settings.plugins.index.uninstall.remove_data_checkbox')"
+                                            form="uninstallForm-{{ $plugin->id }}"
+                                            icon_type="danger"
+                                            confirm_color="red"
+                                        />
                                     </form>
                                 </div>
                             </td>

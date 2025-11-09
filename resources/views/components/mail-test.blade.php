@@ -685,4 +685,4 @@
 </script>
 
 <!-- 通知コンポーネントを読み込み -->
-@include('components.notification')
+<x-notification />

@@ -60,14 +60,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('save')
     <!-- 保存ボタンとモーダル -->
-    @include('components.save', [
-        'id' => 'confirmationModal',
-        'label' => __('common.save'),
-        'onclick' => "openModal('confirmationModal')",
-        'title' => __('common.save_confirmation_title'),
-        'message' => __('common.save_confirmation_message'),
-        'confirm_label' => __('common.save'),
-        'cancel_label' => __('common.cancel'),
-        'form' => 'media-settings-form',
-    ])
+    <x-save
+        id="confirmationModal"
+        :label="__('common.save')"
+        onclick="openModal('confirmationModal')"
+        :title="__('common.save_confirmation_title')"
+        :message="__('common.save_confirmation_message')"
+        :confirm-label="__('common.save')"
+        :cancel-label="__('common.cancel')"
+        :form="'media-settings-form'"
+    />
 @endsection

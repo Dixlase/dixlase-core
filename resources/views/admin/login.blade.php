@@ -26,62 +26,62 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
     {{-- メール認証待ちメッセージ --}}
     @if(session('email_verification_pending') || session('info'))
-        @include('components.message', [
-            'type' => 'info',
-            'message' => session('info') ?? __('auth.verify_email_login_required')
-        ])
+        <x-message
+            type="info"
+            :message="session('info') ?? __('auth.verify_email_login_required')"
+        />
     @endif
 
     <form method="POST" action="{{ route('admin.login') }}">
         @csrf
 
-        @include('components.captcha', [
-            'enabled' => $captchaEnabled ?? false,
-            'widget' => $captchaWidget ?? null
-        ])
+        <x-captcha
+            :enabled="$captchaEnabled ?? false"
+            :widget="$captchaWidget ?? null"
+        />
 
         <!-- メールアドレス -->
-        @include('components.auth.login-field', [
-            'id' => 'email',
-            'type' => 'email',
-            'name' => 'email',
-            'label' => __('common.email'),
-            'value' => old('email'),
-            'required' => true,
-            'autofocus' => true,
-            'autocomplete' => 'username'
-        ])
+        <x-auth.login-field
+            id="email"
+            type="email"
+            name="email"
+            :label="__('common.email')"
+            :value="old('email')"
+            :required="true"
+            :autofocus="true"
+            autocomplete="username"
+        />
 
         <!-- パスワード -->
-        @include('components.auth.login-field', [
-            'id' => 'password',
-            'type' => 'password',
-            'name' => 'password',
-            'label' => __('common.password'),
-            'value' => '',
-            'required' => true,
-            'autofocus' => false,
-            'autocomplete' => 'current-password'
-        ])
+        <x-auth.login-field
+            id="password"
+            type="password"
+            name="password"
+            :label="__('common.password')"
+            value=""
+            :required="true"
+            :autofocus="false"
+            autocomplete="current-password"
+        />
 
         <!-- Remember Me -->
-        @include('components.form.checkbox', [
-            'id' => 'remember_me',
-            'name' => 'remember',
-            'label' => 'admin.login.remember_me',
-            'class' => 'rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-500 dark:bg-gray-800 dark:text-indigo-400'
-        ])
+        <x-form.checkbox
+            id="remember_me"
+            name="remember"
+            label="admin.login.remember_me"
+            class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-500 dark:bg-gray-800 dark:text-indigo-400"
+        />
 
 
 
         <!-- ボタンとパスワードリセットリンク -->
         <div class="flex items-center justify-between mt-4">
-            @include('components.form.button', [
-                'type' => 'submit',
-                'variant' => 'primary',
-                'label' => __('common.login'),
-                'class' => 'dark:focus:ring-offset-gray-800'
-            ])
+            <x-form.button
+                type="submit"
+                variant="primary"
+                :label="__('common.login')"
+                class="dark:focus:ring-offset-gray-800"
+            />
 
             @if (Route::has('admin.password.request') && ($passwordResetEnabled ?? true))
                 <a class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 hover:underline" href="{{ route('admin.password.request') }}">

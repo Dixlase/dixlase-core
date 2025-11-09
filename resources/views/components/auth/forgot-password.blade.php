@@ -31,30 +31,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <fieldset>
             <legend class="sr-only">{{ $emailLabel }}</legend>
             
-            @include('components::form.text', [
-                'type' => 'email',
-                'id' => 'email',
-                'name' => 'email',
-                'value' => old('email'),
-                'required' => true,
-                'autocomplete' => 'email',
-                'ariaLabel' => $emailLabel,
-                'placeholder' => $emailLabel
-            ])
+            <x-form.text
+                type="email"
+                id="email"
+                name="email"
+                :value="old('email')"
+                :required="true"
+                :autofocus="true"
+                autocomplete="username"
+            />
             
-            @include('components::form.error', [
-                'messages' => $errors->get('email')
-            ])
+            <x-form.error
+                :messages="$errors->get('email')"
+            />
         </fieldset>
     </section>
 
     <section class="flex items-center flex-col justify-between mt-6">
-        @include('components::form.button', [
-            'type' => 'submit',
-            'variant' => 'primary',
-            'size' => 'md',
-            'label' => $submitText,
-            'class' => 'w-full'
-        ])
+        <x-form.button
+            type="submit"
+            variant="primary"
+            size="md"
+            :label="__('common.send_password_reset_link')"
+            class="w-full"
+        />
     </section>
-</form>
+</x-form>

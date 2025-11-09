@@ -39,14 +39,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
         
         <div class="modal-actions">
-            @include('components::form.button', [
-                'type' => 'button',
-                'label' => __('common.ok'),
-                'variant' => 'primary',
-                'onclick' => "window.PasskeyResultModal.close('$modalId')",
-                'class' => 'mx-2',
-                'id' => null
-            ])
+            <x-form.button
+                type="button"
+                variant="primary"
+                :label="__('common.close')"
+                onclick="closeModal('{{ $modalId }}')"
+                class="mx-2"
+            />
         </div>
     </div>
 </div>
