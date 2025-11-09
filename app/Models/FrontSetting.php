@@ -23,7 +23,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Contracts\Repositories\FrontSettingRepositoryInterface;
 
+/**
+ * フロント設定モデル
+ * 
+ * @deprecated 静的メソッドは非推奨です。FrontSettingRepositoryを使用してください。
+ */
 class FrontSetting extends Model
 {
     protected $table = 'front_settings';
@@ -43,21 +49,27 @@ class FrontSetting extends Model
     
     /**
      * 設定値の取得
+     *
+     * @deprecated FrontSettingRepository::get() を使用してください
+     * @param string $name
+     * @param mixed $default
+     * @return mixed
      */
     public static function getValue($name, $default = null)
     {
-        $setting = self::where('name', $name)->first();
-        return $setting ? ($setting->value ?? $default) : $default;
+        return app(FrontSettingRepositoryInterface::class)->get($name, $default);
     }
     
     /**
      * 設定値の保存
+     *
+     * @deprecated FrontSettingRepository::set() を使用してください
+     * @param string $name
+     * @param mixed $value
+     * @return FrontSetting
      */
     public static function setValue($name, $value)
     {
-        self::updateOrCreate(
-            ['name' => $name],
-            ['value' => $value]
-        );
+        return app(FrontSettingRepositoryInterface::class)->set($name, $value);
     }
 }

@@ -29,6 +29,12 @@ use App\Contracts\Repositories\BaseSettingRepositoryInterface;
 use App\Repositories\BaseSettingRepository;
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 use App\Repositories\SecuritySettingRepository;
+use App\Contracts\Repositories\MediaSettingRepositoryInterface;
+use App\Repositories\MediaSettingRepository;
+use App\Contracts\Repositories\FrontSettingRepositoryInterface;
+use App\Repositories\FrontSettingRepository;
+use App\Contracts\Repositories\MediaRepositoryInterface;
+use App\Repositories\MediaRepository;
 
 /**
  * リポジトリサービスプロバイダー
@@ -60,11 +66,29 @@ class RepositoryServiceProvider extends ServiceProvider
             SecuritySettingRepository::class
         );
 
+        // MediaSetting リポジトリのバインディング
+        $this->app->bind(
+            MediaSettingRepositoryInterface::class,
+            MediaSettingRepository::class
+        );
+
+        // FrontSetting リポジトリのバインディング
+        $this->app->bind(
+            FrontSettingRepositoryInterface::class,
+            FrontSettingRepository::class
+        );
+
+        // Media リポジトリのバインディング
+        $this->app->bind(
+            MediaRepositoryInterface::class,
+            MediaRepository::class
+        );
+
         // 今後、他のリポジトリもここに追加
         // 例:
         // $this->app->bind(
-        //     ThemeSettingRepositoryInterface::class,
-        //     ThemeSettingRepository::class
+        //     MemberRepositoryInterface::class,
+        //     MemberRepository::class
         // );
     }
 

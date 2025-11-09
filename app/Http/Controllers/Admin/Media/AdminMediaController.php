@@ -28,9 +28,32 @@ use App\Models\Media;
 use Illuminate\Support\Facades\Storage;
 use App\Models\MediaSetting;
 use App\Http\Requests\Admin\Media\AdminMediaStoreRequest;
+use App\Contracts\Repositories\MediaSettingRepositoryInterface;
+use App\Contracts\Repositories\MediaRepositoryInterface;
 
 class AdminMediaController extends AdminLoggedInController
 {
+    /**
+     * メディア設定リポジトリ
+     */
+    protected MediaSettingRepositoryInterface $mediaSettingRepository;
+
+    /**
+     * メディアリポジトリ
+     */
+    protected MediaRepositoryInterface $mediaRepository;
+
+    /**
+     * コンストラクタ
+     */
+    public function __construct(
+        MediaSettingRepositoryInterface $mediaSettingRepository,
+        MediaRepositoryInterface $mediaRepository
+    ) {
+        parent::__construct();
+        $this->mediaSettingRepository = $mediaSettingRepository;
+        $this->mediaRepository = $mediaRepository;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -67,50 +90,26 @@ class AdminMediaController extends AdminLoggedInController
         $dateFrom = $request->get('date_from');
         $dateTo = $request->get('date_to');
 
-        //メディアをページネーションで読み込み（メンバー情報も事前読み込み）
-        $query = Media::with('member');
-
-        // 検索条件を適用
+        // フィルター配列を構築
+        $filters = [];
         if ($search) {
-            $query->where('name', 'like', '%' . $search . '%');
+            $filters['search'] = $search;
         }
-
-        // ファイルタイプフィルター
         if ($fileType) {
-            switch ($fileType) {
-                case 'image':
-                    $query->where('type', 'like', 'image/%');
-                    break;
-                case 'video':
-                    $query->where('type', 'like', 'video/%');
-                    break;
-                case 'audio':
-                    $query->where('type', 'like', 'audio/%');
-                    break;
-                case 'document':
-                    $query->where(function($q) {
-                        $q->where('type', 'like', 'application/%')
-                          ->orWhere('type', 'like', 'text/%');
-                    });
-                    break;
-            }
+            $filters['type'] = $fileType;
         }
-
-        // アップロードメンバーフィルター
         if ($uploadedBy) {
-            $query->where('uploaded_by', $uploadedBy);
+            $filters['uploaded_by'] = $uploadedBy;
         }
-
-        // 日付範囲フィルター
         if ($dateFrom) {
-            $query->whereDate('created_at', '>=', $dateFrom);
+            $filters['date_from'] = $dateFrom;
         }
         if ($dateTo) {
-            $query->whereDate('created_at', '<=', $dateTo);
+            $filters['date_to'] = $dateTo;
         }
 
-        $media = $query->orderBy($sort, $order)
-            ->paginate($perPage)
+        // リポジトリを使用してページネーション実行
+        $media = $this->mediaRepository->paginate($perPage, $filters, $sort, $order)
             ->withQueryString(); // URLパラメータを保持
             
         $this->viewParams['media'] = $media;
@@ -128,8 +127,7 @@ class AdminMediaController extends AdminLoggedInController
     public function upload()
     {
         //許可されたファイルタイプを読み込み
-        $allowedFileTypes = MediaSetting::where('name', 'allowed_file_types')->value('value');
-        $allowedFileTypes = json_decode($allowedFileTypes, true) ?? [];
+        $allowedFileTypes = $this->mediaSettingRepository->get('allowed_file_types', []);
         $this->viewParams['allowedFileTypes'] = $allowedFileTypes;
 
         return view('admin.media.upload', $this->viewParams);
@@ -155,7 +153,7 @@ class AdminMediaController extends AdminLoggedInController
             return redirect()->back()->withErrors(['file' => 'ファイルの保存に失敗しました']);
         }
 
-        Media::create([
+        $this->mediaRepository->create([
             'name' => $file->getClientOriginalName(),
             'path' => $fileName,
             'type' => $file->getMimeType(),
@@ -246,7 +244,7 @@ class AdminMediaController extends AdminLoggedInController
             'description' => 'nullable|string|max:1000',
         ]);
 
-        $media->update([
+        $this->mediaRepository->update($media->id, [
             'caption' => $request->input('caption'),
             'alt_text' => $request->input('alt_text'),
             'description' => $request->input('description'),
@@ -260,10 +258,9 @@ class AdminMediaController extends AdminLoggedInController
     public function settings()
     {
 
-        $allowedFileTypes = MediaSetting::where('name', 'allowed_file_types')->value('value');
-        $allowedFileTypes = json_decode($allowedFileTypes, true) ?? [];
+        $allowedFileTypes = $this->mediaSettingRepository->get('allowed_file_types', []);
 
-        $maxFileSize = MediaSetting::where('name', 'max_file_size')->value('value') ?? '2048';
+        $maxFileSize = $this->mediaSettingRepository->get('max_file_size', '2048');
 
         $fileExtensions = config('admin.fileExtensions');
         $fileExtensionNames = config('admin.fileExtensionNames');
@@ -281,37 +278,21 @@ class AdminMediaController extends AdminLoggedInController
      */
     public function api(Request $request)
     {
-        $perPage = $request->get('per_page', 20);
+        $perPage = $request->get('per_page', 12);
         $search = $request->get('search');
         $type = $request->get('type');
         
-        $query = Media::with('member')->orderBy('created_at', 'desc');
-        
-        // 検索フィルター
+        // フィルター配列を構築
+        $filters = [];
         if ($search) {
-            $query->where('name', 'like', '%' . $search . '%');
+            $filters['search'] = $search;
         }
-        
-        // タイプフィルター
         if ($type) {
-            switch ($type) {
-                case 'image':
-                    $query->where('type', 'like', 'image/%');
-                    break;
-                case 'video':
-                    $query->where('type', 'like', 'video/%');
-                    break;
-                case 'document':
-                    $query->whereNotIn('type', function($q) {
-                        $q->select('type')->from('media')
-                          ->where('type', 'like', 'image/%')
-                          ->orWhere('type', 'like', 'video/%');
-                    });
-                    break;
-            }
+            $filters['type'] = $type;
         }
         
-        $media = $query->paginate($perPage);
+        // リポジトリを使用してページネーション実行
+        $media = $this->mediaRepository->paginate($perPage, $filters, 'created_at', 'desc');
         
         // URLを追加
         $mediaPath = config('admin.mediaPath', 'media');
@@ -348,15 +329,8 @@ class AdminMediaController extends AdminLoggedInController
         $maxFileSizeMB = $request->input('max_file_size');
         $maxFileSize = round($maxFileSizeMB * 1024); // Convert MB to KB for storage
 
-        MediaSetting::updateOrCreate(
-            ['name' => 'allowed_file_types'],
-            ['value' => json_encode($selectedTypes)]
-        );
-
-        MediaSetting::updateOrCreate(
-            ['name' => 'max_file_size'],
-            ['value' => $maxFileSize]
-        );
+        $this->mediaSettingRepository->set('allowed_file_types', $selectedTypes);
+        $this->mediaSettingRepository->set('max_file_size', $maxFileSize);
 
         return redirect()->back()->with('success', 'メディア設定が更新されました。');
     }

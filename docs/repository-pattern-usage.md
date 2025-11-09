@@ -38,6 +38,44 @@ Dixlaseコアシステムでは、データアクセス層の抽象化とテス�
 - IP制限設定の管理
 - 通知設定の管理
 
+### MediaSettingRepository
+
+メディア設定（ファイルタイプ、サイズ制限など）のデータアクセスを管理するリポジトリです。
+
+**インターフェース:** `App\Contracts\Repositories\MediaSettingRepositoryInterface`  
+**実装クラス:** `App\Repositories\MediaSettingRepository`
+
+**特徴:**
+- JSON値の自動エンコード/デコード
+- ファイルタイプ制限の管理
+- ファイルサイズ制限の管理
+
+### FrontSettingRepository
+
+フロント設定（OGP画像、説明文など）のデータアクセスを管理するリポジトリです。
+
+**インターフェース:** `App\Contracts\Repositories\FrontSettingRepositoryInterface`  
+**実装クラス:** `App\Repositories\FrontSettingRepository`
+
+**特徴:**
+- フロントOGP画像リレーションのサポート
+- フロントページ設定の管理
+- キャッシュ管理
+
+### MediaRepository
+
+メディアマスター（画像、動画、ドキュメントなど）のデータアクセスを管理するリポジトリです。
+
+**インターフェース:** `App\Contracts\Repositories\MediaRepositoryInterface`  
+**実装クラス:** `App\Repositories\MediaRepository`
+
+**特徴:**
+- CRUD操作（作成、読取、更新、削除）
+- ページネーション付き一覧取得
+- 検索・フィルタリング（名前、タイプ、アップロード者、日付範囲）
+- ソフトデリート対応
+- メンバーリレーションのサポート
+
 ## 基本的な使用方法
 
 ### 1. コンストラクタインジェクション（推奨）
@@ -198,10 +236,9 @@ class MemberSettingTest extends TestCase
 
 以下のリポジトリを順次実装予定です：
 
-- `ThemeSettingRepository` - テーマ設定管理
-- `PluginSettingRepository` - プラグイン設定管理
-- `MediaRepository` - メディア管理
-- `MemberRepository` - メンバー管理
+- `MemberRepository` - メンバー管理（認証、権限、2FA）
+- `ThemeRepository` - テーマ管理
+- `PluginRepository` - プラグイン管理
 
 ## ベストプラクティス
 
@@ -228,6 +265,15 @@ BaseSetting::setMany(['key1' => 'value1', 'key2' => 'value2']);
 // SecuritySetting
 $captchaEnabled = SecuritySetting::get('captcha_enabled', false);
 SecuritySetting::set('captcha_enabled', true);
+
+// MediaSetting
+$allowedTypes = MediaSetting::where('name', 'allowed_file_types')->value('value');
+$allowedTypes = json_decode($allowedTypes, true) ?? [];
+MediaSetting::updateOrCreate(['name' => 'allowed_file_types'], ['value' => json_encode($types)]);
+
+// FrontSetting
+$ogpImageId = FrontSetting::getValue('front_ogp_image_id');
+FrontSetting::setValue('front_description', 'New description');
 ```
 
 ### After（新）
@@ -236,11 +282,15 @@ SecuritySetting::set('captcha_enabled', true);
 public function __construct(
     MemberSettingRepositoryInterface $memberSettingRepository,
     BaseSettingRepositoryInterface $baseSettingRepository,
-    SecuritySettingRepositoryInterface $securitySettingRepository
+    SecuritySettingRepositoryInterface $securitySettingRepository,
+    MediaSettingRepositoryInterface $mediaSettingRepository,
+    FrontSettingRepositoryInterface $frontSettingRepository
 ) {
     $this->memberSettingRepository = $memberSettingRepository;
     $this->baseSettingRepository = $baseSettingRepository;
     $this->securitySettingRepository = $securitySettingRepository;
+    $this->mediaSettingRepository = $mediaSettingRepository;
+    $this->frontSettingRepository = $frontSettingRepository;
 }
 
 // メソッド内で使用
@@ -253,6 +303,13 @@ $this->baseSettingRepository->setMultiple(['key1' => 'value1', 'key2' => 'value2
 
 $captchaEnabled = $this->securitySettingRepository->get('captcha_enabled', false);
 $this->securitySettingRepository->set('captcha_enabled', true);
+
+// JSON自動処理
+$allowedTypes = $this->mediaSettingRepository->get('allowed_file_types', []); // 自動デコード
+$this->mediaSettingRepository->set('allowed_file_types', ['image', 'pdf']); // 自動エンコード
+
+$ogpImageId = $this->frontSettingRepository->get('front_ogp_image_id');
+$this->frontSettingRepository->set('front_description', 'New description');
 ```
 
 ## 参考

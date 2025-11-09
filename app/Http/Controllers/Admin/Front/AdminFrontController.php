@@ -26,9 +26,23 @@ use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\FrontSetting;
 use App\Models\Media;
 use Illuminate\Http\Request;
+use App\Contracts\Repositories\FrontSettingRepositoryInterface;
 
 class AdminFrontController extends AdminLoggedinController
 {
+    /**
+     * フロント設定リポジトリ
+     */
+    protected FrontSettingRepositoryInterface $frontSettingRepository;
+
+    /**
+     * コンストラクタ
+     */
+    public function __construct(FrontSettingRepositoryInterface $frontSettingRepository)
+    {
+        parent::__construct();
+        $this->frontSettingRepository = $frontSettingRepository;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -50,8 +64,8 @@ class AdminFrontController extends AdminLoggedinController
     {
         // 設定値を取得
         $settings = [
-            'front_ogp_image_id' => FrontSetting::getValue('front_ogp_image_id'),
-            'front_description' => FrontSetting::getValue('front_description'),
+            'front_ogp_image_id' => $this->frontSettingRepository->get('front_ogp_image_id'),
+            'front_description' => $this->frontSettingRepository->get('front_description'),
         ];
         
         // メディア情報を取得
@@ -74,8 +88,8 @@ class AdminFrontController extends AdminLoggedinController
         ]);
         
         // 設定を保存
-        FrontSetting::setValue('front_ogp_image_id', $request->input('front_ogp_image_id'));
-        FrontSetting::setValue('front_description', $request->input('front_description'));
+        $this->frontSettingRepository->set('front_ogp_image_id', $request->input('front_ogp_image_id'));
+        $this->frontSettingRepository->set('front_description', $request->input('front_description'));
         
         return redirect()->route('admin.front.settings')
             ->with('success', __('admin.settings.front.settings_updated'));
