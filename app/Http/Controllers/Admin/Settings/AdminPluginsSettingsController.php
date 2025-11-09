@@ -37,6 +37,7 @@ use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Log;
 use App\Helpers\GitExcludeHelper;
+use App\Helpers\ComposerLocalHelper;
 
 class AdminPluginsSettingsController extends AdminLoggedInController
 {
@@ -238,6 +239,9 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
             // .git/info/excludeにプラグインの除外ルールを追加
             GitExcludeHelper::addPluginExclusion($pluginDir);
+            
+            // composer.local.jsonを更新
+            ComposerLocalHelper::syncAutoload();
 
             return redirect()->route('admin.settings.plugins.index')
                 ->with('success', 'プラグインが正常にインストールされました。')
@@ -321,6 +325,9 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
         // .git/info/excludeからプラグインの除外ルールを削除
         GitExcludeHelper::removePluginExclusion($pluginDir);
+        
+        // composer.local.jsonを更新
+        ComposerLocalHelper::syncAutoload();
 
         return redirect()->route('admin.settings.plugins.index')
             ->with('success', 'プラグインをアンインストールしました');
