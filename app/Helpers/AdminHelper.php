@@ -211,24 +211,33 @@ class AdminHelper
 
         // 既存のナビゲーション設定を取得
         // IMPORTANT: 静的変数でキャッシュして、Laravelのconfig()の問題を回避
+        // キャッシュがある場合は必ず使用（プラグインのマージを保持）
         if (self::$navigationCache !== null) {
             \Log::channel('dixlase')->info("{$name}: Using cached navigation", [
                 'cached_settings_children' => isset(self::$navigationCache['settings']['children']) ? array_keys(self::$navigationCache['settings']['children']) : 'none'
             ]);
             $existingNav = self::$navigationCache;
         } else {
+            // 初回のみconfig()から取得
+            // IMPORTANT: app()->config['admin.nav']を必ず使用（プラグインのマージを保持）
             $fromAppConfig = app()->config['admin.nav'] ?? null;
-            $fromConfigHelper = config('admin.nav', []);
             
             \Log::channel('dixlase')->info("{$name}: Config retrieval comparison (first time)", [
                 'from_app_config_is_null' => is_null($fromAppConfig),
                 'from_app_config_keys' => $fromAppConfig ? array_keys($fromAppConfig) : 'null',
                 'from_app_config_settings_children' => isset($fromAppConfig['settings']['children']) ? array_keys($fromAppConfig['settings']['children']) : 'none',
-                'from_config_helper_keys' => array_keys($fromConfigHelper),
-                'from_config_helper_settings_children' => isset($fromConfigHelper['settings']['children']) ? array_keys($fromConfigHelper['settings']['children']) : 'none',
             ]);
             
-            $existingNav = $fromAppConfig ?? $fromConfigHelper;
+            // app()->configがnullの場合のみconfig()から読み込む
+            if ($fromAppConfig === null) {
+                $fromAppConfig = config('admin.nav', []);
+                \Log::channel('dixlase')->info("{$name}: Fallback to config() helper", [
+                    'config_helper_keys' => array_keys($fromAppConfig),
+                    'config_helper_settings_children' => isset($fromAppConfig['settings']['children']) ? array_keys($fromAppConfig['settings']['children']) : 'none',
+                ]);
+            }
+            
+            $existingNav = $fromAppConfig;
         }
         
         // コアの設定が正しく読み込まれているかチェック

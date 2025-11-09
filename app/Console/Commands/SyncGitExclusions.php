@@ -118,7 +118,8 @@ class SyncGitExclusions extends Command
             foreach ($directories as $directory) {
                 $themeName = basename($directory);
                 // .で始まるディレクトリは除外
-                if (!str_starts_with($themeName, '.')) {
+                // DixlaseDefaultThemeはGit Submoduleとして管理されるため除外
+                if (!str_starts_with($themeName, '.') && $themeName !== 'DixlaseDefaultTheme') {
                     $actualThemes[] = $themeName;
                 }
             }
