@@ -52,20 +52,31 @@ class {{ class }} extends ServiceProvider
 
     /**
      * ルートを登録
+     * 
+     * 注意: plugin.web と plugin.admin ミドルウェアグループは
+     * コアによって強制的にセキュリティミドルウェアが適用されます。
+     * これらのミドルウェアグループを変更しないでください。
      */
     protected function registerRoutes(): void
     {
         // Web routes (フロントエンド)
-        // IP制限を含む
+        // plugin.web グループにより以下が自動適用されます:
+        // - セッション管理
+        // - CSRF保護
+        // - IP制限（front.ip）← コアにより強制
         if (file_exists(__DIR__ . '/../../routes/web.php')) {
-            Route::middleware(['web', 'front.ip'])
+            Route::middleware(['plugin.web'])
                 ->group(__DIR__ . '/../../routes/web.php');
         }
 
         // Admin routes (管理画面)
-        // IP制限、認証を含む
+        // plugin.admin グループにより以下が自動適用されます:
+        // - セッション管理
+        // - CSRF保護
+        // - 認証（auth:member）← コアにより強制
+        // - IP制限（admin.ip）← コアにより強制
         if (file_exists(__DIR__ . '/../../routes/admin.php')) {
-            Route::middleware(['web', 'auth:member', 'admin.ip'])
+            Route::middleware(['plugin.admin'])
                 ->prefix(config('admin.url', 'admin'))
                 ->name('admin.')
                 ->group(__DIR__ . '/../../routes/admin.php');

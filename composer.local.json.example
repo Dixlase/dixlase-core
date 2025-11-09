@@ -1,0 +1,13 @@
+{
+    "_comment": "このファイルをcomposer.local.jsonにコピーして使用してください",
+    "_comment2": "プラグインやカスタムパッケージのautoload設定をここに追加します",
+    "autoload": {
+        "psr-4": {
+            "_example_comment": "以下の形式でプラグインを追加してください",
+            "_example": "Plugins\\YourPlugin\\App\\: plugins/YourPlugin/app"
+        }
+    },
+    "require": {
+        "_example_comment": "追加のパッケージが必要な場合はここに記述します"
+    }
+}

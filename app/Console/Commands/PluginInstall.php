@@ -30,6 +30,8 @@ use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 use App\Console\Traits\PluginManagementTrait;
+use App\Helpers\GitExcludeHelper;
+use App\Helpers\ComposerLocalHelper;
 
 
 class PluginInstall extends Command
@@ -129,7 +131,13 @@ class PluginInstall extends Command
         $migrator = new PluginMigrator(app(Filesystem::class), app(ConnectionResolverInterface::class), 'plugin_migrations', $slug);
         $migrator->migrate($pluginName);
 
+        // .git/info/excludeにプラグインの除外ルールを追加
+        GitExcludeHelper::addPluginExclusion($pluginName);
+        $this->info("Added {$pluginName} to .git/info/exclude");
 
+        // composer.local.jsonを更新
+        ComposerLocalHelper::syncAutoload();
+        $this->info("Updated composer.local.json");
 
         // プラグインの有効化を確認（--enable オプションが指定されていない場合のみ確認）
         if ($this->option('enable') || $this->confirm(__('command.make_plugin.installation.enable_confirm', [

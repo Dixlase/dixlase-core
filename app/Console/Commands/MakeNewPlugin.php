@@ -29,7 +29,7 @@ use Illuminate\Support\Str;
 use App\Models\Plugin;
 use App\Console\Traits\MakeLicenseTrait;
 use App\Console\Traits\MakeFileTrait;
-use App\Helpers\PluginGitignoreHelper;
+use App\Helpers\GitExcludeHelper;
 
 class MakeNewPlugin extends Command
 {
@@ -195,12 +195,8 @@ class MakeNewPlugin extends Command
 
         $this->call('plugin:autoload:sync');
 
-        // .gitignoreにプラグインを追加
-        if (PluginGitignoreHelper::addPlugin($pluginDirName)) {
-            $this->info("✓ プラグイン '{$pluginDirName}' を .gitignore の除外リストに追加しました");
-        } else {
-            $this->warn("⚠ プラグイン '{$pluginDirName}' の .gitignore への追加に失敗しました");
-        }
+        // .git/info/excludeにプラグインを追加（plugin:installコマンド内で実行されるため不要）
+        // GitExcludeHelper::addPluginExclusion($pluginDirName);
 
         $this->info(__('command.make_plugin.success', ['pluginName' => $pluginName]));
         return Command::SUCCESS;

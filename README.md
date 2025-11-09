@@ -69,9 +69,16 @@ This allows VSCode or Cursor to directly run Laravel commands and generate compo
 
 ## 📚 Documentation
 
-- [Official Site (WIP)](https://dixlase.org)  
-- [Plugin Marketplace (Planned)](https://market.dixlase.org)  
-- [Developer Docs (WIP)](https://docs.dixlase.org)  
+### Official Resources
+- [Official Site (WIP)](https://dixlase.com)  
+- [Plugin Marketplace (Planned)](https://market.dixlase.com)  
+- [Developer Docs (WIP)](https://docs.dixlase.com)
+
+### Development Guides
+- [Composer Local Setup](docs/composer-local-setup.md) - Managing custom plugins and packages
+- [Git Exclude Auto Management](docs/git-exclude-auto-management.md) - Automatic .git/info/exclude management for plugins
+- [Password Dictionary Attack Protection](docs/password-dictionary-attack-protection-usage.md) - Have I Been Pwned API integration
+- [Two-Factor Authentication](docs/two-factor-authentication-usage.md) - 2FA implementation guide  
 
 ---
 

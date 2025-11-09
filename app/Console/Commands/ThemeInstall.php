@@ -6,6 +6,8 @@ use Illuminate\Console\Command;
 use App\Models\Theme;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use App\Helpers\GitExcludeHelper;
+use App\Helpers\ComposerLocalHelper;
 
 class ThemeInstall extends Command
 {
@@ -52,6 +54,14 @@ class ThemeInstall extends Command
             'directory' => $themeName,
             'version' => '1.0.0',
         ]);
+
+        // .git/info/excludeにテーマの除外ルールを追加
+        GitExcludeHelper::addThemeExclusion($themeName);
+        $this->info("Added {$themeName} to .git/info/exclude");
+
+        // composer.local.jsonを更新
+        ComposerLocalHelper::syncAutoload();
+        $this->info("Updated composer.local.json");
 
         $this->info(__('command.theme_install.registered', ['themeName' => $themeName]));
         $this->info(__('command.theme_install.activate_help', ['themeName' => $themeName]));

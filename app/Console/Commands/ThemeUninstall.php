@@ -5,6 +5,8 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Theme;
 use Illuminate\Support\Facades\File;
+use App\Helpers\GitExcludeHelper;
+use App\Helpers\ComposerLocalHelper;
 
 class ThemeUninstall extends Command
 {
@@ -94,6 +96,14 @@ class ThemeUninstall extends Command
             $this->warn(__('command.theme_uninstall.directory_not_found', ['themeDir' => $themeDir]));
         }
         
+        // .git/info/excludeからテーマの除外ルールを削除
+        GitExcludeHelper::removeThemeExclusion($theme->directory);
+        $this->info("Removed {$theme->directory} from .git/info/exclude");
+
+        // composer.local.jsonを更新
+        ComposerLocalHelper::syncAutoload();
+        $this->info("Updated composer.local.json");
+
         // Delete the theme from database
         $theme->delete();
         $this->info(__('command.theme_uninstall.uninstalled', ['themeName' => $theme->name]));

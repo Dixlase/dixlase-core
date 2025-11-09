@@ -69,9 +69,9 @@ VSCode や Cursor から Laravel のコマンド実行やコンポーネント�
 
 ## 📚 ドキュメント
 
-- [公式サイト（準備中）](https://dixlase.org)  
-- [プラグインマーケット（計画中）](https://market.dixlase.org)  
-- [開発ドキュメント（準備中）](https://docs.dixlase.org)  
+- [公式サイト（準備中）](https://dixlase.com)  
+- [プラグインマーケット（計画中）](https://market.dixlase.com)  
+- [開発ドキュメント（準備中）](https://docs.dixlase.com)  
 
 ---
 

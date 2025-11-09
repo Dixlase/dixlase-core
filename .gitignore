@@ -24,6 +24,7 @@ Homestead.yaml
 auth.json
 npm-debug.log
 yarn-error.log
+composer.local.json
 
 # IDE / Editor configs
 /.fleet
@@ -37,17 +38,11 @@ CLAUDE.md
 # カスタムファイルを入れるディレクトリを除外
 custom/*
 
-# プラグインを入れるディレクトリを除外
+# プラグインとテーマのディレクトリを除外
+# 個別のプラグイン/テーマは .git/info/exclude で追跡対象に戻します
 plugins/*
-!plugins/DixlasePages
-!plugins/DixlaseInquiry
-
-# === プラグイン用例外除外設定（自動管理） ===
-!plugins/DixlaseInquiry/
-# === プラグイン用例外除外設定終了 ===
-
-# テーマを入れるディレクトリを除外
 themes/*
+
 license-info.json
 license.txt
 

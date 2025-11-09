@@ -39,11 +39,31 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
 
+        // プラグイン用ミドルウェアグループ（基本）
         $middleware->group('plugin', [
             \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        ]);
+
+        // プラグインフロントエンド用（IP制限強制）
+        $middleware->group('plugin.web', [
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\FrontIpFilter::class, // IP制限を強制
+        ]);
+
+        // プラグイン管理画面用（認証 + IP制限強制）
+        $middleware->group('plugin.admin', [
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\Authenticate::class . ':member', // 認証を強制
+            \App\Http\Middleware\AdminIpFilter::class, // IP制限を強制
         ]);
     })
 
