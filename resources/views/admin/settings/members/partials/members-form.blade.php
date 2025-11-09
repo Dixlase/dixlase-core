@@ -94,21 +94,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {{-- メールアドレス確認フィールド（新規作成時 or 編集時にメールアドレス変更） --}}
         <fieldset id="email-confirmation-field" style="display: none;">
             <legend>{{ __('admin.settings.members.form.email_confirmation') }}</legend>
-            @include('components::form.text', [
-                'type' => 'email',
-                'id' => 'email_confirmation',
-                'name' => 'email_confirmation',
-                'value' => old('email_confirmation'),
-                'required' => false,
-                'autocomplete' => 'off',
-                'onpaste' => 'return false',
-                'oncopy' => 'return false',
-                'oncut' => 'return false',
-            ])
+            <x-form.text
+                type="email"
+                id="email_confirmation"
+                name="email_confirmation"
+                :value="old('email_confirmation')"
+                :required="false"
+                autocomplete="off"
+                onpaste="return false"
+                oncopy="return false"
+                oncut="return false"
+            />
             <p class="help-text">{{ __('admin.settings.members.form.email_confirmation_help') }}</p>
-            @include('components::form.error', [
-                'messages' => $errors->get('email_confirmation')
-            ])
+            <x-form.error
+                :messages="$errors->get('email_confirmation')"
+            />
         </fieldset>
     </section>
 
@@ -118,18 +118,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <fieldset>
             <legend>{{ $requirePassword ? __('common.password') : __('admin.profile.password_change_only') }}</legend>
-            @include('components.password-tools', [
-                'id' => 'password',
-                'name' => 'password',
-                'required' => $requirePassword,
-                'minLength' => $passwordMinLength,
-                'requireUppercase' => $passwordRequireUppercase,
-                'requireSymbol' => $passwordRequireSymbol,
-                'showConfirmation' => true
-            ])
-            @include('components::form.error', [
-                'messages' => $errors->get('password')
-            ])
+            <x-password-tools
+                id="password"
+                name="password"
+                :required="$requirePassword"
+                :minLength="$passwordMinLength"
+                :requireUppercase="$passwordRequireUppercase"
+                :requireSymbol="$passwordRequireSymbol"
+                :showConfirmation="true"
+            />
+            <x-form.error
+                :messages="$errors->get('password')"
+            />
         </fieldset>
     </section>
 
@@ -142,10 +142,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <legend>{{ __('admin.settings.members.form.account_verification') }}</legend>
             
             @if(!$isMailServerTested)
-                @include('components.message', [
-                    'type' => 'info',
-                    'message' => __('admin.settings.members.form.account_verification_disabled')
-                ])
+                <x-message
+                    type="info"
+                    :message="__('admin.settings.members.form.account_verification_disabled')"
+                />
                 <input type="hidden" name="email_verified" value="1">
             @else
                 @if(!isset($member) || !$member->exists)
@@ -157,11 +157,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             '1' => 'admin.settings.members.form.account_verified',
                         ];
                     @endphp
-                    @include('components::form.radio-group', [
-                        'name' => 'email_verified',
-                        'options' => $emailVerificationOptions,
-                        'value' => $emailVerifiedValue
-                    ])
+                    <x-form.radio-group
+                        name="email_verified"
+                        :options="$emailVerificationOptions"
+                        :value="$emailVerifiedValue"
+                    />
                     <p class="description-text">{{ __('admin.settings.members.form.account_verification_help_create') }}</p>
                 @else
                     {{-- 編集時 --}}
@@ -172,34 +172,34 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             '1' => 'admin.settings.members.form.account_verified',
                         ];
                     @endphp
-                    @include('components::form.radio-group', [
-                        'name' => 'email_verified',
-                        'options' => $emailVerificationOptionsEdit,
-                        'value' => $emailVerifiedValue
-                    ])
+                    <x-form.radio-group
+                        name="email_verified"
+                        :options="$emailVerificationOptionsEdit"
+                        :value="$emailVerifiedValue"
+                    />
                     <p class="description-text">{{ __('admin.settings.members.form.account_verification_help_edit') }}</p>
                     
                     {{-- 認証メール送信ボタン --}}
                     <div class="mt-4">
                         @if($isMailServerTested)
-                            @include('components::form.button', [
-                                'type' => 'button',
-                                'variant' => 'secondary',
-                                'size' => 'sm',
-                                'label' => __('admin.settings.members.form.send_verification_email_button'),
-                                'icon' => 'fas fa-envelope',
-                                'id' => 'send-verification-email-btn',
-                                'onclick' => 'sendVerificationEmail(' . $member->id . ')'
-                            ])
+                            <x-form.button
+                                type="button"
+                                variant="secondary"
+                                size="sm"
+                                :label="__('admin.settings.members.form.send_verification_email_button')"
+                                icon="fas fa-envelope"
+                                id="send-verification-email-btn"
+                                onclick="sendVerificationEmail({{ $member->id }})"
+                            />
                         @else
-                            @include('components::form.button', [
-                                'type' => 'button',
-                                'variant' => 'secondary',
-                                'size' => 'sm',
-                                'label' => __('admin.settings.members.form.send_verification_email_button'),
-                                'icon' => 'fas fa-envelope',
-                                'disabled' => true
-                            ])
+                            <x-form.button
+                                type="button"
+                                variant="secondary"
+                                size="sm"
+                                :label="__('admin.settings.members.form.send_verification_email_button')"
+                                icon="fas fa-envelope"
+                                :disabled="true"
+                            />
                             <p class="text-sm text-yellow-600 dark:text-yellow-400 mt-2">
                                 <i class="fas fa-exclamation-triangle mr-1"></i>
                                 {{ __('admin.settings.members.form.mail_server_not_tested') }}
@@ -209,24 +209,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
             @endif
             
-            @include('components::form.error', [
-                'messages' => $errors->get('email_verified')
-            ])
+            <x-form.error
+                :messages="$errors->get('email_verified')"
+            />
         </fieldset>
         
         <!-- 言語設定 -->
         <fieldset>
             <legend>{{ __('common.locale') }}</legend>
-            @include('components.form.select', [
-                'name' => 'locale',
-                'options' => $localeOptions,
-                'value' => old('locale', $member->locale?->value ?? null),
-                'nullable' => true,
-                'nullLabel' => __('admin.profile.use_system_default')
-            ])
-            @include('components::form.error', [
-                'messages' => $errors->get('locale')
-            ])
+            <x-form.select
+                name="locale"
+                :options="$localeOptions"
+                :value="old('locale', $member->locale?->value ?? null)"
+                :nullable="true"
+                :nullLabel="__('admin.profile.use_system_default')"
+            />
+            <x-form.error
+                :messages="$errors->get('locale')"
+            />
             <p class="description-text">{{ __('admin.profile.language_help') }}</p>
         </fieldset>
         
@@ -241,14 +241,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     '2' => 'common.dark',
                 ];
             @endphp
-            @include('components::form.radio-group', [
-                'name' => 'appearance',
-                'options' => $appearanceOptions,
-                'value' => $appearanceValue
-            ])
-            @include('components::form.error', [
-                'messages' => $errors->get('appearance')
-            ])
+            <x-form.radio-group
+                name="appearance"
+                :options="$appearanceOptions"
+                :value="$appearanceValue"
+            />
+            <x-form.error
+                :messages="$errors->get('appearance')"
+            />
         </fieldset>
 
         <!-- アカウントステータス -->
@@ -271,15 +271,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         '0' => 'components.status.inactive',
                     ];
                 @endphp
-                @include('components::form.radio-group', [
-                    'name' => 'status',
-                    'options' => $statusOptions,
-                    'value' => $statusValue
-                ])
+                <x-form.radio-group
+                    name="status"
+                    :options="$statusOptions"
+                    :value="$statusValue"
+                />
             @endif
-            @include('components::form.error', [
-                'messages' => $errors->get('status')
-            ])
+            <x-form.error
+                :messages="$errors->get('status')"
+            />
         </fieldset>
 
         <!-- 管理者ロール -->
@@ -302,15 +302,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         $roleOptions[$role->value] = $role->label();
                     }
                 @endphp
-                @include('components::form.radio-group', [
-                    'name' => 'role',
-                    'options' => $roleOptions,
-                    'value' => $roleValue
-                ])
+                <x-form.radio-group
+                    name="role"
+                    :options="$roleOptions"
+                    :value="$roleValue"
+                />
             @endif
-            @include('components::form.error', [
-                'messages' => $errors->get('role')
-            ])
+            <x-form.error
+                :messages="$errors->get('role')"
+            />
         </fieldset>
     </section>
 
@@ -318,10 +318,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <section>
         <h2>{{ __('common.notification_settings') }}</h2>
         @if(!$isMailServerTested)
-            @include('components.message', [
-                'type' => 'warning',
-                'message' => __('admin.settings.members.form.mail_server_not_tested')
-            ])
+            <x-message
+                type="warning"
+                :message="__('admin.settings.members.form.mail_server_not_tested')"
+            />
         @endif
         
         <!-- ログイン通知設定 -->
@@ -335,14 +335,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         '1' => 'common.enabled',
                     ];
                 @endphp
-                @include('components::form.radio-group', [
-                    'name' => 'login_notification',
-                    'options' => $loginNotificationOptions,
-                    'value' => $loginNotificationValue
-                ])
-                @include('components::form.error', [
-                    'messages' => $errors->get('login_notification')
-                ])
+                <x-form.radio-group
+                    name="login_notification"
+                    :options="$loginNotificationOptions"
+                    :value="$loginNotificationValue"
+                />
+                <x-form.error
+                    :messages="$errors->get('login_notification')"
+                />
             </fieldset>
         @else
             <fieldset>
@@ -355,10 +355,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <section>
         <h2>{{ __('common.two_factor_settings') }}</h2>
         @if(!$isMailServerTested)
-            @include('components.message', [
-                'type' => 'warning',
-                'message' => __('admin.settings.members.form.mail_server_not_tested')
-            ])
+            <x-message
+                type="warning"
+                :message="__('admin.settings.members.form.mail_server_not_tested')"
+            />
         @endif   
         
         @if($force2fa === $twoFactorUseProfileSettingValue)
@@ -368,14 +368,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @php
                     $twoFactorModeValue = old('two_factor_mode', $member->two_factor_mode->value ?? $twoFactorMode->value);
                 @endphp
-                @include('components::form.radio-group', [
-                    'name' => 'two_factor_mode',
-                    'options' => $twoFactorModeOptions,
-                    'value' => $twoFactorModeValue
-                ])
-                @include('components::form.error', [
-                    'messages' => $errors->get('two_factor_mode')
-                ])
+                <x-form.radio-group
+                    name="two_factor_mode"
+                    :options="$twoFactorModeOptions"
+                    :value="$twoFactorModeValue"
+                />
+                <x-form.error
+                    :messages="$errors->get('two_factor_mode')"
+                />
             </fieldset>
             
             <!-- 二段階認証方法設定 -->
@@ -398,11 +398,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endphp
 
                 @if(count($enabledTwoFactorMethods) > 1)
-                    @include('components::form.radio-group', [
-                        'name' => 'two_factor_method',
-                        'options' => $enabledTwoFactorMethods,
-                        'value' => $currentMethod
-                    ])
+                    <x-form.radio-group
+                        name="two_factor_method"
+                        :options="$enabledTwoFactorMethods"
+                        :value="$currentMethod"
+                    />
                 @else
                     <input type="hidden" name="two_factor_method" value="{{ $currentMethod }}">
                     <p class="description-text">
@@ -411,9 +411,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </p>
                 @endif
                 
-                @include('components::form.error', [
-                    'messages' => $errors->get('two_factor_method')
-                ])
+                <x-form.error
+                    :messages="$errors->get('two_factor_method')"
+                />
             </fieldset>
         @endif
         @else
@@ -473,12 +473,14 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold">Passkeyデバイス</h3>
                 @if(!$passkeyDevices->isEmpty())
-                    <button 
+                    <x-form.button
                         type="button"
+                        variant="danger"
+                        size="sm"
+                        label="全て削除"
+                        icon="fas fa-trash-alt"
                         onclick="openModal('deleteAllPasskeysModal')"
-                        class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
-                        <i class="fas fa-trash-alt mr-1"></i>全て削除
-                    </button>
+                    />
                 @endif
             </div>
             
@@ -500,12 +502,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                     @endif
                                 </div>
                             </div>
-                            <button 
+                            <x-form.button
                                 type="button"
+                                variant="danger"
+                                size="sm"
+                                label="削除"
                                 onclick="openDeletePasskeyModal('{{ $device->id }}', '{{ $device->name }}')"
-                                class="ml-4 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
-                                削除
-                            </button>
+                                class="ml-4"
+                            />
                         </div>
                     @endforeach
                 </div>
@@ -539,12 +543,14 @@ document.addEventListener('DOMContentLoaded', function() {
                             <i class="fas fa-info-circle mr-2"></i>
                             {{ __('two-factor.recovery_codes.remaining', ['count' => $recoveryCodesCount]) }}
                         </p>
-                        <button type="button" 
-                                onclick="openModal('deleteRecoveryCodesModal')"
-                                class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                            <i class="fas fa-trash mr-1"></i>
-                            {{ __('admin.settings.members.form.delete_recovery_codes') }}
-                        </button>
+                        <x-form.button
+                            type="button"
+                            variant="danger"
+                            size="sm"
+                            :label="__('admin.settings.members.form.delete_recovery_codes')"
+                            icon="fas fa-trash"
+                            onclick="openModal('deleteRecoveryCodesModal')"
+                        />
                     </div>
                 </div>
             @else
@@ -573,42 +579,38 @@ document.addEventListener('DOMContentLoaded', function() {
         <fieldset>
             <legend>{{ __('admin.settings.members.form.unlock_lockout') }}</legend>
             <p class="mb-4">{{ __('admin.settings.members.form.unlock_lockout_description') }}</p>
-            @include('components::form.button', [
-                'variant' => 'info',
-                'icon' => 'fas fa-unlock',
-                'label' => __('admin.settings.members.form.unlock_lockout_button'),
-                'onclick' => "openModal('unlockLockoutModal')",
-            ])
+            <x-form.button
+                variant="info"
+                icon="fas fa-unlock"
+                :label="__('admin.settings.members.form.unlock_lockout_button')"
+                onclick="openModal('unlockLockoutModal')"
+            />
         </fieldset>
         
         <fieldset>
             <legend>{{ __('admin.settings.members.form.force_logout') }}</legend>
             <p class="mb-4">{{ __('admin.settings.members.form.force_logout_description') }}</p>
-            @include('components::form.button', [
-                'variant' => 'warning',
-                'icon' => 'fas fa-sign-out-alt',
-                'label' => __('admin.settings.members.form.force_logout_button'),
-                'onclick' => "openModal('forceLogoutModal')",
-            ])
+            <x-form.button
+                variant="warning"
+                icon="fas fa-sign-out-alt"
+                :label="__('admin.settings.members.form.force_logout_button')"
+                onclick="openModal('forceLogoutModal')"
+            />
         </fieldset>
 
         @if(!$isInitialAdmin)
             <fieldset>
                 <legend>{{ __('admin.settings.members.form.delete_member') }}</legend>
                 <p class="mb-4">{{ __('admin.settings.members.form.delete_member_description') }}</p>
-                @include('components::form.button', [
-                    'variant' => 'danger',
-                    'icon' => 'fas fa-trash',
-                    'label' => __('admin.settings.members.form.delete_member_button'),
-                    'onclick' => "openModal('deleteMemberModal')"
-                ])
+                <x-form.button
+                    variant="danger"
+                    icon="fas fa-trash"
+                    :label="__('admin.settings.members.form.delete_member_button')"
+                    onclick="openModal('deleteMemberModal')"
+                />
             </fieldset>
         @endif
     </section>
-@endif
-
-@if($includeForm && $formAction)
-    </form>
 @endif
 
 @if(isset($member) && $member->exists)
@@ -635,39 +637,39 @@ document.addEventListener('DOMContentLoaded', function() {
         $deleteMemberFormId = 'deleteMemberForm-' . $member->id;
     @endphp
     
-    @include('components.modal', [
-        'id' => 'forceLogoutModal',
-        'title' => __('admin.settings.members.modals.force_logout.title'),
-        'message' => __('admin.settings.members.modals.force_logout.message', ['name' => $member->name]),
-        'confirm_label' => __('admin.settings.members.modals.force_logout.confirm'),
-        'cancel_label' => __('common.cancel'),
-        'form' => $forceLogoutFormId,
-        'icon_type' => 'warning',
-        'confirm_color' => 'yellow'
-        ])
+    <x-modal
+        id="forceLogoutModal"
+        :title="__('admin.settings.members.modals.force_logout.title')"
+        :message="__('admin.settings.members.modals.force_logout.message', ['name' => $member->name])"
+        :confirm_label="__('admin.settings.members.modals.force_logout.confirm')"
+        :cancel_label="__('common.cancel')"
+        :form="$forceLogoutFormId"
+        icon_type="warning"
+        confirm_color="yellow"
+    />
 
-    @include('components.modal', [
-        'id' => 'unlockLockoutModal',
-        'title' => __('admin.settings.members.modals.unlock_lockout.title'),
-        'message' => __('admin.settings.members.modals.unlock_lockout.message', ['name' => $member->name]),
-        'confirm_label' => __('admin.settings.members.modals.unlock_lockout.confirm'),
-        'cancel_label' => __('common.cancel'),
-        'form' => $unlockLockoutFormId,
-        'icon_type' => 'info',
-        'confirm_color' => 'blue'
-        ])
+    <x-modal
+        id="unlockLockoutModal"
+        :title="__('admin.settings.members.modals.unlock_lockout.title')"
+        :message="__('admin.settings.members.modals.unlock_lockout.message', ['name' => $member->name])"
+        :confirm_label="__('admin.settings.members.modals.unlock_lockout.confirm')"
+        :cancel_label="__('common.cancel')"
+        :form="$unlockLockoutFormId"
+        icon_type="info"
+        confirm_color="blue"
+    />
 
     @if(!$isInitialAdmin)
-        @include('components.modal', [
-            'id' => 'deleteMemberModal',
-            'title' => __('admin.settings.members.modals.delete.title'),
-            'message' => __('admin.settings.members.modals.delete.message', ['name' => $member->name]) . "\n\n" . __('admin.settings.members.modals.delete.warning'),
-            'confirm_label' => __('common.delete'),
-            'cancel_label' => __('common.cancel'),
-            'form' => $deleteMemberFormId,
-            'icon_type' => 'danger',
-            'confirm_color' => 'red'
-        ])
+        <x-modal
+            id="deleteMemberModal"
+            :title="__('admin.settings.members.modals.delete.title')"
+            :message="__('admin.settings.members.modals.delete.message', ['name' => $member->name]) . "\n\n" . __('admin.settings.members.modals.delete.warning')"
+            :confirm_label="__('common.delete')"
+            :cancel_label="__('common.cancel')"
+            :form="$deleteMemberFormId"
+            icon_type="danger"
+            confirm_color="red"
+        />
     @endif
 @endif
 

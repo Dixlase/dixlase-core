@@ -37,12 +37,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             {{ __('common.filters.search_keyword') }}
                         </label>
-                        @include('components::form.text', [
-                            'id' => 'search',
-                            'name' => 'search',
-                            'placeholder' => __('components.forms.placeholder.search'),
-                            'value' => $search,
-                        ])
+                        <x-form.text
+                            id="search"
+                            name="search"
+                            :placeholder="__('components.forms.placeholder.search')"
+                            :value="$search"
+                        />
                     </div>
 
                     <!-- 権限フィルター -->

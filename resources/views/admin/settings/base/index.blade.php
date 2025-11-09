@@ -171,27 +171,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <section>
         <h2>{{ __('admin.settings.base.mail_server_settings') }}</h2>
 
-        @include('components.mail-server-form', [
-            'settings' => $settings,
-            'mailers' => $mailers,
-            'encryptions' => $encryptions,
-            'context' => 'admin'
-        ])
+        <x-mail-server-form
+            :settings="$settings"
+            :mailers="$mailers"
+            :encryptions="$encryptions"
+            context="admin"
+        />
 
-        @include('components.mail-test', [
-            'context' => 'admin',
-            'connectionTestRoute' => route('admin.settings.base.test-connection'),
-            'mailTestRoute' => route('admin.settings.base.test-mail'),
-            'showStatus' => true,
-            'testStatus' => [
+        <x-mail-test
+            context="admin"
+            :connectionTestRoute="route('admin.settings.base.test-connection')"
+            :mailTestRoute="route('admin.settings.base.test-mail')"
+            :showStatus="true"
+            :testStatus="[
                 'connection_tested' => $mailConnectionTested,
                 'send_tested' => $mailSendTested,
                 'receive_tested' => $mailReceiveTested,
                 'connection_test_date' => $mailConnectionTestDate,
                 'send_test_date' => $mailSendTestDate,
                 'receive_test_date' => $mailReceiveTestDate
-            ]
-        ])
+            ]"
+        />
     </section>
 
     <!-- システム管理者メールアドレス -->

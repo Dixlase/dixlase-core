@@ -76,10 +76,10 @@
 
 <!-- メディア選択モーダル -->
 @push('modals')
-    @include('components.media-selector', [
-        'id' => $selectorId,
-        'inputId' => $inputId,
-        'previewId' => $previewId,
-        'multiple' => false
-    ])
+    <x-media-selector
+        :id="$selectorId"
+        :inputId="$inputId"
+        :previewId="$previewId"
+        :multiple="false"
+    />
 @endpush

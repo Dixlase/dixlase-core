@@ -118,6 +118,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['roleFilter'] = $roleFilter;
         $this->viewParams['statusFilter'] = $statusFilter;
         $this->viewParams['pagination'] = $pagination;
+        $this->viewParams['roles'] = MemberRole::cases();
 
         // ビューにデータを渡す
         return view('admin::settings.members.index', $this->viewParams);
