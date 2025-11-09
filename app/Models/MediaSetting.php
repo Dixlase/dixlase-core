@@ -23,8 +23,40 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Contracts\Repositories\MediaSettingRepositoryInterface;
 
+/**
+ * メディア設定モデル
+ * 
+ * @deprecated 直接使用は非推奨です。MediaSettingRepositoryを使用してください。
+ */
 class MediaSetting extends Model
 {
     protected $fillable = ['name', 'value'];
+
+    /**
+     * 設定値を取得
+     *
+     * @deprecated MediaSettingRepository::get() を使用してください
+     * @param string $name
+     * @param mixed $default
+     * @return mixed
+     */
+    public static function getValue(string $name, mixed $default = null): mixed
+    {
+        return app(MediaSettingRepositoryInterface::class)->get($name, $default);
+    }
+
+    /**
+     * 設定値を保存
+     *
+     * @deprecated MediaSettingRepository::set() を使用してください
+     * @param string $name
+     * @param mixed $value
+     * @return MediaSetting
+     */
+    public static function setValue(string $name, mixed $value): MediaSetting
+    {
+        return app(MediaSettingRepositoryInterface::class)->set($name, $value);
+    }
 }
