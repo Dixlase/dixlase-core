@@ -42,17 +42,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('save')
-    <!-- {{ __('admin.settings.members.create.create_confirmation_title') }} -->
-    @include('components.save', [
-        'id' => 'confirmationModal',
-        'label' => __('common.create'),
-        'onclick' => "openModal('confirmationModal')",
-        'title' => __('admin.settings.members.create.create_confirmation_title'),
-        'message' => __('admin.settings.members.create.create_confirmation_message'),
-        'confirm_label' => __('common.create'),
-        'cancel_label' => __('common.back'),
-        'form' => 'create-form', // 🔁 保存ボタンに form 属性を渡す（必要なら）
-    ])
+    <x-save
+        id="confirmationModal"
+        :label="__('common.create')"
+        :title="__('admin.settings.members.create.create_confirmation_title')"
+        :message="__('admin.settings.members.create.create_confirmation_message')"
+        :confirm_label="__('common.create')"
+        :cancel_label="__('common.back')"
+        form="create-form"
+    />
 @endsection
-
-

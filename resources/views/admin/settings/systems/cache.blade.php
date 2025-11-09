@@ -40,13 +40,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <input type="hidden" name="type" value="{{ $type }}">
                 </form>
                 
-                @include('components::form.button', [
-                    'type' => 'button',
-                    'label' => __('common.clear'),
-                    'variant' => 'danger',
-                    'icon' => 'fas fa-trash',
-                    'onclick' => "openModal('clearCacheModal" . ucfirst($type) . "')"
-                ])
+                <x-form.button
+                    type="button"
+                    variant="danger"
+                    :label="__('common.clear')"
+                    icon="fas fa-trash"
+                    onclick="openModal('clearCacheModal" . ucfirst($type) . "')"
+                />
             </div>
         </section>
         @endforeach
@@ -64,13 +64,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <input type="hidden" name="type" value="all">
                 </form>
                 
-                @include('components::form.button', [
-                    'type' => 'button',
-                    'label' => __('admin.settings.systems.cache.clear_all_button'),
-                    'variant' => 'danger',
-                    'icon' => 'fas fa-trash-alt',
-                    'onclick' => "openModal('clearAllCacheModal')"
-                ])
+                <x-form.button
+                    type="button"
+                    variant="danger"
+                    :label="__('admin.settings.systems.cache.clear_all_button')"
+                    icon="fas fa-trash-alt"
+                    onclick="openModal('clearAllCacheModal')"
+                />
             </div>
         </section>
 
@@ -96,30 +96,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <!-- Individual Cache Clear Modals -->
 @foreach($cacheInfo as $type => $info)
-    @include('components.modal', [
-        'id' => 'clearCacheModal' . ucfirst($type),
-        'title' => __('admin.settings.systems.cache.clear_confirm', ['name' => $info['name']]),
-        'message' => $info['description'],
-        'confirm_label' => __('common.clear'),
-        'message' => $info['description'],
-        'confirm_label' => __('common.clear'),
-        'cancel_label' => __('common.cancel'),
-        'form' => 'clearCacheForm' . ucfirst($type),
-        'icon_type' => 'danger',
-        'confirm_color' => 'red'
-    ])
+    <x-modal
+        id="clearCacheModal{{ ucfirst($type) }}"
+        :title="__('admin.settings.systems.cache.clear_confirm', ['name' => $info['name']])"
+        :message="$info['description']"
+        :confirm_label="__('common.clear')"
+        :cancel_label="__('common.cancel')"
+        form="clearCacheForm{{ ucfirst($type) }}"
+        icon_type="danger"
+        confirm_color="red"
+    />
 @endforeach
 
 <!-- Clear All Cache Modal -->
-    @include('components.modal', [
-        'id' => 'clearAllCacheModal',
-        'title' => __('admin.settings.systems.cache.clear_all_title'),
-        'message' => __('admin.settings.systems.cache.clear_all_description') . ' ' . __('admin.settings.systems.cache.clear_all_warning'),
-        'confirm_label' => __('admin.settings.systems.cache.clear_all_button'),
-        'cancel_label' => __('common.cancel'),
-        'form' => 'clearAllCacheForm',
-        'icon_type' => 'danger',
-        'confirm_color' => 'red'
-    ])
+    <x-modal
+        id="clearAllCacheModal"
+        :title="__('admin.settings.systems.cache.clear_all_title')"
+        :message="__('admin.settings.systems.cache.clear_all_description') . ' ' . __('admin.settings.systems.cache.clear_all_warning')"
+        :confirm_label="__('admin.settings.systems.cache.clear_all_button')"
+        :cancel_label="__('common.cancel')"
+        form="clearAllCacheForm"
+        icon_type="danger"
+        confirm_color="red"
+    />
 
 @endsection

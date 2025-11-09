@@ -40,15 +40,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     ])
 
     <!-- 認証メール送信確認モーダル -->
-    @include('components.modal', [
-        'id' => 'verificationEmailModal',
-        'title' => __('admin.settings.members.form.send_verification_email_title'),
-        'message' => __('admin.settings.members.form.send_verification_email_confirm'),
-        'confirm_label' => __('common.send'),
-        'cancel_label' => __('common.cancel'),
-        'icon_type' => 'info',
-        'confirm_color' => 'blue',
-    ])
+    <x-modal
+        id="verificationEmailModal"
+        :title="__('admin.settings.members.form.send_verification_email_title')"
+        :message="__('admin.settings.members.form.send_verification_email_confirm')"
+        :confirm_label="__('common.send')"
+        :cancel_label="__('common.cancel')"
+        icon_type="info"
+        confirm_color="blue"
+    />
 
     <!-- Passkey削除確認モーダル -->
     <x-modal 
@@ -84,15 +84,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('save')
     <!-- 保存ボタンとモーダル -->
-    @include('components.save', [
-        'id_confirmation' => 'confirmationModal',
-        'label' => __('common.update'),
-        'title' => __('common.update_confirmation'),
-        'message' => __('admin.settings.members.edit.confirm_message'),
-        'confirm_label' => __('common.update'),
-        'cancel_label' => __('common.cancel'),
-        'form' => 'update-form',
-    ])
+    <x-save
+        id_confirmation="confirmationModal"
+        :label="__('common.update')"
+        :title="__('admin.settings.members.edit.confirm_title')"
+        :message="__('admin.settings.members.edit.confirm_message')"
+        :confirm_label="__('common.update')"
+        :cancel_label="__('common.cancel')"
+        form="update-form"
+    />
 @endsection
 
 @push('scripts')

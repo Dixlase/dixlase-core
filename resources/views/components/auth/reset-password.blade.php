@@ -33,29 +33,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <form method="POST" action="{{ $action }}">
     @csrf
 
-    @include('components::form.hidden', [
-        'name' => 'token',
-        'value' => $token
-    ])
+    <x-form.hidden
+        name="token"
+        :value="$token"
+    />
 
     <section>
         <fieldset>
             <legend class="sr-only">{{ $emailLabel }}</legend>
             
-            @include('components::form.text', [
-                'type' => 'email',
-                'id' => 'email',
-                'name' => 'email',
-                'value' => old('email', $email),
-                'required' => true,
-                'autocomplete' => 'username',
-                'ariaLabel' => $emailLabel,
-                'placeholder' => $emailLabel
-            ])
+            <x-form.text
+                type="email"
+                id="email"
+                name="email"
+                :value="old('email', $email)"
+                :required="true"
+                :autofocus="true"
+                autocomplete="username"
+            />
             
-            @include('components::form.error', [
-                'messages' => $errors->get('email')
-            ])
+            <x-form.error
+                :messages="$errors->get('email')"
+            />
         </fieldset>
     </section>
 
@@ -75,23 +74,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :showConfirmation="true"
             />
             
-            @include('components::form.error', [
-                'messages' => $errors->get('password')
-            ])
+            <x-form.error
+                :messages="$errors->get('password')"
+            />
             
-            @include('components::form.error', [
-                'messages' => $errors->get('password_confirmation')
-            ])
+            <x-form.error
+                :messages="$errors->get('password_confirmation')"
+            />
         </fieldset>
     </section>
 
     <section class="flex items-center justify-center mt-6">
-        @include('components::form.button', [
-            'type' => 'submit',
-            'variant' => 'primary',
-            'size' => 'md',
-            'label' => $submitText,
-            'class' => 'w-full'
-        ])
+        <x-form.button
+            type="submit"
+            variant="primary"
+            size="md"
+            :label="$submitText"
+            class="w-full"
+        />
     </section>
 </form>

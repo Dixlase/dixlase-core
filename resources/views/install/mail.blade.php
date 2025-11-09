@@ -14,24 +14,24 @@
     <section aria-labelledby="mail-server-heading">
         <h2 id="mail-server-heading" class="sr-only">{{ __('install.mail_server_settings') }}</h2>
         
-        @include('components.mail-server-form', [
-            'settings' => [],
-            'context' => 'install',
-            'admin_email' => $admin_email
-        ])
+        <x-mail-server-form
+            :settings="[]"
+            context="install"
+            :admin_email="$admin_email"
+        />
     </section>
 
     <!-- メール接続テストセクション -->
     <section aria-labelledby="mail-test-heading">
         <h2 id="mail-test-heading" class="sr-only">{{ __('install.mail_connection_test') }}</h2>
         
-        @include('components.mail-test', [
-            'context' => 'install',
-            'connectionTestRoute' => route('install.mail.test-connection'),
-            'mailTestRoute' => route('install.mail.test-send'),
-            'showStatus' => false,
-            'testStatus' => $testStatus
-        ])
+        <x-mail-test
+            context="install"
+            :connectionTestRoute="route('install.mail.test-connection')"
+            :mailTestRoute="route('install.mail.test-send')"
+            :showStatus="false"
+            :testStatus="$testStatus"
+        />
     </section>
 
     <!-- フォームナビゲーション -->

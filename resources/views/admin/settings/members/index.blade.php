@@ -50,20 +50,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <label for="role" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             {{ __('common.filters.role_filter') }}
                         </label>
-                        @include('components::form.select', [
-                            'id' => 'role',
-                            'name' => 'role',
-                            'options' => [
-                                '' => __('common.filters.all_roles'),
-                                '0' => __('common.roles.super_admin'),
-                                '1' => __('common.roles.admin'),
-                                '2' => __('common.roles.editor'),
-                                '3' => __('common.roles.author'),
-                                '4' => __('common.roles.contributor'),
-                                '5' => __('common.roles.receptionist'),
-                            ],
-                            'value' => $roleFilter,
-                        ])
+                        <x-form.select
+                            id="role"
+                            name="role"
+                            :options="array_merge(
+                                ['' => 'common.all'],
+                                collect($roles)->mapWithKeys(fn($role) => [$role->value => $role->label()])->toArray()
+                            )"
+                            :value="$role ?? ''"
+                        />
                     </div>
 
                     <!-- ステータスフィルター -->
@@ -71,26 +66,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             {{ __('common.filters.status_filter') }}
                         </label>
-                        @include('components::form.select', [
-                            'id' => 'status',
-                            'name' => 'status',
-                            'options' => [
-                                '' => __('common.filters.all_statuses'),
-                                '1' => __('components.status.active'),
-                                '0' => __('components.status.inactive'),
-                            ],
-                            'value' => $statusFilter,
-                        ])
+                        <x-form.select
+                            id="status"
+                            name="status"
+                            :options="[
+                                '' => 'common.all',
+                                '1' => 'components.status.active',
+                                '0' => 'components.status.inactive',
+                            ]"
+                            :value="$status ?? ''"
+                        />
                     </div>
 
                     <!-- 検索ボタン -->
                     <div class="flex items-end">
                         <div class="flex gap-2 w-full">
-                            @include('components::form.button', [
-                                'type' => 'submit',
-                                'label' => __('common.search'),
-                                'class' => 'flex-1'
-                            ])
+                            <x-form.button
+                                type="submit"
+                                variant="primary"
+                                :label="__('common.search')"
+                                icon="fas fa-search"
+                            />
                             <a href="{{ route('admin.settings.members.index') }}" 
                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 flex items-center justify-center">
                                 {{ __('common.filters.clear_button') }}
@@ -107,24 +103,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <h2 class="sr-only">{{ __('admin.settings.members.index.heading') }}</h2>
 
         <!-- ページネーション制御 -->
-        @include('components::pagination-controls', [
-            'paginator' => $members,
-            'currentPerPage' => request('per_page', 25),
-            'totalLabel' => 'components.pagination.total_count',
-            'perPageLabel' => 'components.pagination.per_page_label'
-        ])
+        <x-pagination-controls
+            :paginator="$members"
+            :perPageOptions="[10, 25, 50, 100]"
+            :currentPerPage="request('per_page', 25)"
+        />
 
         <!-- ページネーション -->
-        @include('components::pagination', [
-            'pagination' => $pagination ?? null,
-            'route' => 'admin.settings.members.index',
-            'routeParams' => array_filter([
+        <x-pagination
+            :pagination="$pagination ?? null"
+            :route="'admin.settings.members.index'"
+            :routeParams="array_filter([
                 'search' => request('search'),
+                'role' => request('role'),
+                'status' => request('status'),
                 'per_page' => request('per_page')
-            ]),
-            'mobilePageRange' => 0,
-            'desktopPageRange' => 2
-        ])
+            ])"
+            :mobilePageRange="0"
+            :desktopPageRange="2"
+        />
 
         <!-- レスポンシブテーブル -->
         <div class="responsive-table !border-0 !dark:border-0">
@@ -152,14 +149,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <td data-label="{{ __('common.email') }}">{{ $member->email }}</td>
                             <td data-label="{{ __('common.role') }}">{{ $member->role->label() }}</td>
                             <td data-label="{{ __('common.actions') }}">
-                                @include('components.form.button', [
-                                    'type' => 'button',
-                                    'variant' => 'secondary',
-                                    'size' => 'sm',
-                                    'label' => __('common.edit'),
-                                    'icon' => 'fas fa-edit',
-                                    'onclick' => "window.location.href='" . route('admin.settings.members.edit', ['member' => $member->id]) . "'",
-                                ])
+                                <x-form.button
+                                    type="button"
+                                    variant="secondary"
+                                    size="sm"
+                                    :label="__('common.edit')"
+                                    icon="fas fa-edit"
+                                    onclick="window.location.href='{{ route('admin.settings.members.edit', ['member' => $member->id]) }}'"
+                                />
                             </td>
                         </tr>
                     @endforeach
@@ -168,18 +165,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>        
 
         <!-- ページネーション -->
-        @include('components::pagination', [
-            'pagination' => $pagination ?? null,
-            'route' => 'admin.settings.members.index',
-            'routeParams' => array_filter([
+        <x-pagination
+            :pagination="$pagination ?? null"
+            route="admin.settings.members.index"
+            :routeParams="array_filter([
                 'search' => request('search'),
                 'role' => request('role'),
                 'status' => request('status'),
                 'per_page' => request('per_page')
-            ]),
-            'mobilePageRange' => 0,
-            'desktopPageRange' => 2
-        ])
+            ])"
+            :mobilePageRange="0"
+            :desktopPageRange="2"
+        />
     </section>
 </div>
 @endsection

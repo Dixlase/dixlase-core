@@ -32,29 +32,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <fieldset>
             <legend>{{ __('admin.settings.base.app_name') }}</legend>
-            @include('components.form.text', [
-                'name' => 'app_name',
-                'value' => old('app_name', $settings['app_name']),
-                'required' => true,
-            ])
+            <x-form.text
+                name="app_name"
+                :value="old('app_name', $settings['app_name'])"
+                :required="true"
+            />
         </fieldset>
 
         <fieldset>
             <legend>{{ __('admin.settings.base.site_description') }}</legend>
-            @include('components.form.textarea', [
-                'name' => 'site_description',
-                'value' => old('site_description', $settings['site_description']),
-                'rows' => 3,
-            ])
+            <x-form.textarea
+                name="site_description"
+                :value="old('site_description', $settings['site_description'])"
+                :rows="3"
+            />
             <p>{{ __('admin.settings.base.site_description_help') }}</p>
         </fieldset>
 
         <fieldset>
             <legend>{{ __('admin.settings.base.site_keywords') }}</legend>
-            @include('components.form.text', [
-                'name' => 'site_keywords',
-                'value' => old('site_keywords', $settings['site_keywords']),
-            ])
+            <x-form.text
+                name="site_keywords"
+                :value="old('site_keywords', $settings['site_keywords'])"
+            />
             <p>{{ __('admin.settings.base.site_keywords_help') }}</p>
         </fieldset>
 
@@ -67,26 +67,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <fieldset>
             <legend>{{ __('admin.settings.base.default_ogp_image') }}</legend>
             
-            @include('components.media-picker', [
-                'name' => 'default_ogp_image_id',
-                'value' => $settings['default_ogp_image_id'],
-                'media' => $defaultOgpImage,
-                'help' => __('admin.settings.base.default_ogp_image_help'),
-                'error' => $errors->first('default_ogp_image_id'),
-                'aspectRatio' => 'ogp'
-            ])
+            <x-media-picker
+                name="default_ogp_image_id"
+                :value="$settings['default_ogp_image_id']"
+                :media="$defaultOgpImage"
+                :help="__('admin.settings.base.default_ogp_image_help')"
+                :error="$errors->first('default_ogp_image_id')"
+                aspectRatio="ogp"
+            />
         </fieldset>
 
         <fieldset>
             <legend>{{ __('admin.settings.base.twitter_card_type') }}</legend>
-            @include('components.form.select', [
-                'name' => 'twitter_card_type',
-                'options' => [
+            <x-form.select
+                name="twitter_card_type"
+                :options="[
                     'summary' => __('admin.settings.base.twitter_card_summary'),
                     'summary_large_image' => __('admin.settings.base.twitter_card_summary_large'),
-                ],
-                'value' => old('twitter_card_type', $settings['twitter_card_type']),
-            ])
+                ]"
+                :value="old('twitter_card_type', $settings['twitter_card_type'])"
+            />
             <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.base.twitter_card_type_help') }}</p>
         </fieldset>
 
@@ -98,40 +98,40 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <fieldset>
             <legend>{{ __('admin.settings.base.locale') }}</legend>
-            @include('components.form.select', [
-                'name' => 'locale',
-                'options' => $locales,
-                'value' => old('locale', $settings['locale']),
-                'required' => true,
-            ])
+            <x-form.select
+                name="locale"
+                :options="$locales"
+                :value="old('locale', $settings['locale'])"
+                :required="true"
+            />
         </fieldset>
 
         <fieldset>
             <legend>{{ __('common.timezone') }}</legend>
-            @include('components.form.select', [
-                'name' => 'timezone',
-                'options' => $timezones,
-                'value' => $settings['timezone'],
-            ])
+            <x-form.select
+                name="timezone"
+                :options="$timezones"
+                :value="$settings['timezone']"
+            />
         </fieldset>
 
         <fieldset>
             <legend>{{ __('admin.settings.base.admin_url') }}</legend>
-            @include('components.form.text', [
-                'name' => 'admin_url',
-                'value' => old('admin_url', $settings['admin_url']),
-                'required' => true,
-            ])
+            <x-form.text
+                name="admin_url"
+                :value="old('admin_url', $settings['admin_url'])"
+                :required="true"
+            />
             <p>{!! __('admin.settings.base.admin_url_help') !!}</p>
         </fieldset>
 
         <fieldset>
             <legend>{{ __('admin.settings.base.force_ssl') }}</legend>
-            @include('components.form.checkbox', [
-                'label' => __('admin.settings.base.force_ssl'),
-                'name' => 'force_ssl',
-                'value' => old('force_ssl', $settings['force_ssl']),
-            ])
+            <x-form.checkbox
+                :label="__('admin.settings.base.force_ssl')"
+                name="force_ssl"
+                :value="old('force_ssl', $settings['force_ssl'])"
+            />
             <p>{{ __('admin.settings.base.force_ssl_help') }}</p>
         </fieldset>
     </section>
@@ -142,27 +142,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <fieldset>
             <legend>{{ __('admin.settings.base.maintenance_mode') }}</legend>
-            @include('components.form.hidden', [
-                'name' => 'maintenance_mode',
-                'value' => '0'
-            ])
-            @include('components.form.radio-group', [
-                'name' => 'maintenance_mode',
-                'options' => [
+            <x-form.hidden
+                name="maintenance_mode"
+                value="0"
+            />
+            <x-form.radio-group
+                name="maintenance_mode"
+                :options="[
                     1 => __('common.yes'),
                     0 => __('common.no')
-                ],
-                'value' => $settings['maintenance_mode'],
-            ])
+                ]"
+                :value="$settings['maintenance_mode']"
+            />
         </fieldset>
 
         <fieldset>
             <legend>{{ __('admin.settings.base.maintenance_message') }}</legend>
-            @include('components.form.textarea', [
-                'name' => 'maintenance_message',
-                'value' => old('maintenance_message', $settings['maintenance_message']),
-                'rows' => 3,
-            ])
+            <x-form.textarea
+                name="maintenance_message"
+                :value="old('maintenance_message', $settings['maintenance_message'])"
+                :rows="3"
+            />
             <p>{{ __('admin.settings.base.maintenance_message_help') }}</p>
         </fieldset>
     </section>
@@ -201,19 +201,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- メールサーバー設定の確認メッセージ -->
         @if(!($mailConnectionTested && $mailSendTested && $mailReceiveTested))
-            @include('components.message', [
-                'type' => 'warning',
-                'message' => __('admin.settings.base.admin_email_mail_test_required')
-            ])
+            <x-message
+                type="warning"
+                :message="__('admin.settings.base.admin_email_mail_test_required')"
+            />
         @endif
 
         <fieldset>
             <legend>{{ __('admin.settings.base.admin_email') }}</legend>
-            @include('components.form.text', [
-                'type' => 'email',
-                'name' => 'system_admin_email',
-                'value' => old('system_admin_email', $settings['system_admin_email']),
-            ])
+            <x-form.text
+                type="email"
+                name="system_admin_email"
+                :value="old('system_admin_email', $settings['system_admin_email'])"
+            />
             <p>{{ __('admin.settings.base.admin_email_help') }}</p>
         </fieldset>
     </section>
@@ -224,15 +224,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('save')
     <!-- 保存ボタンとモーダル -->
-    @include('components.save', [
-        'id_confirmation' => 'confirmationModal',
-        'label' => __('common.save'),
-        'title' => __('common.save_confirmation_title'),
-        'message' => __('common.save_confirmation_message'),
-        'confirm_label' => __('common.save'),
-        'cancel_label' => __('common.cancel'),
-        'form' => 'base-settings-form',
-    ])
+    <x-save
+        id_confirmation="confirmationModal"
+        :label="__('common.save')"
+        :title="__('common.save_confirmation_title')"
+        :message="__('common.save_confirmation_message')"
+        :confirm_label="__('common.save')"
+        :cancel_label="__('common.cancel')"
+        form="base-settings-form"
+    />
 @endsection
 
 @section('scripts')

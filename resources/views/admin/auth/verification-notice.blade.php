@@ -36,20 +36,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <div class="mt-4 flex items-center justify-between">
         <form method="POST" action="{{ route('admin.verification.send') }}">
             @csrf
-            @include('components.form.button', [
-                'type' => 'submit',
-                'variant' => 'primary',
-                'label' => __('auth.resend_verification_email')
-            ])
+            <x-form.button
+                type="submit"
+                variant="primary"
+                :label="__('admin.auth.verification.resend_button')"
+            />
         </form>
 
         <form method="POST" action="{{ route('admin.logout') }}">
             @csrf
-            @include('components.form.button', [
-                'type' => 'submit',
-                'variant' => 'secondary',
-                'label' => __('common.logout')
-            ])
+            <x-form.button
+                type="submit"
+                variant="secondary"
+                :label="__('admin.auth.verification.logout_button')"
+            />
         </form>
     </div>
 @endsection

@@ -74,16 +74,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('save')
     <!-- 更新ボタンとモーダル-->
-    @include('components.save', [
-        'id' => 'confirmationModal',
-        'label' => __('common.update'),
-        'onclick' => "openModal('confirmationModal')",
-        'title' => __('admin.settings.members.roles.confirm_title'),
-        'message' => __('admin.settings.members.roles.confirm_message'),
-        'confirm_label' => __('common.update'),
-        'cancel_label' => __('common.cancel'),
-        'form' => 'member-roles-form',
-    ])
+    <x-save
+        id="confirmationModal"
+        :label="__('common.save')"
+        :title="__('common.save_confirmation_title')"
+        :message="__('common.save_confirmation_message')"
+        :confirm_label="__('common.save')"
+        :cancel_label="__('common.cancel')"
+        form="member-roles-form"
+    />
 @endsection
 
 @push('styles')

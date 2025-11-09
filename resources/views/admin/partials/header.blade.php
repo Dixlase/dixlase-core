@@ -38,10 +38,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- Brand/Logo Section -->
         <div class="w-1/3 flex justify-center sm:flex-1 sm:justify-start">
             <a href="{{ route('admin.dashboard') }}" class="flex items-center" aria-label="Go to dashboard">
-                @include('components::application-logo' ,[
-                    'class' => 'text-gray-900 dark:text-white',
-                    'site_name' => $site_name
-                ])
+                <x-application-logo
+                    class="text-gray-900 dark:text-white"
+                    :site_name="$site_name"
+                />
             </a>
 
             <!-- Site Name (Desktop only) -->

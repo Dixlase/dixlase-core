@@ -19,20 +19,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 <!-- 削除ボタン -->
-@include('components::form.button', [
-    'type' => $type,
-    'label' => $label,
-    'class' => $class,
-    'onclick' => "openModal('" . $id_confirmation . "')",
-    'disabled' => $disabled,
-
-])
+<x-form.button
+    type="button"
+    variant="danger"
+    :label="$label ?? __('common.delete')"
+    icon="fas fa-trash-alt"
+    onclick="openModal('{{ $id_confirmation }}')"
+    class="delete-button"
+/>
 
 <!-- 削除モーダル -->
-@include('components.modal', [
-    'id' => $id_confirmation,
-    'title' => $title,
-    'message' => $message,
-    'confirm_label' => $label,
-    'cancel_label' => $cancel_label,
-])
+<x-modal
+    :id="$id_confirmation"
+    :title="$title ?? __('common.delete_confirmation_title')"
+    :message="$message ?? __('common.delete_confirmation_message')"
+    :confirm_label="$label ?? __('common.delete')"
+    :cancel_label="$cancel_label ?? __('common.cancel')"
+    icon_type="danger"
+    confirm_color="red"
+    :form="$form ?? null"
+/>

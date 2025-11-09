@@ -43,10 +43,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @method($formMethod)
         @endif
         @if(isset($member) && $member->id)
-            @include('components::form.hidden', [
-                'name' => 'id',
-                'value' => $member->id,
-            ])
+            <x-form.hidden
+                name="id"
+                :value="$member->id"
+            />
         @endif
 @endif
 
@@ -56,39 +56,39 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <fieldset>
             <legend>{{ __('common.name') }}</legend>
-            @include('components::form.text', [
-                'id' => 'name',
-                'name' => 'name',
-                'value' => old('name', $member->name ?? ''),
-                'required' => true,
-            ])
-            @include('components::form.error', [
-                'messages' => $errors->get('name')
-            ])
+            <x-form.text
+                id="name"
+                name="name"
+                :value="old('name', $member->name ?? '')"
+                :required="true"
+            />
+            <x-form.error
+                :messages="$errors->get('name')"
+            />
         </fieldset>
 
         <fieldset>
             <legend>{{ __('common.description') }}</legend>
             <textarea name="description" id="description" rows="3" 
                 class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded px-3 py-2">{{ old('description', $member->description ?? '') }}</textarea>
-            @include('components::form.error', [
-                'messages' => $errors->get('description')
-            ])
+            <x-form.error
+                :messages="$errors->get('description')"
+            />
         </fieldset>
 
         <fieldset>
             <legend>{{ __('common.email') }}</legend>
-            @include('components::form.text', [
-                'type' => 'email',
-                'id' => 'email',
-                'name' => 'email',
-                'value' => old('email', $member->email ?? ''),
-                'required' => true,
-                'autocomplete' => 'email',
-            ])
-            @include('components::form.error', [
-                'messages' => $errors->get('email')
-            ])
+            <x-form.text
+                type="email"
+                id="email"
+                name="email"
+                :value="old('email', $member->email ?? '')"
+                :required="true"
+                autocomplete="email"
+            />
+            <x-form.error
+                :messages="$errors->get('email')"
+            />
         </fieldset>
 
         {{-- メールアドレス確認フィールド（新規作成時 or 編集時にメールアドレス変更） --}}

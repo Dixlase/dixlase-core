@@ -83,22 +83,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="modal-actions">
             @if(!$hasCustomFooter)
                 {{-- 標準フッター --}}
-                @include('components::form.button', [
-                    'type' => 'button',
-                    'label' => $cancel_label,
-                    'variant' => 'secondary',
-                    'onclick' => "closeModal('$id')",
-                    'class' => 'mx-2',
-                    'id' => null
-                ])
-                @include('components::form.button', [
-                    'type' => 'button',
-                    'label' => $confirm_label,
-                    'variant' => $confirm_color === 'blue' ? 'primary' : ($confirm_color === 'red' ? 'danger' : ($confirm_color === 'yellow' ? 'warning' : ($confirm_color === 'green' ? 'success' : 'primary'))),
-                    'onclick' => $form ? "submitModalForm('$form')" : null,
-                    'class' => 'mx-2',
-                    'id' => null
-                ])
+                <x-form.button
+                    type="button"
+                    variant="secondary"
+                    :label="$cancel_label ?? __('common.cancel')"
+                    onclick="closeModal('{{ $id }}')"
+                    class="mx-2"
+                />
+                <x-form.button
+                    :type="$form ? 'submit' : 'button'"
+                    :variant="$confirm_variant ?? 'primary'"
+                    :label="$confirm_label ?? __('common.confirm')"
+                    class="mx-2"
+                />
             @else
                 {{-- カスタムフッター --}}
                 {{ $footer }}

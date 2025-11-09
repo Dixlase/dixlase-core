@@ -26,11 +26,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('content')
-    @include('components.auth.forgot-password', [
-        'action' => route('admin.password.email'),
-        'emailLabel' => __('admin.auth.forgot_password.email'),
-        'submitText' => __('admin.auth.forgot_password.send_reset_link')
-    ])
+    <x-auth.forgot-password
+        :route="route('admin.password.email')"
+        :loginRoute="route('admin.login')"
+    />
 @endsection
 
 @section('back_link')

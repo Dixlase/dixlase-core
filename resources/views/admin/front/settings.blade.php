@@ -37,11 +37,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <fieldset>
                 <legend>{{ __('admin.settings.front.front_description') }}</legend>
-                @include('components.form.textarea', [
-                    'name' => 'front_description',
-                    'value' => old('front_description', $settings['front_description']),
-                    'rows' => 3,
-                ])
+                <x-form.textarea
+                    name="front_description"
+                    :value="old('front_description', $settings['front_description'])"
+                    :rows="3"
+                    :placeholder="__('admin.settings.front.front_description_placeholder')"
+                />
+                @error('front_description')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
                 <p>{!! __('admin.settings.front.front_description_help') !!}</p>
             </fieldset>
         </section>
@@ -52,14 +56,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <fieldset>
                 <legend>{{ __('admin.settings.front.front_ogp_image') }}</legend>
-                @include('components.media-picker', [
-                    'name' => 'front_ogp_image_id',
-                    'value' => $settings['front_ogp_image_id'],
-                    'media' => $frontOgpImage,
-                    'help' => __('admin.settings.front.front_ogp_image_help'),
-                    'error' => $errors->first('front_ogp_image_id'),
-                    'aspectRatio' => 'ogp'
-                ])
+                <x-media-picker
+                    name="front_ogp_image_id"
+                    :value="$settings['front_ogp_image_id']"
+                    :media="$frontOgpImage"
+                    :aspectRatio="'ogp'"
+                />
+                @error('front_ogp_image_id')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+                <p>{!! __('admin.settings.front.front_ogp_image_help') !!}</p>
             </fieldset>
         </section>
     </form>
@@ -68,13 +74,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('save')
     <!-- 保存ボタンとモーダル -->
-    @include('components.save', [
-        'id_confirmation' => 'frontSettingsConfirmationModal',
-        'label' => __('common.save'),
-        'title' => __('admin.settings.front.save_confirmation_title'),
-        'message' => __('admin.settings.front.save_confirmation_message'),
-        'confirm_label' => __('common.save'),
-        'cancel_label' => __('common.cancel'),
-        'form' => 'front-settings-form',
-    ])
+    <x-save
+        id_confirmation="frontSettingsConfirmationModal"
+        :label="__('common.save')"
+        :title="__('admin.settings.front.save_confirmation_title')"
+        :message="__('admin.settings.front.save_confirmation_message')"
+        :confirm_label="__('common.save')"
+        :cancel_label="__('common.cancel')"
+        form="front-settings-form"
+    />
 @endsection

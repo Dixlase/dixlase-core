@@ -25,16 +25,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- Success/Error Messages -->
     @if(session('success'))
         @include('components.message', [
-            'type' => 'success',
-            'message' => session('success')
-        ])
     @endif
 
     @if(session('error'))
-        @include('components.message', [
-            'type' => 'error',
-            'message' => session('error')
-        ])
+        <x-message
+            type="error"
+            :message="session('error')"
+        />
     @endif
 
     <!-- Log Type Selection -->

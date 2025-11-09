@@ -78,13 +78,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
             
             <div class="flex justify-center md:justify-end flex-shrink-0">
-                @include('components::form.button', [
-                    'type' => 'button',
-                    'label' => __('admin.settings.systems.database.cleanup_button'),
-                    'variant' => 'danger',
-                    'icon' => 'fas fa-database',
-                    'onclick' => "openModal('cleanupModal" . ucfirst($type) . "')"
-                ])
+                <x-form.button
+                    type="button"
+                    variant="danger"
+                    :label="__('admin.settings.systems.database.cleanup_button')"
+                    icon="fas fa-database"
+                    onclick="openModal('cleanupModal" . ucfirst($type) . "')"
+                />
             </div>
         </section>
     @endforeach
@@ -119,13 +119,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
         
         <div class="flex-shrink-0">
-            @include('components::form.button', [
-                'type' => 'button',
-                'label' => __('admin.settings.systems.database.all_cleanup_button'),
-                'variant' => 'danger',
-                'icon' => 'fas fa-trash-alt',
-                'onclick' => "openModal('cleanupAllModal')"
-            ])
+            <x-form.button
+                type="button"
+                variant="danger"
+                :label="__('admin.settings.systems.database.all_cleanup_button')"
+                icon="fas fa-trash-alt"
+                onclick="openModal('cleanupAllModal')"
+            />
         </div>
     </section>
 
@@ -162,9 +162,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 </section>
 </div>
 
-@include('components::message', [
-    'type' => 'info',
-    'message' => '
+<x-message
+    type="info"
+    :message="'
         <h3 class="text-lg font-semibold mb-3">' . __('admin.settings.systems.database.info_panel.title') . '</h3>
         <ul class="text-sm space-y-2">
             <li>• ' . __('admin.settings.systems.database.info_panel.notes.irreversible') . '</li>
@@ -172,31 +172,31 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <li>• ' . __('admin.settings.systems.database.info_panel.notes.production') . '</li>
             <li>• ' . __('admin.settings.systems.database.info_panel.notes.defaults') . '</li>
         </ul>
-    '
-])
+    '"
+/>
 
 @endsection
 
 @foreach($cleanupInfo as $type => $info)
-@include('components.modal', [
-    'id' => 'cleanupModal' . ucfirst($type),
-    'title' => __('admin.settings.systems.database.modal.title'),
-    'message' => __('admin.settings.systems.database.modal.message_single', ['name' => $info['name']]),
-    'confirm_label' => __('common.execute'),
-    'cancel_label' => __('common.cancel'),
-    'icon_type' => 'danger',
-    'confirm_color' => 'red',
-    'form' => 'cleanupForm' . ucfirst($type)
-])
+<x-modal
+    id="cleanupModal{{ ucfirst($type) }}"
+    title="{{ __('admin.settings.systems.database.modal.title') }}"
+    message="{{ __('admin.settings.systems.database.modal.message_single', ['name' => $info['name']]) }}"
+    confirm-label="{{ __('common.execute') }}"
+    cancel-label="{{ __('common.cancel') }}"
+    icon-type="danger"
+    confirm-color="red"
+    form="cleanupForm{{ ucfirst($type) }}"
+/>
 @endforeach
 
-@include('components.modal', [
-    'id' => 'cleanupAllModal',
-    'title' => __('admin.settings.systems.database.modal.title'),
-    'message' => __('admin.settings.systems.database.modal.message_all'),
-    'confirm_label' => __('common.execute'),
-    'cancel_label' => __('common.cancel'),
-    'icon_type' => 'danger',
-    'confirm_color' => 'red',
-    'form' => 'cleanupAllForm'
-])
+<x-modal
+    id="cleanupAllModal"
+    title="{{ __('admin.settings.systems.database.modal.title') }}"
+    message="{{ __('admin.settings.systems.database.modal.message_all') }}"
+    confirm-label="{{ __('common.execute') }}"
+    cancel-label="{{ __('common.cancel') }}"
+    icon-type="danger"
+    confirm-color="red"
+    form="cleanupAllForm"
+/>

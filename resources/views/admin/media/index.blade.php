@@ -23,13 +23,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 <div class="max-w-4xl mx-auto">
     <div class="flex justify-end mb-4">
-        @include('components.form.button', [
-            'type' => 'link',
-            'href' => route('admin.media.upload'),
-            'label' => __('admin.media.index.upload_new_file'),
-            'variant' => 'primary',
-            'icon' => 'fas fa-plus'
-        ])
+        <x-form.button
+            type="link"
+            :href="route('admin.media.upload')"
+            :label="__('admin.media.index.upload_new_file')"
+            variant="primary"
+            icon="fas fa-plus"
+        />
     </div>
 
     <!-- 検索フォーム -->
@@ -37,67 +37,67 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <form method="GET" action="{{ route('admin.media.index') }}">
             <fieldset>
                 <legend>{{ __('common.file_name') }}</legend>
-                @include('components.form.text', [
-                    'type' => 'text',
-                    'id' => 'search',
-                    'name' => 'search',
-                    'value' => $search ?? '',
-                    'placeholder' => __('admin.media.search.file_name_placeholder'),
-                ])
+                <x-form.text
+                    type="text"
+                    id="search"
+                    name="search"
+                    :value="$search ?? ''"
+                    :placeholder="__('admin.media.search.file_name_placeholder')"
+                />
             </fieldset>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                 <fieldset>
                     <legend>{{ __('common.file_type') }}</legend>
-                    @include('components.form.select', [
-                        'id' => 'file_type',
-                        'name' => 'file_type',
-                        'options' => [
+                    <x-form.select
+                        id="file_type"
+                        name="file_type"
+                        :options="[
                             '' => 'common.all',
                             'image' => 'admin.media.types.image',
                             'video' => 'admin.media.types.video',
                             'audio' => 'admin.media.types.audio',
                             'document' => 'admin.media.types.document',
-                        ],
-                        'value' => $fileType ?? '',
-                    ])
+                        ]"
+                        :value="$fileType ?? ''"
+                    />
                 </fieldset>
 
                 <fieldset>
                     <legend>{{ __('admin.media.search.date_from') }}</legend>
-                    @include('components.form.text', [
-                        'type' => 'date',
-                        'id' => 'date_from',
-                        'name' => 'date_from',
-                        'value' => $dateFrom ?? '',
-                    ])
+                    <x-form.text
+                        type="date"
+                        id="date_from"
+                        name="date_from"
+                        :value="$dateFrom ?? ''"
+                    />
                 </fieldset>
 
                 <fieldset>
                     <legend>{{ __('admin.media.search.date_to') }}</legend>
-                    @include('components.form.text', [
-                        'type' => 'date',
-                        'id' => 'date_to',
-                        'name' => 'date_to',
-                        'value' => $dateTo ?? '',
-                    ])
+                    <x-form.text
+                        type="date"
+                        id="date_to"
+                        name="date_to"
+                        :value="$dateTo ?? ''"
+                    />
                 </fieldset>
             </div>
 
             <div class="flex flex-col sm:flex-row gap-2">
-                @include('components.form.button', [
-                    'type' => 'submit',
-                    'variant' => 'primary',
-                    'label' => __('common.search'),
-                    'icon' => 'fas fa-search',
-                ])
+                <x-form.button
+                    type="submit"
+                    variant="primary"
+                    :label="__('common.search')"
+                    icon="fas fa-search"
+                />
                 
-                @include('components.form.button', [
-                    'type' => 'button',
-                    'variant' => 'secondary',
-                    'label' => __('common.reset'),
-                    'icon' => 'fas fa-redo',
-                    'onclick' => "window.location.href='" . route('admin.media.index') . "'",
-                ])
+                <x-form.button
+                    type="button"
+                    variant="secondary"
+                    :label="__('common.reset')"
+                    icon="fas fa-redo"
+                    :onclick="\"window.location.href='\" . route('admin.media.index') . \"'\""
+                />
             </div>
         </form>
     </section>
@@ -105,33 +105,33 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 上部のページネーションと表示件数設定 -->
     @if($media->hasPages() || $media->count() > 0)
         <div class="media-controls">
-            @include('components.pagination-controls', [
-                'paginator' => $media,
-                'perPageOptions' => [10, 25, 50, 100],
-                'currentPerPage' => request('per_page', 25),
-                'totalLabel' => 'components.pagination.total_count',
-                'perPageLabel' => 'components.pagination.per_page_label',
-                'showSort' => true,
-                'sortOptions' => [
+            <x-pagination-controls
+                :paginator="$media"
+                :perPageOptions="[10, 25, 50, 100]"
+                :currentPerPage="request('per_page', 25)"
+                totalLabel="components.pagination.total_count"
+                perPageLabel="components.pagination.per_page_label"
+                :showSort="true"
+                :sortOptions="[
                     'name' => __('common.file_name'),
                     'type' => __('common.file_type'),
                     'created_at' => __('common.created_at'),
                     'updated_at' => __('common.updated_at'),
-                ],
-                'currentSort' => $currentSort ?? 'created_at',
-                'currentOrder' => $currentOrder ?? 'desc',
-            ])
+                ]"
+                :currentSort="$currentSort ?? 'created_at'"
+                :currentOrder="$currentOrder ?? 'desc'"
+            />
             
-            @include('components.pagination', [
-                'pagination' => [
+            <x-pagination
+                :pagination="[
                     'current_page' => $media->currentPage(),
                     'last_page' => $media->lastPage(),
                     'prev_page' => $media->currentPage() > 1 ? $media->currentPage() - 1 : null,
                     'next_page' => $media->hasMorePages() ? $media->currentPage() + 1 : null,
-                ],
-                'route' => 'admin.media.index',
-                'routeParams' => request()->except('page')
-            ])
+                ]"
+                route="admin.media.index"
+                :routeParams="request()->except('page')"
+            />
         </div>
     @endif
 
@@ -157,30 +157,30 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 下部のページネーション -->
     @if($media->hasPages())
         <div class="media-controls media-controls--bottom">
-            @include('components.pagination', [
-                'pagination' => [
+            <x-pagination
+                :pagination="[
                     'current_page' => $media->currentPage(),
                     'last_page' => $media->lastPage(),
                     'prev_page' => $media->currentPage() > 1 ? $media->currentPage() - 1 : null,
                     'next_page' => $media->hasMorePages() ? $media->currentPage() + 1 : null,
-                ],
-                'route' => 'admin.media.index',
-                'routeParams' => request()->except('page')
-            ])
+                ]"
+                route="admin.media.index"
+                :routeParams="request()->except('page')"
+            />
         </div>
     @endif
 
 <!-- 削除確認モーダル -->
-@include('components.modal', [
-    'id' => 'deleteModal',
-    'title' => __('admin.media.preview.delete_confirmation'),
-    'message' => '',
-    'confirm_label' => __('common.delete'),
-    'cancel_label' => __('common.cancel'),
-    'icon_type' => 'danger',
-    'confirm_color' => 'red',
-    'form' => 'deleteForm'
-])
+<x-modal
+    id="deleteModal"
+    :title="__('admin.media.preview.delete_confirmation')"
+    message=""
+    :confirm_label="__('common.delete')"
+    :cancel_label="__('common.cancel')"
+    icon_type="danger"
+    confirm_color="red"
+    form="deleteForm"
+/>
 
 <!-- 削除用フォーム -->
 <form id="deleteForm" method="POST" style="display: none;">

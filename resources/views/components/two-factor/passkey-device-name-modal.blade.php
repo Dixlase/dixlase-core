@@ -58,22 +58,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
         
         <div class="modal-actions">
-            @include('components::form.button', [
-                'type' => 'button',
-                'label' => $cancelLabel ?? __('common.cancel'),
-                'variant' => 'secondary',
-                'onclick' => "window.PasskeyDeviceNameModal.cancel('$modalId')",
-                'class' => 'mx-2',
-                'id' => null
-            ])
-            @include('components::form.button', [
-                'type' => 'button',
-                'label' => $confirmLabel ?? __('common.ok'),
-                'variant' => 'primary',
-                'onclick' => "window.PasskeyDeviceNameModal.confirm('$modalId')",
-                'class' => 'mx-2',
-                'id' => null
-            ])
+            <x-form.button
+                type="button"
+                variant="secondary"
+                :label="$cancelLabel ?? __('common.cancel')"
+                onclick="window.PasskeyDeviceNameModal.cancel('{{ $modalId }}')"
+            />
+            <x-form.button
+                type="button"
+                variant="primary"
+                :label="$confirmLabel ?? __('common.ok')"
+                onclick="window.PasskeyDeviceNameModal.confirm('{{ $modalId }}')"
+            />
         </div>
     </div>
 </div>

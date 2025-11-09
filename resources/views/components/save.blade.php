@@ -37,26 +37,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 ])
 
 <!-- {{ __('common.save') }} -->
-@include('components::form.button', [
-    'type' => $type,
-    'label' => $label,
-    'disabled' => $disabled,
-    'onclick' => $onclick ?? "openModal('" . $id_confirmation . "')",
-    'form' => $form,
-    'variant' => 'primary',
-    'id' => null,
-])
+<x-form.button
+    type="button"
+    variant="primary"
+    :label="$label ?? __('common.save')"
+    icon="fas fa-save"
+    onclick="openModal('{{ $id_confirmation }}')"
+    class="save-button"
+/>
 
 <!-- {{ __('common.save_confirmation_title') }} -->
 @push('modals')
-    @include('components.modal', [
-        'id' => $id_confirmation,
-        'title' => $title,
-        'message' => $message,
-        'confirm_label' => $confirm_label,
-        'cancel_label' => $cancel_label,
-        'form' => $form,
-    ])
+    <x-modal
+        :id="$id_confirmation"
+        :title="$title ?? __('common.save_confirmation_title')"
+        :message="$message ?? __('common.save_confirmation_message')"
+        :confirm_label="$confirm_label ?? __('common.save')"
+        :cancel_label="$cancel_label ?? __('common.cancel')"
+        :form="$form ?? null"
+    />
 @endpush
-
-

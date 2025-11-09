@@ -45,7 +45,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {!! load_active_assets() !!}
 
         {{-- 通知コンポーネント（他のスクリプトより先に読み込み） --}}
-        @include('components.notification')
+        <x-notification />
 
     </head>
     <body class="admin font-sans antialiased transition-colors-unified dark:bg-black dark:text-white"
@@ -76,7 +76,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     <!-- Page Content -->
                     <article class="w-full px-6 lg:px-8 pb-8">
-                        @include('components::flash-message')
+                        <x-flash-message />
                         @yield('content')
                     </article>
 

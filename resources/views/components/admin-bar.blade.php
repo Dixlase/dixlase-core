@@ -12,11 +12,11 @@
             <div class="flex items-center {{ $isAdminLayout ? '' : 'space-x-4' }}">
                 {{-- サイト名/ロゴ --}}
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-2 hover:opacity-80 transition-opacity {{ $isAdminLayout ? 'mr-4' : '' }}">
-                    @include('components::application-logo', [
-                        'class' => 'text-white flex-shrink-0',
-                        'site_name' => config('app.name'),
-                        'size' => 'h-6 w-6'
-                    ])
+                    <x-application-logo
+                        class="text-gray-900 dark:text-white"
+                        :site_name="config('app.name')"
+                        size="h-6 w-6"
+                    />
                     <span class="font-semibold hidden sm:inline">{{ config('app.name') }}</span>
                 </a>
 
