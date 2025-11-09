@@ -174,16 +174,16 @@ document.addEventListener('DOMContentLoaded', function() {
             class="w-full mail-setting-input"
         />
     @else
-        @include('components::form.label', [
-            'for' => 'mail_mailer',
-            'text' => __('mail.server_settings.mailer'),
-        ])
-        @include('components::form.select', [
-            'id' => 'mail_mailer',
-            'name' => 'mail_mailer',
-            'options' => $mailers,
-            'value' => old('mail_mailer', $settings['mail_mailer']),
-        ])
+        <x-form.label
+            for="mail_mailer"
+            :text="__('mail.server_settings.mailer')"
+        />
+        <x-form.select
+            id="mail_mailer"
+            name="mail_mailer"
+            :options="$mailers"
+            :value="old('mail_mailer', $settings['mail_mailer'])"
+        />
     @endif
 </div>
 
@@ -198,15 +198,15 @@ document.addEventListener('DOMContentLoaded', function() {
             class="mail-setting-input"
         />
     @else
-        @include('components::form.label', [
-            'for' => 'mail_host',
-            'text' => __('mail.server_settings.mail_host'),
-        ])
-        @include('components::form.text', [
-            'id' => 'mail_host',
-            'name' => 'mail_host',
-            'value' => old('mail_host', $settings['mail_host']),
-        ])
+        <x-form.label
+            for="mail_host"
+            :text="__('mail.server_settings.mail_host')"
+        />
+        <x-form.text
+            id="mail_host"
+            name="mail_host"
+            :value="old('mail_host', $settings['mail_host'])"
+        />
     @endif
 </div>
 
@@ -222,15 +222,15 @@ document.addEventListener('DOMContentLoaded', function() {
             class="mail-setting-input"
         />
     @else
-        @include('components::form.label', [
-            'for' => 'mail_port',
-            'text' => __('mail.server_settings.mail_port'),
-        ])
-        @include('components::form.text', [
-            'id' => 'mail_port',
-            'name' => 'mail_port',
-            'value' => old('mail_port', $settings['mail_port']),
-        ])
+        <x-form.label
+            for="mail_port"
+            :text="__('mail.server_settings.mail_port')"
+        />
+        <x-form.text
+            id="mail_port"
+            name="mail_port"
+            :value="old('mail_port', $settings['mail_port'])"
+        />
     @endif
 </div>
 
@@ -245,15 +245,15 @@ document.addEventListener('DOMContentLoaded', function() {
             class="mail-setting-input"
         />
     @else
-        @include('components::form.label', [
-            'for' => 'mail_username',
-            'text' => __('mail.server_settings.mail_username'),
-        ])
-        @include('components::form.text', [
-            'id' => 'mail_username',
-            'name' => 'mail_username',
-            'value' => old('mail_username', $settings['mail_username']),
-        ])
+        <x-form.label
+            for="mail_username"
+            :text="__('mail.server_settings.mail_username')"
+        />
+        <x-form.text
+            id="mail_username"
+            name="mail_username"
+            :value="old('mail_username', $settings['mail_username'])"
+        />
     @endif
 </div>
 
@@ -269,15 +269,15 @@ document.addEventListener('DOMContentLoaded', function() {
             class="mail-setting-input"
         />
     @else
-        @include('components::form.label', [
-            'for' => 'mail_password',
-            'text' => __('mail.server_settings.mail_password'),
-        ])
-        @include('components::form.text', [
-            'id' => 'mail_password',
-            'name' => 'mail_password',
-            'value' => old('mail_password', $settings['mail_password']),
-        ])
+        <x-form.label
+            for="mail_password"
+            :text="__('mail.server_settings.mail_password')"
+        />
+        <x-form.text
+            id="mail_password"
+            name="mail_password"
+            :value="old('mail_password', $settings['mail_password'])"
+        />
     @endif
 </div>
 
@@ -293,16 +293,16 @@ document.addEventListener('DOMContentLoaded', function() {
             class="w-full mail-setting-input"
         />
     @else
-        @include('components::form.label', [
-            'for' => 'mail_encryption',
-            'text' => __('mail.server_settings.mail_encryption'),
-        ])
-        @include('components::form.select', [
-            'id' => 'mail_encryption',
-            'name' => 'mail_encryption',
-            'options' => $encryptions,
-            'value' => old('mail_encryption', $settings['mail_encryption']),
-        ])
+        <x-form.label
+            for="mail_encryption"
+            :text="__('mail.server_settings.mail_encryption')"
+        />
+        <x-form.select
+            id="mail_encryption"
+            name="mail_encryption"
+            :options="$encryptions"
+            :value="old('mail_encryption', $settings['mail_encryption'])"
+        />
     @endif
 </div>
 
@@ -318,14 +318,14 @@ document.addEventListener('DOMContentLoaded', function() {
             class="mail-setting-input"
         />
     @else
-        @include('components::form.label', [
-            'for' => 'mail_from_address',
-            'text' => __('mail.server_settings.mail_from_address'),
-        ])
-        @include('components::form.text', [
-            'id' => 'mail_from_address',
-            'name' => 'mail_from_address',
-            'value' => old('mail_from_address', $settings['mail_from_address']),
-        ])
+        <x-form.label
+            for="mail_from_address"
+            :text="__('mail.server_settings.mail_from_address')"
+        />
+        <x-form.text
+            id="mail_from_address"
+            name="mail_from_address"
+            :value="old('mail_from_address', $settings['mail_from_address'])"
+        />
     @endif
 </div>
