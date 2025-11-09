@@ -39,7 +39,8 @@ CLAUDE.md
 custom/*
 
 # プラグインとテーマのディレクトリを除外
-# 個別のプラグイン/テーマは .git/info/exclude で追跡対象に戻します
+# 各プラグイン/テーマは個別のリポジトリとして管理
+# SourceTreeでは .git/info/exclude の設定により追跡可能
 plugins/*
 themes/*
 
