@@ -41,18 +41,25 @@ use App\Enums\MemberStatus;
 use Illuminate\Support\Facades\Hash;
 use App\Helpers\AdminHelper;
 use App\Services\MailServerValidatorService;
+use App\Contracts\Repositories\MemberSettingRepositoryInterface;
 
 
 
 
 class AdminMembersSettingsController extends AdminLoggedInController
 {
+    /**
+     * メンバー設定リポジトリ
+     */
+    protected MemberSettingRepositoryInterface $memberSettingRepository;
 
-    //初期設定を行う
-    public function __construct()
+    /**
+     * コンストラクタ
+     */
+    public function __construct(MemberSettingRepositoryInterface $memberSettingRepository)
     {
-        // 親クラスのコンストラクタを呼び出す
         parent::__construct();
+        $this->memberSettingRepository = $memberSettingRepository;
     }
     /**
      * Display a listing of the resource.
@@ -169,13 +176,13 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['requirePassword'] = true;
 
         // パスワード設定を取得
-        $this->viewParams['passwordMinLength'] = (int) MemberSetting::getValue('password_min_length', 8);
-        $this->viewParams['passwordRequireUppercase'] = (bool) MemberSetting::getValue('password_require_uppercase', true);
-        $this->viewParams['passwordRequireNumber'] = (bool) MemberSetting::getValue('password_require_number', true);
-        $this->viewParams['passwordRequireSymbol'] = (bool) MemberSetting::getValue('password_require_symbol', true);
+        $this->viewParams['passwordMinLength'] = (int) $this->memberSettingRepository->get('password_min_length', 8);
+        $this->viewParams['passwordRequireUppercase'] = (bool) $this->memberSettingRepository->get('password_require_uppercase', true);
+        $this->viewParams['passwordRequireNumber'] = (bool) $this->memberSettingRepository->get('password_require_number', true);
+        $this->viewParams['passwordRequireSymbol'] = (bool) $this->memberSettingRepository->get('password_require_symbol', true);
 
         // ログイン通知設定
-        $loginNotificationMode = (int) MemberSetting::getValue('login_notification_mode', LoginNotificationMode::UseProfileSetting->value);
+        $loginNotificationMode = (int) $this->memberSettingRepository->get('login_notification_mode', LoginNotificationMode::UseProfileSetting->value);
         $this->viewParams['loginNotificationMode'] = $loginNotificationMode;
         
         // ログイン通知設定のラベルを取得（全体設定が固定されている場合に表示用）
@@ -183,7 +190,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['loginNotificationModeLabel'] = $loginNotificationEnum ? $loginNotificationEnum->label() : '';
 
         // 二段階認証設定
-        $force2fa = (int) MemberSetting::getValue('force_2fa', TwoFactorMode::Disabled->value);
+        $force2fa = (int) $this->memberSettingRepository->get('force_2fa', TwoFactorMode::Disabled->value);
         $this->viewParams['force2fa'] = $force2fa;
         
         // 二段階認証設定のラベルを取得（全体設定が固定されている場合に表示用）
@@ -191,7 +198,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['twoFactorModeLabel'] = $twoFactorEnum ? $twoFactorEnum->label() : '';
         
         // 有効な二段階認証方法を取得
-        $enabledTwoFactorMethodsString = MemberSetting::getValue('enabled_two_factor_methods', (string)TwoFactorMethod::EMAIL->value);
+        $enabledTwoFactorMethodsString = $this->memberSettingRepository->get('enabled_two_factor_methods', (string)TwoFactorMethod::EMAIL->value);
         $enabledTwoFactorMethods = ($enabledTwoFactorMethodsString !== null && $enabledTwoFactorMethodsString !== '') ? explode(',', $enabledTwoFactorMethodsString) : [];
         
         // 二段階認証方法の選択肢を作成（翻訳キー版）
@@ -206,7 +213,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         }
         
         $this->viewParams['enabledTwoFactorMethods'] = $twoFactorMethodOptions;
-        $this->viewParams['defaultTwoFactorMethod'] = (int) MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value);
+        $this->viewParams['defaultTwoFactorMethod'] = (int) $this->memberSettingRepository->get('default_two_factor_method', TwoFactorMethod::EMAIL->value);
 
         // 二段階認証モード設定
         $this->viewParams['twoFactorMode'] = TwoFactorMode::from($this->viewParams['force2fa']);
@@ -312,13 +319,13 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['requirePassword'] = false;
 
         // パスワード設定を取得
-        $this->viewParams['passwordMinLength'] = (int) MemberSetting::getValue('password_min_length', 8);
-        $this->viewParams['passwordRequireUppercase'] = (bool) MemberSetting::getValue('password_require_uppercase', true);
-        $this->viewParams['passwordRequireNumber'] = (bool) MemberSetting::getValue('password_require_number', true);
-        $this->viewParams['passwordRequireSymbol'] = (bool) MemberSetting::getValue('password_require_symbol', true);
+        $this->viewParams['passwordMinLength'] = (int) $this->memberSettingRepository->get('password_min_length', 8);
+        $this->viewParams['passwordRequireUppercase'] = (bool) $this->memberSettingRepository->get('password_require_uppercase', true);
+        $this->viewParams['passwordRequireNumber'] = (bool) $this->memberSettingRepository->get('password_require_number', true);
+        $this->viewParams['passwordRequireSymbol'] = (bool) $this->memberSettingRepository->get('password_require_symbol', true);
 
         // ログイン通知設定
-        $loginNotificationMode = (int) MemberSetting::getValue('login_notification_mode', LoginNotificationMode::UseProfileSetting->value);
+        $loginNotificationMode = (int) $this->memberSettingRepository->get('login_notification_mode', LoginNotificationMode::UseProfileSetting->value);
         $this->viewParams['loginNotificationMode'] = $loginNotificationMode;
         
         // ログイン通知設定のラベルを取得（全体設定が固定されている場合に表示用）
@@ -326,7 +333,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['loginNotificationModeLabel'] = $loginNotificationEnum ? $loginNotificationEnum->label() : '';
 
         // 二段階認証設定
-        $force2fa = (int) MemberSetting::getValue('force_2fa', TwoFactorMode::Disabled->value);
+        $force2fa = (int) $this->memberSettingRepository->get('force_2fa', TwoFactorMode::Disabled->value);
         $this->viewParams['force2fa'] = $force2fa;
         
         // 二段階認証設定のラベルを取得（全体設定が固定されている場合に表示用）
@@ -334,7 +341,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['twoFactorModeLabel'] = $twoFactorEnum ? $twoFactorEnum->label() : '';
         
         // 有効な二段階認証方法を取得
-        $enabledTwoFactorMethodsString = MemberSetting::getValue('enabled_two_factor_methods', (string)TwoFactorMethod::EMAIL->value);
+        $enabledTwoFactorMethodsString = $this->memberSettingRepository->get('enabled_two_factor_methods', (string)TwoFactorMethod::EMAIL->value);
         $enabledTwoFactorMethods = ($enabledTwoFactorMethodsString !== null && $enabledTwoFactorMethodsString !== '') ? explode(',', $enabledTwoFactorMethodsString) : [];
         
         // 二段階認証方法の選択肢を作成（翻訳キー版）
@@ -349,7 +356,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         }
         
         $this->viewParams['enabledTwoFactorMethods'] = $twoFactorMethodOptions;
-        $this->viewParams['defaultTwoFactorMethod'] = (int) MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value);
+        $this->viewParams['defaultTwoFactorMethod'] = (int) $this->memberSettingRepository->get('default_two_factor_method', TwoFactorMethod::EMAIL->value);
 
         // 二段階認証モード設定
         $this->viewParams['twoFactorMode'] = TwoFactorMode::from($this->viewParams['force2fa']);
@@ -359,7 +366,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['isMailServerTested'] = $this->isMailServerTested();
 
         // Passkeyデバイス一覧を取得
-        $passkeyEnabled = MemberSetting::getValue('enabled_2fa_passkey', '0') === '1';
+        $passkeyEnabled = $this->memberSettingRepository->get('enabled_2fa_passkey', '0') === '1';
         $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
         $this->viewParams['passkeyDevices'] = $passkeyService->getDevices($member);
         $this->viewParams['passkeyEnabled'] = $passkeyEnabled;
@@ -662,10 +669,10 @@ class AdminMembersSettingsController extends AdminLoggedInController
     {
 
         // 既存の設定を取得
-        $passwordMinLength = (int) MemberSetting::getValue('password_min_length', 8);
-        $passwordRequireUppercase = (bool) MemberSetting::getValue('password_require_uppercase', true);
-        $passwordRequireNumber = (bool) MemberSetting::getValue('password_require_number', true);
-        $passwordRequireSymbol = (bool) MemberSetting::getValue('password_require_symbol', true);
+        $passwordMinLength = (int) $this->memberSettingRepository->get('password_min_length', 8);
+        $passwordRequireUppercase = (bool) $this->memberSettingRepository->get('password_require_uppercase', true);
+        $passwordRequireNumber = (bool) $this->memberSettingRepository->get('password_require_number', true);
+        $passwordRequireSymbol = (bool) $this->memberSettingRepository->get('password_require_symbol', true);
         
         // パスワード条件設定の選択肢を準備
         $minLengthOptions = collect(__('admin.settings.members.settings.password_min_length_options'))
@@ -713,13 +720,13 @@ class AdminMembersSettingsController extends AdminLoggedInController
         ];
 
         // ログイン通知設定
-        $loginNotification = (int) MemberSetting::getValue('login_notification_mode', LoginNotificationMode::UseProfileSetting->value);
+        $loginNotification = (int) $this->memberSettingRepository->get('login_notification_mode', LoginNotificationMode::UseProfileSetting->value);
         $loginNotificationGlobalOptions = collect(config('admin.global_login_notification_mail_mode'))
             ->mapWithKeys(fn ($value) => [$value => __('common.login_notification_mode.options.' . $value)])
             ->toArray();
 
         // 二段階認証設定
-        $force2fa = (int) MemberSetting::getValue('force_2fa', TwoFactorMode::Disabled->value);
+        $force2fa = (int) $this->memberSettingRepository->get('force_2fa', TwoFactorMode::Disabled->value);
         
         // old() の値がある場合はそれを優先（バリデーションエラー後の再表示時）
         if (old('force_2fa') !== null) {
@@ -732,7 +739,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         
         // Passkey有効/無効設定を取得
         // メール認証は常に有効なので設定不要
-        $passkeyDbValue = MemberSetting::getValue('enabled_2fa_passkey', '0');
+        $passkeyDbValue = $this->memberSettingRepository->get('enabled_2fa_passkey', '0');
         $passkeyEnabled = $passkeyDbValue === '1';
         
         // old() の値がある場合はそれを優先（バリデーションエラー後の再表示時）
@@ -741,35 +748,35 @@ class AdminMembersSettingsController extends AdminLoggedInController
         }
 
         // パスワードリセット機能設定
-        $passwordResetEnabled = (bool) MemberSetting::getValue('password_reset_enabled', true);
+        $passwordResetEnabled = (bool) $this->memberSettingRepository->get('password_reset_enabled', true);
 
         // パスワード辞書攻撃対策設定
-        $pwnedPasswordCheckEnabled = (bool) MemberSetting::getValue('pwned_password_check_enabled', false);
+        $pwnedPasswordCheckEnabled = (bool) $this->memberSettingRepository->get('pwned_password_check_enabled', false);
 
         // ログイン試行制限設定
-        $loginAttemptLimitEnabled = (bool) MemberSetting::getValue('login_attempt_limit_enabled', false);
-        $loginAttemptMaxAttempts = (int) MemberSetting::getValue('login_attempt_max_attempts', 5);
-        $loginAttemptTimeWindow = (int) MemberSetting::getValue('login_attempt_time_window', 15);
-        $loginAttemptLockoutDuration = (int) MemberSetting::getValue('login_attempt_lockout_duration', 30);
-        $lockoutNotificationEnabled = (bool) MemberSetting::getValue('lockout_notification_enabled', true);
+        $loginAttemptLimitEnabled = (bool) $this->memberSettingRepository->get('login_attempt_limit_enabled', false);
+        $loginAttemptMaxAttempts = (int) $this->memberSettingRepository->get('login_attempt_max_attempts', 5);
+        $loginAttemptTimeWindow = (int) $this->memberSettingRepository->get('login_attempt_time_window', 15);
+        $loginAttemptLockoutDuration = (int) $this->memberSettingRepository->get('login_attempt_lockout_duration', 30);
+        $lockoutNotificationEnabled = (bool) $this->memberSettingRepository->get('lockout_notification_enabled', true);
 
         // 管理メンバー用セッション設定
-        $membersSessionLifetimeEnabled = (bool) MemberSetting::getValue('members_session_lifetime_enabled', false);
-        $membersSessionLifetime = (int) MemberSetting::getValue('members_session_lifetime', 120);
+        $membersSessionLifetimeEnabled = (bool) $this->memberSettingRepository->get('members_session_lifetime_enabled', false);
+        $membersSessionLifetime = (int) $this->memberSettingRepository->get('members_session_lifetime', 120);
 
         // 二段階認証の有効期限設定（メンバー設定 > コンフィグ）
-        $twoFactorExpireMinutes = (int) MemberSetting::getValue('two_factor_expire_minutes', config('two-factor.code_expiration', 5));
-        $twoFactorResendIntervalSeconds = (int) MemberSetting::getValue('two_factor_resend_interval_seconds', config('two-factor.resend_interval', 60));
+        $twoFactorExpireMinutes = (int) $this->memberSettingRepository->get('two_factor_expire_minutes', config('two-factor.code_expiration', 5));
+        $twoFactorResendIntervalSeconds = (int) $this->memberSettingRepository->get('two_factor_resend_interval_seconds', config('two-factor.resend_interval', 60));
 
         // 二段階認証試行制限設定
-        $twoFaMaxAttempts = (int) MemberSetting::getValue('2fa_max_attempts', 5);
-        $twoFaAttemptWindow = (int) MemberSetting::getValue('2fa_attempt_window', 15);
-        $twoFaLockoutDuration = (int) MemberSetting::getValue('2fa_lockout_duration', 30);
-        $twoFaLockoutNotificationEnabled = (bool) MemberSetting::getValue('2fa_lockout_notification_enabled', true);
+        $twoFaMaxAttempts = (int) $this->memberSettingRepository->get('2fa_max_attempts', 5);
+        $twoFaAttemptWindow = (int) $this->memberSettingRepository->get('2fa_attempt_window', 15);
+        $twoFaLockoutDuration = (int) $this->memberSettingRepository->get('2fa_lockout_duration', 30);
+        $twoFaLockoutNotificationEnabled = (bool) $this->memberSettingRepository->get('2fa_lockout_notification_enabled', true);
 
         // 回復コード設定
-        $recoveryCodesCount = (int) MemberSetting::getValue('recovery_codes_count', 5);
-        $recoveryCodeRegenerateInterval = (int) MemberSetting::getValue('recovery_code_regenerate_interval', 24);
+        $recoveryCodesCount = (int) $this->memberSettingRepository->get('recovery_codes_count', 5);
+        $recoveryCodeRegenerateInterval = (int) $this->memberSettingRepository->get('recovery_code_regenerate_interval', 24);
 
         // メールサーバー接続テスト状況
         $isMailServerTested = $this->isMailServerTested();
@@ -824,43 +831,43 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $validated = $request->validated();
 
 
-        MemberSetting::setValue('password_min_length', (int) $validated['password_min_length']);
-        MemberSetting::setValue('password_require_uppercase', (int) $validated['password_require_uppercase']);
-        MemberSetting::setValue('password_require_number', (int) $validated['password_require_number']);
-        MemberSetting::setValue('password_require_symbol', (int) $validated['password_require_symbol']);
-        MemberSetting::setValue('login_notification_mode', (int) $validated['login_notification_mode']);
-        MemberSetting::setValue('force_2fa', (int) $validated['force_2fa']);
-        MemberSetting::setValue('password_reset_enabled', (bool) $validated['password_reset_enabled']);
-        MemberSetting::setValue('pwned_password_check_enabled', (bool) $validated['pwned_password_check_enabled']);
+        $this->memberSettingRepository->set('password_min_length', (int) $validated['password_min_length']);
+        $this->memberSettingRepository->set('password_require_uppercase', (int) $validated['password_require_uppercase']);
+        $this->memberSettingRepository->set('password_require_number', (int) $validated['password_require_number']);
+        $this->memberSettingRepository->set('password_require_symbol', (int) $validated['password_require_symbol']);
+        $this->memberSettingRepository->set('login_notification_mode', (int) $validated['login_notification_mode']);
+        $this->memberSettingRepository->set('force_2fa', (int) $validated['force_2fa']);
+        $this->memberSettingRepository->set('password_reset_enabled', (bool) $validated['password_reset_enabled']);
+        $this->memberSettingRepository->set('pwned_password_check_enabled', (bool) $validated['pwned_password_check_enabled']);
         
         // ログイン試行制限設定
-        MemberSetting::setValue('login_attempt_limit_enabled', $validated['login_attempt_limit_enabled'] ? '1' : '0');
-        MemberSetting::setValue('login_attempt_max_attempts', (string) $validated['login_attempt_max_attempts']);
-        MemberSetting::setValue('login_attempt_time_window', (string) $validated['login_attempt_time_window']);
-        MemberSetting::setValue('login_attempt_lockout_duration', (string) $validated['login_attempt_lockout_duration']);
-        MemberSetting::setValue('lockout_notification_enabled', $validated['lockout_notification_enabled'] ? '1' : '0');
+        $this->memberSettingRepository->set('login_attempt_limit_enabled', $validated['login_attempt_limit_enabled'] ? '1' : '0');
+        $this->memberSettingRepository->set('login_attempt_max_attempts', (string) $validated['login_attempt_max_attempts']);
+        $this->memberSettingRepository->set('login_attempt_time_window', (string) $validated['login_attempt_time_window']);
+        $this->memberSettingRepository->set('login_attempt_lockout_duration', (string) $validated['login_attempt_lockout_duration']);
+        $this->memberSettingRepository->set('lockout_notification_enabled', $validated['lockout_notification_enabled'] ? '1' : '0');
 
         // 管理メンバー用セッション設定
-        MemberSetting::setValue('members_session_lifetime_enabled', $validated['members_session_lifetime_enabled'] ? '1' : '0');
-        MemberSetting::setValue('members_session_lifetime', (string) $validated['members_session_lifetime']);
+        $this->memberSettingRepository->set('members_session_lifetime_enabled', $validated['members_session_lifetime_enabled'] ? '1' : '0');
+        $this->memberSettingRepository->set('members_session_lifetime', (string) $validated['members_session_lifetime']);
 
         // 二段階認証の有効期限設定
-        MemberSetting::setValue('two_factor_expire_minutes', (string) $validated['two_factor_expire_minutes']);
-        MemberSetting::setValue('two_factor_resend_interval_seconds', (string) $validated['two_factor_resend_interval_seconds']);
+        $this->memberSettingRepository->set('two_factor_expire_minutes', (string) $validated['two_factor_expire_minutes']);
+        $this->memberSettingRepository->set('two_factor_resend_interval_seconds', (string) $validated['two_factor_resend_interval_seconds']);
         
         // Passkey有効/無効設定の保存（メール認証は常に有効）
         $passkeyValue = isset($validated['enabled_2fa_passkey']) && $validated['enabled_2fa_passkey'] ? '1' : '0';
-        MemberSetting::setValue('enabled_2fa_passkey', $passkeyValue);
+        $this->memberSettingRepository->set('enabled_2fa_passkey', $passkeyValue);
 
         // 二段階認証試行制限設定
-        MemberSetting::setValue('2fa_max_attempts', (string) $validated['2fa_max_attempts']);
-        MemberSetting::setValue('2fa_attempt_window', (string) $validated['2fa_attempt_window']);
-        MemberSetting::setValue('2fa_lockout_duration', (string) $validated['2fa_lockout_duration']);
-        MemberSetting::setValue('2fa_lockout_notification_enabled', $validated['2fa_lockout_notification_enabled'] ? '1' : '0');
+        $this->memberSettingRepository->set('2fa_max_attempts', (string) $validated['2fa_max_attempts']);
+        $this->memberSettingRepository->set('2fa_attempt_window', (string) $validated['2fa_attempt_window']);
+        $this->memberSettingRepository->set('2fa_lockout_duration', (string) $validated['2fa_lockout_duration']);
+        $this->memberSettingRepository->set('2fa_lockout_notification_enabled', $validated['2fa_lockout_notification_enabled'] ? '1' : '0');
 
         // 回復コード設定
-        MemberSetting::setValue('recovery_codes_count', (string) $validated['recovery_codes_count']);
-        MemberSetting::setValue('recovery_code_regenerate_interval', (string) $validated['recovery_code_regenerate_interval']);
+        $this->memberSettingRepository->set('recovery_codes_count', (string) $validated['recovery_codes_count']);
+        $this->memberSettingRepository->set('recovery_code_regenerate_interval', (string) $validated['recovery_code_regenerate_interval']);
 
         return redirect()->route('admin.settings.members.settings')
             ->with('success', __('admin.settings.members.settings.updated'));

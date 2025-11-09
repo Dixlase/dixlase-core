@@ -36,56 +36,65 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use App\Helpers\EnvHelper;
 use App\Helpers\ConfigHelper;
+use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 
 
 
 class AdminSecuritySettingsController extends AdminLoggedInController
 {
+    /**
+     * セキュリティ設定リポジトリ
+     */
+    protected SecuritySettingRepositoryInterface $securitySettingRepository;
 
-    public function __construct()
+    /**
+     * コンストラクタ
+     */
+    public function __construct(SecuritySettingRepositoryInterface $securitySettingRepository)
     {
         parent::__construct();
+        $this->securitySettingRepository = $securitySettingRepository;
     }
 
     public function index()
     {
         // DEBUG: Log current CAPTCHA settings
         if (config('app.debug')) {
-            $rawCaptchaEnabled = SecuritySetting::get('captcha_enabled', false);
+            $rawCaptchaEnabled = $this->securitySettingRepository->get('captcha_enabled', false);
             $convertedCaptchaEnabled = filter_var($rawCaptchaEnabled, FILTER_VALIDATE_BOOLEAN);
             Log::info('AdminSecuritySettingsController::index() - CAPTCHA Settings Debug', [
                 'captcha_enabled_raw' => $rawCaptchaEnabled,
                 'captcha_enabled_converted' => $convertedCaptchaEnabled,
-                'captcha_driver' => SecuritySetting::get('captcha_driver', 'google'),
+                'captcha_driver' => $this->securitySettingRepository->get('captcha_driver', 'google'),
             ]);
         }
 
         $settings = [
-            'enable_allowed_admin_ips' => filter_var(SecuritySetting::get('enable_allowed_admin_ips', false), FILTER_VALIDATE_BOOLEAN),
-            'allowed_admin_ips' => SecuritySetting::get('allowed_admin_ips', ''),
-            'enable_blocked_admin_ips' => filter_var(SecuritySetting::get('enable_blocked_admin_ips', false), FILTER_VALIDATE_BOOLEAN),
-            'blocked_admin_ips' => SecuritySetting::get('blocked_admin_ips', ''),
-            'enable_allowed_front_ips' => filter_var(SecuritySetting::get('enable_allowed_front_ips', false), FILTER_VALIDATE_BOOLEAN),
-            'allowed_front_ips' => SecuritySetting::get('allowed_front_ips', ''),
-            'enable_blocked_front_ips' => filter_var(SecuritySetting::get('enable_blocked_front_ips', false), FILTER_VALIDATE_BOOLEAN),
-            'blocked_front_ips' => SecuritySetting::get('blocked_front_ips', ''),
+            'enable_allowed_admin_ips' => filter_var($this->securitySettingRepository->get('enable_allowed_admin_ips', false), FILTER_VALIDATE_BOOLEAN),
+            'allowed_admin_ips' => $this->securitySettingRepository->get('allowed_admin_ips', ''),
+            'enable_blocked_admin_ips' => filter_var($this->securitySettingRepository->get('enable_blocked_admin_ips', false), FILTER_VALIDATE_BOOLEAN),
+            'blocked_admin_ips' => $this->securitySettingRepository->get('blocked_admin_ips', ''),
+            'enable_allowed_front_ips' => filter_var($this->securitySettingRepository->get('enable_allowed_front_ips', false), FILTER_VALIDATE_BOOLEAN),
+            'allowed_front_ips' => $this->securitySettingRepository->get('allowed_front_ips', ''),
+            'enable_blocked_front_ips' => filter_var($this->securitySettingRepository->get('enable_blocked_front_ips', false), FILTER_VALIDATE_BOOLEAN),
+            'blocked_front_ips' => $this->securitySettingRepository->get('blocked_front_ips', ''),
             // Session settings - use base values for security settings form
             'session_driver' => ConfigHelper::getSessionDriver(),
             'session_encrypt' => ConfigHelper::getSessionEncrypt(),
             'session_lifetime' => ConfigHelper::getSessionLifetime(),
             // reCAPTCHA settings
-            'captcha_enabled' => filter_var(SecuritySetting::get('captcha_enabled', false), FILTER_VALIDATE_BOOLEAN),
-            'captcha_driver' => SecuritySetting::get('captcha_driver', 'google'),
-            'captcha_site_key' => SecuritySetting::get('captcha_site_key', ''),
-            'captcha_secret_key' => SecuritySetting::get('captcha_secret_key', ''),
-            'captcha_google_version' => SecuritySetting::get('captcha_google_version', 'v3'),
-            'captcha_google_min_score' => SecuritySetting::get('captcha_google_min_score', '0.5'),
-            'captcha_google_project_id' => SecuritySetting::get('captcha_google_project_id', ''),
+            'captcha_enabled' => filter_var($this->securitySettingRepository->get('captcha_enabled', false), FILTER_VALIDATE_BOOLEAN),
+            'captcha_driver' => $this->securitySettingRepository->get('captcha_driver', 'google'),
+            'captcha_site_key' => $this->securitySettingRepository->get('captcha_site_key', ''),
+            'captcha_secret_key' => $this->securitySettingRepository->get('captcha_secret_key', ''),
+            'captcha_google_version' => $this->securitySettingRepository->get('captcha_google_version', 'v3'),
+            'captcha_google_min_score' => $this->securitySettingRepository->get('captcha_google_min_score', '0.5'),
+            'captcha_google_project_id' => $this->securitySettingRepository->get('captcha_google_project_id', ''),
             // Notification settings
-            'notification_enabled' => filter_var(SecuritySetting::get('notification_enabled', true), FILTER_VALIDATE_BOOLEAN),
-            'notification_log_levels' => array_map('intval', array_filter(explode(',', SecuritySetting::get('notification_log_levels', implode(',', LogLevel::getDefaultNotificationLevels()))))),
+            'notification_enabled' => filter_var($this->securitySettingRepository->get('notification_enabled', true), FILTER_VALIDATE_BOOLEAN),
+            'notification_log_levels' => array_map('intval', array_filter(explode(',', $this->securitySettingRepository->get('notification_log_levels', implode(',', LogLevel::getDefaultNotificationLevels()))))),
             // Password security settings
-            'pwned_password_check_enabled' => filter_var(SecuritySetting::get('pwned_password_check_enabled', false), FILTER_VALIDATE_BOOLEAN),
+            'pwned_password_check_enabled' => filter_var($this->securitySettingRepository->get('pwned_password_check_enabled', false), FILTER_VALIDATE_BOOLEAN),
         ];
 
         // 動的reCAPTCHAフォーム設定を取得
@@ -123,20 +132,20 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         $captchaTestService = new CaptchaTestService();
         
         // 現在のCAPTCHA設定を取得
-        $currentCaptchaEnabled = SecuritySetting::get('captcha_enabled', false);
-        $currentCaptchaDriver = SecuritySetting::get('captcha_driver', 'google');
+        $currentCaptchaEnabled = $this->securitySettingRepository->get('captcha_enabled', false);
+        $currentCaptchaDriver = $this->securitySettingRepository->get('captcha_driver', 'google');
         $currentCaptchaSettings = [
-            'captcha_site_key' => SecuritySetting::get('captcha_site_key', ''),
-            'captcha_secret_key' => SecuritySetting::get('captcha_secret_key', ''),
-            'captcha_google_version' => SecuritySetting::get('captcha_google_version', 'v3'),
-            'captcha_google_min_score' => SecuritySetting::get('captcha_google_min_score', '0.5'),
-            'captcha_google_site_key' => SecuritySetting::get('captcha_google_site_key', ''),
-            'captcha_google_secret_key' => SecuritySetting::get('captcha_google_secret_key', ''),
-            'captcha_google_enterprise_site_key' => SecuritySetting::get('captcha_google_enterprise_site_key', ''),
-            'captcha_google_enterprise_secret_key' => SecuritySetting::get('captcha_google_enterprise_secret_key', ''),
-            'captcha_google_project_id' => SecuritySetting::get('captcha_google_project_id', ''),
-            'captcha_turnstile_site_key' => SecuritySetting::get('captcha_turnstile_site_key', ''),
-            'captcha_turnstile_secret_key' => SecuritySetting::get('captcha_turnstile_secret_key', ''),
+            'captcha_site_key' => $this->securitySettingRepository->get('captcha_site_key', ''),
+            'captcha_secret_key' => $this->securitySettingRepository->get('captcha_secret_key', ''),
+            'captcha_google_version' => $this->securitySettingRepository->get('captcha_google_version', 'v3'),
+            'captcha_google_min_score' => $this->securitySettingRepository->get('captcha_google_min_score', '0.5'),
+            'captcha_google_site_key' => $this->securitySettingRepository->get('captcha_google_site_key', ''),
+            'captcha_google_secret_key' => $this->securitySettingRepository->get('captcha_google_secret_key', ''),
+            'captcha_google_enterprise_site_key' => $this->securitySettingRepository->get('captcha_google_enterprise_site_key', ''),
+            'captcha_google_enterprise_secret_key' => $this->securitySettingRepository->get('captcha_google_enterprise_secret_key', ''),
+            'captcha_google_project_id' => $this->securitySettingRepository->get('captcha_google_project_id', ''),
+            'captcha_turnstile_site_key' => $this->securitySettingRepository->get('captcha_turnstile_site_key', ''),
+            'captcha_turnstile_secret_key' => $this->securitySettingRepository->get('captcha_turnstile_secret_key', ''),
         ];
         
         // 新しいCAPTCHA設定
@@ -188,23 +197,23 @@ class AdminSecuritySettingsController extends AdminLoggedInController
             $captchaTestService->resetCaptchaTestResults();
         }
 
-        SecuritySetting::set('enable_allowed_admin_ips', $request->boolean('enable_allowed_admin_ips'));
-        SecuritySetting::set('allowed_admin_ips', $request->input('allowed_admin_ips'));
-        SecuritySetting::set('enable_blocked_admin_ips', $request->boolean('enable_blocked_admin_ips'));
-        SecuritySetting::set('blocked_admin_ips', $request->input('blocked_admin_ips'));
-        SecuritySetting::set('enable_allowed_front_ips', $request->boolean('enable_allowed_front_ips'));
-        SecuritySetting::set('allowed_front_ips', $request->input('allowed_front_ips'));
-        SecuritySetting::set('enable_blocked_front_ips', $request->boolean('enable_blocked_front_ips'));
-        SecuritySetting::set('blocked_front_ips', $request->input('blocked_front_ips'));
+        $this->securitySettingRepository->set('enable_allowed_admin_ips', $request->boolean('enable_allowed_admin_ips'));
+        $this->securitySettingRepository->set('allowed_admin_ips', $request->input('allowed_admin_ips'));
+        $this->securitySettingRepository->set('enable_blocked_admin_ips', $request->boolean('enable_blocked_admin_ips'));
+        $this->securitySettingRepository->set('blocked_admin_ips', $request->input('blocked_admin_ips'));
+        $this->securitySettingRepository->set('enable_allowed_front_ips', $request->boolean('enable_allowed_front_ips'));
+        $this->securitySettingRepository->set('allowed_front_ips', $request->input('allowed_front_ips'));
+        $this->securitySettingRepository->set('enable_blocked_front_ips', $request->boolean('enable_blocked_front_ips'));
+        $this->securitySettingRepository->set('blocked_front_ips', $request->input('blocked_front_ips'));
         
         // Save session settings
         $sessionDriver = $request->input('session_driver', 'file');
         $sessionEncrypt = $request->boolean('session_encrypt');
         $sessionLifetime = $request->integer('session_lifetime', 120);
         
-        SecuritySetting::set('session_driver', $sessionDriver);
-        SecuritySetting::set('session_encrypt', $sessionEncrypt);
-        SecuritySetting::set('session_lifetime', $sessionLifetime);
+        $this->securitySettingRepository->set('session_driver', $sessionDriver);
+        $this->securitySettingRepository->set('session_encrypt', $sessionEncrypt);
+        $this->securitySettingRepository->set('session_lifetime', $sessionLifetime);
         
         // Update .env file with session settings
         EnvHelper::update([
@@ -214,14 +223,14 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         ]);
         
         // Save reCAPTCHA settings
-        SecuritySetting::set('captcha_enabled', $request->boolean('captcha_enabled'));
-        SecuritySetting::set('captcha_driver', $request->input('captcha_driver', 'google'));
+        $this->securitySettingRepository->set('captcha_enabled', $request->boolean('captcha_enabled'));
+        $this->securitySettingRepository->set('captcha_driver', $request->input('captcha_driver', 'google'));
         
         // Save common keys directly
-        SecuritySetting::set('captcha_site_key', $request->input('captcha_site_key', ''));
-        SecuritySetting::set('captcha_secret_key', $request->input('captcha_secret_key', ''));
+        $this->securitySettingRepository->set('captcha_site_key', $request->input('captcha_site_key', ''));
+        $this->securitySettingRepository->set('captcha_secret_key', $request->input('captcha_secret_key', ''));
         
-        SecuritySetting::set('captcha_google_version', $request->input('captcha_google_version', 'v3'));
+        $this->securitySettingRepository->set('captcha_google_version', $request->input('captcha_google_version', 'v3'));
         // Debug: Check if min_score is in POST data
         \Log::info('CAPTCHA Min Score Debug', [
             'all_post_data' => $request->all(),
@@ -244,11 +253,11 @@ class AdminSecuritySettingsController extends AdminLoggedInController
                 'driver' => $driver,
                 'version' => $version,
                 'min_score_value' => $minScore,
-                'before_save' => SecuritySetting::get('captcha_google_min_score')
+                'before_save' => $this->securitySettingRepository->get('captcha_google_min_score')
             ]);
-            SecuritySetting::set('captcha_google_min_score', $minScore);
+            $this->securitySettingRepository->set('captcha_google_min_score', $minScore);
             \Log::info('Min Score After Save', [
-                'saved_value' => SecuritySetting::get('captcha_google_min_score')
+                'saved_value' => $this->securitySettingRepository->get('captcha_google_min_score')
             ]);
         } else {
             \Log::info('Min Score Processing', [
@@ -260,14 +269,14 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         }
         
         // Save Google reCAPTCHA Enterprise project ID
-        SecuritySetting::set('captcha_google_project_id', $request->input('captcha_google_project_id', ''));
+        $this->securitySettingRepository->set('captcha_google_project_id', $request->input('captcha_google_project_id', ''));
         
         // Save notification settings
         $notificationEnabled = $request->boolean('notification_enabled');
-        SecuritySetting::set('notification_enabled', $notificationEnabled);
+        $this->securitySettingRepository->set('notification_enabled', $notificationEnabled);
 
         // Save password security settings
-        SecuritySetting::set('pwned_password_check_enabled', $request->boolean('pwned_password_check_enabled'));
+        $this->securitySettingRepository->set('pwned_password_check_enabled', $request->boolean('pwned_password_check_enabled'));
 
         // ログレベルは通知の有効/無効に関わらず保存できるようにする
         $submittedLevels = $request->input('notification_log_levels', null);
@@ -286,7 +295,7 @@ class AdminSecuritySettingsController extends AdminLoggedInController
                 $validLogLevels = \App\Enums\LogLevel::getDefaultNotificationLevels();
             }
 
-            SecuritySetting::set('notification_log_levels', implode(',', $validLogLevels));
+            $this->securitySettingRepository->set('notification_log_levels', implode(',', $validLogLevels));
         }
         
         // Save dynamic captcha form settings

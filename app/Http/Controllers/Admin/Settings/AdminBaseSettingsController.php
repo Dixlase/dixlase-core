@@ -42,17 +42,25 @@ use DateTimeZone;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
+use App\Contracts\Repositories\BaseSettingRepositoryInterface;
 
 
 class AdminBaseSettingsController extends AdminLoggedInController
 {
     use MailTestTrait;
 
-    //初期設定を行う
-    public function __construct()
+    /**
+     * 基本設定リポジトリ
+     */
+    protected BaseSettingRepositoryInterface $baseSettingRepository;
+
+    /**
+     * コンストラクタ
+     */
+    public function __construct(BaseSettingRepositoryInterface $baseSettingRepository)
     {
-        // 親クラスのコンストラクタを呼び出す
         parent::__construct();
+        $this->baseSettingRepository = $baseSettingRepository;
     }
 
     /**
@@ -80,12 +88,12 @@ class AdminBaseSettingsController extends AdminLoggedInController
             'app_name' => ConfigHelper::getAppName(),
 
             // サイトの説明
-            'site_description' => BaseSetting::getValue('site_description', ''),
-            'site_keywords' => BaseSetting::getValue('site_keywords', ''),
+            'site_description' => $this->baseSettingRepository->get('site_description', ''),
+            'site_keywords' => $this->baseSettingRepository->get('site_keywords', ''),
             
             // OGP設定
-            'default_ogp_image_id' => BaseSetting::getValue('default_ogp_image_id'),
-            'twitter_card_type' => BaseSetting::getValue('twitter_card_type', 'summary_large_image'),
+            'default_ogp_image_id' => $this->baseSettingRepository->get('default_ogp_image_id'),
+            'twitter_card_type' => $this->baseSettingRepository->get('twitter_card_type', 'summary_large_image'),
 
             // 基本設定では個人設定を無視してシステム設定を取得
             'locale' => $this->getSystemLocale(),
@@ -107,21 +115,21 @@ class AdminBaseSettingsController extends AdminLoggedInController
             'system_admin_email' => ConfigHelper::getNotificationEmail(),
             
             // Database-only settings (no .env equivalent)
-            'admin_url' => BaseSetting::getValue('admin_url', config('admin.admin_url')),
-            'force_ssl' => (bool) BaseSetting::getValue('force_ssl', false),
+            'admin_url' => $this->baseSettingRepository->get('admin_url', config('admin.admin_url')),
+            'force_ssl' => (bool) $this->baseSettingRepository->get('force_ssl', false),
 
         ];
 
         // メールテスト状態を取得（DB優先、セッションは一時的な状態のみ）
         $sessionTestResults = session('mail_test_results', []);
         
-        $mailConnectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? BaseSetting::getValue('mail_connection_tested', false));
-        $mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? BaseSetting::getValue('mail_send_tested', false));
-        $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? BaseSetting::getValue('mail_receive_tested', false));
+        $mailConnectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? $this->baseSettingRepository->get('mail_connection_tested', false));
+        $mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? $this->baseSettingRepository->get('mail_send_tested', false));
+        $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? $this->baseSettingRepository->get('mail_receive_tested', false));
         
-        $mailConnectionTestDate = $sessionTestResults['mail_connection_test_date'] ?? BaseSetting::getValue('mail_connection_test_date', '');
-        $mailSendTestDate = $sessionTestResults['mail_send_test_date'] ?? BaseSetting::getValue('mail_send_test_date', '');
-        $mailReceiveTestDate = $sessionTestResults['mail_receive_test_date'] ?? BaseSetting::getValue('mail_receive_test_date', '');
+        $mailConnectionTestDate = $sessionTestResults['mail_connection_test_date'] ?? $this->baseSettingRepository->get('mail_connection_test_date', '');
+        $mailSendTestDate = $sessionTestResults['mail_send_test_date'] ?? $this->baseSettingRepository->get('mail_send_test_date', '');
+        $mailReceiveTestDate = $sessionTestResults['mail_receive_test_date'] ?? $this->baseSettingRepository->get('mail_receive_test_date', '');
 
         $timezones = TimezoneHelper::getTimezonesWithUtcOffset();
         
@@ -179,7 +187,7 @@ class AdminBaseSettingsController extends AdminLoggedInController
         }
 
         // 2. データベースから取得
-        $dbLocale = BaseSetting::getValue('locale');
+        $dbLocale = $this->baseSettingRepository->get('locale');
         if ($dbLocale !== null) {
             return $dbLocale;
         }
@@ -305,20 +313,20 @@ class AdminBaseSettingsController extends AdminLoggedInController
         }
 
         // DBに全ての設定を保存（フォールバック用）
-        BaseSetting::setMany($dbSettings);
+        $this->baseSettingRepository->setMultiple($dbSettings);
         
         // .envファイルに設定を保存
         EnvHelper::update($envData);
         
         if ($mailSettingsChanged) {
             // メール設定変更時は全てのテストステータスをリセット
-            BaseSetting::setValue('mail_connection_tested', 0);
-            BaseSetting::setValue('mail_connection_test_date', null);
-            BaseSetting::setValue('mail_send_tested', 0);
-            BaseSetting::setValue('mail_send_test_date', null);
-            BaseSetting::setValue('mail_receive_tested', 0);
-            BaseSetting::setValue('mail_receive_test_date', null);
-            BaseSetting::setValue('mail_verification_token', null);
+            $this->baseSettingRepository->set('mail_connection_tested', 0);
+            $this->baseSettingRepository->set('mail_connection_test_date', null);
+            $this->baseSettingRepository->set('mail_send_tested', 0);
+            $this->baseSettingRepository->set('mail_send_test_date', null);
+            $this->baseSettingRepository->set('mail_receive_tested', 0);
+            $this->baseSettingRepository->set('mail_receive_test_date', null);
+            $this->baseSettingRepository->set('mail_verification_token', null);
             
             // セッションのテスト結果もクリア
             session()->forget('mail_test_results');
@@ -328,7 +336,7 @@ class AdminBaseSettingsController extends AdminLoggedInController
             
             if (!empty($sessionTestResults)) {
                 foreach ($sessionTestResults as $key => $value) {
-                    BaseSetting::setValue($key, $value);
+                    $this->baseSettingRepository->set($key, $value);
                 }
                 
                 // セッションからテスト結果をクリア
@@ -389,13 +397,13 @@ class AdminBaseSettingsController extends AdminLoggedInController
         session()->forget('mail_test_results');
         
         // データベースのテスト結果も即座にリセット
-        BaseSetting::setValue('mail_connection_tested', 0);
-        BaseSetting::setValue('mail_connection_test_date', null);
-        BaseSetting::setValue('mail_send_tested', 0);
-        BaseSetting::setValue('mail_send_test_date', null);
-        BaseSetting::setValue('mail_receive_tested', 0);
-        BaseSetting::setValue('mail_receive_test_date', null);
-        BaseSetting::setValue('mail_verification_token', null);
+        $this->baseSettingRepository->set('mail_connection_tested', 0);
+        $this->baseSettingRepository->set('mail_connection_test_date', null);
+        $this->baseSettingRepository->set('mail_send_tested', 0);
+        $this->baseSettingRepository->set('mail_send_test_date', null);
+        $this->baseSettingRepository->set('mail_receive_tested', 0);
+        $this->baseSettingRepository->set('mail_receive_test_date', null);
+        $this->baseSettingRepository->set('mail_verification_token', null);
         
         Log::info('メールテストセッション・DB両方クリア完了', [
             'session_cleared' => true,
@@ -416,12 +424,12 @@ class AdminBaseSettingsController extends AdminLoggedInController
         $sessionTestResults = session('mail_test_results', []);
         
         // セッションとDBの状態を統合
-        $mailConnectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? BaseSetting::getValue('mail_connection_tested', false));
-        $mailConnectionTestDate = $sessionTestResults['mail_connection_test_date'] ?? BaseSetting::getValue('mail_connection_test_date', null);
-        $mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? BaseSetting::getValue('mail_send_tested', false));
-        $mailSendTestDate = $sessionTestResults['mail_send_test_date'] ?? BaseSetting::getValue('mail_send_test_date', null);
-        $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? BaseSetting::getValue('mail_receive_tested', false));
-        $mailReceiveTestDate = $sessionTestResults['mail_receive_test_date'] ?? BaseSetting::getValue('mail_receive_test_date', null);
+        $mailConnectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? $this->baseSettingRepository->get('mail_connection_tested', false));
+        $mailConnectionTestDate = $sessionTestResults['mail_connection_test_date'] ?? $this->baseSettingRepository->get('mail_connection_test_date', null);
+        $mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? $this->baseSettingRepository->get('mail_send_tested', false));
+        $mailSendTestDate = $sessionTestResults['mail_send_test_date'] ?? $this->baseSettingRepository->get('mail_send_test_date', null);
+        $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? $this->baseSettingRepository->get('mail_receive_tested', false));
+        $mailReceiveTestDate = $sessionTestResults['mail_receive_test_date'] ?? $this->baseSettingRepository->get('mail_receive_test_date', null);
         
         return response()->json([
             'success' => true,

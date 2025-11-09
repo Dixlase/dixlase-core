@@ -23,10 +23,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 
+/**
+ * セキュリティ設定モデル
+ * 
+ * @deprecated 静的メソッドは非推奨です。SecuritySettingRepositoryを使用してください。
+ */
 class SecuritySetting extends Model
 {
-
     protected $table = 'security_settings';
 
     protected $fillable = [
@@ -34,17 +39,29 @@ class SecuritySetting extends Model
         'value'
     ];
 
+    /**
+     * 設定値を取得
+     *
+     * @deprecated SecuritySettingRepository::get() を使用してください
+     * @param string $key
+     * @param mixed $default
+     * @return mixed
+     */
     public static function get($key, $default = null)
     {
-        return self::where('name', $key)->value('value') ?? $default;
+        return app(SecuritySettingRepositoryInterface::class)->get($key, $default);
     }
 
+    /**
+     * 設定値を保存
+     *
+     * @deprecated SecuritySettingRepository::set() を使用してください
+     * @param string $key
+     * @param mixed $value
+     * @return SecuritySetting
+     */
     public static function set($key, $value)
     {
-        // Convert boolean to string for consistent storage
-        if (is_bool($value)) {
-            $value = $value ? '1' : '0';
-        }
-        return self::updateOrCreate(['name' => $key], ['value' => $value]);
+        return app(SecuritySettingRepositoryInterface::class)->set($key, $value);
     }
 }
