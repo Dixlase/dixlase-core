@@ -94,6 +94,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :type="$form ? 'submit' : 'button'"
                     :variant="$confirm_variant ?? 'primary'"
                     :label="$confirm_label ?? __('common.confirm')"
+                    :form="$form"
                     class="mx-2"
                 />
             @else
