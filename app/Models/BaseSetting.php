@@ -23,17 +23,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Log;
+use App\Contracts\Repositories\BaseSettingRepositoryInterface;
 
+/**
+ * 基本設定モデル
+ * 
+ * @deprecated 静的メソッドは非推奨です。BaseSettingRepositoryを使用してください。
+ */
 class BaseSetting extends Model
 {
-    /**
-     * デフォルトOGP画像とのリレーション
-     */
-    public function defaultOgpImage()
-    {
-        return $this->belongsTo(Media::class, 'default_ogp_image_id');
-    }
     /**
      * テーブル名
      *
@@ -49,59 +47,61 @@ class BaseSetting extends Model
     protected $fillable = ['name', 'value'];
 
     /**
+     * デフォルトOGP画像とのリレーション
+     */
+    public function defaultOgpImage()
+    {
+        return $this->belongsTo(Media::class, 'default_ogp_image_id');
+    }
+
+    /**
      * 設定の取得
      *
-     * @param string $title
+     * @deprecated BaseSettingRepository::get() を使用してください
+     * @param string $name
      * @param mixed $default
      * @return mixed
      */
-
     public static function getValue($name, $default = null)
     {
-        $setting = self::where('name', $name)->first();
-        return $setting ? json_decode($setting->value, true) ?? $setting->value : $default;
+        return app(BaseSettingRepositoryInterface::class)->get($name, $default);
     }
 
     /**
      * 設定の保存
      *
+     * @deprecated BaseSettingRepository::set() を使用してください
      * @param string $name
      * @param mixed $value
-     * @return void
+     * @return BaseSetting
      */
     public static function setValue($name, $value)
     {
-        $setting = self::where('name', $name)->first();
-
-        if ($setting) {
-            // 既存の設定がある場合は更新
-            $setting->value = is_array($value) ? json_encode($value) : $value;
-            $setting->save();
-        } else {
-            // 設定がない場合は新規作成
-            self::create([
-                'name' => $name,
-                'value' => is_array($value) ? json_encode($value) : $value,
-            ]);
-        }
+        return app(BaseSettingRepositoryInterface::class)->set($name, $value);
     }
 
+    /**
+     * 複数の設定を一括保存
+     *
+     * @deprecated BaseSettingRepository::setMultiple() を使用してください
+     * @param array $settings
+     * @return void
+     */
     public static function setMany(array $settings): void
     {
-        foreach ($settings as $key => $value) {
-            self::setValue($key, $value);
-        }
+        app(BaseSettingRepositoryInterface::class)->setMultiple($settings);
     }
 
     /**
      * ConfigHelperとの互換性のためのエイリアスメソッド
      *
+     * @deprecated BaseSettingRepository::get() を使用してください
      * @param string $name
      * @param mixed $default
      * @return mixed
      */
     public static function get($name, $default = null)
     {
-        return self::getValue($name, $default);
+        return app(BaseSettingRepositoryInterface::class)->get($name, $default);
     }
 }
