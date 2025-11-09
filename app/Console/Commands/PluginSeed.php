@@ -38,7 +38,8 @@ class PluginSeed extends Command
      */
     protected $signature = 'plugin:seed
                             {plugin : The name of the plugin (e.g. EventsPlugin)}
-                            {--class=DatabaseSeeder : The seeder class name to run}';
+                            {--class=DatabaseSeeder : The seeder class name to run}
+                            {--force : Force the operation to run in production}';
     /**
      * The console command description.
      *
