@@ -29,6 +29,8 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Helpers\GitExcludeHelper;
+use App\Helpers\ComposerLocalHelper;
 
 
 
@@ -193,6 +195,12 @@ class AdminThemesSettingsController extends AdminLoggedInController
                     // テーマのシーダーを実行（権限設定など）
                     $this->runThemeSeeder($directoryName);
 
+                    // .git/info/excludeにテーマの除外ルールを追加
+                    GitExcludeHelper::addThemeExclusion($directoryName);
+                    
+                    // composer.local.jsonを更新
+                    ComposerLocalHelper::syncAutoload();
+
                     return redirect()->route('admin.settings.themes.index')->with('success', 'テーマがインストールされました！');
                 } else {
                     // theme.json が見つからない場合
@@ -238,6 +246,13 @@ class AdminThemesSettingsController extends AdminLoggedInController
                     throw new \Exception('ディレクトリの削除に失敗しました。');
                 }
             }
+            
+            // .git/info/excludeからテーマの除外ルールを削除
+            GitExcludeHelper::removeThemeExclusion($theme->directory);
+            
+            // composer.local.jsonを更新
+            ComposerLocalHelper::syncAutoload();
+            
             // DBからテーマ情報を削除
             $theme->delete();
         } catch (\Exception $e) {
