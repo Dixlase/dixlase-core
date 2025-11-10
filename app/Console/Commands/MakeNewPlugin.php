@@ -208,8 +208,8 @@ class MakeNewPlugin extends Command
             $this->warn("⚠ プラグイン '{$pluginDirName}' の .git/info/exclude への追加に失敗しました");
         }
 
-        // Composerオートロードを再生成
-        $this->call('plugin:autoload:sync');
+        // 注意: composer.local.jsonのみ更新し、composer.jsonは素の状態を保持
+        // オートロードの反映は `composer dump-autoload` で手動実行
 
         $this->info(__('command.make_plugin.success', ['pluginName' => $pluginName]));
         return Command::SUCCESS;

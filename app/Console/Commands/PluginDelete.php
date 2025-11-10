@@ -96,8 +96,8 @@ class PluginDelete extends Command
         ComposerLocalHelper::syncAutoload();
         $this->info("✓ composer.local.jsonを更新しました");
 
-        // オートロードを更新
-        $this->call('plugin:autoload:sync');
+        // 注意: composer.local.jsonのみ更新し、composer.jsonは素の状態を保持
+        // オートロードの反映は `composer dump-autoload` で手動実行
 
         $this->info(__('command.plugin_delete.completed', ['directory' => $pluginDirectory]));
         
