@@ -30,6 +30,7 @@ use App\Models\Plugin;
 use App\Console\Traits\MakeLicenseTrait;
 use App\Console\Traits\MakeFileTrait;
 use App\Helpers\GitExcludeHelper;
+use App\Helpers\ComposerLocalHelper;
 
 class MakeNewPlugin extends Command
 {
@@ -193,10 +194,22 @@ class MakeNewPlugin extends Command
             $this->installPlugin($pluginName, $pluginDirName, $shouldEnableAfterInstall);
         }
 
-        $this->call('plugin:autoload:sync');
+        // composer.local.jsonを更新（全プラグインを自動検出して同期）
+        if (ComposerLocalHelper::syncAutoload()) {
+            $this->info("✓ プラグイン '{$pluginDirName}' を composer.local.json に追加しました");
+        } else {
+            $this->warn("⚠ プラグイン '{$pluginDirName}' の composer.local.json への追加に失敗しました");
+        }
 
-        // .git/info/excludeにプラグインを追加（plugin:installコマンド内で実行されるため不要）
-        // GitExcludeHelper::addPluginExclusion($pluginDirName);
+        // .git/info/excludeにプラグインを追加
+        if (GitExcludeHelper::addPluginExclusion($pluginDirName)) {
+            $this->info("✓ プラグイン '{$pluginDirName}' を .git/info/exclude に追加しました");
+        } else {
+            $this->warn("⚠ プラグイン '{$pluginDirName}' の .git/info/exclude への追加に失敗しました");
+        }
+
+        // Composerオートロードを再生成
+        $this->call('plugin:autoload:sync');
 
         $this->info(__('command.make_plugin.success', ['pluginName' => $pluginName]));
         return Command::SUCCESS;

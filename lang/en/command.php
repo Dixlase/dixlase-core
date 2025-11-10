@@ -169,6 +169,8 @@ return [
         'still_enabled' => 'Plugin \':pluginName\' is still enabled.',
         'disable_first' => 'Please disable the plugin first using `plugin:disable` command before uninstalling.',
         'force_disabling' => 'Force disabling plugin \':pluginName\' due to --force option.',
+        'confirm' => 'Are you sure you want to uninstall plugin \':pluginName\'? This will remove plugin information from the database.',
+        'cancelled' => 'Uninstallation cancelled.',
         'rollback_running' => 'Running migrations rollback...',
         'rollback_confirm' => 'Do you want to delete database tables related to plugin \':pluginName\'?',
         'rollback_skipped' => 'Database rollback was skipped.',

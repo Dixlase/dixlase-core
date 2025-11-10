@@ -78,6 +78,17 @@ class PluginUninstall extends Command
 
         $pluginPath = base_path('plugins/' . $plugin->directory);
 
+        // アンインストール確認（--no-interactionオプションがない場合のみ）
+        if (!$this->option('no-interaction')) {
+            $this->warn(__('command.plugin_uninstall.confirm', ['pluginName' => $pluginName]));
+            $answer = $this->ask('yes/no を入力してください');
+            
+            if (!in_array(strtolower($answer), ['yes', 'y'])) {
+                $this->info(__('command.plugin_uninstall.cancelled'));
+                return 0;
+            }
+        }
+
         // アンインストール処理中フラグを設定（ServiceProvider読み込みを防ぐ）
         config(['app.plugin_uninstalling' => $pluginName]);
 
@@ -87,21 +98,12 @@ class PluginUninstall extends Command
             $this->disablePlugin($pluginName);
             $plugin = DB::table('plugins')->where('name', $pluginName)->first();
         }
-        
-        // .git/info/exclude除外リストからプラグインを削除
-        // ディレクトリ名を使用（プラグイン名ではなく）
-        if (GitExcludeHelper::removePluginExclusion($plugin->directory)) {
-            $this->info("✓ プラグイン '{$plugin->directory}' を .git/info/exclude の除外リストから削除しました");
-        } else {
-            $this->warn("⚠ プラグイン '{$plugin->directory}' の .git/info/exclude からの削除に失敗しました");
-        }
-
         // マイグレーションのロールバック
         if ($this->option('rollback')) {
             $this->info(__('command.plugin_uninstall.rollback_running'));
             $migrator = new PluginMigrator(app(Filesystem::class), app(ConnectionResolverInterface::class), 'plugin_migrations', $plugin->slug);
             $migrator->rollback($plugin->directory);
-        } else if ($this->confirm(__('command.plugin_uninstall.rollback_confirm', ['pluginName' => $pluginName]), false)) {
+        } else if (!$this->option('no-interaction') && $this->confirm(__('command.plugin_uninstall.rollback_confirm', ['pluginName' => $pluginName]), false)) {
             $this->info(__('command.plugin_uninstall.rollback_running'));
             $migrator = new PluginMigrator(app(Filesystem::class), app(ConnectionResolverInterface::class), 'plugin_migrations', $plugin->slug);
             $migrator->rollback($plugin->directory);
@@ -116,12 +118,8 @@ class PluginUninstall extends Command
         DB::table('plugins')->where('name', $pluginName)->delete();
         $this->info(__('command.plugin_uninstall.database_removed', ['pluginName' => $pluginName]));
 
-        // composer.local.jsonを更新（ディレクトリ削除後に実行）
-        ComposerLocalHelper::syncAutoload();
-        $this->info("✓ composer.local.jsonを更新しました");
-
-        // オートロードを更新
-        $this->updateAutoload();
+        // 注意: composer.local.jsonと.git/info/excludeの更新は、
+        // プラグイン削除時（plugin:delete）に行うため、ここでは不要
 
         // アンインストール処理中フラグをクリア
         putenv('PLUGIN_UNINSTALLING');
