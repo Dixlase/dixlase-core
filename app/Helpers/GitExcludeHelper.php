@@ -106,11 +106,22 @@ class GitExcludeHelper
 
             // 該当行を削除
             $lines = explode("\n", $content);
-            $lines = array_filter($lines, function ($line) use ($pluginPath) {
-                return trim($line) !== $pluginPath;
-            });
+            $filteredLines = [];
+            foreach ($lines as $line) {
+                if (trim($line) !== $pluginPath) {
+                    $filteredLines[] = $line;
+                }
+            }
 
-            $content = implode("\n", $lines);
+            // 末尾の空行を削除
+            while (!empty($filteredLines) && trim(end($filteredLines)) === '') {
+                array_pop($filteredLines);
+            }
+
+            $content = implode("\n", $filteredLines);
+            if (!empty($content)) {
+                $content .= "\n"; // 末尾に改行を追加
+            }
             File::put($excludePath, $content);
 
             Log::info("Removed plugin exclusion from .git/info/exclude: {$pluginPath}");

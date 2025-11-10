@@ -131,18 +131,13 @@ class PluginInstall extends Command
         $migrator = new PluginMigrator(app(Filesystem::class), app(ConnectionResolverInterface::class), 'plugin_migrations', $slug);
         $migrator->migrate($pluginName);
 
-        // .git/info/excludeにプラグインの除外ルールを追加
-        GitExcludeHelper::addPluginExclusion($pluginName);
-        $this->info("Added {$pluginName} to .git/info/exclude");
-
-        // composer.local.jsonを更新
-        ComposerLocalHelper::syncAutoload();
-        $this->info("Updated composer.local.json");
+        // 注意: composer.local.jsonと.git/info/excludeの更新は、
+        // プラグイン作成時（make:plugin）に既に行われているため、ここでは不要
 
         // プラグインの有効化を確認（--enable オプションが指定されていない場合のみ確認）
         if ($this->option('enable') || $this->confirm(__('command.make_plugin.installation.enable_confirm', [
             'pluginName' => $pluginName
-        ]), true)) {
+        ]), false)) {
             $this->call('plugin:enable', [
                 'pluginName' => $pluginName
             ]);
