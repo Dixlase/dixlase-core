@@ -151,12 +151,15 @@ trait PluginManagementTrait
 
     /**
      * オートロードを更新
+     * 
+     * 注意: このメソッドは非推奨です。
+     * composer.local.jsonの更新にはComposerLocalHelper::syncAutoload()を使用してください。
      *
      * @return void
+     * @deprecated
      */
     protected function updateAutoload(): void
     {
-        $this->info('オートロードを更新中...');
-        $this->call('plugin:autoload:sync');
+        $this->warn('updateAutoload()は非推奨です。ComposerLocalHelper::syncAutoload()を使用してください。');
     }
 }

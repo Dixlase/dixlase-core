@@ -234,13 +234,10 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 // テーブルが既にあるとみなしてシーダーをスキップ
             }
 
-            // artisanコマンドでPSR-4オートロードを更新
-            Artisan::call('plugin:autoload:sync', ['--cleanup' => true]);
-
             // .git/info/excludeにプラグインの除外ルールを追加
             GitExcludeHelper::addPluginExclusion($pluginDir);
             
-            // composer.local.jsonを更新
+            // composer.local.jsonを更新（composer.jsonは素の状態を保持）
             ComposerLocalHelper::syncAutoload();
 
             return redirect()->route('admin.settings.plugins.index')
@@ -320,13 +317,10 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         // データベースから削除
         $plugin->delete();
 
-        // artisanコマンドでPSR-4オートロードを更新
-        Artisan::call('plugin:autoload:sync', ['--cleanup' => true]);
-
         // .git/info/excludeからプラグインの除外ルールを削除
         GitExcludeHelper::removePluginExclusion($pluginDir);
         
-        // composer.local.jsonを更新
+        // composer.local.jsonを更新（composer.jsonは素の状態を保持）
         ComposerLocalHelper::syncAutoload();
 
         return redirect()->route('admin.settings.plugins.index')
