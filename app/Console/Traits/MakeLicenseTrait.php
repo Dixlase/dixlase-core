@@ -318,4 +318,46 @@ trait MakeLicenseTrait
         // Blade用コメントでラップ
         return "{{--\n" . trim($license) . "\n--}}";
     }
+
+    /**
+     * ライセンスキーからライセンス情報を取得
+     *
+     * @param string $licenseKey ライセンスキー（例：MIT, GPL）
+     * @param array $info プレースホルダー置換用の情報
+     * @return array ライセンス情報（template, info）
+     */
+    protected function getLicenseInfoFromKey(string $licenseKey, array $info = []): array
+    {
+        // ライセンスキーが'NONE'または空の場合
+        if (empty($licenseKey) || strtoupper($licenseKey) === 'NONE') {
+            return [];
+        }
+
+        // ライセンステンプレートファイルのパスを取得
+        $upperKey = strtoupper($licenseKey);
+        $templateFile = config("license.templates.{$upperKey}");
+        
+        if (empty($templateFile)) {
+            return [];
+        }
+
+        $templatePath = base_path(config('license.templatesPath') . '/' . $templateFile);
+        
+        if (!File::exists($templatePath)) {
+            return [];
+        }
+
+        // デフォルト情報とマージ
+        $licenseInfo = array_merge([
+            'software' => config('license.defaults.software'),
+            'author' => config('license.defaults.author'),
+            'website' => config('license.defaults.website'),
+            'year' => date('Y'),
+        ], $info);
+
+        return [
+            'template' => File::get($templatePath),
+            'info' => $licenseInfo,
+        ];
+    }
 }
