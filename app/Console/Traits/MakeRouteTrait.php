@@ -28,11 +28,11 @@ use App\Console\Traits\MakePluginCommandTrait;
 
 /**
  * ルートファイル作成用トレイト。
- * -> MakeFileTrait を use し、ルートファイル特有のロジックを追加。
+ * MakeModelTrait と同じパターンに従う
  */
 trait MakeRouteTrait
 {
-    use MakeFileTrait, MakeCustomCommandTrait, MakePluginCommandTrait;
+    use MakeFileTrait, MakeLicenseTrait, MakeCustomCommandTrait, MakePluginCommandTrait;
     
     /**
      * ルートファイル固有のオプション定義を取得
@@ -43,6 +43,8 @@ trait MakeRouteTrait
     {
         return [
             '{routeType? : The route type (e.g. web, admin, api)}',
+            '{--placeholders= : JSON encoded placeholders for stub replacement}',
+            '{--license-info= : JSON encoded license information}',
         ];
     }
 
@@ -90,6 +92,30 @@ trait MakeRouteTrait
             return false;
         }
         
+        // プレースホルダーの取得（JSON形式で渡された場合はデコード）
+        $additionalPlaceholders = [];
+        if (isset($options['placeholders']) && !empty($options['placeholders'])) {
+            $decoded = json_decode($options['placeholders'], true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $additionalPlaceholders = $decoded;
+            }
+        }
+        
+        // ライセンスキーからライセンス情報を取得
+        $finalLicenseInfo = $licenseInfo;
+        if (isset($options['license-info']) && !empty($options['license-info'])) {
+            $licenseKey = $options['license-info'];
+            // プラグイン情報を取得
+            $pluginInfo = [];
+            if (!empty($pluginName)) {
+                $licenseInfoFile = base_path("plugins/{$pluginName}/license-info.json");
+                if (File::exists($licenseInfoFile)) {
+                    $pluginInfo = json_decode(File::get($licenseInfoFile), true) ?? [];
+                }
+            }
+            $finalLicenseInfo = $this->getLicenseInfoFromKey($licenseKey, $pluginInfo);
+        }
+        
         // ファイル生成
         return $this->makeFiler(
             $className,
@@ -99,8 +125,8 @@ trait MakeRouteTrait
             $subDirs,
             $stub,
             $pluginName,
-            [], // 追加のプレースホルダーは不要
-            $licenseInfo
+            $additionalPlaceholders, // プレースホルダーを渡す
+            $finalLicenseInfo
         );
     }
 

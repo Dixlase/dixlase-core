@@ -40,7 +40,7 @@ trait MakeSeederTrait
     protected function getAdditionalOptions(): array
     {
         return [
-            
+            '{--license-info= : JSON encoded license information}',
         ];
     }
 
@@ -63,6 +63,21 @@ trait MakeSeederTrait
     ): bool {
         // Get the stub content
         $stub = $this->renderStub($options);
+        
+        // ライセンスキーからライセンス情報を取得
+        $finalLicenseInfo = $this->getFileTypeLicenseInfo($fileType, $pluginName);
+        if (isset($options['license-info']) && !empty($options['license-info'])) {
+            $licenseKey = $options['license-info'];
+            // プラグイン情報を取得
+            $pluginInfo = [];
+            if (!empty($pluginName)) {
+                $licenseInfoFile = base_path("plugins/{$pluginName}/license-info.json");
+                if (File::exists($licenseInfoFile)) {
+                    $pluginInfo = json_decode(File::get($licenseInfoFile), true) ?? [];
+                }
+            }
+            $finalLicenseInfo = $this->getLicenseInfoFromKey($licenseKey, $pluginInfo);
+        }
 
         // ファイル生成
         $this->makeFiler(
@@ -74,7 +89,7 @@ trait MakeSeederTrait
             stub: $stub,
             pluginName: $pluginName,
             placeholders: [],
-            licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
+            licenseInfo: $finalLicenseInfo
         );
 
         return true;

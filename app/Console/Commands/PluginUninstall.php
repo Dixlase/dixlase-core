@@ -26,7 +26,7 @@ class PluginUninstall extends Command
      */
     protected $signature = 'plugin:uninstall {pluginName}
                             {--rollback : Rollback database migrations}
-                            {--delete : Delete plugin files and directories}';
+                            {--force : Force uninstall even if plugin is enabled}';
     /**
      * Create a new command instance.
      *
@@ -66,23 +66,27 @@ class PluginUninstall extends Command
 
         if (!$plugin) {
             $this->error(__('command.plugin_uninstall.not_found', ['pluginName' => $pluginName]));
-            return;
+            return 1;
+        }
+
+        // 有効化状態チェック
+        if ($plugin->status == 1 && !$this->option('force')) {
+            $this->error(__('command.plugin_uninstall.still_enabled', ['pluginName' => $pluginName]));
+            $this->warn(__('command.plugin_uninstall.disable_first'));
+            return 1;
         }
 
         $pluginPath = base_path('plugins/' . $plugin->directory);
 
         // アンインストール処理中フラグを設定（ServiceProvider読み込みを防ぐ）
         config(['app.plugin_uninstalling' => $pluginName]);
-        $this->info("DEBUG: Set uninstalling flag for plugin: {$pluginName}");
-        $this->info("DEBUG: Current config value: " . config('app.plugin_uninstalling'));
 
-        // プラグインの無効化（最初に実行してServiceProviderの読み込みを防ぐ）
-        $this->info("DEBUG: Disabling plugin: {$pluginName}");
-        $this->disablePlugin($pluginName);
-        
-        // 無効化後の状態を確認
-        $updatedPlugin = DB::table('plugins')->where('name', $pluginName)->first();
-        $this->info("DEBUG: Plugin status after disable: " . ($updatedPlugin ? $updatedPlugin->status : 'NOT FOUND'));
+        // --forceオプションが指定されている場合のみ無効化を実行
+        if ($plugin->status == 1 && $this->option('force')) {
+            $this->warn(__('command.plugin_uninstall.force_disabling', ['pluginName' => $pluginName]));
+            $this->disablePlugin($pluginName);
+            $plugin = DB::table('plugins')->where('name', $pluginName)->first();
+        }
         
         // .git/info/exclude除外リストからプラグインを削除
         // ディレクトリ名を使用（プラグイン名ではなく）
@@ -105,24 +109,8 @@ class PluginUninstall extends Command
             $this->info(__('command.plugin_uninstall.rollback_skipped'));
         }
 
-        // プラグインのディレクトリを削除するか？
-        if ($this->option('delete')) {
-            if (File::exists($pluginPath)) {
-                File::deleteDirectory($pluginPath);
-                $this->info(__('command.plugin_uninstall.directory_deleted', ['path' => $pluginPath]));
-            } else {
-                $this->info(__('command.plugin_uninstall.directory_not_exists'));
-            }
-        } else if ($this->confirm(__('command.plugin_uninstall.delete_confirm', ['pluginName' => $pluginName]), false)) {
-            if (File::exists($pluginPath)) {
-                File::deleteDirectory($pluginPath);
-                $this->info(__('command.plugin_uninstall.directory_deleted', ['path' => $pluginPath]));
-            } else {
-                $this->info(__('command.plugin_uninstall.directory_not_exists'));
-            }
-        } else {
-            $this->info(__('command.plugin_uninstall.directory_not_deleted'));
-        }
+        // ディレクトリは削除しない（plugin:deleteコマンドを使用）
+        $this->info(__('command.plugin_uninstall.files_preserved'));
 
         // データベースからプラグインを削除
         DB::table('plugins')->where('name', $pluginName)->delete();
@@ -140,5 +128,8 @@ class PluginUninstall extends Command
         config(['app.plugin_uninstalling' => null]);
 
         $this->info(__('command.plugin_uninstall.completed', ['pluginName' => $pluginName]));
+        $this->info(__('command.plugin_uninstall.delete_hint'));
+        
+        return 0;
     }
 }

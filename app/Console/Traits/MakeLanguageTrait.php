@@ -45,6 +45,8 @@ trait MakeLanguageTrait
     {
         return [
             '{lang? : The language code (e.g. en, ja)}',
+            '{--placeholders= : JSON encoded placeholders for stub replacement}',
+            '{--license-info= : JSON encoded license information}',
         ];
     }
 
@@ -103,6 +105,30 @@ trait MakeLanguageTrait
         // スタブの取得
         $stub = $this->renderStub($lang);
         
+        // プレースホルダーの取得（JSON形式で渡された場合はデコード）
+        $additionalPlaceholders = [];
+        if (isset($options['placeholders']) && !empty($options['placeholders'])) {
+            $decoded = json_decode($options['placeholders'], true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $additionalPlaceholders = $decoded;
+            }
+        }
+        
+        // ライセンスキーからライセンス情報を取得
+        $finalLicenseInfo = $this->getFileTypeLicenseInfo($fileType, $pluginName);
+        if (isset($options['license-info']) && !empty($options['license-info'])) {
+            $licenseKey = $options['license-info'];
+            // プラグイン情報を取得
+            $pluginInfo = [];
+            if (!empty($pluginName)) {
+                $licenseInfoFile = base_path("plugins/{$pluginName}/license-info.json");
+                if (File::exists($licenseInfoFile)) {
+                    $pluginInfo = json_decode(File::get($licenseInfoFile), true) ?? [];
+                }
+            }
+            $finalLicenseInfo = $this->getLicenseInfoFromKey($licenseKey, $pluginInfo);
+        }
+        
         // ファイル生成
         return $this->makeFiler(
             $className,
@@ -112,8 +138,8 @@ trait MakeLanguageTrait
             $subDirs,
             $stub,
             $pluginName,
-            [],
-            $this->getFileTypeLicenseInfo($fileType, $pluginName)
+            $additionalPlaceholders,
+            $finalLicenseInfo
         );
 
     }

@@ -279,7 +279,6 @@ class MakeNewPlugin extends Command
         $pluginNameStudly = Str::studly($pluginNameNoSpaces);
 
         // ライセンス情報を取得
-        $licenseText = $licenseInfo['licenseText'] ?? '';
         $licenseName = $licenseInfo['license'] ?? '';
 
         
@@ -290,7 +289,6 @@ class MakeNewPlugin extends Command
             'pluginDirName'     => $pluginDirName,
             'namespace'         => $namespace,
             'pluginSlug'        => $pluginSlug,
-            'license'           => $licenseText,
             'licenseName'       => $licenseName,
             'vendorName'        => $vendorName,
             'vendorNameDefault' => $vendorNameDefault,
@@ -389,11 +387,19 @@ class MakeNewPlugin extends Command
         // プラグイン名をStudlyCaseに変換
         $pluginDirName = Str::studly($pluginName);
         
+        // プレースホルダーをJSON形式にエンコード
+        $placeholdersJson = json_encode($placeholders, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        
+        // ライセンスキーを取得
+        $licenseKey = $licenseInfo['info']['license'] ?? 'MIT';
+        
         //フロント用のルートファイルを作成        
         Artisan::call('make:plugin:route', [
             'className' => "web",
             'pluginName' => $pluginDirName,
             'routeType' => 'web',
+            '--placeholders' => $placeholdersJson,
+            '--license-info' => $licenseKey,
         ]);
 
         //管理画面用のルートファイルを作成
@@ -401,10 +407,11 @@ class MakeNewPlugin extends Command
             'className' => "admin",
             'pluginName' => $pluginDirName,
             'routeType' => 'admin',
+            '--placeholders' => $placeholdersJson,
+            '--license-info' => $licenseKey,
         ]);
 
         $this->info(__('command.make_plugin.files.routes', ['className' => "web.php, admin.php", 'pluginName' => $pluginName]));
-
     }
 
     
@@ -420,10 +427,18 @@ class MakeNewPlugin extends Command
         // Convert plugin name to snake_case for the config file name
         $configFileName = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $pluginName));
 
-        // フロント用のコンフィグファイルを作成        
+        // プレースホルダーをJSON形式にエンコード
+        $placeholdersJson = json_encode($placeholders, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        
+        // ライセンスキーを取得
+        $licenseKey = $licenseInfo['info']['license'] ?? 'MIT';
+
+        // コンフィグファイルを作成        
         Artisan::call('make:plugin:config', [
             'className' => $configFileName,
             'pluginName' => $pluginDirName,
+            '--placeholders' => $placeholdersJson,
+            '--license-info' => $licenseKey,
         ]);
 
         $this->info(__('command.make_plugin.files.config', ['pluginName' => $pluginName]));
@@ -440,11 +455,19 @@ class MakeNewPlugin extends Command
         // Convert plugin name to snake_case for the language file name
         $langFileName = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $pluginName));
 
+        // プレースホルダーをJSON形式にエンコード
+        $placeholdersJson = json_encode($placeholders, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        
+        // ライセンスキーを取得
+        $licenseKey = $licenseInfo['info']['license'] ?? 'MIT';
+
         // 英語の言語ファイルを作成        
         Artisan::call('make:plugin:lang', [
             'className' => $langFileName,
             'pluginName' => $pluginDirName,
             'lang' => 'en',
+            '--placeholders' => $placeholdersJson,
+            '--license-info' => $licenseKey,
         ]);
 
         // 日本語の言語ファイルを作成
@@ -452,6 +475,8 @@ class MakeNewPlugin extends Command
             'className' => $langFileName,
             'pluginName' => $pluginDirName,
             'lang' => 'ja',
+            '--placeholders' => $placeholdersJson,
+            '--license-info' => $licenseKey,
         ]);
 
         $this->info(__('command.make_plugin.files.lang', ['pluginName' => $pluginName]));
@@ -462,7 +487,6 @@ class MakeNewPlugin extends Command
      */
     protected function createViteConfigFile(string $pluginName, string $pluginDir, array $placeholders, array $licenseInfo)
     {
-
         // スタブファイルの内容を取得してファイルを生成
         $content = $this->getStubContent('vite.config.plugin.stub', $placeholders);
         file_put_contents("{$pluginDir}/vite.config.js", $content);
@@ -505,9 +529,13 @@ class MakeNewPlugin extends Command
     {
         $providerName = "{$pluginDirName}ServiceProvider";
 
+        // ライセンスキーを取得
+        $licenseKey = $licenseInfo['info']['license'] ?? 'MIT';
+
         $params = [
             'className' => $providerName,
             'pluginName' => $pluginDirName, // StudlyCase形式のディレクトリ名を使用
+            '--license-info' => $licenseKey,
         ];
         
         Artisan::call('make:plugin:provider', $params);

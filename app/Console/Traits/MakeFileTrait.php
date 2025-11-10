@@ -147,9 +147,13 @@ trait MakeFileTrait
         $this->path = base_path($pathInfo['full_path']);
 
         //ライセンス情報を生成
-        if (!empty($licenseInfo['template']) || !empty($licenseInfo['info'])) {
+        \Log::info("MakeFileTrait: Received licenseInfo keys: " . json_encode(array_keys($licenseInfo ?? [])));
+        \Log::info("MakeFileTrait: fileCategory: {$fileCategory}, className: {$className}");
+        \Log::info("MakeFileTrait: licenseInfo['template'] length: " . (isset($licenseInfo['template']) ? strlen($licenseInfo['template']) : 'NOT SET'));
+        \Log::info("MakeFileTrait: licenseInfo['template'] is empty: " . (empty($licenseInfo['template']) ? 'YES' : 'NO'));
+        if (isset($licenseInfo['template']) && !empty($licenseInfo['template'])) {
            
-            $license = $this->replacePlaceholders($licenseInfo['template'], $licenseInfo['info']);
+            $license = $this->replacePlaceholders($licenseInfo['template'], $licenseInfo['info'] ?? []);
 
             //ライセンス情報をファイルフォーマットによって整形
             if ($fileCategory == 'blade') { //BladeファイルならBlade用の整形
@@ -170,8 +174,17 @@ trait MakeFileTrait
             'license'           => $license,
         ];
 
+        \Log::info("MakeFileTrait: placeholders keys: " . json_encode(array_keys($placeholders)));
+        \Log::info("MakeFileTrait: placeholders has license: " . (isset($placeholders['license']) ? 'YES' : 'NO'));
+        if (isset($placeholders['license'])) {
+            \Log::info("MakeFileTrait: placeholders['license'] length: " . strlen($placeholders['license']));
+        }
+
         // 追加の置換をマージ
         $finalPlaceholders = array_merge($defaultPlaceholders, $placeholders);
+
+        \Log::info("MakeFileTrait: Final license placeholder length: " . strlen($finalPlaceholders['license']));
+        \Log::info("MakeFileTrait: Final license preview: " . substr($finalPlaceholders['license'], 0, 100));
 
         // スタブファイルのプレースホルダーを置換
         $content = $this->replacePlaceholders($stub, $finalPlaceholders);
@@ -234,7 +247,9 @@ trait MakeFileTrait
     {
 
         foreach ($placeholders as $key => $value) {
+            // スペースあり・なし両方に対応
             $stub = str_replace("{{ {$key} }}", $value, $stub);
+            $stub = str_replace("{{{$key}}}", $value, $stub);
         }
         return $stub;
     }
