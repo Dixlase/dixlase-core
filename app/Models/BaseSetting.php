@@ -24,6 +24,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Contracts\Repositories\BaseSettingRepositoryInterface;
+use App\Models\Traits\UsesSettingRepositoryTrait;
 
 /**
  * 基本設定モデル
@@ -32,6 +33,8 @@ use App\Contracts\Repositories\BaseSettingRepositoryInterface;
  */
 class BaseSetting extends Model
 {
+    use UsesSettingRepositoryTrait;
+
     /**
      * テーブル名
      *
@@ -55,53 +58,10 @@ class BaseSetting extends Model
     }
 
     /**
-     * 設定の取得
-     *
-     * @deprecated BaseSettingRepository::get() を使用してください
-     * @param string $name
-     * @param mixed $default
-     * @return mixed
+     * {@inheritDoc}
      */
-    public static function getValue($name, $default = null)
+    protected static function getRepositoryInterface(): string
     {
-        return app(BaseSettingRepositoryInterface::class)->get($name, $default);
-    }
-
-    /**
-     * 設定の保存
-     *
-     * @deprecated BaseSettingRepository::set() を使用してください
-     * @param string $name
-     * @param mixed $value
-     * @return BaseSetting
-     */
-    public static function setValue($name, $value)
-    {
-        return app(BaseSettingRepositoryInterface::class)->set($name, $value);
-    }
-
-    /**
-     * 複数の設定を一括保存
-     *
-     * @deprecated BaseSettingRepository::setMultiple() を使用してください
-     * @param array $settings
-     * @return void
-     */
-    public static function setMany(array $settings): void
-    {
-        app(BaseSettingRepositoryInterface::class)->setMultiple($settings);
-    }
-
-    /**
-     * ConfigHelperとの互換性のためのエイリアスメソッド
-     *
-     * @deprecated BaseSettingRepository::get() を使用してください
-     * @param string $name
-     * @param mixed $default
-     * @return mixed
-     */
-    public static function get($name, $default = null)
-    {
-        return app(BaseSettingRepositoryInterface::class)->get($name, $default);
+        return BaseSettingRepositoryInterface::class;
     }
 }

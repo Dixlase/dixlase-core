@@ -24,154 +24,41 @@ namespace App\Repositories;
 
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 use App\Models\SecuritySetting;
-use Illuminate\Support\Facades\Cache;
 
 /**
  * セキュリティ設定リポジトリ実装
  */
-class SecuritySettingRepository implements SecuritySettingRepositoryInterface
+class SecuritySettingRepository extends AbstractSettingRepository implements SecuritySettingRepositoryInterface
 {
     /**
-     * キャッシュキーのプレフィックス
+     * コンストラクタ
      */
-    protected const CACHE_PREFIX = 'security_setting:';
-
-    /**
-     * 全設定のキャッシュキー
-     */
-    protected const CACHE_ALL_KEY = 'security_settings_all';
-
-    /**
-     * キャッシュの有効期限（分）
-     */
-    protected const CACHE_TTL = 10;
-
-    /**
-     * {@inheritDoc}
-     */
-    public function all(): array
+    public function __construct()
     {
-        return Cache::remember(
-            self::CACHE_ALL_KEY,
-            now()->addMinutes(self::CACHE_TTL),
-            fn() => SecuritySetting::pluck('value', 'name')->toArray()
-        );
+        $this->cachePrefix = 'security_setting:';
+        $this->cacheAllKey = 'security_settings_all';
+        $this->cacheTtl = 10;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function get(string $name, mixed $default = null): mixed
+    protected function getModelClass(): string
     {
-        return Cache::remember(
-            self::CACHE_PREFIX . $name,
-            now()->addMinutes(self::CACHE_TTL),
-            fn() => SecuritySetting::where('name', $name)->value('value') ?? $default
-        );
+        return SecuritySetting::class;
     }
 
     /**
+     * boolean値を'1'/'0'に変換
+     * 
      * {@inheritDoc}
      */
-    public function getMultiple(array $names, mixed $default = null): array
+    protected function transformValueForStorage(mixed $value): mixed
     {
-        $settings = [];
-        
-        foreach ($names as $name) {
-            $settings[$name] = $this->get($name, $default);
-        }
-        
-        return $settings;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function set(string $name, mixed $value): SecuritySetting
-    {
-        // Convert boolean to string for consistent storage
         if (is_bool($value)) {
-            $value = $value ? '1' : '0';
-        }
-
-        $record = SecuritySetting::updateOrCreate(
-            ['name' => $name],
-            ['value' => $value]
-        );
-
-        $this->clearCache($name);
-
-        return $record;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function setMultiple(array $settings): bool
-    {
-        try {
-            foreach ($settings as $name => $value) {
-                $this->set($name, $value);
-            }
-
-            $this->clearAllCache();
-
-            return true;
-        } catch (\Exception $e) {
-            \Log::error('Failed to set multiple security settings', [
-                'error' => $e->getMessage(),
-                'settings' => array_keys($settings)
-            ]);
-
-            return false;
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function has(string $name): bool
-    {
-        return SecuritySetting::where('name', $name)->exists();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function delete(string $name): bool
-    {
-        $result = SecuritySetting::where('name', $name)->delete();
-
-        if ($result) {
-            $this->clearCache($name);
-        }
-
-        return (bool) $result;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function clearCache(?string $name = null): void
-    {
-        if ($name !== null) {
-            Cache::forget(self::CACHE_PREFIX . $name);
+            return $value ? '1' : '0';
         }
         
-        Cache::forget(self::CACHE_ALL_KEY);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function clearAllCache(): void
-    {
-        Cache::forget(self::CACHE_ALL_KEY);
-        
-        // 個別キャッシュもクリア
-        $allSettings = SecuritySetting::pluck('name');
-        foreach ($allSettings as $name) {
-            Cache::forget(self::CACHE_PREFIX . $name);
-        }
+        return $value;
     }
 }

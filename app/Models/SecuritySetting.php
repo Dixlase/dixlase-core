@@ -24,6 +24,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
+use App\Models\Traits\UsesSettingRepositoryTrait;
 
 /**
  * セキュリティ設定モデル
@@ -32,6 +33,8 @@ use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
  */
 class SecuritySetting extends Model
 {
+    use UsesSettingRepositoryTrait;
+
     protected $table = 'security_settings';
 
     protected $fillable = [
@@ -40,28 +43,10 @@ class SecuritySetting extends Model
     ];
 
     /**
-     * 設定値を取得
-     *
-     * @deprecated SecuritySettingRepository::get() を使用してください
-     * @param string $key
-     * @param mixed $default
-     * @return mixed
+     * {@inheritDoc}
      */
-    public static function get($key, $default = null)
+    protected static function getRepositoryInterface(): string
     {
-        return app(SecuritySettingRepositoryInterface::class)->get($key, $default);
-    }
-
-    /**
-     * 設定値を保存
-     *
-     * @deprecated SecuritySettingRepository::set() を使用してください
-     * @param string $key
-     * @param mixed $value
-     * @return SecuritySetting
-     */
-    public static function set($key, $value)
-    {
-        return app(SecuritySettingRepositoryInterface::class)->set($key, $value);
+        return SecuritySettingRepositoryInterface::class;
     }
 }
