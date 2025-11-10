@@ -24,6 +24,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Contracts\Repositories\FrontSettingRepositoryInterface;
+use App\Models\Traits\UsesSettingRepositoryTrait;
 
 /**
  * フロント設定モデル
@@ -32,6 +33,8 @@ use App\Contracts\Repositories\FrontSettingRepositoryInterface;
  */
 class FrontSetting extends Model
 {
+    use UsesSettingRepositoryTrait;
+
     protected $table = 'front_settings';
     protected $fillable = [
         'name',
@@ -48,28 +51,10 @@ class FrontSetting extends Model
     }
     
     /**
-     * 設定値の取得
-     *
-     * @deprecated FrontSettingRepository::get() を使用してください
-     * @param string $name
-     * @param mixed $default
-     * @return mixed
+     * {@inheritDoc}
      */
-    public static function getValue($name, $default = null)
+    protected static function getRepositoryInterface(): string
     {
-        return app(FrontSettingRepositoryInterface::class)->get($name, $default);
-    }
-    
-    /**
-     * 設定値の保存
-     *
-     * @deprecated FrontSettingRepository::set() を使用してください
-     * @param string $name
-     * @param mixed $value
-     * @return FrontSetting
-     */
-    public static function setValue($name, $value)
-    {
-        return app(FrontSettingRepositoryInterface::class)->set($name, $value);
+        return FrontSettingRepositoryInterface::class;
     }
 }

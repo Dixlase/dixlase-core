@@ -24,143 +24,28 @@ namespace App\Repositories;
 
 use App\Contracts\Repositories\BaseSettingRepositoryInterface;
 use App\Models\BaseSetting;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 
 /**
  * 基本設定リポジトリ実装
  */
-class BaseSettingRepository implements BaseSettingRepositoryInterface
+class BaseSettingRepository extends AbstractSettingRepository implements BaseSettingRepositoryInterface
 {
     /**
-     * キャッシュキーのプレフィックス
+     * コンストラクタ
      */
-    protected const CACHE_PREFIX = 'base_setting:';
-
-    /**
-     * 全設定のキャッシュキー
-     */
-    protected const CACHE_ALL_KEY = 'base_settings_all';
-
-    /**
-     * キャッシュの有効期限（分）
-     */
-    protected const CACHE_TTL = 10;
-
-    /**
-     * {@inheritDoc}
-     */
-    public function all(): array
+    public function __construct()
     {
-        return Cache::remember(
-            self::CACHE_ALL_KEY,
-            now()->addMinutes(self::CACHE_TTL),
-            function () {
-                $settings = [];
-                foreach (BaseSetting::all() as $setting) {
-                    $settings[$setting->name] = $this->decodeValue($setting->value);
-                }
-                return $settings;
-            }
-        );
+        $this->cachePrefix = 'base_setting:';
+        $this->cacheAllKey = 'base_settings_all';
+        $this->cacheTtl = 10;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function get(string $name, mixed $default = null): mixed
+    protected function getModelClass(): string
     {
-        return Cache::remember(
-            self::CACHE_PREFIX . $name,
-            now()->addMinutes(self::CACHE_TTL),
-            function () use ($name, $default) {
-                $setting = BaseSetting::where('name', $name)->first();
-                return $setting ? $this->decodeValue($setting->value) : $default;
-            }
-        );
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getMultiple(array $names, mixed $default = null): array
-    {
-        $settings = [];
-        
-        foreach ($names as $name) {
-            $settings[$name] = $this->get($name, $default);
-        }
-        
-        return $settings;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function set(string $name, mixed $value): BaseSetting
-    {
-        $encodedValue = $this->encodeValue($value);
-        
-        $setting = BaseSetting::where('name', $name)->first();
-
-        if ($setting) {
-            $setting->value = $encodedValue;
-            $setting->save();
-        } else {
-            $setting = BaseSetting::create([
-                'name' => $name,
-                'value' => $encodedValue,
-            ]);
-        }
-
-        $this->clearCache($name);
-
-        return $setting;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function setMultiple(array $settings): bool
-    {
-        try {
-            foreach ($settings as $name => $value) {
-                $this->set($name, $value);
-            }
-
-            $this->clearAllCache();
-
-            return true;
-        } catch (\Exception $e) {
-            Log::error('Failed to set multiple base settings', [
-                'error' => $e->getMessage(),
-                'settings' => array_keys($settings)
-            ]);
-
-            return false;
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function has(string $name): bool
-    {
-        return BaseSetting::where('name', $name)->exists();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function delete(string $name): bool
-    {
-        $result = BaseSetting::where('name', $name)->delete();
-
-        if ($result) {
-            $this->clearCache($name);
-        }
-
-        return (bool) $result;
+        return BaseSetting::class;
     }
 
     /**
@@ -174,56 +59,23 @@ class BaseSettingRepository implements BaseSettingRepositoryInterface
     }
 
     /**
-     * キャッシュをクリア
-     *
-     * @param string|null $name 特定の名前のみクリアする場合は指定
-     * @return void
+     * 配列をJSON文字列に変換
+     * 
+     * {@inheritDoc}
      */
-    protected function clearCache(?string $name = null): void
+    protected function transformValueForStorage(mixed $value): mixed
     {
-        if ($name !== null) {
-            Cache::forget(self::CACHE_PREFIX . $name);
-        }
-        
-        Cache::forget(self::CACHE_ALL_KEY);
+        return is_array($value) ? json_encode($value) : (string) $value;
     }
 
     /**
-     * すべてのキャッシュをクリア
-     *
-     * @return void
+     * JSON文字列を配列に変換
+     * 
+     * {@inheritDoc}
      */
-    protected function clearAllCache(): void
-    {
-        Cache::forget(self::CACHE_ALL_KEY);
-        
-        // 個別キャッシュもクリア
-        $allSettings = BaseSetting::pluck('name');
-        foreach ($allSettings as $name) {
-            Cache::forget(self::CACHE_PREFIX . $name);
-        }
-    }
-
-    /**
-     * 値をデコード（JSON文字列を配列に変換）
-     *
-     * @param mixed $value
-     * @return mixed
-     */
-    protected function decodeValue(mixed $value): mixed
+    protected function transformValueFromStorage(mixed $value): mixed
     {
         $decoded = json_decode($value, true);
         return $decoded ?? $value;
-    }
-
-    /**
-     * 値をエンコード（配列をJSON文字列に変換）
-     *
-     * @param mixed $value
-     * @return string
-     */
-    protected function encodeValue(mixed $value): string
-    {
-        return is_array($value) ? json_encode($value) : (string) $value;
     }
 }

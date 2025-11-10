@@ -1,8 +1,41 @@
 # リポジトリパターン使用ガイド
 
+このドキュメントでは、Dixlaseで実装されているリポジトリパターンの使用方法について説明します。
+
 ## 概要
 
-Dixlaseコアシステムでは、データアクセス層の抽象化とテスタビリティ向上のため、リポジトリパターンを段階的に導入しています。
+リポジトリパターンは、データアクセスロジックをビジネスロジックから分離するためのデザインパターンです。このパターンを使用することで、以下のメリットが得られます：
+
+- **テスタビリティの向上**: モックやスタブを使用したテストが容易になります
+- **保守性の向上**: データアクセスロジックが一箇所に集約されます
+- **柔軟性の向上**: データソースの変更が容易になります
+- **依存性の逆転**: 上位レイヤーが下位レイヤーに依存しなくなります
+
+## アーキテクチャ
+
+### ベースインターフェース
+
+すべての設定系リポジトリは `SettingRepositoryInterface` を継承しています。これにより、共通メソッドの重複を排除し、一貫性のあるAPIを提供します。
+
+```php
+SettingRepositoryInterface (ベース)
+├── MemberSettingRepositoryInterface
+├── BaseSettingRepositoryInterface
+├── SecuritySettingRepositoryInterface
+├── MediaSettingRepositoryInterface
+└── FrontSettingRepositoryInterface
+```
+
+**共通メソッド:**
+- `all()` - すべての設定を取得
+- `get()` - 特定の設定を取得
+- `getMultiple()` - 複数の設定を一括取得
+- `set()` - 設定を保存
+- `setMultiple()` - 複数の設定を一括保存
+- `has()` - 設定の存在確認
+- `delete()` - 設定を削除
+- `clearCache()` - キャッシュをクリア
+- `clearAllCache()` - すべてのキャッシュをクリア
 
 ## 実装済みリポジトリ
 

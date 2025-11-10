@@ -24,127 +24,28 @@ namespace App\Repositories;
 
 use App\Contracts\Repositories\FrontSettingRepositoryInterface;
 use App\Models\FrontSetting;
-use Illuminate\Support\Facades\Cache;
 
 /**
  * フロント設定リポジトリ実装
  */
-class FrontSettingRepository implements FrontSettingRepositoryInterface
+class FrontSettingRepository extends AbstractSettingRepository implements FrontSettingRepositoryInterface
 {
     /**
-     * キャッシュキーのプレフィックス
+     * コンストラクタ
      */
-    protected const CACHE_PREFIX = 'front_setting:';
-
-    /**
-     * 全設定のキャッシュキー
-     */
-    protected const CACHE_ALL_KEY = 'front_settings_all';
-
-    /**
-     * キャッシュの有効期限（分）
-     */
-    protected const CACHE_TTL = 10;
-
-    /**
-     * {@inheritDoc}
-     */
-    public function all(): array
+    public function __construct()
     {
-        return Cache::remember(
-            self::CACHE_ALL_KEY,
-            now()->addMinutes(self::CACHE_TTL),
-            fn() => FrontSetting::pluck('value', 'name')->toArray()
-        );
+        $this->cachePrefix = 'front_setting:';
+        $this->cacheAllKey = 'front_settings_all';
+        $this->cacheTtl = 10;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function get(string $name, mixed $default = null): mixed
+    protected function getModelClass(): string
     {
-        return Cache::remember(
-            self::CACHE_PREFIX . $name,
-            now()->addMinutes(self::CACHE_TTL),
-            function () use ($name, $default) {
-                $setting = FrontSetting::where('name', $name)->first();
-                return $setting ? ($setting->value ?? $default) : $default;
-            }
-        );
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getMultiple(array $names, mixed $default = null): array
-    {
-        $settings = [];
-        
-        foreach ($names as $name) {
-            $settings[$name] = $this->get($name, $default);
-        }
-        
-        return $settings;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function set(string $name, mixed $value): FrontSetting
-    {
-        $record = FrontSetting::updateOrCreate(
-            ['name' => $name],
-            ['value' => $value]
-        );
-
-        $this->clearCache($name);
-
-        return $record;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function setMultiple(array $settings): bool
-    {
-        try {
-            foreach ($settings as $name => $value) {
-                $this->set($name, $value);
-            }
-
-            $this->clearAllCache();
-
-            return true;
-        } catch (\Exception $e) {
-            \Log::error('Failed to set multiple front settings', [
-                'error' => $e->getMessage(),
-                'settings' => array_keys($settings)
-            ]);
-
-            return false;
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function has(string $name): bool
-    {
-        return FrontSetting::where('name', $name)->exists();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function delete(string $name): bool
-    {
-        $result = FrontSetting::where('name', $name)->delete();
-
-        if ($result) {
-            $this->clearCache($name);
-        }
-
-        return (bool) $result;
+        return FrontSetting::class;
     }
 
     /**
@@ -152,34 +53,8 @@ class FrontSettingRepository implements FrontSettingRepositoryInterface
      */
     public function findWithRelations(string $name): ?FrontSetting
     {
-        return FrontSetting::where('name', $name)
-            ->with('frontOgpImage')
+        return FrontSetting::with('frontOgpImage')
+            ->where('name', $name)
             ->first();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function clearCache(?string $name = null): void
-    {
-        if ($name !== null) {
-            Cache::forget(self::CACHE_PREFIX . $name);
-        }
-        
-        Cache::forget(self::CACHE_ALL_KEY);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function clearAllCache(): void
-    {
-        Cache::forget(self::CACHE_ALL_KEY);
-        
-        // 個別キャッシュもクリア
-        $allSettings = FrontSetting::pluck('name');
-        foreach ($allSettings as $name) {
-            Cache::forget(self::CACHE_PREFIX . $name);
-        }
     }
 }

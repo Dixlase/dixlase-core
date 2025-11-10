@@ -24,153 +24,28 @@ namespace App\Repositories;
 
 use App\Contracts\Repositories\MemberSettingRepositoryInterface;
 use App\Models\MemberSetting;
-use Illuminate\Support\Facades\Cache;
 
 /**
  * メンバー設定リポジトリ実装
  */
-class MemberSettingRepository implements MemberSettingRepositoryInterface
+class MemberSettingRepository extends AbstractSettingRepository implements MemberSettingRepositoryInterface
 {
     /**
-     * キャッシュキーのプレフィックス
+     * コンストラクタ
      */
-    protected const CACHE_PREFIX = 'member_setting:';
-
-    /**
-     * 全設定のキャッシュキー
-     */
-    protected const CACHE_ALL_KEY = 'members_settings_all';
-
-    /**
-     * キャッシュの有効期限（分）
-     */
-    protected const CACHE_TTL = 10;
-
-    /**
-     * {@inheritDoc}
-     */
-    public function all(): array
+    public function __construct()
     {
-        return Cache::remember(
-            self::CACHE_ALL_KEY,
-            now()->addMinutes(self::CACHE_TTL),
-            fn() => MemberSetting::pluck('value', 'key')->toArray()
-        );
+        $this->cachePrefix = 'member_setting:';
+        $this->cacheAllKey = 'members_settings_all';
+        $this->cacheTtl = 10;
+        $this->keyColumn = 'key'; // MemberSettingは'key'カラムを使用
     }
 
     /**
      * {@inheritDoc}
      */
-    public function get(string $key, mixed $default = null): mixed
+    protected function getModelClass(): string
     {
-        return Cache::remember(
-            self::CACHE_PREFIX . $key,
-            now()->addMinutes(self::CACHE_TTL),
-            fn() => MemberSetting::where('key', $key)->value('value') ?? $default
-        );
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getMultiple(array $keys, mixed $default = null): array
-    {
-        $settings = [];
-        
-        foreach ($keys as $key) {
-            $settings[$key] = $this->get($key, $default);
-        }
-        
-        return $settings;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function set(string $key, mixed $value): MemberSetting
-    {
-        $record = MemberSetting::updateOrCreate(
-            ['key' => $key],
-            ['value' => $value]
-        );
-
-        $this->clearCache($key);
-
-        return $record;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function setMultiple(array $settings): bool
-    {
-        try {
-            foreach ($settings as $key => $value) {
-                MemberSetting::updateOrCreate(
-                    ['key' => $key],
-                    ['value' => $value]
-                );
-            }
-
-            $this->clearAllCache();
-
-            return true;
-        } catch (\Exception $e) {
-            \Log::error('Failed to set multiple member settings', [
-                'error' => $e->getMessage(),
-                'settings' => array_keys($settings)
-            ]);
-
-            return false;
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function has(string $key): bool
-    {
-        return MemberSetting::where('key', $key)->exists();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function delete(string $key): bool
-    {
-        $result = MemberSetting::where('key', $key)->delete();
-
-        if ($result) {
-            $this->clearCache($key);
-        }
-
-        return (bool) $result;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function clearCache(?string $key = null): void
-    {
-        if ($key !== null) {
-            Cache::forget(self::CACHE_PREFIX . $key);
-        }
-        
-        Cache::forget(self::CACHE_ALL_KEY);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function clearAllCache(): void
-    {
-        Cache::forget(self::CACHE_ALL_KEY);
-        
-        // 個別キャッシュもクリア（パターンマッチング）
-        // Note: Redisなどを使用している場合は、より効率的な方法を検討
-        $allSettings = MemberSetting::pluck('key');
-        foreach ($allSettings as $key) {
-            Cache::forget(self::CACHE_PREFIX . $key);
-        }
+        return MemberSetting::class;
     }
 }
