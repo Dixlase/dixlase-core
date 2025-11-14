@@ -67,7 +67,7 @@ trait MakeControllerTrait
      * @param  string  $scope      スコープ (front/adminなど)
      * @return bool
      */
-    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '')
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '', array $licenseInfo = [])
     {
 
         $scope = $options['scope'] ?? 'plain'; // スコープの取得（例: admin, front, plain）

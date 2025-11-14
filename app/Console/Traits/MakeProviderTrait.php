@@ -44,6 +44,7 @@ trait MakeProviderTrait
     {
         return [
             '{--license-info= : JSON encoded license information}',
+            '{--initial : Use full-featured stub for initial plugin creation}',
         ];
     }
     
@@ -132,7 +133,10 @@ trait MakeProviderTrait
     {
         // プロバイダー用のスタブを選択
         $stubName = 'provider.stub';
-        if ($options['plugin'] ?? false) {
+        
+        // プラグイン用で、かつ初期作成時（--initialフラグがある）の場合のみ
+        // フル機能版のスタブを使用
+        if (($options['plugin'] ?? false) && ($options['initial'] ?? false)) {
             $stubName = 'provider.plugin.stub';
         }
 

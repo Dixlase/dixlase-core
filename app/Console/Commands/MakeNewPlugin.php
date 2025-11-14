@@ -292,7 +292,7 @@ class MakeNewPlugin extends Command
         $pluginNameStudly = Str::studly($pluginNameNoSpaces);
 
         // ライセンス情報を取得
-        $licenseName = $licenseInfo['license'] ?? '';
+        $licenseName = $licenseInfo['license'] ?? 'GPL';
 
         
 
@@ -404,8 +404,8 @@ class MakeNewPlugin extends Command
         $placeholdersJson = json_encode($placeholders, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         
         // ライセンスキーを取得
-        $licenseKey = $licenseInfo['info']['license'] ?? 'MIT';
-        
+        $licenseKey = $licenseInfo['license'] ?? 'GPL';
+
         //フロント用のルートファイルを作成        
         Artisan::call('make:plugin:route', [
             'className' => "web",
@@ -444,7 +444,7 @@ class MakeNewPlugin extends Command
         $placeholdersJson = json_encode($placeholders, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         
         // ライセンスキーを取得
-        $licenseKey = $licenseInfo['info']['license'] ?? 'MIT';
+        $licenseKey = $licenseInfo['license'] ?? 'GPL';
 
         // コンフィグファイルを作成        
         Artisan::call('make:plugin:config', [
@@ -472,7 +472,7 @@ class MakeNewPlugin extends Command
         $placeholdersJson = json_encode($placeholders, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         
         // ライセンスキーを取得
-        $licenseKey = $licenseInfo['info']['license'] ?? 'MIT';
+        $licenseKey = $licenseInfo['license'] ?? 'GPL';
 
         // 英語の言語ファイルを作成        
         Artisan::call('make:plugin:lang', [
@@ -543,12 +543,13 @@ class MakeNewPlugin extends Command
         $providerName = "{$pluginDirName}ServiceProvider";
 
         // ライセンスキーを取得
-        $licenseKey = $licenseInfo['info']['license'] ?? 'MIT';
+        $licenseKey = $licenseInfo['license'] ?? 'GPL';
 
         $params = [
             'className' => $providerName,
             'pluginName' => $pluginDirName, // StudlyCase形式のディレクトリ名を使用
             '--license-info' => $licenseKey,
+            '--initial' => true, // 初期作成時はフル機能版のスタブを使用
         ];
         
         Artisan::call('make:plugin:provider', $params);
