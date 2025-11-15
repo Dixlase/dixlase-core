@@ -71,6 +71,7 @@ return [
         'prompt' => 'プラグインを選択してください',
         'not_found' => '指定されたプラグインが見つかりません。',
         'not_exists' => '指定されたプラグインは存在しません。',
+        'not_selected' => 'プラグインが選択されませんでした。',
     ],
     'plugin_install' => [
         'description' => 'プラグインをインストールし、データベースに登録し、マイグレーションを実行し、オートロードを更新します。',
@@ -247,8 +248,8 @@ return [
     'file_type' => [
         'prompt' => 'カスタム用ファイルの種類を選択してください',
         'labels' => [
-            'custom_core' => 'コア用ファイル（core）',
-            'custom_plugin' => 'プラグイン用ファイル（plugin）',
+            'core' => 'コア用ファイル（core）',
+            'plugin' => 'プラグイン用ファイル（plugin）',
         ],
     ],
 

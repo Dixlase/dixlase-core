@@ -22,66 +22,70 @@
 
 namespace App\Console\Traits;
 
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 
 /**
- * ミドルウェアを作るための追加ロジック。
- * -> MakeFileTrait を use して継承的に発展させる例
+ * ミドルウェアファイル作成用トレイト
  */
 trait MakeMiddlewareTrait
 {
     use MakeFileTrait;
-
+    
     /**
-     * ミドルウェアを作成するメイン処理。
+     * ミドルウェア固有のオプション定義を取得
+     * 
+     * @return array
+     */
+    protected function getAdditionalOptions(): array
+    {
+        return [];
+    }
+    
+    /**
+     * ミドルウェアクラスを作成するメイン処理。
      *
-     * @param  string  $className
-     * @param  array   $subDirs
-     * @param  bool    $force
-     * @return void
+     * @param  string  $className  クラス名
+     * @param  string  $fileType   ファイルタイプ
+     * @param  array   $options    オプション配列
+     * @param  array   $subDirs    サブディレクトリ配列
+     * @param  string  $pluginName プラグイン名
+     * @return bool
      */
-    protected function makeFile(string $className, array $subDirs, bool $force): void
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '')
     {
-        // 1) ミドルウェア用 stub ファイル (今は常に "middleware.stub" でOK)
-        $stubFile = $this->resolveStubFile();
-
-        // 2) options
-        $options = [
-            'force' => $force,
-        ];
-
-        // 3) ミドルウェア固有の追加プレースホルダ (特になければ空配列でOK)
-        $extraPlaceholders = [];
-
-        // 4) makeFiler
-        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders, 'middleware');
+        // スタブの取得
+        $stub = $this->renderStub($options);
+        
+        // ファイル生成
+        return $this->makeFiler(
+            className: $className,
+            fileType: $fileType,
+            fileCategory: 'middleware',
+            options: $options,
+            subDirs: $subDirs,
+            stub: $stub,
+            pluginName: $pluginName,
+            placeholders: [],
+            licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
+        );
     }
 
     /**
-     * stubファイル名を決定
-     * 例: "middleware.stub"
+     * ミドルウェア用のスタブをレンダリングします。
+     *
+     * @param  array  $options
+     * @return string
      */
-    protected function resolveStubFile(): string
+    protected function renderStub(array $options = []): string
     {
-        return 'middleware.stub';
-    }
+        // スタブファイルのパスを取得
+        $stubPath = config('command.custom_stub_directory') . '/middleware.stub';
 
-    /**
-     * (B)パターン: getDirectory/getNamespace でサブクラスの getMiddlewareDirectory/Namespace を呼ぶ
-     */
-    protected function getDirectory(array $subDirs): string
-    {
-        return $this->getMiddlewareDirectory($subDirs);
-    }
+        if (!File::exists($stubPath)) {
+            $this->error("Stub file not found: {$stubPath}");
+            return '';
+        }
 
-    protected function getNamespace(array $subDirs): string
-    {
-        return $this->getMiddlewareNamespace($subDirs);
+        return File::get($stubPath);
     }
-
-    /**
-     * サブクラスで実装: getMiddlewareDirectory/Namespace
-     */
-    abstract protected function getMiddlewareDirectory(array $subDirs): string;
-    abstract protected function getMiddlewareNamespace(array $subDirs): string;
 }

@@ -52,23 +52,13 @@ trait MakeHelperTrait
      * @param  string  $pluginName プラグイン名
      * @return bool
      */
-    protected function makeFile(
-        string $className,
-        string $fileType,
-        array $options,
-        array $subDirs,
-        string $pluginName
-    ): bool {
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '')
+    {
         // スタブの取得
         $stub = $this->renderStub($options);
         
-        // プレースホルダーの準備
-        $placeholders = [
-            'class' => $className,
-        ];
-                
         // ファイル生成
-        $this->makeFiler(
+        return $this->makeFiler(
             className: $className,
             fileType: $fileType,
             fileCategory: 'helper',
@@ -76,11 +66,9 @@ trait MakeHelperTrait
             subDirs: $subDirs,
             stub: $stub,
             pluginName: $pluginName,
-            placeholders: $placeholders,
+            placeholders: [],
             licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
         );
-        
-        return true;
     }
 
     /**

@@ -22,63 +22,73 @@
 
 namespace App\Console\Traits;
 
+use Illuminate\Support\Facades\File;
+
 /**
- * 通知を作るための追加ロジック。
- * -> MakeFileTrait を use して継承的に発展させる例
+ * 通知ファイル作成用トレイト
  */
 trait MakeNotificationTrait
 {
     use MakeFileTrait;
-
+    
+    /**
+     * 通知固有のオプション定義を取得
+     * 
+     * @return array
+     */
+    protected function getAdditionalOptions(): array
+    {
+        return [
+            '{--markdown : Create a Markdown-based Notification}',
+        ];
+    }
+    
     /**
      * 通知クラスを作成するメイン処理。
      *
-     * @param  string  $className
-     * @param  array   $subDirs
-     * @param  bool    $force
-     * @return void
+     * @param  string  $className  クラス名
+     * @param  string  $fileType   ファイルタイプ
+     * @param  array   $options    オプション配列
+     * @param  array   $subDirs    サブディレクトリ配列
+     * @param  string  $pluginName プラグイン名
+     * @return bool
      */
-    protected function makeFile(string $className, array $subDirs, bool $force): void
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '')
     {
-        // 1) 通知用 stubファイル (例: "notification.stub")
-        $stubFile = $this->resolveStubFile();
-
-        // 2) options
-        $options = [
-            'force' => $force,
-        ];
-
-        // 3) 通知固有のプレースホルダ (なければ空配列でOK)
-        $extraPlaceholders = [];
-
-        // 4) makeFiler
-        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders);
+        // スタブの取得
+        $stub = $this->renderStub($options);
+        
+        // ファイル生成
+        return $this->makeFiler(
+            className: $className,
+            fileType: $fileType,
+            fileCategory: 'notification',
+            options: $options,
+            subDirs: $subDirs,
+            stub: $stub,
+            pluginName: $pluginName,
+            placeholders: [],
+            licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
+        );
     }
 
     /**
-     * 通知の stub ファイルを指定。将来、--markdown= などで切り替える場合に拡張可能
+     * 通知用のスタブをレンダリングします。
+     *
+     * @param  array  $options
+     * @return string
      */
-    protected function resolveStubFile(): string
+    protected function renderStub(array $options = []): string
     {
-        return 'notification.stub';
-    }
+        // --markdown オプションによってスタブを切り替え
+        $stubName = ($options['markdown'] ?? false) ? 'markdown-notification.stub' : 'notification.stub';
+        $stubPath = config('command.custom_stub_directory') . '/' . $stubName;
 
-    /**
-     * (B)パターン: getDirectory/getNamespace を通知用にまとめる
-     */
-    protected function getDirectory(array $subDirs): string
-    {
-        return $this->getNotificationDirectory($subDirs);
-    }
+        if (!File::exists($stubPath)) {
+            $this->error("Stub file not found: {$stubPath}");
+            return '';
+        }
 
-    protected function getNamespace(array $subDirs): string
-    {
-        return $this->getNotificationNamespace($subDirs);
+        return File::get($stubPath);
     }
-
-    /**
-     * サブクラスで実装
-     */
-    abstract protected function getNotificationDirectory(array $subDirs): string;
-    abstract protected function getNotificationNamespace(array $subDirs): string;
 }

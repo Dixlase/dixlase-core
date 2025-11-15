@@ -22,70 +22,81 @@
 
 namespace App\Console\Traits;
 
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 
 /**
- * Mailableクラスを作成するための Trait.
- * -> MakeFileTrait を use してファイル生成を共通化。
+ * Mailファイル作成用トレイト
  */
 trait MakeMailTrait
 {
     use MakeFileTrait;
-
+    
     /**
-     * @param  string  $className
-     * @param  array   $subDirs
-     * @param  bool    $force
-     * @param  bool    $isMarkdown      --markdown がtrueなら
-     * @param  string  $subject         --subject= で指定された文字列
-     * @param  string  $view            --view= などで指定されたBlade (markdown のみ？)
+     * Mail固有のオプション定義を取得
+     * 
+     * @return array
      */
-    protected function makeFile(
-        string $className,
-        array $subDirs,
-        bool $force,
-        bool $isMarkdown,
-        string $subject = 'Mail Subject',
-        string $view = 'view.name'
-    ): void {
-        // 1) stubファイルを決定
-        //    --markdown なら "markdown-mail.stub", なければ "mail.stub"
-        $stubFile = $isMarkdown ? 'markdown-mail.stub' : 'mail.stub';
-
-        // 2) options
-        $options = [
-            'force' => $force,
-        ];
-
-        // 3) 追加プレースホルダ: subject, view
-        $extraPlaceholders = [
-            '{{ subject }}' => $subject,
-        ];
-
-        // markdown 用 stub の場合: '{{ view }}' => $view
-        // 通常 mail.stub は '{{ view }}' が無いがあっても無害
-        $extraPlaceholders['{{ view }}'] = $view;
-
-        // 4) makeFiler
-        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders);
-    }
-
-    /**
-     * (B)パターン: getDirectory/getNamespace => getMailDirectory/Namespace
-     */
-    protected function getDirectory(array $subDirs): string
+    protected function getAdditionalOptions(): array
     {
-        return $this->getMailDirectory($subDirs);
+        return [
+            '{--markdown : Create a Markdown-based Mailable}',
+            '{--subject= : The email subject}',
+            '{--view= : The Blade view name}',
+        ];
     }
-
-    protected function getNamespace(array $subDirs): string
+    
+    /**
+     * Mailクラスを作成するメイン処理。
+     *
+     * @param  string  $className  クラス名
+     * @param  string  $fileType   ファイルタイプ
+     * @param  array   $options    オプション配列
+     * @param  array   $subDirs    サブディレクトリ配列
+     * @param  string  $pluginName プラグイン名
+     * @return bool
+     */
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '')
     {
-        return $this->getMailNamespace($subDirs);
+        // スタブの取得
+        $stub = $this->renderStub($options);
+        
+        // プレースホルダーの準備
+        $placeholders = [
+            'subject' => $options['subject'] ?? 'Mail Subject',
+            'view' => $options['view'] ?? 'view.name',
+        ];
+        
+        // ファイル生成
+        return $this->makeFiler(
+            className: $className,
+            fileType: $fileType,
+            fileCategory: 'mail',
+            options: $options,
+            subDirs: $subDirs,
+            stub: $stub,
+            pluginName: $pluginName,
+            placeholders: $placeholders,
+            licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
+        );
     }
 
     /**
-     * サブクラスで実装
+     * Mail用のスタブをレンダリングします。
+     *
+     * @param  array  $options
+     * @return string
      */
-    abstract protected function getMailDirectory(array $subDirs): string;
-    abstract protected function getMailNamespace(array $subDirs): string;
+    protected function renderStub(array $options = []): string
+    {
+        // --markdown オプションによってスタブを切り替え
+        $stubName = ($options['markdown'] ?? false) ? 'markdown-mail.stub' : 'mail.stub';
+        $stubPath = config('command.custom_stub_directory') . '/' . $stubName;
+
+        if (!File::exists($stubPath)) {
+            $this->error("Stub file not found: {$stubPath}");
+            return '';
+        }
+
+        return File::get($stubPath);
+    }
 }
