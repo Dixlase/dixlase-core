@@ -75,6 +75,15 @@ trait MakeCustomCommandTrait
             }
         }
 
+        // ファイルタイプがpluginでプラグイン名が指定されていない場合、プラグイン名を聞く
+        if ($fileType === 'plugin' && empty($pluginName)) {
+            $pluginName = $this->choosePlugin();
+            if (!$pluginName) {
+                $this->error(__('command.plugin.not_selected'));
+                return false;
+            }
+        }
+
         // スコープの処理（必要な場合）
         if ($needsScope && empty($scope)) {
             $scope = $this->chooseScope();
@@ -89,6 +98,14 @@ trait MakeCustomCommandTrait
             $classPath,
             $needsScope ? $scope : null
         );
+
+        // カスタムコマンドでpluginが指定された場合はcustom_pluginに変換
+        if ($fileType === 'plugin') {
+            $fileType = 'custom_plugin';
+        }
+
+        // プラグイン名がnullの場合は空文字列に変換（coreの場合など）
+        $pluginName = $pluginName ?? '';
 
         // 共通パラメータを準備
         $common = [
@@ -114,7 +131,7 @@ trait MakeCustomCommandTrait
             $fileType,
             $options,
             $subDirs,
-            $pluginName,
+            $pluginName
         );
 
         return true;

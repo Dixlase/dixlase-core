@@ -23,55 +23,33 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
-use App\Services\FileGenerator;
 use App\Console\Traits\MakeNotificationTrait;
+use App\Console\Traits\MakeCustomCommandTrait;
 
 class MakeCustomNotification extends Command
 {
     use MakeNotificationTrait;
+    use MakeCustomCommandTrait;
 
-    protected $signature = 'make:custom:notification
-        {name : The notification class (with optional subfolders, e.g. Admin/SendUpdate)}
-        {--force : Overwrite if notification already exists}';
-
-    protected $description = 'Create a new notification in the custom directory';
-
-    protected FileGenerator $fileGenerator;
-
-    public function __construct(FileGenerator $fileGenerator)
+    public function __construct()
     {
+        $this->signature = $this->makeSignature(
+            'make:custom:notification'
+            .$this->getCustomCommandSignature(),
+            $this->getAdditionalOptions()
+        );
+        $this->setDescription(__('command.make_custom.notification.description'));
         parent::__construct();
-        $this->fileGenerator = $fileGenerator;
     }
 
     public function handle()
     {
-        // subDirs + className
-        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
-
-        $force = (bool)$this->option('force');
-
-        $this->makeFile($className, $subDirs, $force);
-
-        return 0;
-    }
-
-    protected function getNotificationDirectory(array $subDirs): string
-    {
-        $base = base_path('custom/notifications');
-        if ($subDirs) {
-            $base .= '/' . implode('/', $subDirs);
-        }
-        return $base;
-    }
-
-    protected function getNotificationNamespace(array $subDirs): string
-    {
-        $base = 'Custom\\Notifications';
-        if ($subDirs) {
-            $base .= '\\' . implode('\\', $subDirs);
-        }
-        return $base;
+        return $this->generateCustomFile(
+            $this->argument('className'),
+            $this->argument('fileType'),
+            $this->argument('pluginName'),
+            'notification',
+            $this->options()
+        );
     }
 }

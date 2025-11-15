@@ -22,65 +22,70 @@
 
 namespace App\Console\Traits;
 
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 
 /**
- * 単に"Trait"を作成するための追加ロジック。
- * -> MakeFileTrait を use してファイル生成を共通化する。
+ * トレイトファイル作成用トレイト
  */
 trait MakeTraitTrait
 {
     use MakeFileTrait;
-
+    
     /**
-     * トレイトを作成するメイン処理
+     * トレイト固有のオプション定義を取得
+     * 
+     * @return array
+     */
+    protected function getAdditionalOptions(): array
+    {
+        return [];
+    }
+    
+    /**
+     * トレイトクラスを作成するメイン処理。
      *
-     * @param  string  $className
-     * @param  array   $subDirs
-     * @param  bool    $force
-     * @return void
+     * @param  string  $className  クラス名
+     * @param  string  $fileType   ファイルタイプ
+     * @param  array   $options    オプション配列
+     * @param  array   $subDirs    サブディレクトリ配列
+     * @param  string  $pluginName プラグイン名
+     * @return bool
      */
-    protected function makeFile(string $className, array $subDirs, bool $force): void
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '')
     {
-        // 1) trait用 stubファイル (例: trait.stub)
-        $stubFile = $this->resolveStubFile();
-
-        // 2) options
-        $options = [
-            'force' => $force,
-        ];
-
-        // 3) トレイト固有のプレースホルダ(なければ空)
-        $extraPlaceholders = [];
-
-        // 4) makeFiler
-        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders);
+        // スタブの取得
+        $stub = $this->renderStub($options);
+        
+        // ファイル生成
+        return $this->makeFiler(
+            className: $className,
+            fileType: $fileType,
+            fileCategory: 'trait',
+            options: $options,
+            subDirs: $subDirs,
+            stub: $stub,
+            pluginName: $pluginName,
+            placeholders: [],
+            licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
+        );
     }
 
     /**
-     * trait.stub を返す (将来別途--finalなど拡張したいならここで分岐)
+     * トレイト用のスタブをレンダリングします。
+     *
+     * @param  array  $options
+     * @return string
      */
-    protected function resolveStubFile(): string
+    protected function renderStub(array $options = []): string
     {
-        return 'trait.stub';
-    }
+        // スタブファイルのパスを取得
+        $stubPath = config('command.custom_stub_directory') . '/trait.stub';
 
-    /**
-     * (B)パターン: getDirectory/getNamespace => getTraitDirectory/Namespace
-     */
-    protected function getDirectory(array $subDirs): string
-    {
-        return $this->getTraitDirectory($subDirs);
-    }
+        if (!File::exists($stubPath)) {
+            $this->error("Stub file not found: {$stubPath}");
+            return '';
+        }
 
-    protected function getNamespace(array $subDirs): string
-    {
-        return $this->getTraitNamespace($subDirs);
+        return File::get($stubPath);
     }
-
-    /**
-     * サブクラスで実装
-     */
-    abstract protected function getTraitDirectory(array $subDirs): string;
-    abstract protected function getTraitNamespace(array $subDirs): string;
 }

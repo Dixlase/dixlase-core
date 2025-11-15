@@ -53,7 +53,7 @@ trait MakeRouteTrait
      * ルートファイルを作成するメイン処理。
      *
      * @param  string  $className     ルートファイル名 (e.g. "web")
-     * @param  string  $fileType      ファイルタイプ (custom_core, custom_plugin, plugin)
+     * @param  string  $fileType      ファイルタイプ (core, custom_plugin, plugin)
      * @param  array   $options       コマンドオプション
      * @param  array   $subDirs       サブディレクトリ (["admin"] など)
      * @param  string  $pluginName    プラグイン名

@@ -23,55 +23,33 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
-use App\Services\FileGenerator;
 use App\Console\Traits\MakeMiddlewareTrait;
+use App\Console\Traits\MakeCustomCommandTrait;
 
 class MakeCustomMiddleware extends Command
 {
     use MakeMiddlewareTrait;
+    use MakeCustomCommandTrait;
 
-    protected $signature = 'make:custom:middleware
-        {name : The middleware class (with optional subfolders, e.g. Admin/CheckSomething)}
-        {--force : Overwrite if middleware already exists}';
-
-    protected $description = 'Create a new middleware in the custom directory';
-
-    protected FileGenerator $fileGenerator;
-
-    public function __construct(FileGenerator $fileGenerator)
+    public function __construct()
     {
+        $this->signature = $this->makeSignature(
+            'make:custom:middleware'
+            .$this->getCustomCommandSignature(),
+            $this->getAdditionalOptions()
+        );
+        $this->setDescription(__('command.make_custom.middleware.description'));
         parent::__construct();
-        $this->fileGenerator = $fileGenerator;
     }
 
     public function handle()
     {
-        // subDirs + className
-        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
-
-        $force = (bool) $this->option('force');
-
-        $this->makeFile($className, $subDirs, $force);
-
-        return 0;
-    }
-
-    protected function getMiddlewareDirectory(array $subDirs): string
-    {
-        $base = base_path('custom/app/Http/Middleware');
-        if ($subDirs) {
-            $base .= '/' . implode('/', $subDirs);
-        }
-        return $base;
-    }
-
-    protected function getMiddlewareNamespace(array $subDirs): string
-    {
-        $base = 'Custom\\App\\Http\\Middleware';
-        if ($subDirs) {
-            $base .= '\\' . implode('\\', $subDirs);
-        }
-        return $base;
+        return $this->generateCustomFile(
+            $this->argument('className'),
+            $this->argument('fileType'),
+            $this->argument('pluginName'),
+            'middleware',
+            $this->options()
+        );
     }
 }

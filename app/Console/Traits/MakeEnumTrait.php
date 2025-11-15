@@ -22,63 +22,84 @@
 
 namespace App\Console\Traits;
 
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 
+/**
+ * Enumファイル作成用トレイト
+ */
 trait MakeEnumTrait
 {
     use MakeFileTrait;
+    
+    /**
+     * Enum固有のオプション定義を取得
+     * 
+     * @return array
+     */
+    protected function getAdditionalOptions(): array
+    {
+        return [
+            '{--s|string : Generate a string backed enum}',
+            '{--i|int : Generate an integer backed enum}',
+        ];
+    }
+    
+    /**
+     * Enumクラスを作成するメイン処理。
+     *
+     * @param  string  $className  クラス名
+     * @param  string  $fileType   ファイルタイプ
+     * @param  array   $options    オプション配列
+     * @param  array   $subDirs    サブディレクトリ配列
+     * @param  string  $pluginName プラグイン名
+     * @return bool
+     */
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '')
+    {
+        // スタブの取得
+        $stub = $this->renderStub($options);
+        
+        // プレースホルダーの準備
+        $placeholders = [];
+        if (!empty($options['string'])) {
+            $placeholders['type'] = 'string';
+        } elseif (!empty($options['int'])) {
+            $placeholders['type'] = 'int';
+        }
+        
+        // ファイル生成
+        return $this->makeFiler(
+            className: $className,
+            fileType: $fileType,
+            fileCategory: 'enum',
+            options: $options,
+            subDirs: $subDirs,
+            stub: $stub,
+            pluginName: $pluginName,
+            placeholders: $placeholders,
+            licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
+        );
+    }
 
     /**
-     * Enumクラスを作成するメイン処理
+     * Enum用のスタブをレンダリングします。
      *
-     * @param  string       $className
-     * @param  array        $subDirs
-     * @param  bool         $force
-     * @param  string|null  $backedType  --backed=xxx の値 (例: "string" / "int" etc.)
+     * @param  array  $options
+     * @return string
      */
-    protected function makeFile(
-        string $className,
-        array $subDirs,
-        bool $force,
-        ?string $backedType = null
-    ): void {
-        // 1) stubファイルを決定
-        //    --backed=があれば "enum.backed.stub", なければ "enum.stub"
-        $isBacked = ! is_null($backedType);
-        $stubFile = $isBacked ? 'enum.backed.stub' : 'enum.stub';
+    protected function renderStub(array $options = []): string
+    {
+        // --string または --int オプションによってスタブを切り替え
+        $stubName = (!empty($options['string']) || !empty($options['int'])) 
+            ? 'enum.backed.stub' 
+            : 'enum.stub';
+        $stubPath = config('command.custom_stub_directory') . '/' . $stubName;
 
-        // 2) options
-        $options = [
-            'force' => $force,
-        ];
-
-        // 3) バッキングありなら追加プレースホルダ {{ type }} => $backedType
-        $extraPlaceholders = [];
-        if ($isBacked) {
-            $extraPlaceholders['{{ type }}'] = $backedType;
+        if (!File::exists($stubPath)) {
+            $this->error("Stub file not found: {$stubPath}");
+            return '';
         }
 
-        // 4) makeFiler
-        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders);
+        return File::get($stubPath);
     }
-
-    /**
-     * (B)パターン: getDirectory/getNamespace => getEnumDirectory/Namespace
-     *   => サブクラスで実装
-     */
-    protected function getDirectory(array $subDirs): string
-    {
-        return $this->getEnumDirectory($subDirs);
-    }
-
-    protected function getNamespace(array $subDirs): string
-    {
-        return $this->getEnumNamespace($subDirs);
-    }
-
-    /**
-     * サブクラスに実装してもらう
-     */
-    abstract protected function getEnumDirectory(array $subDirs): string;
-    abstract protected function getEnumNamespace(array $subDirs): string;
 }

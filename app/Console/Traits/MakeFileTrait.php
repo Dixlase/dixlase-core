@@ -592,7 +592,7 @@ trait MakeFileTrait
                 }
                 break;
 
-            case 'custom_core':
+            case 'core':
                 // コア用カスタムファイル
                 $basePath = 'custom/' . $basePath;
                 $baseNamespace = $baseNamespace 

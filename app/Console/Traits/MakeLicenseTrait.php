@@ -16,7 +16,7 @@ trait MakeLicenseTrait
      */
     protected function getFileTypeLicenseInfo(string $fileType, ?string $pluginName = null): array
     {
-        if ($fileType === 'custom_core') {
+        if ($fileType === 'core') {
             return $this->getCustomFileLicenseInfo(true) ?? [];
         } elseif ($fileType === 'plugin' || $fileType === 'custom_plugin' && $pluginName) {
             return $this->getPluginLicenseInfo($pluginName) ?? [];
