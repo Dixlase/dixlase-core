@@ -39,7 +39,10 @@ trait MakeNotificationTrait
     protected function getAdditionalOptions(): array
     {
         return [
-            '{--markdown : Create a Markdown-based Notification}',
+            '{--m|markdown : Create a new Markdown template for the notification}',
+            '{--test : Generate an accompanying test for the Notification}',
+            '{--pest : Generate an accompanying Pest test for the Notification}',
+            '{--phpunit : Generate an accompanying PHPUnit test for the Notification}',
         ];
     }
     
@@ -58,8 +61,21 @@ trait MakeNotificationTrait
         // スタブの取得
         $stub = $this->renderStub($options);
         
+        // プレースホルダーの準備
+        $placeholders = [];
+        
+        // --markdownオプションが指定されている場合、viewプレースホルダーを追加
+        if (!empty($options['markdown'])) {
+            $viewPath = $options['markdown'];
+            // 値が指定されていない場合（-m のみ）はデフォルトのビュー名を生成
+            if ($viewPath === true || empty($viewPath)) {
+                $viewPath = 'mail.' . \Illuminate\Support\Str::kebab($className);
+            }
+            $placeholders['view'] = $viewPath;
+        }
+        
         // ファイル生成
-        return $this->makeFiler(
+        $result = $this->makeFiler(
             className: $className,
             fileType: $fileType,
             fileCategory: 'notification',
@@ -67,9 +83,16 @@ trait MakeNotificationTrait
             subDirs: $subDirs,
             stub: $stub,
             pluginName: $pluginName,
-            placeholders: [],
+            placeholders: $placeholders,
             licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
         );
+        
+        // テストファイルの生成
+        if (!empty($options['test']) || !empty($options['pest']) || !empty($options['phpunit'])) {
+            $this->createMatchingTest($className, $fileType, $options, $pluginName);
+        }
+        
+        return $result;
     }
 
     /**
@@ -81,7 +104,7 @@ trait MakeNotificationTrait
     protected function renderStub(array $options = []): string
     {
         // --markdown オプションによってスタブを切り替え
-        $stubName = ($options['markdown'] ?? false) ? 'markdown-notification.stub' : 'notification.stub';
+        $stubName = (!empty($options['markdown'])) ? 'markdown-notification.stub' : 'notification.stub';
         $stubPath = config('command.custom_stub_directory') . '/' . $stubName;
 
         if (!File::exists($stubPath)) {
@@ -90,5 +113,44 @@ trait MakeNotificationTrait
         }
 
         return File::get($stubPath);
+    }
+    
+    /**
+     * 通知に対応するテストファイルを生成
+     *
+     * @param  string  $className
+     * @param  string  $fileType
+     * @param  array   $options
+     * @param  string  $pluginName
+     * @return void
+     */
+    protected function createMatchingTest(string $className, string $fileType, array $options, string $pluginName): void
+    {
+        $testClassName = $className . 'Test';
+        
+        // テストオプションを準備
+        $testOptions = [];
+        
+        // Pestオプションを引き継ぐ
+        if (!empty($options['pest'])) {
+            $testOptions['--pest'] = true;
+        } elseif (!empty($options['phpunit'])) {
+            $testOptions['--phpunit'] = true;
+        }
+        
+        // Artisanコマンドを呼び出す
+        if ($fileType === 'plugin') {
+            $this->call('make:plugin:test', array_merge([
+                'className' => $testClassName,
+                'pluginName' => $pluginName,
+            ], $testOptions));
+        } else {
+            // core または custom_plugin
+            $this->call('make:custom:test', array_merge([
+                'className' => $testClassName,
+                'fileType' => $fileType === 'core' ? 'core' : 'plugin',
+                'pluginName' => $fileType === 'custom_plugin' ? $pluginName : null,
+            ], $testOptions));
+        }
     }
 }

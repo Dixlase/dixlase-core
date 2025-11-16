@@ -47,6 +47,9 @@ trait MakeMigrationTrait
         return [
             '{--create= : The table to be created}',
             '{--table= : The table to migrate}',
+            '{--path= : The location where the migration file should be created}',
+            '{--realpath : Indicate any provided migration file paths are pre-resolved absolute paths}',
+            '{--fullpath : Output the full path of the migration (Deprecated)}',
         ];
     }
 
@@ -67,6 +70,20 @@ trait MakeMigrationTrait
         array $subDirs,
         string $pluginName
     ): bool {
+        // --pathオプションが指定されている場合はサブディレクトリとして扱う
+        if (!empty($options['path'])) {
+            $customPath = $options['path'];
+            // --realpathが指定されていない場合は、相対パスとして扱う
+            if (empty($options['realpath'])) {
+                // 相対パスをサブディレクトリ配列に変換
+                $subDirs = array_merge($subDirs, explode('/', trim($customPath, '/')));
+            } else {
+                // 絶対パスの場合は警告を出す（プラグイン/カスタム構造では推奨しない）
+                $this->warn('--realpath option is not recommended for plugin/custom migrations. Using relative path instead.');
+                $subDirs = array_merge($subDirs, explode('/', trim($customPath, '/')));
+            }
+        }
+        
         // テーブル名を取得
         $tableName = $options['create'] ?? $options['table'] ?? null;
         
@@ -116,9 +133,9 @@ trait MakeMigrationTrait
     protected function renderStub(array $options = []): string
     {
         // スタブファイル名を決定
-        if (array_key_exists('create', $options)) {
+        if (!empty($options['create'])) {
             $stubName = 'migration.create.stub';
-        } elseif (array_key_exists('table', $options)) {
+        } elseif (!empty($options['table'])) {
             $stubName = 'migration.update.stub';
         } else {
             $stubName = 'migration.stub';

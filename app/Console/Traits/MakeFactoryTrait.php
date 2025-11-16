@@ -40,7 +40,7 @@ trait MakeFactoryTrait
     protected function getAdditionalOptions(): array
     {
         return [
-            '--model' => 'The name of the model',
+            '{--m|model= : The name of the model}',
         ];
     }
 
@@ -69,7 +69,7 @@ trait MakeFactoryTrait
         // Prepare placeholders
         $placeholders = [
             'class' => $className,
-            'model' => $this->getModelName($className, $options['model'] ?? null),
+            'namespacedModel' => $this->getModelName($className, $fileType, $pluginName, $options['model'] ?? null),
         ];
 
         // ファイル生成
@@ -91,15 +91,30 @@ trait MakeFactoryTrait
     /**
      * モデル名を取得する
      */
-    protected function getModelName(string $className, ?string $modelOption): string
+    protected function getModelName(string $className, string $fileType, string $pluginName, ?string $modelOption): string
     {
-        if ($modelOption) {
-            return '\\' . ltrim($modelOption, '\\');
-        }
-
         // Remove Factory suffix and convert to model name
         $modelName = Str::replaceLast('Factory', '', $className);
-        return '\\App\\Models\\' . $modelName;
+        
+        // モデルオプションが指定されている場合
+        if ($modelOption) {
+            // すでに名前空間が含まれている場合はそのまま使用
+            if (str_contains($modelOption, '\\')) {
+                return $modelOption;
+            }
+            // 名前空間が含まれていない場合は自動補完
+            $modelName = $modelOption;
+        }
+        
+        // ファイルタイプに応じて名前空間を決定
+        if ($fileType === 'plugin') {
+            return "Plugins\\{$pluginName}\\App\\Models\\{$modelName}";
+        } elseif ($fileType === 'custom_plugin') {
+            return "Custom\\Plugins\\{$pluginName}\\App\\Models\\{$modelName}";
+        } else {
+            // core または custom_core
+            return "Custom\\App\\Models\\{$modelName}";
+        }
     }
 
     /**

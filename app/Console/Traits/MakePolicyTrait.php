@@ -23,89 +23,161 @@
 namespace App\Console\Traits;
 
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 
 /**
- * ポリシーを作るための追加ロジック。
- * -> MakeFileTrait を use し、model指定あり/なしを含む処理をまとめる例
+ * ポリシーファイル作成用トレイト
  */
 trait MakePolicyTrait
 {
     use MakeFileTrait;
-
+    
     /**
-     * ポリシーを作成するメイン処理
-     *
-     * @param  string       $className   ポリシークラス名 (e.g. "UserPolicy")
-     * @param  array        $subDirs
-     * @param  bool         $force
-     * @param  string|null  $modelOption --model= で指定されたモデルFQCN or 相対パス
-     * @return void
-     */
-    protected function makeFile(
-        string $className,
-        array $subDirs,
-        bool $force,
-        ?string $modelOption
-    ): void {
-        // 1) どの stub を使うか (modelあり → policy.stub, なし → policy.plain.stub)
-        $stubFile = $modelOption ? 'policy.stub' : 'policy.plain.stub';
-
-        // 2) options
-        $options = [
-            'force' => $force,
-        ];
-
-        // 3) ポリシー固有の追加プレースホルダ(あとでまとめる)
-        //    modelFQCN, userFQCNなどは後で replace する場合はここでも良いが
-        //    ここでは一旦空にしておき、makeFiler呼出し直前にマージする設計もできる
-
-        // => ここではとりあえず空でOK
-        $extraPlaceholders = [];
-
-        // 4) makeFiler
-        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders, 'policies');
-    }
-
-    /**
-     * Get additional options specific to policy generation
+     * Policy固有のオプション定義を取得
      * 
      * @return array
      */
     protected function getAdditionalOptions(): array
     {
         return [
-            '{--model=} ' . __('The model that the policy applies to'),
-            '{--guard=} ' . __('The guard that the policy relies on')
+            '{--m|model= : The model that the policy applies to}',
+            '{--g|guard= : The guard that the policy relies on}',
         ];
+    }
+    
+    /**
+     * ポリシークラスを作成するメイン処理。
+     *
+     * @param  string  $className  クラス名
+     * @param  string  $fileType   ファイルタイプ
+     * @param  array   $options    オプション配列
+     * @param  array   $subDirs    サブディレクトリ配列
+     * @param  string  $pluginName プラグイン名
+     * @return bool
+     */
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '')
+    {
+        // スタブの取得
+        $stub = $this->renderStub($options);
+        
+        // プレースホルダーの準備
+        $placeholders = $this->preparePlaceholders($className, $fileType, $options, $pluginName);
+        
+        // ファイル生成
+        return $this->makeFiler(
+            className: $className,
+            fileType: $fileType,
+            fileCategory: 'policy',
+            options: $options,
+            subDirs: $subDirs,
+            stub: $stub,
+            pluginName: $pluginName,
+            placeholders: $placeholders,
+            licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
+        );
     }
 
     /**
-     * Get the model class name for the policy.
+     * Policy用のスタブをレンダリングします。
+     *
+     * @param  array  $options
+     * @return string
+     */
+    protected function renderStub(array $options = []): string
+    {
+        // --model オプションによってスタブを切り替え
+        $stubName = (!empty($options['model'])) ? 'policy.stub' : 'policy.plain.stub';
+        $stubPath = config('command.custom_stub_directory') . '/' . $stubName;
+
+        if (!File::exists($stubPath)) {
+            $this->error("Stub file not found: {$stubPath}");
+            return '';
+        }
+
+        return File::get($stubPath);
+    }
+    
+    /**
+     * プレースホルダーを準備
+     *
+     * @param  string  $className
+     * @param  string  $fileType
+     * @param  array   $options
+     * @param  string  $pluginName
+     * @return array
+     */
+    protected function preparePlaceholders(string $className, string $fileType, array $options, string $pluginName): array
+    {
+        $placeholders = [];
+        
+        // --modelオプションが指定されている場合
+        if (!empty($options['model'])) {
+            $modelFqcn = $this->qualifyModel($options['model'], $fileType, $pluginName);
+            $modelBase = class_basename($modelFqcn);
+            $modelVar  = Str::camel($modelBase);
+            
+            $placeholders['namespacedModel'] = $modelFqcn;
+            $placeholders['model'] = $modelBase;
+            $placeholders['modelVariable'] = $modelVar;
+        }
+        
+        // User model
+        $userFqcn = $this->qualifyUserModel($options);
+        $userBase = class_basename($userFqcn);
+        
+        $placeholders['namespacedUserModel'] = $userFqcn;
+        $placeholders['user'] = $userBase;
+        
+        return $placeholders;
+    }
+
+    /**
+     * モデルの完全修飾クラス名を取得
      *
      * @param  string  $modelOption
+     * @param  string  $fileType
      * @param  string  $pluginName
      * @return string
      */
-    protected function qualifyModel(string $modelOption, string $pluginName): string
+    protected function qualifyModel(string $modelOption, string $fileType, string $pluginName): string
     {
-        if (Str::startsWith($modelOption, '\\')) {
-            $modelOption = Str::replaceFirst('\\', '', $modelOption);
+        // すでに名前空間が含まれている場合はそのまま使用
+        if (str_contains($modelOption, '\\')) {
+            return ltrim($modelOption, '\\');
         }
         
-        if (Str::contains($modelOption, '\\')) {
-            return $modelOption;
+        // ファイルタイプに応じて名前空間を決定
+        if ($fileType === 'plugin') {
+            return "Plugins\\{$pluginName}\\App\\Models\\{$modelOption}";
+        } elseif ($fileType === 'custom_plugin') {
+            return "Custom\\Plugins\\{$pluginName}\\App\\Models\\{$modelOption}";
+        } else {
+            // core または custom_core
+            return "Custom\\App\\Models\\{$modelOption}";
         }
-        
-        return "Plugins\\{$pluginName}\\App\\Models\\{$modelOption}";
     }
 
     /**
-     * Get the user model class name.
+     * Userモデルの完全修飾クラス名を取得
      *
+     * @param  array  $options
      * @return string
      */
-    protected function qualifyUserModel(): string
+    protected function qualifyUserModel(array $options = []): string
     {
+        // --guardオプションが指定されている場合、そのguardのproviderを使用
+        if (!empty($options['guard'])) {
+            $guard = $options['guard'];
+            $provider = config("auth.guards.{$guard}.provider");
+            if ($provider) {
+                $model = config("auth.providers.{$provider}.model");
+                if ($model) {
+                    return $model;
+                }
+            }
+        }
+        
+        // デフォルトのUserモデルを使用
         return config('auth.providers.users.model', 'App\\Models\\User');
     }
 }

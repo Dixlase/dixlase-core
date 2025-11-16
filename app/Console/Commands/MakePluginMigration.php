@@ -23,51 +23,33 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
-use App\Services\FileGenerator;
 use App\Console\Traits\MakeMigrationTrait;
 use App\Console\Traits\MakePluginCommandTrait;
-
+use App\Console\Traits\MakeLicenseTrait;
 
 class MakePluginMigration extends Command
 {
-
     use MakeMigrationTrait;
     use MakePluginCommandTrait;
+    use MakeLicenseTrait;
 
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:migration '
-            .$this->getPluginCommandSignature(true),
+            'make:plugin:migration ' . $this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_plugin.migration.description'));
-
         parent::__construct();
     }
 
-
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
-        $options = $this->options();
-        // --create または --table オプションが指定されていたら追加
-        if ($this->hasOption('create') && $this->option('create') !== null) {
-            $options['create'] = $this->option('create');
-        } elseif ($this->hasOption('table') && $this->option('table') !== null) {
-            $options['table'] = $this->option('table');
-        }
-
         return $this->generatePluginFile(
             $this->argument('className'),
             $this->argument('pluginName'),
             'migration',
-            $options,
+            $this->options()
         );
-
     }
-
 }
