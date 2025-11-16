@@ -38,7 +38,11 @@ trait MakeMiddlewareTrait
      */
     protected function getAdditionalOptions(): array
     {
-        return [];
+        return [
+            '{--test : Generate an accompanying test for the Middleware}',
+            '{--pest : Generate an accompanying Pest test for the Middleware}',
+            '{--phpunit : Generate an accompanying PHPUnit test for the Middleware}',
+        ];
     }
     
     /**
@@ -57,7 +61,7 @@ trait MakeMiddlewareTrait
         $stub = $this->renderStub($options);
         
         // ファイル生成
-        return $this->makeFiler(
+        $result = $this->makeFiler(
             className: $className,
             fileType: $fileType,
             fileCategory: 'middleware',
@@ -68,6 +72,13 @@ trait MakeMiddlewareTrait
             placeholders: [],
             licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
         );
+        
+        // テストファイルの生成
+        if (!empty($options['test']) || !empty($options['pest']) || !empty($options['phpunit'])) {
+            $this->createMatchingTest($className, $fileType, $options, $pluginName);
+        }
+        
+        return $result;
     }
 
     /**
@@ -87,5 +98,44 @@ trait MakeMiddlewareTrait
         }
 
         return File::get($stubPath);
+    }
+    
+    /**
+     * ミドルウェアに対応するテストファイルを生成
+     *
+     * @param  string  $className
+     * @param  string  $fileType
+     * @param  array   $options
+     * @param  string  $pluginName
+     * @return void
+     */
+    protected function createMatchingTest(string $className, string $fileType, array $options, string $pluginName): void
+    {
+        $testClassName = $className . 'Test';
+        
+        // テストオプションを準備
+        $testOptions = [];
+        
+        // Pestオプションを引き継ぐ
+        if (!empty($options['pest'])) {
+            $testOptions['--pest'] = true;
+        } elseif (!empty($options['phpunit'])) {
+            $testOptions['--phpunit'] = true;
+        }
+        
+        // Artisanコマンドを呼び出す
+        if ($fileType === 'plugin') {
+            $this->call('make:plugin:test', array_merge([
+                'className' => $testClassName,
+                'pluginName' => $pluginName,
+            ], $testOptions));
+        } else {
+            // core または custom_plugin
+            $this->call('make:custom:test', array_merge([
+                'className' => $testClassName,
+                'fileType' => $fileType === 'core' ? 'core' : 'plugin',
+                'pluginName' => $fileType === 'custom_plugin' ? $pluginName : null,
+            ], $testOptions));
+        }
     }
 }

@@ -57,6 +57,7 @@ return [
         'migration' => ['database/migrations', 'Database\\Migrations'],
         'seeder' => ['database/seeders', 'Database\\Seeders'],
         'factory' => ['database/factories', 'Database\\Factories'],
+        'test' => ['tests', 'Tests'],
         'blade' => ['resources/views', ''],
     ],
     

@@ -33,13 +33,6 @@ class MakeCustomFactory extends Command
     use MakeFactoryTrait;
     use MakeCustomCommandTrait;
 
-    protected $signature = 'make:custom:factory
-        {name : The factory class name (e.g. UserFactory or just User)}
-        {--model= : The model class the factory applies to (FQCN or relative)}
-        {--force : Overwrite the factory if it already exists}';
-
-    protected $description = 'Create a new model factory in the custom directory (custom/database/factories).';
-
     public function __construct()
     {
         $this->signature = $this->makeSignature(

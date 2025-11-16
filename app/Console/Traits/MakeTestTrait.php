@@ -22,83 +22,110 @@
 
 namespace App\Console\Traits;
 
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 
 /**
- * テストファイルを作るための追加ロジック。
- * -> MakeFileTrait を use してファイル生成を共通化。
+ * テストファイル作成用トレイト
  */
 trait MakeTestTrait
 {
     use MakeFileTrait;
-
+    
+    /**
+     * Test固有のオプション定義を取得
+     * 
+     * @return array
+     */
+    protected function getAdditionalOptions(): array
+    {
+        return [
+            '{--u|unit : Create a unit test}',
+            '{--pest : Create a Pest test}',
+            '{--phpunit : Create a PHPUnit test}',
+        ];
+    }
+    
     /**
      * テストファイルを作成するメイン処理。
      *
-     * @param  string  $className   テストクラス名
-     * @param  array   $subDirs     サブディレクトリ (["Admin", ...] など)
-     * @param  bool    $force       --force
-     * @param  bool    $isUnit      --unit (true => Unit test, false => Feature test)
-     * @param  bool    $usingPest   Pestを使うかどうか
-     * @return void
+     * @param  string  $className  クラス名
+     * @param  string  $fileType   ファイルタイプ
+     * @param  array   $options    オプション配列
+     * @param  array   $subDirs    サブディレクトリ配列
+     * @param  string  $pluginName プラグイン名
+     * @return bool
      */
-    protected function makeFile(
-        string $className,
-        array $subDirs,
-        bool $force,
-        bool $isUnit,
-        bool $usingPest
-    ): void {
-        // 1) stubファイル名を決定
-        //    "test.stub" / "test.unit.stub" (PHPUnit)
-        //    "pest.stub" / "pest.unit.stub" (Pest)
-        $stubFile = $this->determineStubFile($isUnit, $usingPest);
-
-        // 2) options
-        $options = [
-            'force' => $force,
-        ];
-
-        // 3) テスト固有プレースホルダ (なければ空)
-        $extraPlaceholders = [];
-
-        // 4) makeFiler
-        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders);
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '')
+    {
+        // スタブの取得
+        $stub = $this->renderStub($options);
+        
+        // Unit testかどうかに応じてサブディレクトリを調整
+        $testType = !empty($options['unit']) ? 'Unit' : 'Feature';
+        $adjustedSubDirs = array_merge([$testType], $subDirs);
+        
+        // プレースホルダーの準備
+        $placeholders = [];
+        
+        // ファイル生成
+        return $this->makeFiler(
+            className: $className,
+            fileType: $fileType,
+            fileCategory: 'test',
+            options: $options,
+            subDirs: $adjustedSubDirs,
+            stub: $stub,
+            pluginName: $pluginName,
+            placeholders: $placeholders,
+            licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
+        );
     }
 
     /**
-     * Pest / PHPUnit と unit / feature で stub を切り替える
+     * Test用のスタブをレンダリングします。
+     *
+     * @param  array  $options
+     * @return string
      */
-    protected function determineStubFile(bool $isUnit, bool $usingPest): string
+    protected function renderStub(array $options = []): string
     {
-        // suffix
+        // Pestを使うかどうかを判定
+        $usingPest = $this->usingPest($options);
+        
+        // Unit testかどうか
+        $isUnit = !empty($options['unit']);
+        
+        // スタブ名を決定
         $suffix = $isUnit ? '.unit.stub' : '.stub';
+        $stubName = $usingPest ? ('pest' . $suffix) : ('test' . $suffix);
+        
+        $stubPath = config('command.custom_stub_directory') . '/' . $stubName;
 
-        if ($usingPest) {
-            // pest.stub / pest.unit.stub
-            return 'pest' . $suffix;
-        } else {
-            // test.stub / test.unit.stub
-            return 'test' . $suffix;
+        if (!File::exists($stubPath)) {
+            $this->error("Stub file not found: {$stubPath}");
+            return '';
         }
-    }
 
+        return File::get($stubPath);
+    }
+    
     /**
-     * (B)パターン: getDirectory/getNamespace => getTestDirectory/Namespace
+     * Pestを使うかどうかを判定
+     *
+     * @param  array  $options
+     * @return bool
      */
-    protected function getDirectory(array $subDirs): string
+    protected function usingPest(array $options): bool
     {
-        return $this->getTestDirectory($subDirs);
-    }
+        if (!empty($options['phpunit'])) {
+            return false;
+        }
 
-    protected function getNamespace(array $subDirs): string
-    {
-        return $this->getTestNamespace($subDirs);
-    }
+        if (!empty($options['pest'])) {
+            return true;
+        }
 
-    /**
-     * サブクラスで実装
-     */
-    abstract protected function getTestDirectory(array $subDirs): string;
-    abstract protected function getTestNamespace(array $subDirs): string;
+        // Pestがインストール済みかどうかを簡易チェック
+        return function_exists('\\Pest\\version') && file_exists(base_path('tests/Pest.php'));
+    }
 }
