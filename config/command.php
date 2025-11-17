@@ -61,6 +61,7 @@ return [
         'class' => ['app/Classes', 'App\\Classes'],
         'interface' => ['app/Contracts', 'App\\Contracts'],
         'component' => ['app/View/Components', 'App\\View\\Components'],
+        'livewire' => ['app/Livewire', 'App\\Livewire'],
         'view' => ['resources/views', ''],
         'route' => ['routes', ''],
         'lang' => ['lang', ''],

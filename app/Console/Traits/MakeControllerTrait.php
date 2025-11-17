@@ -44,14 +44,18 @@ trait MakeControllerTrait
     protected function getAdditionalOptions(): array
     {
         return [
-            '{--invokable} ' . __('commands.make.options.invokable'),
-            '{--model=} ' . __('commands.make.options.model'),
-            '{--parent=} ' . __('commands.make.options.parent'),
-            '{--resource} ' . __('commands.make.options.resource'),
-            '{--requests} ' . __('commands.make.options.requests'),
-            '{--api} ' . __('commands.make.options.api'),
-            '{--singleton} ' . __('commands.make.options.singleton'),
-            '{--creatable} ' . __('commands.make.options.creatable'),
+            '{--api : ' . __('commands.make.options.api') . '}',
+            '{--type= : ' . __('commands.make.options.type') . '}',
+            '{--i|invokable : ' . __('commands.make.options.invokable') . '}',
+            '{--m|model= : ' . __('commands.make.options.model') . '}',
+            '{--p|parent= : ' . __('commands.make.options.parent') . '}',
+            '{--r|resource : ' . __('commands.make.options.resource') . '}',
+            '{--R|requests : ' . __('commands.make.options.requests') . '}',
+            '{--s|singleton : ' . __('commands.make.options.singleton') . '}',
+            '{--creatable : ' . __('commands.make.options.creatable') . '}',
+            '{--test : ' . __('command.make.options.test') . '}',
+            '{--pest : ' . __('command.make.options.pest') . '}',
+            '{--phpunit : ' . __('command.make.options.phpunit') . '}',
         ];
     }
 
@@ -89,7 +93,32 @@ trait MakeControllerTrait
             licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
         );
         
+        // テスト生成
+        if ($options['test'] ?? false || $options['pest'] ?? false || $options['phpunit'] ?? false) {
+            $this->createTest($className, $fileType, $subDirs, $pluginName, $options);
+        }
+        
         return true;
+    }
+
+    /**
+     * Create a test for the controller
+     */
+    protected function createTest($className, $fileType, $subDirs, $pluginName = '', $options = [])
+    {
+        $testName = class_basename($className) . 'Test';
+        
+        $command = 'make:custom:test';
+        if ($fileType === 'plugin') {
+            $command = 'make:plugin:test';
+        }
+        
+        $this->call($command, array_filter([
+            'name' => $testName,
+            'pluginName' => $fileType === 'plugin' ? $pluginName : null,
+            '--pest' => $options['pest'] ?? false,
+            '--phpunit' => $options['phpunit'] ?? false,
+        ]));
     }
 
 

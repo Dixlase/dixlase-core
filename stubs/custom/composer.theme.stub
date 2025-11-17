@@ -2,6 +2,7 @@
     "name": "{{ themeName }}",
     "directory": "{{ themeDirectory }}",
     "description": "This is the {{ themeName }} theme.",
+    "type": "dixlase-theme",
     "author": "{{ author }}",
     "email": "{{ email }}",
     "web": "{{ website }}",
