@@ -22,76 +22,75 @@
 
 namespace App\Console\Traits;
 
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 
 /**
- * イベントを作るための追加ロジック。
- * -> MakeFileTrait を use して継承的に発展させる例
+ * Eventファイル作成用トレイト
  */
 trait MakeEventTrait
 {
     use MakeFileTrait;
-
+    
     /**
-     * イベントを作成するメイン処理 (コントローラやファクトリの makeFile に合わせた命名)
-     *
-     * @param  string  $className  イベントクラス名
-     * @param  array   $subDirs    サブディレクトリ配列 (["Admin", "Sub"]など)
-     * @param  bool    $force      上書きフラグ
-     * @return void
+     * Event固有のオプション定義を取得
+     * 
+     * @return array
      */
-    protected function makeFile(string $className, array $subDirs, bool $force): void
+    protected function getAdditionalOptions(): array
     {
-        // 1) イベント用スタブファイルを決定
-        //    今回は単純に "event.stub" を返すだけ
-        $stubFile = $this->resolveStubFile();
-
-        // 2) options をまとめる (MakeFileTrait::makeFiler の引数に渡す)
-        $options = [
-            'force' => $force,
+        return [
+            // Laravel標準のEventにはforceのみ
         ];
-
-        // 3) イベント固有の追加プレースホルダ (今回は特になしでOK)
-        //    必要であれば '{{ somePlaceholder }}' => 'value' を追加
-        $extraPlaceholders = [
-            // もし何かあればここで定義
-        ];
-
-        // 4) makeFiler を呼び出す
-        //    → (クラス名, subDirs, options, stubFile, extraPlaceholders)
-        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders, 'events');
     }
-
+    
     /**
-     * イベント用 stubファイルを決定。
-     * デフォルト "event.stub"。将来的に --type等で拡張も可能
-     */
-    protected function resolveStubFile(): string
-    {
-        return 'event.stub';
-    }
-
-    /**
-     * MakeFileTrait が要求する抽象メソッド:
-     *  getDirectory(array $subDirs): string
-     *  getNamespace(array $subDirs): string
+     * Eventを作成するメイン処理。
      *
-     * ここで "getEventDirectory" や "getEventNamespace" を呼び出して
-     * サブクラスに実装を任せる形にする。(B) パターン
+     * @param  string  $className  クラス名
+     * @param  string  $fileType   ファイルタイプ
+     * @param  array   $options    オプション配列
+     * @param  array   $subDirs    サブディレクトリ配列
+     * @param  string  $pluginName プラグイン名
+     * @return bool
      */
-    protected function getDirectory(array $subDirs): string
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '')
     {
-        return $this->getEventDirectory($subDirs);
-    }
-
-    protected function getNamespace(array $subDirs): string
-    {
-        return $this->getEventNamespace($subDirs);
+        // スタブの取得
+        $stub = $this->renderStub($options);
+        
+        // プレースホルダーの準備
+        $placeholders = [];
+        
+        // ファイル生成
+        return $this->makeFiler(
+            className: $className,
+            fileType: $fileType,
+            fileCategory: 'event',
+            options: $options,
+            subDirs: $subDirs,
+            stub: $stub,
+            pluginName: $pluginName,
+            placeholders: $placeholders,
+            licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
+        );
     }
 
     /**
-     * サブクラスで実装: Eventのディレクトリ, 名前空間
+     * Event用のスタブをレンダリングします。
+     *
+     * @param  array  $options
+     * @return string
      */
-    abstract protected function getEventDirectory(array $subDirs): string;
-    abstract protected function getEventNamespace(array $subDirs): string;
+    protected function renderStub(array $options = []): string
+    {
+        $stubName = 'event.stub';
+        $stubPath = config('command.custom_stub_directory') . '/' . $stubName;
+
+        if (!File::exists($stubPath)) {
+            $this->error("Stub file not found: {$stubPath}");
+            return '';
+        }
+
+        return File::get($stubPath);
+    }
 }

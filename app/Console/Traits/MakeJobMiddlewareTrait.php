@@ -23,28 +23,31 @@
 namespace App\Console\Traits;
 
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 /**
- * Interfaceファイル作成用トレイト
+ * JobMiddlewareファイル作成用トレイト
  */
-trait MakeInterfaceTrait
+trait MakeJobMiddlewareTrait
 {
     use MakeFileTrait;
     
     /**
-     * Interface固有のオプション定義を取得
+     * JobMiddleware固有のオプション定義を取得
      * 
      * @return array
      */
     protected function getAdditionalOptions(): array
     {
         return [
-            // Laravel標準のInterfaceにはforceのみ
+            '{--test : Generate an accompanying test for the Middleware}',
+            '{--pest : Generate an accompanying Pest test for the Middleware}',
+            '{--phpunit : Generate an accompanying PHPUnit test for the Middleware}',
         ];
     }
     
     /**
-     * Interfaceを作成するメイン処理。
+     * JobMiddlewareを作成するメイン処理。
      *
      * @param  string  $className  クラス名
      * @param  string  $fileType   ファイルタイプ
@@ -62,10 +65,10 @@ trait MakeInterfaceTrait
         $placeholders = [];
         
         // ファイル生成
-        return $this->makeFiler(
+        $result = $this->makeFiler(
             className: $className,
             fileType: $fileType,
-            fileCategory: 'interface',
+            fileCategory: 'job-middleware',
             options: $options,
             subDirs: $subDirs,
             stub: $stub,
@@ -73,17 +76,24 @@ trait MakeInterfaceTrait
             placeholders: $placeholders,
             licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
         );
+        
+        // テストファイルの生成
+        if (!empty($options['test']) || !empty($options['pest']) || !empty($options['phpunit'])) {
+            $this->createMatchingTest($className, $fileType, $options, $pluginName);
+        }
+        
+        return $result;
     }
 
     /**
-     * Interface用のスタブをレンダリングします。
+     * JobMiddleware用のスタブをレンダリングします。
      *
      * @param  array  $options
      * @return string
      */
     protected function renderStub(array $options = []): string
     {
-        $stubName = 'interface.stub';
+        $stubName = 'job-middleware.stub';
         $stubPath = config('command.custom_stub_directory') . '/' . $stubName;
 
         if (!File::exists($stubPath)) {
@@ -92,5 +102,44 @@ trait MakeInterfaceTrait
         }
 
         return File::get($stubPath);
+    }
+
+    /**
+     * JobMiddlewareに対応するテストファイルを生成
+     *
+     * @param  string  $className
+     * @param  string  $fileType
+     * @param  array   $options
+     * @param  string  $pluginName
+     * @return void
+     */
+    protected function createMatchingTest(string $className, string $fileType, array $options, string $pluginName): void
+    {
+        $testClassName = $className . 'Test';
+        
+        // テストオプションを準備
+        $testOptions = [];
+        
+        // Pestオプションを引き継ぐ
+        if (!empty($options['pest'])) {
+            $testOptions['--pest'] = true;
+        } elseif (!empty($options['phpunit'])) {
+            $testOptions['--phpunit'] = true;
+        }
+        
+        // Artisanコマンドを呼び出す
+        if ($fileType === 'plugin') {
+            $this->call('make:plugin:test', array_merge([
+                'className' => $testClassName,
+                'pluginName' => $pluginName,
+            ], $testOptions));
+        } else {
+            // core または custom_plugin
+            $this->call('make:custom:test', array_merge([
+                'className' => $testClassName,
+                'fileType' => $fileType === 'core' ? 'core' : 'plugin',
+                'pluginName' => $fileType === 'custom_plugin' ? $pluginName : null,
+            ], $testOptions));
+        }
     }
 }

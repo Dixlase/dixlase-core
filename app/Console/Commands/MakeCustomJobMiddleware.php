@@ -23,22 +23,22 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Console\Traits\MakeChannelTrait;
+use App\Console\Traits\MakeJobMiddlewareTrait;
 use App\Console\Traits\MakeCustomCommandTrait;
 
-class MakeCustomChannel extends Command
+class MakeCustomJobMiddleware extends Command
 {
-    use MakeChannelTrait;
+    use MakeJobMiddlewareTrait;
     use MakeCustomCommandTrait;
 
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:channel'
+            'make:custom:job-middleware'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );
-        $this->setDescription(__('command.make_custom.channel.description'));
+        $this->setDescription(__('command.make_custom.job_middleware.description'));
         parent::__construct();
     }
 
@@ -48,7 +48,7 @@ class MakeCustomChannel extends Command
             $this->argument('className'),
             $this->argument('fileType'),
             $this->argument('pluginName'),
-            'channel',
+            'job-middleware',
             $this->options()
         );
     }

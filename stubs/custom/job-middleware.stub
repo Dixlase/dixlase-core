@@ -1,10 +1,9 @@
-<?php
-
 {{ license }}
 
 namespace {{ namespace }};
 
 use Closure;
+use Illuminate\Contracts\Queue\Job;
 
 class {{ class }}
 {
@@ -13,8 +12,12 @@ class {{ class }}
      *
      * @param  \Closure(object): void  $next
      */
-    public function handle(object $job, Closure $next): void
+    public function handle(Job $job, Closure $next): void
     {
+        // Perform action before the job is processed...
+
         $next($job);
+
+        // Perform action after the job is processed...
     }
 }

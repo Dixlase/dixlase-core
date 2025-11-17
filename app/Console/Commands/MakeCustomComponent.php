@@ -23,22 +23,22 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Console\Traits\MakeChannelTrait;
+use App\Console\Traits\MakeComponentTrait;
 use App\Console\Traits\MakeCustomCommandTrait;
 
-class MakeCustomChannel extends Command
+class MakeCustomComponent extends Command
 {
-    use MakeChannelTrait;
+    use MakeComponentTrait;
     use MakeCustomCommandTrait;
 
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:channel'
+            'make:custom:component'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );
-        $this->setDescription(__('command.make_custom.channel.description'));
+        $this->setDescription(__('command.make_custom.component.description'));
         parent::__construct();
     }
 
@@ -48,7 +48,7 @@ class MakeCustomChannel extends Command
             $this->argument('className'),
             $this->argument('fileType'),
             $this->argument('pluginName'),
-            'channel',
+            'component',
             $this->options()
         );
     }
