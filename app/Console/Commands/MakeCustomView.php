@@ -23,68 +23,37 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
-use App\Console\Traits\MakeBladeTrait;
-use App\Console\Traits\MakePluginCommandTrait;
+use App\Console\Traits\MakeViewTrait;
+use App\Console\Traits\MakeCustomCommandTrait;
 
-class MakePluginBlade extends Command
+class MakeCustomView extends Command
 {
-    use MakeBladeTrait;
-    use MakePluginCommandTrait;
+    use MakeViewTrait;
+    use MakeCustomCommandTrait;
 
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:blade '
-            .$this->getPluginCommandSignature(true),
+            'make:custom:view'
+            .$this->getCustomCommandSignature(true),
             $this->getAdditionalOptions()
         );
-        $this->setDescription(__('command.make_plugin.blade.description'));
+        
+        $this->setDescription(__('command.make_custom.view.description'));
         
         parent::__construct();
     }
 
-
-    /**
-     * Handle the command execution.
-     *
-     * @return int
-     */
     public function handle()
     {
-        return $this->generatePluginFile(
+        return $this->generateCustomFile(
             $this->argument('className'),
+            $this->argument('fileType'),
             $this->argument('pluginName'),
-            'blade',
+            'view',
             $this->options(),
             true,
             $this->argument('scope')
         );
-
-    }
-
-    /**
-     * プラグイン用のベースディレクトリを返す
-     * "plugins/{Plugin}/resources/views"
-     */
-    protected function getDirectory(array $subDirs): string
-    {
-        $pluginName = Str::studly($this->argument('pluginName'));
-        $base = base_path("plugins/{$pluginName}/resources/views");
-        
-        // サブディレクトリが指定されていれば追加
-        if (!empty($subDirs)) {
-            $base .= '/' . implode('/', $subDirs);
-        }
-        
-        return $base;
-    }
-
-    /**
-     * Blade ファイルにはネームスペースは不要なので空文字を返す
-     */
-    protected function getNamespace(array $subDirs): string
-    {
-        return '';
     }
 }

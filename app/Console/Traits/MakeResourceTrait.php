@@ -22,96 +22,76 @@
 
 namespace App\Console\Traits;
 
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
 
-
 /**
- * Bladeファイルを作成するためのTrait。
- * -> いわゆる「クラス + namespace」が存在しないため、MakeFileTraitは使わず、
- *    シンプルに「フォルダ+ファイル」を生成するだけに特化する。
+ * Resourceファイル作成用トレイト
  */
-trait MakeBladeTrait
+trait MakeResourceTrait
 {
-
+    use MakeFileTrait;
+    
     /**
-     * コンフィグファイル作成の共通オプション定義
-     *
+     * Resource固有のオプション定義を取得
+     * 
      * @return array
      */
     protected function getAdditionalOptions(): array
     {
         return [
-
+            '{--c|collection : Create a resource collection}',
         ];
     }
-
+    
     /**
-     * Bladeファイルを作成するメイン処理。
+     * Resourceクラスを作成するメイン処理。
      *
      * @param  string  $className  クラス名
      * @param  string  $fileType   ファイルタイプ
      * @param  array   $options    オプション配列
      * @param  array   $subDirs    サブディレクトリ配列
      * @param  string  $pluginName プラグイン名
-     * @param  array   $licenseInfo ライセンス情報
      * @return bool
      */
-    protected function makeFile(
-        string $className,
-        string $fileType,
-        array $options,
-        array $subDirs,
-        string $pluginName
-    ){
-
-        $scope = $options['scope'] ?? 'plain'; // スコープの取得（例: admin, front, plain）
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '')
+    {
+        // スタブの取得
+        $stub = $this->renderStub($options);
         
-        // スタブの取得（スコープを考慮）
-        $stub = $this->renderStub($options, $scope);
-
-        // Bladeファイルの場合はサブディレクトリをすべて小文字に変換
-        $subDirs = array_map('strtolower', $subDirs);
-
+        // プレースホルダーの準備
+        $placeholders = [];
+        
         // ファイル生成
-        $this->makeFiler(
+        return $this->makeFiler(
             className: $className,
             fileType: $fileType,
-            fileCategory: 'blade',
+            fileCategory: 'resource',
             options: $options,
             subDirs: $subDirs,
             stub: $stub,
             pluginName: $pluginName,
-            placeholders: [],
+            placeholders: $placeholders,
             licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
         );
-        
-        return true;
     }
-    
 
     /**
-     * スコープに基づいて適切なスタブファイルをレンダリングする
-     * 
-     * @param array $options オプション
-     * @return string スタブファイルの内容
+     * Resource用のスタブをレンダリングします。
+     *
+     * @param  array  $options
+     * @return string
      */
     protected function renderStub(array $options = []): string
     {
-        $scope = $options['scope'] ?? 'plain';
-        
-        // スコープに応じたスタブファイル名を設定
-        $stubName = 'blade.stub';
-        if ($scope === 'admin') {
-            $stubName = 'blade-admin.stub';
-        } elseif ($scope === 'front') {
-            $stubName = 'blade-front.stub';
-        }
-
-        // スタブファイルのパスを取得
+        // --collection オプションによってスタブを切り替え
+        $stubName = (!empty($options['collection'])) ? 'resource-collection.stub' : 'resource.stub';
         $stubPath = config('command.custom_stub_directory') . '/' . $stubName;
 
-        // スタブファイルの内容を取得
+        if (!File::exists($stubPath)) {
+            $this->error("Stub file not found: {$stubPath}");
+            return '';
+        }
+
         return File::get($stubPath);
     }
 }

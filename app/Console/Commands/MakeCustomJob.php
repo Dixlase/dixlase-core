@@ -23,67 +23,33 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
-use App\Services\FileGenerator;
 use App\Console\Traits\MakeJobTrait;
-
-
+use App\Console\Traits\MakeCustomCommandTrait;
 
 class MakeCustomJob extends Command
 {
     use MakeJobTrait;
+    use MakeCustomCommandTrait;
 
-    /**
-     * コマンド署名
-     */
-    protected $signature = 'make:custom:job
-        {name : The job class name (with optional subfolders, e.g. Admin/MyJob)}
-        {--force : Overwrite if job already exists}
-        {--sync : Indicates that the job should be synchronous}';
-
-    protected $description = 'Create a new job in the custom directory';
-
-    protected FileGenerator $fileGenerator;
-
-    public function __construct(FileGenerator $fileGenerator)
+    public function __construct()
     {
+        $this->signature = $this->makeSignature(
+            'make:custom:job'
+            .$this->getCustomCommandSignature(),
+            $this->getAdditionalOptions()
+        );
+        $this->setDescription(__('command.make_custom.job.description'));
         parent::__construct();
-        $this->fileGenerator = $fileGenerator;
     }
 
     public function handle()
     {
-        // 1) subDirs + className
-        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
-
-        // 2) --force, --sync
-        $force = (bool) $this->option('force');
-        $sync  = (bool) $this->option('sync');
-
-        // 3) Traitのメソッドを呼ぶ
-        $this->makeFile($className, $subDirs, $force, $sync);
-
-        return 0;
-    }
-
-    /**
-     * ディレクトリ/名前空間
-     */
-    protected function getJobDirectory(array $subDirs): string
-    {
-        $base = base_path('custom/app/Jobs');
-        if ($subDirs) {
-            $base .= '/' . implode('/', $subDirs);
-        }
-        return $base;
-    }
-
-    protected function getJobNamespace(array $subDirs): string
-    {
-        $base = 'Custom\\App\\Jobs';
-        if ($subDirs) {
-            $base .= '\\' . implode('\\', $subDirs);
-        }
-        return $base;
+        return $this->generateCustomFile(
+            $this->argument('className'),
+            $this->argument('fileType'),
+            $this->argument('pluginName'),
+            'job',
+            $this->options()
+        );
     }
 }

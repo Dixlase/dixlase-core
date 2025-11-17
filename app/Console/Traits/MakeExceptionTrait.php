@@ -22,64 +22,89 @@
 
 namespace App\Console\Traits;
 
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 
 /**
- * カスタム Exception を作成するためのTrait.
- * -> MakeFileTrait を use してファイル生成を共通化。
+ * Exceptionファイル作成用トレイト
  */
 trait MakeExceptionTrait
 {
     use MakeFileTrait;
-
+    
     /**
-     * 例外クラスを作成するメイン処理。
-     *
-     * @param  string  $className
-     * @param  array   $subDirs
-     * @param  bool    $force
+     * Exception固有のオプション定義を取得
+     * 
+     * @return array
      */
-    protected function makeFile(string $className, array $subDirs, bool $force): void
+    protected function getAdditionalOptions(): array
     {
-        // 1) exception.stub
-        $stubFile = $this->resolveStubFile();
-
-        // 2) options
-        $options = [
-            'force' => $force,
+        return [
+            '{--render : Create the exception with an empty render method}',
+            '{--report : Create the exception with an empty report method}',
         ];
-
-        // 3) 追加プレースホルダがあれば定義 (ここでは空)
-        $extraPlaceholders = [];
-
-        // 4) makeFiler
-        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders);
+    }
+    
+    /**
+     * Exceptionクラスを作成するメイン処理。
+     *
+     * @param  string  $className  クラス名
+     * @param  string  $fileType   ファイルタイプ
+     * @param  array   $options    オプション配列
+     * @param  array   $subDirs    サブディレクトリ配列
+     * @param  string  $pluginName プラグイン名
+     * @return bool
+     */
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '')
+    {
+        // スタブの取得
+        $stub = $this->renderStub($options);
+        
+        // プレースホルダーの準備
+        $placeholders = [];
+        
+        // ファイル生成
+        return $this->makeFiler(
+            className: $className,
+            fileType: $fileType,
+            fileCategory: 'exception',
+            options: $options,
+            subDirs: $subDirs,
+            stub: $stub,
+            pluginName: $pluginName,
+            placeholders: $placeholders,
+            licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
+        );
     }
 
     /**
-     * デフォルト "exception.stub"
+     * Exception用のスタブをレンダリングします。
+     *
+     * @param  array  $options
+     * @return string
      */
-    protected function resolveStubFile(): string
+    protected function renderStub(array $options = []): string
     {
-        return 'exception.stub';
-    }
+        // --renderと--reportオプションによってスタブを切り替え
+        $hasRender = !empty($options['render']);
+        $hasReport = !empty($options['report']);
+        
+        if ($hasRender && $hasReport) {
+            $stubName = 'exception-render-report.stub';
+        } elseif ($hasRender) {
+            $stubName = 'exception-render.stub';
+        } elseif ($hasReport) {
+            $stubName = 'exception-report.stub';
+        } else {
+            $stubName = 'exception.stub';
+        }
+        
+        $stubPath = config('command.custom_stub_directory') . '/' . $stubName;
 
-    /**
-     * (B)パターン: getDirectory/getNamespace => getExceptionDirectory/Namespace
-     */
-    protected function getDirectory(array $subDirs): string
-    {
-        return $this->getExceptionDirectory($subDirs);
-    }
+        if (!File::exists($stubPath)) {
+            $this->error("Stub file not found: {$stubPath}");
+            return '';
+        }
 
-    protected function getNamespace(array $subDirs): string
-    {
-        return $this->getExceptionNamespace($subDirs);
+        return File::get($stubPath);
     }
-
-    /**
-     * サブクラスで実装
-     */
-    abstract protected function getExceptionDirectory(array $subDirs): string;
-    abstract protected function getExceptionNamespace(array $subDirs): string;
 }

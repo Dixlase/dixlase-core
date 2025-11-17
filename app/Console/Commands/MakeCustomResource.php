@@ -23,22 +23,22 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Console\Traits\MakeRuleTrait;
+use App\Console\Traits\MakeResourceTrait;
 use App\Console\Traits\MakeCustomCommandTrait;
 
-class MakeCustomRule extends Command
+class MakeCustomResource extends Command
 {
-    use MakeRuleTrait;
+    use MakeResourceTrait;
     use MakeCustomCommandTrait;
 
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:rule'
+            'make:custom:resource'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );
-        $this->setDescription(__('command.make_custom.rule.description'));
+        $this->setDescription(__('command.make_custom.resource.description'));
         parent::__construct();
     }
 
@@ -48,7 +48,7 @@ class MakeCustomRule extends Command
             $this->argument('className'),
             $this->argument('fileType'),
             $this->argument('pluginName'),
-            'rule',
+            'resource',
             $this->options()
         );
     }

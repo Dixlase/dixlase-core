@@ -23,89 +23,189 @@
 namespace App\Console\Traits;
 
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 
 /**
- * リスナーを作るための追加ロジック。
- * -> MakeFileTrait を use して継承的に発展させる例
+ * Listenerファイル作成用トレイト
  */
 trait MakeListenerTrait
 {
     use MakeFileTrait;
-
+    
     /**
-     * リスナーを作成するメイン処理。
-     *
-     * @param  string       $className  リスナークラス名
-     * @param  array        $subDirs    サブディレクトリ (["Admin", "Nested"] 等)
-     * @param  bool         $force
-     * @param  bool         $queued     --queued
-     * @param  string|null  $eventClass --event= のFQCN (nullの場合は「object $event」扱い)
-     * @return void
+     * Listener固有のオプション定義を取得
+     * 
+     * @return array
      */
-    protected function makeFile(
-        string $className,
-        array $subDirs,
-        bool $force,
-        bool $queued,
-        ?string $eventClass
-    ): void {
-        // 1) stubファイル名を決定
-        $stubFile = $this->determineStubFile($eventClass, $queued);
-
-        // 2) options
-        $options = [
-            'force' => $force,
+    protected function getAdditionalOptions(): array
+    {
+        return [
+            '{--e|event= : The event class being listened for}',
+            '{--queued : Indicates the event listener should be queued}',
+            '{--test : Generate an accompanying test for the Listener}',
+            '{--pest : Generate an accompanying Pest test for the Listener}',
+            '{--phpunit : Generate an accompanying PHPUnit test for the Listener}',
         ];
-
-        // 3) リスナー固有の追加プレースホルダ
-        //    例) typed vs object, eventNamespace
-        $extraPlaceholders = [
-            '{{ event }}'          => $eventClass ? class_basename($eventClass) : 'object',
-            '{{ eventNamespace }}' => $eventClass ?? '',
-        ];
-
-        // 4) makeFiler
-        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders, 'listeners');
+    }
+    
+    /**
+     * Listenerクラスを作成するメイン処理。
+     *
+     * @param  string  $className  クラス名
+     * @param  string  $fileType   ファイルタイプ
+     * @param  array   $options    オプション配列
+     * @param  array   $subDirs    サブディレクトリ配列
+     * @param  string  $pluginName プラグイン名
+     * @return bool
+     */
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '')
+    {
+        // スタブの取得
+        $stub = $this->renderStub($options);
+        
+        // プレースホルダーの準備
+        $placeholders = $this->preparePlaceholders($className, $fileType, $options, $pluginName);
+        
+        // ファイル生成
+        $result = $this->makeFiler(
+            className: $className,
+            fileType: $fileType,
+            fileCategory: 'listener',
+            options: $options,
+            subDirs: $subDirs,
+            stub: $stub,
+            pluginName: $pluginName,
+            placeholders: $placeholders,
+            licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
+        );
+        
+        // テストファイルの生成
+        if (!empty($options['test']) || !empty($options['pest']) || !empty($options['phpunit'])) {
+            $this->createMatchingTest($className, $fileType, $options, $pluginName);
+        }
+        
+        return $result;
     }
 
     /**
-     * stubファイルの決定
-     * 例:
-     *   listener.stub
-     *   listener.queued.stub
-     *   listener.typed.stub
-     *   listener.typed.queued.stub
+     * Listener用のスタブをレンダリングします。
+     *
+     * @param  array  $options
+     * @return string
      */
-    protected function determineStubFile(?string $eventClass, bool $queued): string
+    protected function renderStub(array $options = []): string
     {
-        if ($eventClass && $queued) {
-            return 'listener.typed.queued.stub';
-        } elseif ($eventClass) {
-            return 'listener.typed.stub';
-        } elseif ($queued) {
-            return 'listener.queued.stub';
+        // --eventと--queuedオプションによってスタブを切り替え
+        $hasEvent = !empty($options['event']);
+        $isQueued = !empty($options['queued']);
+        
+        if ($hasEvent && $isQueued) {
+            $stubName = 'listener.typed.queued.stub';
+        } elseif ($hasEvent) {
+            $stubName = 'listener.typed.stub';
+        } elseif ($isQueued) {
+            $stubName = 'listener.queued.stub';
         } else {
-            return 'listener.stub';
+            $stubName = 'listener.stub';
+        }
+        
+        $stubPath = config('command.custom_stub_directory') . '/' . $stubName;
+
+        if (!File::exists($stubPath)) {
+            $this->error("Stub file not found: {$stubPath}");
+            return '';
+        }
+
+        return File::get($stubPath);
+    }
+    
+    /**
+     * プレースホルダーを準備
+     *
+     * @param  string  $className
+     * @param  string  $fileType
+     * @param  array   $options
+     * @param  string  $pluginName
+     * @return array
+     */
+    protected function preparePlaceholders(string $className, string $fileType, array $options, string $pluginName): array
+    {
+        $placeholders = [];
+        
+        // --eventオプションが指定されている場合
+        if (!empty($options['event'])) {
+            $eventFqcn = $this->qualifyEvent($options['event'], $fileType, $pluginName);
+            $eventBase = class_basename($eventFqcn);
+            
+            $placeholders['event'] = $eventBase;
+            $placeholders['eventNamespace'] = $eventFqcn;
+        }
+        
+        return $placeholders;
+    }
+    
+    /**
+     * Eventの完全修飾クラス名を取得
+     *
+     * @param  string  $eventOption
+     * @param  string  $fileType
+     * @param  string  $pluginName
+     * @return string
+     */
+    protected function qualifyEvent(string $eventOption, string $fileType, string $pluginName): string
+    {
+        // すでに名前空間が含まれている場合はそのまま使用
+        if (str_contains($eventOption, '\\')) {
+            return ltrim($eventOption, '\\');
+        }
+        
+        // ファイルタイプに応じて名前空間を決定
+        if ($fileType === 'plugin') {
+            return "Plugins\\{$pluginName}\\App\\Events\\{$eventOption}";
+        } elseif ($fileType === 'custom_plugin') {
+            return "Custom\\Plugins\\{$pluginName}\\App\\Events\\{$eventOption}";
+        } else {
+            // core または custom_core
+            return "Custom\\App\\Events\\{$eventOption}";
         }
     }
-
+    
     /**
-     * (B)パターン: getDirectory() / getNamespace() を本Trait内でオーバーライドし、
-     *   getListenerDirectory() / getListenerNamespace() をサブクラスで定義させる
+     * Listenerに対応するテストファイルを生成
+     *
+     * @param  string  $className
+     * @param  string  $fileType
+     * @param  array   $options
+     * @param  string  $pluginName
+     * @return void
      */
-    protected function getDirectory(array $subDirs): string
+    protected function createMatchingTest(string $className, string $fileType, array $options, string $pluginName): void
     {
-        return $this->getListenerDirectory($subDirs);
+        $testClassName = $className . 'Test';
+        
+        // テストオプションを準備
+        $testOptions = [];
+        
+        // Pestオプションを引き継ぐ
+        if (!empty($options['pest'])) {
+            $testOptions['--pest'] = true;
+        } elseif (!empty($options['phpunit'])) {
+            $testOptions['--phpunit'] = true;
+        }
+        
+        // Artisanコマンドを呼び出す
+        if ($fileType === 'plugin') {
+            $this->call('make:plugin:test', array_merge([
+                'className' => $testClassName,
+                'pluginName' => $pluginName,
+            ], $testOptions));
+        } else {
+            // core または custom_plugin
+            $this->call('make:custom:test', array_merge([
+                'className' => $testClassName,
+                'fileType' => $fileType === 'core' ? 'core' : 'plugin',
+                'pluginName' => $fileType === 'custom_plugin' ? $pluginName : null,
+            ], $testOptions));
+        }
     }
-
-    protected function getNamespace(array $subDirs): string
-    {
-        return $this->getListenerNamespace($subDirs);
-    }
-
-    /**
-     * サブクラスで実装
-     */
-    abstract protected function getListenerDirectory(array $subDirs): string;
-    abstract protected function getListenerNamespace(array $subDirs): string;
 }

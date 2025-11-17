@@ -22,64 +22,76 @@
 
 namespace App\Console\Traits;
 
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 
 /**
- * カスタム ValidationRule を作成するための Trait.
- * -> MakeFileTrait を use してファイル生成を共通化。
+ * ValidationRuleファイル作成用トレイト
  */
 trait MakeRuleTrait
 {
     use MakeFileTrait;
-
+    
     /**
-     * ルールクラスを作成するメイン処理
-     *
-     * @param  string  $className
-     * @param  array   $subDirs
-     * @param  bool    $force
+     * Rule固有のオプション定義を取得
+     * 
+     * @return array
      */
-    protected function makeFile(string $className, array $subDirs, bool $force): void
+    protected function getAdditionalOptions(): array
     {
-        // 1) rule.stub
-        $stubFile = $this->resolveStubFile();
-
-        // 2) options
-        $options = [
-            'force' => $force,
+        return [
+            '{--i|implicit : Generate an implicit rule}',
         ];
-
-        // 3) 追加プレースホルダが必要なら定義 (ここでは空)
-        $extraPlaceholders = [];
-
-        // 4) makeFiler
-        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders);
+    }
+    
+    /**
+     * Ruleクラスを作成するメイン処理。
+     *
+     * @param  string  $className  クラス名
+     * @param  string  $fileType   ファイルタイプ
+     * @param  array   $options    オプション配列
+     * @param  array   $subDirs    サブディレクトリ配列
+     * @param  string  $pluginName プラグイン名
+     * @return bool
+     */
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '')
+    {
+        // スタブの取得
+        $stub = $this->renderStub($options);
+        
+        // プレースホルダーの準備
+        $placeholders = [];
+        
+        // ファイル生成
+        return $this->makeFiler(
+            className: $className,
+            fileType: $fileType,
+            fileCategory: 'rule',
+            options: $options,
+            subDirs: $subDirs,
+            stub: $stub,
+            pluginName: $pluginName,
+            placeholders: $placeholders,
+            licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
+        );
     }
 
     /**
-     * デフォルト "rule.stub"
+     * Rule用のスタブをレンダリングします。
+     *
+     * @param  array  $options
+     * @return string
      */
-    protected function resolveStubFile(): string
+    protected function renderStub(array $options = []): string
     {
-        return 'rule.stub';
-    }
+        // --implicit オプションによってスタブを切り替え
+        $stubName = (!empty($options['implicit'])) ? 'rule.implicit.stub' : 'rule.stub';
+        $stubPath = config('command.custom_stub_directory') . '/' . $stubName;
 
-    /**
-     * (B)パターン: getDirectory/getNamespace => getRuleDirectory/Namespace
-     */
-    protected function getDirectory(array $subDirs): string
-    {
-        return $this->getRuleDirectory($subDirs);
-    }
+        if (!File::exists($stubPath)) {
+            $this->error("Stub file not found: {$stubPath}");
+            return '';
+        }
 
-    protected function getNamespace(array $subDirs): string
-    {
-        return $this->getRuleNamespace($subDirs);
+        return File::get($stubPath);
     }
-
-    /**
-     * サブクラスで実装
-     */
-    abstract protected function getRuleDirectory(array $subDirs): string;
-    abstract protected function getRuleNamespace(array $subDirs): string;
 }

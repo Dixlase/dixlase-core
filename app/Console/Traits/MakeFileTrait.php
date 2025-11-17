@@ -193,7 +193,14 @@ trait MakeFileTrait
         $content = $this->trimAndIndent($content);
 
         // 4. パスとファイル名の生成
-        $extension = ($fileCategory === 'blade') ? '.blade.php' : '.php';
+        // オプションで拡張子が指定されている場合はそれを使用
+        if (!empty($options['extension'])) {
+            $extension = '.' . ltrim($options['extension'], '.');
+        } elseif ($fileCategory === 'blade' || $fileCategory === 'view') {
+            $extension = '.blade.php';
+        } else {
+            $extension = '.php';
+        }
         $fullPath = $this->path . '/' . $className . $extension;
 
         // 5. 上書き確認

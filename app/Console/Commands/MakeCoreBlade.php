@@ -24,11 +24,11 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Services\FileGenerator;
-use App\Console\Traits\MakeBladeTrait;
+use App\Console\Traits\MakeViewTrait;
 
 class MakeCoreBlade extends Command
 {
-    use MakeBladeTrait;
+    use MakeViewTrait;
 
     protected $signature = 'make:blade
         {file : The blade file name (with optional subdirectories, e.g. admin/dashboard)}
