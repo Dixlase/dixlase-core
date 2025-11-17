@@ -23,22 +23,22 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Console\Traits\MakeChannelTrait;
+use App\Console\Traits\MakeVoltTrait;
 use App\Console\Traits\MakeCustomCommandTrait;
 
-class MakeCustomChannel extends Command
+class MakeCustomVolt extends Command
 {
-    use MakeChannelTrait;
+    use MakeVoltTrait;
     use MakeCustomCommandTrait;
 
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:channel'
+            'make:custom:volt'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );
-        $this->setDescription(__('command.make_custom.channel.description'));
+        $this->setDescription(__('command.make_custom.volt.description'));
         parent::__construct();
     }
 
@@ -48,7 +48,7 @@ class MakeCustomChannel extends Command
             $this->argument('className'),
             $this->argument('fileType'),
             $this->argument('pluginName'),
-            'channel',
+            'volt',
             $this->options()
         );
     }

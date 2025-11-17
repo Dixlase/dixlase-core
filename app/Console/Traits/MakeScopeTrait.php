@@ -22,56 +22,75 @@
 
 namespace App\Console\Traits;
 
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 
 /**
- * Eloquent Scope (Global Scope) を作成するための Trait.
- * -> MakeFileTrait を use してファイル生成を共通化。
+ * Scopeファイル作成用トレイト
  */
 trait MakeScopeTrait
 {
     use MakeFileTrait;
-
+    
     /**
-     * スコープクラスを作成するメイン処理
-     *
-     * @param  string  $className
-     * @param  array   $subDirs
-     * @param  bool    $force
+     * Scope固有のオプション定義を取得
+     * 
+     * @return array
      */
-    protected function makeFile(string $className, array $subDirs, bool $force): void
+    protected function getAdditionalOptions(): array
     {
-        // 1) scope.stub
-        $stubFile = 'scope.stub';
-
-        // 2) options
-        $options = [
-            'force' => $force,
+        return [
+            // Laravel標準のScopeにはforceのみ
         ];
-
-        // 3) 追加プレースホルダ（なければ空）
-        $extraPlaceholders = [];
-
-        // 4) makeFiler
-        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders);
+    }
+    
+    /**
+     * Scopeを作成するメイン処理。
+     *
+     * @param  string  $className  クラス名
+     * @param  string  $fileType   ファイルタイプ
+     * @param  array   $options    オプション配列
+     * @param  array   $subDirs    サブディレクトリ配列
+     * @param  string  $pluginName プラグイン名
+     * @return bool
+     */
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '')
+    {
+        // スタブの取得
+        $stub = $this->renderStub($options);
+        
+        // プレースホルダーの準備
+        $placeholders = [];
+        
+        // ファイル生成
+        return $this->makeFiler(
+            className: $className,
+            fileType: $fileType,
+            fileCategory: 'scope',
+            options: $options,
+            subDirs: $subDirs,
+            stub: $stub,
+            pluginName: $pluginName,
+            placeholders: $placeholders,
+            licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
+        );
     }
 
     /**
-     * (B)パターン: getDirectory/getNamespace => getScopeDirectory/Namespace
+     * Scope用のスタブをレンダリングします。
+     *
+     * @param  array  $options
+     * @return string
      */
-    protected function getDirectory(array $subDirs): string
+    protected function renderStub(array $options = []): string
     {
-        return $this->getScopeDirectory($subDirs);
-    }
+        $stubName = 'scope.stub';
+        $stubPath = config('command.custom_stub_directory') . '/' . $stubName;
 
-    protected function getNamespace(array $subDirs): string
-    {
-        return $this->getScopeNamespace($subDirs);
-    }
+        if (!File::exists($stubPath)) {
+            $this->error("Stub file not found: {$stubPath}");
+            return '';
+        }
 
-    /**
-     * サブクラスで実装
-     */
-    abstract protected function getScopeDirectory(array $subDirs): string;
-    abstract protected function getScopeNamespace(array $subDirs): string;
+        return File::get($stubPath);
+    }
 }

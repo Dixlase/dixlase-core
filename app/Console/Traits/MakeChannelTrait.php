@@ -22,64 +22,75 @@
 
 namespace App\Console\Traits;
 
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 
 /**
- * ブロードキャスト用のチャンネルクラスを作成するための Trait.
- * -> MakeFileTrait を use してファイル生成を共通化。
+ * Channelファイル作成用トレイト
  */
 trait MakeChannelTrait
 {
     use MakeFileTrait;
-
+    
     /**
-     * チャンネルクラスを作成するメイン処理
-     *
-     * @param  string  $className
-     * @param  array   $subDirs
-     * @param  bool    $force
+     * Channel固有のオプション定義を取得
+     * 
+     * @return array
      */
-    protected function makeFile(string $className, array $subDirs, bool $force): void
+    protected function getAdditionalOptions(): array
     {
-        // 1) channel.stub
-        $stubFile = $this->resolveStubFile();
-
-        // 2) options
-        $options = [
-            'force' => $force,
+        return [
+            // Laravel標準のChannelにはforceのみ
         ];
-
-        // 3) 追加プレースホルダ (不要なら空)
-        $extraPlaceholders = [];
-
-        // 4) makeFiler
-        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders);
+    }
+    
+    /**
+     * Channelを作成するメイン処理。
+     *
+     * @param  string  $className  クラス名
+     * @param  string  $fileType   ファイルタイプ
+     * @param  array   $options    オプション配列
+     * @param  array   $subDirs    サブディレクトリ配列
+     * @param  string  $pluginName プラグイン名
+     * @return bool
+     */
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '')
+    {
+        // スタブの取得
+        $stub = $this->renderStub($options);
+        
+        // プレースホルダーの準備
+        $placeholders = [];
+        
+        // ファイル生成
+        return $this->makeFiler(
+            className: $className,
+            fileType: $fileType,
+            fileCategory: 'channel',
+            options: $options,
+            subDirs: $subDirs,
+            stub: $stub,
+            pluginName: $pluginName,
+            placeholders: $placeholders,
+            licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
+        );
     }
 
     /**
-     * デフォルト "channel.stub"
+     * Channel用のスタブをレンダリングします。
+     *
+     * @param  array  $options
+     * @return string
      */
-    protected function resolveStubFile(): string
+    protected function renderStub(array $options = []): string
     {
-        return 'channel.stub';
-    }
+        $stubName = 'channel.stub';
+        $stubPath = config('command.custom_stub_directory') . '/' . $stubName;
 
-    /**
-     * (B)パターン: getDirectory/getNamespace => getChannelDirectory/Namespace
-     */
-    protected function getDirectory(array $subDirs): string
-    {
-        return $this->getChannelDirectory($subDirs);
-    }
+        if (!File::exists($stubPath)) {
+            $this->error("Stub file not found: {$stubPath}");
+            return '';
+        }
 
-    protected function getNamespace(array $subDirs): string
-    {
-        return $this->getChannelNamespace($subDirs);
+        return File::get($stubPath);
     }
-
-    /**
-     * サブクラスで実装
-     */
-    abstract protected function getChannelDirectory(array $subDirs): string;
-    abstract protected function getChannelNamespace(array $subDirs): string;
 }

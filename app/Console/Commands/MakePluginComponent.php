@@ -23,71 +23,33 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
-use App\Services\FileGenerator;
+use App\Console\Traits\MakeComponentTrait;
+use App\Console\Traits\MakePluginCommandTrait;
+use App\Console\Traits\MakeLicenseTrait;
 
 class MakePluginComponent extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'make:plugin:component
-                            {plugin : The plugin name}
-                            {name : The name of the view component}';
+    use MakeComponentTrait;
+    use MakePluginCommandTrait;
+    use MakeLicenseTrait;
 
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Create a new view component class for the specified plugin.';
-
-    protected FileGenerator $fileGenerator;
-
-    public function __construct(FileGenerator $fileGenerator)
+    public function __construct()
     {
+        $this->signature = $this->makeSignature(
+            'make:plugin:component ' . $this->getPluginCommandSignature(true),
+            $this->getAdditionalOptions()
+        );
+        $this->setDescription(__('command.make_plugin.component.description'));
         parent::__construct();
-        $this->fileGenerator = $fileGenerator;
     }
 
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
-        $pluginName = Str::studly($this->argument('plugin'));
-        $componentName = $this->argument('name');
-
-        $namespace = "Plugins\\{$pluginName}\\App\\View\\Components";
-        $filePath  = base_path("plugins/{$pluginName}/app/View/Components/{$componentName}.php");
-
-        try {
-            $this->fileGenerator->prepareFilePath(
-                $filePath,
-                "Component [{$componentName}] already exists in plugin [{$pluginName}]."
-            );
-        } catch (\RuntimeException $e) {
-            $this->error($e->getMessage());
-            return Command::FAILURE;
-        }
-
-        $stub = $this->fileGenerator->getStubContent(
-            'component.stub',
-            null,
-            [base_path('stubs/custom')]
+        return $this->generatePluginFile(
+            $this->argument('className'),
+            $this->argument('pluginName'),
+            'component',
+            $this->options()
         );
-
-        $content = $this->fileGenerator->embedLicensePhp($stub, [
-            '{{ namespace }}' => $namespace,
-            '{{ class }}'     => $componentName,
-        ]);
-
-        $this->fileGenerator->generateFile($filePath, $content);
-        $this->info("View Component [{$componentName}] created successfully in plugin [{$pluginName}].");
-
-        return Command::SUCCESS;
     }
 }
