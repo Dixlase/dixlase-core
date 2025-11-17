@@ -1,0 +1,17 @@
+{{ license }}
+
+namespace {{ namespace }};
+
+use Livewire\Component;
+
+class {{ class }} extends Component
+{
+    public function render()
+    {
+        return <<<'HTML'
+        <div>
+            {{-- Livewire Component: {{ class }} --}}
+        </div>
+        HTML;
+    }
+}

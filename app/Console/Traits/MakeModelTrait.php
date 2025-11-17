@@ -41,17 +41,20 @@ trait MakeModelTrait
     protected function getAdditionalOptions(): array
     {
         return [
-            '{--all : ' . __("command.make.options.all") . '}',
-            '{--controller : ' . __("command.make.options.controller") . '}',
-            '{--factory : ' . __("command.make.options.factory") . '}',
-            '{--migration : ' . __("command.make.options.migration") . '}',
+            '{--a|all : ' . __("command.make.options.all") . '}',
+            '{--c|controller : ' . __("command.make.options.controller") . '}',
+            '{--f|factory : ' . __("command.make.options.factory") . '}',
+            '{--m|migration : ' . __("command.make.options.migration") . '}',
             '{--morph-pivot : ' . __("command.make.options.morph-pivot") . '}',
             '{--policy : ' . __("command.make.options.policy") . '}',
-            '{--seed : ' . __("command.make.options.seed") . '}',
-            '{--pivot : ' . __("command.make.options.pivot") . '}',
-            '{--resource : ' . __("command.make.options.resource") . '}',
+            '{--s|seed : ' . __("command.make.options.seed") . '}',
+            '{--p|pivot : ' . __("command.make.options.pivot") . '}',
+            '{--r|resource : ' . __("command.make.options.resource") . '}',
             '{--api : ' . __("command.make.options.api") . '}',
-            '{--requests : ' . __("command.make.options.requests") . '}',
+            '{--R|requests : ' . __("command.make.options.requests") . '}',
+            '{--test : ' . __("command.make.options.test") . '}',
+            '{--pest : ' . __("command.make.options.pest") . '}',
+            '{--phpunit : ' . __("command.make.options.phpunit") . '}',
         ];
     }
 
@@ -170,6 +173,10 @@ trait MakeModelTrait
             $this->createPolicy($className, $fileType, $subDirs, $pluginName);
         }
 
+        if ($this->option('test') || $this->option('pest') || $this->option('phpunit')) {
+            $this->createTest($className, $fileType, $subDirs, $pluginName);
+        }
+
         return true;
     }
 
@@ -256,8 +263,25 @@ trait MakeModelTrait
         ]);
     }
 
-
-
+    /**
+     * Create a test for the model
+     */
+    protected function createTest($className, $fileType, $subDirs, $pluginName = '')
+    {
+        $testName = class_basename($className) . 'Test';
+        
+        $command = 'make:custom:test';
+        if ($fileType === 'plugin') {
+            $command = 'make:plugin:test';
+        }
+        
+        $this->call($command, array_filter([
+            'name' => $testName,
+            'pluginName' => $fileType === 'plugin' ? $pluginName : null,
+            '--pest' => $this->option('pest'),
+            '--phpunit' => $this->option('phpunit'),
+        ]));
+    }
 
     /**
      * Qualify the given model class base name

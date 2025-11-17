@@ -23,41 +23,32 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
-use App\Console\Traits\MakeModelTrait;
-use App\Console\Traits\MakePluginCommandTrait;
-use App\Console\Traits\MakeLicenseTrait;
+use App\Console\Traits\MakeLivewireTrait;
+use App\Console\Traits\MakeCustomCommandTrait;
 
-/**
- * Class MakePluginModel
- *
- * @package App\Console\Commands
- */
-class MakePluginModel extends Command
+class MakeCustomLivewire extends Command
 {
-    use MakeModelTrait;
-    use MakePluginCommandTrait;
-    use MakeLicenseTrait;
+    use MakeLivewireTrait;
+    use MakeCustomCommandTrait;
 
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:model '
-            .$this->getPluginCommandSignature(true),
+            'make:custom:livewire'
+            .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );
-        $this->setDescription(__('command.make_plugin.model.description'));
-        
+        $this->setDescription(__('command.make_custom.livewire.description'));
         parent::__construct();
     }
 
     public function handle()
     {
-
-        return $this->generatePluginFile(
+        return $this->generateCustomFile(
             $this->argument('className'),
+            $this->argument('fileType'),
             $this->argument('pluginName'),
-            'model',
+            'livewire',
             $this->options()
         );
     }

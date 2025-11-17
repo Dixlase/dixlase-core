@@ -1,6 +1,7 @@
 {
     "name": "{{ cmsNameSlug }}/plugins-{{ pluginSlug }}",
     "description": "This is the {{ pluginName }} plugin.",
+    "type": "dixlase-plugin",
     "version": "1.0.0",
     "license": "{{ licenseName }}",
     "authors": [
