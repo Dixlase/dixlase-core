@@ -23,35 +23,31 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Services\FileGenerator;
-use App\Console\Traits\MakeBladeTrait;
-use App\Console\Traits\MakeCustomCommandTrait;
+use App\Console\Traits\MakeViewTrait;
+use App\Console\Traits\MakePluginCommandTrait;
 
-
-class MakeCustomBlade extends Command
+class MakePluginView extends Command
 {
-    use MakeBladeTrait;
-    use MakeCustomCommandTrait;
+    use MakeViewTrait;
+    use MakePluginCommandTrait;
 
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:blade'
-            .$this->getCustomCommandSignature(true),
-            $this->getAdditionalOptions());
-        
-        $this->setDescription(__('command.make_custom.blade.description'));
+            'make:plugin:view ' . $this->getPluginCommandSignature(true),
+            $this->getAdditionalOptions()
+        );
+        $this->setDescription(__('command.make_plugin.view.description'));
         
         parent::__construct();
     }
 
     public function handle()
     {
-        return $this->generateCustomFile(
+        return $this->generatePluginFile(
             $this->argument('className'),
-            $this->argument('fileType'),
             $this->argument('pluginName'),
-            'blade',
+            'view',
             $this->options(),
             true,
             $this->argument('scope')

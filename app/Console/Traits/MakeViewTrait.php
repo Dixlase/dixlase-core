@@ -22,33 +22,31 @@
 
 namespace App\Console\Traits;
 
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
 
 /**
- * Jobファイル作成用トレイト
+ * Viewファイル作成用トレイト
  */
-trait MakeJobTrait
+trait MakeViewTrait
 {
-    use MakeFileTrait;
-    
     /**
-     * Job固有のオプション定義を取得
+     * View固有のオプション定義を取得
      * 
      * @return array
      */
     protected function getAdditionalOptions(): array
     {
         return [
-            '{--sync : Indicates that the job should be synchronous}',
-            '{--batched : Indicates that the job should be batchable}',
-            '{--test : Generate an accompanying test for the Job}',
-            '{--pest : Generate an accompanying Pest test for the Job}',
-            '{--phpunit : Generate an accompanying PHPUnit test for the Job}',
+            '{--extension= : The extension of the generated view}',
+            '{--test : Generate an accompanying test for the View}',
+            '{--pest : Generate an accompanying Pest test for the View}',
+            '{--phpunit : Generate an accompanying PHPUnit test for the View}',
         ];
     }
-    
+
     /**
-     * Jobクラスを作成するメイン処理。
+     * Viewファイルを作成するメイン処理。
      *
      * @param  string  $className  クラス名
      * @param  string  $fileType   ファイルタイプ
@@ -57,50 +55,67 @@ trait MakeJobTrait
      * @param  string  $pluginName プラグイン名
      * @return bool
      */
-    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '')
-    {
-        // スタブの取得
+    protected function makeFile(
+        string $className,
+        string $fileType,
+        array $options,
+        array $subDirs,
+        string $pluginName
+    ){
+        // スコープの取得（Dixlase独自機能）
+        $scope = $options['scope'] ?? 'plain';
+        
+        // スタブの取得（スコープを考慮）
         $stub = $this->renderStub($options);
-        
-        // プレースホルダーの準備
-        $placeholders = [];
-        
+
+        // Viewファイルの場合はサブディレクトリをすべて小文字に変換
+        $subDirs = array_map('strtolower', $subDirs);
+
+        // 拡張子の取得（デフォルトは blade.php）
+        // オプションに拡張子を追加して makeFiler に渡す
+        $options['extension'] = $options['extension'] ?? 'blade.php';
+
         // ファイル生成
-        $result = $this->makeFiler(
+        $this->makeFiler(
             className: $className,
             fileType: $fileType,
-            fileCategory: 'job',
+            fileCategory: 'view',
             options: $options,
             subDirs: $subDirs,
             stub: $stub,
             pluginName: $pluginName,
-            placeholders: $placeholders,
+            placeholders: [],
             licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
         );
         
         // テストファイルの生成
         if (!empty($options['test']) || !empty($options['pest']) || !empty($options['phpunit'])) {
-            $this->createMatchingTest($className, $fileType, $options, $pluginName);
+            $this->createMatchingTest($className, $fileType, $options, $pluginName, $subDirs);
         }
         
-        return $result;
+        return true;
     }
 
     /**
-     * Job用のスタブをレンダリングします。
-     *
-     * @param  array  $options
-     * @return string
+     * スコープに基づいて適切なスタブファイルをレンダリングする
+     * 
+     * @param array $options オプション
+     * @return string スタブファイルの内容
      */
     protected function renderStub(array $options = []): string
     {
-        // --sync, --batched オプションによってスタブを切り替え
-        if (!empty($options['sync'])) {
-            $stubName = 'job.stub';
-        } else {
-            $stubName = 'job.queued.stub';
-        }
+        // スコープの取得（Dixlase独自機能）
+        $scope = $options['scope'] ?? 'plain';
         
+        // スコープに応じたスタブファイル名を設定
+        $stubName = 'view.stub';
+        if ($scope === 'admin') {
+            $stubName = 'blade-admin.stub';
+        } elseif ($scope === 'front') {
+            $stubName = 'blade-front.stub';
+        }
+
+        // スタブファイルのパスを取得
         $stubPath = config('command.custom_stub_directory') . '/' . $stubName;
 
         if (!File::exists($stubPath)) {
@@ -108,21 +123,29 @@ trait MakeJobTrait
             return '';
         }
 
+        // スタブファイルの内容を取得
         return File::get($stubPath);
     }
-    
+
     /**
-     * Jobに対応するテストファイルを生成
+     * Viewに対応するテストファイルを生成
      *
      * @param  string  $className
      * @param  string  $fileType
      * @param  array   $options
      * @param  string  $pluginName
+     * @param  array   $subDirs
      * @return void
      */
-    protected function createMatchingTest(string $className, string $fileType, array $options, string $pluginName): void
+    protected function createMatchingTest(string $className, string $fileType, array $options, string $pluginName, array $subDirs): void
     {
-        $testClassName = $className . 'Test';
+        // ビュー名を生成（ドット記法）
+        $viewName = strtolower($className);
+        if (!empty($subDirs)) {
+            $viewName = implode('.', array_map('strtolower', $subDirs)) . '.' . strtolower($className);
+        }
+        
+        $testClassName = Str::studly($className) . 'ViewTest';
         
         // テストオプションを準備
         $testOptions = [];
@@ -148,5 +171,7 @@ trait MakeJobTrait
                 'pluginName' => $fileType === 'custom_plugin' ? $pluginName : null,
             ], $testOptions));
         }
+        
+        $this->info("View test created for view: {$viewName}");
     }
 }

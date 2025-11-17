@@ -23,32 +23,32 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Console\Traits\MakeRuleTrait;
-use App\Console\Traits\MakeCustomCommandTrait;
+use App\Console\Traits\MakeResourceTrait;
+use App\Console\Traits\MakePluginCommandTrait;
+use App\Console\Traits\MakeLicenseTrait;
 
-class MakeCustomRule extends Command
+class MakePluginResource extends Command
 {
-    use MakeRuleTrait;
-    use MakeCustomCommandTrait;
+    use MakeResourceTrait;
+    use MakePluginCommandTrait;
+    use MakeLicenseTrait;
 
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:rule'
-            .$this->getCustomCommandSignature(),
+            'make:plugin:resource ' . $this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );
-        $this->setDescription(__('command.make_custom.rule.description'));
+        $this->setDescription(__('command.make_plugin.resource.description'));
         parent::__construct();
     }
 
     public function handle()
     {
-        return $this->generateCustomFile(
+        return $this->generatePluginFile(
             $this->argument('className'),
-            $this->argument('fileType'),
             $this->argument('pluginName'),
-            'rule',
+            'resource',
             $this->options()
         );
     }

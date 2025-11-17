@@ -22,63 +22,76 @@
 
 namespace App\Console\Traits;
 
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 
 /**
- * 汎用クラスを作成するためのTrait.
- * -> MakeFileTrait を use してファイル生成を共通化。
+ * Classファイル作成用トレイト
  */
 trait MakeClassTrait
 {
     use MakeFileTrait;
-
+    
     /**
-     * 汎用クラス (invokable可) を作成するメイン処理
-     *
-     * @param  string  $className
-     * @param  array   $subDirs
-     * @param  bool    $force
-     * @param  bool    $isInvokable  --invokable がtrueなら
+     * Class固有のオプション定義を取得
+     * 
+     * @return array
      */
-    protected function makeFile(
-        string $className,
-        array $subDirs,
-        bool $force,
-        bool $isInvokable
-    ): void {
-        // 1) stubファイルを決定
-        //    --invokable なら "class.invokable.stub"、
-        //    そうでなければ "class.stub"
-        $stubFile = $isInvokable ? 'class.invokable.stub' : 'class.stub';
-
-        // 2) options
-        $options = [
-            'force' => $force,
+    protected function getAdditionalOptions(): array
+    {
+        return [
+            '{--i|invokable : Generate a single method, invokable class}',
         ];
-
-        // 3) 追加プレースホルダ (なければ空)
-        $extraPlaceholders = [];
-
-        // 4) makeFiler
-        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders);
+    }
+    
+    /**
+     * Classを作成するメイン処理。
+     *
+     * @param  string  $className  クラス名
+     * @param  string  $fileType   ファイルタイプ
+     * @param  array   $options    オプション配列
+     * @param  array   $subDirs    サブディレクトリ配列
+     * @param  string  $pluginName プラグイン名
+     * @return bool
+     */
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '')
+    {
+        // スタブの取得
+        $stub = $this->renderStub($options);
+        
+        // プレースホルダーの準備
+        $placeholders = [];
+        
+        // ファイル生成
+        return $this->makeFiler(
+            className: $className,
+            fileType: $fileType,
+            fileCategory: 'class',
+            options: $options,
+            subDirs: $subDirs,
+            stub: $stub,
+            pluginName: $pluginName,
+            placeholders: $placeholders,
+            licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
+        );
     }
 
     /**
-     * (B)パターン: getDirectory/getNamespace => getClassDirectory/Namespace
+     * Class用のスタブをレンダリングします。
+     *
+     * @param  array  $options
+     * @return string
      */
-    protected function getDirectory(array $subDirs): string
+    protected function renderStub(array $options = []): string
     {
-        return $this->getClassDirectory($subDirs);
-    }
+        // --invokable オプションによってスタブを切り替え
+        $stubName = (!empty($options['invokable'])) ? 'class.invokable.stub' : 'class.stub';
+        $stubPath = config('command.custom_stub_directory') . '/' . $stubName;
 
-    protected function getNamespace(array $subDirs): string
-    {
-        return $this->getClassNamespace($subDirs);
-    }
+        if (!File::exists($stubPath)) {
+            $this->error("Stub file not found: {$stubPath}");
+            return '';
+        }
 
-    /**
-     * サブクラスで実装
-     */
-    abstract protected function getClassDirectory(array $subDirs): string;
-    abstract protected function getClassNamespace(array $subDirs): string;
+        return File::get($stubPath);
+    }
 }
