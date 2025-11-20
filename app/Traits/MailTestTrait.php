@@ -265,6 +265,8 @@ trait MailTestTrait
             
             if (!$connectionTested) {
                 return response()->json([
+                    'success' => false,
+                    'message' => __('mail.test_functions.connection_test_required')
                 ], 400);
             }
             

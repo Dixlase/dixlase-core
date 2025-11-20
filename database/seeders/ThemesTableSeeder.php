@@ -34,13 +34,50 @@ class ThemesTableSeeder extends Seeder
      */
     public function run(): void
     {
-        Theme::create([
-            'name' => 'DixlaseDefaultTheme',
-            'slug' => 'DixlaseDefaultTheme',
-            'directory' => 'DixlaseDefaultTheme',
-            'version' => '1.0.0',
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
+        // theme.jsonから情報を読み込む
+        $themeJsonPath = base_path('themes/DixlaseDefaultTheme/theme.json');
+        
+        if (file_exists($themeJsonPath)) {
+            $themeJson = json_decode(file_get_contents($themeJsonPath), true);
+            
+            // 日本語の説明を取得（フォールバック: 英語）
+            $description = $themeJson['description']['ja'] ?? $themeJson['description']['en'] ?? null;
+            
+            Theme::create([
+                'name' => $themeJson['name'] ?? 'DixlaseDefaultTheme',
+                'package_name' => $themeJson['package_name'] ?? null,
+                'directory' => 'DixlaseDefaultTheme',
+                'slug' => $themeJson['slug'] ?? 'dixlase-default-theme',
+                'namespace' => $themeJson['namespace'] ?? null,
+                'description' => $description,
+                'license' => $themeJson['license'] ?? null,
+                'author' => $themeJson['author'] ?? null,
+                'email' => $themeJson['email'] ?? null,
+                'web' => $themeJson['url'] ?? null,
+                'version' => $themeJson['version'] ?? '1.0.0',
+                'config' => [
+                    'supports' => $themeJson['supports'] ?? [],
+                    'customizable' => $themeJson['customizable'] ?? [],
+                    'tags' => $themeJson['tags'] ?? [],
+                    'requires' => $themeJson['requires'] ?? [],
+                ],
+                'installed_at' => now(),
+                'activated_at' => now(), // デフォルトテーマは自動的に有効化
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+        } else {
+            // theme.jsonが存在しない場合は最小限の情報で作成
+            Theme::create([
+                'name' => 'DixlaseDefaultTheme',
+                'slug' => 'dixlase-default-theme',
+                'directory' => 'DixlaseDefaultTheme',
+                'version' => '1.0.0',
+                'installed_at' => now(),
+                'activated_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+        }
     }
 }

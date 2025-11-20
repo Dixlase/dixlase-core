@@ -238,6 +238,7 @@ return [
         'send_test_failed' => 'テストメールの送信に失敗しました',
         'test_mail_success' => 'テストメールが正常に送信されました。受信トレイをご確認し、メール内のリンクから受信確認を完了させてください。',
         'test_mail_failed' => 'メール送信に失敗しました: :error',
+        'connection_test_required' => 'メール送信テストを実行する前に、まず接続テストを完了させてください。',
         'three_stage_test_incomplete' => 'メールテストが未完了です',
         'three_stage_test_complete' => 'メールテストが完了しました',
         'connection_test' => 'サーバー接続テスト',

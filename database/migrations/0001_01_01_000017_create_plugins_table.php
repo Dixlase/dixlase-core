@@ -47,8 +47,8 @@ return new class extends Migration
             $table->string('email')->nullable(); // 作者のメール
             $table->string('web')->nullable(); // 作者のウェブサイト
             $table->string('version'); // バージョン
-            $table->tinyInteger('status')->default(0)->comment('0: disabled, 1: enabled'); // ステータス
             $table->timestamp('installed_at')->nullable(); // インストール日時
+            $table->timestamp('activated_at')->nullable(); // 有効化日時
             $table->timestamps(); // Laravelの `created_at` & `updated_at`
         });
     }
