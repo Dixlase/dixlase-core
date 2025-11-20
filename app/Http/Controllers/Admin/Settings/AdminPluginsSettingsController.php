@@ -224,7 +224,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             if (!empty($migrated)) {
                 // 新しいマイグレーションがあったので、テーブルが新規(または更新)された
                 // ここでシーダー実行
-                Artisan::call('plugin:seed', [
+                Artisan::call('dls:plugin:seed', [
                     'plugin' => $pluginDir,
                     '--force' => true,
                 ]);
@@ -303,7 +303,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         // ★ 1) DBデータも削除か？ → plugin:rollback 実行
         if ($request->has('remove_db_data')) {
             // plugin:rollback コマンドを呼ぶ (実装済みなら)
-            Artisan::call('plugin:migrate:rollback', [
+            Artisan::call('dls:plugin:migrate:rollback', [
                 'plugin' => $pluginDir,
                 '--force' => true,
                 '--step' => 9999, // 全部ロールバック
