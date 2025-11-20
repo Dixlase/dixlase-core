@@ -201,7 +201,6 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                     'email'       => $email,
                     'web'         => $web,
                     'version'     => $version,
-                    'status'      => 0, // デフォルトで無効化
                     'installed_at' => now(), // インストール日時をセット
                 ]);
 
@@ -268,7 +267,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
         try {
             // プラグインを有効化
-            $plugin->update(['status' => 1]);
+            $plugin->update(['activated_at' => now()]);
 
             return redirect()->route('admin.settings.plugins.index')->with('success', 'プラグインを有効化しました');
         } catch (\Exception $e) {
@@ -286,7 +285,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             delete_plugin_symlink($plugin->directory);
 
             // プラグインを無効化
-            $plugin->update(['status' => 0]);
+            $plugin->update(['activated_at' => null]);
 
             return redirect()->route('admin.settings.plugins.index')->with('success', 'プラグインを無効化しました');
         } catch (\Exception $e) {
@@ -358,7 +357,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
      */
     private function checkPluginHasSettings($plugin)
     {
-        if ($plugin->status !== 1) {
+        if (!$plugin->isActivated()) {
             return false; // 無効なプラグインは設定画面なし
         }
 

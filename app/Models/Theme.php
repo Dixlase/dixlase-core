@@ -39,10 +39,28 @@ class Theme extends Model
      */
     protected $fillable = [
         'name',         // テーマ名
-        'slug',         // テーマのスラッグ名 (一意)
+        'package_name', // パッケージ名
         'directory',    // テーマディレクトリ名
+        'slug',         // テーマのスラッグ名 (一意)
+        'namespace',    // テーマの名前空間
+        'description',  // テーマ説明
+        'license',      // ライセンス
+        'author',       // 作者
+        'email',        // 作者のメール
+        'web',          // 作者のウェブサイト
         'version',      // テーマバージョン
+        'config',       // テーマ設定
+        'installed_at', // インストール日時
+        'activated_at', // 有効化日時
+    ];
 
+    /**
+     * キャスト設定
+     */
+    protected $casts = [
+        'config' => 'array',
+        'installed_at' => 'datetime',
+        'activated_at' => 'datetime',
     ];
 
 
@@ -51,7 +69,31 @@ class Theme extends Model
      */
     public function scopeActive($query)
     {
-        return $query->where('is_active', true);
+        return $query->whereNotNull('activated_at');
+    }
+
+    /**
+     * インストール済みテーマのスコープ
+     */
+    public function scopeInstalled($query)
+    {
+        return $query->whereNotNull('installed_at');
+    }
+
+    /**
+     * テーマがインストール済みかチェック
+     */
+    public function isInstalled(): bool
+    {
+        return !is_null($this->installed_at);
+    }
+
+    /**
+     * テーマが有効化されているかチェック
+     */
+    public function isActivated(): bool
+    {
+        return !is_null($this->activated_at);
     }
 
     /**
