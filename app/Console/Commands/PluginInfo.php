@@ -304,10 +304,10 @@ class PluginInfo extends Command
             }
 
             return [
-                'installed' => true,
-                'enabled' => $plugin->is_enabled ?? false,
+                'installed' => !is_null($plugin->installed_at),
+                'enabled' => !is_null($plugin->activated_at),
                 'migrated' => $plugin->is_migrated ?? false,
-                'installed_at' => $plugin->created_at?->format('Y-m-d H:i:s') ?? 'N/A',
+                'installed_at' => $plugin->installed_at?->format('Y-m-d H:i:s') ?? 'N/A',
             ];
         } catch (\Exception $e) {
             return [

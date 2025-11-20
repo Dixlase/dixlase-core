@@ -45,14 +45,20 @@ class ThemeDeactivate extends Command
             return Command::FAILURE;
         }
 
+        // Check if theme is installed
+        if (!$theme->isInstalled()) {
+            $this->error(__('command.theme_deactivate.not_installed', ['themeName' => $theme->name]));
+            return Command::FAILURE;
+        }
+
         // Check if the theme is already inactive
-        if (!$theme->is_active) {
+        if (!$theme->isActivated()) {
             $this->info(__('command.theme_deactivate.already_inactive', ['themeName' => $theme->name]));
             return Command::SUCCESS;
         }
 
         // Deactivate the theme
-        $theme->update(['is_active' => false]);
+        $theme->update(['activated_at' => null]);
         $this->info(__('command.theme_deactivate.deactivated', ['themeName' => $theme->name]));
         
         return Command::SUCCESS;
@@ -65,7 +71,8 @@ class ThemeDeactivate extends Command
      */
     protected function listActiveThemes()
     {
-        $activeThemes = Theme::where('is_active', true)
+        $activeThemes = Theme::whereNotNull('activated_at')
+                           ->whereNotNull('installed_at')
                            ->get(['name', 'slug']);
         
         if ($activeThemes->isEmpty()) {

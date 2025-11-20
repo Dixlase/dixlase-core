@@ -26,7 +26,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Plugin extends Model
 {
-    //
+    /**
+     * 複数代入の許可フィールド
+     */
     protected $fillable = [
         'name',
         'package_name',
@@ -39,13 +41,47 @@ class Plugin extends Model
         'web',
         'license',
         'description',
-        'status',
         'installed_at',
+        'activated_at',
     ];
 
-    // 有効化されたプラグインを取得するスコープ
+    /**
+     * キャスト設定
+     */
+    protected $casts = [
+        'installed_at' => 'datetime',
+        'activated_at' => 'datetime',
+    ];
+
+    /**
+     * 有効化されたプラグインを取得するスコープ
+     */
     public function scopeActive($query)
     {
-        return $query->where('status', 1);
+        return $query->whereNotNull('activated_at');
+    }
+
+    /**
+     * インストール済みプラグインのスコープ
+     */
+    public function scopeInstalled($query)
+    {
+        return $query->whereNotNull('installed_at');
+    }
+
+    /**
+     * プラグインがインストール済みかチェック
+     */
+    public function isInstalled(): bool
+    {
+        return !is_null($this->installed_at);
+    }
+
+    /**
+     * プラグインが有効化されているかチェック
+     */
+    public function isActivated(): bool
+    {
+        return !is_null($this->activated_at);
     }
 }

@@ -16,9 +16,7 @@ class ThemeUninstall extends Command
      * @var string
      */
     protected $signature = 'theme:uninstall 
-                            {themeName : ' . 'command.theme_uninstall.theme_name_prompt' . '} 
-                            {--force : ' . 'command.theme_uninstall.force_option' . '} 
-                            {--delete : ' . 'command.theme_uninstall.delete_option' . '}';
+                            {themeName : ' . 'command.theme_uninstall.theme_name_prompt' . '}';
 
     /**
      * The console command description.
@@ -35,7 +33,6 @@ class ThemeUninstall extends Command
     public function handle()
     {
         $themeName = $this->argument('themeName');
-        $force = $this->option('force');
         
         // Find the theme
         $theme = Theme::where('name', $themeName)
@@ -47,9 +44,16 @@ class ThemeUninstall extends Command
             return Command::FAILURE;
         }
 
+        // Check if theme is installed
+        if (!$theme->isInstalled()) {
+            $this->error(__('command.theme_uninstall.not_installed', ['themeName' => $theme->name]));
+            return Command::FAILURE;
+        }
+
         // Check if theme is active
-        if ($theme->is_active && !$force) {
+        if ($theme->isActivated()) {
             $this->error(__('command.theme_uninstall.cannot_uninstall_active', ['themeName' => $theme->name]));
+            $this->warn(__('command.theme_uninstall.deactivate_first'));
             return Command::FAILURE;
         }
 
@@ -59,43 +63,6 @@ class ThemeUninstall extends Command
             return Command::SUCCESS;
         }
 
-        // Deactivate the theme if it's active and force is used
-        if ($theme->is_active) {
-            $theme->update(['is_active' => false]);
-            $this->info(__('command.theme_uninstall.deactivated', ['themeName' => $theme->name]));
-        }
-
-        // Get theme directory path
-        $themeDir = base_path('themes/' . $theme->directory);
-        $deleteFiles = false;
-        
-        // Check if we should delete theme files
-        if ($this->option('delete')) {
-            $deleteFiles = true;
-        } elseif (is_dir($themeDir) && $this->confirm(__('command.theme_uninstall.confirm_delete', ['themeDir' => $themeDir]))) {
-            $deleteFiles = true;
-        }
-        
-        // Delete theme files if requested and directory exists
-        if ($deleteFiles && is_dir($themeDir)) {
-            try {
-                // Delete the theme directory recursively
-                File::deleteDirectory($themeDir);
-                
-                // Check if directory was deleted
-                if (!is_dir($themeDir)) {
-                    $this->info(__('command.theme_uninstall.deleted_directory', ['themeDir' => $themeDir]));
-                } else {
-                    $this->warn(__('command.theme_uninstall.delete_failed', ['themeDir' => $themeDir]));
-                }
-            } catch (\Exception $e) {
-                $this->error(__('command.theme_uninstall.delete_error', ['error' => $e->getMessage()]));
-                $this->warn(__('command.theme_uninstall.files_not_deleted'));
-            }
-        } elseif ($deleteFiles && !is_dir($themeDir)) {
-            $this->warn(__('command.theme_uninstall.directory_not_found', ['themeDir' => $themeDir]));
-        }
-        
         // .git/info/excludeからテーマの除外ルールを削除
         GitExcludeHelper::removeThemeExclusion($theme->directory);
         $this->info("Removed {$theme->directory} from .git/info/exclude");
@@ -104,13 +71,11 @@ class ThemeUninstall extends Command
         ComposerLocalHelper::syncAutoload();
         $this->info("Updated composer.local.json");
 
-        // Delete the theme from database
-        $theme->delete();
+        // Mark theme as uninstalled (but keep in database)
+        $theme->update(['installed_at' => null]);
         $this->info(__('command.theme_uninstall.uninstalled', ['themeName' => $theme->name]));
-        
-        if (!$deleteFiles) {
-            $this->info(__('command.theme_uninstall.files_not_removed', ['themeDir' => $themeDir]));
-        }
+        $this->info(__('command.theme_uninstall.files_preserved'));
+        $this->info(__('command.theme_uninstall.delete_hint'));
         
         return Command::SUCCESS;
     }

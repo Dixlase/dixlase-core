@@ -117,7 +117,6 @@ class PluginInstall extends Command
                 'email' => $email,
                 'web' => $web,
                 'version' => $version, // composer.json から取得
-                'status' => 0,
                 'installed_at' => now()
             ]
         );
