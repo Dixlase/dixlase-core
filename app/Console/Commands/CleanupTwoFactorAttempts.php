@@ -32,7 +32,7 @@ class CleanupTwoFactorAttempts extends Command
      *
      * @var string
      */
-    protected $signature = 'admin:cleanup-two-factor-attempts {--days=30 : Number of days to keep 2FA attempt records} {--all : Delete all 2FA attempt records} {--force : Force deletion without confirmation}';
+    protected $signature = 'dls:admin:cleanup-two-factor-attempts {--days=30 : Number of days to keep 2FA attempt records} {--all : Delete all 2FA attempt records} {--force : Force deletion without confirmation}';
 
     /**
      * The console command description.

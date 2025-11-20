@@ -44,7 +44,7 @@ class PluginInstall extends Command
      *
      * @var string
      */
-    protected $signature = 'plugin:install {pluginName} {--enable : Enable the plugin after installation}';
+    protected $signature = 'dls:plugin:install {pluginName : The name of the plugin to install}';
 
     /**
      * The console command description.

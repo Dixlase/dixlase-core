@@ -44,7 +44,7 @@ class MakeNewPlugin extends Command
      *  - --install, --enable : インストール＆有効化フラグ
      */
 
-    protected $signature = 'make:plugin
+    protected $signature = 'dls:make:plugin
                             {pluginName? : The name of the plugin}
                             {--author= : The author of the plugin}
                             {--email= : The email address of the author}
@@ -407,7 +407,7 @@ class MakeNewPlugin extends Command
         $licenseKey = $licenseInfo['license'] ?? 'GPL';
 
         //フロント用のルートファイルを作成        
-        Artisan::call('make:plugin:route', [
+        Artisan::call('dls:make:plugin:route', [
             'className' => "web",
             'pluginName' => $pluginDirName,
             'routeType' => 'web',
@@ -416,7 +416,7 @@ class MakeNewPlugin extends Command
         ]);
 
         //管理画面用のルートファイルを作成
-        Artisan::call('make:plugin:route', [
+        Artisan::call('dls:make:plugin:route', [
             'className' => "admin",
             'pluginName' => $pluginDirName,
             'routeType' => 'admin',
@@ -447,7 +447,7 @@ class MakeNewPlugin extends Command
         $licenseKey = $licenseInfo['license'] ?? 'GPL';
 
         // コンフィグファイルを作成        
-        Artisan::call('make:plugin:config', [
+        Artisan::call('dls:make:plugin:config', [
             'className' => $configFileName,
             'pluginName' => $pluginDirName,
             '--placeholders' => $placeholdersJson,
@@ -475,7 +475,7 @@ class MakeNewPlugin extends Command
         $licenseKey = $licenseInfo['license'] ?? 'GPL';
 
         // 英語の言語ファイルを作成        
-        Artisan::call('make:plugin:lang', [
+        Artisan::call('dls:make:plugin:lang', [
             'className' => $langFileName,
             'pluginName' => $pluginDirName,
             'lang' => 'en',
@@ -484,7 +484,7 @@ class MakeNewPlugin extends Command
         ]);
 
         // 日本語の言語ファイルを作成
-        Artisan::call('make:plugin:lang', [
+        Artisan::call('dls:make:plugin:lang', [
             'className' => $langFileName,
             'pluginName' => $pluginDirName,
             'lang' => 'ja',
@@ -552,7 +552,7 @@ class MakeNewPlugin extends Command
             '--initial' => true, // 初期作成時はフル機能版のスタブを使用
         ];
         
-        Artisan::call('make:plugin:provider', $params);
+        Artisan::call('dls:make:plugin:provider', $params);
 
         $this->info(__('command.make_plugin.files.service_provider', ['className' => $providerName, 'pluginName' => $pluginName]));
     }
@@ -775,7 +775,7 @@ class MakeNewPlugin extends Command
     protected function installPlugin($pluginName, $pluginDirName, $enable = false)
     {
         // PluginInstallコマンドを実行（--enableオプションで有効化を制御）
-        $this->call('plugin:install', [
+        $this->call('dls:plugin:install', [
             'pluginName' => $pluginDirName,
             '--enable' => $enable, // 明示的に有効化を指定した場合のみ有効化
         ]);
@@ -790,7 +790,7 @@ class MakeNewPlugin extends Command
      */
     protected function enablePlugin($pluginName)
     {
-        $this->call('plugin:enable', [
+        $this->call('dls:plugin:enable', [
             'name' => $pluginName
         ]);
     }

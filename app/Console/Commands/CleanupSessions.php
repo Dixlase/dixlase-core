@@ -32,7 +32,7 @@ class CleanupSessions extends Command
      *
      * @var string
      */
-    protected $signature = 'admin:cleanup-sessions {--days=7 : Number of days to keep session records} {--all : Delete all session records} {--force : Force deletion without confirmation}';
+    protected $signature = 'dls:admin:cleanup-sessions {--days=7 : Number of days to keep session records} {--all : Delete all session records} {--force : Force deletion without confirmation}';
 
     /**
      * The console command description.

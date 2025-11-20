@@ -12,7 +12,7 @@ class ThemeActivate extends Command
      *
      * @var string
      */
-    protected $signature = 'theme:activate {themeName? : ' . 'command.theme_activate.theme_name_prompt' . '}';
+    protected $signature = 'dls:theme:activate {themeName? : ' . 'command.theme_activate.theme_name_prompt' . '}';
 
     /**
      * The console command description.

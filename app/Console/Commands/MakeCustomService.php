@@ -36,7 +36,7 @@ class MakeCustomService extends Command
      *
      * @var string
      */
-    protected $signature = 'make:custom:service
+    protected $signature = 'dls:make:custom:service
         {name : The name of the service class (with optional subfolders, e.g. Admin/MyService)}
         {--force : Overwrite if the service class already exists}';
 

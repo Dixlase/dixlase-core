@@ -33,7 +33,7 @@ class PluginEnable extends Command
      *
      * @var string
      */
-    protected $signature = 'plugin:enable {pluginName : The name of the plugin to enable}';
+    protected $signature = 'dls:plugin:enable {pluginName : The name of the plugin to enable}';
 
     
     /**

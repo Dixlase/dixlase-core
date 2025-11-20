@@ -35,7 +35,7 @@ class PluginInfo extends Command
      *
      * @var string
      */
-    protected $signature = 'plugin:info 
+    protected $signature = 'dls:plugin:info 
                             {plugin : The plugin name to show information}
                             {--json : Output as JSON format}';
 

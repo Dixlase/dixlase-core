@@ -31,7 +31,7 @@ class MakePluginObserver extends Command
 {
     use MakeObserverTrait;
 
-    protected $signature = 'make:plugin:observer
+    protected $signature = 'dls:make:plugin:observer
         {plugin : The plugin name (e.g. MyPlugin)}
         {name : The observer class name (optionally with subfolders, e.g. Admin/UserObserver)}
         {--model= : The model that the observer applies to}

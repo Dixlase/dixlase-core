@@ -32,7 +32,7 @@ class PluginSymlink extends Command
      *
      * @var string
      */
-    protected $signature = 'plugin:symlink 
+    protected $signature = 'dls:plugin:symlink 
                             {action : The action to perform (create|remove)}
                             {plugin : The directory name of the plugin}';
 

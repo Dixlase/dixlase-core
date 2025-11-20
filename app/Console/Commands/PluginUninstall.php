@@ -24,7 +24,7 @@ class PluginUninstall extends Command
      *
      * @var string
      */
-    protected $signature = 'plugin:uninstall {pluginName}
+    protected $signature = 'dls:plugin:uninstall {pluginName}
                             {--rollback : Rollback database migrations}
                             {--force : Force uninstall even if plugin is enabled}';
     /**

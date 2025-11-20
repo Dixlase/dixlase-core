@@ -37,7 +37,7 @@ class PluginMigrate extends Command
      *
      * @var string
      */
-    protected $signature = 'plugin:migrate
+    protected $signature = 'dls:plugin:migrate
                             {plugin : The name of the plugin (e.g. EventsPlugin)}
                             {--pretend : Dump the SQL queries that would be run}
                             {--step= : Number of migrations to run}

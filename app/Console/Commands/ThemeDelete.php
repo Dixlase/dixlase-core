@@ -33,7 +33,7 @@ class ThemeDelete extends Command
      *
      * @var string
      */
-    protected $signature = 'theme:delete {themeDirectory : ' . 'command.theme_delete.theme_directory_prompt' . '}
+    protected $signature = 'dls:theme:delete {themeDirectory : ' . 'command.theme_delete.theme_directory_prompt' . '}
                             {--force : ' . 'command.theme_delete.force_option' . '}';
 
     /**

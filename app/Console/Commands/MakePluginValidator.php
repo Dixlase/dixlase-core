@@ -31,7 +31,7 @@ class MakePluginValidator extends Command
 {
     use MakeValidatorTrait;
 
-    protected $signature = 'make:plugin:validator
+    protected $signature = 'dls:make:plugin:validator
         {plugin : The plugin name (e.g. "MyPlugin")}
         {name : The name of the validator/rule (with optional subfolders, e.g. Admin/MyRule)}
         {--force : Overwrite if validator file already exists}';

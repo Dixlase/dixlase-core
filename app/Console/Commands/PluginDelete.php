@@ -35,7 +35,7 @@ class PluginDelete extends Command
      *
      * @var string
      */
-    protected $signature = 'plugin:delete {pluginDirectory : The directory name of the plugin to delete}
+    protected $signature = 'dls:plugin:delete {pluginDirectory : The directory name of the plugin to delete}
                             {--force : Force delete without confirmation}';
 
     /**

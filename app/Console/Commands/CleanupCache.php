@@ -32,7 +32,7 @@ class CleanupCache extends Command
      *
      * @var string
      */
-    protected $signature = 'admin:cleanup-cache {--expired-only : Delete only expired cache entries} {--all : Delete all cache entries} {--force : Force deletion without confirmation}';
+    protected $signature = 'dls:admin:cleanup-cache {--expired-only : Delete only expired cache entries} {--all : Delete all cache entries} {--force : Force deletion without confirmation}';
 
     /**
      * The console command description.

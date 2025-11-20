@@ -32,7 +32,7 @@ class CleanupRecoveryCodes extends Command
      *
      * @var string
      */
-    protected $signature = 'admin:cleanup-recovery-codes {--days=90 : Number of days to keep used recovery code records} {--all : Delete all recovery code records} {--force : Force deletion without confirmation}';
+    protected $signature = 'dls:admin:cleanup-recovery-codes {--days=90 : Number of days to keep used recovery code records} {--all : Delete all recovery code records} {--force : Force deletion without confirmation}';
 
     /**
      * The console command description.

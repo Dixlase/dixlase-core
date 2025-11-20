@@ -32,7 +32,7 @@ class CleanupLoginAttempts extends Command
      *
      * @var string
      */
-    protected $signature = 'admin:cleanup-login-attempts {--days=30 : Number of days to keep login attempt records} {--all : Delete all login attempt records} {--force : Force deletion without confirmation}';
+    protected $signature = 'dls:admin:cleanup-login-attempts {--days=30 : Number of days to keep login attempt records} {--all : Delete all login attempt records} {--force : Force deletion without confirmation}';
 
     /**
      * The console command description.

@@ -16,7 +16,7 @@ class ThemeInstall extends Command
      *
      * @var string
      */
-    protected $signature = 'theme:install {themeName : ' . 'command.theme_install.theme_name_prompt' . '}';
+    protected $signature = 'dls:theme:install {themeName : ' . 'command.theme_install.theme_name_prompt' . '}';
     
     /**
      * The console command description.

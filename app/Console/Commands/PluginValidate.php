@@ -33,7 +33,7 @@ class PluginValidate extends Command
      *
      * @var string
      */
-    protected $signature = 'plugin:validate 
+    protected $signature = 'dls:plugin:validate 
                             {plugin : The plugin name to validate}
                             {--strict : Enable strict validation mode}';
 

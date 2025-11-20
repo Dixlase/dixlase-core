@@ -43,7 +43,7 @@ class PluginFactory extends Command
      * {model} : モデル名 (例: Page)
      * --count= : 生成するレコード数 (デフォルト: 10)
      */
-    protected $signature = 'plugin:factory
+    protected $signature = 'dls:plugin:factory
                             {plugin : The name of the plugin (e.g. DixlasePages)}
                             {model : The model name (e.g. Page)}
                             {--count=10 : Number of records to create}

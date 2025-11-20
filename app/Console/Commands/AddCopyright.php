@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\File;
 class AddCopyright extends Command
 {
     // コマンドの識別名と説明を設定
-    protected $signature = 'copyright:update {--dir=app : 変更するファイルがあるディレクトリ(カンマ区切りで複数指定可)}';
+    protected $signature = 'dls:copyright:update {--dir=app : 変更するファイルがあるディレクトリ(カンマ区切りで複数指定可)}';
     protected $description = 'PHPおよびBladeファイルの著作権表示を挿入または更新する';
 
     // コマンドの実行ロジック

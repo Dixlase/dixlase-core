@@ -32,7 +32,7 @@ class CleanupPasswordResetTokens extends Command
      *
      * @var string
      */
-    protected $signature = 'admin:cleanup-password-reset-tokens {--days=30 : Number of days to keep password reset token records} {--all : Delete all password reset token records} {--force : Force deletion without confirmation}';
+    protected $signature = 'dls:admin:cleanup-password-reset-tokens {--days=30 : Number of days to keep password reset token records} {--all : Delete all password reset token records} {--force : Force deletion without confirmation}';
 
     /**
      * The console command description.

@@ -214,7 +214,7 @@ class CheckInstallationReady
             // ステップ2: migrationsテーブルが存在するかチェック（Laravel標準）
             // ※ 直接SQL実行でインストールされた場合はmigrationsテーブルがない場合があるため
             //    存在しない場合はスキップして次のチェックに進む
-            // テーブルプレフィックスを考慮: dxl_migrations または migrations
+            // テーブルプレフィックスを考慮: dls_migrations または migrations
             $hasMigrationsTable = DB::getSchemaBuilder()->hasTable('migrations');
             $debugInfo['step2_migrations_table'] = $hasMigrationsTable ? 'OK' : 'SKIP (直接SQL実行の可能性)';
             
