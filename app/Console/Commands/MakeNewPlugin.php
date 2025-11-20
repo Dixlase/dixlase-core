@@ -48,7 +48,7 @@ class MakeNewPlugin extends Command
                             {pluginName? : The name of the plugin}
                             {--author= : The author of the plugin}
                             {--email= : The email address of the author}
-                            {--website= : The website URL for the plugin}
+                            {--url= : The URL for the plugin}
                             {--license= : The license type (GPL, AGPL, MIT, Apache, BSD, LGPL, commercial, custom, none)}
                             {--install : Install the plugin after creation}
                             {--enable : Enable the plugin after installation (implies --install)}';
@@ -114,8 +114,8 @@ class MakeNewPlugin extends Command
 
         // URL入力を補完（https://を自動追加）
         $defaultWebsite = 'example.com';
-        $websitePrompt = $this->option('website') ?: $this->ask(__('command.make_plugin.enter_website_url') . ' (optional)' , $defaultWebsite);
-        $website = $websitePrompt === $defaultWebsite ? $websitePrompt : $this->ensureUrlHasScheme($websitePrompt);
+        $url = $this->option('url') ?: $this->ask(__('command.make_plugin.enter_website_url') . ' (optional)' , $defaultWebsite);
+        $url = $url === $defaultWebsite ? $url : $this->ensureUrlHasScheme($url);
 
 
         // ライセンス情報を取得（オプションで指定されていればそれを使用、なければ選択を求める）
@@ -127,7 +127,7 @@ class MakeNewPlugin extends Command
             $selectedLicense['info']['software'] = $pluginName;
             $selectedLicense['info']['author'] = $author;
             $selectedLicense['info']['email'] = $email;
-            $selectedLicense['info']['website'] = $website;
+            $selectedLicense['info']['url'] = $url;
         }
 
 
@@ -136,15 +136,15 @@ class MakeNewPlugin extends Command
             'software' => $pluginName,
             'author' => $author,
             'email' => $email,
-            'website' => $website,
+            'url' => $url,
         ];
     
         
-        if (!Str::startsWith($website, 'https://')) {
-            $website = 'https://' . ltrim($website, '/');
+        if (!Str::startsWith($url, 'https://')) {
+            $url = 'https://' . ltrim($url, '/');
         }
 
-        $licenseInfo['website'] = $website;
+        $licenseInfo['url'] = $url;
 
     
         // 選択されたライセンス情報をマージ
@@ -171,7 +171,7 @@ class MakeNewPlugin extends Command
             $softwareName,
             $author,
             $email,
-            $website,
+            $url,
             $licenseInfo
         );
 
@@ -276,7 +276,7 @@ class MakeNewPlugin extends Command
         string $softwareName,
         string $author,
         string $email,
-        string $website,
+        string $url,
         array $licenseInfo
     ) {
 
@@ -310,7 +310,7 @@ class MakeNewPlugin extends Command
             'cmsNameSlug'       => $cmsNameSlug,
             'author'            => $author,
             'email'             => $email,
-            'website'           => $website,
+            'url'               => $url,
         ];
 
 
@@ -321,8 +321,8 @@ class MakeNewPlugin extends Command
 
         // プラグインのメインファイルを作成
         
-        // プラグイン専用の license-info.json を作成
-        $this->createLicenseInfoFile($pluginName, $pluginDir, $licenseInfo);
+        // plugin.json を作成
+        $this->createPluginJsonFile($pluginName, $pluginDir, $placeholders, $licenseInfo);
 
         // コンフィグファイルを作成
         $this->createConfigFile($pluginName, $pluginDir, $placeholders, $licenseInfo);
@@ -380,7 +380,7 @@ class MakeNewPlugin extends Command
             'software' => $pluginName,
             'author' => $licenseInfo['author'] ?? 'My Company',
             'email' => $licenseInfo['email'] ?? 'company@example.com',
-            'website' => $licenseInfo['website'] ?? 'https://example.com',
+            'url' => $licenseInfo['url'] ?? 'https://example.com',
             'license' => $licenseName,
             'template' => $template
         ];
@@ -585,7 +585,7 @@ class MakeNewPlugin extends Command
                 'software' => $licenseInfo['info']['software'] ?? config('app.name', 'Dixlase'),
                 'year' => $licenseInfo['info']['year'] ?? date('Y'),
                 'author' => $licenseInfo['info']['author'] ?? config('app.name', 'Dixlase'),
-                'website' => $licenseInfo['info']['website'] ?? ''
+                'url' => $licenseInfo['info']['url'] ?? ''
             ];
             
             // 1. プレースホルダを置換
@@ -793,5 +793,33 @@ class MakeNewPlugin extends Command
         $this->call('plugin:enable', [
             'name' => $pluginName
         ]);
+    }
+
+    /**
+     * plugin.json ファイルを作成
+     *
+     * @param string $pluginName プラグイン名
+     * @param string $pluginDir プラグインディレクトリ
+     * @param array $placeholders プレースホルダー
+     * @param array $licenseInfo ライセンス情報
+     * @return void
+     */
+    protected function createPluginJsonFile(string $pluginName, string $pluginDir, array $placeholders, array $licenseInfo)
+    {
+        $stubPath = config('console.custom_stub_paths');
+        $stubFile = $this->fileGenerator->getStubContent('plugin.json.stub', null, $stubPath);
+        
+        // プレースホルダーを追加
+        $licenseName = $licenseInfo['license'] ?? 'GPL';
+        $pluginPlaceholders = array_merge($placeholders, [
+            '{{ pluginName }}' => $pluginName,
+            '{{ packageName }}' => $placeholders['vendorNameDefault'] . '/' . $placeholders['pluginSlug'],
+            '{{ slug }}' => $placeholders['pluginSlug'],
+            '{{ pluginDirectory }}' => $placeholders['pluginDirName'],
+            '{{ licenseTemplate }}' => 'license-' . strtolower(str_replace([' ', '.'], ['-', ''], $licenseName)) . '.txt',
+        ]);
+        
+        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $pluginPlaceholders);
+        $this->fileGenerator->generateFile("{$pluginDir}/plugin.json", $fileContent);
     }
 }

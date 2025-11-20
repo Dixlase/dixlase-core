@@ -159,12 +159,26 @@ class MakeNewTheme extends Command
             '{{ themeName }}'      => $themeName,       // 人間向け名称
             '{{ themeDirectory }}' => $themeDirName,    // ディレクトリ名
             '{{ themeLicense }}'   => $licenseName,     // ライセンス名
+            '{{ licenseName }}'    => $licenseName,     // ライセンス名（短縮版）
+            '{{ licenseTemplate }}' => 'license-' . strtolower(str_replace([' ', '.'], ['-', ''], $licenseName)) . '.txt', // ライセンステンプレート
+            '{{ packageName }}'    => Str::slug($themeName), // パッケージ名
+            '{{ slug }}'           => Str::slug($themeName), // スラッグ
+            '{{ author }}'         => 'Your Name',      // 作者名
+            '{{ email }}'          => 'your-email@example.com', // メールアドレス
+            '{{ url }}'            => 'https://example.com', // URL
+            '{{ year }}'           => date('Y'),        // 年
+            '{{ licenseFullText }}' => $licenseContent, // ライセンス全文
         ];
 
         // ***** vite.config.js *****
         $stubFile = $this->fileGenerator->getStubContent('vite.config.theme.stub', null, $stubPath);
         $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
         $this->fileGenerator->generateFile("{$themeDir}/vite.config.js", $fileContent);
+
+        // ***** theme.json *****
+        $stubFile = $this->fileGenerator->getStubContent('theme.json.stub', null, $stubPath);
+        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
+        $this->fileGenerator->generateFile("{$themeDir}/theme.json", $fileContent);
 
         // ***** composer.json *****
         $stubFile = $this->fileGenerator->getStubContent('composer.theme.stub', null, $stubPath);
