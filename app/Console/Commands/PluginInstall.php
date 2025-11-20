@@ -61,6 +61,7 @@ class PluginInstall extends Command
         //
         $pluginName = $this->argument('pluginName');
         $pluginPath = base_path('plugins/' . $pluginName);
+        $pluginJsonPath = $pluginPath . '/plugin.json';
         $composerPath = $pluginPath . '/composer.json';
 
         if (!File::exists($pluginPath)) {
@@ -68,16 +69,36 @@ class PluginInstall extends Command
             return;
         }
 
-        // `composer.json` を取得
-        $version = '1.0.0'; // デフォルトバージョン
+        // プラグイン情報を読み取る（plugin.json → composer.json → デフォルト値の順）
+        $version = '1.0.0';
         $description = null;
         $license = null;
         $author = null;
         $email = null;
         $web = null;
         $packageName = null;
-        $slug = Str::slug(Str::headline($pluginName), '-'); // デフォルトのスラッグを `kebab-case` に変換
+        $slug = Str::slug(Str::headline($pluginName), '-');
 
+        // 1. plugin.jsonから読み取り（最優先）
+        if (File::exists($pluginJsonPath)) {
+            $pluginData = json_decode(File::get($pluginJsonPath), true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $packageName = $pluginData['package_name'] ?? $pluginData['name'] ?? null;
+                $description = $pluginData['description'] ?? null;
+                // 多言語対応の場合は英語を優先
+                if (is_array($description)) {
+                    $description = $description['en'] ?? $description['ja'] ?? null;
+                }
+                $license = $pluginData['license'] ?? null;
+                $author = $pluginData['author'] ?? null;
+                $email = $pluginData['email'] ?? null;
+                $web = $pluginData['url'] ?? $pluginData['homepage'] ?? $pluginData['web'] ?? null;
+                $version = $pluginData['version'] ?? '1.0.0';
+                $slug = $pluginData['slug'] ?? $slug;
+            }
+        }
+
+        // 2. composer.jsonからフォールバック
         if (File::exists($composerPath)) {
             $composerData = json_decode(File::get($composerPath), true);
 
@@ -88,20 +109,25 @@ class PluginInstall extends Command
                 return;
             }
 
-            $version = $composerData['version'] ?? '1.0.0';
-            $description = $composerData['description'] ?? null;
-            $license = $composerData['license'] ?? null;
-            $packageName = $composerData['name'] ?? null;
+            $packageName = $packageName ?? $composerData['name'] ?? null;
+            $description = $description ?? $composerData['description'] ?? null;
+            $license = $license ?? $composerData['license'] ?? null;
+            
+            if ($version === '1.0.0') {
+                $version = $composerData['version'] ?? '1.0.0';
+            }
 
             // 作者情報の取得
-            $authors = $composerData['authors'] ?? [];
-            $firstAuthor = $authors[0] ?? [];
-            $author = $firstAuthor['name'] ?? null;
-            $email = $firstAuthor['email'] ?? null;
-            $web = $firstAuthor['homepage'] ?? null;
-            $slug = $composerData['extra']['slug'] ?? $slug;
+            if (!$author) {
+                $authors = $composerData['authors'] ?? [];
+                $firstAuthor = $authors[0] ?? [];
+                $author = $firstAuthor['name'] ?? null;
+                $email = $email ?? $firstAuthor['email'] ?? null;
+                $web = $web ?? $firstAuthor['homepage'] ?? null;
+            }
+            
+            $slug = $slug ?? $composerData['extra']['slug'] ?? Str::slug(Str::headline($pluginName), '-');
         }
-
 
         // データベースに登録
         DB::table('plugins')->updateOrInsert(

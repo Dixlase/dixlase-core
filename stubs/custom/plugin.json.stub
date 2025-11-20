@@ -1,0 +1,29 @@
+{
+    "name": "{{ pluginName }}",
+    "package_name": "{{ packageName }}",
+    "slug": "{{ slug }}",
+    "version": "1.0.0",
+    "description": {
+        "ja": "{{ pluginName }}のプラグインです。",
+        "en": "This is the {{ pluginName }} plugin."
+    },
+    "author": "{{ author }}",
+    "email": "{{ email }}",
+    "url": "{{ website }}",
+    "license": "{{ licenseName }}",
+    "license_template": "{{ licenseTemplate }}",
+    "namespace": "Plugins\\{{ pluginDirectory }}",
+    "type": "dixlase-plugin",
+    "category": "general",
+    "tags": ["custom"],
+    "requires": {
+        "dixlase": ">=1.0.0",
+        "php": ">=8.2"
+    },
+    "provides": {
+        "admin_menu": false,
+        "front_routes": false,
+        "api_routes": false,
+        "settings_page": false
+    }
+}

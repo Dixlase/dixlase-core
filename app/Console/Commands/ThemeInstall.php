@@ -47,8 +47,10 @@ class ThemeInstall extends Command
             return Command::FAILURE;
         }
 
-        // composer.jsonから情報を読み取る
+        // テーマ情報を読み取る（theme.json → composer.json → デフォルト値の順）
+        $themeJsonPath = "{$themeDir}/theme.json";
         $composerPath = "{$themeDir}/composer.json";
+        
         $packageName = null;
         $namespace = null;
         $description = null;
@@ -58,36 +60,56 @@ class ThemeInstall extends Command
         $web = null;
         $version = '1.0.0';
 
+        // 1. theme.jsonから読み取り（最優先）
+        if (file_exists($themeJsonPath)) {
+            $themeData = json_decode(file_get_contents($themeJsonPath), true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $packageName = $themeData['package_name'] ?? $themeData['name'] ?? null;
+                $namespace = $themeData['namespace'] ?? null;
+                $description = $themeData['description'] ?? null;
+                // 多言語対応の場合は英語を優先
+                if (is_array($description)) {
+                    $description = $description['en'] ?? $description['ja'] ?? null;
+                }
+                $license = $themeData['license'] ?? null;
+                $author = $themeData['author'] ?? null;
+                $email = $themeData['email'] ?? null;
+                $web = $themeData['url'] ?? $themeData['homepage'] ?? $themeData['web'] ?? null;
+                $version = $themeData['version'] ?? '1.0.0';
+            }
+        }
+
+        // 2. composer.jsonからフォールバック
         if (file_exists($composerPath)) {
             $composerData = json_decode(file_get_contents($composerPath), true);
-            $packageName = $composerData['name'] ?? null;
-            
-            // namespaceは複数の場所から取得を試みる
-            if (isset($composerData['autoload']['psr-4'])) {
-                $namespace = array_key_first($composerData['autoload']['psr-4']);
-                $namespace = rtrim($namespace, '\\'); // 末尾の\\を削除
-            } else {
-                $namespace = "Themes\\{$themeName}";
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $packageName = $packageName ?? $composerData['name'] ?? null;
+                
+                // namespaceはcomposer.jsonのautoloadから取得
+                if (!$namespace && isset($composerData['autoload']['psr-4'])) {
+                    $namespace = array_key_first($composerData['autoload']['psr-4']);
+                    $namespace = rtrim($namespace, '\\');
+                }
+                
+                $description = $description ?? $composerData['description'] ?? null;
+                $license = $license ?? $composerData['license'] ?? null;
+                
+                // authors配列から情報を取得
+                if (!$author && isset($composerData['authors']) && is_array($composerData['authors']) && count($composerData['authors']) > 0) {
+                    $author = $composerData['authors'][0]['name'] ?? null;
+                    $email = $email ?? $composerData['authors'][0]['email'] ?? null;
+                    $web = $web ?? $composerData['authors'][0]['homepage'] ?? null;
+                }
+                
+                // versionはextra.dixlase.versionから取得、なければルートのもの
+                if ($version === '1.0.0') {
+                    $version = $composerData['extra']['dixlase']['version'] ?? $composerData['version'] ?? '1.0.0';
+                }
             }
-            
-            $description = $composerData['description'] ?? null;
-            $license = $composerData['license'] ?? null;
-            
-            // authors配列から情報を取得
-            if (isset($composerData['authors']) && is_array($composerData['authors']) && count($composerData['authors']) > 0) {
-                $author = $composerData['authors'][0]['name'] ?? null;
-                $email = $composerData['authors'][0]['email'] ?? null;
-                $web = $composerData['authors'][0]['homepage'] ?? null;
-            } else {
-                // フォールバック: 直接指定されている場合
-                $author = $composerData['author'] ?? null;
-                $email = $composerData['email'] ?? null;
-                $web = $composerData['web'] ?? null;
-            }
-            
-            // versionはextra.dixlase.versionから取得、なければルートのもの
-            $version = $composerData['extra']['dixlase']['version'] ?? $composerData['version'] ?? '1.0.0';
         }
+
+        // デフォルト値の設定
+        $namespace = $namespace ?? "Themes\\{$themeName}";
 
         // Register the theme
         $theme = Theme::create([
