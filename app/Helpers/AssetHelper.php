@@ -158,7 +158,7 @@ if (!function_exists('load_active_assets')) {
         }
 
         // 有効なプラグインを取得
-        $activePlugins = DB::table('plugins')->where('status', 1)->get();
+        $activePlugins = DB::table('plugins')->whereNotNull('activated_at')->get();
 
         foreach ($activePlugins as $plugin) {
             $output .= load_assets('plugin', $plugin->directory, [

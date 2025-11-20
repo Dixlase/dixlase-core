@@ -263,6 +263,12 @@ class InstallController extends Controller
         $installData = session('install_data', []);
         $adminEmail = $installData['admin_email'] ?? '';
 
+        // mail_from_addressが未設定の場合、admin_emailをデフォルト値として設定
+        if (empty($installData['mail_from_address']) && !empty($adminEmail)) {
+            $installData['mail_from_address'] = $adminEmail;
+            session(['install_data' => $installData]);
+        }
+
         // メールテスト結果をセッションから取得
         $testStatus = [
             'connection_tested' => (bool) ($installData['mail_connection_tested'] ?? false),
@@ -780,11 +786,21 @@ class InstallController extends Controller
         // ✅ セッションデータから管理画面URLを先に取得
         $adminSlug = session('install_data.admin_url', 'admin');
         
+        // ✅ force_ssl設定を確認
+        $forceSsl = false;
+        try {
+            $forceSsl = DB::table('base_settings')
+                ->where('key', 'force_ssl')
+                ->value('value') === '1';
+        } catch (\Exception $e) {
+            Log::channel('install')->warning('force_ssl設定の取得に失敗: ' . $e->getMessage());
+        }
+        
         // ✅ `.env` の `APP_URL` を確実に取得する
         $envAppUrl = env('APP_URL');
         if (!$envAppUrl) {
             // フォールバック: リクエストから現在のURLを構築
-            $scheme = request()->isSecure() ? 'https' : 'http';
+            $scheme = ($forceSsl || request()->isSecure()) ? 'https' : 'http';
             $host = request()->getHost();
             $port = request()->getPort();
             
@@ -792,6 +808,11 @@ class InstallController extends Controller
                 $envAppUrl = $scheme . '://' . $host . ':' . $port;
             } else {
                 $envAppUrl = $scheme . '://' . $host;
+            }
+        } else {
+            // APP_URLが存在する場合、force_sslが有効ならhttpsに変換
+            if ($forceSsl) {
+                $envAppUrl = preg_replace('/^http:/', 'https:', $envAppUrl);
             }
         }
         

@@ -36,12 +36,19 @@ return new class extends Migration
         Schema::create($this->table, function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('package_name')->nullable();
             $table->string('directory');
             $table->string('slug')->unique();
-            $table->string('version')->default('1.0.0');
+            $table->string('namespace')->nullable();
             $table->text('description')->nullable();
+            $table->string('license')->nullable();
+            $table->string('author')->nullable();
+            $table->string('email')->nullable();
+            $table->string('web')->nullable();
+            $table->string('version')->default('1.0.0');
             $table->json('config')->nullable();
-            $table->boolean('is_active')->default(false);
+            $table->timestamp('activated_at')->nullable();
+            $table->timestamp('installed_at')->nullable();
             $table->timestamps();
         });
     }

@@ -39,7 +39,7 @@ class MakeLinkAssets extends Command
         $this->createLink(base_path('resources/views/admin'), public_path('assets/admin'));
 
         // 有効化されたプラグインのアセット
-        $enabledPlugins = Plugin::where('status', 1)->get();
+        $enabledPlugins = Plugin::whereNotNull('activated_at')->get();
         foreach ($enabledPlugins as $plugin) {
             try {
                 create_plugin_symlink($plugin->directory);
