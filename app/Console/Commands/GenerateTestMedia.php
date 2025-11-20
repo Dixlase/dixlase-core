@@ -18,7 +18,7 @@ class GenerateTestMedia extends Command
      *
      * @var string
      */
-    protected $signature = 'admin:generate-test-media 
+    protected $signature = 'dls:admin:generate-test-media 
                             {--type=all : Type of test data to generate (all, login_attempts, password_reset_tokens, two_factor_devices, two_factor_tokens, cache, sessions, media)}
                             {--count=50 : Number of records to generate}
                             {--old-ratio=0.3 : Ratio of old records (for cleanup testing)}';

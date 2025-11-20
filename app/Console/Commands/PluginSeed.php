@@ -36,7 +36,7 @@ class PluginSeed extends Command
      *  - {plugin} : プラグイン名
      *  - --class : 実行する Seeder クラス名 (デフォルト: DatabaseSeeder)
      */
-    protected $signature = 'plugin:seed
+    protected $signature = 'dls:plugin:seed
                             {plugin : The name of the plugin (e.g. EventsPlugin)}
                             {--class=DatabaseSeeder : The seeder class name to run}
                             {--force : Force the operation to run in production}';

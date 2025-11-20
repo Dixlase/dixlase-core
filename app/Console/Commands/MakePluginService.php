@@ -31,7 +31,7 @@ class MakePluginService extends Command
 {
     use MakeServiceTrait;
 
-    protected $signature = 'make:plugin:service
+    protected $signature = 'dls:make:plugin:service
         {plugin : The plugin name (e.g. "MyPlugin")}
         {name : The service class name (with optional subfolders, e.g. Admin/MyService)}
         {--force : Overwrite if the service class already exists}';

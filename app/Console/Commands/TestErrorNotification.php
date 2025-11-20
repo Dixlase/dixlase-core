@@ -13,7 +13,7 @@ class TestErrorNotification extends Command
      *
      * @var string
      */
-    protected $signature = 'admin:test-error-notification 
+    protected $signature = 'dls:admin:test-error-notification 
                             {--level=error : Log level to test (emergency, alert, critical, error, warning, notice, info, debug)}
                             {--message= : Custom error message}';
 

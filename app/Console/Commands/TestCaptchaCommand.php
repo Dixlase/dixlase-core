@@ -15,7 +15,7 @@ class TestCaptchaCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'captcha:test {--token= : reCAPTCHA token to test}';
+    protected $signature = 'dls:captcha:test {--token= : reCAPTCHA token to test}';
 
     /**
      * The console command description.

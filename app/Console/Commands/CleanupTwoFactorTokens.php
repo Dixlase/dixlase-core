@@ -12,7 +12,7 @@ class CleanupTwoFactorTokens extends Command
      *
      * @var string
      */
-    protected $signature = 'admin:cleanup-two-factor-tokens {--days=7 : Number of days to keep two-factor token records} {--all : Delete all two-factor token records} {--force : Force deletion without confirmation}';
+    protected $signature = 'dls:admin:cleanup-two-factor-tokens {--days=7 : Number of days to keep two-factor token records} {--all : Delete all two-factor token records} {--force : Force deletion without confirmation}';
 
     /**
      * The console command description.

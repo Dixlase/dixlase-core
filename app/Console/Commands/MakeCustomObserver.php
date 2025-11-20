@@ -31,7 +31,7 @@ class MakeCustomObserver extends Command
 {
     use MakeObserverTrait;
 
-    protected $signature = 'make:custom:observer
+    protected $signature = 'dls:make:custom:observer
         {name : The observer class name (optionally with subfolders, e.g. Admin/UserObserver)}
         {--model= : The model that the observer applies to}
         {--force : Overwrite if the observer class already exists}';

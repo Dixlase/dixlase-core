@@ -15,7 +15,7 @@ class ThemeUninstall extends Command
      *
      * @var string
      */
-    protected $signature = 'theme:uninstall 
+    protected $signature = 'dls:theme:uninstall 
                             {themeName : ' . 'command.theme_uninstall.theme_name_prompt' . '}';
 
     /**

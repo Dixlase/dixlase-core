@@ -33,7 +33,7 @@ class PluginList extends Command
      *
      * @var string
      */
-    protected $signature = 'plugin:list';
+    protected $signature = 'dls:plugin:list';
 
     /**
      * The console command description.

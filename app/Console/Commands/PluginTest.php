@@ -34,7 +34,7 @@ class PluginTest extends Command
      *
      * @var string
      */
-    protected $signature = 'plugin:test 
+    protected $signature = 'dls:plugin:test 
                             {plugin : The plugin name to test}
                             {--pest : Run tests using Pest}
                             {--phpunit : Run tests using PHPUnit (default)}

@@ -15,7 +15,7 @@ class TestFactories extends Command
      *
      * @var string
      */
-    protected $signature = 'admin:test-factories';
+    protected $signature = 'dls:admin:test-factories';
 
     /**
      * The console command description.

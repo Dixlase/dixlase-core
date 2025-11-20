@@ -36,7 +36,7 @@ class AppUninstall extends Command
      *
      * @var string
      */
-    protected $signature = 'app:uninstall {--force : 対話なしで即座にアンインストールを実行}';
+    protected $signature = 'dls:app:uninstall {--force : 対話なしで即座にアンインストールを実行}';
 
     /**
      * コマンドの説明

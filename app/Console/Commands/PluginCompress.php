@@ -33,7 +33,7 @@ class PluginCompress extends Command
      *
      * @var string
      */
-    protected $signature = 'plugin:zip {pluginName} {--output-dir= : Zipファイルの出力先ディレクトリ}';
+    protected $signature = 'dls:plugin:zip {pluginName} {--output-dir= : Zipファイルの出力先ディレクトリ}';
 
     /**
      * The console command description.

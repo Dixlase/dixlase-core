@@ -31,7 +31,7 @@ class ReplaceComments extends Command
      *
      * @var string
      */
-    protected $signature = 'replace:comments {locale=en}';
+    protected $signature = 'dls:replace:comments {locale=en}';
 
     protected $description = 'Replace Japanese comments with English comments based on translation files';
 

@@ -33,7 +33,7 @@ class PluginDisable extends Command
      *
      * @var string
      */
-    protected $signature = 'plugin:disable {pluginName : The name of the plugin to disable}';
+    protected $signature = 'dls:plugin:disable {pluginName : The name of the plugin to disable}';
 
    
     /**

@@ -32,7 +32,7 @@ class CleanupPasskeys extends Command
      *
      * @var string
      */
-    protected $signature = 'admin:cleanup-passkeys {--days=90 : Number of days to keep deleted passkey records} {--all : Delete all passkey records} {--force : Force deletion without confirmation}';
+    protected $signature = 'dls:admin:cleanup-passkeys {--days=90 : Number of days to keep deleted passkey records} {--all : Delete all passkey records} {--force : Force deletion without confirmation}';
 
     /**
      * The console command description.

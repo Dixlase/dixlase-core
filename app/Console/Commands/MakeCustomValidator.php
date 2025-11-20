@@ -31,7 +31,7 @@ class MakeCustomValidator extends Command
 {
     use MakeValidatorTrait;
 
-    protected $signature = 'make:custom:validator
+    protected $signature = 'dls:make:custom:validator
         {name : The name of the validator/rule (with optional subfolders, e.g. Admin/MyCustomRule)}
         {--force : Overwrite if validator file already exists}';
 

@@ -36,7 +36,7 @@ class PluginMigrateRefresh extends Command
      *
      * @var string
      */
-    protected $signature = 'plugin:migrate:refresh
+    protected $signature = 'dls:plugin:migrate:refresh
                             {plugin : The name of the plugin (e.g. EventsPlugin)}
                             {--step= : Number of migrations to rollback}
                             {--force : Force the operation to run when in production}';

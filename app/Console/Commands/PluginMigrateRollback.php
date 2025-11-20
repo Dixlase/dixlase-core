@@ -35,7 +35,7 @@ class PluginMigrateRollback extends Command
      *
      * @var string
      */
-    protected $signature = 'plugin:migrate:rollback
+    protected $signature = 'dls:plugin:migrate:rollback
                             {plugin : The name of the plugin (e.g. EventsPlugin)}
                             {--force : Force the operation to run when in production}
                             {--step= : Number of migrations to rollback}';

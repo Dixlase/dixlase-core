@@ -12,7 +12,7 @@ class ThemeDeactivate extends Command
      *
      * @var string
      */
-    protected $signature = 'theme:deactivate {themeName? : ' . 'command.theme_deactivate.theme_name_prompt' . '}';
+    protected $signature = 'dls:theme:deactivate {themeName? : ' . 'command.theme_deactivate.theme_name_prompt' . '}';
 
     /**
      * The console command description.

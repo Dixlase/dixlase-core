@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\Artisan;
 
 class MakeNewTheme extends Command
 {
-    protected $signature = 'make:theme {themeName? : command.make_theme.enter_theme_name}
+    protected $signature = 'dls:make:theme {themeName? : command.make_theme.enter_theme_name}
         {--install : command.make_theme.confirm_install}
         {--activate : command.make_theme.confirm_activate}';
     
