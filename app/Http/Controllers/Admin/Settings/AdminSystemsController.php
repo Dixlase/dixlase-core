@@ -295,49 +295,49 @@ class AdminSystemsController extends AdminLoggedInController
                 'name' => __('admin.settings.systems.database.login_attempts.name'),
                 'description' => __('admin.settings.systems.database.login_attempts.description'),
                 'default_days' => 30,
-                'command' => 'admin:cleanup-login-attempts'
+                'command' => 'dls:admin:cleanup-login-attempts'
             ],
             'password_reset_tokens' => [
                 'name' => __('admin.settings.systems.database.password_reset_tokens.name'),
                 'description' => __('admin.settings.systems.database.password_reset_tokens.description'),
                 'default_days' => 30,
-                'command' => 'admin:cleanup-password-reset-tokens'
+                'command' => 'dls:admin:cleanup-password-reset-tokens'
             ],
             'two_factor_attempts' => [
                 'name' => __('admin.settings.systems.database.two_factor_attempts.name'),
                 'description' => __('admin.settings.systems.database.two_factor_attempts.description'),
                 'default_days' => 30,
-                'command' => 'admin:cleanup-two-factor-attempts'
+                'command' => 'dls:admin:cleanup-two-factor-attempts'
             ],
             'two_factor_tokens' => [
                 'name' => __('admin.settings.systems.database.two_factor_tokens.name'),
                 'description' => __('admin.settings.systems.database.two_factor_tokens.description'),
                 'default_days' => 7,
-                'command' => 'admin:cleanup-two-factor-tokens'
+                'command' => 'dls:admin:cleanup-two-factor-tokens'
             ],
             'recovery_codes' => [
                 'name' => __('admin.settings.systems.database.recovery_codes.name'),
                 'description' => __('admin.settings.systems.database.recovery_codes.description'),
                 'default_days' => 90,
-                'command' => 'admin:cleanup-recovery-codes'
+                'command' => 'dls:admin:cleanup-recovery-codes'
             ],
             'passkeys' => [
                 'name' => __('admin.settings.systems.database.passkeys.name'),
                 'description' => __('admin.settings.systems.database.passkeys.description'),
                 'default_days' => 90,
-                'command' => 'admin:cleanup-passkeys'
+                'command' => 'dls:admin:cleanup-passkeys'
             ],
             'cache_data' => [
                 'name' => __('admin.settings.systems.database.cache_data.name'),
                 'description' => __('admin.settings.systems.database.cache_data.description'),
                 'default_days' => null, // 期限切れのみ
-                'command' => 'admin:cleanup-cache'
+                'command' => 'dls:admin:cleanup-cache'
             ],
             'sessions' => [
                 'name' => __('admin.settings.systems.database.sessions.name'),
                 'description' => __('admin.settings.systems.database.sessions.description'),
                 'default_days' => 7,
-                'command' => 'admin:cleanup-sessions'
+                'command' => 'dls:admin:cleanup-sessions'
             ]
         ];
 
@@ -362,61 +362,42 @@ class AdminSystemsController extends AdminLoggedInController
                     if ($days === 0) {
                         $options['--force'] = true;
                     }
-                    $exitCode = Artisan::call('admin:cleanup-login-attempts', $options);
+                    $exitCode = Artisan::call('dls:admin:cleanup-login-attempts', $options);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
                     $message = __('admin.settings.systems.database.cleanup_success', ['count' => $count]);
                     break;
                 case 'password_reset_tokens':
                     $options = $days === 0 ? ['--days' => $days, '--force' => true] : ['--days' => $days];
-                    $exitCode = Artisan::call('admin:cleanup-password-reset-tokens', $options);
+                    $exitCode = Artisan::call('dls:admin:cleanup-password-reset-tokens', $options);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
                     $message = __('admin.settings.systems.database.cleanup_success', ['count' => $count]);
                     break;
                 case 'trusted_devices':
                     $options = $days === 0 ? ['--days' => $days, '--force' => true] : ['--days' => $days];
-                    $exitCode = Artisan::call('admin:cleanup-trusted-devices', $options);
+                    $exitCode = Artisan::call('dls:admin:cleanup-trusted-devices', $options);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
                     $message = __('admin.settings.systems.database.cleanup_success', ['count' => $count]);
                     break;
                 case 'two_factor_attempts':
                     $options = $days === 0 ? ['--days' => $days, '--force' => true] : ['--days' => $days];
-                    $exitCode = Artisan::call('admin:cleanup-two-factor-attempts', $options);
+                    $exitCode = Artisan::call('dls:admin:cleanup-two-factor-attempts', $options);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
                     $message = __('admin.settings.systems.database.cleanup_success', ['count' => $count]);
                     break;
                 case 'two_factor_tokens':
                     $options = $days === 0 ? ['--days' => $days, '--force' => true] : ['--days' => $days];
-                    $exitCode = Artisan::call('admin:cleanup-two-factor-tokens', $options);
+                    $exitCode = Artisan::call('dls:admin:cleanup-two-factor-tokens', $options);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
                     $message = __('admin.settings.systems.database.cleanup_success', ['count' => $count]);
                     break;
                 case 'recovery_codes':
                     $options = $days === 0 ? ['--days' => $days, '--force' => true] : ['--days' => $days];
-                    $exitCode = Artisan::call('admin:cleanup-recovery-codes', $options);
-                    $output = Artisan::output();
-                    $count = $this->extractCountFromOutput($output);
-                    $message = __('admin.settings.systems.database.cleanup_success', ['count' => $count]);
-                    break;
-                case 'passkeys':
-                    $options = $days === 0 ? ['--days' => $days, '--force' => true] : ['--days' => $days];
-                    $exitCode = Artisan::call('admin:cleanup-passkeys', $options);
-                    $output = Artisan::output();
-                    $count = $this->extractCountFromOutput($output);
-                    $message = __('admin.settings.systems.database.cleanup_success', ['count' => $count]);
-                    break;
-                case 'cache_data':
-                    $exitCode = Artisan::call('admin:cleanup-cache', ['--force' => true]);
-                    $output = Artisan::output();
-                    $count = $this->extractCountFromOutput($output);
-                    $message = __('admin.settings.systems.database.cleanup_success', ['count' => $count]);
-                    break;
-                case 'sessions':
-                    $exitCode = Artisan::call('admin:cleanup-sessions', ['--days' => $days, '--force' => true]);
+                    $exitCode = Artisan::call('dls:admin:cleanup-recovery-codes', $options);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
                     $message = __('admin.settings.systems.database.cleanup_success', ['count' => $count]);
@@ -438,7 +419,7 @@ class AdminSystemsController extends AdminLoggedInController
                     
                     // 各クリーンアップコマンドを共通の日数で実行
                     foreach ($cleanupTypes as $cleanupType) {
-                        $commandName = 'admin:cleanup-' . str_replace('_', '-', $cleanupType);
+                        $commandName = 'dls:admin:cleanup-' . str_replace('_', '-', $cleanupType);
                         $options = ['--days' => $allDays, '--force' => true];
                         
                         Artisan::call($commandName, $options);
@@ -447,7 +428,7 @@ class AdminSystemsController extends AdminLoggedInController
                     }
                     
                     // キャッシュクリーンアップ（日数指定なし）
-                    Artisan::call('admin:cleanup-cache', ['--expired-only' => true, '--force' => true]);
+                    Artisan::call('dls:admin:cleanup-cache', ['--expired-only' => true, '--force' => true]);
                     $output = Artisan::output();
                     $totalCount += $this->extractCountFromOutput($output);
                     
