@@ -687,7 +687,11 @@ class InstallController extends Controller
 
             if ($activeTheme) {
                 try {
-                    update_theme_symlink($activeTheme->directory);
+                    // シンボリックリンクを作成（コマンド実行）
+                    Artisan::call('dls:theme:symlink', [
+                        'action' => 'create',
+                        'theme' => $activeTheme->directory
+                    ]);
                     Log::channel('install')->info('テーマシンボリックリンク作成完了', ['theme' => $activeTheme->directory]);
                 } catch (\Exception $e) {
                     Log::channel('install')->error("シンボリックリンクの作成に失敗しました: {$e->getMessage()}");

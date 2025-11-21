@@ -76,12 +76,23 @@ return [
     ],
     'scope' => [
         'prompt' => 'Please select the controller scope',
+        'select' => 'Please select a scope',
+        'not_selected' => 'No scope was selected.',
         'labels' => [
             'plain' => 'No scope',
             'front' => 'Frontend',
             'admin' => 'Admin panel',
         ],
     ],
+    'theme' => [
+        'not_found' => 'Theme \':name\' not found.',
+        'no_themes_found' => 'No themes found.',
+        'select_theme' => 'Please select a theme',
+    ],
+    'class_name_prompt' => 'Please enter the class name',
+    'class_name_required' => 'Class name is required.',
+    'production_warning' => 'You are about to run :action in production environment.',
+    'production_confirm' => 'Do you want to continue?',
     'plugin' => [
         'prompt' => 'Please select a plugin',
         'not_found' => 'Not found plugin.',
@@ -172,12 +183,129 @@ return [
         'install_later' => 'You can install it later using: php artisan dls:theme:install :slugName',
         'install_success' => "Theme ':themeName' has been installed.",
         'enable_success' => "Theme ':themeName' has been enabled.",
+        'view' => [
+            'description' => 'Create a Blade view file for a theme',
+        ],
+        'component' => [
+            'description' => 'Create a Blade component for a theme',
+        ],
+        'config' => [
+            'description' => 'Create a configuration file for a theme',
+        ],
+        'language' => [
+            'description' => 'Create a language file for a theme',
+        ],
+        'provider' => [
+            'description' => 'Create a service provider for a theme',
+        ],
+        'controller' => [
+            'description' => 'Create a controller for a theme',
+        ],
+        'model' => [
+            'description' => 'Create a model for a theme',
+        ],
+        'request' => [
+            'description' => 'Create a form request for a theme',
+        ],
+        'route' => [
+            'description' => 'Create a route definition file for a theme',
+        ],
+        'migration' => [
+            'description' => 'Create a migration file for a theme',
+        ],
+        'seeder' => [
+            'description' => 'Create a seeder file for a theme',
+        ],
+        'service' => [
+            'description' => 'Create a service class for a theme',
+        ],
+        'helper' => [
+            'description' => 'Create a helper function file for a theme',
+        ],
+        'trait' => [
+            'description' => 'Create a trait for a theme',
+        ],
+        'middleware' => [
+            'description' => 'Create a middleware for a theme',
+        ],
+        'class' => [
+            'description' => 'Create a generic class for a theme',
+        ],
+        'livewire' => [
+            'description' => 'Create a Livewire component for a theme',
+        ],
+        'volt' => [
+            'description' => 'Create a Volt component for a theme',
+        ],
+        'event' => [
+            'description' => 'Create an event class for a theme',
+        ],
+        'listener' => [
+            'description' => 'Create an event listener for a theme',
+        ],
+        'mail' => [
+            'description' => 'Create a mail class for a theme',
+        ],
+        'notification' => [
+            'description' => 'Create a notification class for a theme',
+        ],
+        'job' => [
+            'description' => 'Create a job class for a theme',
+        ],
+        'observer' => [
+            'description' => 'Create a model observer for a theme',
+        ],
+        'policy' => [
+            'description' => 'Create a policy class for a theme',
+        ],
+        'rule' => [
+            'description' => 'Create a validation rule for a theme',
+        ],
+        'scope' => [
+            'description' => 'Create a query scope for a theme',
+        ],
+        'enum' => [
+            'description' => 'Create an enum for a theme',
+        ],
+        'exception' => [
+            'description' => 'Create an exception class for a theme',
+        ],
+        'interface' => [
+            'description' => 'Create an interface for a theme',
+        ],
+        'cast' => [
+            'description' => 'Create a custom cast for a theme',
+        ],
+        'factory' => [
+            'description' => 'Create a factory for a theme',
+        ],
+        'test' => [
+            'description' => 'Create a test class for a theme',
+        ],
+        'resource' => [
+            'description' => 'Create an API resource for a theme',
+        ],
+        'channel' => [
+            'description' => 'Create a notification channel for a theme',
+        ],
+        'validator' => [
+            'description' => 'Create a validator class for a theme',
+        ],
+        'job_middleware' => [
+            'description' => 'Create a job middleware for a theme',
+        ],
     ],
     'plugin_symlink' => [
         'description' => 'Manage plugin asset symlinks',
         'invalid_action' => 'Invalid action. Use "create" or "remove".',
         'created' => 'Symlink created for plugin: :plugin',
         'removed' => 'Symlink removed for plugin: :plugin',
+    ],
+    'theme_symlink' => [
+        'description' => 'Manage theme asset symlinks',
+        'invalid_action' => 'Invalid action. Use "create" or "remove".',
+        'created' => 'Symlink created for theme: :theme',
+        'removed' => 'Symlink removed for theme: :theme',
     ],
     'plugin_autoload_sync' => [
         'description' => 'Synchronize plugins with composer.json PSR-4 settings (and optionally clean up).',
