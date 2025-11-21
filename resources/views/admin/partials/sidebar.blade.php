@@ -148,7 +148,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                         // 孫項目の権限キーを生成（親キー.子キー.孫キー）
                                                         $grand_child_role_key = $key . '.' . $child_key . '.' . $grand_child_key;
                                                     @endphp
-                                                    @if (\App\Helpers\AdminHelper::canEditMenu($grand_child_role_key) || \App\Helpers\AdminHelper::canViewMenu($grand_child_role_key))
+                                                    @if (isset($grand_child_item['route']) && is_string($grand_child_item['route']) && (\App\Helpers\AdminHelper::canEditMenu($grand_child_role_key) || \App\Helpers\AdminHelper::canViewMenu($grand_child_role_key)))
                                                         <a href="{{ route($grand_child_item['route']) }}"
                                                         class="{{ $button_class }} {{ $grand_child_item['route'] === $route_name ? config('appearance.appearance_class.sidebar.active') : config('appearance.appearance_class.sidebar.normal') }}">
                                                             <i class="{{ $grand_child_item['icon'] }} mr-3"></i>

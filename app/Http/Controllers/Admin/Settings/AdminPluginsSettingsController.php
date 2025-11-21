@@ -50,6 +50,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
     public function index()
     {
+        // インストール済みプラグイン
         $plugins = Plugin::all();
         
         // 各プラグインに設定画面があるかチェック、翻訳された名前と説明を取得
@@ -59,7 +60,11 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $plugin->translated_description = $this->getPluginDescription($plugin);
         }
         
+        // アンインストール済みプラグインを検出
+        $uninstalledPlugins = $this->getUninstalledPlugins();
+        
         $this->viewParams['plugins'] = $plugins;
+        $this->viewParams['uninstalledPlugins'] = $uninstalledPlugins;
         $this->viewParams['heading'] = 'プラグインマスター';
         return view('admin::settings.plugins.index', $this->viewParams);
     }
@@ -252,78 +257,79 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
     public function enable($id)
     {
-
-
         $plugin = Plugin::findOrFail($id);
 
-        // シンボリックリンクを作成
-        create_plugin_symlink($plugin->directory);
-
-        //プラグイン名を取得
-        $pluginName = $plugin->name;
-
-        //プラグインディレクトリ名を取得
-        $pluginDirectory = $plugin->directory;
-
         try {
-            // プラグインを有効化
-            $plugin->update(['activated_at' => now()]);
+            // コマンドを使用して有効化
+            Artisan::call('dls:plugin:enable', [
+                'pluginName' => $plugin->name
+            ]);
 
-            return redirect()->route('admin.settings.plugins.index')->with('success', 'プラグインを有効化しました');
+            return redirect()->route('admin.settings.plugins.index')
+                ->with('success', 'プラグインを有効化しました');
         } catch (\Exception $e) {
+            Log::error('Plugin enable failed', [
+                'plugin' => $plugin->name,
+                'error' => $e->getMessage()
+            ]);
             return back()->with('error', "プラグイン有効化中にエラーが発生しました: {$e->getMessage()}");
         }
     }
 
     public function disable($id)
     {
-
-
         $plugin = Plugin::findOrFail($id);
+        
         try {
-            // シンボリックリンクを削除
-            delete_plugin_symlink($plugin->directory);
+            // コマンドを使用して無効化
+            Artisan::call('dls:plugin:disable', [
+                'pluginName' => $plugin->name
+            ]);
 
-            // プラグインを無効化
-            $plugin->update(['activated_at' => null]);
-
-            return redirect()->route('admin.settings.plugins.index')->with('success', 'プラグインを無効化しました');
+            return redirect()->route('admin.settings.plugins.index')
+                ->with('success', 'プラグインを無効化しました');
         } catch (\Exception $e) {
+            Log::error('Plugin disable failed', [
+                'plugin' => $plugin->name,
+                'error' => $e->getMessage()
+            ]);
             return back()->with('error', "プラグイン無効化中にエラーが発生しました: {$e->getMessage()}");
         }
     }
 
     public function uninstall($id, Request $request)
     {
-
-        // プラグインを取得
         $plugin = Plugin::findOrFail($id);
-        $pluginDir = $plugin->directory;
 
-        // ★ 1) DBデータも削除か？ → plugin:rollback 実行
-        if ($request->has('remove_db_data')) {
-            // plugin:rollback コマンドを呼ぶ (実装済みなら)
-            Artisan::call('dls:plugin:migrate:rollback', [
-                'plugin' => $pluginDir,
-                '--force' => true,
-                '--step' => 9999, // 全部ロールバック
-            ]);
+        // 有効化中のプラグインはアンインストールできない
+        if ($plugin->isEnabled()) {
+            return back()->with('error', '有効化中のプラグインはアンインストールできません。先に無効化してください。');
         }
 
-        // プラグインフォルダを削除
-        File::deleteDirectory(base_path('plugins/' . $pluginDir));
+        try {
+            // コマンドを使用してアンインストール
+            $options = [
+                'pluginName' => $plugin->name,
+                '--force' => true,
+                '--no-interaction' => true,
+            ];
+            
+            // DBデータも削除する場合
+            if ($request->has('remove_db_data')) {
+                $options['--rollback'] = true;
+            }
+            
+            Artisan::call('dls:plugin:uninstall', $options);
 
-        // データベースから削除
-        $plugin->delete();
-
-        // .git/info/excludeからプラグインの除外ルールを削除
-        GitExcludeHelper::removePluginExclusion($pluginDir);
-        
-        // composer.local.jsonを更新（composer.jsonは素の状態を保持）
-        ComposerLocalHelper::syncAutoload();
-
-        return redirect()->route('admin.settings.plugins.index')
-            ->with('success', 'プラグインをアンインストールしました');
+            return redirect()->route('admin.settings.plugins.index')
+                ->with('success', 'プラグインをアンインストールしました');
+        } catch (\Exception $e) {
+            Log::error('Plugin uninstall failed', [
+                'plugin' => $plugin->name,
+                'error' => $e->getMessage()
+            ]);
+            return back()->with('error', 'プラグインのアンインストールに失敗しました: ' . $e->getMessage());
+        }
     }
 
     // ZIPファイルのサイズをバイト数に変換
@@ -464,6 +470,154 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         } catch (\Exception $e) {
             // 翻訳ファイルが存在しない場合はDBの説明またはデフォルト
             return $plugin->description ?? '説明がありません';
+        }
+    }
+
+    /**
+     * アンインストール済みプラグインを検出
+     */
+    private function getUninstalledPlugins()
+    {
+        $uninstalledPlugins = [];
+        $pluginsPath = base_path('plugins');
+        
+        if (!File::exists($pluginsPath)) {
+            return $uninstalledPlugins;
+        }
+        
+        // pluginsディレクトリ内のすべてのディレクトリを取得
+        $directories = File::directories($pluginsPath);
+        
+        // インストール済みプラグインのディレクトリ名を取得
+        $installedDirectories = Plugin::pluck('directory')->toArray();
+        
+        foreach ($directories as $directory) {
+            $dirName = basename($directory);
+            
+            // DBに登録されていないプラグインを検出
+            if (!in_array($dirName, $installedDirectories)) {
+                $pluginInfo = $this->getPluginInfoFromDirectory($dirName);
+                if ($pluginInfo) {
+                    $uninstalledPlugins[] = $pluginInfo;
+                }
+            }
+        }
+        
+        return $uninstalledPlugins;
+    }
+
+    /**
+     * ディレクトリからプラグイン情報を取得
+     */
+    private function getPluginInfoFromDirectory($dirName)
+    {
+        $composerPath = base_path("plugins/{$dirName}/composer.json");
+        
+        if (!File::exists($composerPath)) {
+            return null;
+        }
+        
+        try {
+            $jsonContent = File::get($composerPath);
+            $composerData = json_decode($jsonContent, true);
+            
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return null;
+            }
+            
+            $displayName = $composerData['extra']['display-name'] ?? $dirName;
+            $authors = $composerData['authors'] ?? [];
+            $firstAuthor = $authors[0] ?? [];
+            
+            return [
+                'directory' => $dirName,
+                'name' => $displayName,
+                'description' => $composerData['description'] ?? null,
+                'version' => $composerData['version'] ?? '1.0.0',
+                'author' => $firstAuthor['name'] ?? null,
+                'email' => $firstAuthor['email'] ?? null,
+                'web' => $firstAuthor['homepage'] ?? null,
+                'license' => $composerData['license'] ?? null,
+                'package_name' => $composerData['name'] ?? null,
+                'slug' => $composerData['extra']['slug'] ?? Str::slug($dirName),
+            ];
+        } catch (\Exception $e) {
+            Log::error('Failed to read plugin info', [
+                'directory' => $dirName,
+                'error' => $e->getMessage()
+            ]);
+            return null;
+        }
+    }
+
+    /**
+     * アンインストール済みプラグインをインストール
+     */
+    public function installFromDirectory(Request $request)
+    {
+        $request->validate([
+            'directory' => 'required|string',
+        ]);
+        
+        $pluginDir = $request->input('directory');
+        $pluginPath = base_path("plugins/{$pluginDir}");
+        
+        if (!File::exists($pluginPath)) {
+            return redirect()->back()->with('error', 'プラグインディレクトリが見つかりません。');
+        }
+        
+        try {
+            // コマンドを使用してインストール
+            Artisan::call('dls:plugin:install', [
+                'pluginName' => $pluginDir
+            ]);
+            
+            // インストールされたプラグインを取得
+            $plugin = Plugin::where('directory', $pluginDir)->first();
+            
+            return redirect()->route('admin.settings.plugins.index')
+                ->with('success', 'プラグインが正常にインストールされました。')
+                ->with('installed_plugin_id', $plugin ? $plugin->id : null);
+        } catch (\Exception $e) {
+            Log::error('Plugin installation failed', [
+                'directory' => $pluginDir,
+                'error' => $e->getMessage()
+            ]);
+            return redirect()->back()->with('error', 'プラグインのインストールに失敗しました: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * プラグインディレクトリを完全に削除
+     */
+    public function deleteDirectory(Request $request)
+    {
+        $request->validate([
+            'directory' => 'required|string',
+        ]);
+        
+        $pluginDir = $request->input('directory');
+        $pluginPath = base_path('plugins/' . $pluginDir);
+        
+        if (!File::exists($pluginPath)) {
+            return redirect()->back()->with('error', 'プラグインディレクトリが見つかりません。');
+        }
+        
+        try {
+            // コマンドを使用して削除
+            Artisan::call('dls:plugin:delete', [
+                'pluginDirectory' => $pluginDir,
+                '--force' => true
+            ]);
+            
+            return redirect()->route('admin.settings.plugins.index')
+                ->with('success', 'プラグインが正常に削除されました。');
+        } catch (\Exception $e) {
+            Log::error('Plugin directory deletion failed', [
+                'directory' => $pluginDir,
+                'error' => $e->getMessage()
+            ]);
+            return redirect()->back()->with('error', 'プラグインの削除に失敗しました: ' . $e->getMessage());
         }
     }
 }

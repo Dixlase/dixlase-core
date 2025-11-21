@@ -65,7 +65,7 @@ class PluginEnable extends Command
         }
 
         // Update plugin status
-        $plugin->update(['activated_at' => now()]);
+        $plugin->update(['enabled_at' => now()]);
 
         // Create symlink for assets
         $this->createPluginSymlink($plugin->directory);

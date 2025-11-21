@@ -29,7 +29,7 @@ class MakeThemeSymlink extends Command
     {
         // ✅ アクティブなテーマのディレクトリをデータベースから取得
         $activeTheme = DB::table('theme_settings')
-            ->join('themes', 'theme_settings.active_theme_id', '=', 'themes.id')
+            ->join('themes', 'theme_settings.enabled_theme_id', '=', 'themes.id')
             ->select('themes.directory')
             ->first();
 

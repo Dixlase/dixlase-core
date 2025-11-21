@@ -65,7 +65,7 @@ class PluginDisable extends Command
         }
 
         // Update plugin status
-        $plugin->update(['activated_at' => null]);
+        $plugin->update(['enabled_at' => null]);
 
         // Remove symlink for assets
         $this->removePluginSymlink($plugin->directory);

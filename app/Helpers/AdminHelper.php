@@ -450,10 +450,12 @@ class AdminHelper
                             $name
                         );
                         // children以外のプロパティは既存を保持
-                    } else {
-                        // 子項目がない場合は単純にマージ
-                        $existing[$key] = array_merge($existing[$key], $value);
+                    } elseif (isset($value['children'])) {
+                        // 新しい項目にchildrenがある場合は追加
+                        \Log::channel('dixlase')->info("{$name}: Adding children to existing '{$key}'");
+                        $existing[$key]['children'] = $value['children'];
                     }
+                    // それ以外のプロパティは既存を保持（上書きしない）
                 } else {
                     // 配列でない場合は上書き
                     $existing[$key] = $value;

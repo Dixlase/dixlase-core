@@ -58,12 +58,12 @@ class ThemeServiceProvider extends ServiceProvider
 
             // Get the active theme from theme_settings
             $themeSetting = \DB::table('theme_settings')->first();
-            if (!$themeSetting || !$themeSetting->active_theme_id) {
+            if (!$themeSetting || !$themeSetting->enabled_theme_id) {
                 Log::warning('No active theme configured in theme_settings');
                 return;
             }
             
-            $activeTheme = Theme::find($themeSetting->active_theme_id);
+            $activeTheme = Theme::find($themeSetting->enabled_theme_id);
 
             if ($activeTheme) {
                 $themePath = base_path("themes/{$activeTheme->directory}");
@@ -203,11 +203,11 @@ class ThemeServiceProvider extends ServiceProvider
 
         // Get the active theme
         $themeSetting = \DB::table('theme_settings')->first();
-        if (!$themeSetting || !$themeSetting->active_theme_id) {
+        if (!$themeSetting || !$themeSetting->enabled_theme_id) {
             return;
         }
         
-        $activeTheme = Theme::find($themeSetting->active_theme_id);
+        $activeTheme = Theme::find($themeSetting->enabled_theme_id);
         if (!$activeTheme) {
             return;
         }

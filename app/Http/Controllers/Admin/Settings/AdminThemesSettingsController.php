@@ -41,24 +41,22 @@ class AdminThemesSettingsController extends AdminLoggedInController
     // テーマ一覧
     public function index()
     {
-
-        // デフォルトテーマを取得
-        $defaultTheme = Theme::where('slug', config('themes.default_theme_slug', 'dixlase-default-theme'))->first();
+        // インストール済みテーマを取得
+        $themes = Theme::all();
 
         // 現在有効なテーマを取得
-        $activeThemeId = DB::table('theme_settings')->value('active_theme_id');
-
-        // 他のテーマを取得（デフォルトテーマ以外）
-        $themes = Theme::where('slug', '!=', config('themes.default_theme_slug', 'dixlase-default-theme'))->paginate(10); // 1ページあたり10件表示
+        $activeThemeId = DB::table('theme_settings')->value('enabled_theme_id');
 
         // テーマ設定機能の有無をチェック
-        $themesWithSettings = $this->checkThemeSettings($themes);
-        if ($defaultTheme) {
-            $defaultTheme->has_settings = $this->hasThemeSettings($defaultTheme);
+        foreach ($themes as $theme) {
+            $theme->has_settings = $this->hasThemeSettings($theme);
         }
 
-        $this->viewParams['defaultTheme'] = $defaultTheme;
-        $this->viewParams['themes'] = $themesWithSettings;
+        // アンインストール済みテーマを検出
+        $uninstalledThemes = $this->getUninstalledThemes();
+
+        $this->viewParams['themes'] = $themes;
+        $this->viewParams['uninstalledThemes'] = $uninstalledThemes;
         $this->viewParams['activeThemeId'] = $activeThemeId;
         return view('admin::settings.themes.index', $this->viewParams);
     }
@@ -88,15 +86,80 @@ class AdminThemesSettingsController extends AdminLoggedInController
     }
 
     /**
-     * 複数テーマの設定機能チェック
+     * アンインストール済みテーマを検出
      */
-    private function checkThemeSettings($themes)
+    private function getUninstalledThemes()
     {
-        foreach ($themes as $theme) {
-            $theme->has_settings = $this->hasThemeSettings($theme);
+        $uninstalledThemes = [];
+        $themesPath = base_path('themes');
+        
+        if (!File::exists($themesPath)) {
+            return $uninstalledThemes;
         }
         
-        return $themes;
+        // themesディレクトリ内のすべてのディレクトリを取得
+        $directories = File::directories($themesPath);
+        
+        // インストール済みテーマのディレクトリ名を取得
+        $installedDirectories = Theme::pluck('directory')->toArray();
+        
+        foreach ($directories as $directory) {
+            $dirName = basename($directory);
+            
+            // DBに登録されていないテーマを検出
+            if (!in_array($dirName, $installedDirectories)) {
+                $themeInfo = $this->getThemeInfoFromDirectory($dirName);
+                if ($themeInfo) {
+                    $uninstalledThemes[] = $themeInfo;
+                }
+            }
+        }
+        
+        return $uninstalledThemes;
+    }
+
+    /**
+     * ディレクトリからテーマ情報を取得
+     */
+    private function getThemeInfoFromDirectory($dirName)
+    {
+        $composerPath = base_path("themes/{$dirName}/composer.json");
+        
+        if (!File::exists($composerPath)) {
+            return null;
+        }
+        
+        try {
+            $jsonContent = File::get($composerPath);
+            $composerData = json_decode($jsonContent, true);
+            
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return null;
+            }
+            
+            $displayName = $composerData['extra']['display-name'] ?? $dirName;
+            $authors = $composerData['authors'] ?? [];
+            $firstAuthor = $authors[0] ?? [];
+            
+            return [
+                'directory' => $dirName,
+                'name' => $displayName,
+                'description' => $composerData['description'] ?? null,
+                'version' => $composerData['version'] ?? '1.0.0',
+                'author' => $firstAuthor['name'] ?? null,
+                'email' => $firstAuthor['email'] ?? null,
+                'web' => $firstAuthor['homepage'] ?? null,
+                'license' => $composerData['license'] ?? null,
+                'package_name' => $composerData['name'] ?? null,
+                'slug' => $composerData['extra']['slug'] ?? Str::slug($dirName),
+            ];
+        } catch (\Exception $e) {
+            Log::error('Failed to read theme info', [
+                'directory' => $dirName,
+                'error' => $e->getMessage()
+            ]);
+            return null;
+        }
     }
 
     // テーマインストール
@@ -270,25 +333,168 @@ class AdminThemesSettingsController extends AdminLoggedInController
     // テーマの切り替え
     public function activate($id)
     {
-
-        $theme = Theme::where('id', $id)->first();
-
-        if (!$theme) {
-            return back()->with('error', 'テーマが見つかりません。');
-        }
+        $theme = Theme::findOrFail($id);
 
         // アクティブテーマを更新
-        DB::table('theme_settings')->update(['active_theme_id' => $theme->id, 'updated_at' => now()]);
+        DB::table('theme_settings')->update(['enabled_theme_id' => $theme->id, 'updated_at' => now()]);
 
         try {
             // シンボリックリンクを更新
             update_theme_symlink($theme->directory);
         } catch (\Exception $e) {
+            Log::error('Theme symlink update failed', [
+                'theme' => $theme->name,
+                'error' => $e->getMessage()
+            ]);
             return back()->with('error', "シンボリックリンクの更新に失敗しました: {$e->getMessage()}");
         }
 
+        return redirect()->route('admin.settings.themes.index')
+            ->with('success', "テーマ '{$theme->name}' が有効化されました。");
+    }
 
-        return redirect()->route('admin.settings.themes.index')->with('success', "テーマ '{$theme->name}' が有効化されました。");
+    /**
+     * テーマをアンインストール
+     */
+    public function uninstall($id)
+    {
+        $theme = Theme::findOrFail($id);
+        
+        // デフォルトテーマはアンインストールできない
+        $defaultThemeSlug = config('themes.default_theme_slug', 'dixlase-default-theme');
+        if ($theme->slug === $defaultThemeSlug) {
+            return back()->with('error', 'デフォルトテーマはアンインストールできません。');
+        }
+        
+        // 有効化中のテーマはアンインストールできない
+        $activeThemeId = DB::table('theme_settings')->value('enabled_theme_id');
+        if ($theme->id == $activeThemeId) {
+            return back()->with('error', '有効化中のテーマはアンインストールできません。');
+        }
+
+        try {
+            // データベースから削除（ファイルは削除しない）
+            $theme->delete();
+
+            return redirect()->route('admin.settings.themes.index')
+                ->with('success', 'テーマをアンインストールしました');
+        } catch (\Exception $e) {
+            Log::error('Theme uninstall failed', [
+                'theme' => $theme->name,
+                'error' => $e->getMessage()
+            ]);
+            return back()->with('error', 'テーマのアンインストールに失敗しました: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * アンインストール済みテーマをインストール
+     */
+    public function installFromDirectory(Request $request)
+    {
+        $request->validate([
+            'directory' => 'required|string',
+        ]);
+        
+        $themeDir = $request->input('directory');
+        $themePath = base_path("themes/{$themeDir}");
+        
+        if (!File::exists($themePath)) {
+            return redirect()->back()->with('error', 'テーマディレクトリが見つかりません。');
+        }
+        
+        $composerPath = base_path("themes/{$themeDir}/composer.json");
+        
+        if (!File::exists($composerPath)) {
+            return redirect()->back()->with('error', 'composer.json が見つかりません。');
+        }
+        
+        try {
+            $jsonContent = File::get($composerPath);
+            $composerData = json_decode($jsonContent, true);
+            
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return redirect()->back()->with('error', 'composer.json の解析に失敗しました: ' . json_last_error_msg());
+            }
+            
+            // テーマ情報を取得
+            $displayName = $composerData['extra']['display-name'] ?? $themeDir;
+            $authors = $composerData['authors'] ?? [];
+            $firstAuthor = $authors[0] ?? [];
+            $author = $firstAuthor['name'] ?? null;
+            $email  = $firstAuthor['email'] ?? null;
+            $web    = $firstAuthor['homepage'] ?? null;
+            $slug = $composerData['extra']['slug'] ?? Str::slug($themeDir);
+            $version = $composerData['version'] ?? '1.0.0';
+            $license = $composerData['license'] ?? null;
+            $description = $composerData['description'] ?? null;
+            $packageName = $composerData['name'] ?? null;
+            $namespace = "Themes\\$themeDir";
+            
+            // DBにテーマ情報を登録
+            $theme = Theme::create([
+                'name'        => $displayName,
+                'package_name' => $packageName,
+                'directory'   => $themeDir,
+                'slug'        => $slug,
+                'namespace'   => $namespace,
+                'description' => $description,
+                'license'     => $license,
+                'author'      => $author,
+                'email'       => $email,
+                'web'         => $web,
+                'version'     => $version,
+                'installed_at' => now(),
+            ]);
+            
+            return redirect()->route('admin.settings.themes.index')
+                ->with('success', 'テーマが正常にインストールされました。')
+                ->with('installed_theme_id', $theme->id);
+        } catch (\Exception $e) {
+            Log::error('Theme installation failed', [
+                'directory' => $themeDir,
+                'error' => $e->getMessage()
+            ]);
+            return redirect()->back()->with('error', 'テーマのインストールに失敗しました: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * テーマディレクトリを完全に削除
+     */
+    public function deleteDirectory(Request $request)
+    {
+        $request->validate([
+            'directory' => 'required|string',
+        ]);
+        
+        $themeDir = $request->input('directory');
+        
+        // デフォルトテーマのディレクトリ名を取得
+        $defaultTheme = Theme::where('slug', config('themes.default_theme_slug', 'dixlase-default-theme'))->first();
+        if ($defaultTheme && $defaultTheme->directory === $themeDir) {
+            return redirect()->back()->with('error', 'デフォルトテーマは削除できません。');
+        }
+        
+        $themePath = base_path('themes/' . $themeDir);
+        
+        if (!File::exists($themePath)) {
+            return redirect()->back()->with('error', 'テーマディレクトリが見つかりません。');
+        }
+        
+        try {
+            // テーマフォルダを完全に削除
+            File::deleteDirectory($themePath);
+            
+            return redirect()->route('admin.settings.themes.index')
+                ->with('success', 'テーマが正常に削除されました。');
+        } catch (\Exception $e) {
+            Log::error('Theme directory deletion failed', [
+                'directory' => $themeDir,
+                'error' => $e->getMessage()
+            ]);
+            return redirect()->back()->with('error', 'テーマの削除に失敗しました: ' . $e->getMessage());
+        }
     }
 
     /**

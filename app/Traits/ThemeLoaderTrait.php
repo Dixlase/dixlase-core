@@ -29,17 +29,17 @@ use Illuminate\Support\Facades\Schema;
 trait ThemeLoaderTrait
 {
     /**
-     * 有効化されているテーマを取得する
+     * アクティブなテーマIDを取得
      *
      * @return int
      */
     public function getActiveTheme(): int
     {
-        //themes_settingsテーブルのactive_theme_idの値を取得
-        //themes_settingsテーブルが存在しているか確認
-        if (Schema::hasTable('themes_settings')) {
-            $activeTheme = DB::table('themes_settings')->first();
-            $activeThemeId = $activeTheme->active_theme_id;
+        //theme_settingsテーブルのenabled_theme_idの値を取得
+        //theme_settingsテーブルが存在しているか確認
+        if (Schema::hasTable('theme_settings')) {
+            $themeSetting = DB::table('theme_settings')->first();
+            $activeThemeId = $themeSetting ? $themeSetting->enabled_theme_id : 1;
         } else {
             $activeThemeId = 1;
         }

@@ -22,9 +22,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="max-w-4xl mx-auto">
-    <!-- プラグイン一覧セクション -->
+    <!-- インストール済みプラグイン一覧セクション -->
     <section>
-        <h2>{{ __('admin.settings.plugins.index.heading') }}</h2>
+        <h2>{{ __('admin.settings.plugins.index.installed_heading') }}</h2>
 
         <!-- レスポンシブテーブル -->
         <div class="responsive-table">
@@ -84,14 +84,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 </div>
                             </td>
                             <td data-label="{{ __('common.status') }}">
-                                <span class="status-badge status-badge--{{ $plugin->status === 1 ? 'enabled' : 'disabled' }}">
-                                    {{ $plugin->status === 1 ? __('common.enabled') : __('common.disabled') }}
+                                <span class="status-badge status-badge--{{ $plugin->isEnabled() ? 'enabled' : 'disabled' }}">
+                                    {{ $plugin->isEnabled() ? __('common.enabled') : __('common.disabled') }}
                                 </span>
                             </td>
                             <td data-label="{{ __('common.actions') }}">
                                 <div class="action-buttons">
                                     <!-- 設定画面リンク -->
-                                    @if ($plugin->status === 1 && isset($plugin->has_settings) && $plugin->has_settings)
+                                    @if ($plugin->isEnabled() && isset($plugin->has_settings) && $plugin->has_settings)
                                         @php
                                             $settingsUrl = app('App\Http\Controllers\Admin\Settings\AdminPluginsSettingsController')->getPluginSettingsUrl($plugin);
                                         @endphp
@@ -108,7 +108,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         @endif
                                     @endif
 
-                                    @if ($plugin->status === 1)
+                                    @if ($plugin->isEnabled())
+                                        <!-- 有効化中：無効化ボタンのみ -->
                                         <form action="{{ route('admin.settings.plugins.disable', $plugin->id) }}" method="POST" class="inline-block">
                                             @csrf
                                             <x-form.button
@@ -120,6 +121,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             />
                                         </form>
                                     @else
+                                        <!-- 無効化中：有効化とアンインストールボタン -->
                                         <form action="{{ route('admin.settings.plugins.enable', $plugin->id) }}" method="POST" class="inline-block">
                                             @csrf
                                             <x-form.button
@@ -130,34 +132,34 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                 icon="fas fa-play"
                                             />
                                         </form>
+
+                                        <form action="{{ route('admin.settings.plugins.uninstall', $plugin->id) }}" method="POST" class="inline-block" id="uninstallForm-{{ $plugin->id }}">
+                                            @csrf
+                                            <x-form.button
+                                                type="button"
+                                                :label="__('common.uninstall')"
+                                                variant="danger"
+                                                size="sm"
+                                                icon="fas fa-trash"
+                                                onclick="openModal('uninstallModal-{{ $plugin->id }}')"
+                                            />
+
+                                            <!-- 確認画面のモーダル -->
+                                            <x-modal
+                                                id="uninstallModal-{{ $plugin->id }}"
+                                                :title="__('admin.settings.plugins.index.uninstall.confirm_title')"
+                                                :message="str_replace('{name}', $plugin->name, __('admin.settings.plugins.index.uninstall.confirm_message'))"
+                                                :confirm_label="__('common.uninstall')"
+                                                :cancel_label="__('common.cancel')"
+                                                :checkbox="true"
+                                                checkbox_name="remove_db_data"
+                                                :checkbox_label="__('admin.settings.plugins.index.uninstall.remove_data_checkbox')"
+                                                form="uninstallForm-{{ $plugin->id }}"
+                                                icon_type="danger"
+                                                confirm_color="red"
+                                            />
+                                        </form>
                                     @endif
-
-                                    <form action="{{ route('admin.settings.plugins.uninstall', $plugin->id) }}" method="POST" class="inline-block" id="uninstallForm-{{ $plugin->id }}">
-                                        @csrf
-                                        <x-form.button
-                                            type="button"
-                                            :label="__('common.delete')"
-                                            variant="danger"
-                                            size="sm"
-                                            icon="fas fa-trash"
-                                            onclick="openModal('uninstallModal-{{ $plugin->id }}')"
-                                        />
-
-                                        <!-- 確認画面のモーダル -->
-                                        <x-modal
-                                            id="uninstallModal-{{ $plugin->id }}"
-                                            :title="__('admin.settings.plugins.index.uninstall.confirm_title')"
-                                            :message="str_replace('{name}', $plugin->name, __('admin.settings.plugins.index.uninstall.confirm_message'))"
-                                            :confirm_label="__('common.uninstall')"
-                                            :cancel_label="__('common.cancel')"
-                                            :checkbox="true"
-                                            checkbox_name="remove_db_data"
-                                            :checkbox_label="__('admin.settings.plugins.index.uninstall.remove_data_checkbox')"
-                                            form="uninstallForm-{{ $plugin->id }}"
-                                            icon_type="danger"
-                                            confirm_color="red"
-                                        />
-                                    </form>
                                 </div>
                             </td>
                         </tr>
@@ -175,5 +177,127 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </table>
         </div>
     </section>
+
+    <!-- アンインストール済みプラグイン一覧セクション -->
+    @if(count($uninstalledPlugins) > 0)
+    <section class="mt-8">
+        <h2>{{ __('admin.settings.plugins.index.uninstalled_heading') }}</h2>
+
+        <!-- レスポンシブテーブル -->
+        <div class="responsive-table">
+            <table>
+                <caption class="sr-only">{{ __('admin.settings.plugins.index.uninstalled_table.caption') }}</caption>
+                <thead>
+                    <tr>
+                        <th>{{ __('admin.settings.plugins.index.table.name') }}</th>
+                        <th>{{ __('common.details') }}</th>
+                        <th>{{ __('common.actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($uninstalledPlugins as $plugin)
+                        <tr>
+                            <td data-label="{{ __('admin.settings.plugins.index.table.name') }}">
+                                <div>
+                                    <strong class="text-lg">{{ $plugin['name'] }}</strong>
+                                    @if($plugin['description'])
+                                        <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ $plugin['description'] }}</div>
+                                    @endif
+                                </div>
+                            </td>
+                            <td data-label="{{ __('common.details') }}">
+                                <div class="text-sm space-y-1">
+                                    <!-- 作者情報 -->
+                                    <div class="mb-2">
+                                        <span class="font-medium text-gray-700 dark:text-gray-300">{{ __('common.author') }}:</span>
+                                        @if($plugin['author'])
+                                            <span>{{ $plugin['author'] }}</span>
+                                            @if($plugin['email'])
+                                                <div class="text-xs text-gray-500 dark:text-gray-400">{{ $plugin['email'] }}</div>
+                                            @endif
+                                            @if($plugin['web'])
+                                                <div class="text-xs">
+                                                    <a href="{{ $plugin['web'] }}" target="_blank" class="text-blue-600 hover:text-blue-800 dark:text-blue-400">{{ $plugin['web'] }}</a>
+                                                </div>
+                                            @endif
+                                        @else
+                                            <span class="text-gray-400">{{ __('common.unknown') }}</span>
+                                        @endif
+                                    </div>
+                                    
+                                    <!-- バージョン情報 -->
+                                    <div class="inline-block font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs">{{ $plugin['version'] }}</div>
+                                    <!-- ライセンス情報 -->
+                                    <div>
+                                        @if($plugin['license'])
+                                            <div class="inline-block bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded text-xs">{{ $plugin['license'] }}</div>
+                                        @else
+                                            <div class="inline-block text-gray-400">{{ __('common.unknown') }}</div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </td>
+                            <td data-label="{{ __('common.actions') }}">
+                                <div class="action-buttons">
+                                    <!-- インストールボタン -->
+                                    <form action="{{ route('admin.settings.plugins.install-from-directory') }}" method="POST" class="inline-block" id="installForm-{{ $plugin['directory'] }}">
+                                        @csrf
+                                        <input type="hidden" name="directory" value="{{ $plugin['directory'] }}">
+                                        <x-form.button
+                                            type="button"
+                                            :label="__('common.install')"
+                                            variant="success"
+                                            size="sm"
+                                            icon="fas fa-download"
+                                            onclick="openModal('installModal-{{ $plugin['directory'] }}')"
+                                        />
+
+                                        <!-- インストール確認モーダル -->
+                                        <x-modal
+                                            id="installModal-{{ $plugin['directory'] }}"
+                                            :title="__('admin.settings.plugins.index.install.confirm_title')"
+                                            :message="str_replace('{name}', $plugin['name'], __('admin.settings.plugins.index.install.confirm_message'))"
+                                            :confirm_label="__('common.install')"
+                                            :cancel_label="__('common.cancel')"
+                                            form="installForm-{{ $plugin['directory'] }}"
+                                            icon_type="info"
+                                            confirm_color="green"
+                                        />
+                                    </form>
+
+                                    <!-- 削除ボタン -->
+                                    <form action="{{ route('admin.settings.plugins.delete-directory') }}" method="POST" class="inline-block" id="deleteForm-{{ $plugin['directory'] }}">
+                                        @csrf
+                                        <input type="hidden" name="directory" value="{{ $plugin['directory'] }}">
+                                        <x-form.button
+                                            type="button"
+                                            :label="__('common.delete')"
+                                            variant="danger"
+                                            size="sm"
+                                            icon="fas fa-trash"
+                                            onclick="openModal('deleteModal-{{ $plugin['directory'] }}')"
+                                        />
+
+                                        <!-- 削除確認モーダル -->
+                                        <x-modal
+                                            id="deleteModal-{{ $plugin['directory'] }}"
+                                            :title="__('admin.settings.plugins.index.delete.confirm_title')"
+                                            :message="str_replace('{name}', $plugin['name'], __('admin.settings.plugins.index.delete.confirm_message'))"
+                                            :confirm_label="__('common.delete')"
+                                            :cancel_label="__('common.cancel')"
+                                            form="deleteForm-{{ $plugin['directory'] }}"
+                                            icon_type="danger"
+                                            confirm_color="red"
+                                        />
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </section>
+    @endif
 </div>
 @endsection

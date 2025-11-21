@@ -37,7 +37,7 @@ class ThemeSettingsTableSeeder extends Seeder
         //
         DB::table('theme_settings')->insert([
             [
-                'active_theme_id' => 1,
+                'enabled_theme_id' => 1,
                 'created_at' => now(),
                 'updated_at' => now()
             ],

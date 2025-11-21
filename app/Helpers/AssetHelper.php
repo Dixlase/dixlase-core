@@ -139,10 +139,10 @@ if (!function_exists('load_active_assets')) {
         );
 
         // アクティブなテーマIDを取得
-        $activeThemeId = DB::table('theme_settings')->where('active_theme_id', 1)->first();
+        $themeSetting = DB::table('theme_settings')->first();
 
-        if ($activeThemeId) {
-            $activeThemeId = $activeThemeId->active_theme_id;
+        if ($themeSetting && $themeSetting->enabled_theme_id) {
+            $activeThemeId = $themeSetting->enabled_theme_id;
         } else {
             $activeThemeId = 1;
         }
@@ -158,7 +158,7 @@ if (!function_exists('load_active_assets')) {
         }
 
         // 有効なプラグインを取得
-        $activePlugins = DB::table('plugins')->whereNotNull('activated_at')->get();
+        $activePlugins = DB::table('plugins')->whereNotNull('enabled_at')->get();
 
         foreach ($activePlugins as $plugin) {
             $output .= load_assets('plugin', $plugin->directory, [

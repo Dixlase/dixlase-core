@@ -94,13 +94,64 @@ return [
             ],
             'themes' => [
                 'text' => 'Theme Management',
-                'index' => 'Theme Master',
+                'index' => [
+                    'heading' => 'Theme Master',
+                    'installed_heading' => 'Installed Themes',
+                    'uninstalled_heading' => 'Uninstalled Themes',
+                    'table' => [
+                        'caption' => 'Theme List',
+                        'id' => 'ID',
+                        'name' => 'Theme Name',
+                    ],
+                    'uninstalled_table' => [
+                        'caption' => 'Uninstalled Theme List',
+                    ],
+                    'no_themes' => 'No themes available',
+                    'uninstall' => [
+                        'confirm_title' => 'Uninstall Theme',
+                        'confirm_message' => 'Are you sure you want to uninstall "{name}"?',
+                    ],
+                    'install' => [
+                        'confirm_title' => 'Install Theme',
+                        'confirm_message' => 'Are you sure you want to install "{name}"?',
+                    ],
+                    'delete' => [
+                        'confirm_title' => 'Delete Theme',
+                        'confirm_message' => 'Are you sure you want to permanently delete all files and folders for "{name}"? This action cannot be undone.',
+                    ],
+                ],
                 'install' => 'Install',
                 'settings' => 'Theme Settings',
             ],
             'plugins' => [
                 'text' => 'Plugin Management',
-                'index' => 'Plugin Master',
+                'index' => [
+                    'heading' => 'Plugin Master',
+                    'installed_heading' => 'Installed Plugins',
+                    'uninstalled_heading' => 'Uninstalled Plugins',
+                    'table' => [
+                        'caption' => 'Plugin List',
+                        'id' => 'ID',
+                        'name' => 'Plugin Name',
+                    ],
+                    'uninstalled_table' => [
+                        'caption' => 'Uninstalled Plugin List',
+                    ],
+                    'no_plugins' => 'No plugins available',
+                    'uninstall' => [
+                        'confirm_title' => 'Uninstall Plugin',
+                        'confirm_message' => 'Are you sure you want to uninstall "{name}"?',
+                        'remove_data_checkbox' => 'Also remove database data',
+                    ],
+                    'install' => [
+                        'confirm_title' => 'Install Plugin',
+                        'confirm_message' => 'Are you sure you want to install "{name}"?',
+                    ],
+                    'delete' => [
+                        'confirm_title' => 'Delete Plugin',
+                        'confirm_message' => 'Are you sure you want to permanently delete all files and folders for "{name}"? This action cannot be undone.',
+                    ],
+                ],
                 'install'  => 'Install',
             ],
             'systems' => [

@@ -57,14 +57,14 @@ trait PluginLoaderTrait
             return;
         }
 
-        //Pluginテーブルのactivated_atがnullでないレコードを取得
+        //Pluginテーブルのenabled_atがnullでないレコードを取得
         //テーブルが存在しているか確認
         if (!Schema::hasTable('plugins')) {
             \Log::info("PluginLoaderTrait: plugins table does not exist, skipping plugin loading");
             return;
         }
 
-        $plugins = Plugin::whereNotNull('activated_at')->get();
+        $plugins = Plugin::whereNotNull('enabled_at')->get();
         \Log::info("PluginLoaderTrait: Found active plugins", [
             'count' => $plugins->count(),
             'plugins' => $plugins->pluck('name')->toArray()

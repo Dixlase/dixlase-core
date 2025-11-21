@@ -42,7 +42,7 @@ class Plugin extends Model
         'license',
         'description',
         'installed_at',
-        'activated_at',
+        'enabled_at',
     ];
 
     /**
@@ -50,15 +50,15 @@ class Plugin extends Model
      */
     protected $casts = [
         'installed_at' => 'datetime',
-        'activated_at' => 'datetime',
+        'enabled_at' => 'datetime',
     ];
 
     /**
      * 有効化されたプラグインを取得するスコープ
      */
-    public function scopeActive($query)
+    public function scopeEnabled($query)
     {
-        return $query->whereNotNull('activated_at');
+        return $query->whereNotNull('enabled_at');
     }
 
     /**
@@ -80,8 +80,17 @@ class Plugin extends Model
     /**
      * プラグインが有効化されているかチェック
      */
+    public function isEnabled(): bool
+    {
+        return !is_null($this->enabled_at);
+    }
+
+    /**
+     * 後方互換性のため残す（非推奨）
+     * @deprecated Use isEnabled() instead
+     */
     public function isActivated(): bool
     {
-        return !is_null($this->activated_at);
+        return $this->isEnabled();
     }
 }
