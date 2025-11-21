@@ -83,12 +83,27 @@ class PluginMigrator
     {
         $migrationPath = $path ?? base_path("plugins/{$plugin}/database/migrations");
 
+        Log::info('PluginMigrator: Starting migration', [
+            'plugin' => $plugin,
+            'path' => $migrationPath,
+            'slug' => $this->pluginSlug
+        ]);
+
         if (!$this->files->isDirectory($migrationPath)) {
+            Log::error('PluginMigrator: Migration path does not exist', ['path' => $migrationPath]);
             throw new \Exception("Migration path does not exist: {$migrationPath}");
         }
 
+        // マイグレーションファイルの一覧を取得
+        $files = $this->files->glob($migrationPath . '/*.php');
+        Log::info('PluginMigrator: Found migration files', [
+            'count' => count($files),
+            'files' => array_map('basename', $files)
+        ]);
+
         // 実行前にマイグレーションファイルを取得
         $before = $this->repository->getRan();
+        Log::info('PluginMigrator: Migrations before run', ['count' => count($before)]);
 
         // マイグレーターにマイグレーションパスを設定
         $this->migrator->run($migrationPath, [
@@ -98,9 +113,14 @@ class PluginMigrator
 
         // 実行後にマイグレーションファイルを取得
         $after = $this->repository->getRan($this->pluginSlug);
+        Log::info('PluginMigrator: Migrations after run', ['count' => count($after)]);
 
         // 新たに実行されたマイグレーションファイルを抽出
         $migrated = array_diff($after, $before);
+        Log::info('PluginMigrator: Migration completed', [
+            'migrated_count' => count($migrated),
+            'migrated' => array_values($migrated)
+        ]);
 
         return array_values($migrated);
     }
@@ -118,12 +138,31 @@ class PluginMigrator
     {
         $migrationPath = base_path("plugins/{$plugin}/database/migrations");
 
+        Log::info('PluginMigrator: Starting rollback', [
+            'plugin' => $plugin,
+            'path' => $migrationPath,
+            'slug' => $this->pluginSlug,
+            'options' => $options
+        ]);
+
         if (!$this->files->isDirectory($migrationPath)) {
+            Log::error('PluginMigrator: Migration path does not exist', ['path' => $migrationPath]);
             throw new \Exception("Migration path does not exist: {$migrationPath}");
         }
 
+        // マイグレーションファイルの一覧を取得
+        $files = $this->files->glob($migrationPath . '/*.php');
+        Log::info('PluginMigrator: Found migration files for rollback', [
+            'count' => count($files),
+            'files' => array_map('basename', $files)
+        ]);
+
         // ロールバック前にマイグレーションファイルを取得
         $before = $this->repository->getRan();
+        Log::info('PluginMigrator: Migrations before rollback', [
+            'count' => count($before),
+            'migrations' => $before
+        ]);
 
         // マイグレーターにマイグレーションパスを設定
         $this->migrator->rollback($migrationPath, [
@@ -133,9 +172,17 @@ class PluginMigrator
 
         // ロールバック後にマイグレーションファイルを取得
         $after = $this->repository->getRan();
+        Log::info('PluginMigrator: Migrations after rollback', [
+            'count' => count($after),
+            'migrations' => $after
+        ]);
 
         // ロールバックされたマイグレーションファイルを抽出
         $rolledBack = array_diff($before, $after);
+        Log::info('PluginMigrator: Rollback completed', [
+            'rolled_back_count' => count($rolledBack),
+            'rolled_back' => array_values($rolledBack)
+        ]);
 
         return array_values($rolledBack);
     }

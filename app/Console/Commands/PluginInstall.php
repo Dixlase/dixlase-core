@@ -44,7 +44,7 @@ class PluginInstall extends Command
      *
      * @var string
      */
-    protected $signature = 'dls:plugin:install {pluginName : The name of the plugin to install}';
+    protected $signature = 'dls:plugin:install {pluginName : The name of the plugin to install} {--enable : Enable the plugin after installation}';
 
     /**
      * The console command description.
@@ -160,12 +160,24 @@ class PluginInstall extends Command
         // プラグイン作成時（make:plugin）に既に行われているため、ここでは不要
 
         // プラグインの有効化を確認（--enable オプションが指定されていない場合のみ確認）
-        if ($this->option('enable') || $this->confirm(__('command.make_plugin.installation.enable_confirm', [
-            'pluginName' => $pluginName
-        ]), false)) {
+        // Web経由での実行時は対話的入力ができないため、--enableオプションの有無のみで判断
+        if ($this->option('enable')) {
             $this->call('plugin:enable', [
                 'pluginName' => $pluginName
             ]);
+        } elseif (app()->runningInConsole() && !app()->runningUnitTests()) {
+            // CLIからの実行時のみ確認プロンプトを表示
+            if ($this->confirm(__('command.make_plugin.installation.enable_confirm', [
+                'pluginName' => $pluginName
+            ]), false)) {
+                $this->call('plugin:enable', [
+                    'pluginName' => $pluginName
+                ]);
+            } else {
+                $this->info(__('command.make_plugin.installation.enable_skipped', [
+                    'pluginName' => $pluginName
+                ]));
+            }
         } else {
             $this->info(__('command.make_plugin.installation.enable_skipped', [
                 'pluginName' => $pluginName
