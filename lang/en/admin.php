@@ -972,6 +972,8 @@ Clicking this link will complete the full mail function test.',
         'themes' => [
             'index' => [
                 'heading' => 'Theme Management',
+                'installed_heading' => 'Installed Themes',
+                'uninstalled_heading' => 'Uninstalled Themes',
                 'available_themes' => 'Available Themes',
                 'currently_active' => 'Currently Active',
                 'activate_confirm' => 'Do you want to activate this theme?',
@@ -979,6 +981,26 @@ Clicking this link will complete the full mail function test.',
                 'activate_button' => 'Activate',
                 'delete_button' => 'Delete',
                 'settings_button' => 'Settings',
+                'table' => [
+                    'caption' => 'Installed Themes List',
+                    'name' => 'Theme Name',
+                ],
+                'uninstalled_table' => [
+                    'caption' => 'Uninstalled Themes List',
+                ],
+                'no_themes' => 'No themes are installed.',
+                'uninstall' => [
+                    'confirm_title' => 'Uninstall Confirmation',
+                    'confirm_message' => 'Do you want to uninstall theme [{name}]?',
+                ],
+                'install' => [
+                    'confirm_title' => 'Install Confirmation',
+                    'confirm_message' => 'Do you want to install theme [{name}]?',
+                ],
+                'delete' => [
+                    'confirm_title' => 'Delete Confirmation',
+                    'confirm_message' => 'Are you sure you want to permanently delete all files and folders for theme [{name}]? This action cannot be undone.',
+                ],
             ],
             'install' => [
                 'heading' => 'Theme Installation',
@@ -995,6 +1017,8 @@ Clicking this link will complete the full mail function test.',
         'plugins' => [
             'index' => [
                 'heading' => 'Plugin List',
+                'installed_heading' => 'Installed Plugins',
+                'uninstalled_heading' => 'Uninstalled Plugins',
                 'systems' => [
                     'text' => 'System',
                     'cache' => 'Cache Management',
@@ -1013,7 +1037,15 @@ Clicking this link will complete the full mail function test.',
                 'uninstall' => [
                     'confirm_title' => 'Uninstall Confirmation',
                     'confirm_message' => 'Do you want to uninstall plugin [{name}]?',
-                    'remove_data_checkbox' => 'Delete database tables created during plugin installation.<br><span class="text-red-600 font-semibold">Warning! Deleting tables will lose all data created by the plugin!</span>',
+                    'remove_data_checkbox' => 'Delete database tables created during plugin installation.<br><br><span class="text-red-600 font-semibold">Warning! Deleting tables will lose all data created by the plugin!</span>',
+                ],
+                'install' => [
+                    'confirm_title' => 'Install Confirmation',
+                    'confirm_message' => 'Do you want to install plugin [{name}]?',
+                ],
+                'delete' => [
+                    'confirm_title' => 'Delete Confirmation',
+                    'confirm_message' => 'Are you sure you want to permanently delete all files and folders for plugin [{name}]? This action cannot be undone.',
                 ],
             ],
             'install' => [
