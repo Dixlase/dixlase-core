@@ -5,21 +5,21 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Theme;
 
-class ThemeDeactivate extends Command
+class ThemeDisable extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'dls:theme:deactivate {themeName? : ' . 'command.theme_deactivate.theme_name_prompt' . '}';
+    protected $signature = 'dls:theme:disable {themeName? : ' . 'command.theme_disable.theme_name_prompt' . '}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'command.theme_deactivate.description';
+    protected $description = 'command.theme_disable.description';
 
     /**
      * Execute the console command.
@@ -30,9 +30,9 @@ class ThemeDeactivate extends Command
     {
         $themeName = $this->argument('themeName');
         
-        // If no theme name provided, show list of active themes
+        // If no theme name provided, show list of enabled themes
         if (!$themeName) {
-            return $this->listActiveThemes();
+            return $this->listEnabledThemes();
         }
 
         // Find the theme
@@ -41,48 +41,48 @@ class ThemeDeactivate extends Command
                      ->first();
 
         if (!$theme) {
-            $this->error(__('command.theme_deactivate.theme_not_found', ['themeName' => $themeName]));
+            $this->error(__('command.theme_disable.theme_not_found', ['themeName' => $themeName]));
             return Command::FAILURE;
         }
 
         // Check if theme is installed
         if (!$theme->isInstalled()) {
-            $this->error(__('command.theme_deactivate.not_installed', ['themeName' => $theme->name]));
+            $this->error(__('command.theme_disable.not_installed', ['themeName' => $theme->name]));
             return Command::FAILURE;
         }
 
-        // Check if the theme is already inactive
-        if (!$theme->isActivated()) {
-            $this->info(__('command.theme_deactivate.already_inactive', ['themeName' => $theme->name]));
+        // Check if the theme is already disabled
+        if (!$theme->isEnabled()) {
+            $this->info(__('command.theme_disable.already_disabled', ['themeName' => $theme->name]));
             return Command::SUCCESS;
         }
 
-        // Deactivate the theme
-        $theme->update(['activated_at' => null]);
-        $this->info(__('command.theme_deactivate.deactivated', ['themeName' => $theme->name]));
+        // Disable the theme
+        $theme->update(['enabled_at' => null]);
+        $this->info(__('command.theme_disable.disabled', ['themeName' => $theme->name]));
         
         return Command::SUCCESS;
     }
 
     /**
-     * List all active themes
+     * List all enabled themes
      *
      * @return int
      */
-    protected function listActiveThemes()
+    protected function listEnabledThemes()
     {
-        $activeThemes = Theme::whereNotNull('activated_at')
+        $enabledThemes = Theme::whereNotNull('enabled_at')
                            ->whereNotNull('installed_at')
                            ->get(['name', 'slug']);
         
-        if ($activeThemes->isEmpty()) {
-            $this->info(__('command.theme_deactivate.no_active_themes'));
+        if ($enabledThemes->isEmpty()) {
+            $this->info(__('command.theme_disable.no_enabled_themes'));
             return Command::SUCCESS;
         }
 
         $this->table(
-            __('command.theme_deactivate.list_headers'),
-            $activeThemes->map(function ($theme) {
+            __('command.theme_disable.list_headers'),
+            $enabledThemes->map(function ($theme) {
                 return [
                     $theme->name,
                     $theme->slug,
@@ -90,7 +90,7 @@ class ThemeDeactivate extends Command
             })
         );
 
-        $this->info("\n" . __('command.theme_deactivate.deactivate_help'));
+        $this->info("\n" . __('command.theme_disable.disable_help'));
         return Command::SUCCESS;
     }
 }

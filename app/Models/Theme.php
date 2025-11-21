@@ -51,7 +51,7 @@ class Theme extends Model
         'version',      // テーマバージョン
         'config',       // テーマ設定
         'installed_at', // インストール日時
-        'activated_at', // 有効化日時
+        'enabled_at',   // 有効化日時
     ];
 
     /**
@@ -60,16 +60,16 @@ class Theme extends Model
     protected $casts = [
         'config' => 'array',
         'installed_at' => 'datetime',
-        'activated_at' => 'datetime',
+        'enabled_at' => 'datetime',
     ];
 
 
     /**
-     * アクティブテーマのスコープ
+     * 有効なテーマのスコープ
      */
-    public function scopeActive($query)
+    public function scopeEnabled($query)
     {
-        return $query->whereNotNull('activated_at');
+        return $query->whereNotNull('enabled_at');
     }
 
     /**
@@ -91,9 +91,9 @@ class Theme extends Model
     /**
      * テーマが有効化されているかチェック
      */
-    public function isActivated(): bool
+    public function isEnabled(): bool
     {
-        return !is_null($this->activated_at);
+        return !is_null($this->enabled_at);
     }
 
     /**
