@@ -1,0 +1,100 @@
+<?php
+
+{{ license }}
+
+namespace {{ namespace }}\App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
+
+class ThemeSetting extends Model
+{
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = '{{ tablePrefix }}settings';
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'name',
+        'value',
+    ];
+
+    /**
+     * キャッシュキーのプレフィックス
+     */
+    const CACHE_KEY = '{{ slug }}_settings';
+
+    /**
+     * 設定値を取得（キャッシュ付き）
+     *
+     * @param string $name
+     * @param mixed $default
+     * @return mixed
+     */
+    public static function get(string $name, $default = null)
+    {
+        $cacheKey = self::CACHE_KEY . '_' . $name;
+        
+        return Cache::remember($cacheKey, 3600, function () use ($name, $default) {
+            $setting = self::where('name', $name)->first();
+            return $setting ? $setting->value : $default;
+        });
+    }
+
+    /**
+     * 設定値を保存（キャッシュクリア付き）
+     *
+     * @param string $name
+     * @param mixed $value
+     * @return bool
+     */
+    public static function set(string $name, $value): bool
+    {
+        $setting = self::updateOrCreate(
+            ['name' => $name],
+            ['value' => $value]
+        );
+
+        // キャッシュをクリア
+        Cache::forget(self::CACHE_KEY . '_' . $name);
+        Cache::forget(self::CACHE_KEY . '_all');
+
+        return $setting->wasRecentlyCreated || $setting->wasChanged();
+    }
+
+    /**
+     * 全設定をオブジェクトとして取得
+     *
+     * @return object
+     */
+    public static function getAllAsObject(): object
+    {
+        return Cache::remember(self::CACHE_KEY . '_all', 3600, function () {
+            $settings = self::all();
+            $result = new \stdClass();
+            
+            foreach ($settings as $setting) {
+                $result->{$setting->name} = $setting->value;
+            }
+            
+            return $result;
+        });
+    }
+
+    /**
+     * 全キャッシュをクリア
+     *
+     * @return void
+     */
+    public static function clearCache(): void
+    {
+        Cache::flush();
+    }
+}

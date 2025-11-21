@@ -1,0 +1,23 @@
+<?php
+
+{{ license }}
+
+namespace {{ namespace }}\App\Http\Controllers\Admin\Settings\Themes;
+
+use App\Http\Controllers\Admin\AdminLoggedInController;
+use Illuminate\Http\Request;
+
+class ThemeSettingsController extends AdminLoggedInController
+{
+    public function index()
+    {
+        // Load theme settings here
+        return view('theme::admin.settings.themes.settings', $this->viewParams);
+    }
+
+    public function update(Request $request)
+    {
+        // Save theme settings here
+        return redirect()->back()->with('success', 'Settings updated successfully');
+    }
+}

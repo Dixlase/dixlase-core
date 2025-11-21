@@ -1,0 +1,16 @@
+<?php
+
+return [
+    'admin_navigation' => [
+        'settings' => [
+            'children' => [
+                'themes_settings' => [
+                    'label' => 'Theme Settings',
+                    'route' => 'admin.settings.themes.{{ slug }}.settings',
+                    'icon' => 'palette',
+                    'order' => 100,
+                ],
+            ],
+        ],
+    ],
+];
