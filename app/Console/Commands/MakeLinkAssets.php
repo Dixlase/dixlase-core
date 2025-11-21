@@ -39,7 +39,7 @@ class MakeLinkAssets extends Command
         $this->createLink(base_path('resources/views/admin'), public_path('assets/admin'));
 
         // 有効化されたプラグインのアセット
-        $enabledPlugins = Plugin::whereNotNull('activated_at')->get();
+        $enabledPlugins = Plugin::whereNotNull('enabled_at')->get();
         foreach ($enabledPlugins as $plugin) {
             try {
                 create_plugin_symlink($plugin->directory);
@@ -49,7 +49,7 @@ class MakeLinkAssets extends Command
         }
 
         // 有効化されたテーマのアセット
-        $activeThemeId = DB::table('theme_settings')->value('active_theme_id');
+        $activeThemeId = DB::table('theme_settings')->value('enabled_theme_id');
         $theme = Theme::find($activeThemeId);
 
         if ($theme && File::exists(base_path("themes/{$theme->directory}/assets"))) {

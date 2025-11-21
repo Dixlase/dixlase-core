@@ -70,7 +70,7 @@ class PluginUninstall extends Command
         }
 
         // 有効化状態チェック
-        if (!is_null($plugin->activated_at) && !$this->option('force')) {
+        if (!is_null($plugin->enabled_at) && !$this->option('force')) {
             $this->error(__('command.plugin_uninstall.still_enabled', ['pluginName' => $pluginName]));
             $this->warn(__('command.plugin_uninstall.disable_first'));
             return 1;
@@ -93,7 +93,7 @@ class PluginUninstall extends Command
         config(['app.plugin_uninstalling' => $pluginName]);
 
         // --forceオプションが指定されている場合のみ無効化を実行
-        if (!is_null($plugin->activated_at) && $this->option('force')) {
+        if (!is_null($plugin->enabled_at) && $this->option('force')) {
             $this->warn(__('command.plugin_uninstall.force_disabling', ['pluginName' => $pluginName]));
             $this->disablePlugin($pluginName);
             $plugin = DB::table('plugins')->where('name', $pluginName)->first();

@@ -93,13 +93,64 @@ return [
             ],
             'themes' => [
                 'text' => 'テーマ管理',
-                'index' => 'テーママスター',
+                'index' => [
+                    'heading' => 'テーママスター',
+                    'installed_heading' => 'インストール済みテーマ',
+                    'uninstalled_heading' => 'アンインストール済みテーマ',
+                    'table' => [
+                        'caption' => 'テーマ一覧',
+                        'id' => 'ID',
+                        'name' => 'テーマ名',
+                    ],
+                    'uninstalled_table' => [
+                        'caption' => 'アンインストール済みテーマ一覧',
+                    ],
+                    'no_themes' => 'テーマがありません',
+                    'uninstall' => [
+                        'confirm_title' => 'テーマのアンインストール',
+                        'confirm_message' => '「{name}」をアンインストールしますか？',
+                    ],
+                    'install' => [
+                        'confirm_title' => 'テーマのインストール',
+                        'confirm_message' => '「{name}」をインストールしますか？',
+                    ],
+                    'delete' => [
+                        'confirm_title' => 'テーマの削除',
+                        'confirm_message' => '「{name}」のファイルとフォルダを完全に削除しますか？この操作は取り消せません。',
+                    ],
+                ],
                 'install'  => 'インストール',
                 'settings' => 'テーマ設定',
             ],
             'plugins' => [
                 'text' => 'プラグイン管理',
-                'index' => 'プラグインマスター',
+                'index' => [
+                    'heading' => 'プラグインマスター',
+                    'installed_heading' => 'インストール済みプラグイン',
+                    'uninstalled_heading' => 'アンインストール済みプラグイン',
+                    'table' => [
+                        'caption' => 'プラグイン一覧',
+                        'id' => 'ID',
+                        'name' => 'プラグイン名',
+                    ],
+                    'uninstalled_table' => [
+                        'caption' => 'アンインストール済みプラグイン一覧',
+                    ],
+                    'no_plugins' => 'プラグインがありません',
+                    'uninstall' => [
+                        'confirm_title' => 'プラグインのアンインストール',
+                        'confirm_message' => '「{name}」をアンインストールしますか？',
+                        'remove_data_checkbox' => 'データベースのデータも削除する',
+                    ],
+                    'install' => [
+                        'confirm_title' => 'プラグインのインストール',
+                        'confirm_message' => '「{name}」をインストールしますか？',
+                    ],
+                    'delete' => [
+                        'confirm_title' => 'プラグインの削除',
+                        'confirm_message' => '「{name}」のファイルとフォルダを完全に削除しますか？この操作は取り消せません。',
+                    ],
+                ],
                 'install'  => 'インストール',
             ],
             'systems' => [

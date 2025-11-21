@@ -56,7 +56,7 @@ class PluginServiceProvider extends ServiceProvider
             }
 
             // Get all enabled plugins
-            $enabledPlugins = Plugin::active()->get();
+            $enabledPlugins = Plugin::enabled()->get();
 
             foreach ($enabledPlugins as $plugin) {
                 $pluginPath = base_path("plugins/{$plugin->directory}");
@@ -151,7 +151,7 @@ class PluginServiceProvider extends ServiceProvider
         }
 
         // Get all enabled plugins
-        $enabledPlugins = Plugin::active()->get();
+        $enabledPlugins = Plugin::enabled()->get();
 
         foreach ($enabledPlugins as $plugin) {
             $pluginPath = base_path("plugins/{$plugin->directory}");

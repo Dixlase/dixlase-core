@@ -273,6 +273,15 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/settings/themes/activate/{id}', [AdminThemesSettingsController::class, 'activate'])
                     ->middleware('check.menu.edit:settings.themes')
                     ->name('settings.themes.activate');
+                Route::post('/settings/themes/uninstall/{id}', [AdminThemesSettingsController::class, 'uninstall'])
+                    ->middleware('check.menu.edit:settings.themes')
+                    ->name('settings.themes.uninstall');
+                Route::post('/settings/themes/install-from-directory', [AdminThemesSettingsController::class, 'installFromDirectory'])
+                    ->middleware('check.menu.edit:settings.themes')
+                    ->name('settings.themes.install-from-directory');
+                Route::post('/settings/themes/delete-directory', [AdminThemesSettingsController::class, 'deleteDirectory'])
+                    ->middleware('check.menu.edit:settings.themes')
+                    ->name('settings.themes.delete-directory');
                 Route::post('/settings/themes/delete/{id}', [AdminThemesSettingsController::class, 'delete'])
                     ->middleware('check.menu.edit:settings.themes')
                     ->name('settings.themes.delete');
@@ -294,6 +303,12 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/settings/plugins/uninstall/{id}', [AdminPluginsSettingsController::class, 'uninstall'])
                     ->middleware('check.menu.edit:settings.plugins')
                     ->name('settings.plugins.uninstall');
+                Route::post('/settings/plugins/install-from-directory', [AdminPluginsSettingsController::class, 'installFromDirectory'])
+                    ->middleware('check.menu.edit:settings.plugins')
+                    ->name('settings.plugins.install-from-directory');
+                Route::post('/settings/plugins/delete-directory', [AdminPluginsSettingsController::class, 'deleteDirectory'])
+                    ->middleware('check.menu.edit:settings.plugins')
+                    ->name('settings.plugins.delete-directory');
             });
 
             // システム設定（権限チェック付き）
