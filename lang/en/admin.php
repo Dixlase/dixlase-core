@@ -94,7 +94,8 @@ return [
             ],
             'themes' => [
                 'text' => 'Theme Management',
-                'index' => [
+                'index' => 'Theme Master',
+                'index_page' => [
                     'heading' => 'Theme Master',
                     'installed_heading' => 'Installed Themes',
                     'uninstalled_heading' => 'Uninstalled Themes',
@@ -120,12 +121,13 @@ return [
                         'confirm_message' => 'Are you sure you want to permanently delete all files and folders for "{name}"? This action cannot be undone.',
                     ],
                 ],
-                'install' => 'Install',
+                'install'  => 'Install',
                 'settings' => 'Theme Settings',
             ],
             'plugins' => [
                 'text' => 'Plugin Management',
-                'index' => [
+                'index' => 'Plugin Master',
+                'index_page' => [
                     'heading' => 'Plugin Master',
                     'installed_heading' => 'Installed Plugins',
                     'uninstalled_heading' => 'Uninstalled Plugins',
