@@ -102,11 +102,13 @@ class PluginUninstall extends Command
         if ($this->option('rollback')) {
             $this->info(__('command.plugin_uninstall.rollback_running'));
             $migrator = new PluginMigrator(app(Filesystem::class), app(ConnectionResolverInterface::class), 'plugin_migrations', $plugin->slug);
-            $migrator->rollback($plugin->directory);
+            // 全てのマイグレーションをロールバックするため、stepを大きな値に設定
+            $migrator->rollback($plugin->directory, ['step' => 999]);
         } else if (!$this->option('no-interaction') && $this->confirm(__('command.plugin_uninstall.rollback_confirm', ['pluginName' => $pluginName]), false)) {
             $this->info(__('command.plugin_uninstall.rollback_running'));
             $migrator = new PluginMigrator(app(Filesystem::class), app(ConnectionResolverInterface::class), 'plugin_migrations', $plugin->slug);
-            $migrator->rollback($plugin->directory);
+            // 全てのマイグレーションをロールバックするため、stepを大きな値に設定
+            $migrator->rollback($plugin->directory, ['step' => 999]);
         } else {
             $this->info(__('command.plugin_uninstall.rollback_skipped'));
         }
