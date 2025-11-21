@@ -153,7 +153,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                 :cancel_label="__('common.cancel')"
                                                 :checkbox="true"
                                                 checkbox_name="remove_db_data"
-                                                :checkbox_label="__('admin.settings.plugins.index.uninstall.remove_data_checkbox')"
+                                                checkbox_label="{!! __('admin.settings.plugins.index.uninstall.remove_data_checkbox') !!}"
                                                 form="uninstallForm-{{ $plugin->id }}"
                                                 icon_type="danger"
                                                 confirm_color="red"

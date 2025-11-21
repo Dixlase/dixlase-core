@@ -921,6 +921,8 @@ return [
         'themes' => [
             'index' => [
                 'heading' => 'テーマ管理',
+                'installed_heading' => 'インストール済みテーマ',
+                'uninstalled_heading' => 'アンインストール済みテーマ',
                 'title' => 'テーマ',
                 'available_themes' => '利用可能なテーマ',
                 'currently_active' => '現在使用中',
@@ -929,6 +931,26 @@ return [
                 'activate_button' => '有効化',
                 'delete_button' => '削除',
                 'settings_button' => '設定',
+                'table' => [
+                    'caption' => 'インストール済みテーマ一覧',
+                    'name' => 'テーマ名',
+                ],
+                'uninstalled_table' => [
+                    'caption' => 'アンインストール済みテーマ一覧',
+                ],
+                'no_themes' => 'テーマがインストールされていません。',
+                'uninstall' => [
+                    'confirm_title' => 'アンインストールの確認',
+                    'confirm_message' => 'テーマ [{name}] をアンインストールしますか？',
+                ],
+                'install' => [
+                    'confirm_title' => 'インストールの確認',
+                    'confirm_message' => 'テーマ [{name}] をインストールしますか？',
+                ],
+                'delete' => [
+                    'confirm_title' => '削除の確認',
+                    'confirm_message' => 'テーマ [{name}] のファイルとフォルダを完全に削除しますか？この操作は取り消せません。',
+                ],
             ],
             'install' => [
                 'heading' => 'テーマインストール',
@@ -945,6 +967,8 @@ return [
         'plugins' => [
             'index' => [
                 'heading' => 'プラグイン一覧',
+                'installed_heading' => 'インストール済みプラグイン',
+                'uninstalled_heading' => 'アンインストール済みプラグイン',
                 'systems' => [
                     'text' => 'システム',
                     'cache' => 'キャッシュ管理',
@@ -963,7 +987,15 @@ return [
                 'uninstall' => [
                     'confirm_title' => 'アンインストールの確認',
                     'confirm_message' => 'プラグイン [{name}] をアンインストールしますか？',
-                    'remove_data_checkbox' => 'プラグインのインストール時に作成されたデータベースのテーブルを削除する。<br><span class="text-red-600 font-semibold">注意！テーブル削除するとプラグインで作成したデータが失われます！</span>',
+                    'remove_data_checkbox' => 'プラグインのインストール時に作成されたデータベースのテーブルを削除する。<br><br><span class="text-red-600 font-semibold">注意！テーブル削除するとプラグインで作成したデータが失われます！</span>',
+                ],
+                'install' => [
+                    'confirm_title' => 'インストールの確認',
+                    'confirm_message' => 'プラグイン [{name}] をインストールしますか？',
+                ],
+                'delete' => [
+                    'confirm_title' => '削除の確認',
+                    'confirm_message' => 'プラグイン [{name}] のファイルとフォルダを完全に削除しますか？この操作は取り消せません。',
                 ],
             ],
             'install' => [
