@@ -93,7 +93,8 @@ return [
             ],
             'themes' => [
                 'text' => 'テーマ管理',
-                'index' => [
+                'index' => 'テーママスター',
+                'index_page' => [
                     'heading' => 'テーママスター',
                     'installed_heading' => 'インストール済みテーマ',
                     'uninstalled_heading' => 'アンインストール済みテーマ',
@@ -124,7 +125,8 @@ return [
             ],
             'plugins' => [
                 'text' => 'プラグイン管理',
-                'index' => [
+                'index' => 'プラグインマスター',
+                'index_page' => [
                     'heading' => 'プラグインマスター',
                     'installed_heading' => 'インストール済みプラグイン',
                     'uninstalled_heading' => 'アンインストール済みプラグイン',
