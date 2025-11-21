@@ -183,6 +183,8 @@ return [
         'install_later' => 'You can install it later using: php artisan dls:theme:install :slugName',
         'install_success' => "Theme ':themeName' has been installed.",
         'enable_success' => "Theme ':themeName' has been enabled.",
+        'with_settings' => 'Create theme settings page',
+        'settings_created' => 'Theme settings page has been created.',
         'view' => [
             'description' => 'Create a Blade view file for a theme',
         ],

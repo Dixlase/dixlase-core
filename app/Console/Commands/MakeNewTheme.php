@@ -35,7 +35,8 @@ class MakeNewTheme extends Command
 
     protected $signature = 'dls:make:theme {themeName? : command.make_theme.enter_theme_name}
         {--install : command.make_theme.confirm_install}
-        {--enable : command.make_theme.confirm_enable}';
+        {--enable : command.make_theme.confirm_enable}
+        {--with-settings : command.make_theme.with_settings}';
     
     protected $description = 'command.make_theme.description';
 
@@ -72,12 +73,17 @@ class MakeNewTheme extends Command
         }
 
         // テーマディレクトリ作成
-        $this->createThemeDirectories($themeDir);
+        $withSettings = $this->option('with-settings');
+        $this->createThemeDirectories($themeDir, $withSettings);
 
         // テーマ初期ファイルの生成
-        $this->createThemeFiles($themeDir, $originalName, $themeDirName);
+        $this->createThemeFiles($themeDir, $originalName, $themeDirName, $slugName, $withSettings);
 
         $this->info(__('command.make_theme.created', ['themeName' => $originalName]));
+        
+        if ($withSettings) {
+            $this->info(__('command.make_theme.settings_created'));
+        }
         
         // インストール確認（オプション指定がない場合は確認）
         $shouldInstall = $this->option('install') || $this->confirm(__('command.make_theme.confirm_install'), true);
@@ -109,19 +115,37 @@ class MakeNewTheme extends Command
     /**
      * テーマディレクトリと初期ファイルを作成
      *
-     * @param string $directory
-     * @param string $themeName
+     * @param string $themeDir
+     * @param bool $withSettings
      */
-    protected function createThemeDirectories(string $themeDir): void
+    protected function createThemeDirectories(string $themeDir, bool $withSettings = false): void
     {
         $directories = [
+            'app/Providers',
             'resources/views',
             'resources/src/js',
             'resources/src/css',
             'resources/assets/js',
             'resources/assets/css',
             'resources/assets/images',
+            'routes',
+            'lang/ja',
+            'lang/en',
+            'database/migrations',
+            'database/seeders',
+            'config',
         ];
+        
+        // 設定ページ用の追加ディレクトリ
+        if ($withSettings) {
+            $directories = array_merge($directories, [
+                'app/Http/Controllers/Admin/Settings/Themes',
+                'app/Http/Requests',
+                'app/Models',
+                'resources/views/admin/settings/themes',
+            ]);
+        }
+        
         // ルートディレクトリの作成
         File::makeDirectory($themeDir, 0755, true);
 
@@ -137,8 +161,10 @@ class MakeNewTheme extends Command
      * @param string $themeDir      テーマディレクトリのパス
      * @param string $themeName     ユーザーが入力したテーマの人間向け名称
      * @param string $themeDirName  テーマのディレクトリ名(StudlyCase)
+     * @param string $slugName      スラッグ名
+     * @param bool $withSettings    設定ページを作成するか
      */
-    protected function createThemeFiles(string $themeDir, string $themeName, string $themeDirName): void
+    protected function createThemeFiles(string $themeDir, string $themeName, string $themeDirName, string $slugName, bool $withSettings = false): void
     {
         // ライセンス情報を取得（デフォルトはAGPL）
         $selectedLicense = $this->getNewLicenseInfo(false, 'GPL');
@@ -154,53 +180,47 @@ class MakeNewTheme extends Command
             'licenseName'       => $licenseName,
             'licenseTemplate'   => 'license-' . strtolower(str_replace([' ', '.'], ['-', ''], $licenseName)) . '.txt',
             'packageName'       => Str::slug($themeName),
-            'slug'              => Str::slug($themeName),
+            'slug'              => $slugName,
             'author'            => 'Your Name',
             'email'             => 'your-email@example.com',
             'url'               => 'https://example.com',
             'year'              => date('Y'),
             'licenseFullText'   => $licenseContent,
+            'namespace'         => "Themes\\{$themeDirName}",
+            'tablePrefix'       => 'thm_' . Str::snake($slugName) . '_',
         ];
 
-        // ***** vite.config.js *****
-        $this->createFileFromStub(
-            'vite.config.theme.stub',
-            "{$themeDir}/vite.config.js",
-            $placeholders
-        );
-
-        // ***** theme.json *****
-        $this->createFileFromStub(
-            'theme.json.stub',
-            "{$themeDir}/theme.json",
-            $placeholders
-        );
-
-        // ***** composer.json *****
-        $this->createFileFromStub(
-            'composer.theme.stub',
-            "{$themeDir}/composer.json",
-            $placeholders
-        );
-
-        // ***** package.json *****
-        $this->createFileFromStub(
-            'package.theme.stub',
-            "{$themeDir}/package.json",
-            $placeholders
-        );
+        // ***** 基本ファイル *****
+        $this->createFileFromStub('vite.config.theme.stub', "{$themeDir}/vite.config.js", $placeholders);
+        $this->createFileFromStub('theme.json.stub', "{$themeDir}/theme.json", $placeholders);
+        $this->createFileFromStub('composer.theme.stub', "{$themeDir}/composer.json", $placeholders);
+        $this->createFileFromStub('package.theme.stub', "{$themeDir}/package.json", $placeholders);
 
         // ***** README.md *****
-        $readmeContent = "# {$themeName}\n\nA custom theme for Dixlase.\n\n## Installation\n\n```bash\nphp artisan theme:install " . Str::slug($themeName) . "\n```\n";
+        $readmeContent = "# {$themeName}\n\nA custom theme for Dixlase.\n\n## Installation\n\n```bash\nphp artisan dls:theme:install {$slugName}\n```\n";
         File::put("{$themeDir}/README.md", $readmeContent);
 
-        // ***** index.blade.php *****
+        // ***** サービスプロバイダー *****
+        $this->createServiceProvider($themeDir, $themeDirName, $withSettings, $placeholders);
+
+        // ***** ルートファイル *****
+        $this->createRouteFiles($themeDir, $themeDirName, $withSettings, $placeholders);
+
+        // ***** ビューファイル *****
         $bladeContent = "<h1>Welcome to {$themeName} Theme</h1>";
         File::put("{$themeDir}/resources/views/index.blade.php", $bladeContent);
 
-        // ***** デフォルトJS/CSSなどの初期ファイル *****
+        // ***** 言語ファイル *****
+        $this->createLanguageFiles($themeDir, $themeName, $withSettings);
+
+        // ***** デフォルトJS/CSS *****
         File::put("{$themeDir}/resources/src/js/app.js", "// JavaScript for {$themeDirName}\nconsole.log('{$themeName} theme loaded');");
         File::put("{$themeDir}/resources/src/css/style.css", "/* Styles for {$themeDirName} */\n\nbody {\n    font-family: sans-serif;\n}");
+
+        // ***** 設定ページ関連ファイル *****
+        if ($withSettings) {
+            $this->createSettingsFiles($themeDir, $themeDirName, $slugName, $placeholders);
+        }
     }
 
     /**
@@ -223,5 +243,113 @@ class MakeNewTheme extends Command
         $content = $this->replacePlaceholders($content, $placeholders);
         
         File::put($outputPath, $content);
+    }
+
+    /**
+     * サービスプロバイダーを作成
+     */
+    protected function createServiceProvider(string $themeDir, string $themeDirName, bool $withSettings, array $placeholders): void
+    {
+        $this->createFileFromStub(
+            'theme-service-provider.stub',
+            "{$themeDir}/app/Providers/{$themeDirName}ServiceProvider.php",
+            $placeholders
+        );
+    }
+
+    /**
+     * ルートファイルを作成
+     */
+    protected function createRouteFiles(string $themeDir, string $themeDirName, bool $withSettings, array $placeholders): void
+    {
+        $this->createFileFromStub(
+            'theme-route-web.stub',
+            "{$themeDir}/routes/web.php",
+            $placeholders
+        );
+
+        if ($withSettings) {
+            $this->createFileFromStub(
+                'theme-route-admin.stub',
+                "{$themeDir}/routes/admin.php",
+                $placeholders
+            );
+        }
+    }
+
+    /**
+     * 言語ファイルを作成
+     */
+    protected function createLanguageFiles(string $themeDir, string $themeName, bool $withSettings): void
+    {
+        $placeholders = ['themeName' => $themeName];
+        
+        $this->createFileFromStub(
+            'theme-lang.stub',
+            "{$themeDir}/lang/ja/theme.php",
+            $placeholders
+        );
+        
+        $this->createFileFromStub(
+            'theme-lang.stub',
+            "{$themeDir}/lang/en/theme.php",
+            $placeholders
+        );
+    }
+
+    /**
+     * 設定ページ関連ファイルを作成
+     */
+    protected function createSettingsFiles(string $themeDir, string $themeDirName, string $slugName, array $placeholders): void
+    {
+        // Controller
+        $this->createFileFromStub(
+            'theme-settings-controller.stub',
+            "{$themeDir}/app/Http/Controllers/Admin/Settings/Themes/ThemeSettingsController.php",
+            $placeholders
+        );
+
+        // Settings view
+        $this->createFileFromStub(
+            'theme-settings-view.stub',
+            "{$themeDir}/resources/views/admin/settings/themes/settings.blade.php",
+            $placeholders
+        );
+
+        // Config file for admin navigation
+        $this->createFileFromStub(
+            'theme-config-admin.stub',
+            "{$themeDir}/config/admin.php",
+            $placeholders
+        );
+
+        // Model
+        $this->createFileFromStub(
+            'theme-settings-model.stub',
+            "{$themeDir}/app/Models/ThemeSetting.php",
+            $placeholders
+        );
+
+        // Migration
+        $migrationFileName = '0001_01_01_000100_create_' . $placeholders['tablePrefix'] . 'settings_table.php';
+        $this->createFileFromStub(
+            'theme-settings-migration.stub',
+            "{$themeDir}/database/migrations/{$migrationFileName}",
+            $placeholders
+        );
+
+        // Seeder
+        $this->createFileFromStub(
+            'theme-settings-seeder.stub',
+            "{$themeDir}/database/seeders/ThemeSettingsSeeder.php",
+            $placeholders
+        );
+
+        // Database Seeder
+        $this->createFileFromStub(
+            'theme-database-seeder.stub',
+            "{$themeDir}/database/seeders/DatabaseSeeder.php",
+            $placeholders
+        );
     }
 }

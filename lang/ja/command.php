@@ -157,6 +157,8 @@ return [
         'install_later' => '後でインストールするには次のコマンドを実行してください: php artisan dls:theme:install :slugName',
         'install_success' => "テーマ ':themeName' をインストールしました。",
         'enable_success' => "テーマ ':themeName' を有効化しました。",
+        'with_settings' => 'テーマ設定ページを作成する',
+        'settings_created' => 'テーマ設定ページが作成されました。',
         'view' => [
             'description' => 'テーマ用のBladeビューファイルを作成します',
         ],

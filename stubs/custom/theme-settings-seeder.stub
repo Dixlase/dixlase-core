@@ -1,0 +1,31 @@
+<?php
+
+{{ license }}
+
+namespace {{ namespace }}\Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use {{ namespace }}\App\Models\ThemeSetting;
+
+class ThemeSettingsSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        $settings = [
+            // Add your theme settings here
+            'example_setting' => 'default value',
+        ];
+        
+        foreach ($settings as $name => $value) {
+            ThemeSetting::updateOrCreate(
+                ['name' => $name],
+                ['value' => $value]
+            );
+        }
+        
+        $this->command->info('テーマ設定のデフォルト値を作成しました。');
+    }
+}
