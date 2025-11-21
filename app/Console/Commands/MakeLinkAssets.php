@@ -56,7 +56,7 @@ class MakeLinkAssets extends Command
             $themeDir = base_path("themes/{$theme->directory}/assets");
             $this->createLink($themeDir, public_path('assets/theme'));
         } else {
-            $this->error("Active theme assets not found.");
+            $this->error("Enabled theme assets not found.");
         }
 
         $this->info('All asset symbolic links have been created.');

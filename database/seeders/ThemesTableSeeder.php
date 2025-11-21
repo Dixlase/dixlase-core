@@ -62,7 +62,7 @@ class ThemesTableSeeder extends Seeder
                     'requires' => $themeJson['requires'] ?? [],
                 ],
                 'installed_at' => now(),
-                'activated_at' => now(), // デフォルトテーマは自動的に有効化
+                'enabled_at' => now(), // デフォルトテーマは自動的に有効化
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
@@ -74,7 +74,7 @@ class ThemesTableSeeder extends Seeder
                 'directory' => 'DixlaseDefaultTheme',
                 'version' => '1.0.0',
                 'installed_at' => now(),
-                'activated_at' => now(),
+                'enabled_at' => now(),
                 'created_at' => now(),
                 'updated_at' => now()
             ]);

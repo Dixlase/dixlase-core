@@ -70,10 +70,10 @@ class ThemeDelete extends Command
                 return Command::FAILURE;
             }
             
-            // テーマがアクティブな場合（念のため）
-            if ($theme->isActivated()) {
-                $this->error(__('command.theme_delete.still_active', ['themeName' => $theme->name]));
-                $this->warn(__('command.theme_delete.deactivate_first'));
+            // テーマが有効な場合（念のため）
+            if ($theme->isEnabled()) {
+                $this->error(__('command.theme_delete.still_enabled', ['themeName' => $theme->name]));
+                $this->warn(__('command.theme_delete.disable_first'));
                 return Command::FAILURE;
             }
         }

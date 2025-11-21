@@ -36,11 +36,11 @@ trait PluginLoaderTrait
     /**
      * 有効化されたプラグインをロードする
      */
-    public function loadActivePlugins()
+    public function loadEnabledPlugins()
     {
         // コマンドライン引数から直接チェック
         $pluginManagementFlag = $this->getUninstallingPluginFromArgs();
-        \Log::info("PluginLoaderTrait: loadActivePlugins called", [
+        \Log::info("PluginLoaderTrait: loadEnabledPlugins called", [
             'plugin_management_flag' => $pluginManagementFlag,
             'argv' => $_SERVER['argv'] ?? 'not_available'
         ]);
@@ -65,7 +65,7 @@ trait PluginLoaderTrait
         }
 
         $plugins = Plugin::whereNotNull('enabled_at')->get();
-        \Log::info("PluginLoaderTrait: Found active plugins", [
+        \Log::info("PluginLoaderTrait: Found enabled plugins", [
             'count' => $plugins->count(),
             'plugins' => $plugins->pluck('name')->toArray()
         ]);

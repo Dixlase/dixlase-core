@@ -50,10 +50,10 @@ class ThemeUninstall extends Command
             return Command::FAILURE;
         }
 
-        // Check if theme is active
-        if ($theme->isActivated()) {
-            $this->error(__('command.theme_uninstall.cannot_uninstall_active', ['themeName' => $theme->name]));
-            $this->warn(__('command.theme_uninstall.deactivate_first'));
+        // Check if theme is enabled
+        if ($theme->isEnabled()) {
+            $this->error(__('command.theme_uninstall.cannot_uninstall_enabled', ['themeName' => $theme->name]));
+            $this->warn(__('command.theme_uninstall.disable_first'));
             return Command::FAILURE;
         }
 

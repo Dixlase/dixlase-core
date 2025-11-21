@@ -29,34 +29,34 @@ use Illuminate\Support\Facades\Schema;
 trait ThemeLoaderTrait
 {
     /**
-     * アクティブなテーマIDを取得
+     * 有効なテーマIDを取得
      *
      * @return int
      */
-    public function getActiveTheme(): int
+    public function getEnabledTheme(): int
     {
         //theme_settingsテーブルのenabled_theme_idの値を取得
         //theme_settingsテーブルが存在しているか確認
         if (Schema::hasTable('theme_settings')) {
             $themeSetting = DB::table('theme_settings')->first();
-            $activeThemeId = $themeSetting ? $themeSetting->enabled_theme_id : 1;
+            $enabledThemeId = $themeSetting ? $themeSetting->enabled_theme_id : 1;
         } else {
-            $activeThemeId = 1;
+            $enabledThemeId = 1;
         }
-        return $activeThemeId;
+        return $enabledThemeId;
     }
 
     /**
-     * 現在アクティブなテーマのディレクトリ名を取得
+     * 現在有効なテーマのディレクトリ名を取得
      *
      * @return string
      */
-    public function getActiveThemeDirectory(): string
+    public function getEnabledThemeDirectory(): string
     {
-        $activeThemeId = $this->getActiveTheme();
+        $enabledThemeId = $this->getEnabledTheme();
         
         if (Schema::hasTable('themes')) {
-            $theme = Theme::find($activeThemeId);
+            $theme = Theme::find($enabledThemeId);
             if ($theme) {
                 return $theme->directory ?? config('themes.default_theme', env('APP_THEME', 'DixlaseDefaultTheme'));
             }
@@ -73,7 +73,7 @@ trait ThemeLoaderTrait
      */
     public function themeAsset(string $path): string
     {
-        $themeDirectory = $this->getActiveThemeDirectory();
+        $themeDirectory = $this->getEnabledThemeDirectory();
         return asset("themes/{$themeDirectory}/{$path}");
     }
 }

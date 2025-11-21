@@ -160,12 +160,12 @@ class AppServiceProvider extends ServiceProvider
 
 
         // 現在有効化されているテーマを取得
-        $activeThemeDirectory = $this->getActiveThemeDirectory();
+        $enabledThemeDirectory = $this->getEnabledThemeDirectory();
 
         // テーマファイルの読み込み、カスタムテーマの読み込みがcustom/resources/viewsのほうを優先されるように設定
         View::addNamespace('themes', [
-            base_path("{$customFilesDir}/{$themeDirectory}/{$activeThemeDirectory}/resources/views"),
-            base_path("{$themeDirectory}/{$activeThemeDirectory}/resources/views"),
+            base_path("{$customFilesDir}/{$themeDirectory}/{$enabledThemeDirectory}/resources/views"),
+            base_path("{$themeDirectory}/{$enabledThemeDirectory}/resources/views"),
             base_path("{$themeDirectory}/{$defaultTheme}/resources/views"),
         ]);
 
@@ -185,7 +185,7 @@ class AppServiceProvider extends ServiceProvider
             
             if (!$isPluginManagementCommand) {
                 // プラグインのロード
-                $this->loadActivePlugins();
+                $this->loadEnabledPlugins();
             } else {
                 \Log::info("AppServiceProvider: Skipping plugin loading during plugin management command");
             }

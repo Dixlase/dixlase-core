@@ -26,23 +26,18 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Artisan;
+use App\Console\Traits\MakeLicenseTrait;
+use App\Console\Traits\MakeFileTrait;
 
 class MakeNewTheme extends Command
 {
+    use MakeLicenseTrait, MakeFileTrait;
+
     protected $signature = 'dls:make:theme {themeName? : command.make_theme.enter_theme_name}
         {--install : command.make_theme.confirm_install}
-        {--activate : command.make_theme.confirm_activate}';
+        {--enable : command.make_theme.confirm_enable}';
     
     protected $description = 'command.make_theme.description';
-
-
-    /**
-     * コンストラクタ
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
 
     public function handle()
     {
@@ -89,17 +84,17 @@ class MakeNewTheme extends Command
         
         if ($shouldInstall) {
             // インストールコマンドを実行
-            $this->call('theme:install', [
+            $this->call('dls:theme:install', [
                 'themeName' => $slugName,
                 '--force' => true
             ]);
 
             // 有効化確認（オプション指定がない場合は確認）
-            $shouldActivate = $this->option('activate') || $this->confirm(__('command.make_theme.confirm_activate'), true);
+            $shouldEnable = $this->option('enable') || $this->confirm(__('command.make_theme.confirm_enable'), true);
             
-            if ($shouldActivate) {
+            if ($shouldEnable) {
                 // 有効化コマンドを実行
-                $this->call('theme:activate', [
+                $this->call('dls:theme:enable', [
                     'themeName' => $slugName
                 ]);
             }
@@ -141,57 +136,92 @@ class MakeNewTheme extends Command
      *
      * @param string $themeDir      テーマディレクトリのパス
      * @param string $themeName     ユーザーが入力したテーマの人間向け名称
-     * @param string $themeDirName  テーマのディレクトリ名(ケバブケース)
+     * @param string $themeDirName  テーマのディレクトリ名(StudlyCase)
      */
     protected function createThemeFiles(string $themeDir, string $themeName, string $themeDirName): void
     {
-        // スタブファイルを探すパス
-        $stubPath = config('console.custom_stub_paths');
-
-        // 外部ファイルやDBなどからライセンス情報を取得
-        $licenseContent = $this->fileGenerator->getLicenseContent();
-
-        $licenseName = $this->fileGenerator->getLicenseName();
+        // ライセンス情報を取得（デフォルトはAGPL）
+        $selectedLicense = $this->getNewLicenseInfo(false, 'GPL');
+        $licenseContent = $selectedLicense['template'] ?? '';
+        $licenseName = $selectedLicense['info']['licenseName'] ?? 'GPL-3.0';
 
         // プレースホルダ定義
         $placeholders = [
-            '{{ license }}'        => $licenseContent,  // ライセンス本文
-            '{{ themeName }}'      => $themeName,       // 人間向け名称
-            '{{ themeDirectory }}' => $themeDirName,    // ディレクトリ名
-            '{{ themeLicense }}'   => $licenseName,     // ライセンス名
-            '{{ licenseName }}'    => $licenseName,     // ライセンス名（短縮版）
-            '{{ licenseTemplate }}' => 'license-' . strtolower(str_replace([' ', '.'], ['-', ''], $licenseName)) . '.txt', // ライセンステンプレート
-            '{{ packageName }}'    => Str::slug($themeName), // パッケージ名
-            '{{ slug }}'           => Str::slug($themeName), // スラッグ
-            '{{ author }}'         => 'Your Name',      // 作者名
-            '{{ email }}'          => 'your-email@example.com', // メールアドレス
-            '{{ url }}'            => 'https://example.com', // URL
-            '{{ year }}'           => date('Y'),        // 年
-            '{{ licenseFullText }}' => $licenseContent, // ライセンス全文
+            'license'           => $licenseContent,
+            'themeName'         => $themeName,
+            'themeDirectory'    => $themeDirName,
+            'themeLicense'      => $licenseName,
+            'licenseName'       => $licenseName,
+            'licenseTemplate'   => 'license-' . strtolower(str_replace([' ', '.'], ['-', ''], $licenseName)) . '.txt',
+            'packageName'       => Str::slug($themeName),
+            'slug'              => Str::slug($themeName),
+            'author'            => 'Your Name',
+            'email'             => 'your-email@example.com',
+            'url'               => 'https://example.com',
+            'year'              => date('Y'),
+            'licenseFullText'   => $licenseContent,
         ];
 
         // ***** vite.config.js *****
-        $stubFile = $this->fileGenerator->getStubContent('vite.config.theme.stub', null, $stubPath);
-        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
-        $this->fileGenerator->generateFile("{$themeDir}/vite.config.js", $fileContent);
+        $this->createFileFromStub(
+            'vite.config.theme.stub',
+            "{$themeDir}/vite.config.js",
+            $placeholders
+        );
 
         // ***** theme.json *****
-        $stubFile = $this->fileGenerator->getStubContent('theme.json.stub', null, $stubPath);
-        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
-        $this->fileGenerator->generateFile("{$themeDir}/theme.json", $fileContent);
+        $this->createFileFromStub(
+            'theme.json.stub',
+            "{$themeDir}/theme.json",
+            $placeholders
+        );
 
         // ***** composer.json *****
-        $stubFile = $this->fileGenerator->getStubContent('composer.theme.stub', null, $stubPath);
-        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $placeholders);
-        $this->fileGenerator->generateFile("{$themeDir}/composer.json", $fileContent);
+        $this->createFileFromStub(
+            'composer.theme.stub',
+            "{$themeDir}/composer.json",
+            $placeholders
+        );
+
+        // ***** package.json *****
+        $this->createFileFromStub(
+            'package.theme.stub',
+            "{$themeDir}/package.json",
+            $placeholders
+        );
+
+        // ***** README.md *****
+        $readmeContent = "# {$themeName}\n\nA custom theme for Dixlase.\n\n## Installation\n\n```bash\nphp artisan theme:install " . Str::slug($themeName) . "\n```\n";
+        File::put("{$themeDir}/README.md", $readmeContent);
 
         // ***** index.blade.php *****
-        // スタブを使わずに直接生成する例 (必要ならstubs化してもOK)
         $bladeContent = "<h1>Welcome to {$themeName} Theme</h1>";
         File::put("{$themeDir}/resources/views/index.blade.php", $bladeContent);
 
-        // ***** デフォルトJS/SCSSなどの初期ファイル *****
-        File::put("{$themeDir}/resources/src/js/app.js", "// JavaScript for {$themeDirName}");
-        File::put("{$themeDir}/resources/src/css/style.css", "/* Styles for {$themeDirName} */");
+        // ***** デフォルトJS/CSSなどの初期ファイル *****
+        File::put("{$themeDir}/resources/src/js/app.js", "// JavaScript for {$themeDirName}\nconsole.log('{$themeName} theme loaded');");
+        File::put("{$themeDir}/resources/src/css/style.css", "/* Styles for {$themeDirName} */\n\nbody {\n    font-family: sans-serif;\n}");
+    }
+
+    /**
+     * スタブファイルからファイルを作成
+     *
+     * @param string $stubFileName スタブファイル名
+     * @param string $outputPath 出力先パス
+     * @param array $placeholders プレースホルダー
+     */
+    protected function createFileFromStub(string $stubFileName, string $outputPath, array $placeholders): void
+    {
+        $stubPath = config('command.custom_stub_directory') . '/' . $stubFileName;
+        
+        if (!File::exists($stubPath)) {
+            $this->warn("Stub file not found: {$stubFileName}");
+            return;
+        }
+
+        $content = File::get($stubPath);
+        $content = $this->replacePlaceholders($content, $placeholders);
+        
+        File::put($outputPath, $content);
     }
 }

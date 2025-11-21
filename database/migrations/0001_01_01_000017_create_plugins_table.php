@@ -27,14 +27,12 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    protected $table = 'plugins';
-
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create($this->table, function (Blueprint $table) {
+        Schema::create('plugins', function (Blueprint $table) {
             $table->id();
             $table->string('name'); // 人間が認識する名前
             $table->string('package_name')->nullable(); // パッケージ名
@@ -48,7 +46,7 @@ return new class extends Migration
             $table->string('web')->nullable(); // 作者のウェブサイト
             $table->string('version'); // バージョン
             $table->timestamp('installed_at')->nullable(); // インストール日時
-            $table->timestamp('activated_at')->nullable(); // 有効化日時
+            $table->timestamp('enabled_at')->nullable(); // 有効化日時
             $table->timestamps(); // Laravelの `created_at` & `updated_at`
         });
     }
@@ -58,6 +56,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists($this->table);
+        Schema::dropIfExists('plugins');
     }
 };
