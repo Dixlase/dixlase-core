@@ -25,6 +25,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Artisan;
 use App\Models\Theme;
 use App\Models\Plugin;
 
@@ -42,7 +43,11 @@ class MakeLinkAssets extends Command
         $enabledPlugins = Plugin::whereNotNull('enabled_at')->get();
         foreach ($enabledPlugins as $plugin) {
             try {
-                create_plugin_symlink($plugin->directory);
+                Artisan::call('dls:plugin:symlink', [
+                    'action' => 'create',
+                    'plugin' => $plugin->directory
+                ]);
+                $this->info("Link created for plugin: {$plugin->name}");
             } catch (\Exception $e) {
                 $this->error("Failed to create link for plugin {$plugin->name}: {$e->getMessage()}");
             }
@@ -52,11 +57,18 @@ class MakeLinkAssets extends Command
         $activeThemeId = DB::table('theme_settings')->value('enabled_theme_id');
         $theme = Theme::find($activeThemeId);
 
-        if ($theme && File::exists(base_path("themes/{$theme->directory}/assets"))) {
-            $themeDir = base_path("themes/{$theme->directory}/assets");
-            $this->createLink($themeDir, public_path('assets/theme'));
+        if ($theme) {
+            try {
+                Artisan::call('dls:theme:symlink', [
+                    'action' => 'create',
+                    'theme' => $theme->directory
+                ]);
+                $this->info("Link created for theme: {$theme->name}");
+            } catch (\Exception $e) {
+                $this->error("Failed to create link for theme {$theme->name}: {$e->getMessage()}");
+            }
         } else {
-            $this->error("Enabled theme assets not found.");
+            $this->error("Enabled theme not found.");
         }
 
         $this->info('All asset symbolic links have been created.');

@@ -29,6 +29,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Artisan;
 use App\Helpers\GitExcludeHelper;
 use App\Helpers\ComposerLocalHelper;
 
@@ -339,8 +340,11 @@ class AdminThemesSettingsController extends AdminLoggedInController
         DB::table('theme_settings')->update(['enabled_theme_id' => $theme->id, 'updated_at' => now()]);
 
         try {
-            // シンボリックリンクを更新
-            update_theme_symlink($theme->directory);
+            // シンボリックリンクを更新（コマンド実行）
+            Artisan::call('dls:theme:symlink', [
+                'action' => 'create',
+                'theme' => $theme->directory
+            ]);
         } catch (\Exception $e) {
             Log::error('Theme symlink update failed', [
                 'theme' => $theme->name,

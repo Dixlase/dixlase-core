@@ -157,12 +157,129 @@ return [
         'install_later' => '後でインストールするには次のコマンドを実行してください: php artisan dls:theme:install :slugName',
         'install_success' => "テーマ ':themeName' をインストールしました。",
         'enable_success' => "テーマ ':themeName' を有効化しました。",
+        'view' => [
+            'description' => 'テーマ用のBladeビューファイルを作成します',
+        ],
+        'component' => [
+            'description' => 'テーマ用のBladeコンポーネントを作成します',
+        ],
+        'config' => [
+            'description' => 'テーマ用の設定ファイルを作成します',
+        ],
+        'language' => [
+            'description' => 'テーマ用の翻訳ファイルを作成します',
+        ],
+        'provider' => [
+            'description' => 'テーマ用のサービスプロバイダーを作成します',
+        ],
+        'controller' => [
+            'description' => 'テーマ用のコントローラーを作成します',
+        ],
+        'model' => [
+            'description' => 'テーマ用のモデルを作成します',
+        ],
+        'request' => [
+            'description' => 'テーマ用のフォームリクエストを作成します',
+        ],
+        'route' => [
+            'description' => 'テーマ用のルート定義ファイルを作成します',
+        ],
+        'migration' => [
+            'description' => 'テーマ用のマイグレーションファイルを作成します',
+        ],
+        'seeder' => [
+            'description' => 'テーマ用のシーダーファイルを作成します',
+        ],
+        'service' => [
+            'description' => 'テーマ用のサービスクラスを作成します',
+        ],
+        'helper' => [
+            'description' => 'テーマ用のヘルパー関数を作成します',
+        ],
+        'trait' => [
+            'description' => 'テーマ用のトレイトを作成します',
+        ],
+        'middleware' => [
+            'description' => 'テーマ用のミドルウェアを作成します',
+        ],
+        'class' => [
+            'description' => 'テーマ用の汎用クラスを作成します',
+        ],
+        'livewire' => [
+            'description' => 'テーマ用のLivewireコンポーネントを作成します',
+        ],
+        'volt' => [
+            'description' => 'テーマ用のVoltコンポーネントを作成します',
+        ],
+        'event' => [
+            'description' => 'テーマ用のイベントクラスを作成します',
+        ],
+        'listener' => [
+            'description' => 'テーマ用のイベントリスナーを作成します',
+        ],
+        'mail' => [
+            'description' => 'テーマ用のメールクラスを作成します',
+        ],
+        'notification' => [
+            'description' => 'テーマ用の通知クラスを作成します',
+        ],
+        'job' => [
+            'description' => 'テーマ用のジョブクラスを作成します',
+        ],
+        'observer' => [
+            'description' => 'テーマ用のモデルオブザーバーを作成します',
+        ],
+        'policy' => [
+            'description' => 'テーマ用のポリシークラスを作成します',
+        ],
+        'rule' => [
+            'description' => 'テーマ用のバリデーションルールを作成します',
+        ],
+        'scope' => [
+            'description' => 'テーマ用のクエリスコープを作成します',
+        ],
+        'enum' => [
+            'description' => 'テーマ用のEnumを作成します',
+        ],
+        'exception' => [
+            'description' => 'テーマ用の例外クラスを作成します',
+        ],
+        'interface' => [
+            'description' => 'テーマ用のインターフェースを作成します',
+        ],
+        'cast' => [
+            'description' => 'テーマ用のカスタムキャストを作成します',
+        ],
+        'factory' => [
+            'description' => 'テーマ用のファクトリーを作成します',
+        ],
+        'test' => [
+            'description' => 'テーマ用のテストクラスを作成します',
+        ],
+        'resource' => [
+            'description' => 'テーマ用のAPIリソースを作成します',
+        ],
+        'channel' => [
+            'description' => 'テーマ用の通知チャンネルを作成します',
+        ],
+        'validator' => [
+            'description' => 'テーマ用のバリデータークラスを作成します',
+        ],
+        'job_middleware' => [
+            'description' => 'テーマ用のジョブミドルウェアを作成します',
+        ],
     ],
     'plugin_symlink' => [
         'description' => 'プラグインアセットのシンボリックリンクを管理します',
         'invalid_action' => '無効なアクションです。"create" または "remove" を使用してください。',
         'created' => 'プラグインのシンボリックリンクを作成しました: :plugin',
         'removed' => 'プラグインのシンボリックリンクを削除しました: :plugin',
+    ],
+    'theme_symlink' => [
+        'description' => 'テーマアセットのシンボリックリンクを管理します',
+        'invalid_action' => '無効なアクションです。"create" または "remove" を使用してください。',
+        'created' => 'テーマのシンボリックリンクを作成しました: :theme',
+        'removed' => 'テーマのシンボリックリンクを削除しました: :theme',
     ],
     'plugin_autoload_sync' => [
         'description' => 'プラグインをcomposer.jsonのPSR-4設定と同期します（オプションでクリーンアップも可能）。',
@@ -253,6 +370,8 @@ return [
     ],
     'scope' => [
         'prompt' => 'スコープを選択してください',
+        'select' => 'スコープを選択してください',
+        'not_selected' => 'スコープが選択されていません。',
         'labels' => [
             'plain' => 'スコープなし',
             'front' => 'フロント用',
@@ -264,6 +383,15 @@ return [
             '管理画面用' => 'admin',
         ]
     ],
+    'theme' => [
+        'not_found' => 'テーマ \':name\' が見つかりません。',
+        'no_themes_found' => 'テーマが見つかりません。',
+        'select_theme' => 'テーマを選択してください',
+    ],
+    'class_name_prompt' => 'クラス名を入力してください',
+    'class_name_required' => 'クラス名は必須です。',
+    'production_warning' => '本番環境で :action を実行しようとしています。',
+    'production_confirm' => '続行してもよろしいですか？',
     'file_type' => [
         'prompt' => 'カスタム用ファイルの種類を選択してください',
         'labels' => [
