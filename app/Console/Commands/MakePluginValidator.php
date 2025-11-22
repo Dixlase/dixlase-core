@@ -24,7 +24,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
-use App\Services\FileGenerator;
 use App\Console\Traits\MakeValidatorTrait;
 
 class MakePluginValidator extends Command
@@ -38,12 +37,10 @@ class MakePluginValidator extends Command
 
     protected $description = 'Create a new custom validator (rule) in the specified plugin directory';
 
-    protected FileGenerator $fileGenerator;
 
-    public function __construct(FileGenerator $fileGenerator)
+    public function __construct()
     {
         parent::__construct();
-        $this->fileGenerator = $fileGenerator;
     }
 
     public function handle()
