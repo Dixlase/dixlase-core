@@ -57,7 +57,7 @@ trait MakeConfigTrait
      * @param array $options
      */
     //protected function makeFile(string $className, array $subDirs, array $options): void
-    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = null)
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = null, $licenseInfo = [])
     {
         //スタブファイルを取得
         $stub = $this->renderStub();

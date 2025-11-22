@@ -579,6 +579,25 @@ trait MakeFileTrait
                     : "Custom\\Plugins\\{$pluginStudly}";
                 break;
 
+            case 'theme':
+                // テーマ用ファイル
+                $themeStudly = Str::studly($pluginName);
+                if (empty($themeStudly)) {
+                    throw new \RuntimeException('Theme name is required');
+                }
+                
+                if ($fileCategory === 'provider') {
+                    // プロバイダーはテーマのルートのapp/Providersに配置
+                    $basePath = "themes/{$themeStudly}/app/Providers";
+                    $baseNamespace = "Themes\\{$themeStudly}\\App\\Providers";
+                } else {
+                    $basePath = "themes/{$themeStudly}/{$basePath}";
+                    $baseNamespace = $baseNamespace 
+                        ? "Themes\\{$themeStudly}\\{$baseNamespace}" 
+                        : "Themes\\{$themeStudly}";
+                }
+                break;
+
             default:
                 $basePath = $basePath ?: 'app';
                 $baseNamespace = $baseNamespace ?: 'App';
