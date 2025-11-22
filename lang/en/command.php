@@ -186,6 +186,8 @@ return [
         'enable_success' => "Theme ':themeName' has been enabled.",
         'with_settings' => 'Create theme settings page',
         'settings_created' => 'Theme settings page has been created.',
+        'running_migrations' => 'Running migrations...',
+        'running_seeders' => 'Running seeders...',
         'view' => [
             'description' => 'Create a Blade view file for a theme',
         ],

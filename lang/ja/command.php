@@ -160,6 +160,8 @@ return [
         'enable_success' => "テーマ ':themeName' を有効化しました。",
         'with_settings' => 'テーマ設定ページを作成する',
         'settings_created' => 'テーマ設定ページが作成されました。',
+        'running_migrations' => 'マイグレーションを実行しています...',
+        'running_seeders' => 'シーダーを実行しています...',
         'view' => [
             'description' => 'テーマ用のBladeビューファイルを作成します',
         ],

@@ -375,42 +375,6 @@ trait MakeFileTrait
 
 
     /**
-     * プラグイン名を選択
-     */
-
-    protected function choosePlugin(): ?string
-    {
-        $pluginDirs = $this->getAvailablePluginNames();
-
-        if (empty($pluginDirs)) {
-            $this->error(__('command.plugin.not_found'));
-            return null;
-        }
-
-        // 表示用の選択肢を1から始まる連番で作成
-        $displayChoices = [];
-        foreach ($pluginDirs as $index => $plugin) {
-            $displayChoices[$index + 1] = $plugin;
-        }
-
-        // ユーザーに選択を促す（表示は1から始まる）
-        return $this->choice(__('command.plugin.prompt'), $displayChoices);
-    }
-
-    /**
-     * プラグインの一覧を取得
-     */
-    protected function getAvailablePluginNames(): array
-    {
-        return collect(File::directories(base_path('plugins')))
-            ->map(fn($dir) => basename($dir))
-            ->filter()
-            ->values()
-            ->all();
-    }
-
-
-    /**
      * スコープを選択
      */
     protected function chooseScope(): string
