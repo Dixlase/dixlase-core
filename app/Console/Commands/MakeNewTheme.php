@@ -96,6 +96,22 @@ class MakeNewTheme extends Command
                 'themeName' => $slugName
             ]);
 
+            // マイグレーション実行（設定ページ作成時のみ）
+            if ($withSettings) {
+                $this->info(__('command.make_theme.running_migrations'));
+                $this->call('dls:theme:migrate', [
+                    'theme' => $themeDirName,
+                    '--force' => true
+                ]);
+
+                // シーダー実行
+                $this->info(__('command.make_theme.running_seeders'));
+                $this->call('dls:theme:seed', [
+                    'theme' => $themeDirName,
+                    '--force' => true
+                ]);
+            }
+
             // 有効化確認（オプション指定がない場合は確認）
             $shouldEnable = $this->option('enable') || $this->confirm(__('command.make_theme.confirm_enable'), true);
             
@@ -167,10 +183,25 @@ class MakeNewTheme extends Command
      */
     protected function createThemeFiles(string $themeDir, string $themeName, string $themeDirName, string $slugName, bool $withSettings = false): void
     {
-        // ライセンス情報を取得（デフォルトはAGPL）
+        // ライセンス情報を取得（デフォルトはGPL）
         $selectedLicense = $this->getNewLicenseInfo(false, 'GPL');
-        $licenseContent = $selectedLicense['template'] ?? '';
+        $licenseTemplate = $selectedLicense['template'] ?? '';
         $licenseName = $selectedLicense['info']['licenseName'] ?? 'GPL-3.0';
+
+        // ライセンス情報を更新
+        $licenseInfo = array_merge($selectedLicense['info'] ?? [], [
+            'software' => $themeName,
+            'author' => 'Your Name',
+            'email' => 'your-email@example.com',
+            'url' => 'https://example.com',
+            'year' => date('Y'),
+        ]);
+
+        // ライセンステキストをプレースホルダーで置換
+        $licenseText = $this->replacePlaceholders($licenseTemplate, $licenseInfo);
+
+        // ライセンステキストをPHPコメント形式に変換
+        $licenseContent = $this->embedLicenseForPhp($licenseText);
 
         // プレースホルダ定義
         $placeholders = [
