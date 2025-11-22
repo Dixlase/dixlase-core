@@ -68,7 +68,8 @@ trait MakeMigrationTrait
         string $fileType,
         array $options,
         array $subDirs,
-        string $pluginName
+        string $pluginName,
+        array $licenseInfo = []
     ): bool {
         // --pathオプションが指定されている場合はサブディレクトリとして扱う
         if (!empty($options['path'])) {
@@ -108,6 +109,11 @@ trait MakeMigrationTrait
             'table' => $tableName ?? '',
         ];
 
+        // ライセンス情報の取得
+        $finalLicenseInfo = !empty($licenseInfo) 
+            ? $licenseInfo 
+            : $this->getFileTypeLicenseInfo($fileType, $pluginName);
+
         // ファイル生成
         $this->makeFiler(
             className: $className,
@@ -118,7 +124,7 @@ trait MakeMigrationTrait
             stub: $stub,
             pluginName: $pluginName,
             placeholders: $placeholders,
-            licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
+            licenseInfo: $finalLicenseInfo
         );
 
         return true;

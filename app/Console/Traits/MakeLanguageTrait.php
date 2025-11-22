@@ -79,7 +79,7 @@ trait MakeLanguageTrait
         return $languageCodes[$selectedIndex - 1];
     }
 
-    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = null)
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = null, $licenseInfo = [])
     {
         //言語コードの取得
         $lang = null;
@@ -114,29 +114,37 @@ trait MakeLanguageTrait
             }
         }
         
-        // ライセンスキーからライセンス情報を取得
-        $finalLicenseInfo = $this->getFileTypeLicenseInfo($fileType, $pluginName);
+        // ライセンス情報の取得
+        $finalLicenseInfo = [];
         
-        // プラグイン情報を取得
-        $pluginInfo = [];
-        if (!empty($pluginName)) {
-            $licenseInfoFile = base_path("plugins/{$pluginName}/license-info.json");
-            if (File::exists($licenseInfoFile)) {
-                $pluginInfo = json_decode(File::get($licenseInfoFile), true) ?? [];
-            }
-        }
-        
-        // --license-infoオプションが指定されている場合はそれを使用、なければlicense-info.jsonから取得
-        if (isset($options['license-info']) && !empty($options['license-info'])) {
-            $licenseKey = $options['license-info'];
-        } elseif (!empty($pluginInfo['license'])) {
-            $licenseKey = $pluginInfo['license'];
+        // 既にlicenseInfoが渡されている場合（テーマなど）
+        if (!empty($licenseInfo)) {
+            $finalLicenseInfo = $licenseInfo;
         } else {
-            $licenseKey = null;
-        }
-        
-        if ($licenseKey) {
-            $finalLicenseInfo = $this->getLicenseInfoFromKey($licenseKey, $pluginInfo);
+            // プラグインまたはコアの場合
+            $finalLicenseInfo = $this->getFileTypeLicenseInfo($fileType, $pluginName);
+            
+            // プラグイン情報を取得
+            $pluginInfo = [];
+            if (!empty($pluginName)) {
+                $licenseInfoFile = base_path("plugins/{$pluginName}/license-info.json");
+                if (File::exists($licenseInfoFile)) {
+                    $pluginInfo = json_decode(File::get($licenseInfoFile), true) ?? [];
+                }
+            }
+            
+            // --license-infoオプションが指定されている場合はそれを使用、なければlicense-info.jsonから取得
+            if (isset($options['license-info']) && !empty($options['license-info'])) {
+                $licenseKey = $options['license-info'];
+            } elseif (!empty($pluginInfo['license'])) {
+                $licenseKey = $pluginInfo['license'];
+            } else {
+                $licenseKey = null;
+            }
+            
+            if ($licenseKey) {
+                $finalLicenseInfo = $this->getLicenseInfoFromKey($licenseKey, $pluginInfo);
+            }
         }
         
         // ファイル生成
