@@ -34,7 +34,7 @@ class MakeCustomView extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:view'
+            'dls:make:custom:view'
             .$this->getCustomCommandSignature(true),
             $this->getAdditionalOptions()
         );

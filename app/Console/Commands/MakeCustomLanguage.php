@@ -34,7 +34,7 @@ class MakeCustomLanguage extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:lang'
+            'dls:make:custom:lang'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions());
         

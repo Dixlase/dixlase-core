@@ -40,7 +40,7 @@ class MakeCustomController extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:controller'
+            'dls:make:custom:controller'
             .$this->getCustomCommandSignature(true),
             $this->getAdditionalOptions()
         );

@@ -34,7 +34,7 @@ class MakeCustomTrait extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:trait'
+            'dls:make:custom:trait'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );

@@ -34,7 +34,7 @@ class MakeCustomTest extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:test'
+            'dls:make:custom:test'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );

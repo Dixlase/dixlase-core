@@ -36,7 +36,7 @@ class MakeCustomMigration extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:migration'
+            'dls:make:custom:migration'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );

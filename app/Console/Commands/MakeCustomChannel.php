@@ -34,7 +34,7 @@ class MakeCustomChannel extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:channel'
+            'dls:make:custom:channel'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );

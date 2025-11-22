@@ -34,7 +34,7 @@ class MakeCustomInterface extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:interface'
+            'dls:make:custom:interface'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );

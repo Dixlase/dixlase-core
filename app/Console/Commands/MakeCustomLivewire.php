@@ -34,7 +34,7 @@ class MakeCustomLivewire extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:livewire'
+            'dls:make:custom:livewire'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );

@@ -37,7 +37,7 @@ class MakeCustomSeeder extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:seeder'
+            'dls:make:custom:seeder'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );

@@ -34,7 +34,7 @@ class MakeCustomVolt extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:volt'
+            'dls:make:custom:volt'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );

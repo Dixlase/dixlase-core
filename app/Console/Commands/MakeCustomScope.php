@@ -34,7 +34,7 @@ class MakeCustomScope extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:scope'
+            'dls:make:custom:scope'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );

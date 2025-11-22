@@ -35,7 +35,7 @@ class MakeCustomHelper extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:helper'
+            'dls:make:custom:helper'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );

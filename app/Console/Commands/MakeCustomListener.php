@@ -34,7 +34,7 @@ class MakeCustomListener extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:listener'
+            'dls:make:custom:listener'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );

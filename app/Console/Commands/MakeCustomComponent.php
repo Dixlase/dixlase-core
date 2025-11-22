@@ -34,7 +34,7 @@ class MakeCustomComponent extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:component'
+            'dls:make:custom:component'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );
