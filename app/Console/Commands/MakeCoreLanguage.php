@@ -34,7 +34,7 @@ class MakeCoreLanguage extends Command
      *
      * @var string
      */
-    protected $signature = 'dls:make:lang
+    protected $signature = 'dls:make:core:lang
         {lang : The language code (e.g. en, ja)}
         {file : The language file name (e.g. messages)}
         {--force : Overwrite if the file already exists}';
