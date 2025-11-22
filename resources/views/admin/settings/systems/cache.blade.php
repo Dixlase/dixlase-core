@@ -45,7 +45,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     variant="danger"
                     :label="__('common.clear')"
                     icon="fas fa-trash"
-                    onclick="openModal('clearCacheModal" . ucfirst($type) . "')"
+                    onclick="openModal('clearCacheModal{{ ucfirst($type) }}')"
                 />
             </div>
         </section>

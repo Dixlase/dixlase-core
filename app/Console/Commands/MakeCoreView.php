@@ -25,14 +25,14 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Console\Traits\MakeViewTrait;
 
-class MakeCoreBlade extends Command
+class MakeCoreView extends Command
 {
     use MakeViewTrait;
 
-    protected $signature = 'make:blade
+    protected $signature = 'dls:make:core:view
         {file : The blade file name (with optional subdirectories, e.g. admin/dashboard)}
         {--force : Overwrite if the blade file already exists}
-        {--type=front : The type of Blade file (front/admin)}';
+        {--scope=front : The scope of Blade file (front/admin)}';
 
     protected $description = 'Create a new Blade template in the core resources/views directory';
 
@@ -48,11 +48,11 @@ class MakeCoreBlade extends Command
         $file = $this->argument('file');
         $options = [
             'force' => (bool) $this->option('force'),
-            'type' => $this->option('type'),
+            'scope' => $this->option('scope'),
         ];
 
-        if (!in_array($options['type'], ['front', 'admin'])) {
-            $this->error("Invalid type: '{$options['type']}'. Choose 'front' or 'admin'.");
+        if (!in_array($options['scope'], ['front', 'admin'])) {
+            $this->error("Invalid scope: '{$options['scope']}'. Choose 'front' or 'admin'.");
             return 1;
         }
 

@@ -45,7 +45,6 @@ trait MakeControllerTrait
     {
         return [
             '{--api : ' . __('commands.make.options.api') . '}',
-            '{--type= : ' . __('commands.make.options.type') . '}',
             '{--i|invokable : ' . __('commands.make.options.invokable') . '}',
             '{--m|model= : ' . __('commands.make.options.model') . '}',
             '{--p|parent= : ' . __('commands.make.options.parent') . '}',

@@ -83,7 +83,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     variant="danger"
                     :label="__('admin.settings.systems.database.cleanup_button')"
                     icon="fas fa-database"
-                    onclick="openModal('cleanupModal" . ucfirst($type) . "')"
+                    onclick="openModal('cleanupModal{{ ucfirst($type) }}')"
                 />
             </div>
         </section>
@@ -162,18 +162,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 </section>
 </div>
 
-<x-message
-    type="info"
-    :message="'
-        <h3 class="text-lg font-semibold mb-3">' . __('admin.settings.systems.database.info_panel.title') . '</h3>
+<x-message type="info">
+    <x-slot name="message">
+        <h3 class="text-lg font-semibold mb-3">{{ __('admin.settings.systems.database.info_panel.title') }}</h3>
         <ul class="text-sm space-y-2">
-            <li>• ' . __('admin.settings.systems.database.info_panel.notes.irreversible') . '</li>
-            <li>• ' . __('admin.settings.systems.database.info_panel.notes.performance') . '</li>
-            <li>• ' . __('admin.settings.systems.database.info_panel.notes.production') . '</li>
-            <li>• ' . __('admin.settings.systems.database.info_panel.notes.defaults') . '</li>
+            <li>• {{ __('admin.settings.systems.database.info_panel.notes.irreversible') }}</li>
+            <li>• {{ __('admin.settings.systems.database.info_panel.notes.performance') }}</li>
+            <li>• {{ __('admin.settings.systems.database.info_panel.notes.production') }}</li>
+            <li>• {{ __('admin.settings.systems.database.info_panel.notes.defaults') }}</li>
         </ul>
-    '"
-/>
+    </x-slot>
+</x-message>
 
 @endsection
 
