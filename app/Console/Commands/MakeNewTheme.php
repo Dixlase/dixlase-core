@@ -211,12 +211,13 @@ class MakeNewTheme extends Command
             'themeLicense'      => $licenseName,
             'licenseName'       => $licenseName,
             'licenseTemplate'   => 'license-' . strtolower(str_replace([' ', '.'], ['-', ''], $licenseName)) . '.txt',
-            'packageName'       => Str::slug($themeName),
+            'packageName'       => 'vendor/' . Str::slug($themeName),
             'slug'              => $slugName,
             'author'            => 'Your Name',
             'email'             => 'your-email@example.com',
             'url'               => 'https://example.com',
             'year'              => date('Y'),
+            'version'           => '1.0.0',
             'licenseFullText'   => $licenseContent,
             'namespace'         => "Themes\\{$themeDirName}",
             'tablePrefix'       => 'thm_' . Str::snake($slugName) . '_',
@@ -231,20 +232,6 @@ class MakeNewTheme extends Command
         // ***** README.md *****
         $readmeContent = "# {$themeName}\n\nA custom theme for Dixlase.\n\n## Installation\n\n```bash\nphp artisan dls:theme:install {$slugName}\n```\n";
         File::put("{$themeDir}/README.md", $readmeContent);
-
-        // ***** license-info.json *****
-        $licenseInfoContent = json_encode([
-            'license' => $licenseName,
-            'licenseName' => $licenseName,
-            'software' => $themeName,
-            'author' => 'Your Name',
-            'email' => 'your-email@example.com',
-            'url' => 'https://example.com',
-            'year' => date('Y'),
-            'template' => $licenseTemplate,
-            'info' => $licenseInfo
-        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        File::put("{$themeDir}/license-info.json", $licenseInfoContent);
 
         // ***** サービスプロバイダー *****
         $this->createServiceProvider($themeDir, $themeDirName, $withSettings, $placeholders);

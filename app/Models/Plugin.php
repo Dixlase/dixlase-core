@@ -38,7 +38,7 @@ class Plugin extends Model
         'version',
         'author',
         'email',
-        'web',
+        'url',
         'license',
         'description',
         'installed_at',

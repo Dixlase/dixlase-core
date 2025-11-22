@@ -8,7 +8,7 @@
         {
             "name": "{{ author }}",
             "email": "{{ email }}",
-            "homepage": "{{ website }}"
+            "homepage": "{{ url }}"
         }
     ],
     "require": {

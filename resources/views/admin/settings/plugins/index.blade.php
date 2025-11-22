@@ -215,9 +215,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             @if($plugin['email'])
                                                 <div class="text-xs text-gray-500 dark:text-gray-400">{{ $plugin['email'] }}</div>
                                             @endif
-                                            @if($plugin['web'])
+                                            @if($plugin['url'])
                                                 <div class="text-xs">
-                                                    <a href="{{ $plugin['web'] }}" target="_blank" class="text-blue-600 hover:text-blue-800 dark:text-blue-400">{{ $plugin['web'] }}</a>
+                                                    <a href="{{ $plugin['url'] }}" target="_blank" class="text-blue-600 hover:text-blue-800 dark:text-blue-400">{{ $plugin['url'] }}</a>
                                                 </div>
                                             @endif
                                         @else

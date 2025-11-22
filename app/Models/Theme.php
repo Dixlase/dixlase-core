@@ -47,11 +47,10 @@ class Theme extends Model
         'license',      // ライセンス
         'author',       // 作者
         'email',        // 作者のメール
-        'web',          // 作者のウェブサイト
+        'url',          // 作者のウェブサイト
         'version',      // テーマバージョン
         'config',       // テーマ設定
         'installed_at', // インストール日時
-        'enabled_at',   // 有効化日時
     ];
 
     /**
@@ -60,17 +59,8 @@ class Theme extends Model
     protected $casts = [
         'config' => 'array',
         'installed_at' => 'datetime',
-        'enabled_at' => 'datetime',
     ];
 
-
-    /**
-     * 有効なテーマのスコープ
-     */
-    public function scopeEnabled($query)
-    {
-        return $query->whereNotNull('enabled_at');
-    }
 
     /**
      * インストール済みテーマのスコープ
@@ -86,14 +76,6 @@ class Theme extends Model
     public function isInstalled(): bool
     {
         return !is_null($this->installed_at);
-    }
-
-    /**
-     * テーマが有効化されているかチェック
-     */
-    public function isEnabled(): bool
-    {
-        return !is_null($this->enabled_at);
     }
 
     /**

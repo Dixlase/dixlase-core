@@ -40,6 +40,7 @@ return [
             'lang' => 'Language files (en & ja) created for plugin [:pluginName].',
             'vite' => 'Vite config file created for plugin [:pluginName].',
             'composer' => 'composer.json file created for plugin [:pluginName].',
+            'package' => 'package.json file created for plugin [:pluginName].',
             'readme' => 'README.md created for plugin [:pluginName].',
             'license_info' => 'License info file created for plugin [:pluginName].',
             'database_seeder' => 'Database seeder [:className] created for plugin [:pluginName].',

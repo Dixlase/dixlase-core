@@ -302,6 +302,7 @@ class MakeNewPlugin extends Command
             'pluginDirName'     => $pluginDirName,
             'namespace'         => $namespace,
             'pluginSlug'        => $pluginSlug,
+            'packageName'       => $vendorNameDefault . '/' . $pluginSlug,
             'licenseName'       => $licenseName,
             'vendorName'        => $vendorName,
             'vendorNameDefault' => $vendorNameDefault,
@@ -338,6 +339,9 @@ class MakeNewPlugin extends Command
 
         // composer.json を作成
         $this->createComposerFile($pluginName, $pluginDir, $placeholders, $licenseInfo);
+
+        // package.json を作成
+        $this->createPackageJsonFile($pluginName, $pluginDir, $placeholders, $licenseInfo);
 
         // README.md を作成
         $this->createReadmeFile($pluginName, $pluginDir, $placeholders, $licenseInfo);
@@ -517,6 +521,18 @@ class MakeNewPlugin extends Command
         file_put_contents("{$pluginDir}/composer.json", $content);
 
         $this->info(__('command.make_plugin.files.composer', ['pluginName' => $pluginName]));
+    }
+
+    /**
+     * package.json を作成
+     */
+    protected function createPackageJsonFile(string $pluginName, string $pluginDir, array $placeholders, array $licenseInfo)
+    {
+        // スタブファイルの内容を取得してファイルを生成
+        $content = $this->getStubContent('package.plugin.stub', $placeholders);
+        file_put_contents("{$pluginDir}/package.json", $content);
+
+        $this->info(__('command.make_plugin.files.package', ['pluginName' => $pluginName]));
     }
 
     /**

@@ -53,7 +53,7 @@ class ThemesTableSeeder extends Seeder
                 'license' => $themeJson['license'] ?? null,
                 'author' => $themeJson['author'] ?? null,
                 'email' => $themeJson['email'] ?? null,
-                'web' => $themeJson['url'] ?? null,
+                'url' => $themeJson['url'] ?? null,
                 'version' => $themeJson['version'] ?? '1.0.0',
                 'config' => [
                     'supports' => $themeJson['supports'] ?? [],
@@ -62,7 +62,6 @@ class ThemesTableSeeder extends Seeder
                     'requires' => $themeJson['requires'] ?? [],
                 ],
                 'installed_at' => now(),
-                'enabled_at' => now(), // デフォルトテーマは自動的に有効化
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
@@ -74,7 +73,6 @@ class ThemesTableSeeder extends Seeder
                 'directory' => 'DixlaseDefaultTheme',
                 'version' => '1.0.0',
                 'installed_at' => now(),
-                'enabled_at' => now(),
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
