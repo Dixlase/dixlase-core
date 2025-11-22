@@ -26,12 +26,14 @@ use Illuminate\Console\Command;
 use App\Console\Traits\MakeObserverTrait;
 use App\Console\Traits\MakeThemeCommandTrait;
 use App\Console\Traits\MakeLicenseTrait;
+use App\Console\Traits\MakeFileTrait;
 
 class MakeThemeObserver extends Command
 {
     use MakeObserverTrait;
     use MakeThemeCommandTrait;
     use MakeLicenseTrait;
+    use MakeFileTrait;
 
     public function __construct()
     {
@@ -51,5 +53,47 @@ class MakeThemeObserver extends Command
             'observer',
             $this->options()
         );
+    }
+
+    /**
+     * Observerディレクトリのパスを取得
+     *
+     * @param array $subDirs サブディレクトリ
+     * @return string
+     */
+    protected function getObserverDirectory(array $subDirs): string
+    {
+        $themeName = $this->argument('themeName');
+        $base = base_path("themes/{$themeName}/app/Observers");
+        if ($subDirs) {
+            $base .= '/' . implode('/', $subDirs);
+        }
+        return $base;
+    }
+
+    /**
+     * Observerの名前空間を取得
+     *
+     * @param array $subDirs サブディレクトリ
+     * @return string
+     */
+    protected function getObserverNamespace(array $subDirs): string
+    {
+        $themeName = $this->argument('themeName');
+        $base = "Themes\\{$themeName}\\App\\Observers";
+        if ($subDirs) {
+            $base .= '\\' . implode('\\', $subDirs);
+        }
+        return $base;
+    }
+
+    /**
+     * 追加オプションを取得
+     *
+     * @return array
+     */
+    protected function getAdditionalOptions(): array
+    {
+        return [];
     }
 }

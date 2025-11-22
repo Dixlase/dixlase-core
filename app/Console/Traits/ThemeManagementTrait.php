@@ -31,33 +31,6 @@ use Illuminate\Support\Facades\File;
  */
 trait ThemeManagementTrait
 {
-
-    /**
-     * 現在の環境が本番環境かどうかを判定
-     *
-     * @return bool
-     */
-    protected function isProduction(): bool
-    {
-        return app()->environment('production');
-    }
-
-    /**
-     * 本番環境での実行を確認する
-     *
-     * @param string $action 説明文（例: "migrate"）
-     * @return bool
-     */
-    protected function confirmProductionAction(string $action): bool
-    {
-        if (!$this->isProduction()) {
-            return true;
-        }
-
-        $this->warn(__('command.production_warning', ['action' => $action]));
-        return $this->confirm(__('command.production_confirm'));
-    }
-
     /**
      * テーマディレクトリのパスを取得
      *

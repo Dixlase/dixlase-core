@@ -26,12 +26,14 @@ use Illuminate\Console\Command;
 use App\Console\Traits\MakeValidatorTrait;
 use App\Console\Traits\MakeThemeCommandTrait;
 use App\Console\Traits\MakeLicenseTrait;
+use App\Console\Traits\MakeFileTrait;
 
 class MakeThemeValidator extends Command
 {
     use MakeValidatorTrait;
     use MakeThemeCommandTrait;
     use MakeLicenseTrait;
+    use MakeFileTrait;
 
     public function __construct()
     {
@@ -51,5 +53,47 @@ class MakeThemeValidator extends Command
             'validator',
             $this->options()
         );
+    }
+
+    /**
+     * Validatorディレクトリのパスを取得
+     *
+     * @param array $subDirs サブディレクトリ
+     * @return string
+     */
+    protected function getValidatorDirectory(array $subDirs): string
+    {
+        $themeName = $this->argument('themeName');
+        $base = base_path("themes/{$themeName}/app/Validators");
+        if ($subDirs) {
+            $base .= '/' . implode('/', $subDirs);
+        }
+        return $base;
+    }
+
+    /**
+     * Validatorの名前空間を取得
+     *
+     * @param array $subDirs サブディレクトリ
+     * @return string
+     */
+    protected function getValidatorNamespace(array $subDirs): string
+    {
+        $themeName = $this->argument('themeName');
+        $base = "Themes\\{$themeName}\\App\\Validators";
+        if ($subDirs) {
+            $base .= '\\' . implode('\\', $subDirs);
+        }
+        return $base;
+    }
+
+    /**
+     * 追加オプションを取得
+     *
+     * @return array
+     */
+    protected function getAdditionalOptions(): array
+    {
+        return [];
     }
 }

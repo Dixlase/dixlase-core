@@ -72,8 +72,10 @@ class MakeNewTheme extends Command
             return Command::FAILURE;
         }
 
+        // 設定ページ作成の確認（オプション指定がない場合は確認）
+        $withSettings = $this->option('with-settings') || $this->confirm(__('command.make_theme.confirm_with_settings'), false);
+
         // テーマディレクトリ作成
-        $withSettings = $this->option('with-settings');
         $this->createThemeDirectories($themeDir, $withSettings);
 
         // テーマ初期ファイルの生成
@@ -91,8 +93,7 @@ class MakeNewTheme extends Command
         if ($shouldInstall) {
             // インストールコマンドを実行
             $this->call('dls:theme:install', [
-                'themeName' => $slugName,
-                '--force' => true
+                'themeName' => $slugName
             ]);
 
             // 有効化確認（オプション指定がない場合は確認）

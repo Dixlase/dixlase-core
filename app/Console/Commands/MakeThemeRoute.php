@@ -25,11 +25,13 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Console\Traits\MakeRouteTrait;
 use App\Console\Traits\MakeThemeCommandTrait;
+use App\Console\Traits\MakeLicenseTrait;
 
 class MakeThemeRoute extends Command
 {
     use MakeRouteTrait;
     use MakeThemeCommandTrait;
+    use MakeLicenseTrait;
 
     public function __construct()
     {

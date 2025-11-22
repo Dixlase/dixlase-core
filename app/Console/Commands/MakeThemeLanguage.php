@@ -25,11 +25,13 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Console\Traits\MakeLanguageTrait;
 use App\Console\Traits\MakeThemeCommandTrait;
+use App\Console\Traits\MakeLicenseTrait;
 
 class MakeThemeLanguage extends Command
 {
     use MakeLanguageTrait;
     use MakeThemeCommandTrait;
+    use MakeLicenseTrait;
 
     public function __construct()
     {

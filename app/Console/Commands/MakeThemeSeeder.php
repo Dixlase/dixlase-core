@@ -25,11 +25,13 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Console\Traits\MakeSeederTrait;
 use App\Console\Traits\MakeThemeCommandTrait;
+use App\Console\Traits\MakeLicenseTrait;
 
 class MakeThemeSeeder extends Command
 {
     use MakeSeederTrait;
     use MakeThemeCommandTrait;
+    use MakeLicenseTrait;
 
     public function __construct()
     {

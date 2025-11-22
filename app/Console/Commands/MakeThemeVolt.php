@@ -25,11 +25,13 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Console\Traits\MakeVoltTrait;
 use App\Console\Traits\MakeThemeCommandTrait;
+use App\Console\Traits\MakeLicenseTrait;
 
 class MakeThemeVolt extends Command
 {
     use MakeVoltTrait;
     use MakeThemeCommandTrait;
+    use MakeLicenseTrait;
 
     public function __construct()
     {

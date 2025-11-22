@@ -26,12 +26,14 @@ use Illuminate\Console\Command;
 use App\Console\Traits\MakeServiceTrait;
 use App\Console\Traits\MakeThemeCommandTrait;
 use App\Console\Traits\MakeLicenseTrait;
+use App\Console\Traits\MakeFileTrait;
 
 class MakeThemeService extends Command
 {
     use MakeServiceTrait;
     use MakeThemeCommandTrait;
     use MakeLicenseTrait;
+    use MakeFileTrait;
 
     public function __construct()
     {
@@ -51,5 +53,47 @@ class MakeThemeService extends Command
             'service',
             $this->options()
         );
+    }
+
+    /**
+     * サービスディレクトリのパスを取得
+     *
+     * @param array $subDirs サブディレクトリ
+     * @return string
+     */
+    protected function getServiceDirectory(array $subDirs): string
+    {
+        $themeName = $this->argument('themeName');
+        $base = base_path("themes/{$themeName}/app/Services");
+        if ($subDirs) {
+            $base .= '/' . implode('/', $subDirs);
+        }
+        return $base;
+    }
+
+    /**
+     * サービスの名前空間を取得
+     *
+     * @param array $subDirs サブディレクトリ
+     * @return string
+     */
+    protected function getServiceNamespace(array $subDirs): string
+    {
+        $themeName = $this->argument('themeName');
+        $base = "Themes\\{$themeName}\\App\\Services";
+        if ($subDirs) {
+            $base .= '\\' . implode('\\', $subDirs);
+        }
+        return $base;
+    }
+
+    /**
+     * 追加オプションを取得
+     *
+     * @return array
+     */
+    protected function getAdditionalOptions(): array
+    {
+        return [];
     }
 }

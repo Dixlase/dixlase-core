@@ -26,10 +26,12 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use App\Services\FileGenerator;
 use App\Console\Traits\MakeViewTrait;
+use App\Console\Traits\MakeLicenseTrait;
 
 class MakeThemeBlade extends Command
 {
     use MakeViewTrait;
+    use MakeLicenseTrait;
 
     /**
      * The name and signature of the console command.
