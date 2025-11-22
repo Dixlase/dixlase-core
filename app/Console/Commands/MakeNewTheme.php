@@ -257,7 +257,7 @@ class MakeNewTheme extends Command
         File::put("{$themeDir}/resources/views/index.blade.php", $bladeContent);
 
         // ***** 言語ファイル *****
-        $this->createLanguageFiles($themeDir, $themeName, $withSettings);
+        $this->createLanguageFiles($themeDir, $themeName, $withSettings, $placeholders);
 
         // ***** デフォルトJS/CSS *****
         File::put("{$themeDir}/resources/src/js/app.js", "// JavaScript for {$themeDirName}\nconsole.log('{$themeName} theme loaded');");
@@ -326,10 +326,8 @@ class MakeNewTheme extends Command
     /**
      * 言語ファイルを作成
      */
-    protected function createLanguageFiles(string $themeDir, string $themeName, bool $withSettings): void
+    protected function createLanguageFiles(string $themeDir, string $themeName, bool $withSettings, array $placeholders): void
     {
-        $placeholders = ['themeName' => $themeName];
-        
         $this->createFileFromStub(
             'theme-lang.stub',
             "{$themeDir}/lang/ja/theme.php",

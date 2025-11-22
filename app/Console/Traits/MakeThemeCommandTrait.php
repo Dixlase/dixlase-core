@@ -24,6 +24,7 @@ namespace App\Console\Traits;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 
 /**
  * テーマ用ファイル作成コマンドの共通機能を提供するトレイト

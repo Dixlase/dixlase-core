@@ -36,7 +36,7 @@ class MakeThemeTrait extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:trait ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:trait ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.trait.description'));

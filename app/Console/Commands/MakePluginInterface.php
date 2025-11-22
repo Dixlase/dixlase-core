@@ -36,7 +36,7 @@ class MakePluginInterface extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:interface ' . $this->getPluginCommandSignature(true),
+            'dls:make:plugin:interface ' . $this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_plugin.interface.description'));

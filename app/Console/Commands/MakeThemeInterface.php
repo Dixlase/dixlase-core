@@ -36,7 +36,7 @@ class MakeThemeInterface extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:interface ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:interface ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.interface.description'));

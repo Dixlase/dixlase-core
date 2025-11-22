@@ -36,7 +36,7 @@ class MakeThemeException extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:exception ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:exception ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.exception.description'));

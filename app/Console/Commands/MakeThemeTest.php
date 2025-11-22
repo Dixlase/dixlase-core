@@ -36,7 +36,7 @@ class MakeThemeTest extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:test ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:test ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.test.description'));

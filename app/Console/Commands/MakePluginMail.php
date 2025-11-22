@@ -36,7 +36,7 @@ class MakePluginMail extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:mail ' . $this->getPluginCommandSignature(true),
+            'dls:make:plugin:mail ' . $this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_plugin.mail.description'));

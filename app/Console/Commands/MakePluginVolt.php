@@ -36,7 +36,7 @@ class MakePluginVolt extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:volt ' . $this->getPluginCommandSignature(true),
+            'dls:make:plugin:volt ' . $this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_plugin.volt.description'));

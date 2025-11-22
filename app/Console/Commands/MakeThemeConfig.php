@@ -36,7 +36,7 @@ class MakeThemeConfig extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:config ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:config ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.config.description'));

@@ -38,7 +38,7 @@ class MakeThemeView extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:view ' . $this->getThemeCommandSignature(true),
+            'dls:make:theme:view ' . $this->getThemeCommandSignature(true),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.view.description'));

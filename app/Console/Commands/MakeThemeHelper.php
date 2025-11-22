@@ -36,7 +36,7 @@ class MakeThemeHelper extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:helper ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:helper ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.helper.description'));

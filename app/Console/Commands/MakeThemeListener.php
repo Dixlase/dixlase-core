@@ -36,7 +36,7 @@ class MakeThemeListener extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:listener ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:listener ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.listener.description'));

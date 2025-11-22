@@ -39,7 +39,7 @@ class MakePluginProvider extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:provider '
+            'dls:make:plugin:provider '
             .$this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );

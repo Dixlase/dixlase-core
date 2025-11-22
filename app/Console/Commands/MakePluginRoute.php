@@ -36,7 +36,7 @@ class MakePluginRoute extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:route '
+            'dls:make:plugin:route '
             .$this->getPluginCommandSignature(false),
             $this->getAdditionalOptions()
         );

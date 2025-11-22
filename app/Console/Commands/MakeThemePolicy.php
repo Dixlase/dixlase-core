@@ -36,7 +36,7 @@ class MakeThemePolicy extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:policy ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:policy ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.policy.description'));

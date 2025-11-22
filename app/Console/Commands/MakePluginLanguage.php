@@ -40,7 +40,7 @@ class MakePluginLanguage extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:lang '
+            'dls:make:plugin:lang '
             .$this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );

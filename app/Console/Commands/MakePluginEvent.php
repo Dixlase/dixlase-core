@@ -36,7 +36,7 @@ class MakePluginEvent extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:event ' . $this->getPluginCommandSignature(true),
+            'dls:make:plugin:event ' . $this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_plugin.event.description'));

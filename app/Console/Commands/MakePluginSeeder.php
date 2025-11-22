@@ -37,7 +37,7 @@ class MakePluginSeeder extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:seeder '
+            'dls:make:plugin:seeder '
             .$this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );

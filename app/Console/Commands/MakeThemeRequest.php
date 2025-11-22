@@ -36,7 +36,7 @@ class MakeThemeRequest extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:request ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:request ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.request.description'));

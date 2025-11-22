@@ -36,7 +36,7 @@ class MakeThemeRoute extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:route ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:route ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.route.description'));

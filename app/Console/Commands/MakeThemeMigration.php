@@ -36,7 +36,7 @@ class MakeThemeMigration extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:migration ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:migration ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.migration.description'));

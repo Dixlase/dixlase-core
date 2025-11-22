@@ -38,7 +38,7 @@ class MakePluginFactory extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:factory '
+            'dls:make:plugin:factory '
             .$this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );

@@ -36,7 +36,7 @@ class MakePluginCast extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:cast ' . $this->getPluginCommandSignature(true),
+            'dls:make:plugin:cast ' . $this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_plugin.cast.description'));

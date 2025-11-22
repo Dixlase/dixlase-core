@@ -38,7 +38,7 @@ class MakeThemeValidator extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:validator ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:validator ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.validator.description'));

@@ -38,7 +38,7 @@ class MakeThemeService extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:service ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:service ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.service.description'));

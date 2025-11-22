@@ -36,7 +36,7 @@ class MakePluginTest extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:test ' . $this->getPluginCommandSignature(true),
+            'dls:make:plugin:test ' . $this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_plugin.test.description'));

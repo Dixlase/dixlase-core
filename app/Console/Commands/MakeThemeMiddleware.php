@@ -36,7 +36,7 @@ class MakeThemeMiddleware extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:middleware ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:middleware ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.middleware.description'));
