@@ -34,7 +34,7 @@ class MakeCustomRule extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:rule'
+            'dls:make:custom:rule'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );

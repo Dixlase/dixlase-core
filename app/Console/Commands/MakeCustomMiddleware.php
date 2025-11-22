@@ -34,7 +34,7 @@ class MakeCustomMiddleware extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:middleware'
+            'dls:make:custom:middleware'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );

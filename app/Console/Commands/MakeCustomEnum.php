@@ -34,7 +34,7 @@ class MakeCustomEnum extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:enum'
+            'dls:make:custom:enum'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );

@@ -34,7 +34,7 @@ class MakeCustomPolicy extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:policy'
+            'dls:make:custom:policy'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );

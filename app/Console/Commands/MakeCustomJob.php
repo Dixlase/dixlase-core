@@ -34,7 +34,7 @@ class MakeCustomJob extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:job'
+            'dls:make:custom:job'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );

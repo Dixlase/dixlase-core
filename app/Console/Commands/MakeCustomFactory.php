@@ -36,7 +36,7 @@ class MakeCustomFactory extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:factory'
+            'dls:make:custom:factory'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );

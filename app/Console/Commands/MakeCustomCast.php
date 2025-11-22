@@ -34,7 +34,7 @@ class MakeCustomCast extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:cast'
+            'dls:make:custom:cast'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );

@@ -34,7 +34,7 @@ class MakeCustomJobMiddleware extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:job-middleware'
+            'dls:make:custom:job-middleware'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );

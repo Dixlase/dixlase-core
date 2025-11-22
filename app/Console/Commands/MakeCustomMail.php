@@ -34,7 +34,7 @@ class MakeCustomMail extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:mail'
+            'dls:make:custom:mail'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );

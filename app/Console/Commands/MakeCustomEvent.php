@@ -34,7 +34,7 @@ class MakeCustomEvent extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:event'
+            'dls:make:custom:event'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );

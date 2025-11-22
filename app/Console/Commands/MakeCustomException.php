@@ -34,7 +34,7 @@ class MakeCustomException extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:exception'
+            'dls:make:custom:exception'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );

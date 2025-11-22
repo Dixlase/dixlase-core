@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\DB;
 
 class CheckInstallStatus extends Command
 {
-    protected $signature = 'install:check';
+    protected $signature = 'dls:install:check';
     protected $description = 'インストール状態とマイグレーション状況をチェック';
 
     public function handle()

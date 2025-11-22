@@ -38,7 +38,7 @@ class MakeCustomProvider extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:provider '
+            'dls:make:custom:provider '
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );

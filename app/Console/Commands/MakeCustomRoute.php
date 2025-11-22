@@ -35,7 +35,7 @@ class MakeCustomRoute extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:route '
+            'dls:make:custom:route '
             .$this->getCustomCommandSignature(false),
             $this->getAdditionalOptions());
         parent::__construct();

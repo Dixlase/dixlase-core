@@ -34,7 +34,7 @@ class MakeCustomResource extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:resource'
+            'dls:make:custom:resource'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );

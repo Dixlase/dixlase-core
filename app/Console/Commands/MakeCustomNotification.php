@@ -34,7 +34,7 @@ class MakeCustomNotification extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:custom:notification'
+            'dls:make:custom:notification'
             .$this->getCustomCommandSignature(),
             $this->getAdditionalOptions()
         );
