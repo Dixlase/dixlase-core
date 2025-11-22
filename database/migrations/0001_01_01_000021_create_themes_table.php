@@ -42,10 +42,9 @@ return new class extends Migration
             $table->string('license')->nullable();
             $table->string('author')->nullable();
             $table->string('email')->nullable();
-            $table->string('web')->nullable();
+            $table->string('url')->nullable();
             $table->string('version')->default('1.0.0');
             $table->json('config')->nullable();
-            $table->timestamp('enabled_at')->nullable();
             $table->timestamp('installed_at')->nullable();
             $table->timestamps();
         });

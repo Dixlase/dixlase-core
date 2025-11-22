@@ -43,7 +43,7 @@ return new class extends Migration
             $table->string('license')->nullable(); // ライセンス
             $table->string('author')->nullable(); // 作者
             $table->string('email')->nullable(); // 作者のメール
-            $table->string('web')->nullable(); // 作者のウェブサイト
+            $table->string('url')->nullable(); // 作者のウェブサイト
             $table->string('version'); // バージョン
             $table->timestamp('installed_at')->nullable(); // インストール日時
             $table->timestamp('enabled_at')->nullable(); // 有効化日時

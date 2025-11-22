@@ -33,7 +33,8 @@ class ThemeInstall extends Command
     public function handle()
     {
         $themeName = $this->argument('themeName');
-        $themeDir = base_path("themes/" . Str::studly($themeName));
+        $themeDirName = Str::studly($themeName);
+        $themeDir = base_path("themes/" . $themeDirName);
         
         // Check if theme directory exists
         if (!file_exists($themeDir)) {
@@ -51,6 +52,7 @@ class ThemeInstall extends Command
         $themeJsonPath = "{$themeDir}/theme.json";
         $composerPath = "{$themeDir}/composer.json";
         
+        $displayName = null;
         $packageName = null;
         $namespace = null;
         $description = null;
@@ -64,7 +66,8 @@ class ThemeInstall extends Command
         if (file_exists($themeJsonPath)) {
             $themeData = json_decode(file_get_contents($themeJsonPath), true);
             if (json_last_error() === JSON_ERROR_NONE) {
-                $packageName = $themeData['package_name'] ?? $themeData['name'] ?? null;
+                $displayName = $themeData['name'] ?? null;
+                $packageName = $themeData['package_name'] ?? null;
                 $namespace = $themeData['namespace'] ?? null;
                 $description = $themeData['description'] ?? null;
                 // 多言語対応の場合は英語を優先
@@ -83,6 +86,8 @@ class ThemeInstall extends Command
         if (file_exists($composerPath)) {
             $composerData = json_decode(file_get_contents($composerPath), true);
             if (json_last_error() === JSON_ERROR_NONE) {
+                // display-nameをextra.dixlaseから取得
+                $displayName = $displayName ?? $composerData['extra']['dixlase']['display-name'] ?? null;
                 $packageName = $packageName ?? $composerData['name'] ?? null;
                 
                 // namespaceはcomposer.jsonのautoloadから取得
@@ -109,20 +114,21 @@ class ThemeInstall extends Command
         }
 
         // デフォルト値の設定
-        $namespace = $namespace ?? "Themes\\{$themeName}";
+        $displayName = $displayName ?? $themeDirName;
+        $namespace = $namespace ?? "Themes\\{$themeDirName}";
 
         // Register the theme
         $theme = Theme::create([
-            'name' => $themeName,
+            'name' => $displayName,
             'package_name' => $packageName,
-            'directory' => $themeName,
+            'directory' => $themeDirName,
             'slug' => Str::slug($themeName),
             'namespace' => $namespace,
             'description' => $description,
             'license' => $license,
             'author' => $author,
             'email' => $email,
-            'web' => $web,
+            'url' => $web,
             'version' => $version,
             'installed_at' => now(),
         ]);

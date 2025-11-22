@@ -508,11 +508,49 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
     /**
      * ディレクトリからプラグイン情報を取得
+     * plugin.json優先、composer.jsonをフォールバック
      */
     private function getPluginInfoFromDirectory($dirName)
     {
+        $pluginJsonPath = base_path("plugins/{$dirName}/plugin.json");
         $composerPath = base_path("plugins/{$dirName}/composer.json");
         
+        // plugin.jsonが存在する場合は優先的に使用
+        if (File::exists($pluginJsonPath)) {
+            try {
+                $jsonContent = File::get($pluginJsonPath);
+                $pluginData = json_decode($jsonContent, true);
+                
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    // descriptionが配列（多言語対応）の場合は英語を優先
+                    $description = $pluginData['description'] ?? null;
+                    if (is_array($description)) {
+                        $description = $description['en'] ?? $description['ja'] ?? null;
+                    }
+                    
+                    return [
+                        'directory' => $dirName,
+                        'name' => $pluginData['name'] ?? $dirName,
+                        'description' => $description,
+                        'version' => $pluginData['version'] ?? '1.0.0',
+                        'author' => $pluginData['author'] ?? null,
+                        'email' => $pluginData['email'] ?? null,
+                        'url' => $pluginData['url'] ?? $pluginData['homepage'] ?? $pluginData['web'] ?? null,
+                        'license' => $pluginData['license'] ?? null,
+                        'package_name' => $pluginData['package_name'] ?? null,
+                        'slug' => $pluginData['slug'] ?? Str::slug($dirName),
+                    ];
+                }
+            } catch (\Exception $e) {
+                Log::error('Failed to read plugin.json', [
+                    'directory' => $dirName,
+                    'error' => $e->getMessage()
+                ]);
+                // plugin.jsonの読み込みに失敗した場合はcomposer.jsonにフォールバック
+            }
+        }
+        
+        // plugin.jsonが存在しない、または読み込みに失敗した場合はcomposer.jsonを使用
         if (!File::exists($composerPath)) {
             return null;
         }
@@ -536,13 +574,13 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 'version' => $composerData['version'] ?? '1.0.0',
                 'author' => $firstAuthor['name'] ?? null,
                 'email' => $firstAuthor['email'] ?? null,
-                'web' => $firstAuthor['homepage'] ?? null,
+                'url' => $firstAuthor['homepage'] ?? null,
                 'license' => $composerData['license'] ?? null,
                 'package_name' => $composerData['name'] ?? null,
                 'slug' => $composerData['extra']['slug'] ?? Str::slug($dirName),
             ];
         } catch (\Exception $e) {
-            Log::error('Failed to read plugin info', [
+            Log::error('Failed to read composer.json', [
                 'directory' => $dirName,
                 'error' => $e->getMessage()
             ]);

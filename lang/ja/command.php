@@ -40,6 +40,7 @@ return [
             'lang' => '言語ファイル（en & ja）がプラグイン [:pluginName] 用に作成されました。',
             'vite' => 'Vite設定ファイルがプラグイン [:pluginName] 用に作成されました。',
             'composer' => 'composer.jsonファイルがプラグイン [:pluginName] 用に作成されました。',
+            'package' => 'package.jsonファイルがプラグイン [:pluginName] 用に作成されました。',
             'readme' => 'README.mdがプラグイン [:pluginName] 用に作成されました。',
             'license_info' => 'ライセンス情報ファイルがプラグイン [:pluginName] 用に作成されました。',
             'database_seeder' => 'データベースシーダー [:className] がプラグイン [:pluginName] 用に作成されました。',

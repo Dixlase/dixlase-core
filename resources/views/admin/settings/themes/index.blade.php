@@ -176,6 +176,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @if(count($uninstalledThemes) > 0)
     <section class="mt-8">
         <h2>{{ __('admin.settings.themes.index.uninstalled_heading') }}</h2>
+        
+        {{-- デバッグ情報 --}}
+        @if(config('app.debug'))
+        <div class="mb-4 p-4 bg-yellow-100 dark:bg-yellow-900 rounded">
+            <p class="font-bold">デバッグ情報:</p>
+            <p>インストール済みテーマ数: {{ count($themes) }}</p>
+            <p>アンインストール済みテーマ数: {{ count($uninstalledThemes) }}</p>
+            <details class="mt-2">
+                <summary class="cursor-pointer">インストール済みディレクトリ一覧</summary>
+                <pre class="mt-2 text-xs">{{ json_encode($themes->pluck('directory')->toArray(), JSON_PRETTY_PRINT) }}</pre>
+            </details>
+            <details class="mt-2">
+                <summary class="cursor-pointer">アンインストール済みディレクトリ一覧</summary>
+                <pre class="mt-2 text-xs">{{ json_encode(collect($uninstalledThemes)->pluck('directory')->toArray(), JSON_PRETTY_PRINT) }}</pre>
+            </details>
+        </div>
+        @endif
 
         <!-- レスポンシブテーブル -->
         <div class="responsive-table">
@@ -209,9 +226,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             @if($theme['email'])
                                                 <div class="text-xs text-gray-500 dark:text-gray-400">{{ $theme['email'] }}</div>
                                             @endif
-                                            @if($theme['web'])
+                                            @if($theme['url'])
                                                 <div class="text-xs">
-                                                    <a href="{{ $theme['web'] }}" target="_blank" class="text-blue-600 hover:text-blue-800 dark:text-blue-400">{{ $theme['web'] }}</a>
+                                                    <a href="{{ $theme['url'] }}" target="_blank" class="text-blue-600 hover:text-blue-800 dark:text-blue-400">{{ $theme['url'] }}</a>
                                                 </div>
                                             @endif
                                         @else

@@ -141,7 +141,7 @@ class PluginInstall extends Command
                 'license' => $license,
                 'author' => $author,
                 'email' => $email,
-                'web' => $web,
+                'url' => $web,
                 'version' => $version, // composer.json から取得
                 'installed_at' => now()
             ]

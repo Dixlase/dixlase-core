@@ -9,7 +9,7 @@
     },
     "author": "{{ author }}",
     "email": "{{ email }}",
-    "url": "{{ website }}",
+    "url": "{{ url }}",
     "license": "{{ licenseName }}",
     "license_template": "{{ licenseTemplate }}",
     "namespace": "Themes\\{{ themeDirectory }}",
