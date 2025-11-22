@@ -1,5 +1,7 @@
 <?php
 
+{{ license }}
+
 return [
     'theme_name' => '{{ themeName }}',
 ];

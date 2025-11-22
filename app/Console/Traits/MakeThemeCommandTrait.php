@@ -97,6 +97,9 @@ trait MakeThemeCommandTrait
             }
         }
 
+        $themeName = Str::studly($themeName);
+        $licenseInfo = $this->getThemeLicenseInfo($themeName) ?? [];
+
         // スコープが必要な場合は選択
         if ($needsScope && empty($scope)) {
             $scope = $this->chooseScope();
@@ -106,15 +109,70 @@ trait MakeThemeCommandTrait
             }
         }
 
-        // ファイル生成処理を実行
-        return $this->generateFile(
-            $classPath,
-            $themeName,
-            $fileType,
+        // パス情報の分解（スコープがある場合は考慮）
+        [$className, $subDirs] = $this->parseClassPath(
             $category,
-            $options,
-            $scope
+            $classPath,
+            $needsScope ? $scope : null
         );
+
+        // 共通パラメータを準備
+        $common = [
+            'fileType' => $fileType,
+            'className' => $className,
+            'themeName' => $themeName,
+            'subDirs' => $subDirs,
+            'licenseInfo' => $licenseInfo,
+            'scope' => $scope,
+            'category' => $category
+        ];
+        
+        // カテゴリに基づいてオプションをマージ
+        $options = $this->mergeCategoryOptions($category, $common, $options);
+
+        // スコープの指定があれば、オプションにマージ
+        if (!empty($scope)) {
+            $options = array_merge($options, ['scope' => $scope]);
+        }
+
+        // テーマ用のフラグを追加
+        $options['isTheme'] = true;
+
+        // ファイル生成
+        $this->makeFile(
+            $className,
+            $fileType,
+            $options,
+            $subDirs,
+            $themeName,
+            $licenseInfo
+        );
+
+        return true;
+    }
+
+    /**
+     * テーマのライセンス情報を取得
+     *
+     * @param string $themeName
+     * @return array|null
+     */
+    protected function getThemeLicenseInfo(string $themeName): ?array
+    {
+        $licenseInfoFile = base_path("themes/{$themeName}/license-info.json");
+
+        if (!file_exists($licenseInfoFile)) {
+            return null;
+        }
+
+        $json = file_get_contents($licenseInfoFile);
+        $data = json_decode($json, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return null;
+        }
+
+        return $data;
     }
 
     /**

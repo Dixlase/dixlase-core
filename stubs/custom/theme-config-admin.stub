@@ -1,5 +1,7 @@
 <?php
 
+{{ license }}
+
 return [
     'admin_navigation' => [
         'settings' => [
