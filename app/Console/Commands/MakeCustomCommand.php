@@ -24,7 +24,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
-use App\Services\FileGenerator;
 use App\Console\Traits\MakeCommandTrait;
 
 class MakeCustomCommand extends Command
@@ -37,12 +36,10 @@ class MakeCustomCommand extends Command
 
     protected $description = 'Create a new Artisan command in the custom directory';
 
-    protected FileGenerator $fileGenerator;
 
-    public function __construct(FileGenerator $fileGenerator)
+    public function __construct()
     {
         parent::__construct();
-        $this->fileGenerator = $fileGenerator;
     }
 
     public function handle()

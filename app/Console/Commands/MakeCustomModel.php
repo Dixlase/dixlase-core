@@ -24,7 +24,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
-use App\Services\FileGenerator;
 use App\Console\Traits\MakeModelTrait;
 use App\Console\Traits\MakeLicenseTrait;
 use App\Console\Traits\MakeCustomCommandTrait;

@@ -23,7 +23,6 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Services\FileGenerator;
 use App\Console\Traits\MakeLanguageTrait;
 
 class MakeCoreLanguage extends Command
@@ -47,10 +46,9 @@ class MakeCoreLanguage extends Command
      */
     protected $description = 'Create a new language file in the core resources/lang directory';
 
-    public function __construct(FileGenerator $fileGenerator)
+    public function __construct()
     {
         parent::__construct();
-        $this->fileGenerator = $fileGenerator;
     }
 
     /**

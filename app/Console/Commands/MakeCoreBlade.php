@@ -23,7 +23,6 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Services\FileGenerator;
 use App\Console\Traits\MakeViewTrait;
 
 class MakeCoreBlade extends Command
@@ -37,12 +36,10 @@ class MakeCoreBlade extends Command
 
     protected $description = 'Create a new Blade template in the core resources/views directory';
 
-    protected FileGenerator $fileGenerator;
 
-    public function __construct(FileGenerator $fileGenerator)
+    public function __construct()
     {
         parent::__construct();
-        $this->fileGenerator = $fileGenerator;
     }
 
 

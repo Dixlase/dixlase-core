@@ -24,7 +24,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
-use App\Services\FileGenerator;
 use App\Console\Traits\MakeObserverTrait;
 
 class MakePluginObserver extends Command
@@ -39,14 +38,12 @@ class MakePluginObserver extends Command
 
     protected $description = 'Create a new Eloquent observer class in the specified plugin directory';
 
-    protected FileGenerator $fileGenerator;
 
     protected string $pluginName;
 
-    public function __construct(FileGenerator $fileGenerator)
+    public function __construct()
     {
         parent::__construct();
-        $this->fileGenerator = $fileGenerator;
     }
 
     public function handle()
