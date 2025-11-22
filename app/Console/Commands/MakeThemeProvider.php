@@ -36,7 +36,7 @@ class MakeThemeProvider extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:provider ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:provider ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.provider.description'));

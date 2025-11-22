@@ -34,7 +34,7 @@ class MakePluginView extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:view ' . $this->getPluginCommandSignature(true),
+            'dls:make:plugin:view ' . $this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_plugin.view.description'));

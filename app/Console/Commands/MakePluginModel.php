@@ -42,7 +42,7 @@ class MakePluginModel extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:model '
+            'dls:make:plugin:model '
             .$this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );

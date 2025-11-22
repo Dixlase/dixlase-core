@@ -36,7 +36,7 @@ class MakeThemeLanguage extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:lang ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:lang ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.language.description'));

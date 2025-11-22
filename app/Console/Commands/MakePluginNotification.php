@@ -36,7 +36,7 @@ class MakePluginNotification extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:notification ' . $this->getPluginCommandSignature(true),
+            'dls:make:plugin:notification ' . $this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_plugin.notification.description'));

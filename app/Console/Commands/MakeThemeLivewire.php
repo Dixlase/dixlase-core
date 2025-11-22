@@ -36,7 +36,7 @@ class MakeThemeLivewire extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:livewire ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:livewire ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.livewire.description'));

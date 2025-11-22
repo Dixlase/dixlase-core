@@ -36,7 +36,7 @@ class MakeThemeEvent extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:event ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:event ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.event.description'));

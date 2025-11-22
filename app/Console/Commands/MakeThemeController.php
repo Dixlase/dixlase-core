@@ -36,7 +36,7 @@ class MakeThemeController extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:controller ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:controller ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.controller.description'));

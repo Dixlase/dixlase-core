@@ -36,7 +36,7 @@ class MakePluginTrait extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:trait ' . $this->getPluginCommandSignature(true),
+            'dls:make:plugin:trait ' . $this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_plugin.trait.description'));

@@ -39,7 +39,7 @@ class MakePluginPolicy extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:policy ' . 
+            'dls:make:plugin:policy ' . 
             $this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );

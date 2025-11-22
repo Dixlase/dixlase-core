@@ -36,7 +36,7 @@ class MakeThemeResource extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:resource ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:resource ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.resource.description'));

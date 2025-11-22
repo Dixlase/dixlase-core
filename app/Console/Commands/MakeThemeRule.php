@@ -36,7 +36,7 @@ class MakeThemeRule extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:rule ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:rule ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.rule.description'));

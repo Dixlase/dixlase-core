@@ -41,7 +41,7 @@ class MakePluginConfig extends Command
     {
         // シグネチャーを設定
         $this->signature = $this->makeSignature(
-            'make:plugin:config '
+            'dls:make:plugin:config '
             .$this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );

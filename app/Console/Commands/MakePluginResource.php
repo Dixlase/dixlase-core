@@ -36,7 +36,7 @@ class MakePluginResource extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:resource ' . $this->getPluginCommandSignature(true),
+            'dls:make:plugin:resource ' . $this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_plugin.resource.description'));

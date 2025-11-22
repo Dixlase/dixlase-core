@@ -36,7 +36,7 @@ class MakeThemeVolt extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:volt ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:volt ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.volt.description'));

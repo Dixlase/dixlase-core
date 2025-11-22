@@ -36,7 +36,7 @@ class MakePluginController extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:controller '
+            'dls:make:plugin:controller '
             .$this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );

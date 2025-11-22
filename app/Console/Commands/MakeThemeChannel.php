@@ -36,7 +36,7 @@ class MakeThemeChannel extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:channel ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:channel ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.channel.description'));

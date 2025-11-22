@@ -36,7 +36,7 @@ class MakeThemeCast extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:cast ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:cast ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.cast.description'));

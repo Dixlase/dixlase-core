@@ -36,7 +36,7 @@ class MakePluginHelper extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:helper ' . $this->getPluginCommandSignature(true),
+            'dls:make:plugin:helper ' . $this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_plugin.helper.description'));

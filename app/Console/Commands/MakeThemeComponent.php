@@ -36,7 +36,7 @@ class MakeThemeComponent extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:component ' . $this->getThemeCommandSignature(true),
+            'dls:make:theme:component ' . $this->getThemeCommandSignature(true),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.component.description'));

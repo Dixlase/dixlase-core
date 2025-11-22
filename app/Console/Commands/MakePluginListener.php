@@ -36,7 +36,7 @@ class MakePluginListener extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:listener ' . $this->getPluginCommandSignature(true),
+            'dls:make:plugin:listener ' . $this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_plugin.listener.description'));

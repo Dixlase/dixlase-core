@@ -36,7 +36,7 @@ class MakeThemeEnum extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:enum ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:enum ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.enum.description'));

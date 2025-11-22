@@ -37,7 +37,7 @@ class MakePluginRequest extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:request '
+            'dls:make:plugin:request '
             .$this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );

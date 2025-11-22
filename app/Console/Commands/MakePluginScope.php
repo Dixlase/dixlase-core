@@ -36,7 +36,7 @@ class MakePluginScope extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:scope ' . $this->getPluginCommandSignature(true),
+            'dls:make:plugin:scope ' . $this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_plugin.scope.description'));

@@ -806,20 +806,20 @@ class MakeNewPlugin extends Command
      */
     protected function createPluginJsonFile(string $pluginName, string $pluginDir, array $placeholders, array $licenseInfo)
     {
-        $stubPath = config('console.custom_stub_paths');
-        $stubFile = $this->fileGenerator->getStubContent('plugin.json.stub', null, $stubPath);
+        $stubPath = config('command.custom_stub_directory') . '/plugin.json.stub';
+        $stubFile = File::get($stubPath);
         
         // プレースホルダーを追加
         $licenseName = $licenseInfo['license'] ?? 'GPL';
         $pluginPlaceholders = array_merge($placeholders, [
-            '{{ pluginName }}' => $pluginName,
-            '{{ packageName }}' => $placeholders['vendorNameDefault'] . '/' . $placeholders['pluginSlug'],
-            '{{ slug }}' => $placeholders['pluginSlug'],
-            '{{ pluginDirectory }}' => $placeholders['pluginDirName'],
-            '{{ licenseTemplate }}' => 'license-' . strtolower(str_replace([' ', '.'], ['-', ''], $licenseName)) . '.txt',
+            'pluginName' => $pluginName,
+            'packageName' => $placeholders['vendorNameDefault'] . '/' . $placeholders['pluginSlug'],
+            'slug' => $placeholders['pluginSlug'],
+            'pluginDirectory' => $placeholders['pluginDirName'],
+            'licenseTemplate' => 'license-' . strtolower(str_replace([' ', '.'], ['-', ''], $licenseName)) . '.txt',
         ]);
         
-        $fileContent = $this->fileGenerator->replacePlaceholders($stubFile, $pluginPlaceholders);
-        $this->fileGenerator->generateFile("{$pluginDir}/plugin.json", $fileContent);
+        $fileContent = $this->replacePlaceholders($stubFile, $pluginPlaceholders);
+        File::put("{$pluginDir}/plugin.json", $fileContent);
     }
 }

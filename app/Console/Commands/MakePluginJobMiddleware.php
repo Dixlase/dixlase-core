@@ -36,7 +36,7 @@ class MakePluginJobMiddleware extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:job-middleware ' . $this->getPluginCommandSignature(true),
+            'dls:make:plugin:job-middleware ' . $this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_plugin.job_middleware.description'));

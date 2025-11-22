@@ -36,7 +36,7 @@ class MakeThemeSeeder extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:seeder ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:seeder ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.seeder.description'));

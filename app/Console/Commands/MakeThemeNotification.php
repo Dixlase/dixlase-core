@@ -36,7 +36,7 @@ class MakeThemeNotification extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:notification ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:notification ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.notification.description'));

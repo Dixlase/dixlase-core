@@ -36,7 +36,7 @@ class MakePluginComponent extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:component ' . $this->getPluginCommandSignature(true),
+            'dls:make:plugin:component ' . $this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_plugin.component.description'));

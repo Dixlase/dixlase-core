@@ -36,7 +36,7 @@ class MakeThemeFactory extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:theme:factory ' . $this->getThemeCommandSignature(),
+            'dls:make:theme:factory ' . $this->getThemeCommandSignature(),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_theme.factory.description'));

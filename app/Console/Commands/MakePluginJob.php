@@ -36,7 +36,7 @@ class MakePluginJob extends Command
     public function __construct()
     {
         $this->signature = $this->makeSignature(
-            'make:plugin:job ' . $this->getPluginCommandSignature(true),
+            'dls:make:plugin:job ' . $this->getPluginCommandSignature(true),
             $this->getAdditionalOptions()
         );
         $this->setDescription(__('command.make_plugin.job.description'));
