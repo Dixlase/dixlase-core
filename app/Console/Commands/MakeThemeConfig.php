@@ -25,11 +25,13 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Console\Traits\MakeConfigTrait;
 use App\Console\Traits\MakeThemeCommandTrait;
+use App\Console\Traits\MakeLicenseTrait;
 
 class MakeThemeConfig extends Command
 {
     use MakeConfigTrait;
     use MakeThemeCommandTrait;
+    use MakeLicenseTrait;
 
     public function __construct()
     {

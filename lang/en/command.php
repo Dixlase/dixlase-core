@@ -178,6 +178,7 @@ return [
         'name_cannot_be_empty' => 'Theme name cannot be empty.',
         'theme_exists' => "Theme ':themeName' already exists.",
         'created' => "Theme ':themeName' has been created successfully.",
+        'confirm_with_settings' => 'Do you want to create theme settings page?',
         'confirm_install' => 'Do you want to install this theme?',
         'confirm_enable' => 'Do you want to enable this theme?',
         'install_later' => 'You can install it later using: php artisan dls:theme:install :slugName',

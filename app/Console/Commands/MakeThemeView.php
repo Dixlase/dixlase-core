@@ -25,11 +25,15 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Console\Traits\MakeViewTrait;
 use App\Console\Traits\MakeThemeCommandTrait;
+use App\Console\Traits\MakeLicenseTrait;
+use App\Console\Traits\MakeFileTrait;
 
 class MakeThemeView extends Command
 {
     use MakeViewTrait;
     use MakeThemeCommandTrait;
+    use MakeLicenseTrait;
+    use MakeFileTrait;
 
     public function __construct()
     {

@@ -30,9 +30,7 @@ use Illuminate\Support\Str;
  */
 trait MakeThemeCommandTrait
 {
-    use MakeFileTrait;
     use ThemeManagementTrait;
-    use MakeLicenseTrait;
 
     /**
      * テーマコマンドの共通引数を取得します
@@ -120,23 +118,6 @@ trait MakeThemeCommandTrait
     }
 
     /**
-     * クラス名の入力を求めます
-     *
-     * @return string|false クラス名、またはキャンセルされた場合はfalse
-     */
-    protected function askForClassName(): string|false
-    {
-        $className = $this->ask(__('command.class_name_prompt'));
-        
-        if (empty($className)) {
-            $this->error(__('command.class_name_required'));
-            return false;
-        }
-        
-        return $className;
-    }
-
-    /**
      * 利用可能なテーマ名のリストを取得します
      *
      * @return array テーマ名の配列
@@ -187,23 +168,5 @@ trait MakeThemeCommandTrait
         );
         
         return $themeName;
-    }
-
-    /**
-     * スコープを選択します
-     *
-     * @return string|null 選択されたスコープ、またはnull
-     */
-    protected function chooseScope(): ?string
-    {
-        $scopes = ['admin', 'front'];
-        
-        $scope = $this->choice(
-            __('command.scope.select'),
-            $scopes,
-            0
-        );
-        
-        return $scope;
     }
 }

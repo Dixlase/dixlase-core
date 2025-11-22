@@ -152,6 +152,7 @@ return [
         'name_cannot_be_empty' => 'テーマ名を入力してください。',
         'theme_exists' => "テーマ ':themeName' は既に存在します。",
         'created' => "テーマ ':themeName' が正常に作成されました。",
+        'confirm_with_settings' => 'テーマ設定ページを作成しますか？',
         'confirm_install' => 'このテーマをインストールしますか？',
         'confirm_enable' => 'このテーマを有効化しますか？',
         'install_later' => '後でインストールするには次のコマンドを実行してください: php artisan dls:theme:install :slugName',
