@@ -10,30 +10,166 @@ trait MakeLicenseTrait
     /**
      * ファイルタイプに応じたライセンス情報を取得
      *
-     * @param string $fileType ファイルタイプ（coreまたはplugin）
-     * @param string|null $pluginName プラグイン名（ファイルタイプがpluginの場合のみ使用）
+     * @param string $fileType ファイルタイプ（core、plugin、theme）
+     * @param string|null $pluginName プラグイン名またはテーマ名（ファイルタイプがpluginまたはthemeの場合のみ使用）
      * @return array ライセンス情報
      */
     protected function getFileTypeLicenseInfo(string $fileType, ?string $pluginName = null): array
     {
+        // 共通メソッドを使用して統一的に取得
         if ($fileType === 'core') {
-            return $this->getCustomFileLicenseInfo(true) ?? [];
+            return $this->getLicenseInfoFromJson('custom', null, true) ?? [];
         } elseif ($fileType === 'plugin' || $fileType === 'custom_plugin' && $pluginName) {
-            return $this->getPluginLicenseInfo($pluginName) ?? [];
+            return $this->getLicenseInfoFromJson('plugins', $pluginName, true) ?? [];
+        } elseif ($fileType === 'theme' && $pluginName) {
+            return $this->getLicenseInfoFromJson('themes', $pluginName, false) ?? [];
         }
         return [];
     }
 
-    
-    
     /**
-     * カスタムディレクトリのライセンス情報を取得
+     * 共通のライセンス情報取得メソッド
+     * プラグイン、テーマ、カスタムディレクトリから統一的にライセンス情報を取得
      *
+     * @param string $type タイプ（plugins、themes、custom）
+     * @param string|null $name プラグイン名またはテーマ名（customの場合はnull）
      * @param bool $showNotice 警告メッセージを表示するかどうか
-     * @return array|null
+     * @return array|null ライセンス情報（template、infoを含む配列）
      */
+    protected function getLicenseInfoFromJson(string $type, ?string $name = null, bool $showNotice = false): ?array
+    {
+        // パスの構築
+        if ($type === 'custom') {
+            $basePath = base_path('custom');
+            $displayName = 'カスタムディレクトリ';
+            
+            // コアの場合は dixlase.json を優先的に確認
+            $dixlaseJsonPath = base_path('dixlase.json');
+            if (file_exists($dixlaseJsonPath)) {
+                $jsonData = json_decode(file_get_contents($dixlaseJsonPath), true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    // dixlase.jsonの情報をlicense-info形式に変換
+                    $licenseData = [
+                        'license' => $jsonData['license'] ?? 'AGPL-3.0',
+                        'year' => date('Y'),
+                        'author' => $jsonData['author'] ?? 'Authr Name',
+                        'url' => $jsonData['url'] ?? 'https://example.com',
+                        'software' => $jsonData['name'] ?? 'Dixlase',
+                    ];
+                    return $this->formatLicenseInfo($licenseData, $displayName, $showNotice);
+                }
+            }
+        } elseif ($type === 'plugins' && $name) {
+            $basePath = base_path("plugins/{$name}");
+            $displayName = "プラグイン: {$name}";
+        } elseif ($type === 'themes' && $name) {
+            $basePath = base_path("themes/{$name}");
+            $displayName = "テーマ: {$name}";
+        } else {
+            return null;
+        }
 
-    protected function getCustomFileLicenseInfo(bool $showNotice = false): array
+        // まずlicense-info.jsonを確認（後方互換性）
+        $licenseInfoFile = "{$basePath}/license-info.json";
+        
+        if (File::exists($licenseInfoFile)) {
+            $licenseData = json_decode(File::get($licenseInfoFile), true);
+            
+            if (json_last_error() === JSON_ERROR_NONE && !empty($licenseData['license'])) {
+                return $this->formatLicenseInfo($licenseData, $displayName, $showNotice);
+            }
+        }
+
+        // theme.jsonまたはplugin.jsonから情報を取得
+        $jsonFile = null;
+        if ($type === 'themes') {
+            $jsonFile = "{$basePath}/theme.json";
+        } elseif ($type === 'plugins') {
+            $jsonFile = "{$basePath}/plugin.json";
+        }
+
+        if ($jsonFile && File::exists($jsonFile)) {
+            $jsonData = json_decode(File::get($jsonFile), true);
+            
+            if (json_last_error() === JSON_ERROR_NONE) {
+                // JSON形式からlicense-info形式に変換
+                $url = $jsonData['url'] ?? 'https://example.com';
+                // プレースホルダーの場合はデフォルト値を使用
+                if (str_contains($url, '{{') || str_contains($url, '}}')) {
+                    $url = 'https://example.com';
+                }
+                
+                $licenseData = [
+                    'license' => $jsonData['license'] ?? 'GPL-3.0',
+                    'year' => date('Y'),
+                    'author' => $jsonData['author'] ?? 'Your Name',
+                    'url' => $url,
+                    'software' => $jsonData['name'] ?? 'Software',
+                ];
+                
+                return $this->formatLicenseInfo($licenseData, $displayName, $showNotice);
+            }
+        }
+
+        if ($showNotice) {
+            $this->warn("ライセンス情報が見つかりません: {$displayName}");
+        }
+
+        return null;
+    }
+
+    /**
+     * ライセンス情報を統一フォーマットに整形
+     *
+     * @param array $licenseData ライセンスデータ
+     * @param string $displayName 表示名（エラーメッセージ用）
+     * @param bool $showNotice 警告メッセージを表示するかどうか
+     * @return array|null フォーマット済みライセンス情報
+     */
+    protected function formatLicenseInfo(array $licenseData, string $displayName, bool $showNotice = false): ?array
+    {
+        // ライセンスキーの検証
+        if (empty($licenseData['license'])) {
+            if ($showNotice) {
+                $this->warn("ライセンスキーが見つかりません: {$displayName}");
+            }
+            return null;
+        }
+
+        // ライセンステンプレートを取得
+        $licenseName = $licenseData['license'];
+        
+        // GPL-3.0 → gpl, AGPL → agpl のように変換
+        $templateFileName = 'license-' . strtolower(str_replace([' ', '.', '-'], ['', '', ''], $licenseName)) . '.txt';
+        $templatePath = base_path('license-templates/' . $templateFileName);
+
+        if (!File::exists($templatePath)) {
+            // デフォルトのGPLテンプレートを使用
+            $templatePath = base_path('license-templates/license-gpl.txt');
+        }
+
+        if (!File::exists($templatePath)) {
+            if ($showNotice) {
+                $this->warn("ライセンステンプレートが見つかりません: {$templatePath}");
+            }
+            return null;
+        }
+
+        $template = File::get($templatePath);
+
+        // 統一フォーマットで返す
+        return [
+            'template' => $template,
+            'info' => $licenseData,
+        ];
+    }
+
+
+    /**
+     * カスタムディレクトリのライセンス情報を取得（旧実装・削除予定）
+     * @deprecated 共通メソッドgetLicenseInfoFromJsonを使用してください
+     */
+    protected function getCustomFileLicenseInfoOld(bool $showNotice = false): array
     {
         // カスタムライセンス情報ファイルのパス
         $customLicensePath = base_path('custom/license-info.json');
@@ -144,53 +280,6 @@ trait MakeLicenseTrait
 
 
 
-    /**
-     * プラグインのライセンス情報を取得
-     *
-     * @param string $pluginName
-     * @return array|null
-     */
-    protected function getPluginLicenseInfo(string $pluginName): ?array
-    {
-        $licenseInfoFile = base_path("plugins/{$pluginName}/license-info.json");
-
-        if (!File::exists($licenseInfoFile)) {
-            $this->warn(__('command.license.warnings.plugin_missing', ['plugin' => $pluginName]));
-            return null;
-        }
-
-        $info = json_decode(File::get($licenseInfoFile), true);
-        $info['year'] = date('Y');
-
-        // ライセンスキーが存在しないか空の場合はスキップ
-        if (empty($info['license'])) {
-            $this->warn(__('command.license.warnings.license_key_missing_or_empty'));
-            return [];
-        }
-
-        // コンフィグからテンプレートパスを取得
-        $templatePath = config('license.templatesPath') . '/' . config('license.templates.' . $info['license']);
-        
-        if (empty($templatePath)) {
-            $this->warn(__('command.license.warnings.invalid_license_key', ['license' => $info['license']]));
-            return [];
-        }
-        
-        // フルパスに変換
-        $templatePath = base_path($templatePath);
-            
-        if (File::exists($templatePath)) {
-            $templateContent = File::get($templatePath);
-        } else {
-            $this->warn(__('command.license.warnings.template_not_found', ['path' => $templatePath]));
-            return [];
-        }
-
-        return [
-            'info' => $info,
-            'template' => $templateContent,
-        ];
-    }
 
 
     /**

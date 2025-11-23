@@ -1,7 +1,7 @@
 This file is part of {{ software }}.
 
 Copyright (C) {{ year }} {{ author }}
-{{ website }}
+{{ url }}
 
 All rights reserved.
 

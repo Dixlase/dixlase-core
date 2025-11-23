@@ -78,6 +78,10 @@ trait MakeControllerTrait
         // スタブの取得（スコープを考慮）
         $stub = $this->renderStub($options, $scope);
     
+        // ライセンス情報の取得（渡された情報を優先）
+        if (empty($licenseInfo)) {
+            $licenseInfo = $this->getFileTypeLicenseInfo($fileType, $pluginName);
+        }
     
         // ファイル生成
         $this->makeFiler(
@@ -89,7 +93,7 @@ trait MakeControllerTrait
             stub: $stub,
             pluginName: $pluginName,
             placeholders: [],
-            licenseInfo: $this->getFileTypeLicenseInfo($fileType, $pluginName)
+            licenseInfo: $licenseInfo
         );
         
         // テスト生成
