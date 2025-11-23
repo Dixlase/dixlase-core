@@ -25,6 +25,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use App\Captcha\CaptchaDriver;
 use App\Captcha\GoogleRecaptchaDriver;
+use App\Captcha\GoogleRecaptchaEnterpriseDriver;
 use App\Captcha\TurnstileCaptchaDriver;
 use App\Helpers\CaptchaHelper;
 
@@ -40,8 +41,9 @@ class CaptchaServiceProvider extends ServiceProvider
             
             switch ($driver) {
                 case 'google':
-                case 'google_enterprise':
                     return new GoogleRecaptchaDriver();
+                case 'google_enterprise':
+                    return new GoogleRecaptchaEnterpriseDriver();
                 case 'turnstile':
                     return new TurnstileCaptchaDriver();
                 default:
