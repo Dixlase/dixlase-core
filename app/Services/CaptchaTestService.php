@@ -23,7 +23,9 @@
 namespace App\Services;
 
 use App\Models\SecuritySetting;
-use App\Captcha\GoogleRecaptchaDriver;
+use App\Captcha\GoogleRecaptchaV2Driver;
+use App\Captcha\GoogleRecaptchaV3Driver;
+use App\Captcha\GoogleRecaptchaEnterpriseDriver;
 use App\Captcha\TurnstileCaptchaDriver;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -127,48 +129,17 @@ class CaptchaTestService
             ];
         }
         
-        // Google Cloud認証の確認
-        $credentialsPath = env('GOOGLE_APPLICATION_CREDENTIALS');
-        if (empty($credentialsPath) || !file_exists($credentialsPath)) {
-            Log::error('CAPTCHA Test Debug - Google Cloud credentials missing', [
-                'credentials_path' => $credentialsPath,
-                'file_exists' => $credentialsPath ? file_exists($credentialsPath) : false
-            ]);
-            
-            return [
-                'success' => false,
-                'message' => 'Google Cloud認証情報が設定されていません。GOOGLE_APPLICATION_CREDENTIALSを設定してください。'
-            ];
-        }
-        
-        // Enterprise APIの場合、Google Cloud SDKが必要
+        // Enterprise APIの場合、REST APIを使用（Google Cloud SDK不要）
         try {
-            // RecaptchaEnterpriseServiceClientクラスの存在確認
-            if (!class_exists('Google\Cloud\RecaptchaEnterprise\V1\RecaptchaEnterpriseServiceClient')) {
-                return [
-                    'success' => false,
-                    'message' => 'Google Cloud reCAPTCHA Enterprise SDKがインストールされていません。composer require google/cloud-recaptcha-enterprise を実行してください。'
-                ];
-            }
-            
-            $driver = new GoogleRecaptchaDriver([
+            $driver = new GoogleRecaptchaEnterpriseDriver([
                 'site_key' => $siteKey,
-                'secret_key' => $secretKey,
-                'project_id' => $projectId,
-                'use_enterprise' => true
+                'api_key' => $secretKey,
+                'project_id' => $projectId
             ]);
-            
-            // 基本的な設定チェック
-            if (!$driver->isEnabled()) {
-                return [
-                    'success' => false,
-                    'message' => __('admin.settings.security.captcha_test_enterprise_config_invalid')
-                ];
-            }
             
             return [
                 'success' => true,
-                'message' => 'Google reCAPTCHA Enterprise設定は正常です。実際のトークン検証にはGoogle Cloud認証が必要です。'
+                'message' => 'Google reCAPTCHA Enterprise設定は正常です。REST APIを使用します。'
             ];
         } catch (\Exception $e) {
             Log::error('CAPTCHA Test Debug - Enterprise test failed', [

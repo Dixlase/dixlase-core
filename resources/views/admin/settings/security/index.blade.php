@@ -1264,6 +1264,19 @@ function loadGoogleRecaptchaWidgetDynamic(version, siteKey) {
 function loadGoogleV3Dynamic(siteKey) {
     console.log('Loading Google reCAPTCHA v3 dynamically with siteKey:', siteKey.substring(0, 20) + '...');
     
+    // 既存のreCAPTCHAスクリプトとgrecaptchaオブジェクトをクリーンアップ
+    const existingScripts = document.querySelectorAll('script[src*="google.com/recaptcha"]');
+    existingScripts.forEach(script => {
+        console.log('Removing existing reCAPTCHA script:', script.src);
+        script.remove();
+    });
+    
+    // grecaptchaオブジェクトを削除
+    if (typeof grecaptcha !== 'undefined') {
+        console.log('Cleaning up existing grecaptcha object');
+        delete window.grecaptcha;
+    }
+    
     // v3スクリプトを動的に読み込み
     const script = document.createElement('script');
     script.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`;
@@ -1296,34 +1309,57 @@ function loadGoogleV2InvisibleDynamic(siteKey) {
     const container = document.getElementById('captcha-widget-container');
     container.innerHTML = '<div id="recaptcha-v2-invisible"></div>';
     
+    // 既存のreCAPTCHAスクリプトとgrecaptchaオブジェクトをクリーンアップ
+    const existingScripts = document.querySelectorAll('script[src*="google.com/recaptcha"]');
+    existingScripts.forEach(script => {
+        console.log('Removing existing reCAPTCHA script:', script.src);
+        script.remove();
+    });
+    
+    // grecaptchaオブジェクトを削除
+    if (typeof grecaptcha !== 'undefined') {
+        console.log('Cleaning up existing grecaptcha object');
+        delete window.grecaptcha;
+    }
+    
     // v2スクリプトを動的に読み込み
     const script = document.createElement('script');
-    script.src = 'https://www.google.com/recaptcha/api.js';
-    script.onload = function() {
+    script.src = 'https://www.google.com/recaptcha/api.js?onload=onRecaptchaV2InvisibleLoad&render=explicit';
+    
+    // グローバルコールバック関数を定義
+    window.onRecaptchaV2InvisibleLoad = function() {
         console.log('Google reCAPTCHA v2 script loaded, rendering invisible widget...');
         
-        const widgetId = grecaptcha.render('recaptcha-v2-invisible', {
-            'sitekey': siteKey,
-            'size': 'invisible',
-            'callback': function(token) {
-                console.log('v2 invisible token generated:', token.substring(0, 50) + '...');
-                validateCaptchaToken(token);
-            },
-            'error-callback': function() {
-                console.error('reCAPTCHA v2 invisible error');
-                showTestResult('error', captchaMessages.v2InvisibleError);
-            }
-        });
-        
-        // 自動実行
-        setTimeout(() => {
-            grecaptcha.execute(widgetId);
-        }, 1000);
+        try {
+            const widgetId = grecaptcha.render('recaptcha-v2-invisible', {
+                'sitekey': siteKey,
+                'size': 'invisible',
+                'callback': function(token) {
+                    console.log('v2 invisible token generated:', token.substring(0, 50) + '...');
+                    validateCaptchaToken(token);
+                },
+                'error-callback': function() {
+                    console.error('reCAPTCHA v2 invisible error');
+                    showTestResult('error', captchaMessages.v2InvisibleError);
+                }
+            });
+            
+            // 自動実行
+            setTimeout(() => {
+                console.log('Executing reCAPTCHA v2 invisible widget ID:', widgetId);
+                grecaptcha.execute(widgetId);
+            }, 1000);
+        } catch (error) {
+            console.error('Failed to render v2 invisible widget:', error);
+            showTestResult('error', captchaMessages.v2WidgetRenderFailed + ': ' + error.message);
+        }
     };
+    
     script.onerror = function() {
         console.error('Failed to load Google reCAPTCHA v2 script');
         showTestResult('error', captchaMessages.v2ScriptLoadFailed);
     };
+    
     document.head.appendChild(script);
 }
 
@@ -1335,9 +1371,27 @@ function loadGoogleV2CheckboxDynamic(siteKey) {
     const container = document.getElementById('captcha-widget-container');
     container.innerHTML = '<div id="recaptcha-v2-checkbox"></div><div class="mt-2 text-sm text-yellow-400">' + captchaMessages.v2CheckboxInstruction + '</div>';
     
-    // 既にgrecaptchaが読み込まれている場合は直接レンダリング
-    if (typeof grecaptcha !== 'undefined' && grecaptcha.render) {
-        console.log('Google reCAPTCHA v2 already loaded, rendering checkbox widget...');
+    // 既存のreCAPTCHAスクリプトとgrecaptchaオブジェクトをクリーンアップ
+    const existingScripts = document.querySelectorAll('script[src*="google.com/recaptcha"]');
+    existingScripts.forEach(script => {
+        console.log('Removing existing reCAPTCHA script:', script.src);
+        script.remove();
+    });
+    
+    // grecaptchaオブジェクトを削除
+    if (typeof grecaptcha !== 'undefined') {
+        console.log('Cleaning up existing grecaptcha object');
+        delete window.grecaptcha;
+    }
+    
+    // v2スクリプトを動的に読み込み
+    const script = document.createElement('script');
+    script.src = 'https://www.google.com/recaptcha/api.js?onload=onRecaptchaV2CheckboxLoad&render=explicit';
+    
+    // グローバルコールバック関数を定義
+    window.onRecaptchaV2CheckboxLoad = function() {
+        console.log('Google reCAPTCHA v2 script loaded, rendering checkbox widget...');
+        
         try {
             grecaptcha.render('recaptcha-v2-checkbox', {
                 'sitekey': siteKey,
@@ -1351,82 +1405,16 @@ function loadGoogleV2CheckboxDynamic(siteKey) {
                 }
             });
         } catch (error) {
-            console.error('grecaptcha.render failed:', error);
-            console.log('grecaptcha object:', grecaptcha);
-            console.log('grecaptcha.render type:', typeof grecaptcha.render);
-            showTestResult('error', captchaMessages.v2WidgetRenderFailed);
+            console.error('Failed to render v2 checkbox widget:', error);
+            showTestResult('error', captchaMessages.v2WidgetRenderFailed + ': ' + error.message);
         }
-        return;
-    }
-    
-    // スクリプトが既に存在するかチェック
-    const existingScript = document.querySelector('script[src="https://www.google.com/recaptcha/api.js"]');
-    if (existingScript) {
-        console.log('Google reCAPTCHA v2 script already exists, waiting for load...');
-        // スクリプトが読み込まれるまで待機
-        const checkGrecaptcha = setInterval(() => {
-            if (typeof grecaptcha !== 'undefined' && grecaptcha.render) {
-                clearInterval(checkGrecaptcha);
-                console.log('Google reCAPTCHA v2 ready, rendering checkbox widget...');
-                grecaptcha.render('recaptcha-v2-checkbox', {
-                    'sitekey': siteKey,
-                    'callback': function(token) {
-                        console.log('v2 checkbox token generated:', token.substring(0, 50) + '...');
-                        validateCaptchaToken(token);
-                    },
-                    'error-callback': function() {
-                        console.error('reCAPTCHA v2 checkbox error');
-                        showTestResult('error', captchaMessages.v2CheckboxError);
-                    }
-                });
-            }
-        }, 100);
-        return;
-    }
-    
-    // v2スクリプトを動的に読み込み
-    const script = document.createElement('script');
-    script.src = 'https://www.google.com/recaptcha/api.js';
-    script.onload = function() {
-        console.log('Google reCAPTCHA v2 script loaded, rendering checkbox widget...');
-        
-        // grecaptchaが完全に初期化されるまで待機
-        const waitForGrecaptcha = () => {
-            if (typeof grecaptcha !== 'undefined' && grecaptcha.render && typeof grecaptcha.render === 'function') {
-                console.log('grecaptcha.render is ready, rendering widget...');
-                try {
-                    grecaptcha.render('recaptcha-v2-checkbox', {
-                        'sitekey': siteKey,
-                        'callback': function(token) {
-                            console.log('v2 checkbox token generated:', token.substring(0, 50) + '...');
-                            validateCaptchaToken(token);
-                        },
-                        'error-callback': function() {
-                            console.error('reCAPTCHA v2 checkbox error');
-                            showTestResult('error', captchaMessages.v2CheckboxError);
-                        }
-                    });
-                } catch (error) {
-                    console.error('grecaptcha.render failed in script.onload:', error);
-                    console.log('grecaptcha object:', grecaptcha);
-                    showTestResult('error', captchaMessages.v2WidgetRenderFailed);
-                }
-            } else {
-                console.log('grecaptcha not ready yet, waiting...', {
-                    exists: typeof grecaptcha !== 'undefined',
-                    hasRender: typeof grecaptcha !== 'undefined' && grecaptcha.render,
-                    renderType: typeof grecaptcha !== 'undefined' ? typeof grecaptcha.render : 'undefined'
-                });
-                setTimeout(waitForGrecaptcha, 100);
-            }
-        };
-        
-        waitForGrecaptcha();
     };
+    
     script.onerror = function() {
         console.error('Failed to load Google reCAPTCHA v2 script');
         showTestResult('error', captchaMessages.v2ScriptLoadFailed);
     };
+    
     document.head.appendChild(script);
 }
 

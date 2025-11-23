@@ -24,7 +24,8 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use App\Captcha\CaptchaDriver;
-use App\Captcha\GoogleRecaptchaDriver;
+use App\Captcha\GoogleRecaptchaV2Driver;
+use App\Captcha\GoogleRecaptchaV3Driver;
 use App\Captcha\GoogleRecaptchaEnterpriseDriver;
 use App\Captcha\TurnstileCaptchaDriver;
 use App\Helpers\CaptchaHelper;
@@ -41,7 +42,14 @@ class CaptchaServiceProvider extends ServiceProvider
             
             switch ($driver) {
                 case 'google':
-                    return new GoogleRecaptchaDriver();
+                    // バージョンに応じてv2/v3を選択
+                    $version = CaptchaHelper::getGoogleVersion();
+                    if ($version === 'v3') {
+                        return new GoogleRecaptchaV3Driver();
+                    } else {
+                        // v2_checkbox or v2_invisible
+                        return new GoogleRecaptchaV2Driver();
+                    }
                 case 'google_enterprise':
                     return new GoogleRecaptchaEnterpriseDriver();
                 case 'turnstile':
