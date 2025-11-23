@@ -47,7 +47,7 @@ class MakeCustomNotification extends Command
         return $this->generateCustomFile(
             $this->argument('className'),
             $this->argument('fileType'),
-            $this->argument('pluginName'),
+            $this->argument('targetName'),
             'notification',
             $this->options()
         );

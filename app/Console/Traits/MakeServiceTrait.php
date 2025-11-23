@@ -23,6 +23,8 @@
 namespace App\Console\Traits;
 
 use Illuminate\Support\Str;
+use App\Console\Traits\MakeLicenseTrait;
+use App\Console\Traits\MakeFileTrait;
 
 /**
  * サービスクラスを作るための追加ロジック。
@@ -31,55 +33,53 @@ use Illuminate\Support\Str;
 trait MakeServiceTrait
 {
     use MakeFileTrait;
+    use MakeLicenseTrait;
+
+    /**
+     * サービスコマンドの共通オプション定義
+     *
+     * @return array
+     */
+    protected function getAdditionalOptions(): array
+    {
+        return [];
+    }
 
     /**
      * サービスクラスを作成するメイン処理
      *
-     * @param  string  $className
-     * @param  array   $subDirs
-     * @param  bool    $force
+     * @param  string  $className   サービスクラス名
+     * @param  string  $fileType    ファイルタイプ
+     * @param  array   $options     オプション配列
+     * @param  array   $subDirs     サブディレクトリ配列
+     * @param  string  $pluginName  プラグイン名
+     * @param  array   $licenseInfo ライセンス情報
+     * @return bool
      */
-    protected function makeFile(string $className, array $subDirs, bool $force): void
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '', array $licenseInfo = [])
     {
-        // 1) service.stub など
-        $stubFile = $this->resolveStubFile();
+        // 1) service.stubの内容を読み込み
+        $stubPath = base_path('stubs/custom/service.stub');
+        $stub = file_get_contents($stubPath);
 
-        // 2) options
-        $options = [
-            'force' => $force,
-        ];
+        // 2) ライセンス情報の取得（渡された情報を優先）
+        if (empty($licenseInfo)) {
+            $licenseInfo = $this->getFileTypeLicenseInfo($fileType, $pluginName);
+        }
 
-        // 3) サービス固有の追加プレースホルダ (なければ空)
-        $extraPlaceholders = [];
+        // 3) ファイル生成
+        $this->makeFiler(
+            className: $className,
+            fileType: $fileType,
+            fileCategory: 'service',
+            options: $options,
+            subDirs: $subDirs,
+            stub: $stub,
+            pluginName: $pluginName,
+            placeholders: [],
+            licenseInfo: $licenseInfo
+        );
 
-        // 4) makeFiler
-        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders);
+        return true;
     }
-
-    /**
-     * デフォルトは "service.stub"
-     */
-    protected function resolveStubFile(): string
-    {
-        return 'service.stub';
-    }
-
-    /**
-     * (B)パターン: getDirectory/getNamespace => getServiceDirectory/Namespace
-     */
-    protected function getDirectory(array $subDirs): string
-    {
-        return $this->getServiceDirectory($subDirs);
-    }
-
-    protected function getNamespace(array $subDirs): string
-    {
-        return $this->getServiceNamespace($subDirs);
-    }
-
-    /**
-     * サブクラスで実装
-     */
-    abstract protected function getServiceDirectory(array $subDirs): string;
-    abstract protected function getServiceNamespace(array $subDirs): string;
 }

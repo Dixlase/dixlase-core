@@ -351,26 +351,32 @@ trait MakeFileTrait
         // 選択されたラベルからファイルタイプを取得
         $fileType = array_search($selectedLabel, $labels) ?: 'core';
 
-        // プラグインの指定を取得
-        $pluginName = '';
+        // プラグインまたはテーマの対象名を取得
+        $targetName = '';
         if ($fileType === 'plugin' || $fileType === 'custom_plugin') {
             // コマンド引数でプラグイン名が指定されている場合はそのまま使用
             if (!empty($this->argument('pluginName'))) {
-                $pluginName = $this->argument('pluginName');
+                $targetName = $this->argument('pluginName');
                 $availablePlugins = $this->getAvailablePluginNames();
-                if (!in_array($pluginName, $availablePlugins)) {
-                    $this->error(__('command.plugin.not_found', ['name' => $pluginName]));
+                if (!in_array($targetName, $availablePlugins)) {
+                    $this->error(__('command.plugin.not_found', ['name' => $targetName]));
                     return [null, null];
                 }
             } else {
-                $pluginName = $this->choosePlugin();
-                if (!$pluginName) {
+                $targetName = $this->choosePlugin();
+                if (!$targetName) {
                     return [null, null];
                 }
             }
+        } elseif ($fileType === 'theme') {
+            // テーマ選択（MakeThemeCommandTraitのchooseThemeメソッドを使用）
+            $targetName = $this->chooseTheme();
+            if (!$targetName) {
+                return [null, null];
+            }
         }
 
-        return [$fileType, $pluginName];
+        return [$fileType, $targetName];
     }
 
 
@@ -596,6 +602,14 @@ trait MakeFileTrait
                         ? "Themes\\{$themeStudly}\\{$baseNamespace}" 
                         : "Themes\\{$themeStudly}";
                 }
+                break;
+
+            case 'custom_theme':
+                // テーマ用カスタムファイル
+                $basePath = "custom/themes/{$pluginStudly}/{$basePath}";
+                $baseNamespace = $baseNamespace 
+                    ? "Custom\\Themes\\{$pluginStudly}\\{$baseNamespace}" 
+                    : "Custom\\Themes\\{$pluginStudly}";
                 break;
 
             default:

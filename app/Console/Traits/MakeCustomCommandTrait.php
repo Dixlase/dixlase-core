@@ -31,6 +31,7 @@ use Illuminate\Support\Str;
 trait MakeCustomCommandTrait
 {
     use MakeFileTrait;
+    use MakeThemeCommandTrait;
 
     /**
      * カスタムコマンドの共通引数を取得します
@@ -39,7 +40,7 @@ trait MakeCustomCommandTrait
      */
     protected function getCustomCommandSignature(bool $includeScope = false): string
     {
-        $signature = "{className? : The class name (e.g. User)} {fileType? : The file type (e.g. Service, Repository)} {pluginName? : The plugin name (e.g. MyPlugin)}";
+        $signature = "{className? : The class name (e.g. User)} {fileType? : The file type (e.g. Service, Repository)} {targetName? : The target name (e.g. MyPlugin)}";
         
         if ($includeScope) {
             $signature .= " {scope?}";
@@ -48,11 +49,22 @@ trait MakeCustomCommandTrait
         return $signature;
     }
 
-
+    /**
+     * カスタムファイルを生成する共通処理
+     *
+     * @param string|null $classPath クラスパス（例: Admin/UserController）
+     * @param string|null $fileType ファイルタイプ（core, plugin, theme）
+     * @param string|null $targetName プラグイン名またはテーマ名
+     * @param string|null $category ファイルカテゴリ（controller, model, service など）
+     * @param array $options 追加オプション
+     * @param bool $needsScope スコープが必要かどうか
+     * @param string|null $scope スコープ（admin, front, plain）
+     * @return bool 成功した場合true
+     */
     protected function generateCustomFile(
         ?string $classPath = null,
         ?string $fileType = null,
-        ?string $pluginName = null,
+        ?string $targetName = null,
         string $category = null,
         array $options = [],
         bool $needsScope = false,
@@ -69,20 +81,14 @@ trait MakeCustomCommandTrait
         
         // ファイルタイプの選択
         if (empty($fileType)) {
-            [$fileType, $pluginName] = $this->chooseFileType();
+            [$fileType, $targetName] = $this->chooseFileType();
             if (!$fileType) {
                 return false;
             }
         }
 
-        // ファイルタイプがpluginでプラグイン名が指定されていない場合、プラグイン名を聞く
-        if ($fileType === 'plugin' && empty($pluginName)) {
-            $pluginName = $this->choosePlugin();
-            if (!$pluginName) {
-                $this->error(__('command.plugin.not_selected'));
-                return false;
-            }
-        }
+        // プラグイン名やテーマ名はchooseFileType()内で既に選択されているため、
+        // ここでの追加処理は通常不要（引数で直接指定された場合のフォールバック）
 
         // スコープの処理（必要な場合）
         if ($needsScope && empty($scope)) {
@@ -104,17 +110,23 @@ trait MakeCustomCommandTrait
             $fileType = 'custom_plugin';
         }
 
-        // プラグイン名がnullの場合は空文字列に変換（coreの場合など）
-        $pluginName = $pluginName ?? '';
+        // カスタムコマンドでthemeが指定された場合はcustom_themeに変換
+        if ($fileType === 'theme') {
+            $fileType = 'custom_theme';
+        }
+
+        // 対象名がnullの場合は空文字列に変換（coreの場合など）
+        $targetName = $targetName ?? '';
 
         // ライセンス情報を取得
-        $licenseInfo = $this->getCustomFileLicenseInfo($fileType, $pluginName);
+        $licenseInfo = $this->getCustomFileLicenseInfo($fileType, $targetName);
 
         // 共通パラメータを準備
         $common = [
             'fileType' => $fileType,
             'className' => $className,
-            'pluginName' => $pluginName,
+            'targetName' => $targetName,
+            'pluginName' => $targetName,  // 互換性のため（既存コードがこのキーを参照している可能性）
             'subDirs' => $subDirs,
             'scope' => $scope,
             'category' => $category
@@ -134,7 +146,7 @@ trait MakeCustomCommandTrait
             $fileType,
             $options,
             $subDirs,
-            $pluginName,
+            $targetName,
             $licenseInfo
         );
 
@@ -144,23 +156,23 @@ trait MakeCustomCommandTrait
     /**
      * カスタムディレクトリのライセンス情報を取得
      *
-     * @param string $fileType ファイルタイプ（core、custom_plugin、theme）
-     * @param string|null $pluginName プラグイン名またはテーマ名
+     * @param string $fileType ファイルタイプ（core、custom_plugin、custom_theme）
+     * @param string|null $targetName プラグイン名またはテーマ名
      * @param bool $showNotice 警告メッセージを表示するかどうか
      * @return array|null
      */
-    protected function getCustomFileLicenseInfo(string $fileType = 'core', ?string $pluginName = null, bool $showNotice = false): array
+    protected function getCustomFileLicenseInfo(string $fileType = 'core', ?string $targetName = null, bool $showNotice = false): array
     {
         // ファイルタイプに応じてライセンス情報を取得
         if ($fileType === 'core') {
             // コアの場合は dixlase.json から取得（getLicenseInfoFromJson内で処理）
             return $this->getLicenseInfoFromJson('custom', null, $showNotice) ?? [];
-        } elseif ($fileType === 'custom_plugin' && $pluginName) {
+        } elseif ($fileType === 'custom_plugin' && $targetName) {
             // プラグイン用カスタムファイルの場合はプラグインのライセンス情報を使用
-            return $this->getLicenseInfoFromJson('plugins', $pluginName, $showNotice) ?? [];
-        } elseif ($fileType === 'theme' && $pluginName) {
+            return $this->getLicenseInfoFromJson('plugins', $targetName, $showNotice) ?? [];
+        } elseif ($fileType === 'custom_theme' && $targetName) {
             // テーマ用カスタムファイルの場合はテーマのライセンス情報を使用
-            return $this->getLicenseInfoFromJson('themes', $pluginName, $showNotice) ?? [];
+            return $this->getLicenseInfoFromJson('themes', $targetName, $showNotice) ?? [];
         }
         
         // デフォルトはcustomディレクトリ

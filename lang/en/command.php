@@ -69,10 +69,11 @@ return [
         ]
     ],
     'file_type' => [
-        'prompt' => 'Please select the file type for custom',
+        'prompt' => 'Select the type of custom file',
         'labels' => [
-            'core'   => 'Core file (core) for custom',
-            'plugin' => 'Plugin file (plugin) for custom',
+            'core' => 'Core file (core)',
+            'plugin' => 'Plugin file (plugin)',
+            'theme' => 'Theme file (theme)',
         ],
     ],
     'scope' => [
@@ -498,6 +499,22 @@ return [
         'cleaning_up' => 'Cleaning up sessions older than :days days...',
         'deleted_old_success' => 'Successfully deleted :count old session records.',
         'no_old_records_found' => 'No old session records found to delete.',
+    ],
+
+    // Custom File Creation Commands
+    'make_custom' => [
+        'observer' => [
+            'description' => 'Create a new Observer class in the custom directory',
+        ],
+        'service' => [
+            'description' => 'Create a new Service class in the custom directory',
+        ],
+        'validator' => [
+            'description' => 'Create a new Validator class in the custom directory',
+        ],
+        'command' => [
+            'description' => 'Create a new Artisan command class in the custom directory',
+        ],
     ],
 
 ];

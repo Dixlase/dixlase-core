@@ -69,17 +69,6 @@ trait MakeLicenseTrait
             return null;
         }
 
-        // まずlicense-info.jsonを確認（後方互換性）
-        $licenseInfoFile = "{$basePath}/license-info.json";
-        
-        if (File::exists($licenseInfoFile)) {
-            $licenseData = json_decode(File::get($licenseInfoFile), true);
-            
-            if (json_last_error() === JSON_ERROR_NONE && !empty($licenseData['license'])) {
-                return $this->formatLicenseInfo($licenseData, $displayName, $showNotice);
-            }
-        }
-
         // theme.jsonまたはplugin.jsonから情報を取得
         $jsonFile = null;
         if ($type === 'themes') {

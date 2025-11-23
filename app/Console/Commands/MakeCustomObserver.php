@@ -23,60 +23,38 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
 use App\Console\Traits\MakeObserverTrait;
+use App\Console\Traits\MakeLicenseTrait;
+use App\Console\Traits\MakeCustomCommandTrait;
 
 class MakeCustomObserver extends Command
 {
     use MakeObserverTrait;
+    use MakeLicenseTrait;
+    use MakeCustomCommandTrait;
 
-    protected $signature = 'dls:make:custom:observer
-        {name : The observer class name (optionally with subfolders, e.g. Admin/UserObserver)}
-        {--model= : The model that the observer applies to}
-        {--force : Overwrite if the observer class already exists}';
-
-    protected $description = 'Create a new Eloquent observer in the custom directory';
-
+    protected $signature;
 
     public function __construct()
     {
+        $this->signature = $this->makeSignature(
+            'dls:make:custom:observer'
+            .$this->getCustomCommandSignature(),
+            $this->getAdditionalOptions()
+        );
+        $this->setDescription(__('command.make_custom.observer.description'));
+        
         parent::__construct();
     }
 
     public function handle()
     {
-        // 1) parse subDirs + className
-        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
-
-        // 2) --model
-        $modelOption = $this->option('model');
-        // 3) --force
-        $force = (bool) $this->option('force');
-
-        // 4) Trait method
-        $this->makeFile($className, $subDirs, $force, $modelOption);
-
-        return 0;
-    }
-
-    /**
-     * (B)パターン: getObserverDirectory/Namespace
-     */
-    protected function getObserverDirectory(array $subDirs): string
-    {
-        $base = base_path('custom/app/Observers');
-        if ($subDirs) {
-            $base .= '/' . implode('/', $subDirs);
-        }
-        return $base;
-    }
-
-    protected function getObserverNamespace(array $subDirs): string
-    {
-        $base = 'Custom\\App\\Observers';
-        if ($subDirs) {
-            $base .= '\\' . implode('\\', $subDirs);
-        }
-        return $base;
+        return $this->generateCustomFile(
+            $this->argument('className'),
+            $this->argument('fileType'),
+            $this->argument('targetName'),
+            'observer',
+            $this->options()
+        );
     }
 }
