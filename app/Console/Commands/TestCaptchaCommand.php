@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\SecuritySetting;
-use App\Captcha\GoogleRecaptchaDriver;
+use App\Captcha\CaptchaDriver;
 use App\Helpers\CaptchaHelper;
 use Illuminate\Http\Request;
 
@@ -79,7 +79,7 @@ class TestCaptchaCommand extends Command
         
         // Test driver initialization
         try {
-            $driver = new GoogleRecaptchaDriver();
+            $driver = app(CaptchaDriver::class);
             $this->info('Driver initialized successfully.');
             
             // Check if driver is enabled

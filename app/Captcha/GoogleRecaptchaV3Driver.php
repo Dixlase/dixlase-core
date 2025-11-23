@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Helpers\CaptchaHelper;
 
-class GoogleRecaptchaDriver implements CaptchaDriver
+class GoogleRecaptchaV3Driver implements CaptchaDriver
 {
     protected array $config;
 
@@ -36,14 +36,12 @@ class GoogleRecaptchaDriver implements CaptchaDriver
         $this->config = array_merge([
             'site_key' => CaptchaHelper::getSiteKey(),
             'secret_key' => CaptchaHelper::getSecretKey(),
-            'version' => CaptchaHelper::getGoogleVersion(),
             'min_score' => CaptchaHelper::getGoogleMinScore(),
             'verify_url' => 'https://www.google.com/recaptcha/api/siteverify',
         ], $config);
         
-        Log::info('GoogleRecaptchaDriver constructor', [
-            'site_key' => substr($this->config['site_key'], 0, 10) . '...',
-            'version' => $this->config['version']
+        Log::info('GoogleRecaptchaV3Driver constructor', [
+            'site_key' => substr($this->config['site_key'], 0, 10) . '...'
         ]);
     }
 
@@ -54,13 +52,7 @@ class GoogleRecaptchaDriver implements CaptchaDriver
         }
 
         $siteKey = $this->config['site_key'];
-        $version = $this->config['version'];
-
-        if ($version === 'v3') {
-            return "<script src=\"https://www.google.com/recaptcha/api.js?render={$siteKey}\"></script>";
-        } else {
-            return "<script src=\"https://www.google.com/recaptcha/api.js\" async defer></script>";
-        }
+        return "<script src=\"https://www.google.com/recaptcha/api.js?render={$siteKey}\"></script>";
     }
 
     public function renderWidget(array $options = []): string
@@ -70,63 +62,58 @@ class GoogleRecaptchaDriver implements CaptchaDriver
         }
 
         $siteKey = $this->config['site_key'];
-        $version = $this->config['version'];
         $action = $options['action'] ?? 'submit';
-        $callback = $options['callback'] ?? 'onRecaptchaCallback';
-
         $scriptTag = $this->renderScript();
         
-        Log::info('GoogleRecaptchaDriver renderWidget', [
+        Log::info('GoogleRecaptchaV3Driver renderWidget', [
             'siteKey' => $siteKey,
-            'version' => $version,
             'action' => $action
         ]);
         
-        if ($version === 'v3') {
-            return $scriptTag . "
-                <input type=\"hidden\" id=\"g-recaptcha-response\" name=\"g-recaptcha-response\" value=\"\">
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        console.log('CAPTCHA Debug - Site Key:', '$siteKey');
-                        console.log('CAPTCHA Debug - Action:', '$action');
-                        if (typeof grecaptcha !== 'undefined') {
-                            grecaptcha.ready(function() {
-                                console.log('CAPTCHA Debug - About to execute with site key:', '$siteKey');
-                                grecaptcha.execute('$siteKey', {action: '$action'}).then(function(token) {
-                                    console.log('CAPTCHA Debug - Token received:', token.substring(0, 20) + '...');
-                                    document.getElementById('g-recaptcha-response').value = token;
-                                }).catch(function(error) {
-                                    console.error('CAPTCHA Debug - Execute failed:', error);
-                                });
+        return $scriptTag . "
+            <input type=\"hidden\" id=\"g-recaptcha-response\" name=\"g-recaptcha-response\" value=\"\">
+            <script>
+                console.log('CAPTCHA v3 Debug - Site Key:', '$siteKey');
+                console.log('CAPTCHA v3 Debug - Action:', '$action');
+                document.addEventListener('DOMContentLoaded', function() {
+                    if (typeof grecaptcha !== 'undefined') {
+                        grecaptcha.ready(function() {
+                            console.log('CAPTCHA v3 Debug - About to execute');
+                            grecaptcha.execute('$siteKey', {action: '$action'}).then(function(token) {
+                                console.log('CAPTCHA v3 Debug - Token received:', token.substring(0, 20) + '...');
+                                document.getElementById('g-recaptcha-response').value = token;
+                            }).catch(function(error) {
+                                console.error('CAPTCHA v3 Debug - Execute failed:', error);
                             });
-                        } else {
-                            console.error('reCAPTCHA v3 script not loaded properly');
-                        }
-                    });
-                </script>
-            ";
-        } else {
-            return $scriptTag . "<div class=\"g-recaptcha\" data-sitekey=\"$siteKey\" data-callback=\"$callback\"></div>";
-        }
+                        });
+                    } else {
+                        console.error('reCAPTCHA v3 script not loaded properly');
+                    }
+                });
+            </script>
+        ";
     }
 
     public function verify(Request $request): CaptchaResult
     {
         if (!$this->isEnabled()) {
+            Log::info('GoogleRecaptchaV3Driver verify - CAPTCHA disabled, bypassing');
             return new CaptchaResult(true, null, null, [], ['bypass' => true]);
         }
 
         $response = $request->input('g-recaptcha-response');
         
+        Log::info('GoogleRecaptchaV3Driver verify - Start', [
+            'has_token' => !empty($response),
+            'token_length' => strlen($response ?? ''),
+            'ip' => $request->ip()
+        ]);
+        
         if (empty($response)) {
+            Log::warning('GoogleRecaptchaV3Driver verify - No token provided');
             return new CaptchaResult(false, null, null, ['captcha' => 'reCAPTCHA response is required']);
         }
 
-        return $this->verifyWithStandardAPI($request, $response);
-    }
-
-    protected function verifyWithStandardAPI(Request $request, string $response): CaptchaResult
-    {
         try {
             $httpResponse = Http::asForm()->post($this->config['verify_url'], [
                 'secret' => $this->config['secret_key'],
@@ -137,7 +124,7 @@ class GoogleRecaptchaDriver implements CaptchaDriver
             $result = $httpResponse->json();
 
             if (!$result['success']) {
-                Log::warning('reCAPTCHA verification failed', [
+                Log::warning('GoogleRecaptchaV3Driver verification failed', [
                     'errors' => $result['error-codes'] ?? [],
                     'ip' => $request->ip(),
                 ]);
@@ -151,35 +138,36 @@ class GoogleRecaptchaDriver implements CaptchaDriver
                 );
             }
 
-            // For v3, check the score
-            if ($this->config['version'] === 'v3') {
-                $score = $result['score'] ?? 0;
-                $action = $result['action'] ?? null;
+            $score = $result['score'] ?? 0;
+            $action = $result['action'] ?? null;
 
-                if ($score < $this->config['min_score']) {
-                    Log::warning('reCAPTCHA score too low', [
-                        'score' => $score,
-                        'min_score' => $this->config['min_score'],
-                        'action' => $action,
-                        'ip' => $request->ip(),
-                    ]);
+            Log::info('GoogleRecaptchaV3Driver verification success', [
+                'score' => $score,
+                'action' => $action,
+                'ip' => $request->ip()
+            ]);
 
-                    return new CaptchaResult(
-                        false,
-                        $score,
-                        $action,
-                        ['captcha' => 'reCAPTCHA score too low'],
-                        ['score' => $score, 'min_score' => $this->config['min_score']]
-                    );
-                }
+            if ($score < $this->config['min_score']) {
+                Log::warning('GoogleRecaptchaV3Driver score too low', [
+                    'score' => $score,
+                    'min_score' => $this->config['min_score'],
+                    'action' => $action,
+                    'ip' => $request->ip(),
+                ]);
 
-                return new CaptchaResult(true, $score, $action, [], ['score' => $score]);
+                return new CaptchaResult(
+                    false,
+                    $score,
+                    $action,
+                    ['captcha' => 'reCAPTCHA score too low'],
+                    ['score' => $score, 'min_score' => $this->config['min_score']]
+                );
             }
 
-            return new CaptchaResult(true, null, null, [], []);
+            return new CaptchaResult(true, $score, $action, [], ['score' => $score]);
 
         } catch (\Exception $e) {
-            Log::error('reCAPTCHA verification error', [
+            Log::error('GoogleRecaptchaV3Driver verification error', [
                 'error' => $e->getMessage(),
                 'ip' => $request->ip(),
             ]);
@@ -207,6 +195,8 @@ class GoogleRecaptchaDriver implements CaptchaDriver
 
     public function isEnabled(): bool
     {
-        return CaptchaHelper::isEnabled() && CaptchaHelper::getDriver() === 'google';
+        return CaptchaHelper::isEnabled() && 
+               CaptchaHelper::getDriver() === 'google' && 
+               CaptchaHelper::getGoogleVersion() === 'v3';
     }
 }
