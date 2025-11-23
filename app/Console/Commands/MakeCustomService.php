@@ -23,70 +23,38 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
 use App\Console\Traits\MakeServiceTrait;
+use App\Console\Traits\MakeLicenseTrait;
+use App\Console\Traits\MakeCustomCommandTrait;
 
 class MakeCustomService extends Command
 {
     use MakeServiceTrait;
+    use MakeLicenseTrait;
+    use MakeCustomCommandTrait;
 
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'dls:make:custom:service
-        {name : The name of the service class (with optional subfolders, e.g. Admin/MyService)}
-        {--force : Overwrite if the service class already exists}';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Command description';
-
+    protected $signature;
 
     public function __construct()
     {
+        $this->signature = $this->makeSignature(
+            'dls:make:custom:service'
+            .$this->getCustomCommandSignature(),
+            $this->getAdditionalOptions()
+        );
+        $this->setDescription(__('command.make_custom.service.description'));
+        
         parent::__construct();
     }
 
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
-        // 1) parse subDirs + className
-        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
-
-        // 2) --force
-        $force = (bool) $this->option('force');
-
-        // 3) Trait method
-        $this->makeFile($className, $subDirs, $force);
-
-        return 0;
-    }
-
-    /**
-     * (B)パターン: getServiceDirectory/Namespace
-     */
-    protected function getServiceDirectory(array $subDirs): string
-    {
-        $base = base_path('custom/services');
-        if ($subDirs) {
-            $base .= '/' . implode('/', $subDirs);
-        }
-        return $base;
-    }
-
-    protected function getServiceNamespace(array $subDirs): string
-    {
-        $base = 'Custom\\Services';
-        if ($subDirs) {
-            $base .= '\\' . implode('\\', $subDirs);
-        }
-        return $base;
+        return $this->generateCustomFile(
+            $this->argument('className'),
+            $this->argument('fileType'),
+            $this->argument('targetName'),
+            'service',
+            $this->options()
+        );
     }
 }

@@ -23,6 +23,8 @@
 namespace App\Console\Traits;
 
 use Illuminate\Support\Str;
+use App\Console\Traits\MakeLicenseTrait;
+use App\Console\Traits\MakeFileTrait;
 
 /**
  * Eloquent オブザーバ (Observer) 作成のための Trait.
@@ -39,45 +41,62 @@ use Illuminate\Support\Str;
 trait MakeObserverTrait
 {
     use MakeFileTrait;
+    use MakeLicenseTrait;
+
+    /**
+     * オブザーバーコマンドの共通オプション定義
+     *
+     * @return array
+     */
+    protected function getAdditionalOptions(): array
+    {
+        return [
+            '{--m|model= : ' . __('commands.make.options.model') . '}',
+        ];
+    }
 
     /**
      * オブザーバクラスを作成するメイン処理。
      *
      * @param  string  $className   オブザーバクラス名 (e.g. "UserObserver")
-     * @param  array   $subDirs     サブディレクトリ
-     * @param  bool    $force
-     * @param  string|null $modelOption  --modelオプション指定があればモデルFQCNを使用する
+     * @param  string  $fileType    ファイルタイプ
+     * @param  array   $options     オプション配列
+     * @param  array   $subDirs     サブディレクトリ配列
+     * @param  string  $pluginName  プラグイン名
+     * @param  array   $licenseInfo ライセンス情報
+     * @return bool
      */
-    protected function makeFile(
-        string $className,
-        array $subDirs,
-        bool $force,
-        ?string $modelOption
-    ): void {
-        // 1) observer.stub
-        $stubFile = $this->resolveStubFile();
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '', array $licenseInfo = [])
+    {
+        // 1) observer.stubの内容を読み込み
+        $stubPath = base_path('stubs/custom/observer.stub');
+        $stub = file_get_contents($stubPath);
 
-        // 2) options
-        $options = [
-            'force' => $force,
-        ];
-
-        // 3) オブザーバに関連づくモデルのプレースホルダを決める
+        // 2) オブザーバに関連づくモデルのプレースホルダを決める
+        $modelOption = $options['model'] ?? null;
         $modelReplacements = $this->buildModelReplacements($modelOption);
 
-        // 4) makeFiler
-        //    => ここでは embedLicensePhp などを呼び出す際に
-        //       $extraPlaceholders を結合して適用する
-        $this->makeFiler($className, $subDirs, $options, $stubFile, $modelReplacements);
+        // 3) ライセンス情報の取得（渡された情報を優先）
+        if (empty($licenseInfo)) {
+            $licenseInfo = $this->getFileTypeLicenseInfo($fileType, $pluginName);
+        }
+
+        // 4) ファイル生成
+        $this->makeFiler(
+            className: $className,
+            fileType: $fileType,
+            fileCategory: 'observer',
+            options: $options,
+            subDirs: $subDirs,
+            stub: $stub,
+            pluginName: $pluginName,
+            placeholders: $modelReplacements,
+            licenseInfo: $licenseInfo
+        );
+
+        return true;
     }
 
-    /**
-     * デフォルトは observer.stub
-     */
-    protected function resolveStubFile(): string
-    {
-        return 'observer.stub';
-    }
 
     /**
      * --model=xxx を指定した場合、そのFQCNを取得し、stubの {{ namespacedModel }} / {{ model }} / {{ modelVariable }} を置換
@@ -103,28 +122,10 @@ trait MakeObserverTrait
         $modelVariable   = Str::camel($modelShortName);
 
         return [
-            '{{ namespacedModel }}' => $modelFqcn,
-            '{{ model }}'           => $modelShortName,
-            '{{ modelVariable }}'   => $modelVariable,
+            'namespacedModel' => $modelFqcn,
+            'model'           => $modelShortName,
+            'modelVariable'   => $modelVariable,
         ];
     }
 
-    /**
-     * (B)パターン: getDirectory/getNamespace => getObserverDirectory/Namespace
-     */
-    protected function getDirectory(array $subDirs): string
-    {
-        return $this->getObserverDirectory($subDirs);
-    }
-
-    protected function getNamespace(array $subDirs): string
-    {
-        return $this->getObserverNamespace($subDirs);
-    }
-
-    /**
-     * サブクラスで実装
-     */
-    abstract protected function getObserverDirectory(array $subDirs): string;
-    abstract protected function getObserverNamespace(array $subDirs): string;
 }

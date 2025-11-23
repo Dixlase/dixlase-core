@@ -23,58 +23,38 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
 use App\Console\Traits\MakeValidatorTrait;
+use App\Console\Traits\MakeLicenseTrait;
+use App\Console\Traits\MakeCustomCommandTrait;
 
 class MakeCustomValidator extends Command
 {
     use MakeValidatorTrait;
+    use MakeLicenseTrait;
+    use MakeCustomCommandTrait;
 
-    protected $signature = 'dls:make:custom:validator
-        {name : The name of the validator/rule (with optional subfolders, e.g. Admin/MyCustomRule)}
-        {--force : Overwrite if validator file already exists}';
-
-    protected $description = 'Create a new custom validator (rule) in the custom directory';
-
+    protected $signature;
 
     public function __construct()
     {
+        $this->signature = $this->makeSignature(
+            'dls:make:custom:validator'
+            .$this->getCustomCommandSignature(),
+            $this->getAdditionalOptions()
+        );
+        $this->setDescription(__('command.make_custom.validator.description'));
+        
         parent::__construct();
     }
 
     public function handle()
     {
-        // 1) parse subDirs + className
-        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
-
-        // 2) --force
-        $force = (bool)$this->option('force');
-
-        // 3) trait method
-        $this->makeFile($className, $subDirs, $force);
-
-        return 0;
-    }
-
-    /**
-     * (B)パターン: getValidatorDirectory/Namespace
-     */
-    protected function getValidatorDirectory(array $subDirs): string
-    {
-        $base = base_path('custom/validators');
-        // "custom/validators" ディレクトリに配置する想定
-        if ($subDirs) {
-            $base .= '/' . implode('/', $subDirs);
-        }
-        return $base;
-    }
-
-    protected function getValidatorNamespace(array $subDirs): string
-    {
-        $base = 'Custom\\Validators';
-        if ($subDirs) {
-            $base .= '\\' . implode('\\', $subDirs);
-        }
-        return $base;
+        return $this->generateCustomFile(
+            $this->argument('className'),
+            $this->argument('fileType'),
+            $this->argument('targetName'),
+            'validator',
+            $this->options()
+        );
     }
 }

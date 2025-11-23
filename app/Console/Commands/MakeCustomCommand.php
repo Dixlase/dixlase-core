@@ -23,57 +23,38 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
 use App\Console\Traits\MakeCommandTrait;
+use App\Console\Traits\MakeLicenseTrait;
+use App\Console\Traits\MakeCustomCommandTrait;
 
 class MakeCustomCommand extends Command
 {
     use MakeCommandTrait;
+    use MakeLicenseTrait;
+    use MakeCustomCommandTrait;
 
-    protected $signature = 'dls:make:custom:command
-        {name : The name of the Artisan command class (with optional subfolders, e.g. Admin/MyTaskCommand)}
-        {--force : Overwrite if the command class already exists}';
-
-    protected $description = 'Create a new Artisan command in the custom directory';
-
+    protected $signature;
 
     public function __construct()
     {
+        $this->signature = $this->makeSignature(
+            'dls:make:custom:command'
+            .$this->getCustomCommandSignature(),
+            $this->getAdditionalOptions()
+        );
+        $this->setDescription(__('command.make_custom.command.description'));
+        
         parent::__construct();
     }
 
     public function handle()
     {
-        // 1) parse subDirs + className
-        [$subDirs, $className] = $this->fileGenerator->parseClassName($this->argument('name'));
-
-        // 2) --force
-        $force = (bool) $this->option('force');
-
-        // 3) Trait method
-        $this->makeFile($className, $subDirs, $force);
-
-        return 0;
-    }
-
-    /**
-     * (B)パターン: getCommandDirectory/Namespace
-     */
-    protected function getCommandDirectory(array $subDirs): string
-    {
-        $base = base_path('custom/console/commands');
-        if ($subDirs) {
-            $base .= '/' . implode('/', $subDirs);
-        }
-        return $base;
-    }
-
-    protected function getCommandNamespace(array $subDirs): string
-    {
-        $base = 'Custom\\Console\\Commands';
-        if ($subDirs) {
-            $base .= '\\' . implode('\\', $subDirs);
-        }
-        return $base;
+        return $this->generateCustomFile(
+            $this->argument('className'),
+            $this->argument('fileType'),
+            $this->argument('targetName'),
+            'command',
+            $this->options()
+        );
     }
 }

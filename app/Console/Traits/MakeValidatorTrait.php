@@ -23,6 +23,8 @@
 namespace App\Console\Traits;
 
 use Illuminate\Support\Str;
+use App\Console\Traits\MakeLicenseTrait;
+use App\Console\Traits\MakeFileTrait;
 
 /**
  * カスタムバリデーター（または独自バリデーションルール）を作るための追加ロジック。
@@ -31,56 +33,53 @@ use Illuminate\Support\Str;
 trait MakeValidatorTrait
 {
     use MakeFileTrait;
+    use MakeLicenseTrait;
+
+    /**
+     * バリデーターコマンドの共通オプション定義
+     *
+     * @return array
+     */
+    protected function getAdditionalOptions(): array
+    {
+        return [];
+    }
 
     /**
      * バリデーターを作成するメイン処理。
      *
-     * @param  string  $className
-     * @param  array   $subDirs
-     * @param  bool    $force
+     * @param  string  $className   バリデータークラス名
+     * @param  string  $fileType    ファイルタイプ
+     * @param  array   $options     オプション配列
+     * @param  array   $subDirs     サブディレクトリ配列
+     * @param  string  $pluginName  プラグイン名
+     * @param  array   $licenseInfo ライセンス情報
+     * @return bool
      */
-    protected function makeFile(string $className, array $subDirs, bool $force): void
+    protected function makeFile($className, $fileType, $options, $subDirs, $pluginName = '', array $licenseInfo = [])
     {
-        // 1) validator.stub (rule.stub と呼ぶこともある)
-        $stubFile = $this->resolveStubFile();
+        // 1) validator.stubの内容を読み込み
+        $stubPath = base_path('stubs/custom/validator.stub');
+        $stub = file_get_contents($stubPath);
 
-        // 2) options
-        $options = [
-            'force' => $force,
-        ];
+        // 2) ライセンス情報の取得（渡された情報を優先）
+        if (empty($licenseInfo)) {
+            $licenseInfo = $this->getFileTypeLicenseInfo($fileType, $pluginName);
+        }
 
-        // 3) バリデーター固有の追加プレースホルダ (なければ空)
-        $extraPlaceholders = [];
+        // 3) ファイル生成
+        $this->makeFiler(
+            className: $className,
+            fileType: $fileType,
+            fileCategory: 'validator',
+            options: $options,
+            subDirs: $subDirs,
+            stub: $stub,
+            pluginName: $pluginName,
+            placeholders: [],
+            licenseInfo: $licenseInfo
+        );
 
-        // 4) makeFiler
-        $this->makeFiler($className, $subDirs, $options, $stubFile, $extraPlaceholders);
+        return true;
     }
-
-    /**
-     * validator.stub を返す
-     * もしくは `rule.stub` と呼んでもOKです
-     */
-    protected function resolveStubFile(): string
-    {
-        return 'validator.stub';
-    }
-
-    /**
-     * (B)パターン: getDirectory/getNamespace => getValidatorDirectory/Namespace
-     */
-    protected function getDirectory(array $subDirs): string
-    {
-        return $this->getValidatorDirectory($subDirs);
-    }
-
-    protected function getNamespace(array $subDirs): string
-    {
-        return $this->getValidatorNamespace($subDirs);
-    }
-
-    /**
-     * サブクラスで実装
-     */
-    abstract protected function getValidatorDirectory(array $subDirs): string;
-    abstract protected function getValidatorNamespace(array $subDirs): string;
 }

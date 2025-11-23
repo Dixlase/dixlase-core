@@ -47,7 +47,7 @@ class MakeCustomJobMiddleware extends Command
         return $this->generateCustomFile(
             $this->argument('className'),
             $this->argument('fileType'),
-            $this->argument('pluginName'),
+            $this->argument('targetName'),
             'job-middleware',
             $this->options()
         );

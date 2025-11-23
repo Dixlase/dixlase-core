@@ -403,6 +403,7 @@ return [
         'labels' => [
             'core' => 'コア用ファイル（core）',
             'plugin' => 'プラグイン用ファイル（plugin）',
+            'theme' => 'テーマ用ファイル（theme）',
         ],
     ],
 
@@ -508,4 +509,19 @@ EOT,
         'no_old_records_found' => '削除する古いセッション記録が見つかりませんでした。',
     ],
 
+    // カスタムファイル作成コマンド
+    'make_custom' => [
+        'observer' => [
+            'description' => 'カスタムディレクトリにObserverクラスを作成します',
+        ],
+        'service' => [
+            'description' => 'カスタムディレクトリにServiceクラスを作成します',
+        ],
+        'validator' => [
+            'description' => 'カスタムディレクトリにValidatorクラスを作成します',
+        ],
+        'command' => [
+            'description' => 'カスタムディレクトリにArtisanコマンドクラスを作成します',
+        ],
+    ],
 ];
