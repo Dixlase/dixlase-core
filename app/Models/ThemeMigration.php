@@ -19,7 +19,7 @@ class ThemeMigration extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'theme_name',
+        'theme',
         'migration',
         'batch',
     ];

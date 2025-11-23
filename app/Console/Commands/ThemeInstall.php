@@ -3,11 +3,14 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\Theme;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use App\Models\Theme;
 use App\Helpers\GitExcludeHelper;
 use App\Helpers\ComposerLocalHelper;
+use App\Services\ThemeMigrator;
+use Illuminate\Filesystem\Filesystem;
+use Illuminate\Database\ConnectionResolverInterface;
 
 class ThemeInstall extends Command
 {
@@ -16,7 +19,7 @@ class ThemeInstall extends Command
      *
      * @var string
      */
-    protected $signature = 'dls:theme:install {themeName : ' . 'command.theme_install.theme_name_prompt' . '}';
+    protected $signature = 'dls:theme:install {themeName : ' . 'command.theme_install.theme_name_prompt' . '} {--force : Force reinstall even if already registered}';
     
     /**
      * The console command description.
@@ -36,16 +39,90 @@ class ThemeInstall extends Command
         $themeDirName = Str::studly($themeName);
         $themeDir = base_path("themes/" . $themeDirName);
         
+        \Log::info('ThemeInstall: Command started', [
+            'themeName' => $themeName,
+            'themeDirName' => $themeDirName,
+            'themeDir' => $themeDir
+        ]);
+        
         // Check if theme directory exists
         if (!file_exists($themeDir)) {
+            \Log::error('ThemeInstall: Theme directory not found', ['themeDir' => $themeDir]);
             $this->error(__('command.theme_install.theme_not_found', ['themeName' => $themeName]));
             return Command::FAILURE;
         }
 
         // Check if theme is already registered
-        if (Theme::where('slug', Str::slug($themeName))->exists()) {
+        $slug = Str::kebab($themeName);
+        $exists = Theme::where('slug', $slug)->exists();
+        \Log::info('ThemeInstall: Checking if theme exists', [
+            'slug' => $slug,
+            'exists' => $exists,
+            'force' => $this->option('force')
+        ]);
+        
+        if ($exists && !$this->option('force')) {
+            \Log::warning('ThemeInstall: Theme already registered', ['themeName' => $themeName]);
             $this->error(__('command.theme_install.already_registered', ['themeName' => $themeName]));
             return Command::FAILURE;
+        }
+        
+        // --forceオプションが指定されている場合は、マイグレーションとシーダーのみ実行
+        if ($exists && $this->option('force')) {
+            \Log::info('ThemeInstall: Force option enabled, running migrations and seeders only');
+            $this->info("Theme already registered. Running migrations and seeders only...");
+            
+            // マイグレーションを実行
+            $migrationPath = base_path("themes/{$themeDirName}/database/migrations");
+            \Log::info('ThemeInstall: Checking migration path', [
+                'path' => $migrationPath,
+                'exists' => file_exists($migrationPath),
+                'is_dir' => is_dir($migrationPath)
+            ]);
+            
+            if (file_exists($migrationPath) && is_dir($migrationPath)) {
+                try {
+                    \Log::info('ThemeInstall: Starting migration', [
+                        'theme' => $themeDirName,
+                        'slug' => $slug
+                    ]);
+                    
+                    $migrator = new ThemeMigrator(
+                        app(Filesystem::class),
+                        app(ConnectionResolverInterface::class),
+                        'theme_migrations',
+                        $slug
+                    );
+                    $migrator->migrate($themeDirName);
+                    $this->info("Theme migrations executed successfully");
+                    \Log::info('ThemeInstall: Migration completed');
+                } catch (\Exception $e) {
+                    \Log::error('ThemeInstall: Migration failed', [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    $this->warn("Failed to execute theme migrations: " . $e->getMessage());
+                }
+            } else {
+                \Log::info('ThemeInstall: No migration directory found', ['path' => $migrationPath]);
+            }
+            
+            // シーダーを実行
+            try {
+                $seederClass = "Themes\\{$themeDirName}\\Database\\Seeders\\DatabaseSeeder";
+                
+                if (class_exists($seederClass)) {
+                    $seeder = new $seederClass();
+                    $seeder->setCommand($this);
+                    $seeder->run();
+                    $this->info("Theme seeder executed successfully");
+                }
+            } catch (\Exception $e) {
+                $this->warn("Failed to execute theme seeder: " . $e->getMessage());
+            }
+            
+            $this->info("Theme migrations and seeders completed.");
+            return Command::SUCCESS;
         }
 
         // テーマ情報を読み取る（theme.json → composer.json → デフォルト値の順）
@@ -122,7 +199,7 @@ class ThemeInstall extends Command
             'name' => $displayName,
             'package_name' => $packageName,
             'directory' => $themeDirName,
-            'slug' => Str::slug($themeName),
+            'slug' => Str::kebab($themeName),
             'namespace' => $namespace,
             'description' => $description,
             'license' => $license,
@@ -140,6 +217,56 @@ class ThemeInstall extends Command
         // composer.local.jsonを更新
         ComposerLocalHelper::syncAutoload();
         $this->info("Updated composer.local.json");
+
+        // マイグレーションを実行（ThemeMigratorを使用）
+        $migrationPath = base_path("themes/{$themeDirName}/database/migrations");
+        \Log::info('ThemeInstall: Checking migration path', [
+            'path' => $migrationPath,
+            'exists' => file_exists($migrationPath),
+            'is_dir' => is_dir($migrationPath)
+        ]);
+        
+        if (file_exists($migrationPath) && is_dir($migrationPath)) {
+            try {
+                \Log::info('ThemeInstall: Starting migration', [
+                    'theme' => $themeDirName,
+                    'slug' => $slug
+                ]);
+                
+                $migrator = new ThemeMigrator(
+                    app(Filesystem::class),
+                    app(ConnectionResolverInterface::class),
+                    'theme_migrations',
+                    $slug
+                );
+                $migrator->migrate($themeDirName);
+                $this->info("Theme migrations executed successfully");
+                \Log::info('ThemeInstall: Migration completed');
+            } catch (\Exception $e) {
+                \Log::error('ThemeInstall: Migration failed', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                $this->warn("Failed to execute theme migrations: " . $e->getMessage());
+            }
+        } else {
+            \Log::info('ThemeInstall: No migration directory found', ['path' => $migrationPath]);
+        }
+
+        // シーダーを実行
+        try {
+            $seederClass = "Themes\\{$themeDirName}\\Database\\Seeders\\DatabaseSeeder";
+            
+            if (class_exists($seederClass)) {
+                $seeder = new $seederClass();
+                // コマンドインスタンスをセット
+                $seeder->setCommand($this);
+                $seeder->run();
+                $this->info("Theme seeder executed successfully");
+            }
+        } catch (\Exception $e) {
+            $this->warn("Failed to execute theme seeder: " . $e->getMessage());
+        }
 
         $this->info(__('command.theme_install.registered', ['themeName' => $themeName]));
         $this->info(__('command.theme_install.activate_help', ['themeName' => $themeName]));

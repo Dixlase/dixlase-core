@@ -942,6 +942,7 @@ return [
                 'uninstall' => [
                     'confirm_title' => 'アンインストールの確認',
                     'confirm_message' => 'テーマ [{name}] をアンインストールしますか？',
+                    'remove_data_checkbox' => 'テーマのインストール時に作成されたデータベースのテーブルを削除する。<br><br><span class="text-red-600 font-semibold">注意！テーブル削除するとテーマで作成したデータが失われます！</span>',
                 ],
                 'install' => [
                     'confirm_title' => 'インストールの確認',

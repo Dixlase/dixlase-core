@@ -198,13 +198,15 @@ class AppUninstall extends Command
                 $tables = DB::select('SHOW TABLES');
                 foreach ($tables as $table) {
                     $tableName = reset($table);
-                    DB::statement("DROP TABLE {$tableName}");
+                    // テーブル名をバッククォートで囲んで、ハイフンなどの特殊文字を含むテーブル名に対応
+                    DB::statement("DROP TABLE `{$tableName}`");
                 }
                 DB::statement('SET FOREIGN_KEY_CHECKS=1;');
             } elseif ($dbType === 'pgsql') {
                 $tables = DB::select("SELECT tablename FROM pg_tables WHERE schemaname = 'public'");
                 foreach ($tables as $table) {
-                    DB::statement("DROP TABLE IF EXISTS {$table->tablename} CASCADE");
+                    // PostgreSQLではダブルクォートで囲む
+                    DB::statement("DROP TABLE IF EXISTS \"{$table->tablename}\" CASCADE");
                 }
             } elseif ($dbType === 'sqlite') {
                 // SQLiteの場合はデータベースファイル自体を削除
