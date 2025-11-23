@@ -32,6 +32,7 @@ use Illuminate\Support\Facades\File;
 trait MakeThemeCommandTrait
 {
     use ThemeManagementTrait;
+    use MakeLicenseTrait;
 
     /**
      * テーマコマンドの共通引数を取得します
@@ -154,26 +155,15 @@ trait MakeThemeCommandTrait
 
     /**
      * テーマのライセンス情報を取得
+     * MakeLicenseTraitの共通メソッドに委譲
      *
      * @param string $themeName
      * @return array|null
      */
     protected function getThemeLicenseInfo(string $themeName): ?array
     {
-        $licenseInfoFile = base_path("themes/{$themeName}/license-info.json");
-
-        if (!file_exists($licenseInfoFile)) {
-            return null;
-        }
-
-        $json = file_get_contents($licenseInfoFile);
-        $data = json_decode($json, true);
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            return null;
-        }
-
-        return $data;
+        // MakeLicenseTraitの共通メソッドを使用
+        return $this->getLicenseInfoFromJson('themes', $themeName, false);
     }
 
     /**

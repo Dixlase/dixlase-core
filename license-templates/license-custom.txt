@@ -1,7 +1,7 @@
 This file is part of {{ software }}.
 
 Copyright (C) {{ year }} {{ author }}
-{{ website }}
+{{ url }}
 
 All rights reserved.
 
@@ -9,4 +9,4 @@ This software is licensed under a custom license agreement defined by the author
 You may modify and distribute this software only under the terms specified by the author.
 Unauthorized copying, modification, distribution, or use is strictly prohibited without explicit permission.
 
-For details regarding the licensing terms, please contact the author or visit {{ website }}.
+For details regarding the licensing terms, please contact the author or visit {{ url }}.

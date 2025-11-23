@@ -190,4 +190,16 @@ trait MakePluginCommandTrait
             ->values()
             ->all();
     }
+
+    /**
+     * プラグインのライセンス情報を取得
+     *
+     * @param string $pluginName
+     * @return array|null
+     */
+    protected function getPluginLicenseInfo(string $pluginName): ?array
+    {
+        // 共通メソッドを使用
+        return $this->getLicenseInfoFromJson('plugins', $pluginName, true);
+    }
 }

@@ -107,6 +107,9 @@ trait MakeCustomCommandTrait
         // プラグイン名がnullの場合は空文字列に変換（coreの場合など）
         $pluginName = $pluginName ?? '';
 
+        // ライセンス情報を取得
+        $licenseInfo = $this->getCustomFileLicenseInfo($fileType, $pluginName);
+
         // 共通パラメータを準備
         $common = [
             'fileType' => $fileType,
@@ -131,9 +134,36 @@ trait MakeCustomCommandTrait
             $fileType,
             $options,
             $subDirs,
-            $pluginName
+            $pluginName,
+            $licenseInfo
         );
 
         return true;
+    }
+
+    /**
+     * カスタムディレクトリのライセンス情報を取得
+     *
+     * @param string $fileType ファイルタイプ（core、custom_plugin、theme）
+     * @param string|null $pluginName プラグイン名またはテーマ名
+     * @param bool $showNotice 警告メッセージを表示するかどうか
+     * @return array|null
+     */
+    protected function getCustomFileLicenseInfo(string $fileType = 'core', ?string $pluginName = null, bool $showNotice = false): array
+    {
+        // ファイルタイプに応じてライセンス情報を取得
+        if ($fileType === 'core') {
+            // コアの場合は dixlase.json から取得（getLicenseInfoFromJson内で処理）
+            return $this->getLicenseInfoFromJson('custom', null, $showNotice) ?? [];
+        } elseif ($fileType === 'custom_plugin' && $pluginName) {
+            // プラグイン用カスタムファイルの場合はプラグインのライセンス情報を使用
+            return $this->getLicenseInfoFromJson('plugins', $pluginName, $showNotice) ?? [];
+        } elseif ($fileType === 'theme' && $pluginName) {
+            // テーマ用カスタムファイルの場合はテーマのライセンス情報を使用
+            return $this->getLicenseInfoFromJson('themes', $pluginName, $showNotice) ?? [];
+        }
+        
+        // デフォルトはcustomディレクトリ
+        return $this->getLicenseInfoFromJson('custom', null, $showNotice) ?? [];
     }
 }
