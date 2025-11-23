@@ -11,14 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('dls_theme_migrations', function (Blueprint $table) {
+        Schema::create('theme_migrations', function (Blueprint $table) {
             $table->id();
-            $table->string('theme_name');
-            $table->string('migration');
-            $table->integer('batch');
-            $table->timestamps();
-
-            $table->index(['theme_name', 'migration']);
+            $table->string('migration', 255); // マイグレーションファイル名
+            $table->string('theme', 255)->nullable(); // どのテーマのマイグレーションか識別
+            $table->integer('batch'); // バッチ番号
+            $table->timestamps(); // created_at, updated_at
         });
     }
 
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('dls_theme_migrations');
+        Schema::dropIfExists('theme_migrations');
     }
 };

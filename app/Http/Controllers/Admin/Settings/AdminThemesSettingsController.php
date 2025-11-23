@@ -437,7 +437,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
     /**
      * テーマをアンインストール
      */
-    public function uninstall($id)
+    public function uninstall($id, Request $request)
     {
         $theme = Theme::findOrFail($id);
         
@@ -454,6 +454,27 @@ class AdminThemesSettingsController extends AdminLoggedInController
         }
 
         try {
+            // DBデータも削除する場合、マイグレーションをロールバック
+            if ($request->has('remove_db_data')) {
+                $migrator = new \App\Services\ThemeMigrator(
+                    app(\Illuminate\Filesystem\Filesystem::class),
+                    app(\Illuminate\Database\ConnectionResolverInterface::class),
+                    'theme_migrations',
+                    $theme->slug
+                );
+                
+                try {
+                    // 全てのマイグレーションをロールバック
+                    $migrator->rollback($theme->directory, ['step' => 999]);
+                    Log::info('Theme migrations rolled back', ['theme' => $theme->name]);
+                } catch (\Exception $e) {
+                    Log::warning('Theme migration rollback failed', [
+                        'theme' => $theme->name,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+            
             // DBレコードを削除（ファイルは削除しない）
             $theme->delete();
 
@@ -478,59 +499,26 @@ class AdminThemesSettingsController extends AdminLoggedInController
         ]);
         
         $themeDir = $request->input('directory');
-        $themePath = base_path("themes/{$themeDir}");
-        
-        if (!File::exists($themePath)) {
-            return redirect()->back()->with('error', 'テーマディレクトリが見つかりません。');
-        }
-        
-        $composerPath = base_path("themes/{$themeDir}/composer.json");
-        
-        if (!File::exists($composerPath)) {
-            return redirect()->back()->with('error', 'composer.json が見つかりません。');
-        }
         
         try {
-            $jsonContent = File::get($composerPath);
-            $composerData = json_decode($jsonContent, true);
-            
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                return redirect()->back()->with('error', 'composer.json の解析に失敗しました: ' . json_last_error_msg());
-            }
-            
-            // テーマ情報を取得
-            $displayName = $composerData['extra']['display-name'] ?? $themeDir;
-            $authors = $composerData['authors'] ?? [];
-            $firstAuthor = $authors[0] ?? [];
-            $author = $firstAuthor['name'] ?? null;
-            $email  = $firstAuthor['email'] ?? null;
-            $web    = $firstAuthor['homepage'] ?? null;
-            $slug = $composerData['extra']['slug'] ?? Str::slug($themeDir);
-            $version = $composerData['version'] ?? '1.0.0';
-            $license = $composerData['license'] ?? null;
-            $description = $composerData['description'] ?? null;
-            $packageName = $composerData['name'] ?? null;
-            $namespace = "Themes\\$themeDir";
-            
-            // DBにテーマ情報を登録
-            $theme = Theme::create([
-                'name'        => $displayName,
-                'package_name' => $packageName,
-                'directory'   => $themeDir,
-                'slug'        => $slug,
-                'namespace'   => $namespace,
-                'description' => $description,
-                'license'     => $license,
-                'author'      => $author,
-                'email'       => $email,
-                'web'         => $web,
-                'version'     => $version,
-                'installed_at' => now(),
+            // Artisanコマンドを実行してテーマをインストール（--forceオプション付き）
+            $exitCode = Artisan::call('dls:theme:install', [
+                'themeName' => $themeDir,
+                '--force' => true
             ]);
             
+            if ($exitCode !== 0) {
+                $output = Artisan::output();
+                Log::error('Theme installation command failed', [
+                    'directory' => $themeDir,
+                    'exit_code' => $exitCode,
+                    'output' => $output
+                ]);
+                return redirect()->back()->with('error', 'テーマのインストールに失敗しました。');
+            }
+            
             return redirect()->route('admin.settings.themes.index')
-                ->with('success', 'テーマが正常にインストールされました。')
-                ->with('installed_theme_id', $theme->id);
+                ->with('success', 'テーマが正常にインストールされました。');
         } catch (\Exception $e) {
             Log::error('Theme installation failed', [
                 'directory' => $themeDir,

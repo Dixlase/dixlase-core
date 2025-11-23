@@ -992,6 +992,7 @@ Clicking this link will complete the full mail function test.',
                 'uninstall' => [
                     'confirm_title' => 'Uninstall Confirmation',
                     'confirm_message' => 'Do you want to uninstall theme [{name}]?',
+                    'remove_data_checkbox' => 'Delete database tables created during theme installation.<br><br><span class="text-red-600 font-semibold">Warning! Deleting tables will result in loss of all data created by the theme!</span>',
                 ],
                 'install' => [
                     'confirm_title' => 'Install Confirmation',

@@ -2,7 +2,16 @@
 管理者ログイン時のみ表示される管理バー
 @props(['isAdminLayout' => false]) - 管理画面レイアウトモードの場合true
 --}}
-@auth('member')
+@php
+    // データベースが存在しない場合（アンインストール後など）は何も表示しない
+    try {
+        $isAuthenticated = auth('member')->check();
+    } catch (\Exception $e) {
+        $isAuthenticated = false;
+    }
+@endphp
+
+@if($isAuthenticated)
 @props(['isAdminLayout' => false])
 
 <div @if(!$isAdminLayout) x-data="{ openSidebar: false, openUserMenu: false }" @endif id="admin-bar" class="fixed top-0 left-0 right-0 backdrop-blur-sm text-gray-700 dark:text-white bg-white/75 dark:bg-gray-900/75 border-b border-gray-300 dark:border-gray-700 shadow-md" style="z-index: 9999;">
@@ -205,4 +214,4 @@
 <script>
     document.body.classList.add('has-admin-bar');
 </script>
-@endauth
+@endif
