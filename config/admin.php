@@ -138,10 +138,10 @@ return [
                             'route' => 'admin.settings.themes.index',
                             'icon' => 'fas fa-fw fa-brush',
                         ],
-                        'install' => [
-                            'text' => 'admin.nav.settings.themes.install',
-                            'route' => 'admin.settings.themes.install',
-                            'icon' => 'fas fa-fw fa-download',
+                        'add' => [
+                            'text' => 'admin.nav.settings.themes.add',
+                            'route' => 'admin.settings.themes.add',
+                            'icon' => 'fas fa-fw fa-plus',
                         ],
                     ]
                 ],
@@ -154,10 +154,10 @@ return [
                             'route' => 'admin.settings.plugins.index',
                             'icon' => 'fas fa-fw fa-puzzle-piece',
                         ],
-                        'install' => [
-                            'text' => 'admin.nav.settings.plugins.install',
-                            'route' => 'admin.settings.plugins.install',
-                            'icon' => 'fas fa-fw fa-download',
+                        'add' => [
+                            'text' => 'admin.nav.settings.plugins.add',
+                            'route' => 'admin.settings.plugins.add',
+                            'icon' => 'fas fa-fw fa-plus',
                         ],
                     ]
                 ],

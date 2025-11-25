@@ -111,21 +111,22 @@ return [
                         'confirm_title' => 'テーマのアンインストール',
                         'confirm_message' => '「{name}」をアンインストールしますか？',
                     ],
-                    'install' => [
-                        'confirm_title' => 'テーマのインストール',
-                        'confirm_message' => '「{name}」をインストールしますか？',
+                    'add' => [
+                        'confirm_title' => 'テーマの追加',
+                        'confirm_message' => '「{name}」を追加しますか？',
                     ],
                     'delete' => [
                         'confirm_title' => 'テーマの削除',
                         'confirm_message' => '「{name}」のファイルとフォルダを完全に削除しますか？この操作は取り消せません。',
                     ],
                 ],
-                'install'  => 'インストール',
+                'add'  => '追加',
                 'settings' => 'テーマ設定',
             ],
             'plugins' => [
                 'text' => 'プラグイン管理',
                 'index' => 'プラグインマスター',
+                'add' => '追加',
                 'index_page' => [
                     'heading' => 'プラグインマスター',
                     'installed_heading' => 'インストール済みプラグイン',
@@ -953,11 +954,11 @@ return [
                     'confirm_message' => 'テーマ [{name}] のファイルとフォルダを完全に削除しますか？この操作は取り消せません。',
                 ],
             ],
-            'install' => [
-                'heading' => 'テーマインストール',
+            'add' => [
+                'heading' => 'テーマを追加',
                 'upload_title' => 'テーマをアップロード',
                 'file_select_label' => 'ファイルを選択',
-                'upload_button' => 'アップロードしてインストール',
+                'upload_button' => 'アップロードして追加',
                 'name' => 'テーマ名',
             ],
             'settings' => [
@@ -999,14 +1000,14 @@ return [
                     'confirm_message' => 'プラグイン [{name}] のファイルとフォルダを完全に削除しますか？この操作は取り消せません。',
                 ],
             ],
-            'install' => [
-                'heading' => 'プラグインインストール',
+            'add' => [
+                'heading' => 'プラグインを追加',
                 'upload_title' => 'プラグインアップロード',
                 'file_select_label' => 'ZIPファイルを選択:',
                 'drag_drop_text' => 'ここにファイルをドラッグするか、クリックしてアップロード',
                 'supported_format' => '対応形式:',
                 'upload_limit' => 'アップロード可能ファイルサイズ上限:',
-                'upload_button' => 'アップロードしてインストール',
+                'upload_button' => 'アップロードして追加',
                 'enable_plugin_text' => 'プラグインを有効化する場合は',
                 'enable_from_here' => 'こちら',
                 'enable_instruction' => 'から有効化してください。',
