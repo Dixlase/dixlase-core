@@ -454,29 +454,19 @@ class AdminThemesSettingsController extends AdminLoggedInController
         }
 
         try {
-            // DBデータも削除する場合、マイグレーションをロールバック
+            // コマンドを使用してアンインストール
+            $options = [
+                'themeName' => $theme->slug,
+                '--force' => true,
+                '--no-interaction' => true,
+            ];
+            
+            // DBデータも削除する場合
             if ($request->has('remove_db_data')) {
-                $migrator = new \App\Services\ThemeMigrator(
-                    app(\Illuminate\Filesystem\Filesystem::class),
-                    app(\Illuminate\Database\ConnectionResolverInterface::class),
-                    'theme_migrations',
-                    $theme->slug
-                );
-                
-                try {
-                    // 全てのマイグレーションをロールバック
-                    $migrator->rollback($theme->directory, ['step' => 999]);
-                    Log::info('Theme migrations rolled back', ['theme' => $theme->name]);
-                } catch (\Exception $e) {
-                    Log::warning('Theme migration rollback failed', [
-                        'theme' => $theme->name,
-                        'error' => $e->getMessage()
-                    ]);
-                }
+                $options['--rollback'] = true;
             }
             
-            // DBレコードを削除（ファイルは削除しない）
-            $theme->delete();
+            Artisan::call('dls:theme:uninstall', $options);
 
             return redirect()->route('admin.settings.themes.index')
                 ->with('success', 'テーマをアンインストールしました');

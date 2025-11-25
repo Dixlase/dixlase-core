@@ -79,6 +79,15 @@ class Theme extends Model
     }
 
     /**
+     * テーマが有効化されているかチェック
+     */
+    public function isEnabled(): bool
+    {
+        $enabledThemeId = \DB::table('theme_settings')->value('enabled_theme_id');
+        return $this->id == $enabledThemeId;
+    }
+
+    /**
      * デフォルトテーマの取得
      */
     public static function getDefaultTheme()
