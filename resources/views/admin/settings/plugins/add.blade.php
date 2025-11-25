@@ -61,12 +61,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     $postMaxMB   = number_format($postMaxBytes / 1048576, 2);
 @endphp
 
+
 @section('content')
 <div class="max-w-4xl mx-auto">
+
     <!-- Flash message for success or error -->
     @if(session('success'))
         <div class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50">
             {{ session('success') }}
+
+            @if(session('installed_plugin_id'))
+                <!-- 有効化フォーム -->
+                <br>{{ __('admin.settings.plugins.add.enable_plugin_text') }}
+                <form action="{{ route('admin.settings.plugins.enable', session('installed_plugin_id')) }}"
+                    method="POST" class="inline-block ml-3">
+                    @csrf
+                    <button type="submit"
+                            class="bg-blue-500 hover:bg-blue-600 text-white py-1 px-2 rounded text-sm">
+                        {{ __('admin.settings.plugins.add.enable_from_here') }}
+                    </button>
+                </form>
+                {{ __('admin.settings.plugins.add.enable_instruction') }}
+            @endif
         </div>
     @endif
 
@@ -81,10 +97,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @endif
 
     <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
-        <h2 class="text-2xl font-bold mb-6 text-gray-700 dark:text-white">{{ __('admin.settings.themes.install.upload_title') }}</h2>
+        <h2 class="text-2xl font-bold mb-6 text-gray-700 dark:text-white">{{ __('admin.settings.plugins.add.upload_title') }}</h2>
         <!-- Alpine.jsでファイルアップロードを管理 -->
         <form
-            action="{{ route('admin.settings.themes.upload') }}"
+            action="{{ route('admin.settings.plugins.upload') }}"
             method="POST"
             enctype="multipart/form-data"
             class="space-y-6"
@@ -95,7 +111,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <!-- アップロードフィールド -->
             <div class="flex flex-col gap-2">
                 <label for="plugin_file" class="text-gray-600 dark:text-gray-300 font-medium">
-                    {{ __('admin.settings.plugins.install.file_select_label') }}
+                    {{ __('admin.settings.plugins.add.file_select_label') }}
                 </label>
                 <div
                     class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-blue-500 transition duration-300 max-w-full"
@@ -128,29 +144,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 d="M12 16v4m0 0H8m4 0h4m-4-4a4 4 0 01-4-4 4 4 0 014-4 4 4 0 014 4 4 4 0 01-4 4z"
                             ></path>
                         </svg>
-                        <p class="text-sm text-gray-500 dark:text-gray-400" x-text="fileName || '{{ __('admin.settings.plugins.install.drag_drop_text') }}'"></p>
-                        <p class="text-xs text-gray-400 mt-1">{{ __('admin.settings.plugins.install.supported_format') }} <strong>.zip</strong></p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400" x-text="fileName || '{{ __('admin.settings.plugins.add.drag_drop_text') }}'"></p>
+                        <p class="text-xs text-gray-400 mt-1">{{ __('admin.settings.plugins.add.supported_format') }} <strong>.zip</strong></p>
 
                         <!-- アップロード上限表示 -->
-                        <p class="text-xs text-gray-400 mt-1">{{ __('admin.settings.plugins.install.upload_limit') }}
+                        <p class="text-xs text-gray-400 mt-1">{{ __('admin.settings.plugins.add.upload_limit') }}
                             <strong>{{ $uploadMaxMB }} MB</strong>
                         </p>
                     </div>
                 </div>
             </div>
 
-
             <!-- アップロードボタン -->
             <div class="flex justify-end">
                 <button
                     type="submit"
-                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-300"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-300"
                 >
                     {{ __('common.upload') }}
                 </button>
             </div>
         </form>
     </div>
+
 </div>
 <!-- Alpine.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>

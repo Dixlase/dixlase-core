@@ -240,7 +240,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <td data-label="{{ __('common.actions') }}">
                                 <div class="action-buttons">
                                     <!-- インストールボタン -->
-                                    <form action="{{ route('admin.settings.plugins.install-from-directory') }}" method="POST" class="inline-block" id="installForm-{{ $plugin['directory'] }}">
+                                    <form action="{{ route('admin.settings.plugins.install') }}" method="POST" class="inline-block" id="installForm-{{ $plugin['directory'] }}">
                                         @csrf
                                         <input type="hidden" name="directory" value="{{ $plugin['directory'] }}">
                                         <x-form.button
@@ -266,7 +266,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     </form>
 
                                     <!-- 削除ボタン -->
-                                    <form action="{{ route('admin.settings.plugins.delete-directory') }}" method="POST" class="inline-block" id="deleteForm-{{ $plugin['directory'] }}">
+                                    <form action="{{ route('admin.settings.plugins.delete') }}" method="POST" class="inline-block" id="deleteForm-{{ $plugin['directory'] }}">
                                         @csrf
                                         <input type="hidden" name="directory" value="{{ $plugin['directory'] }}">
                                         <x-form.button

@@ -266,23 +266,20 @@ Route::prefix($adminUrl)->name('admin.')
             // テーマ設定（権限チェック付き）
             Route::middleware('check.menu.access:settings.themes')->group(function () {
                 Route::get('/settings/themes', [AdminThemesSettingsController::class, 'index'])->name('settings.themes.index');
-                Route::get('/settings/themes/install', [AdminThemesSettingsController::class, 'install'])->name('settings.themes.install');
+                Route::get('/settings/themes/add', [AdminThemesSettingsController::class, 'add'])->name('settings.themes.add');
                 Route::post('/settings/themes/upload', [AdminThemesSettingsController::class, 'upload'])
                     ->middleware('check.menu.edit:settings.themes')
                     ->name('settings.themes.upload');
-                Route::post('/settings/themes/activate/{id}', [AdminThemesSettingsController::class, 'activate'])
+                Route::post('/settings/themes/install', [AdminThemesSettingsController::class, 'install'])
                     ->middleware('check.menu.edit:settings.themes')
-                    ->name('settings.themes.activate');
+                    ->name('settings.themes.install');
                 Route::post('/settings/themes/uninstall/{id}', [AdminThemesSettingsController::class, 'uninstall'])
                     ->middleware('check.menu.edit:settings.themes')
                     ->name('settings.themes.uninstall');
-                Route::post('/settings/themes/install-from-directory', [AdminThemesSettingsController::class, 'installFromDirectory'])
+                Route::post('/settings/themes/switch/{id}', [AdminThemesSettingsController::class, 'switch'])
                     ->middleware('check.menu.edit:settings.themes')
-                    ->name('settings.themes.install-from-directory');
-                Route::post('/settings/themes/delete-directory', [AdminThemesSettingsController::class, 'deleteDirectory'])
-                    ->middleware('check.menu.edit:settings.themes')
-                    ->name('settings.themes.delete-directory');
-                Route::post('/settings/themes/delete/{id}', [AdminThemesSettingsController::class, 'delete'])
+                    ->name('settings.themes.switch');
+                Route::post('/settings/themes/delete', [AdminThemesSettingsController::class, 'delete'])
                     ->middleware('check.menu.edit:settings.themes')
                     ->name('settings.themes.delete');
             });
@@ -290,25 +287,25 @@ Route::prefix($adminUrl)->name('admin.')
             // プラグイン設定（権限チェック付き）
             Route::middleware('check.menu.access:settings.plugins')->group(function () {
                 Route::get('/settings/plugins', [AdminPluginsSettingsController::class, 'index'])->name('settings.plugins.index');
-                Route::get('/settings/plugins/install', [AdminPluginsSettingsController::class, 'install'])->name('settings.plugins.install');
+                Route::get('/settings/plugins/add', [AdminPluginsSettingsController::class, 'add'])->name('settings.plugins.add');
                 Route::post('/settings/plugins/upload', [AdminPluginsSettingsController::class, 'upload'])
                     ->middleware('check.menu.edit:settings.plugins')
                     ->name('settings.plugins.upload');
+                Route::post('/settings/plugins/install', [AdminPluginsSettingsController::class, 'install'])
+                    ->middleware('check.menu.edit:settings.plugins')
+                    ->name('settings.plugins.install');
+                Route::post('/settings/plugins/uninstall/{id}', [AdminPluginsSettingsController::class, 'uninstall'])
+                    ->middleware('check.menu.edit:settings.plugins')
+                    ->name('settings.plugins.uninstall');
                 Route::post('/settings/plugins/enable/{id}', [AdminPluginsSettingsController::class, 'enable'])
                     ->middleware('check.menu.edit:settings.plugins')
                     ->name('settings.plugins.enable');
                 Route::post('/settings/plugins/disable/{id}', [AdminPluginsSettingsController::class, 'disable'])
                     ->middleware('check.menu.edit:settings.plugins')
                     ->name('settings.plugins.disable');
-                Route::post('/settings/plugins/uninstall/{id}', [AdminPluginsSettingsController::class, 'uninstall'])
+                Route::post('/settings/plugins/delete', [AdminPluginsSettingsController::class, 'delete'])
                     ->middleware('check.menu.edit:settings.plugins')
-                    ->name('settings.plugins.uninstall');
-                Route::post('/settings/plugins/install-from-directory', [AdminPluginsSettingsController::class, 'installFromDirectory'])
-                    ->middleware('check.menu.edit:settings.plugins')
-                    ->name('settings.plugins.install-from-directory');
-                Route::post('/settings/plugins/delete-directory', [AdminPluginsSettingsController::class, 'deleteDirectory'])
-                    ->middleware('check.menu.edit:settings.plugins')
-                    ->name('settings.plugins.delete-directory');
+                    ->name('settings.plugins.delete');
             });
 
             // システム設定（権限チェック付き）

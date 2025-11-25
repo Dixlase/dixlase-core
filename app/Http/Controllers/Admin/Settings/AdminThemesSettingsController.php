@@ -62,6 +62,285 @@ class AdminThemesSettingsController extends AdminLoggedInController
         return view('admin::settings.themes.index', $this->viewParams);
     }
 
+    // テーマ追加
+    public function add()
+    {
+        return view('admin::settings.themes.add', $this->viewParams);
+    }
+
+        /**
+     * テーマのアップロード（ZIPファイルの解凍とファイル配置のみ）
+     */
+    public function upload(Request $request)
+    {
+        $request->validate([
+            'theme' => 'required|mimes:zip',
+        ]);
+
+        $zip = new \ZipArchive;
+        $uploadedFile = $request->file('theme');
+        $themeDirectory = resource_path('views/themes/');
+
+        // ZIPファイル名からディレクトリ名を生成
+        $originalName = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME);
+        $directoryName = Str::slug($originalName);
+        $themePath = $themeDirectory . $directoryName;
+
+        if (is_dir($themePath)) {
+            return redirect()->route('admin.settings.themes.add')
+                ->with('error', "テーマディレクトリ '{$directoryName}' がすでに存在します。");
+        }
+
+        if ($zip->open($uploadedFile->path()) === true) {
+            try {
+                // ZIP内の最初のディレクトリ名を取得
+                $extractedRootDir = null;
+                for ($i = 0; $i < $zip->numFiles; $i++) {
+                    $stat = $zip->statIndex($i);
+                    $filename = $stat['name'];
+
+                    if (strpos($filename, '/') !== false) {
+                        $extractedRootDir = explode('/', $filename)[0];
+                        break;
+                    }
+                }
+
+                if (!$extractedRootDir) {
+                    return redirect()->route('admin.settings.themes.add')
+                        ->with('error', 'ZIPファイルに有効なディレクトリが含まれていません。');
+                }
+
+                // ZIPを解凍
+                $zip->extractTo($themeDirectory);
+                $zip->close();
+
+                // 解凍されたディレクトリのパス
+                $extractedDirPath = $themeDirectory . '/' . $extractedRootDir;
+                $renamedDirPath = $themeDirectory . '/' . $directoryName;
+
+                // 解凍されたディレクトリをリネーム
+                if (is_dir($extractedDirPath) && basename($extractedDirPath) !== $directoryName) {
+                    File::move($extractedDirPath, $renamedDirPath);
+                }
+
+                // theme.jsonの存在確認
+                $themeJsonPath = $renamedDirPath . '/theme.json';
+                if (!file_exists($themeJsonPath)) {
+                    File::deleteDirectory($renamedDirPath);
+                    return redirect()->route('admin.settings.themes.add')
+                        ->with('error', 'theme.json が見つかりません。');
+                }
+
+                // .git/info/excludeにテーマの除外ルールを追加
+                GitExcludeHelper::addThemeExclusion($directoryName);
+                
+                // composer.local.jsonを更新
+                ComposerLocalHelper::syncAutoload();
+
+                return redirect()->route('admin.settings.themes.index')
+                    ->with('success', 'テーマのアップロードが完了しました。一覧からインストールしてください。')
+                    ->with('uploaded_theme_directory', $directoryName);
+                    
+            } catch (\Exception $e) {
+                // 例外発生時にディレクトリを削除
+                if (isset($renamedDirPath) && is_dir($renamedDirPath)) {
+                    File::deleteDirectory($renamedDirPath);
+                }
+                Log::error('Theme upload failed', [
+                    'directory' => $directoryName,
+                    'error' => $e->getMessage()
+                ]);
+                return redirect()->route('admin.settings.themes.add')
+                    ->with('error', 'テーマのアップロードに失敗しました: ' . $e->getMessage());
+            }
+        } else {
+            return redirect()->route('admin.settings.themes.add')
+                ->with('error', 'ZIPファイルの解凍に失敗しました。');
+        }
+    }
+
+    /**
+     * アンインストール済みテーマをインストール
+     */
+    public function install(Request $request)
+    {
+        $request->validate([
+            'directory' => 'required|string',
+        ]);
+        
+        $themeDir = $request->input('directory');
+        
+        try {
+            // Artisanコマンドを実行してテーマをインストール（--forceオプション付き）
+            $exitCode = Artisan::call('dls:theme:install', [
+                'themeName' => $themeDir,
+                '--force' => true,
+                '--no-interaction' => true,
+            ]);
+            
+            if ($exitCode !== 0) {
+                $output = Artisan::output();
+                Log::error('Theme installation command failed', [
+                    'directory' => $themeDir,
+                    'exit_code' => $exitCode,
+                    'output' => $output
+                ]);
+                return redirect()->back()->with('error', 'テーマのインストールに失敗しました。');
+            }
+            
+            return redirect()->route('admin.settings.themes.index')
+                ->with('success', 'テーマが正常にインストールされました。');
+        } catch (\Exception $e) {
+            Log::error('Theme installation failed', [
+                'directory' => $themeDir,
+                'error' => $e->getMessage()
+            ]);
+            return redirect()->back()->with('error', 'テーマのインストールに失敗しました: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * テーマをアンインストール
+     */
+    public function uninstall($id, Request $request)
+    {
+        $theme = Theme::findOrFail($id);
+        
+        // デフォルトテーマはアンインストールできない
+        $defaultThemeSlug = config('themes.default_theme_slug', 'dixlase-default-theme');
+        if ($theme->slug === $defaultThemeSlug) {
+            return back()->with('error', 'デフォルトテーマはアンインストールできません。');
+        }
+        
+        // 有効化中のテーマはアンインストールできない
+        $activeThemeId = DB::table('theme_settings')->value('enabled_theme_id');
+        if ($theme->id == $activeThemeId) {
+            return back()->with('error', '有効化中のテーマはアンインストールできません。');
+        }
+
+        try {
+            // コマンドを使用してアンインストール
+            $options = [
+                'themeName' => $theme->slug,
+                '--force' => true,
+                '--no-interaction' => true,
+            ];
+            
+            // DBデータも削除する場合
+            if ($request->has('remove_db_data')) {
+                $options['--rollback'] = true;
+            }
+            
+            Artisan::call('dls:theme:uninstall', $options);
+
+            return redirect()->route('admin.settings.themes.index')
+                ->with('success', 'テーマをアンインストールしました');
+        } catch (\Exception $e) {
+            Log::error('Theme uninstall failed', [
+                'theme' => $theme->name,
+                'error' => $e->getMessage()
+            ]);
+            return back()->with('error', 'テーマのアンインストールに失敗しました: ' . $e->getMessage());
+        }
+    }
+
+
+    /**
+     * テーマを切り替え（有効化）
+     */
+    public function switch($id)
+    {
+        $theme = Theme::findOrFail($id);
+
+        try {
+            // Artisanコマンドを使用してテーマを切り替え
+            $exitCode = Artisan::call('dls:theme:switch', [
+                'themeName' => $theme->slug,
+            ]);
+            
+            if ($exitCode !== 0) {
+                $output = Artisan::output();
+                Log::error('Theme switch command failed', [
+                    'slug' => $theme->slug,
+                    'exit_code' => $exitCode,
+                    'output' => $output
+                ]);
+                return redirect()->back()->with('error', 'テーマの切り替えに失敗しました。');
+            }
+            
+            return redirect()->route('admin.settings.themes.index')
+                ->with('success', 'テーマが切り替えられました。');
+        } catch (\Exception $e) {
+            Log::error('Theme switch failed', [
+                'theme' => $theme->name,
+                'error' => $e->getMessage()
+            ]);
+            return redirect()->back()->with('error', 'テーマの切り替えに失敗しました: ' . $e->getMessage());
+        }
+    }
+
+
+    /**
+     * テーマを完全に削除（ファイル + DBレコード）
+     */
+    public function delete(Request $request)
+    {
+        $request->validate([
+            'directory' => 'required|string',
+        ]);
+        
+        $themeDir = $request->input('directory');
+        
+        // DBレコードが存在するか確認
+        $theme = Theme::where('directory', $themeDir)->first();
+        
+        try {
+            // DBレコードが存在する場合は先にアンインストール
+            if ($theme) {
+                $exitCode = Artisan::call('dls:theme:uninstall', [
+                    'themeName' => $theme->slug,
+                    '--force' => true,
+                    '--no-interaction' => true,
+                ]);
+                
+                if ($exitCode !== 0) {
+                    $output = Artisan::output();
+                    Log::error('Theme uninstall command failed', [
+                        'directory' => $themeDir,
+                        'exit_code' => $exitCode,
+                        'output' => $output
+                    ]);
+                    return redirect()->back()->with('error', 'テーマのアンインストールに失敗しました。');
+                }
+            }
+            
+            // テーマディレクトリを削除
+            $exitCode = Artisan::call('dls:theme:delete', [
+                'themeDirectory' => $themeDir,
+                '--force' => true,
+            ]);
+            
+            if ($exitCode !== 0) {
+                $output = Artisan::output();
+                Log::error('Theme delete command failed', [
+                    'directory' => $themeDir,
+                    'exit_code' => $exitCode,
+                    'output' => $output
+                ]);
+                return redirect()->back()->with('error', 'テーマの削除に失敗しました。');
+            }
+            
+            return redirect()->route('admin.settings.themes.index')
+                ->with('success', 'テーマが正常に削除されました。');
+        } catch (\Exception $e) {
+            Log::error('Theme deletion failed', [
+                'directory' => $themeDir,
+                'error' => $e->getMessage()
+            ]);
+            return redirect()->back()->with('error', 'テーマの削除に失敗しました: ' . $e->getMessage());
+        }
+    }
+
     /**
      * テーマに設定機能があるかチェック
      */
@@ -240,348 +519,23 @@ class AdminThemesSettingsController extends AdminLoggedInController
         }
     }
 
-    // テーマインストール
-    public function install()
-    {
-        return view('admin::settings.themes.install', $this->viewParams);
-    }
-
-
-
-    // テーマのアップロード
-    public function upload(Request $request)
-    {
-        $request->validate([
-            'theme' => 'required|mimes:zip',
-        ]);
-
-        $zip = new \ZipArchive;
-        $uploadedFile = $request->file('theme');
-
-        $themeDirectory = resource_path('views/themes/');
-
-        // ZIPファイル名からディレクトリ名を生成
-        $originalName = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME); // ZIP名
-        $directoryName = Str::slug($originalName); // デフォルトのディレクトリ名（スラッグ化）
-        $themePath = $themeDirectory . $directoryName;
-
-        if (is_dir($themePath)) {
-            return redirect()->route('admin.settings.themes.install')->with('error', "テーマディレクトリ '{$directoryName}' がすでに存在します。");
-        }
-
-        if ($zip->open($uploadedFile->path()) === true) {
-            try {
-                // ZIP内の最初のディレクトリ名を取得する
-                $extractedRootDir = null;
-                for ($i = 0; $i < $zip->numFiles; $i++) {
-                    $stat = $zip->statIndex($i);
-                    $filename = $stat['name'];
-
-                    // 最初のディレクトリ名を取得
-                    if (strpos($filename, '/') !== false) {
-                        $extractedRootDir = explode('/', $filename)[0];
-                        break;
-                    }
-                }
-
-                if (!$extractedRootDir) {
-                    return redirect()->route('admin.settings.themes.install')
-                        ->with('error', 'ZIPファイルに有効なディレクトリが含まれていません。');
-                }
-
-                // ZIPを解凍
-                $zip->extractTo($themeDirectory);
-                $zip->close();
-
-                // 解凍されたディレクトリのパス
-                $extractedDirPath = $themeDirectory . '/' . $extractedRootDir;
-
-                // リネーム後のディレクトリパス
-                $renamedDirPath = $themeDirectory . '/' . $directoryName;
-
-                // 解凍されたディレクトリをリネーム
-                if (is_dir($extractedDirPath) && basename($extractedDirPath) !== $directoryName) {
-                    File::move($extractedDirPath, $renamedDirPath);
-                    $themePath = $renamedDirPath;
-                }
-
-
-                // theme.json の読み取り
-                $themeJsonPath = $themePath . '/theme.json';
-                $themeData = [];
-                $slug = $directoryName; // デフォルトスラッグはディレクトリ名
-
-                if (file_exists($themeJsonPath)) {
-                    $themeData = json_decode(file_get_contents($themeJsonPath), true);
-
-                    // theme.jsonからスラッグを取得、なければディレクトリ名を使用
-                    $slug = isset($themeData['slug']) && !empty($themeData['slug'])
-                        ? Str::slug($themeData['slug'])
-                        : $directoryName;
-
-                    // スラッグ名の重複チェック
-                    if (Theme::where('slug', $slug)->exists()) {
-                        File::deleteDirectory($themePath);
-                        return redirect()->route('admin.settings.themes.install')->with('error', "同じスラッグ名 '{$slug}' のテーマがすでに存在します。");
-                    }
-
-                    // テーマ情報をデータベースに登録
-                    Theme::create([
-                        'name' => $themeData['name'] ?? $directoryName,
-                        'slug' => $slug,            // theme.jsonまたはディレクトリ名から生成したスラッグ
-                        'directory' => $directoryName, // ディレクトリ名
-                        'version' => $themeData['version'] ?? '1.0',
-                    ]);
-
-                    // テーマのシーダーを実行（権限設定など）
-                    $this->runThemeSeeder($directoryName);
-
-                    // .git/info/excludeにテーマの除外ルールを追加
-                    GitExcludeHelper::addThemeExclusion($directoryName);
-                    
-                    // composer.local.jsonを更新
-                    ComposerLocalHelper::syncAutoload();
-
-                    return redirect()->route('admin.settings.themes.index')->with('success', 'テーマがインストールされました！');
-                } else {
-                    // theme.json が見つからない場合
-                    File::deleteDirectory($themePath);
-                    return redirect()->route('admin.settings.themes.install')->with('error', 'theme.json が見つかりません。');
-                }
-            } catch (\Exception $e) {
-                // 例外発生時にディレクトリを削除
-                File::deleteDirectory($themePath);
-                return redirect()->route('admin.settings.themes.install')->with('error', 'データベースへの登録中にエラーが発生しました: ' . $e->getMessage());
-            }
-        } else {
-            return back()->with('error', 'テンプレートの解凍に失敗しました。');
-        }
-    }
-
-    // テーマの削除
-    public function delete($slug)
-    {
-        $theme = Theme::where('slug', $slug)->first();
-        if (!$theme) {
-            return redirect()->route('admin.settings.themes.index')->with('error', 'テーマが見つかりません。');
-        }
-
-        // デフォルトテンプレートは削除禁止
-        if ($theme->slug === config('themes.default_theme_slug', 'dixlase-default-theme')) {
-            return redirect()->route('admin.settings.themes.index')->with('error', 'デフォルトテーマは削除できません。');
-        }
-
-        // テーマディレクトリの確認
-        $themeDirectory = resource_path('views/themes/' . $theme->directory);
-
-
-        // 安全チェック: 削除対象が `themes` そのものではないことを確認
-        if ($theme->directory === '' || realpath($themeDirectory) === realpath(resource_path('views/themes'))) {
-            return redirect()->route('admin.settings.themes.index')->with('error', '無効なディレクトリパスです。');
-        }
-
-        // ディレクトリ削除とDBからの削除
-        try {
-            if (is_dir($themeDirectory)) {
-                if (!File::deleteDirectory($themeDirectory)) {
-                    throw new \Exception('ディレクトリの削除に失敗しました。');
-                }
-            }
-            
-            // .git/info/excludeからテーマの除外ルールを削除
-            GitExcludeHelper::removeThemeExclusion($theme->directory);
-            
-            // composer.local.jsonを更新
-            ComposerLocalHelper::syncAutoload();
-            
-            // DBからテーマ情報を削除
-            $theme->delete();
-        } catch (\Exception $e) {
-            return redirect()->route('admin.settings.themes.index')->with('error', $e->getMessage());
-        }
-
-        session()->flash('success', 'テーマが削除されました！');
-        session()->save();
-
-        return redirect()->route('admin.settings.themes.index');
-    }
-
-
-
-    // テーマの切り替え
-    public function activate($id)
-    {
-        $theme = Theme::findOrFail($id);
-
-        // アクティブテーマを更新
-        DB::table('theme_settings')->update(['enabled_theme_id' => $theme->id, 'updated_at' => now()]);
-
-        try {
-            // シンボリックリンクを更新（コマンド実行）
-            Artisan::call('dls:theme:symlink', [
-                'action' => 'create',
-                'theme' => $theme->directory
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Theme symlink update failed', [
-                'theme' => $theme->name,
-                'error' => $e->getMessage()
-            ]);
-            return back()->with('error', "シンボリックリンクの更新に失敗しました: {$e->getMessage()}");
-        }
-
-        return redirect()->route('admin.settings.themes.index')
-            ->with('success', "テーマ '{$theme->name}' が有効化されました。");
-    }
-
-    /**
-     * テーマをアンインストール
-     */
-    public function uninstall($id, Request $request)
-    {
-        $theme = Theme::findOrFail($id);
-        
-        // デフォルトテーマはアンインストールできない
-        $defaultThemeSlug = config('themes.default_theme_slug', 'dixlase-default-theme');
-        if ($theme->slug === $defaultThemeSlug) {
-            return back()->with('error', 'デフォルトテーマはアンインストールできません。');
-        }
-        
-        // 有効化中のテーマはアンインストールできない
-        $activeThemeId = DB::table('theme_settings')->value('enabled_theme_id');
-        if ($theme->id == $activeThemeId) {
-            return back()->with('error', '有効化中のテーマはアンインストールできません。');
-        }
-
-        try {
-            // コマンドを使用してアンインストール
-            $options = [
-                'themeName' => $theme->slug,
-                '--force' => true,
-                '--no-interaction' => true,
-            ];
-            
-            // DBデータも削除する場合
-            if ($request->has('remove_db_data')) {
-                $options['--rollback'] = true;
-            }
-            
-            Artisan::call('dls:theme:uninstall', $options);
-
-            return redirect()->route('admin.settings.themes.index')
-                ->with('success', 'テーマをアンインストールしました');
-        } catch (\Exception $e) {
-            Log::error('Theme uninstall failed', [
-                'theme' => $theme->name,
-                'error' => $e->getMessage()
-            ]);
-            return back()->with('error', 'テーマのアンインストールに失敗しました: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * アンインストール済みテーマをインストール
-     */
-    public function installFromDirectory(Request $request)
-    {
-        $request->validate([
-            'directory' => 'required|string',
-        ]);
-        
-        $themeDir = $request->input('directory');
-        
-        try {
-            // Artisanコマンドを実行してテーマをインストール（--forceオプション付き）
-            $exitCode = Artisan::call('dls:theme:install', [
-                'themeName' => $themeDir,
-                '--force' => true
-            ]);
-            
-            if ($exitCode !== 0) {
-                $output = Artisan::output();
-                Log::error('Theme installation command failed', [
-                    'directory' => $themeDir,
-                    'exit_code' => $exitCode,
-                    'output' => $output
-                ]);
-                return redirect()->back()->with('error', 'テーマのインストールに失敗しました。');
-            }
-            
-            return redirect()->route('admin.settings.themes.index')
-                ->with('success', 'テーマが正常にインストールされました。');
-        } catch (\Exception $e) {
-            Log::error('Theme installation failed', [
-                'directory' => $themeDir,
-                'error' => $e->getMessage()
-            ]);
-            return redirect()->back()->with('error', 'テーマのインストールに失敗しました: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * テーマディレクトリを完全に削除
-     */
-    public function deleteDirectory(Request $request)
-    {
-        $request->validate([
-            'directory' => 'required|string',
-        ]);
-        
-        $themeDir = $request->input('directory');
-        
-        // デフォルトテーマのディレクトリ名を取得
-        $defaultTheme = Theme::where('slug', config('themes.default_theme_slug', 'dixlase-default-theme'))->first();
-        if ($defaultTheme && $defaultTheme->directory === $themeDir) {
-            return redirect()->back()->with('error', 'デフォルトテーマは削除できません。');
-        }
-        
-        $themePath = base_path('themes/' . $themeDir);
-        
-        if (!File::exists($themePath)) {
-            return redirect()->back()->with('error', 'テーマディレクトリが見つかりません。');
-        }
-        
-        try {
-            // テーマフォルダを完全に削除
-            File::deleteDirectory($themePath);
-            
-            return redirect()->route('admin.settings.themes.index')
-                ->with('success', 'テーマが正常に削除されました。');
-        } catch (\Exception $e) {
-            Log::error('Theme directory deletion failed', [
-                'directory' => $themeDir,
-                'error' => $e->getMessage()
-            ]);
-            return redirect()->back()->with('error', 'テーマの削除に失敗しました: ' . $e->getMessage());
-        }
-    }
-
     /**
      * テーマのシーダーを実行
      */
     protected function runThemeSeeder(string $themeDirectory): void
     {
         try {
-            $seederClass = "Themes\\{$themeDirectory}\\Database\\Seeders\\DatabaseSeeder";
+            // Artisanコマンドを使用してシーダーを実行
+            Artisan::call('dls:theme:seed', [
+                'themeName' => $themeDirectory,
+            ]);
             
-            // シーダークラスが存在するか確認
-            if (class_exists($seederClass)) {
-                $seeder = new $seederClass();
-                $seeder->run();
-                
-                \Log::info("Theme seeder executed successfully", [
-                    'theme' => $themeDirectory,
-                    'seeder' => $seederClass
-                ]);
-            } else {
-                \Log::info("Theme seeder not found (optional)", [
-                    'theme' => $themeDirectory,
-                    'seeder' => $seederClass
-                ]);
-            }
+            Log::info('Theme seeder executed via command', [
+                'theme' => $themeDirectory
+            ]);
         } catch (\Exception $e) {
             // シーダーの実行に失敗してもインストールは続行
-            \Log::warning("Theme seeder execution failed", [
+            Log::warning('Theme seeder execution failed', [
                 'theme' => $themeDirectory,
                 'error' => $e->getMessage()
             ]);

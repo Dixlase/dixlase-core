@@ -69,191 +69,195 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         return view('admin::settings.plugins.index', $this->viewParams);
     }
 
-    public function install()
+    public function add()
     {
 
 
-        $this->viewParams['heading'] = 'プラグインインストール';
-        return view('admin::settings.plugins.install', $this->viewParams);
+        $this->viewParams['heading'] = 'プラグインを追加';
+        return view('admin::settings.plugins.add', $this->viewParams);
     }
 
+    /**
+     * プラグインのアップロード（ZIPファイルの解凍とファイル配置のみ）
+     */
     public function upload(Request $request)
     {
-
-
-        // 例: ini_get('upload_max_filesize') -> "2M"
+        // アップロード最大サイズを取得
         $uploadMaxFilesize = ini_get('upload_max_filesize');
-        $maxBytes = $this->parsePhpSize($uploadMaxFilesize); // 下記関数で "2M" -> 2097152 に変換
-
-        Log::info('uploadMaxFilesize: ' . $uploadMaxFilesize);
-        Log::info('maxBytes: ' . $maxBytes);
+        $maxBytes = $this->parsePhpSize($uploadMaxFilesize);
 
         $request->validate([
             'plugin_file' => [
                 'required',
                 'file',
                 'mimes:zip',
-                'max:' . floor($maxBytes / 1024), // kB単位に変換 (Laravel の max: ルールがkB単位)
+                'max:' . floor($maxBytes / 1024), // kB単位に変換
             ],
         ]);
-
-        Log::info('validate完了');
-
 
         // ZIPファイルを一時保存
         $file = $request->file('plugin_file');
         $fileName = $file->getClientOriginalName();
         $tempPath = storage_path('app/temp/plugins/' . $fileName);
-
-        Log::info('tempPath: ' . $tempPath);
-
         $file->move(storage_path('app/temp/plugins'), $fileName);
-
-        Log::info('move完了');
 
         // ZIP展開
         $zip = new ZipArchive();
         if ($zip->open($tempPath) === true) {
+            try {
+                // プラグインフォルダ名取得（ZIP内の最初のディレクトリ）
+                $pluginDir = null;
+                $dirs = [];
 
-
-            // プラグインフォルダ名取得 (ZIP内の最初のディレクトリ)
-            $pluginDir = null;
-            $dirs = [];
-
-            for ($i = 0; $i < $zip->numFiles; $i++) {
-                $entry = $zip->getNameIndex($i);
-
-                // エントリがディレクトリの中のファイルである場合も含めて考慮
-                if ($entry !== false) {
-                    $pathParts = explode('/', $entry);
-
-                    // ルートディレクトリの取得
-                    if (!empty($pathParts[0])) {
-                        $dirs[] = $pathParts[0];
+                for ($i = 0; $i < $zip->numFiles; $i++) {
+                    $entry = $zip->getNameIndex($i);
+                    if ($entry !== false) {
+                        $pathParts = explode('/', $entry);
+                        if (!empty($pathParts[0])) {
+                            $dirs[] = $pathParts[0];
+                        }
                     }
                 }
-            }
 
-            // 最も上位のディレクトリ名を取得（重複削除）
-            $dirs = array_unique($dirs);
-            $pluginDir = reset($dirs); // 配列の最初の要素を取得
+                $dirs = array_unique($dirs);
+                $pluginDir = reset($dirs);
 
-            if (!$pluginDir) {
-                return redirect()->back()->with('error', 'ZIP 内に有効なプラグインディレクトリが見つかりません。');
-            }
-
-
-            $destinationPath = base_path('plugins/' . $pluginDir);
-
-            // プラグインフォルダが既に存在しているか確認
-            if (File::exists($destinationPath)) {
-                $zip->close();
-                File::delete($tempPath);
-                return redirect()->back()->with('error', 'プラグインは既に存在します。');
-            }
-
-            // ZIPを解凍
-            $zip->extractTo(base_path('plugins'));
-            $zip->close();
-
-            // ZIPファイルを削除
-            File::delete($tempPath);
-
-            // composer.json のパス
-            $composerPath = base_path("plugins/{$pluginDir}/composer.json");
-
-            if (File::exists($composerPath)) {
-                // composer.json の内容を取得
-                $jsonContent = File::get($composerPath);
-                $composerData = json_decode($jsonContent, true);
-
-                if (json_last_error() !== JSON_ERROR_NONE) {
-                    return redirect()->back()->with('error', 'composer.json の解析に失敗しました: ' . json_last_error_msg());
+                if (!$pluginDir) {
+                    $zip->close();
+                    File::delete($tempPath);
+                    return redirect()->route('admin.settings.plugins.add')
+                        ->with('error', 'ZIP内に有効なプラグインディレクトリが見つかりません。');
                 }
 
-                // 1. プラグインの“見せたい”名前を display-name から取得
-                $displayName = $composerData['extra']['display-name'] ?? $pluginDir;
+                $destinationPath = base_path('plugins/' . $pluginDir);
 
-                // 2. authors[0] から author, email, homepage を取得
-                $authors = $composerData['authors'] ?? [];
-                $firstAuthor = $authors[0] ?? [];
-                $author = $firstAuthor['name'] ?? null;
-                $email  = $firstAuthor['email'] ?? null;
-                $web    = $firstAuthor['homepage'] ?? null;
+                // プラグインフォルダが既に存在しているか確認
+                if (File::exists($destinationPath)) {
+                    $zip->close();
+                    File::delete($tempPath);
+                    return redirect()->route('admin.settings.plugins.add')
+                        ->with('error', "プラグインディレクトリ '{$pluginDir}' は既に存在します。");
+                }
 
-                // 3. スラッグやライセンスなど
-                $slug = $composerData['extra']['slug'] ?? Str::slug($pluginDir);
-                $version = $composerData['version'] ?? '1.0.0';
-                $license = $composerData['license'] ?? null;
-                $description = $composerData['description'] ?? null;
+                // ZIPを解凍
+                $zip->extractTo(base_path('plugins'));
+                $zip->close();
+                File::delete($tempPath);
 
-                // 4. Composerパッケージ名
-                $packageName = $composerData['name'] ?? null; // "my-software/plugins-my-plugin"
+                // composer.jsonの存在確認
+                $composerPath = base_path("plugins/{$pluginDir}/composer.json");
+                if (!File::exists($composerPath)) {
+                    File::deleteDirectory($destinationPath);
+                    return redirect()->route('admin.settings.plugins.add')
+                        ->with('error', 'composer.json が見つかりません。');
+                }
 
-                // 5. namespace はフォルダ名から生成
-                $namespace = "Plugins\\$pluginDir";
+                // .git/info/excludeにプラグインの除外ルールを追加
+                GitExcludeHelper::addPluginExclusion($pluginDir);
+                
+                // composer.local.jsonを更新
+                ComposerLocalHelper::syncAutoload();
 
-                // DBにプラグイン情報を登録
-                $plugin = Plugin::create([
-                    'name'        => $displayName, // “MyPlugin”
-                    'package_name' => $packageName, // "my-software/plugins-my-plugin"
-                    'directory'   => $pluginDir,   // 例: "MyPlugin"
-                    'slug'        => $slug,
-                    'namespace'   => $namespace,
-                    'description' => $description,
-                    'license'     => $license,
-                    'author'      => $author,
-                    'email'       => $email,
-                    'web'         => $web,
-                    'version'     => $version,
-                    'installed_at' => now(), // インストール日時をセット
+                return redirect()->route('admin.settings.plugins.index')
+                    ->with('success', 'プラグインのアップロードが完了しました。一覧からインストールしてください。')
+                    ->with('uploaded_plugin_directory', $pluginDir);
+                    
+            } catch (\Exception $e) {
+                // 例外発生時にクリーンアップ
+                if (isset($destinationPath) && File::exists($destinationPath)) {
+                    File::deleteDirectory($destinationPath);
+                }
+                if (File::exists($tempPath)) {
+                    File::delete($tempPath);
+                }
+                Log::error('Plugin upload failed', [
+                    'directory' => $pluginDir ?? 'unknown',
+                    'error' => $e->getMessage()
                 ]);
-
-                // インストールしたプラグインのID
-                $pluginId = $plugin->id;
-            } else {
-                return redirect()->back()->with('error', 'composer.json が見つかりません。');
+                return redirect()->route('admin.settings.plugins.add')
+                    ->with('error', 'プラグインのアップロードに失敗しました: ' . $e->getMessage());
             }
-
-            $migrator = new PluginMigrator(
-                app(Filesystem::class),
-                app(ConnectionResolverInterface::class),
-                'plugin_migrations',
-                $slug // ここでプラグインのスラッグを渡す
-            );
-
-            // プラグインのマイグレーションを実行
-            // $migrated には「新しく実行された」マイグレーションファイルが入る
-            $migrated = $migrator->migrate($pluginDir, null, ['step' => false]);
-
-            if (!empty($migrated)) {
-                // 新しいマイグレーションがあったので、テーブルが新規(または更新)された
-                // ここでシーダー実行
-                Artisan::call('dls:plugin:seed', [
-                    'plugin' => $pluginDir,
-                    '--force' => true,
-                ]);
-            } else {
-                // 空 → "No migrations to run" の状態
-                // テーブルが既にあるとみなしてシーダーをスキップ
-            }
-
-            // .git/info/excludeにプラグインの除外ルールを追加
-            GitExcludeHelper::addPluginExclusion($pluginDir);
-            
-            // composer.local.jsonを更新（composer.jsonは素の状態を保持）
-            ComposerLocalHelper::syncAutoload();
-
-            return redirect()->route('admin.settings.plugins.index')
-                ->with('success', 'プラグインが正常にインストールされました。')
-                ->with('installed_plugin_id', $pluginId);
         }
 
-        // エラー処理
-        return redirect()->back()->with('error', 'ZIPファイルの展開に失敗しました。');
+        // ZIP展開失敗
+        if (File::exists($tempPath)) {
+            File::delete($tempPath);
+        }
+        return redirect()->route('admin.settings.plugins.add')
+            ->with('error', 'ZIPファイルの展開に失敗しました。');
     }
 
+    /**
+     * アンインストール済みプラグインをインストール
+     */
+    public function install(Request $request)
+    {
+        $request->validate([
+            'directory' => 'required|string',
+        ]);
+        
+        $pluginDir = $request->input('directory');
+        $pluginPath = base_path("plugins/{$pluginDir}");
+        
+        if (!File::exists($pluginPath)) {
+            return redirect()->back()->with('error', 'プラグインディレクトリが見つかりません。');
+        }
+        
+        try {
+            // コマンドを使用してインストール
+            Artisan::call('dls:plugin:install', [
+                'pluginName' => $pluginDir
+            ]);
+            
+            // インストールされたプラグインを取得
+            $plugin = Plugin::where('directory', $pluginDir)->first();
+            
+            return redirect()->route('admin.settings.plugins.index')
+                ->with('success', 'プラグインが正常にインストールされました。')
+                ->with('installed_plugin_id', $plugin ? $plugin->id : null);
+        } catch (\Exception $e) {
+            Log::error('Plugin installation failed', [
+                'directory' => $pluginDir,
+                'error' => $e->getMessage()
+            ]);
+            return redirect()->back()->with('error', 'プラグインのインストールに失敗しました: ' . $e->getMessage());
+        }
+    }
 
+    public function uninstall($id, Request $request)
+    {
+        $plugin = Plugin::findOrFail($id);
+
+        // 有効化中のプラグインはアンインストールできない
+        if ($plugin->isEnabled()) {
+            return back()->with('error', '有効化中のプラグインはアンインストールできません。先に無効化してください。');
+        }
+
+        try {
+            // コマンドを使用してアンインストール
+            $options = [
+                'pluginName' => $plugin->name,
+                '--force' => true,
+                '--no-interaction' => true,
+            ];
+            
+            // DBデータも削除する場合
+            if ($request->has('remove_db_data')) {
+                $options['--rollback'] = true;
+            }
+            
+            Artisan::call('dls:plugin:uninstall', $options);
+
+            return redirect()->route('admin.settings.plugins.index')
+                ->with('success', 'プラグインをアンインストールしました');
+        } catch (\Exception $e) {
+            Log::error('Plugin uninstall failed', [
+                'plugin' => $plugin->name,
+                'error' => $e->getMessage()
+            ]);
+            return back()->with('error', 'プラグインのアンインストールに失敗しました: ' . $e->getMessage());
+        }
+    }
 
     public function enable($id)
     {
@@ -297,40 +301,68 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         }
     }
 
-    public function uninstall($id, Request $request)
+/**
+     * プラグインを完全に削除（ファイル + DBレコード）
+     */
+    public function delete(Request $request)
     {
-        $plugin = Plugin::findOrFail($id);
-
-        // 有効化中のプラグインはアンインストールできない
-        if ($plugin->isEnabled()) {
-            return back()->with('error', '有効化中のプラグインはアンインストールできません。先に無効化してください。');
-        }
-
+        $request->validate([
+            'directory' => 'required|string',
+        ]);
+        
+        $pluginDir = $request->input('directory');
+        
+        // DBレコードが存在するか確認
+        $plugin = Plugin::where('directory', $pluginDir)->first();
+        
         try {
-            // コマンドを使用してアンインストール
-            $options = [
-                'pluginName' => $plugin->name,
-                '--force' => true,
-                '--no-interaction' => true,
-            ];
-            
-            // DBデータも削除する場合
-            if ($request->has('remove_db_data')) {
-                $options['--rollback'] = true;
+            // DBレコードが存在する場合は先にアンインストール
+            if ($plugin) {
+                $exitCode = Artisan::call('dls:plugin:uninstall', [
+                    'pluginName' => $plugin->slug,
+                    '--force' => true,
+                    '--no-interaction' => true,
+                ]);
+                
+                if ($exitCode !== 0) {
+                    $output = Artisan::output();
+                    Log::error('Plugin uninstall command failed', [
+                        'directory' => $pluginDir,
+                        'exit_code' => $exitCode,
+                        'output' => $output
+                    ]);
+                    return redirect()->back()->with('error', 'プラグインのアンインストールに失敗しました。');
+                }
             }
             
-            Artisan::call('dls:plugin:uninstall', $options);
-
+            // プラグインディレクトリを削除
+            $exitCode = Artisan::call('dls:plugin:delete', [
+                'pluginDirectory' => $pluginDir,
+                '--force' => true,
+            ]);
+            
+            if ($exitCode !== 0) {
+                $output = Artisan::output();
+                Log::error('Plugin delete command failed', [
+                    'directory' => $pluginDir,
+                    'exit_code' => $exitCode,
+                    'output' => $output
+                ]);
+                return redirect()->back()->with('error', 'プラグインの削除に失敗しました。');
+            }
+            
             return redirect()->route('admin.settings.plugins.index')
-                ->with('success', 'プラグインをアンインストールしました');
+                ->with('success', 'プラグインが正常に削除されました。');
         } catch (\Exception $e) {
-            Log::error('Plugin uninstall failed', [
-                'plugin' => $plugin->name,
+            Log::error('Plugin deletion failed', [
+                'directory' => $pluginDir,
                 'error' => $e->getMessage()
             ]);
-            return back()->with('error', 'プラグインのアンインストールに失敗しました: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'プラグインの削除に失敗しました: ' . $e->getMessage());
         }
     }
+
+    
 
     // ZIPファイルのサイズをバイト数に変換
     private function parsePhpSize($sizeStr)
@@ -585,77 +617,6 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 'error' => $e->getMessage()
             ]);
             return null;
-        }
-    }
-
-    /**
-     * アンインストール済みプラグインをインストール
-     */
-    public function installFromDirectory(Request $request)
-    {
-        $request->validate([
-            'directory' => 'required|string',
-        ]);
-        
-        $pluginDir = $request->input('directory');
-        $pluginPath = base_path("plugins/{$pluginDir}");
-        
-        if (!File::exists($pluginPath)) {
-            return redirect()->back()->with('error', 'プラグインディレクトリが見つかりません。');
-        }
-        
-        try {
-            // コマンドを使用してインストール
-            Artisan::call('dls:plugin:install', [
-                'pluginName' => $pluginDir
-            ]);
-            
-            // インストールされたプラグインを取得
-            $plugin = Plugin::where('directory', $pluginDir)->first();
-            
-            return redirect()->route('admin.settings.plugins.index')
-                ->with('success', 'プラグインが正常にインストールされました。')
-                ->with('installed_plugin_id', $plugin ? $plugin->id : null);
-        } catch (\Exception $e) {
-            Log::error('Plugin installation failed', [
-                'directory' => $pluginDir,
-                'error' => $e->getMessage()
-            ]);
-            return redirect()->back()->with('error', 'プラグインのインストールに失敗しました: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * プラグインディレクトリを完全に削除
-     */
-    public function deleteDirectory(Request $request)
-    {
-        $request->validate([
-            'directory' => 'required|string',
-        ]);
-        
-        $pluginDir = $request->input('directory');
-        $pluginPath = base_path('plugins/' . $pluginDir);
-        
-        if (!File::exists($pluginPath)) {
-            return redirect()->back()->with('error', 'プラグインディレクトリが見つかりません。');
-        }
-        
-        try {
-            // コマンドを使用して削除
-            Artisan::call('dls:plugin:delete', [
-                'pluginDirectory' => $pluginDir,
-                '--force' => true
-            ]);
-            
-            return redirect()->route('admin.settings.plugins.index')
-                ->with('success', 'プラグインが正常に削除されました。');
-        } catch (\Exception $e) {
-            Log::error('Plugin directory deletion failed', [
-                'directory' => $pluginDir,
-                'error' => $e->getMessage()
-            ]);
-            return redirect()->back()->with('error', 'プラグインの削除に失敗しました: ' . $e->getMessage());
         }
     }
 }

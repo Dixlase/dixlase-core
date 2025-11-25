@@ -113,7 +113,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         @endif
                                     @else
                                         <!-- 有効化ボタン -->
-                                        <form action="{{ route('admin.settings.themes.activate', $theme->id) }}" method="POST" class="inline-block">
+                                        <form action="{{ route('admin.settings.themes.switch', $theme->id) }}" method="POST" class="inline-block">
                                             @csrf
                                             <x-form.button
                                                 type="submit"
@@ -238,7 +238,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <td data-label="{{ __('common.actions') }}">
                                 <div class="action-buttons">
                                     <!-- インストールボタン -->
-                                    <form action="{{ route('admin.settings.themes.install-from-directory') }}" method="POST" class="inline-block" id="installThemeForm-{{ $theme['directory'] }}">
+                                    <form action="{{ route('admin.settings.themes.install') }}" method="POST" class="inline-block" id="installThemeForm-{{ $theme['directory'] }}">
                                         @csrf
                                         <input type="hidden" name="directory" value="{{ $theme['directory'] }}">
                                         <x-form.button
@@ -268,7 +268,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         $defaultThemeSlug = config('themes.default_theme_slug', 'dixlase-default-theme');
                                     @endphp
                                     @if($theme['slug'] !== $defaultThemeSlug)
-                                        <form action="{{ route('admin.settings.themes.delete-directory') }}" method="POST" class="inline-block" id="deleteThemeForm-{{ $theme['directory'] }}">
+                                        <form action="{{ route('admin.settings.themes.delete') }}" method="POST" class="inline-block" id="deleteThemeForm-{{ $theme['directory'] }}">
                                             @csrf
                                             <input type="hidden" name="directory" value="{{ $theme['directory'] }}">
                                             <x-form.button
