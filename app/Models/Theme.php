@@ -83,8 +83,12 @@ class Theme extends Model
      */
     public function isEnabled(): bool
     {
-        $enabledThemeId = \DB::table('theme_settings')->value('enabled_theme_id');
-        return $this->id == $enabledThemeId;
+        $themeSetting = \DB::table('theme_settings')
+            ->where('key', 'enabled_theme_id')
+            ->first();
+        $enabledThemeId = $themeSetting ? (int)$themeSetting->value : null;
+        
+        return $enabledThemeId && $this->id == $enabledThemeId;
     }
 
     /**

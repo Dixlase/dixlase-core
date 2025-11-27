@@ -34,10 +34,10 @@ class ThemeSettingsTableSeeder extends Seeder
      */
     public function run(): void
     {
-        //
         DB::table('theme_settings')->insert([
             [
-                'enabled_theme_id' => 1,
+                'key' => 'enabled_theme_id',
+                'value' => '1',
                 'created_at' => now(),
                 'updated_at' => now()
             ],

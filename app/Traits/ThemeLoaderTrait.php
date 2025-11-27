@@ -38,8 +38,10 @@ trait ThemeLoaderTrait
         //theme_settingsテーブルのenabled_theme_idの値を取得
         //theme_settingsテーブルが存在しているか確認
         if (Schema::hasTable('theme_settings')) {
-            $themeSetting = DB::table('theme_settings')->first();
-            $enabledThemeId = $themeSetting ? $themeSetting->enabled_theme_id : 1;
+            $themeSetting = DB::table('theme_settings')
+                ->where('key', 'enabled_theme_id')
+                ->first();
+            $enabledThemeId = $themeSetting ? (int)$themeSetting->value : 1;
         } else {
             $enabledThemeId = 1;
         }

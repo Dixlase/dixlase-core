@@ -139,10 +139,12 @@ if (!function_exists('load_active_assets')) {
         );
 
         // アクティブなテーマIDを取得
-        $themeSetting = DB::table('theme_settings')->first();
+        $themeSetting = DB::table('theme_settings')
+            ->where('key', 'enabled_theme_id')
+            ->first();
 
-        if ($themeSetting && $themeSetting->enabled_theme_id) {
-            $activeThemeId = $themeSetting->enabled_theme_id;
+        if ($themeSetting && $themeSetting->value) {
+            $activeThemeId = (int)$themeSetting->value;
         } else {
             $activeThemeId = 1;
         }

@@ -34,7 +34,8 @@ return new class extends Migration
     {
         Schema::create('theme_settings', function (Blueprint $table) {
             $table->id();
-            $table->integer('enabled_theme_id'); // 有効なテーマのID
+            $table->string('key')->unique(); // 設定キー
+            $table->text('value')->nullable(); // 設定値
             $table->timestamps();
         });
     }

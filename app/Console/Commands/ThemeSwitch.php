@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\Theme;
+use Illuminate\Support\Facades\DB;
 
 class ThemeSwitch extends Command
 {
@@ -68,23 +69,34 @@ class ThemeSwitch extends Command
      */
     protected function switchTheme(Theme $theme)
     {
-        // Get the current enabled theme
-        $currentEnabled = Theme::whereNotNull('enabled_at')->first();
+        // Get the current enabled theme ID from theme_settings
+        $currentSetting = DB::table('theme_settings')
+            ->where('key', 'enabled_theme_id')
+            ->first();
+        
+        $currentThemeId = $currentSetting ? $currentSetting->value : null;
         
         // Check if already enabled
-        if ($currentEnabled && $currentEnabled->id === $theme->id) {
+        if ($currentThemeId && $currentThemeId == $theme->id) {
             $this->info(__('command.theme_switch.already_enabled', ['themeName' => $theme->name]));
             return Command::SUCCESS;
         }
         
-        // Disable current theme if exists
-        if ($currentEnabled) {
-            $currentEnabled->update(['enabled_at' => null]);
-            $this->info(__('command.theme_switch.disabled', ['themeName' => $currentEnabled->name]));
+        // Get current theme for display message
+        if ($currentThemeId) {
+            $currentTheme = Theme::find($currentThemeId);
+            if ($currentTheme) {
+                $this->info(__('command.theme_switch.disabled', ['themeName' => $currentTheme->name]));
+            }
         }
         
-        // Enable the new theme
-        $theme->update(['enabled_at' => now()]);
+        // Update or create the enabled_theme_id setting
+        DB::table('theme_settings')
+            ->updateOrInsert(
+                ['key' => 'enabled_theme_id'],
+                ['value' => $theme->id, 'updated_at' => now()]
+            );
+        
         $this->info(__('command.theme_switch.switched', ['themeName' => $theme->name]));
         
         // Update symlink
@@ -114,13 +126,18 @@ class ThemeSwitch extends Command
             return Command::FAILURE;
         }
 
-        // Get current enabled theme
-        $currentEnabled = Theme::whereNotNull('enabled_at')->first();
+        // Get current enabled theme ID from theme_settings
+        $currentSetting = DB::table('theme_settings')
+            ->where('key', 'enabled_theme_id')
+            ->first();
+        
+        $currentThemeId = $currentSetting ? $currentSetting->value : null;
+        $currentTheme = $currentThemeId ? Theme::find($currentThemeId) : null;
         
         // Create choices array
-        $choices = $themes->mapWithKeys(function ($theme) use ($currentEnabled) {
+        $choices = $themes->mapWithKeys(function ($theme) use ($currentThemeId) {
             $label = $theme->name;
-            if ($currentEnabled && $currentEnabled->id === $theme->id) {
+            if ($currentThemeId && $currentThemeId == $theme->id) {
                 $label .= ' ' . __('command.theme_switch.current_marker');
             }
             return [$theme->slug => $label];
@@ -129,7 +146,7 @@ class ThemeSwitch extends Command
         $selected = $this->choice(
             __('command.theme_switch.select_prompt'),
             $choices,
-            $currentEnabled ? $currentEnabled->slug : null
+            $currentTheme ? $currentTheme->slug : null
         );
 
         // Find selected theme by the choice value (which is the label)

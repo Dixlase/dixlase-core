@@ -54,8 +54,11 @@ class MakeLinkAssets extends Command
         }
 
         // 有効化されたテーマのアセット
-        $activeThemeId = DB::table('theme_settings')->value('enabled_theme_id');
-        $theme = Theme::find($activeThemeId);
+        $themeSetting = DB::table('theme_settings')
+            ->where('key', 'enabled_theme_id')
+            ->first();
+        $activeThemeId = $themeSetting ? (int)$themeSetting->value : null;
+        $theme = $activeThemeId ? Theme::find($activeThemeId) : null;
 
         if ($theme) {
             try {
