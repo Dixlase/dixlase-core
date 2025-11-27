@@ -176,7 +176,10 @@ return [
     // コンテンツ関連
     'content' => 'コンテンツ',
     'slug' => 'スラッグ',
+    'slug_help' => 'URLに使用されます（例: /pages/about-us）。空の場合はタイトルから自動生成されます。',
+    'auto_generate' => '自動生成',
     'published_at' => '公開日時',
+    'page_url' => 'ページURL',
 
     // デザイン・表示
     'color' => 'カラー',
@@ -358,4 +361,44 @@ return [
         'content' => '内容',
         'description' => '説明',
     ],
+
+    // 言語
+    'language' => '言語',
+    'languages' => [
+        'ja' => '日本語',
+        'en' => 'English',
+    ],
+
+    // コンテンツ保存方法
+    'content_storage' => [
+        'label' => 'コンテンツの保存方法',
+        'database' => 'データベース',
+        'database_description' => 'DBに保存します。管理画面から直接編集できます。',
+        'file' => 'ファイル',
+        'file_description' => 'ファイルとして保存します。ローカルエディタで直接編集できます。',
+        'file_info_title' => 'ファイル保存について',
+        'file_info_description' => 'コンテンツはファイルとして保存されます。以下のパスで直接編集できます：',
+        'gui_db_only' => 'GUIエディタはデータベース保存のみ対応',
+    ],
+
+    // コンテンツエディタ
+    'content_editor' => [
+        'label' => 'エディタータイプ',
+        'gui' => 'GUIエディタ',
+        'gui_description' => 'ドラッグ&ドロップで直感的に編集（将来実装予定）',
+        'gui_coming_soon' => 'GUIエディタは近日実装予定です',
+        'markdown' => 'Markdown',
+        'markdown_description' => 'Markdown記法で記述。プレビュー機能付き。',
+        'markdown_editor' => 'Markdownエディタ',
+        'html' => 'HTML',
+        'html_description' => 'HTMLタグを直接記述。完全な制御が可能。',
+        'blade' => 'Blade',
+        'blade_description' => 'Laravel Blade記法で記述。動的コンテンツ対応。',
+        'blade_warning' => '⚠️ Bladeテンプレートは強力ですが、セキュリティリスクがあります。信頼できる管理者のみが使用してください。',
+        'preview' => 'プレビュー',
+    ],
+
+    // メタ情報
+    'meta_description' => 'メタディスクリプション',
+    'ogp_image' => 'OGP画像',
 ];
