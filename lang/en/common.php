@@ -173,7 +173,10 @@ return [
     // Content Related
     'content' => 'Content',
     'slug' => 'Slug',
+    'slug_help' => 'Used in URL (e.g., /pages/about-us). Auto-generated from title if empty.',
+    'auto_generate' => 'Auto Generate',
     'published_at' => 'Published At',
+    'page_url' => 'Page URL',
 
     // Design & Display
     'color' => 'Color',
@@ -336,4 +339,44 @@ return [
         'content' => 'content',
         'description' => 'description',
     ],
+
+    // Languages
+    'language' => 'Language',
+    'languages' => [
+        'ja' => '日本語',
+        'en' => 'English',
+    ],
+
+    // Content Storage
+    'content_storage' => [
+        'label' => 'Content Storage Method',
+        'database' => 'Database',
+        'database_description' => 'Store in database. Edit directly from admin panel.',
+        'file' => 'File',
+        'file_description' => 'Store as file. Edit directly with local editor.',
+        'file_info_title' => 'About File Storage',
+        'file_info_description' => 'Content will be stored as a file. You can edit it directly at:',
+        'gui_db_only' => 'GUI editor supports database storage only',
+    ],
+
+    // Content Editor
+    'content_editor' => [
+        'label' => 'Editor Type',
+        'gui' => 'GUI Editor',
+        'gui_description' => 'Intuitive drag & drop editing (coming soon)',
+        'gui_coming_soon' => 'GUI editor is coming soon',
+        'markdown' => 'Markdown',
+        'markdown_description' => 'Write in Markdown syntax. Preview available.',
+        'markdown_editor' => 'Markdown Editor',
+        'html' => 'HTML',
+        'html_description' => 'Write HTML tags directly. Full control.',
+        'blade' => 'Blade',
+        'blade_description' => 'Write in Laravel Blade syntax. Dynamic content support.',
+        'blade_warning' => '⚠️ Blade templates are powerful but have security risks. Only trusted administrators should use this.',
+        'preview' => 'Preview',
+    ],
+
+    // Meta Information
+    'meta_description' => 'Meta Description',
+    'ogp_image' => 'OGP Image',
 ];

@@ -1,0 +1,269 @@
+<?php
+
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2025 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+namespace App\Helpers;
+
+use Illuminate\Support\Facades\Auth;
+
+/**
+ * 言語設定ヘルパー
+ * 
+ * 多言語対応の言語設定とフォールバックロジックを管理します。
+ */
+class LocaleHelper
+{
+    /**
+     * サポートされている言語一覧
+     */
+    protected static array $supportedLocales = ['ja', 'en'];
+
+    /**
+     * デフォルト言語
+     */
+    protected static string $defaultLocale = 'ja';
+
+    /**
+     * 言語のフォールバック優先順位
+     */
+    protected static array $fallbackPriority = ['ja', 'en'];
+
+    /**
+     * サポートされている言語一覧を取得
+     * 
+     * @return array
+     */
+    public static function supportedLocales(): array
+    {
+        return self::$supportedLocales;
+    }
+
+    /**
+     * サポートされている言語を選択肢として取得
+     * 
+     * @return array ['ja' => '日本語', 'en' => 'English']
+     */
+    public static function supportedLocaleOptions(): array
+    {
+        return [
+            'ja' => __('common.languages.ja'),
+            'en' => __('common.languages.en'),
+        ];
+    }
+
+    /**
+     * 言語がサポートされているかチェック
+     * 
+     * @param string $locale
+     * @return bool
+     */
+    public static function isSupported(string $locale): bool
+    {
+        return in_array($locale, self::$supportedLocales);
+    }
+
+    /**
+     * ログイン中のユーザーの優先言語を取得
+     * 
+     * @return string
+     */
+    public static function getUserPreferredLocale(): string
+    {
+        if (Auth::check() && Auth::user()->locale) {
+            $userLocale = Auth::user()->locale;
+            // Enumの場合は文字列に変換
+            if ($userLocale instanceof \App\Enums\Locale) {
+                $userLocale = $userLocale->value;
+            }
+            if (self::isSupported($userLocale)) {
+                return $userLocale;
+            }
+        }
+
+        return self::getCurrentLocale();
+    }
+
+    /**
+     * 現在の言語を取得
+     * 
+     * @return string
+     */
+    public static function getCurrentLocale(): string
+    {
+        $locale = app()->getLocale();
+        return self::isSupported($locale) ? $locale : self::$defaultLocale;
+    }
+
+    /**
+     * デフォルト言語を取得
+     * 
+     * @return string
+     */
+    public static function getDefaultLocale(): string
+    {
+        return self::$defaultLocale;
+    }
+
+    /**
+     * フォールバック言語を取得
+     * 
+     * @param string $preferredLocale 優先言語
+     * @param array $availableLocales 利用可能な言語一覧
+     * @return string|null
+     */
+    public static function getFallbackLocale(string $preferredLocale, array $availableLocales): ?string
+    {
+        // 優先言語が利用可能ならそれを返す
+        if (in_array($preferredLocale, $availableLocales)) {
+            return $preferredLocale;
+        }
+
+        // フォールバック優先順位に従って検索
+        foreach (self::$fallbackPriority as $locale) {
+            if (in_array($locale, $availableLocales)) {
+                return $locale;
+            }
+        }
+
+        // どれもなければ最初の利用可能な言語
+        return $availableLocales[0] ?? null;
+    }
+
+    /**
+     * URLから言語コードを抽出
+     * 
+     * @param string $url
+     * @return string|null
+     */
+    public static function extractLocaleFromUrl(string $url): ?string
+    {
+        // /ja/about, /en/contact などから言語コードを抽出
+        if (preg_match('#^/(' . implode('|', self::$supportedLocales) . ')(/|$)#', $url, $matches)) {
+            return $matches[1];
+        }
+
+        return null;
+    }
+
+    /**
+     * URLに言語プレフィックスを追加
+     * 
+     * @param string $url
+     * @param string|null $locale
+     * @return string
+     */
+    public static function addLocalePrefix(string $url, ?string $locale = null): string
+    {
+        $locale = $locale ?? self::getCurrentLocale();
+        
+        // すでに言語プレフィックスがある場合は置換
+        $url = preg_replace('#^/(' . implode('|', self::$supportedLocales) . ')(/|$)#', '/', $url);
+        
+        // 言語プレフィックスを追加
+        return '/' . $locale . $url;
+    }
+
+    /**
+     * URLから言語プレフィックスを削除
+     * 
+     * @param string $url
+     * @return string
+     */
+    public static function removeLocalePrefix(string $url): string
+    {
+        return preg_replace('#^/(' . implode('|', self::$supportedLocales) . ')(/|$)#', '/', $url);
+    }
+
+    /**
+     * 言語を切り替えたURLを生成
+     * 
+     * @param string $url
+     * @param string $newLocale
+     * @return string
+     */
+    public static function switchLocaleUrl(string $url, string $newLocale): string
+    {
+        // 既存の言語プレフィックスを削除
+        $url = self::removeLocalePrefix($url);
+        
+        // 新しい言語プレフィックスを追加
+        return self::addLocalePrefix($url, $newLocale);
+    }
+
+    /**
+     * 言語名を取得
+     * 
+     * @param string $locale
+     * @param bool $native ネイティブ表記で取得するか
+     * @return string
+     */
+    public static function getLocaleName(string $locale, bool $native = true): string
+    {
+        if ($native) {
+            return match($locale) {
+                'ja' => '日本語',
+                'en' => 'English',
+                default => $locale,
+            };
+        }
+
+        return __("common.languages.{$locale}");
+    }
+
+    /**
+     * すべての言語名を取得
+     * 
+     * @param bool $native ネイティブ表記で取得するか
+     * @return array
+     */
+    public static function getAllLocaleNames(bool $native = true): array
+    {
+        $names = [];
+        foreach (self::$supportedLocales as $locale) {
+            $names[$locale] = self::getLocaleName($locale, $native);
+        }
+        return $names;
+    }
+
+    /**
+     * 言語設定を変更
+     * 
+     * @param string $locale
+     * @return void
+     */
+    public static function setLocale(string $locale): void
+    {
+        if (self::isSupported($locale)) {
+            app()->setLocale($locale);
+            session(['locale' => $locale]);
+        }
+    }
+
+    /**
+     * セッションから言語を取得
+     * 
+     * @return string|null
+     */
+    public static function getSessionLocale(): ?string
+    {
+        return session('locale');
+    }
+}
