@@ -35,17 +35,12 @@ class PluginDisable extends Command
      */
     protected $signature = 'dls:plugin:disable {pluginName : The name of the plugin to disable}';
 
-   
     /**
-     * Create a new command instance.
+     * The console command description.
      *
-     * @return void
+     * @var string
      */
-    public function __construct()
-    {
-        parent::__construct();
-        $this->description = __('command.plugin_disable.description');
-    }
+    protected $description = 'Disable a plugin';
 
     /**
      * Execute the console command.
@@ -82,7 +77,7 @@ class PluginDisable extends Command
      */
     protected function removePluginSymlink(string $pluginDirName)
     {
-        $this->call('plugin:symlink', [
+        $this->call('dls:plugin:symlink', [
             'action' => 'remove',
             'plugin' => $pluginDirName
         ]);

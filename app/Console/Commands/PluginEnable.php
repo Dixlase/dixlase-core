@@ -35,17 +35,12 @@ class PluginEnable extends Command
      */
     protected $signature = 'dls:plugin:enable {pluginName : The name of the plugin to enable}';
 
-    
     /**
-     * Create a new command instance.
+     * The console command description.
      *
-     * @return void
+     * @var string
      */
-    public function __construct()
-    {
-        parent::__construct();
-        $this->description = __('command.plugin_enable.description');
-    }
+    protected $description = 'Enable a plugin';
 
     /**
      * Execute the console command.
@@ -82,7 +77,7 @@ class PluginEnable extends Command
      */
     protected function createPluginSymlink(string $pluginDirName)
     {
-        $this->call('plugin:symlink', [
+        $this->call('dls:plugin:symlink', [
             'action' => 'create',
             'plugin' => $pluginDirName
         ]);

@@ -162,7 +162,7 @@ class PluginInstall extends Command
         // プラグインの有効化を確認（--enable オプションが指定されていない場合のみ確認）
         // Web経由での実行時は対話的入力ができないため、--enableオプションの有無のみで判断
         if ($this->option('enable')) {
-            $this->call('plugin:enable', [
+            $this->call('dls:plugin:enable', [
                 'pluginName' => $pluginName
             ]);
         } elseif (app()->runningInConsole() && !app()->runningUnitTests()) {
@@ -170,7 +170,7 @@ class PluginInstall extends Command
             if ($this->confirm(__('command.make_plugin.installation.enable_confirm', [
                 'pluginName' => $pluginName
             ]), false)) {
-                $this->call('plugin:enable', [
+                $this->call('dls:plugin:enable', [
                     'pluginName' => $pluginName
                 ]);
             } else {
