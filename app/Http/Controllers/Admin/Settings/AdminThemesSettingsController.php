@@ -46,7 +46,10 @@ class AdminThemesSettingsController extends AdminLoggedInController
         $themes = Theme::all();
 
         // 現在有効なテーマを取得
-        $activeThemeId = DB::table('theme_settings')->value('enabled_theme_id');
+        $themeSetting = DB::table('theme_settings')
+            ->where('key', 'enabled_theme_id')
+            ->first();
+        $activeThemeId = $themeSetting ? (int)$themeSetting->value : null;
 
         // テーマ設定機能の有無をチェック
         foreach ($themes as $theme) {
@@ -213,8 +216,12 @@ class AdminThemesSettingsController extends AdminLoggedInController
         }
         
         // 有効化中のテーマはアンインストールできない
-        $activeThemeId = DB::table('theme_settings')->value('enabled_theme_id');
-        if ($theme->id == $activeThemeId) {
+        $themeSetting = DB::table('theme_settings')
+            ->where('key', 'enabled_theme_id')
+            ->first();
+        $activeThemeId = $themeSetting ? (int)$themeSetting->value : null;
+        
+        if ($activeThemeId && $theme->id == $activeThemeId) {
             return back()->with('error', '有効化中のテーマはアンインストールできません。');
         }
 

@@ -680,10 +680,17 @@ class InstallController extends Controller
 
             // ✅ アクティブなテーマのシンボリックリンクを作成
             Log::channel('install')->info('テーマシンボリックリンク作成開始');
-            $activeTheme = DB::table('theme_settings')
-                ->join('themes', 'theme_settings.enabled_theme_id', '=', 'themes.id')
-                ->select('themes.directory')
+            $themeSetting = DB::table('theme_settings')
+                ->where('key', 'enabled_theme_id')
                 ->first();
+            
+            $activeTheme = null;
+            if ($themeSetting && $themeSetting->value) {
+                $activeTheme = DB::table('themes')
+                    ->where('id', $themeSetting->value)
+                    ->select('directory')
+                    ->first();
+            }
 
             if ($activeTheme) {
                 try {
