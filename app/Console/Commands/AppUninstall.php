@@ -261,6 +261,9 @@ class AppUninstall extends Command
 
     /**
      * キャッシュのクリア
+     * 
+     * 注意: アンインストール時はキャッシュを再生成しない（config:cacheを実行しない）
+     * これにより、次回アクセス時にインストール画面が正しく表示される
      */
     private function clearCache()
     {
@@ -271,15 +274,30 @@ class AppUninstall extends Command
         }
 
         try {
-            // 基本的なキャッシュクリア
+            // 基本的なキャッシュクリア（config:clearを最初に実行）
             Artisan::call('config:clear');
-            Artisan::call('cache:clear');
+            $this->info('✔️ 設定キャッシュをクリアしました。');
+            
+            // cache:clearはDBテーブルが削除されている可能性があるためtry-catch
+            try {
+                Artisan::call('cache:clear');
+                $this->info('✔️ アプリケーションキャッシュをクリアしました。');
+            } catch (\Exception $e) {
+                $this->warn('⚠️ アプリケーションキャッシュのクリアをスキップしました（テーブルが存在しない可能性）。');
+            }
+            
             Artisan::call('view:clear');
             Artisan::call('route:clear');
             
             // 追加のクリアコマンド（再インストール問題対策）
             Artisan::call('clear-compiled');
-            Artisan::call('optimize:clear');
+            
+            // optimize:clearもDBキャッシュを使用する可能性があるためtry-catch
+            try {
+                Artisan::call('optimize:clear');
+            } catch (\Exception $e) {
+                $this->warn('⚠️ optimize:clearの一部をスキップしました。');
+            }
             
             $this->info('✔️ 基本キャッシュをクリアしました。');
             
@@ -292,16 +310,9 @@ class AppUninstall extends Command
                 $this->warn('⚠️ Composer autoload の再生成をスキップしました（composerコマンドが見つからない）。');
             }
             
-            // アンインストール後はセッションドライバをfileに変更してからキャッシュ再生成
-            if ($this->isEnvComplete()) {
-                // .envのセッションドライバをfileに変更
-                $this->updateEnvSessionDriver();
-                
-                Artisan::call('config:cache');
-                $this->info('✔️ 設定キャッシュを再生成しました（セッションドライバ: file）。');
-            } else {
-                $this->info('ℹ️ .envが不完全なため、config:cacheをスキップしました。');
-            }
+            // ⚠️ アンインストール時はconfig:cacheを実行しない
+            // キャッシュを再生成すると、次回アクセス時にインストール画面が表示されなくなる
+            $this->info('ℹ️ アンインストール完了のため、設定キャッシュの再生成はスキップしました。');
             
         } catch (\Exception $e) {
             $this->error('キャッシュのクリア中にエラーが発生しました: ' . $e->getMessage());

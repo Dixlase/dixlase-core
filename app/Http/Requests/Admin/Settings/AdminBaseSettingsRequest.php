@@ -63,6 +63,9 @@ class AdminBaseSettingsRequest extends FormRequest
             'force_ssl' => 'nullable|boolean',
             'default_ogp_image_id' => 'nullable|exists:media,id',
             'twitter_card_type' => ['nullable', Rule::in(['summary', 'summary_large_image', 'app', 'player'])],
+            'multilingual_enabled' => 'required|boolean',
+            'enabled_locales' => 'nullable|array',
+            'enabled_locales.*' => ['string', Rule::in(array_keys(config('admin.locale.available', [])))],
         ];
     }
 

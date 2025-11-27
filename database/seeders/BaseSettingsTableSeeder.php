@@ -70,6 +70,11 @@ class BaseSettingsTableSeeder extends Seeder
             ['name' => 'site_description', 'value' => ''],
             ['name' => 'site_keywords', 'value' => ''],
             ['name' => 'twitter_card_type', 'value' => 'summary_large_image'],
+            
+            // 多言語設定
+            ['name' => 'multilingual_enabled', 'value' => '0'],
+            // 有効な言語（JSON配列形式、デフォルトは英語のみ）
+            ['name' => 'enabled_locales', 'value' => json_encode(['en'])],
         ];
 
         foreach ($settings as $setting) {

@@ -38,17 +38,48 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'publishedAtValue' => '',
     'pagesDirectory' => 'pages',
     'baseUrl' => '',
+    'multilingualEnabled' => null, // null = auto-detect from base settings
 ])
 
 @php
 use App\Enums\ContentStorageType;
 use App\Enums\ContentEditorType;
 use App\Helpers\LocaleHelper;
+use App\Models\BaseSetting;
 
 $storageTypeEnum = is_string($storageType) ? ContentStorageType::from($storageType) : $storageType;
 $editorTypeEnum = is_string($editorType) ? ContentEditorType::from($editorType) : $editorType;
-$supportedLocales = LocaleHelper::supportedLocales();
+
+// 多言語設定を取得（プロパティで指定されていない場合は基本設定から取得）
+$isMultilingualEnabled = $multilingualEnabled ?? (bool) BaseSetting::get('multilingual_enabled', false);
+
+// 有効な言語を取得（文字列または配列の両方に対応）
+$enabledLocalesValue = BaseSetting::get('enabled_locales', '["en"]');
+$enabledLocales = is_array($enabledLocalesValue) 
+    ? ($enabledLocalesValue ?: ['en'])
+    : (json_decode($enabledLocalesValue, true) ?: ['en']);
+
+// 多言語が有効な場合は有効な言語のみを使用、無効な場合はデフォルト言語のみ
+if ($isMultilingualEnabled) {
+    // 有効な言語のみをフィルタリング
+    $allSupportedLocales = LocaleHelper::supportedLocales();
+    $supportedLocales = array_values(array_filter($allSupportedLocales, function($locale) use ($enabledLocales) {
+        return in_array($locale, $enabledLocales);
+    }));
+    // 有効な言語がない場合はデフォルト言語（英語）を使用
+    if (empty($supportedLocales)) {
+        $supportedLocales = ['en'];
+    }
+} else {
+    // 多言語無効時はデフォルト言語のみ
+    $defaultLocale = config('app.locale', 'ja');
+    $supportedLocales = [$defaultLocale];
+}
 $userPreferredLocale = LocaleHelper::getUserPreferredLocale();
+// ユーザーの優先言語が有効な言語に含まれていない場合は最初の有効な言語を使用
+if (!in_array($userPreferredLocale, $supportedLocales)) {
+    $userPreferredLocale = $supportedLocales[0];
+}
 @endphp
 
 <div x-data="{
@@ -224,7 +255,8 @@ $userPreferredLocale = LocaleHelper::getUserPreferredLocale();
     }
 }" x-init="$watch('storageType', () => updateEditorType()); $watch('editorType', () => updateStorageType())" class="space-y-4">
 
-    {{-- 1. 言語タブ --}}
+    {{-- 1. 言語タブ（多言語有効時のみ表示） --}}
+    @if($isMultilingualEnabled && count($supportedLocales) > 1)
     <div class="border-b border-gray-200 dark:border-gray-700">
         <nav class="flex space-x-4" aria-label="Tabs">
             @foreach($supportedLocales as $locale)
@@ -243,6 +275,7 @@ $userPreferredLocale = LocaleHelper::getUserPreferredLocale();
             @endforeach
         </nav>
     </div>
+    @endif
 
     {{-- 2. 各言語のタイトル --}}
     @foreach($supportedLocales as $locale)

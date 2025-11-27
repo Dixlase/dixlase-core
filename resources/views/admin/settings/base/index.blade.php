@@ -60,6 +60,106 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     </section>
 
+    <!-- 言語設定 -->
+    <section>
+        <h2>{{ __('admin.settings.base.language_settings') }}</h2>
+
+        <fieldset>
+            <legend>{{ __('admin.settings.base.locale') }}</legend>
+            <x-form.select
+                name="locale"
+                :options="$locales"
+                :value="old('locale', $settings['locale'])"
+                :required="true"
+            />
+        </fieldset>
+
+        <fieldset x-data="{ multilingualEnabled: {{ old('multilingual_enabled', $settings['multilingual_enabled'] ? 1 : 0) }} }">
+            <legend>{{ __('admin.settings.base.multilingual_enabled') }}</legend>
+            <x-form.radio-group
+                name="multilingual_enabled"
+                :options="[
+                    1 => __('common.enabled'),
+                    0 => __('common.disabled')
+                ]"
+                :value="old('multilingual_enabled', $settings['multilingual_enabled'] ? 1 : 0)"
+                xModel="multilingualEnabled"
+            />
+            <p>{{ __('admin.settings.base.multilingual_enabled_help') }}</p>
+
+            {{-- 多言語有効時のみ言語選択を表示 --}}
+            <div x-show="multilingualEnabled == 1" x-cloak class="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    {{ __('admin.settings.base.enabled_locales') }}
+                </label>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ __('admin.settings.base.enabled_locales_help') }}</p>
+                
+                <div class="space-y-2">
+                    @php
+                        $enabledLocales = old('enabled_locales', $settings['enabled_locales'] ?? ['en']);
+                    @endphp
+                    @foreach($availableLocales as $localeCode => $localeInfo)
+                        <label class="flex items-center">
+                            <input type="checkbox" 
+                                   name="enabled_locales[]" 
+                                   value="{{ $localeCode }}"
+                                   {{ in_array($localeCode, $enabledLocales) ? 'checked' : '' }}
+                                   {{ $localeCode === 'en' ? 'checked disabled' : '' }}
+                                   class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 dark:bg-gray-700 dark:border-gray-600">
+                            <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                                {{ $localeInfo['name'] }}
+                                @if($localeCode === 'en')
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">({{ __('admin.settings.base.default_language') }})</span>
+                                @endif
+                            </span>
+                        </label>
+                    @endforeach
+                    {{-- 英語は常に有効なので、hidden fieldで送信 --}}
+                    <input type="hidden" name="enabled_locales[]" value="en">
+                </div>
+            </div>
+        </fieldset>
+    </section>
+
+    <!-- 地域設定 -->
+    <section>
+        <h2>{{ __('admin.settings.base.region_settings') }}</h2>
+
+        <fieldset>
+            <legend>{{ __('common.timezone') }}</legend>
+            <x-form.select
+                name="timezone"
+                :options="$timezones"
+                :value="$settings['timezone']"
+            />
+        </fieldset>
+    </section>
+
+    <!-- 管理画面設定 -->
+    <section>
+        <h2>{{ __('admin.settings.base.admin_panel_settings') }}</h2>
+
+        <fieldset>
+            <legend>{{ __('admin.settings.base.admin_url') }}</legend>
+            <x-form.text
+                name="admin_url"
+                :value="old('admin_url', $settings['admin_url'])"
+                :required="true"
+            />
+            <p>{!! __('admin.settings.base.admin_url_help') !!}</p>
+        </fieldset>
+
+        <fieldset>
+            <legend>{{ __('admin.settings.base.force_ssl') }}</legend>
+            <x-form.checkbox
+                :label="__('admin.settings.base.force_ssl')"
+                name="force_ssl"
+                :value="old('force_ssl', $settings['force_ssl'])"
+            />
+            <p>{{ __('admin.settings.base.force_ssl_help') }}</p>
+        </fieldset>
+    </section>
+
     <!-- OGP・SEO設定 -->
     <section>
         <h2>{{ __('admin.settings.base.ogp_seo_settings') }}</h2>
@@ -90,50 +190,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.base.twitter_card_type_help') }}</p>
         </fieldset>
 
-    </section>
-
-    <!-- 言語・タイムゾーン設定 -->
-    <section>
-        <h2>{{ __('common.language_timezone') }}</h2>
-
-        <fieldset>
-            <legend>{{ __('admin.settings.base.locale') }}</legend>
-            <x-form.select
-                name="locale"
-                :options="$locales"
-                :value="old('locale', $settings['locale'])"
-                :required="true"
-            />
-        </fieldset>
-
-        <fieldset>
-            <legend>{{ __('common.timezone') }}</legend>
-            <x-form.select
-                name="timezone"
-                :options="$timezones"
-                :value="$settings['timezone']"
-            />
-        </fieldset>
-
-        <fieldset>
-            <legend>{{ __('admin.settings.base.admin_url') }}</legend>
-            <x-form.text
-                name="admin_url"
-                :value="old('admin_url', $settings['admin_url'])"
-                :required="true"
-            />
-            <p>{!! __('admin.settings.base.admin_url_help') !!}</p>
-        </fieldset>
-
-        <fieldset>
-            <legend>{{ __('admin.settings.base.force_ssl') }}</legend>
-            <x-form.checkbox
-                :label="__('admin.settings.base.force_ssl')"
-                name="force_ssl"
-                :value="old('force_ssl', $settings['force_ssl'])"
-            />
-            <p>{{ __('admin.settings.base.force_ssl_help') }}</p>
-        </fieldset>
     </section>
 
     <!-- メンテナンスモード設定 -->
