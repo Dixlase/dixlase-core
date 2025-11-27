@@ -49,6 +49,7 @@ class Theme extends Model
         'email',        // 作者のメール
         'url',          // 作者のウェブサイト
         'version',      // テーマバージョン
+        'has_settings', // テーマ設定ページの有無
         'config',       // テーマ設定
         'installed_at', // インストール日時
     ];
@@ -58,6 +59,7 @@ class Theme extends Model
      */
     protected $casts = [
         'config' => 'array',
+        'has_settings' => 'boolean',
         'installed_at' => 'datetime',
     ];
 

@@ -44,6 +44,7 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->string('url')->nullable();
             $table->string('version')->default('1.0.0');
+            $table->boolean('has_settings')->default(false)->comment('テーマ設定ページの有無');
             $table->json('config')->nullable();
             $table->timestamp('installed_at')->nullable();
             $table->timestamps();

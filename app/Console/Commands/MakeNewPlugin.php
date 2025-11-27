@@ -592,7 +592,7 @@ class MakeNewPlugin extends Command
         }
         
         // ライセンス情報を取得
-        $licenseInfo = $this->getPluginLicenseInfo($pluginName);
+        $licenseInfo = $this->getLicenseInfoFromJson('plugins', $pluginName);
         
         // ライセンス情報が有効な場合は処理を続行
         if ($licenseInfo && !empty($licenseInfo['template'])) {
@@ -838,4 +838,5 @@ class MakeNewPlugin extends Command
         $fileContent = $this->replacePlaceholders($stubFile, $pluginPlaceholders);
         File::put("{$pluginDir}/plugin.json", $fileContent);
     }
+
 }

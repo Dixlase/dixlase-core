@@ -7,6 +7,6 @@ use {{ namespace }}\App\Http\Controllers\Admin\Settings\Themes\ThemeSettingsCont
 
 // Admin routes for {{ themeDirectory }} theme settings
 Route::middleware(['web', 'auth:admin'])->group(function () {
-    Route::get('/admin/settings/themes/settings', [ThemeSettingsController::class, 'index'])->name('admin.settings.themes.{{ slug }}.settings');
-    Route::post('/admin/settings/themes/settings', [ThemeSettingsController::class, 'update'])->name('admin.settings.themes.{{ slug }}.settings.update');
+    Route::get('/admin/settings/themes/settings', [ThemeSettingsController::class, 'index'])->name('admin.settings.themes.settings');
+    Route::post('/admin/settings/themes/settings', [ThemeSettingsController::class, 'update'])->name('admin.settings.themes.settings.update');
 });
