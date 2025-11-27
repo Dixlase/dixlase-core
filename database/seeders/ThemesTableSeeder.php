@@ -55,6 +55,7 @@ class ThemesTableSeeder extends Seeder
                 'email' => $themeJson['email'] ?? null,
                 'url' => $themeJson['url'] ?? null,
                 'version' => $themeJson['version'] ?? '1.0.0',
+                'has_settings' => true,
                 'config' => [
                     'supports' => $themeJson['supports'] ?? [],
                     'customizable' => $themeJson['customizable'] ?? [],
@@ -72,6 +73,7 @@ class ThemesTableSeeder extends Seeder
                 'slug' => 'dixlase-default-theme',
                 'directory' => 'DixlaseDefaultTheme',
                 'version' => '1.0.0',
+                'has_settings' => true,
                 'installed_at' => now(),
                 'created_at' => now(),
                 'updated_at' => now()

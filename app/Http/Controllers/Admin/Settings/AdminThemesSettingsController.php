@@ -52,8 +52,11 @@ class AdminThemesSettingsController extends AdminLoggedInController
         $activeThemeId = $themeSetting ? (int)$themeSetting->value : null;
 
         // テーマ設定機能の有無をチェック
+        // データベースのhas_settingsカラムを優先し、nullの場合のみファイルチェック
         foreach ($themes as $theme) {
-            $theme->has_settings = $this->hasThemeSettings($theme);
+            if ($theme->has_settings === null) {
+                $theme->has_settings = $this->hasThemeSettings($theme);
+            }
         }
 
         // アンインストール済みテーマを検出

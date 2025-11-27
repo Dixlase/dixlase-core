@@ -34,6 +34,10 @@ class MakeNewTheme extends Command
     use MakeLicenseTrait, MakeFileTrait;
 
     protected $signature = 'dls:make:theme {themeName? : command.make_theme.enter_theme_name}
+        {--author= : The author of the theme}
+        {--email= : The email address of the author}
+        {--url= : The URL for the theme}
+        {--license= : The license type (GPL, AGPL, MIT, Apache, BSD, LGPL, commercial, custom, none)}
         {--install : command.make_theme.confirm_install}
         {--enable : command.make_theme.confirm_enable}
         {--with-settings : command.make_theme.with_settings}';
@@ -92,25 +96,11 @@ class MakeNewTheme extends Command
         
         if ($shouldInstall) {
             // インストールコマンドを実行
+            // dls:theme:installコマンドが既にマイグレーションとシーダーを実行するため、
+            // ここでは追加のマイグレーション・シーダー実行は不要
             $this->call('dls:theme:install', [
                 'themeName' => $slugName
             ]);
-
-            // マイグレーション実行（設定ページ作成時のみ）
-            if ($withSettings) {
-                $this->info(__('command.make_theme.running_migrations'));
-                $this->call('dls:theme:migrate', [
-                    'theme' => $themeDirName,
-                    '--force' => true
-                ]);
-
-                // シーダー実行
-                $this->info(__('command.make_theme.running_seeders'));
-                $this->call('dls:theme:seed', [
-                    'theme' => $themeDirName,
-                    '--force' => true
-                ]);
-            }
 
             // 有効化確認（オプション指定がない場合は確認）
             $shouldEnable = $this->option('enable') || $this->confirm(__('command.make_theme.confirm_enable'), true);

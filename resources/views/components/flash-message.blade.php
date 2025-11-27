@@ -30,6 +30,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </div>
 @endif
 
+@if (session('error'))
+    <div class="mb-6 p-4 font-semibold text-red-800 bg-red-100 border border-red-200 rounded-xl dark:text-red-200 dark:bg-red-900 dark:border-red-700">
+        {!! session('error') !!}
+    </div>
+@endif
+
 @if ($errors->any())
     <div class="mb-6 p-4 font-semibold text-red-800 bg-red-100 border border-red-200 rounded-xl dark:text-red-200 dark:bg-red-900 dark:border-red-700">
         <ul class="list-disc list-inside">

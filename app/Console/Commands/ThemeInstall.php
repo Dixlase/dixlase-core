@@ -193,6 +193,9 @@ class ThemeInstall extends Command
         // デフォルト値の設定
         $displayName = $displayName ?? $themeDirName;
         $namespace = $namespace ?? "Themes\\{$themeDirName}";
+        
+        // テーマ設定ページの有無をチェック
+        $hasSettings = file_exists("{$themeDir}/app/Http/Controllers/Admin/Settings/Themes/ThemeSettingsController.php");
 
         // Register the theme
         $theme = Theme::create([
@@ -207,6 +210,7 @@ class ThemeInstall extends Command
             'email' => $email,
             'url' => $web,
             'version' => $version,
+            'has_settings' => $hasSettings,
             'installed_at' => now(),
         ]);
 
