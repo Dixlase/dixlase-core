@@ -116,8 +116,10 @@ if (!in_array($userPreferredLocale, $supportedLocales)) {
         return this.editorType === 'gui';
     },
     
-    get filePath() {
-        if (!this.isFileStorage) return '';
+    supportedLocales: @js($supportedLocales),
+    
+    get filePaths() {
+        if (!this.isFileStorage) return [];
         const slugOrId = this.slug || this.identifier || 'untitled';
         const extensions = {
             'blade': 'blade.php',
@@ -125,7 +127,15 @@ if (!in_array($userPreferredLocale, $supportedLocales)) {
             'html': 'html'
         };
         const ext = extensions[this.editorType] || 'txt';
-        return `storage/app/pages/${slugOrId}.${this.currentLocale}.${ext}`;
+        
+        // 有効な言語ごとのファイルパスを生成
+        return this.supportedLocales.map(locale => {
+            // 英語(en)はデフォルトファイル、他言語は言語コード付き
+            const fileName = locale === 'en' 
+                ? `${slugOrId}.${ext}` 
+                : `${slugOrId}.${locale}.${ext}`;
+            return `storage/app/private/pages/${fileName}`;
+        });
     },
     
     getCurrentTranslation(locale) {
@@ -497,7 +507,11 @@ if (!in_array($userPreferredLocale, $supportedLocales)) {
                     </div>
                     <div class="text-sm text-blue-800 dark:text-blue-200 space-y-1">
                         <p>{{ __('common.content_storage.file_info_description') }}</p>
-                        <p class="font-mono text-xs bg-white dark:bg-gray-800 p-2 rounded mt-2" x-text="filePath"></p>
+                        <div class="font-mono text-xs bg-white dark:bg-gray-800 p-2 rounded mt-2 space-y-1">
+                            <template x-for="path in filePaths" :key="path">
+                                <p x-text="path"></p>
+                            </template>
+                        </div>
                     </div>
                 </div>
             </div>

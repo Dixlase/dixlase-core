@@ -94,8 +94,7 @@ class PluginServiceProvider extends ServiceProvider
             ]);
         }
         
-        // Load plugin routes
-        $this->loadPluginRoutes();
+
     }
 
     /**
@@ -181,3 +180,4 @@ class PluginServiceProvider extends ServiceProvider
     }
 
 }
+
