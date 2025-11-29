@@ -344,6 +344,6 @@ Route::prefix($adminUrl)->name('admin.')
             \App\Helpers\PluginHelper::loadEnabledAdminRoutes();
             
             // 有効化されているテーマの管理画面ルートを自動読み込み
-            \App\Helpers\ThemeHelper::loadActiveThemeAdminRoutes();
+            \App\Helpers\ThemeHelper::loadEnabledThemeAdminRoutes();
         });
     });

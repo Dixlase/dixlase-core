@@ -83,7 +83,7 @@ class ThemeHelper
      *
      * @return void
      */
-    public static function loadActiveThemeAdminRoutes(): void
+    public static function loadEnabledThemeAdminRoutes(): void
     {
         try {
             $activeTheme = self::getActiveTheme();
@@ -115,7 +115,7 @@ class ThemeHelper
      *
      * @return void
      */
-    public static function loadActiveThemeWebRoutes(): void
+    public static function loadEnabledThemeWebRoutes(): void
     {
         try {
             $activeTheme = self::getActiveTheme();

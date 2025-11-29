@@ -22,6 +22,7 @@
 
 namespace App\Providers;
 
+use App\Helpers\PluginHelper;
 use App\Models\Plugin;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
@@ -94,7 +95,8 @@ class PluginServiceProvider extends ServiceProvider
             ]);
         }
         
-
+        // プラグインのAPIルートを読み込む
+        PluginHelper::loadEnabledApiRoutes();
     }
 
     /**

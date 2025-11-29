@@ -23,6 +23,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'editorType' => 'html',
     'translations' => [], // ['ja' => ['title' => '...', 'content' => '...'], 'en' => [...]]
     'identifier' => '',
+    'pageId' => null, // ページID（編集時のファイルコンテンツ取得用）
     'showStorageSelector' => true,
     'showEditorSelector' => true,
     'storageFieldName' => 'storage_type',
@@ -87,12 +88,14 @@ if (!in_array($userPreferredLocale, $supportedLocales)) {
     editorType: '{{ $editorTypeEnum->value }}',
     currentLocale: '{{ $userPreferredLocale }}',
     identifier: @js($identifier),
+    pageId: @js($pageId),
     translations: @js($translations),
     slug: @js($slugValue),
     status: @js($statusValue),
     publishedAt: @js($publishedAtValue),
     pagesDirectory: @js($pagesDirectory),
     baseUrl: @js($baseUrl ?: config('app.url')),
+    isLoadingContent: false,
     
     get availableEditors() {
         const editors = {
@@ -157,10 +160,47 @@ if (!in_array($userPreferredLocale, $supportedLocales)) {
         return Math.round((filled / fields.length) * 100);
     },
     
-    updateEditorType() {
+    async updateEditorType() {
         if (!this.availableEditors.includes(this.editorType)) {
             this.editorType = this.availableEditors[0] || 'html';
         }
+    },
+    
+    // 保存方法またはエディタータイプ変更時にコンテンツを読み込む
+    async loadContent(storageType = null, editorType = null) {
+        // ページIDがない場合（新規作成時）はスキップ
+        if (!this.pageId) {
+            return;
+        }
+        
+        const targetStorageType = storageType || this.storageType;
+        const targetEditorType = editorType || this.editorType;
+        
+        this.isLoadingContent = true;
+        try {
+            const response = await fetch(`/admin/pages/${this.pageId}/content/${targetStorageType}/${targetEditorType}`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.contents) {
+                    // 各言語のコンテンツを更新
+                    for (const [locale, content] of Object.entries(data.contents)) {
+                        if (!this.translations[locale]) {
+                            this.translations[locale] = { title: '', content: '', meta_description: '' };
+                        }
+                        this.translations[locale].content = content;
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Failed to load content:', error);
+        } finally {
+            this.isLoadingContent = false;
+        }
+    },
+    
+    // エディタータイプ変更時にファイルコンテンツを読み込む（後方互換性のため残す）
+    async loadFileContent(newEditorType) {
+        await this.loadContent(this.storageType, newEditorType);
     },
     
     updateStorageType() {
@@ -168,6 +208,32 @@ if (!in_array($userPreferredLocale, $supportedLocales)) {
         if (this.editorType === 'gui') {
             this.storageType = 'database';
         }
+    },
+    
+    // 保存方法変更時のハンドラ
+    async onStorageTypeChange(newStorageType) {
+        this.storageType = newStorageType;
+        
+        // GUIエディタの場合は強制的にDBに
+        if (this.editorType === 'gui' && newStorageType === 'file') {
+            this.editorType = 'html';
+        }
+        
+        // 利用可能なエディタに切り替え
+        if (!this.availableEditors.includes(this.editorType)) {
+            this.editorType = this.availableEditors[0] || 'html';
+        }
+        
+        // コンテンツを読み込む
+        await this.loadContent(newStorageType, this.editorType);
+    },
+    
+    // エディタータイプ変更時のハンドラ
+    async onEditorTypeChange(newEditorType) {
+        this.editorType = newEditorType;
+        
+        // コンテンツを読み込む
+        await this.loadContent(this.storageType, newEditorType);
     },
     
     // スラッグ自動生成
@@ -321,6 +387,7 @@ if (!in_array($userPreferredLocale, $supportedLocales)) {
                            name="{{ $editorFieldName }}" 
                            :value="editor"
                            x-model="editorType"
+                           @change="onEditorTypeChange(editor)"
                            class="mt-1 mr-3">
                     <div class="flex-1">
                         <div class="font-medium text-gray-900 dark:text-gray-100" x-text="$t(`common.content_editor.${editor}`)"></div>
@@ -351,9 +418,6 @@ if (!in_array($userPreferredLocale, $supportedLocales)) {
                         {{ __('common.content_editor.gui_coming_soon') }}
                     </p>
                 </div>
-                <input type="hidden" 
-                       name="translations[{{ $locale }}][content]" 
-                       x-model="translations.{{ $locale }}.content">
             </div>
 
             {{-- Markdown エディタ --}}
@@ -365,8 +429,6 @@ if (!in_array($userPreferredLocale, $supportedLocales)) {
                         </div>
                         @include('components::form.textarea', [
                             'id' => "content_markdown_{$locale}",
-                            'name' => "translations[{$locale}][content]",
-                            'value' => old("translations.{$locale}.content", $translations[$locale]['content'] ?? ''),
                             'class' => 'min-h-96 font-mono text-sm',
                             'xModel' => "translations.{$locale}.content",
                         ])
@@ -385,8 +447,6 @@ if (!in_array($userPreferredLocale, $supportedLocales)) {
             <div x-show="editorType === 'html'" x-cloak>
                 @include('components::form.textarea', [
                     'id' => "content_html_{$locale}",
-                    'name' => "translations[{$locale}][content]",
-                    'value' => old("translations.{$locale}.content", $translations[$locale]['content'] ?? ''),
                     'class' => 'min-h-96 font-mono text-sm',
                     'xModel' => "translations.{$locale}.content",
                 ])
@@ -396,8 +456,6 @@ if (!in_array($userPreferredLocale, $supportedLocales)) {
             <div x-show="editorType === 'blade'" x-cloak>
                 @include('components::form.textarea', [
                     'id' => "content_blade_{$locale}",
-                    'name' => "translations[{$locale}][content]",
-                    'value' => old("translations.{$locale}.content", $translations[$locale]['content'] ?? ''),
                     'class' => 'min-h-96 font-mono text-sm',
                     'xModel' => "translations.{$locale}.content",
                 ])
@@ -406,6 +464,11 @@ if (!in_array($userPreferredLocale, $supportedLocales)) {
                     {{ __('common.content_editor.blade_warning') }}
                 </div>
             </div>
+            
+            {{-- コンテンツ用の隠しフィールド（Alpine.jsのデータをフォームに送信） --}}
+            <input type="hidden" 
+                   name="translations[{{ $locale }}][content]" 
+                   :value="translations['{{ $locale }}']?.content || ''">
         </div>
     </div>
     @endforeach
@@ -484,6 +547,7 @@ if (!in_array($userPreferredLocale, $supportedLocales)) {
                        name="{{ $storageFieldName }}" 
                        value="{{ $value }}"
                        x-model="storageType"
+                       @change="onStorageTypeChange('{{ $value }}')"
                        class="mt-1 mr-3">
                 <div class="flex-1">
                     <div class="font-medium text-gray-900 dark:text-gray-100">

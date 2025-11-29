@@ -4,7 +4,7 @@
 # --- ビルド成果物（Vite出力）を除外 ---
 /public/assets/build
 /public/assets/plugins
-/public/assets/theme
+/public/assets/themes
 /public/hot
 /public/storage
 
@@ -42,6 +42,12 @@ custom/*
 # プラグイン: 個別のリポジトリとして管理（.git/info/excludeで追跡）
 # テーマ: DixlaseDefaultThemeはGit Submoduleとしてコアに同梱
 plugins/*
+!plugins/DixlaseInquiry/
+!plugins/DixlaseMenu/
+!plugins/DixlasePages/
+!plugins/DixlaseUsers/
+!plugins/DixlaseBlog/
+!plugins/DixlaseDocs/
 themes/*
 !themes/DixlaseDefaultTheme/
 

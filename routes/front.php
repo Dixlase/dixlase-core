@@ -21,6 +21,7 @@
  */
 
 
+use App\Helpers\PluginHelper;
 use App\Http\Controllers\Front\FrontWelcomeController;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
@@ -61,3 +62,6 @@ Route::middleware(['web', 'front.ip'])->group(
         })->where('file', '.*');
     }
 );
+
+// プラグインのWebルートを読み込む
+PluginHelper::loadEnabledWebRoutes();
