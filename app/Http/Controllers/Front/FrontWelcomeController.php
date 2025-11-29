@@ -22,22 +22,41 @@
 
 namespace App\Http\Controllers\Front;
 
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
-
-
+use App\Models\FrontPage;
+use App\Services\FrontPageContentService;
+use Illuminate\Support\Facades\App;
 
 class FrontWelcomeController extends FrontController
 {
-    //
-    //コンストラクタ
-    public function __construct()
+    protected FrontPageContentService $contentService;
+
+    /**
+     * コンストラクタ
+     */
+    public function __construct(FrontPageContentService $contentService)
     {
         parent::__construct();
+        $this->contentService = $contentService;
     }
 
+    /**
+     * フロントページを表示
+     */
     public function index()
     {
+        // フロントページのメインコンテンツを取得
+        $frontPage = FrontPage::findByType('main_content');
+        $frontContent = null;
+        $frontEditorType = 'html';
+
+        if ($frontPage) {
+            $locale = App::getLocale();
+            $frontContent = $this->contentService->getContent($frontPage, $locale);
+            $frontEditorType = $frontPage->editor_type->value ?? 'html';
+        }
+
+        $this->viewParams['frontContent'] = $frontContent;
+        $this->viewParams['frontEditorType'] = $frontEditorType;
 
         return view('themes::index', $this->viewParams);
     }

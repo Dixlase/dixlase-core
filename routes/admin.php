@@ -115,11 +115,12 @@ Route::prefix($adminUrl)->name('admin.')
             Route::middleware('check.menu.access:front')->group(function () {
                 //フロントページマスター
                 Route::get('/front', [AdminFrontController::class, 'index'])->name('front.index');
-                //フロントページデザイン
-                Route::get('/front/design', [AdminFrontController::class, 'design'])->name('front.design');
-                Route::post('/front/design', [AdminFrontController::class, 'design'])
+                //フロントページ編集
+                Route::get('/front/edit', [AdminFrontController::class, 'edit'])->name('front.edit');
+                Route::put('/front/edit', [AdminFrontController::class, 'updateEdit'])
                     ->middleware('check.menu.edit:front')
-                    ->name('front.design.store');
+                    ->name('front.edit.update');
+                Route::get('/front/edit/content/{storageType}/{editorType}', [AdminFrontController::class, 'getContent'])->name('front.edit.content');
                 //フロントページ設定
                 Route::get('/front/settings', [AdminFrontController::class, 'settings'])->name('front.settings');
                 Route::post('/front/settings', [AdminFrontController::class, 'updateSettings'])

@@ -69,7 +69,7 @@ return [
         'front' => [
             'text' => 'フロントページ管理',
             'index' => 'フロントページマスター',
-            'design' => 'フロントページデザイン',
+            'edit' => 'フロントページ編集',
             'settings' => 'フロントページ設定',
         ],
         'media' => [
@@ -1188,8 +1188,11 @@ return [
             'select_ogp_image' => 'OGP画像を選択',
             'remove_ogp_image' => 'OGP画像を削除',
             'settings_updated' => 'フロントページ設定が更新されました。',
-            'save_confirmation_title' => 'フロントページ設定保存の確認',
-            'save_confirmation_message' => 'フロントページ設定を保存しますか？',
+            'design_updated' => 'フロントページ編集内容が保存されました。',
+            'save_confirmation_title' => 'フロントページ編集保存の確認',
+            'save_confirmation_message' => 'フロントページ編集内容を保存しますか？',
+            'settings_save_confirmation_title' => 'フロントページ設定保存の確認',
+            'settings_save_confirmation_message' => 'フロントページ設定を保存しますか？',
         ],
     ],
 

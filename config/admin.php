@@ -51,10 +51,10 @@ return [
                     'route' => 'admin.front.index',
                     'icon' => 'fas fa-fw fa-home',
                 ],
-                'design' => [
-                    'text' => 'admin.nav.front.design',
-                    'route' => 'admin.front.design',
-                    'icon' => 'fas fa-fw fa-paint-brush',
+                'edit' => [
+                    'text' => 'admin.nav.front.edit',
+                    'route' => 'admin.front.edit',
+                    'icon' => 'fas fa-fw fa-edit',
                 ],
                 'settings' => [
                     'text' => 'admin.nav.front.settings',

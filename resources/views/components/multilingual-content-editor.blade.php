@@ -24,10 +24,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'translations' => [], // ['ja' => ['title' => '...', 'content' => '...'], 'en' => [...]]
     'identifier' => '',
     'pageId' => null, // ページID（編集時のファイルコンテンツ取得用）
+    'contentApiUrl' => null, // コンテンツ取得APIのURL（nullの場合はデフォルトのpages APIを使用）
     'showStorageSelector' => true,
     'showEditorSelector' => true,
     'storageFieldName' => 'storage_type',
     'editorFieldName' => 'editor_type',
+    'showTitle' => true,
     'showMetaDescription' => false,
     'showOgpImage' => false,
     'showSlug' => false,
@@ -39,6 +41,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'publishedAtValue' => '',
     'pagesDirectory' => 'pages',
     'baseUrl' => '',
+    'fileBasePath' => null, // ファイル保存時のベースパス（nullの場合はpagesディレクトリを使用）
+    'fileNamePrefix' => null, // ファイル名のプレフィックス（nullの場合はslugまたはidentifierを使用）
     'multilingualEnabled' => null, // null = auto-detect from base settings
 ])
 
@@ -89,6 +93,7 @@ if (!in_array($userPreferredLocale, $supportedLocales)) {
     currentLocale: '{{ $userPreferredLocale }}',
     identifier: @js($identifier),
     pageId: @js($pageId),
+    contentApiUrl: @js($contentApiUrl),
     translations: @js($translations),
     slug: @js($slugValue),
     status: @js($statusValue),
@@ -121,9 +126,13 @@ if (!in_array($userPreferredLocale, $supportedLocales)) {
     
     supportedLocales: @js($supportedLocales),
     
+    fileBasePath: @js($fileBasePath),
+    fileNamePrefix: @js($fileNamePrefix),
+    
     get filePaths() {
         if (!this.isFileStorage) return [];
-        const slugOrId = this.slug || this.identifier || 'untitled';
+        const slugOrId = this.fileNamePrefix || this.slug || this.identifier || 'untitled';
+        const basePath = this.fileBasePath || 'storage/app/private/pages';
         const extensions = {
             'blade': 'blade.php',
             'markdown': 'md',
@@ -137,7 +146,7 @@ if (!in_array($userPreferredLocale, $supportedLocales)) {
             const fileName = locale === 'en' 
                 ? `${slugOrId}.${ext}` 
                 : `${slugOrId}.${locale}.${ext}`;
-            return `storage/app/private/pages/${fileName}`;
+            return `${basePath}/${fileName}`;
         });
     },
     
@@ -178,7 +187,8 @@ if (!in_array($userPreferredLocale, $supportedLocales)) {
         
         this.isLoadingContent = true;
         try {
-            const response = await fetch(`/admin/pages/${this.pageId}/content/${targetStorageType}/${targetEditorType}`);
+            const apiUrl = this.contentApiUrl || `/admin/pages/${this.pageId}/content/${targetStorageType}/${targetEditorType}`;
+            const response = await fetch(apiUrl.replace('{storageType}', targetStorageType).replace('{editorType}', targetEditorType));
             if (response.ok) {
                 const data = await response.json();
                 if (data.contents) {
@@ -354,6 +364,7 @@ if (!in_array($userPreferredLocale, $supportedLocales)) {
     @endif
 
     {{-- 2. 各言語のタイトル --}}
+    @if($showTitle)
     @foreach($supportedLocales as $locale)
     <div x-show="currentLocale === '{{ $locale }}'" x-cloak>
         @include('components::form.label', [
@@ -370,6 +381,7 @@ if (!in_array($userPreferredLocale, $supportedLocales)) {
         ])
     </div>
     @endforeach
+    @endif
 
     {{-- 3. エディタータイプ選択 --}}
     @if($showEditorSelector)

@@ -392,14 +392,14 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
     /**
      * プラグインが設定画面を持っているかチェック
+     * config/admin.php の settings_route が定義されていれば設定画面ありと判定
      */
-    private function checkPluginHasSettings($plugin)
+    private function checkPluginHasSettings($plugin): bool
     {
         if (!$plugin->isActivated()) {
-            return false; // 無効なプラグインは設定画面なし
+            return false;
         }
 
-        // プラグインの設定ファイルから設定画面ルート名を取得
         $configPath = base_path("plugins/{$plugin->directory}/config/admin.php");
         
         if (!file_exists($configPath)) {
@@ -410,53 +410,48 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $pluginConfig = require $configPath;
             $settingsRoute = $pluginConfig['settings_route'] ?? null;
             
-            \Log::info('Plugin settings check', [
-                'plugin' => $plugin->directory,
-                'configPath' => $configPath,
-                'settingsRoute' => $settingsRoute,
-                'routeExists' => $settingsRoute ? \Route::has($settingsRoute) : false
-            ]);
-            
-            // settings_routeが定義されており、実際にルートが存在するかチェック
-            return !empty($settingsRoute) && \Route::has($settingsRoute);
+            // settings_routeが定義されていれば設定画面あり
+            return !empty($settingsRoute);
         } catch (\Exception $e) {
-            \Log::error('Plugin settings check failed', [
-                'plugin' => $plugin->directory,
-                'error' => $e->getMessage()
-            ]);
             return false;
         }
     }
 
     /**
      * プラグインの設定画面URLを取得
+     * config/admin.php の settings_route からルート名を取得してURLを生成
      */
-    public function getPluginSettingsUrl($plugin)
+    public function getPluginSettingsUrl($plugin): ?string
     {
-        // プラグインの設定ファイルから設定画面ルート名を取得
         $configPath = base_path("plugins/{$plugin->directory}/config/admin.php");
-        $routeName = null;
         
-        if (file_exists($configPath)) {
+        if (!file_exists($configPath)) {
+            return null;
+        }
+
+        try {
             $pluginConfig = require $configPath;
-            $routeName = $pluginConfig['settings_route'] ?? null;
+            $settingsRoute = $pluginConfig['settings_route'] ?? null;
+            
+            if (empty($settingsRoute)) {
+                return null;
+            }
+            
+            // ルートが存在する場合はURLを生成
+            if (\Route::has($settingsRoute)) {
+                return route($settingsRoute);
+            }
+            
+            // ルートが存在しない場合はログに警告を出力
+            \Log::warning('Plugin settings route not found', [
+                'plugin' => $plugin->directory,
+                'route' => $settingsRoute,
+            ]);
+            
+            return null;
+        } catch (\Exception $e) {
+            return null;
         }
-
-        \Log::info('Plugin settings URL generation', [
-            'plugin' => $plugin->directory,
-            'configPath' => $configPath,
-            'configExists' => file_exists($configPath),
-            'routeName' => $routeName,
-            'routeExists' => $routeName ? \Route::has($routeName) : false
-        ]);
-
-        if ($routeName && \Route::has($routeName)) {
-            $url = route($routeName);
-            \Log::info('Generated URL', ['url' => $url]);
-            return $url;
-        }
-
-        return null;
     }
 
     /**
