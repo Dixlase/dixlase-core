@@ -175,33 +175,48 @@ class ContentFileService
     }
 
     /**
-     * スラッグ変更時にファイルをリネームする
+     * スラッグ変更時にディレクトリをリネームする
      *
      * @param string $oldSlug 旧スラッグ
      * @param string $newSlug 新スラッグ
-     * @param string $editorType エディタータイプ
-     * @param array $locales 言語コードの配列
-     * @return bool すべてリネーム成功時はtrue
+     * @param string $editorType エディタータイプ（未使用、互換性のため残す）
+     * @param array $locales 言語コードの配列（未使用、互換性のため残す）
+     * @return bool リネーム成功時はtrue
      */
     public function renameFiles(string $oldSlug, string $newSlug, string $editorType, array $locales): bool
     {
-        $success = true;
-        foreach ($locales as $locale) {
-            $oldPath = $this->getFilePath($oldSlug, $locale, $editorType);
-            $newPath = $this->getFilePath($newSlug, $locale, $editorType);
+        $oldDir = "{$this->basePath}/{$oldSlug}";
+        $newDir = "{$this->basePath}/{$newSlug}";
 
-            if (Storage::disk($this->disk)->exists($oldPath)) {
-                if (!Storage::disk($this->disk)->move($oldPath, $newPath)) {
-                    $success = false;
-                }
-            }
+        // ディレクトリが存在する場合はリネーム
+        if (Storage::disk($this->disk)->exists($oldDir)) {
+            return Storage::disk($this->disk)->move($oldDir, $newDir);
         }
-        return $success;
+        
+        return true;
+    }
+
+    /**
+     * スラッグのディレクトリを削除する
+     *
+     * @param string $slug スラッグ
+     * @return bool 削除成功時はtrue
+     */
+    public function deleteDirectory(string $slug): bool
+    {
+        $directory = "{$this->basePath}/{$slug}";
+        
+        if (Storage::disk($this->disk)->exists($directory)) {
+            return Storage::disk($this->disk)->deleteDirectory($directory);
+        }
+        
+        return true;
     }
 
     /**
      * ファイルパスを取得する
-     * デフォルト言語はファイル名に言語コードを付けない、他言語は言語コード付き
+     * 構造: {basePath}/{slug}/content.{locale}.{extension}
+     * デフォルト言語はファイル名に言語コードを付けない
      *
      * @param string $slug スラッグ
      * @param string $locale 言語コード
@@ -214,10 +229,10 @@ class ContentFileService
         
         // デフォルト言語はファイル名に言語コードを付けない
         if ($locale === $this->defaultLocale) {
-            return "{$this->basePath}/{$slug}.{$extension}";
+            return "{$this->basePath}/{$slug}/content.{$extension}";
         }
         
-        return "{$this->basePath}/{$slug}.{$locale}.{$extension}";
+        return "{$this->basePath}/{$slug}/content.{$locale}.{$extension}";
     }
 
     /**

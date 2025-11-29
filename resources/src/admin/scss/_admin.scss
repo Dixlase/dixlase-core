@@ -108,7 +108,7 @@
 
     //テーブル
     table {
-        @apply w-full text-sm text-left rtl:text-right mb-4;
+        @apply w-full text-sm text-left rtl:text-right;
 
         thead {
             @apply text-xs uppercase bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white;

@@ -13,9 +13,17 @@ export default defineConfig({
                 'resources/src/common/js/app.js',
                 'resources/src/common/scss/style.scss',
             ],
-            refresh: true,
+            refresh: [
+                // デフォルトのBladeテンプレート
+                'resources/views/**',
+                // ストレージ内のコンテンツファイル
+                'storage/app/private/plugins/**',
+                'storage/app/private/themes/**',
+                'storage/app/private/front/**',
+            ],
         }),
         liveReload([
+            // コアファイル
             __dirname + '/app/**/*.php',
             __dirname + '/config/**/*.php',
             __dirname + '/database/**/*.php',
@@ -25,13 +33,24 @@ export default defineConfig({
             __dirname + '/resources/src/**/*.php',
             __dirname + '/resources/src/**/*.scss',
             __dirname + '/resources/src/**/*.js',
+            // プラグイン
             __dirname + '/plugins/**/**/*.php',
             __dirname + '/plugins/**/**/*.js',
             __dirname + '/plugins/**/**/*.scss',
+            // テーマ
             __dirname + '/themes/**/**/*.php',
             __dirname + '/themes/**/**/*.js',
             __dirname + '/themes/**/**/*.scss',
-
+            // ストレージ内のコンテンツファイル（Blade, HTML, Markdown）
+            __dirname + '/storage/app/private/plugins/**/*.blade.php',
+            __dirname + '/storage/app/private/plugins/**/*.html',
+            __dirname + '/storage/app/private/plugins/**/*.md',
+            __dirname + '/storage/app/private/themes/**/*.blade.php',
+            __dirname + '/storage/app/private/themes/**/*.html',
+            __dirname + '/storage/app/private/themes/**/*.md',
+            __dirname + '/storage/app/private/front/**/*.blade.php',
+            __dirname + '/storage/app/private/front/**/*.html',
+            __dirname + '/storage/app/private/front/**/*.md',
         ]),
     ],
     build: {

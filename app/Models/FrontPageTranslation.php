@@ -42,6 +42,9 @@ class FrontPageTranslation extends Model
         'locale',
         'title',
         'content',
+        'content_html',
+        'content_markdown',
+        'content_blade',
     ];
 
     /**

@@ -69,7 +69,7 @@ return [
         'front' => [
             'text' => 'Front Page Management',
             'index' => 'Front Page Master',
-            'design' => 'Front Page Design',
+            'edit' => 'Front Page Edit',
             'settings' => 'Front Page Settings',
         ],
         'media' => [
@@ -1244,8 +1244,11 @@ Clicking this link will complete the full mail function test.',
             'select_ogp_image' => 'Select OGP Image',
             'remove_ogp_image' => 'Remove OGP Image',
             'settings_updated' => 'Front page settings have been updated.',
-            'save_confirmation_title' => 'Front Page Settings Save Confirmation',
-            'save_confirmation_message' => 'Do you want to save the front page settings?',
+            'design_updated' => 'Front page content has been saved.',
+            'save_confirmation_title' => 'Front Page Edit Save Confirmation',
+            'save_confirmation_message' => 'Do you want to save the front page content?',
+            'settings_save_confirmation_title' => 'Front Page Settings Save Confirmation',
+            'settings_save_confirmation_message' => 'Do you want to save the front page settings?',
         ],
     ],
 
