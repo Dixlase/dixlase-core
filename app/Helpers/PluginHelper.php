@@ -156,4 +156,149 @@ class PluginHelper
             ]);
         }
     }
+
+    /**
+     * 有効化されているプラグインのAPIルートを読み込む
+     * 
+     * このメソッドはroutes/api.php内またはServiceProviderで呼び出されることを想定しています。
+     *
+     * @return void
+     */
+    public static function loadEnabledApiRoutes(): void
+    {
+        // インストール前やテーブルが存在しない場合はスキップ
+        if (!file_exists(base_path('.env')) || !env('INSTALLED', false)) {
+            return;
+        }
+
+        try {
+            $enabledPlugins = self::getEnabledPlugins();
+
+            foreach ($enabledPlugins as $plugin) {
+                $apiRoutePath = self::getPluginPath($plugin->directory) . '/routes/api.php';
+                
+                if (File::exists($apiRoutePath)) {
+                    Log::debug('PluginHelper: Loading API routes', [
+                        'plugin' => $plugin->directory,
+                        'path' => $apiRoutePath,
+                    ]);
+                    
+                    include $apiRoutePath;
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error('PluginHelper: Failed to load plugin API routes', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+        }
+    }
+
+    /**
+     * ショートコードを登録
+     * 
+     * プラグインのServiceProviderから呼び出して使用します。
+     * 
+     * 使用例:
+     *   PluginHelper::registerShortcode('menu', MenuShortcode::class);
+     *
+     * @param string $name ショートコード名
+     * @param string $class ショートコードクラス名
+     * @return bool 登録成功したかどうか
+     */
+    public static function registerShortcode(string $name, string $class): bool
+    {
+        try {
+            if (app()->bound('shortcode')) {
+                $shortcode = app('shortcode');
+                $shortcode->add($name, $class);
+                return true;
+            }
+            return false;
+        } catch (\Exception $e) {
+            Log::error('PluginHelper: Failed to register shortcode', [
+                'name' => $name,
+                'class' => $class,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * 複数のショートコードを一括登録
+     * 
+     * 使用例:
+     *   PluginHelper::registerShortcodes([
+     *       'menu' => MenuShortcode::class,
+     *       'submenu' => SubMenuShortcode::class,
+     *   ]);
+     *
+     * @param array $shortcodes ['name' => 'ClassName'] の配列
+     * @return int 登録成功した数
+     */
+    public static function registerShortcodes(array $shortcodes): int
+    {
+        $count = 0;
+        foreach ($shortcodes as $name => $class) {
+            if (self::registerShortcode($name, $class)) {
+                $count++;
+            }
+        }
+        return $count;
+    }
+
+    /**
+     * リンクソースを登録（メニュープラグイン用）
+     * 
+     * メニュープラグインのMenuLinkSourceManagerにリンクソースを登録します。
+     * 
+     * 使用例:
+     *   PluginHelper::registerLinkSource(new PageLinkSource());
+     *
+     * @param object $source リンクソースインスタンス
+     * @return bool 登録成功したかどうか
+     */
+    public static function registerLinkSource(object $source): bool
+    {
+        try {
+            $managerClass = 'Plugins\\DixlaseMenu\\App\\Services\\MenuLinkSourceManager';
+            
+            if (app()->bound($managerClass)) {
+                $manager = app($managerClass);
+                $manager->register($source);
+                return true;
+            }
+            return false;
+        } catch (\Exception $e) {
+            Log::error('PluginHelper: Failed to register link source', [
+                'source' => get_class($source),
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * 複数のリンクソースを一括登録
+     * 
+     * 使用例:
+     *   PluginHelper::registerLinkSources([
+     *       new PageLinkSource(),
+     *       new PostLinkSource(),
+     *   ]);
+     *
+     * @param array $sources リンクソースインスタンスの配列
+     * @return int 登録成功した数
+     */
+    public static function registerLinkSources(array $sources): int
+    {
+        $count = 0;
+        foreach ($sources as $source) {
+            if (self::registerLinkSource($source)) {
+                $count++;
+            }
+        }
+        return $count;
+    }
 }

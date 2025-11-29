@@ -29,6 +29,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'class' => '',
     'xBindReadonly' => null,  // Alpine.jsのx-bind:readonly
     'xBindClass' => null,     // Alpine.jsのx-bind:class
+    'xModel' => null,         // Alpine.jsのx-model
 ])
 
 <textarea
@@ -41,5 +42,5 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @if($readonly) readonly @endif
     {{ $xBindReadonly ? "x-bind:readonly=$xBindReadonly" : '' }}
     {{ $xBindClass ? "x-bind:class=$xBindClass" : '' }}
->{{ old($name, $value) }}
-</textarea>
+    {{ $xModel ? "x-model=$xModel" : '' }}
+>@if(!$xModel){{ $name ? (is_string($oldVal = old($name, $value)) ? $oldVal : $value) : $value }}@endif</textarea>
