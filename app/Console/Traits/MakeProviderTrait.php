@@ -84,16 +84,31 @@ trait MakeProviderTrait
         // ライセンスキーからライセンス情報を取得
         $finalLicenseInfo = $this->getFileTypeLicenseInfo($fileType, $pluginName);
         
-        // プラグイン情報を取得
+        // プラグイン情報を取得（plugin.jsonから読み取る）
         $pluginInfo = [];
         if (!empty($pluginName)) {
-            $licenseInfoFile = base_path("plugins/{$pluginName}/license-info.json");
-            if (File::exists($licenseInfoFile)) {
-                $pluginInfo = json_decode(File::get($licenseInfoFile), true) ?? [];
+            // まずplugin.jsonから読み取る（推奨）
+            $pluginJsonFile = base_path("plugins/{$pluginName}/plugin.json");
+            if (File::exists($pluginJsonFile)) {
+                $pluginJsonData = json_decode(File::get($pluginJsonFile), true) ?? [];
+                $pluginInfo = [
+                    'software' => $pluginJsonData['name'] ?? $pluginName,
+                    'author' => $pluginJsonData['author'] ?? 'Your Name',
+                    'email' => $pluginJsonData['email'] ?? '',
+                    'url' => $pluginJsonData['url'] ?? 'https://example.com',
+                    'license' => $pluginJsonData['license'] ?? 'GPL',
+                ];
+            }
+            // フォールバック: license-info.jsonから読み取る（後方互換性）
+            if (empty($pluginInfo)) {
+                $licenseInfoFile = base_path("plugins/{$pluginName}/license-info.json");
+                if (File::exists($licenseInfoFile)) {
+                    $pluginInfo = json_decode(File::get($licenseInfoFile), true) ?? [];
+                }
             }
         }
         
-        // --license-infoオプションが指定されている場合はそれを使用、なければlicense-info.jsonから取得
+        // --license-infoオプションが指定されている場合はそれを使用、なければplugin.jsonから取得
         if (isset($options['license-info']) && !empty($options['license-info'])) {
             $licenseKey = $options['license-info'];
         } elseif (!empty($pluginInfo['license'])) {

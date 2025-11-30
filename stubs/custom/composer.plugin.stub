@@ -1,5 +1,5 @@
 {
-    "name": "{{ cmsNameSlug }}/plugins-{{ pluginSlug }}",
+    "name": "{{ softwareNameSlug }}/{{ pluginSlug }}",
     "description": "This is the {{ pluginName }} plugin.",
     "type": "dixlase-plugin",
     "version": "1.0.0",
@@ -12,23 +12,23 @@
         }
     ],
     "require": {
-        "php": ">=8.0",
-        "some/dependency": "^1.2"
+        "php": ">=8.2"
     },
     "autoload": {
         "psr-4": {
-            "{{ vendorNameStudly }}\\{{ pluginNameStudly }}\\App\\": "app/"
+            "{{ vendorNameStudly }}\\{{ pluginNameStudly }}\\": ""
         }
     },
     "extra": {
         "display-name": "{{ pluginName }}",
-        "keywords": ["laravel", "plugin", "custom"],
+        "keywords": ["dixlase", "plugin"],
         "slug": "{{ pluginSlug }}",
-        "category": "plugin",
-        "laravel": {
+        "category": "general",
+        "dixlase": {
             "providers": [
                 "{{ vendorNameStudly }}\\{{ pluginNameStudly }}\\App\\Providers\\{{ pluginNameStudly }}ServiceProvider"
             ]
         }
-    }
+    },
+    "minimum-stability": "stable"
 }

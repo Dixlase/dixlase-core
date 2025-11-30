@@ -151,19 +151,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <section class="transition-colors-unified" x-data="{
             localTheme: '{{ $appearanceValue }}',
             savedTheme: '{{ $appearanceValue }}',
-            applyLocalTheme() {
+            applyLocalTheme(enableTransition = false) {
                 const isDark = this.localTheme === '2' || (this.localTheme === '0' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                // トランジションを有効にする
+                if (enableTransition) {
+                    document.documentElement.classList.add('theme-ready');
+                }
                 document.documentElement.classList.toggle('dark', isDark);
                 document.documentElement.classList.toggle('light', !isDark);
             },
             resetToSavedTheme() {
                 this.localTheme = this.savedTheme;
-                this.applyLocalTheme();
+                this.applyLocalTheme(false);
             }
         }" x-init="
-            // 初期化時に保存された値でDOMをリセット
+            // 初期化時に保存された値でDOMをリセット（トランジションなし）
             resetToSavedTheme();
-            $watch('localTheme', () => applyLocalTheme());
+            $watch('localTheme', () => applyLocalTheme(true));
         " data-profile-theme>
             <h2>{{ __('common.appearance_settings') }}</h2>
             

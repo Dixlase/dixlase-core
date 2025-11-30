@@ -81,10 +81,10 @@ class MakeNewPlugin extends Command
     public function handle()
     {
 
-        // ソフトウェア名
-        $softwareName = config('app.name');
-        // ソフトウェア名をスネークケースに変換
-        $cmsNameSlug = Str::slug(Str::snake($softwareName));
+        // ソフトウェア名（.envのSOFTWARE_NAMEから取得、デフォルトはDixlase）
+        $softwareName = config('app.software_name', 'Dixlase');
+        // ソフトウェア名をスラッグに変換
+        $softwareNameSlug = Str::slug(Str::snake($softwareName));
         // プラグイン名を取得（引数がなければ入力を求める）
         $pluginName = $this->argument('pluginName') ?: $this->ask(__('command.make_plugin.enter_plugin_name'));
         // スラッグ名。プラグイン名をスネークケースに変換
@@ -98,7 +98,7 @@ class MakeNewPlugin extends Command
         // ベンダー名 (Composerパッケージ用)
         $vendorName = 'plugins';
         // Composerパッケージ名
-        $packageName = "{$cmsNameSlug}-{$pluginSlug}";
+        $packageName = "{$softwareNameSlug}-{$pluginSlug}";
 
 
         if (File::exists($pluginDir)) {
@@ -166,7 +166,7 @@ class MakeNewPlugin extends Command
             $pluginDirName,
             $vendorName,
             $namespace,
-            $cmsNameSlug,
+            $softwareNameSlug,
             $pluginSlug,
             $softwareName,
             $author,
@@ -271,7 +271,7 @@ class MakeNewPlugin extends Command
         string $pluginDirName,
         string $vendorName,
         string $namespace,
-        string $cmsNameSlug,
+        string $softwareNameSlug,
         string $pluginSlug,
         string $softwareName,
         string $author,
@@ -308,7 +308,7 @@ class MakeNewPlugin extends Command
             'vendorNameDefault' => $vendorNameDefault,
             'vendorNameStudly'  => $vendorNameStudly,
             'softwareName'      => $softwareName,
-            'cmsNameSlug'       => $cmsNameSlug,
+            'softwareNameSlug'  => $softwareNameSlug,
             'author'            => $author,
             'email'             => $email,
             'url'               => $url,
@@ -442,7 +442,8 @@ class MakeNewPlugin extends Command
         $pluginDirName = Str::studly($pluginName);
         
         // Convert plugin name to snake_case for the config file name
-        $configFileName = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $pluginName));
+        // First remove spaces and convert to StudlyCase, then to snake_case
+        $configFileName = Str::snake($pluginDirName);
 
         // プレースホルダーをJSON形式にエンコード
         $placeholdersJson = json_encode($placeholders, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -470,7 +471,8 @@ class MakeNewPlugin extends Command
         $pluginDirName = Str::studly($pluginName);
         
         // Convert plugin name to snake_case for the language file name
-        $langFileName = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $pluginName));
+        // First remove spaces and convert to StudlyCase, then to snake_case
+        $langFileName = Str::snake($pluginDirName);
 
         // プレースホルダーをJSON形式にエンコード
         $placeholdersJson = json_encode($placeholders, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -540,8 +542,10 @@ class MakeNewPlugin extends Command
      */
     protected function createReadmeFile(string $pluginName, string $pluginDir, array $placeholders, array $licenseInfo)
     {
-        //現在の年を取得
+        // 現在の年を取得
         $placeholders['year'] = date('Y');
+        // ライセンス名を設定
+        $placeholders['license'] = $licenseInfo['license'] ?? 'GPL-3.0';
         // スタブファイルの内容を取得してファイルを生成
         $content = $this->getStubContent('readme.plugin.stub', $placeholders);
         file_put_contents("{$pluginDir}/README.md", $content);

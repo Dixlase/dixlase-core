@@ -24,6 +24,8 @@
         "admin_menu": false,
         "front_routes": false,
         "api_routes": false,
-        "settings_page": false
+        "settings_page": false,
+        "shortcodes": false,
+        "helper_functions": false
     }
 }
