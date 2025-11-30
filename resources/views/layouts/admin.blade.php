@@ -58,12 +58,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <div class="min-h-screen flex">
                 <!-- Navigation Sidebar (Desktop only) -->
-                <aside class="md:fixed md:h-full hidden sm:block w-64 flex-shrink-0 border-gray-300 {{ empty($transitionEnabled) ? '' : 'transition-colors-unified' }}"
+                <aside class="md:fixed md:h-full hidden sm:block w-64 flex-shrink-0 border-gray-300"
                        :class="{
-                           'transition-transform duration-300 ease-in-out': sidebarReady,
                            '-translate-x-64': sidebarCollapsed,
                            'translate-x-0': !sidebarCollapsed
                        }"
+                       :style="sidebarReady ? 'transition: transform 300ms ease-in-out, background-color 500ms ease-in-out, color 500ms ease-in-out, border-color 500ms ease-in-out' : ''"
                        role="navigation" aria-label="Main navigation">
                     @include('admin.partials.sidebar', [
                         'transitionEnabled' => $transitionEnabled ?? null,
@@ -75,21 +75,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <button @click="sidebarCollapsed = !sidebarCollapsed"
                         class="hidden sm:flex fixed left-0 top-21 -translate-y-1/2 z-40 backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-white px-1.5 py-4 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
                         :class="{
-                            'transition-transform duration-300 ease-in-out': sidebarReady,
                             'translate-x-0': sidebarCollapsed,
                             'translate-x-64': !sidebarCollapsed
                         }"
+                        :style="sidebarReady ? 'transition: transform 300ms ease-in-out' : ''"
                         aria-label="Toggle sidebar menu">
                     <i class="fas text-sm" :class="sidebarCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'"></i>
                 </button>
 
                 <!-- Main Content Area -->
-                <main class="mt-12 ml-0 md:pl-4 lg:pl-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white {{ empty($transitionEnabled) ? '' : 'transition-colors-unified' }}"
+                <main class="mt-12 ml-0 md:pl-4 lg:pl-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white"
                       :class="{
-                          'transition-[margin] duration-300 ease-in-out': sidebarReady,
                           'md:ml-0': sidebarCollapsed,
                           'md:ml-64': !sidebarCollapsed
                       }"
+                      :style="sidebarReady ? 'transition: margin 300ms ease-in-out, background-color 500ms ease-in-out, color 500ms ease-in-out' : ''"
                       role="main">
 
                     <!-- Page Header -->
