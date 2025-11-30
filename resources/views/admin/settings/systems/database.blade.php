@@ -21,7 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('layouts.admin')
 
 @section('content')
-<div class="max-w-4xl mx-auto">
+<div class="mx-auto">
 <section>
     <h2>{{ __('admin.settings.systems.database.heading') }}</h2>
     

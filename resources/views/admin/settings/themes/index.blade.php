@@ -21,7 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('layouts.admin')
 
 @section('content')
-<div class="max-w-4xl mx-auto">
+<div class="mx-auto">
     <!-- インストール済みテーマ一覧セクション -->
     <section>
         <h2>{{ __('admin.settings.themes.index.installed_heading') }}</h2>

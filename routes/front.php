@@ -26,19 +26,6 @@ use App\Http\Controllers\Front\FrontWelcomeController;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/debug-locale', function() {
-    return [
-        'current_locale' => app()->getLocale(),
-        'config_locale' => config('app.locale'),
-        'session_locale' => session('locale'),
-        'env_locale' => env('APP_LOCALE'),
-        'available_locales' => ['en', 'ja'],
-        'is_ja_available' => file_exists(resource_path('lang/ja')),
-        'is_en_available' => file_exists(resource_path('lang/en')),
-    ];
-});
-
-
 // インストール済みの場合にアクセス可能なルート
 Route::middleware(['web', 'front.ip'])->group(
     function () {

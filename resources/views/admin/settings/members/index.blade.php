@@ -22,6 +22,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="max-w-7xl mx-auto">
+    <div class="flex justify-start mb-4">
+        <x-form.button
+            type="link"
+            :href="route('admin.settings.members.create')"
+            :label="__('common.create')"
+            variant="primary"
+            icon="fas fa-plus"
+        />
+    </div>
+
+
     <!-- 検索セクション -->
     <section class="mb-6">
         <h2 class="text-lg font-semibold mb-4">{{ __('admin.settings.members.index.search_title') }}</h2>

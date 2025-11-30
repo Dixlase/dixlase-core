@@ -21,7 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('layouts.admin')
 
 @section('content')
-<div class="max-w-4xl mx-auto">
+<div class="mx-auto">
 <form id="base-settings-form" action="{{ route('admin.settings.base.update') }}" method="POST" class="overflow-x-hidden">
     @csrf
     @method('PUT')

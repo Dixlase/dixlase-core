@@ -63,7 +63,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
 @section('content')
-<div class="max-w-4xl mx-auto">
+<div class="mx-auto">
 
     <!-- Flash message for success or error -->
     @if(session('success'))

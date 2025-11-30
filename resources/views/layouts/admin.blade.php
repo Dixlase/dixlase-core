@@ -49,7 +49,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     </head>
     <body class="admin font-sans antialiased transition-colors-unified dark:bg-black dark:text-white"
-          x-data="{ openSidebar: false, openUserMenu: false }">
+          x-data="{ openSidebar: false, openUserMenu: false, sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true', sidebarReady: false }"
+          x-init="$nextTick(() => { sidebarReady = true }); $watch('sidebarCollapsed', value => localStorage.setItem('sidebarCollapsed', value))">
         <div class="min-h-screen">
             <!-- Admin Bar (Header) -->
             <x-admin-bar :isAdminLayout="true" />
@@ -57,15 +58,39 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <div class="min-h-screen flex">
                 <!-- Navigation Sidebar (Desktop only) -->
-                <aside class="md:fixed md:h-full hidden sm:block w-64 flex-shrink- border-gray-300 {{ empty($transitionEnabled) ? '' : 'transition-colors-unified' }}" role="navigation" aria-label="Main navigation">
+                <aside class="md:fixed md:h-full hidden sm:block w-64 flex-shrink-0 border-gray-300 {{ empty($transitionEnabled) ? '' : 'transition-colors-unified' }}"
+                       :class="{
+                           'transition-transform duration-300 ease-in-out': sidebarReady,
+                           '-translate-x-64': sidebarCollapsed,
+                           'translate-x-0': !sidebarCollapsed
+                       }"
+                       role="navigation" aria-label="Main navigation">
                     @include('admin.partials.sidebar', [
                         'transitionEnabled' => $transitionEnabled ?? null,
                         'route_name' => Route::currentRouteName()
                     ])
                 </aside>
 
+                <!-- Sidebar Toggle Button (Desktop) -->
+                <button @click="sidebarCollapsed = !sidebarCollapsed"
+                        class="hidden sm:flex fixed left-0 top-21 -translate-y-1/2 z-40 backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-white px-1.5 py-4 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        :class="{
+                            'transition-transform duration-300 ease-in-out': sidebarReady,
+                            'translate-x-0': sidebarCollapsed,
+                            'translate-x-64': !sidebarCollapsed
+                        }"
+                        aria-label="Toggle sidebar menu">
+                    <i class="fas text-sm" :class="sidebarCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'"></i>
+                </button>
+
                 <!-- Main Content Area -->
-                <main class="mt-12 ml-0 md:ml-64 md:pl-4 lg:pl-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white {{ empty($transitionEnabled) ? '' : 'transition-colors-unified' }}" role="main">
+                <main class="mt-12 ml-0 md:pl-4 lg:pl-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white {{ empty($transitionEnabled) ? '' : 'transition-colors-unified' }}"
+                      :class="{
+                          'transition-[margin] duration-300 ease-in-out': sidebarReady,
+                          'md:ml-0': sidebarCollapsed,
+                          'md:ml-64': !sidebarCollapsed
+                      }"
+                      role="main">
 
                     <!-- Page Header -->
                     <header class="mx-auto py-6 px-8 mb-10 bg-white text-gray-800 border-b border-gray-300 dark:border-gray-700 dark:bg-black dark:text-white {{ empty($transitionEnabled) ? '' : 'transition-colors-unified' }}">

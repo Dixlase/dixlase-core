@@ -62,7 +62,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endphp
 
 @section('content')
-<div class="max-w-4xl mx-auto">
+<div class="mx-auto">
     <!-- Flash message for success or error -->
     @if(session('success'))
         <div class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50">
