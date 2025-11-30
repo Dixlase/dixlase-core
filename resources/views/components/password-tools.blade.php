@@ -46,8 +46,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :required="$required"
         autocomplete="new-password"
         class="password-input"
-        xModel="password"
-        xOn:input="validatePassword"
     />
 
     <!-- 自動生成ボタン -->
