@@ -27,7 +27,8 @@ use Illuminate\Support\Facades\Auth;
 /**
  * 言語設定ヘルパー
  * 
- * 多言語対応の言語設定とフォールバックロジックを管理します。
+ * 管理画面の言語設定とフォールバックロジックを管理します。
+ * フロントエンドの多言語機能はDixlaseMultilingualプラグインで提供されます。
  */
 class LocaleHelper
 {
@@ -145,67 +146,6 @@ class LocaleHelper
 
         // どれもなければ最初の利用可能な言語
         return $availableLocales[0] ?? null;
-    }
-
-    /**
-     * URLから言語コードを抽出
-     * 
-     * @param string $url
-     * @return string|null
-     */
-    public static function extractLocaleFromUrl(string $url): ?string
-    {
-        // /ja/about, /en/contact などから言語コードを抽出
-        if (preg_match('#^/(' . implode('|', self::$supportedLocales) . ')(/|$)#', $url, $matches)) {
-            return $matches[1];
-        }
-
-        return null;
-    }
-
-    /**
-     * URLに言語プレフィックスを追加
-     * 
-     * @param string $url
-     * @param string|null $locale
-     * @return string
-     */
-    public static function addLocalePrefix(string $url, ?string $locale = null): string
-    {
-        $locale = $locale ?? self::getCurrentLocale();
-        
-        // すでに言語プレフィックスがある場合は置換
-        $url = preg_replace('#^/(' . implode('|', self::$supportedLocales) . ')(/|$)#', '/', $url);
-        
-        // 言語プレフィックスを追加
-        return '/' . $locale . $url;
-    }
-
-    /**
-     * URLから言語プレフィックスを削除
-     * 
-     * @param string $url
-     * @return string
-     */
-    public static function removeLocalePrefix(string $url): string
-    {
-        return preg_replace('#^/(' . implode('|', self::$supportedLocales) . ')(/|$)#', '/', $url);
-    }
-
-    /**
-     * 言語を切り替えたURLを生成
-     * 
-     * @param string $url
-     * @param string $newLocale
-     * @return string
-     */
-    public static function switchLocaleUrl(string $url, string $newLocale): string
-    {
-        // 既存の言語プレフィックスを削除
-        $url = self::removeLocalePrefix($url);
-        
-        // 新しい言語プレフィックスを追加
-        return self::addLocalePrefix($url, $newLocale);
     }
 
     /**

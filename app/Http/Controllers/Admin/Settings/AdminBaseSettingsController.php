@@ -117,10 +117,6 @@ class AdminBaseSettingsController extends AdminLoggedInController
             // Database-only settings (no .env equivalent)
             'admin_url' => $this->baseSettingRepository->get('admin_url', config('admin.admin_url')),
             'force_ssl' => (bool) $this->baseSettingRepository->get('force_ssl', false),
-            
-            // 多言語設定
-            'multilingual_enabled' => (bool) $this->baseSettingRepository->get('multilingual_enabled', false),
-            'enabled_locales' => $this->getEnabledLocales(),
 
         ];
 
@@ -167,8 +163,6 @@ class AdminBaseSettingsController extends AdminLoggedInController
         $this->viewParams['locales'] = collect(config('admin.locale.available', []))->mapWithKeys(function ($locale, $key) {
             return [$key => $locale['name']];
         })->toArray();
-        // 多言語設定用：利用可能な全言語（キーと名前）
-        $this->viewParams['availableLocales'] = config('admin.locale.available', []);
         $this->viewParams['mailers'] = __('mail.mailers');
         $this->viewParams['encryptions'] = __('mail.encryptions');
         $this->viewParams['defaultOgpImage'] = $defaultOgpImage;
@@ -230,8 +224,6 @@ class AdminBaseSettingsController extends AdminLoggedInController
             'force_ssl',
             'default_ogp_image_id',
             'twitter_card_type',
-            'multilingual_enabled',
-            'enabled_locales',
 
         ]);
         
@@ -240,10 +232,6 @@ class AdminBaseSettingsController extends AdminLoggedInController
         $allSettings['maintenance_mode'] = (int) ($allSettings['maintenance_mode'] ?? 0);
         // force_ssl はチェックボックスなので has() で判定
         $allSettings['force_ssl'] = $request->has('force_ssl') ? 1 : 0;
-        // multilingual_enabled はラジオボタンなので値をそのまま使用
-        $allSettings['multilingual_enabled'] = (int) ($allSettings['multilingual_enabled'] ?? 0);
-        // enabled_locales は配列なのでそのまま使用（バリデーション済み）
-        $allSettings['enabled_locales'] = $allSettings['enabled_locales'] ?? ['en'];
 
 
         // .envに保存するもの
@@ -282,8 +270,6 @@ class AdminBaseSettingsController extends AdminLoggedInController
             'force_ssl' => ($allSettings['force_ssl'] ?? false) ? '1' : '0',
             'default_ogp_image_id' => $allSettings['default_ogp_image_id'] ?? null,
             'twitter_card_type' => $allSettings['twitter_card_type'] ?? 'summary_large_image',
-            'multilingual_enabled' => ($allSettings['multilingual_enabled'] ?? false) ? '1' : '0',
-            'enabled_locales' => json_encode($allSettings['enabled_locales'] ?? ['en']),
 
         ];
 
@@ -516,27 +502,5 @@ class AdminBaseSettingsController extends AdminLoggedInController
         }
 
         return $timezones;
-    }
-
-    /**
-     * 有効な言語一覧を取得
-     * 
-     * DBから取得した値が文字列（JSON）か配列かを判定して適切に処理
-     * 
-     * @return array
-     */
-    private function getEnabledLocales(): array
-    {
-        $value = $this->baseSettingRepository->get('enabled_locales', '["en"]');
-        
-        // 既に配列の場合はそのまま返す
-        if (is_array($value)) {
-            return $value ?: ['en'];
-        }
-        
-        // 文字列の場合はJSONデコード
-        $decoded = json_decode($value, true);
-        
-        return is_array($decoded) ? $decoded : ['en'];
     }
 }

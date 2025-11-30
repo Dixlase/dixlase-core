@@ -74,51 +74,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             />
         </fieldset>
 
-        <fieldset x-data="{ multilingualEnabled: {{ old('multilingual_enabled', $settings['multilingual_enabled'] ? 1 : 0) }} }">
-            <legend>{{ __('admin.settings.base.multilingual_enabled') }}</legend>
-            <x-form.radio-group
-                name="multilingual_enabled"
-                :options="[
-                    1 => __('common.enabled'),
-                    0 => __('common.disabled')
-                ]"
-                :value="old('multilingual_enabled', $settings['multilingual_enabled'] ? 1 : 0)"
-                xModel="multilingualEnabled"
-            />
-            <p>{{ __('admin.settings.base.multilingual_enabled_help') }}</p>
-
-            {{-- 多言語有効時のみ言語選択を表示 --}}
-            <div x-show="multilingualEnabled == 1" x-cloak class="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                    {{ __('admin.settings.base.enabled_locales') }}
-                </label>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ __('admin.settings.base.enabled_locales_help') }}</p>
-                
-                <div class="space-y-2">
-                    @php
-                        $enabledLocales = old('enabled_locales', $settings['enabled_locales'] ?? ['en']);
-                    @endphp
-                    @foreach($availableLocales as $localeCode => $localeInfo)
-                        <label class="flex items-center">
-                            <input type="checkbox" 
-                                   name="enabled_locales[]" 
-                                   value="{{ $localeCode }}"
-                                   {{ in_array($localeCode, $enabledLocales) ? 'checked' : '' }}
-                                   {{ $localeCode === 'en' ? 'checked disabled' : '' }}
-                                   class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 dark:bg-gray-700 dark:border-gray-600">
-                            <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                                {{ $localeInfo['name'] }}
-                                @if($localeCode === 'en')
-                                    <span class="text-xs text-gray-500 dark:text-gray-400">({{ __('admin.settings.base.default_language') }})</span>
-                                @endif
-                            </span>
-                        </label>
-                    @endforeach
-                    {{-- 英語は常に有効なので、hidden fieldで送信 --}}
-                    <input type="hidden" name="enabled_locales[]" value="en">
-                </div>
-            </div>
-        </fieldset>
     </section>
 
     <!-- 地域設定 -->

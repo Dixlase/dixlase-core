@@ -27,6 +27,25 @@
         }
     }
 
+    // 外観モード変更時のみ背景色をアニメーション
+    html.theme-ready & section,
+    html.theme-ready & header,
+    html.theme-ready & footer,
+    html.theme-ready & aside,
+    html.theme-ready & nav,
+    html.theme-ready & main {
+        transition: background-color var(--transition-duration) ease-in-out,
+            border-color var(--transition-duration) ease-in-out,
+            color var(--transition-duration) ease-in-out;
+    }
+
+    // サイドバー内の要素もアニメーション
+    html.theme-ready & aside div,
+    html.theme-ready & aside nav {
+        transition: background-color var(--transition-duration) ease-in-out,
+            border-color var(--transition-duration) ease-in-out;
+    }
+
 
     // ヘルプテキスト（pタグにデフォルト適用）
     p {
@@ -166,10 +185,47 @@
         transition: all var(--transition-duration) ease-in-out;
     }
 
+    // 外観モード変更時のみトランジションを有効にする
+    // デフォルトはトランジションなし
     .transition-colors-unified {
+        transition: none;
+    }
+
+    // theme-readyクラスがhtml要素にある場合のみトランジションを有効にする
+    html.theme-ready .transition-colors-unified {
         transition: color var(--transition-duration) ease-in-out,
             background-color var(--transition-duration) ease-in-out,
             border-color var(--transition-duration) ease-in-out;
+    }
+
+    // サイドバー用トランジション（色のみ、transformは別制御）
+    .sidebar-transition {
+        transition: color var(--transition-duration) ease-in-out,
+            background-color var(--transition-duration) ease-in-out,
+            border-color var(--transition-duration) ease-in-out;
+    }
+
+    // サイドバーアニメーション有効時（transformを追加）
+    .sidebar-animate {
+        transition: color var(--transition-duration) ease-in-out,
+            background-color var(--transition-duration) ease-in-out,
+            border-color var(--transition-duration) ease-in-out,
+            transform 300ms ease-in-out;
+    }
+
+    // メインコンテンツ用トランジション（色のみ、marginは別制御）
+    .main-transition {
+        transition: color var(--transition-duration) ease-in-out,
+            background-color var(--transition-duration) ease-in-out,
+            border-color var(--transition-duration) ease-in-out;
+    }
+
+    // メインコンテンツアニメーション有効時（marginを追加）
+    .main-animate {
+        transition: color var(--transition-duration) ease-in-out,
+            background-color var(--transition-duration) ease-in-out,
+            border-color var(--transition-duration) ease-in-out,
+            margin 300ms ease-in-out;
     }
 
     // フォーム要素用トランジション（クラス指定で使用）

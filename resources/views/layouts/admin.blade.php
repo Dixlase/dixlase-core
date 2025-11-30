@@ -21,14 +21,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <!DOCTYPE html>
 <html
     lang="{{ str_replace('_', '-', env('APP_LOCALE', config('app.locale', 'en'))) }}"
-    class="{{ $htmlClass ?? '' }} {{ empty($transitionEnabled) ? 'disable-transition' : '' }}"
+    class="{{ $htmlClass ?? '' }}"
     x-data="appearanceTheme('{{ $appearance }}')"
-    @if(empty($transitionEnabled))
-        x-init="applyTheme(true)"
-    @else
-        x-init="init()"
-    @endif
-    :class="{ 'dark': isDark, 'light': !isDark }"
+    x-init="init()"
+    :class="{ 'dark': isDark, 'light': !isDark, 'theme-ready': themeReady }"
 >
     <head>
         <meta charset="utf-8">
@@ -131,17 +127,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 return {
                     theme: defaultValue, // データベースの値を優先
                     isDark: false,
+                    themeReady: false, // 外観モード変更時のみトランジションを有効にする
 
-                    applyTheme(skipApply = false) {
+                    applyTheme(enableTransition = false) {
                         this.isDark = this.theme === '2' || (this.theme === '0' && window.matchMedia('(prefers-color-scheme: dark)').matches);
                         // プロフィール画面でのみlocalStorageに保存（リアルタイム変更のため）
                         if (document.querySelector('[data-profile-theme]')) {
                             localStorage.setItem('appearance', this.theme);
                         }
-                        if (!skipApply) {
-                            document.documentElement.classList.toggle('dark', this.isDark);
-                            document.documentElement.classList.toggle('light', !this.isDark);
+                        // トランジションを有効にするかどうか
+                        if (enableTransition) {
+                            this.themeReady = true;
                         }
+                        document.documentElement.classList.toggle('dark', this.isDark);
+                        document.documentElement.classList.toggle('light', !this.isDark);
                     },
 
                     init() {
@@ -154,9 +153,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         }
                         // その他の画面（メンバー管理画面含む）はDBの値を優先
                         
+                        // 初期適用時はトランジションなし
                         this.applyTheme(false);
-                        document.documentElement.classList.remove('disable-transition');
 
+                        // 外観モード変更のイベントリスナー
                         document.querySelectorAll('input[name="appearance"]').forEach((el) => {
                             // プロフィール画面とメンバー管理画面の外観設定は除外
                             if (el.closest('[data-profile-theme]') || el.closest('[data-member-theme]')) {
@@ -164,7 +164,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             }
                             el.addEventListener('change', (e) => {
                                 this.theme = e.target.value;
-                                this.applyTheme(false);
+                                this.applyTheme(true); // 変更時はトランジション有効
                             });
                         });
                     }
