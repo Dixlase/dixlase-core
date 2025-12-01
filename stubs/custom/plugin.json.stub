@@ -13,6 +13,9 @@
     "license": "{{ licenseName }}",
     "license_template": "{{ licenseTemplate }}",
     "namespace": "Plugins\\{{ pluginDirectory }}",
+    "providers": [
+        "Plugins\\{{ pluginDirectory }}\\App\\Providers\\{{ pluginDirectory }}ServiceProvider"
+    ],
     "type": "dixlase-plugin",
     "category": "general",
     "tags": ["custom"],
@@ -27,5 +30,45 @@
         "settings_page": false,
         "shortcodes": false,
         "helper_functions": false
+    },
+    "permissions": {
+        "database": {
+            "own_tables": false,
+            "core_tables": []
+        },
+        "storage": {
+            "own_directory": false,
+            "public_uploads": false,
+            "temp_files": false
+        },
+        "settings": {
+            "read_core": false,
+            "write_own": true
+        },
+        "members": {
+            "read": false,
+            "write": false,
+            "create": false,
+            "delete": false
+        },
+        "mail": {
+            "send": false,
+            "bulk_send": false
+        },
+        "content": {
+            "read_other_plugins": [],
+            "write_other_plugins": []
+        },
+        "system": {
+            "register_shortcodes": false,
+            "register_middleware": false,
+            "register_commands": false,
+            "register_blade_directives": false,
+            "modify_routes": false
+        }
+    },
+    "signing": {
+        "algo": "ed25519",
+        "key_id": null
     }
 }
