@@ -36,7 +36,7 @@
         },
         "files": [
             "app/Helpers/AssetHelper.php",
-            "app/helpers.php"
+            "app/Helpers/GlobalHelper.php"
         ]
     },
     "autoload-dev": {
