@@ -191,19 +191,27 @@ class PluginAudit extends Command
     {
         $pluginInput = $this->argument('plugin');
         $pluginDir = $this->resolvePluginDirectory($pluginInput);
+        $isJson = $this->option('json');
 
         if (!$pluginDir) {
-            $this->error("Plugin not found: {$pluginInput}");
+            if ($isJson) {
+                $this->line(json_encode(['error' => "Plugin not found: {$pluginInput}"], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            } else {
+                $this->error("Plugin not found: {$pluginInput}");
+            }
             return Command::FAILURE;
         }
 
         $pluginSlug = Str::kebab(basename($pluginDir));
         $pluginJsonPath = "{$pluginDir}/plugin.json";
 
-        $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        $this->info("🔍 Auditing plugin: " . basename($pluginDir));
-        $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        $this->newLine();
+        // JSONモードでない場合のみヘッダーを表示
+        if (!$isJson) {
+            $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            $this->info("🔍 Auditing plugin: " . basename($pluginDir));
+            $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            $this->newLine();
+        }
 
         // plugin.json から宣言された権限を取得
         $declaredPermissions = $this->getDeclaredPermissions($pluginJsonPath);
@@ -214,7 +222,7 @@ class PluginAudit extends Command
         // 比較結果を生成
         $auditResult = $this->comparePermissions($declaredPermissions, $detectedPermissions);
 
-        if ($this->option('json')) {
+        if ($isJson) {
             $this->outputJson($auditResult);
         } else {
             $this->outputReport($auditResult);

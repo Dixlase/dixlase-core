@@ -39,6 +39,7 @@ use Illuminate\Support\Facades\Log;
 use App\Helpers\GitExcludeHelper;
 use App\Helpers\ComposerLocalHelper;
 use App\Services\Plugin\PluginPermissionService;
+use App\Models\PluginAudit;
 
 class AdminPluginsSettingsController extends AdminLoggedInController
 {
@@ -63,22 +64,143 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $plugin->translated_name = $this->getPluginName($plugin);
             $plugin->translated_description = $this->getPluginDescription($plugin);
             
-            // 権限サマリーを取得
-            $plugin->permission_summary = $permissionService->getSummary($plugin->slug);
+            // 権限サマリーを取得（監査結果を含む）
+            $summary = $permissionService->getSummary($plugin->slug);
+            $summary['audit'] = $this->getPluginAuditResult($plugin->slug);
+            $plugin->permission_summary = $summary;
         }
         
         // アンインストール済みプラグインを検出
         $uninstalledPlugins = $this->getUninstalledPlugins();
         
-        // アンインストール済みプラグインにも権限サマリーを追加
+        // アンインストール済みプラグインにも権限サマリーと監査結果を追加
         foreach ($uninstalledPlugins as &$plugin) {
-            $plugin['permission_summary'] = $permissionService->getSummary($plugin['slug']);
+            $summary = $permissionService->getSummary($plugin['slug']);
+            $summary['audit'] = $this->getPluginAuditResult($plugin['slug']);
+            $plugin['permission_summary'] = $summary;
         }
         
         $this->viewParams['plugins'] = $plugins;
         $this->viewParams['uninstalledPlugins'] = $uninstalledPlugins;
         $this->viewParams['heading'] = 'プラグインマスター';
         return view('admin::settings.plugins.index', $this->viewParams);
+    }
+    
+    /**
+     * プラグインの監査結果をDBから取得
+     *
+     * @param string $pluginSlug
+     * @return array
+     */
+    protected function getPluginAuditResult(string $pluginSlug): array
+    {
+        $audit = PluginAudit::getBySlug($pluginSlug);
+        
+        if ($audit) {
+            return $audit->toAuditArray();
+        }
+        
+        // 監査結果がない場合は空の結果を返す
+        return [
+            'has_mismatches' => false,
+            'mismatches' => [],
+            'matches_count' => 0,
+            'total_checked' => 0,
+            'audited_at' => null,
+        ];
+    }
+    
+    /**
+     * プラグインを監査してDBに保存
+     *
+     * @param string $pluginSlug
+     * @return array
+     */
+    protected function runPluginAudit(string $pluginSlug): array
+    {
+        try {
+            Log::info('Plugin audit starting', ['plugin' => $pluginSlug]);
+            
+            Artisan::call('dls:plugin:audit', [
+                'plugin' => $pluginSlug,
+                '--json' => true,
+            ]);
+            
+            $output = trim(Artisan::output());
+            
+            Log::info('Plugin audit output', [
+                'plugin' => $pluginSlug,
+                'output_length' => strlen($output),
+                'output_preview' => substr($output, 0, 500),
+            ]);
+            
+            $result = json_decode($output, true);
+            
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                Log::warning('Plugin audit JSON parse error', [
+                    'plugin' => $pluginSlug,
+                    'error' => json_last_error_msg(),
+                    'output' => $output,
+                ]);
+            }
+            
+            if (json_last_error() === JSON_ERROR_NONE && is_array($result)) {
+                $auditData = [
+                    'has_mismatches' => !empty($result['mismatches'] ?? []),
+                    'mismatches' => $result['mismatches'] ?? [],
+                    'matches_count' => count($result['matches'] ?? []),
+                    'total_checked' => $result['total_checked'] ?? 0,
+                    'risk_level' => $result['risk_level'] ?? null,
+                    'risk_reasons' => $result['risk_reasons'] ?? [],
+                ];
+                
+                Log::info('Plugin audit data', ['plugin' => $pluginSlug, 'data' => $auditData]);
+                
+                // DBに保存
+                $audit = PluginAudit::saveAuditResult($pluginSlug, $auditData);
+                
+                Log::info('Plugin audit saved', ['plugin' => $pluginSlug, 'audit_id' => $audit->id]);
+                
+                return $audit->toAuditArray();
+            }
+        } catch (\Exception $e) {
+            Log::error('Plugin audit failed', [
+                'plugin' => $pluginSlug,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+        }
+        
+        return [
+            'has_mismatches' => false,
+            'mismatches' => [],
+            'matches_count' => 0,
+            'total_checked' => 0,
+            'audited_at' => null,
+        ];
+    }
+    
+    /**
+     * プラグインを手動で監査（Ajax）
+     */
+    public function audit(Request $request)
+    {
+        $slug = $request->input('slug');
+        
+        if (!$slug) {
+            return response()->json([
+                'success' => false,
+                'message' => __('admin.settings.plugins.audit.invalid_slug'),
+            ], 400);
+        }
+        
+        $result = $this->runPluginAudit($slug);
+        
+        return response()->json([
+            'success' => true,
+            'message' => __('admin.settings.plugins.audit.completed'),
+            'audit' => $result,
+        ]);
     }
 
     public function add()
@@ -223,6 +345,11 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             
             // インストールされたプラグインを取得
             $plugin = Plugin::where('directory', $pluginDir)->first();
+            
+            // インストール後に監査を実行
+            if ($plugin) {
+                $this->runPluginAudit($plugin->slug);
+            }
             
             return redirect()->route('admin.settings.plugins.index')
                 ->with('success', 'プラグインが正常にインストールされました。')

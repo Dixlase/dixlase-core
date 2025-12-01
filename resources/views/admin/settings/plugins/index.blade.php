@@ -149,15 +149,35 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                 $badgeIcon = 'fas fa-exclamation-triangle';
                                                 $badgeLabel = __('admin.settings.plugins.permissions.unknown');
                                             }
+                                            
+                                            // 監査結果
+                                            $auditResult = $plugin->permission_summary['audit'] ?? [];
+                                            $hasMismatches = $auditResult['has_mismatches'] ?? false;
                                         @endphp
                                         <div class="mt-1">
-                                            <button type="button" 
-                                                    class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $badgeColor }} cursor-pointer hover:opacity-80 transition-opacity"
-                                                    onclick="openModal('{{ $permissionModalId }}')">
-                                                <i class="{{ $badgeIcon }} mr-1"></i>
-                                                {{ $badgeLabel }}
-                                                <i class="fas fa-info-circle ml-1 text-xs opacity-60"></i>
-                                            </button>
+                                            <div class="flex items-center gap-1 flex-wrap">
+                                                <button type="button" 
+                                                        class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $badgeColor }} cursor-pointer hover:opacity-80 transition-opacity"
+                                                        onclick="openModal('{{ $permissionModalId }}')">
+                                                    <i class="{{ $badgeIcon }} mr-1"></i>
+                                                    {{ $badgeLabel }}
+                                                    <i class="fas fa-info-circle ml-1 text-xs opacity-60"></i>
+                                                </button>
+                                                @if($hasMismatches)
+                                                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" title="{{ __('admin.settings.plugins.permissions.audit_mismatch_warning') }}">
+                                                        <i class="fas fa-code-branch mr-1"></i>
+                                                        {{ __('admin.settings.plugins.permissions.audit_mismatch_badge') }}
+                                                    </span>
+                                                @endif
+                                                {{-- スキャンボタン --}}
+                                                <button type="button"
+                                                        class="audit-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                                        data-slug="{{ $plugin->slug }}"
+                                                        title="{{ $auditResult['audited_at'] ? __('admin.settings.plugins.permissions.audit_last_scanned') . ': ' . $auditResult['audited_at'] : __('admin.settings.plugins.permissions.audit_not_scanned') }}">
+                                                    <i class="fas fa-search mr-1"></i>
+                                                    <span class="audit-btn-text">{{ $auditResult['audited_at'] ? __('admin.settings.plugins.permissions.audit_button_rescan') : __('admin.settings.plugins.permissions.audit_button') }}</span>
+                                                </button>
+                                            </div>
                                             
                                             {{-- 権限・署名詳細モーダル --}}
                                             <x-modal
@@ -168,6 +188,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                 :close_label="__('common.close')"
                                             >
                                                 <div class="text-left">
+                                                    {{-- 監査警告 --}}
+                                                    @if($hasMismatches)
+                                                        <div class="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                                                            <h5 class="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">
+                                                                <i class="fas fa-code-branch mr-1"></i>
+                                                                {{ __('admin.settings.plugins.permissions.audit_mismatch_title') }}
+                                                            </h5>
+                                                            <p class="text-xs text-red-700 dark:text-red-300 mb-2">{{ __('admin.settings.plugins.permissions.audit_mismatch_warning') }}</p>
+                                                            <ul class="text-xs text-red-600 dark:text-red-400 space-y-1 ml-4 list-disc">
+                                                                @foreach(array_slice($auditResult['mismatches'] ?? [], 0, 5) as $mismatch)
+                                                                    <li>
+                                                                        <code class="bg-red-100 dark:bg-red-800 px-1 rounded">{{ $mismatch['permission'] }}</code>
+                                                                        @if($mismatch['type'] === 'undeclared_usage')
+                                                                            - {{ __('admin.settings.plugins.permissions.audit_undeclared_usage') }}
+                                                                        @else
+                                                                            - {{ __('admin.settings.plugins.permissions.audit_unused_declaration') }}
+                                                                        @endif
+                                                                    </li>
+                                                                @endforeach
+                                                            </ul>
+                                                        </div>
+                                                    @endif
+                                                    
                                                     {{-- 署名ステータス --}}
                                                     <div class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
                                                         <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('admin.settings.plugins.permissions.signature_status') }}</h4>
@@ -503,14 +546,34 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             $badgeIcon = 'fas fa-exclamation-triangle';
                                             $badgeLabel = __('admin.settings.plugins.permissions.unknown');
                                         }
+                                        
+                                        // 監査結果
+                                        $auditResult = $plugin['permission_summary']['audit'] ?? [];
+                                        $hasMismatches = $auditResult['has_mismatches'] ?? false;
                                     @endphp
-                                    <button type="button" 
-                                            class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $badgeColor }} cursor-pointer hover:opacity-80 transition-opacity"
-                                            onclick="openModal('{{ $permissionModalId }}')">
-                                        <i class="{{ $badgeIcon }} mr-1"></i>
-                                        {{ $badgeLabel }}
-                                        <i class="fas fa-info-circle ml-1 text-xs opacity-60"></i>
-                                    </button>
+                                    <div class="flex items-center gap-1 flex-wrap">
+                                        <button type="button" 
+                                                class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $badgeColor }} cursor-pointer hover:opacity-80 transition-opacity"
+                                                onclick="openModal('{{ $permissionModalId }}')">
+                                            <i class="{{ $badgeIcon }} mr-1"></i>
+                                            {{ $badgeLabel }}
+                                            <i class="fas fa-info-circle ml-1 text-xs opacity-60"></i>
+                                        </button>
+                                        @if($hasMismatches)
+                                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" title="{{ __('admin.settings.plugins.permissions.audit_mismatch_warning') }}">
+                                                <i class="fas fa-code-branch mr-1"></i>
+                                                {{ __('admin.settings.plugins.permissions.audit_mismatch_badge') }}
+                                            </span>
+                                        @endif
+                                        {{-- スキャンボタン --}}
+                                        <button type="button"
+                                                class="audit-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                                data-slug="{{ $plugin['slug'] }}"
+                                                title="{{ ($auditResult['audited_at'] ?? null) ? __('admin.settings.plugins.permissions.audit_last_scanned') . ': ' . $auditResult['audited_at'] : __('admin.settings.plugins.permissions.audit_not_scanned') }}">
+                                            <i class="fas fa-search mr-1"></i>
+                                            <span class="audit-btn-text">{{ ($auditResult['audited_at'] ?? null) ? __('admin.settings.plugins.permissions.audit_button_rescan') : __('admin.settings.plugins.permissions.audit_button') }}</span>
+                                        </button>
+                                    </div>
                                     
                                     {{-- 権限・署名詳細モーダル --}}
                                     <x-modal
@@ -521,6 +584,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         :close_label="__('common.close')"
                                     >
                                         <div class="text-left">
+                                            {{-- 監査警告 --}}
+                                            @if($hasMismatches)
+                                                <div class="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                                                    <h5 class="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">
+                                                        <i class="fas fa-code-branch mr-1"></i>
+                                                        {{ __('admin.settings.plugins.permissions.audit_mismatch_title') }}
+                                                    </h5>
+                                                    <p class="text-xs text-red-700 dark:text-red-300 mb-2">{{ __('admin.settings.plugins.permissions.audit_mismatch_warning') }}</p>
+                                                    <ul class="text-xs text-red-600 dark:text-red-400 space-y-1 ml-4 list-disc">
+                                                        @foreach(array_slice($auditResult['mismatches'] ?? [], 0, 5) as $mismatch)
+                                                            <li>
+                                                                <code class="bg-red-100 dark:bg-red-800 px-1 rounded">{{ $mismatch['permission'] }}</code>
+                                                                @if($mismatch['type'] === 'undeclared_usage')
+                                                                    - {{ __('admin.settings.plugins.permissions.audit_undeclared_usage') }}
+                                                                @else
+                                                                    - {{ __('admin.settings.plugins.permissions.audit_unused_declaration') }}
+                                                                @endif
+                                                            </li>
+                                                        @endforeach
+                                                    </ul>
+                                                </div>
+                                            @endif
+                                            
                                             {{-- 署名ステータス --}}
                                             <div class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
                                                 <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('admin.settings.plugins.permissions.signature_status') }}</h4>
@@ -649,6 +735,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <td data-label="{{ __('common.actions') }}">
                                 <div class="action-buttons">
                                     <!-- インストールボタン -->
+                                    @php
+                                        $audit = $plugin['permission_summary']['audit'] ?? [];
+                                        $hasMismatches = $audit['has_mismatches'] ?? false;
+                                        $isUnsigned = ($plugin['permission_summary']['signature']['status'] ?? 'unsigned') === 'unsigned';
+                                        $isUndefined = !($plugin['permission_summary']['has_permissions'] ?? false);
+                                        $riskLevel = $plugin['permission_summary']['risk_level'] ?? 'unknown';
+                                        $hasWarnings = $hasMismatches || $isUnsigned || $isUndefined || in_array($riskLevel, ['medium', 'high']);
+                                    @endphp
                                     <form action="{{ route('admin.settings.plugins.install') }}" method="POST" class="inline-block" id="installForm-{{ $plugin['directory'] }}">
                                         @csrf
                                         <input type="hidden" name="directory" value="{{ $plugin['directory'] }}">
@@ -661,17 +755,51 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             onclick="openModal('installModal-{{ $plugin['directory'] }}')"
                                         />
 
-                                        <!-- インストール確認モーダル -->
+                                        <!-- インストール確認モーダル（警告付き） -->
                                         <x-modal
                                             id="installModal-{{ $plugin['directory'] }}"
-                                            :title="__('admin.settings.plugins.index.install.confirm_title')"
-                                            :message="str_replace('{name}', $plugin['name'], __('admin.settings.plugins.index.install.confirm_message'))"
+                                            :title="$hasWarnings ? __('admin.settings.plugins.permissions.install_warning_title') : __('admin.settings.plugins.index.install.confirm_title')"
                                             :confirm_label="__('common.install')"
                                             :cancel_label="__('common.cancel')"
                                             form="installForm-{{ $plugin['directory'] }}"
-                                            icon_type="info"
-                                            confirm_color="green"
-                                        />
+                                            :icon_type="$hasWarnings ? 'warning' : 'info'"
+                                            :confirm_color="$hasWarnings ? 'yellow' : 'green'"
+                                        >
+                                            @if($hasWarnings)
+                                                <div class="text-left">
+                                                    <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                                                        {{ str_replace('{name}', $plugin['name'], __('admin.settings.plugins.index.install.confirm_message')) }}
+                                                    </p>
+                                                    <div class="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 mb-3">
+                                                        <p class="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
+                                                            <i class="fas fa-exclamation-triangle mr-1"></i>
+                                                            {{ __('admin.settings.plugins.permissions.install_warning_risk') }}
+                                                        </p>
+                                                        <ul class="text-sm text-yellow-700 dark:text-yellow-300 space-y-1 ml-5 list-disc">
+                                                            @if($isUndefined)
+                                                                <li>{{ __('admin.settings.plugins.permissions.install_warning_undefined') }}</li>
+                                                            @endif
+                                                            @if($isUnsigned)
+                                                                <li>{{ __('admin.settings.plugins.permissions.install_warning_unsigned') }}</li>
+                                                            @endif
+                                                            @if($hasMismatches)
+                                                                <li>{{ __('admin.settings.plugins.permissions.install_warning_mismatch') }}</li>
+                                                            @endif
+                                                            @if(in_array($riskLevel, ['medium', 'high']))
+                                                                <li>{{ __('admin.settings.plugins.permissions.risk_' . $riskLevel) }}</li>
+                                                            @endif
+                                                        </ul>
+                                                    </div>
+                                                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                                                        {{ __('admin.settings.plugins.permissions.install_warning_confirm') }}
+                                                    </p>
+                                                </div>
+                                            @else
+                                                <p class="text-sm text-gray-700 dark:text-gray-300">
+                                                    {{ str_replace('{name}', $plugin['name'], __('admin.settings.plugins.index.install.confirm_message')) }}
+                                                </p>
+                                            @endif
+                                        </x-modal>
                                     </form>
 
                                     <!-- 削除ボタン -->
@@ -711,3 +839,145 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const auditMessages = {
+        scanning: @json(__('admin.settings.plugins.permissions.audit_scanning')),
+        rescan: @json(__('admin.settings.plugins.permissions.audit_button_rescan')),
+        completed: @json(__('admin.settings.plugins.index.audit.completed')),
+        failed: @json(__('admin.settings.plugins.index.audit.failed')),
+        resultTitle: @json(__('admin.settings.plugins.permissions.audit_result_title') ?? 'スキャン結果'),
+        noIssues: @json(__('admin.settings.plugins.permissions.audit_no_issues') ?? '問題は検出されませんでした'),
+        mismatchFound: @json(__('admin.settings.plugins.permissions.audit_mismatch_title')),
+        undeclaredUsage: @json(__('admin.settings.plugins.permissions.audit_undeclared_usage')),
+        unusedDeclaration: @json(__('admin.settings.plugins.permissions.audit_unused_declaration')),
+        close: @json(__('common.close')),
+    };
+    
+    // 結果モーダルを作成
+    function showAuditResultModal(slug, audit) {
+        const modalId = 'auditResultModal';
+        let modal = document.getElementById(modalId);
+        
+        // 既存のモーダルを削除
+        if (modal) {
+            modal.remove();
+        }
+        
+        // モーダルHTML作成
+        let contentHtml = '';
+        if (audit.has_mismatches && audit.mismatches && audit.mismatches.length > 0) {
+            contentHtml = `
+                <div class="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 mb-3">
+                    <p class="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                        ${auditMessages.mismatchFound}
+                    </p>
+                    <ul class="text-sm text-yellow-700 dark:text-yellow-300 space-y-1 ml-5 list-disc">
+                        ${audit.mismatches.slice(0, 10).map(m => `
+                            <li>
+                                <code class="bg-yellow-100 dark:bg-yellow-800 px-1 rounded">${m.permission}</code>
+                                - ${m.type === 'undeclared_usage' ? auditMessages.undeclaredUsage : auditMessages.unusedDeclaration}
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            `;
+        } else {
+            contentHtml = `
+                <div class="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                    <p class="text-sm text-green-700 dark:text-green-300">
+                        <i class="fas fa-check-circle mr-1"></i>
+                        ${auditMessages.noIssues}
+                    </p>
+                </div>
+            `;
+        }
+        
+        // 統計情報
+        contentHtml += `
+            <div class="mt-3 text-xs text-gray-500 dark:text-gray-400">
+                チェック項目: ${audit.total_checked || 0} / 一致: ${audit.matches_count || 0} / 不一致: ${(audit.mismatches || []).length}
+            </div>
+        `;
+        
+        const modalHtml = `
+            <div id="${modalId}" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0,0,0,0.5);">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full">
+                    <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                            <i class="fas fa-search mr-2"></i>${auditMessages.resultTitle}
+                        </h3>
+                        <button type="button" onclick="window.location.reload()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        ${contentHtml}
+                    </div>
+                    <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+                        <button type="button" onclick="window.location.reload()" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700">
+                            ${auditMessages.close}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+    
+    document.querySelectorAll('.audit-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const slug = this.dataset.slug;
+            const btnText = this.querySelector('.audit-btn-text');
+            const icon = this.querySelector('i');
+            const originalText = btnText.textContent;
+            const originalIcon = icon.className;
+            const button = this;
+            
+            // ボタンを無効化してスピナー表示
+            button.disabled = true;
+            btnText.textContent = auditMessages.scanning;
+            icon.className = 'fas fa-spinner fa-spin mr-1';
+            
+            fetch('{{ route("admin.settings.plugins.audit") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ slug: slug }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Audit response:', data);
+                
+                // ボタンを元に戻す
+                button.disabled = false;
+                btnText.textContent = auditMessages.rescan;
+                icon.className = originalIcon;
+                
+                if (data.success) {
+                    // 結果をモーダルで表示
+                    showAuditResultModal(slug, data.audit);
+                } else {
+                    alert(data.message || auditMessages.failed);
+                }
+            })
+            .catch(error => {
+                console.error('Audit error:', error);
+                alert(auditMessages.failed);
+                // ボタンを元に戻す
+                button.disabled = false;
+                btnText.textContent = originalText;
+                icon.className = originalIcon;
+            });
+        });
+    });
+});
+</script>
+@endpush

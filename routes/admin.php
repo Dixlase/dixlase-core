@@ -307,6 +307,9 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/settings/plugins/delete', [AdminPluginsSettingsController::class, 'delete'])
                     ->middleware('check.menu.edit:settings.plugins')
                     ->name('settings.plugins.delete');
+                Route::post('/settings/plugins/audit', [AdminPluginsSettingsController::class, 'audit'])
+                    ->middleware('check.menu.edit:settings.plugins')
+                    ->name('settings.plugins.audit');
             });
 
             // システム設定（権限チェック付き）
