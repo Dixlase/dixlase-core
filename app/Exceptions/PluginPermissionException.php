@@ -1,0 +1,84 @@
+<?php
+
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2025 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+namespace App\Exceptions;
+
+use Exception;
+
+/**
+ * プラグイン権限違反例外
+ * 
+ * プラグインが宣言していない権限を使用しようとした場合にスローされます。
+ */
+class PluginPermissionException extends Exception
+{
+    /**
+     * プラグインスラッグ
+     */
+    protected string $pluginSlug = '';
+
+    /**
+     * 違反した権限
+     */
+    protected string $permission = '';
+
+    /**
+     * コンストラクタ
+     *
+     * @param string $message
+     * @param string $pluginSlug
+     * @param string $permission
+     * @param int $code
+     * @param \Throwable|null $previous
+     */
+    public function __construct(
+        string $message = '',
+        string $pluginSlug = '',
+        string $permission = '',
+        int $code = 0,
+        ?\Throwable $previous = null
+    ) {
+        parent::__construct($message, $code, $previous);
+        $this->pluginSlug = $pluginSlug;
+        $this->permission = $permission;
+    }
+
+    /**
+     * プラグインスラッグを取得
+     *
+     * @return string
+     */
+    public function getPluginSlug(): string
+    {
+        return $this->pluginSlug;
+    }
+
+    /**
+     * 違反した権限を取得
+     *
+     * @return string
+     */
+    public function getPermission(): string
+    {
+        return $this->permission;
+    }
+}

@@ -24,6 +24,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'message' => 'この操作を実行しますか？', // モーダルのメッセージ
     'confirm_label' => '確認',     // 確認ボタンのテキスト
     'cancel_label' => 'キャンセル', // キャンセルボタンのテキスト
+    'close_label' => null,        // 閉じるボタンのテキスト（設定すると閉じるボタンのみモード）
     'class' => '',               // モーダルのカスタムクラス
     // ↓ チェックボックス用追加パラメータ
     'checkbox' => false,          // チェックボックスを表示するかどうか
@@ -33,6 +34,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     // ↓ 新しいカスタマイズパラメータ
     'icon_type' => 'info',     // アイコンタイプ: warning, danger, info, success
     'confirm_color' => 'blue',     // 確認ボタンの色: blue, red, green, yellow
+    'close_only' => false,        // 閉じるボタンのみ表示モード
 ])
 
 @php
@@ -82,21 +84,32 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <div class="modal-actions">
             @if(!$hasCustomFooter)
-                {{-- 標準フッター --}}
-                <x-form.button
-                    type="button"
-                    variant="secondary"
-                    :label="$cancel_label ?? __('common.cancel')"
-                    onclick="closeModal('{{ $id }}')"
-                    class="mx-2"
-                />
-                <x-form.button
-                    :type="$form ? 'submit' : 'button'"
-                    :variant="$confirm_variant ?? 'primary'"
-                    :label="$confirm_label ?? __('common.confirm')"
-                    :form="$form"
-                    class="mx-2"
-                />
+                @if($close_only || $close_label)
+                    {{-- 閉じるボタンのみモード --}}
+                    <x-form.button
+                        type="button"
+                        variant="secondary"
+                        :label="$close_label ?? __('common.close')"
+                        onclick="closeModal('{{ $id }}')"
+                        class="mx-2"
+                    />
+                @else
+                    {{-- 標準フッター（確認・キャンセル） --}}
+                    <x-form.button
+                        type="button"
+                        variant="secondary"
+                        :label="$cancel_label ?? __('common.cancel')"
+                        onclick="closeModal('{{ $id }}')"
+                        class="mx-2"
+                    />
+                    <x-form.button
+                        :type="$form ? 'submit' : 'button'"
+                        :variant="$confirm_variant ?? 'primary'"
+                        :label="$confirm_label ?? __('common.confirm')"
+                        :form="$form"
+                        class="mx-2"
+                    />
+                @endif
             @else
                 {{-- カスタムフッター --}}
                 {{ $footer }}

@@ -36,7 +36,8 @@
         },
         "files": [
             "app/Helpers/AssetHelper.php",
-            "app/Helpers/GlobalHelper.php"
+            "app/Helpers/GlobalHelper.php",
+            "app/Helpers/PluginPermissionHelper.php"
         ]
     },
     "autoload-dev": {

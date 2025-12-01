@@ -38,6 +38,7 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Log;
 use App\Helpers\GitExcludeHelper;
 use App\Helpers\ComposerLocalHelper;
+use App\Services\Plugin\PluginPermissionService;
 
 class AdminPluginsSettingsController extends AdminLoggedInController
 {
@@ -53,15 +54,26 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         // インストール済みプラグイン
         $plugins = Plugin::all();
         
+        // 権限サービスを取得
+        $permissionService = app(PluginPermissionService::class);
+        
         // 各プラグインに設定画面があるかチェック、翻訳された名前と説明を取得
         foreach ($plugins as $plugin) {
             $plugin->has_settings = $this->checkPluginHasSettings($plugin);
             $plugin->translated_name = $this->getPluginName($plugin);
             $plugin->translated_description = $this->getPluginDescription($plugin);
+            
+            // 権限サマリーを取得
+            $plugin->permission_summary = $permissionService->getSummary($plugin->slug);
         }
         
         // アンインストール済みプラグインを検出
         $uninstalledPlugins = $this->getUninstalledPlugins();
+        
+        // アンインストール済みプラグインにも権限サマリーを追加
+        foreach ($uninstalledPlugins as &$plugin) {
+            $plugin['permission_summary'] = $permissionService->getSummary($plugin['slug']);
+        }
         
         $this->viewParams['plugins'] = $plugins;
         $this->viewParams['uninstalledPlugins'] = $uninstalledPlugins;
