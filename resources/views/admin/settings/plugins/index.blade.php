@@ -144,9 +144,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                 $badgeIcon = $riskIcons[$riskLevel] ?? $riskIcons['low'];
                                                 $badgeLabel = __('admin.settings.plugins.permissions.risk_' . $riskLevel);
                                             } else {
-                                                // 未署名 + 権限未定義
-                                                $badgeColor = 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400';
-                                                $badgeIcon = 'fas fa-question-circle';
+                                                // 未署名 + 権限未定義 → 警告表示
+                                                $badgeColor = 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 border border-orange-300 dark:border-orange-700';
+                                                $badgeIcon = 'fas fa-exclamation-triangle';
                                                 $badgeLabel = __('admin.settings.plugins.permissions.unknown');
                                             }
                                         @endphp
@@ -211,25 +211,54 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                         <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('admin.settings.plugins.permissions.permission_info') }}</h4>
                                                         @if($hasPermissions)
                                                             {{-- リスクレベル表示 --}}
+                                                            @php
+                                                                $riskReasons = $plugin->permission_summary['risk_reasons'] ?? [];
+                                                                $riskScore = $plugin->permission_summary['risk_score'] ?? 0;
+                                                                $riskColors = [
+                                                                    'low' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                                                                    'medium' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+                                                                    'high' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                                                                ];
+                                                                $riskIcons = [
+                                                                    'low' => 'fas fa-shield-alt',
+                                                                    'medium' => 'fas fa-exclamation-triangle',
+                                                                    'high' => 'fas fa-exclamation-circle',
+                                                                ];
+                                                            @endphp
                                                             <div class="mb-3 flex items-center">
                                                                 <span class="text-sm text-gray-700 dark:text-gray-300 mr-2">{{ __('admin.settings.plugins.permissions.risk_level') }}:</span>
-                                                                @php
-                                                                    $riskColors = [
-                                                                        'low' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-                                                                        'medium' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-                                                                        'high' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-                                                                    ];
-                                                                    $riskIcons = [
-                                                                        'low' => 'fas fa-shield-alt',
-                                                                        'medium' => 'fas fa-exclamation-triangle',
-                                                                        'high' => 'fas fa-exclamation-circle',
-                                                                    ];
-                                                                @endphp
                                                                 <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $riskColors[$riskLevel] ?? $riskColors['low'] }}">
                                                                     <i class="{{ $riskIcons[$riskLevel] ?? $riskIcons['low'] }} mr-1"></i>
                                                                     {{ __('admin.settings.plugins.permissions.risk_' . $riskLevel) }}
                                                                 </span>
                                                             </div>
+                                                            
+                                                            {{-- リスクの理由 --}}
+                                                            @if(!empty($riskReasons))
+                                                                <div class="mb-4 p-3 rounded-lg {{ $riskLevel === 'high' ? 'bg-red-50 dark:bg-red-900/20' : ($riskLevel === 'medium' ? 'bg-yellow-50 dark:bg-yellow-900/20' : 'bg-gray-50 dark:bg-gray-800') }}">
+                                                                    <h5 class="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                                                        <i class="fas fa-info-circle mr-1"></i>
+                                                                        {{ __('admin.settings.plugins.permissions.risk_reasons_title') }}
+                                                                    </h5>
+                                                                    <ul class="space-y-1">
+                                                                        @foreach($riskReasons as $reason)
+                                                                            @php
+                                                                                $reasonKey = str_replace('.', '_', $reason['key']);
+                                                                                $severityColor = $reason['severity'] === 'high' 
+                                                                                    ? 'text-red-600 dark:text-red-400' 
+                                                                                    : 'text-yellow-600 dark:text-yellow-400';
+                                                                                $severityIcon = $reason['severity'] === 'high' 
+                                                                                    ? 'fas fa-exclamation-circle' 
+                                                                                    : 'fas fa-exclamation-triangle';
+                                                                            @endphp
+                                                                            <li class="flex items-start text-xs {{ $severityColor }}">
+                                                                                <i class="{{ $severityIcon }} mr-2 mt-0.5 flex-shrink-0"></i>
+                                                                                <span>{{ __('admin.settings.plugins.permissions.risk_reason_' . $reasonKey) }}</span>
+                                                                            </li>
+                                                                        @endforeach
+                                                                    </ul>
+                                                                </div>
+                                                            @endif
                                                             
                                                             {{-- 権限カテゴリ一覧 --}}
                                                             @if(!empty($categories))
@@ -251,7 +280,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin.settings.plugins.permissions.no_special_permissions') }}</p>
                                                             @endif
                                                         @else
-                                                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin.settings.plugins.permissions.no_permissions_defined') }}</p>
+                                                            {{-- 権限未定義 → 警告 --}}
+                                                            <div class="p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
+                                                                <div class="flex items-start">
+                                                                    <i class="fas fa-exclamation-triangle text-orange-500 dark:text-orange-400 mr-2 mt-0.5"></i>
+                                                                    <p class="text-sm text-orange-700 dark:text-orange-300">{{ __('admin.settings.plugins.permissions.unknown_warning') }}</p>
+                                                                </div>
+                                                            </div>
                                                         @endif
                                                     </div>
                                                 </div>
@@ -463,8 +498,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             $badgeIcon = $riskIcons[$riskLevel] ?? $riskIcons['low'];
                                             $badgeLabel = __('admin.settings.plugins.permissions.risk_' . $riskLevel);
                                         } else {
-                                            $badgeColor = 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400';
-                                            $badgeIcon = 'fas fa-question-circle';
+                                            // 未署名 + 権限未定義 → 警告表示
+                                            $badgeColor = 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 border border-orange-300 dark:border-orange-700';
+                                            $badgeIcon = 'fas fa-exclamation-triangle';
                                             $badgeLabel = __('admin.settings.plugins.permissions.unknown');
                                         }
                                     @endphp
@@ -528,25 +564,54 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                 <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('admin.settings.plugins.permissions.permission_info') }}</h4>
                                                 @if($hasPermissions)
                                                     {{-- リスクレベル表示 --}}
+                                                    @php
+                                                        $riskReasons = $plugin['permission_summary']['risk_reasons'] ?? [];
+                                                        $riskScore = $plugin['permission_summary']['risk_score'] ?? 0;
+                                                        $riskColors = [
+                                                            'low' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                                                            'medium' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+                                                            'high' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                                                        ];
+                                                        $riskIcons = [
+                                                            'low' => 'fas fa-shield-alt',
+                                                            'medium' => 'fas fa-exclamation-triangle',
+                                                            'high' => 'fas fa-exclamation-circle',
+                                                        ];
+                                                    @endphp
                                                     <div class="mb-3 flex items-center">
                                                         <span class="text-sm text-gray-700 dark:text-gray-300 mr-2">{{ __('admin.settings.plugins.permissions.risk_level') }}:</span>
-                                                        @php
-                                                            $riskColors = [
-                                                                'low' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-                                                                'medium' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-                                                                'high' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-                                                            ];
-                                                            $riskIcons = [
-                                                                'low' => 'fas fa-shield-alt',
-                                                                'medium' => 'fas fa-exclamation-triangle',
-                                                                'high' => 'fas fa-exclamation-circle',
-                                                            ];
-                                                        @endphp
                                                         <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $riskColors[$riskLevel] ?? $riskColors['low'] }}">
                                                             <i class="{{ $riskIcons[$riskLevel] ?? $riskIcons['low'] }} mr-1"></i>
                                                             {{ __('admin.settings.plugins.permissions.risk_' . $riskLevel) }}
                                                         </span>
                                                     </div>
+                                                    
+                                                    {{-- リスクの理由 --}}
+                                                    @if(!empty($riskReasons))
+                                                        <div class="mb-4 p-3 rounded-lg {{ $riskLevel === 'high' ? 'bg-red-50 dark:bg-red-900/20' : ($riskLevel === 'medium' ? 'bg-yellow-50 dark:bg-yellow-900/20' : 'bg-gray-50 dark:bg-gray-800') }}">
+                                                            <h5 class="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                                                <i class="fas fa-info-circle mr-1"></i>
+                                                                {{ __('admin.settings.plugins.permissions.risk_reasons_title') }}
+                                                            </h5>
+                                                            <ul class="space-y-1">
+                                                                @foreach($riskReasons as $reason)
+                                                                    @php
+                                                                        $reasonKey = str_replace('.', '_', $reason['key']);
+                                                                        $severityColor = $reason['severity'] === 'high' 
+                                                                            ? 'text-red-600 dark:text-red-400' 
+                                                                            : 'text-yellow-600 dark:text-yellow-400';
+                                                                        $severityIcon = $reason['severity'] === 'high' 
+                                                                            ? 'fas fa-exclamation-circle' 
+                                                                            : 'fas fa-exclamation-triangle';
+                                                                    @endphp
+                                                                    <li class="flex items-start text-xs {{ $severityColor }}">
+                                                                        <i class="{{ $severityIcon }} mr-2 mt-0.5 flex-shrink-0"></i>
+                                                                        <span>{{ __('admin.settings.plugins.permissions.risk_reason_' . $reasonKey) }}</span>
+                                                                    </li>
+                                                                @endforeach
+                                                            </ul>
+                                                        </div>
+                                                    @endif
                                                     
                                                     {{-- 権限カテゴリ一覧 --}}
                                                     @if(!empty($categories))
@@ -568,7 +633,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                         <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin.settings.plugins.permissions.no_special_permissions') }}</p>
                                                     @endif
                                                 @else
-                                                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin.settings.plugins.permissions.no_permissions_defined') }}</p>
+                                                    {{-- 権限未定義 → 警告 --}}
+                                                    <div class="p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
+                                                        <div class="flex items-start">
+                                                            <i class="fas fa-exclamation-triangle text-orange-500 dark:text-orange-400 mr-2 mt-0.5"></i>
+                                                            <p class="text-sm text-orange-700 dark:text-orange-300">{{ __('admin.settings.plugins.permissions.unknown_warning') }}</p>
+                                                        </div>
+                                                    </div>
                                                 @endif
                                             </div>
                                         </div>

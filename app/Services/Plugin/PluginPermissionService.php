@@ -307,16 +307,28 @@ class PluginPermissionService
         $permissions = $this->getPermissions($pluginSlug);
         $signatureInfo = $this->getSignatureInfo($pluginSlug);
         
+        if ($permissions === null) {
+            return [
+                'has_permissions' => false,
+                'risk_level' => 'unknown',
+                'risk_reasons' => [],
+                'risk_score' => 0,
+                'categories' => [],
+                'signature' => $signatureInfo,
+            ];
+        }
+        
+        // リスクレベルと理由を計算
+        $riskResult = $this->calculateRiskLevelWithReasons($permissions);
+        
         $baseSummary = [
-            'has_permissions' => $permissions !== null,
-            'risk_level' => $permissions !== null ? $this->calculateRiskLevel($permissions) : 'unknown',
+            'has_permissions' => true,
+            'risk_level' => $riskResult['level'],
+            'risk_reasons' => $riskResult['reasons'],
+            'risk_score' => $riskResult['score'],
             'categories' => [],
             'signature' => $signatureInfo,
         ];
-        
-        if ($permissions === null) {
-            return $baseSummary;
-        }
 
         // カテゴリごとの権限をまとめる
         foreach ($permissions as $category => $perms) {
@@ -438,29 +450,77 @@ class PluginPermissionService
      */
     protected function calculateRiskLevel(array $permissions): string
     {
+        $result = $this->calculateRiskLevelWithReasons($permissions);
+        return $result['level'];
+    }
+
+    /**
+     * リスクレベルと理由を計算
+     *
+     * @param array $permissions
+     * @return array ['level' => string, 'reasons' => array, 'score' => int]
+     */
+    public function calculateRiskLevelWithReasons(array $permissions): array
+    {
         $score = 0;
+        $reasons = [];
 
-        // 高リスク権限
-        if ($permissions['members']['write'] ?? false) $score += 3;
-        if ($permissions['members']['create'] ?? false) $score += 3;
-        if ($permissions['members']['delete'] ?? false) $score += 4;
-        if ($permissions['mail']['bulk_send'] ?? false) $score += 3;
-        if ($permissions['storage']['public_uploads'] ?? false) $score += 2;
-        if (!empty($permissions['content']['write_other_plugins'] ?? [])) $score += 2;
+        // 高リスク権限（スコア2以上）
+        if ($permissions['members']['write'] ?? false) {
+            $score += 3;
+            $reasons[] = ['key' => 'members.write', 'severity' => 'high', 'score' => 3];
+        }
+        if ($permissions['members']['create'] ?? false) {
+            $score += 3;
+            $reasons[] = ['key' => 'members.create', 'severity' => 'high', 'score' => 3];
+        }
+        if ($permissions['members']['delete'] ?? false) {
+            $score += 4;
+            $reasons[] = ['key' => 'members.delete', 'severity' => 'high', 'score' => 4];
+        }
+        if ($permissions['mail']['bulk_send'] ?? false) {
+            $score += 3;
+            $reasons[] = ['key' => 'mail.bulk_send', 'severity' => 'high', 'score' => 3];
+        }
+        if ($permissions['storage']['public_uploads'] ?? false) {
+            $score += 2;
+            $reasons[] = ['key' => 'storage.public_uploads', 'severity' => 'high', 'score' => 2];
+        }
+        if (!empty($permissions['content']['write_other_plugins'] ?? [])) {
+            $score += 2;
+            $reasons[] = ['key' => 'content.write_other_plugins', 'severity' => 'high', 'score' => 2];
+        }
 
-        // 中リスク権限
-        if ($permissions['mail']['send'] ?? false) $score += 1;
-        if ($permissions['settings']['read_core'] ?? false) $score += 1;
-        if ($permissions['system']['register_middleware'] ?? false) $score += 1;
-        if (!empty($permissions['database']['core_tables'] ?? [])) $score += 1;
+        // 中リスク権限（スコア1）
+        if ($permissions['mail']['send'] ?? false) {
+            $score += 1;
+            $reasons[] = ['key' => 'mail.send', 'severity' => 'medium', 'score' => 1];
+        }
+        if ($permissions['settings']['read_core'] ?? false) {
+            $score += 1;
+            $reasons[] = ['key' => 'settings.read_core', 'severity' => 'medium', 'score' => 1];
+        }
+        if ($permissions['system']['register_middleware'] ?? false) {
+            $score += 1;
+            $reasons[] = ['key' => 'system.register_middleware', 'severity' => 'medium', 'score' => 1];
+        }
+        if (!empty($permissions['database']['core_tables'] ?? [])) {
+            $score += 1;
+            $reasons[] = ['key' => 'database.core_tables', 'severity' => 'medium', 'score' => 1];
+        }
 
+        $level = 'low';
         if ($score >= 5) {
-            return 'high';
+            $level = 'high';
+        } elseif ($score >= 2) {
+            $level = 'medium';
         }
-        if ($score >= 2) {
-            return 'medium';
-        }
-        return 'low';
+
+        return [
+            'level' => $level,
+            'reasons' => $reasons,
+            'score' => $score,
+        ];
     }
 
     /**
