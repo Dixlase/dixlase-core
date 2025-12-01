@@ -41,6 +41,8 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Auth;
 use App\Enums\AppearanceMode;
+use App\Contracts\Multilingual;
+use App\Services\DummyMultilingualService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -53,7 +55,14 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Register any application services.
      */
-    public function register(): void {}
+    public function register(): void
+    {
+        // 多言語サービスのデフォルト実装をバインド
+        // 多言語プラグインが有効な場合は、プラグイン側で本物の実装に差し替えられる
+        $this->app->singleton(Multilingual::class, function ($app) {
+            return new DummyMultilingualService();
+        });
+    }
 
     /**
      * Bootstrap any application services.
