@@ -409,13 +409,13 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             ]);
 
             return redirect()->route('admin.settings.plugins.index')
-                ->with('success', 'プラグインを有効化しました');
+                ->with('success', str_replace('{name}', $plugin->translated_name, __('admin.settings.plugins.index.enabled.success')));
         } catch (\Exception $e) {
             Log::error('Plugin enable failed', [
                 'plugin' => $plugin->name,
                 'error' => $e->getMessage()
             ]);
-            return back()->with('error', "プラグイン有効化中にエラーが発生しました: {$e->getMessage()}");
+            return back()->with('error', str_replace('{name}', $plugin->translated_name, __('admin.settings.plugins.index.enabled.failed')) . ": {$e->getMessage()}");
         }
     }
 

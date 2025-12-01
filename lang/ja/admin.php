@@ -1003,6 +1003,11 @@ return [
                     'confirm_title' => 'インストールの確認',
                     'confirm_message' => 'プラグイン [{name}] をインストールしますか？',
                 ],
+                'enabled' => [
+                    'confirm_message' => 'プラグイン [{name}] を有効化しますか？',
+                    'success' => '{name}を有効化しました',
+                    'failed' => '{name}の有効化に失敗しました',
+                ],
                 'delete' => [
                     'confirm_title' => '削除の確認',
                     'confirm_message' => 'プラグイン [{name}] のファイルとフォルダを完全に削除しますか？この操作は取り消せません。',
@@ -1046,6 +1051,13 @@ return [
                 'install_warning_unsigned' => '署名されていません',
                 'install_warning_mismatch' => '権限宣言とコードが一致しません',
                 'install_warning_confirm' => '上記を理解した上でインストールしますか？',
+                // 有効化警告
+                'enable_warning_title' => '有効化前の確認',
+                'enable_warning_message' => 'プラグイン「:name」には以下の注意点があります：',
+                'enable_warning_confirm' => '上記を理解した上で有効化しますか？',
+                'enable_warning_invalid_signature' => '署名が無効です（改ざんの可能性）',
+                'enable_warning_high_risk' => '高リスクの権限を使用しています',
+                'warning_not_scanned' => 'コードスキャンが実行されていません',
                 // 監査ボタン
                 'audit_button' => 'スキャン',
                 'audit_button_rescan' => '再スキャン',

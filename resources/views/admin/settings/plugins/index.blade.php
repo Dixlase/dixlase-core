@@ -372,15 +372,93 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         </form>
                                     @else
                                         <!-- 無効化中：有効化とアンインストールボタン -->
-                                        <form action="{{ route('admin.settings.plugins.enable', $plugin->id) }}" method="POST" class="inline-block">
+                                        @php
+                                            // 有効化時の警告条件を判定
+                                            $enableWarnings = [];
+                                            $signatureStatus = $plugin->permission_summary['signature']['status'] ?? 'unsigned';
+                                            $riskLevel = $plugin->permission_summary['risk_level'] ?? 'low';
+                                            $hasPermissions = !empty($plugin->permission_summary['permissions'] ?? []);
+                                            $hasMismatchesForEnable = $plugin->permission_summary['audit']['has_mismatches'] ?? false;
+                                            $auditedAtForEnable = $plugin->permission_summary['audit']['audited_at'] ?? null;
+                                            
+                                            // 署名無効
+                                            if ($signatureStatus === 'invalid') {
+                                                $enableWarnings[] = __('admin.settings.plugins.permissions.enable_warning_invalid_signature');
+                                            }
+                                            // 未署名
+                                            if ($signatureStatus === 'unsigned' || $signatureStatus === 'none') {
+                                                $enableWarnings[] = __('admin.settings.plugins.permissions.install_warning_unsigned');
+                                            }
+                                            // 権限未定義
+                                            if (!$hasPermissions) {
+                                                $enableWarnings[] = __('admin.settings.plugins.permissions.install_warning_undefined');
+                                            }
+                                            // 高リスク
+                                            if ($riskLevel === 'high') {
+                                                $enableWarnings[] = __('admin.settings.plugins.permissions.enable_warning_high_risk');
+                                            }
+                                            // 不一致
+                                            if ($hasMismatchesForEnable) {
+                                                $enableWarnings[] = __('admin.settings.plugins.permissions.install_warning_mismatch');
+                                            }
+                                            // 未スキャン
+                                            if (!$auditedAtForEnable) {
+                                                $enableWarnings[] = __('admin.settings.plugins.permissions.warning_not_scanned');
+                                            }
+                                            
+                                            $hasEnableWarnings = !empty($enableWarnings);
+                                            $enableModalId = 'enableModal-' . $plugin->id;
+                                        @endphp
+                                        
+                                        <form action="{{ route('admin.settings.plugins.enable', $plugin->id) }}" method="POST" class="inline-block" id="enableForm-{{ $plugin->id }}">
                                             @csrf
-                                            <x-form.button
-                                                type="submit"
-                                                :label="__('common.enable')"
-                                                variant="success"
-                                                size="sm"
-                                                icon="fas fa-play"
-                                            />
+                                            @if($hasEnableWarnings)
+                                                <x-form.button
+                                                    type="button"
+                                                    :label="__('common.enable')"
+                                                    variant="success"
+                                                    size="sm"
+                                                    icon="fas fa-play"
+                                                    onclick="openModal('{{ $enableModalId }}')"
+                                                />
+                                                
+                                                <!-- 有効化確認モーダル -->
+                                                <x-modal
+                                                    :id="$enableModalId"
+                                                    :title="__('admin.settings.plugins.permissions.enable_warning_title')"
+                                                    icon_type="warning"
+                                                    :confirm_label="__('common.enable')"
+                                                    :cancel_label="__('common.cancel')"
+                                                    form="enableForm-{{ $plugin->id }}"
+                                                    confirm_color="yellow">
+                                                    <div class="text-left">
+                                                        <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                                                            {{ str_replace('{name}', $plugin['name'], __('admin.settings.plugins.index.enabled.confirm_message')) }}
+                                                        </p>
+                                                        <div class="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 mb-3">
+                                                            <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                                                                {{ __('admin.settings.plugins.permissions.enable_warning_message', ['name' => $plugin->translated_name]) }}
+                                                            </p>
+                                                            <ul class="text-sm text-yellow-700 dark:text-yellow-300 space-y-1 ml-4 list-disc">
+                                                                @foreach($enableWarnings as $warning)
+                                                                    <li>{{ $warning }}</li>
+                                                                @endforeach
+                                                            </ul>
+                                                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-3">
+                                                                {{ __('admin.settings.plugins.permissions.enable_warning_confirm') }}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </x-modal>
+                                            @else
+                                                <x-form.button
+                                                    type="submit"
+                                                    :label="__('common.enable')"
+                                                    variant="success"
+                                                    size="sm"
+                                                    icon="fas fa-play"
+                                                />
+                                            @endif
                                         </form>
 
                                         <form action="{{ route('admin.settings.plugins.uninstall', $plugin->id) }}" method="POST" class="inline-block" id="uninstallForm-{{ $plugin->id }}">
@@ -738,10 +816,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     @php
                                         $audit = $plugin['permission_summary']['audit'] ?? [];
                                         $hasMismatches = $audit['has_mismatches'] ?? false;
+                                        $isNotScanned = empty($audit['audited_at'] ?? null);
                                         $isUnsigned = ($plugin['permission_summary']['signature']['status'] ?? 'unsigned') === 'unsigned';
                                         $isUndefined = !($plugin['permission_summary']['has_permissions'] ?? false);
                                         $riskLevel = $plugin['permission_summary']['risk_level'] ?? 'unknown';
-                                        $hasWarnings = $hasMismatches || $isUnsigned || $isUndefined || in_array($riskLevel, ['medium', 'high']);
+                                        $hasWarnings = $hasMismatches || $isUnsigned || $isUndefined || $isNotScanned || in_array($riskLevel, ['medium', 'high']);
                                     @endphp
                                     <form action="{{ route('admin.settings.plugins.install') }}" method="POST" class="inline-block" id="installForm-{{ $plugin['directory'] }}">
                                         @csrf
@@ -784,6 +863,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                             @endif
                                                             @if($hasMismatches)
                                                                 <li>{{ __('admin.settings.plugins.permissions.install_warning_mismatch') }}</li>
+                                                            @endif
+                                                            @if($isNotScanned)
+                                                                <li>{{ __('admin.settings.plugins.permissions.warning_not_scanned') }}</li>
                                                             @endif
                                                             @if(in_array($riskLevel, ['medium', 'high']))
                                                                 <li>{{ __('admin.settings.plugins.permissions.risk_' . $riskLevel) }}</li>
