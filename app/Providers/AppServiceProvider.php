@@ -43,6 +43,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Enums\AppearanceMode;
 use App\Contracts\Multilingual;
 use App\Services\DummyMultilingualService;
+use App\Services\Plugin\PluginPermissionService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -61,6 +62,11 @@ class AppServiceProvider extends ServiceProvider
         // 多言語プラグインが有効な場合は、プラグイン側で本物の実装に差し替えられる
         $this->app->singleton(Multilingual::class, function ($app) {
             return new DummyMultilingualService();
+        });
+
+        // プラグイン権限サービスをシングルトンとして登録
+        $this->app->singleton(PluginPermissionService::class, function ($app) {
+            return new PluginPermissionService();
         });
     }
 

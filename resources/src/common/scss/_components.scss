@@ -440,4 +440,13 @@
     &--orange {
         @apply bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300;
     }
+
+    // ステータス用
+    &--enabled {
+        @apply px-2 py-1 rounded-md bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200;
+    }
+
+    &--disabled {
+        @apply px-2 py-1 rounded-md bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400;
+    }
 }

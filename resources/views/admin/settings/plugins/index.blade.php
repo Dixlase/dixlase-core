@@ -84,9 +84,181 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 </div>
                             </td>
                             <td data-label="{{ __('common.status') }}">
-                                <span class="status-badge status-badge--{{ $plugin->isEnabled() ? 'enabled' : 'disabled' }}">
-                                    {{ $plugin->isEnabled() ? __('common.enabled') : __('common.disabled') }}
-                                </span>
+                                <div class="space-y-2">
+                                    <span class="status-badge status-badge--{{ $plugin->isEnabled() ? 'enabled' : 'disabled' }}">
+                                        {{ $plugin->isEnabled() ? __('common.enabled') : __('common.disabled') }}
+                                    </span>
+                                    
+                                    {{-- 権限・署名ステータスバッジ（モーダル表示） --}}
+                                    @if(isset($plugin->permission_summary))
+                                        @php
+                                            $hasPermissions = $plugin->permission_summary['has_permissions'];
+                                            $riskLevel = $plugin->permission_summary['risk_level'];
+                                            $categories = $plugin->permission_summary['categories'] ?? [];
+                                            $signature = $plugin->permission_summary['signature'] ?? ['status' => 'unsigned'];
+                                            $permissionModalId = 'permissionModal-' . $plugin->id;
+                                            
+                                            // 署名ステータスに基づくバッジ設定
+                                            $signatureStatus = $signature['status'] ?? 'unsigned';
+                                            $signatureType = $signature['type'] ?? null;
+                                            
+                                            // バッジの色とアイコンを決定
+                                            if ($signatureStatus === 'valid' || $signatureStatus === 'pending_verification') {
+                                                // 署名あり（検証OK or 検証待ち）
+                                                $badgeColors = [
+                                                    'official' => 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+                                                    'verified' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                                                    'partner' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+                                                ];
+                                                $badgeIcons = [
+                                                    'official' => 'fas fa-crown',
+                                                    'verified' => 'fas fa-check-circle',
+                                                    'partner' => 'fas fa-handshake',
+                                                ];
+                                                $badgeLabels = [
+                                                    'official' => __('admin.settings.plugins.permissions.signature_official'),
+                                                    'verified' => __('admin.settings.plugins.permissions.signature_verified'),
+                                                    'partner' => __('admin.settings.plugins.permissions.signature_partner'),
+                                                ];
+                                                $badgeColor = $badgeColors[$signatureType] ?? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+                                                $badgeIcon = $badgeIcons[$signatureType] ?? 'fas fa-check-circle';
+                                                $badgeLabel = $badgeLabels[$signatureType] ?? __('admin.settings.plugins.permissions.signature_signed');
+                                            } elseif ($signatureStatus === 'invalid') {
+                                                // 署名無効
+                                                $badgeColor = 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+                                                $badgeIcon = 'fas fa-times-circle';
+                                                $badgeLabel = __('admin.settings.plugins.permissions.signature_invalid');
+                                            } elseif ($hasPermissions) {
+                                                // 未署名 + 権限定義あり
+                                                $riskColors = [
+                                                    'low' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                                                    'medium' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+                                                    'high' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                                                ];
+                                                $riskIcons = [
+                                                    'low' => 'fas fa-shield-alt',
+                                                    'medium' => 'fas fa-exclamation-triangle',
+                                                    'high' => 'fas fa-exclamation-circle',
+                                                ];
+                                                $badgeColor = $riskColors[$riskLevel] ?? $riskColors['low'];
+                                                $badgeIcon = $riskIcons[$riskLevel] ?? $riskIcons['low'];
+                                                $badgeLabel = __('admin.settings.plugins.permissions.risk_' . $riskLevel);
+                                            } else {
+                                                // 未署名 + 権限未定義
+                                                $badgeColor = 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400';
+                                                $badgeIcon = 'fas fa-question-circle';
+                                                $badgeLabel = __('admin.settings.plugins.permissions.unknown');
+                                            }
+                                        @endphp
+                                        <div class="mt-1">
+                                            <button type="button" 
+                                                    class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $badgeColor }} cursor-pointer hover:opacity-80 transition-opacity"
+                                                    onclick="openModal('{{ $permissionModalId }}')">
+                                                <i class="{{ $badgeIcon }} mr-1"></i>
+                                                {{ $badgeLabel }}
+                                                <i class="fas fa-info-circle ml-1 text-xs opacity-60"></i>
+                                            </button>
+                                            
+                                            {{-- 権限・署名詳細モーダル --}}
+                                            <x-modal
+                                                :id="$permissionModalId"
+                                                :title="__('admin.settings.plugins.permissions.details_title') . ' - ' . $plugin->translated_name"
+                                                icon_type="info"
+                                                :close_only="true"
+                                                :close_label="__('common.close')"
+                                            >
+                                                <div class="text-left">
+                                                    {{-- 署名ステータス --}}
+                                                    <div class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+                                                        <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('admin.settings.plugins.permissions.signature_status') }}</h4>
+                                                        @if($signatureStatus === 'valid' || $signatureStatus === 'pending_verification')
+                                                            <div class="flex items-center mb-2">
+                                                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $badgeColor }}">
+                                                                    <i class="{{ $badgeIcon }} mr-1"></i>
+                                                                    {{ $badgeLabel }}
+                                                                </span>
+                                                            </div>
+                                                            @if($signature['signed_by'])
+                                                                <p class="text-sm text-gray-600 dark:text-gray-400">
+                                                                    {{ __('admin.settings.plugins.permissions.signed_by') }}: {{ $signature['signed_by'] }}
+                                                                </p>
+                                                            @endif
+                                                        @elseif($signatureStatus === 'invalid')
+                                                            <div class="flex items-center mb-2">
+                                                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                                                    <i class="fas fa-times-circle mr-1"></i>
+                                                                    {{ __('admin.settings.plugins.permissions.signature_invalid') }}
+                                                                </span>
+                                                            </div>
+                                                            <p class="text-sm text-red-600 dark:text-red-400">
+                                                                {{ __('admin.settings.plugins.permissions.signature_invalid_warning') }}
+                                                            </p>
+                                                        @else
+                                                            <div class="flex items-center mb-2">
+                                                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                                                                    <i class="fas fa-file-signature mr-1"></i>
+                                                                    {{ __('admin.settings.plugins.permissions.signature_unsigned') }}
+                                                                </span>
+                                                            </div>
+                                                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                                                {{ __('admin.settings.plugins.permissions.signature_unsigned_info') }}
+                                                            </p>
+                                                        @endif
+                                                    </div>
+                                                    
+                                                    {{-- 権限情報 --}}
+                                                    <div>
+                                                        <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('admin.settings.plugins.permissions.permission_info') }}</h4>
+                                                        @if($hasPermissions)
+                                                            {{-- リスクレベル表示 --}}
+                                                            <div class="mb-3 flex items-center">
+                                                                <span class="text-sm text-gray-700 dark:text-gray-300 mr-2">{{ __('admin.settings.plugins.permissions.risk_level') }}:</span>
+                                                                @php
+                                                                    $riskColors = [
+                                                                        'low' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                                                                        'medium' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+                                                                        'high' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                                                                    ];
+                                                                    $riskIcons = [
+                                                                        'low' => 'fas fa-shield-alt',
+                                                                        'medium' => 'fas fa-exclamation-triangle',
+                                                                        'high' => 'fas fa-exclamation-circle',
+                                                                    ];
+                                                                @endphp
+                                                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $riskColors[$riskLevel] ?? $riskColors['low'] }}">
+                                                                    <i class="{{ $riskIcons[$riskLevel] ?? $riskIcons['low'] }} mr-1"></i>
+                                                                    {{ __('admin.settings.plugins.permissions.risk_' . $riskLevel) }}
+                                                                </span>
+                                                            </div>
+                                                            
+                                                            {{-- 権限カテゴリ一覧 --}}
+                                                            @if(!empty($categories))
+                                                                <div class="space-y-3">
+                                                                    @foreach($categories as $category => $permissions)
+                                                                        <div class="border-b border-gray-200 dark:border-gray-700 pb-2 last:border-0">
+                                                                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('admin.settings.plugins.permissions.category_' . $category) }}:</span>
+                                                                            <div class="mt-1 flex flex-wrap gap-1">
+                                                                                @foreach($permissions as $perm)
+                                                                                    <span class="inline-block bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded text-xs">
+                                                                                        {{ __('admin.settings.plugins.permissions.perm_' . $perm) }}
+                                                                                    </span>
+                                                                                @endforeach
+                                                                            </div>
+                                                                        </div>
+                                                                    @endforeach
+                                                                </div>
+                                                            @else
+                                                                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin.settings.plugins.permissions.no_special_permissions') }}</p>
+                                                            @endif
+                                                        @else
+                                                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin.settings.plugins.permissions.no_permissions_defined') }}</p>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </x-modal>
+                                        </div>
+                                    @endif
+                                </div>
                             </td>
                             <td data-label="{{ __('common.actions') }}">
                                 <div class="action-buttons">
@@ -191,6 +363,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <tr>
                         <th>{{ __('admin.settings.plugins.index.table.name') }}</th>
                         <th>{{ __('common.details') }}</th>
+                        <th>{{ __('admin.settings.plugins.permissions.risk_level') }}</th>
                         <th>{{ __('common.actions') }}</th>
                     </tr>
                 </thead>
@@ -236,6 +409,171 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         @endif
                                     </div>
                                 </div>
+                            </td>
+                            <td data-label="{{ __('admin.settings.plugins.permissions.risk_level') }}">
+                                {{-- 権限・署名ステータスバッジ（モーダル表示） --}}
+                                @if(isset($plugin['permission_summary']))
+                                    @php
+                                        $hasPermissions = $plugin['permission_summary']['has_permissions'];
+                                        $riskLevel = $plugin['permission_summary']['risk_level'];
+                                        $categories = $plugin['permission_summary']['categories'] ?? [];
+                                        $signature = $plugin['permission_summary']['signature'] ?? ['status' => 'unsigned'];
+                                        $permissionModalId = 'permissionModal-uninstalled-' . $plugin['directory'];
+                                        
+                                        // 署名ステータスに基づくバッジ設定
+                                        $signatureStatus = $signature['status'] ?? 'unsigned';
+                                        $signatureType = $signature['type'] ?? null;
+                                        
+                                        // バッジの色とアイコンを決定
+                                        if ($signatureStatus === 'valid' || $signatureStatus === 'pending_verification') {
+                                            $badgeColors = [
+                                                'official' => 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+                                                'verified' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                                                'partner' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+                                            ];
+                                            $badgeIcons = [
+                                                'official' => 'fas fa-crown',
+                                                'verified' => 'fas fa-check-circle',
+                                                'partner' => 'fas fa-handshake',
+                                            ];
+                                            $badgeLabels = [
+                                                'official' => __('admin.settings.plugins.permissions.signature_official'),
+                                                'verified' => __('admin.settings.plugins.permissions.signature_verified'),
+                                                'partner' => __('admin.settings.plugins.permissions.signature_partner'),
+                                            ];
+                                            $badgeColor = $badgeColors[$signatureType] ?? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+                                            $badgeIcon = $badgeIcons[$signatureType] ?? 'fas fa-check-circle';
+                                            $badgeLabel = $badgeLabels[$signatureType] ?? __('admin.settings.plugins.permissions.signature_signed');
+                                        } elseif ($signatureStatus === 'invalid') {
+                                            $badgeColor = 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+                                            $badgeIcon = 'fas fa-times-circle';
+                                            $badgeLabel = __('admin.settings.plugins.permissions.signature_invalid');
+                                        } elseif ($hasPermissions) {
+                                            $riskColors = [
+                                                'low' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                                                'medium' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+                                                'high' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                                            ];
+                                            $riskIcons = [
+                                                'low' => 'fas fa-shield-alt',
+                                                'medium' => 'fas fa-exclamation-triangle',
+                                                'high' => 'fas fa-exclamation-circle',
+                                            ];
+                                            $badgeColor = $riskColors[$riskLevel] ?? $riskColors['low'];
+                                            $badgeIcon = $riskIcons[$riskLevel] ?? $riskIcons['low'];
+                                            $badgeLabel = __('admin.settings.plugins.permissions.risk_' . $riskLevel);
+                                        } else {
+                                            $badgeColor = 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400';
+                                            $badgeIcon = 'fas fa-question-circle';
+                                            $badgeLabel = __('admin.settings.plugins.permissions.unknown');
+                                        }
+                                    @endphp
+                                    <button type="button" 
+                                            class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $badgeColor }} cursor-pointer hover:opacity-80 transition-opacity"
+                                            onclick="openModal('{{ $permissionModalId }}')">
+                                        <i class="{{ $badgeIcon }} mr-1"></i>
+                                        {{ $badgeLabel }}
+                                        <i class="fas fa-info-circle ml-1 text-xs opacity-60"></i>
+                                    </button>
+                                    
+                                    {{-- 権限・署名詳細モーダル --}}
+                                    <x-modal
+                                        :id="$permissionModalId"
+                                        :title="__('admin.settings.plugins.permissions.details_title') . ' - ' . $plugin['name']"
+                                        icon_type="info"
+                                        :close_only="true"
+                                        :close_label="__('common.close')"
+                                    >
+                                        <div class="text-left">
+                                            {{-- 署名ステータス --}}
+                                            <div class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+                                                <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('admin.settings.plugins.permissions.signature_status') }}</h4>
+                                                @if($signatureStatus === 'valid' || $signatureStatus === 'pending_verification')
+                                                    <div class="flex items-center mb-2">
+                                                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $badgeColor }}">
+                                                            <i class="{{ $badgeIcon }} mr-1"></i>
+                                                            {{ $badgeLabel }}
+                                                        </span>
+                                                    </div>
+                                                    @if($signature['signed_by'] ?? null)
+                                                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                                                            {{ __('admin.settings.plugins.permissions.signed_by') }}: {{ $signature['signed_by'] }}
+                                                        </p>
+                                                    @endif
+                                                @elseif($signatureStatus === 'invalid')
+                                                    <div class="flex items-center mb-2">
+                                                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                                            <i class="fas fa-times-circle mr-1"></i>
+                                                            {{ __('admin.settings.plugins.permissions.signature_invalid') }}
+                                                        </span>
+                                                    </div>
+                                                    <p class="text-sm text-red-600 dark:text-red-400">
+                                                        {{ __('admin.settings.plugins.permissions.signature_invalid_warning') }}
+                                                    </p>
+                                                @else
+                                                    <div class="flex items-center mb-2">
+                                                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                                                            <i class="fas fa-file-signature mr-1"></i>
+                                                            {{ __('admin.settings.plugins.permissions.signature_unsigned') }}
+                                                        </span>
+                                                    </div>
+                                                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                                                        {{ __('admin.settings.plugins.permissions.signature_unsigned_info') }}
+                                                    </p>
+                                                @endif
+                                            </div>
+                                            
+                                            {{-- 権限情報 --}}
+                                            <div>
+                                                <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('admin.settings.plugins.permissions.permission_info') }}</h4>
+                                                @if($hasPermissions)
+                                                    {{-- リスクレベル表示 --}}
+                                                    <div class="mb-3 flex items-center">
+                                                        <span class="text-sm text-gray-700 dark:text-gray-300 mr-2">{{ __('admin.settings.plugins.permissions.risk_level') }}:</span>
+                                                        @php
+                                                            $riskColors = [
+                                                                'low' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                                                                'medium' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+                                                                'high' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                                                            ];
+                                                            $riskIcons = [
+                                                                'low' => 'fas fa-shield-alt',
+                                                                'medium' => 'fas fa-exclamation-triangle',
+                                                                'high' => 'fas fa-exclamation-circle',
+                                                            ];
+                                                        @endphp
+                                                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $riskColors[$riskLevel] ?? $riskColors['low'] }}">
+                                                            <i class="{{ $riskIcons[$riskLevel] ?? $riskIcons['low'] }} mr-1"></i>
+                                                            {{ __('admin.settings.plugins.permissions.risk_' . $riskLevel) }}
+                                                        </span>
+                                                    </div>
+                                                    
+                                                    {{-- 権限カテゴリ一覧 --}}
+                                                    @if(!empty($categories))
+                                                        <div class="space-y-3">
+                                                            @foreach($categories as $category => $permissions)
+                                                                <div class="border-b border-gray-200 dark:border-gray-700 pb-2 last:border-0">
+                                                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('admin.settings.plugins.permissions.category_' . $category) }}:</span>
+                                                                    <div class="mt-1 flex flex-wrap gap-1">
+                                                                        @foreach($permissions as $perm)
+                                                                            <span class="inline-block bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded text-xs">
+                                                                                {{ __('admin.settings.plugins.permissions.perm_' . $perm) }}
+                                                                            </span>
+                                                                        @endforeach
+                                                                    </div>
+                                                                </div>
+                                                            @endforeach
+                                                        </div>
+                                                    @else
+                                                        <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin.settings.plugins.permissions.no_special_permissions') }}</p>
+                                                    @endif
+                                                @else
+                                                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin.settings.plugins.permissions.no_permissions_defined') }}</p>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </x-modal>
+                                @endif
                             </td>
                             <td data-label="{{ __('common.actions') }}">
                                 <div class="action-buttons">
@@ -300,4 +638,5 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </section>
     @endif
 </div>
+
 @endsection
