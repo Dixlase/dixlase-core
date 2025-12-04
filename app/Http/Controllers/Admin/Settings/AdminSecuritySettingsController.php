@@ -37,6 +37,8 @@ use Illuminate\Support\Facades\Http;
 use App\Helpers\EnvHelper;
 use App\Helpers\ConfigHelper;
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
+use App\Enums\ExtensionSecurityLevel;
+use App\Enums\ExtensionSecurityPreset;
 
 
 
@@ -95,6 +97,15 @@ class AdminSecuritySettingsController extends AdminLoggedInController
             'notification_log_levels' => array_map('intval', array_filter(explode(',', $this->securitySettingRepository->get('notification_log_levels', implode(',', LogLevel::getDefaultNotificationLevels()))))),
             // Password security settings
             'pwned_password_check_enabled' => filter_var($this->securitySettingRepository->get('pwned_password_check_enabled', false), FILTER_VALIDATE_BOOLEAN),
+            // Extension security settings
+            'extension_security_preset' => $this->securitySettingRepository->get('extension_security_preset', ExtensionSecurityPreset::Balanced->value),
+            'extension_require_signature' => filter_var($this->securitySettingRepository->get('extension_require_signature', false), FILTER_VALIDATE_BOOLEAN),
+            'extension_require_permission_definition' => filter_var($this->securitySettingRepository->get('extension_require_permission_definition', false), FILTER_VALIDATE_BOOLEAN),
+            'extension_allow_undefined_permissions' => filter_var($this->securitySettingRepository->get('extension_allow_undefined_permissions', true), FILTER_VALIDATE_BOOLEAN),
+            'extension_plugin_max_health_level' => (int) $this->securitySettingRepository->get('extension_plugin_max_health_level', ExtensionSecurityLevel::Warning->value),
+            'extension_theme_max_health_level' => (int) $this->securitySettingRepository->get('extension_theme_max_health_level', ExtensionSecurityLevel::NeedsAttention->value),
+            'extension_allow_logic_themes' => filter_var($this->securitySettingRepository->get('extension_allow_logic_themes', true), FILTER_VALIDATE_BOOLEAN),
+            'extension_permission_mismatch_action' => $this->securitySettingRepository->get('extension_permission_mismatch_action', 'warn'),
         ];
 
         // 動的reCAPTCHAフォーム設定を取得
@@ -277,6 +288,34 @@ class AdminSecuritySettingsController extends AdminLoggedInController
 
         // Save password security settings
         $this->securitySettingRepository->set('pwned_password_check_enabled', $request->boolean('pwned_password_check_enabled'));
+
+        // Save extension security settings
+        $extensionPreset = $request->input('extension_security_preset', ExtensionSecurityPreset::Balanced->value);
+        $this->securitySettingRepository->set('extension_security_preset', $extensionPreset);
+        
+        // プリセットがカスタム以外の場合は、プリセットのデフォルト値を適用
+        if ($extensionPreset !== ExtensionSecurityPreset::Custom->value) {
+            $preset = ExtensionSecurityPreset::tryFrom($extensionPreset) ?? ExtensionSecurityPreset::Balanced;
+            $presetSettings = $preset->getDefaultSettings();
+            
+            $this->securitySettingRepository->set('extension_require_signature', $presetSettings['require_signature']);
+            $this->securitySettingRepository->set('extension_require_permission_definition', $presetSettings['require_permission_definition']);
+            $this->securitySettingRepository->set('extension_allow_undefined_permissions', $presetSettings['allow_undefined_permissions']);
+            $this->securitySettingRepository->set('extension_plugin_max_health_level', $presetSettings['plugin_max_health_level']);
+            $this->securitySettingRepository->set('extension_theme_max_health_level', $presetSettings['theme_max_health_level']);
+            $this->securitySettingRepository->set('extension_allow_logic_themes', $presetSettings['allow_logic_themes']);
+        } else {
+            // カスタムモードの場合はフォームから送信された値を使用
+            $this->securitySettingRepository->set('extension_require_signature', $request->boolean('extension_require_signature'));
+            $this->securitySettingRepository->set('extension_require_permission_definition', $request->boolean('extension_require_permission_definition'));
+            $this->securitySettingRepository->set('extension_allow_undefined_permissions', $request->boolean('extension_allow_undefined_permissions'));
+            $this->securitySettingRepository->set('extension_plugin_max_health_level', $request->integer('extension_plugin_max_health_level', ExtensionSecurityLevel::Warning->value));
+            $this->securitySettingRepository->set('extension_theme_max_health_level', $request->integer('extension_theme_max_health_level', ExtensionSecurityLevel::NeedsAttention->value));
+            $this->securitySettingRepository->set('extension_allow_logic_themes', $request->boolean('extension_allow_logic_themes'));
+        }
+        
+        // 権限不一致時の動作は常にフォームから取得
+        $this->securitySettingRepository->set('extension_permission_mismatch_action', $request->input('extension_permission_mismatch_action', 'warn'));
 
         // ログレベルは通知の有効/無効に関わらず保存できるようにする
         $submittedLevels = $request->input('notification_log_levels', null);

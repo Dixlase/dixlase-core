@@ -543,6 +543,285 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </fieldset>
             </section>
         </section>
+
+        <!-- 拡張機能セキュリティ設定 -->
+        <section x-data="{
+            preset: '{{ old('extension_security_preset', $settings['extension_security_preset']) }}',
+            requireSignature: {{ old('extension_require_signature', $settings['extension_require_signature']) ? 'true' : 'false' }},
+            requirePermissionDefinition: {{ old('extension_require_permission_definition', $settings['extension_require_permission_definition']) ? 'true' : 'false' }},
+            allowUndefinedPermissions: {{ old('extension_allow_undefined_permissions', $settings['extension_allow_undefined_permissions']) ? 'true' : 'false' }},
+            pluginMaxHealthLevel: {{ old('extension_plugin_max_health_level', $settings['extension_plugin_max_health_level']) }},
+            themeMaxHealthLevel: {{ old('extension_theme_max_health_level', $settings['extension_theme_max_health_level']) }},
+            allowLogicThemes: {{ old('extension_allow_logic_themes', $settings['extension_allow_logic_themes']) ? 'true' : 'false' }},
+            permissionMismatchAction: '{{ old('extension_permission_mismatch_action', $settings['extension_permission_mismatch_action']) }}',
+            
+            applyPreset(presetValue) {
+                const presets = {
+                    'strict': {
+                        requireSignature: true,
+                        requirePermissionDefinition: true,
+                        allowUndefinedPermissions: false,
+                        pluginMaxHealthLevel: 0,
+                        themeMaxHealthLevel: 0,
+                        allowLogicThemes: false
+                    },
+                    'balanced': {
+                        requireSignature: false,
+                        requirePermissionDefinition: false,
+                        allowUndefinedPermissions: true,
+                        pluginMaxHealthLevel: 1,
+                        themeMaxHealthLevel: 2,
+                        allowLogicThemes: true
+                    },
+                    'development': {
+                        requireSignature: false,
+                        requirePermissionDefinition: false,
+                        allowUndefinedPermissions: true,
+                        pluginMaxHealthLevel: 3,
+                        themeMaxHealthLevel: 3,
+                        allowLogicThemes: true
+                    }
+                };
+                
+                if (presets[presetValue]) {
+                    const p = presets[presetValue];
+                    this.requireSignature = p.requireSignature;
+                    this.requirePermissionDefinition = p.requirePermissionDefinition;
+                    this.allowUndefinedPermissions = p.allowUndefinedPermissions;
+                    this.pluginMaxHealthLevel = p.pluginMaxHealthLevel;
+                    this.themeMaxHealthLevel = p.themeMaxHealthLevel;
+                    this.allowLogicThemes = p.allowLogicThemes;
+                }
+            },
+            
+            getHealthLevelClass(level) {
+                const classes = {
+                    0: 'text-green-600 dark:text-green-400',
+                    1: 'text-yellow-600 dark:text-yellow-400',
+                    2: 'text-orange-600 dark:text-orange-400',
+                    3: 'text-gray-600 dark:text-gray-400'
+                };
+                return classes[level] || classes[0];
+            }
+        }" x-init="$watch('preset', (value) => { if (value !== 'custom') applyPreset(value); })">
+            <h2>{{ __('admin.settings.security.extension_security.title') }}</h2>
+            <p>{{ __('admin.settings.security.extension_security.description') }}</p>
+
+            <!-- プリセット選択 -->
+            <fieldset>
+                <legend>{{ __('admin.settings.security.extension_security.preset_label') }}</legend>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-3">
+                    @foreach(\App\Enums\ExtensionSecurityPreset::all() as $presetOption)
+                        <label class="relative flex cursor-pointer rounded-lg border p-4 shadow-sm focus:outline-none transition-all"
+                               :class="preset === '{{ $presetOption->value }}' 
+                                   ? 'border-blue-500 ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20' 
+                                   : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'">
+                            <input type="radio" 
+                                   name="extension_security_preset" 
+                                   value="{{ $presetOption->value }}"
+                                   x-model="preset"
+                                   class="sr-only">
+                            <span class="flex flex-1">
+                                <span class="flex flex-col">
+                                    <span class="flex items-center gap-2 text-sm font-medium {{ $presetOption->cssClass() }}">
+                                        <i class="{{ $presetOption->iconClass() }}"></i>
+                                        {{ $presetOption->label() }}
+                                        @if(!$presetOption->isProductionSafe())
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
+                                                {{ __('admin.settings.security.extension_security.dev_only') }}
+                                            </span>
+                                        @endif
+                                    </span>
+                                    <span class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        {{ $presetOption->description() }}
+                                    </span>
+                                </span>
+                            </span>
+                            <span class="pointer-events-none absolute -inset-px rounded-lg" 
+                                  :class="preset === '{{ $presetOption->value }}' ? 'border-2 border-blue-500' : 'border border-transparent'" 
+                                  aria-hidden="true"></span>
+                        </label>
+                    @endforeach
+                </div>
+                
+                <p class="mt-2">{{ __('admin.settings.security.extension_security.preset_help') }}</p>
+            </fieldset>
+
+            <!-- カスタム設定（プリセットがcustomの場合のみ編集可能） -->
+            <div class="mt-6 space-y-6" :class="{ 'opacity-50 pointer-events-none': preset !== 'custom' }">
+                <div class="flex items-center gap-2 mb-4" x-show="preset !== 'custom'">
+                    <i class="fas fa-info-circle text-blue-500"></i>
+                    <span class="text-sm text-blue-600 dark:text-blue-400">
+                        {{ __('admin.settings.security.extension_security.custom_mode_hint') }}
+                    </span>
+                </div>
+
+                <!-- 署名要件 -->
+                <fieldset>
+                    <legend>{{ __('admin.settings.security.extension_security.signature_settings') }}</legend>
+                    
+                    <x-form.checkbox
+                        :label="__('admin.settings.security.extension_security.require_signature')"
+                        id="extension_require_signature"
+                        name="extension_require_signature"
+                        :value="old('extension_require_signature', $settings['extension_require_signature'])"
+                        xModel="requireSignature"
+                        :disabled="false"
+                    />
+                    <p>{{ __('admin.settings.security.extension_security.require_signature_help') }}</p>
+                </fieldset>
+
+                <!-- 権限定義要件 -->
+                <fieldset>
+                    <legend>{{ __('admin.settings.security.extension_security.permission_settings') }}</legend>
+                    
+                    <x-form.checkbox
+                        :label="__('admin.settings.security.extension_security.require_permission_definition')"
+                        id="extension_require_permission_definition"
+                        name="extension_require_permission_definition"
+                        :value="old('extension_require_permission_definition', $settings['extension_require_permission_definition'])"
+                        xModel="requirePermissionDefinition"
+                        :disabled="false"
+                    />
+                    <p>{{ __('admin.settings.security.extension_security.require_permission_definition_help') }}</p>
+                    
+                    <div class="mt-4">
+                        <x-form.checkbox
+                            :label="__('admin.settings.security.extension_security.allow_undefined_permissions')"
+                            id="extension_allow_undefined_permissions"
+                            name="extension_allow_undefined_permissions"
+                            :value="old('extension_allow_undefined_permissions', $settings['extension_allow_undefined_permissions'])"
+                            xModel="allowUndefinedPermissions"
+                            :disabled="false"
+                        />
+                        <p>{{ __('admin.settings.security.extension_security.allow_undefined_permissions_help') }}</p>
+                    </div>
+                </fieldset>
+
+                <!-- プラグイン健全性レベル -->
+                <fieldset>
+                    <legend>{{ __('admin.settings.security.extension_security.plugin_health_level') }}</legend>
+                    
+                    <div class="mt-3">
+                        <x-form.range
+                            id="extension_plugin_max_health_level"
+                            name="extension_plugin_max_health_level"
+                            :value="old('extension_plugin_max_health_level', $settings['extension_plugin_max_health_level'])"
+                            :min="0"
+                            :max="3"
+                            :step="1"
+                            :labels="\App\Enums\ExtensionSecurityLevel::getRangeLabels()"
+                            xModel="pluginMaxHealthLevel"
+                        />
+                    </div>
+                    
+                    <div class="mt-3 p-3 rounded-lg border" :class="getHealthLevelClass(pluginMaxHealthLevel)">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-puzzle-piece"></i>
+                            <span class="font-medium">{{ __('admin.settings.security.extension_security.current_setting') }}:</span>
+                            <span x-text="[
+                                '{{ __('admin.settings.security.extension_security.health_level.healthy') }}',
+                                '{{ __('admin.settings.security.extension_security.health_level.warning') }}',
+                                '{{ __('admin.settings.security.extension_security.health_level.needs_attention') }}',
+                                '{{ __('admin.settings.security.extension_security.health_level.not_verified') }}'
+                            ][pluginMaxHealthLevel]"></span>
+                        </div>
+                        <p class="mt-1 text-sm" x-text="[
+                            '{{ __('admin.settings.security.extension_security.health_level_description.healthy') }}',
+                            '{{ __('admin.settings.security.extension_security.health_level_description.warning') }}',
+                            '{{ __('admin.settings.security.extension_security.health_level_description.needs_attention') }}',
+                            '{{ __('admin.settings.security.extension_security.health_level_description.not_verified') }}'
+                        ][pluginMaxHealthLevel]"></p>
+                    </div>
+                    
+                    <p class="mt-2">{{ __('admin.settings.security.extension_security.plugin_health_level_help') }}</p>
+                </fieldset>
+
+                <!-- テーマ健全性レベル -->
+                <fieldset>
+                    <legend>{{ __('admin.settings.security.extension_security.theme_health_level') }}</legend>
+                    
+                    <div class="mt-3">
+                        <x-form.range
+                            id="extension_theme_max_health_level"
+                            name="extension_theme_max_health_level"
+                            :value="old('extension_theme_max_health_level', $settings['extension_theme_max_health_level'])"
+                            :min="0"
+                            :max="3"
+                            :step="1"
+                            :labels="\App\Enums\ExtensionSecurityLevel::getRangeLabels()"
+                            xModel="themeMaxHealthLevel"
+                        />
+                    </div>
+                    
+                    <div class="mt-3 p-3 rounded-lg border" :class="getHealthLevelClass(themeMaxHealthLevel)">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-palette"></i>
+                            <span class="font-medium">{{ __('admin.settings.security.extension_security.current_setting') }}:</span>
+                            <span x-text="[
+                                '{{ __('admin.settings.security.extension_security.health_level.healthy') }}',
+                                '{{ __('admin.settings.security.extension_security.health_level.warning') }}',
+                                '{{ __('admin.settings.security.extension_security.health_level.needs_attention') }}',
+                                '{{ __('admin.settings.security.extension_security.health_level.not_verified') }}'
+                            ][themeMaxHealthLevel]"></span>
+                        </div>
+                        <p class="mt-1 text-sm" x-text="[
+                            '{{ __('admin.settings.security.extension_security.health_level_description.healthy') }}',
+                            '{{ __('admin.settings.security.extension_security.health_level_description.warning') }}',
+                            '{{ __('admin.settings.security.extension_security.health_level_description.needs_attention') }}',
+                            '{{ __('admin.settings.security.extension_security.health_level_description.not_verified') }}'
+                        ][themeMaxHealthLevel]"></p>
+                    </div>
+                    
+                    <p class="mt-2">{{ __('admin.settings.security.extension_security.theme_health_level_help') }}</p>
+                </fieldset>
+
+                <!-- ロジックを含むテーマ -->
+                <fieldset>
+                    <legend>{{ __('admin.settings.security.extension_security.logic_themes') }}</legend>
+                    
+                    <x-form.checkbox
+                        :label="__('admin.settings.security.extension_security.allow_logic_themes')"
+                        id="extension_allow_logic_themes"
+                        name="extension_allow_logic_themes"
+                        :value="old('extension_allow_logic_themes', $settings['extension_allow_logic_themes'])"
+                        xModel="allowLogicThemes"
+                        :disabled="false"
+                    />
+                    <p>{{ __('admin.settings.security.extension_security.allow_logic_themes_help') }}</p>
+                    
+                    <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+                            <div class="text-sm text-blue-700 dark:text-blue-300">
+                                <p class="font-medium">{{ __('admin.settings.security.extension_security.theme_types_title') }}</p>
+                                <ul class="mt-1 list-disc list-inside space-y-1">
+                                    <li>{{ __('admin.settings.security.extension_security.theme_type_pure') }}</li>
+                                    <li>{{ __('admin.settings.security.extension_security.theme_type_logic') }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- 権限不一致時の動作 -->
+                <fieldset>
+                    <legend>{{ __('admin.settings.security.extension_security.permission_mismatch') }}</legend>
+                    
+                    <x-form.radio-group
+                        name="extension_permission_mismatch_action"
+                        :options="[
+                            'warn' => __('admin.settings.security.extension_security.mismatch_action.warn'),
+                            'block' => __('admin.settings.security.extension_security.mismatch_action.block')
+                        ]"
+                        :value="old('extension_permission_mismatch_action', $settings['extension_permission_mismatch_action'])"
+                        xModel="permissionMismatchAction"
+                    />
+                    <p>{{ __('admin.settings.security.extension_security.permission_mismatch_help') }}</p>
+                </fieldset>
+            </div>
+        </section>
     </form>
 </div>
 </div>
