@@ -41,6 +41,7 @@ use App\Helpers\ComposerLocalHelper;
 use App\Services\Plugin\PluginPermissionService;
 use App\Models\PluginAudit;
 use App\Services\ExtensionOperationService;
+use App\Services\Csp\CspDiagnosticService;
 
 class AdminPluginsSettingsController extends AdminLoggedInController
 {
@@ -56,8 +57,9 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         // インストール済みプラグイン
         $plugins = Plugin::all();
         
-        // 権限サービスを取得
+        // 権限サービスとCSP診断サービスを取得
         $permissionService = app(PluginPermissionService::class);
+        $cspDiagnosticService = app(CspDiagnosticService::class);
         
         // 各プラグインに設定画面があるかチェック、翻訳された名前と説明を取得
         foreach ($plugins as $plugin) {
@@ -69,6 +71,10 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $summary = $permissionService->getSummary($plugin->slug);
             $summary['audit'] = $this->getPluginAuditResult($plugin->slug);
             $plugin->permission_summary = $summary;
+            
+            // CSP診断結果を取得
+            $pluginPath = base_path('plugins/' . $plugin->slug);
+            $plugin->csp_diagnostic = $cspDiagnosticService->diagnosePlugin($pluginPath);
         }
         
         // アンインストール済みプラグインを検出
@@ -79,6 +85,10 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $summary = $permissionService->getSummary($plugin['slug']);
             $summary['audit'] = $this->getPluginAuditResult($plugin['slug']);
             $plugin['permission_summary'] = $summary;
+            
+            // CSP診断結果を取得
+            $pluginPath = base_path('plugins/' . $plugin['slug']);
+            $plugin['csp_diagnostic'] = $cspDiagnosticService->diagnosePlugin($pluginPath);
         }
         
         $this->viewParams['plugins'] = $plugins;

@@ -221,8 +221,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :label="__('admin.settings.security.captcha_enabled')"
                 id="captcha_enabled"
                 name="captcha_enabled"
-                :checked="old('captcha_enabled', $settings['captcha_enabled'])"
-                xBind="captchaEnabled"
+                xModel="captchaEnabled"
             />
             
 

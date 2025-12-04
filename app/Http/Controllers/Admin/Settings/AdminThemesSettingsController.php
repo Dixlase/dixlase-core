@@ -35,6 +35,7 @@ use App\Helpers\GitExcludeHelper;
 use App\Helpers\ComposerLocalHelper;
 use App\Services\Theme\ThemePermissionService;
 use App\Services\ExtensionOperationService;
+use App\Services\Csp\CspDiagnosticService;
 
 
 
@@ -54,8 +55,9 @@ class AdminThemesSettingsController extends AdminLoggedInController
             ->first();
         $activeThemeId = $themeSetting ? (int)$themeSetting->value : null;
 
-        // 権限サービスを取得
+        // 権限サービスとCSP診断サービスを取得
         $permissionService = app(ThemePermissionService::class);
+        $cspDiagnosticService = app(CspDiagnosticService::class);
 
         // テーマ設定機能の有無をチェック
         // データベースのhas_settingsカラムを優先し、nullの場合のみファイルチェック
@@ -68,6 +70,10 @@ class AdminThemesSettingsController extends AdminLoggedInController
             $summary = $permissionService->getSummary($theme->slug);
             $summary['audit'] = $this->getThemeAuditResult($theme->slug);
             $theme->permission_summary = $summary;
+            
+            // CSP診断結果を取得
+            $themePath = base_path('themes/' . $theme->slug);
+            $theme->csp_diagnostic = $cspDiagnosticService->diagnoseTheme($themePath);
         }
 
         // アンインストール済みテーマを検出
@@ -78,6 +84,10 @@ class AdminThemesSettingsController extends AdminLoggedInController
             $summary = $permissionService->getSummary($theme['slug']);
             $summary['audit'] = $this->getThemeAuditResult($theme['slug']);
             $theme['permission_summary'] = $summary;
+            
+            // CSP診断結果を取得
+            $themePath = base_path('themes/' . $theme['slug']);
+            $theme['csp_diagnostic'] = $cspDiagnosticService->diagnoseTheme($themePath);
         }
 
         $this->viewParams['themes'] = $themes;
