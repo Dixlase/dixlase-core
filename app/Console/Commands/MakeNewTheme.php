@@ -215,7 +215,9 @@ class MakeNewTheme extends Command
 
         // ***** 基本ファイル *****
         $this->createFileFromStub('vite.config.theme.stub', "{$themeDir}/vite.config.js", $placeholders);
-        $this->createFileFromStub('theme.json.stub', "{$themeDir}/theme.json", $placeholders);
+        // 設定ページ付きの場合は専用のtheme.jsonスタブを使用（permissions が異なる）
+        $themeJsonStub = $withSettings ? 'theme-with-settings.json.stub' : 'theme.json.stub';
+        $this->createFileFromStub($themeJsonStub, "{$themeDir}/theme.json", $placeholders);
         $this->createFileFromStub('composer.theme.stub', "{$themeDir}/composer.json", $placeholders);
         $this->createFileFromStub('package.theme.stub', "{$themeDir}/package.json", $placeholders);
 

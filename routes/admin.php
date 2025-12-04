@@ -283,6 +283,9 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/settings/themes/delete', [AdminThemesSettingsController::class, 'delete'])
                     ->middleware('check.menu.edit:settings.themes')
                     ->name('settings.themes.delete');
+                Route::post('/settings/themes/audit', [AdminThemesSettingsController::class, 'audit'])
+                    ->middleware('check.menu.edit:settings.themes')
+                    ->name('settings.themes.audit');
             });
 
             // プラグイン設定（権限チェック付き）
