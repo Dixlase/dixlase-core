@@ -3,7 +3,8 @@
     $checked = $checked ?? false;
     $label = $label ?? '';
     $disabled = $disabled ?? false;
-    $xBind = $xBind ?? null;
+    $xBind = $xBind ?? null;      // disabled状態を制御するAlpine.js変数
+    $xModel = $xModel ?? null;    // 双方向バインディング用Alpine.js変数
 @endphp
 
 <div class="flex items-center space-x-3" @if($xBind) :class="{{ $xBind }} ? '' : 'opacity-50'" @elseif($disabled) class="opacity-50" @endif>
@@ -11,7 +12,7 @@
         <input type="checkbox"
                id="{{ $id }}"
                name="{{ $name }}"
-               {{ $checked ? 'checked' : '' }}
+               @if($xModel) x-model="{{ $xModel }}" @else {{ $checked ? 'checked' : '' }} @endif
                @if($xBind) :disabled="!{{ $xBind }}" @elseif($disabled) disabled @endif
                class="sr-only peer">
         <div class="w-11 h-6 rounded-full transition-colors peer-focus:outline-none

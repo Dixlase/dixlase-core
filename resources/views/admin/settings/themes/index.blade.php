@@ -182,6 +182,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                         {{ __('admin.settings.themes.permissions.audit_mismatch_badge') }}
                                                     </span>
                                                 @endif
+                                                {{-- CSP診断バッジ --}}
+                                                @if(isset($theme->csp_diagnostic) && !$theme->csp_diagnostic['compliant'])
+                                                    @php
+                                                        $cspIssues = $theme->csp_diagnostic['summary']['total_issues'] ?? 0;
+                                                    @endphp
+                                                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200" title="{{ __('admin.settings.plugins.permissions.csp_warning_message') }}">
+                                                        <i class="fas fa-shield-alt mr-1"></i>
+                                                        CSP {{ __('admin.settings.plugins.permissions.csp_issues_found', ['count' => $cspIssues]) }}
+                                                    </span>
+                                                @endif
                                                 {{-- スキャンボタン --}}
                                                 <button type="button"
                                                         class="theme-audit-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
@@ -221,6 +231,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                                     </li>
                                                                 @endforeach
                                                             </ul>
+                                                        </div>
+                                                    @endif
+                                                    
+                                                    {{-- CSP診断警告 --}}
+                                                    @if(isset($theme->csp_diagnostic) && !$theme->csp_diagnostic['compliant'])
+                                                        <div class="mb-4 p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
+                                                            <h5 class="text-sm font-semibold text-orange-800 dark:text-orange-200 mb-2">
+                                                                <i class="fas fa-shield-alt mr-1"></i>
+                                                                {{ __('admin.settings.plugins.permissions.csp_warning_title') }}
+                                                            </h5>
+                                                            <p class="text-xs text-orange-700 dark:text-orange-300 mb-2">{{ __('admin.settings.plugins.permissions.csp_warning_message') }}</p>
+                                                            <div class="text-xs text-orange-600 dark:text-orange-400 space-y-1">
+                                                                <p><i class="fas fa-code mr-1"></i> {{ __('admin.settings.plugins.permissions.csp_inline_scripts') }}: {{ $theme->csp_diagnostic['summary']['inline_scripts'] ?? 0 }}</p>
+                                                                <p><i class="fas fa-paint-brush mr-1"></i> {{ __('admin.settings.plugins.permissions.csp_inline_styles') }}: {{ $theme->csp_diagnostic['summary']['inline_styles'] ?? 0 }}</p>
+                                                            </div>
+                                                            <p class="text-xs text-orange-600 dark:text-orange-400 mt-2 italic">{{ __('admin.settings.plugins.permissions.csp_fix_suggestion') }}</p>
                                                         </div>
                                                     @endif
                                                     
@@ -660,6 +686,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                 {{ __('admin.settings.themes.permissions.audit_mismatch_badge') }}
                                             </span>
                                         @endif
+                                        {{-- CSP診断バッジ --}}
+                                        @if(isset($theme['csp_diagnostic']) && !$theme['csp_diagnostic']['compliant'])
+                                            @php
+                                                $cspIssuesUninstalled = $theme['csp_diagnostic']['summary']['total_issues'] ?? 0;
+                                            @endphp
+                                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200" title="{{ __('admin.settings.plugins.permissions.csp_warning_message') }}">
+                                                <i class="fas fa-shield-alt mr-1"></i>
+                                                CSP {{ __('admin.settings.plugins.permissions.csp_issues_found', ['count' => $cspIssuesUninstalled]) }}
+                                            </span>
+                                        @endif
                                         {{-- スキャンボタン --}}
                                         <button type="button"
                                                 class="theme-audit-btn inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
@@ -699,6 +735,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                             </li>
                                                         @endforeach
                                                     </ul>
+                                                </div>
+                                            @endif
+                                            
+                                            {{-- CSP診断警告 --}}
+                                            @if(isset($theme['csp_diagnostic']) && !$theme['csp_diagnostic']['compliant'])
+                                                <div class="mb-4 p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
+                                                    <h5 class="text-sm font-semibold text-orange-800 dark:text-orange-200 mb-2">
+                                                        <i class="fas fa-shield-alt mr-1"></i>
+                                                        {{ __('admin.settings.plugins.permissions.csp_warning_title') }}
+                                                    </h5>
+                                                    <p class="text-xs text-orange-700 dark:text-orange-300 mb-2">{{ __('admin.settings.plugins.permissions.csp_warning_message') }}</p>
+                                                    <div class="text-xs text-orange-600 dark:text-orange-400 space-y-1">
+                                                        <p><i class="fas fa-code mr-1"></i> {{ __('admin.settings.plugins.permissions.csp_inline_scripts') }}: {{ $theme['csp_diagnostic']['summary']['inline_scripts'] ?? 0 }}</p>
+                                                        <p><i class="fas fa-paint-brush mr-1"></i> {{ __('admin.settings.plugins.permissions.csp_inline_styles') }}: {{ $theme['csp_diagnostic']['summary']['inline_styles'] ?? 0 }}</p>
+                                                    </div>
+                                                    <p class="text-xs text-orange-600 dark:text-orange-400 mt-2 italic">{{ __('admin.settings.plugins.permissions.csp_fix_suggestion') }}</p>
                                                 </div>
                                             @endif
                                             
