@@ -1051,6 +1051,20 @@ return [
                 'risk_reason_system_register_commands' => 'コマンドの登録権限があります',
                 'risk_reason_system_register_blade_directives' => 'Blade指令の登録権限があります',
                 'risk_reason_system_modify_routes' => 'ルートの変更権限があります',
+                // インストール警告
+                'install_warning_title' => 'インストール前の確認',
+                'install_warning_risk' => 'このテーマには以下のリスクがあります：',
+                'install_warning_undefined' => '権限情報が未定義です',
+                'install_warning_unsigned' => '署名されていません',
+                'install_warning_mismatch' => '権限宣言とコードが一致しません',
+                'install_warning_confirm' => '上記を理解した上でインストールしますか？',
+                'warning_not_scanned' => 'コードスキャンが実行されていません',
+                // 有効化警告
+                'enable_warning_title' => '有効化前の確認',
+                'enable_warning_message' => 'このテーマには以下の注意点があります：',
+                'enable_warning_confirm' => '上記を理解した上で有効化しますか？',
+                'enable_warning_invalid_signature' => '署名が無効です（改ざんの可能性）',
+                'enable_warning_high_risk' => '高リスクの権限が含まれています',
             ],
         ],
         // プラグイン

@@ -46,11 +46,13 @@
                         <span class="hidden md:inline">{{ __('common.design') }}</span>
                     </a>
 
-                    {{-- テーマ設定 --}}
-                    <a href="{{ route('admin.settings.themes.settings') }}" class="px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm">
-                        <i class="fas fa-palette mr-1"></i>
-                        <span class="hidden md:inline">{{ __('admin.nav.settings.themes.settings') }}</span>
-                    </a>
+                    {{-- テーマ設定（ルートが存在する場合のみ表示） --}}
+                    @if(Route::has('admin.settings.themes.settings'))
+                        <a href="{{ route('admin.settings.themes.settings') }}" class="px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm">
+                            <i class="fas fa-palette mr-1"></i>
+                            <span class="hidden md:inline">{{ __('admin.nav.settings.themes.settings') }}</span>
+                        </a>
+                    @endif
 
 
                 </nav>
