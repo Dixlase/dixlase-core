@@ -21,6 +21,7 @@ class AdminSystemsController extends AdminLoggedInController
         'dixlase'  => 'dixlase.log',
         'front_activity' => 'front_activity.log',
         'front_error' => 'front_error.log',
+        'extension' => 'extension_activity.log',
     ];
 
     public function __construct()

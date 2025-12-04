@@ -53,7 +53,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <input type="hidden" id="captcha_validation_token" name="captcha_validation_token" value="{{ session('captcha_just_saved') ? 'saved_token' : '' }}">
         
         <!-- システムエラー通知設定 -->
-        <section>
+        <section x-data="{ notificationEnabled: {{ ($settings['notification_enabled'] ?? 0) ? 'true' : 'false' }} }">
             <h2>{{ __('admin.settings.security.error_notification_settings') }}</h2>
             <p>{{ __('admin.settings.security.error_notification_settings_description') }}</p>
 
@@ -76,30 +76,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     value="0"
                 />
                 
-                <x-form.radio-group
+                <x-form.toggle
+                    :label="__('admin.settings.security.notification_enabled')"
+                    id="notification_enabled"
                     name="notification_enabled"
-                    :options="[
-                        1 => __('common.enabled'),
-                        0 => __('common.disabled')
-                    ]"
-                    :value="$settings['notification_enabled'] ?? 0"
+                    :checked="$settings['notification_enabled'] ?? false"
+                    x-on:change="notificationEnabled = $event.target.checked"
                 />
                 
                 <p>{{ __('admin.settings.security.notification_enabled_help') }}</p>
             </fieldset>
 
             <!-- 通知するログレベル -->
-            <fieldset x-data="{ notificationEnabled: {{ ($settings['notification_enabled'] ?? 0) ? 'true' : 'false' }} }" 
-                        x-init="
-                            // ラジオボタンの変更を監視
-                            document.querySelectorAll('input[name=notification_enabled]').forEach(radio => {
-                                radio.addEventListener('change', () => {
-                                    notificationEnabled = radio.value === '1';
-                                });
-                            });
-                        ">
+            <fieldset>
                 <legend>{{ __('admin.settings.security.notification_log_levels') }}</legend>
-                
                 
                 <div class="my-3" :class="{ 'opacity-50': !notificationEnabled }">
                     @php
@@ -110,12 +100,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         }
                     @endphp
                     
-                    <x-form.checkbox-group
+                    <x-form.toggle-group
                         name="notification_log_levels"
                         :options="$logLevelOptions"
                         :values="$settings['notification_log_levels'] ?? \App\Enums\LogLevel::getDefaultNotificationLevels()"
                         :disabled="false"
-                        class="space-y-2"
                         flexDirection="col"
                     />
                 </div>
@@ -228,12 +217,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :message="__('admin.settings.security.captcha_test_required')"
                 />
             @endif
-            <x-form.checkbox
+            <x-form.toggle
                 :label="__('admin.settings.security.captcha_enabled')"
                 id="captcha_enabled"
                 name="captcha_enabled"
-                :value="old('captcha_enabled', $settings['captcha_enabled'])"
-                xModel="captchaEnabled"
+                :checked="old('captcha_enabled', $settings['captcha_enabled'])"
+                xBind="captchaEnabled"
             />
             
 
@@ -400,11 +389,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <h4 class="text-md font-medium mb-3">{{ __('admin.settings.security.captcha_form_settings') }}</h4>
                         <div class="space-y-2">
                             @foreach($captchaFormSettings as $formSetting)
-                                <x-form.checkbox
+                                <x-form.toggle
                                     :label="__('admin.settings.security.captcha_forms.' . $formSetting->key)"
                                     :id="'captcha_form_' . $formSetting->key"
                                     :name="'captcha_form_' . $formSetting->key"
-                                    :value="old('captcha_form_' . $formSetting->key, $formSetting->enabled)"
+                                    :checked="old('captcha_form_' . $formSetting->key, $formSetting->enabled)"
                                 />
                             @endforeach
                         </div>
@@ -424,12 +413,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <!-- 許可IP設定 -->
                 <fieldset>
                     
-                    <x-form.checkbox
+                    <x-form.toggle
                         :label="__('admin.settings.security.enable_allowed_admin_ips')"
                         id="enable_allowed_admin_ips"
                         name="enable_allowed_admin_ips"
-                        :value="old('enable_allowed_admin_ips', $settings['enable_allowed_admin_ips'])"
-                        xModel="enableAllowedIPs"
+                        :checked="old('enable_allowed_admin_ips', $settings['enable_allowed_admin_ips'])"
+                        xBind="enableAllowedIPs"
                     />
 
                     <x-form.label
@@ -453,12 +442,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <!-- ブロックIP設定 -->
                 <fieldset>
                     
-                    <x-form.checkbox
+                    <x-form.toggle
                         :label="__('admin.settings.security.enable_blocked_admin_ips')"
                         id="enable_blocked_admin_ips"
                         name="enable_blocked_admin_ips"
-                        :value="old('enable_blocked_admin_ips', $settings['enable_blocked_admin_ips'])"
-                        xModel="blockedAdminIps"
+                        :checked="old('enable_blocked_admin_ips', $settings['enable_blocked_admin_ips'])"
+                        xBind="blockedAdminIps"
                     />
 
                     <x-form.label
@@ -486,13 +475,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <!-- 許可IP設定 -->
                 <fieldset>
 
-                    <x-form.checkbox
+                    <x-form.toggle
                         :label="__('admin.settings.security.enable_allowed_front_ips')"
                         id="enable_allowed_front_ips"
                         name="enable_allowed_front_ips"
-                        :value="old('enable_allowed_front_ips', $settings['enable_allowed_front_ips'])"
-                        xModel="enableAllowedFrontIPs"
-                        class="mb-3"
+                        :checked="old('enable_allowed_front_ips', $settings['enable_allowed_front_ips'])"
+                        xBind="enableAllowedFrontIPs"
                     />
 
                     <x-form.label
@@ -516,12 +504,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <!-- ブロックIP設定 -->
                 <fieldset>
 
-                    <x-form.checkbox
+                    <x-form.toggle
                         :label="__('admin.settings.security.enable_blocked_front_ips')"
                         id="enable_blocked_front_ips"
                         name="enable_blocked_front_ips"
-                        :value="old('enable_blocked_front_ips', $settings['enable_blocked_front_ips'])"
-                        xModel="enableBlockedFrontIps"
+                        :checked="old('enable_blocked_front_ips', $settings['enable_blocked_front_ips'])"
+                        xBind="enableBlockedFrontIps"
                     />
 
                     <x-form.label
@@ -661,13 +649,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <fieldset>
                     <legend>{{ __('admin.settings.security.extension_security.signature_settings') }}</legend>
                     
-                    <x-form.checkbox
+                    <x-form.toggle
                         :label="__('admin.settings.security.extension_security.require_signature')"
                         id="extension_require_signature"
                         name="extension_require_signature"
-                        :value="old('extension_require_signature', $settings['extension_require_signature'])"
-                        xModel="requireSignature"
-                        :disabled="false"
+                        :checked="old('extension_require_signature', $settings['extension_require_signature'])"
+                        xBind="requireSignature"
                     />
                     <p>{{ __('admin.settings.security.extension_security.require_signature_help') }}</p>
                 </fieldset>
@@ -676,24 +663,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <fieldset>
                     <legend>{{ __('admin.settings.security.extension_security.permission_settings') }}</legend>
                     
-                    <x-form.checkbox
+                    <x-form.toggle
                         :label="__('admin.settings.security.extension_security.require_permission_definition')"
                         id="extension_require_permission_definition"
                         name="extension_require_permission_definition"
-                        :value="old('extension_require_permission_definition', $settings['extension_require_permission_definition'])"
-                        xModel="requirePermissionDefinition"
-                        :disabled="false"
+                        :checked="old('extension_require_permission_definition', $settings['extension_require_permission_definition'])"
+                        xBind="requirePermissionDefinition"
                     />
                     <p>{{ __('admin.settings.security.extension_security.require_permission_definition_help') }}</p>
                     
                     <div class="mt-4">
-                        <x-form.checkbox
+                        <x-form.toggle
                             :label="__('admin.settings.security.extension_security.allow_undefined_permissions')"
                             id="extension_allow_undefined_permissions"
                             name="extension_allow_undefined_permissions"
-                            :value="old('extension_allow_undefined_permissions', $settings['extension_allow_undefined_permissions'])"
-                            xModel="allowUndefinedPermissions"
-                            :disabled="false"
+                            :checked="old('extension_allow_undefined_permissions', $settings['extension_allow_undefined_permissions'])"
+                            xBind="allowUndefinedPermissions"
                         />
                         <p>{{ __('admin.settings.security.extension_security.allow_undefined_permissions_help') }}</p>
                     </div>
@@ -781,13 +766,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <fieldset>
                     <legend>{{ __('admin.settings.security.extension_security.logic_themes') }}</legend>
                     
-                    <x-form.checkbox
+                    <x-form.toggle
                         :label="__('admin.settings.security.extension_security.allow_logic_themes')"
                         id="extension_allow_logic_themes"
                         name="extension_allow_logic_themes"
-                        :value="old('extension_allow_logic_themes', $settings['extension_allow_logic_themes'])"
-                        xModel="allowLogicThemes"
-                        :disabled="false"
+                        :checked="old('extension_allow_logic_themes', $settings['extension_allow_logic_themes'])"
+                        xBind="allowLogicThemes"
                     />
                     <p>{{ __('admin.settings.security.extension_security.allow_logic_themes_help') }}</p>
                     
@@ -821,6 +805,130 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <p>{{ __('admin.settings.security.extension_security.permission_mismatch_help') }}</p>
                 </fieldset>
             </div>
+        </section>
+
+        <!-- 拡張機能操作通知設定 -->
+        <section>
+            <h2>{{ __('admin.settings.security.extension_notification.title') }}</h2>
+            <p>{{ __('admin.settings.security.extension_notification.description') }}</p>
+
+            <!-- メールサーバー設定の確認メッセージ -->
+            @if(!($mailConnectionTested && $mailSendTested && $mailReceiveTested))
+                <div class="mt-4">
+                    <x-message
+                        type="warning"
+                        :message="__('admin.settings.security.error_notification_mail_test_required', ['url' => route('admin.settings.base')])"
+                    />
+                </div>
+            @endif
+
+            <!-- インストール時に通知 -->
+            <fieldset>
+                <legend>{{ __('admin.settings.security.extension_notification.notify_on_install') }}</legend>
+                
+                <x-form.hidden
+                    name="extension_notify_on_install"
+                    value="0"
+                />
+                
+                <x-form.toggle
+                    :label="__('admin.settings.security.extension_notification.notify_on_install')"
+                    id="extension_notify_on_install"
+                    name="extension_notify_on_install"
+                    :checked="old('extension_notify_on_install', $settings['extension_notify_on_install'] ?? true)"
+                />
+                <p>{{ __('admin.settings.security.extension_notification.notify_on_install_help') }}</p>
+            </fieldset>
+
+            <!-- アンインストール時に通知 -->
+            <fieldset>
+                <legend>{{ __('admin.settings.security.extension_notification.notify_on_uninstall') }}</legend>
+                
+                <x-form.hidden
+                    name="extension_notify_on_uninstall"
+                    value="0"
+                />
+                
+                <x-form.toggle
+                    :label="__('admin.settings.security.extension_notification.notify_on_uninstall')"
+                    id="extension_notify_on_uninstall"
+                    name="extension_notify_on_uninstall"
+                    :checked="old('extension_notify_on_uninstall', $settings['extension_notify_on_uninstall'] ?? true)"
+                />
+                <p>{{ __('admin.settings.security.extension_notification.notify_on_uninstall_help') }}</p>
+            </fieldset>
+
+            <!-- 有効化時に通知 -->
+            <fieldset>
+                <legend>{{ __('admin.settings.security.extension_notification.notify_on_enable') }}</legend>
+                
+                <x-form.hidden
+                    name="extension_notify_on_enable"
+                    value="0"
+                />
+                
+                <x-form.toggle
+                    :label="__('admin.settings.security.extension_notification.notify_on_enable')"
+                    id="extension_notify_on_enable"
+                    name="extension_notify_on_enable"
+                    :checked="old('extension_notify_on_enable', $settings['extension_notify_on_enable'] ?? true)"
+                />
+                <p>{{ __('admin.settings.security.extension_notification.notify_on_enable_help') }}</p>
+            </fieldset>
+
+            <!-- 無効化時に通知 -->
+            <fieldset>
+                <legend>{{ __('admin.settings.security.extension_notification.notify_on_disable') }}</legend>
+                
+                <x-form.hidden
+                    name="extension_notify_on_disable"
+                    value="0"
+                />
+                
+                <x-form.toggle
+                    :label="__('admin.settings.security.extension_notification.notify_on_disable')"
+                    id="extension_notify_on_disable"
+                    name="extension_notify_on_disable"
+                    :checked="old('extension_notify_on_disable', $settings['extension_notify_on_disable'] ?? false)"
+                />
+                <p>{{ __('admin.settings.security.extension_notification.notify_on_disable_help') }}</p>
+            </fieldset>
+
+            <!-- 健全性警告を通知 -->
+            <fieldset>
+                <legend>{{ __('admin.settings.security.extension_notification.notify_on_unhealthy') }}</legend>
+                
+                <x-form.hidden
+                    name="extension_notify_on_unhealthy"
+                    value="0"
+                />
+                
+                <x-form.toggle
+                    :label="__('admin.settings.security.extension_notification.notify_on_unhealthy')"
+                    id="extension_notify_on_unhealthy"
+                    name="extension_notify_on_unhealthy"
+                    :checked="old('extension_notify_on_unhealthy', $settings['extension_notify_on_unhealthy'] ?? true)"
+                />
+                <p>{{ __('admin.settings.security.extension_notification.notify_on_unhealthy_help') }}</p>
+            </fieldset>
+
+            <!-- 操作をログに記録 -->
+            <fieldset>
+                <legend>{{ __('admin.settings.security.extension_notification.log_operations') }}</legend>
+                
+                <x-form.hidden
+                    name="extension_log_operations"
+                    value="0"
+                />
+                
+                <x-form.toggle
+                    :label="__('admin.settings.security.extension_notification.log_operations')"
+                    id="extension_log_operations"
+                    name="extension_log_operations"
+                    :checked="old('extension_log_operations', $settings['extension_log_operations'] ?? true)"
+                />
+                <p>{{ __('admin.settings.security.extension_notification.log_operations_help') }}</p>
+            </fieldset>
         </section>
     </form>
 </div>

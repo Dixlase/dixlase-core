@@ -401,6 +401,48 @@ Clicking this link will complete the full mail functionality test.',
             'regards' => 'Best regards',
         ],
     ],
+
+    // Extension operation notifications
+    'extension_operation' => [
+        // Subjects
+        'subject_installed' => '[:app_name] :type ":name" has been installed',
+        'subject_uninstalled' => '[:app_name] :type ":name" has been uninstalled',
+        'subject_enabled' => '[:app_name] :type ":name" has been enabled',
+        'subject_disabled' => '[:app_name] :type ":name" has been disabled',
+        'subject_unhealthy_warning' => '[:app_name Warning] :type with health concerns was operated',
+        // Types
+        'type_plugin' => 'Plugin',
+        'type_theme' => 'Theme',
+        // Body
+        'greeting' => 'System Administrator',
+        'message_installed' => ':type ":name" has been installed.',
+        'message_uninstalled' => ':type ":name" has been uninstalled.',
+        'message_enabled' => ':type ":name" has been enabled.',
+        'message_disabled' => ':type ":name" has been disabled.',
+        'message_unhealthy_warning' => 'A :type with health status other than "Healthy" has been operated. Please review the details.',
+        // Details
+        'details_title' => 'Operation Details',
+        'extension_name' => 'Extension Name',
+        'extension_type' => 'Type',
+        'operation' => 'Operation',
+        'operation_installed' => 'Installed',
+        'operation_uninstalled' => 'Uninstalled',
+        'operation_enabled' => 'Enabled',
+        'operation_disabled' => 'Disabled',
+        'operated_by' => 'Operated By',
+        'operated_at' => 'Operated At',
+        'health_status' => 'Health Status',
+        'health_healthy' => 'Healthy',
+        'health_warning' => 'Warning',
+        'health_needs_attention' => 'Needs Attention',
+        'health_not_verified' => 'Not Verified',
+        'version' => 'Version',
+        // Warning message
+        'unhealthy_notice' => 'This extension has a health status of ":level". We recommend reviewing its features and permissions.',
+        // Footer
+        'regards' => 'Best regards',
+        'auto_notification' => 'This notification was sent automatically based on security settings.',
+    ],
     
 
 ];

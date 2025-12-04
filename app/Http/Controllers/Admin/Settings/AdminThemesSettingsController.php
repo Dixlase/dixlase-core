@@ -34,6 +34,7 @@ use Illuminate\Support\Facades\Artisan;
 use App\Helpers\GitExcludeHelper;
 use App\Helpers\ComposerLocalHelper;
 use App\Services\Theme\ThemePermissionService;
+use App\Services\ExtensionOperationService;
 
 
 
@@ -353,6 +354,24 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 return redirect()->back()->with('error', 'テーマのインストールに失敗しました。');
             }
             
+            // インストールされたテーマを取得して通知
+            $theme = Theme::where('directory', $themeDir)->first();
+            if ($theme) {
+                $permissionService = app(ThemePermissionService::class);
+                $summary = $permissionService->getSummary($theme->slug);
+                
+                app(ExtensionOperationService::class)->recordOperation(
+                    ExtensionOperationService::TYPE_THEME,
+                    ExtensionOperationService::OPERATION_INSTALLED,
+                    [
+                        'name' => $theme->name,
+                        'slug' => $theme->slug,
+                        'version' => $theme->version ?? null,
+                        'health_status' => $summary['risk_level'] ?? 'unknown',
+                    ]
+                );
+            }
+            
             return redirect()->route('admin.settings.themes.index')
                 ->with('success', 'テーマが正常にインストールされました。');
         } catch (\Exception $e) {
@@ -387,6 +406,14 @@ class AdminThemesSettingsController extends AdminLoggedInController
             return back()->with('error', '有効化中のテーマはアンインストールできません。');
         }
 
+        // 通知用にテーマ情報を保存
+        $themeData = [
+            'name' => $theme->name,
+            'slug' => $theme->slug,
+            'version' => $theme->version ?? null,
+            'health_status' => 'low', // アンインストール時は健全性警告不要
+        ];
+
         try {
             // コマンドを使用してアンインストール
             $options = [
@@ -401,6 +428,13 @@ class AdminThemesSettingsController extends AdminLoggedInController
             }
             
             Artisan::call('dls:theme:uninstall', $options);
+
+            // 拡張機能操作の通知・ログ記録
+            app(ExtensionOperationService::class)->recordOperation(
+                ExtensionOperationService::TYPE_THEME,
+                ExtensionOperationService::OPERATION_UNINSTALLED,
+                $themeData
+            );
 
             return redirect()->route('admin.settings.themes.index')
                 ->with('success', 'テーマをアンインストールしました');
@@ -436,6 +470,21 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 ]);
                 return redirect()->back()->with('error', 'テーマの切り替えに失敗しました。');
             }
+            
+            // 拡張機能操作の通知・ログ記録
+            $permissionService = app(ThemePermissionService::class);
+            $summary = $permissionService->getSummary($theme->slug);
+            
+            app(ExtensionOperationService::class)->recordOperation(
+                ExtensionOperationService::TYPE_THEME,
+                ExtensionOperationService::OPERATION_ENABLED,
+                [
+                    'name' => $theme->name,
+                    'slug' => $theme->slug,
+                    'version' => $theme->version ?? null,
+                    'health_status' => $summary['risk_level'] ?? 'unknown',
+                ]
+            );
             
             return redirect()->route('admin.settings.themes.index')
                 ->with('success', 'テーマが切り替えられました。');

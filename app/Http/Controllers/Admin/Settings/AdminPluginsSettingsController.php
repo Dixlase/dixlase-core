@@ -40,6 +40,7 @@ use App\Helpers\GitExcludeHelper;
 use App\Helpers\ComposerLocalHelper;
 use App\Services\Plugin\PluginPermissionService;
 use App\Models\PluginAudit;
+use App\Services\ExtensionOperationService;
 
 class AdminPluginsSettingsController extends AdminLoggedInController
 {
@@ -349,6 +350,21 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             // インストール後に監査を実行
             if ($plugin) {
                 $this->runPluginAudit($plugin->slug);
+                
+                // 拡張機能操作の通知・ログ記録
+                $permissionService = app(PluginPermissionService::class);
+                $summary = $permissionService->getSummary($plugin->slug);
+                
+                app(ExtensionOperationService::class)->recordOperation(
+                    ExtensionOperationService::TYPE_PLUGIN,
+                    ExtensionOperationService::OPERATION_INSTALLED,
+                    [
+                        'name' => $plugin->translated_name ?? $plugin->name,
+                        'slug' => $plugin->slug,
+                        'version' => $plugin->version ?? null,
+                        'health_status' => $summary['risk_level'] ?? 'unknown',
+                    ]
+                );
             }
             
             return redirect()->route('admin.settings.plugins.index')
@@ -372,6 +388,14 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             return back()->with('error', '有効化中のプラグインはアンインストールできません。先に無効化してください。');
         }
 
+        // 通知用にプラグイン情報を保存
+        $pluginData = [
+            'name' => $plugin->translated_name ?? $plugin->name,
+            'slug' => $plugin->slug,
+            'version' => $plugin->version ?? null,
+            'health_status' => 'low', // アンインストール時は健全性警告不要
+        ];
+
         try {
             // コマンドを使用してアンインストール
             $options = [
@@ -386,6 +410,13 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             }
             
             Artisan::call('dls:plugin:uninstall', $options);
+
+            // 拡張機能操作の通知・ログ記録
+            app(ExtensionOperationService::class)->recordOperation(
+                ExtensionOperationService::TYPE_PLUGIN,
+                ExtensionOperationService::OPERATION_UNINSTALLED,
+                $pluginData
+            );
 
             return redirect()->route('admin.settings.plugins.index')
                 ->with('success', 'プラグインをアンインストールしました');
@@ -408,6 +439,21 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 'pluginName' => $plugin->name
             ]);
 
+            // 拡張機能操作の通知・ログ記録
+            $permissionService = app(PluginPermissionService::class);
+            $summary = $permissionService->getSummary($plugin->slug);
+            
+            app(ExtensionOperationService::class)->recordOperation(
+                ExtensionOperationService::TYPE_PLUGIN,
+                ExtensionOperationService::OPERATION_ENABLED,
+                [
+                    'name' => $plugin->translated_name ?? $plugin->name,
+                    'slug' => $plugin->slug,
+                    'version' => $plugin->version ?? null,
+                    'health_status' => $summary['risk_level'] ?? 'unknown',
+                ]
+            );
+
             return redirect()->route('admin.settings.plugins.index')
                 ->with('success', str_replace('{name}', $plugin->translated_name, __('admin.settings.plugins.index.enabled.success')));
         } catch (\Exception $e) {
@@ -428,6 +474,18 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             Artisan::call('dls:plugin:disable', [
                 'pluginName' => $plugin->name
             ]);
+
+            // 拡張機能操作の通知・ログ記録
+            app(ExtensionOperationService::class)->recordOperation(
+                ExtensionOperationService::TYPE_PLUGIN,
+                ExtensionOperationService::OPERATION_DISABLED,
+                [
+                    'name' => $plugin->translated_name ?? $plugin->name,
+                    'slug' => $plugin->slug,
+                    'version' => $plugin->version ?? null,
+                    'health_status' => 'low', // 無効化時は健全性警告不要
+                ]
+            );
 
             return redirect()->route('admin.settings.plugins.index')
                 ->with('success', 'プラグインを無効化しました');
