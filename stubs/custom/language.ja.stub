@@ -1,7 +1,0 @@
-<?php
-
-{{ license }}
-
-return [
-    'hello' => 'こんにちは、世界！'
-];

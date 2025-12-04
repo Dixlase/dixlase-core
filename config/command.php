@@ -23,61 +23,7 @@ return [
     // 例: スタブのデフォルト格納先
     'default_stub_directory' => base_path('vendor/laravel/framework/src/Illuminate/Routing/Console/stubs'),
 
-    // 独自のカスタムスタブファイルの格納先
-    'custom_stub_directory' => base_path('stubs/custom'),
+    // Dixlaseコア用スタブファイルの格納先（デプロイスタブなど）
+    'dixlase_stub_directory' => base_path('stubs/dixlase'),
 
-    // 他にも繰り返し使うような定数など
-    'license_txt' => base_path('license.txt'),
-    'license_json' => base_path('license-info.json'),
-
-    // ファイルカテゴリごとのベースディレクトリと名前空間設定
-    // 形式: 'category' => [path, namespace]
-    'category_paths' => [
-        // App directory files
-        'controller' => ['app/Http/Controllers', 'App\\Http\\Controllers'],
-        'model' => ['app/Models', 'App\\Models'],
-        'scope' => ['app/Scopes', 'App\\Scopes'],
-        'request' => ['app/Http/Requests', 'App\\Http\\Requests'],
-        'provider' => ['app/Providers', 'App\\Providers'],
-        'command' => ['app/Console/Commands', 'App\\Console\\Commands'],
-        'policy' => ['app/Policies', 'App\\Policies'],
-        'listener' => ['app/Listeners', 'App\\Listeners'],
-        'event' => ['app/Events', 'App\\Events'],
-        'observer' => ['app/Observers', 'App\\Observers'],
-        'job' => ['app/Jobs', 'App\\Jobs'],
-        'job-middleware' => ['app/Jobs/Middleware', 'App\\Jobs\\Middleware'],
-        'middleware' => ['app/Http/Middleware', 'App\\Http\\Middleware'],
-        'service' => ['app/Services', 'App\\Services'],
-        'repository' => ['app/Repositories', 'App\\Repositories'],
-        'trait' => ['app/Traits', 'App\\Traits'],
-        'helper' => ['app/Helpers', 'App\\Helpers'],
-        'notification' => ['app/Notifications', 'App\\Notifications'],
-        'channel' => ['app/Broadcasting', 'App\\Broadcasting'],
-        'mail' => ['app/Mail', 'App\\Mail'],
-        'enum' => ['app/Enums', 'App\\Enums'],
-        'rule' => ['app/Rules', 'App\\Rules'],
-        'validator' => ['app/Validators', 'App\\Validators'],
-        'cast' => ['app/Casts', 'App\\Casts'],
-        'exception' => ['app/Exceptions', 'App\\Exceptions'],
-        'resource' => ['app/Http/Resources', 'App\\Http\\Resources'],
-        'class' => ['app/Classes', 'App\\Classes'],
-        'interface' => ['app/Contracts', 'App\\Contracts'],
-        'component' => ['app/View/Components', 'App\\View\\Components'],
-        'livewire' => ['app/Livewire', 'App\\Livewire'],
-        'view' => ['resources/views', ''],
-        'route' => ['routes', ''],
-        'lang' => ['lang', ''],
-        'config' => ['config', ''],
-        'migration' => ['database/migrations', 'Database\\Migrations'],
-        'seeder' => ['database/seeders', 'Database\\Seeders'],
-        'factory' => ['database/factories', 'Database\\Factories'],
-        'test' => ['tests', 'Tests'],
-        'blade' => ['resources/views', ''],
-    ],
-    
-    // ディレクトリ名をStudlyCaseにするファイルカテゴリ
-    'studly_case_categories' => [
-        'controller', 'model', 'provider', 'service', 'repository', 'middleware', 'request', 'listener', 'event', 'job', 
-        'mail', 'notification', 'policy', 'rule'
-    ],
 ];

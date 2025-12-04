@@ -352,7 +352,7 @@ class DeployConfigService
      */
     public function generateConfig(): string
     {
-        $stubPath = base_path('stubs/custom/dixlase-deploy.stub');
+        $stubPath = config('command.dixlase_stub_directory') . '/dixlase-deploy.stub';
         
         if (!File::exists($stubPath)) {
             throw new \RuntimeException("Stub file not found: {$stubPath}");

@@ -1,7 +1,0 @@
-<?php
-
-{{ license }}
-
-use Illuminate\Support\Facades\Route;
-
-// Web routes for {{ themeDirectory }} theme

@@ -1,7 +1,0 @@
-<?php
-
-{{ license }}
-
-return [
-    'welcome' => '{{ pluginName }}プラグインへようこそ！',
-];

@@ -32,7 +32,8 @@
             "Database\\Seeders\\": "database/seeders/",
             "Custom\\App\\": "custom/app/",
             "Custom\\Database\\Factories\\": "custom/database/factories",
-            "Custom\\Database\\Seeders\\": "custom/database/seeders"
+            "Custom\\Database\\Seeders\\": "custom/database/seeders",
+            "Plugins\\": "plugins/"
         },
         "files": [
             "app/Helpers/AssetHelper.php",
