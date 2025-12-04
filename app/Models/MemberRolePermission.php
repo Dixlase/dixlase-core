@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Enums\MemberRole;
 
 class MemberRolePermission extends Model
 {
@@ -13,14 +14,81 @@ class MemberRolePermission extends Model
         'view_roles'
     ];
 
-    // カンマ区切り文字列を配列に変換
-    public function getAccessRolesAttribute($value)
+    /**
+     * access_rolesを整数として取得
+     * 保存された値は「この権限値以上のユーザーがアクセス可能」を意味する
+     * SUPER_ADMIN(10)が設定されている場合は特権管理者専用
+     * 
+     * @param mixed $value
+     * @return int
+     */
+    public function getAccessRolesAttribute($value): int
     {
-        return $value ? explode(',', $value) : [];
+        // 空またはnullの場合はGUEST（最低権限）を返す
+        if ($value === null || $value === '') {
+            return MemberRole::GUEST->value;
+        }
+        
+        return (int) $value;
     }
 
-    public function getViewRolesAttribute($value)
+    /**
+     * view_rolesを整数として取得
+     * 保存された値は「この権限値以上のユーザーが閲覧可能」を意味する
+     * SUPER_ADMIN(10)が設定されている場合は特権管理者専用
+     * 
+     * @param mixed $value
+     * @return int
+     */
+    public function getViewRolesAttribute($value): int
     {
-        return $value ? explode(',', $value) : [];
+        // 空またはnullの場合はGUEST（最低権限）を返す
+        if ($value === null || $value === '') {
+            return MemberRole::GUEST->value;
+        }
+        
+        return (int) $value;
+    }
+
+    /**
+     * 指定されたユーザー権限がアクセス可能かチェック
+     * 
+     * @param MemberRole $userRole
+     * @return bool
+     */
+    public function canAccess(MemberRole $userRole): bool
+    {
+        return $userRole->value >= $this->access_roles;
+    }
+
+    /**
+     * 指定されたユーザー権限が閲覧可能かチェック
+     * 
+     * @param MemberRole $userRole
+     * @return bool
+     */
+    public function canView(MemberRole $userRole): bool
+    {
+        return $userRole->value >= $this->view_roles;
+    }
+
+    /**
+     * 特権管理者専用かどうかをチェック（編集権限）
+     * 
+     * @return bool
+     */
+    public function isSuperAdminOnlyAccess(): bool
+    {
+        return $this->access_roles === MemberRole::SUPER_ADMIN->value;
+    }
+
+    /**
+     * 特権管理者専用かどうかをチェック（閲覧権限）
+     * 
+     * @return bool
+     */
+    public function isSuperAdminOnlyView(): bool
+    {
+        return $this->view_roles === MemberRole::SUPER_ADMIN->value;
     }
 }

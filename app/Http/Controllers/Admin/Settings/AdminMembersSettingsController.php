@@ -645,11 +645,12 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $data = $request->input('permissions', []);
 
         foreach ($data as $menuKey => $values) {
+            // 単一の数値として保存（この値以上の権限を持つユーザーがアクセス可能）
             MemberRolePermission::updateOrCreate(
                 ['menu_key' => $menuKey],
                 [
-                    'access_roles' => isset($values['access_roles']) ? implode(',', $values['access_roles']) : '',
-                    'view_roles' => isset($values['view_roles']) ? implode(',', $values['view_roles']) : '',
+                    'access_roles' => isset($values['access_roles']) ? (int) $values['access_roles'] : MemberRole::GUEST->value,
+                    'view_roles' => isset($values['view_roles']) ? (int) $values['view_roles'] : MemberRole::GUEST->value,
                 ]
             );
         }

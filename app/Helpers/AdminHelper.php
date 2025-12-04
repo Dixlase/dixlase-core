@@ -101,15 +101,16 @@ class AdminHelper
                 return false;
             }
             
-            // 子項目のいずれかに権限があるかチェック
+            // 子項目のいずれかに権限があるかチェック（>=比較）
             foreach ($childPermissions as $childPermission) {
-                $accessRoles = is_array($childPermission->access_roles) ? $childPermission->access_roles : explode(',', $childPermission->access_roles);
-                $viewRoles = is_array($childPermission->view_roles) ? $childPermission->view_roles : explode(',', $childPermission->view_roles);
-                
-                if (in_array($user->role->value, $accessRoles) || in_array($user->role->value, $viewRoles)) {
+                // ユーザーの権限値が設定された最低権限値以上であればアクセス可能
+                if ($childPermission->canAccess($user->role) || $childPermission->canView($user->role)) {
                     \Log::channel('dixlase')->info('canAccessMenu: Access granted via child permission', [
                         'parent_menu_key' => $menuKey,
-                        'child_menu_key' => $childPermission->menu_key
+                        'child_menu_key' => $childPermission->menu_key,
+                        'user_role_value' => $user->role->value,
+                        'required_access_role' => $childPermission->access_roles,
+                        'required_view_role' => $childPermission->view_roles
                     ]);
                     return true;
                 }
@@ -119,15 +120,13 @@ class AdminHelper
             return false;
         }
 
-        // access_rolesとview_rolesは既にモデルのアクセサで配列に変換されている
-        $accessRoles = is_array($permission->access_roles) ? $permission->access_roles : explode(',', $permission->access_roles);
-        $viewRoles = is_array($permission->view_roles) ? $permission->view_roles : explode(',', $permission->view_roles);
-        $hasAccess = in_array($user->role->value, $accessRoles) || in_array($user->role->value, $viewRoles);
+        // ユーザーの権限値が設定された最低権限値以上であればアクセス可能
+        $hasAccess = $permission->canAccess($user->role) || $permission->canView($user->role);
         
         \Log::channel('dixlase')->info('canAccessMenu: Access check result', [
             'user_role' => $user->role->value,
-            'access_roles' => $accessRoles,
-            'view_roles' => $viewRoles,
+            'required_access_role' => $permission->access_roles,
+            'required_view_role' => $permission->view_roles,
             'has_access' => $hasAccess
         ]);
         
@@ -136,6 +135,7 @@ class AdminHelper
 
     /**
      * メニューの閲覧権限をチェック（編集はできないが表示はできる）
+     * ユーザーの権限値がaccess_roles以上であれば閲覧可能
      */
     public static function canViewMenu(string $menuKey): bool
     {
@@ -153,13 +153,13 @@ class AdminHelper
             return false;
         }
 
-        // access_rolesは既にモデルのアクセサで配列に変換されている
-        $accessRoles = is_array($permission->access_roles) ? $permission->access_roles : explode(',', $permission->access_roles);
-        return in_array($user->role->value, $accessRoles);
+        // ユーザーの権限値がaccess_roles以上であれば閲覧可能
+        return $permission->canAccess($user->role);
     }
 
     /**
      * メニューの編集権限をチェック
+     * ユーザーの権限値がview_roles以上であれば編集可能
      */
     public static function canEditMenu(string $menuKey): bool
     {
@@ -177,9 +177,8 @@ class AdminHelper
             return false;
         }
 
-        // view_rolesは既にモデルのアクセサで配列に変換されている
-        $viewRoles = is_array($permission->view_roles) ? $permission->view_roles : explode(',', $permission->view_roles);
-        return in_array($user->role->value, $viewRoles);
+        // ユーザーの権限値がview_roles以上であれば編集可能
+        return $permission->canView($user->role);
     }
 
     /**

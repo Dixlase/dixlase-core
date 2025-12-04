@@ -598,38 +598,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <legend>{{ __('admin.settings.security.extension_security.preset_label') }}</legend>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-3">
-                    @foreach(\App\Enums\ExtensionSecurityPreset::all() as $presetOption)
-                        <label class="relative flex cursor-pointer rounded-lg border p-4 shadow-sm focus:outline-none transition-all"
-                               :class="preset === '{{ $presetOption->value }}' 
-                                   ? 'border-blue-500 ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20' 
-                                   : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'">
-                            <input type="radio" 
-                                   name="extension_security_preset" 
-                                   value="{{ $presetOption->value }}"
-                                   x-model="preset"
-                                   class="sr-only">
-                            <span class="flex flex-1">
-                                <span class="flex flex-col">
-                                    <span class="flex items-center gap-2 text-sm font-medium {{ $presetOption->cssClass() }}">
-                                        <i class="{{ $presetOption->iconClass() }}"></i>
-                                        {{ $presetOption->label() }}
-                                        @if(!$presetOption->isProductionSafe())
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
-                                                {{ __('admin.settings.security.extension_security.dev_only') }}
-                                            </span>
-                                        @endif
-                                    </span>
-                                    <span class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                        {{ $presetOption->description() }}
-                                    </span>
-                                </span>
-                            </span>
-                            <span class="pointer-events-none absolute -inset-px rounded-lg" 
-                                  :class="preset === '{{ $presetOption->value }}' ? 'border-2 border-blue-500' : 'border border-transparent'" 
-                                  aria-hidden="true"></span>
-                        </label>
-                    @endforeach
+                <div class="mt-3">
+                    <x-form.radio-card-group
+                        name="extension_security_preset"
+                        :options="\App\Enums\ExtensionSecurityPreset::getRadioCardOptions()"
+                        :value="old('extension_security_preset', $settings['extension_security_preset'])"
+                        xModel="preset"
+                        :columns="4"
+                    />
                 </div>
                 
                 <p class="mt-2">{{ __('admin.settings.security.extension_security.preset_help') }}</p>
@@ -696,6 +672,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             :max="3"
                             :step="1"
                             :labels="\App\Enums\ExtensionSecurityLevel::getRangeLabels()"
+                            :labelColors="\App\Enums\ExtensionSecurityLevel::getRangeLabelColors()"
                             xModel="pluginMaxHealthLevel"
                         />
                     </div>
@@ -735,6 +712,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             :max="3"
                             :step="1"
                             :labels="\App\Enums\ExtensionSecurityLevel::getRangeLabels()"
+                            :labelColors="\App\Enums\ExtensionSecurityLevel::getRangeLabelColors()"
                             xModel="themeMaxHealthLevel"
                         />
                     </div>

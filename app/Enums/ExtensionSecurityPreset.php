@@ -184,4 +184,43 @@ enum ExtensionSecurityPreset: string
     {
         return array_filter(self::cases(), fn($preset) => $preset->isProductionSafe());
     }
+
+    /**
+     * 色名を取得（radio-card-group用）
+     */
+    public function colorName(): string
+    {
+        return match ($this) {
+            self::Strict => 'green',
+            self::Balanced => 'blue',
+            self::Development => 'yellow',
+            self::Custom => 'purple',
+        };
+    }
+
+    /**
+     * radio-card-groupコンポーネント用のオプション配列を取得
+     */
+    public static function getRadioCardOptions(): array
+    {
+        $options = [];
+        foreach (self::cases() as $preset) {
+            $option = [
+                'value' => $preset->value,
+                'label' => $preset->translationKey(),
+                'description' => $preset->translationKey() . '_description',
+                'icon' => $preset->iconClass(),
+                'color' => $preset->colorName(),
+            ];
+            
+            // 本番環境で使用不可の場合はバッジを追加
+            if (!$preset->isProductionSafe()) {
+                $option['badge'] = 'admin.settings.security.extension_security.dev_only';
+                $option['badgeColor'] = 'yellow';
+            }
+            
+            $options[] = $option;
+        }
+        return $options;
+    }
 }
