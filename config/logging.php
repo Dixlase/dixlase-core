@@ -222,6 +222,14 @@ return [
             'days' => env('LOG_DAILY_DAYS', 14),
         ],
 
+        // CSP違反レポートログ
+        'csp' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/csp_violations.log'),
+            'level' => 'warning',
+            'days' => env('LOG_DAILY_DAYS', 14),
+        ],
+
     ],
 
 ];

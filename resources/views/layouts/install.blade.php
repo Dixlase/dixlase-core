@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="{{ $currentLocale ?? 'en' }}" x-data="installTheme()" x-init="init()" :class="{ 'dark': isDark, 'light': !isDark }">
 <head>
-    <script>
+    <script @cspNonce>
         // Alpine.js ダークモード検出関数
         function installTheme() {
             return {
@@ -155,7 +155,7 @@
     </div>
 
     @if(isset($availableLocales) && isset($currentLocale))
-    <script>
+    <script @cspNonce>
         // ページ読み込み時に実行
         document.addEventListener('DOMContentLoaded', function() {
             const availableLocales = @json($availableLocales);

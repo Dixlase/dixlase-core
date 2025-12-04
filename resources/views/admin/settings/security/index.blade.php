@@ -930,6 +930,98 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <p>{{ __('admin.settings.security.extension_notification.log_operations_help') }}</p>
             </fieldset>
         </section>
+
+        <!-- CSP (Content Security Policy) 設定 -->
+        <section class="mt-8">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ __('admin.settings.security.csp.title') }}</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ __('admin.settings.security.csp.description') }}</p>
+
+            <!-- CSPとは？ -->
+            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+                <h3 class="font-medium text-blue-800 dark:text-blue-300 mb-2">{{ __('admin.settings.security.csp.what_is_csp') }}</h3>
+                <p class="text-sm text-blue-700 dark:text-blue-400">{{ __('admin.settings.security.csp.what_is_csp_description') }}</p>
+                <p class="text-sm text-blue-700 dark:text-blue-400 mt-2">{{ __('admin.settings.security.csp.nonce_explanation') }}</p>
+            </div>
+
+            <!-- CSP有効/無効 -->
+            <fieldset class="mb-4">
+                <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.settings.security.csp.enabled') }}</legend>
+                
+                <x-form.hidden
+                    name="csp_enabled"
+                    value="0"
+                />
+                
+                <x-form.toggle
+                    :label="__('admin.settings.security.csp.enabled')"
+                    id="csp_enabled"
+                    name="csp_enabled"
+                    :checked="old('csp_enabled', $settings['csp_enabled'] ?? true)"
+                />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin.settings.security.csp.enabled_help') }}</p>
+            </fieldset>
+
+            <!-- CSPモード -->
+            <fieldset class="mb-4">
+                <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.settings.security.csp.mode') }}</legend>
+                
+                <x-form.radio-group
+                    name="csp_mode"
+                    :options="[
+                        'report-only' => __('admin.settings.security.csp.mode_options.report-only'),
+                        'enforce' => __('admin.settings.security.csp.mode_options.enforce'),
+                    ]"
+                    :value="old('csp_mode', $settings['csp_mode'] ?? 'report-only')"
+                />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin.settings.security.csp.mode_help') }}</p>
+            </fieldset>
+
+            <!-- 違反をログに記録 -->
+            <fieldset class="mb-4">
+                <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.settings.security.csp.log_violations') }}</legend>
+                
+                <x-form.hidden
+                    name="csp_log_violations"
+                    value="0"
+                />
+                
+                <x-form.toggle
+                    :label="__('admin.settings.security.csp.log_violations')"
+                    id="csp_log_violations"
+                    name="csp_log_violations"
+                    :checked="old('csp_log_violations', $settings['csp_log_violations'] ?? true)"
+                />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin.settings.security.csp.log_violations_help') }}</p>
+            </fieldset>
+
+            <!-- 信頼済みドメイン -->
+            <fieldset class="mb-4">
+                <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.settings.security.csp.trusted_domains') }}</legend>
+                
+                <x-form.textarea
+                    id="csp_trusted_domains"
+                    name="csp_trusted_domains"
+                    :value="old('csp_trusted_domains', $settings['csp_trusted_domains'] ?? '')"
+                    :placeholder="__('admin.settings.security.csp.trusted_domains_placeholder')"
+                    rows="4"
+                />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin.settings.security.csp.trusted_domains_help') }}</p>
+            </fieldset>
+
+            <!-- カスタムディレクティブ（上級者向け） -->
+            <fieldset class="mb-4">
+                <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.settings.security.csp.custom_directives') }}</legend>
+                
+                <x-form.textarea
+                    id="csp_custom_directives"
+                    name="csp_custom_directives"
+                    :value="old('csp_custom_directives', $settings['csp_custom_directives'] ?? '')"
+                    :placeholder="__('admin.settings.security.csp.custom_directives_placeholder')"
+                    rows="3"
+                />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin.settings.security.csp.custom_directives_help') }}</p>
+            </fieldset>
+        </section>
     </form>
 </div>
 </div>

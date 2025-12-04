@@ -232,5 +232,36 @@ class SecuritySettingsTableSeeder extends Seeder
             ['value' => '1']
         );
 
+        // CSP (Content Security Policy) settings
+        // CSP有効/無効
+        SecuritySetting::updateOrCreate(
+            ['name' => 'csp_enabled'],
+            ['value' => '1']
+        );
+
+        // CSPモード（enforce: 強制, report-only: レポートのみ）
+        SecuritySetting::updateOrCreate(
+            ['name' => 'csp_mode'],
+            ['value' => 'report-only']
+        );
+
+        // CSP違反をログに記録
+        SecuritySetting::updateOrCreate(
+            ['name' => 'csp_log_violations'],
+            ['value' => '1']
+        );
+
+        // 信頼済みドメイン（改行区切り）
+        SecuritySetting::updateOrCreate(
+            ['name' => 'csp_trusted_domains'],
+            ['value' => '']
+        );
+
+        // カスタムディレクティブ（JSON形式）
+        SecuritySetting::updateOrCreate(
+            ['name' => 'csp_custom_directives'],
+            ['value' => '']
+        );
+
     }
 }

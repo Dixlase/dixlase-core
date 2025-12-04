@@ -43,9 +43,63 @@ class PluginServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // プラグインのServiceProviderを登録（設定読み込みのため）
+        $this->registerPluginServiceProviders();
+
         // プラグインのコマンドを登録（CLIモードのみ）
         if ($this->app->runningInConsole()) {
             $this->registerPluginCommands();
+        }
+    }
+
+    /**
+     * プラグインのServiceProviderを登録
+     */
+    protected function registerPluginServiceProviders(): void
+    {
+        $pluginsPath = base_path('plugins');
+        
+        if (!File::isDirectory($pluginsPath)) {
+            return;
+        }
+
+        $pluginDirs = File::directories($pluginsPath);
+        
+        foreach ($pluginDirs as $pluginDir) {
+            $pluginName = basename($pluginDir);
+            
+            // dixlase.json または plugin.json からプロバイダーを読み込む
+            $manifestPath = $pluginDir . '/dixlase.json';
+            if (!File::exists($manifestPath)) {
+                $manifestPath = $pluginDir . '/plugin.json';
+            }
+            
+            if (!File::exists($manifestPath)) {
+                continue;
+            }
+
+            try {
+                $manifest = json_decode(File::get($manifestPath), true);
+                
+                if (isset($manifest['providers']) && is_array($manifest['providers'])) {
+                    foreach ($manifest['providers'] as $provider) {
+                        if (class_exists($provider)) {
+                            try {
+                                $this->app->register($provider);
+                            } catch (\Exception $e) {
+                                // プロバイダー登録時のエラーは警告のみ（DBテーブル未作成など）
+                                Log::debug("Failed to register plugin provider: {$provider}", [
+                                    'error' => $e->getMessage()
+                                ]);
+                            }
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::warning("Failed to load plugin manifest: {$pluginName}", [
+                    'error' => $e->getMessage()
+                ]);
+            }
         }
     }
 

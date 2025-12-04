@@ -754,6 +754,32 @@ return [
                 'log_operations' => '操作をログに記録',
                 'log_operations_help' => '拡張機能の操作履歴をログファイルに記録します。',
             ],
+            // CSP (Content Security Policy) 設定
+            'csp' => [
+                'title' => 'コンテンツセキュリティポリシー（CSP）',
+                'description' => 'CSPはブラウザに対してどのリソースを読み込み・実行してよいかを指示するセキュリティ機能です。XSS攻撃や不正なスクリプト実行を防ぎます。',
+                'enabled' => 'CSPを有効にする',
+                'enabled_help' => 'Content-Security-Policyヘッダーをレスポンスに付与します。',
+                'mode' => 'CSPモード',
+                'mode_help' => 'レポートモードでは違反を記録するのみで、ブロックしません。本番環境では強制モードを推奨します。',
+                'mode_options' => [
+                    'report-only' => 'レポートモード（違反を記録のみ）',
+                    'enforce' => '強制モード（違反をブロック）',
+                ],
+                'log_violations' => '違反をログに記録',
+                'log_violations_help' => 'CSP違反をログファイル（csp_violations.log）に記録します。',
+                'trusted_domains' => '信頼済みドメイン',
+                'trusted_domains_help' => '外部リソースの読み込みを許可するドメインを1行に1つずつ入力してください。プラグインやテーマが必要とする外部CDN等を追加できます。',
+                'trusted_domains_placeholder' => 'https://cdn.example.com
+https://fonts.googleapis.com
+https://api.example.com',
+                'custom_directives' => 'カスタムディレクティブ',
+                'custom_directives_help' => '高度な設定が必要な場合、JSON形式でカスタムディレクティブを指定できます。',
+                'custom_directives_placeholder' => '{"script-src": ["https://example.com"], "connect-src": ["https://api.example.com"]}',
+                'what_is_csp' => 'CSPとは？',
+                'what_is_csp_description' => 'Content Security Policy（CSP）は、Webページで実行できるスクリプトや読み込めるリソースを制限するセキュリティ機能です。これにより、XSS（クロスサイトスクリプティング）攻撃やデータ漏洩のリスクを大幅に軽減できます。',
+                'nonce_explanation' => 'Dixlaseはnonce（使い捨てトークン）方式を採用しており、許可されたインラインスクリプトのみが実行されます。',
+            ],
         ],
         // メンバー
         'members' => [
@@ -1362,6 +1388,7 @@ return [
                 'front_activity' => 'フロント操作',
                 'front_error' => 'フロントエラー',
                 'extension' => '拡張機能操作',
+                'csp' => 'CSP違反',
                 'clear' => 'ログ消去',
                 'clear_confirm' => 'ログファイルの内容を消去してもよろしいですか？この操作は元に戻せません。',
                 'admin_logs_label' => '管理画面ログ',

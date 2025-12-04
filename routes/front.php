@@ -22,9 +22,15 @@
 
 
 use App\Helpers\PluginHelper;
+use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\Front\FrontWelcomeController;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
+
+// CSP違反レポートエンドポイント（認証不要、CSPミドルウェア除外）
+Route::post('/csp-report', [CspReportController::class, 'report'])
+    ->name('csp.report')
+    ->withoutMiddleware([\App\Http\Middleware\ContentSecurityPolicy::class]);
 
 // インストール済みの場合にアクセス可能なルート
 Route::middleware(['web', 'front.ip'])->group(
