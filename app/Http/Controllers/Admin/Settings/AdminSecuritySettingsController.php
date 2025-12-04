@@ -106,6 +106,13 @@ class AdminSecuritySettingsController extends AdminLoggedInController
             'extension_theme_max_health_level' => (int) $this->securitySettingRepository->get('extension_theme_max_health_level', ExtensionSecurityLevel::NeedsAttention->value),
             'extension_allow_logic_themes' => filter_var($this->securitySettingRepository->get('extension_allow_logic_themes', true), FILTER_VALIDATE_BOOLEAN),
             'extension_permission_mismatch_action' => $this->securitySettingRepository->get('extension_permission_mismatch_action', 'warn'),
+            // Extension notification settings
+            'extension_notify_on_install' => filter_var($this->securitySettingRepository->get('extension_notify_on_install', true), FILTER_VALIDATE_BOOLEAN),
+            'extension_notify_on_uninstall' => filter_var($this->securitySettingRepository->get('extension_notify_on_uninstall', true), FILTER_VALIDATE_BOOLEAN),
+            'extension_notify_on_enable' => filter_var($this->securitySettingRepository->get('extension_notify_on_enable', true), FILTER_VALIDATE_BOOLEAN),
+            'extension_notify_on_disable' => filter_var($this->securitySettingRepository->get('extension_notify_on_disable', false), FILTER_VALIDATE_BOOLEAN),
+            'extension_notify_on_unhealthy' => filter_var($this->securitySettingRepository->get('extension_notify_on_unhealthy', true), FILTER_VALIDATE_BOOLEAN),
+            'extension_log_operations' => filter_var($this->securitySettingRepository->get('extension_log_operations', true), FILTER_VALIDATE_BOOLEAN),
         ];
 
         // 動的reCAPTCHAフォーム設定を取得
@@ -316,6 +323,14 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         
         // 権限不一致時の動作は常にフォームから取得
         $this->securitySettingRepository->set('extension_permission_mismatch_action', $request->input('extension_permission_mismatch_action', 'warn'));
+
+        // Save extension notification settings
+        $this->securitySettingRepository->set('extension_notify_on_install', $request->boolean('extension_notify_on_install'));
+        $this->securitySettingRepository->set('extension_notify_on_uninstall', $request->boolean('extension_notify_on_uninstall'));
+        $this->securitySettingRepository->set('extension_notify_on_enable', $request->boolean('extension_notify_on_enable'));
+        $this->securitySettingRepository->set('extension_notify_on_disable', $request->boolean('extension_notify_on_disable'));
+        $this->securitySettingRepository->set('extension_notify_on_unhealthy', $request->boolean('extension_notify_on_unhealthy'));
+        $this->securitySettingRepository->set('extension_log_operations', $request->boolean('extension_log_operations'));
 
         // ログレベルは通知の有効/無効に関わらず保存できるようにする
         $submittedLevels = $request->input('notification_log_levels', null);

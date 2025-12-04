@@ -213,6 +213,15 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // 拡張機能（プラグイン・テーマ）操作ログ
+        'extension_activity' => [
+            'driver' => 'single',
+            'formatter' => env('LOG_STDERR_FORMATTER'),
+            'path' => storage_path('logs/extension_activity.log'),
+            'level' => 'info',
+            'days' => env('LOG_DAILY_DAYS', 14),
+        ],
+
     ],
 
 ];

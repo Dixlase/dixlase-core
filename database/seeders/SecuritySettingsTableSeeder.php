@@ -195,5 +195,42 @@ class SecuritySettingsTableSeeder extends Seeder
             ['value' => 'warn']
         );
 
+        // Extension notification settings (拡張機能操作通知)
+        // プラグイン・テーマのインストール時にメール通知
+        SecuritySetting::updateOrCreate(
+            ['name' => 'extension_notify_on_install'],
+            ['value' => '1']
+        );
+
+        // プラグイン・テーマのアンインストール時にメール通知
+        SecuritySetting::updateOrCreate(
+            ['name' => 'extension_notify_on_uninstall'],
+            ['value' => '1']
+        );
+
+        // プラグイン・テーマの有効化時にメール通知
+        SecuritySetting::updateOrCreate(
+            ['name' => 'extension_notify_on_enable'],
+            ['value' => '1']
+        );
+
+        // プラグイン・テーマの無効化時にメール通知
+        SecuritySetting::updateOrCreate(
+            ['name' => 'extension_notify_on_disable'],
+            ['value' => '0']
+        );
+
+        // 健全性が「良好」以外の拡張機能操作時に警告メール
+        SecuritySetting::updateOrCreate(
+            ['name' => 'extension_notify_on_unhealthy'],
+            ['value' => '1']
+        );
+
+        // 拡張機能操作をログに記録
+        SecuritySetting::updateOrCreate(
+            ['name' => 'extension_log_operations'],
+            ['value' => '1']
+        );
+
     }
 }

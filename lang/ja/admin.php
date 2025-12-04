@@ -737,6 +737,23 @@ return [
                     'block' => 'ブロック（インストール・有効化を禁止）',
                 ],
             ],
+            // 拡張機能操作通知設定
+            'extension_notification' => [
+                'title' => '拡張機能操作通知',
+                'description' => 'プラグインやテーマの操作時にシステム管理者へメール通知を送信します。通知先は基本設定のシステム管理者メールアドレスです。',
+                'notify_on_install' => 'インストール時に通知',
+                'notify_on_install_help' => 'プラグインやテーマがインストールされた時にメール通知を送信します。',
+                'notify_on_uninstall' => 'アンインストール時に通知',
+                'notify_on_uninstall_help' => 'プラグインやテーマがアンインストールされた時にメール通知を送信します。',
+                'notify_on_enable' => '有効化時に通知',
+                'notify_on_enable_help' => 'プラグインやテーマが有効化された時にメール通知を送信します。',
+                'notify_on_disable' => '無効化時に通知',
+                'notify_on_disable_help' => 'プラグインやテーマが無効化された時にメール通知を送信します。',
+                'notify_on_unhealthy' => '健全性警告を通知',
+                'notify_on_unhealthy_help' => '健全性が「良好」以外の拡張機能が追加・インストール・有効化された時に警告メールを送信します。',
+                'log_operations' => '操作をログに記録',
+                'log_operations_help' => '拡張機能の操作履歴をログファイルに記録します。',
+            ],
         ],
         // メンバー
         'members' => [
@@ -1025,6 +1042,10 @@ return [
                     'confirm_title' => 'インストールの確認',
                     'confirm_message' => 'テーマ [{name}] をインストールしますか？',
                 ],
+                'switch' => [
+                    'confirm_title' => '有効化の確認',
+                    'confirm_message' => 'テーマ [{name}] を有効化しますか？',
+                ],
                 'delete' => [
                     'confirm_title' => '削除の確認',
                     'confirm_message' => 'テーマ [{name}] のファイルとフォルダを完全に削除しますか？この操作は取り消せません。',
@@ -1126,6 +1147,7 @@ return [
                 'install_warning_unsigned' => '署名されていません',
                 'install_warning_mismatch' => '権限宣言とコードが一致しません',
                 'install_warning_confirm' => '上記を理解した上でインストールしますか？',
+                'install_warning_risk' => 'このテーマには以下の注意点があります：',
                 'warning_not_scanned' => 'コードスキャンが実行されていません',
                 // 有効化警告
                 'enable_warning_title' => '有効化前の確認',
@@ -1213,6 +1235,8 @@ return [
                 'install_warning_unsigned' => '署名されていません',
                 'install_warning_mismatch' => '権限宣言とコードが一致しません',
                 'install_warning_confirm' => '上記を理解した上でインストールしますか？',
+                'install_warning_risk' => 'このプラグインには以下の注意点があります：',
+                'risk_medium' => '中程度の健全性リスク',
                 // 有効化警告
                 'enable_warning_title' => '有効化前の確認',
                 'enable_warning_message' => 'プラグイン「:name」には以下の注意点があります：',
@@ -1337,6 +1361,7 @@ return [
                 'dixlase' => 'Dixlase',
                 'front_activity' => 'フロント操作',
                 'front_error' => 'フロントエラー',
+                'extension' => '拡張機能操作',
                 'clear' => 'ログ消去',
                 'clear_confirm' => 'ログファイルの内容を消去してもよろしいですか？この操作は元に戻せません。',
                 'admin_logs_label' => '管理画面ログ',

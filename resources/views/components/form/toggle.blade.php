@@ -7,7 +7,7 @@
 @endphp
 
 <div class="flex items-center space-x-3" @if($xBind) :class="{{ $xBind }} ? '' : 'opacity-50'" @elseif($disabled) class="opacity-50" @endif>
-    <label for="{{ $id }}" class="relative inline-flex items-center" @if($xBind) :class="{{ $xBind }} ? 'cursor-pointer' : 'cursor-not-allowed'" @else class="{{ $disabled ? 'cursor-not-allowed' : 'cursor-pointer' }}" @endif>
+    <label for="{{ $id }}" class="relative inline-flex items-center mb-2" @if($xBind) :class="{{ $xBind }} ? 'cursor-pointer' : 'cursor-not-allowed'" @else class="{{ $disabled ? 'cursor-not-allowed' : 'cursor-pointer' }}" @endif>
         <input type="checkbox"
                id="{{ $id }}"
                name="{{ $name }}"
