@@ -121,7 +121,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
         @stack('modals')
 
-        <script>
+        <script @cspNonce>
             // Alpine.js関数を先に定義
             function appearanceTheme(defaultValue) {
                 return {

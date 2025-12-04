@@ -22,6 +22,7 @@ class AdminSystemsController extends AdminLoggedInController
         'front_activity' => 'front_activity.log',
         'front_error' => 'front_error.log',
         'extension' => 'extension_activity.log',
+        'csp' => 'csp_violations.log',
     ];
 
     public function __construct()

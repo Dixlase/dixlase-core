@@ -113,6 +113,12 @@ class AdminSecuritySettingsController extends AdminLoggedInController
             'extension_notify_on_disable' => filter_var($this->securitySettingRepository->get('extension_notify_on_disable', false), FILTER_VALIDATE_BOOLEAN),
             'extension_notify_on_unhealthy' => filter_var($this->securitySettingRepository->get('extension_notify_on_unhealthy', true), FILTER_VALIDATE_BOOLEAN),
             'extension_log_operations' => filter_var($this->securitySettingRepository->get('extension_log_operations', true), FILTER_VALIDATE_BOOLEAN),
+            // CSP (Content Security Policy) settings
+            'csp_enabled' => filter_var($this->securitySettingRepository->get('csp_enabled', true), FILTER_VALIDATE_BOOLEAN),
+            'csp_mode' => $this->securitySettingRepository->get('csp_mode', 'report-only'),
+            'csp_log_violations' => filter_var($this->securitySettingRepository->get('csp_log_violations', true), FILTER_VALIDATE_BOOLEAN),
+            'csp_trusted_domains' => $this->securitySettingRepository->get('csp_trusted_domains', ''),
+            'csp_custom_directives' => $this->securitySettingRepository->get('csp_custom_directives', ''),
         ];
 
         // 動的reCAPTCHAフォーム設定を取得
@@ -331,6 +337,13 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         $this->securitySettingRepository->set('extension_notify_on_disable', $request->boolean('extension_notify_on_disable'));
         $this->securitySettingRepository->set('extension_notify_on_unhealthy', $request->boolean('extension_notify_on_unhealthy'));
         $this->securitySettingRepository->set('extension_log_operations', $request->boolean('extension_log_operations'));
+
+        // Save CSP (Content Security Policy) settings
+        $this->securitySettingRepository->set('csp_enabled', $request->boolean('csp_enabled'));
+        $this->securitySettingRepository->set('csp_mode', $request->input('csp_mode', 'report-only'));
+        $this->securitySettingRepository->set('csp_log_violations', $request->boolean('csp_log_violations'));
+        $this->securitySettingRepository->set('csp_trusted_domains', $request->input('csp_trusted_domains', ''));
+        $this->securitySettingRepository->set('csp_custom_directives', $request->input('csp_custom_directives', ''));
 
         // ログレベルは通知の有効/無効に関わらず保存できるようにする
         $submittedLevels = $request->input('notification_log_levels', null);
