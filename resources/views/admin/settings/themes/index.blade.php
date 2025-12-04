@@ -138,19 +138,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                 $badgeLabel = __('admin.settings.themes.permissions.signature_invalid');
                                             } elseif ($hasPermissions) {
                                                 // 未署名 + 権限定義あり
-                                                $riskColors = [
+                                                $healthColors = [
                                                     'low' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
                                                     'medium' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-                                                    'high' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                                                    'high' => 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
                                                 ];
-                                                $riskIcons = [
-                                                    'low' => 'fas fa-shield-alt',
-                                                    'medium' => 'fas fa-exclamation-triangle',
+                                                $healthIcons = [
+                                                    'low' => 'fas fa-check-circle',
+                                                    'medium' => 'fas fa-info-circle',
                                                     'high' => 'fas fa-exclamation-circle',
                                                 ];
-                                                $badgeColor = $riskColors[$riskLevel] ?? $riskColors['low'];
-                                                $badgeIcon = $riskIcons[$riskLevel] ?? $riskIcons['low'];
-                                                $badgeLabel = __('admin.settings.themes.permissions.risk_' . $riskLevel);
+                                                $healthLabels = [
+                                                    'low' => 'health_healthy',
+                                                    'medium' => 'health_warning',
+                                                    'high' => 'health_needs_attention',
+                                                ];
+                                                $badgeColor = $healthColors[$riskLevel] ?? $healthColors['low'];
+                                                $badgeIcon = $healthIcons[$riskLevel] ?? $healthIcons['low'];
+                                                $badgeLabel = __('admin.settings.themes.permissions.' . ($healthLabels[$riskLevel] ?? 'health_healthy'));
                                             } else {
                                                 // 未署名 + 権限未定義 → 警告表示
                                                 $badgeColor = 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 border border-orange-300 dark:border-orange-700';
@@ -261,50 +266,54 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                     <div>
                                                         <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('admin.settings.themes.permissions.permission_info') }}</h4>
                                                         @if($hasPermissions)
-                                                            {{-- リスクレベル表示 --}}
+                                                            {{-- 健全性レベル表示 --}}
                                                             @php
-                                                                $riskReasons = $theme->permission_summary['risk_reasons'] ?? [];
-                                                                $riskScore = $theme->permission_summary['risk_score'] ?? 0;
-                                                                $riskColors = [
+                                                                $attentionReasons = $theme->permission_summary['risk_reasons'] ?? [];
+                                                                $healthColors = [
                                                                     'low' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
                                                                     'medium' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-                                                                    'high' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                                                                    'high' => 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
                                                                 ];
-                                                                $riskIcons = [
-                                                                    'low' => 'fas fa-shield-alt',
-                                                                    'medium' => 'fas fa-exclamation-triangle',
+                                                                $healthIcons = [
+                                                                    'low' => 'fas fa-check-circle',
+                                                                    'medium' => 'fas fa-info-circle',
                                                                     'high' => 'fas fa-exclamation-circle',
+                                                                ];
+                                                                $healthLabels = [
+                                                                    'low' => 'health_healthy',
+                                                                    'medium' => 'health_warning',
+                                                                    'high' => 'health_needs_attention',
                                                                 ];
                                                             @endphp
                                                             <div class="mb-3 flex items-center">
-                                                                <span class="text-sm text-gray-700 dark:text-gray-300 mr-2">{{ __('admin.settings.themes.permissions.risk_level') }}:</span>
-                                                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $riskColors[$riskLevel] ?? $riskColors['low'] }}">
-                                                                    <i class="{{ $riskIcons[$riskLevel] ?? $riskIcons['low'] }} mr-1"></i>
-                                                                    {{ __('admin.settings.themes.permissions.risk_' . $riskLevel) }}
+                                                                <span class="text-sm text-gray-700 dark:text-gray-300 mr-2">{{ __('admin.settings.themes.permissions.health_status') }}:</span>
+                                                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $healthColors[$riskLevel] ?? $healthColors['low'] }}">
+                                                                    <i class="{{ $healthIcons[$riskLevel] ?? $healthIcons['low'] }} mr-1"></i>
+                                                                    {{ __('admin.settings.themes.permissions.' . ($healthLabels[$riskLevel] ?? 'health_healthy')) }}
                                                                 </span>
                                                             </div>
                                                             
-                                                            {{-- リスクの理由 --}}
-                                                            @if(!empty($riskReasons))
-                                                                <div class="mb-4 p-3 rounded-lg {{ $riskLevel === 'high' ? 'bg-red-50 dark:bg-red-900/20' : ($riskLevel === 'medium' ? 'bg-yellow-50 dark:bg-yellow-900/20' : 'bg-gray-50 dark:bg-gray-800') }}">
+                                                            {{-- 確認が必要な理由 --}}
+                                                            @if(!empty($attentionReasons))
+                                                                <div class="mb-4 p-3 rounded-lg {{ $riskLevel === 'high' ? 'bg-orange-50 dark:bg-orange-900/20' : ($riskLevel === 'medium' ? 'bg-yellow-50 dark:bg-yellow-900/20' : 'bg-gray-50 dark:bg-gray-800') }}">
                                                                     <h5 class="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                                                         <i class="fas fa-info-circle mr-1"></i>
-                                                                        {{ __('admin.settings.themes.permissions.risk_reasons_title') }}
+                                                                        {{ __('admin.settings.themes.permissions.attention_reasons_title') }}
                                                                     </h5>
                                                                     <ul class="space-y-1">
-                                                                        @foreach($riskReasons as $reason)
+                                                                        @foreach($attentionReasons as $reason)
                                                                             @php
                                                                                 $reasonKey = str_replace('.', '_', $reason['key']);
                                                                                 $severityColor = $reason['severity'] === 'high' 
-                                                                                    ? 'text-red-600 dark:text-red-400' 
+                                                                                    ? 'text-orange-600 dark:text-orange-400' 
                                                                                     : 'text-yellow-600 dark:text-yellow-400';
                                                                                 $severityIcon = $reason['severity'] === 'high' 
                                                                                     ? 'fas fa-exclamation-circle' 
-                                                                                    : 'fas fa-exclamation-triangle';
+                                                                                    : 'fas fa-info-circle';
                                                                             @endphp
                                                                             <li class="flex items-start text-xs {{ $severityColor }}">
                                                                                 <i class="{{ $severityIcon }} mr-2 mt-0.5 flex-shrink-0"></i>
-                                                                                <span>{{ __('admin.settings.themes.permissions.risk_reason_' . $reasonKey) }}</span>
+                                                                                <span>{{ __('admin.settings.themes.permissions.attention_reason_' . $reasonKey) }}</span>
                                                                             </li>
                                                                         @endforeach
                                                                     </ul>
@@ -384,13 +393,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             if (!$hasPermissions) {
                                                 $enableWarnings[] = __('admin.settings.themes.permissions.install_warning_undefined');
                                             }
-                                            // 高リスク
+                                            // 要確認
                                             if ($riskLevel === 'high') {
-                                                $enableWarnings[] = __('admin.settings.themes.permissions.enable_warning_high_risk');
+                                                $enableWarnings[] = __('admin.settings.themes.permissions.enable_warning_needs_attention');
                                             }
-                                            // 中リスク
+                                            // 注意
                                             if ($riskLevel === 'medium') {
-                                                $enableWarnings[] = __('admin.settings.themes.permissions.risk_medium');
+                                                $enableWarnings[] = __('admin.settings.themes.permissions.health_warning');
                                             }
                                             // 不一致
                                             if ($hasMismatchesForEnable) {
@@ -522,7 +531,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <tr>
                         <th>{{ __('admin.settings.themes.index.table.name') }}</th>
                         <th>{{ __('common.details') }}</th>
-                        <th>{{ __('admin.settings.themes.permissions.risk_level') }}</th>
+                        <th>{{ __('admin.settings.themes.permissions.health_status') }}</th>
                         <th>{{ __('common.actions') }}</th>
                     </tr>
                 </thead>
@@ -569,7 +578,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     </div>
                                 </div>
                             </td>
-                            <td data-label="{{ __('admin.settings.themes.permissions.risk_level') }}">
+                            <td data-label="{{ __('admin.settings.themes.permissions.health_status') }}">
                                 {{-- 権限・署名ステータスバッジ（モーダル表示） --}}
                                 @if(isset($theme['permission_summary']))
                                     @php
@@ -608,19 +617,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             $badgeIcon = 'fas fa-times-circle';
                                             $badgeLabel = __('admin.settings.themes.permissions.signature_invalid');
                                         } elseif ($hasPermissions) {
-                                            $riskColors = [
+                                            $healthColors = [
                                                 'low' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
                                                 'medium' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-                                                'high' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                                                'high' => 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
                                             ];
-                                            $riskIcons = [
-                                                'low' => 'fas fa-shield-alt',
-                                                'medium' => 'fas fa-exclamation-triangle',
+                                            $healthIcons = [
+                                                'low' => 'fas fa-check-circle',
+                                                'medium' => 'fas fa-info-circle',
                                                 'high' => 'fas fa-exclamation-circle',
                                             ];
-                                            $badgeColor = $riskColors[$riskLevel] ?? $riskColors['low'];
-                                            $badgeIcon = $riskIcons[$riskLevel] ?? $riskIcons['low'];
-                                            $badgeLabel = __('admin.settings.themes.permissions.risk_' . $riskLevel);
+                                            $healthLabels = [
+                                                'low' => 'health_healthy',
+                                                'medium' => 'health_warning',
+                                                'high' => 'health_needs_attention',
+                                            ];
+                                            $badgeColor = $healthColors[$riskLevel] ?? $healthColors['low'];
+                                            $badgeIcon = $healthIcons[$riskLevel] ?? $healthIcons['low'];
+                                            $badgeLabel = __('admin.settings.themes.permissions.' . ($healthLabels[$riskLevel] ?? 'health_healthy'));
                                         } else {
                                             // 未署名 + 権限未定義 → 警告表示
                                             $badgeColor = 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 border border-orange-300 dark:border-orange-700';
@@ -730,26 +744,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             <div>
                                                 <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ __('admin.settings.themes.permissions.permission_info') }}</h4>
                                                 @if($hasPermissions)
-                                                    {{-- リスクレベル表示 --}}
+                                                    {{-- 健全性レベル表示 --}}
                                                     @php
-                                                        $riskReasons = $theme['permission_summary']['risk_reasons'] ?? [];
-                                                        $riskScore = $theme['permission_summary']['risk_score'] ?? 0;
-                                                        $riskColors = [
+                                                        $healthColors = [
                                                             'low' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
                                                             'medium' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-                                                            'high' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                                                            'high' => 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
                                                         ];
-                                                        $riskIcons = [
-                                                            'low' => 'fas fa-shield-alt',
-                                                            'medium' => 'fas fa-exclamation-triangle',
+                                                        $healthIcons = [
+                                                            'low' => 'fas fa-check-circle',
+                                                            'medium' => 'fas fa-info-circle',
                                                             'high' => 'fas fa-exclamation-circle',
+                                                        ];
+                                                        $healthLabels = [
+                                                            'low' => 'health_healthy',
+                                                            'medium' => 'health_warning',
+                                                            'high' => 'health_needs_attention',
                                                         ];
                                                     @endphp
                                                     <div class="mb-3 flex items-center">
-                                                        <span class="text-sm text-gray-700 dark:text-gray-300 mr-2">{{ __('admin.settings.themes.permissions.risk_level') }}:</span>
-                                                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $riskColors[$riskLevel] ?? $riskColors['low'] }}">
-                                                            <i class="{{ $riskIcons[$riskLevel] ?? $riskIcons['low'] }} mr-1"></i>
-                                                            {{ __('admin.settings.themes.permissions.risk_' . $riskLevel) }}
+                                                        <span class="text-sm text-gray-700 dark:text-gray-300 mr-2">{{ __('admin.settings.themes.permissions.health_status') }}:</span>
+                                                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $healthColors[$riskLevel] ?? $healthColors['low'] }}">
+                                                            <i class="{{ $healthIcons[$riskLevel] ?? $healthIcons['low'] }} mr-1"></i>
+                                                            {{ __('admin.settings.themes.permissions.' . ($healthLabels[$riskLevel] ?? 'health_healthy')) }}
                                                         </span>
                                                     </div>
                                                     

@@ -23,6 +23,8 @@
 namespace App\Http\Requests\Admin\Settings\Security;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Enums\ExtensionSecurityPreset;
+use App\Enums\ExtensionSecurityLevel;
 
 class AdminSettngsSecurityUpdateRequest extends FormRequest
 {
@@ -59,6 +61,11 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
             'pwned_password_check_enabled' => filter_var($this->input('pwned_password_check_enabled'), FILTER_VALIDATE_BOOLEAN),
             // CAPTCHA authentication result
             'captcha_authentication_result' => filter_var($this->input('captcha_authentication_result'), FILTER_VALIDATE_BOOLEAN),
+            // Extension security settings
+            'extension_require_signature' => filter_var($this->input('extension_require_signature'), FILTER_VALIDATE_BOOLEAN),
+            'extension_require_permission_definition' => filter_var($this->input('extension_require_permission_definition'), FILTER_VALIDATE_BOOLEAN),
+            'extension_allow_undefined_permissions' => filter_var($this->input('extension_allow_undefined_permissions'), FILTER_VALIDATE_BOOLEAN),
+            'extension_allow_logic_themes' => filter_var($this->input('extension_allow_logic_themes'), FILTER_VALIDATE_BOOLEAN),
         ]);
     }
 
@@ -101,6 +108,15 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
             'notification_log_levels' => 'nullable|array',
             // Password security validation rules
             'pwned_password_check_enabled' => 'required|boolean',
+            // Extension security validation rules
+            'extension_security_preset' => 'required|string|in:' . implode(',', array_map(fn($p) => $p->value, ExtensionSecurityPreset::cases())),
+            'extension_require_signature' => 'nullable|boolean',
+            'extension_require_permission_definition' => 'nullable|boolean',
+            'extension_allow_undefined_permissions' => 'nullable|boolean',
+            'extension_plugin_max_health_level' => 'nullable|integer|min:0|max:3',
+            'extension_theme_max_health_level' => 'nullable|integer|min:0|max:3',
+            'extension_allow_logic_themes' => 'nullable|boolean',
+            'extension_permission_mismatch_action' => 'nullable|string|in:warn,block',
         ];
 
         // CAPTCHAが有効な場合の条件付きバリデーション

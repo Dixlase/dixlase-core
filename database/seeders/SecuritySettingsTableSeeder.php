@@ -26,6 +26,8 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\SecuritySetting;
 use App\Enums\LogLevel;
+use App\Enums\ExtensionSecurityLevel;
+use App\Enums\ExtensionSecurityPreset;
 
 class SecuritySettingsTableSeeder extends Seeder
 {
@@ -142,6 +144,55 @@ class SecuritySettingsTableSeeder extends Seeder
         SecuritySetting::updateOrCreate(
             ['name' => 'session_lifetime'],
             ['value' => (string) config('session.lifetime', 120)]
+        );
+
+        // Extension security settings (plugins and themes)
+        // プリセットモード（デフォルト: balanced）
+        SecuritySetting::updateOrCreate(
+            ['name' => 'extension_security_preset'],
+            ['value' => ExtensionSecurityPreset::Balanced->value]
+        );
+
+        // 署名を必須にするか
+        SecuritySetting::updateOrCreate(
+            ['name' => 'extension_require_signature'],
+            ['value' => '0']
+        );
+
+        // 権限定義を必須にするか
+        SecuritySetting::updateOrCreate(
+            ['name' => 'extension_require_permission_definition'],
+            ['value' => '0']
+        );
+
+        // 未定義の権限を許可するか
+        SecuritySetting::updateOrCreate(
+            ['name' => 'extension_allow_undefined_permissions'],
+            ['value' => '1']
+        );
+
+        // プラグインの最大許可健全性レベル
+        SecuritySetting::updateOrCreate(
+            ['name' => 'extension_plugin_max_health_level'],
+            ['value' => (string) ExtensionSecurityLevel::Warning->value]
+        );
+
+        // テーマの最大許可健全性レベル
+        SecuritySetting::updateOrCreate(
+            ['name' => 'extension_theme_max_health_level'],
+            ['value' => (string) ExtensionSecurityLevel::NeedsAttention->value]
+        );
+
+        // ロジックを含むテーマを許可するか
+        SecuritySetting::updateOrCreate(
+            ['name' => 'extension_allow_logic_themes'],
+            ['value' => '1']
+        );
+
+        // 権限不一致時の動作（warn: 警告のみ, block: ブロック）
+        SecuritySetting::updateOrCreate(
+            ['name' => 'extension_permission_mismatch_action'],
+            ['value' => 'warn']
         );
 
     }
