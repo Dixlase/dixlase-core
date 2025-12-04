@@ -157,6 +157,20 @@ enum ExtensionSecurityLevel: int
     }
 
     /**
+     * Range用のラベル色配列を取得
+     * 良好→緑、注意→黄、要確認→オレンジ、未確認→赤
+     */
+    public static function getRangeLabelColors(): array
+    {
+        return [
+            self::Healthy->value => 'green',
+            self::Warning->value => 'yellow',
+            self::NeedsAttention->value => 'orange',
+            self::NotVerified->value => 'red',
+        ];
+    }
+
+    /**
      * デフォルト値を取得（バランスモード = Warning）
      */
     public static function default(): self

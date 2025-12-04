@@ -162,58 +162,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         }
     }
 
-    .permission-option {
-        cursor: pointer;
-        border-radius: 0.375rem;
-        padding: 0.5rem;
-        transition: background-color 0.15s ease-in-out;
-
-        &:hover {
-            background-color: #f9fafb;
-
-            .dark & {
-                background-color: #374151;
-            }
-        }
-
-        &__label {
-            font-weight: 500;
-            user-select: none;
-        }
-    }
-
-    .permission-checkbox {
-        width: 1rem;
-        height: 1rem;
-        border-radius: 0.25rem;
-        border: 1px solid #d1d5db;
-        background-color: #ffffff;
-        color: #4f46e5;
-        flex-shrink: 0;
-
-        &:focus {
-            outline: 2px solid transparent;
-            outline-offset: 2px;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-            border-color: #4f46e5;
-        }
-
-        &:checked {
-            background-color: #4f46e5;
-            border-color: #4f46e5;
-        }
-
-        .dark & {
-            border-color: #6b7280;
-            background-color: #374151;
-
-            &:checked {
-                background-color: #4f46e5;
-                border-color: #4f46e5;
-            }
-        }
-    }
-
     .permission-section-header {
         &__title {
             font-size: 1.25rem;
