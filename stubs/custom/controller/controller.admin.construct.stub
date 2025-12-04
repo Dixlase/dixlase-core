@@ -1,6 +1,0 @@
-public function __construct()
-    {
-        $this->initialize();
-        $this->initializeAfterLogin();
-    }
-

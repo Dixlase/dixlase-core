@@ -1,9 +1,0 @@
-<?php
-
-{{ license }}
-
-namespace {{ namespace }};
-class {{ class }}
-{
-    //
-}

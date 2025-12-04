@@ -1,7 +1,0 @@
-<?php
-
-{{ license }}
-
-return [
-    // Your plugin configuration here...
-];

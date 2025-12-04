@@ -1,9 +1,0 @@
-This file is part of {{ software }}.
-
-Copyright (C) {{ year }} {{ author }}
-{{ url }}
-
-All rights reserved.
-
-This software is licensed under a commercial license agreement.
-Unauthorized copying, modification, distribution, or use is strictly prohibited.

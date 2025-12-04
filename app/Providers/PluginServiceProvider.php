@@ -24,6 +24,7 @@ namespace App\Providers;
 
 use App\Helpers\PluginHelper;
 use App\Models\Plugin;
+use Illuminate\Console\Application as Artisan;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
@@ -33,11 +34,19 @@ use Illuminate\Support\Facades\Log;
 class PluginServiceProvider extends ServiceProvider
 {
     /**
+     * 登録されたプラグインコマンドを保持
+     */
+    protected array $pluginCommands = [];
+
+    /**
      * Register services.
      */
     public function register(): void
     {
-        //
+        // プラグインのコマンドを登録（CLIモードのみ）
+        if ($this->app->runningInConsole()) {
+            $this->registerPluginCommands();
+        }
     }
 
     /**
@@ -179,6 +188,62 @@ class PluginServiceProvider extends ServiceProvider
                     });
             }
         }
+    }
+
+    /**
+     * プラグインのコマンドを登録
+     */
+    protected function registerPluginCommands(): void
+    {
+        // pluginsディレクトリをスキャン
+        $pluginsPath = base_path('plugins');
+        
+        if (!File::isDirectory($pluginsPath)) {
+            return;
+        }
+
+        $pluginDirs = File::directories($pluginsPath);
+        
+        foreach ($pluginDirs as $pluginDir) {
+            $commandsPath = $pluginDir . '/app/Console/Commands';
+            
+            if (!File::isDirectory($commandsPath)) {
+                continue;
+            }
+
+            // プラグイン名を取得（ディレクトリ名）
+            $pluginName = basename($pluginDir);
+            
+            // コマンドファイルをスキャン
+            $commandFiles = File::files($commandsPath);
+            
+            foreach ($commandFiles as $file) {
+                if ($file->getExtension() !== 'php') {
+                    continue;
+                }
+
+                $className = $file->getBasename('.php');
+                $fullClassName = "Plugins\\{$pluginName}\\App\\Console\\Commands\\{$className}";
+                
+                // クラスが存在し、Commandクラスを継承しているか確認
+                if (class_exists($fullClassName) && is_subclass_of($fullClassName, \Illuminate\Console\Command::class)) {
+                    $this->pluginCommands[] = $fullClassName;
+                }
+            }
+        }
+
+        // コマンドを登録
+        if (!empty($this->pluginCommands)) {
+            $this->commands($this->pluginCommands);
+        }
+    }
+
+    /**
+     * 登録されたプラグインコマンドを取得
+     */
+    public function getPluginCommands(): array
+    {
+        return $this->pluginCommands;
     }
 
 }
