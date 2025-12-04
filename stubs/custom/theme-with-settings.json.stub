@@ -39,11 +39,11 @@
     },
     "permissions": {
         "database": {
-            "own_tables": false,
+            "own_tables": true,
             "core_tables": []
         },
         "storage": {
-            "own_directory": false,
+            "own_directory": true,
             "public_uploads": false,
             "temp_files": false
         },
@@ -61,7 +61,7 @@
             "register_middleware": false,
             "register_commands": false,
             "register_blade_directives": false,
-            "modify_routes": false
+            "modify_routes": true
         }
     }
 }

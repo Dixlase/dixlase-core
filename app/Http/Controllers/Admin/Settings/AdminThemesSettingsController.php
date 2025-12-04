@@ -25,6 +25,7 @@ namespace App\Http\Controllers\Admin\Settings;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use Illuminate\Http\Request;
 use App\Models\Theme;
+use App\Models\ThemeAudit;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -32,6 +33,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Artisan;
 use App\Helpers\GitExcludeHelper;
 use App\Helpers\ComposerLocalHelper;
+use App\Services\Theme\ThemePermissionService;
 
 
 
@@ -51,21 +53,178 @@ class AdminThemesSettingsController extends AdminLoggedInController
             ->first();
         $activeThemeId = $themeSetting ? (int)$themeSetting->value : null;
 
+        // 権限サービスを取得
+        $permissionService = app(ThemePermissionService::class);
+
         // テーマ設定機能の有無をチェック
         // データベースのhas_settingsカラムを優先し、nullの場合のみファイルチェック
         foreach ($themes as $theme) {
             if ($theme->has_settings === null) {
                 $theme->has_settings = $this->hasThemeSettings($theme);
             }
+            
+            // 権限サマリーを取得（監査結果を含む）
+            $summary = $permissionService->getSummary($theme->slug);
+            $summary['audit'] = $this->getThemeAuditResult($theme->slug);
+            $theme->permission_summary = $summary;
         }
 
         // アンインストール済みテーマを検出
         $uninstalledThemes = $this->getUninstalledThemes();
+        
+        // アンインストール済みテーマにも権限サマリーと監査結果を追加
+        foreach ($uninstalledThemes as &$theme) {
+            $summary = $permissionService->getSummary($theme['slug']);
+            $summary['audit'] = $this->getThemeAuditResult($theme['slug']);
+            $theme['permission_summary'] = $summary;
+        }
 
         $this->viewParams['themes'] = $themes;
         $this->viewParams['uninstalledThemes'] = $uninstalledThemes;
         $this->viewParams['activeThemeId'] = $activeThemeId;
         return view('admin::settings.themes.index', $this->viewParams);
+    }
+    
+    /**
+     * テーマの監査結果をDBから取得
+     *
+     * @param string $themeSlug
+     * @return array
+     */
+    protected function getThemeAuditResult(string $themeSlug): array
+    {
+        $audit = ThemeAudit::getBySlug($themeSlug);
+        
+        if ($audit) {
+            return $audit->toAuditArray();
+        }
+        
+        // 監査結果がない場合は空の結果を返す
+        return [
+            'has_mismatches' => false,
+            'mismatches' => [],
+            'matches_count' => 0,
+            'total_checked' => 0,
+            'audited_at' => null,
+        ];
+    }
+    
+    /**
+     * テーマを監査してDBに保存
+     *
+     * @param string $themeSlug
+     * @return array
+     */
+    protected function runThemeAudit(string $themeSlug): array
+    {
+        try {
+            Log::info('Theme audit starting', ['theme' => $themeSlug]);
+            
+            Artisan::call('dls:theme:audit', [
+                'theme' => $themeSlug,
+                '--json' => true,
+            ]);
+            
+            $output = trim(Artisan::output());
+            
+            Log::info('Theme audit output', [
+                'theme' => $themeSlug,
+                'output_length' => strlen($output),
+                'output_preview' => substr($output, 0, 500),
+            ]);
+            
+            $result = json_decode($output, true);
+            
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                Log::warning('Theme audit JSON parse error', [
+                    'theme' => $themeSlug,
+                    'error' => json_last_error_msg(),
+                    'output' => $output,
+                ]);
+            }
+            
+            if (json_last_error() === JSON_ERROR_NONE && is_array($result)) {
+                // mismatchesのevidenceを制限（DBサイズ削減）
+                $mismatches = $result['mismatches'] ?? [];
+                foreach ($mismatches as &$mismatch) {
+                    if (isset($mismatch['evidence']) && is_array($mismatch['evidence'])) {
+                        // evidenceは最大3件まで
+                        $mismatch['evidence'] = array_slice($mismatch['evidence'], 0, 3);
+                    }
+                }
+                unset($mismatch);
+                
+                $auditData = [
+                    'has_mismatches' => !empty($mismatches),
+                    'mismatches' => $mismatches,
+                    'matches_count' => count($result['matches'] ?? []),
+                    'total_checked' => $result['total_checked'] ?? 0,
+                    'risk_level' => $result['risk_level'] ?? null,
+                    'risk_reasons' => $result['risk_reasons'] ?? [],
+                ];
+                
+                Log::info('Theme audit data prepared', ['theme' => $themeSlug, 'mismatches_count' => count($mismatches)]);
+                
+                // DBに保存
+                $audit = ThemeAudit::saveAuditResult($themeSlug, $auditData);
+                
+                Log::info('Theme audit saved', ['theme' => $themeSlug, 'audit_id' => $audit->id]);
+                
+                return $audit->toAuditArray();
+            }
+        } catch (\Exception $e) {
+            Log::error('Theme audit failed', [
+                'theme' => $themeSlug,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+        }
+        
+        return [
+            'has_mismatches' => false,
+            'mismatches' => [],
+            'matches_count' => 0,
+            'total_checked' => 0,
+            'audited_at' => null,
+        ];
+    }
+    
+    /**
+     * テーマを手動で監査（Ajax）
+     */
+    public function audit(Request $request)
+    {
+        // JSONリクエストの場合はjson()で取得
+        $slug = $request->json('slug') ?? $request->input('slug');
+        
+        Log::info('Theme audit request', ['slug' => $slug, 'content_type' => $request->header('Content-Type')]);
+        
+        if (!$slug) {
+            return response()->json([
+                'success' => false,
+                'message' => __('admin.settings.themes.audit.invalid_slug'),
+            ], 400);
+        }
+        
+        try {
+            $result = $this->runThemeAudit($slug);
+            
+            return response()->json([
+                'success' => true,
+                'message' => __('admin.settings.themes.audit.completed'),
+                'audit' => $result,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Theme audit controller error', [
+                'slug' => $slug,
+                'error' => $e->getMessage(),
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => __('admin.settings.themes.audit.failed') . ': ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     // テーマ追加
