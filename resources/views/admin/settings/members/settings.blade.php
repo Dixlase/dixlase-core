@@ -163,6 +163,37 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </section>
 
+        <!-- CAPTCHAを使用するフォーム設定 -->
+        <section>
+            <h2>{{ __('admin.settings.members.settings.captcha_form_settings') }}</h2>
+            <p>{{ __('admin.settings.members.settings.captcha_form_settings_description') }}</p>
+            
+            @if(!$captchaEnabled)
+                <x-message
+                    type="info"
+                    :message="__('admin.settings.members.settings.captcha_not_enabled', ['url' => route('admin.settings.security')])"
+                />
+            @endif
+            
+            <fieldset>
+                <legend>{{ __('admin.settings.members.settings.captcha_enabled_forms') }}</legend>
+                <div class="space-y-2">
+                    @foreach($captchaFormSettings as $formSetting)
+                        <x-form.toggle
+                            :label="__('admin.settings.security.captcha_forms.' . $formSetting->key)"
+                            :id="'captcha_form_' . $formSetting->key"
+                            :name="'captcha_form_' . $formSetting->key"
+                            :checked="old('captcha_form_' . $formSetting->key, $formSetting->enabled)"
+                            :disabled="!$captchaEnabled"
+                        />
+                    @endforeach
+                </div>
+                <p class="mt-2">
+                    {{ __('admin.settings.members.settings.captcha_form_settings_help') }}
+                </p>
+            </fieldset>
+        </section>
+
         <!-- パスワードリセット機能設定 -->
         <section>
             <h2>{{ __('admin.settings.members.settings.password_reset_settings') }}</h2>

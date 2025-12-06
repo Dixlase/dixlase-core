@@ -152,6 +152,4 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </form>
     </div>
 </div>
-<!-- Alpine.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 @endsection
