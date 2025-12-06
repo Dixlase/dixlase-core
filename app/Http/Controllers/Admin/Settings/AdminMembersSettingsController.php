@@ -43,7 +43,6 @@ use Illuminate\Support\Facades\Hash;
 use App\Helpers\AdminHelper;
 use App\Services\MailServerValidatorService;
 use App\Contracts\Repositories\MemberSettingRepositoryInterface;
-use App\Models\CaptchaFormSetting;
 use App\Models\SecuritySetting;
 
 
@@ -946,11 +945,11 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['isMailServerTested'] = $isMailServerTested;
         $this->viewParams['mailConnectionTestDate'] = $mailConnectionTestDate;
 
-        // CAPTCHAフォーム設定
-        $captchaFormSettings = CaptchaFormSetting::getOrderedForms();
+        // CAPTCHA設定（管理画面ログイン用）
         $captchaEnabled = filter_var(SecuritySetting::get('captcha_enabled', false), FILTER_VALIDATE_BOOLEAN);
-        $this->viewParams['captchaFormSettings'] = $captchaFormSettings;
+        $captchaAdminLoginEnabled = (bool) $this->memberSettingRepository->get('captcha_admin_login_enabled', false);
         $this->viewParams['captchaEnabled'] = $captchaEnabled;
+        $this->viewParams['captchaAdminLoginEnabled'] = $captchaAdminLoginEnabled;
 
         return view('admin.settings.members.settings', $this->viewParams);
     }
@@ -999,13 +998,8 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->memberSettingRepository->set('recovery_codes_count', (string) $validated['recovery_codes_count']);
         $this->memberSettingRepository->set('recovery_code_regenerate_interval', (string) $validated['recovery_code_regenerate_interval']);
 
-        // CAPTCHAフォーム設定の保存
-        $captchaFormSettings = CaptchaFormSetting::all();
-        foreach ($captchaFormSettings as $formSetting) {
-            $inputKey = 'captcha_form_' . $formSetting->key;
-            $formSetting->enabled = $request->boolean($inputKey);
-            $formSetting->save();
-        }
+        // CAPTCHA設定（管理画面ログイン用）の保存
+        $this->memberSettingRepository->set('captcha_admin_login_enabled', $request->boolean('captcha_admin_login_enabled') ? '1' : '0');
 
         return redirect()->route('admin.settings.members.settings')
             ->with('success', __('admin.settings.members.settings.updated'));

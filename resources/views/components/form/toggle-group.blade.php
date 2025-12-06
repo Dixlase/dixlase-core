@@ -32,6 +32,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'options' => [],
     'values' => [],
     'disabled' => false,
+    'xBindDisabled' => null,  // Alpine.js動的disabled用
     'class' => '',
     'flexDirection' => 'col',
     'cardStyle' => false,  // カード形式で表示
@@ -43,7 +44,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'flex-col' => $flexDirection == 'col',
     'flex-row flex-wrap' => $flexDirection == 'row',
     $class,
-])>
+]) @if($xBindDisabled) :class="{ 'opacity-50': {{ $xBindDisabled }} }" @endif>
     @foreach ($options as $key => $option)
         @php
             // シンプル形式と拡張形式の両方に対応
@@ -73,6 +74,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                value="{{ $optionValue }}"
                                {{ $isChecked ? 'checked' : '' }}
                                @if($disabled) disabled @endif
+                               @if($xBindDisabled) x-bind:disabled="{{ $xBindDisabled }}" @endif
                                class="sr-only peer">
                         <div class="w-11 h-6 rounded-full transition-colors peer-focus:outline-none
                             {{ $disabled && $isChecked ? 'bg-indigo-900 dark:bg-indigo-900' : '' }}
@@ -104,6 +106,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                            value="{{ $optionValue }}"
                            {{ $isChecked ? 'checked' : '' }}
                            @if($disabled) disabled @endif
+                           @if($xBindDisabled) x-bind:disabled="{{ $xBindDisabled }}" @endif
                            class="sr-only peer">
                     <div class="w-11 h-6 rounded-full transition-colors peer-focus:outline-none
                         {{ $disabled && $isChecked ? 'bg-indigo-900 dark:bg-indigo-900' : '' }}

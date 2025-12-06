@@ -57,6 +57,8 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
             // 回復コード設定
             'recovery_codes_count' => 'required|integer|min:1|max:10',
             'recovery_code_regenerate_interval' => 'required|integer|min:1|max:168', // 1-168時間（1時間-7日間）
+            // CAPTCHA設定（管理画面ログイン用）
+            'captcha_admin_login_enabled' => 'nullable|boolean',
         ];
 
         return $rules;
