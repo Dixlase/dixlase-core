@@ -174,6 +174,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                         {{ __('admin.settings.plugins.permissions.audit_mismatch_badge') }}
                                                     </span>
                                                 @endif
+                                                {{-- CSP互換性バッジ --}}
+                                                @php
+                                                    $cspLoader = app(\App\Services\Csp\CspExtensionLoader::class);
+                                                    $cspCompatibility = $cspLoader->getCspCompatibility('plugin', $plugin->slug);
+                                                @endphp
+                                                @if($cspCompatibility['status'] === 'csp_ready' || $cspCompatibility['status'] === 'compatible')
+                                                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" title="{{ __('admin.settings.security.csp.badge_csp_ready_tooltip') }}">
+                                                        <i class="fas fa-shield-alt mr-1"></i>
+                                                        {{ __('admin.settings.security.csp.badge_csp_ready') }}
+                                                    </span>
+                                                @elseif($cspCompatibility['requires_inline_js'])
+                                                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" title="{{ __('admin.settings.security.csp.badge_inline_required_tooltip') }}">
+                                                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                                                        {{ __('admin.settings.security.csp.badge_inline_required') }}
+                                                    </span>
+                                                @endif
                                                 {{-- CSP診断バッジ --}}
                                                 @if(isset($plugin->csp_diagnostic) && !$plugin->csp_diagnostic['compliant'])
                                                     @php

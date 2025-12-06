@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use App\Models\BaseSetting;
 use App\Models\MemberRolePermission;
+use App\Models\PluginMemberRolePermission;
 
 
 class AdminHelper
@@ -179,6 +180,73 @@ class AdminHelper
 
         // ユーザーの権限値がview_roles以上であれば編集可能
         return $permission->canView($user->role);
+    }
+
+    /**
+     * プラグインメニューのアクセス権限をチェック
+     */
+    public static function canAccessPluginMenu(string $pluginSlug, string $menuKey): bool
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return false;
+        }
+
+        if ($user->role->value === MemberRole::SUPER_ADMIN->value) {
+            return true;
+        }
+
+        $permission = PluginMemberRolePermission::getPermission($pluginSlug, $menuKey);
+        if (!$permission) {
+            // 権限設定がない場合はADMIN以上でアクセス可能
+            return $user->role->value >= MemberRole::ADMIN->value;
+        }
+
+        return $permission->canAccess($user->role) || $permission->canView($user->role);
+    }
+
+    /**
+     * プラグインメニューの閲覧権限をチェック
+     */
+    public static function canViewPluginMenu(string $pluginSlug, string $menuKey): bool
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return false;
+        }
+
+        if ($user->role->value === MemberRole::SUPER_ADMIN->value) {
+            return true;
+        }
+
+        $permission = PluginMemberRolePermission::getPermission($pluginSlug, $menuKey);
+        if (!$permission) {
+            return $user->role->value >= MemberRole::ADMIN->value;
+        }
+
+        return $permission->canAccess($user->role);
+    }
+
+    /**
+     * プラグインメニューの編集権限をチェック
+     */
+    public static function canEditPluginMenu(string $pluginSlug, string $menuKey): bool
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return false;
+        }
+
+        if ($user->role->value === MemberRole::SUPER_ADMIN->value) {
+            return true;
+        }
+
+        $permission = PluginMemberRolePermission::getPermission($pluginSlug, $menuKey);
+        if (!$permission) {
+            return $user->role->value >= MemberRole::ADMIN->value;
+        }
+
+        return $permission->canEdit($user->role);
     }
 
     /**

@@ -18,6 +18,15 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
+{{--
+オプション配列の形式:
+- シンプル形式: ['value' => 'label', ...]
+- 拡張形式: [
+    ['value' => 'xxx', 'label' => 'Label', 'description' => '説明', 'icon' => 'fas fa-xxx'],
+    ...
+  ]
+--}}
+
 @props([
     'name' => '',
     'options' => [],
@@ -25,6 +34,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'disabled' => false,
     'class' => '',
     'flexDirection' => 'col',
+    'cardStyle' => false,  // カード形式で表示
 ])
 
 <div @class([
@@ -34,30 +44,86 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'flex-row flex-wrap' => $flexDirection == 'row',
     $class,
 ])>
-    @foreach ($options as $option_value => $option_label)
+    @foreach ($options as $key => $option)
         @php
-            $isChecked = in_array($option_value, $values);
-            $toggleId = $name . '_' . $option_value;
+            // シンプル形式と拡張形式の両方に対応
+            if (is_array($option)) {
+                $optionValue = $option['value'] ?? $key;
+                $optionLabel = $option['label'] ?? '';
+                $optionDescription = $option['description'] ?? null;
+                $optionIcon = $option['icon'] ?? null;
+            } else {
+                $optionValue = $key;
+                $optionLabel = $option;
+                $optionDescription = null;
+                $optionIcon = null;
+            }
+            $isChecked = in_array($optionValue, $values);
+            $toggleId = $name . '_' . $optionValue;
         @endphp
-        <div class="flex items-center space-x-3">
-            <label for="{{ $toggleId }}" class="relative inline-flex items-center {{ $disabled ? 'cursor-not-allowed' : 'cursor-pointer' }}">
-                <input type="checkbox"
-                       id="{{ $toggleId }}"
-                       name="{{ $name }}[]"
-                       value="{{ $option_value }}"
-                       {{ $isChecked ? 'checked' : '' }}
-                       @if($disabled) disabled @endif
-                       class="sr-only peer">
-                <div class="w-11 h-6 rounded-full transition-colors peer-focus:outline-none
-                    {{ $disabled && $isChecked ? 'bg-indigo-900 dark:bg-indigo-900' : '' }}
-                    {{ $disabled && !$isChecked ? 'bg-gray-300 dark:bg-gray-700' : '' }}
-                    {{ !$disabled ? 'bg-gray-200 dark:bg-gray-600 peer-checked:bg-indigo-600' : '' }}
-                "></div>
-                <div class="absolute left-1 top-1 w-4 h-4 bg-white border border-gray-300 rounded-full transition-all peer-checked:translate-x-full peer-checked:border-white"></div>
-            </label>
-            <span class="text-sm {{ $disabled ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300' }}">
-                {{ __($option_label) }}
-            </span>
-        </div>
+        
+        @if($cardStyle)
+            {{-- カード形式 --}}
+            <div class="p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors {{ $disabled ? 'opacity-50' : '' }}">
+                <label for="{{ $toggleId }}" class="flex items-center gap-3 {{ $disabled ? 'cursor-not-allowed' : 'cursor-pointer' }}">
+                    <div class="relative inline-flex items-center flex-shrink-0">
+                        <input type="checkbox"
+                               id="{{ $toggleId }}"
+                               name="{{ $name }}[]"
+                               value="{{ $optionValue }}"
+                               {{ $isChecked ? 'checked' : '' }}
+                               @if($disabled) disabled @endif
+                               class="sr-only peer">
+                        <div class="w-11 h-6 rounded-full transition-colors peer-focus:outline-none
+                            {{ $disabled && $isChecked ? 'bg-indigo-900 dark:bg-indigo-900' : '' }}
+                            {{ $disabled && !$isChecked ? 'bg-gray-300 dark:bg-gray-700' : '' }}
+                            {{ !$disabled ? 'bg-gray-200 dark:bg-gray-600 peer-checked:bg-indigo-600' : '' }}
+                        "></div>
+                        <div class="absolute left-1 top-1 w-4 h-4 bg-white border border-gray-300 rounded-full transition-all peer-checked:translate-x-full peer-checked:border-white"></div>
+                    </div>
+                    @if ($optionIcon)
+                        <i class="{{ $optionIcon }} text-gray-500 dark:text-gray-400"></i>
+                    @endif
+                    <div class="flex-1">
+                        <span class="font-medium {{ $disabled ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300' }}">
+                            {{ __($optionLabel) }}
+                        </span>
+                        @if ($optionDescription)
+                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ __($optionDescription) }}</p>
+                        @endif
+                    </div>
+                </label>
+            </div>
+        @else
+            {{-- シンプル形式 --}}
+            <div class="flex items-center space-x-3">
+                <label for="{{ $toggleId }}" class="relative inline-flex items-center {{ $disabled ? 'cursor-not-allowed' : 'cursor-pointer' }}">
+                    <input type="checkbox"
+                           id="{{ $toggleId }}"
+                           name="{{ $name }}[]"
+                           value="{{ $optionValue }}"
+                           {{ $isChecked ? 'checked' : '' }}
+                           @if($disabled) disabled @endif
+                           class="sr-only peer">
+                    <div class="w-11 h-6 rounded-full transition-colors peer-focus:outline-none
+                        {{ $disabled && $isChecked ? 'bg-indigo-900 dark:bg-indigo-900' : '' }}
+                        {{ $disabled && !$isChecked ? 'bg-gray-300 dark:bg-gray-700' : '' }}
+                        {{ !$disabled ? 'bg-gray-200 dark:bg-gray-600 peer-checked:bg-indigo-600' : '' }}
+                    "></div>
+                    <div class="absolute left-1 top-1 w-4 h-4 bg-white border border-gray-300 rounded-full transition-all peer-checked:translate-x-full peer-checked:border-white"></div>
+                </label>
+                @if ($optionIcon)
+                    <i class="{{ $optionIcon }} text-gray-500 dark:text-gray-400"></i>
+                @endif
+                <div>
+                    <span class="text-sm {{ $disabled ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300' }}">
+                        {{ __($optionLabel) }}
+                    </span>
+                    @if ($optionDescription)
+                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ __($optionDescription) }}</p>
+                    @endif
+                </div>
+            </div>
+        @endif
     @endforeach
 </div>

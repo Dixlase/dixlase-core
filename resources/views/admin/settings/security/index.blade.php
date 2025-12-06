@@ -909,7 +909,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </section>
 
         <!-- CSP (Content Security Policy) 設定 -->
-        <section class="mt-8">
+        <section class="mt-8" x-data="{ cspEnabled: {{ old('csp_enabled', $settings['csp_enabled'] ?? true) ? 'true' : 'false' }} }">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ __('admin.settings.security.csp.title') }}</h2>
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ __('admin.settings.security.csp.description') }}</p>
 
@@ -929,75 +929,229 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     value="0"
                 />
                 
-                <x-form.toggle
-                    :label="__('admin.settings.security.csp.enabled')"
-                    id="csp_enabled"
-                    name="csp_enabled"
-                    :checked="old('csp_enabled', $settings['csp_enabled'] ?? true)"
-                />
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" 
+                           id="csp_enabled" 
+                           name="csp_enabled" 
+                           value="1"
+                           x-model="cspEnabled"
+                           {{ old('csp_enabled', $settings['csp_enabled'] ?? true) ? 'checked' : '' }}
+                           class="sr-only peer">
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                    <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">{{ __('admin.settings.security.csp.enabled') }}</span>
+                </label>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin.settings.security.csp.enabled_help') }}</p>
             </fieldset>
 
-            <!-- CSPモード -->
-            <fieldset class="mb-4">
-                <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.settings.security.csp.mode') }}</legend>
-                
-                <x-form.radio-group
-                    name="csp_mode"
-                    :options="[
-                        'report-only' => __('admin.settings.security.csp.mode_options.report-only'),
-                        'enforce' => __('admin.settings.security.csp.mode_options.enforce'),
-                    ]"
-                    :value="old('csp_mode', $settings['csp_mode'] ?? 'report-only')"
-                />
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin.settings.security.csp.mode_help') }}</p>
-            </fieldset>
+            <!-- CSP詳細設定（CSP有効時のみ操作可能） -->
+            <div :class="{ 'opacity-50 pointer-events-none': !cspEnabled }">
+                <!-- CSPモード -->
+                <fieldset class="mb-4">
+                    <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.settings.security.csp.mode') }}</legend>
+                    
+                    <x-form.radio-card-group
+                        name="csp_mode"
+                        :options="[
+                            [
+                                'value' => 'development',
+                                'label' => __('admin.settings.security.csp.mode_development'),
+                                'description' => __('admin.settings.security.csp.mode_development_desc'),
+                                'icon' => 'fas fa-code',
+                                'color' => 'blue',
+                                'features' => [
+                                    __('admin.settings.security.csp.mode_development_feature1'),
+                                    __('admin.settings.security.csp.mode_development_feature2'),
+                                    __('admin.settings.security.csp.mode_development_feature3'),
+                                ],
+                            ],
+                            [
+                                'value' => 'standard',
+                                'label' => __('admin.settings.security.csp.mode_standard'),
+                                'description' => __('admin.settings.security.csp.mode_standard_desc'),
+                                'icon' => 'fas fa-shield-alt',
+                                'color' => 'yellow',
+                                'badge' => __('admin.settings.security.csp.recommended'),
+                                'badgeColor' => 'green',
+                                'features' => [
+                                    __('admin.settings.security.csp.mode_standard_feature1'),
+                                    __('admin.settings.security.csp.mode_standard_feature2'),
+                                    __('admin.settings.security.csp.mode_standard_feature3'),
+                                ],
+                            ],
+                            [
+                                'value' => 'strict',
+                                'label' => __('admin.settings.security.csp.mode_strict'),
+                                'description' => __('admin.settings.security.csp.mode_strict_desc'),
+                                'icon' => 'fas fa-lock',
+                                'color' => 'red',
+                                'features' => [
+                                    __('admin.settings.security.csp.mode_strict_feature1'),
+                                    __('admin.settings.security.csp.mode_strict_feature2'),
+                                    __('admin.settings.security.csp.mode_strict_feature3'),
+                                ],
+                            ],
+                        ]"
+                        :value="old('csp_mode', $settings['csp_mode'] ?? 'development')"
+                        :columns="3"
+                    />
+                </fieldset>
 
-            <!-- 違反をログに記録 -->
-            <fieldset class="mb-4">
-                <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.settings.security.csp.log_violations') }}</legend>
-                
-                <x-form.hidden
-                    name="csp_log_violations"
-                    value="0"
-                />
-                
-                <x-form.toggle
-                    :label="__('admin.settings.security.csp.log_violations')"
-                    id="csp_log_violations"
-                    name="csp_log_violations"
-                    :checked="old('csp_log_violations', $settings['csp_log_violations'] ?? true)"
-                />
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin.settings.security.csp.log_violations_help') }}</p>
-            </fieldset>
+                <!-- 違反をログに記録 -->
+                <fieldset class="mb-4">
+                    <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.settings.security.csp.log_violations') }}</legend>
+                    
+                    <x-form.hidden
+                        name="csp_log_violations"
+                        value="0"
+                    />
+                    
+                    <x-form.toggle
+                        :label="__('admin.settings.security.csp.log_violations')"
+                        id="csp_log_violations"
+                        name="csp_log_violations"
+                        :checked="old('csp_log_violations', $settings['csp_log_violations'] ?? true)"
+                    />
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin.settings.security.csp.log_violations_help') }}</p>
+                </fieldset>
 
-            <!-- 信頼済みドメイン -->
-            <fieldset class="mb-4">
-                <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.settings.security.csp.trusted_domains') }}</legend>
-                
-                <x-form.textarea
-                    id="csp_trusted_domains"
-                    name="csp_trusted_domains"
-                    :value="old('csp_trusted_domains', $settings['csp_trusted_domains'] ?? '')"
-                    :placeholder="__('admin.settings.security.csp.trusted_domains_placeholder')"
-                    rows="4"
-                />
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin.settings.security.csp.trusted_domains_help') }}</p>
-            </fieldset>
+                <!-- 信頼済みドメイン -->
+                <fieldset class="mb-4">
+                    <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.settings.security.csp.trusted_domains') }}</legend>
+                    
+                    <x-form.textarea
+                        id="csp_trusted_domains"
+                        name="csp_trusted_domains"
+                        :value="old('csp_trusted_domains', $settings['csp_trusted_domains'] ?? '')"
+                        :placeholder="__('admin.settings.security.csp.trusted_domains_placeholder')"
+                        rows="4"
+                    />
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin.settings.security.csp.trusted_domains_help') }}</p>
+                </fieldset>
 
-            <!-- カスタムディレクティブ（上級者向け） -->
-            <fieldset class="mb-4">
-                <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.settings.security.csp.custom_directives') }}</legend>
-                
-                <x-form.textarea
-                    id="csp_custom_directives"
-                    name="csp_custom_directives"
-                    :value="old('csp_custom_directives', $settings['csp_custom_directives'] ?? '')"
-                    :placeholder="__('admin.settings.security.csp.custom_directives_placeholder')"
-                    rows="3"
-                />
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin.settings.security.csp.custom_directives_help') }}</p>
-            </fieldset>
+                <!-- 拒否ドメイン -->
+                <fieldset class="mb-4">
+                    <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.settings.security.csp.denied_domains') }}</legend>
+                    
+                    <x-form.textarea
+                        id="csp_denied_domains"
+                        name="csp_denied_domains"
+                        :value="old('csp_denied_domains', $settings['csp_denied_domains'] ?? '')"
+                        :placeholder="__('admin.settings.security.csp.denied_domains_placeholder')"
+                        rows="4"
+                    />
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{!! __('admin.settings.security.csp.denied_domains_help') !!}</p>
+
+                </fieldset>
+
+                <!-- ブロックリスト照合設定 -->
+                <fieldset class="mb-4" x-data="{ blocklistEnabled: {{ old('csp_blocklist_check_enabled', $settings['csp_blocklist_check_enabled'] ?? false) ? 'true' : 'false' }} }">
+                    <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.settings.security.csp.blocklist_check_title') }}</legend>
+                    
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">{!! __('admin.settings.security.csp.blocklist_check_description') !!}</p>
+
+                    <!-- 有効/無効 -->
+                    <div class="mb-4">
+                        <x-form.hidden name="csp_blocklist_check_enabled" value="0" />
+                        <x-form.toggle
+                            :label="__('admin.settings.security.csp.blocklist_check_enabled')"
+                            id="csp_blocklist_check_enabled"
+                            name="csp_blocklist_check_enabled"
+                            :checked="old('csp_blocklist_check_enabled', $settings['csp_blocklist_check_enabled'] ?? false)"
+                            xModel="blocklistEnabled"
+                        />
+                    </div>
+
+                    <!-- 検出時のアクション -->
+                    <div class="mb-4 pl-6" :class="{ 'opacity-50 pointer-events-none': !blocklistEnabled }">
+                        <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">{{ __('admin.settings.security.csp.blocklist_action_label') }}</p>
+                        <x-form.radio-card-group
+                            name="csp_blocklist_action"
+                            :options="[
+                                [
+                                    'value' => 'warn',
+                                    'label' => __('admin.settings.security.csp.blocklist_action_warn'),
+                                    'description' => __('admin.settings.security.csp.blocklist_action_warn_desc'),
+                                    'icon' => 'fas fa-exclamation-triangle',
+                                    'color' => 'yellow',
+                                ],
+                                [
+                                    'value' => 'block',
+                                    'label' => __('admin.settings.security.csp.blocklist_action_block'),
+                                    'description' => __('admin.settings.security.csp.blocklist_action_block_desc'),
+                                    'icon' => 'fas fa-ban',
+                                    'color' => 'red',
+                                ],
+                            ]"
+                            :value="old('csp_blocklist_action', $settings['csp_blocklist_action'] ?? 'warn')"
+                            :columns="2"
+                        />
+                    </div>
+
+                    <!-- カテゴリ選択 -->
+                    <div class="space-y-3 pl-6 mb-4" :class="{ 'opacity-50 pointer-events-none': !blocklistEnabled }">
+                        <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">{{ __('admin.settings.security.csp.blocklist_check_categories') }}</p>
+                        @php
+                            $enabledCategories = explode(',', old('csp_blocklist_enabled_categories', $settings['csp_blocklist_enabled_categories'] ?? ''));
+                            $blocklistSources = config('csp.blocklist_sources', []);
+                            $categoryIcons = [
+                                'tracking' => 'fas fa-ad',
+                                'malware' => 'fas fa-virus',
+                                'cryptominer' => 'fas fa-coins',
+                            ];
+                        @endphp
+                        @foreach($blocklistSources as $categoryKey => $categoryData)
+                        @php
+                            $isChecked = in_array($categoryKey, $enabledCategories);
+                            $toggleId = 'csp_blocklist_category_' . $categoryKey;
+                        @endphp
+                        <div class="p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
+                            <label for="{{ $toggleId }}" class="flex items-center gap-3 cursor-pointer">
+                                <div class="relative inline-flex items-center flex-shrink-0">
+                                    <input type="checkbox"
+                                           id="{{ $toggleId }}"
+                                           name="csp_blocklist_categories[]"
+                                           value="{{ $categoryKey }}"
+                                           {{ $isChecked ? 'checked' : '' }}
+                                           class="sr-only peer">
+                                    <div class="w-11 h-6 rounded-full transition-colors peer-focus:outline-none bg-gray-200 dark:bg-gray-600 peer-checked:bg-indigo-600"></div>
+                                    <div class="absolute left-1 top-1 w-4 h-4 bg-white border border-gray-300 rounded-full transition-all peer-checked:translate-x-full peer-checked:border-white"></div>
+                                </div>
+                                <i class="{{ $categoryIcons[$categoryKey] ?? 'fas fa-list' }} text-gray-500 dark:text-gray-400"></i>
+                                <div class="flex-1">
+                                    <span class="font-medium text-gray-700 dark:text-gray-300">{{ app()->getLocale() === 'en' ? ($categoryData['name_en'] ?? $categoryData['name']) : $categoryData['name'] }}</span>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ app()->getLocale() === 'en' ? ($categoryData['description_en'] ?? $categoryData['description']) : $categoryData['description'] }}</p>
+                                </div>
+                            </label>
+                            <!-- 取得先URL表示 -->
+                            <div class="ml-14 mt-2">
+                                <details class="text-xs">
+                                    <summary class="text-blue-600 dark:text-blue-400 cursor-pointer hover:underline">{{ __('admin.settings.security.csp.blocklist_sources_show') }}</summary>
+                                    <ul class="mt-1 space-y-0.5 text-gray-500 dark:text-gray-400 font-mono text-[10px]">
+                                        @foreach($categoryData['lists'] ?? [] as $url)
+                                        <li class="truncate" title="{{ $url }}">{{ $url }}</li>
+                                        @endforeach
+                                    </ul>
+                                </details>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </fieldset>
+
+                <!-- カスタムディレクティブ（上級者向け） -->
+                <fieldset class="mb-4">
+                    <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.settings.security.csp.custom_directives') }}</legend>
+                    
+                    <x-form.textarea
+                        id="csp_custom_directives"
+                        name="csp_custom_directives"
+                        :value="old('csp_custom_directives', $settings['csp_custom_directives'] ?? '')"
+                        :placeholder="__('admin.settings.security.csp.custom_directives_placeholder')"
+                        rows="3"
+                    />
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin.settings.security.csp.custom_directives_help') }}</p>
+                </fieldset>
+            </div>
         </section>
     </form>
 </div>
@@ -2547,5 +2701,6 @@ function resetCaptchaAuthenticationResult(reason) {
     hideTestResult();
     console.log('DEBUG: Hidden CAPTCHA test result message due to settings change');
 }
+
 </script>
 @endpush

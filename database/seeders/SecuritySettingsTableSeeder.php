@@ -257,6 +257,13 @@ class SecuritySettingsTableSeeder extends Seeder
             ['value' => '']
         );
 
+        // 拒否ドメイン（改行区切り）
+        // プラグイン/テーマがこれらのドメインを使用しようとしても、CSPによりブロックされる
+        SecuritySetting::updateOrCreate(
+            ['name' => 'csp_denied_domains'],
+            ['value' => '']
+        );
+
         // カスタムディレクティブ（JSON形式）
         SecuritySetting::updateOrCreate(
             ['name' => 'csp_custom_directives'],

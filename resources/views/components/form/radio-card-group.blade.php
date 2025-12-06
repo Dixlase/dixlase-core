@@ -43,6 +43,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 - badge: (任意) バッジテキスト（開発専用など）
 - badgeColor: (任意) バッジの色 (yellow, red, green, blue, gray) デフォルト: yellow
 - disabled: (任意) 無効化フラグ
+- features: (任意) 機能リスト（配列）
 --}}
 
 @props([
@@ -51,6 +52,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'value' => null,
     'xModel' => null,
     'columns' => 4,        // グリッドの列数 (1, 2, 3, 4)
+    'direction' => 'grid', // 'grid', 'row', 'col'
     'disabled' => false,
     'class' => '',
 ])
@@ -59,13 +61,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     $currentValue = old($name, $value);
     $modelVar = $xModel ?: null;
     
-    // 列数に応じたグリッドクラス
-    $gridClasses = match((int)$columns) {
-        1 => 'grid-cols-1',
-        2 => 'grid-cols-1 md:grid-cols-2',
-        3 => 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3',
-        4 => 'grid-cols-1 md:grid-cols-2 xl:grid-cols-4',
-        default => 'grid-cols-1 md:grid-cols-2 xl:grid-cols-4',
+    // レイアウトクラス
+    $layoutClasses = match($direction) {
+        'row' => 'flex flex-wrap gap-4',
+        'col' => 'flex flex-col gap-3',
+        default => 'grid gap-4 ' . match((int)$columns) {
+            1 => 'grid-cols-1',
+            2 => 'grid-cols-1 md:grid-cols-2',
+            3 => 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3',
+            4 => 'grid-cols-1 md:grid-cols-2 xl:grid-cols-4',
+            default => 'grid-cols-1 md:grid-cols-2 xl:grid-cols-4',
+        },
     };
     
     // 色のマッピング
@@ -124,7 +130,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     ];
 @endphp
 
-<div class="grid {{ $gridClasses }} gap-4 {{ $class }}">
+<div class="{{ $layoutClasses }} {{ $class }}" x-data="{ selected: '{{ $currentValue }}' }">
     @foreach ($options as $option)
         @php
             $optionValue = $option['value'] ?? '';
@@ -135,6 +141,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             $optionBadge = $option['badge'] ?? null;
             $optionBadgeColor = $option['badgeColor'] ?? 'yellow';
             $optionDisabled = $option['disabled'] ?? false;
+            $optionFeatures = $option['features'] ?? [];
             
             $colors = $colorClasses[$optionColor] ?? $colorClasses['blue'];
             $badgeClass = $badgeColorClasses[$optionBadgeColor] ?? $badgeColorClasses['yellow'];
@@ -148,13 +155,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                        ? '{{ $colors['border'] }} ring-2 {{ $colors['ring'] }} {{ $colors['bg'] }}' 
                        : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'"
                @else
-                   class="{{ $currentValue == $optionValue ? "{$colors['border']} ring-2 {$colors['ring']} {$colors['bg']}" : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500' }}"
+                   :class="selected === '{{ $optionValue }}' 
+                       ? '{{ $colors['border'] }} ring-2 {{ $colors['ring'] }} {{ $colors['bg'] }}' 
+                       : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'"
                @endif
+               @click="selected = '{{ $optionValue }}'"
         >
             <input type="radio" 
                    name="{{ $name }}" 
                    value="{{ $optionValue }}"
-                   @if ($modelVar) x-model="{{ $modelVar }}" @endif
+                   @if ($modelVar) x-model="{{ $modelVar }}" @else x-model="selected" @endif
                    @if (!$modelVar && $currentValue == $optionValue) checked @endif
                    @if ($isDisabled) disabled @endif
                    class="sr-only">
@@ -176,13 +186,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             {{ __($optionDescription) }}
                         </span>
                     @endif
+                    @if (!empty($optionFeatures))
+                        <ul class="mt-2 text-xs text-gray-500 dark:text-gray-400 space-y-0.5 list-disc list-inside">
+                            @foreach ($optionFeatures as $feature)
+                                <li>{{ __($feature) }}</li>
+                            @endforeach
+                        </ul>
+                    @endif
                 </span>
             </span>
             <span class="pointer-events-none absolute -inset-px rounded-lg" 
                   @if ($modelVar)
                       :class="{{ $modelVar }} === '{{ $optionValue }}' ? 'border-2 {{ $colors['border'] }}' : 'border border-transparent'"
                   @else
-                      class="{{ $currentValue == $optionValue ? "border-2 {$colors['border']}" : 'border border-transparent' }}"
+                      :class="selected === '{{ $optionValue }}' ? 'border-2 {{ $colors['border'] }}' : 'border border-transparent'"
                   @endif
                   aria-hidden="true"></span>
         </label>

@@ -88,6 +88,37 @@ class CspServiceProvider extends ServiceProvider
         Blade::directive('cspMeta', function () {
             return '<?php echo csp_meta(); ?>';
         });
+
+        // @dixScript / @enddixScript - CSP対応インラインスクリプト
+        // 使用例: @dixScript console.log('hello'); @enddixScript
+        Blade::directive('dixScript', function ($expression) {
+            $options = $expression ? ", {$expression}" : '';
+            return "<?php ob_start(); ?>";
+        });
+        Blade::directive('enddixScript', function () {
+            return "<?php echo \App\Helpers\Dixlase::script(ob_get_clean()); ?>";
+        });
+
+        // @dixStyle / @enddixStyle - CSP対応インラインスタイル
+        // 使用例: @dixStyle body { color: red; } @enddixStyle
+        Blade::directive('dixStyle', function ($expression) {
+            return "<?php ob_start(); ?>";
+        });
+        Blade::directive('enddixStyle', function () {
+            return "<?php echo \App\Helpers\Dixlase::style(ob_get_clean()); ?>";
+        });
+
+        // @dixScriptSrc - CSP対応外部スクリプト
+        // 使用例: @dixScriptSrc('https://example.com/script.js', ['defer' => true])
+        Blade::directive('dixScriptSrc', function ($expression) {
+            return "<?php echo \App\Helpers\Dixlase::scriptSrc({$expression}); ?>";
+        });
+
+        // @dixStyleSrc - CSP対応外部スタイルシート
+        // 使用例: @dixStyleSrc('https://example.com/style.css')
+        Blade::directive('dixStyleSrc', function ($expression) {
+            return "<?php echo \App\Helpers\Dixlase::styleSrc({$expression}); ?>";
+        });
     }
 
     /**

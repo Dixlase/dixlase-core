@@ -92,7 +92,10 @@ class CspBuilder
         $registryDirectives = $this->registry->collectDirectives();
         $directives = $this->mergeDirectives($directives, $registryDirectives);
 
-        // 6. レポートURIを追加
+        // 6. 拒否ドメインを除外（最優先）
+        $directives = $this->filterDeniedDomains($directives);
+
+        // 7. レポートURIを追加
         $directives = $this->addReportUri($directives);
 
         return $directives;
@@ -117,6 +120,91 @@ class CspBuilder
         }
 
         return array_unique($configDomains);
+    }
+
+    /**
+     * 拒否ドメインを取得
+     * 
+     * これらのドメインはplugin.json/theme.jsonで宣言されていても
+     * CSPに追加されない（最優先でブロック）
+     */
+    protected function getDeniedDomains(): array
+    {
+        $deniedDomains = [];
+
+        try {
+            $dbDomains = SecuritySetting::get('csp_denied_domains', '');
+            if (!empty($dbDomains)) {
+                $deniedDomains = array_filter(array_map('trim', explode("\n", $dbDomains)));
+            }
+        } catch (\Exception $e) {
+            // データベース未設定時は無視
+        }
+
+        return array_unique($deniedDomains);
+    }
+
+    /**
+     * ドメインが拒否リストに含まれているかチェック
+     */
+    protected function isDeniedDomain(string $domain): bool
+    {
+        $deniedDomains = $this->getDeniedDomains();
+        
+        foreach ($deniedDomains as $denied) {
+            // 完全一致
+            if ($domain === $denied) {
+                return true;
+            }
+            
+            // ワイルドカードマッチング（*.example.com）
+            if (str_starts_with($denied, '*.')) {
+                $baseDomain = substr($denied, 2);
+                if (str_ends_with($domain, $baseDomain) || $domain === $baseDomain) {
+                    return true;
+                }
+            }
+            
+            // URLからドメイン部分を抽出してチェック
+            $parsedDomain = parse_url($domain, PHP_URL_HOST);
+            if ($parsedDomain) {
+                if ($parsedDomain === $denied) {
+                    return true;
+                }
+                if (str_starts_with($denied, '*.')) {
+                    $baseDomain = substr($denied, 2);
+                    if (str_ends_with($parsedDomain, $baseDomain) || $parsedDomain === $baseDomain) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * ディレクティブから拒否ドメインを除外
+     */
+    protected function filterDeniedDomains(array $directives): array
+    {
+        foreach ($directives as $directive => &$values) {
+            $values = array_filter($values, function ($value) {
+                // 特殊値（'self', 'none', 'nonce'等）は除外しない
+                if (str_starts_with($value, "'") && str_ends_with($value, "'")) {
+                    return true;
+                }
+                // data:, blob: 等のスキームも除外しない
+                if (preg_match('/^[a-z]+:$/', $value)) {
+                    return true;
+                }
+                // 拒否ドメインに含まれていなければ許可
+                return !$this->isDeniedDomain($value);
+            });
+            $values = array_values($values); // インデックスを振り直し
+        }
+
+        return $directives;
     }
 
     /**
