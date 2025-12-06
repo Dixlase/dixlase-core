@@ -28,6 +28,7 @@ use App\Http\Requests\Admin\Settings\Members\AdminSettingsMemberStoreRequest;
 use App\Http\Requests\Admin\Settings\Members\AdminSettingsMemberSettingsRequest;
 use App\Models\Member;
 use App\Models\MemberRolePermission;
+use App\Models\PluginMemberRolePermission;
 use App\Models\MemberSetting;
 use App\Models\BaseSetting;
 use Illuminate\Support\Facades\Auth;
@@ -581,15 +582,116 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $roles = MemberRole::cases(); // Enumの一覧を取得
         $menuList = config('admin.nav'); // メニューリスト
 
-        // 権限アイテムを収集
-        $permissionItems = $this->collectMenuPermissions($menuList);
+        // コア機能の権限アイテムを収集
+        $corePermissionItems = $this->collectMenuPermissions($menuList);
+
+        // インストール済みプラグインの権限アイテムを収集
+        $pluginPermissionGroups = $this->collectPluginPermissions();
+        
+        // プラグイン権限を取得
+        $pluginPermissions = PluginMemberRolePermission::all()
+            ->groupBy('plugin_slug')
+            ->map(fn($items) => $items->keyBy('menu_key'));
 
         $this->viewParams['permissions'] = $permissions;
+        $this->viewParams['pluginPermissions'] = $pluginPermissions;
         $this->viewParams['roles'] = $roles;
         $this->viewParams['menuList'] = $menuList;
-        $this->viewParams['permissionItems'] = $permissionItems;
+        $this->viewParams['permissionItems'] = $corePermissionItems;
+        $this->viewParams['pluginPermissionGroups'] = $pluginPermissionGroups;
 
         return view('admin.settings.members.roles', $this->viewParams);
+    }
+
+    /**
+     * インストール済みプラグインから権限設定用のアイテムを収集
+     */
+    private function collectPluginPermissions(): array
+    {
+        $pluginGroups = [];
+        
+        // プラグインディレクトリをスキャン
+        $pluginsPath = base_path('plugins');
+        if (!is_dir($pluginsPath)) {
+            return $pluginGroups;
+        }
+
+        $pluginDirs = array_filter(glob($pluginsPath . '/*'), 'is_dir');
+        
+        foreach ($pluginDirs as $pluginDir) {
+            $pluginJsonPath = $pluginDir . '/plugin.json';
+            $dixlaseJsonPath = $pluginDir . '/dixlase.json';
+            
+            // plugin.json または dixlase.json を読み込み
+            $pluginInfo = null;
+            if (file_exists($pluginJsonPath)) {
+                $pluginInfo = json_decode(file_get_contents($pluginJsonPath), true);
+            } elseif (file_exists($dixlaseJsonPath)) {
+                $pluginInfo = json_decode(file_get_contents($dixlaseJsonPath), true);
+            }
+            
+            if (!$pluginInfo) {
+                continue;
+            }
+
+            $pluginSlug = $pluginInfo['slug'] ?? basename($pluginDir);
+            $pluginName = $pluginInfo['name'] ?? $pluginSlug;
+            
+            // プラグインの管理画面設定を読み込み
+            $adminConfigPath = $pluginDir . '/config/admin.php';
+            if (!file_exists($adminConfigPath)) {
+                continue;
+            }
+            
+            $adminConfig = require $adminConfigPath;
+            if (!isset($adminConfig['nav']) || !is_array($adminConfig['nav'])) {
+                continue;
+            }
+
+            // プラグインのナビゲーションから権限アイテムを収集
+            $items = $this->collectPluginMenuPermissions($adminConfig['nav'], $pluginSlug);
+            
+            if (!empty($items)) {
+                $pluginGroups[] = [
+                    'slug' => $pluginSlug,
+                    'name' => $pluginName,
+                    'description' => $pluginInfo['description'] ?? null,
+                    'items' => $items,
+                ];
+            }
+        }
+        
+        return $pluginGroups;
+    }
+
+    /**
+     * プラグインのナビゲーションから権限設定用のアイテムを収集
+     */
+    private function collectPluginMenuPermissions(array $navConfig, string $pluginSlug, string $parentKey = ''): array
+    {
+        $items = [];
+        
+        foreach ($navConfig as $key => $item) {
+            $menuKey = $parentKey ? $parentKey . '.' . $key : $key;
+            
+            // ルートがある場合は権限設定対象
+            if (isset($item['route'])) {
+                $items[] = [
+                    'type' => 'permission',
+                    'title' => isset($item['text']) ? __($item['text']) : $key,
+                    'menuKey' => $menuKey,
+                    'pluginSlug' => $pluginSlug,
+                ];
+            }
+            
+            // 子メニューがあれば再帰処理
+            if (isset($item['children'])) {
+                $childItems = $this->collectPluginMenuPermissions($item['children'], $pluginSlug, $menuKey);
+                $items = array_merge($items, $childItems);
+            }
+        }
+        
+        return $items;
     }
 
     /**
@@ -642,6 +744,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
 
         $this->authorizeEdit('settings.members.roles');
 
+        // コア権限の更新
         $data = $request->input('permissions', []);
 
         foreach ($data as $menuKey => $values) {
@@ -653,6 +756,24 @@ class AdminMembersSettingsController extends AdminLoggedInController
                     'view_roles' => isset($values['view_roles']) ? (int) $values['view_roles'] : MemberRole::GUEST->value,
                 ]
             );
+        }
+
+        // プラグイン権限の更新
+        $pluginData = $request->input('plugin_permissions', []);
+
+        foreach ($pluginData as $pluginSlug => $menuItems) {
+            foreach ($menuItems as $menuKey => $values) {
+                PluginMemberRolePermission::updateOrCreate(
+                    [
+                        'plugin_slug' => $pluginSlug,
+                        'menu_key' => $menuKey,
+                    ],
+                    [
+                        'access_roles' => isset($values['access_roles']) ? (int) $values['access_roles'] : MemberRole::ADMIN->value,
+                        'view_roles' => isset($values['view_roles']) ? (int) $values['view_roles'] : MemberRole::ADMIN->value,
+                    ]
+                );
+            }
         }
 
         return redirect()->back()->with('success', __('admin.settings.members.messages.permissions_saved'));

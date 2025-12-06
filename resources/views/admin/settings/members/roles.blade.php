@@ -24,49 +24,88 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <form method="POST" action="{{ route('admin.settings.members.roles.update') }}" id="member-roles-form" class="permission-management permission-form" novalidate>
     @csrf
-    <div class="permission-groups space-y-6 mb-10" x-data="{ openSections: {} }">
-        @php
-            $currentSection = null;
-            $sectionItems = [];
-        @endphp
+    
+    {{-- コア機能の権限設定 --}}
+    <div class="permission-section-wrapper mb-8">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
+                <i class="fas fa-cog text-indigo-600 dark:text-indigo-400"></i>
+            </div>
+            <div>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ __('admin.settings.members.roles.core_permissions') }}</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin.settings.members.roles.core_permissions_description') }}</p>
+            </div>
+        </div>
         
-        @foreach ($permissionItems as $index => $item)
-            @if ($item['type'] === 'heading')
-                {{-- 前のセクションがあれば出力 --}}
-                @if ($currentSection !== null)
-                    @include('admin.settings.members.partials.roles-permission-group', [
-                        'sectionTitle' => $currentSection,
-                        'sectionId' => 'section_' . md5($currentSection),
-                        'items' => $sectionItems,
-                        'permissions' => $permissions,
+        <div class="permission-groups space-y-6 mb-10" x-data="{ openSections: {} }">
+            @php
+                $currentSection = null;
+                $sectionItems = [];
+            @endphp
+            
+            @foreach ($permissionItems as $index => $item)
+                @if ($item['type'] === 'heading')
+                    {{-- 前のセクションがあれば出力 --}}
+                    @if ($currentSection !== null)
+                        @include('admin.settings.members.partials.roles-permission-group', [
+                            'sectionTitle' => $currentSection,
+                            'sectionId' => 'section_' . md5($currentSection),
+                            'items' => $sectionItems,
+                            'permissions' => $permissions,
+                            'roles' => $roles
+                        ])
+                    @endif
+                    
+                    {{-- 新しいセクションを開始 --}}
+                    @php
+                        $currentSection = $item['title'];
+                        $sectionItems = [];
+                    @endphp
+                @elseif ($item['type'] === 'permission')
+                    {{-- セクション内のアイテムを収集 --}}
+                    @php
+                        $sectionItems[] = $item;
+                    @endphp
+                @endif
+            @endforeach
+            
+            {{-- 最後のセクションを出力 --}}
+            @if ($currentSection !== null)
+                @include('admin.settings.members.partials.roles-permission-group', [
+                    'sectionTitle' => $currentSection,
+                    'sectionId' => 'section_' . md5($currentSection),
+                    'items' => $sectionItems,
+                    'permissions' => $permissions,
+                    'roles' => $roles
+                ])
+            @endif
+        </div>
+    </div>
+    
+    {{-- プラグインの権限設定 --}}
+    @if (!empty($pluginPermissionGroups))
+        <div class="permission-section-wrapper">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                    <i class="fas fa-puzzle-piece text-purple-600 dark:text-purple-400"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ __('admin.settings.members.roles.plugin_permissions') }}</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin.settings.members.roles.plugin_permissions_description') }}</p>
+                </div>
+            </div>
+            
+            <div class="permission-groups space-y-6 mb-10" x-data="{ openSections: {} }">
+                @foreach ($pluginPermissionGroups as $pluginGroup)
+                    @include('admin.settings.members.partials.roles-plugin-permission-group', [
+                        'pluginGroup' => $pluginGroup,
+                        'pluginPermissions' => $pluginPermissions[$pluginGroup['slug']] ?? collect(),
                         'roles' => $roles
                     ])
-                @endif
-                
-                {{-- 新しいセクションを開始 --}}
-                @php
-                    $currentSection = $item['title'];
-                    $sectionItems = [];
-                @endphp
-            @elseif ($item['type'] === 'permission')
-                {{-- セクション内のアイテムを収集 --}}
-                @php
-                    $sectionItems[] = $item;
-                @endphp
-            @endif
-        @endforeach
-        
-        {{-- 最後のセクションを出力 --}}
-        @if ($currentSection !== null)
-            @include('admin.settings.members.partials.roles-permission-group', [
-                'sectionTitle' => $currentSection,
-                'sectionId' => 'section_' . md5($currentSection),
-                'items' => $sectionItems,
-                'permissions' => $permissions,
-                'roles' => $roles
-            ])
-        @endif
-    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
 </form>
 
 @endsection

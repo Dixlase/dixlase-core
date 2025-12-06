@@ -38,13 +38,52 @@ return [
     |--------------------------------------------------------------------------
     |
     | CSPの動作モードを指定します。
-    | - 'enforce': Content-Security-Policy ヘッダーを使用（違反をブロック）
-    | - 'report-only': Content-Security-Policy-Report-Only ヘッダーを使用（違反を報告のみ）
+    | - 'development': 開発モード（Report-Only、インラインJS許可）
+    | - 'standard': 標準モード（nonce付きインラインのみ許可）
+    | - 'strict': 厳格モード（インライン一切禁止）
     |
     | 実際の設定はデータベース（SecuritySetting）から読み込まれます。
     |
     */
-    'mode' => env('CSP_MODE', 'report-only'),
+    'mode' => env('CSP_MODE', 'development'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | CSP Mode Definitions
+    |--------------------------------------------------------------------------
+    |
+    | 各モードの詳細設定。
+    |
+    */
+    'modes' => [
+        // 開発モード: インラインJS/CSS許可、Report-Onlyで違反を記録
+        'development' => [
+            'header' => 'Content-Security-Policy-Report-Only',
+            'allow_inline_scripts' => true,
+            'allow_inline_styles' => true,
+            'allow_eval' => true,
+            'require_nonce' => false,
+            'block_inline_plugins' => false,
+        ],
+        // 標準モード: nonce付きインラインのみ許可
+        'standard' => [
+            'header' => 'Content-Security-Policy',
+            'allow_inline_scripts' => false,
+            'allow_inline_styles' => false,
+            'allow_eval' => false,
+            'require_nonce' => true,
+            'block_inline_plugins' => false,
+        ],
+        // 厳格モード: インライン一切禁止、requires_inline_jsプラグインをブロック
+        'strict' => [
+            'header' => 'Content-Security-Policy',
+            'allow_inline_scripts' => false,
+            'allow_inline_styles' => false,
+            'allow_eval' => false,
+            'require_nonce' => true,
+            'block_inline_plugins' => true,
+        ],
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -214,5 +253,63 @@ return [
     |
     */
     'log_channel' => 'csp',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Blocklist Sources
+    |--------------------------------------------------------------------------
+    |
+    | 拒否ドメインリストの取得元。
+    | 外部のブロックリストから既知の悪意あるドメインを取得します。
+    |
+    */
+    'blocklist_sources' => [
+        // トラッキング・広告ブロック
+        'tracking' => [
+            'name' => 'トラッキング・広告',
+            'name_en' => 'Tracking & Ads',
+            'description' => '広告ネットワーク、トラッキングサービス、アナリティクス等',
+            'description_en' => 'Ad networks, tracking services, analytics, etc.',
+            'lists' => [
+                // Peter Lowe's Ad and tracking server list
+                'https://pgl.yoyo.org/adservers/serverlist.php?hostformat=nohtml&showintro=0',
+                // AdGuard Tracking Protection
+                'https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_trackers.txt',
+            ],
+        ],
+        // マルウェア・フィッシング
+        'malware' => [
+            'name' => 'マルウェア・フィッシング',
+            'name_en' => 'Malware & Phishing',
+            'description' => '既知のマルウェア配布サイト、フィッシングサイト',
+            'description_en' => 'Known malware distribution sites, phishing sites',
+            'lists' => [
+                // URLhaus Malware URLs (domains only)
+                'https://urlhaus.abuse.ch/downloads/hostfile/',
+            ],
+        ],
+        // 暗号通貨マイニング
+        'cryptominer' => [
+            'name' => '暗号通貨マイニング',
+            'name_en' => 'Cryptominers',
+            'description' => 'ブラウザベースの暗号通貨マイニングスクリプト',
+            'description_en' => 'Browser-based cryptocurrency mining scripts',
+            'lists' => [
+                // NoCoin list (hoshsadiq/adblock-nocoin-list)
+                'https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt',
+            ],
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Blocklist Cache TTL
+    |--------------------------------------------------------------------------
+    |
+    | ブロックリストのキャッシュ時間（秒）。
+    | デフォルト: 86400秒（24時間）
+    |
+    */
+    'blocklist_cache_ttl' => env('CSP_BLOCKLIST_CACHE_TTL', 86400),
 
 ];

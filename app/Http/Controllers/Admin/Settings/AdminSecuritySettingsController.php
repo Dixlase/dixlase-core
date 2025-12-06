@@ -118,7 +118,12 @@ class AdminSecuritySettingsController extends AdminLoggedInController
             'csp_mode' => $this->securitySettingRepository->get('csp_mode', 'report-only'),
             'csp_log_violations' => filter_var($this->securitySettingRepository->get('csp_log_violations', true), FILTER_VALIDATE_BOOLEAN),
             'csp_trusted_domains' => $this->securitySettingRepository->get('csp_trusted_domains', ''),
+            'csp_denied_domains' => $this->securitySettingRepository->get('csp_denied_domains', ''),
             'csp_custom_directives' => $this->securitySettingRepository->get('csp_custom_directives', ''),
+            // CSPブロックリスト照合設定
+            'csp_blocklist_check_enabled' => filter_var($this->securitySettingRepository->get('csp_blocklist_check_enabled', false), FILTER_VALIDATE_BOOLEAN),
+            'csp_blocklist_action' => $this->securitySettingRepository->get('csp_blocklist_action', 'warn'),
+            'csp_blocklist_enabled_categories' => $this->securitySettingRepository->get('csp_blocklist_enabled_categories', ''),
         ];
 
         // 動的reCAPTCHAフォーム設定を取得
@@ -343,7 +348,13 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         $this->securitySettingRepository->set('csp_mode', $request->input('csp_mode', 'report-only'));
         $this->securitySettingRepository->set('csp_log_violations', $request->boolean('csp_log_violations'));
         $this->securitySettingRepository->set('csp_trusted_domains', $request->input('csp_trusted_domains', ''));
+        $this->securitySettingRepository->set('csp_denied_domains', $request->input('csp_denied_domains', ''));
         $this->securitySettingRepository->set('csp_custom_directives', $request->input('csp_custom_directives', ''));
+        // CSPブロックリスト照合設定
+        $this->securitySettingRepository->set('csp_blocklist_check_enabled', $request->boolean('csp_blocklist_check_enabled'));
+        $this->securitySettingRepository->set('csp_blocklist_action', $request->input('csp_blocklist_action', 'warn'));
+        $categories = $request->input('csp_blocklist_categories', []);
+        $this->securitySettingRepository->set('csp_blocklist_enabled_categories', implode(',', $categories));
 
         // ログレベルは通知の有効/無効に関わらず保存できるようにする
         $submittedLevels = $request->input('notification_log_levels', null);

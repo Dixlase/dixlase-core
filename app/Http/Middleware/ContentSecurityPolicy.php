@@ -26,6 +26,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use App\Services\Csp\CspBuilder;
 use App\Services\Csp\CspNonceGenerator;
+use App\Services\Csp\CspExtensionLoader;
 
 /**
  * Content Security Policy Middleware
@@ -36,11 +37,17 @@ class ContentSecurityPolicy
 {
     protected CspBuilder $builder;
     protected CspNonceGenerator $nonceGenerator;
+    protected CspExtensionLoader $extensionLoader;
+    protected bool $extensionsLoaded = false;
 
-    public function __construct(CspBuilder $builder, CspNonceGenerator $nonceGenerator)
-    {
+    public function __construct(
+        CspBuilder $builder,
+        CspNonceGenerator $nonceGenerator,
+        CspExtensionLoader $extensionLoader
+    ) {
         $this->builder = $builder;
         $this->nonceGenerator = $nonceGenerator;
+        $this->extensionLoader = $extensionLoader;
     }
 
     /**
@@ -60,6 +67,12 @@ class ContentSecurityPolicy
 
         // nonceをリクエストに保存（Bladeで使用するため）
         $request->attributes->set('csp_nonce', $this->nonceGenerator->getNonce());
+
+        // プラグイン・テーマからCSP設定を読み込み（1回のみ）
+        if (!$this->extensionsLoaded) {
+            $this->extensionLoader->loadAll();
+            $this->extensionsLoaded = true;
+        }
 
         // コンテキストを設定（admin/front）
         $context = $context ?? $this->detectContext($request);
