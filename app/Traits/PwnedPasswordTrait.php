@@ -28,12 +28,15 @@ trait PwnedPasswordTrait
             $suffix = substr($hash, 5);
 
             // Have I Been Pwned API v3にリクエスト
-            $response = Http::timeout(10)
+            $apiEndpoint = config('security.pwned_passwords.api_endpoint', 'https://api.pwnedpasswords.com');
+            $timeout = config('security.pwned_passwords.timeout', 5);
+            
+            $response = Http::timeout($timeout)
                 ->withHeaders([
                     'User-Agent' => 'Dixlase-Password-Checker/1.0',
                     'Add-Padding' => 'true', // レスポンスサイズを一定にしてプライバシー保護
                 ])
-                ->get("https://api.pwnedpasswords.com/range/{$prefix}");
+                ->get("{$apiEndpoint}/range/{$prefix}");
 
             if (!$response->successful()) {
                 Log::warning('Have I Been Pwned API request failed', [

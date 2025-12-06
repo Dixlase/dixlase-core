@@ -45,5 +45,21 @@ return [
     // SSLを強制するかどうか
     'force_ssl' => env('FORCE_SSL', false),
 
+    /*
+    |--------------------------------------------------------------------------
+    | パスワード漏洩チェック設定
+    |--------------------------------------------------------------------------
+    |
+    | Have I Been Pwned APIを使用したパスワード漏洩チェックの設定
+    | パスワード自体は送信されず、SHA-1ハッシュの先頭5文字のみが送信されます
+    |
+    */
+    'pwned_passwords' => [
+        // Have I Been Pwned API エンドポイント
+        'api_endpoint' => env('PWNED_PASSWORDS_API_ENDPOINT', 'https://api.pwnedpasswords.com'),
+        
+        // APIリクエストのタイムアウト（秒）
+        'timeout' => env('PWNED_PASSWORDS_TIMEOUT', 5),
+    ],
 
 ];

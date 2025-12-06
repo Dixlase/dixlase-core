@@ -508,6 +508,7 @@ return [
             'password_security_description' => 'パスワードに関するセキュリティ設定を管理します。',
             'pwned_password_check' => 'パスワード漏洩チェック',
             'pwned_password_check_help' => 'パスワード設定時に漏洩データベースとの照合を行います。',
+            'pwned_password_api_info' => 'このチェックはHave I Been Pwned APIを使用します。パスワード自体は送信されず、SHA-1ハッシュの先頭5文字のみが使用されるため安全です。',
             'recaptcha_settings' => 'CAPTCHA設定',
             'recaptcha_settings_description' => 'ボット対策のためのCAPTCHA（自動アクセス防止）設定を管理します。',
             'captcha_enabled' => 'CAPTCHAを有効にする',
@@ -551,6 +552,7 @@ return [
             
             // Additional CAPTCHA messages
             'captcha_test_completed_successfully' => 'CAPTCHAの認証テストが正常に完了しています。',
+            'captcha_test_completed_hint' => '管理画面へのログインでCAPTCHAを使用するには<a href=":members_url" class="text-blue-600 dark:text-blue-400 hover:underline">メンバー全体設定</a>で有効にしてください。<br>プラグインでCAPTCHAを使用する場合は各プラグインの設定で有効にしてください。',
             'captcha_authentication_success_title' => '認証成功',
             'captcha_authentication_failed_title' => '認証失敗',
             'captcha_expired_message' => 'CAPTCHA認証が期限切れです。再度実行してください。',
@@ -734,8 +736,10 @@ return [
                 'permission_mismatch' => '権限不一致時の動作',
                 'permission_mismatch_help' => '宣言された権限と実際のコードが一致しない場合の動作を設定します。',
                 'mismatch_action' => [
-                    'warn' => '警告のみ（インストール・有効化は許可）',
-                    'block' => 'ブロック（インストール・有効化を禁止）',
+                    'warn' => '警告のみ',
+                    'warn_description' => '権限不一致を検出しても警告を表示するだけで、インストール・有効化は許可します。',
+                    'block' => 'ブロック',
+                    'block_description' => '権限不一致を検出した場合、インストール・有効化を禁止します。',
                 ],
             ],
             // 拡張機能操作通知設定
@@ -986,6 +990,12 @@ tracking.example.com',
                 'two_factor_mode_global_setting' => '二段階認証の全体設定',
                 'two_factor_methods_label' => '利用可能な二段階認証の方法',
                 'two_factor_methods_help' => 'ユーザーが利用できる二段階認証の方法を選択してください。最低1つは有効にする必要があります。',
+                // CAPTCHAフォーム設定
+                'captcha_form_settings' => 'CAPTCHAを使用するフォーム',
+                'captcha_form_settings_description' => 'CAPTCHAを有効にするフォームを選択します。',
+                'captcha_enabled_forms' => '有効なフォーム',
+                'captcha_form_settings_help' => '選択したフォームでCAPTCHA認証が要求されます。',
+                'captcha_not_enabled' => 'CAPTCHAが有効になっていません。<a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">セキュリティ設定</a>でCAPTCHAを有効にしてください。',
                 'password_reset_settings' => 'パスワードリセット機能設定',
                 'password_reset_enabled' => 'ログイン画面でのパスワードリセット機能',
                 'password_reset_help' => '有効にした場合にはセキュリティリスクが高まる恐れがあるのでご注意ください。<br>無効にした場合、管理画面のログイン画面でパスワードリセットリンクが非表示になり、パスワードリセット機能が利用できなくなります。<br>無効時にパスワードをリセットする場合は、メンバー管理の編集画面から行ってください。',

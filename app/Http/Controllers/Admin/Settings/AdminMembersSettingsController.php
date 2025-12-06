@@ -43,6 +43,8 @@ use Illuminate\Support\Facades\Hash;
 use App\Helpers\AdminHelper;
 use App\Services\MailServerValidatorService;
 use App\Contracts\Repositories\MemberSettingRepositoryInterface;
+use App\Models\CaptchaFormSetting;
+use App\Models\SecuritySetting;
 
 
 
@@ -944,6 +946,12 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['isMailServerTested'] = $isMailServerTested;
         $this->viewParams['mailConnectionTestDate'] = $mailConnectionTestDate;
 
+        // CAPTCHAフォーム設定
+        $captchaFormSettings = CaptchaFormSetting::getOrderedForms();
+        $captchaEnabled = filter_var(SecuritySetting::get('captcha_enabled', false), FILTER_VALIDATE_BOOLEAN);
+        $this->viewParams['captchaFormSettings'] = $captchaFormSettings;
+        $this->viewParams['captchaEnabled'] = $captchaEnabled;
+
         return view('admin.settings.members.settings', $this->viewParams);
     }
 
@@ -990,6 +998,14 @@ class AdminMembersSettingsController extends AdminLoggedInController
         // 回復コード設定
         $this->memberSettingRepository->set('recovery_codes_count', (string) $validated['recovery_codes_count']);
         $this->memberSettingRepository->set('recovery_code_regenerate_interval', (string) $validated['recovery_code_regenerate_interval']);
+
+        // CAPTCHAフォーム設定の保存
+        $captchaFormSettings = CaptchaFormSetting::all();
+        foreach ($captchaFormSettings as $formSetting) {
+            $inputKey = 'captcha_form_' . $formSetting->key;
+            $formSetting->enabled = $request->boolean($inputKey);
+            $formSetting->save();
+        }
 
         return redirect()->route('admin.settings.members.settings')
             ->with('success', __('admin.settings.members.settings.updated'));

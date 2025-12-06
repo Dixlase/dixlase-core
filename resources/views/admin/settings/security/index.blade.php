@@ -196,14 +196,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <legend>{{ __('admin.settings.security.pwned_password_check') }}</legend>
                 <p>{{ __('admin.settings.security.pwned_password_check_help') }}</p>
                 
-                <x-form.radio-group
+                <x-form.toggle
+                    :label="__('common.enabled')"
+                    id="pwned_password_check_enabled"
                     name="pwned_password_check_enabled"
-                    :options="[
-                        1 => __('common.enabled'),
-                        0 => __('common.disabled')
-                    ]"
-                    :value="old('pwned_password_check_enabled', (int) $settings['pwned_password_check_enabled'])"
+                    :checked="old('pwned_password_check_enabled', $settings['pwned_password_check_enabled'])"
                 />
+                
+                <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <div class="flex items-start gap-2">
+                        <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+                        <div class="text-sm text-blue-700 dark:text-blue-300">
+                            <p>{{ __('admin.settings.security.pwned_password_api_info') }}</p>
+                        </div>
+                    </div>
+                </div>
             </fieldset>
         </section>
 
@@ -360,6 +367,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 <div>
                                     <h4 id="captcha-test-title" class="font-semibold"></h4>
                                     <p id="captcha-test-message" class="text-sm mt-1"></p>
+                                    <p id="captcha-test-hint" class="text-sm mt-2" style="display: none;"></p>
                                 </div>
                             </div>
                         </div>
@@ -386,19 +394,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </button>
                     </div>
 
-                    <div class="mt-6">
-                        <h4 class="text-md font-medium mb-3">{{ __('admin.settings.security.captcha_form_settings') }}</h4>
-                        <div class="space-y-2">
-                            @foreach($captchaFormSettings as $formSetting)
-                                <x-form.toggle
-                                    :label="__('admin.settings.security.captcha_forms.' . $formSetting->key)"
-                                    :id="'captcha_form_' . $formSetting->key"
-                                    :name="'captcha_form_' . $formSetting->key"
-                                    :checked="old('captcha_form_' . $formSetting->key, $formSetting->enabled)"
-                                />
-                            @endforeach
-                        </div>
-                    </div>
                 </div>
             </div>
         </section>
@@ -407,7 +402,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- IPアクセス制御設定 -->
         <section>
             <h2>{{ __('admin.settings.security.ip_access_control') }}</h2>
-            <p>{{ __('admin.settings.security.ip_access_control_description') }}</p>
+            <p class="mb-2">{{ __('admin.settings.security.ip_access_control_description') }}</p>
             <!-- 管理画面IP制御 -->
             <section>
                 <h3>{{ __('admin.settings.security.admin_ip_access_control') }}</h3>
@@ -419,25 +414,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         id="enable_allowed_admin_ips"
                         name="enable_allowed_admin_ips"
                         :checked="old('enable_allowed_admin_ips', $settings['enable_allowed_admin_ips'])"
-                        xBind="enableAllowedIPs"
+                        xModel="enableAllowedIPs"
                     />
 
-                    <x-form.label
-                        for="allowed_admin_ips"
-                        :text="__('admin.settings.security.allowed_admin_ips_list')"
-                        class="text-sm font-medium"
-                    />
-                    
-                    <x-form.textarea
-                        id="allowed_admin_ips"
-                        name="allowed_admin_ips"
-                        :value="$settings['allowed_admin_ips']"
-                        :rows="8"
-                        :placeholder="__('admin.settings.security.ip_list_placeholder')"
-                        class="font-mono text-sm"
-                    />
-                    
-                    <p>{{ __('admin.settings.security.admin_ip_help') }}</p>
+                    <div :class="{ 'opacity-50': !enableAllowedIPs }">
+                        <x-form.label
+                            for="allowed_admin_ips"
+                            :text="__('admin.settings.security.allowed_admin_ips_list')"
+                            class="text-sm font-medium"
+                        />
+                        
+                        <x-form.textarea
+                            id="allowed_admin_ips"
+                            name="allowed_admin_ips"
+                            :value="$settings['allowed_admin_ips']"
+                            :rows="8"
+                            :placeholder="__('admin.settings.security.ip_list_placeholder')"
+                            class="font-mono text-sm"
+                            x-bind:disabled="!enableAllowedIPs"
+                        />
+                        
+                        <p class="mb-3">{{ __('admin.settings.security.admin_ip_help') }}</p>
+                    </div>
                 </fieldset>
 
                 <!-- ブロックIP設定 -->
@@ -448,25 +446,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         id="enable_blocked_admin_ips"
                         name="enable_blocked_admin_ips"
                         :checked="old('enable_blocked_admin_ips', $settings['enable_blocked_admin_ips'])"
-                        xBind="blockedAdminIps"
+                        xModel="blockedAdminIps"
                     />
 
-                    <x-form.label
-                        for="blocked_admin_ips"
-                        :text="__('admin.settings.security.blocked_admin_ips_list')"
-                        class="text-sm font-medium"
-                    />
-                    
-                    <x-form.textarea
-                        id="blocked_admin_ips"
-                        name="blocked_admin_ips"
-                        :value="$settings['blocked_admin_ips']"
-                        :rows="8"
-                        :placeholder="__('admin.settings.security.ip_list_placeholder')"
-                        class="font-mono text-sm"
-                    />
-                    
-                    <p>{{ __('admin.settings.security.admin_ip_help') }}</p>
+                    <div :class="{ 'opacity-50': !blockedAdminIps }">
+                        <x-form.label
+                            for="blocked_admin_ips"
+                            :text="__('admin.settings.security.blocked_admin_ips_list')"
+                            class="text-sm font-medium"
+                        />
+                        
+                        <x-form.textarea
+                            id="blocked_admin_ips"
+                            name="blocked_admin_ips"
+                            :value="$settings['blocked_admin_ips']"
+                            :rows="8"
+                            :placeholder="__('admin.settings.security.ip_list_placeholder')"
+                            class="font-mono text-sm"
+                            x-bind:disabled="!blockedAdminIps"
+                        />
+                        
+                        <p>{{ __('admin.settings.security.admin_ip_help') }}</p>
+                    </div>
                 </fieldset>
             </section>
 
@@ -481,25 +482,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         id="enable_allowed_front_ips"
                         name="enable_allowed_front_ips"
                         :checked="old('enable_allowed_front_ips', $settings['enable_allowed_front_ips'])"
-                        xBind="enableAllowedFrontIPs"
+                        xModel="enableAllowedFrontIPs"
                     />
 
-                    <x-form.label
-                        for="allowed_front_ips"
-                        :text="__('admin.settings.security.allowed_front_ips_list')"
-                        class="text-sm font-medium"
-                    />
-                    
-                    <x-form.textarea
-                        id="allowed_front_ips"
-                        name="allowed_front_ips"
-                        :value="$settings['allowed_front_ips']"
-                        :rows="8"
-                        :placeholder="__('admin.settings.security.ip_list_placeholder')"
-                        class="font-mono text-sm"
-                    />
-                    
-                    <p>{{ __('admin.settings.security.front_ip_help') }}</p>
+                    <div :class="{ 'opacity-50': !enableAllowedFrontIPs }">
+                        <x-form.label
+                            for="allowed_front_ips"
+                            :text="__('admin.settings.security.allowed_front_ips_list')"
+                            class="text-sm font-medium"
+                        />
+                        
+                        <x-form.textarea
+                            id="allowed_front_ips"
+                            name="allowed_front_ips"
+                            :value="$settings['allowed_front_ips']"
+                            :rows="8"
+                            :placeholder="__('admin.settings.security.ip_list_placeholder')"
+                            class="font-mono text-sm"
+                            x-bind:disabled="!enableAllowedFrontIPs"
+                        />
+                        
+                        <p class="mb-3">{{ __('admin.settings.security.front_ip_help') }}</p>
+                    </div>
                 </fieldset>
 
                 <!-- ブロックIP設定 -->
@@ -510,25 +514,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         id="enable_blocked_front_ips"
                         name="enable_blocked_front_ips"
                         :checked="old('enable_blocked_front_ips', $settings['enable_blocked_front_ips'])"
-                        xBind="enableBlockedFrontIps"
+                        xModel="enableBlockedFrontIps"
                     />
 
-                    <x-form.label
-                        for="blocked_front_ips"
-                        :text="__('admin.settings.security.blocked_front_ips_list')"
-                        class="text-sm font-medium"
-                    />
-                    
-                    <x-form.textarea
-                        id="blocked_front_ips"
-                        name="blocked_front_ips"
-                        :value="$settings['blocked_front_ips']"
-                        :rows="8"
-                        :placeholder="__('admin.settings.security.ip_list_placeholder')"
-                        class="font-mono text-sm"
-                    />
-                    
-                    <p>{{ __('admin.settings.security.front_ip_help') }}</p>
+                    <div :class="{ 'opacity-50': !enableBlockedFrontIps }">
+                        <x-form.label
+                            for="blocked_front_ips"
+                            :text="__('admin.settings.security.blocked_front_ips_list')"
+                            class="text-sm font-medium"
+                        />
+                        
+                        <x-form.textarea
+                            id="blocked_front_ips"
+                            name="blocked_front_ips"
+                            :value="$settings['blocked_front_ips']"
+                            :rows="8"
+                            :placeholder="__('admin.settings.security.ip_list_placeholder')"
+                            class="font-mono text-sm"
+                            x-bind:disabled="!enableBlockedFrontIps"
+                        />
+                        
+                        <p>{{ __('admin.settings.security.front_ip_help') }}</p>
+                    </div>
                 </fieldset>
             </section>
         </section>
@@ -631,7 +638,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         id="extension_require_signature"
                         name="extension_require_signature"
                         :checked="old('extension_require_signature', $settings['extension_require_signature'])"
-                        xBind="requireSignature"
+                        xModel="requireSignature"
                     />
                     <p>{{ __('admin.settings.security.extension_security.require_signature_help') }}</p>
                 </fieldset>
@@ -645,7 +652,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         id="extension_require_permission_definition"
                         name="extension_require_permission_definition"
                         :checked="old('extension_require_permission_definition', $settings['extension_require_permission_definition'])"
-                        xBind="requirePermissionDefinition"
+                        xModel="requirePermissionDefinition"
                     />
                     <p>{{ __('admin.settings.security.extension_security.require_permission_definition_help') }}</p>
                     
@@ -655,7 +662,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             id="extension_allow_undefined_permissions"
                             name="extension_allow_undefined_permissions"
                             :checked="old('extension_allow_undefined_permissions', $settings['extension_allow_undefined_permissions'])"
-                            xBind="allowUndefinedPermissions"
+                            xModel="allowUndefinedPermissions"
                         />
                         <p>{{ __('admin.settings.security.extension_security.allow_undefined_permissions_help') }}</p>
                     </div>
@@ -750,7 +757,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         id="extension_allow_logic_themes"
                         name="extension_allow_logic_themes"
                         :checked="old('extension_allow_logic_themes', $settings['extension_allow_logic_themes'])"
-                        xBind="allowLogicThemes"
+                        xModel="allowLogicThemes"
                     />
                     <p>{{ __('admin.settings.security.extension_security.allow_logic_themes_help') }}</p>
                     
@@ -771,17 +778,32 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <!-- 権限不一致時の動作 -->
                 <fieldset>
                     <legend>{{ __('admin.settings.security.extension_security.permission_mismatch') }}</legend>
-                    
-                    <x-form.radio-group
-                        name="extension_permission_mismatch_action"
-                        :options="[
-                            'warn' => __('admin.settings.security.extension_security.mismatch_action.warn'),
-                            'block' => __('admin.settings.security.extension_security.mismatch_action.block')
-                        ]"
-                        :value="old('extension_permission_mismatch_action', $settings['extension_permission_mismatch_action'])"
-                        xModel="permissionMismatchAction"
-                    />
                     <p>{{ __('admin.settings.security.extension_security.permission_mismatch_help') }}</p>
+                    
+                    <div class="mt-3">
+                        <x-form.radio-card-group
+                            name="extension_permission_mismatch_action"
+                            :options="[
+                                [
+                                    'value' => 'warn',
+                                    'label' => __('admin.settings.security.extension_security.mismatch_action.warn'),
+                                    'description' => __('admin.settings.security.extension_security.mismatch_action.warn_description'),
+                                    'icon' => 'fas fa-exclamation-triangle',
+                                    'color' => 'yellow'
+                                ],
+                                [
+                                    'value' => 'block',
+                                    'label' => __('admin.settings.security.extension_security.mismatch_action.block'),
+                                    'description' => __('admin.settings.security.extension_security.mismatch_action.block_description'),
+                                    'icon' => 'fas fa-ban',
+                                    'color' => 'red'
+                                ]
+                            ]"
+                            :value="old('extension_permission_mismatch_action', $settings['extension_permission_mismatch_action'])"
+                            xModel="permissionMismatchAction"
+                            :columns="2"
+                        />
+                    </div>
                 </fieldset>
             </div>
         </section>
@@ -1207,6 +1229,7 @@ const captchaMessages = {
     
     // Additional messages
     testCompletedSuccessfully: @json(__('admin.settings.security.captcha_test_completed_successfully')),
+    testCompletedHint: @json(__('admin.settings.security.captcha_test_completed_hint', ['members_url' => route('admin.settings.members.settings')])),
     authenticationSuccessTitle: @json(__('admin.settings.security.captcha_authentication_success_title')),
     authenticationFailedTitle: @json(__('admin.settings.security.captcha_authentication_failed_title')),
     expiredMessage: @json(__('admin.settings.security.captcha_expired_message')),
@@ -2614,6 +2637,7 @@ function showTestResult(type, message) {
     const iconElement = document.getElementById('captcha-test-icon');
     const titleElement = document.getElementById('captcha-test-title');
     const messageElement = document.getElementById('captcha-test-message');
+    const hintElement = document.getElementById('captcha-test-hint');
     
     if (resultElement && iconElement && titleElement && messageElement) {
         // メッセージとタイトルを設定
@@ -2624,11 +2648,22 @@ function showTestResult(type, message) {
             resultElement.className = 'mb-4 p-3 border rounded-lg bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-200';
             iconElement.className = 'fas fa-check-circle mr-3 text-green-600 dark:text-green-400';
             titleElement.textContent = captchaMessages.authenticationSuccessTitle;
+            
+            // ヒントメッセージを表示
+            if (hintElement && captchaMessages.testCompletedHint) {
+                hintElement.innerHTML = captchaMessages.testCompletedHint;
+                hintElement.style.display = 'block';
+            }
         } else {
             // 失敗時のスタイル設定
             resultElement.className = 'mb-4 p-3 border rounded-lg bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-200';
             iconElement.className = 'fas fa-times-circle mr-3 text-red-600 dark:text-red-400';
             titleElement.textContent = captchaMessages.authenticationFailedTitle;
+            
+            // ヒントメッセージを非表示
+            if (hintElement) {
+                hintElement.style.display = 'none';
+            }
         }
         
         resultElement.style.display = 'block';
