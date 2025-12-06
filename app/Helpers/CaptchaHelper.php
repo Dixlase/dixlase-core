@@ -24,6 +24,7 @@ namespace App\Helpers;
 
 use App\Models\SecuritySetting;
 use App\Models\CaptchaFormSetting;
+use App\Models\MemberSetting;
 use App\Services\CaptchaTestService;
 use Illuminate\Support\Facades\Log;
 
@@ -59,7 +60,7 @@ class CaptchaHelper
         }
 
         // フォーム固有の設定チェック
-        $formCaptchaEnabled = $formName ? CaptchaFormSetting::isEnabledFor($formName) : true;
+        $formCaptchaEnabled = $formName ? self::isEnabledForForm($formName) : true;
         if (!$formCaptchaEnabled) {
             return false;
         }
@@ -151,9 +152,21 @@ class CaptchaHelper
 
     /**
      * 指定されたフォームでCAPTCHAが有効かチェック
+     * 
+     * admin_loginの場合はMemberSettingから読み込み、
+     * それ以外はCaptchaFormSettingから読み込む
      */
     public static function isEnabledForForm(string $formName): bool
     {
+        // 管理画面ログインの場合はMemberSettingから読み込む
+        if ($formName === 'admin_login') {
+            return filter_var(
+                MemberSetting::get('captcha_admin_login_enabled', false),
+                FILTER_VALIDATE_BOOLEAN
+            );
+        }
+        
+        // その他のフォームはCaptchaFormSettingから読み込む
         return CaptchaFormSetting::isEnabledFor($formName);
     }
 

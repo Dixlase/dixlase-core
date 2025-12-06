@@ -81,7 +81,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     id="notification_enabled"
                     name="notification_enabled"
                     :checked="$settings['notification_enabled'] ?? false"
-                    x-on:change="notificationEnabled = $event.target.checked"
+                    xModel="notificationEnabled"
                 />
                 
                 <p>{{ __('admin.settings.security.notification_enabled_help') }}</p>
@@ -104,7 +104,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         name="notification_log_levels"
                         :options="$logLevelOptions"
                         :values="$settings['notification_log_levels'] ?? \App\Enums\LogLevel::getDefaultNotificationLevels()"
-                        :disabled="false"
+                        xBindDisabled="!notificationEnabled"
                         flexDirection="col"
                     />
                 </div>
@@ -234,7 +234,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             />
             
 
-            <div class="mt-4 space-y-4">
+            <div class="mt-4 space-y-4" :class="{ 'opacity-50': !captchaEnabled }">
                 <x-form.label
                     for="captcha_driver"
                     :text="__('admin.settings.security.captcha_driver')"
@@ -250,6 +250,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         'turnstile' => 'Cloudflare Turnstile'
                     ]"
                     xModel="captchaDriver"
+                    x-bind:disabled="!captchaEnabled"
                 />
 
                 <!-- Common CAPTCHA Settings -->
@@ -264,6 +265,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     type="password"
                     xModel="captchaSiteKey"
                     autocomplete="off"
+                    x-bind:disabled="!captchaEnabled"
                 />
 
                 <label for="captcha_secret_key" class="block font-medium text-lg {{ config('appearance.appearance_class.form.label') }}" 
@@ -277,6 +279,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     type="password"
                     xModel="captchaSecretKey"
                     autocomplete="off"
+                    x-bind:disabled="!captchaEnabled"
                 />
 
                 <!-- Google reCAPTCHA Settings -->
@@ -291,6 +294,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :value="old('captcha_google_version', $settings['captcha_google_version'])"
                         :options="__('admin.settings.security.captcha_version_options')"
                         xModel="captchaVersion"
+                        x-bind:disabled="!captchaEnabled"
                     />
                 </div>
 
@@ -306,6 +310,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :value="old('captcha_google_project_id', $settings['captcha_google_project_id'])"
                         placeholder="your-gcp-project-id"
                         xModel="captchaProjectId"
+                        x-bind:disabled="!captchaEnabled"
                     />
                 </div>
 
@@ -321,6 +326,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :value="old('captcha_google_min_score', $settings['captcha_google_min_score'])"
                         type="number"
                         step="0.1"
+                        x-bind:disabled="!captchaEnabled"
                     />
                     <p class="text-sm text-gray-200 mt-1">
                         {{ __('admin.settings.security.captcha_min_score_description') }}

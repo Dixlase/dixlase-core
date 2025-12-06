@@ -163,10 +163,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </section>
 
-        <!-- CAPTCHAを使用するフォーム設定 -->
+        <!-- CAPTCHA設定（管理画面ログイン用） -->
         <section>
-            <h2>{{ __('admin.settings.members.settings.captcha_form_settings') }}</h2>
-            <p>{{ __('admin.settings.members.settings.captcha_form_settings_description') }}</p>
+            <h2>{{ __('admin.settings.members.settings.captcha_admin_login_settings') }}</h2>
+            <p class="mb-2">{{ __('admin.settings.members.settings.captcha_admin_login_settings_description') }}</p>
             
             @if(!$captchaEnabled)
                 <x-message
@@ -176,20 +176,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endif
             
             <fieldset>
-                <legend>{{ __('admin.settings.members.settings.captcha_enabled_forms') }}</legend>
-                <div class="space-y-2">
-                    @foreach($captchaFormSettings as $formSetting)
-                        <x-form.toggle
-                            :label="__('admin.settings.security.captcha_forms.' . $formSetting->key)"
-                            :id="'captcha_form_' . $formSetting->key"
-                            :name="'captcha_form_' . $formSetting->key"
-                            :checked="old('captcha_form_' . $formSetting->key, $formSetting->enabled)"
-                            :disabled="!$captchaEnabled"
-                        />
-                    @endforeach
-                </div>
+                <x-form.toggle
+                    name="captcha_admin_login_enabled"
+                    :label="__('admin.settings.members.settings.captcha_admin_login_enabled')"
+                    :checked="old('captcha_admin_login_enabled', $captchaAdminLoginEnabled)"
+                    :disabled="!$captchaEnabled"
+                />
                 <p class="mt-2">
-                    {{ __('admin.settings.members.settings.captcha_form_settings_help') }}
+                    {{ __('admin.settings.members.settings.captcha_admin_login_help') }}
                 </p>
             </fieldset>
         </section>

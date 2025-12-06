@@ -60,6 +60,9 @@ class MembersSettingsSeeder extends Seeder
             ['key' => 'members_session_lifetime_enabled', 'value' => '0'], // デフォルト: 無効（セキュリティ設定のデフォルト値を使用）
             ['key' => 'members_session_lifetime', 'value' => '120'], // デフォルト: 120分
 
+            // CAPTCHA設定（管理画面ログイン用）
+            ['key' => 'captcha_admin_login_enabled', 'value' => '0'], // デフォルト: 無効
+
         ];
 
         foreach ($settings as $setting) {
