@@ -60,7 +60,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             value="{{ $info['default_days'] }}" 
                             min="0" 
                             max="365"
-                            class="number-input-small">
+                            class="input-common input-sm">
                         @if($info['default_days'])
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                             <i class="fas fa-info-circle mr-1"></i>
@@ -109,7 +109,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         value="30" 
                         min="0" 
                         max="365"
-                        class="number-input-small">
+                        class="input-common input-sm">
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         <i class="fas fa-info-circle mr-1"></i>
                         {{ __('admin.settings.systems.database.all_days_help') }}

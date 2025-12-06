@@ -36,6 +36,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 name="app_name"
                 :value="old('app_name', $settings['app_name'])"
                 :required="true"
+                class="input-full"
             />
         </fieldset>
 
@@ -45,6 +46,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 name="site_description"
                 :value="old('site_description', $settings['site_description'])"
                 :rows="3"
+                class="input-full"
             />
             <p>{{ __('admin.settings.base.site_description_help') }}</p>
         </fieldset>
@@ -54,6 +56,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <x-form.text
                 name="site_keywords"
                 :value="old('site_keywords', $settings['site_keywords'])"
+                class="input-full"
             />
             <p>{{ __('admin.settings.base.site_keywords_help') }}</p>
         </fieldset>
@@ -71,6 +74,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :options="$locales"
                 :value="old('locale', $settings['locale'])"
                 :required="true"
+                class="input-lg"
             />
         </fieldset>
 
@@ -86,6 +90,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 name="timezone"
                 :options="$timezones"
                 :value="$settings['timezone']"
+                class="input-lg"
             />
         </fieldset>
     </section>
@@ -100,18 +105,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 name="admin_url"
                 :value="old('admin_url', $settings['admin_url'])"
                 :required="true"
+                class="input-lg"
             />
             <p>{!! __('admin.settings.base.admin_url_help') !!}</p>
         </fieldset>
 
         <fieldset>
-            <legend>{{ __('admin.settings.base.force_ssl') }}</legend>
-            <x-form.checkbox
-                :label="__('admin.settings.base.force_ssl')"
+            <x-form.toggle
                 name="force_ssl"
-                :value="old('force_ssl', $settings['force_ssl'])"
+                :label="__('admin.settings.base.force_ssl')"
+                :checked="old('force_ssl', $settings['force_ssl'])"
             />
-            <p>{{ __('admin.settings.base.force_ssl_help') }}</p>
+            <p class="mt-2">{{ __('admin.settings.base.force_ssl_help') }}</p>
         </fieldset>
     </section>
 
@@ -141,6 +146,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     'summary_large_image' => __('admin.settings.base.twitter_card_summary_large'),
                 ]"
                 :value="old('twitter_card_type', $settings['twitter_card_type'])"
+                class="input-lg"
             />
             <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.base.twitter_card_type_help') }}</p>
         </fieldset>
@@ -152,18 +158,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <h2>{{ __('admin.settings.base.maintenance_settings') }}</h2>
         
         <fieldset>
-            <legend>{{ __('admin.settings.base.maintenance_mode') }}</legend>
-            <x-form.hidden
+            <x-form.toggle
                 name="maintenance_mode"
-                value="0"
-            />
-            <x-form.radio-group
-                name="maintenance_mode"
-                :options="[
-                    1 => __('common.yes'),
-                    0 => __('common.no')
-                ]"
-                :value="$settings['maintenance_mode']"
+                :label="__('admin.settings.base.maintenance_mode')"
+                :checked="old('maintenance_mode', $settings['maintenance_mode'])"
             />
         </fieldset>
 
@@ -173,6 +171,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 name="maintenance_message"
                 :value="old('maintenance_message', $settings['maintenance_message'])"
                 :rows="3"
+                class="input-full"
             />
             <p>{{ __('admin.settings.base.maintenance_message_help') }}</p>
         </fieldset>
@@ -224,6 +223,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 type="email"
                 name="system_admin_email"
                 :value="old('system_admin_email', $settings['system_admin_email'])"
+                class="input-lg"
             />
             <p>{{ __('admin.settings.base.admin_email_help') }}</p>
         </fieldset>

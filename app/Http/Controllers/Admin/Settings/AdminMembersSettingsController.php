@@ -797,55 +797,23 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $passwordRequireNumber = (bool) $this->memberSettingRepository->get('password_require_number', true);
         $passwordRequireSymbol = (bool) $this->memberSettingRepository->get('password_require_symbol', true);
         
-        // パスワード条件設定の選択肢を準備
+        // パスワード条件設定の選択肢を準備（radio-card-group用）
         $minLengthOptions = collect(__('admin.settings.members.settings.password_min_length_options'))
-            ->mapWithKeys(fn($label, $key) => [$key => $label])
-            ->toArray();
-            
-        $uppercaseOptions = collect(__('admin.settings.members.settings.password_require_uppercase_options'))
-            ->mapWithKeys(fn($label, $key) => [$key => $label])
-            ->toArray();
-            
-        $numberOptions = collect(__('admin.settings.members.settings.password_require_number_options'))
-            ->mapWithKeys(fn($label, $key) => [$key => $label])
-            ->toArray();
-            
-        $symbolOptions = collect(__('admin.settings.members.settings.password_require_symbol_options'))
-            ->mapWithKeys(fn($label, $key) => [$key => $label])
+            ->map(fn($label, $key) => ['value' => (string) $key, 'label' => $label])
+            ->values()
             ->toArray();
 
-        // その他の選択肢を準備
-        $loginAttemptLimitOptions = [
-            '0' => __('common.disabled'),
-            '1' => __('common.enabled'),
-        ];
-        
-        $lockoutNotificationOptions = [
-            '0' => __('common.disabled'),
-            '1' => __('common.enabled'),
+        // toggleに変更したため、以下のオプションは不要
+        // loginAttemptLimitOptions, lockoutNotificationOptions, passwordResetOptions, pwnedPasswordOptions, adminSessionLifetimeOptions
 
-        ];
-        
-        $passwordResetOptions = [
-            '0' => __('common.disabled'),
-            '1' => __('common.enabled'),
-
-        ];
-        
-        $pwnedPasswordOptions = [
-            '0' => __('common.disabled'),
-            '1' => __('common.enabled'),
-        ];
-        
-        $adminSessionLifetimeOptions = [
-            '0' => __('admin.settings.members.settings.admin_session_lifetime_enabled_options.disabled'),
-            '1' => __('admin.settings.members.settings.admin_session_lifetime_enabled_options.enabled'),
-        ];
-
-        // ログイン通知設定
+        // ログイン通知設定（radio-card-group用）
         $loginNotification = (int) $this->memberSettingRepository->get('login_notification_mode', LoginNotificationMode::UseProfileSetting->value);
         $loginNotificationGlobalOptions = collect(config('admin.global_login_notification_mail_mode'))
-            ->mapWithKeys(fn ($value) => [$value => __('common.login_notification_mode.options.' . $value)])
+            ->map(fn ($value) => [
+                'value' => (string) $value,
+                'label' => __('common.login_notification_mode.options.' . $value),
+            ])
+            ->values()
             ->toArray();
 
         // 二段階認証設定
@@ -856,8 +824,13 @@ class AdminMembersSettingsController extends AdminLoggedInController
             $force2fa = (int) old('force_2fa');
         }
         
+        // 二段階認証設定（radio-card-group用）
         $twoFactorGlobalOptions = collect(config('admin.global_two_factor_mode'))
-            ->mapWithKeys(fn ($value) => [$value => str_replace(':account_type', __('common.account_types.member'), __('common.two_factor_mode.options.' . $value))])
+            ->map(fn ($value) => [
+                'value' => (string) $value,
+                'label' => str_replace(':account_type', __('common.account_types.member'), __('common.two_factor_mode.options.' . $value)),
+            ])
+            ->values()
             ->toArray();
         
         // Passkey有効/無効設定を取得
@@ -911,14 +884,6 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['passwordRequireNumber'] = $passwordRequireNumber;
         $this->viewParams['passwordRequireSymbol'] = $passwordRequireSymbol;
         $this->viewParams['minLengthOptions'] = $minLengthOptions;
-        $this->viewParams['uppercaseOptions'] = $uppercaseOptions;
-        $this->viewParams['numberOptions'] = $numberOptions;
-        $this->viewParams['symbolOptions'] = $symbolOptions;
-        $this->viewParams['loginAttemptLimitOptions'] = $loginAttemptLimitOptions;
-        $this->viewParams['lockoutNotificationOptions'] = $lockoutNotificationOptions;
-        $this->viewParams['passwordResetOptions'] = $passwordResetOptions;
-        $this->viewParams['pwnedPasswordOptions'] = $pwnedPasswordOptions;
-        $this->viewParams['adminSessionLifetimeOptions'] = $adminSessionLifetimeOptions;
         $this->viewParams['loginNotification'] = $loginNotification;
         $this->viewParams['loginNotificationGlobalOptions'] = $loginNotificationGlobalOptions;
         $this->viewParams['force2fa'] = $force2fa;
@@ -947,8 +912,13 @@ class AdminMembersSettingsController extends AdminLoggedInController
 
         // CAPTCHA設定（管理画面ログイン用）
         $captchaEnabled = filter_var(SecuritySetting::get('captcha_enabled', false), FILTER_VALIDATE_BOOLEAN);
+        $captchaAuthenticationResult = filter_var(SecuritySetting::get('captcha_authentication_result', false), FILTER_VALIDATE_BOOLEAN);
         $captchaAdminLoginEnabled = (bool) $this->memberSettingRepository->get('captcha_admin_login_enabled', false);
+        // CAPTCHAが有効かつ認証テスト済みの場合のみトグル操作可能
+        $captchaAvailable = $captchaEnabled && $captchaAuthenticationResult;
         $this->viewParams['captchaEnabled'] = $captchaEnabled;
+        $this->viewParams['captchaAuthenticationResult'] = $captchaAuthenticationResult;
+        $this->viewParams['captchaAvailable'] = $captchaAvailable;
         $this->viewParams['captchaAdminLoginEnabled'] = $captchaAdminLoginEnabled;
 
         return view('admin.settings.members.settings', $this->viewParams);

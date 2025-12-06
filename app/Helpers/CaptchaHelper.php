@@ -146,7 +146,7 @@ class CaptchaHelper
      */
     public static function getTestResult(): bool
     {
-        $captchaTestService = new CaptchaTestService();
+        $captchaTestService = app(CaptchaTestService::class);
         return $captchaTestService->getTestResult();
     }
 
