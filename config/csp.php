@@ -222,6 +222,82 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Domain Detection Keywords
+    |--------------------------------------------------------------------------
+    |
+    | 信頼済みドメインを適切なCSPディレクティブに自動振り分けするための
+    | キーワード定義。ドメイン名にこれらのキーワードが含まれている場合、
+    | 対応するディレクティブに追加されます。
+    |
+    */
+    'domain_detection_keywords' => [
+        // フォント関連 → font-src, style-src
+        'font-src' => [
+            'font', 'fonts', 'typekit', 'typography',
+        ],
+
+        // スクリプト関連 → script-src
+        'script-src' => [
+            'cdn', 'cdnjs', 'jsdelivr', 'unpkg', 'cloudflare',
+            'ajax', 'api', 'sdk', 'js', 'script',
+            'recaptcha', 'captcha', 'turnstile', 'challenges',
+            'analytics', 'gtag', 'gtm', 'tag', 'tracking',
+            'jquery', 'bootstrap', 'vue', 'react', 'angular',
+        ],
+
+        // スタイル関連 → style-src
+        'style-src' => [
+            'css', 'style', 'styles', 'theme',
+            'bootstrap', 'tailwind', 'bulma', 'materialize',
+        ],
+
+        // 画像関連 → img-src
+        'img-src' => [
+            'img', 'image', 'images', 'photo', 'photos',
+            'static', 'assets', 'media', 'upload', 'uploads',
+            'gravatar', 'avatar', 'icon', 'icons',
+        ],
+
+        // iframe/フレーム関連 → frame-src
+        'frame-src' => [
+            'embed', 'widget', 'iframe', 'frame',
+            'recaptcha', 'captcha', 'turnstile', 'challenges',
+            'youtube', 'vimeo', 'player', 'video',
+            'maps', 'map',
+        ],
+
+        // 接続関連（API、WebSocket等） → connect-src
+        'connect-src' => [
+            'api', 'ws', 'wss', 'socket', 'realtime',
+            'graphql', 'rest', 'endpoint',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Multi-Purpose Domain Keywords
+    |--------------------------------------------------------------------------
+    |
+    | 複数の用途に使われるドメインのキーワード。
+    | これらのキーワードを含むドメインは、指定された複数のディレクティブに追加されます。
+    |
+    */
+    'multi_purpose_keywords' => [
+        // CDN系ドメインは複数用途
+        'cdn' => ['script-src', 'style-src', 'font-src', 'img-src'],
+        'cdnjs' => ['script-src', 'style-src', 'font-src', 'img-src'],
+        'jsdelivr' => ['script-src', 'style-src', 'font-src', 'img-src'],
+
+        // 汎用的なstaticドメインは複数用途
+        'static' => ['script-src', 'style-src', 'img-src', 'font-src'],
+        'assets' => ['script-src', 'style-src', 'img-src', 'font-src'],
+
+        // gstatic.comは特殊（Google系の静的リソース）
+        'gstatic' => ['script-src', 'style-src', 'img-src', 'font-src', 'frame-src'],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Excluded Paths
     |--------------------------------------------------------------------------
     |

@@ -433,15 +433,22 @@ class AdminSecuritySettingsController extends AdminLoggedInController
      */
     public function validateCaptchaWidget(Request $request)
     {
-        $driver = $request->input('captcha_driver', 'google');
-        $token = $request->input('g-recaptcha-response', '');
-        
-        if (empty($token)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'CAPTCHA token is missing'
+        try {
+            \Log::info('validateCaptchaWidget called', [
+                'driver' => $request->input('captcha_driver'),
+                'has_token' => !empty($request->input('g-recaptcha-response')),
+                'request_data' => $request->except(['captcha_secret_key', 'g-recaptcha-response'])
             ]);
-        }
+            
+            $driver = $request->input('captcha_driver', 'google');
+            $token = $request->input('g-recaptcha-response', '');
+            
+            if (empty($token)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'CAPTCHA token is missing'
+                ]);
+            }
         
         // 実際のCAPTCHA検証を実行
         if ($driver === 'google') {
@@ -493,8 +500,9 @@ class AdminSecuritySettingsController extends AdminLoggedInController
                         ]);
                         
                         if ($score >= $minScore) {
-                            // テスト成功時はセッションのみに保存（DBには保存しない）
-                            session(['captcha_authentication_result' => true]);
+                            // テスト成功時はセッションとDBに保存
+                            session(['captcha_test_result' => true]);
+                            $this->securitySettingRepository->set('captcha_test_result', '1');
                             
                             return response()->json([
                                 'success' => true,
@@ -515,8 +523,9 @@ class AdminSecuritySettingsController extends AdminLoggedInController
                             ]);
                         }
                     } else {
-                        // v2の場合もテスト成功時はセッションのみに保存（DBには保存しない）
+                        // v2の場合もテスト成功時はセッションとDBに保存
                         session(['captcha_test_result' => true]);
+                        $this->securitySettingRepository->set('captcha_test_result', '1');
                         
                         return response()->json([
                             'success' => true,
@@ -587,8 +596,9 @@ class AdminSecuritySettingsController extends AdminLoggedInController
                     ]);
                     
                     if ($score >= $minScore) {
-                        // テスト成功時はセッションのみに保存（DBには保存しない）
-                        session(['captcha_authentication_result' => true]);
+                        // テスト成功時はセッションとDBに保存
+                        session(['captcha_test_result' => true]);
+                        $this->securitySettingRepository->set('captcha_test_result', '1');
                         
                         return response()->json([
                             'success' => true,
@@ -641,8 +651,9 @@ class AdminSecuritySettingsController extends AdminLoggedInController
                 ]);
                 
                 if ($data['success'] ?? false) {
-                    // テスト成功時はセッションのみに保存（DBには保存しない）
-                    session(['captcha_authentication_result' => true]);
+                    // テスト成功時はセッションとDBに保存
+                    session(['captcha_test_result' => true]);
+                    $this->securitySettingRepository->set('captcha_test_result', '1');
                     
                     return response()->json([
                         'success' => true,
@@ -663,10 +674,23 @@ class AdminSecuritySettingsController extends AdminLoggedInController
             }
         }
         
-        return response()->json([
-            'success' => false,
-            'message' => __('admin.settings.security.captcha_driver_unsupported')
-        ]);
+            return response()->json([
+                'success' => false,
+                'message' => __('admin.settings.security.captcha_driver_unsupported')
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('validateCaptchaWidget exception', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Server error: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
