@@ -509,6 +509,7 @@ return [
             'pwned_password_check' => 'パスワード漏洩チェック',
             'pwned_password_check_help' => 'パスワード設定時に漏洩データベースとの照合を行います。',
             'recaptcha_settings' => 'CAPTCHA設定',
+            'recaptcha_settings_description' => 'ボット対策のためのCAPTCHA（自動アクセス防止）設定を管理します。',
             'captcha_enabled' => 'CAPTCHAを有効にする',
             'captcha_driver' => 'CAPTCHAプロバイダー',
             'captcha_site_key' => 'サイトキー',

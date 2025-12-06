@@ -208,8 +208,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </section>
 
         <!-- CAPTCHA設定 -->
-        <div class="my-6">
-            <h2 class="{{ config('appearance.appearance_class.heading.h2') }}">{{ __('admin.settings.security.recaptcha_settings') }}</h2>
+        <section>
+            <h2>{{ __('admin.settings.security.recaptcha_settings') }}</h2>
+            <p>{{ __('admin.settings.security.recaptcha_settings_description') }}</p>
+            
             <!-- CAPTCHA test required notice for enabled CAPTCHA -->
             @if($settings['captcha_enabled'] && !$captchaTestResult)
                 <x-message
@@ -399,7 +401,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
 
 
         <!-- IPアクセス制御設定 -->

@@ -216,43 +216,58 @@ class CspBuilder
             return $directives;
         }
 
-        // フォント関連ドメインはfont-srcとstyle-srcに追加
-        $fontDomains = array_filter($domains, fn($d) => str_contains($d, 'fonts.') || str_contains($d, 'font'));
-        
-        // CDN関連ドメインはscript-srcとstyle-srcに追加
-        $cdnDomains = array_filter($domains, fn($d) => str_contains($d, 'cdn.') || str_contains($d, 'cdnjs.'));
+        // domain_detection_keywordsとmulti_purpose_keywordsを取得
+        $detectionKeywords = config('csp.domain_detection_keywords', []);
+        $multiPurposeKeywords = config('csp.multi_purpose_keywords', []);
 
         foreach ($domains as $domain) {
-            // style-src
-            if (!isset($directives['style-src'])) {
-                $directives['style-src'] = [];
-            }
-            if (!in_array($domain, $directives['style-src'])) {
-                $directives['style-src'][] = $domain;
-            }
-
-            // font-src（フォント関連のみ）
-            if (in_array($domain, $fontDomains)) {
-                if (!isset($directives['font-src'])) {
-                    $directives['font-src'] = [];
-                }
-                if (!in_array($domain, $directives['font-src'])) {
-                    $directives['font-src'][] = $domain;
+            $addedToDirectives = [];
+            
+            // Multi-purpose keywordsをチェック（優先）
+            foreach ($multiPurposeKeywords as $keyword => $targetDirectives) {
+                if (stripos($domain, $keyword) !== false) {
+                    foreach ($targetDirectives as $directive) {
+                        if (!in_array($directive, $addedToDirectives)) {
+                            $this->addDomainToDirective($directives, $directive, $domain);
+                            $addedToDirectives[] = $directive;
+                        }
+                    }
                 }
             }
-
-            // script-src（CDN関連のみ）
-            if (in_array($domain, $cdnDomains)) {
-                if (!isset($directives['script-src'])) {
-                    $directives['script-src'] = [];
+            
+            // 通常のdetection keywordsをチェック
+            foreach ($detectionKeywords as $directive => $keywords) {
+                foreach ($keywords as $keyword) {
+                    if (stripos($domain, $keyword) !== false) {
+                        if (!in_array($directive, $addedToDirectives)) {
+                            $this->addDomainToDirective($directives, $directive, $domain);
+                            $addedToDirectives[] = $directive;
+                        }
+                        break; // 同じディレクティブに複数回追加しない
+                    }
                 }
-                if (!in_array($domain, $directives['script-src'])) {
-                    $directives['script-src'][] = $domain;
-                }
+            }
+            
+            // どのキーワードにもマッチしない場合は、デフォルトでstyle-srcに追加
+            if (empty($addedToDirectives)) {
+                $this->addDomainToDirective($directives, 'style-src', $domain);
             }
         }
 
         return $directives;
+    }
+    
+    /**
+     * ドメインを指定されたディレクティブに追加
+     */
+    protected function addDomainToDirective(array &$directives, string $directive, string $domain): void
+    {
+        if (!isset($directives[$directive])) {
+            $directives[$directive] = [];
+        }
+        if (!in_array($domain, $directives[$directive])) {
+            $directives[$directive][] = $domain;
+        }
     }
 
     /**
