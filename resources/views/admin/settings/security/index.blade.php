@@ -135,7 +135,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         'array' => __('admin.settings.security.session_driver_array'),
                     ]"
                     :value="old('session_driver', $settings['session_driver'])"
-                    class="mt-2"
+                    class="input-common input-xl"
                 />
                 
                 <p>{{ __('admin.settings.security.session_driver_help') }}</p>
@@ -143,23 +143,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <!-- セッション暗号化 -->
             <fieldset>
-                <legend>{{ __('admin.settings.security.session_encrypt') }}</legend>
-                
-                <x-form.hidden
+                <x-form.toggle
                     name="session_encrypt"
-                    value="0"
+                    :label="__('admin.settings.security.session_encrypt')"
+                    :checked="old('session_encrypt', $settings['session_encrypt'])"
                 />
-                
-                <x-form.radio-group
-                    name="session_encrypt"
-                    :options="[
-                        1 => __('common.enabled'),
-                        0 => __('common.disabled')
-                    ]"
-                    :value="old('session_encrypt', (int) $settings['session_encrypt'])"
-                />
-                
-                <p>{{ __('admin.settings.security.session_encrypt_help') }}</p>
+                <p class="mt-2">{{ __('admin.settings.security.session_encrypt_help') }}</p>
             </fieldset>
 
             <!-- デフォルトセッション有効時間 -->
@@ -174,7 +163,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :min="1"
                         :max="43200"
                         :value="old('session_lifetime', $settings['session_lifetime'])"
-                        class="w-32"
+                        class="input-common input-sm"
                         aria-describedby="session_lifetime_unit session_lifetime_help"
                     />
                     <span id="session_lifetime_unit" class="text-sm text-gray-700 dark:text-gray-300">
@@ -251,6 +240,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     ]"
                     xModel="captchaDriver"
                     x-bind:disabled="!captchaEnabled"
+                    class="input-common input-xl"
                 />
 
                 <!-- Common CAPTCHA Settings -->
@@ -266,6 +256,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     xModel="captchaSiteKey"
                     autocomplete="off"
                     x-bind:disabled="!captchaEnabled"
+                    class="input-common input-xl"
                 />
 
                 <label for="captcha_secret_key" class="block font-medium text-lg {{ config('appearance.appearance_class.form.label') }}" 
@@ -280,6 +271,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     xModel="captchaSecretKey"
                     autocomplete="off"
                     x-bind:disabled="!captchaEnabled"
+                    class="input-common input-xl"
                 />
 
                 <!-- Google reCAPTCHA Settings -->
@@ -295,6 +287,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :options="__('admin.settings.security.captcha_version_options')"
                         xModel="captchaVersion"
                         x-bind:disabled="!captchaEnabled"
+                        class="input-common input-xl"
                     />
                 </div>
 
@@ -311,6 +304,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         placeholder="your-gcp-project-id"
                         xModel="captchaProjectId"
                         x-bind:disabled="!captchaEnabled"
+                        class="input-common input-xl"
                     />
                 </div>
 
@@ -327,6 +321,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         type="number"
                         step="0.1"
                         x-bind:disabled="!captchaEnabled"
+                        class="input-common input-sm"
                     />
                     <p class="text-sm text-gray-200 mt-1">
                         {{ __('admin.settings.security.captcha_min_score_description') }}
@@ -436,7 +431,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             :value="$settings['allowed_admin_ips']"
                             :rows="8"
                             :placeholder="__('admin.settings.security.ip_list_placeholder')"
-                            class="font-mono text-sm"
+                            class="input-xl"
                             x-bind:disabled="!enableAllowedIPs"
                         />
                         
@@ -468,7 +463,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             :value="$settings['blocked_admin_ips']"
                             :rows="8"
                             :placeholder="__('admin.settings.security.ip_list_placeholder')"
-                            class="font-mono text-sm"
+                            class="input-xl"
                             x-bind:disabled="!blockedAdminIps"
                         />
                         
@@ -504,7 +499,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             :value="$settings['allowed_front_ips']"
                             :rows="8"
                             :placeholder="__('admin.settings.security.ip_list_placeholder')"
-                            class="font-mono text-sm"
+                            class="input-xl"
                             x-bind:disabled="!enableAllowedFrontIPs"
                         />
                         
@@ -536,7 +531,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             :value="$settings['blocked_front_ips']"
                             :rows="8"
                             :placeholder="__('admin.settings.security.ip_list_placeholder')"
-                            class="font-mono text-sm"
+                            class="input-xl"
                             x-bind:disabled="!enableBlockedFrontIps"
                         />
                         
@@ -619,7 +614,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :options="\App\Enums\ExtensionSecurityPreset::getRadioCardOptions()"
                         :value="old('extension_security_preset', $settings['extension_security_preset'])"
                         xModel="preset"
-                        :columns="4"
+                        :columns="2"
                     />
                 </div>
                 
@@ -1054,6 +1049,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :value="old('csp_trusted_domains', $settings['csp_trusted_domains'] ?? '')"
                         :placeholder="__('admin.settings.security.csp.trusted_domains_placeholder')"
                         rows="4"
+                        class="input-xl"
                     />
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin.settings.security.csp.trusted_domains_help') }}</p>
                 </fieldset>
@@ -1068,6 +1064,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :value="old('csp_denied_domains', $settings['csp_denied_domains'] ?? '')"
                         :placeholder="__('admin.settings.security.csp.denied_domains_placeholder')"
                         rows="4"
+                        class="input-xl"
                     />
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{!! __('admin.settings.security.csp.denied_domains_help') !!}</p>
 
@@ -1178,6 +1175,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :value="old('csp_custom_directives', $settings['csp_custom_directives'] ?? '')"
                         :placeholder="__('admin.settings.security.csp.custom_directives_placeholder')"
                         rows="3"
+                        class="input-xl"
                     />
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin.settings.security.csp.custom_directives_help') }}</p>
                 </fieldset>

@@ -30,40 +30,40 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <h2>{{ __('admin.settings.members.settings.password_conditions') }}</h2>
             <fieldset>
                 <legend>{{ __('admin.settings.members.settings.password_min_length') }}</legend>
-                <x-form.radio-group
+                <x-form.radio-card-group
                     name="password_min_length"
                     :options="$minLengthOptions"
                     :value="old('password_min_length', (string) $passwordMinLength)"
+                    :columns="4"
+                    direction="row"
+                    class="mb-3"
                 />
             </fieldset>
 
             <!-- 大文字 -->
             <fieldset>
-                <legend>{{ __('admin.settings.members.settings.password_require_uppercase') }}</legend>
-                <x-form.radio-group
+                <x-form.toggle
                     name="password_require_uppercase"
-                    :options="$uppercaseOptions"
-                    :value="old('password_require_uppercase', (string) (int) $passwordRequireUppercase)"
+                    :label="__('admin.settings.members.settings.password_require_uppercase')"
+                    :checked="old('password_require_uppercase', $passwordRequireUppercase)"
                 />
             </fieldset>
 
             <!-- 数字 -->
             <fieldset>
-                <legend>{{ __('admin.settings.members.settings.password_require_number') }}</legend>
-                <x-form.radio-group
+                <x-form.toggle
                     name="password_require_number"
-                    :options="$numberOptions"
-                    :value="old('password_require_number', (string) (int) $passwordRequireNumber)"
+                    :label="__('admin.settings.members.settings.password_require_number')"
+                    :checked="old('password_require_number', $passwordRequireNumber)"
                 />
             </fieldset>
 
             <!-- 記号 -->
             <fieldset>
-                <legend>{{ __('admin.settings.members.settings.password_require_symbol') }}</legend>
-                <x-form.radio-group
+                <x-form.toggle
                     name="password_require_symbol"
-                    :options="$symbolOptions"
-                    :value="old('password_require_symbol', (string) (int) $passwordRequireSymbol)"
+                    :label="__('admin.settings.members.settings.password_require_symbol')"
+                    :checked="old('password_require_symbol', $passwordRequireSymbol)"
                 />
             </fieldset>
             <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
@@ -82,16 +82,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endif
             <!-- 機能有効/無効 -->
             <fieldset>
-                <legend>{{ __('admin.settings.members.settings.login_attempt_limit_enabled') }}</legend>
-                <x-form.radio-group
+                <x-form.toggle
                     name="login_attempt_limit_enabled"
-                    :options="[
-                        '0' => __('common.disabled'),
-                        '1' => __('common.enabled'),
-                    ]"
-                    :value="old('login_attempt_limit_enabled', (string) (int) $loginAttemptLimitEnabled)"
+                    :label="__('admin.settings.members.settings.login_attempt_limit_enabled')"
+                    :checked="old('login_attempt_limit_enabled', $loginAttemptLimitEnabled)"
                 />
-                <p>
+                <p class="mt-2">
                     {{ __('admin.settings.members.settings.login_attempt_limit_help') }}
                 </p>
             </fieldset>
@@ -107,7 +103,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :value="old('login_attempt_max_attempts', $loginAttemptMaxAttempts)"
                         :min="1"
                         :max="100"
-                        class="number-input-small"
+                        class="input-common input-sm"
                     />
                     <p>
                         {{ __('admin.settings.members.settings.login_attempt_max_attempts_help') }}
@@ -123,7 +119,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :value="old('login_attempt_time_window', $loginAttemptTimeWindow)"
                         :min="1"
                         :max="1440"
-                        class="number-input-small"
+                        class="input-common input-sm"
                     />
                     <p>
                         {{ __('admin.settings.members.settings.login_attempt_time_window_help') }}
@@ -139,7 +135,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :value="old('login_attempt_lockout_duration', $loginAttemptLockoutDuration)"
                         :min="1"
                         :max="10080"
-                        class="number-input-small"
+                        class="input-common input-sm"
                     />
                     <p>
                         {{ __('admin.settings.members.settings.login_attempt_lockout_duration_help') }}
@@ -147,16 +143,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </fieldset>
                 <!-- ロックアウト通知設定 -->
                 <fieldset>
-                    <legend>{{ __('admin.settings.members.settings.lockout_notification_enabled') }}</legend>
-                    <x-form.radio-group
+                    <x-form.toggle
                         name="lockout_notification_enabled"
-                        :options="[
-                            '0' => __('common.disabled'),
-                            '1' => __('common.enabled'),
-                        ]"
-                        :value="old('lockout_notification_enabled', (string) (int) $lockoutNotificationEnabled)"
+                        :label="__('admin.settings.members.settings.lockout_notification_enabled')"
+                        :checked="old('lockout_notification_enabled', $lockoutNotificationEnabled)"
                     />
-                    <p>
+                    <p class="mt-2">
                         {!! __('admin.settings.members.settings.lockout_notification_help') !!}
                     </p>
                 </fieldset>
@@ -170,17 +162,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             
             @if(!$captchaEnabled)
                 <x-message
-                    type="info"
+                    type="warning"
                     :message="__('admin.settings.members.settings.captcha_not_enabled', ['url' => route('admin.settings.security')])"
+                />
+            @elseif(!$captchaAuthenticationResult)
+                <x-message
+                    type="warning"
+                    :message="__('admin.settings.members.settings.captcha_not_authenticated', ['url' => route('admin.settings.security')])"
                 />
             @endif
             
             <fieldset>
+                {{-- disabled時も値を保持するためのhiddenフィールド --}}
+                @if(!$captchaAvailable)
+                    <x-form.hidden
+                        name="captcha_admin_login_enabled"
+                        :value="$captchaAdminLoginEnabled ? '1' : '0'"
+                    />
+                @endif
                 <x-form.toggle
                     name="captcha_admin_login_enabled"
                     :label="__('admin.settings.members.settings.captcha_admin_login_enabled')"
                     :checked="old('captcha_admin_login_enabled', $captchaAdminLoginEnabled)"
-                    :disabled="!$captchaEnabled"
+                    :disabled="!$captchaAvailable"
                 />
                 <p class="mt-2">
                     {{ __('admin.settings.members.settings.captcha_admin_login_help') }}
@@ -198,13 +202,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 />
             @endif
             <fieldset>
-                <legend>{{ __('admin.settings.members.settings.password_reset_enabled') }}</legend>
-                <x-form.radio-group
+                <x-form.toggle
                     name="password_reset_enabled"
-                    :options="$passwordResetOptions"
-                    :value="old('password_reset_enabled', (string) (int) $passwordResetEnabled)"
+                    :label="__('admin.settings.members.settings.password_reset_enabled')"
+                    :checked="old('password_reset_enabled', $passwordResetEnabled)"
                 />
-                <p>
+                <p class="mt-2">
                     {!! __('admin.settings.members.settings.password_reset_help') !!}
                 </p>
             </fieldset>
@@ -215,13 +218,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <h2>{{ __('admin.settings.members.settings.pwned_password_settings') }}</h2>
 
             <fieldset>
-                <legend>{{ __('admin.settings.members.settings.pwned_password_check_enabled') }}</legend>
-                <x-form.radio-group
+                <x-form.toggle
                     name="pwned_password_check_enabled"
-                    :options="$pwnedPasswordOptions"
-                    :value="old('pwned_password_check_enabled', (string) (int) $pwnedPasswordCheckEnabled)"
+                    :label="__('admin.settings.members.settings.pwned_password_check_enabled')"
+                    :checked="old('pwned_password_check_enabled', $pwnedPasswordCheckEnabled)"
                 />
-                <p>
+                <p class="mt-2">
                     {!! __('admin.settings.members.settings.pwned_password_help') !!}
                 </p>
                 <!-- API情報 -->
@@ -241,16 +243,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <!-- セッション有効時間カスタマイズ有効/無効 -->
             <fieldset>
-                <legend>{{ __('admin.settings.members.settings.admin_session_lifetime_enabled') }}</legend>
-                <x-form.radio-group
+                <x-form.toggle
                     name="members_session_lifetime_enabled"
-                    :options="[
-                        '1' => __('common.enabled'),
-                        '0' => __('common.disabled')
-                    ]"
-                    :value="old('members_session_lifetime_enabled', (string) (int) $membersSessionLifetimeEnabled)"
+                    :label="__('admin.settings.members.settings.admin_session_lifetime_enabled')"
+                    :checked="old('members_session_lifetime_enabled', $membersSessionLifetimeEnabled)"
                 />
-                <p>
+                <p class="mt-2">
                     {{ __('admin.settings.members.settings.admin_session_lifetime_enabled_help') }}
                 </p>
             </fieldset>
@@ -265,7 +263,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :value="old('members_session_lifetime', $membersSessionLifetime)"
                         :min="1"
                         :max="43200"
-                        class="number-input-small"
+                        class="input-common input-sm"
                     />
                     <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.members.settings.minutes') }}</span>
                 </div>
@@ -286,10 +284,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endif
             <fieldset>
                 <legend>{{ __('admin.settings.members.settings.login_notification_global_setting') }}</legend>
-                <x-form.radio-group
+                <x-form.radio-card-group
                     name="login_notification_mode"
                     :options="$loginNotificationGlobalOptions"
                     :value="old('login_notification_mode', (string) $loginNotification)"
+                    :columns="4"
                 />
             </fieldset>
         </section>
@@ -305,10 +304,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endif
             <fieldset>
                 <legend>{{ __('admin.settings.members.settings.two_factor_mode_global_setting') }}</legend>
-                <x-form.radio-group
+                <x-form.radio-card-group
                     name="force_2fa"
                     :options="$twoFactorGlobalOptions"
                     :value="old('force_2fa', (string) $force2fa)"
+                    :columns="4"
                 />
             </fieldset>
 
@@ -330,11 +330,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                         <!-- Passkey認証（有効/無効選択可能） -->
                         <div class="flex items-center space-x-3">
-                            <x-form.checkbox
+                            <x-form.toggle
                                 name="enabled_2fa_passkey"
                                 :label="__('common.two_factor_method.numbered_options.1')"
-                                :value="$passkeyEnabled ? 1 : 0"
-                                :checked="$passkeyEnabled ?? false"
+                                :checked="old('enabled_2fa_passkey', $passkeyEnabled ?? false)"
                             />
                         </div>
                     </div>
@@ -369,7 +368,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 :value="old('two_factor_expire_minutes', $twoFactorExpireMinutes)"
                                 :min="1"
                                 :max="60"
-                                class="w-24"
+                                class="input-common input-sm"
                             />
                             <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.members.settings.minutes') }}</span>
                         </div>
@@ -392,7 +391,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 :min="60"
                                 :max="600"
                                 :step="60"
-                                class="w-24"
+                                class="input-common input-sm"
                             />
                             <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.members.settings.seconds') }}</span>
                         </div>
@@ -422,7 +421,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 :value="old('2fa_max_attempts', $twoFaMaxAttempts)"
                                 :min="1"
                                 :max="10"
-                                class="w-24"
+                                class="input-common input-sm"
                             />
                             <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.members.settings.times') }}</span>
                         </div>
@@ -444,7 +443,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 :value="old('2fa_attempt_window', $twoFaAttemptWindow)"
                                 :min="5"
                                 :max="60"
-                                class="w-24"
+                                class="input-common input-sm"
                             />
                             <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.members.settings.minutes') }}</span>
                         </div>
@@ -466,7 +465,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 :value="old('2fa_lockout_duration', $twoFaLockoutDuration)"
                                 :min="5"
                                 :max="1440"
-                                class="w-24"
+                                class="input-common input-sm"
                             />
                             <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.members.settings.minutes') }}</span>
                         </div>
@@ -477,18 +476,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     <!-- ロックアウト通知 -->
                     <div>
-                        <label class="block text-sm font-medium mb-2">
-                            {{ __('admin.settings.members.settings.2fa_lockout_notification') }}
-                        </label>
-                        <x-form.radio-group
+                        <x-form.toggle
                             name="2fa_lockout_notification_enabled"
-                            :options="[
-                                '1' => __('common.enabled'),
-                                '0' => __('common.disabled'),
-                            ]"
-                            :value="old('2fa_lockout_notification_enabled', $twoFaLockoutNotificationEnabled ? '1' : '0')"
+                            :label="__('admin.settings.members.settings.2fa_lockout_notification')"
+                            :checked="old('2fa_lockout_notification_enabled', $twoFaLockoutNotificationEnabled)"
                         />
-                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
                             {{ __('admin.settings.members.settings.2fa_lockout_notification_help') }}
                         </p>
                     </div>
@@ -513,7 +506,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 :value="old('recovery_codes_count', $recoveryCodesCount ?? 5)"
                                 :min="1"
                                 :max="10"
-                                class="w-24"
+                                class="input-common input-sm"
                             />
                             <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.members.settings.codes') }}</span>
                         </div>
@@ -535,7 +528,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 :value="old('recovery_code_regenerate_interval', $recoveryCodeRegenerateInterval ?? 24)"
                                 :min="1"
                                 :max="168"
-                                class="w-24"
+                                class="input-common input-sm"
                             />
                             <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.members.settings.hours') }}</span>
                         </div>

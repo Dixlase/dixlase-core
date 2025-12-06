@@ -21,6 +21,34 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
     }
 
     /**
+     * Prepare the data for validation.
+     * セキュリティ設定と同じ方法でcheckbox/toggleフィールドをboolean変換
+     */
+    public function prepareForValidation()
+    {
+        $this->merge([
+            // パスワード条件設定
+            'password_require_uppercase' => filter_var($this->input('password_require_uppercase'), FILTER_VALIDATE_BOOLEAN),
+            'password_require_number' => filter_var($this->input('password_require_number'), FILTER_VALIDATE_BOOLEAN),
+            'password_require_symbol' => filter_var($this->input('password_require_symbol'), FILTER_VALIDATE_BOOLEAN),
+            // ログイン試行制限設定
+            'login_attempt_limit_enabled' => filter_var($this->input('login_attempt_limit_enabled'), FILTER_VALIDATE_BOOLEAN),
+            'lockout_notification_enabled' => filter_var($this->input('lockout_notification_enabled'), FILTER_VALIDATE_BOOLEAN),
+            // パスワードリセット機能設定
+            'password_reset_enabled' => filter_var($this->input('password_reset_enabled'), FILTER_VALIDATE_BOOLEAN),
+            // パスワード辞書攻撃対策設定
+            'pwned_password_check_enabled' => filter_var($this->input('pwned_password_check_enabled'), FILTER_VALIDATE_BOOLEAN),
+            // 管理メンバー用セッション設定
+            'members_session_lifetime_enabled' => filter_var($this->input('members_session_lifetime_enabled'), FILTER_VALIDATE_BOOLEAN),
+            // 二段階認証設定
+            'enabled_2fa_passkey' => filter_var($this->input('enabled_2fa_passkey'), FILTER_VALIDATE_BOOLEAN),
+            '2fa_lockout_notification_enabled' => filter_var($this->input('2fa_lockout_notification_enabled'), FILTER_VALIDATE_BOOLEAN),
+            // CAPTCHA設定（管理画面ログイン用）
+            'captcha_admin_login_enabled' => filter_var($this->input('captcha_admin_login_enabled'), FILTER_VALIDATE_BOOLEAN),
+        ]);
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>

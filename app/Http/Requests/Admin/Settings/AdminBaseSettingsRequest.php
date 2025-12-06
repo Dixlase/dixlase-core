@@ -36,6 +36,19 @@ class AdminBaseSettingsRequest extends FormRequest
     }
 
     /**
+     * Prepare the data for validation.
+     * toggleフィールドをboolean変換
+     */
+    public function prepareForValidation()
+    {
+        $this->merge([
+            'force_ssl' => filter_var($this->input('force_ssl'), FILTER_VALIDATE_BOOLEAN),
+            'maintenance_mode' => filter_var($this->input('maintenance_mode'), FILTER_VALIDATE_BOOLEAN),
+            'multilingual_enabled' => filter_var($this->input('multilingual_enabled'), FILTER_VALIDATE_BOOLEAN),
+        ]);
+    }
+
+    /**
      * バリデーションルールの設定
      */
     public function rules()

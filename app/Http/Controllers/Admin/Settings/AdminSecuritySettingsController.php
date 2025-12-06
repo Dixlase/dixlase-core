@@ -137,7 +137,7 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? BaseSetting::getValue('mail_receive_tested', false));
 
         // CAPTCHAテスト結果を取得（初回読み込み時はセッションクリア、バリデーションエラー時は保持）
-        $captchaTestService = new CaptchaTestService();
+        $captchaTestService = app(CaptchaTestService::class);
         
         // バリデーションエラーがない場合はセッションをクリアしてDBから読み込み
         if (!session()->has('errors') || !session('errors')->any()) {
@@ -158,7 +158,7 @@ class AdminSecuritySettingsController extends AdminLoggedInController
 
     public function update(AdminSettngsSecurityUpdateRequest $request)
     {
-        $captchaTestService = new CaptchaTestService();
+        $captchaTestService = app(CaptchaTestService::class);
         
         // 現在のCAPTCHA設定を取得
         $currentCaptchaEnabled = $this->securitySettingRepository->get('captcha_enabled', false);
@@ -399,7 +399,7 @@ class AdminSecuritySettingsController extends AdminLoggedInController
      */
     public function testCaptcha(Request $request)
     {
-        $captchaTestService = new CaptchaTestService();
+        $captchaTestService = app(CaptchaTestService::class);
         
         $settings = [
             'captcha_driver' => $request->input('captcha_driver', 'google'),
@@ -698,7 +698,7 @@ class AdminSecuritySettingsController extends AdminLoggedInController
      */
     public function resetCaptchaTest(Request $request)
     {
-        $captchaTestService = new CaptchaTestService();
+        $captchaTestService = app(CaptchaTestService::class);
         
         // テスト結果をfalseにリセット（レコードは保持）
         $captchaTestService->resetCaptchaTestResults();

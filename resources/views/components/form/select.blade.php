@@ -41,7 +41,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <select @if($id) id="{{ $id }}" @endif
         name="{{ $name }}"
-        class="{{ $finalClass }}"
+        class="input-common {{ $finalClass }}"
         @if ($disabled) disabled @endif
         @if ($required) required @endif
         @if ($xModel) x-model="{{ $xModel }}" @endif

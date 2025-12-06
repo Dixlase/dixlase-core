@@ -23,6 +23,7 @@
 namespace App\Services;
 
 use App\Models\SecuritySetting;
+use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 use App\Captcha\GoogleRecaptchaV2Driver;
 use App\Captcha\GoogleRecaptchaV3Driver;
 use App\Captcha\GoogleRecaptchaEnterpriseDriver;
@@ -34,6 +35,19 @@ use Carbon\Carbon;
 
 class CaptchaTestService
 {
+    /**
+     * セキュリティ設定リポジトリ
+     */
+    protected SecuritySettingRepositoryInterface $securitySettingRepository;
+
+    /**
+     * コンストラクタ
+     */
+    public function __construct(SecuritySettingRepositoryInterface $securitySettingRepository)
+    {
+        $this->securitySettingRepository = $securitySettingRepository;
+    }
+
     /**
      * CAPTCHA接続テストを実行
      */
@@ -696,10 +710,8 @@ class CaptchaTestService
     {
         $testKey = "captcha_authentication_result";
         
-        SecuritySetting::updateOrCreate(
-            ['name' => $testKey],
-            ['value' => $success ? '1' : '0']
-        );
+        // リポジトリを使用してキャッシュを自動クリア
+        $this->securitySettingRepository->set($testKey, $success);
     }
 
     /**
@@ -789,8 +801,8 @@ class CaptchaTestService
         // セッションからテスト結果を削除
         session()->forget('captcha_authentication_result');
         
-        // データベースのテスト結果を0にリセット（レコードは保持）
+        // データベースのテスト結果を0にリセット（リポジトリを使用してキャッシュを自動クリア）
         $testKey = "captcha_authentication_result";
-        SecuritySetting::where('name', $testKey)->update(['value' => '0']);
+        $this->securitySettingRepository->set($testKey, false);
     }
 }

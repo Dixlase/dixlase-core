@@ -68,9 +68,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         default => 'grid gap-4 ' . match((int)$columns) {
             1 => 'grid-cols-1',
             2 => 'grid-cols-1 md:grid-cols-2',
-            3 => 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3',
-            4 => 'grid-cols-1 md:grid-cols-2 xl:grid-cols-4',
-            default => 'grid-cols-1 md:grid-cols-2 xl:grid-cols-4',
+            3 => 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
+            4 => 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
+            default => 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
         },
     };
     
@@ -168,8 +168,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                    @if (!$modelVar && $currentValue == $optionValue) checked @endif
                    @if ($isDisabled) disabled @endif
                    class="sr-only">
-            <span class="flex flex-1">
-                <span class="flex flex-col">
+            <span class="flex flex-1 items-center">
+                <span class="flex flex-col justify-center">
                     <span class="flex items-center gap-2 text-sm font-medium {{ $colors['text'] }}">
                         @if ($optionIcon)
                             <i class="{{ $optionIcon }}"></i>

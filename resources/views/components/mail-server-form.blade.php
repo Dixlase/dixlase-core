@@ -172,6 +172,7 @@ document.addEventListener('DOMContentLoaded', function() {
             :options="$mailers"
             :value="old('mail_mailer', session('install_data.mail_mailer', 'smtp'))"
             class="w-full mail-setting-input"
+            class="input-lg"
         />
     @else
         <x-form.label
@@ -183,6 +184,7 @@ document.addEventListener('DOMContentLoaded', function() {
             name="mail_mailer"
             :options="$mailers"
             :value="old('mail_mailer', $settings['mail_mailer'])"
+            class="input-lg"
         />
     @endif
 </div>
@@ -196,6 +198,7 @@ document.addEventListener('DOMContentLoaded', function() {
             id="mail_host"
             :value="old('mail_host', session('install_data.mail_host', 'mailpit'))"
             class="mail-setting-input"
+            class="input-lg"
         />
     @else
         <x-form.label
@@ -206,6 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
             id="mail_host"
             name="mail_host"
             :value="old('mail_host', $settings['mail_host'])"
+            class="input-lg"
         />
     @endif
 </div>
@@ -219,7 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
             name="mail_port"
             id="mail_port"
             :value="old('mail_port', session('install_data.mail_port', '1025'))"
-            class="mail-setting-input"
+            class="input-lg"
         />
     @else
         <x-form.label
@@ -230,6 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
             id="mail_port"
             name="mail_port"
             :value="old('mail_port', $settings['mail_port'])"
+            class="input-lg"
         />
     @endif
 </div>
@@ -242,7 +247,7 @@ document.addEventListener('DOMContentLoaded', function() {
             name="mail_username"
             id="mail_username"
             :value="old('mail_username', session('install_data.mail_username'))"
-            class="mail-setting-input"
+            class="input-lg"
         />
     @else
         <x-form.label
@@ -253,6 +258,7 @@ document.addEventListener('DOMContentLoaded', function() {
             id="mail_username"
             name="mail_username"
             :value="old('mail_username', $settings['mail_username'])"
+            class="input-lg"
         />
     @endif
 </div>
@@ -266,7 +272,7 @@ document.addEventListener('DOMContentLoaded', function() {
             name="mail_password"
             id="mail_password"
             :value="old('mail_password')"
-            class="mail-setting-input"
+            class="input-lg"
         />
     @else
         <x-form.label
@@ -277,6 +283,7 @@ document.addEventListener('DOMContentLoaded', function() {
             id="mail_password"
             name="mail_password"
             :value="old('mail_password', $settings['mail_password'])"
+            class="input-lg"
         />
     @endif
 </div>
@@ -302,6 +309,7 @@ document.addEventListener('DOMContentLoaded', function() {
             name="mail_encryption"
             :options="$encryptions"
             :value="old('mail_encryption', $settings['mail_encryption'])"
+            class="input-lg"
         />
     @endif
 </div>
@@ -315,7 +323,7 @@ document.addEventListener('DOMContentLoaded', function() {
             name="mail_from_address"
             id="mail_from_address"
             :value="old('mail_from_address', session('install_data.mail_from_address', $admin_email ?? ''))"
-            class="mail-setting-input"
+            class="input-lg"
         />
     @else
         <x-form.label
@@ -326,6 +334,7 @@ document.addEventListener('DOMContentLoaded', function() {
             id="mail_from_address"
             name="mail_from_address"
             :value="old('mail_from_address', $settings['mail_from_address'])"
+            class="input-lg"
         />
     @endif
 </div>
