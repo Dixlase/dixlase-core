@@ -223,7 +223,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             />
             
 
-            <div class="mt-4 space-y-4" :class="{ 'opacity-50': !captchaEnabled }">
+            <div class="mt-4 space-y-4" :class="{ 'opacity-50 pointer-events-none': !captchaEnabled }">
                 <x-form.label
                     for="captcha_driver"
                     :text="__('admin.settings.security.captcha_driver')"

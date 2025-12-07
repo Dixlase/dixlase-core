@@ -35,6 +35,7 @@ use App\Http\Controllers\Admin\Auth\AdminVerifyEmailController;
 use App\Http\Controllers\Admin\Settings\AdminBaseSettingsController;
 use App\Http\Controllers\Admin\Settings\AdminPluginsSettingsController;
 use App\Http\Controllers\Admin\Settings\AdminSecuritySettingsController;
+use App\Http\Controllers\Admin\Settings\AdminApiSettingsController;
 use App\Http\Controllers\Admin\Settings\AdminMembersSettingsController;
 use App\Http\Controllers\Admin\Settings\AdminThemesSettingsController;
 use App\Http\Controllers\Admin\Settings\AdminSystemsController;
@@ -204,6 +205,26 @@ Route::prefix($adminUrl)->name('admin.')
                 // ファイル整合性チェック
                 Route::post('/settings/security/scan-integrity', [AdminSecuritySettingsController::class, 'scanFileIntegrity'])->name('settings.security.scan-integrity');
                 Route::post('/settings/security/regenerate-baseline', [AdminSecuritySettingsController::class, 'regenerateBaseline'])->name('settings.security.regenerate-baseline');
+            });
+
+            // API設定（権限チェック付き）
+            Route::middleware('check.menu.access:settings.api')->group(function () {
+                Route::get('/settings/api', [AdminApiSettingsController::class, 'index'])->name('settings.api');
+                Route::post('/settings/api', [AdminApiSettingsController::class, 'update'])
+                    ->middleware('check.menu.edit:settings.api')
+                    ->name('settings.api.update');
+                // APIキー生成
+                Route::post('/settings/api/generate-key', [AdminApiSettingsController::class, 'generateKey'])
+                    ->middleware('check.menu.edit:settings.api')
+                    ->name('settings.api.generate-key');
+                // APIキー削除
+                Route::delete('/settings/api/revoke-key/{id}', [AdminApiSettingsController::class, 'revokeKey'])
+                    ->middleware('check.menu.edit:settings.api')
+                    ->name('settings.api.revoke-key');
+                // APIキー再生成
+                Route::post('/settings/api/regenerate-key/{id}', [AdminApiSettingsController::class, 'regenerateKey'])
+                    ->middleware('check.menu.edit:settings.api')
+                    ->name('settings.api.regenerate-key');
             });
 
             // メンバー管理（権限チェック付き）

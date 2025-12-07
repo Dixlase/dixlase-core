@@ -84,6 +84,11 @@ class MemberRolePermissionSeeder extends Seeder
                 'access_roles' => MemberRole::ADMIN->value,        // 管理者以上
                 'view_roles'  => MemberRole::ADMIN->value,
             ],
+            [
+                'menu_key' => 'settings.api',
+                'access_roles' => MemberRole::SUPER_ADMIN->value,  // 特権管理者専用
+                'view_roles'  => MemberRole::SUPER_ADMIN->value,
+            ],
 
             // メンバー管理
             [
