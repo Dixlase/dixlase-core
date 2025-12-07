@@ -147,7 +147,6 @@ class ThemeInstall extends Command
                 $packageName = $themeData['package_name'] ?? null;
                 $namespace = $themeData['namespace'] ?? null;
                 $description = $themeData['description'] ?? null;
-                // 多言語対応の場合は英語を優先
                 if (is_array($description)) {
                     $description = $description['en'] ?? $description['ja'] ?? null;
                 }

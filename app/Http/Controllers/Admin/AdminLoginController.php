@@ -37,7 +37,6 @@ use App\Services\AdminLoginNotificationService;
 use App\Services\AdminLoginLockoutService;
 use App\Services\MailServerValidatorService;
 use App\Models\SecuritySetting;
-use App\Models\CaptchaFormSetting;
 use App\Captcha\CaptchaDriver;
 use App\Helpers\CaptchaHelper;
 use App\Helpers\TwoFactorHelper;

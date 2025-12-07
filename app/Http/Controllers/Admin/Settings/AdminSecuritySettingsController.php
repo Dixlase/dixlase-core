@@ -25,7 +25,6 @@ namespace App\Http\Controllers\Admin\Settings;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\SecuritySetting;
 use App\Models\BaseSetting;
-use App\Models\CaptchaFormSetting;
 use App\Http\Requests\Admin\Settings\Security\AdminSettngsSecurityUpdateRequest;
 use App\Services\CaptchaTestService;
 use App\Enums\LogLevel;
@@ -126,9 +125,6 @@ class AdminSecuritySettingsController extends AdminLoggedInController
             'csp_blocklist_enabled_categories' => $this->securitySettingRepository->get('csp_blocklist_enabled_categories', ''),
         ];
 
-        // 動的reCAPTCHAフォーム設定を取得
-        $captchaFormSettings = CaptchaFormSetting::getOrderedForms();
-
         // メールテスト状態を取得（DB優先、セッションは一時的な状態のみ）
         $sessionTestResults = session('mail_test_results', []);
         
@@ -145,13 +141,21 @@ class AdminSecuritySettingsController extends AdminLoggedInController
         }
         
         $captchaTestResult = $captchaTestService->getTestResult();
+
+        // ファイル整合性情報を取得
+        $fileIntegrityService = app(\App\Services\FileIntegrityService::class);
+        $latestIntegrityAudit = \App\Models\FileIntegrityAudit::getLatestCore();
+        $hasBaseline = $fileIntegrityService->hasBaseline();
+        $baselineMeta = $hasBaseline ? $fileIntegrityService->getBaselineMeta() : null;
         
         $this->viewParams['settings'] = $settings;
-        $this->viewParams['captchaFormSettings'] = $captchaFormSettings;
         $this->viewParams['captchaTestResult'] = $captchaTestResult;
         $this->viewParams['mailConnectionTested'] = $mailConnectionTested;
         $this->viewParams['mailSendTested'] = $mailSendTested;
         $this->viewParams['mailReceiveTested'] = $mailReceiveTested;
+        $this->viewParams['latestIntegrityAudit'] = $latestIntegrityAudit;
+        $this->viewParams['hasBaseline'] = $hasBaseline;
+        $this->viewParams['baselineMeta'] = $baselineMeta;
 
         return view('admin.settings.security.index', $this->viewParams);
     }
@@ -375,15 +379,6 @@ class AdminSecuritySettingsController extends AdminLoggedInController
 
             $this->securitySettingRepository->set('notification_log_levels', implode(',', $validLogLevels));
         }
-        
-        // Save dynamic captcha form settings
-        $captchaFormSettings = CaptchaFormSetting::all();
-        foreach ($captchaFormSettings as $formSetting) {
-            $inputKey = 'captcha_form_' . $formSetting->key;
-            $formSetting->enabled = $request->boolean($inputKey);
-            $formSetting->save();
-        }
-
 
         // 保存成功後は認証状態をセッションに一時保存（次回ページ読み込み時用）
         if ($request->boolean('captcha_enabled') && $request->boolean('captcha_validation_status')) {
@@ -738,6 +733,108 @@ class AdminSecuritySettingsController extends AdminLoggedInController
             return response()->json([
                 'success' => false, 
                 'message' => 'テスト結果のクリアに失敗しました'
+            ], 500);
+        }
+    }
+
+    /**
+     * ファイル整合性スキャンを実行
+     */
+    public function scanFileIntegrity(Request $request)
+    {
+        try {
+            $fileIntegrityService = app(\App\Services\FileIntegrityService::class);
+            
+            $audit = $fileIntegrityService->scanCore(
+                \App\Models\FileIntegrityAudit::TRIGGER_MANUAL,
+                \App\Models\FileIntegrityAudit::INITIATED_BY_USER,
+                Auth::id()
+            );
+
+            Log::channel('admin_activity')->info('ファイル整合性スキャンを実行しました', [
+                'admin_id' => Auth::id(),
+                'status' => $audit->status,
+                'changed' => $audit->changed_files_count,
+                'added' => $audit->added_files_count,
+                'removed' => $audit->removed_files_count,
+                'suspicious' => $audit->suspicious_files_count,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'audit' => [
+                    'id' => $audit->id,
+                    'scan_uuid' => $audit->scan_uuid,
+                    'status' => $audit->status,
+                    'status_label' => __('command.integrity.status_' . $audit->status),
+                    'total_files_scanned' => $audit->total_files_scanned,
+                    'changed_files_count' => $audit->changed_files_count,
+                    'added_files_count' => $audit->added_files_count,
+                    'removed_files_count' => $audit->removed_files_count,
+                    'suspicious_files_count' => $audit->suspicious_files_count,
+                    'duration_ms' => $audit->duration_ms,
+                    'summary' => $audit->summary,
+                    'started_at' => $audit->started_at?->format('Y-m-d H:i:s'),
+                    'result' => $audit->result_payload,
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            Log::channel('admin_error')->error('ファイル整合性スキャンエラー', [
+                'admin_id' => Auth::id(),
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => __('command.integrity.scan_error', ['error' => $e->getMessage()]),
+            ], 500);
+        }
+    }
+
+    /**
+     * ファイル整合性ベースラインを再生成
+     */
+    public function regenerateBaseline(Request $request)
+    {
+        try {
+            $fileIntegrityService = app(\App\Services\FileIntegrityService::class);
+            
+            $result = $fileIntegrityService->regenerateBaseline(
+                \App\Models\FileIntegrityAudit::TRIGGER_MANUAL,
+                \App\Models\FileIntegrityAudit::INITIATED_BY_USER,
+                Auth::id()
+            );
+
+            if ($result) {
+                $baselineMeta = $fileIntegrityService->getBaselineMeta();
+
+                Log::channel('admin_activity')->info('ファイル整合性ベースラインを再生成しました', [
+                    'admin_id' => Auth::id(),
+                    'files_count' => $baselineMeta['files'] ?? 0,
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => __('command.integrity.baseline_regenerated'),
+                    'meta' => $baselineMeta,
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => __('command.integrity.baseline_failed'),
+            ], 500);
+
+        } catch (\Exception $e) {
+            Log::channel('admin_error')->error('ベースライン再生成エラー', [
+                'admin_id' => Auth::id(),
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
             ], 500);
         }
     }

@@ -65,11 +65,12 @@ class FrontPageContentService extends ContentFileService
      * フロントページのコンテンツを取得する（DB or ファイル）
      *
      * @param FrontPage $frontPage フロントページモデル
-     * @param string $locale 言語コード
+     * @param string|null $locale 言語コード（nullの場合は現在の言語）
      * @return string|null コンテンツ
      */
-    public function getContent(FrontPage $frontPage, string $locale): ?string
+    public function getContent(FrontPage $frontPage, ?string $locale = null): ?string
     {
+        $locale = $locale ?? app()->getLocale();
         $storageType = $frontPage->storage_type->value ?? 'database';
         $editorType = $frontPage->editor_type->value ?? 'html';
 
@@ -78,25 +79,21 @@ class FrontPageContentService extends ContentFileService
         }
 
         // データベースから取得（エディタータイプ別カラム）
-        $translation = $frontPage->translate($locale);
-        if ($translation) {
-            $contentColumn = 'content_' . $editorType;
-            return $translation->{$contentColumn} ?? $translation->content ?? null;
-        }
-        
-        return null;
+        $contentColumn = 'content_' . $editorType;
+        return $frontPage->{$contentColumn} ?? $frontPage->content ?? null;
     }
 
     /**
      * フロントページのコンテンツを保存する（DB or ファイル）
      *
      * @param FrontPage $frontPage フロントページモデル
-     * @param string $locale 言語コード
      * @param string $content コンテンツ
+     * @param string|null $locale 言語コード（nullの場合は現在の言語）
      * @return bool 保存成功時はtrue
      */
-    public function saveContent(FrontPage $frontPage, string $locale, string $content): bool
+    public function saveContent(FrontPage $frontPage, string $content, ?string $locale = null): bool
     {
+        $locale = $locale ?? app()->getLocale();
         $storageType = $frontPage->storage_type->value ?? 'database';
         $editorType = $frontPage->editor_type->value ?? 'html';
 
@@ -104,7 +101,7 @@ class FrontPageContentService extends ContentFileService
             return $this->saveToFile($frontPage->page_type, $locale, $editorType, $content);
         }
 
-        // データベースに保存（翻訳テーブルへの保存はコントローラーで行う）
+        // データベースに保存（コントローラーで行う）
         return true;
     }
 }

@@ -40,18 +40,18 @@
                     :options="$envOptions"
                     :value="old('app_env', session('install_data.app_env', 'local'))"
                     onchange="toggleDebugMode()"
-                    class="w-full"
+                    class="input-lg"
                 />
             </div>
 
             <div>
                 <x-form.label for="app_debug" :text="__('install.app_debug')" />
-                <label class="inline-flex items-center cursor-pointer">
-                    <input type="checkbox" name="app_debug" id="app_debug" 
-                        class="form-checkbox h-5 w-5 text-blue-600 dark:text-blue-500 rounded border-gray-300 dark:border-gray-600 focus:ring-blue-500 dark:focus:ring-blue-400"
-                        value="1" {{ old('app_debug', session('install_data.app_debug', '1')) == '1' ? 'checked' : '' }}>
-                    <span class="ml-2 text-gray-700 dark:text-gray-300">{{ __('install.enable_debug') }}</span>
-                </label>
+                <x-form.toggle
+                    name="app_debug"
+                    id="app_debug"
+                    :checked="old('app_debug', session('install_data.app_debug', '1')) == '1'"
+                    :label="__('install.enable_debug')"
+                />
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1" id="debug-note">{{ __('install.app_debug_note') }}</p>
             </div>
         </fieldset>
@@ -67,7 +67,7 @@
             <div>
                 <x-form.label for="app_url" :text="__('install.app_url')" :required="true" />
                 <div class="flex items-center">
-                    <span id="protocol_display" class="p-2 bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-l-lg text-gray-700 dark:text-gray-300">
+                    <span id="protocol_display" class="p-2 bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-l-lg text-gray-700 dark:text-gray-300 text-sm">
                         {{ session('install_data.force_ssl', false) ? 'https://' : 'http://' }}
                     </span>
                     <x-form.text
@@ -75,18 +75,18 @@
                         id="app_url"
                         :value="old('app_url', $hostAndPort)"
                         :required="true"
-                        class="rounded-l-none"
+                        class="input-full rounded-r-lg rounded-l-none"
                     />
                 </div>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('install.app_url_note') }}</p>
             </div>
 
-            <div class="flex items-center">
-                <input type="checkbox" name="force_ssl" id="force_ssl" 
-                    class="h-5 w-5 text-blue-600 dark:text-blue-500 rounded border-gray-300 dark:border-gray-600 focus:ring-blue-500 dark:focus:ring-blue-400 mr-2"
-                    value="1" {{ session('install_data.force_ssl', false) ? 'checked' : '' }}>
-                <x-form.label for="force_ssl" :text="__('install.force_ssl')" class="mb-0" />
-            </div>
+            <x-form.toggle
+                name="force_ssl"
+                id="force_ssl"
+                :checked="session('install_data.force_ssl', false)"
+                :label="__('install.force_ssl')"
+            />
         </fieldset>
     </section>
 
@@ -105,7 +105,7 @@
                         name="admin_url"
                         id="admin_url"
                         :value="old('admin_url', session('install_data.admin_url', 'admin'))"
-                        class="rounded-l-none"
+                        class="input-full rounded-r-lg rounded-l-none"
                     />
                 </div>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('install.admin_url_security_note') }}</p>
@@ -168,7 +168,7 @@
                     }
                 @endphp
                 <select name="app_timezone" id="app_timezone" 
-                    class="block w-full p-2 pr-10 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-white">
+                    class="input-common input-full">
                     @foreach($timezoneOptions as $timezone => $translatedName)
                         <option value="{{ $timezone }}" {{ $currentTz === $timezone ? 'selected' : '' }}>
                             {{ $translatedName }}

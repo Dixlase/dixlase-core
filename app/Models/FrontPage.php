@@ -24,14 +24,10 @@ namespace App\Models;
 
 use App\Enums\ContentEditorType;
 use App\Enums\ContentStorageType;
-use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class FrontPage extends Model
 {
-    use HasTranslations;
-
     /**
      * テーブル名
      */
@@ -44,6 +40,11 @@ class FrontPage extends Model
      */
     protected $fillable = [
         'page_type',
+        'title',
+        'content',
+        'content_html',
+        'content_markdown',
+        'content_blade',
         'storage_type',
         'editor_type',
         'status',
@@ -58,14 +59,6 @@ class FrontPage extends Model
         'storage_type' => ContentStorageType::class,
         'editor_type' => ContentEditorType::class,
     ];
-
-    /**
-     * 翻訳とのリレーション
-     */
-    public function translations(): HasMany
-    {
-        return $this->hasMany(FrontPageTranslation::class, 'front_page_id');
-    }
 
     /**
      * ページタイプで取得

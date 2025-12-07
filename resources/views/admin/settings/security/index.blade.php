@@ -259,7 +259,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     class="input-common input-xl"
                 />
 
-                <label for="captcha_secret_key" class="block font-medium text-lg {{ config('appearance.appearance_class.form.label') }}" 
+                <label for="captcha_secret_key" class="form-label text-lg" 
                        x-text="captchaDriver === 'google_enterprise' ? '{{ __("admin.settings.security.captcha_google_enterprise_secret_key") }}' : '{{ __("admin.settings.security.captcha_secret_key") }}'">
                     {{ __('admin.settings.security.captcha_secret_key') }}
                 </label>
@@ -1182,6 +1182,167 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </section>
     </form>
+
+    <!-- ファイル整合性チェック（フォーム外） -->
+    <section class="mt-8" x-data="fileIntegrityChecker()">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ __('admin.settings.security.file_integrity.title') }}</h2>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ __('admin.settings.security.file_integrity.description') }}</p>
+
+        <!-- ベースライン情報 -->
+        <div class="mb-6 p-4 rounded-lg {{ $hasBaseline ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' : 'bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800' }}">
+            <div class="flex items-center gap-2 mb-2">
+                @if($hasBaseline)
+                    <i class="fas fa-check-circle text-green-600 dark:text-green-400"></i>
+                    <span class="font-medium text-green-800 dark:text-green-200">{{ __('admin.settings.security.file_integrity.baseline_exists') }}</span>
+                @else
+                    <i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400"></i>
+                    <span class="font-medium text-yellow-800 dark:text-yellow-200">{{ __('admin.settings.security.file_integrity.baseline_not_exists') }}</span>
+                @endif
+            </div>
+            @if($hasBaseline && $baselineMeta)
+                <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                    <p><span class="font-medium">{{ __('command.integrity.generated_at') }}:</span> {{ $baselineMeta['generated_at'] ?? '-' }}</p>
+                    <p><span class="font-medium">{{ __('command.integrity.app_version') }}:</span> {{ $baselineMeta['app_version'] ?? '-' }}</p>
+                    <p><span class="font-medium">{{ __('command.integrity.hash_algo') }}:</span> {{ $baselineMeta['hash_algo'] ?? 'sha256' }}</p>
+                </div>
+            @endif
+        </div>
+
+        <!-- 最新スキャン結果 -->
+        @if($latestIntegrityAudit)
+            <div class="mb-6 p-4 rounded-lg border {{ $latestIntegrityAudit->status === 'ok' ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : ($latestIntegrityAudit->status === 'warning' ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800' : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800') }}">
+                <div class="flex items-center gap-2 mb-2">
+                    <i class="{{ $latestIntegrityAudit->getStatusIcon() }} {{ $latestIntegrityAudit->status === 'ok' ? 'text-green-600 dark:text-green-400' : ($latestIntegrityAudit->status === 'warning' ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400') }}"></i>
+                    <span class="font-medium {{ $latestIntegrityAudit->status === 'ok' ? 'text-green-800 dark:text-green-200' : ($latestIntegrityAudit->status === 'warning' ? 'text-yellow-800 dark:text-yellow-200' : 'text-red-800 dark:text-red-200') }}">
+                        {{ __('admin.settings.security.file_integrity.last_scan_result') }}: {{ __('command.integrity.status_' . $latestIntegrityAudit->status) }}
+                    </span>
+                </div>
+                <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                    <p><span class="font-medium">{{ __('admin.settings.security.file_integrity.scanned_at') }}:</span> {{ $latestIntegrityAudit->started_at?->format('Y-m-d H:i:s') }}</p>
+                    <p><span class="font-medium">{{ __('command.integrity.files_scanned') }}:</span> {{ $latestIntegrityAudit->total_files_scanned }}</p>
+                    @if($latestIntegrityAudit->hasIssues())
+                        <p class="mt-2">
+                            <span class="font-medium">{{ __('command.integrity.summary') }}:</span> {{ $latestIntegrityAudit->summary }}
+                        </p>
+                    @endif
+                </div>
+            </div>
+        @endif
+
+        <!-- スキャン結果表示エリア（AJAX結果用） -->
+        <div x-show="scanResult" x-cloak class="mb-6 p-4 rounded-lg border" :class="getScanResultClass()">
+            <div class="flex items-center gap-2 mb-2">
+                <i :class="getScanResultIcon()"></i>
+                <span class="font-medium" :class="getScanResultTextClass()" x-text="scanResult?.status_label"></span>
+            </div>
+            <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                <p><span class="font-medium">{{ __('command.integrity.files_scanned') }}:</span> <span x-text="scanResult?.total_files_scanned"></span></p>
+                <p><span class="font-medium">{{ __('command.integrity.duration') }}:</span> <span x-text="scanResult?.duration_ms + 'ms'"></span></p>
+                <template x-if="scanResult?.summary">
+                    <p><span class="font-medium">{{ __('command.integrity.summary') }}:</span> <span x-text="scanResult?.summary"></span></p>
+                </template>
+            </div>
+
+            <!-- 詳細結果 -->
+            <template x-if="scanResult?.result && (scanResult.result.changed?.length || scanResult.result.added?.length || scanResult.result.removed?.length || scanResult.result.suspicious?.length)">
+                <div class="mt-4 space-y-3">
+                    <!-- 変更されたファイル -->
+                    <template x-if="scanResult.result.changed?.length">
+                        <div>
+                            <h4 class="font-medium text-yellow-700 dark:text-yellow-300 mb-1">{{ __('admin.settings.security.file_integrity.changed_files') }} (<span x-text="scanResult.result.changed.length"></span>)</h4>
+                            <ul class="text-sm space-y-1 max-h-32 overflow-y-auto">
+                                <template x-for="file in scanResult.result.changed" :key="file.path">
+                                    <li class="flex items-center gap-1">
+                                        <span class="text-yellow-600">M</span>
+                                        <code class="text-xs bg-gray-100 dark:bg-gray-800 px-1 rounded" x-text="file.path"></code>
+                                    </li>
+                                </template>
+                            </ul>
+                        </div>
+                    </template>
+
+                    <!-- 追加されたファイル -->
+                    <template x-if="scanResult.result.added?.length">
+                        <div>
+                            <h4 class="font-medium text-green-700 dark:text-green-300 mb-1">{{ __('admin.settings.security.file_integrity.added_files') }} (<span x-text="scanResult.result.added.length"></span>)</h4>
+                            <ul class="text-sm space-y-1 max-h-32 overflow-y-auto">
+                                <template x-for="file in scanResult.result.added" :key="file.path">
+                                    <li class="flex items-center gap-1">
+                                        <span class="text-green-600">A</span>
+                                        <code class="text-xs bg-gray-100 dark:bg-gray-800 px-1 rounded" x-text="file.path"></code>
+                                    </li>
+                                </template>
+                            </ul>
+                        </div>
+                    </template>
+
+                    <!-- 削除されたファイル -->
+                    <template x-if="scanResult.result.removed?.length">
+                        <div>
+                            <h4 class="font-medium text-red-700 dark:text-red-300 mb-1">{{ __('admin.settings.security.file_integrity.removed_files') }} (<span x-text="scanResult.result.removed.length"></span>)</h4>
+                            <ul class="text-sm space-y-1 max-h-32 overflow-y-auto">
+                                <template x-for="file in scanResult.result.removed" :key="file.path">
+                                    <li class="flex items-center gap-1">
+                                        <span class="text-red-600">D</span>
+                                        <code class="text-xs bg-gray-100 dark:bg-gray-800 px-1 rounded" x-text="file.path"></code>
+                                    </li>
+                                </template>
+                            </ul>
+                        </div>
+                    </template>
+
+                    <!-- 疑わしいファイル -->
+                    <template x-if="scanResult.result.suspicious?.length">
+                        <div>
+                            <h4 class="font-medium text-red-700 dark:text-red-300 mb-1">{{ __('admin.settings.security.file_integrity.suspicious_files') }} (<span x-text="scanResult.result.suspicious.length"></span>)</h4>
+                            <ul class="text-sm space-y-1 max-h-32 overflow-y-auto">
+                                <template x-for="file in scanResult.result.suspicious" :key="file.path">
+                                    <li class="flex items-center gap-1">
+                                        <span class="text-red-600">!</span>
+                                        <code class="text-xs bg-gray-100 dark:bg-gray-800 px-1 rounded" x-text="file.path"></code>
+                                        <span class="text-xs text-gray-500" x-text="'(' + file.reason + ')'"></span>
+                                    </li>
+                                </template>
+                            </ul>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+
+        <!-- エラー表示 -->
+        <div x-show="errorMessage" x-cloak class="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-times-circle text-red-600 dark:text-red-400"></i>
+                <span class="text-red-800 dark:text-red-200" x-text="errorMessage"></span>
+            </div>
+        </div>
+
+        <!-- アクションボタン -->
+        <div class="flex flex-wrap gap-3">
+            <button
+                type="button"
+                @click="runScan()"
+                :disabled="isScanning"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors"
+            >
+                <i class="fas fa-search" :class="{ 'animate-spin': isScanning }"></i>
+                <span x-text="isScanning ? '{{ __('admin.settings.security.file_integrity.scanning') }}' : '{{ __('admin.settings.security.file_integrity.run_scan') }}'"></span>
+            </button>
+
+            <button
+                type="button"
+                @click="regenerateBaseline()"
+                :disabled="isRegenerating"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors"
+            >
+                <i class="fas fa-sync-alt" :class="{ 'animate-spin': isRegenerating }"></i>
+                <span x-text="isRegenerating ? '{{ __('admin.settings.security.file_integrity.regenerating') }}' : '{{ __('admin.settings.security.file_integrity.regenerate_baseline') }}'"></span>
+            </button>
+        </div>
+
+        <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">{{ __('admin.settings.security.file_integrity.regenerate_baseline_help') }}</p>
+    </section>
 </div>
 </div>
 
@@ -2741,6 +2902,104 @@ function resetCaptchaAuthenticationResult(reason) {
     // 統合されたテスト結果メッセージを非表示にする
     hideTestResult();
     console.log('DEBUG: Hidden CAPTCHA test result message due to settings change');
+}
+
+// ファイル整合性チェック用Alpine.jsコンポーネント
+function fileIntegrityChecker() {
+    return {
+        isScanning: false,
+        isRegenerating: false,
+        scanResult: null,
+        errorMessage: null,
+
+        async runScan() {
+            this.isScanning = true;
+            this.scanResult = null;
+            this.errorMessage = null;
+
+            try {
+                const response = await fetch('{{ route("admin.settings.security.scan-integrity") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    this.scanResult = data.audit;
+                } else {
+                    this.errorMessage = data.message || '{{ __("admin.settings.security.file_integrity.scan_failed") }}';
+                }
+            } catch (error) {
+                console.error('Scan error:', error);
+                this.errorMessage = '{{ __("admin.settings.security.file_integrity.scan_failed") }}';
+            } finally {
+                this.isScanning = false;
+            }
+        },
+
+        async regenerateBaseline() {
+            if (!confirm('{{ __("admin.settings.security.file_integrity.regenerate_confirm") }}')) {
+                return;
+            }
+
+            this.isRegenerating = true;
+            this.errorMessage = null;
+
+            try {
+                const response = await fetch('{{ route("admin.settings.security.regenerate-baseline") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // ページをリロードして最新の情報を表示
+                    window.location.reload();
+                } else {
+                    this.errorMessage = data.message || '{{ __("admin.settings.security.file_integrity.regenerate_failed") }}';
+                }
+            } catch (error) {
+                console.error('Regenerate error:', error);
+                this.errorMessage = '{{ __("admin.settings.security.file_integrity.regenerate_failed") }}';
+            } finally {
+                this.isRegenerating = false;
+            }
+        },
+
+        getScanResultClass() {
+            if (!this.scanResult) return '';
+            const status = this.scanResult.status;
+            if (status === 'ok') return 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
+            if (status === 'warning') return 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800';
+            return 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800';
+        },
+
+        getScanResultIcon() {
+            if (!this.scanResult) return '';
+            const status = this.scanResult.status;
+            if (status === 'ok') return 'fas fa-check-circle text-green-600 dark:text-green-400';
+            if (status === 'warning') return 'fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400';
+            return 'fas fa-times-circle text-red-600 dark:text-red-400';
+        },
+
+        getScanResultTextClass() {
+            if (!this.scanResult) return '';
+            const status = this.scanResult.status;
+            if (status === 'ok') return 'text-green-800 dark:text-green-200';
+            if (status === 'warning') return 'text-yellow-800 dark:text-yellow-200';
+            return 'text-red-800 dark:text-red-200';
+        }
+    };
 }
 
 </script>

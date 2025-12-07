@@ -23,6 +23,10 @@
 
 @use "@fortawesome/fontawesome-free/css/all.min.css";
 @use 'tailwind-custom';
+@use 'forms';
+@use 'typography';
+@use 'buttons';
+@use 'tables';
 @use 'components';
 
 @tailwind base;

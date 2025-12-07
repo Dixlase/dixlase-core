@@ -28,7 +28,6 @@ use Illuminate\Support\Facades\Auth;
  * 言語設定ヘルパー
  * 
  * 管理画面の言語設定とフォールバックロジックを管理します。
- * フロントエンドの多言語機能はDixlaseMultilingualプラグインで提供されます。
  */
 class LocaleHelper
 {

@@ -136,7 +136,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                                     @if(isset($child_item['icon']) && is_string($child_item['icon']) && isset($child_item['text']) && is_string($child_item['text']))
                                     <div x-data="{ {{ $open_child_key }}: {{ $is_open_child ? 'true' : 'false' }} }">
-                                        <button @click="{{ $open_child_key }} = !{{ $open_child_key }}" class="{{ $button_class }} {{ config('appearance.appearance_class.sidebar.normal') }}">
+                                        <button @click="{{ $open_child_key }} = !{{ $open_child_key }}" class="{{ $button_class }} sidebar-link">
                                             <i class="{{ $child_item['icon'] }} mr-3"></i>
                                             <span>{{ __($child_item['text']) }}</span>
                                             <svg class="{{ $arrow_class }}" :class="{ 'rotate-180': {{ $open_child_key }} }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -152,7 +152,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                     @endphp
                                                     @if (isset($grand_child_item['route']) && is_string($grand_child_item['route']) && Route::has($grand_child_item['route']) && isset($grand_child_item['icon']) && is_string($grand_child_item['icon']) && isset($grand_child_item['text']) && is_string($grand_child_item['text']) && (\App\Helpers\AdminHelper::canEditMenu($grand_child_role_key) || \App\Helpers\AdminHelper::canViewMenu($grand_child_role_key)))
                                                         <a href="{{ route($grand_child_item['route']) }}"
-                                                        class="{{ $button_class }} {{ $grand_child_item['route'] === $route_name ? config('appearance.appearance_class.sidebar.active') : config('appearance.appearance_class.sidebar.normal') }}">
+                                                        class="{{ $button_class }} {{ $grand_child_item['route'] === $route_name ? 'sidebar-link-active' : 'sidebar-link' }}">
                                                             <i class="{{ $grand_child_item['icon'] }} mr-3"></i>
                                                             <span>{{ __($grand_child_item['text']) }}</span>
                                                             @if (!\App\Helpers\AdminHelper::canEditMenu($grand_child_role_key))

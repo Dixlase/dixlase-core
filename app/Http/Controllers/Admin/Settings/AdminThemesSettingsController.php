@@ -667,7 +667,6 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 $themeData = json_decode($jsonContent, true);
                 
                 if (json_last_error() === JSON_ERROR_NONE) {
-                    // descriptionが配列（多言語対応）の場合は英語を優先
                     $description = $themeData['description'] ?? null;
                     if (is_array($description)) {
                         $description = $description['en'] ?? $description['ja'] ?? null;

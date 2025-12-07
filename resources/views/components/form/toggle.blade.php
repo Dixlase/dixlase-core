@@ -23,6 +23,6 @@
         <div class="absolute left-1 top-1 w-4 h-4 bg-white border border-gray-300 rounded-full transition-all peer-checked:translate-x-full peer-checked:border-white"></div>
     </label>
     @if ($label)
-        <span class="text-sm" @if($xBind) :class="{{ $xBind }} ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-500'" @else class="{{ $disabled ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300' }}" @endif>{{ $label }}</span>
+        <span class="mb-2 text-sm {{ $disabled ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300' }}" @if($xBind) :class="{{ $xBind }} ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-500'" @endif>{{ $label }}</span>
     @endif
 </div>

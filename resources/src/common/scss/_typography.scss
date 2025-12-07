@@ -1,0 +1,92 @@
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2025 exc-D inc.
+ * Website: https://exc-d.com
+ *
+ * Common typography styles shared across admin, install, and front screens.
+ */
+
+// ヘルプテキスト
+.help-text {
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: rgb(107 114 128); // gray-500
+}
+
+.dark .help-text,
+html.dark .help-text {
+    color: rgb(255 255 255);
+}
+
+// 説明テキスト
+.description-text {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    margin-bottom: 1rem;
+    color: rgb(75 85 99); // gray-600
+}
+
+.dark .description-text,
+html.dark .description-text {
+    color: rgb(156 163 175); // gray-400
+}
+
+// 大きめテキスト
+.large-text {
+    font-size: 1rem;
+    line-height: 1.5rem;
+    color: rgb(55 65 81); // gray-700
+}
+
+.dark .large-text,
+html.dark .large-text {
+    color: rgb(209 213 219); // gray-300
+}
+
+// テキストリンク
+.text-link {
+    color: rgb(37 99 235); // blue-600
+    text-decoration: underline;
+    transition: color 200ms;
+
+    &:hover {
+        color: rgb(30 64 175); // blue-800
+    }
+}
+
+.dark .text-link,
+html.dark .text-link {
+    color: rgb(96 165 250); // blue-400
+
+    &:hover {
+        color: rgb(147 197 253); // blue-300
+    }
+}
+
+// エラーテキスト
+.error-text,
+.error {
+    color: rgb(220 38 38); // red-600
+}
+
+.dark .error-text,
+.dark .error,
+html.dark .error-text,
+html.dark .error {
+    color: rgb(248 113 113); // red-400
+}
+
+// フォームラベル
+.form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgb(55 65 81); // gray-700
+}
+
+.dark .form-label,
+html.dark .form-label {
+    color: rgb(209 213 219); // gray-300
+}

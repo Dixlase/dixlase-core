@@ -85,7 +85,6 @@ class PluginInstall extends Command
             if (json_last_error() === JSON_ERROR_NONE) {
                 $packageName = $pluginData['package_name'] ?? $pluginData['name'] ?? null;
                 $description = $pluginData['description'] ?? null;
-                // 多言語対応の場合は英語を優先
                 if (is_array($description)) {
                     $description = $description['en'] ?? $description['ja'] ?? null;
                 }

@@ -169,6 +169,12 @@ class InstallController extends Controller
 
     public function storeEnvironment(Request $request)
     {
+        // トグル/チェックボックスの値をboolean変換（バリデーション前）
+        $request->merge([
+            'app_debug' => filter_var($request->input('app_debug'), FILTER_VALIDATE_BOOLEAN),
+            'force_ssl' => filter_var($request->input('force_ssl'), FILTER_VALIDATE_BOOLEAN),
+        ]);
+
         $data = $request->validate([
             'app_env' => 'required|in:local,staging,production',
             'app_debug' => 'nullable|boolean',
@@ -177,9 +183,6 @@ class InstallController extends Controller
             'app_timezone' => 'required|timezone',
             'force_ssl' => 'nullable|boolean',
         ]);
-
-        // ✅ `force_ssl` の値を取得（チェックなしなら false）
-        $data['force_ssl'] = $request->has('force_ssl') ? true : false;
 
         // 1) プロトコル除去
         $data['app_url'] = preg_replace('/^(http:\/\/|https:\/\/)/', '', $data['app_url']);
@@ -223,6 +226,11 @@ class InstallController extends Controller
 
     public function storeDatabase(Request $request)
     {
+        // トグル/チェックボックスの値をboolean変換（バリデーション前）
+        $request->merge([
+            'preserve_data' => filter_var($request->input('preserve_data'), FILTER_VALIDATE_BOOLEAN),
+        ]);
+
         $request->validate([
             'db_connection' => 'required|string',
             'db_host' => 'required|string',
@@ -334,6 +342,14 @@ class InstallController extends Controller
 
     public function storeSecurity(Request $request)
     {
+        // トグル/チェックボックスの値をboolean変換（バリデーション前）
+        $request->merge([
+            'enable_allowed_admin_ips' => filter_var($request->input('enable_allowed_admin_ips'), FILTER_VALIDATE_BOOLEAN),
+            'enable_blocked_admin_ips' => filter_var($request->input('enable_blocked_admin_ips'), FILTER_VALIDATE_BOOLEAN),
+            'enable_allowed_front_ips' => filter_var($request->input('enable_allowed_front_ips'), FILTER_VALIDATE_BOOLEAN),
+            'enable_blocked_front_ips' => filter_var($request->input('enable_blocked_front_ips'), FILTER_VALIDATE_BOOLEAN),
+        ]);
+
         $validated = $request->validate([
             'enable_allowed_admin_ips' => 'nullable|boolean',
             'allowed_admin_ips' => 'nullable|string',
@@ -345,11 +361,11 @@ class InstallController extends Controller
             'blocked_front_ips' => 'nullable|string',
         ]);
 
-        // ✅ チェックがない場合は false にする
-        $validated['enable_allowed_admin_ips'] = $request->has('enable_allowed_admin_ips') ? '1' : '0';
-        $validated['enable_blocked_admin_ips'] = $request->has('enable_blocked_admin_ips') ? '1' : '0';
-        $validated['enable_allowed_front_ips'] = $request->has('enable_allowed_front_ips') ? '1' : '0';
-        $validated['enable_blocked_front_ips'] = $request->has('enable_blocked_front_ips') ? '1' : '0';
+        // boolean値を文字列に変換（セッション保存用）
+        $validated['enable_allowed_admin_ips'] = $validated['enable_allowed_admin_ips'] ? '1' : '0';
+        $validated['enable_blocked_admin_ips'] = $validated['enable_blocked_admin_ips'] ? '1' : '0';
+        $validated['enable_allowed_front_ips'] = $validated['enable_allowed_front_ips'] ? '1' : '0';
+        $validated['enable_blocked_front_ips'] = $validated['enable_blocked_front_ips'] ? '1' : '0';
 
 
         session(['install_data' => array_merge(session('install_data', []), $validated)]);
@@ -705,6 +721,38 @@ class InstallController extends Controller
                 }
             } else {
                 Log::channel('install')->warning("アクティブなテーマが見つかりません。シンボリックリンクは作成されませんでした。");
+            }
+
+            // ✅ ファイル整合性ベースラインを生成
+            Log::channel('install')->info('ファイル整合性ベースライン生成開始');
+            try {
+                $fileIntegrityService = app(\App\Services\FileIntegrityService::class);
+                $baseline = $fileIntegrityService->generateCoreBaseline();
+                $fileIntegrityService->saveBaseline($baseline);
+                
+                // 監査ログを記録
+                \App\Models\FileIntegrityAudit::create([
+                    'scope' => \App\Models\FileIntegrityAudit::SCOPE_CORE,
+                    'trigger' => \App\Models\FileIntegrityAudit::TRIGGER_INSTALL,
+                    'initiated_by_type' => \App\Models\FileIntegrityAudit::INITIATED_BY_SYSTEM,
+                    'status' => \App\Models\FileIntegrityAudit::STATUS_OK,
+                    'hash_algo' => 'sha256',
+                    'baseline_version' => $baseline['meta']['app_version'] ?? null,
+                    'total_files_scanned' => count($baseline['files']),
+                    'started_at' => now(),
+                    'finished_at' => now(),
+                    'duration_ms' => 0,
+                    'summary' => __('command.integrity.baseline_generated'),
+                ]);
+                
+                Log::channel('install')->info('ファイル整合性ベースライン生成完了', [
+                    'files_count' => count($baseline['files']),
+                    'version' => $baseline['meta']['app_version'] ?? 'unknown'
+                ]);
+            } catch (\Exception $e) {
+                Log::channel('install')->warning('ファイル整合性ベースライン生成に失敗しましたが、インストールは続行します', [
+                    'error' => $e->getMessage()
+                ]);
             }
 
             // セッションデータを削除

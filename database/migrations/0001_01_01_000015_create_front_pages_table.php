@@ -37,30 +37,15 @@ return new class extends Migration
         Schema::create('front_pages', function (Blueprint $table) {
             $table->id();
             $table->string('page_type', 50)->default('main_content')->unique();
+            $table->string('title')->nullable();
+            $table->text('content')->nullable();
+            $table->text('content_html')->nullable();
+            $table->text('content_markdown')->nullable();
+            $table->text('content_blade')->nullable();
             $table->string('storage_type', 20)->default('database');
             $table->string('editor_type', 20)->default('html');
             $table->enum('status', ['draft', 'published'])->default('published');
             $table->timestamps();
-        });
-
-        // front_page_translationsテーブル作成
-        Schema::create('front_page_translations', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('front_page_id');
-            $table->string('locale', 10);
-            $table->string('title')->nullable();
-            $table->text('content')->nullable();
-            $table->timestamps();
-
-            // インデックス
-            $table->unique(['front_page_id', 'locale']);
-            $table->index('locale');
-
-            // 外部キー制約
-            $table->foreign('front_page_id')
-                ->references('id')
-                ->on('front_pages')
-                ->onDelete('cascade');
         });
     }
 
@@ -71,7 +56,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('front_page_translations');
         Schema::dropIfExists('front_pages');
     }
 };

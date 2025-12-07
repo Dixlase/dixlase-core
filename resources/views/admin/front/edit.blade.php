@@ -23,27 +23,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 <div class="mx-auto">
     @php
-    use App\Helpers\LocaleHelper;
-
-    // 翻訳データの準備
-    $translations = [];
-    foreach (LocaleHelper::supportedLocales() as $locale) {
-        $translation = $frontPage->translate($locale);
-        
-        // ファイル保存の場合はファイルからコンテンツを取得
-        if (isset($fileContents[$locale])) {
-            $content = old("translations.{$locale}.content", $fileContents[$locale]);
-        } else {
-            // DB保存の場合はエディタータイプ別のカラムから取得
-            $editorType = $frontPage->editor_type->value ?? 'html';
-            $contentColumn = 'content_' . $editorType;
-            $content = old("translations.{$locale}.content", $translation->{$contentColumn} ?? $translation->content ?? '');
-        }
-        
-        $translations[$locale] = [
-            'title' => old("translations.{$locale}.title", $translation->title ?? ''),
-            'content' => $content,
-        ];
+    // コンテンツの取得
+    $editorType = $frontPage->editor_type->value ?? 'html';
+    $contentColumn = 'content_' . $editorType;
+    
+    // ファイル保存の場合はファイルから、DB保存の場合はカラムから
+    if ($fileContents !== null) {
+        $content = old('content', $fileContents);
+    } else {
+        $content = old('content', $frontPage->{$contentColumn} ?? $frontPage->content ?? '');
     }
     @endphp
 
@@ -57,11 +45,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @csrf
         @method('PUT')
 
-        <!-- 多言語コンテンツエディタ -->
-        <x-multilingual-content-editor
+        <!-- コンテンツエディタ -->
+        <x-content-editor
             :storageType="old('storage_type', $frontPage->storage_type->value ?? 'database')"
             :editorType="old('editor_type', $frontPage->editor_type->value ?? 'html')"
-            :translations="$translations"
+            :title="old('title', $frontPage->title ?? '')"
+            :content="$content"
             :identifier="'front-main-content'"
             :pageId="$frontPage->id"
             :contentApiUrl="url('admin/front/edit/content/{storageType}/{editorType}')"

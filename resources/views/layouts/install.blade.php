@@ -63,7 +63,7 @@
 
 
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 flex items-center justify-center min-h-screen transition-colors duration-200">
+<body class="bg-gray-100 dark:bg-black flex items-center justify-center min-h-screen transition-colors duration-200">
     <div class="flex flex-col items-center w-full max-w-xl min-w-[400px] my-10">
 
         <!-- Site Logo -->
@@ -72,7 +72,7 @@
         </div>
 
         <!-- Main Installation Container -->
-        <main class="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8 max-w-xl w-full transition-colors duration-200" role="main">
+        <main class="bg-white dark:bg-gray-900 shadow-lg rounded-lg p-8 max-w-xl w-full transition-colors duration-200" role="main">
 
             <!-- Installation Header -->
             <header class="mb-6">
