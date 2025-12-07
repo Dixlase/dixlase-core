@@ -103,6 +103,11 @@ return [
                     'route' => 'admin.settings.security',
                     'icon' => 'fas fa-fw fa-shield-alt',
                 ],
+                'api' => [
+                    'text' => 'admin.nav.settings.api',
+                    'route' => 'admin.settings.api',
+                    'icon' => 'fas fa-fw fa-key',
+                ],
                 'members' => [
                     'text' => 'admin.nav.settings.members.text',
                     'icon' => 'fas fa-fw fa-users-cog',

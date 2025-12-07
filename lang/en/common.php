@@ -90,6 +90,8 @@ return [
     'default_method' => 'Default',
     'enabled' => 'Enabled',
     'disabled' => 'Disabled',
+    'active' => 'Active',
+    'inactive' => 'Inactive',
     'available_methods' => 'available methods',
     
     // Theme

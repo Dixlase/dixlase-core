@@ -92,6 +92,8 @@ return [
     'default_method' => 'デフォルト',
     'enabled' => '有効',
     'disabled' => '無効',
+    'active' => '有効',
+    'inactive' => '無効',
     'available_methods' => '利用可能な方法',
     
     // テーマ
