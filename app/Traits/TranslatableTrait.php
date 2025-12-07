@@ -1,0 +1,251 @@
+<?php
+
+namespace App\Traits;
+
+use App\Contracts\TranslationResolver;
+use Illuminate\Support\Facades\App;
+
+/**
+ * Translatable Trait
+ * 
+ * Provides translation capability for Eloquent models.
+ * This trait defines which fields are translatable and provides
+ * a standard interface for translation plugins to hook into.
+ * 
+ * Usage:
+ * ```php
+ * class Post extends Model
+ * {
+ *     use TranslatableTrait;
+ * 
+ *     protected array $translatable = [
+ *         'title',
+ *         'body',
+ *         'slug',
+ *         'meta_description',
+ *     ];
+ * }
+ * ```
+ * 
+ * Translation plugins can register a custom resolver:
+ * ```php
+ * TranslationManager::resolveUsing(function ($model, $key, $locale) {
+ *     return MyTranslationTable::get($model, $key, $locale);
+ * });
+ * ```
+ * 
+ * @see docs/translation-api-spec.md
+ */
+trait TranslatableTrait
+{
+    /**
+     * Boot the translatable trait
+     */
+    public static function bootTranslatableTrait(): void
+    {
+        // Fire event when model is retrieved
+        static::retrieved(function ($model) {
+            event('translation.model.retrieved', [$model]);
+        });
+
+        // Fire event when model is saving
+        static::saving(function ($model) {
+            event('translation.model.saving', [$model]);
+        });
+
+        // Fire event when model is saved
+        static::saved(function ($model) {
+            event('translation.model.saved', [$model]);
+        });
+
+        // Fire event when model is deleted
+        static::deleted(function ($model) {
+            event('translation.model.deleted', [$model]);
+        });
+    }
+
+    /**
+     * Get the translatable fields for this model
+     *
+     * @return array
+     */
+    public function getTranslatableFields(): array
+    {
+        return $this->translatable ?? [];
+    }
+
+    /**
+     * Check if a field is translatable
+     *
+     * @param string $field
+     * @return bool
+     */
+    public function isTranslatable(string $field): bool
+    {
+        return in_array($field, $this->getTranslatableFields(), true);
+    }
+
+    /**
+     * Get translated value for a field
+     *
+     * @param string $field
+     * @param string|null $locale Locale code (defaults to current locale)
+     * @param bool $fallback Whether to fallback to default locale
+     * @return mixed
+     */
+    public function getTranslation(string $field, ?string $locale = null, bool $fallback = true): mixed
+    {
+        $locale = $locale ?? App::getLocale();
+        $defaultLocale = config('app.fallback_locale', 'en');
+
+        // If translation resolver is registered, use it
+        if (App::bound(TranslationResolver::class)) {
+            $resolver = App::make(TranslationResolver::class);
+            $value = $resolver->resolve($this, $field, $locale);
+
+            // Fallback to default locale if no translation found
+            if ($value === null && $fallback && $locale !== $defaultLocale) {
+                $value = $resolver->resolve($this, $field, $defaultLocale);
+            }
+
+            // Fallback to original value if still no translation
+            if ($value === null && $fallback) {
+                return $this->getOriginalValue($field);
+            }
+
+            return $value;
+        }
+
+        // No resolver registered, return original value
+        return $this->getOriginalValue($field);
+    }
+
+    /**
+     * Set translated value for a field
+     *
+     * @param string $field
+     * @param mixed $value
+     * @param string|null $locale
+     * @return $this
+     */
+    public function setTranslation(string $field, mixed $value, ?string $locale = null): static
+    {
+        $locale = $locale ?? App::getLocale();
+
+        if (App::bound(TranslationResolver::class)) {
+            $resolver = App::make(TranslationResolver::class);
+            $resolver->store($this, $field, $value, $locale);
+        }
+
+        // Fire event
+        event('translation.field.updated', [$this, $field, $value, $locale]);
+
+        return $this;
+    }
+
+    /**
+     * Get all translations for a field
+     *
+     * @param string $field
+     * @return array ['en' => 'value', 'ja' => 'value', ...]
+     */
+    public function getTranslations(string $field): array
+    {
+        if (App::bound(TranslationResolver::class)) {
+            $resolver = App::make(TranslationResolver::class);
+            return $resolver->all($this, $field);
+        }
+
+        return [
+            config('app.fallback_locale', 'en') => $this->getOriginalValue($field),
+        ];
+    }
+
+    /**
+     * Check if translation exists for a field and locale
+     *
+     * @param string $field
+     * @param string|null $locale
+     * @return bool
+     */
+    public function hasTranslation(string $field, ?string $locale = null): bool
+    {
+        $locale = $locale ?? App::getLocale();
+
+        if (App::bound(TranslationResolver::class)) {
+            $resolver = App::make(TranslationResolver::class);
+            return $resolver->exists($this, $field, $locale);
+        }
+
+        return false;
+    }
+
+    /**
+     * Delete translation for a field and locale
+     *
+     * @param string $field
+     * @param string|null $locale If null, deletes all translations for the field
+     * @return $this
+     */
+    public function deleteTranslation(string $field, ?string $locale = null): static
+    {
+        if (App::bound(TranslationResolver::class)) {
+            $resolver = App::make(TranslationResolver::class);
+            $resolver->delete($this, $field, $locale);
+        }
+
+        event('translation.field.deleted', [$this, $field, $locale]);
+
+        return $this;
+    }
+
+    /**
+     * Get the original (non-translated) value of a field
+     *
+     * @param string $field
+     * @return mixed
+     */
+    protected function getOriginalValue(string $field): mixed
+    {
+        return $this->attributes[$field] ?? null;
+    }
+
+    /**
+     * Override getAttribute to automatically return translated values
+     *
+     * @param string $key
+     * @return mixed
+     */
+    public function getAttribute($key): mixed
+    {
+        // Check if this is a translatable field and resolver is available
+        if ($this->isTranslatable($key) && App::bound(TranslationResolver::class)) {
+            $value = $this->getTranslation($key);
+            if ($value !== null) {
+                return $value;
+            }
+        }
+
+        return parent::getAttribute($key);
+    }
+
+    /**
+     * Get model identifier for translation storage
+     *
+     * @return string
+     */
+    public function getTranslatableType(): string
+    {
+        return get_class($this);
+    }
+
+    /**
+     * Get model ID for translation storage
+     *
+     * @return int|string
+     */
+    public function getTranslatableId(): int|string
+    {
+        return $this->getKey();
+    }
+}
