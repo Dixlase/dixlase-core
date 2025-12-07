@@ -27,7 +27,6 @@ use App\Models\FrontSetting;
 use App\Models\FrontPage;
 use App\Models\Media;
 use App\Services\FrontPageContentService;
-use App\Helpers\LocaleHelper;
 use Illuminate\Http\Request;
 use App\Contracts\Repositories\FrontSettingRepositoryInterface;
 
@@ -72,19 +71,13 @@ class AdminFrontController extends AdminLoggedinController
         $frontPage = FrontPage::findOrCreateByType('main_content');
         
         // ファイル保存の場合、ファイルからコンテンツを読み込む
-        $fileContents = [];
+        $fileContents = null;
         if ($frontPage->storage_type->value === 'file') {
-            $locales = LocaleHelper::supportedLocales();
-            foreach ($locales as $locale) {
-                $fileContent = $this->contentService->loadFromFile(
-                    $frontPage->page_type,
-                    $locale,
-                    $frontPage->editor_type->value
-                );
-                if ($fileContent !== null) {
-                    $fileContents[$locale] = $fileContent;
-                }
-            }
+            $fileContents = $this->contentService->loadFromFile(
+                $frontPage->page_type,
+                app()->getLocale(),
+                $frontPage->editor_type->value
+            );
         }
         
         $this->viewParams['frontPage'] = $frontPage;
@@ -101,9 +94,8 @@ class AdminFrontController extends AdminLoggedinController
         $validated = $request->validate([
             'storage_type' => 'required|in:database,file',
             'editor_type' => 'required|in:gui,markdown,html,blade',
-            'translations' => 'required|array',
-            'translations.*.title' => 'nullable|string|max:255',
-            'translations.*.content' => 'nullable|string',
+            'title' => 'nullable|string|max:255',
+            'content' => 'nullable|string',
         ]);
         
         // GUIエディタの場合は強制的にDBに
@@ -116,60 +108,51 @@ class AdminFrontController extends AdminLoggedinController
         $frontPage = FrontPage::findOrCreateByType('main_content');
         $oldStorageType = $frontPage->storage_type->value;
         $oldEditorType = $frontPage->editor_type->value;
-        $locales = LocaleHelper::supportedLocales();
+        $locale = app()->getLocale();
+        
+        $content = $validated['content'] ?? '';
+        
+        // コンテンツカラムの準備
+        $contentData = [
+            'content' => null,
+            'content_markdown' => null,
+            'content_html' => null,
+            'content_blade' => null,
+        ];
         
         // 保存方法が変更された場合の処理
         if ($oldStorageType !== $storageType) {
             if ($oldStorageType === 'file' && $storageType === 'database') {
                 // ファイル→DB: ファイルからコンテンツを読み込んでDBに保存、ファイルを削除
-                foreach ($locales as $locale) {
-                    $fileContent = $this->contentService->loadFromFile($frontPage->page_type, $locale, $oldEditorType);
-                    if ($fileContent !== null && isset($validated['translations'][$locale])) {
-                        $validated['translations'][$locale]['content'] = $fileContent;
-                    }
+                $fileContent = $this->contentService->loadFromFile($frontPage->page_type, $locale, $oldEditorType);
+                if ($fileContent !== null) {
+                    $content = $fileContent;
                 }
-                $this->contentService->deleteAllFiles($frontPage->page_type, $oldEditorType, $locales);
+                $this->contentService->deleteFile($frontPage->page_type, $locale, $oldEditorType);
             }
         }
         
-        // フロントページ本体を更新
+        if ($storageType === 'file') {
+            // ファイル保存の場合はコンテンツをファイルに保存
+            $this->contentService->saveToFile(
+                $frontPage->page_type,
+                $locale,
+                $validated['editor_type'],
+                $content
+            );
+        } else {
+            // DB保存の場合はエディタータイプ別のカラムに保存
+            $contentColumn = 'content_' . $validated['editor_type'];
+            $contentData[$contentColumn] = $content;
+        }
+        
+        // フロントページを更新
         $frontPage->update([
+            'title' => $validated['title'] ?? null,
             'storage_type' => $storageType,
             'editor_type' => $validated['editor_type'],
+            ...$contentData,
         ]);
-
-        // 翻訳データを更新
-        if (isset($validated['translations'])) {
-            foreach ($validated['translations'] as $locale => $data) {
-                $content = $data['content'] ?? '';
-                
-                if ($storageType === 'file') {
-                    // ファイル保存の場合はコンテンツをファイルに保存
-                    $this->contentService->saveToFile(
-                        $frontPage->page_type,
-                        $locale,
-                        $validated['editor_type'],
-                        $content
-                    );
-                    // DBにはコンテンツを保存しない
-                    $validated['translations'][$locale]['content'] = null;
-                    $validated['translations'][$locale]['content_markdown'] = null;
-                    $validated['translations'][$locale]['content_html'] = null;
-                    $validated['translations'][$locale]['content_blade'] = null;
-                } else {
-                    // DB保存の場合はエディタータイプ別のカラムに保存
-                    $validated['translations'][$locale]['content'] = null; // 旧カラムはnull
-                    $validated['translations'][$locale]['content_markdown'] = null;
-                    $validated['translations'][$locale]['content_html'] = null;
-                    $validated['translations'][$locale]['content_blade'] = null;
-                    
-                    // 現在のエディタータイプのカラムにのみ保存
-                    $contentColumn = 'content_' . $validated['editor_type'];
-                    $validated['translations'][$locale][$contentColumn] = $content;
-                }
-            }
-            $frontPage->setTranslations($validated['translations']);
-        }
 
         return redirect()
             ->route('admin.front.edit')
@@ -182,31 +165,22 @@ class AdminFrontController extends AdminLoggedinController
     public function getContent(string $storageType, string $editorType)
     {
         $frontPage = FrontPage::findOrCreateByType('main_content');
-        $locales = LocaleHelper::supportedLocales();
-        $contents = [];
+        $content = '';
 
-        foreach ($locales as $locale) {
-            if ($storageType === 'file') {
-                // ファイルからコンテンツを読み込む
-                $content = $this->contentService->loadFromFile(
-                    $frontPage->page_type,
-                    $locale,
-                    $editorType
-                );
-                $contents[$locale] = $content ?? '';
-            } else {
-                // DBからエディタータイプ別のカラムを読み込む
-                $translation = $frontPage->translate($locale);
-                if ($translation) {
-                    $contentColumn = 'content_' . $editorType;
-                    $contents[$locale] = $translation->{$contentColumn} ?? '';
-                } else {
-                    $contents[$locale] = '';
-                }
-            }
+        if ($storageType === 'file') {
+            // ファイルからコンテンツを読み込む
+            $content = $this->contentService->loadFromFile(
+                $frontPage->page_type,
+                app()->getLocale(),
+                $editorType
+            ) ?? '';
+        } else {
+            // DBからエディタータイプ別のカラムを読み込む
+            $contentColumn = 'content_' . $editorType;
+            $content = $frontPage->{$contentColumn} ?? '';
         }
 
-        return response()->json(['contents' => $contents]);
+        return response()->json(['content' => $content]);
     }
 
     /**

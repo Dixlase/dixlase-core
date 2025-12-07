@@ -1,0 +1,106 @@
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2025 exc-D inc.
+ * Website: https://exc-d.com
+ *
+ * Common form styles shared across admin and install screens.
+ */
+
+// 共通入力フィールドスタイル
+// Tailwindのベーススタイルを上書きするため詳細度を上げて直接CSSプロパティを指定
+input.input-common,
+textarea.input-common,
+select.input-common,
+.input-common[type],
+.input-common {
+    padding: 0.5rem 0.75rem;
+    background-color: rgb(249 250 251); // gray-50
+    border: 1px solid rgb(209 213 219); // gray-300
+    // border-radiusはTailwindクラス（rounded-lg, rounded-l-none等）で制御
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+
+    &:focus {
+        outline: none;
+        border-color: rgb(99 102 241); // indigo-500
+        box-shadow: 0 0 0 1px rgb(99 102 241);
+    }
+
+    // デフォルトのborder-radius（rounded-lgと同等）
+    // rounded-l-none等で上書き可能
+    &:not([class*="rounded-"]) {
+        border-radius: 0.5rem;
+    }
+}
+
+// ダークモード対応
+.dark input.input-common,
+.dark textarea.input-common,
+.dark select.input-common,
+.dark .input-common[type],
+.dark .input-common,
+html.dark input.input-common,
+html.dark textarea.input-common,
+html.dark select.input-common,
+html.dark .input-common {
+    background-color: rgb(31 41 55); // gray-800
+    border-color: rgb(107 114 128); // gray-500
+    color: rgb(255 255 255);
+
+    &:focus {
+        border-color: rgb(99 102 241); // indigo-500
+        box-shadow: 0 0 0 1px rgb(99 102 241);
+    }
+}
+
+// 入力フィールドの幅指定（汎用）
+// 小: w-24 (6rem/96px) - 数値入力など短い入力向け
+// 中: w-48 (12rem/192px) - 短めのテキスト入力向け
+// 大: w-72 (18rem/288px) - 通常のテキスト入力向け
+// 特大: w-96 (24rem/384px) - 長めのテキスト入力向け
+
+.input-sm {
+    @apply w-24;
+}
+
+.input-md {
+    @apply w-48;
+}
+
+.input-lg {
+    @apply w-72;
+}
+
+.input-xl {
+    @apply w-96;
+}
+
+.input-full {
+    width: 100%;
+}
+
+// チェックボックス共通スタイル
+input.checkbox-common,
+.checkbox-common {
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 0.25rem;
+    border: 1px solid rgb(209 213 219); // gray-300
+    color: rgb(79 70 229); // indigo-600
+    cursor: pointer;
+
+    &:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px rgb(99 102 241 / 0.5); // indigo-500
+    }
+}
+
+.dark input.checkbox-common,
+.dark .checkbox-common,
+html.dark input.checkbox-common,
+html.dark .checkbox-common {
+    border-color: rgb(75 85 99); // gray-600
+    background-color: rgb(31 41 55); // gray-800
+}

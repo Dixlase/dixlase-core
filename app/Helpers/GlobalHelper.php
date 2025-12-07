@@ -20,38 +20,6 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use App\Contracts\Multilingual;
-
-if (!function_exists('multilingual')) {
-    /**
-     * 多言語サービスのインスタンスを取得
-     * 
-     * 多言語プラグインが有効な場合は本物の実装を返し、
-     * 無効な場合はダミー実装（単一言語モード）を返します。
-     * 
-     * テーマやプラグインは常にこのヘルパーを通じて多言語機能にアクセスします。
-     * これにより、多言語プラグインの有無に関わらず同じコードで動作します。
-     *
-     * @return \App\Contracts\Multilingual
-     * 
-     * @example
-     * // 多言語が有効かチェック
-     * if (multilingual()->isEnabled()) {
-     *     // 多言語モード
-     * }
-     * 
-     * // 翻訳された値を取得
-     * $title = multilingual()->getTranslated($page, 'title');
-     * 
-     * // 言語切替URLを生成
-     * $url = multilingual()->switchUrl('en');
-     */
-    function multilingual(): Multilingual
-    {
-        return app(Multilingual::class);
-    }
-}
-
 if (!function_exists('shortcode_parse')) {
     /**
      * ショートコードをパースして実行

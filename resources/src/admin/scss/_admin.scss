@@ -1,13 +1,112 @@
-// コンポーネントスタイルをインポート
+// 共通スタイルをインポート
 @use '../../common/scss/components';
+@use '../../common/scss/forms';
+@use '../../common/scss/typography';
+@use '../../common/scss/buttons';
+@use '../../common/scss/tables';
 
 
 .admin {
 
+    // =========================================================================
+    // レイアウト - 外観モード対応スタイル (appearance.php から移行)
+    // =========================================================================
+
     body {
         @apply bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300;
-
     }
+
+    // ヘッダー
+    .admin-header {
+        @apply bg-gray-200 dark:bg-gray-800 border-gray-300 dark:border-gray-700;
+    }
+
+    // ロゴ
+    .admin-logo {
+        @apply text-gray-900 dark:text-white;
+    }
+
+    // サイドバー
+    .admin-aside {
+        @apply bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-700 transition-colors duration-1000;
+    }
+
+    // メインコンテンツ
+    .admin-main {
+        @apply bg-white dark:bg-black text-gray-900 dark:text-white;
+    }
+
+    // タイトルエリア
+    .admin-title {
+        @apply bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white border-b border-gray-300 dark:border-gray-700;
+    }
+
+    // 見出し
+    .admin-heading {
+        @apply text-gray-800 dark:text-white;
+    }
+
+    // ナビゲーションリンク
+    .admin-nav-link {
+        @apply text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white;
+    }
+
+    // 管理者ユーザーボタン
+    .admin-button-user {
+        @apply text-gray-500 dark:text-gray-300 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-white;
+    }
+
+    // ハンバーガーボタン
+    .admin-button-hamburger {
+        @apply text-gray-400 dark:text-gray-300 hover:text-gray-500 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700;
+    }
+
+    // レスポンシブナビゲーションメニュー
+    .admin-responsive-nav {
+        @apply text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white;
+    }
+
+    // オプション系（汎用）
+    .admin-option-border {
+        @apply border-gray-200 dark:border-gray-700;
+    }
+
+    .admin-option-text {
+        @apply text-gray-800 dark:text-white;
+    }
+
+    .admin-option-subtext {
+        @apply text-gray-500 dark:text-gray-400;
+    }
+
+    // 保存ボタンエリア
+    .admin-save-button-area {
+        @apply bg-gray-200 dark:bg-gray-800 border-gray-300 dark:border-gray-700;
+    }
+
+    // =========================================================================
+    // サイドバーナビゲーション
+    // =========================================================================
+
+    .sidebar-link {
+        @apply text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-black dark:hover:text-white;
+    }
+
+    .sidebar-link-active {
+        @apply bg-gray-200 dark:bg-gray-100 text-gray-900 dark:text-black font-bold border-blue-500 pl-3 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 hover:text-black;
+    }
+
+    // =========================================================================
+    // インディゴリンク（管理画面用）
+    // =========================================================================
+
+    .admin-link {
+        @apply text-indigo-600 dark:text-indigo-300 hover:text-indigo-500 dark:hover:text-indigo-500;
+    }
+
+    // =========================================================================
+    // 基本要素スタイル
+    // =========================================================================
 
     h2 {
         font-size: 1.5rem;
@@ -52,49 +151,7 @@
         @apply mt-1 text-xs text-gray-500 dark:text-white;
     }
 
-    // ヘルプテキスト用クラス（後方互換性のため残す）
-    .help-text {
-        @apply mt-1 text-xs text-gray-500 dark:text-white;
-    }
-
-    // カスタムテキストスタイル
-    .description-text {
-        @apply text-sm mb-4 text-gray-600 dark:text-gray-400;
-    }
-
-    .large-text {
-        @apply text-base text-gray-700 dark:text-gray-300;
-    }
-
-    .input-common {
-        @apply px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-800 dark:border-gray-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-500 dark:text-white;
-    }
-
-    // 入力フィールドの幅指定（汎用）
-    // 小: w-24 (6rem/96px) - 数値入力など短い入力向け
-    // 中: w-48 (12rem/192px) - 短めのテキスト入力向け
-    // 大: w-72 (18rem/288px) - 通常のテキスト入力向け
-    // 特大: w-96 (24rem/384px) - 長めのテキスト入力向け
-
-    .input-sm {
-        @apply w-24;
-    }
-
-    .input-md {
-        @apply w-48;
-    }
-
-    .input-lg {
-        @apply w-72;
-    }
-
-    .input-xl {
-        @apply w-96;
-    }
-
-    .input-full {
-        @apply w-full;
-    }
+    // テキストスタイルは _typography.scss で共通化済み
 
     // フィールドグループ
     .field-group {
@@ -146,9 +203,7 @@
     }
     */
 
-    .error {
-        @apply text-red-600 dark:text-red-400;
-    }
+    // .error は _typography.scss で共通化済み
 
     //テーブル
     table {
@@ -261,80 +316,7 @@
             color var(--transition-duration) ease-in-out;
     }
 
-    // テキストリンク
-    .text-link {
-        @apply text-blue-600 underline hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200;
-    }
-
-    // アクションボタングループ
-    .action-buttons {
-        @apply flex flex-wrap gap-2 justify-center;
-
-        form {
-            @apply inline-block;
-        }
-
-        // モバイル表示時の調整
-        @media (max-width: 768px) {
-            @apply flex-col items-stretch;
-
-            form {
-                @apply block;
-            }
-        }
-    }
-
-    // 空の状態表示
-    .empty-state {
-        @apply flex flex-col items-center justify-center py-8 text-gray-500 dark:text-gray-400;
-
-        i {
-            @apply mb-4;
-        }
-
-        p {
-            @apply text-base font-medium;
-        }
-    }
-
-    // レスポンシブテーブル
-    .responsive-table {
-        @apply overflow-x-auto bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm;
-
-        table {
-            @apply min-w-full;
-
-            // モバイル表示時の調整
-            @media (max-width: 768px) {
-                thead {
-                    @apply sr-only;
-                }
-
-                tbody {
-                    tr {
-                        @apply block border border-gray-200 dark:border-gray-700 rounded-lg mb-4 p-4;
-                    }
-
-                    td {
-                        @apply block text-right border-0 py-2;
-
-                        &:before {
-                            content: attr(data-label) ": ";
-                            @apply float-left font-semibold text-gray-700 dark:text-gray-300;
-                        }
-
-                        &:last-child {
-                            @apply text-center;
-
-                            &:before {
-                                @apply sr-only;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+    // .text-link, .action-buttons, .empty-state, .responsive-table は共通スタイルで定義済み
 
     // メディア管理
 
@@ -434,82 +416,6 @@
         @apply flex items-center justify-center gap-2 pt-3 border-t border-gray-200 dark:border-gray-700;
     }
 
-    .action-btn {
-        @apply inline-flex items-center justify-center w-8 h-8 text-sm rounded-full transition-all duration-200 focus:ring-2 focus:outline-none;
-
-        &--copy {
-            @apply text-purple-700 bg-purple-50 hover:bg-purple-100 focus:ring-purple-300 dark:bg-purple-900/20 dark:text-purple-400 dark:hover:bg-purple-900/40 dark:focus:ring-purple-800;
-        }
-
-        &--download {
-            @apply text-blue-700 bg-blue-50 hover:bg-blue-100 focus:ring-blue-300 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40 dark:focus:ring-blue-800;
-        }
-
-        &--preview {
-            @apply text-green-700 bg-green-50 hover:bg-green-100 focus:ring-green-300 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/40 dark:focus:ring-green-800;
-        }
-
-        &--delete {
-            @apply text-red-700 bg-red-50 hover:bg-red-100 focus:ring-red-300 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 dark:focus:ring-red-800;
-        }
-
-        &--success {
-            @apply text-green-700 bg-green-50 hover:bg-green-100 focus:ring-green-300 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/40 dark:focus:ring-green-800;
-        }
-    }
-
-    // レスポンシブテーブル（モバイルでカード形式）
-    .responsive-table {
-        @apply w-full overflow-x-auto;
-
-        table {
-            @apply w-full border-collapse;
-
-            thead {
-                @apply bg-gray-50 dark:bg-gray-800;
-            }
-
-            th {
-                @apply px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider;
-            }
-
-            td {
-                @apply pl-4 pr-2 py-2 text-sm text-gray-900 dark:text-gray-100;
-            }
-
-            tbody tr {
-                @apply border-b border-gray-200 dark:border-gray-700;
-
-            }
-        }
-
-        // モバイル表示（カード形式）
-        @media (max-width: 768px) {
-            table {
-                @apply border-0;
-
-                thead {
-                    @apply sr-only;
-                }
-
-                tbody tr {
-                    @apply block mb-4 border border-gray-200 dark:border-gray-700 rounded-lg;
-                }
-
-                td {
-                    @apply block text-right border-b border-gray-200 dark:border-gray-700 px-4 py-3;
-
-                    &:last-child {
-                        @apply border-b-0;
-                    }
-
-                    &::before {
-                        content: attr(data-label);
-                        @apply float-left font-bold text-gray-700 dark:text-gray-300;
-                    }
-                }
-            }
-        }
-    }
+    // .action-btn, .responsive-table は _buttons.scss, _tables.scss で共通化済み
 
 }

@@ -34,7 +34,6 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             BaseSettingsTableSeeder::class,
-            CaptchaFormSettingsSeeder::class,
             FrontSettingsTableSeeder::class,
             MediaTableSeeder::class,
             MediaSettingsSeeder::class,

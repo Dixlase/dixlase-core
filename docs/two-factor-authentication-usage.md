@@ -30,7 +30,6 @@ Dixlaseの二段階認証システムは、以下のコンポーネントで構�
 
 6. **汎用メールクラス** (`app/Mail/TwoFactorLoginCodeMail.php`)
    - コンテキスト別メール送信（admin, user, default）
-   - 多言語対応
 
 ### 実装サービス
 

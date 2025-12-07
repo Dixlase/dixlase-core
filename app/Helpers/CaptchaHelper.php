@@ -23,7 +23,6 @@
 namespace App\Helpers;
 
 use App\Models\SecuritySetting;
-use App\Models\CaptchaFormSetting;
 use App\Models\MemberSetting;
 use App\Services\CaptchaTestService;
 use Illuminate\Support\Facades\Log;
@@ -153,8 +152,8 @@ class CaptchaHelper
     /**
      * 指定されたフォームでCAPTCHAが有効かチェック
      * 
-     * admin_loginの場合はMemberSettingから読み込み、
-     * それ以外はCaptchaFormSettingから読み込む
+     * admin_loginの場合はMemberSettingから読み込む
+     * その他のフォームはプラグイン側で独自に管理する
      */
     public static function isEnabledForForm(string $formName): bool
     {
@@ -166,8 +165,9 @@ class CaptchaHelper
             );
         }
         
-        // その他のフォームはCaptchaFormSettingから読み込む
-        return CaptchaFormSetting::isEnabledFor($formName);
+        // その他のフォームはプラグイン側で独自に管理するため、ここではfalseを返す
+        // プラグインは独自の設定テーブルからCAPTCHA有効/無効を判定すること
+        return false;
     }
 
     /**

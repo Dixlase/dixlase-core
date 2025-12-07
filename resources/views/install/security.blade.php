@@ -32,15 +32,12 @@
             
             <!-- 許可IPアドレス -->
             <div class="space-y-2">
-                <div class="flex items-center">
-                    <input type="checkbox" 
-                        name="enable_allowed_admin_ips" 
-                        id="enable_allowed_admin_ips" 
-                        value="1"
-                        class="h-5 w-5 text-blue-600 dark:text-blue-500 rounded border-gray-300 dark:border-gray-600 focus:ring-blue-500 dark:focus:ring-blue-400"
-                        {{ old('enable_allowed_admin_ips', session('install_data.enable_allowed_admin_ips', '0')) == '1' ? 'checked' : '' }}>
-                    <x-form.label for="enable_allowed_admin_ips" :text="__('install.enable_allowed_admin_ips')" class="ml-2 mb-0" />
-                </div>
+                <x-form.toggle
+                    name="enable_allowed_admin_ips"
+                    id="enable_allowed_admin_ips"
+                    :checked="old('enable_allowed_admin_ips', session('install_data.enable_allowed_admin_ips', '0')) == '1'"
+                    :label="__('install.enable_allowed_admin_ips')"
+                />
                 <x-form.textarea
                     name="allowed_admin_ips"
                     id="allowed_admin_ips"
@@ -48,26 +45,25 @@
                     :value="old('allowed_admin_ips', session('install_data.allowed_admin_ips', '127.0.0.1'))"
                     placeholder="127.0.0.1"
                     :disabled="old('enable_allowed_admin_ips', session('install_data.enable_allowed_admin_ips', '0')) != '1'"
+                    class="input-full"
                 />
             </div>
 
             <!-- ブロックIPアドレス -->
             <div class="space-y-2">
-                <div class="flex items-center">
-                    <input type="checkbox" 
-                        name="enable_blocked_admin_ips" 
-                        id="enable_blocked_admin_ips" 
-                        value="1"
-                        class="h-5 w-5 text-blue-600 dark:text-blue-500 rounded border-gray-300 dark:border-gray-600 focus:ring-blue-500 dark:focus:ring-blue-400"
-                        {{ old('enable_blocked_admin_ips', session('install_data.enable_blocked_admin_ips', '0')) == '1' ? 'checked' : '' }}>
-                    <x-form.label for="enable_blocked_admin_ips" :text="__('install.enable_blocked_admin_ips')" class="ml-2 mb-0" />
-                </div>
+                <x-form.toggle
+                    name="enable_blocked_admin_ips"
+                    id="enable_blocked_admin_ips"
+                    :checked="old('enable_blocked_admin_ips', session('install_data.enable_blocked_admin_ips', '0')) == '1'"
+                    :label="__('install.enable_blocked_admin_ips')"
+                />
                 <x-form.textarea
                     name="blocked_admin_ips"
                     id="blocked_admin_ips"
                     rows="3"
                     :value="old('blocked_admin_ips', session('install_data.blocked_admin_ips', ''))"
                     :disabled="old('enable_blocked_admin_ips', session('install_data.enable_blocked_admin_ips', '0')) != '1'"
+                    class="input-full"
                 />
             </div>
         </fieldset>
@@ -80,41 +76,37 @@
             
             <!-- 許可IPアドレス -->
             <div class="space-y-2">
-                <div class="flex items-center">
-                    <input type="checkbox" 
-                        name="enable_allowed_front_ips" 
-                        id="enable_allowed_front_ips" 
-                        value="1"
-                        class="h-5 w-5 text-blue-600 dark:text-blue-500 rounded border-gray-300 dark:border-gray-600 focus:ring-blue-500 dark:focus:ring-blue-400"
-                        {{ old('enable_allowed_front_ips', session('install_data.enable_allowed_front_ips', '0')) == '1' ? 'checked' : '' }}>
-                    <x-form.label for="enable_allowed_front_ips" :text="__('install.enable_allowed_front_ips')" class="ml-2 mb-0" />
-                </div>
+                <x-form.toggle
+                    name="enable_allowed_front_ips"
+                    id="enable_allowed_front_ips"
+                    :checked="old('enable_allowed_front_ips', session('install_data.enable_allowed_front_ips', '0')) == '1'"
+                    :label="__('install.enable_allowed_front_ips')"
+                />
                 <x-form.textarea
                     name="allowed_front_ips"
                     id="allowed_front_ips"
                     rows="3"
                     :value="old('allowed_front_ips', session('install_data.allowed_front_ips', ''))"
                     :disabled="old('enable_allowed_front_ips', session('install_data.enable_allowed_front_ips', '0')) != '1'"
+                    class="input-full"
                 />
             </div>
 
             <!-- ブロックIPアドレス -->
             <div class="space-y-2">
-                <div class="flex items-center">
-                    <input type="checkbox" 
-                        name="enable_blocked_front_ips" 
-                        id="enable_blocked_front_ips" 
-                        value="1"
-                        class="h-5 w-5 text-blue-600 dark:text-blue-500 rounded border-gray-300 dark:border-gray-600 focus:ring-blue-500 dark:focus:ring-blue-400"
-                        {{ old('enable_blocked_front_ips', session('install_data.enable_blocked_front_ips', '0')) == '1' ? 'checked' : '' }}>
-                    <x-form.label for="enable_blocked_front_ips" :text="__('install.enable_blocked_front_ips')" class="ml-2 mb-0" />
-                </div>
+                <x-form.toggle
+                    name="enable_blocked_front_ips"
+                    id="enable_blocked_front_ips"
+                    :checked="old('enable_blocked_front_ips', session('install_data.enable_blocked_front_ips', '0')) == '1'"
+                    :label="__('install.enable_blocked_front_ips')"
+                />
                 <x-form.textarea
                     name="blocked_front_ips"
                     id="blocked_front_ips"
                     rows="3"
                     :value="old('blocked_front_ips', session('install_data.blocked_front_ips', ''))"
                     :disabled="old('enable_blocked_front_ips', session('install_data.enable_blocked_front_ips', '0')) != '1'"
+                    class="input-full"
                 />
             </div>
         </fieldset>

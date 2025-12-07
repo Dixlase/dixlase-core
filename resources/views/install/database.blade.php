@@ -28,7 +28,7 @@
                     name="db_connection"
                     :options="$dbConnectionOptions"
                     :value="old('db_connection', session('install_data.db_connection', 'mysql'))"
-                    class="w-full"
+                    class="input-lg"
                 />
             </div>
 
@@ -46,6 +46,7 @@
                     id="db_host"
                     :value="old('db_host', session('install_data.db_host', $defaultDbHost))"
                     :required="true"
+                    class="input-full"
                 />
             </div>
 
@@ -57,6 +58,7 @@
                     id="db_port"
                     :value="old('db_port', session('install_data.db_port', '3306'))"
                     :required="true"
+                    class="input-full"
                 />
             </div>
 
@@ -67,6 +69,7 @@
                     id="db_database"
                     :value="old('db_database', session('install_data.db_database', 'dixlase'))"
                     :required="true"
+                    class="input-full"
                 />
             </div>
 
@@ -77,6 +80,7 @@
                     id="db_username"
                     :value="old('db_username', session('install_data.db_username', $defaultDbUser))"
                     :required="true"
+                    class="input-full"
                 />
             </div>
 
@@ -89,7 +93,7 @@
                         id="db_password"
                         :value="old('db_password', $defaultDbPassword)"
                         :required="true"
-                        class="pr-10"
+                        class="input-full pr-10"
                     />
                     <button type="button" onclick="togglePassword()" 
                         class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
@@ -108,12 +112,12 @@
         <fieldset>
             <legend class="sr-only">{{ __('install.database_preservation_options') }}</legend>
             
-            <div class="flex items-center">
-                <input type="checkbox" name="preserve_data" id="preserve_data" value="1" 
-                    class="h-5 w-5 text-blue-600 dark:text-blue-500 rounded border-gray-300 dark:border-gray-600 focus:ring-blue-500 dark:focus:ring-blue-400"
-                    {{ old('preserve_data', session('install_data.preserve_data', false)) ? 'checked' : '' }}>
-                <x-form.label for="preserve_data" :text="__('install.preserve_database')" class="ml-2 mb-0" />
-            </div>
+            <x-form.toggle
+                name="preserve_data"
+                id="preserve_data"
+                :checked="old('preserve_data', session('install_data.preserve_data', false))"
+                :label="__('install.preserve_database')"
+            />
             <x-form.help-text :text="__('install.preserve_database_help')" />
         </fieldset>
     </section>

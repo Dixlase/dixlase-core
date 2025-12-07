@@ -21,6 +21,7 @@
                     id="site_name"
                     :value="old('site_name', session('install_data.site_name', ''))"
                     :required="true"
+                    class="input-full"
                 />
             </div>
         </fieldset>
@@ -47,6 +48,7 @@
                     oninvalid="setCustomValidity('{{ __('install.validation.admin_name_required') }}')"
                     oninput="setCustomValidity('')"
                     ariaDescribedby="admin_name_help"
+                    class="input-full"
                 />
                 <x-form.help-text :text="__('install.admin_name_requirements')" id="admin_name_help" />
             </div>
@@ -59,6 +61,7 @@
                     id="admin_email"
                     :value="old('admin_email', session('install_data.admin_email', ''))"
                     :required="true"
+                    class="input-full"
                 />
             </div>
         </fieldset>
@@ -95,6 +98,7 @@
                     id="admin_password_confirmation"
                     :required="true"
                     ariaDescribedby="password_confirmation_help"
+                    class="input-full"
                 />
                 <p id="password_confirmation_help" class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ __('install.admin_password_confirmation_note') }}</p>
             </div>

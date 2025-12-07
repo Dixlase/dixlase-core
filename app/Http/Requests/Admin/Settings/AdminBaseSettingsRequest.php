@@ -44,7 +44,6 @@ class AdminBaseSettingsRequest extends FormRequest
         $this->merge([
             'force_ssl' => filter_var($this->input('force_ssl'), FILTER_VALIDATE_BOOLEAN),
             'maintenance_mode' => filter_var($this->input('maintenance_mode'), FILTER_VALIDATE_BOOLEAN),
-            'multilingual_enabled' => filter_var($this->input('multilingual_enabled'), FILTER_VALIDATE_BOOLEAN),
         ]);
     }
 
@@ -76,9 +75,6 @@ class AdminBaseSettingsRequest extends FormRequest
             'force_ssl' => 'nullable|boolean',
             'default_ogp_image_id' => 'nullable|exists:media,id',
             'twitter_card_type' => ['nullable', Rule::in(['summary', 'summary_large_image', 'app', 'player'])],
-            'multilingual_enabled' => 'required|boolean',
-            'enabled_locales' => 'nullable|array',
-            'enabled_locales.*' => ['string', Rule::in(array_keys(config('admin.locale.available', [])))],
         ];
     }
 

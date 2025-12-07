@@ -319,7 +319,7 @@ trait MailTestTrait
             // アプリケーション名を取得
             $appName = env('APP_NAME', 'Dixlase');
 
-            // 多言語対応のメール内容を取得
+            // メール内容を取得
             $subject = __('mail.test_mail.subject');
             
             // MailMessage形式でメールを作成（ログイン通知と同じ形式）

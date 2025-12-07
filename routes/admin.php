@@ -201,6 +201,9 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/settings/security/validate-captcha-widget', [AdminSecuritySettingsController::class, 'validateCaptchaWidget'])->name('settings.security.validate-captcha-widget');
                 Route::post('/settings/security/reset-captcha-test', [AdminSecuritySettingsController::class, 'resetCaptchaTest'])->name('settings.security.reset-captcha-test');
                 Route::post('/settings/security/clear-captcha-test', [AdminSecuritySettingsController::class, 'clearCaptchaTest'])->name('settings.security.clear-captcha-test');
+                // ファイル整合性チェック
+                Route::post('/settings/security/scan-integrity', [AdminSecuritySettingsController::class, 'scanFileIntegrity'])->name('settings.security.scan-integrity');
+                Route::post('/settings/security/regenerate-baseline', [AdminSecuritySettingsController::class, 'regenerateBaseline'])->name('settings.security.regenerate-baseline');
             });
 
             // メンバー管理（権限チェック付き）
