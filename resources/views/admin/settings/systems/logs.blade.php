@@ -80,6 +80,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endforeach
             </nav>
         </div>
+
+        <!-- Audit Logs -->
+        <div class="mb-4">
+            <h3 class="mb-2 md:mb-0 md:mr-2 md:inline-block text-center md:text-left">{{ __('admin.settings.audit_logs.title') }}</h3>
+            <nav class="flex flex-wrap gap-2 justify-center md:justify-start">
+                <a href="{{ route('admin.settings.systems.logs', ['type' => 'audit', 'view' => 'db']) }}"
+                    @class([
+                        'nav-button',
+                        'nav-button--blue',
+                        'nav-button--active' => $logType === 'audit' && request('view', 'db') === 'db'
+                    ])>
+                    {{ __('admin.settings.systems.logs.audit_db') }}
+                </a>
+                <a href="{{ route('admin.settings.systems.logs', ['type' => 'audit', 'view' => 'file']) }}"
+                    @class([
+                        'nav-button',
+                        'nav-button--blue',
+                        'nav-button--active' => $logType === 'audit' && request('view') === 'file'
+                    ])>
+                    {{ __('admin.settings.systems.logs.audit_file') }}
+                </a>
+            </nav>
+        </div>
     </div>
 
     

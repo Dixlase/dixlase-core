@@ -230,6 +230,14 @@ return [
             'days' => env('LOG_DAILY_DAYS', 14),
         ],
 
+        // 監査ログ（Audit Log）
+        'audit' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/audit.log'),
+            'level' => 'info',
+            'days' => env('AUDIT_LOG_DAYS', 90),
+        ],
+
     ],
 
 ];

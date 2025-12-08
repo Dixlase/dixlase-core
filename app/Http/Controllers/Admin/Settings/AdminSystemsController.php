@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Admin\Settings;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
+use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class AdminSystemsController extends AdminLoggedInController
 {
@@ -23,6 +25,7 @@ class AdminSystemsController extends AdminLoggedInController
         'front_error' => 'front_error.log',
         'extension' => 'extension_activity.log',
         'csp' => 'csp_violations.log',
+        'audit' => 'audit.log',
     ];
 
     public function __construct()
@@ -36,6 +39,15 @@ class AdminSystemsController extends AdminLoggedInController
     //システムログ
     public function logs(Request $request, $type = 'activity')
     {
+        // 監査ログの場合は特別処理
+        if ($type === 'audit') {
+            $view = $request->input('view', 'db');
+            
+            if ($view === 'db') {
+                return $this->auditLogsDb($request);
+            }
+            // view=file の場合は通常のファイルログ表示へ
+        }
 
         $fileName = $this->logPaths[$type] ?? $this->logPaths['activity'];
         $filePath = storage_path("logs/{$fileName}");
@@ -720,5 +732,241 @@ class AdminSystemsController extends AdminLoggedInController
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'フロントエラーログテストでエラーが発生しました: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * 監査ログDB表示
+     */
+    protected function auditLogsDb(Request $request)
+    {
+        $this->viewParams['logType'] = 'audit';
+        $this->viewParams['auditView'] = 'db';
+
+        // テーブルが存在しない場合
+        if (!Schema::hasTable('audit_logs')) {
+            $this->viewParams['auditLogs'] = collect();
+            $this->viewParams['categories'] = [];
+            $this->viewParams['actions'] = [];
+            $this->viewParams['severities'] = [];
+            $this->viewParams['outcomes'] = [];
+            $this->viewParams['tableExists'] = false;
+            return view('admin::settings.systems.logs-audit', $this->viewParams);
+        }
+
+        $query = AuditLog::query()->orderByDesc('occurred_at');
+
+        // フィルタリング
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
+
+        if ($request->filled('action')) {
+            $query->where('action', $request->action);
+        }
+
+        if ($request->filled('severity')) {
+            $query->where('severity', $request->severity);
+        }
+
+        if ($request->filled('outcome')) {
+            $query->where('outcome', $request->outcome);
+        }
+
+        if ($request->filled('actor_name')) {
+            $query->where('actor_name', 'like', '%' . $request->actor_name . '%');
+        }
+
+        if ($request->filled('ip_address')) {
+            $query->where('ip_address', 'like', '%' . $request->ip_address . '%');
+        }
+
+        if ($request->filled('plugin_name')) {
+            $query->where('plugin_name', $request->plugin_name);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->where('occurred_at', '>=', $request->date_from . ' 00:00:00');
+        }
+
+        if ($request->filled('date_to')) {
+            $query->where('occurred_at', '<=', $request->date_to . ' 23:59:59');
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('actor_name', 'like', '%' . $search . '%')
+                  ->orWhere('target_label', 'like', '%' . $search . '%')
+                  ->orWhere('action', 'like', '%' . $search . '%')
+                  ->orWhere('ip_address', 'like', '%' . $search . '%');
+            });
+        }
+
+        $perPage = $request->input('per_page', 50);
+        $allowedPerPage = [25, 50, 100, 200];
+        if (!in_array($perPage, $allowedPerPage)) {
+            $perPage = 50;
+        }
+
+        $this->viewParams['auditLogs'] = $query->paginate($perPage)->withQueryString();
+
+        // フィルタ用の選択肢を取得
+        $this->viewParams['categories'] = AuditLog::distinct()->pluck('category')->filter()->sort()->values()->toArray();
+        $this->viewParams['actions'] = AuditLog::distinct()->pluck('action')->filter()->sort()->values()->toArray();
+        $this->viewParams['severities'] = ['debug', 'info', 'notice', 'warning', 'error', 'critical', 'alert', 'emergency'];
+        $this->viewParams['outcomes'] = ['success', 'failure', 'denied', 'pending', 'unknown'];
+        $this->viewParams['tableExists'] = true;
+
+        return view('admin::settings.systems.logs-audit', $this->viewParams);
+    }
+
+    /**
+     * 監査ログ詳細表示
+     */
+    public function auditLogShow(Request $request, $id)
+    {
+        $this->viewParams['logType'] = 'audit';
+        $this->viewParams['auditView'] = 'db';
+
+        if (!Schema::hasTable('audit_logs')) {
+            return redirect()->route('admin.settings.systems.logs', ['type' => 'audit', 'view' => 'db'])
+                ->with('error', __('admin.settings.audit_logs.table_not_exists'));
+        }
+
+        $auditLog = AuditLog::findOrFail($id);
+        
+        // 同一リクエストIDの関連ログを取得
+        $relatedLogs = collect();
+        if ($auditLog->request_id) {
+            $relatedLogs = AuditLog::where('request_id', $auditLog->request_id)
+                ->where('id', '!=', $auditLog->id)
+                ->orderBy('occurred_at')
+                ->get();
+        }
+
+        $this->viewParams['auditLog'] = $auditLog;
+        $this->viewParams['relatedLogs'] = $relatedLogs;
+
+        return view('admin::settings.systems.logs-audit-show', $this->viewParams);
+    }
+
+    /**
+     * 監査ログCSVエクスポート
+     */
+    public function auditLogExport(Request $request)
+    {
+        if (!Schema::hasTable('audit_logs')) {
+            return redirect()->route('admin.settings.systems.logs', ['type' => 'audit', 'view' => 'db'])
+                ->with('error', __('admin.settings.audit_logs.table_not_exists'));
+        }
+
+        $query = AuditLog::query()->orderByDesc('occurred_at');
+
+        // フィルタリング（indexと同じ）
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
+        if ($request->filled('action')) {
+            $query->where('action', $request->action);
+        }
+        if ($request->filled('severity')) {
+            $query->where('severity', $request->severity);
+        }
+        if ($request->filled('outcome')) {
+            $query->where('outcome', $request->outcome);
+        }
+        if ($request->filled('ip_address')) {
+            $query->where('ip_address', 'like', '%' . $request->ip_address . '%');
+        }
+        if ($request->filled('date_from')) {
+            $query->where('occurred_at', '>=', $request->date_from . ' 00:00:00');
+        }
+        if ($request->filled('date_to')) {
+            $query->where('occurred_at', '<=', $request->date_to . ' 23:59:59');
+        }
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('actor_name', 'like', '%' . $search . '%')
+                  ->orWhere('target_label', 'like', '%' . $search . '%')
+                  ->orWhere('action', 'like', '%' . $search . '%')
+                  ->orWhere('ip_address', 'like', '%' . $search . '%');
+            });
+        }
+
+        $logs = $query->limit(10000)->get();
+
+        $filename = 'audit_logs_' . now()->format('Y-m-d_His') . '.csv';
+        
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function () use ($logs) {
+            $file = fopen('php://output', 'w');
+            // BOM for Excel
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            // ヘッダー
+            fputcsv($file, [
+                'ID', 'Category', 'Action', 'Severity', 'Outcome', 
+                'Actor Type', 'Actor ID', 'Actor Name',
+                'Target Type', 'Target ID', 'Target Label',
+                'IP Address', 'User Agent', 'Plugin', 'Request ID',
+                'Message', 'Occurred At'
+            ]);
+
+            foreach ($logs as $log) {
+                fputcsv($file, [
+                    $log->id,
+                    $log->category,
+                    $log->action,
+                    $log->severity,
+                    $log->outcome,
+                    $log->actor_type,
+                    $log->actor_id,
+                    $log->actor_name,
+                    $log->target_type,
+                    $log->target_id,
+                    $log->target_label,
+                    $log->ip_address,
+                    $log->user_agent,
+                    $log->plugin_name,
+                    $log->request_id,
+                    $log->message,
+                    $log->occurred_at?->format('Y-m-d H:i:s'),
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * 監査ログクリーンアップ
+     */
+    public function auditLogCleanup(Request $request)
+    {
+        if (!Schema::hasTable('audit_logs')) {
+            return redirect()->route('admin.settings.systems.logs', ['type' => 'audit', 'view' => 'db'])
+                ->with('error', __('admin.settings.audit_logs.table_not_exists'));
+        }
+
+        $days = (int) $request->input('days', 90);
+        
+        if ($days === 0) {
+            $count = AuditLog::count();
+            AuditLog::truncate();
+        } else {
+            $cutoff = now()->subDays($days);
+            $count = AuditLog::where('occurred_at', '<', $cutoff)->count();
+            AuditLog::where('occurred_at', '<', $cutoff)->delete();
+        }
+
+        return redirect()->route('admin.settings.systems.logs', ['type' => 'audit', 'view' => 'db'])
+            ->with('success', __('admin.settings.audit_logs.cleanup_success', ['count' => $count]));
     }
 }

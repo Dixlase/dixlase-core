@@ -364,6 +364,13 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/settings/system/logs/test-front', [AdminSystemsController::class, 'testFrontLogs'])->name('settings.systems.logs.test_front');
                 Route::post('/settings/system/logs/test-front-error', [AdminSystemsController::class, 'testFrontErrorLog'])->name('settings.systems.logs.test_front_error');
                 
+                // 監査ログ（ログ管理内に統合）
+                Route::get('/settings/system/audit-logs/{id}', [AdminSystemsController::class, 'auditLogShow'])->name('settings.systems.audit-logs.show');
+                Route::get('/settings/system/audit-logs-export', [AdminSystemsController::class, 'auditLogExport'])->name('settings.systems.audit-logs.export');
+                Route::post('/settings/system/audit-logs/cleanup', [AdminSystemsController::class, 'auditLogCleanup'])
+                    ->middleware('check.menu.edit:settings.systems')
+                    ->name('settings.systems.audit-logs.cleanup');
+                
                 //システム情報
                 Route::get('/settings/systems/info', [AdminSystemsController::class, 'info'])->name('settings.systems.info');
             });

@@ -69,20 +69,20 @@ class MemberRolePermissionSeeder extends Seeder
             ],
             [
                 'menu_key' => 'media.settings',
-                'access_roles' => MemberRole::ADMIN->value,        // 管理者以上
-                'view_roles'  => MemberRole::ADMIN->value,
+                'access_roles' => MemberRole::SUPER_ADMIN->value,        // 特権管理者専用
+                'view_roles'  => MemberRole::SUPER_ADMIN->value,
             ],
 
             // 全体設定
             [
                 'menu_key' => 'settings.base',
-                'access_roles' => MemberRole::ADMIN->value,        // 管理者以上
-                'view_roles'  => MemberRole::ADMIN->value,
+                'access_roles' => MemberRole::SUPER_ADMIN->value,        // 特権管理者専用
+                'view_roles'  => MemberRole::SUPER_ADMIN->value,
             ],
             [
                 'menu_key' => 'settings.security',
-                'access_roles' => MemberRole::ADMIN->value,        // 管理者以上
-                'view_roles'  => MemberRole::ADMIN->value,
+                'access_roles' => MemberRole::SUPER_ADMIN->value,        // 特権管理者専用
+                'view_roles'  => MemberRole::SUPER_ADMIN->value,
             ],
             [
                 'menu_key' => 'settings.api',
@@ -108,15 +108,15 @@ class MemberRolePermissionSeeder extends Seeder
             ],
             [
                 'menu_key' => 'settings.members.settings',
-                'access_roles' => MemberRole::ADMIN->value,        // 管理者以上
-                'view_roles'  => MemberRole::ADMIN->value,
+                'access_roles' => MemberRole::SUPER_ADMIN->value,        // 特権管理者専用
+                'view_roles'  => MemberRole::SUPER_ADMIN->value,
             ],
 
             // テーマ管理（コア機能）
             [
                 'menu_key' => 'settings.themes.index',
-                'access_roles' => MemberRole::ADMIN->value,        // 管理者以上
-                'view_roles'  => MemberRole::ADMIN->value,
+                'access_roles' => MemberRole::SUPER_ADMIN->value,        // 特権管理者専用
+                'view_roles'  => MemberRole::SUPER_ADMIN->value,
             ],
             [
                 'menu_key' => 'settings.themes.install',
@@ -127,8 +127,8 @@ class MemberRolePermissionSeeder extends Seeder
             // プラグイン設定
             [
                 'menu_key' => 'settings.plugins.index',
-                'access_roles' => MemberRole::ADMIN->value,        // 管理者以上
-                'view_roles'  => MemberRole::ADMIN->value,
+                'access_roles' => MemberRole::SUPER_ADMIN->value,        // 特権管理者専用
+                'view_roles'  => MemberRole::SUPER_ADMIN->value,
             ],
             [
                 'menu_key' => 'settings.plugins.install',
