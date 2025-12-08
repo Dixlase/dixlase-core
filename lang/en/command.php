@@ -1,98 +1,17 @@
 <?php
 
 return [
-    'file' => [
-        'already_exists' => 'File [ :path ] already exists.',
-        'created' => 'File [ :path ] created successfully.',
-    ],
-    'make_plugin' => [
-        'enter_plugin_name' => 'Please enter the plugin name',
-        'enter_author_name' => 'Please enter the developer name',
-        'enter_email' => 'Please enter the developer\'s email address',
-        'enter_website_url' => 'Please enter the developer\'s website URL (only the part after https://)',
-        'select_license' => 'Available licenses:',
-        'enter_license_number' => 'Enter license number (default: none):',
-        'confirm_install' => 'Do you want to install the plugin?',
-        'confirm_enable' => 'Do you want to enable the plugin?',
-        'success' => 'Plugin :pluginName has been created successfully!',
-        'already_exists' => 'The plugin \':pluginName\' already exists.',
-        'installed' => 'Plugin :pluginName has been installed.',
-        'enabled' => 'Plugin \':pluginName\' has been enabled.',
-        'disabled' => 'Plugin \':pluginName\' has been disabled.',
-        'not_found' => 'Plugin \':pluginName\' not found in the database.',
-        'no_assets' => 'No assets directory found for plugin \':pluginName\'.',
-        'files' => [
-            'service_provider' => 'Service provider [:className] created for plugin [:pluginName].',
-            'controller' => 'Controller [:className] created for plugin [:pluginName].',
-            'model' => 'Model [:className] created for plugin [:pluginName].',
-            'policy' => 'Policy [:className] created for plugin [:pluginName].',
-            'listener' => 'Listener [:className] created for plugin [:pluginName].',
-            'test' => 'Test [:className] created for plugin [:pluginName].',
-            'migration' => 'Migration :className created for plugin [:pluginName].',
-            'resource' => 'Resource [:className] created for plugin [:pluginName].',
-            'command' => 'Command [:className] created for plugin [:pluginName].',
-            'job' => 'Job [:className] created for plugin [:pluginName].',
-            'notification' => 'Notification [:className] created for plugin [:pluginName].',
-            'seeder' => 'Seeder :className created for plugin [:pluginName].',
-            'factory' => 'Factory [:className] created for plugin [:pluginName].',
-            'routes' => 'Routes file created for plugin [:pluginName].',
-            'config' => 'Config file created for plugin [:pluginName].',
-            'lang' => 'Language files (en & ja) created for plugin [:pluginName].',
-            'vite' => 'Vite config file created for plugin [:pluginName].',
-            'composer' => 'composer.json file created for plugin [:pluginName].',
-            'package' => 'package.json file created for plugin [:pluginName].',
-            'readme' => 'README.md created for plugin [:pluginName].',
-            'license_info' => 'License info file created for plugin [:pluginName].',
-            'database_seeder' => 'Database seeder [:className] created for plugin [:pluginName].',
-            'phpunit_config' => 'PHPUnit configuration file created for plugin [:pluginName].',
-            'editorconfig' => '.editorconfig file created for plugin [:pluginName].',
-        ],
-        'license_options' => [
-            'gpl' => 'GPL-3.0',
-            'agpl' => 'AGPL-3.0',
-            'mit' => 'MIT',
-            'apache' => 'Apache-2.0',
-            'bsd3' => 'BSD-3-Clause',
-            'lgpl' => 'LGPL-3.0',
-            'commercial' => 'Commercial',
-            'custom' => 'Custom License'
-        ],
-        'config' => [
-            'description' => 'Create a new configuration file for a plugin',
-        ],
-        'installation' => [
-            'installed' => 'Plugin \':pluginName\' has been installed.',
-            'migrating' => 'Running migrations...',
-            'enable_confirm' => 'Enable plugin \':pluginName\'?',
-            'enable_skipped' => 'Plugin \':pluginName\' remains disabled. To enable it later, use the admin panel or run `php artisan plugin:enable :pluginName`.',
-            'composer_parse_error' => 'Failed to parse composer.json: :error',
-        ]
-    ],
-    'file_type' => [
-        'prompt' => 'Select the type of custom file',
-        'labels' => [
-            'core' => 'Core file (core)',
-            'plugin' => 'Plugin file (plugin)',
-            'theme' => 'Theme file (theme)',
-        ],
-    ],
-    'scope' => [
-        'prompt' => 'Please select the controller scope',
-        'select' => 'Please select a scope',
-        'not_selected' => 'No scope was selected.',
-        'labels' => [
-            'plain' => 'No scope',
-            'front' => 'Frontend',
-            'admin' => 'Admin panel',
-        ],
-    ],
+    // ========================================
+    // DixlaseDeveloper related keys have been moved to
+    // plugins/DixlaseDeveloper/lang/*/command.php
+    // ========================================
+
+    // scope, class_name_prompt, class_name_required moved to DixlaseDeveloper
     'theme' => [
         'not_found' => 'Theme \':name\' not found.',
         'no_themes_found' => 'No themes found.',
         'select_theme' => 'Please select a theme',
     ],
-    'class_name_prompt' => 'Please enter the class name',
-    'class_name_required' => 'Class name is required.',
     'production_warning' => 'You are about to run :action in production environment.',
     'production_confirm' => 'Do you want to continue?',
     'plugin' => [
@@ -194,134 +113,7 @@ return [
         'database_removed' => 'Removed theme \':themeName\' from database.',
         'completed' => 'Theme \':directory\' deletion completed.',
     ],
-    'make_theme' => [
-        'description' => 'Create a new theme directory structure with default files',
-        'enter_theme_name' => 'Please enter the theme name',
-        'name_cannot_be_empty' => 'Theme name cannot be empty.',
-        'theme_exists' => "Theme ':themeName' already exists.",
-        'created' => "Theme ':themeName' has been created successfully.",
-        'confirm_with_settings' => 'Do you want to create theme settings page?',
-        'confirm_install' => 'Do you want to install this theme?',
-        'confirm_enable' => 'Do you want to enable this theme?',
-        'install_later' => 'You can install it later using: php artisan dls:theme:install :slugName',
-        'install_success' => "Theme ':themeName' has been installed.",
-        'enable_success' => "Theme ':themeName' has been enabled.",
-        'with_settings' => 'Create theme settings page',
-        'settings_created' => 'Theme settings page has been created.',
-        'running_migrations' => 'Running migrations...',
-        'running_seeders' => 'Running seeders...',
-        'view' => [
-            'description' => 'Create a Blade view file for a theme',
-        ],
-        'component' => [
-            'description' => 'Create a Blade component for a theme',
-        ],
-        'config' => [
-            'description' => 'Create a configuration file for a theme',
-        ],
-        'language' => [
-            'description' => 'Create a language file for a theme',
-        ],
-        'provider' => [
-            'description' => 'Create a service provider for a theme',
-        ],
-        'controller' => [
-            'description' => 'Create a controller for a theme',
-        ],
-        'model' => [
-            'description' => 'Create a model for a theme',
-        ],
-        'request' => [
-            'description' => 'Create a form request for a theme',
-        ],
-        'route' => [
-            'description' => 'Create a route definition file for a theme',
-        ],
-        'migration' => [
-            'description' => 'Create a migration file for a theme',
-        ],
-        'seeder' => [
-            'description' => 'Create a seeder file for a theme',
-        ],
-        'service' => [
-            'description' => 'Create a service class for a theme',
-        ],
-        'helper' => [
-            'description' => 'Create a helper function file for a theme',
-        ],
-        'trait' => [
-            'description' => 'Create a trait for a theme',
-        ],
-        'middleware' => [
-            'description' => 'Create a middleware for a theme',
-        ],
-        'class' => [
-            'description' => 'Create a generic class for a theme',
-        ],
-        'livewire' => [
-            'description' => 'Create a Livewire component for a theme',
-        ],
-        'volt' => [
-            'description' => 'Create a Volt component for a theme',
-        ],
-        'event' => [
-            'description' => 'Create an event class for a theme',
-        ],
-        'listener' => [
-            'description' => 'Create an event listener for a theme',
-        ],
-        'mail' => [
-            'description' => 'Create a mail class for a theme',
-        ],
-        'notification' => [
-            'description' => 'Create a notification class for a theme',
-        ],
-        'job' => [
-            'description' => 'Create a job class for a theme',
-        ],
-        'observer' => [
-            'description' => 'Create a model observer for a theme',
-        ],
-        'policy' => [
-            'description' => 'Create a policy class for a theme',
-        ],
-        'rule' => [
-            'description' => 'Create a validation rule for a theme',
-        ],
-        'scope' => [
-            'description' => 'Create a query scope for a theme',
-        ],
-        'enum' => [
-            'description' => 'Create an enum for a theme',
-        ],
-        'exception' => [
-            'description' => 'Create an exception class for a theme',
-        ],
-        'interface' => [
-            'description' => 'Create an interface for a theme',
-        ],
-        'cast' => [
-            'description' => 'Create a custom cast for a theme',
-        ],
-        'factory' => [
-            'description' => 'Create a factory for a theme',
-        ],
-        'test' => [
-            'description' => 'Create a test class for a theme',
-        ],
-        'resource' => [
-            'description' => 'Create an API resource for a theme',
-        ],
-        'channel' => [
-            'description' => 'Create a notification channel for a theme',
-        ],
-        'validator' => [
-            'description' => 'Create a validator class for a theme',
-        ],
-        'job_middleware' => [
-            'description' => 'Create a job middleware for a theme',
-        ],
-    ],
+    // make_theme moved to DixlaseDeveloper
     'plugin_symlink' => [
         'description' => 'Manage plugin asset symlinks',
         'invalid_action' => 'Invalid action. Use "create" or "remove".',
@@ -365,74 +157,7 @@ return [
         'failed' => 'Failed to delete plugin directory: :error',
         'completed' => 'Plugin \':directory\' has been deleted successfully.',
     ],
-    'class' => [
-        'enter_class_name' => 'Enter the class name',
-        'class_name_required' => 'Class name is required',
-        'enter_provider_class_name' => 'Enter the provider class name (e.g., MyServiceProvider)',
-        'provider_class_required' => 'Provider class name is required',
-        'enter_route_name' => 'Enter the route file name (e.g., web, admin, api)',
-        'route_name_required' => 'Route file name is required',
-    ],
-    'license' => [
-        'prompt' => 'Please select a license (press Enter without input to select no license)',
-        'using_custom_license' => 'Using license for custom directory : :license',
-        'failed_to_read_license' => 'Failed to read custom license file: :error',
-        'warnings' => [
-            'plugin_missing' => '⚠️ License info for plugin [:pluginName] not found. License header will be skipped.',
-            'template_not_specified' => '⚠️ License info does not contain a template path.',
-            'template_not_found' => '⚠️ Template file not found: :path',
-            'template_missing_core' => 'Template not found: :path',
-            'notice' => '[!] Note: While you can choose any license for newly created files, please be aware of the following:
-・Files that extend core classes, use core traits, implement core interfaces, or directly utilize core code will be subject to the core\'s AGPL license terms.
-・However, if you place your code in a completely separate custom directory and maintain loose coupling with the core (e.g., through event listeners), you can choose your own license.
-・If you choose AGPL and implement features that allow data input from general users (e.g., forms), source code disclosure will be required. In such cases, we recommend using alternative licenses like GPL or MIT.
-・For client-specific deliverables intended for internal use and not public access, no license notice is required.
-・Please carefully review the license terms if redistribution or SaaS deployment is planned.',
-        ],
-    ],
-    'files' => [
-        'category' => [
-            'controllers' => 'Controller',
-            'requests'    => 'Request',
-            'services'    => 'Service',
-            'repositories' => 'Repository',
-            'models' => 'Model',
-            'default'    => 'File',
-        ],
-        'created' => 'created!',
-    ],
-    'make' => [
-        'select_route_type' => 'Select route type (1-3):',
-        'enter_route_type' => 'Enter route type (1=Web, 2=Admin, 3=API) [1]:',
-        'route_types' => [
-            'web' => 'Web',
-            'web_description' => 'For regular web pages',
-            'admin' => 'Admin',
-            'admin_description' => 'For admin panel routes',
-            'api' => 'API',
-            'api_description' => 'For API endpoints',
-        ],
-        'options' => [
-            'all' => 'Generate a migration, seeder, factory, policy, resource controller and form requests',
-            'controller' => 'Create a new controller for the model',
-            'factory' => 'Create a new factory for the model',
-            'migration' => 'Create a new migration file for the model',
-            'policy' => 'Create a new policy for the model',
-            'seed' => 'Create a new seeder for the model',
-            'api' => 'Exclude the create and edit methods from the controller',
-            'requests' => 'Create form request classes for the controller',
-            'invokable' => 'Generate a single method, invokable controller class',
-            'model' => 'Generate a resource controller for the given model',
-            'parent' => 'Generate a nested resource controller class',
-            'resource' => 'Generate a resource controller class',
-            'singleton' => 'Generate a singleton resource controller class',
-            'creatable' => 'Generate a resource controller with create and store methods',
-        ],
-        'common' => [
-            'class_name' => 'Class name',
-            'force' => 'Overwrite existing files',
-        ]
-    ],
+    // class, files, make, license moved to DixlaseDeveloper
     'plugin_autoload' => [
         'description' => 'Add new plugin directories to composer.json autoload (no cleanup).',
         'added' => 'Added new plugin directories to composer.json autoload.',

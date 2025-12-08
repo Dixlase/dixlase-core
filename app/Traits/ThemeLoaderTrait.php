@@ -25,9 +25,95 @@ namespace App\Traits;
 use Illuminate\Support\Facades\DB;
 use App\Models\Theme;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 trait ThemeLoaderTrait
 {
+    /**
+     * テーマの言語ファイルを読み込む
+     *
+     * @param string $themePath テーマのベースパス
+     * @param string $customThemePath カスタムテーマのベースパス
+     * @param string $namespace 言語ファイルの名前空間
+     * @return void
+     */
+    protected function loadThemeTranslations(string $themePath, string $customThemePath, string $namespace): void
+    {
+        // カスタムパスを優先
+        $paths = array_filter([$customThemePath . '/lang', $themePath . '/lang']);
+        
+        foreach ($paths as $path) {
+            if (is_dir($path)) {
+                $this->loadTranslationsFrom($path, $namespace);
+            }
+        }
+    }
+
+    /**
+     * テーマのビューを読み込む
+     *
+     * @param string $themePath テーマのベースパス
+     * @param string $customThemePath カスタムテーマのベースパス
+     * @param string $namespace ビューの名前空間
+     * @return void
+     */
+    protected function loadThemeViews(string $themePath, string $customThemePath, string $namespace): void
+    {
+        $paths = array_filter([$customThemePath . '/resources/views', $themePath . '/resources/views']);
+        
+        foreach ($paths as $path) {
+            if (is_dir($path)) {
+                \Illuminate\Support\Facades\View::addNamespace($namespace, $path);
+            }
+        }
+    }
+
+    /**
+     * テーマの設定ファイルを読み込む
+     *
+     * @param string $themePath テーマのベースパス
+     * @param string $customThemePath カスタムテーマのベースパス
+     * @param string $themeSlug テーマのスラッグ
+     * @return void
+     */
+    protected function loadThemeConfig(string $themePath, string $customThemePath, string $themeSlug): void
+    {
+        // カスタムパスを優先
+        $customConfigPath = $customThemePath . '/config';
+        $coreConfigPath = $themePath . '/config';
+        
+        $configPaths = [];
+        if (is_dir($customConfigPath)) {
+            $configPaths[] = $customConfigPath;
+        }
+        if (is_dir($coreConfigPath)) {
+            $configPaths[] = $coreConfigPath;
+        }
+        
+        foreach ($configPaths as $configPath) {
+            foreach (glob($configPath . '/*.php') as $configFile) {
+                $configName = basename($configFile, '.php');
+                $key = "theme.{$themeSlug}.{$configName}";
+                
+                // 既に設定されていなければマージ
+                if (!config()->has($key)) {
+                    config([$key => require $configFile]);
+                }
+            }
+        }
+    }
+
+    /**
+     * テーマの名前空間を生成
+     *
+     * @param string $themeDirectory テーマのディレクトリ名
+     * @return string
+     */
+    protected function getThemeNamespace(string $themeDirectory): string
+    {
+        return Str::kebab($themeDirectory);
+    }
+
     /**
      * 有効なテーマIDを取得
      *
