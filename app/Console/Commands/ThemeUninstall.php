@@ -5,8 +5,6 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Theme;
 use Illuminate\Support\Facades\File;
-use App\Helpers\GitExcludeHelper;
-use App\Helpers\ComposerLocalHelper;
 use App\Services\ThemeMigrator;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Filesystem\Filesystem;
@@ -99,13 +97,8 @@ class ThemeUninstall extends Command
             $this->info('Skipping migration rollback');
         }
 
-        // .git/info/excludeからテーマの除外ルールを削除
-        GitExcludeHelper::removeThemeExclusion($theme->directory);
-        $this->info("Removed {$theme->directory} from .git/info/exclude");
-
-        // composer.local.jsonを更新
-        ComposerLocalHelper::syncAutoload();
-        $this->info("Updated composer.local.json");
+        // Note: .git/info/exclude and composer.local.json are updated in ThemeDelete,
+        // not here because uninstall does not delete files
 
         // Delete theme from database
         $theme->delete();

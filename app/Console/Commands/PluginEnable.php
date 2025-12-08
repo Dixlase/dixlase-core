@@ -25,6 +25,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Plugin;
 use Illuminate\Support\Facades\File;
+use App\Providers\PluginServiceProvider;
 
 class PluginEnable extends Command
 {
@@ -64,6 +65,9 @@ class PluginEnable extends Command
 
         // Create symlink for assets
         $this->createPluginSymlink($plugin->directory);
+
+        // Clear enabled plugins cache
+        PluginServiceProvider::clearEnabledPluginsCache();
 
         $this->info(__('command.make_plugin.enabled', ['pluginName' => $pluginName]));
         return 0;

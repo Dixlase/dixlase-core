@@ -9,10 +9,9 @@ use Illuminate\Support\Facades\File;
 use App\Services\PluginMigrator;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Filesystem\Filesystem;
-use App\Helpers\GitExcludeHelper;
-use App\Helpers\ComposerLocalHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use App\Providers\PluginServiceProvider;
 
 class PluginUninstall extends Command
 {
@@ -126,6 +125,9 @@ class PluginUninstall extends Command
         // アンインストール処理中フラグをクリア
         putenv('PLUGIN_UNINSTALLING');
         config(['app.plugin_uninstalling' => null]);
+
+        // Clear enabled plugins cache
+        PluginServiceProvider::clearEnabledPluginsCache();
 
         $this->info(__('command.plugin_uninstall.completed', ['pluginName' => $pluginName]));
         $this->info(__('command.plugin_uninstall.delete_hint'));

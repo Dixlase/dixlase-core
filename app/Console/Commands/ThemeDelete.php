@@ -25,6 +25,9 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Theme;
 use Illuminate\Support\Facades\File;
+use App\Helpers\GitExcludeHelper;
+use App\Helpers\ComposerLocalHelper;
+use App\Helpers\GitIgnoreHelper;
 
 class ThemeDelete extends Command
 {
@@ -100,6 +103,20 @@ class ThemeDelete extends Command
             $theme->delete();
             $this->info(__('command.theme_delete.database_removed', ['themeName' => $theme->name]));
         }
+
+        // .git/info/excludeからテーマの除外ルールを削除
+        if (GitExcludeHelper::removeThemeExclusion($themeDirectory)) {
+            $this->info("✓ テーマ '{$themeDirectory}' を .git/info/exclude から削除しました");
+        }
+
+        // .gitignoreからテーマの除外ルールを削除
+        if (GitIgnoreHelper::removeThemeExclusion($themeDirectory)) {
+            $this->info("✓ テーマ '{$themeDirectory}' を .gitignore から削除しました");
+        }
+
+        // composer.local.jsonを更新
+        ComposerLocalHelper::syncAutoload();
+        $this->info("✓ composer.local.jsonを更新しました");
 
         $this->info(__('command.theme_delete.completed', ['directory' => $themeDirectory]));
         
