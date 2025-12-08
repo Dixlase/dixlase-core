@@ -24,13 +24,27 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\ApiKey;
-use App\Models\SecuritySetting;
+use App\Contracts\Repositories\ApiSettingRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class AdminApiSettingsController extends AdminLoggedInController
 {
+    /**
+     * API設定リポジトリ
+     */
+    protected ApiSettingRepositoryInterface $apiSettingRepository;
+
+    /**
+     * コンストラクタ
+     */
+    public function __construct(ApiSettingRepositoryInterface $apiSettingRepository)
+    {
+        parent::__construct();
+        $this->apiSettingRepository = $apiSettingRepository;
+    }
+
     /**
      * API設定画面を表示
      */
@@ -43,19 +57,19 @@ class AdminApiSettingsController extends AdminLoggedInController
         
         // API設定を取得
         $settings = [
-            'api_enabled' => filter_var(SecuritySetting::get('api_enabled', false), FILTER_VALIDATE_BOOLEAN),
-            'api_rate_limit' => (int) SecuritySetting::get('api_rate_limit', 60),
-            'api_signature_required' => filter_var(SecuritySetting::get('api_signature_required', true), FILTER_VALIDATE_BOOLEAN),
+            'api_enabled' => filter_var($this->apiSettingRepository->get('api_enabled', false), FILTER_VALIDATE_BOOLEAN),
+            'api_rate_limit' => (int) $this->apiSettingRepository->get('api_rate_limit', 60),
+            'api_signature_required' => filter_var($this->apiSettingRepository->get('api_signature_required', true), FILTER_VALIDATE_BOOLEAN),
         ];
         
         // 利用可能なスコープ
         $availableScopes = ApiKey::availableScopes();
         
-        return view('admin.settings.api.index', [
-            'apiKeys' => $apiKeys,
-            'settings' => $settings,
-            'availableScopes' => $availableScopes,
-        ]);
+        $this->viewParams['apiKeys'] = $apiKeys;
+        $this->viewParams['settings'] = $settings;
+        $this->viewParams['availableScopes'] = $availableScopes;
+        
+        return view('admin.settings.api.index', $this->viewParams);
     }
 
     /**
@@ -69,9 +83,9 @@ class AdminApiSettingsController extends AdminLoggedInController
             'api_signature_required' => 'nullable|boolean',
         ]);
         
-        SecuritySetting::set('api_enabled', $validated['api_enabled'] ?? false);
-        SecuritySetting::set('api_rate_limit', $validated['api_rate_limit'] ?? 60);
-        SecuritySetting::set('api_signature_required', $validated['api_signature_required'] ?? true);
+        $this->apiSettingRepository->set('api_enabled', $validated['api_enabled'] ?? false);
+        $this->apiSettingRepository->set('api_rate_limit', $validated['api_rate_limit'] ?? 60);
+        $this->apiSettingRepository->set('api_signature_required', $validated['api_signature_required'] ?? true);
         
         Log::channel('admin_activity')->info('API設定を更新しました', [
             'member_id' => Auth::guard('member')->id(),

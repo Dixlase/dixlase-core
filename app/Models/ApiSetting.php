@@ -4,7 +4,7 @@
  * This file is part of Dixlase.
  *
  * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -20,29 +20,33 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+namespace App\Models;
 
-namespace Database\Seeders;
+use Illuminate\Database\Eloquent\Model;
+use App\Contracts\Repositories\ApiSettingRepositoryInterface;
+use App\Models\Traits\UsesSettingRepositoryTrait;
 
-use Illuminate\Database\Seeder;
-
-class DatabaseSeeder extends Seeder
+/**
+ * API設定モデル
+ * 
+ * @deprecated 静的メソッドは非推奨です。ApiSettingRepositoryを使用してください。
+ */
+class ApiSetting extends Model
 {
+    use UsesSettingRepositoryTrait;
+
+    protected $table = 'api_settings';
+
+    protected $fillable = [
+        'name',
+        'value'
+    ];
+
     /**
-     * Seed the application's database.
+     * {@inheritDoc}
      */
-    public function run(): void
+    protected static function getRepositoryInterface(): string
     {
-        $this->call([
-            ApiSettingsTableSeeder::class,
-            BaseSettingsTableSeeder::class,
-            FrontSettingsTableSeeder::class,
-            MediaTableSeeder::class,
-            MediaSettingsSeeder::class,
-            MemberRolePermissionSeeder::class,
-            MembersSettingsSeeder::class,
-            SecuritySettingsTableSeeder::class,
-            ThemeSettingsTableSeeder::class,
-            ThemesTableSeeder::class,
-        ]);
+        return ApiSettingRepositoryInterface::class;
     }
 }

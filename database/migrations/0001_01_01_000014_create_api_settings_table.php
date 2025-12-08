@@ -4,7 +4,7 @@
  * This file is part of Dixlase.
  *
  * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -20,29 +20,33 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-namespace Database\Seeders;
-
-use Illuminate\Database\Seeder;
-
-class DatabaseSeeder extends Seeder
+return new class extends Migration
 {
     /**
-     * Seed the application's database.
+     * Run the migrations.
+     * 
+     * API設定テーブル
+     * API機能全体の設定を管理
      */
-    public function run(): void
+    public function up(): void
     {
-        $this->call([
-            ApiSettingsTableSeeder::class,
-            BaseSettingsTableSeeder::class,
-            FrontSettingsTableSeeder::class,
-            MediaTableSeeder::class,
-            MediaSettingsSeeder::class,
-            MemberRolePermissionSeeder::class,
-            MembersSettingsSeeder::class,
-            SecuritySettingsTableSeeder::class,
-            ThemeSettingsTableSeeder::class,
-            ThemesTableSeeder::class,
-        ]);
+        Schema::create('api_settings', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->unique();
+            $table->text('value')->nullable();
+            $table->timestamps();
+        });
     }
-}
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('api_settings');
+    }
+};
