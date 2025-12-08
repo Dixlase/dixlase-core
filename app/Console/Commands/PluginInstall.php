@@ -30,8 +30,6 @@ use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 use App\Console\Traits\PluginManagementTrait;
-use App\Helpers\GitExcludeHelper;
-use App\Helpers\ComposerLocalHelper;
 
 
 class PluginInstall extends Command

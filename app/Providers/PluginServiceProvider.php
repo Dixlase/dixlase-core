@@ -45,28 +45,38 @@ class PluginServiceProvider extends ServiceProvider
     {
         // プラグインのServiceProviderを登録（設定読み込みのため）
         $this->registerPluginServiceProviders();
-
-        // プラグインのコマンドを登録（CLIモードのみ）
-        if ($this->app->runningInConsole()) {
-            $this->registerPluginCommands();
-        }
     }
 
     /**
      * プラグインのServiceProviderを登録
+     * インストール済み・有効化済みのプラグインのみ登録
      */
     protected function registerPluginServiceProviders(): void
     {
+        // .envファイルが存在しない場合やインストールされていない場合はスキップ
+        if (!file_exists(base_path('.env')) || !env('INSTALLED', false)) {
+            return;
+        }
+
         $pluginsPath = base_path('plugins');
         
         if (!File::isDirectory($pluginsPath)) {
             return;
         }
 
-        $pluginDirs = File::directories($pluginsPath);
+        // 有効化されたプラグインのリストを取得（キャッシュファイルから）
+        $enabledPlugins = $this->getEnabledPluginsFromCache();
         
-        foreach ($pluginDirs as $pluginDir) {
-            $pluginName = basename($pluginDir);
+        if (empty($enabledPlugins)) {
+            return;
+        }
+
+        foreach ($enabledPlugins as $pluginDirectory) {
+            $pluginDir = $pluginsPath . '/' . $pluginDirectory;
+            
+            if (!File::isDirectory($pluginDir)) {
+                continue;
+            }
             
             // dixlase.json または plugin.json からプロバイダーを読み込む
             $manifestPath = $pluginDir . '/dixlase.json';
@@ -96,10 +106,107 @@ class PluginServiceProvider extends ServiceProvider
                     }
                 }
             } catch (\Exception $e) {
-                Log::warning("Failed to load plugin manifest: {$pluginName}", [
+                Log::warning("Failed to load plugin manifest: {$pluginDirectory}", [
                     'error' => $e->getMessage()
                 ]);
             }
+        }
+    }
+
+    /**
+     * キャッシュファイルから有効化されたプラグインのリストを取得
+     * register()フェーズではDBにアクセスできないため、キャッシュがない場合は空配列を返す
+     * 
+     * @return array プラグインディレクトリ名の配列
+     */
+    protected function getEnabledPluginsFromCache(): array
+    {
+        $cachePath = storage_path('framework/cache/enabled_plugins.php');
+        
+        if (File::exists($cachePath)) {
+            try {
+                $cached = require $cachePath;
+                if (is_array($cached)) {
+                    return $cached;
+                }
+            } catch (\Exception $e) {
+                // キャッシュ読み込みエラーは無視
+            }
+        }
+        
+        // キャッシュがない場合は空配列を返す
+        // register()フェーズではDBにアクセスできないため
+        // boot()フェーズでキャッシュが作成される
+        return [];
+    }
+
+    /**
+     * 有効化されたプラグインのキャッシュを更新（コレクションから）
+     * 
+     * @param \Illuminate\Support\Collection $enabledPlugins 有効化されたプラグインのコレクション
+     */
+    protected function updateEnabledPluginsCache($enabledPlugins): void
+    {
+        try {
+            $directories = $enabledPlugins->pluck('directory')->toArray();
+            
+            // キャッシュファイルに保存
+            $cachePath = storage_path('framework/cache/enabled_plugins.php');
+            $cacheDir = dirname($cachePath);
+            
+            if (!File::isDirectory($cacheDir)) {
+                File::makeDirectory($cacheDir, 0755, true);
+            }
+            
+            $content = "<?php\n\n// Generated at: " . now()->toDateTimeString() . "\n\nreturn " . var_export($directories, true) . ";\n";
+            File::put($cachePath, $content);
+        } catch (\Exception $e) {
+            Log::debug('Failed to update enabled plugins cache: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * 有効化されたプラグインのキャッシュを更新（DBから取得）
+     * 
+     * @return array プラグインディレクトリ名の配列
+     */
+    public function refreshEnabledPluginsCache(): array
+    {
+        try {
+            // DBにアクセスできるか確認
+            if (!\Illuminate\Support\Facades\Schema::hasTable('plugins')) {
+                return [];
+            }
+            
+            $enabledPlugins = Plugin::enabled()->pluck('directory')->toArray();
+            
+            // キャッシュファイルに保存
+            $cachePath = storage_path('framework/cache/enabled_plugins.php');
+            $cacheDir = dirname($cachePath);
+            
+            if (!File::isDirectory($cacheDir)) {
+                File::makeDirectory($cacheDir, 0755, true);
+            }
+            
+            $content = "<?php\n\n// Generated at: " . now()->toDateTimeString() . "\n\nreturn " . var_export($enabledPlugins, true) . ";\n";
+            File::put($cachePath, $content);
+            
+            return $enabledPlugins;
+        } catch (\Exception $e) {
+            Log::debug('Failed to refresh enabled plugins cache: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * 有効化されたプラグインのキャッシュをクリア
+     */
+    public static function clearEnabledPluginsCache(): void
+    {
+        $cachePath = storage_path('framework/cache/enabled_plugins.php');
+        
+        if (File::exists($cachePath)) {
+            File::delete($cachePath);
         }
     }
 
@@ -113,6 +220,8 @@ class PluginServiceProvider extends ServiceProvider
             return;
         }
 
+        $enabledPlugins = collect();
+
         try {
             // Only proceed if the plugins table exists
             if (!\Illuminate\Support\Facades\Schema::hasTable('plugins')) {
@@ -121,6 +230,9 @@ class PluginServiceProvider extends ServiceProvider
 
             // Get all enabled plugins
             $enabledPlugins = Plugin::enabled()->get();
+
+            // キャッシュファイルを更新（次回のregister()フェーズで使用）
+            $this->updateEnabledPluginsCache($enabledPlugins);
 
             foreach ($enabledPlugins as $plugin) {
                 $pluginPath = base_path("plugins/{$plugin->directory}");
@@ -160,6 +272,11 @@ class PluginServiceProvider extends ServiceProvider
         
         // プラグインのAPIルートを読み込む
         PluginHelper::loadEnabledApiRoutes();
+        
+        // プラグインのコマンドを登録（CLIモードのみ、有効化されたプラグインのみ）
+        if ($this->app->runningInConsole()) {
+            $this->registerPluginCommands($enabledPlugins);
+        }
     }
 
     /**
@@ -246,49 +363,50 @@ class PluginServiceProvider extends ServiceProvider
 
     /**
      * プラグインのコマンドを登録
+     * インストール済み・有効化済みのプラグインのみコマンドを登録
+     * 
+     * @param \Illuminate\Support\Collection|null $enabledPlugins 有効化されたプラグインのコレクション
      */
-    protected function registerPluginCommands(): void
+    protected function registerPluginCommands($enabledPlugins = null): void
     {
-        // pluginsディレクトリをスキャン
-        $pluginsPath = base_path('plugins');
-        
-        if (!File::isDirectory($pluginsPath)) {
+        if ($enabledPlugins === null || $enabledPlugins->isEmpty()) {
             return;
         }
 
-        $pluginDirs = File::directories($pluginsPath);
-        
-        foreach ($pluginDirs as $pluginDir) {
-            $commandsPath = $pluginDir . '/app/Console/Commands';
-            
-            if (!File::isDirectory($commandsPath)) {
-                continue;
-            }
-
-            // プラグイン名を取得（ディレクトリ名）
-            $pluginName = basename($pluginDir);
-            
-            // コマンドファイルをスキャン
-            $commandFiles = File::files($commandsPath);
-            
-            foreach ($commandFiles as $file) {
-                if ($file->getExtension() !== 'php') {
+        try {
+            foreach ($enabledPlugins as $plugin) {
+                $pluginPath = base_path("plugins/{$plugin->directory}");
+                $commandsPath = $pluginPath . '/app/Console/Commands';
+                
+                if (!File::isDirectory($commandsPath)) {
                     continue;
                 }
 
-                $className = $file->getBasename('.php');
-                $fullClassName = "Plugins\\{$pluginName}\\App\\Console\\Commands\\{$className}";
+                // コマンドファイルをスキャン
+                $commandFiles = File::files($commandsPath);
                 
-                // クラスが存在し、Commandクラスを継承しているか確認
-                if (class_exists($fullClassName) && is_subclass_of($fullClassName, \Illuminate\Console\Command::class)) {
-                    $this->pluginCommands[] = $fullClassName;
+                foreach ($commandFiles as $file) {
+                    if ($file->getExtension() !== 'php') {
+                        continue;
+                    }
+
+                    $className = $file->getBasename('.php');
+                    $fullClassName = "Plugins\\{$plugin->directory}\\App\\Console\\Commands\\{$className}";
+                    
+                    // クラスが存在し、Commandクラスを継承しているか確認
+                    if (class_exists($fullClassName) && is_subclass_of($fullClassName, \Illuminate\Console\Command::class)) {
+                        $this->pluginCommands[] = $fullClassName;
+                    }
                 }
             }
-        }
 
-        // コマンドを登録
-        if (!empty($this->pluginCommands)) {
-            $this->commands($this->pluginCommands);
+            // コマンドを登録
+            if (!empty($this->pluginCommands)) {
+                $this->commands($this->pluginCommands);
+            }
+        } catch (\Exception $e) {
+            // エラーの場合はログに記録してスキップ
+            Log::debug('Failed to register plugin commands: ' . $e->getMessage());
         }
     }
 

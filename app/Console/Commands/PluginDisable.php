@@ -25,6 +25,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Plugin;
 use Illuminate\Support\Facades\File;
+use App\Providers\PluginServiceProvider;
 
 class PluginDisable extends Command
 {
@@ -64,6 +65,9 @@ class PluginDisable extends Command
 
         // Remove symlink for assets
         $this->removePluginSymlink($plugin->directory);
+
+        // Clear enabled plugins cache
+        PluginServiceProvider::clearEnabledPluginsCache();
 
         $this->info(__('command.make_plugin.disabled', ['pluginName' => $pluginName]));
         return 0;

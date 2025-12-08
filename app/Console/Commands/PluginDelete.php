@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use App\Helpers\ComposerLocalHelper;
 use App\Helpers\GitExcludeHelper;
+use App\Helpers\GitIgnoreHelper;
 
 class PluginDelete extends Command
 {
@@ -90,6 +91,11 @@ class PluginDelete extends Command
             $this->info("✓ プラグイン '{$pluginDirectory}' を .git/info/exclude から削除しました");
         } else {
             $this->warn("⚠ プラグイン '{$pluginDirectory}' の .git/info/exclude からの削除に失敗しました（既に削除されている可能性があります）");
+        }
+
+        // .gitignoreからプラグインの除外ルールを削除
+        if (GitIgnoreHelper::removePluginExclusion($pluginDirectory)) {
+            $this->info("✓ プラグイン '{$pluginDirectory}' を .gitignore から削除しました");
         }
 
         // composer.local.jsonを更新
