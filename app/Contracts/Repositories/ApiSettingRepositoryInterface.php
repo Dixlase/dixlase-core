@@ -4,7 +4,7 @@
  * This file is part of Dixlase.
  *
  * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -20,29 +20,16 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+namespace App\Contracts\Repositories;
 
-namespace Database\Seeders;
-
-use Illuminate\Database\Seeder;
-
-class DatabaseSeeder extends Seeder
+/**
+ * API設定リポジトリインターフェース
+ * 
+ * API関連の設定を管理します。
+ * boolean値は自動的に'1'/'0'に変換されます。
+ */
+interface ApiSettingRepositoryInterface extends SettingRepositoryInterface
 {
-    /**
-     * Seed the application's database.
-     */
-    public function run(): void
-    {
-        $this->call([
-            ApiSettingsTableSeeder::class,
-            BaseSettingsTableSeeder::class,
-            FrontSettingsTableSeeder::class,
-            MediaTableSeeder::class,
-            MediaSettingsSeeder::class,
-            MemberRolePermissionSeeder::class,
-            MembersSettingsSeeder::class,
-            SecuritySettingsTableSeeder::class,
-            ThemeSettingsTableSeeder::class,
-            ThemesTableSeeder::class,
-        ]);
-    }
+    // 共通メソッドはSettingRepositoryInterfaceから継承
+    // 必要に応じてAPI設定固有のメソッドをここに追加
 }

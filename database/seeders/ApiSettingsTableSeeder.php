@@ -20,29 +20,34 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use App\Models\ApiSetting;
 
-class DatabaseSeeder extends Seeder
+class ApiSettingsTableSeeder extends Seeder
 {
     /**
-     * Seed the application's database.
+     * Run the database seeds.
      */
     public function run(): void
     {
-        $this->call([
-            ApiSettingsTableSeeder::class,
-            BaseSettingsTableSeeder::class,
-            FrontSettingsTableSeeder::class,
-            MediaTableSeeder::class,
-            MediaSettingsSeeder::class,
-            MemberRolePermissionSeeder::class,
-            MembersSettingsSeeder::class,
-            SecuritySettingsTableSeeder::class,
-            ThemeSettingsTableSeeder::class,
-            ThemesTableSeeder::class,
-        ]);
+        // API機能の有効/無効
+        ApiSetting::updateOrCreate(
+            ['name' => 'api_enabled'],
+            ['value' => '0']
+        );
+
+        // デフォルトレート制限（1分あたりのリクエスト数）
+        ApiSetting::updateOrCreate(
+            ['name' => 'api_rate_limit'],
+            ['value' => '60']
+        );
+
+        // 署名検証を必須にするか
+        ApiSetting::updateOrCreate(
+            ['name' => 'api_signature_required'],
+            ['value' => '1']
+        );
     }
 }

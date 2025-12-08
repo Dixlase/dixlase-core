@@ -35,6 +35,8 @@ use App\Contracts\Repositories\FrontSettingRepositoryInterface;
 use App\Repositories\FrontSettingRepository;
 use App\Contracts\Repositories\MediaRepositoryInterface;
 use App\Repositories\MediaRepository;
+use App\Contracts\Repositories\ApiSettingRepositoryInterface;
+use App\Repositories\ApiSettingRepository;
 
 /**
  * リポジトリサービスプロバイダー
@@ -82,6 +84,12 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(
             MediaRepositoryInterface::class,
             MediaRepository::class
+        );
+
+        // ApiSetting リポジトリのバインディング
+        $this->app->bind(
+            ApiSettingRepositoryInterface::class,
+            ApiSettingRepository::class
         );
 
         // 今後、他のリポジトリもここに追加
