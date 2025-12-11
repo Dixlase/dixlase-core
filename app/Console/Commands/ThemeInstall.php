@@ -6,7 +6,6 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use App\Models\Theme;
-use App\Helpers\GitExcludeHelper;
 use App\Helpers\ComposerLocalHelper;
 use App\Services\ThemeMigrator;
 use Illuminate\Filesystem\Filesystem;
@@ -212,10 +211,6 @@ class ThemeInstall extends Command
             'has_settings' => $hasSettings,
             'installed_at' => now(),
         ]);
-
-        // .git/info/excludeにテーマの除外ルールを追加
-        GitExcludeHelper::addThemeExclusion($themeName);
-        $this->info("Added {$themeName} to .git/info/exclude");
 
         // composer.local.jsonを更新
         ComposerLocalHelper::syncAutoload();

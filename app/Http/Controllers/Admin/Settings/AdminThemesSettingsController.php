@@ -32,6 +32,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Artisan;
 use App\Helpers\GitExcludeHelper;
+use App\Helpers\GitIgnoreHelper;
 use App\Helpers\ComposerLocalHelper;
 use App\Services\Theme\ThemePermissionService;
 use App\Services\ExtensionOperationService;
@@ -309,6 +310,9 @@ class AdminThemesSettingsController extends AdminLoggedInController
 
                 // .git/info/excludeにテーマの除外ルールを追加
                 GitExcludeHelper::addThemeExclusion($directoryName);
+
+                // .gitignoreにテーマの除外ルールを追加
+                GitIgnoreHelper::addThemeExclusion($directoryName);
                 
                 // composer.local.jsonを更新
                 ComposerLocalHelper::syncAutoload();
