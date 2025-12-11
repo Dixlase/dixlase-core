@@ -81,7 +81,14 @@ return [
         'profile' => 'プロフィール設定',
         'settings' => [
             'text' => '全体設定',
-            'base' => '基本設定',
+            'base' => [
+                'text' => '基本設定',
+                'index' => '概要',
+                'site' => 'サイト設定',
+                'admin' => '管理画面設定',
+                'mail' => 'メール設定',
+                'maintenance' => 'メンテナンス設定',
+            ],
             'security' => [
                 'text' => 'セキュリティ設定',
                 'index' => '概要',
@@ -342,9 +349,98 @@ return [
 
     // 設定
     'settings' => [
-        // 基本
+        // 基本設定
         'base' => [
             'heading' => '基本設定',
+            
+            // ========================================
+            // 概要ページ (index)
+            // ========================================
+            'index' => [
+                'heading' => '基本設定概要',
+                'description' => '基本設定の概要と各機能の状態を確認できます。',
+                'locale' => '言語',
+                'admin_url' => '管理画面URL',
+                'mailer' => 'メーラー',
+                'mail_test_complete' => 'メールテスト完了',
+                'mail_test_required' => 'メールテスト未完了',
+                'maintenance_active' => 'メンテナンス中',
+                'maintenance_inactive' => '通常運用中',
+            ],
+            
+            // ========================================
+            // サイト設定ページ (site)
+            // ========================================
+            'site' => [
+                'heading' => 'サイト設定',
+                'site_settings' => 'サイト設定',
+                'app_name' => 'アプリケーション名',
+                'site_description' => 'サイトの説明',
+                'site_description_help' => 'サイトの説明文を入力してください。検索エンジンの検索結果に表示されます。（推奨: 120-160文字）',
+                'site_keywords' => 'サイトのキーワード',
+                'site_keywords_help' => 'サイトに関連するキーワードをカンマ区切りで入力してください。（例: CMS, Laravel, ウェブサイト管理）',
+                'language_region_settings' => '言語・地域設定',
+                'locale' => 'デフォルトの言語設定',
+                'ogp_seo_settings' => 'OGP・SEO設定',
+                'default_ogp_image' => 'デフォルトOGP画像',
+                'default_ogp_image_help' => 'SNSでシェアされた際に表示されるデフォルト画像を設定します。個別ページで設定がない場合に使用されます。（推奨サイズ: 1200x630px）',
+                'twitter_card_type' => 'Twitterカードタイプ',
+                'twitter_card_type_help' => 'Twitterでシェアされた際の表示形式を選択します。',
+                'twitter_card_summary' => '概要（小さい画像）',
+                'twitter_card_summary_large' => '概要（大きい画像）',
+                'select_ogp_image' => 'OGP画像を選択',
+                'remove_ogp_image' => 'OGP画像を削除',
+                'settings_updated' => 'サイト設定が更新されました。',
+            ],
+            
+            // ========================================
+            // 管理画面設定ページ (admin)
+            // ========================================
+            'admin' => [
+                'heading' => '管理画面設定',
+                'admin_panel_settings' => '管理画面設定',
+                'admin_url' => '管理画面URL',
+                'admin_url_help' => '管理画面にアクセスするためのURLパスを設定します。<br>本番環境では、「admin」など予測されやすいURLは避けることを推奨します。<br>注意！:管理画面URLを変更すると、一旦管理画面からログアウトされます。',
+                'force_ssl' => 'SSL強制',
+                'force_ssl_help' => 'HTTPSでのアクセスを強制します。SSL証明書が設定されている場合のみ有効にしてください。',
+                'settings_updated' => '管理画面設定が更新されました。',
+                'admin_url_changed' => '管理画面URLが変更されました。新しいURLでログインしてください。',
+            ],
+            
+            // ========================================
+            // メール設定ページ (mail)
+            // ========================================
+            'mail' => [
+                'heading' => 'メール設定',
+                'mail_server_settings' => 'メールサーバー設定',
+                'admin_email_settings' => 'システム管理者メールアドレス',
+                'admin_email_settings_description' => 'システム管理者のメールアドレスを設定します。エラー通知やシステム関連の重要な情報の送信先として使用されます。',
+                'admin_email' => '管理者メールアドレス',
+                'admin_email_help' => 'システム管理者のメールアドレスを入力してください。',
+                'admin_email_mail_test_required' => 'メールサーバーのテストが完了していません。エラー通知を使用するには、接続テスト、送信テスト、受信テストをすべて完了してください。',
+                'settings_updated' => 'メール設定が更新されました。',
+                'test_session_cleared' => 'メールテストセッションがクリアされました。',
+                'mail_test_complete' => 'メール機能テスト完了',
+                'mail_test_incomplete' => 'メール機能テスト未完了',
+                'mail_receive_test_completed' => 'メール受信テストが完了しました。設定を保存してください。',
+            ],
+            
+            // ========================================
+            // メンテナンス設定ページ (maintenance)
+            // ========================================
+            'maintenance' => [
+                'heading' => 'メンテナンス設定',
+                'maintenance_settings' => 'メンテナンスモード設定',
+                'maintenance_mode' => 'メンテナンスモード',
+                'maintenance_mode_help' => 'メンテナンスモードを有効にすると、フロント画面にメンテナンス中のメッセージが表示されます。',
+                'maintenance_message' => 'メンテナンス中の表示メッセージ',
+                'maintenance_message_help' => '※メンテナンスモード有効時にフロント画面で表示されます。',
+                'settings_updated' => 'メンテナンス設定が更新されました。',
+            ],
+            
+            // ========================================
+            // 共通・後方互換性用
+            // ========================================
             'site_settings' => 'サイト設定',
             'app_name' => 'アプリケーション名',
             'site_description' => 'サイトの説明',
@@ -432,33 +528,6 @@ return [
                 'close_button' => 'ウィンドウを閉じる',
                 'completed_message' => 'メール受信確認が完了しました。',
             ],
-            'view_messages' => [
-                'mail_test_complete' => 'メール機能テスト完了',
-                'mail_test_incomplete' => 'メール機能テスト未完了',
-                'mail_test_warning_features' => 'メンバー全体設定のロックアウト通知、パスワードリセット、ログイン通知、二段階認証機能を使用するには、すべてのメールテストを完了してください。',
-                'mail_test_warning_temporary' => 'テスト結果は一時的に保存されます。更新ボタンを押すまで、設定やテスト結果は保存されません。',
-                'connection_test' => 'サーバー接続テスト',
-                'send_test' => 'メール送信テスト',
-                'receive_test' => 'メール受信確認テスト',
-                'test_passed' => 'テスト合格',
-                'test_not_completed' => '未実行',
-                'mail_receive_test_completed' => 'メール受信テストが完了しました。設定を保存してください。',
-            ],
-            'mail_verification_success' => [
-                'title' => 'メール受信確認完了',
-                'heading' => 'メール受信確認が完了しました',
-                'description' => 'メール機能のテストが正常に完了しました。',
-                'next_steps_title' => '次の手順',
-                'next_steps' => [
-                    'close_window' => 'このウィンドウを閉じてください',
-                    'save_settings' => '基本設定画面で「更新」ボタンを押して設定を保存してください',
-                    'data_saved' => 'テスト結果が保存され、メール機能が有効になります',
-                ],
-                'important_notice_title' => '重要な注意事項',
-                'important_notice' => 'テスト結果は一時的に保存されています。必ず設定を保存してください。',
-                'close_button' => 'ウィンドウを閉じる',
-            ],
-            // システム管理者メールアドレス設定
             'admin_email_settings' => 'システム管理者メールアドレス',
             'admin_email_settings_description' => 'システム管理者のメールアドレスを設定します。エラー通知やシステム関連の重要な情報の送信先として使用されます。',
             'admin_email' => '管理者メールアドレス',

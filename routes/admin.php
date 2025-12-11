@@ -33,6 +33,7 @@ use App\Http\Controllers\Admin\Auth\AdminPasswordResetLinkController;
 use App\Http\Controllers\Admin\Auth\AdminRegisteredUserController;
 use App\Http\Controllers\Admin\Auth\AdminVerifyEmailController;
 use App\Http\Controllers\Admin\Settings\AdminBaseSettingsController;
+use App\Http\Controllers\Admin\Settings\Base;
 use App\Http\Controllers\Admin\Settings\AdminPluginsSettingsController;
 use App\Http\Controllers\Admin\Settings\AdminSecuritySettingsController;
 use App\Http\Controllers\Admin\Settings\Security;
@@ -180,17 +181,39 @@ Route::prefix($adminUrl)->name('admin.')
 
             // 全体設定
             // 基本設定（権限チェック付き）
-            Route::middleware('check.menu.access:settings.base')->group(function () {
-                Route::get('/settings/base', [AdminBaseSettingsController::class, 'index'])->name('settings.base');
-                Route::put('/settings/base', [AdminBaseSettingsController::class, 'update'])
+            Route::middleware('check.menu.access:settings.base')->prefix('settings/base')->name('settings.base.')->group(function () {
+                // 概要
+                Route::get('/', [Base\AdminBaseIndexController::class, 'index'])->name('index');
+                
+                // サイト設定
+                Route::get('/site', [Base\AdminBaseSiteController::class, 'index'])->name('site');
+                Route::post('/site', [Base\AdminBaseSiteController::class, 'update'])
                     ->middleware('check.menu.edit:settings.base')
-                    ->name('settings.base.update');
-                Route::post('/settings/base/test-mail', [AdminBaseSettingsController::class, 'testMail'])->name('settings.base.test-mail');
-                Route::post('/settings/base/test-connection', [AdminBaseSettingsController::class, 'testConnection'])->name('settings.base.test-connection');
-                Route::post('/settings/base/clear-test-session', [AdminBaseSettingsController::class, 'clearTestSession'])->name('settings.base.clear-test-session');
-                Route::get('/settings/base/check-test-session', [AdminBaseSettingsController::class, 'checkTestSession'])->name('settings.base.check-test-session');
-                Route::get('/settings/base/verify-mail/{token}', [AdminBaseSettingsController::class, 'verifyMail'])->name('settings.base.verify-mail');
-                Route::get('/settings/base/mail-verification-success', [AdminBaseSettingsController::class, 'mailVerificationSuccess'])->name('settings.base.mail-verification-success');
+                    ->name('site.update');
+                
+                // 管理画面設定
+                Route::get('/admin', [Base\AdminBaseAdminController::class, 'index'])->name('admin');
+                Route::post('/admin', [Base\AdminBaseAdminController::class, 'update'])
+                    ->middleware('check.menu.edit:settings.base')
+                    ->name('admin.update');
+                
+                // メール設定
+                Route::get('/mail', [Base\AdminBaseMailController::class, 'index'])->name('mail');
+                Route::post('/mail', [Base\AdminBaseMailController::class, 'update'])
+                    ->middleware('check.menu.edit:settings.base')
+                    ->name('mail.update');
+                Route::post('/mail/test-mail', [Base\AdminBaseMailController::class, 'testMail'])->name('mail.test-mail');
+                Route::post('/mail/test-connection', [Base\AdminBaseMailController::class, 'testConnection'])->name('mail.test-connection');
+                Route::post('/mail/clear-test-session', [Base\AdminBaseMailController::class, 'clearTestSession'])->name('mail.clear-test-session');
+                Route::get('/mail/check-test-session', [Base\AdminBaseMailController::class, 'checkTestSession'])->name('mail.check-test-session');
+                Route::get('/mail/verify-mail/{token}', [Base\AdminBaseMailController::class, 'verifyMail'])->name('mail.verify-mail');
+                Route::get('/mail/mail-verification-success', [Base\AdminBaseMailController::class, 'mailVerificationSuccess'])->name('mail.mail-verification-success');
+                
+                // メンテナンス設定
+                Route::get('/maintenance', [Base\AdminBaseMaintenanceController::class, 'index'])->name('maintenance');
+                Route::post('/maintenance', [Base\AdminBaseMaintenanceController::class, 'update'])
+                    ->middleware('check.menu.edit:settings.base')
+                    ->name('maintenance.update');
             });
 
             // セキュリティ設定（権限チェック付き）

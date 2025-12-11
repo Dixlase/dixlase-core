@@ -81,7 +81,14 @@ return [
         'profile' => 'Profile Settings',
         'settings' => [
             'text' => 'Global Settings',
-            'base' => 'Basic Settings',
+            'base' => [
+                'text' => 'Basic Settings',
+                'index' => 'Overview',
+                'site' => 'Site Settings',
+                'admin' => 'Admin Panel Settings',
+                'mail' => 'Mail Settings',
+                'maintenance' => 'Maintenance Settings',
+            ],
             'security' => [
                 'text' => 'Security Settings',
                 'index' => 'Overview',
@@ -364,9 +371,98 @@ return [
 
     // Settings
     'settings' => [
-        // Basic
+        // Basic Settings
         'base' => [
             'heading' => 'Basic Settings',
+            
+            // ========================================
+            // Overview Page (index)
+            // ========================================
+            'index' => [
+                'heading' => 'Basic Settings Overview',
+                'description' => 'View the overview and status of each basic setting.',
+                'locale' => 'Language',
+                'admin_url' => 'Admin URL',
+                'mailer' => 'Mailer',
+                'mail_test_complete' => 'Mail Test Complete',
+                'mail_test_required' => 'Mail Test Required',
+                'maintenance_active' => 'Maintenance Mode Active',
+                'maintenance_inactive' => 'Normal Operation',
+            ],
+            
+            // ========================================
+            // Site Settings Page (site)
+            // ========================================
+            'site' => [
+                'heading' => 'Site Settings',
+                'site_settings' => 'Site Settings',
+                'app_name' => 'Application Name',
+                'site_description' => 'Site Description',
+                'site_description_help' => 'Enter a description of your site. This will be displayed in search engine results. (Recommended: 120-160 characters)',
+                'site_keywords' => 'Site Keywords',
+                'site_keywords_help' => 'Enter keywords related to your site, separated by commas. (Example: CMS, Laravel, Website Management)',
+                'language_region_settings' => 'Language & Region Settings',
+                'locale' => 'Default Language Settings',
+                'ogp_seo_settings' => 'OGP & SEO Settings',
+                'default_ogp_image' => 'Default OGP Image',
+                'default_ogp_image_help' => 'Set the default image displayed when shared on social media. Used when individual pages don\'t have a specific image set. (Recommended size: 1200x630px)',
+                'twitter_card_type' => 'Twitter Card Type',
+                'twitter_card_type_help' => 'Select the display format when shared on Twitter.',
+                'twitter_card_summary' => 'Summary (Small Image)',
+                'twitter_card_summary_large' => 'Summary (Large Image)',
+                'select_ogp_image' => 'Select OGP Image',
+                'remove_ogp_image' => 'Remove OGP Image',
+                'settings_updated' => 'Site settings have been updated.',
+            ],
+            
+            // ========================================
+            // Admin Panel Settings Page (admin)
+            // ========================================
+            'admin' => [
+                'heading' => 'Admin Panel Settings',
+                'admin_panel_settings' => 'Admin Panel Settings',
+                'admin_url' => 'Admin URL',
+                'admin_url_help' => 'Set the URL path for accessing the admin panel. <br>For production environments, it is recommended to avoid predictable URLs like "admin".<br>Warning: Changing the admin URL will log you out of the admin panel.',
+                'force_ssl' => 'Force SSL',
+                'force_ssl_help' => 'Force HTTPS access. Only enable this if SSL certificate is properly configured.',
+                'settings_updated' => 'Admin panel settings have been updated.',
+                'admin_url_changed' => 'Admin URL has been changed. Please login with the new URL.',
+            ],
+            
+            // ========================================
+            // Mail Settings Page (mail)
+            // ========================================
+            'mail' => [
+                'heading' => 'Mail Settings',
+                'mail_server_settings' => 'Mail Server Settings',
+                'admin_email_settings' => 'System Administrator Email Address',
+                'admin_email_settings_description' => 'Configure the system administrator email address. This will be used as the destination for error notifications and important system-related information.',
+                'admin_email' => 'Administrator Email Address',
+                'admin_email_help' => 'Enter the system administrator email address.',
+                'admin_email_mail_test_required' => 'Mail server tests are not completed. Please complete all connection, send, and receive tests before using mail functions.',
+                'settings_updated' => 'Mail settings have been updated.',
+                'test_session_cleared' => 'Mail test session has been cleared.',
+                'mail_test_complete' => 'Mail Function Test Complete',
+                'mail_test_incomplete' => 'Mail Function Test Incomplete',
+                'mail_receive_test_completed' => 'Mail receive test completed. Please save your settings.',
+            ],
+            
+            // ========================================
+            // Maintenance Settings Page (maintenance)
+            // ========================================
+            'maintenance' => [
+                'heading' => 'Maintenance Settings',
+                'maintenance_settings' => 'Maintenance Mode Settings',
+                'maintenance_mode' => 'Maintenance Mode',
+                'maintenance_mode_help' => 'When maintenance mode is enabled, a maintenance message will be displayed on the front screen.',
+                'maintenance_message' => 'Maintenance Message',
+                'maintenance_message_help' => '※Displayed on the front screen when maintenance mode is enabled.',
+                'settings_updated' => 'Maintenance settings have been updated.',
+            ],
+            
+            // ========================================
+            // Common / Backward Compatibility
+            // ========================================
             'site_settings' => 'Site Settings',
             'app_name' => 'Application Name',
             'site_description' => 'Site Description',
@@ -478,7 +574,6 @@ Clicking this link will complete the full mail function test.',
                 'test_not_completed' => 'Not Executed',
                 'mail_receive_test_completed' => 'Mail receive test completed. Please save your settings.',
             ],
-            // System Administrator Email Settings
             'admin_email_settings' => 'System Administrator Email Address',
             'admin_email_settings_description' => 'Configure the system administrator email address. This will be used as the destination for error notifications and important system-related information.',
             'admin_email' => 'Administrator Email Address',
@@ -486,7 +581,6 @@ Clicking this link will complete the full mail function test.',
             'admin_email_mail_test_required' => 'Mail server tests are not completed. Please complete all connection, send, and receive tests before using mail functions.',
             'notification_email_help' => 'Enter the email address to receive system error notifications.',
             'notification_mail_test_required' => 'To use the error notification function, please complete all mail function tests above.',
-            'maintenance_message_help' => '※Displayed on the front screen when maintenance mode is enabled.',
         ],
         // Security
         'security' => [

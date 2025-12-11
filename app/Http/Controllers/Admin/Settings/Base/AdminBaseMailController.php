@@ -1,0 +1,282 @@
+<?php
+
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2025 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+namespace App\Http\Controllers\Admin\Settings\Base;
+
+use App\Helpers\ConfigHelper;
+use App\Helpers\EnvHelper;
+use App\Http\Controllers\Admin\AdminLoggedInController;
+use App\Http\Requests\MailServerRequest;
+use App\Contracts\Repositories\BaseSettingRepositoryInterface;
+use App\Traits\MailTestTrait;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
+class AdminBaseMailController extends AdminLoggedInController
+{
+    use MailTestTrait;
+
+    protected BaseSettingRepositoryInterface $baseSettingRepository;
+
+    public function __construct(BaseSettingRepositoryInterface $baseSettingRepository)
+    {
+        parent::__construct();
+        $this->baseSettingRepository = $baseSettingRepository;
+    }
+
+    /**
+     * メール設定ページ
+     */
+    public function index(Request $request)
+    {
+        // メール受信テスト状態更新のリクエストを処理
+        if ($request->isMethod('post') && $request->input('action') === 'update_receive_test_status') {
+            $mailTestResults = session('mail_test_results', []);
+            $mailTestResults['mail_receive_tested'] = 1;
+            $mailTestResults['mail_receive_test_date'] = now()->format('Y-m-d H:i:s');
+            session(['mail_test_results' => $mailTestResults]);
+            
+            return response()->json(['success' => true]);
+        }
+
+        // メール設定ページを開くたびにメールテストセッションをクリア
+        session()->forget('mail_test_results');
+
+        $settings = [
+            'mail_mailer' => ConfigHelper::getMailMailer(),
+            'mail_host' => ConfigHelper::getMailHost(),
+            'mail_port' => ConfigHelper::getMailPort(),
+            'mail_username' => ConfigHelper::getMailUsername(),
+            'mail_password' => ConfigHelper::getMailPassword(),
+            'mail_encryption' => ConfigHelper::getMailEncryption(),
+            'mail_from_address' => ConfigHelper::getMailFromAddress(),
+            'system_admin_email' => ConfigHelper::getNotificationEmail(),
+        ];
+
+        // メールテスト状態を取得
+        $sessionTestResults = session('mail_test_results', []);
+        
+        $mailConnectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? $this->baseSettingRepository->get('mail_connection_tested', false));
+        $mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? $this->baseSettingRepository->get('mail_send_tested', false));
+        $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? $this->baseSettingRepository->get('mail_receive_tested', false));
+        
+        $mailConnectionTestDate = $sessionTestResults['mail_connection_test_date'] ?? $this->baseSettingRepository->get('mail_connection_test_date', '');
+        $mailSendTestDate = $sessionTestResults['mail_send_test_date'] ?? $this->baseSettingRepository->get('mail_send_test_date', '');
+        $mailReceiveTestDate = $sessionTestResults['mail_receive_test_date'] ?? $this->baseSettingRepository->get('mail_receive_test_date', '');
+
+        $this->viewParams['settings'] = $settings;
+        $this->viewParams['mailConnectionTested'] = $mailConnectionTested;
+        $this->viewParams['mailSendTested'] = $mailSendTested;
+        $this->viewParams['mailReceiveTested'] = $mailReceiveTested;
+        $this->viewParams['mailConnectionTestDate'] = $mailConnectionTestDate;
+        $this->viewParams['mailSendTestDate'] = $mailSendTestDate;
+        $this->viewParams['mailReceiveTestDate'] = $mailReceiveTestDate;
+        $this->viewParams['mailers'] = __('mail.mailers');
+        $this->viewParams['encryptions'] = __('mail.encryptions');
+
+        return view('admin.settings.base.mail', $this->viewParams);
+    }
+
+    /**
+     * メール設定の更新
+     */
+    public function update(Request $request)
+    {
+        $validated = $request->validate([
+            'mail_mailer' => 'required|string|in:smtp,sendmail,log',
+            'mail_host' => 'nullable|string|max:255',
+            'mail_port' => 'nullable|integer|min:1|max:65535',
+            'mail_username' => 'nullable|string|max:255',
+            'mail_password' => 'nullable|string|max:255',
+            'mail_encryption' => 'nullable|string|in:tls,ssl,',
+            'mail_from_address' => 'nullable|email|max:255',
+            'system_admin_email' => 'nullable|email|max:255',
+        ]);
+
+        // .envに保存
+        $envData = [
+            'mail_mailer' => $validated['mail_mailer'],
+            'mail_host' => $validated['mail_host'] ?? '',
+            'mail_port' => $validated['mail_port'] ?? '',
+            'mail_username' => $validated['mail_username'] ?? null,
+            'mail_password' => $validated['mail_password'] ?? null,
+            'mail_encryption' => $validated['mail_encryption'] ?? null,
+            'mail_from_address' => $validated['mail_from_address'] ?? '',
+        ];
+
+        // 空文字列をnullに変換
+        $nullableMailFields = ['mail_username', 'mail_password', 'mail_encryption'];
+        foreach ($nullableMailFields as $field) {
+            if (isset($envData[$field]) && $envData[$field] === '') {
+                $envData[$field] = null;
+            }
+        }
+
+        // メール設定が変更されたかチェック
+        $mailKeys = ['mail_mailer', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption', 'mail_from_address'];
+        $mailSettingsChanged = false;
+        
+        foreach ($mailKeys as $key) {
+            if (array_key_exists($key, $envData)) {
+                $currentValue = env(strtoupper($key));
+                $newValue = $envData[$key];
+                
+                $currentValue = $currentValue === null ? '' : (string)$currentValue;
+                $newValue = $newValue === null ? '' : (string)$newValue;
+                
+                if ($currentValue !== $newValue) {
+                    $mailSettingsChanged = true;
+                    break;
+                }
+            }
+        }
+
+        // DBに保存
+        $dbSettings = [
+            'mail_mailer' => $validated['mail_mailer'],
+            'mail_host' => $validated['mail_host'] ?? '',
+            'mail_port' => (string) ($validated['mail_port'] ?? ''),
+            'mail_username' => $validated['mail_username'] ?? '',
+            'mail_password' => $validated['mail_password'] ?? '',
+            'mail_encryption' => $validated['mail_encryption'] ?? '',
+            'mail_from_address' => $validated['mail_from_address'] ?? '',
+            'system_admin_email' => $validated['system_admin_email'] ?? '',
+        ];
+
+        $this->baseSettingRepository->setMultiple($dbSettings);
+        
+        // .envファイルに設定を保存
+        EnvHelper::update($envData);
+        
+        if ($mailSettingsChanged) {
+            // メール設定変更時は全てのテストステータスをリセット
+            $this->baseSettingRepository->set('mail_connection_tested', 0);
+            $this->baseSettingRepository->set('mail_connection_test_date', null);
+            $this->baseSettingRepository->set('mail_send_tested', 0);
+            $this->baseSettingRepository->set('mail_send_test_date', null);
+            $this->baseSettingRepository->set('mail_receive_tested', 0);
+            $this->baseSettingRepository->set('mail_receive_test_date', null);
+            $this->baseSettingRepository->set('mail_verification_token', null);
+            
+            session()->forget('mail_test_results');
+        } else {
+            // メール設定が変更されていない場合、セッションのテスト結果をDBに保存
+            $sessionTestResults = session('mail_test_results', []);
+            
+            if (!empty($sessionTestResults)) {
+                foreach ($sessionTestResults as $key => $value) {
+                    $this->baseSettingRepository->set($key, $value);
+                }
+                
+                session()->forget('mail_test_results');
+            }
+        }
+
+        return redirect()->route('admin.settings.base.mail')
+            ->with('success', __('admin.settings.base.mail.settings_updated'));
+    }
+
+    /**
+     * メールテストセッションをクリア
+     */
+    public function clearTestSession()
+    {
+        session()->forget('mail_test_results');
+        
+        $this->baseSettingRepository->set('mail_connection_tested', 0);
+        $this->baseSettingRepository->set('mail_connection_test_date', null);
+        $this->baseSettingRepository->set('mail_send_tested', 0);
+        $this->baseSettingRepository->set('mail_send_test_date', null);
+        $this->baseSettingRepository->set('mail_receive_tested', 0);
+        $this->baseSettingRepository->set('mail_receive_test_date', null);
+        $this->baseSettingRepository->set('mail_verification_token', null);
+        
+        Log::info('メールテストセッション・DB両方クリア完了');
+        
+        return response()->json([
+            'success' => true,
+            'message' => __('admin.settings.base.mail.test_session_cleared')
+        ]);
+    }
+
+    /**
+     * メールテストセッション状態をチェック
+     */
+    public function checkTestSession()
+    {
+        $sessionTestResults = session('mail_test_results', []);
+        
+        $mailConnectionTested = (bool) ($sessionTestResults['mail_connection_tested'] ?? $this->baseSettingRepository->get('mail_connection_tested', false));
+        $mailConnectionTestDate = $sessionTestResults['mail_connection_test_date'] ?? $this->baseSettingRepository->get('mail_connection_test_date', null);
+        $mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? $this->baseSettingRepository->get('mail_send_tested', false));
+        $mailSendTestDate = $sessionTestResults['mail_send_test_date'] ?? $this->baseSettingRepository->get('mail_send_test_date', null);
+        $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? $this->baseSettingRepository->get('mail_receive_tested', false));
+        $mailReceiveTestDate = $sessionTestResults['mail_receive_test_date'] ?? $this->baseSettingRepository->get('mail_receive_test_date', null);
+        
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'connection_tested' => $mailConnectionTested,
+                'connection_test_date' => $mailConnectionTestDate,
+                'send_tested' => $mailSendTested,
+                'send_test_date' => $mailSendTestDate,
+                'receive_tested' => $mailReceiveTested,
+                'receive_test_date' => $mailReceiveTestDate,
+                'all_tests_complete' => $mailConnectionTested && $mailSendTested && $mailReceiveTested
+            ]
+        ]);
+    }
+
+    /**
+     * メールサーバー接続テスト
+     */
+    public function testConnection(MailServerRequest $request)
+    {
+        return $this->performConnectionTest($request, 'admin');
+    }
+
+    /**
+     * メール送信テスト
+     */
+    public function testMail(MailServerRequest $request)
+    {
+        return $this->performMailTest($request, 'admin');
+    }
+
+    /**
+     * メール受信確認（認証リンクアクセス時）
+     */
+    public function verifyMail($token)
+    {
+        return $this->performMailVerification($token, 'admin');
+    }
+
+    /**
+     * メール認証成功ページ
+     */
+    public function mailVerificationSuccess()
+    {
+        return view('components.mail-verification-success', [
+            'isInstall' => false
+        ]);
+    }
+}
