@@ -303,7 +303,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div class="mt-4">
                     <x-message
                         type="warning"
-                        :message="__('admin.settings.security.error_notification_mail_test_required', ['url' => route('admin.settings.base')])"
+                        :message="__('admin.settings.security.error_notification_mail_test_required', ['url' => route('admin.settings.base.mail')])"
                     />
                 </div>
             @endif
