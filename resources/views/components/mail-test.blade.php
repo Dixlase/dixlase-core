@@ -650,7 +650,7 @@
                     
                     @if($context === 'admin')
                     // 管理画面用：セッションに受信テスト完了を記録
-                    fetch('{{ route('admin.settings.base') }}', {
+                    fetch('{{ route('admin.settings.base.mail') }}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

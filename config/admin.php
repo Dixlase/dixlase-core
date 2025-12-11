@@ -94,9 +94,35 @@ return [
             'icon' => 'fas fa-fw fa-cogs',
             'children' => [
                 'base' => [
-                    'text' => 'admin.nav.settings.base',
-                    'route' => 'admin.settings.base',
+                    'text' => 'admin.nav.settings.base.text',
                     'icon' => 'fas fa-fw fa-gear',
+                    'children' => [
+                        'index' => [
+                            'text' => 'admin.nav.settings.base.index',
+                            'route' => 'admin.settings.base.index',
+                            'icon' => 'fas fa-fw fa-tachometer-alt',
+                        ],
+                        'site' => [
+                            'text' => 'admin.nav.settings.base.site',
+                            'route' => 'admin.settings.base.site',
+                            'icon' => 'fas fa-fw fa-globe',
+                        ],
+                        'admin' => [
+                            'text' => 'admin.nav.settings.base.admin',
+                            'route' => 'admin.settings.base.admin',
+                            'icon' => 'fas fa-fw fa-cog',
+                        ],
+                        'mail' => [
+                            'text' => 'admin.nav.settings.base.mail',
+                            'route' => 'admin.settings.base.mail',
+                            'icon' => 'fas fa-fw fa-envelope',
+                        ],
+                        'maintenance' => [
+                            'text' => 'admin.nav.settings.base.maintenance',
+                            'route' => 'admin.settings.base.maintenance',
+                            'icon' => 'fas fa-fw fa-tools',
+                        ],
+                    ]
                 ],
                 'security' => [
                     'text' => 'admin.nav.settings.security.text',
