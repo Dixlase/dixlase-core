@@ -172,14 +172,6 @@ return [
             'days' => env('LOG_DAILY_DAYS', 14),
         ],
 
-        //管理メンバーのログイン・ログアウト
-        'admin_login' => [
-            'driver' => 'single',
-            'path' => storage_path('logs/admin_login.log'),
-            'level' => 'info',
-            'days' => env('LOG_DAILY_DAYS', 14),
-        ],
-
         //フロントページの操作
         'front_activity' => [
             'driver' => 'single',
@@ -211,15 +203,6 @@ return [
             'path' => storage_path('logs/install.log'),
             'level' => 'debug',
             'replace_placeholders' => true,
-        ],
-
-        // 拡張機能（プラグイン・テーマ）操作ログ
-        'extension_activity' => [
-            'driver' => 'single',
-            'formatter' => env('LOG_STDERR_FORMATTER'),
-            'path' => storage_path('logs/extension_activity.log'),
-            'level' => 'info',
-            'days' => env('LOG_DAILY_DAYS', 14),
         ],
 
         // CSP違反レポートログ

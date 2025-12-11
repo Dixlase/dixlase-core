@@ -24,6 +24,7 @@ namespace App\Helpers;
 
 
 use App\Enums\MemberRole;
+use App\Models\Member;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use App\Models\BaseSetting;
@@ -38,6 +39,16 @@ class AdminHelper
      * Laravelのconfig()は信頼できないため、静的変数で管理
      */
     private static $navigationCache = null;
+
+    /**
+     * 現在ログイン中のメンバーを取得
+     * 
+     * @return Member|null
+     */
+    public static function getMember(): ?Member
+    {
+        return Auth::guard('member')->user();
+    }
 
     public static function getAdminUrl()
     {

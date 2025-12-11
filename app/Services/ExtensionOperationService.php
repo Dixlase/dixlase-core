@@ -22,10 +22,12 @@
 
 namespace App\Services;
 
+use App\Facades\Audit;
+use App\Helpers\AdminHelper;
 use App\Mail\ExtensionOperationNotificationMail;
+use App\Models\AuditLog;
 use App\Models\BaseSetting;
 use App\Models\SecuritySetting;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -105,40 +107,83 @@ class ExtensionOperationService
     }
 
     /**
-     * 操作をログに記録
+     * 操作をログに記録（監査ログに統合）
      */
     protected function logOperation(array $details, string $operation): void
     {
-        $typeLabel = $details['type'] === self::TYPE_PLUGIN ? 'Plugin' : 'Theme';
-        $operationLabel = ucfirst($operation);
+        // 監査ログのアクションを決定
+        $action = $this->getAuditAction($details['type'], $operation);
         
-        $logMessage = sprintf(
-            '[Extension Operation] %s %s: %s (v%s) by %s',
-            $typeLabel,
-            $operationLabel,
-            $details['name'],
-            $details['version'] ?? 'unknown',
-            $details['operated_by']
-        );
+        // 健全性が良好以外の場合は警告レベル
+        $isUnhealthy = $details['health_status'] !== 'low' && 
+            in_array($operation, [self::OPERATION_INSTALLED, self::OPERATION_ENABLED]);
+        
+        $severity = $isUnhealthy ? AuditLog::SEVERITY_WARNING : AuditLog::SEVERITY_NOTICE;
 
-        $logContext = [
-            'type' => $details['type'],
-            'name' => $details['name'],
-            'slug' => $details['slug'],
-            'version' => $details['version'],
-            'health_status' => $details['health_status'],
-            'operation' => $operation,
-            'operated_by' => $details['operated_by'],
-            'operated_by_id' => $details['operated_by_id'],
-            'operated_at' => $details['operated_at'],
+        // 操作者を取得
+        $actor = AdminHelper::getMember();
+
+        // 監査ログに記録
+        Audit::logExtension($action, [
+            'actor' => $actor,
+            'outcome' => AuditLog::OUTCOME_SUCCESS,
+            'severity' => $severity,
+            'context' => [
+                'message' => $this->getOperationMessage($details, $operation),
+                'extension_type' => $details['type'],
+                'extension_name' => $details['name'],
+                'extension_slug' => $details['slug'],
+                'extension_version' => $details['version'],
+                'health_status' => $details['health_status'],
+                'operation' => $operation,
+            ],
+        ]);
+    }
+
+    /**
+     * 監査ログのアクションを取得
+     */
+    protected function getAuditAction(string $type, string $operation): string
+    {
+        $actionMap = [
+            self::TYPE_PLUGIN => [
+                self::OPERATION_INSTALLED => AuditLog::ACTION_PLUGIN_INSTALLED,
+                self::OPERATION_UNINSTALLED => AuditLog::ACTION_PLUGIN_UNINSTALLED,
+                self::OPERATION_ENABLED => AuditLog::ACTION_PLUGIN_ENABLED,
+                self::OPERATION_DISABLED => AuditLog::ACTION_PLUGIN_DISABLED,
+            ],
+            self::TYPE_THEME => [
+                self::OPERATION_INSTALLED => AuditLog::ACTION_THEME_INSTALLED,
+                self::OPERATION_UNINSTALLED => AuditLog::ACTION_THEME_UNINSTALLED,
+                self::OPERATION_ENABLED => AuditLog::ACTION_THEME_ENABLED,
+                self::OPERATION_DISABLED => AuditLog::ACTION_THEME_DISABLED,
+            ],
         ];
 
-        // 健全性が良好以外の場合は警告レベルでログ
-        if ($details['health_status'] !== 'low' && in_array($operation, [self::OPERATION_INSTALLED, self::OPERATION_ENABLED])) {
-            Log::channel('extension_activity')->warning($logMessage, $logContext);
-        } else {
-            Log::channel('extension_activity')->info($logMessage, $logContext);
-        }
+        return $actionMap[$type][$operation] ?? "extension_{$operation}";
+    }
+
+    /**
+     * 操作メッセージを生成
+     */
+    protected function getOperationMessage(array $details, string $operation): string
+    {
+        $typeLabel = $details['type'] === self::TYPE_PLUGIN ? 'プラグイン' : 'テーマ';
+        $operationLabels = [
+            self::OPERATION_INSTALLED => 'インストール',
+            self::OPERATION_UNINSTALLED => 'アンインストール',
+            self::OPERATION_ENABLED => '有効化',
+            self::OPERATION_DISABLED => '無効化',
+        ];
+        $operationLabel = $operationLabels[$operation] ?? $operation;
+        
+        return sprintf(
+            '%s「%s」(v%s)を%sしました',
+            $typeLabel,
+            $details['name'],
+            $details['version'] ?? 'unknown',
+            $operationLabel
+        );
     }
 
     /**

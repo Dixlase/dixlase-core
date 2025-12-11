@@ -19,11 +19,9 @@ class AdminSystemsController extends AdminLoggedInController
     protected $logPaths = [
         'activity' => 'admin_activity.log',
         'error'    => 'admin_error.log',
-        'login'    => 'admin_login.log',
         'dixlase'  => 'dixlase.log',
         'front_activity' => 'front_activity.log',
         'front_error' => 'front_error.log',
-        'extension' => 'extension_activity.log',
         'csp' => 'csp_violations.log',
         'audit' => 'audit.log',
     ];
@@ -52,10 +50,15 @@ class AdminSystemsController extends AdminLoggedInController
         $fileName = $this->logPaths[$type] ?? $this->logPaths['activity'];
         $filePath = storage_path("logs/{$fileName}");
 
+        // dailyドライバーの場合、日付付きファイル名を探す
+        if (!File::exists($filePath)) {
+            $filePath = $this->findDailyLogFile($fileName);
+        }
+
         $this->viewParams['logType'] = $type;
 
 
-        if (!File::exists($filePath)) {
+        if (!$filePath || !File::exists($filePath)) {
             // Return structured data even when file doesn't exist
             $this->viewParams['logs'] = [[
                 'timestamp' => '',
@@ -81,22 +84,6 @@ class AdminSystemsController extends AdminLoggedInController
         }
 
 
-        $lines = array_reverse(
-            array_filter(
-                explode("\n", File::get($filePath)),
-                fn($line) => trim($line) !== ''
-            )
-        );
-
-        // Parse log lines into structured data
-        $parsedLogs = [];
-        foreach ($lines as $line) {
-            $parsedLog = $this->parseLogLine($line);
-            if ($parsedLog) {
-                $parsedLogs[] = $parsedLog;
-            }
-        }
-
         // Implement pagination
         $perPage = $request->input('per_page', 50);
         
@@ -107,6 +94,20 @@ class AdminSystemsController extends AdminLoggedInController
         }
         
         $currentPage = $request->get('page', 1);
+
+        // 大きなファイルの場合、末尾から必要な行数だけ読み込む
+        $maxLinesToRead = 5000; // 最大読み込み行数
+        $lines = $this->readLogFileLines($filePath, $maxLinesToRead);
+
+        // Parse log lines into structured data
+        $parsedLogs = [];
+        foreach ($lines as $line) {
+            $parsedLog = $this->parseLogLine($line);
+            if ($parsedLog) {
+                $parsedLogs[] = $parsedLog;
+            }
+        }
+
         $offset = ($currentPage - 1) * $perPage;
         $totalLogs = count($parsedLogs);
         $paginatedLogs = array_slice($parsedLogs, $offset, $perPage);
@@ -137,12 +138,19 @@ class AdminSystemsController extends AdminLoggedInController
         $fileName = $this->logPaths[$type] ?? $this->logPaths['activity'];
         $filePath = storage_path("logs/{$fileName}");
 
+        // dailyドライバーの場合、日付付きファイル名を探す
         if (!File::exists($filePath)) {
+            $filePath = $this->findDailyLogFile($fileName);
+        }
+
+        if (!$filePath || !File::exists($filePath)) {
             return redirect()->route('admin.settings.systems.logs', ['type' => $type])
                 ->with('error', __('admin.settings.systems.logs.messages.download_error', ['filename' => $fileName]));
         }
 
-        return response()->download($filePath, $fileName);
+        // ダウンロード時のファイル名は実際のファイル名を使用
+        $downloadFileName = basename($filePath);
+        return response()->download($filePath, $downloadFileName);
     }
 
     // ログ内容消去
@@ -151,11 +159,17 @@ class AdminSystemsController extends AdminLoggedInController
         $fileName = $this->logPaths[$type] ?? $this->logPaths['activity'];
         $filePath = storage_path("logs/{$fileName}");
 
+        // dailyドライバーの場合、日付付きファイル名を探す
+        if (!File::exists($filePath)) {
+            $filePath = $this->findDailyLogFile($fileName);
+        }
+
         try {
-            if (File::exists($filePath)) {
+            if ($filePath && File::exists($filePath)) {
                 File::put($filePath, '');
+                $clearedFileName = basename($filePath);
                 return redirect()->route('admin.settings.systems.logs', ['type' => $type])
-                    ->with('success', __('admin.settings.systems.logs.messages.clear_success', ['filename' => $fileName]));
+                    ->with('success', __('admin.settings.systems.logs.messages.clear_success', ['filename' => $clearedFileName]));
             } else {
                 return redirect()->route('admin.settings.systems.logs', ['type' => $type])
                     ->with('error', __('admin.settings.systems.logs.messages.clear_error', ['filename' => $fileName]));
@@ -583,19 +597,6 @@ class AdminSystemsController extends AdminLoggedInController
                 $results['error'] = 'success';
             }
 
-            if ($type === 'all' || $type === 'login') {
-                // ログインログのテスト
-                Log::channel('admin_login')->info('ログ出力テスト - ログインログ', [
-                    'test_type' => 'login_log',
-                    'timestamp' => now()->toDateTimeString(),
-                    'user_id' => auth()->id(),
-                    'user_name' => auth()->user()->name,
-                    'action' => 'test_login_log',
-                    'ip' => request()->ip(),
-                ]);
-                $results['login'] = 'success';
-            }
-
             $message = __('admin.settings.systems.logs.test_success', ['results' => implode(', ', array_keys($results))]);
             return redirect()->back()->with('success', $message);
 
@@ -968,5 +969,101 @@ class AdminSystemsController extends AdminLoggedInController
 
         return redirect()->route('admin.settings.systems.logs', ['type' => 'audit', 'view' => 'db'])
             ->with('success', __('admin.settings.audit_logs.cleanup_success', ['count' => $count]));
+    }
+
+    /**
+     * dailyドライバーの日付付きログファイルを探す
+     * 
+     * @param string $baseFileName 基本ファイル名（例: audit.log）
+     * @return string|null 見つかったファイルパス、または null
+     */
+    protected function findDailyLogFile(string $baseFileName): ?string
+    {
+        $logsPath = storage_path('logs');
+        
+        // 拡張子を除いたベース名を取得（例: audit.log → audit）
+        $baseName = pathinfo($baseFileName, PATHINFO_FILENAME);
+        $extension = pathinfo($baseFileName, PATHINFO_EXTENSION);
+        
+        // 今日の日付から過去に向かって探す
+        for ($i = 0; $i < 30; $i++) {
+            $date = now()->subDays($i)->format('Y-m-d');
+            $dailyFileName = "{$baseName}-{$date}.{$extension}";
+            $dailyFilePath = "{$logsPath}/{$dailyFileName}";
+            
+            if (File::exists($dailyFilePath)) {
+                return $dailyFilePath;
+            }
+        }
+        
+        return null;
+    }
+
+    /**
+     * ログファイルから末尾の行を効率的に読み込む
+     * 
+     * @param string $filePath ファイルパス
+     * @param int $maxLines 最大読み込み行数
+     * @return array 行の配列（新しい順）
+     */
+    protected function readLogFileLines(string $filePath, int $maxLines = 5000): array
+    {
+        $fileSize = filesize($filePath);
+        
+        // 小さいファイル（1MB未満）は従来通り全体を読み込む
+        if ($fileSize < 1024 * 1024) {
+            $lines = array_reverse(
+                array_filter(
+                    explode("\n", File::get($filePath)),
+                    fn($line) => trim($line) !== ''
+                )
+            );
+            return array_slice($lines, 0, $maxLines);
+        }
+
+        // 大きいファイルは末尾から読み込む
+        $lines = [];
+        $handle = fopen($filePath, 'r');
+        
+        if (!$handle) {
+            return [];
+        }
+
+        // ファイル末尾から読み込むためのバッファサイズ
+        $bufferSize = 8192;
+        $buffer = '';
+        $position = $fileSize;
+
+        while ($position > 0 && count($lines) < $maxLines) {
+            // 読み込み位置を計算
+            $readSize = min($bufferSize, $position);
+            $position -= $readSize;
+            
+            fseek($handle, $position);
+            $chunk = fread($handle, $readSize);
+            $buffer = $chunk . $buffer;
+            
+            // バッファから行を抽出
+            $bufferLines = explode("\n", $buffer);
+            
+            // 最初の行は不完全な可能性があるので保持
+            $buffer = array_shift($bufferLines);
+            
+            // 残りの行を追加（逆順で）
+            foreach (array_reverse($bufferLines) as $line) {
+                if (trim($line) !== '' && count($lines) < $maxLines) {
+                    $lines[] = $line;
+                }
+            }
+        }
+
+        // 残りのバッファを処理
+        if (trim($buffer) !== '' && count($lines) < $maxLines) {
+            $lines[] = $buffer;
+        }
+
+        fclose($handle);
+        
+        return $lines;
     }
 }
