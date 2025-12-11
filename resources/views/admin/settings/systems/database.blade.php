@@ -48,7 +48,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 
                 @if($info['default_days'])
                 <div class="mt-4">
-                    <form id="cleanupForm{{ ucfirst($type) }}" action="{{ route('admin.settings.systems.database.clean') }}" method="POST">
+                    <form id="cleanupForm{{ ucfirst($type) }}" action="{{ route('admin.settings.systems.database.cleanup') }}" method="POST">
                         @csrf
                         <input type="hidden" name="type" value="{{ $type }}">
                         <label for="days_{{ $type }}" class="block text-sm font-medium mb-1">
@@ -70,7 +70,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </form>
                 </div>
                 @else
-                <form id="cleanupForm{{ ucfirst($type) }}" action="{{ route('admin.settings.systems.database.clean') }}" method="POST">
+                <form id="cleanupForm{{ ucfirst($type) }}" action="{{ route('admin.settings.systems.database.cleanup') }}" method="POST">
                     @csrf
                     <input type="hidden" name="type" value="{{ $type }}">
                 </form>
@@ -95,7 +95,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <p>{{ __('admin.settings.systems.database.all_cleanup_description') }}</p>
             <p><strong>{{ __('common.warning') }}:</strong> {{ __('admin.settings.systems.database.all_cleanup_warning') }}</p>
             
-            <form id="cleanupAllForm" action="{{ route('admin.settings.systems.database.clean') }}" method="POST" class="mt-4">
+            <form id="cleanupAllForm" action="{{ route('admin.settings.systems.database.cleanup') }}" method="POST" class="mt-4">
                 @csrf
                 <input type="hidden" name="type" value="all">
                 

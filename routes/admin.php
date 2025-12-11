@@ -37,10 +37,9 @@ use App\Http\Controllers\Admin\Settings\Base;
 use App\Http\Controllers\Admin\Settings\AdminPluginsSettingsController;
 use App\Http\Controllers\Admin\Settings\AdminSecuritySettingsController;
 use App\Http\Controllers\Admin\Settings\Security;
-use App\Http\Controllers\Admin\Settings\Systems\AdminApiSettingsController;
-use App\Http\Controllers\Admin\Settings\AdminMembersSettingsController;
+use App\Http\Controllers\Admin\Settings\Systems;
+use App\Http\Controllers\Admin\Settings\Members;
 use App\Http\Controllers\Admin\Settings\AdminThemesSettingsController;
-use App\Http\Controllers\Admin\Settings\AdminSystemsController;
 use App\Http\Controllers\Admin\Profile\AdminProfileController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -272,64 +271,52 @@ Route::prefix($adminUrl)->name('admin.')
 
 
             // メンバー管理（権限チェック付き）
-            Route::middleware('check.menu.access:settings.members')->group(function () {
-                // メンバーマスター
-                Route::get('/settings/members', [AdminMembersSettingsController::class, 'index'])->name('settings.members.index');
-                // メンバー作成
-                Route::get('/settings/members/create', [AdminMembersSettingsController::class, 'create'])->name('settings.members.create');
-                // メンバー保存
-                Route::post('/settings/members/store', [AdminMembersSettingsController::class, 'store'])
+            Route::middleware('check.menu.access:settings.members')->prefix('settings/members')->name('settings.members.')->group(function () {
+                // メンバー一覧・CRUD
+                Route::get('/', [Members\AdminMemberIndexController::class, 'index'])->name('index');
+                Route::get('/create', [Members\AdminMemberIndexController::class, 'create'])->name('create');
+                Route::post('/store', [Members\AdminMemberIndexController::class, 'store'])
                     ->middleware('check.menu.edit:settings.members')
-                    ->name('settings.members.store');
-                // メンバー編集
-                Route::get('/settings/members/edit/{member}', [AdminMembersSettingsController::class, 'edit'])->name('settings.members.edit');
-                // メンバー更新
-                Route::patch('/settings/members/update/{member}', [AdminMembersSettingsController::class, 'update'])
+                    ->name('store');
+                Route::get('/edit/{member}', [Members\AdminMemberIndexController::class, 'edit'])->name('edit');
+                Route::patch('/update/{member}', [Members\AdminMemberIndexController::class, 'update'])
                     ->middleware('check.menu.edit:settings.members')
-                    ->name('settings.members.update');
-                // Passkey削除
-                Route::delete('/settings/members/passkey/{member}/{credentialId}', [AdminMembersSettingsController::class, 'revokePasskey'])
+                    ->name('update');
+                Route::delete('/destroy/{member}', [Members\AdminMemberIndexController::class, 'destroy'])
                     ->middleware('check.menu.edit:settings.members')
-                    ->name('settings.members.passkey.revoke');
-                // 回復コード削除
-                Route::delete('/settings/members/recovery-codes/{member}', [AdminMembersSettingsController::class, 'revokeRecoveryCodes'])
+                    ->name('destroy');
+
+                // セキュリティ操作
+                Route::delete('/passkey/{member}/{credentialId}', [Members\AdminMemberSecurityController::class, 'revokePasskey'])
                     ->middleware('check.menu.edit:settings.members')
-                    ->name('settings.members.recovery-codes.revoke');
-                // メンバー削除
-                Route::delete('/settings/members/destroy/{member}', [AdminMembersSettingsController::class, 'destroy'])
+                    ->name('passkey.revoke');
+                Route::delete('/recovery-codes/{member}', [Members\AdminMemberSecurityController::class, 'revokeRecoveryCodes'])
                     ->middleware('check.menu.edit:settings.members')
-                    ->name('settings.members.destroy');
-                // メンバー強制ログアウト
-                Route::post('/settings/members/force-logout/{member}', [AdminMembersSettingsController::class, 'forceLogout'])
+                    ->name('recovery-codes.revoke');
+                Route::post('/force-logout/{member}', [Members\AdminMemberSecurityController::class, 'forceLogout'])
                     ->middleware('check.menu.edit:settings.members')
-                    ->name('settings.members.force-logout');
-                // 2FAロックアウト解除
-                Route::post('/settings/members/unlock-2fa/{member}', [AdminMembersSettingsController::class, 'unlock2fa'])
+                    ->name('force-logout');
+                Route::post('/unlock-2fa/{member}', [Members\AdminMemberSecurityController::class, 'unlock2fa'])
                     ->middleware('check.menu.edit:settings.members')
-                    ->name('settings.members.unlock-2fa');
-                // 全メンバー強制ログアウト
-                Route::post('/settings/members/force-logout-all', [AdminMembersSettingsController::class, 'forceLogoutAll'])
+                    ->name('unlock-2fa');
+                Route::post('/force-logout-all', [Members\AdminMemberSecurityController::class, 'forceLogoutAll'])
                     ->middleware('check.menu.edit:settings.members')
-                    ->name('settings.members.force-logout-all');
-                // 認証メール送信
-                Route::post('/settings/members/{member}/send-verification-email', [AdminMembersSettingsController::class, 'sendVerificationEmail'])
+                    ->name('force-logout-all');
+                Route::post('/{member}/send-verification-email', [Members\AdminMemberSecurityController::class, 'sendVerificationEmail'])
                     ->middleware('check.menu.edit:settings.members')
-                    ->name('settings.members.send-verification-email');
-                // プロフィール
-                Route::get('/settings/members/profile', [AdminMembersSettingsController::class, 'profile'])->name('settings.members.profile');
-                Route::post('/settings/members/profile', [AdminMembersSettingsController::class, 'updateProfile'])->name('settings.members.profile.update');
+                    ->name('send-verification-email');
 
                 // 権限設定
-                Route::get('/settings/members/roles/', [AdminMembersSettingsController::class, 'roles'])->name('settings.members.roles');
-                Route::post('/settings/members/roles/', [AdminMembersSettingsController::class, 'updateRoles'])
+                Route::get('/roles', [Members\AdminMemberRolesController::class, 'index'])->name('roles');
+                Route::post('/roles', [Members\AdminMemberRolesController::class, 'update'])
                     ->middleware('check.menu.edit:settings.members')
-                    ->name('settings.members.roles.update');
+                    ->name('roles.update');
 
                 // メンバー設定
-                Route::get('/settings/members/settings', [AdminMembersSettingsController::class, 'settings'])->name('settings.members.settings');
-                Route::post('/settings/members/settings', [AdminMembersSettingsController::class, 'updateSettings'])
+                Route::get('/settings', [Members\AdminMemberSettingsController::class, 'index'])->name('settings');
+                Route::post('/settings', [Members\AdminMemberSettingsController::class, 'update'])
                     ->middleware('check.menu.edit:settings.members')
-                    ->name('settings.members.settings.update');
+                    ->name('settings.update');
             });
 
             // テーマ設定（権限チェック付き）
@@ -384,54 +371,54 @@ Route::prefix($adminUrl)->name('admin.')
             });
 
             // システム設定（権限チェック付き）
-            Route::middleware('check.menu.access:settings.systems')->group(function () {
+            Route::middleware('check.menu.access:settings.systems')->prefix('settings/systems')->name('settings.systems.')->group(function () {
                 // API管理
-                Route::get('/settings/systems/api', [AdminApiSettingsController::class, 'index'])->name('settings.systems.api');
-                Route::post('/settings/systems/api', [AdminApiSettingsController::class, 'update'])
+                Route::get('/api', [Systems\AdminSystemApiController::class, 'index'])->name('api');
+                Route::post('/api', [Systems\AdminSystemApiController::class, 'update'])
                     ->middleware('check.menu.edit:settings.systems')
-                    ->name('settings.systems.api.update');
-                Route::post('/settings/systems/api/generate-key', [AdminApiSettingsController::class, 'generateKey'])
+                    ->name('api.update');
+                Route::post('/api/generate-key', [Systems\AdminSystemApiController::class, 'generateKey'])
                     ->middleware('check.menu.edit:settings.systems')
-                    ->name('settings.systems.api.generate-key');
-                Route::delete('/settings/systems/api/revoke-key/{id}', [AdminApiSettingsController::class, 'revokeKey'])
+                    ->name('api.generate-key');
+                Route::delete('/api/revoke-key/{id}', [Systems\AdminSystemApiController::class, 'revokeKey'])
                     ->middleware('check.menu.edit:settings.systems')
-                    ->name('settings.systems.api.revoke-key');
-                Route::post('/settings/systems/api/regenerate-key/{id}', [AdminApiSettingsController::class, 'regenerateKey'])
+                    ->name('api.revoke-key');
+                Route::post('/api/regenerate-key/{id}', [Systems\AdminSystemApiController::class, 'regenerateKey'])
                     ->middleware('check.menu.edit:settings.systems')
-                    ->name('settings.systems.api.regenerate-key');
+                    ->name('api.regenerate-key');
 
-                //キャッシュ管理
-                Route::get('/settings/systems/cache', [AdminSystemsController::class, 'cache'])->name('settings.systems.cache');
-                Route::post('/settings/systems/cache/clear', [AdminSystemsController::class, 'clearCache'])
+                // キャッシュ管理
+                Route::get('/cache', [Systems\AdminSystemCacheController::class, 'index'])->name('cache');
+                Route::post('/cache/clear', [Systems\AdminSystemCacheController::class, 'clear'])
                     ->middleware('check.menu.edit:settings.systems')
-                    ->name('settings.systems.cache.clear');
+                    ->name('cache.clear');
 
-                //データベース管理
-                Route::get('/settings/systems/database', [AdminSystemsController::class, 'database'])->name('settings.systems.database');
-                Route::post('/settings/systems/database/clean', [AdminSystemsController::class, 'cleanupDatabase'])
+                // データベース管理
+                Route::get('/database', [Systems\AdminSystemDatabaseController::class, 'index'])->name('database');
+                Route::post('/database/cleanup', [Systems\AdminSystemDatabaseController::class, 'cleanup'])
                     ->middleware('check.menu.edit:settings.systems')
-                    ->name('settings.systems.database.clean');
+                    ->name('database.cleanup');
                 
-                //ログ
-                Route::get('/settings/system/logs/{type?}', [AdminSystemsController::class, 'logs'])->name('settings.systems.logs');
-                Route::get('/settings/system/logs/{type}/download', [AdminSystemsController::class, 'downloadLog'])->name('settings.systems.logs.download');
-                Route::post('/settings/system/logs/{type}/clear', [AdminSystemsController::class, 'clearLog'])
+                // ログ
+                Route::get('/logs/{type?}', [Systems\AdminSystemLogsController::class, 'index'])->name('logs');
+                Route::get('/logs/{type}/download', [Systems\AdminSystemLogsController::class, 'download'])->name('logs.download');
+                Route::post('/logs/{type}/clear', [Systems\AdminSystemLogsController::class, 'clear'])
                     ->middleware('check.menu.edit:settings.systems')
-                    ->name('settings.systems.logs.clear');
-                Route::post('/settings/system/logs/test', [AdminSystemsController::class, 'testLogs'])->name('settings.systems.logs.test');
-                Route::post('/settings/system/logs/test-error', [AdminSystemsController::class, 'testErrorLog'])->name('settings.systems.logs.test_error');
-                Route::post('/settings/system/logs/test-front', [AdminSystemsController::class, 'testFrontLogs'])->name('settings.systems.logs.test_front');
-                Route::post('/settings/system/logs/test-front-error', [AdminSystemsController::class, 'testFrontErrorLog'])->name('settings.systems.logs.test_front_error');
+                    ->name('logs.clear');
+                Route::post('/logs/test', [Systems\AdminSystemLogsController::class, 'test'])->name('logs.test');
+                Route::post('/logs/test-error', [Systems\AdminSystemLogsController::class, 'testError'])->name('logs.test-error');
+                Route::post('/logs/test-front', [Systems\AdminSystemLogsController::class, 'testFront'])->name('logs.test-front');
+                Route::post('/logs/test-front-error', [Systems\AdminSystemLogsController::class, 'testFrontError'])->name('logs.test-front-error');
                 
-                // 監査ログ（ログ管理内に統合）
-                Route::get('/settings/system/audit-logs/{id}', [AdminSystemsController::class, 'auditLogShow'])->name('settings.systems.audit-logs.show');
-                Route::get('/settings/system/audit-logs-export', [AdminSystemsController::class, 'auditLogExport'])->name('settings.systems.audit-logs.export');
-                Route::post('/settings/system/audit-logs/cleanup', [AdminSystemsController::class, 'auditLogCleanup'])
+                // 監査ログ
+                Route::get('/audit-logs/{id}', [Systems\AdminSystemLogsController::class, 'auditShow'])->name('audit-logs.show');
+                Route::get('/audit-logs-export', [Systems\AdminSystemLogsController::class, 'auditExport'])->name('audit-logs.export');
+                Route::post('/audit-logs/cleanup', [Systems\AdminSystemLogsController::class, 'auditCleanup'])
                     ->middleware('check.menu.edit:settings.systems')
-                    ->name('settings.systems.audit-logs.cleanup');
+                    ->name('audit-logs.cleanup');
                 
-                //システム情報
-                Route::get('/settings/systems/info', [AdminSystemsController::class, 'info'])->name('settings.systems.info');
+                // システム情報
+                Route::get('/info', [Systems\AdminSystemInfoController::class, 'index'])->name('info');
             });
 
             // ログアウト

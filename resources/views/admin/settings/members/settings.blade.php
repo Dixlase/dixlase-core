@@ -77,7 +77,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @if(!$isMailServerTested)
                 <x-message
                     type="warning"
-                    :message="__('admin.settings.members.settings.mail_server_test_warning', ['url' => route('admin.settings.base')])"
+                    :message="__('admin.settings.members.settings.mail_server_test_warning', ['url' => route('admin.settings.base.mail')])"
                 />
             @endif
             <!-- 機能有効/無効 -->
@@ -163,12 +163,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @if(!$captchaEnabled)
                 <x-message
                     type="warning"
-                    :message="__('admin.settings.members.settings.captcha_not_enabled', ['url' => route('admin.settings.security')])"
+                    :message="__('admin.settings.members.settings.captcha_not_enabled', ['url' => route('admin.settings.security.captcha')])"
                 />
             @elseif(!$captchaAuthenticationResult)
                 <x-message
                     type="warning"
-                    :message="__('admin.settings.members.settings.captcha_not_authenticated', ['url' => route('admin.settings.security')])"
+                    :message="__('admin.settings.members.settings.captcha_not_authenticated', ['url' => route('admin.settings.security.captcha')])"
                 />
             @endif
             
@@ -198,7 +198,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @if(!$isMailServerTested)
                 <x-message
                     type="warning"
-                    :message="__('admin.settings.members.settings.mail_server_test_warning', ['url' => route('admin.settings.base')])"
+                    :message="__('admin.settings.members.settings.mail_server_test_warning', ['url' => route('admin.settings.base.mail')])"
                 />
             @endif
             <fieldset>
@@ -279,7 +279,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @if(!$isMailServerTested)
                 <x-message
                     type="warning"
-                    :message="__('admin.settings.members.settings.mail_server_test_warning', ['url' => route('admin.settings.base')])"
+                    :message="__('admin.settings.members.settings.mail_server_test_warning', ['url' => route('admin.settings.base.mail')])"
                 />
             @endif
             <fieldset>
@@ -299,7 +299,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @if(!$isMailServerTested)
                 <x-message
                     type="warning"
-                    :message="__('admin.settings.members.settings.mail_server_test_warning', ['url' => route('admin.settings.base')])"
+                    :message="__('admin.settings.members.settings.mail_server_test_warning', ['url' => route('admin.settings.base.mail')])"
                 />
             @endif
             <fieldset>
