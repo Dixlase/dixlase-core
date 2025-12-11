@@ -446,5 +446,27 @@ return [
         'auto_notification' => 'この通知はセキュリティ設定に基づいて自動送信されています。',
     ],
     
+    // ファイル整合性アラートメール
+    'file_integrity' => [
+        'subject' => '【:site_name】ファイル整合性アラート - :status',
+        'title' => 'ファイル整合性アラート',
+        'greeting' => ':site_name のファイル整合性チェックで問題が検出されました。',
+        'intro' => 'スキャン結果: :status',
+        'scan_info' => 'スキャン情報',
+        'scan_date' => 'スキャン日時',
+        'status' => 'ステータス',
+        'status_critical' => '重大',
+        'status_warning' => '警告',
+        'status_unknown' => '不明',
+        'files_scanned' => 'スキャンファイル数',
+        'issues_summary' => '検出された問題',
+        'changed_files' => '変更されたファイル',
+        'added_files' => '追加されたファイル',
+        'removed_files' => '削除されたファイル',
+        'suspicious_files' => '疑わしいファイル',
+        'action_required' => '詳細を確認し、必要に応じて対処してください。',
+        'view_details_button' => '詳細を確認',
+        'thanks' => 'よろしくお願いいたします。',
+    ],
 
 ];

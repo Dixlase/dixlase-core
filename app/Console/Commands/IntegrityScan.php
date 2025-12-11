@@ -2,9 +2,13 @@
 
 namespace App\Console\Commands;
 
+use App\Mail\FileIntegrityAlertMail;
+use App\Models\BaseSetting;
 use App\Models\FileIntegrityAudit;
+use App\Models\SecuritySetting;
 use App\Services\FileIntegrityService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Mail;
 
 class IntegrityScan extends Command
 {
@@ -16,7 +20,8 @@ class IntegrityScan extends Command
     protected $signature = 'dls:integrity:scan
                             {--scope=core : スキャン対象 (core, plugin, theme, all)}
                             {--identifier= : プラグイン名またはテーマ名}
-                            {--json : 結果をJSON形式で出力}';
+                            {--json : 結果をJSON形式で出力}
+                            {--scheduled : スケジュール実行フラグ}';
 
     /**
      * The console command description.
@@ -51,11 +56,20 @@ class IntegrityScan extends Command
             $this->output->write(__('command.integrity.scanning'));
         }
 
-        // スキャン実行
+        // スキャン実行（スケジュール実行の場合はTRIGGER_SCHEDULE）
+        $trigger = $this->option('scheduled') 
+            ? FileIntegrityAudit::TRIGGER_SCHEDULE 
+            : FileIntegrityAudit::TRIGGER_MANUAL;
+        
         $audit = $service->scanCore(
-            FileIntegrityAudit::TRIGGER_MANUAL,
+            $trigger,
             FileIntegrityAudit::INITIATED_BY_CLI
         );
+
+        // 問題が検出された場合はメール通知
+        if ($audit->hasIssues()) {
+            $this->sendAlertNotification($audit, $outputJson);
+        }
 
         if ($outputJson) {
             $this->outputJson($audit);
@@ -69,6 +83,45 @@ class IntegrityScan extends Command
         $this->displayResult($audit);
 
         return $audit->hasIssues() ? Command::FAILURE : Command::SUCCESS;
+    }
+
+    /**
+     * アラート通知を送信
+     */
+    protected function sendAlertNotification(FileIntegrityAudit $audit, bool $outputJson): void
+    {
+        // 通知が有効かチェック
+        $notificationEnabled = filter_var(
+            SecuritySetting::get('notification_enabled', true),
+            FILTER_VALIDATE_BOOLEAN
+        );
+
+        if (!$notificationEnabled) {
+            if (!$outputJson) {
+                $this->line(__('command.integrity.notification_disabled'));
+            }
+            return;
+        }
+
+        // 通知先メールアドレスを取得
+        $notificationEmail = BaseSetting::getValue('notification_email');
+        if (empty($notificationEmail)) {
+            if (!$outputJson) {
+                $this->warn(__('command.integrity.no_notification_email'));
+            }
+            return;
+        }
+
+        try {
+            Mail::to($notificationEmail)->send(new FileIntegrityAlertMail($audit));
+            if (!$outputJson) {
+                $this->info(__('command.integrity.notification_sent', ['email' => $notificationEmail]));
+            }
+        } catch (\Exception $e) {
+            if (!$outputJson) {
+                $this->error(__('command.integrity.notification_failed', ['error' => $e->getMessage()]));
+            }
+        }
     }
 
     /**

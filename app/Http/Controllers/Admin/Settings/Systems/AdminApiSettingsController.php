@@ -20,7 +20,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Controllers\Admin\Settings;
+namespace App\Http\Controllers\Admin\Settings\Systems;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\ApiKey;
@@ -69,7 +69,7 @@ class AdminApiSettingsController extends AdminLoggedInController
         $this->viewParams['settings'] = $settings;
         $this->viewParams['availableScopes'] = $availableScopes;
         
-        return view('admin.settings.api.index', $this->viewParams);
+        return view('admin.settings.systems.api.index', $this->viewParams);
     }
 
     /**
@@ -92,8 +92,8 @@ class AdminApiSettingsController extends AdminLoggedInController
             'settings' => $validated,
         ]);
         
-        return redirect()->route('admin.settings.api')
-            ->with('success', __('admin.settings.api.update_success'));
+        return redirect()->route('admin.settings.systems.api')
+            ->with('success', __('admin.settings.systems.api.update_success'));
     }
 
     /**
@@ -145,8 +145,8 @@ class AdminApiSettingsController extends AdminLoggedInController
         session()->flash('generated_key', $result['plain_key']);
         session()->flash('generated_key_id', $result['model']->id);
         
-        return redirect()->route('admin.settings.api')
-            ->with('success', __('admin.settings.api.key_generated'));
+        return redirect()->route('admin.settings.systems.api')
+            ->with('success', __('admin.settings.systems.api.key_generated'));
     }
 
     /**
@@ -165,8 +165,8 @@ class AdminApiSettingsController extends AdminLoggedInController
             'name' => $keyName,
         ]);
         
-        return redirect()->route('admin.settings.api')
-            ->with('success', __('admin.settings.api.key_revoked'));
+        return redirect()->route('admin.settings.systems.api')
+            ->with('success', __('admin.settings.systems.api.key_revoked'));
     }
 
     /**
@@ -204,7 +204,7 @@ class AdminApiSettingsController extends AdminLoggedInController
         session()->flash('generated_key', $result['plain_key']);
         session()->flash('generated_key_id', $result['model']->id);
         
-        return redirect()->route('admin.settings.api')
-            ->with('success', __('admin.settings.api.key_regenerated'));
+        return redirect()->route('admin.settings.systems.api')
+            ->with('success', __('admin.settings.systems.api.key_regenerated'));
     }
 }
