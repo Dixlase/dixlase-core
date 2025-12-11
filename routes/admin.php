@@ -35,7 +35,8 @@ use App\Http\Controllers\Admin\Auth\AdminVerifyEmailController;
 use App\Http\Controllers\Admin\Settings\AdminBaseSettingsController;
 use App\Http\Controllers\Admin\Settings\AdminPluginsSettingsController;
 use App\Http\Controllers\Admin\Settings\AdminSecuritySettingsController;
-use App\Http\Controllers\Admin\Settings\AdminApiSettingsController;
+use App\Http\Controllers\Admin\Settings\Security;
+use App\Http\Controllers\Admin\Settings\Systems\AdminApiSettingsController;
 use App\Http\Controllers\Admin\Settings\AdminMembersSettingsController;
 use App\Http\Controllers\Admin\Settings\AdminThemesSettingsController;
 use App\Http\Controllers\Admin\Settings\AdminSystemsController;
@@ -193,39 +194,59 @@ Route::prefix($adminUrl)->name('admin.')
             });
 
             // セキュリティ設定（権限チェック付き）
-            Route::middleware('check.menu.access:settings.security')->group(function () {
-                Route::get('/settings/security', [AdminSecuritySettingsController::class, 'index'])->name('settings.security');
-                Route::post('/settings/security', [AdminSecuritySettingsController::class, 'update'])
+            Route::middleware('check.menu.access:settings.security')->prefix('settings/security')->name('settings.security.')->group(function () {
+                // 概要
+                Route::get('/', [Security\AdminSecurityIndexController::class, 'index'])->name('index');
+                
+                // 認証・セッション
+                Route::get('/auth', [Security\AdminSecurityAuthController::class, 'index'])->name('auth');
+                Route::post('/auth', [Security\AdminSecurityAuthController::class, 'update'])
                     ->middleware('check.menu.edit:settings.security')
-                    ->name('settings.security.update');
-                Route::post('/settings/security/test-captcha', [AdminSecuritySettingsController::class, 'testCaptcha'])->name('settings.security.test-captcha');
-                Route::post('/settings/security/validate-captcha-widget', [AdminSecuritySettingsController::class, 'validateCaptchaWidget'])->name('settings.security.validate-captcha-widget');
-                Route::post('/settings/security/reset-captcha-test', [AdminSecuritySettingsController::class, 'resetCaptchaTest'])->name('settings.security.reset-captcha-test');
-                Route::post('/settings/security/clear-captcha-test', [AdminSecuritySettingsController::class, 'clearCaptchaTest'])->name('settings.security.clear-captcha-test');
-                // ファイル整合性チェック
-                Route::post('/settings/security/scan-integrity', [AdminSecuritySettingsController::class, 'scanFileIntegrity'])->name('settings.security.scan-integrity');
-                Route::post('/settings/security/regenerate-baseline', [AdminSecuritySettingsController::class, 'regenerateBaseline'])->name('settings.security.regenerate-baseline');
+                    ->name('auth.update');
+                
+                // CAPTCHA
+                Route::get('/captcha', [Security\AdminSecurityCaptchaController::class, 'index'])->name('captcha');
+                Route::post('/captcha', [Security\AdminSecurityCaptchaController::class, 'update'])
+                    ->middleware('check.menu.edit:settings.security')
+                    ->name('captcha.update');
+                Route::post('/captcha/validate-widget', [Security\AdminSecurityCaptchaController::class, 'validateWidget'])->name('captcha.validate-widget');
+                Route::post('/captcha/clear-test', [Security\AdminSecurityCaptchaController::class, 'clearTest'])->name('captcha.clear-test');
+                
+                // IPアクセス制御
+                Route::get('/ip', [Security\AdminSecurityIpController::class, 'index'])->name('ip');
+                Route::post('/ip', [Security\AdminSecurityIpController::class, 'update'])
+                    ->middleware('check.menu.edit:settings.security')
+                    ->name('ip.update');
+                
+                // 拡張機能セキュリティ
+                Route::get('/extensions', [Security\AdminSecurityExtensionsController::class, 'index'])->name('extensions');
+                Route::post('/extensions', [Security\AdminSecurityExtensionsController::class, 'update'])
+                    ->middleware('check.menu.edit:settings.security')
+                    ->name('extensions.update');
+                
+                // CSP
+                Route::get('/csp', [Security\AdminSecurityCspController::class, 'index'])->name('csp');
+                Route::post('/csp', [Security\AdminSecurityCspController::class, 'update'])
+                    ->middleware('check.menu.edit:settings.security')
+                    ->name('csp.update');
+                
+                // 通知
+                Route::get('/notifications', [Security\AdminSecurityNotificationsController::class, 'index'])->name('notifications');
+                Route::post('/notifications', [Security\AdminSecurityNotificationsController::class, 'update'])
+                    ->middleware('check.menu.edit:settings.security')
+                    ->name('notifications.update');
+                
+                // ファイル整合性
+                Route::get('/integrity', [Security\AdminSecurityIntegrityController::class, 'index'])->name('integrity');
+                Route::post('/integrity/scan', [Security\AdminSecurityIntegrityController::class, 'scan'])
+                    ->middleware('check.menu.edit:settings.security')
+                    ->name('integrity.scan');
+                Route::post('/integrity/regenerate-baseline', [Security\AdminSecurityIntegrityController::class, 'regenerateBaseline'])
+                    ->middleware('check.menu.edit:settings.security')
+                    ->name('integrity.regenerate-baseline');
+                Route::get('/integrity/{audit}', [Security\AdminSecurityIntegrityController::class, 'show'])->name('integrity.show');
             });
 
-            // API設定（権限チェック付き）
-            Route::middleware('check.menu.access:settings.api')->group(function () {
-                Route::get('/settings/api', [AdminApiSettingsController::class, 'index'])->name('settings.api');
-                Route::post('/settings/api', [AdminApiSettingsController::class, 'update'])
-                    ->middleware('check.menu.edit:settings.api')
-                    ->name('settings.api.update');
-                // APIキー生成
-                Route::post('/settings/api/generate-key', [AdminApiSettingsController::class, 'generateKey'])
-                    ->middleware('check.menu.edit:settings.api')
-                    ->name('settings.api.generate-key');
-                // APIキー削除
-                Route::delete('/settings/api/revoke-key/{id}', [AdminApiSettingsController::class, 'revokeKey'])
-                    ->middleware('check.menu.edit:settings.api')
-                    ->name('settings.api.revoke-key');
-                // APIキー再生成
-                Route::post('/settings/api/regenerate-key/{id}', [AdminApiSettingsController::class, 'regenerateKey'])
-                    ->middleware('check.menu.edit:settings.api')
-                    ->name('settings.api.regenerate-key');
-            });
 
             // メンバー管理（権限チェック付き）
             Route::middleware('check.menu.access:settings.members')->group(function () {
@@ -341,6 +362,21 @@ Route::prefix($adminUrl)->name('admin.')
 
             // システム設定（権限チェック付き）
             Route::middleware('check.menu.access:settings.systems')->group(function () {
+                // API管理
+                Route::get('/settings/systems/api', [AdminApiSettingsController::class, 'index'])->name('settings.systems.api');
+                Route::post('/settings/systems/api', [AdminApiSettingsController::class, 'update'])
+                    ->middleware('check.menu.edit:settings.systems')
+                    ->name('settings.systems.api.update');
+                Route::post('/settings/systems/api/generate-key', [AdminApiSettingsController::class, 'generateKey'])
+                    ->middleware('check.menu.edit:settings.systems')
+                    ->name('settings.systems.api.generate-key');
+                Route::delete('/settings/systems/api/revoke-key/{id}', [AdminApiSettingsController::class, 'revokeKey'])
+                    ->middleware('check.menu.edit:settings.systems')
+                    ->name('settings.systems.api.revoke-key');
+                Route::post('/settings/systems/api/regenerate-key/{id}', [AdminApiSettingsController::class, 'regenerateKey'])
+                    ->middleware('check.menu.edit:settings.systems')
+                    ->name('settings.systems.api.regenerate-key');
+
                 //キャッシュ管理
                 Route::get('/settings/systems/cache', [AdminSystemsController::class, 'cache'])->name('settings.systems.cache');
                 Route::post('/settings/systems/cache/clear', [AdminSystemsController::class, 'clearCache'])

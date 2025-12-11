@@ -444,5 +444,27 @@ Clicking this link will complete the full mail functionality test.',
         'auto_notification' => 'This notification was sent automatically based on security settings.',
     ],
     
+    // File Integrity Alert Email
+    'file_integrity' => [
+        'subject' => '[:site_name] File Integrity Alert - :status',
+        'title' => 'File Integrity Alert',
+        'greeting' => 'A file integrity check on :site_name has detected issues.',
+        'intro' => 'Scan result: :status',
+        'scan_info' => 'Scan Information',
+        'scan_date' => 'Scan Date',
+        'status' => 'Status',
+        'status_critical' => 'Critical',
+        'status_warning' => 'Warning',
+        'status_unknown' => 'Unknown',
+        'files_scanned' => 'Files Scanned',
+        'issues_summary' => 'Issues Detected',
+        'changed_files' => 'Changed Files',
+        'added_files' => 'Added Files',
+        'removed_files' => 'Removed Files',
+        'suspicious_files' => 'Suspicious Files',
+        'action_required' => 'Please review the details and take action if necessary.',
+        'view_details_button' => 'View Details',
+        'thanks' => 'Best regards',
+    ],
 
 ];

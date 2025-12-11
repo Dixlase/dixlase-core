@@ -509,5 +509,11 @@ return [
         'app_version' => 'アプリバージョン',
         'hash_algo' => 'ハッシュアルゴリズム',
         'generated_at' => '生成日時',
+
+        // 通知関連
+        'notification_disabled' => '通知機能が無効になっています。',
+        'no_notification_email' => '通知先メールアドレスが設定されていません。',
+        'notification_sent' => 'アラート通知を送信しました: :email',
+        'notification_failed' => '通知の送信に失敗しました: :error',
     ],
 ];

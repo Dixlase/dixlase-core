@@ -509,6 +509,12 @@ return [
         'app_version' => 'App version',
         'hash_algo' => 'Hash algorithm',
         'generated_at' => 'Generated at',
+
+        // Notification
+        'notification_disabled' => 'Notification is disabled.',
+        'no_notification_email' => 'Notification email address is not configured.',
+        'notification_sent' => 'Alert notification sent to: :email',
+        'notification_failed' => 'Failed to send notification: :error',
     ],
 
 ];

@@ -99,14 +99,50 @@ return [
                     'icon' => 'fas fa-fw fa-gear',
                 ],
                 'security' => [
-                    'text' => 'admin.nav.settings.security',
-                    'route' => 'admin.settings.security',
+                    'text' => 'admin.nav.settings.security.text',
                     'icon' => 'fas fa-fw fa-shield-alt',
-                ],
-                'api' => [
-                    'text' => 'admin.nav.settings.api',
-                    'route' => 'admin.settings.api',
-                    'icon' => 'fas fa-fw fa-key',
+                    'children' => [
+                        'index' => [
+                            'text' => 'admin.nav.settings.security.index',
+                            'route' => 'admin.settings.security.index',
+                            'icon' => 'fas fa-fw fa-tachometer-alt',
+                        ],
+                        'auth' => [
+                            'text' => 'admin.nav.settings.security.auth',
+                            'route' => 'admin.settings.security.auth',
+                            'icon' => 'fas fa-fw fa-user-lock',
+                        ],
+                        'captcha' => [
+                            'text' => 'admin.nav.settings.security.captcha',
+                            'route' => 'admin.settings.security.captcha',
+                            'icon' => 'fas fa-fw fa-robot',
+                        ],
+                        'ip' => [
+                            'text' => 'admin.nav.settings.security.ip',
+                            'route' => 'admin.settings.security.ip',
+                            'icon' => 'fas fa-fw fa-network-wired',
+                        ],
+                        'extensions' => [
+                            'text' => 'admin.nav.settings.security.extensions',
+                            'route' => 'admin.settings.security.extensions',
+                            'icon' => 'fas fa-fw fa-puzzle-piece',
+                        ],
+                        'csp' => [
+                            'text' => 'admin.nav.settings.security.csp',
+                            'route' => 'admin.settings.security.csp',
+                            'icon' => 'fas fa-fw fa-code',
+                        ],
+                        'notifications' => [
+                            'text' => 'admin.nav.settings.security.notifications',
+                            'route' => 'admin.settings.security.notifications',
+                            'icon' => 'fas fa-fw fa-bell',
+                        ],
+                        'integrity' => [
+                            'text' => 'admin.nav.settings.security.integrity',
+                            'route' => 'admin.settings.security.integrity',
+                            'icon' => 'fas fa-fw fa-file-shield',
+                        ],
+                    ]
                 ],
                 'members' => [
                     'text' => 'admin.nav.settings.members.text',
@@ -179,6 +215,11 @@ return [
                             'text' => 'admin.nav.settings.systems.database',
                             'route' => 'admin.settings.systems.database',
                             'icon' => 'fas fa-fw fa-database',
+                        ],
+                        'api' => [
+                            'text' => 'admin.nav.settings.systems.api',
+                            'route' => 'admin.settings.systems.api',
+                            'icon' => 'fas fa-fw fa-key',
                         ],
                         'logs' => [
                             'text' => 'admin.nav.settings.systems.logs',
