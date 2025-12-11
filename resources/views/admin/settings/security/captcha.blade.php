@@ -38,19 +38,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <!-- CAPTCHA設定 -->
         <section>
-            <h2>{{ __('admin.settings.security.recaptcha_settings') }}</h2>
-            <p>{{ __('admin.settings.security.recaptcha_settings_description') }}</p>
+            <h2>{{ __('admin.settings.security.captcha.title') }}</h2>
+            <p>{{ __('admin.settings.security.captcha.description') }}</p>
             
             <!-- CAPTCHA test required notice for enabled CAPTCHA -->
             @if($settings['captcha_enabled'] && !$captchaTestResult)
                 <x-message
                     type="warning"
-                    :message="__('admin.settings.security.captcha_test_required')"
+                    :message="__('admin.settings.security.captcha.test_required')"
                 />
             @endif
             
             <x-form.toggle
-                :label="__('admin.settings.security.captcha_enabled')"
+                :label="__('admin.settings.security.captcha.enabled')"
                 id="captcha_enabled"
                 name="captcha_enabled"
                 :checked="old('captcha_enabled', $settings['captcha_enabled'])"
@@ -60,10 +60,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="mt-4 space-y-4" :class="{ 'opacity-50 pointer-events-none': !captchaEnabled }">
                 <x-form.label
                     for="captcha_driver"
-                    :text="__('admin.settings.security.captcha_driver')"
+                    :text="__('admin.settings.security.captcha.driver')"
                 />
                 <x-form.select
-                    :label="__('admin.settings.security.captcha_driver')"
+                    :label="__('admin.settings.security.captcha.driver')"
                     id="captcha_driver"
                     name="captcha_driver"
                     :value="old('captcha_driver', $settings['captcha_driver'])"
@@ -80,7 +80,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <!-- Common CAPTCHA Settings -->
                 <x-form.label
                     for="captcha_site_key"
-                    :text="__('admin.settings.security.captcha_site_key')"
+                    :text="__('admin.settings.security.captcha.site_key')"
                 />
                 <x-form.text
                     id="captcha_site_key"
@@ -94,8 +94,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 />
 
                 <label for="captcha_secret_key" class="form-label text-lg" 
-                       x-text="captchaDriver === 'google_enterprise' ? '{{ __("admin.settings.security.captcha_google_enterprise_secret_key") }}' : '{{ __("admin.settings.security.captcha_secret_key") }}'">
-                    {{ __('admin.settings.security.captcha_secret_key') }}
+                       x-text="captchaDriver === 'google_enterprise' ? '{{ __("admin.settings.security.captcha.google_enterprise_secret_key") }}' : '{{ __("admin.settings.security.captcha.secret_key") }}'">
+                    {{ __('admin.settings.security.captcha.secret_key') }}
                 </label>
                 <x-form.text
                     id="captcha_secret_key"
@@ -112,13 +112,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div x-show="captchaDriver === 'google'">
                     <x-form.label
                         for="captcha_google_version"
-                        :text="__('admin.settings.security.captcha_google_version')"
+                        :text="__('admin.settings.security.captcha.google_version')"
                     />
                     <x-form.select
                         id="captcha_google_version"
                         name="captcha_google_version"
                         :value="old('captcha_google_version', $settings['captcha_google_version'])"
-                        :options="__('admin.settings.security.captcha_version_options')"
+                        :options="__('admin.settings.security.captcha.version_options')"
                         xModel="captchaVersion"
                         x-bind:disabled="!captchaEnabled"
                         class="input-common input-xl"
@@ -129,7 +129,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div x-show="captchaDriver === 'google_enterprise'">
                     <x-form.label
                         for="captcha_google_project_id"
-                        :text="__('admin.settings.security.captcha_google_project_id')"
+                        :text="__('admin.settings.security.captcha.google_project_id')"
                     />
                     <x-form.text
                         id="captcha_google_project_id"
@@ -146,7 +146,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div x-show="(captchaDriver === 'google' && captchaVersion === 'v3') || captchaDriver === 'google_enterprise'" class="mt-4">
                     <x-form.label
                         for="captcha_google_min_score"
-                        :text="__('admin.settings.security.captcha_google_min_score')"
+                        :text="__('admin.settings.security.captcha.google_min_score')"
                     />
                     <x-form.text
                         id="captcha_google_min_score"
@@ -158,30 +158,30 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         class="input-common input-sm"
                     />
                     <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        {{ __('admin.settings.security.captcha_min_score_description') }}
+                        {{ __('admin.settings.security.captcha.min_score_description') }}
                     </p>
                 </div>
 
                 <!-- CAPTCHA認証テストセクション -->
                 <div class="mt-6" x-show="captchaEnabled" id="captcha-test-section">
                     <div class="p-4 border rounded-lg bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-                        <h3 class="font-semibold text-gray-900 dark:text-white mb-3">{{ __('admin.settings.security.captcha_test_title') }}</h3>
+                        <h3 class="font-semibold text-gray-900 dark:text-white mb-3">{{ __('admin.settings.security.captcha.live_validation') }}</h3>
                         
                         @if($captchaTestResult)
                             <div class="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                                 <div class="flex items-center text-green-600 dark:text-green-400">
                                     <i class="fas fa-check-circle mr-2"></i>
-                                    <span>{{ __('admin.settings.security.captcha_test_passed') }}</span>
+                                    <span>{{ __('admin.settings.security.captcha.validation_success') }}</span>
                                 </div>
                             </div>
                         @else
                             <div class="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg mb-3">
                                 <div class="flex items-center text-yellow-600 dark:text-yellow-400">
                                     <i class="fas fa-exclamation-triangle mr-2"></i>
-                                    <span>{{ __('admin.settings.security.captcha_test_required_title') }}</span>
+                                    <span>{{ __('admin.settings.security.captcha.test_required_title') }}</span>
                                 </div>
                                 <p class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
-                                    {{ __('admin.settings.security.captcha_test_required_description') }}
+                                    {{ __('admin.settings.security.captcha.test_required_description') }}
                                 </p>
                             </div>
                             
@@ -206,7 +206,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     onclick="validateCaptchaWidget()"
                                     x-show="captchaEnabled && captchaDriver && captchaSiteKey && captchaSecretKey"
                                     :disabled="!captchaEnabled || !captchaDriver || !captchaSiteKey || !captchaSecretKey">
-                                {{ __('admin.settings.security.captcha_validate_button') }}
+                                {{ __('admin.settings.security.captcha.validate_button') }}
                             </button>
                         @endif
                     </div>
@@ -240,7 +240,7 @@ function validateCaptchaWidget() {
     const secretKey = document.getElementById('captcha_secret_key').value;
     
     if (!driver || !siteKey || !secretKey) {
-        showTestResult('error', '{{ __("admin.settings.security.captcha_required_fields_empty") }}');
+        showTestResult('error', '{{ __("admin.settings.security.captcha.required_fields_empty") }}');
         return;
     }
     
@@ -334,7 +334,7 @@ function validateToken(token) {
         }
     })
     .catch(error => {
-        showTestResult('error', '{{ __("admin.settings.security.captcha_validation_error") }}');
+        showTestResult('error', '{{ __("admin.settings.security.captcha.validation_error") }}');
     });
 }
 
@@ -350,12 +350,12 @@ function showTestResult(type, message) {
         resultDiv.className = 'mb-4 p-3 border rounded-lg bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
         icon.className = 'fas fa-check-circle text-green-500 text-xl mr-3';
         title.className = 'font-semibold text-green-700 dark:text-green-300';
-        title.textContent = '{{ __("admin.settings.security.captcha_test_success") }}';
+        title.textContent = '{{ __("admin.settings.security.captcha.authentication_success_title") }}';
     } else {
         resultDiv.className = 'mb-4 p-3 border rounded-lg bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800';
         icon.className = 'fas fa-times-circle text-red-500 text-xl mr-3';
         title.className = 'font-semibold text-red-700 dark:text-red-300';
-        title.textContent = '{{ __("admin.settings.security.captcha_test_failed") }}';
+        title.textContent = '{{ __("admin.settings.security.captcha.authentication_failed_title") }}';
     }
     
     msg.textContent = message;

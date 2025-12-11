@@ -470,27 +470,11 @@ return [
         // セキュリティ
         'security' => [
             'heading' => 'セキュリティ設定',
-            // 各ページのheading
+            
+            // ========================================
+            // 概要ページ (index)
+            // ========================================
             'index' => [
-                'heading' => 'セキュリティ設定概要',
-            ],
-            'auth' => [
-                'heading' => '認証・セッション設定',
-            ],
-            'captcha' => [
-                'heading' => 'CAPTCHA設定',
-            ],
-            'ip' => [
-                'heading' => 'IPアクセス制御',
-            ],
-            'extensions' => [
-                'heading' => '拡張機能セキュリティ',
-            ],
-            'notifications' => [
-                'heading' => 'エラー通知設定',
-            ],
-            // 概要ページ
-            'overview' => [
                 'heading' => 'セキュリティ設定概要',
                 'description' => 'セキュリティ設定の概要と各機能の状態を確認できます。',
                 'session_driver' => 'セッションドライバー',
@@ -516,9 +500,380 @@ return [
                 'status' => 'ステータス',
                 'view_details' => '詳細を見る',
             ],
-            // ファイル整合性
+            
+            // ========================================
+            // 認証・セッション設定ページ (auth)
+            // ========================================
+            'auth' => [
+                'heading' => '認証・セッション設定',
+                // セッション管理
+                'session_management' => 'セッション管理設定',
+                'session_management_description' => 'システム全体のセッション設定を管理します。',
+                'session_driver' => 'セッションドライバー',
+                'session_driver_help' => 'セッションデータの保存方法を選択してください。',
+                'session_driver_file' => 'ファイル',
+                'session_driver_database' => 'データベース',
+                'session_driver_redis' => 'Redis',
+                'session_driver_memcached' => 'Memcached',
+                'session_driver_cookie' => 'Cookie',
+                'session_driver_array' => 'Array（テスト用）',
+                'session_encrypt' => 'セッション暗号化',
+                'session_encrypt_help' => 'セッションデータを暗号化して保存します。',
+                'session_lifetime' => 'デフォルトセッション有効時間',
+                'session_lifetime_help' => 'セッションの有効時間を分単位で設定してください（1-43200分）。',
+                // パスワードセキュリティ
+                'password_security_settings' => 'パスワードセキュリティ設定',
+                'password_security_description' => 'パスワードに関するセキュリティ設定を管理します。',
+                'pwned_password_check' => 'パスワード漏洩チェック',
+                'pwned_password_check_help' => 'パスワード設定時に漏洩データベースとの照合を行います。',
+                'pwned_password_api_info' => 'このチェックはHave I Been Pwned APIを使用します。パスワード自体は送信されず、SHA-1ハッシュの先頭5文字のみが使用されるため安全です。',
+                'pwned_password_settings' => 'パスワード辞書攻撃対策設定',
+                'pwned_password_description' => 'パスワードが漏洩データベースに含まれていないかをチェックし、安全でないパスワードの使用を防ぎます。',
+                'pwned_password_check_enabled' => '辞書攻撃対策',
+                'pwned_password_help' => '有効にすると、メンバー作成・編集・パスワード変更時にHave I Been Pwned APIを使用してパスワードの安全性をチェックします。',
+                'settings_updated' => '認証・セッション設定が更新されました。',
+            ],
+            
+            // ========================================
+            // CAPTCHA設定ページ (captcha)
+            // ========================================
+            'captcha' => [
+                'heading' => 'CAPTCHA設定',
+                'title' => 'CAPTCHA設定',
+                'description' => 'ボット対策のためのCAPTCHA（自動アクセス防止）設定を管理します。',
+                'enabled' => 'CAPTCHAを有効にする',
+                'driver' => 'CAPTCHAプロバイダー',
+                'site_key' => 'サイトキー',
+                'secret_key' => 'シークレットキー',
+                'google_site_key' => 'Google reCAPTCHA サイトキー',
+                'google_secret_key' => 'Google reCAPTCHA シークレットキー',
+                'google_enterprise_site_key' => 'Google reCAPTCHA Enterprise サイトキー',
+                'google_enterprise_secret_key' => 'APIキー',
+                'google_project_id' => 'Google Cloud プロジェクト ID',
+                'google_version' => 'reCAPTCHA バージョン',
+                'google_min_score' => '最小スコア (0.0-1.0)',
+                'turnstile_site_key' => 'Cloudflare Turnstile サイトキー',
+                'turnstile_secret_key' => 'Cloudflare Turnstile シークレットキー',
+                'min_score_description' => '0は最も疑わしく、1.0は最も信頼できることを示します。通常は0.5を推奨します。開発環境(localhost)では0に設定してください。',
+                // バリデーションメッセージ
+                'validation_error' => 'CAPTCHA検証中にエラーが発生しました。',
+                'button_disabled_reason' => 'キーエラーのため無効化されています',
+                'enter_site_key' => 'サイトキーを入力してください',
+                'invalid_v3_site_key' => 'v3サイトキーが無効です。正しいv3用のキーを入力してください。',
+                'required_fields_missing' => '必要なフォーム要素が見つかりません',
+                'required_fields_empty' => '必須フィールドが入力されていません',
+                'enterprise_project_id_required' => 'reCAPTCHA EnterpriseにはプロジェクトIDが必要です',
+                'unsupported_version' => 'サポートされていないreCAPTCHAバージョンです',
+                'unsupported_provider' => 'サポートされていないCAPTCHAプロバイダーです',
+                'authentication_success' => 'CAPTCHA認証が成功しました',
+                'authentication_failed' => 'CAPTCHA認証に失敗しました',
+                'v3_execution_failed' => 'reCAPTCHA v3の実行に失敗しました',
+                'v3_script_load_failed' => 'reCAPTCHA v3スクリプトの読み込みに失敗しました',
+                'v2_invisible_error' => 'reCAPTCHA v2 invisibleでエラーが発生しました',
+                'v2_script_load_failed' => 'reCAPTCHA v2スクリプトの読み込みに失敗しました',
+                'v2_checkbox_instruction' => 'チェックボックスをクリックして認証を完了してください。',
+                'v2_checkbox_error' => 'reCAPTCHA v2 checkboxでエラーが発生しました',
+                'v2_widget_render_failed' => 'reCAPTCHA v2ウィジェットのレンダリングに失敗しました',
+                'turnstile_error' => 'Turnstileでエラーが発生しました',
+                'turnstile_script_load_failed' => 'Turnstileスクリプトの読み込みに失敗しました',
+                'enterprise_execution_failed' => 'reCAPTCHA Enterpriseの実行に失敗しました',
+                'enterprise_script_load_failed' => 'reCAPTCHA Enterpriseスクリプトの読み込みに失敗しました',
+                // テスト関連
+                'test_completed_successfully' => 'CAPTCHAの認証テストが正常に完了しています。',
+                'test_completed_hint' => '管理画面へのログインでCAPTCHAを使用するには<a href=":members_url" class="text-blue-600 dark:text-blue-400 hover:underline">メンバー全体設定</a>で有効にしてください。<br>プラグインでCAPTCHAを使用する場合は各プラグインの設定で有効にしてください。',
+                'authentication_success_title' => '認証成功',
+                'authentication_failed_title' => '認証失敗',
+                'expired_message' => 'CAPTCHA認証が期限切れです。再度実行してください。',
+                'site_key_project_id_missing' => 'サイトキーまたはプロジェクトIDが設定されていません',
+                'server_communication_failed' => 'サーバーとの通信に失敗しました',
+                'provider_settings_check' => 'の設定を確認',
+                'test_required_title' => '認証テストが必要です',
+                'test_required_description' => 'CAPTCHAを使用できるようにするには認証テストを行い、認証に成功する必要があります。',
+                'provider_setup_link' => 'プロバイダー設定ページ',
+                // テストサービスメッセージ
+                'test_unsupported_driver' => 'サポートされていないCAPTCHAドライバーです',
+                'test_system_error' => 'システムエラーによりテストに失敗しました',
+                'test_keys_missing' => 'サイトキーまたはシークレットキーが不足しています',
+                'test_enterprise_keys_missing' => 'サイトキー、シークレットキー、またはプロジェクトIDが不足しています',
+                'test_enterprise_config_invalid' => 'Google reCAPTCHA Enterpriseの設定が無効です',
+                'test_enterprise_success' => 'Google reCAPTCHA Enterpriseの設定テストが成功しました',
+                'test_enterprise_api_failed' => 'Enterprise APIテストに失敗しました',
+                'test_api_request_failed' => 'APIリクエストが失敗しました。ステータス',
+                'test_invalid_secret_key' => 'シークレットキーが無効です',
+                'test_turnstile_success' => 'Cloudflare Turnstile接続テストが成功しました',
+                'test_invalid_site_key_format' => 'サイトキーの形式が無効です。Google reCAPTCHAサイトキーは「6」で始まる40文字である必要があります。',
+                'test_key_version_mismatch_v2_to_v3' => 'キータイプの不一致: v3が設定されていますが、これはv2キーのようです。reCAPTCHAバージョン設定を確認してください。',
+                'test_key_version_mismatch_v3_to_v2' => 'キータイプの不一致: v2が設定されていますが、これはv3キーのようです。reCAPTCHAバージョン設定を確認してください。',
+                'test_invalid_secret_verify' => 'シークレットキーが無効です。正しいシークレットキーを入力してください。',
+                'test_bad_request' => 'リクエストが無効です。選択されたバージョンに対してリクエスト形式が正しくない可能性があります。',
+                'form_settings' => 'CAPTCHAを使用するフォーム',
+                'forms' => [
+                    'admin_login' => '管理画面ログイン',
+                ],
+                'turnstile_errors' => [
+                    'missing-input-secret' => 'シークレットパラメータが不足しています',
+                    'invalid-input-secret' => 'シークレットパラメータが無効または形式が正しくありません',
+                    'missing-input-response' => 'レスポンスパラメータが不足しています',
+                    'invalid-input-response' => 'レスポンスパラメータが無効または形式が正しくありません',
+                    'bad-request' => 'リクエストが無効または形式が正しくありません',
+                    'timeout-or-duplicate' => 'レスポンスが無効です：期限切れまたは既に使用されています',
+                    'internal-error' => 'レスポンス検証中に内部エラーが発生しました',
+                ],
+                'test_required' => 'CAPTCHA認証が完了してません。CAPTCHAを使用するには認証を実行して成功する必要があります。',
+                'test_button' => '接続テスト',
+                'test_status' => [
+                    'not_tested' => '接続テスト未実行。CAPTCHAを有効にする場合は、各項目を入力し、接続テストを完了させてください。',
+                    'not_tested_with_provider' => '接続テスト未実行。CAPTCHAを有効にする場合は、各項目を入力し、接続テストを完了させてください。<br>選択中: :provider （<a href=":link" target="_blank" class="text-blue-600 hover:text-blue-800 underline">設定方法を確認</a>）',
+                    'setup_link_text' => ':providerの設定を確認',
+                    'selected_provider' => '選択中',
+                    'passed_initial' => '接続テスト実行済み',
+                    'passed_success' => '接続テストが成功しました！保存するとCAPTCHAが使用できます。',
+                    'failed' => '接続テストに失敗しました。各項目やプロバイダの設定内容をご確認ください。',
+                    'testing' => '接続テスト中...',
+                ],
+                'live_validation' => 'CAPTCHA認証テスト',
+                'live_validation_description' => 'CAPTCHAを有効にするには、保存前に認証テストを完了させてください。',
+                'validation_required' => 'CAPTCHA認証が未完了です',
+                'validate_button' => 'CAPTCHA認証を実行',
+                'validation_success' => 'CAPTCHA認証が成功しました',
+                'validation_failed' => 'CAPTCHA認証に失敗しました',
+                'validation_required_before_save' => 'CAPTCHAが有効な場合、設定を保存する前にCAPTCHA認証を完了してください。',
+                'test_validation' => 'CAPTCHAを使用するには認証テストが必要です',
+                'test_validation_description' => '保存するとCAPTCHAを使用できます。',
+                'validation_success_with_score' => 'CAPTCHA認証が成功しました (スコア: :score)。保存するとCAPTCHAが使用できるようになります。',
+                'validation_score_too_low' => 'CAPTCHAスコアが低すぎます: :score (最小値: :min_score)',
+                'validation_failed_with_errors' => 'CAPTCHA認証に失敗しました: :errors',
+                'api_connection_failed' => 'reCAPTCHA APIへの接続に失敗しました',
+                'driver_unsupported' => 'サポートされていないCAPTCHAドライバーです',
+                'version_options' => [
+                    'v3' => 'v3 (推奨 - 非対話型)',
+                    'v2_checkbox' => 'v2 チェックボックス',
+                    'v2_invisible' => 'v2 非表示',
+                ],
+                'settings_updated' => 'CAPTCHA設定が更新されました。',
+                'token_required' => 'CAPTCHAトークンが必要です',
+            ],
+            
+            // ========================================
+            // IPアクセス制御ページ (ip)
+            // ========================================
+            'ip' => [
+                'heading' => 'IPアクセス制御',
+                'title' => 'IPアクセス制御設定',
+                'description' => 'システムへのIPアドレスベースのアクセス制御を設定します。',
+                // 管理画面IP制御
+                'admin_access_control' => '管理画面IPアクセス制御設定',
+                'admin_url' => '管理画面URL',
+                'enable_allowed_admin_ips' => '特定のIPアドレスのみアクセスを許可',
+                'allowed_admin_ips' => '許可IPアドレス',
+                'allowed_admin_ips_list' => '許可IPアドレスリスト',
+                'enable_blocked_admin_ips' => '特定のIPアドレスをブロック',
+                'blocked_admin_ips' => 'ブロックIPアドレス',
+                'blocked_admin_ips_list' => 'ブロックIPアドレスリスト',
+                'admin_ip_help' => 'IPアドレスまたはCIDR記法で入力してください。1行に1つずつ記入してください。例: 192.168.1.1 または 192.168.1.0/24',
+                // フロントIP制御
+                'front_access_control' => 'フロントIPアクセス制御設定',
+                'enable_allowed_front_ips' => '特定のIPアドレスのみアクセスを許可',
+                'allowed_front_ips' => '許可IPアドレス',
+                'allowed_front_ips_list' => '許可IPアドレスリスト',
+                'enable_blocked_front_ips' => '特定のIPアドレスをブロック',
+                'blocked_front_ips' => 'ブロックIPアドレス',
+                'blocked_front_ips_list' => 'ブロックIPアドレスリスト',
+                'front_ip_help' => 'IPアドレスまたはCIDR記法で入力してください。1行に1つずつ記入してください。例: 192.168.1.1 または 192.168.1.0/24',
+                'ip_list_placeholder' => '192.168.1.1
+192.168.1.0/24
+10.0.0.0/8',
+                'settings_updated' => 'IPアクセス制御設定が更新されました。',
+            ],
+            
+            // ========================================
+            // 拡張機能セキュリティページ (extensions)
+            // ========================================
+            'extensions' => [
+                'heading' => '拡張機能セキュリティ',
+                // 拡張機能セキュリティ設定
+                'security' => [
+                    'title' => '拡張機能セキュリティ設定',
+                    'description' => 'プラグインやテーマのインストール・有効化に関するセキュリティポリシーを設定します。',
+                    'preset_label' => 'セキュリティプリセット',
+                    'preset_help' => 'プリセットを選択すると、推奨される設定が自動的に適用されます。「カスタム」を選択すると個別に設定できます。',
+                    'dev_only' => '開発用',
+                    'custom_mode_hint' => '個別設定を変更するには「カスタム」プリセットを選択してください。',
+                    'preset' => [
+                        'strict' => '厳格モード',
+                        'strict_description' => '署名必須、権限定義必須。最も安全な設定です。',
+                        'balanced' => 'バランスモード',
+                        'balanced_description' => '署名推奨、「注意」レベルまで許可。一般的な運用に適しています。',
+                        'development' => '開発モード',
+                        'development_description' => '未署名・未定義も許可。開発・検証環境向けです。',
+                        'custom' => 'カスタム',
+                        'custom_description' => '個別に設定をカスタマイズできます。',
+                    ],
+                    'signature_settings' => '署名要件',
+                    'require_signature' => '署名を必須にする',
+                    'require_signature_help' => '有効にすると、署名されていないプラグインやテーマのインストール・有効化を禁止します。',
+                    'permission_settings' => '権限定義要件',
+                    'require_permission_definition' => '権限定義を必須にする',
+                    'require_permission_definition_help' => '有効にすると、plugin.json/theme.jsonに権限情報が定義されていない拡張機能のインストールを禁止します。',
+                    'allow_undefined_permissions' => '未定義の権限を許可する',
+                    'allow_undefined_permissions_help' => '権限情報が定義されていない拡張機能のインストールを許可します。警告は表示されます。',
+                    'plugin_health_level' => 'プラグインの許可健全性レベル',
+                    'plugin_health_level_help' => 'インストール・有効化を許可するプラグインの健全性レベルを設定します。',
+                    'theme_health_level' => 'テーマの許可健全性レベル',
+                    'theme_health_level_help' => 'インストール・有効化を許可するテーマの健全性レベルを設定します。',
+                    'current_setting' => '現在の設定',
+                    'health_level' => [
+                        'healthy' => '良好（Healthy）',
+                        'warning' => '注意（Warning）',
+                        'needs_attention' => '要確認（Needs Attention）',
+                        'not_verified' => '未確認（Not Verified）',
+                    ],
+                    'health_level_short' => [
+                        'healthy' => '良好',
+                        'warning' => '注意',
+                        'needs_attention' => '要確認',
+                        'not_verified' => '未確認',
+                    ],
+                    'health_level_description' => [
+                        'healthy' => '基本機能のみを使用する拡張機能です。最も安全な設定です。',
+                        'warning' => '一部の拡張機能を使用します。基本的な機能に加え、追加の権限が必要な拡張機能が対象です。',
+                        'needs_attention' => 'より多くの機能を使用します。データベースアクセスや外部通信を行う拡張機能が含まれます。',
+                        'not_verified' => '未確認の拡張機能も許可します。すべての拡張機能をインストール可能ですが、十分な確認をお勧めします。',
+                    ],
+                    'logic_themes' => 'ロジックを含むテーマ',
+                    'allow_logic_themes' => 'ロジックを含むテーマを許可する',
+                    'allow_logic_themes_help' => 'PHPロジック（ServiceProvider、ミドルウェア等）を含むテーマのインストールを許可します。',
+                    'theme_types_title' => 'テーマの種類について',
+                    'theme_type_pure' => 'ピュアテーマ: テンプレートファイル（Blade/HTML/CSS/JS）のみで構成。健全性チェックは軽め。',
+                    'theme_type_logic' => 'ロジックテーマ: ThemeServiceProviderでPHPロジックを実行。プラグインと同等のスキャン・権限制御を適用。',
+                    'permission_mismatch' => '権限不一致時の動作',
+                    'permission_mismatch_help' => '宣言された権限と実際のコードが一致しない場合の動作を設定します。',
+                    'mismatch_action' => [
+                        'warn' => '警告のみ',
+                        'warn_description' => '権限不一致を検出しても警告を表示するだけで、インストール・有効化は許可します。',
+                        'block' => 'ブロック',
+                        'block_description' => '権限不一致を検出した場合、インストール・有効化を禁止します。',
+                    ],
+                ],
+                // 拡張機能操作通知
+                'notification' => [
+                    'title' => '拡張機能操作通知',
+                    'description' => 'プラグインやテーマの操作時にシステム管理者へメール通知を送信します。通知先は基本設定のシステム管理者メールアドレスです。',
+                    'notify_on_install' => 'インストール時に通知',
+                    'notify_on_install_help' => 'プラグインやテーマがインストールされた時にメール通知を送信します。',
+                    'notify_on_uninstall' => 'アンインストール時に通知',
+                    'notify_on_uninstall_help' => 'プラグインやテーマがアンインストールされた時にメール通知を送信します。',
+                    'notify_on_enable' => '有効化時に通知',
+                    'notify_on_enable_help' => 'プラグインやテーマが有効化された時にメール通知を送信します。',
+                    'notify_on_disable' => '無効化時に通知',
+                    'notify_on_disable_help' => 'プラグインやテーマが無効化された時にメール通知を送信します。',
+                    'notify_on_unhealthy' => '健全性警告を通知',
+                    'notify_on_unhealthy_help' => '健全性が「良好」以外の拡張機能が追加・インストール・有効化された時に警告メールを送信します。',
+                    'log_operations' => '操作をログに記録',
+                    'log_operations_help' => '拡張機能の操作履歴をログファイルに記録します。',
+                ],
+                'settings_updated' => '拡張機能セキュリティ設定が更新されました。',
+            ],
+            
+            // ========================================
+            // エラー通知設定ページ (notifications)
+            // ========================================
+            'notifications' => [
+                'heading' => 'エラー通知設定',
+                'title' => 'システムエラー通知設定',
+                'description' => 'システムエラーやアプリケーションの問題が発生した際の通知設定を行います。',
+                'enabled' => 'エラー通知機能',
+                'enabled_help' => 'システムエラーが発生した際にメール通知を送信するかどうかを設定します。',
+                'log_levels' => '通知するログレベル',
+                'log_levels_help' => '通知を送信するログレベルを選択してください。重要度の高いエラーのみを通知することで、必要な情報だけを受け取れます。',
+                'mail_test_required' => 'エラー通知機能を使用するには、<a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">基本設定</a>でメールサーバー設定とメールテストをすべて完了してください。',
+                'log_level_options' => [
+                    'emergency' => 'Emergency（緊急）- システムが使用不可',
+                    'alert' => 'Alert（警告）- 即座に対応が必要',
+                    'critical' => 'Critical（重大）- 重大な状況',
+                    'error' => 'Error（エラー）- エラー状況だが動作継続',
+                    'warning' => 'Warning（注意）- 警告レベルの問題',
+                    'notice' => 'Notice（通知）- 正常だが注目すべき状況',
+                    'info' => 'Info（情報）- 一般的な情報メッセージ',
+                    'debug' => 'Debug（デバッグ）- デバッグ情報',
+                ],
+                'settings_updated' => 'エラー通知設定が更新されました。',
+            ],
+            
+            // ========================================
+            // CSP設定ページ (csp)
+            // ========================================
+            'csp' => [
+                'heading' => 'コンテンツセキュリティポリシー',
+                'title' => 'コンテンツセキュリティポリシー（CSP）',
+                'description' => 'CSPはブラウザに対してどのリソースを読み込み・実行してよいかを指示するセキュリティ機能です。XSS攻撃や不正なスクリプト実行を防ぎます。',
+                'enabled' => 'CSPを有効にする',
+                'enabled_help' => 'Content-Security-Policyヘッダーをレスポンスに付与します。',
+                'mode' => 'CSPモード',
+                'mode_help' => 'サイトのセキュリティレベルと開発のしやすさのバランスを選択してください。',
+                'recommended' => '推奨',
+                'mode_development' => '開発モード',
+                'mode_development_desc' => 'プラグイン・テーマ開発時に最適。すべてのスクリプトが動作し、違反はログに記録されます。',
+                'mode_development_feature1' => 'インラインJS・CSS、onclick等すべて許可',
+                'mode_development_feature2' => 'Report-Onlyモードで違反を記録',
+                'mode_development_feature3' => '開発完了後は標準モードへの移行を推奨',
+                'mode_standard' => '標準モード',
+                'mode_standard_desc' => '本番環境に推奨。nonce付きインラインのみ許可し、セキュリティと互換性のバランスを取ります。',
+                'mode_standard_feature1' => '素の<script>タグはブロック',
+                'mode_standard_feature2' => '@dixScript等のヘルパー経由ならOK',
+                'mode_standard_feature3' => 'ほとんどのプラグイン・テーマが動作',
+                'mode_strict' => '厳格モード',
+                'mode_strict_desc' => '最高レベルのセキュリティ。インラインスクリプトを一切許可しません。',
+                'mode_strict_feature1' => 'インラインJS・CSS完全禁止',
+                'mode_strict_feature2' => 'CSP Ready プラグイン・テーマのみ動作',
+                'mode_strict_feature3' => 'requires_inline_js: true のプラグインは有効化不可',
+                'log_violations' => '違反をログに記録',
+                'log_violations_help' => 'CSP違反をログファイル（csp_violations.log）に記録します。',
+                'trusted_domains' => '信頼済みドメイン',
+                'trusted_domains_help' => '外部リソースの読み込みを許可するドメインを1行に1つずつ入力してください。プラグインやテーマが必要とする外部CDN等を追加できます。',
+                'trusted_domains_placeholder' => 'https://cdn.example.com
+https://fonts.googleapis.com
+https://api.example.com',
+                'denied_domains' => '拒否ドメイン',
+                'denied_domains_help' => '外部リソースの読み込みを<strong>常にブロック</strong>するドメインを1行に1つずつ入力してください。<br>プラグインやテーマがこれらのドメインを使用しようとしても、CSPによりブロックされます。<br>ワイルドカード（例: <code>*.example.com</code>）も使用できます。',
+                'denied_domains_placeholder' => 'google-analytics.com
+*.doubleclick.net
+tracking.example.com',
+                'blocklist_check_title' => 'ブロックリスト照合',
+                'blocklist_check_description' => 'プラグイン・テーマのインストール・有効化時に、外部ドメインが既知の危険なドメインリストに含まれていないかチェックします。',
+                'blocklist_check_enabled' => 'ブロックリスト照合を有効にする',
+                'blocklist_action_label' => '検出時のアクション:',
+                'blocklist_action_warn' => '警告のみ',
+                'blocklist_action_warn_desc' => '（警告を表示するが、インストール・有効化は許可）',
+                'blocklist_action_block' => 'ブロック',
+                'blocklist_action_block_desc' => '（インストール・有効化を拒否）',
+                'blocklist_check_categories' => '照合するカテゴリ:',
+                'blocklist_sources_show' => '取得先URLを表示',
+                'blocklist_warning_title' => '危険なドメインが検出されました',
+                'blocklist_warning_message' => 'この拡張機能は以下の危険なドメインを使用しています:',
+                'blocklist_blocked_title' => 'インストールがブロックされました',
+                'blocklist_blocked_message' => 'この拡張機能は危険なドメインを使用しているため、インストールできません:',
+                'custom_directives' => 'カスタムディレクティブ',
+                'custom_directives_help' => '高度な設定が必要な場合、JSON形式でカスタムディレクティブを指定できます。',
+                'custom_directives_placeholder' => '{"script-src": ["https://example.com"], "connect-src": ["https://api.example.com"]}',
+                'what_is_csp' => 'CSPとは？',
+                'what_is_csp_description' => 'Content Security Policy（CSP）は、Webページで実行できるスクリプトや読み込めるリソースを制限するセキュリティ機能です。これにより、XSS（クロスサイトスクリプティング）攻撃やデータ漏洩のリスクを大幅に軽減できます。',
+                'nonce_explanation' => 'Dixlaseはnonce（使い捨てトークン）方式を採用しており、許可されたインラインスクリプトのみが実行されます。',
+                'badge_csp_ready' => 'CSP Ready',
+                'badge_inline_required' => 'Inline JS Required',
+                'badge_csp_ready_tooltip' => 'このプラグインはCSPに完全対応しています',
+                'badge_inline_required_tooltip' => 'このプラグインはインラインJSを必要とします。厳格モードでは使用できません。',
+                'strict_mode_blocked' => '厳格モードでは有効化できません',
+                'strict_mode_blocked_reason' => 'このプラグインはインラインJSを必要とするため、CSP厳格モードでは有効化できません。',
+                'settings_updated' => 'CSP設定が更新されました。',
+            ],
+            
+            // ========================================
+            // ファイル整合性ページ (integrity)
+            // ========================================
             'integrity' => [
                 'heading' => 'ファイル整合性チェック',
+                'title' => 'ファイル整合性チェック',
                 'description' => 'Dixlaseコアファイルの整合性を検証し、改ざんを検出します。',
                 'baseline_info' => 'ベースライン情報',
                 'baseline_version' => 'バージョン',
@@ -566,7 +921,50 @@ return [
                 'suspicious_files_help' => 'これらのファイルは通常存在しないはずの場所で検出されました。',
                 'all_files_ok' => 'すべてのファイルが正常です',
                 'all_files_ok_description' => 'スキャンされたすべてのファイルがベースラインと一致しています。',
+                // 旧file_integrityからの移行
+                'baseline_exists' => 'ベースラインが存在します',
+                'baseline_not_exists' => 'ベースラインが存在しません',
+                'last_scan_result' => '最新スキャン結果',
+                'scanned_at' => 'スキャン日時',
+                'scanning' => 'スキャン中...',
+                'regenerating' => '再生成中...',
+                'regenerate_baseline_help' => 'コアファイルを更新した後は、ベースラインを再生成してください。',
+                'scan_failed' => 'スキャンに失敗しました',
+                'regenerate_failed' => 'ベースラインの再生成に失敗しました',
             ],
+            
+            // ========================================
+            // 共通・バリデーション
+            // ========================================
+            'validation' => [
+                'allowed_admin_ips_format' => 'IPアドレスはカンマ区切りの形式で入力してください (例: 192.168.1.1, 127.0.0.1)。',
+                'blocked_admin_ips_format' => 'IPアドレスはカンマ区切りの形式で入力してください (例: 192.168.1.1, 127.0.0.1)。',
+                'allowed_front_ips_format' => 'IPアドレスはカンマ区切りの形式で入力してください (例: 192.168.1.1, 127.0.0.1)。',
+                'blocked_front_ips_format' => 'IPアドレスはカンマ区切りの形式で入力してください (例: 192.168.1.1, 127.0.0.1)。',
+                'captcha_google_version_invalid' => '有効なGoogle reCAPTCHAバージョンを選択してください。',
+                'captcha_google_min_score_range' => 'スコアは0から1の間で入力してください。',
+                'captcha_driver_invalid' => '有効なCAPTCHAプロバイダーを選択してください。',
+                'captcha_site_key_required' => 'CAPTCHAを有効にした場合はCAPTCHAサイトキーは必須です。',
+                'captcha_secret_key_required' => 'CAPTCHAを有効にした場合はCAPTCHAシークレットキーは必須です。',
+                'captcha_google_site_key_required' => 'Google reCAPTCHAを使用する場合、サイトキーは必須です。',
+                'captcha_google_secret_key_required' => 'CAPTCHAが有効な場合、Google reCAPTCHAシークレットキーは必須です。',
+                'captcha_turnstile_site_key_required' => 'Turnstileが選択されている場合、Cloudflare Turnstileサイトキーは必須です。',
+                'captcha_turnstile_secret_key_required' => 'Turnstileが選択されている場合、Cloudflare Turnstileシークレットキーは必須です。',
+                'captcha_google_project_id_required' => 'Google reCAPTCHA Enterpriseを使用する場合、プロジェクトIDは必須です。',
+                'captcha_validation_required' => '設定を保存する前にCAPTCHA認証を完了してください。',
+                'captcha_validation_authenticated' => 'CAPTCHA認証済み',
+                'captcha_validation_success_fresh' => 'CAPTCHA認証が成功しました！',
+            ],
+            
+            // コントローラーメッセージ
+            'controller_messages' => [
+                'settings_updated' => 'セキュリティ設定が更新されました。',
+            ],
+            
+            // ========================================
+            // 後方互換性のための旧キー（非推奨）
+            // ========================================
+            // 以下は後方互換性のために残しています。新しいコードでは上記の構造化されたキーを使用してください。
             'basic_security_settings' => '基本セキュリティ設定',
             'ip_access_control' => 'IPアクセス制御設定',
             'ip_access_control_description' => 'システムへのIPアドレスベースのアクセス制御を設定します。',
