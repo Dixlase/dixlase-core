@@ -85,12 +85,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 return classes[level] || classes[0];
             }
         }" x-init="$watch('preset', (value) => { if (value !== 'custom') applyPreset(value); })">
-            <h2>{{ __('admin.settings.security.extension_security.title') }}</h2>
-            <p>{{ __('admin.settings.security.extension_security.description') }}</p>
+            <h2>{{ __('admin.settings.security.extensions.security.title') }}</h2>
+            <p>{{ __('admin.settings.security.extensions.security.description') }}</p>
 
             <!-- プリセット選択 -->
             <fieldset>
-                <legend>{{ __('admin.settings.security.extension_security.preset_label') }}</legend>
+                <legend>{{ __('admin.settings.security.extensions.security.preset_label') }}</legend>
                 
                 <div class="mt-3">
                     <x-form.radio-card-group
@@ -102,7 +102,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     />
                 </div>
                 
-                <p class="mt-2">{{ __('admin.settings.security.extension_security.preset_help') }}</p>
+                <p class="mt-2">{{ __('admin.settings.security.extensions.security.preset_help') }}</p>
             </fieldset>
 
             <!-- カスタム設定 -->
@@ -110,52 +110,52 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div class="flex items-center gap-2 mb-4" x-show="preset !== 'custom'">
                     <i class="fas fa-info-circle text-blue-500"></i>
                     <span class="text-sm text-blue-600 dark:text-blue-400">
-                        {{ __('admin.settings.security.extension_security.custom_mode_hint') }}
+                        {{ __('admin.settings.security.extensions.security.custom_mode_hint') }}
                     </span>
                 </div>
 
                 <!-- 署名要件 -->
                 <fieldset>
-                    <legend>{{ __('admin.settings.security.extension_security.signature_settings') }}</legend>
+                    <legend>{{ __('admin.settings.security.extensions.security.signature_settings') }}</legend>
                     
                     <x-form.toggle
-                        :label="__('admin.settings.security.extension_security.require_signature')"
+                        :label="__('admin.settings.security.extensions.security.require_signature')"
                         id="extension_require_signature"
                         name="extension_require_signature"
                         :checked="old('extension_require_signature', $settings['extension_require_signature'])"
                         xModel="requireSignature"
                     />
-                    <p>{{ __('admin.settings.security.extension_security.require_signature_help') }}</p>
+                    <p>{{ __('admin.settings.security.extensions.security.require_signature_help') }}</p>
                 </fieldset>
 
                 <!-- 権限定義要件 -->
                 <fieldset>
-                    <legend>{{ __('admin.settings.security.extension_security.permission_settings') }}</legend>
+                    <legend>{{ __('admin.settings.security.extensions.security.permission_settings') }}</legend>
                     
                     <x-form.toggle
-                        :label="__('admin.settings.security.extension_security.require_permission_definition')"
+                        :label="__('admin.settings.security.extensions.security.require_permission_definition')"
                         id="extension_require_permission_definition"
                         name="extension_require_permission_definition"
                         :checked="old('extension_require_permission_definition', $settings['extension_require_permission_definition'])"
                         xModel="requirePermissionDefinition"
                     />
-                    <p>{{ __('admin.settings.security.extension_security.require_permission_definition_help') }}</p>
+                    <p>{{ __('admin.settings.security.extensions.security.require_permission_definition_help') }}</p>
                     
                     <div class="mt-4">
                         <x-form.toggle
-                            :label="__('admin.settings.security.extension_security.allow_undefined_permissions')"
+                            :label="__('admin.settings.security.extensions.security.allow_undefined_permissions')"
                             id="extension_allow_undefined_permissions"
                             name="extension_allow_undefined_permissions"
                             :checked="old('extension_allow_undefined_permissions', $settings['extension_allow_undefined_permissions'])"
                             xModel="allowUndefinedPermissions"
                         />
-                        <p>{{ __('admin.settings.security.extension_security.allow_undefined_permissions_help') }}</p>
+                        <p>{{ __('admin.settings.security.extensions.security.allow_undefined_permissions_help') }}</p>
                     </div>
                 </fieldset>
 
                 <!-- プラグイン健全性レベル -->
                 <fieldset>
-                    <legend>{{ __('admin.settings.security.extension_security.plugin_health_level') }}</legend>
+                    <legend>{{ __('admin.settings.security.extensions.security.plugin_health_level') }}</legend>
                     
                     <div class="mt-3">
                         <x-form.range
@@ -174,28 +174,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div class="mt-3 p-3 rounded-lg border" :class="getHealthLevelClass(pluginMaxHealthLevel)">
                         <div class="flex items-center gap-2">
                             <i class="fas fa-puzzle-piece"></i>
-                            <span class="font-medium">{{ __('admin.settings.security.extension_security.current_setting') }}:</span>
+                            <span class="font-medium">{{ __('admin.settings.security.extensions.security.current_setting') }}:</span>
                             <span x-text="[
-                                '{{ __('admin.settings.security.extension_security.health_level.healthy') }}',
-                                '{{ __('admin.settings.security.extension_security.health_level.warning') }}',
-                                '{{ __('admin.settings.security.extension_security.health_level.needs_attention') }}',
-                                '{{ __('admin.settings.security.extension_security.health_level.not_verified') }}'
+                                '{{ __('admin.settings.security.extensions.security.health_level.healthy') }}',
+                                '{{ __('admin.settings.security.extensions.security.health_level.warning') }}',
+                                '{{ __('admin.settings.security.extensions.security.health_level.needs_attention') }}',
+                                '{{ __('admin.settings.security.extensions.security.health_level.not_verified') }}'
                             ][pluginMaxHealthLevel]"></span>
                         </div>
                         <p class="mt-1 text-sm" x-text="[
-                            '{{ __('admin.settings.security.extension_security.health_level_description.healthy') }}',
-                            '{{ __('admin.settings.security.extension_security.health_level_description.warning') }}',
-                            '{{ __('admin.settings.security.extension_security.health_level_description.needs_attention') }}',
-                            '{{ __('admin.settings.security.extension_security.health_level_description.not_verified') }}'
+                            '{{ __('admin.settings.security.extensions.security.health_level_description.healthy') }}',
+                            '{{ __('admin.settings.security.extensions.security.health_level_description.warning') }}',
+                            '{{ __('admin.settings.security.extensions.security.health_level_description.needs_attention') }}',
+                            '{{ __('admin.settings.security.extensions.security.health_level_description.not_verified') }}'
                         ][pluginMaxHealthLevel]"></p>
                     </div>
                     
-                    <p class="mt-2">{{ __('admin.settings.security.extension_security.plugin_health_level_help') }}</p>
+                    <p class="mt-2">{{ __('admin.settings.security.extensions.security.plugin_health_level_help') }}</p>
                 </fieldset>
 
                 <!-- テーマ健全性レベル -->
                 <fieldset>
-                    <legend>{{ __('admin.settings.security.extension_security.theme_health_level') }}</legend>
+                    <legend>{{ __('admin.settings.security.extensions.security.theme_health_level') }}</legend>
                     
                     <div class="mt-3">
                         <x-form.range
@@ -214,46 +214,46 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div class="mt-3 p-3 rounded-lg border" :class="getHealthLevelClass(themeMaxHealthLevel)">
                         <div class="flex items-center gap-2">
                             <i class="fas fa-palette"></i>
-                            <span class="font-medium">{{ __('admin.settings.security.extension_security.current_setting') }}:</span>
+                            <span class="font-medium">{{ __('admin.settings.security.extensions.security.current_setting') }}:</span>
                             <span x-text="[
-                                '{{ __('admin.settings.security.extension_security.health_level.healthy') }}',
-                                '{{ __('admin.settings.security.extension_security.health_level.warning') }}',
-                                '{{ __('admin.settings.security.extension_security.health_level.needs_attention') }}',
-                                '{{ __('admin.settings.security.extension_security.health_level.not_verified') }}'
+                                '{{ __('admin.settings.security.extensions.security.health_level.healthy') }}',
+                                '{{ __('admin.settings.security.extensions.security.health_level.warning') }}',
+                                '{{ __('admin.settings.security.extensions.security.health_level.needs_attention') }}',
+                                '{{ __('admin.settings.security.extensions.security.health_level.not_verified') }}'
                             ][themeMaxHealthLevel]"></span>
                         </div>
                         <p class="mt-1 text-sm" x-text="[
-                            '{{ __('admin.settings.security.extension_security.health_level_description.healthy') }}',
-                            '{{ __('admin.settings.security.extension_security.health_level_description.warning') }}',
-                            '{{ __('admin.settings.security.extension_security.health_level_description.needs_attention') }}',
-                            '{{ __('admin.settings.security.extension_security.health_level_description.not_verified') }}'
+                            '{{ __('admin.settings.security.extensions.security.health_level_description.healthy') }}',
+                            '{{ __('admin.settings.security.extensions.security.health_level_description.warning') }}',
+                            '{{ __('admin.settings.security.extensions.security.health_level_description.needs_attention') }}',
+                            '{{ __('admin.settings.security.extensions.security.health_level_description.not_verified') }}'
                         ][themeMaxHealthLevel]"></p>
                     </div>
                     
-                    <p class="mt-2">{{ __('admin.settings.security.extension_security.theme_health_level_help') }}</p>
+                    <p class="mt-2">{{ __('admin.settings.security.extensions.security.theme_health_level_help') }}</p>
                 </fieldset>
 
                 <!-- ロジックを含むテーマ -->
                 <fieldset>
-                    <legend>{{ __('admin.settings.security.extension_security.logic_themes') }}</legend>
+                    <legend>{{ __('admin.settings.security.extensions.security.logic_themes') }}</legend>
                     
                     <x-form.toggle
-                        :label="__('admin.settings.security.extension_security.allow_logic_themes')"
+                        :label="__('admin.settings.security.extensions.security.allow_logic_themes')"
                         id="extension_allow_logic_themes"
                         name="extension_allow_logic_themes"
                         :checked="old('extension_allow_logic_themes', $settings['extension_allow_logic_themes'])"
                         xModel="allowLogicThemes"
                     />
-                    <p>{{ __('admin.settings.security.extension_security.allow_logic_themes_help') }}</p>
+                    <p>{{ __('admin.settings.security.extensions.security.allow_logic_themes_help') }}</p>
                     
                     <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                         <div class="flex items-start gap-2">
                             <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
                             <div class="text-sm text-blue-700 dark:text-blue-300">
-                                <p class="font-medium">{{ __('admin.settings.security.extension_security.theme_types_title') }}</p>
+                                <p class="font-medium">{{ __('admin.settings.security.extensions.security.theme_types_title') }}</p>
                                 <ul class="mt-1 list-disc list-inside space-y-1">
-                                    <li>{{ __('admin.settings.security.extension_security.theme_type_pure') }}</li>
-                                    <li>{{ __('admin.settings.security.extension_security.theme_type_logic') }}</li>
+                                    <li>{{ __('admin.settings.security.extensions.security.theme_type_pure') }}</li>
+                                    <li>{{ __('admin.settings.security.extensions.security.theme_type_logic') }}</li>
                                 </ul>
                             </div>
                         </div>
@@ -262,8 +262,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 <!-- 権限不一致時の動作 -->
                 <fieldset>
-                    <legend>{{ __('admin.settings.security.extension_security.permission_mismatch') }}</legend>
-                    <p>{{ __('admin.settings.security.extension_security.permission_mismatch_help') }}</p>
+                    <legend>{{ __('admin.settings.security.extensions.security.permission_mismatch') }}</legend>
+                    <p>{{ __('admin.settings.security.extensions.security.permission_mismatch_help') }}</p>
                     
                     <div class="mt-3">
                         <x-form.radio-card-group
@@ -271,15 +271,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             :options="[
                                 [
                                     'value' => 'warn',
-                                    'label' => __('admin.settings.security.extension_security.mismatch_action.warn'),
-                                    'description' => __('admin.settings.security.extension_security.mismatch_action.warn_description'),
+                                    'label' => __('admin.settings.security.extensions.security.mismatch_action.warn'),
+                                    'description' => __('admin.settings.security.extensions.security.mismatch_action.warn_description'),
                                     'icon' => 'fas fa-exclamation-triangle',
                                     'color' => 'yellow'
                                 ],
                                 [
                                     'value' => 'block',
-                                    'label' => __('admin.settings.security.extension_security.mismatch_action.block'),
-                                    'description' => __('admin.settings.security.extension_security.mismatch_action.block_description'),
+                                    'label' => __('admin.settings.security.extensions.security.mismatch_action.block'),
+                                    'description' => __('admin.settings.security.extensions.security.mismatch_action.block_description'),
                                     'icon' => 'fas fa-ban',
                                     'color' => 'red'
                                 ]
@@ -295,8 +295,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- 拡張機能操作通知設定 -->
         <section>
-            <h2>{{ __('admin.settings.security.extension_notification.title') }}</h2>
-            <p>{{ __('admin.settings.security.extension_notification.description') }}</p>
+            <h2>{{ __('admin.settings.security.extensions.notification.title') }}</h2>
+            <p>{{ __('admin.settings.security.extensions.notification.description') }}</p>
 
             <!-- メールサーバー設定の確認メッセージ -->
             @if(!($mailConnectionTested && $mailSendTested && $mailReceiveTested))
@@ -310,92 +310,92 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <!-- インストール時に通知 -->
             <fieldset>
-                <legend>{{ __('admin.settings.security.extension_notification.notify_on_install') }}</legend>
+                <legend>{{ __('admin.settings.security.extensions.notification.notify_on_install') }}</legend>
                 
                 <x-form.hidden name="extension_notify_on_install" value="0" />
                 
                 <x-form.toggle
-                    :label="__('admin.settings.security.extension_notification.notify_on_install')"
+                    :label="__('admin.settings.security.extensions.notification.notify_on_install')"
                     id="extension_notify_on_install"
                     name="extension_notify_on_install"
                     :checked="old('extension_notify_on_install', $settings['extension_notify_on_install'] ?? true)"
                 />
-                <p>{{ __('admin.settings.security.extension_notification.notify_on_install_help') }}</p>
+                <p>{{ __('admin.settings.security.extensions.notification.notify_on_install_help') }}</p>
             </fieldset>
 
             <!-- アンインストール時に通知 -->
             <fieldset>
-                <legend>{{ __('admin.settings.security.extension_notification.notify_on_uninstall') }}</legend>
+                <legend>{{ __('admin.settings.security.extensions.notification.notify_on_uninstall') }}</legend>
                 
                 <x-form.hidden name="extension_notify_on_uninstall" value="0" />
                 
                 <x-form.toggle
-                    :label="__('admin.settings.security.extension_notification.notify_on_uninstall')"
+                    :label="__('admin.settings.security.extensions.notification.notify_on_uninstall')"
                     id="extension_notify_on_uninstall"
                     name="extension_notify_on_uninstall"
                     :checked="old('extension_notify_on_uninstall', $settings['extension_notify_on_uninstall'] ?? true)"
                 />
-                <p>{{ __('admin.settings.security.extension_notification.notify_on_uninstall_help') }}</p>
+                <p>{{ __('admin.settings.security.extensions.notification.notify_on_uninstall_help') }}</p>
             </fieldset>
 
             <!-- 有効化時に通知 -->
             <fieldset>
-                <legend>{{ __('admin.settings.security.extension_notification.notify_on_enable') }}</legend>
+                <legend>{{ __('admin.settings.security.extensions.notification.notify_on_enable') }}</legend>
                 
                 <x-form.hidden name="extension_notify_on_enable" value="0" />
                 
                 <x-form.toggle
-                    :label="__('admin.settings.security.extension_notification.notify_on_enable')"
+                    :label="__('admin.settings.security.extensions.notification.notify_on_enable')"
                     id="extension_notify_on_enable"
                     name="extension_notify_on_enable"
                     :checked="old('extension_notify_on_enable', $settings['extension_notify_on_enable'] ?? true)"
                 />
-                <p>{{ __('admin.settings.security.extension_notification.notify_on_enable_help') }}</p>
+                <p>{{ __('admin.settings.security.extensions.notification.notify_on_enable_help') }}</p>
             </fieldset>
 
             <!-- 無効化時に通知 -->
             <fieldset>
-                <legend>{{ __('admin.settings.security.extension_notification.notify_on_disable') }}</legend>
+                <legend>{{ __('admin.settings.security.extensions.notification.notify_on_disable') }}</legend>
                 
                 <x-form.hidden name="extension_notify_on_disable" value="0" />
                 
                 <x-form.toggle
-                    :label="__('admin.settings.security.extension_notification.notify_on_disable')"
+                    :label="__('admin.settings.security.extensions.notification.notify_on_disable')"
                     id="extension_notify_on_disable"
                     name="extension_notify_on_disable"
                     :checked="old('extension_notify_on_disable', $settings['extension_notify_on_disable'] ?? false)"
                 />
-                <p>{{ __('admin.settings.security.extension_notification.notify_on_disable_help') }}</p>
+                <p>{{ __('admin.settings.security.extensions.notification.notify_on_disable_help') }}</p>
             </fieldset>
 
             <!-- 健全性問題検出時に通知 -->
             <fieldset>
-                <legend>{{ __('admin.settings.security.extension_notification.notify_on_unhealthy') }}</legend>
+                <legend>{{ __('admin.settings.security.extensions.notification.notify_on_unhealthy') }}</legend>
                 
                 <x-form.hidden name="extension_notify_on_unhealthy" value="0" />
                 
                 <x-form.toggle
-                    :label="__('admin.settings.security.extension_notification.notify_on_unhealthy')"
+                    :label="__('admin.settings.security.extensions.notification.notify_on_unhealthy')"
                     id="extension_notify_on_unhealthy"
                     name="extension_notify_on_unhealthy"
                     :checked="old('extension_notify_on_unhealthy', $settings['extension_notify_on_unhealthy'] ?? true)"
                 />
-                <p>{{ __('admin.settings.security.extension_notification.notify_on_unhealthy_help') }}</p>
+                <p>{{ __('admin.settings.security.extensions.notification.notify_on_unhealthy_help') }}</p>
             </fieldset>
 
             <!-- 操作ログ記録 -->
             <fieldset>
-                <legend>{{ __('admin.settings.security.extension_notification.log_operations') }}</legend>
+                <legend>{{ __('admin.settings.security.extensions.notification.log_operations') }}</legend>
                 
                 <x-form.hidden name="extension_log_operations" value="0" />
                 
                 <x-form.toggle
-                    :label="__('admin.settings.security.extension_notification.log_operations')"
+                    :label="__('admin.settings.security.extensions.notification.log_operations')"
                     id="extension_log_operations"
                     name="extension_log_operations"
                     :checked="old('extension_log_operations', $settings['extension_log_operations'] ?? true)"
                 />
-                <p>{{ __('admin.settings.security.extension_notification.log_operations_help') }}</p>
+                <p>{{ __('admin.settings.security.extensions.notification.log_operations_help') }}</p>
             </fieldset>
         </section>
 
