@@ -25,7 +25,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <div class="flex justify-start mb-4">
         <x-form.button
             type="link"
-            :href="route('admin.settings.members.create')"
+            :href="route('admin.members.create')"
             :label="__('common.create')"
             variant="primary"
             icon="fas fa-plus"
@@ -35,11 +35,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- 検索セクション -->
     <section class="mb-6">
-        <h2 class="text-lg font-semibold mb-4">{{ __('admin.settings.members.index.search_title') }}</h2>
+        <h2 class="text-lg font-semibold mb-4">{{ __('admin.members.index.search_title') }}</h2>
         
-        <form action="{{ route('admin.settings.members.index') }}" method="GET" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+        <form action="{{ route('admin.members.index') }}" method="GET" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
             <fieldset>
-                <legend class="sr-only">{{ __('admin.settings.members.index.search_title') }}</legend>
+                <legend class="sr-only">{{ __('admin.members.index.search_title') }}</legend>
                 
                 <!-- 検索フィールド -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
@@ -98,7 +98,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 :label="__('common.search')"
                                 icon="fas fa-search"
                             />
-                            <a href="{{ route('admin.settings.members.index') }}" 
+                            <a href="{{ route('admin.members.index') }}" 
                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 flex items-center justify-center">
                                 {{ __('common.filters.clear_button') }}
                             </a>
@@ -111,7 +111,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- メンバー一覧セクション -->
     <section>
-        <h2 class="sr-only">{{ __('admin.settings.members.index.heading') }}</h2>
+        <h2 class="sr-only">{{ __('admin.members.index.heading') }}</h2>
 
         <!-- ページネーション制御 -->
         <x-pagination-controls
@@ -123,7 +123,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- ページネーション -->
         <x-pagination
             :pagination="$pagination ?? null"
-            :route="'admin.settings.members.index'"
+            :route="'admin.members.index'"
             :routeParams="array_filter([
                 'search' => request('search'),
                 'role' => request('role'),
@@ -137,7 +137,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- レスポンシブテーブル -->
         <div class="responsive-table !border-0 !dark:border-0">
             <table class="border rounded-sm ">
-                <caption class="sr-only">{{ __('admin.settings.members.index.table.caption') }}</caption>
+                <caption class="sr-only">{{ __('admin.members.index.table.caption') }}</caption>
                 <thead>
                     <tr>
                         <th>{{ __('common.id') }}</th>
@@ -152,7 +152,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <tr>
                             <td data-label="{{ __('common.id') }}">{{ $member->id }}</td>
                             <td data-label="{{ __('common.name') }}">
-                                <a href="{{ route('admin.settings.members.edit', ['member' => $member->id]) }}" 
+                                <a href="{{ route('admin.members.edit', ['member' => $member->id]) }}" 
                                    class="hover:underline">
                                     {{ $member->name }}
                                 </a>
@@ -166,7 +166,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     size="sm"
                                     :label="__('common.edit')"
                                     icon="fas fa-edit"
-                                    onclick="window.location.href='{{ route('admin.settings.members.edit', ['member' => $member->id]) }}'"
+                                    onclick="window.location.href='{{ route('admin.members.edit', ['member' => $member->id]) }}'"
                                 />
                             </td>
                         </tr>
@@ -178,7 +178,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- ページネーション -->
         <x-pagination
             :pagination="$pagination ?? null"
-            route="admin.settings.members.index"
+            route="admin.members.index"
             :routeParams="array_filter([
                 'search' => request('search'),
                 'role' => request('role'),
@@ -191,4 +191,3 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </section>
 </div>
 @endsection
-
