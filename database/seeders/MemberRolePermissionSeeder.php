@@ -92,22 +92,22 @@ class MemberRolePermissionSeeder extends Seeder
 
             // メンバー管理
             [
-                'menu_key' => 'settings.members.index',
+                'menu_key' => 'members.index',
                 'access_roles' => MemberRole::ADMIN->value,        // 管理者以上
                 'view_roles'  => MemberRole::ADMIN->value,
             ],
             [
-                'menu_key' => 'settings.members.create',
+                'menu_key' => 'members.create',
                 'access_roles' => MemberRole::ADMIN->value,        // 管理者以上
                 'view_roles'  => MemberRole::ADMIN->value,
             ],
             [
-                'menu_key' => 'settings.members.roles',
+                'menu_key' => 'members.roles',
                 'access_roles' => MemberRole::ADMIN->value,        // 管理者以上
                 'view_roles'  => MemberRole::ADMIN->value,
             ],
             [
-                'menu_key' => 'settings.members.settings',
+                'menu_key' => 'members.settings',
                 'access_roles' => MemberRole::SUPER_ADMIN->value,        // 特権管理者専用
                 'view_roles'  => MemberRole::SUPER_ADMIN->value,
             ],

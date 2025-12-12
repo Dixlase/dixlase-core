@@ -38,7 +38,7 @@ use App\Http\Controllers\Admin\Settings\AdminPluginsSettingsController;
 use App\Http\Controllers\Admin\Settings\AdminSecuritySettingsController;
 use App\Http\Controllers\Admin\Settings\Security;
 use App\Http\Controllers\Admin\Settings\Systems;
-use App\Http\Controllers\Admin\Settings\Members;
+use App\Http\Controllers\Admin\Members;
 use App\Http\Controllers\Admin\Settings\AdminThemesSettingsController;
 use App\Http\Controllers\Admin\Profile\AdminProfileController;
 use Illuminate\Support\Facades\Route;
@@ -267,56 +267,64 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:settings.security')
                     ->name('integrity.regenerate-baseline');
                 Route::get('/integrity/{audit}', [Security\AdminSecurityIntegrityController::class, 'show'])->name('integrity.show');
+
             });
-
-
             // メンバー管理（権限チェック付き）
-            Route::middleware('check.menu.access:settings.members')->prefix('settings/members')->name('settings.members.')->group(function () {
+            Route::middleware('check.menu.access:members')->prefix('settings/members')->name('members.')->group(function () {
                 // メンバー一覧・CRUD
                 Route::get('/', [Members\AdminMemberIndexController::class, 'index'])->name('index');
                 Route::get('/create', [Members\AdminMemberIndexController::class, 'create'])->name('create');
-                Route::post('/store', [Members\AdminMemberIndexController::class, 'store'])
-                    ->middleware('check.menu.edit:settings.members')
-                    ->name('store');
+                Route::post('/', [Members\AdminMemberIndexController::class, 'store'])->name('store');
                 Route::get('/edit/{member}', [Members\AdminMemberIndexController::class, 'edit'])->name('edit');
-                Route::patch('/update/{member}', [Members\AdminMemberIndexController::class, 'update'])
-                    ->middleware('check.menu.edit:settings.members')
-                    ->name('update');
+                Route::patch('/update/{member}', [Members\AdminMemberIndexController::class, 'update'])->name('update');
                 Route::delete('/destroy/{member}', [Members\AdminMemberIndexController::class, 'destroy'])
-                    ->middleware('check.menu.edit:settings.members')
+                    ->middleware('check.menu.edit:members.index')
                     ->name('destroy');
 
                 // セキュリティ操作
                 Route::delete('/passkey/{member}/{credentialId}', [Members\AdminMemberSecurityController::class, 'revokePasskey'])
-                    ->middleware('check.menu.edit:settings.members')
+                    ->middleware('check.menu.edit:members.index')
                     ->name('passkey.revoke');
                 Route::delete('/recovery-codes/{member}', [Members\AdminMemberSecurityController::class, 'revokeRecoveryCodes'])
-                    ->middleware('check.menu.edit:settings.members')
+                    ->middleware('check.menu.edit:members.index')
                     ->name('recovery-codes.revoke');
                 Route::post('/force-logout/{member}', [Members\AdminMemberSecurityController::class, 'forceLogout'])
-                    ->middleware('check.menu.edit:settings.members')
+                    ->middleware('check.menu.edit:members.index')
                     ->name('force-logout');
                 Route::post('/unlock-2fa/{member}', [Members\AdminMemberSecurityController::class, 'unlock2fa'])
-                    ->middleware('check.menu.edit:settings.members')
+                    ->middleware('check.menu.edit:members.index')
                     ->name('unlock-2fa');
                 Route::post('/force-logout-all', [Members\AdminMemberSecurityController::class, 'forceLogoutAll'])
-                    ->middleware('check.menu.edit:settings.members')
+                    ->middleware('check.menu.edit:members.settings')
                     ->name('force-logout-all');
                 Route::post('/{member}/send-verification-email', [Members\AdminMemberSecurityController::class, 'sendVerificationEmail'])
-                    ->middleware('check.menu.edit:settings.members')
+                    ->middleware('check.menu.edit:members.index')
                     ->name('send-verification-email');
 
                 // 権限設定
                 Route::get('/roles', [Members\AdminMemberRolesController::class, 'index'])->name('roles');
                 Route::post('/roles', [Members\AdminMemberRolesController::class, 'update'])
-                    ->middleware('check.menu.edit:settings.members')
+                    ->middleware('check.menu.edit:members.roles')
                     ->name('roles.update');
 
                 // メンバー設定
                 Route::get('/settings', [Members\AdminMemberSettingsController::class, 'index'])->name('settings');
+                Route::get('/settings/password', [Members\AdminMemberSettingsController::class, 'password'])->name('settings.password');
+                Route::get('/settings/session', [Members\AdminMemberSettingsController::class, 'session'])->name('settings.session');
+                Route::get('/settings/authentication', [Members\AdminMemberSettingsController::class, 'authentication'])->name('settings.authentication');
+
                 Route::post('/settings', [Members\AdminMemberSettingsController::class, 'update'])
-                    ->middleware('check.menu.edit:settings.members')
+                    ->middleware('check.menu.edit:members.settings')
                     ->name('settings.update');
+                Route::post('/settings/password', [Members\AdminMemberSettingsController::class, 'update'])
+                    ->middleware('check.menu.edit:members.settings')
+                    ->name('settings.password.update');
+                Route::post('/settings/session', [Members\AdminMemberSettingsController::class, 'update'])
+                    ->middleware('check.menu.edit:members.settings')
+                    ->name('settings.session.update');
+                Route::post('/settings/authentication', [Members\AdminMemberSettingsController::class, 'update'])
+                    ->middleware('check.menu.edit:members.settings')
+                    ->name('settings.authentication.update');
             });
 
             // テーマ設定（権限チェック付き）

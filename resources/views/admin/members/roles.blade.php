@@ -71,7 +71,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             
             {{-- 最後のセクションを出力 --}}
             @if ($currentSection !== null)
-                @include('admin.settings.members.partials.roles-permission-group', [
+                @include('admin.members.partials.roles-permission-group', [
                     'sectionTitle' => $currentSection,
                     'sectionId' => 'section_' . md5($currentSection),
                     'items' => $sectionItems,
