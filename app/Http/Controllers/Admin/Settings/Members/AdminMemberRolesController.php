@@ -58,7 +58,7 @@ class AdminMemberRolesController extends AdminLoggedInController
         $this->viewParams['permissionItems'] = $corePermissionItems;
         $this->viewParams['pluginPermissionGroups'] = $pluginPermissionGroups;
 
-        return view('admin.settings.members.roles', $this->viewParams);
+        return view('admin.members.roles', $this->viewParams);
     }
 
     /**
@@ -66,7 +66,7 @@ class AdminMemberRolesController extends AdminLoggedInController
      */
     public function update(Request $request)
     {
-        $this->authorizeEdit('settings.members.roles');
+        $this->authorizeEdit('members.roles');
 
         $data = $request->input('permissions', []);
 
@@ -97,7 +97,7 @@ class AdminMemberRolesController extends AdminLoggedInController
             }
         }
 
-        return redirect()->back()->with('success', __('admin.settings.members.messages.permissions_saved'));
+        return redirect()->back()->with('success', __('admin.members.messages.permissions_saved'));
     }
 
     /**
@@ -229,7 +229,7 @@ class AdminMemberRolesController extends AdminLoggedInController
     protected function authorizeEdit(string $menuKey)
     {
         if (!\App\Helpers\AdminHelper::canEditMenu($menuKey)) {
-            abort(403, __('admin.settings.members.messages.insufficient_permissions'));
+            abort(403, __('admin.members.messages.insufficient_permissions'));
         }
     }
 }

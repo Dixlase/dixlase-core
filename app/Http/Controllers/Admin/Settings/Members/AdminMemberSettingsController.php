@@ -50,7 +50,7 @@ class AdminMemberSettingsController extends AdminLoggedInController
         $passwordRequireNumber = (bool) $this->memberSettingRepository->get('password_require_number', true);
         $passwordRequireSymbol = (bool) $this->memberSettingRepository->get('password_require_symbol', true);
         
-        $minLengthOptions = collect(__('admin.settings.members.settings.password_min_length_options'))
+        $minLengthOptions = collect(__('admin.members.settings.password.min_length_options'))
             ->map(fn($label, $key) => ['value' => (string) $key, 'label' => $label])
             ->values()
             ->toArray();
@@ -149,7 +149,24 @@ class AdminMemberSettingsController extends AdminLoggedInController
         $this->viewParams['captchaAvailable'] = $captchaAvailable;
         $this->viewParams['captchaAdminLoginEnabled'] = $captchaAdminLoginEnabled;
 
-        return view('admin.settings.members.settings', $this->viewParams);
+        $settingsSection = request('settings_section');
+
+        if (request()->routeIs('admin.members.settings.password')) {
+            $settingsSection = 'password';
+        } elseif (request()->routeIs('admin.members.settings.session')) {
+            $settingsSection = 'session';
+        } elseif (request()->routeIs('admin.members.settings.authentication')) {
+            $settingsSection = 'authentication';
+        }
+
+        $viewName = match ($settingsSection) {
+            'password' => 'admin.members.settings.password',
+            'session' => 'admin.members.settings.session',
+            'authentication' => 'admin.members.settings.authentication',
+            default => 'admin.members.settings',
+        };
+
+        return view($viewName, $this->viewParams);
     }
 
     /**
@@ -159,42 +176,89 @@ class AdminMemberSettingsController extends AdminLoggedInController
     {
         $validated = $request->validated();
 
-        $this->memberSettingRepository->set('password_min_length', (int) $validated['password_min_length']);
-        $this->memberSettingRepository->set('password_require_uppercase', (int) $validated['password_require_uppercase']);
-        $this->memberSettingRepository->set('password_require_number', (int) $validated['password_require_number']);
-        $this->memberSettingRepository->set('password_require_symbol', (int) $validated['password_require_symbol']);
-        $this->memberSettingRepository->set('login_notification_mode', (int) $validated['login_notification_mode']);
-        $this->memberSettingRepository->set('force_2fa', (int) $validated['force_2fa']);
-        $this->memberSettingRepository->set('password_reset_enabled', (bool) $validated['password_reset_enabled']);
-        $this->memberSettingRepository->set('pwned_password_check_enabled', (bool) $validated['pwned_password_check_enabled']);
-        
-        $this->memberSettingRepository->set('login_attempt_limit_enabled', $validated['login_attempt_limit_enabled'] ? '1' : '0');
-        $this->memberSettingRepository->set('login_attempt_max_attempts', (string) $validated['login_attempt_max_attempts']);
-        $this->memberSettingRepository->set('login_attempt_time_window', (string) $validated['login_attempt_time_window']);
-        $this->memberSettingRepository->set('login_attempt_lockout_duration', (string) $validated['login_attempt_lockout_duration']);
-        $this->memberSettingRepository->set('lockout_notification_enabled', $validated['lockout_notification_enabled'] ? '1' : '0');
+        if (array_key_exists('password_min_length', $validated)) {
+            $this->memberSettingRepository->set('password_min_length', (int) $validated['password_min_length']);
+        }
+        if (array_key_exists('password_require_uppercase', $validated)) {
+            $this->memberSettingRepository->set('password_require_uppercase', (int) $validated['password_require_uppercase']);
+        }
+        if (array_key_exists('password_require_number', $validated)) {
+            $this->memberSettingRepository->set('password_require_number', (int) $validated['password_require_number']);
+        }
+        if (array_key_exists('password_require_symbol', $validated)) {
+            $this->memberSettingRepository->set('password_require_symbol', (int) $validated['password_require_symbol']);
+        }
+        if (array_key_exists('password_reset_enabled', $validated)) {
+            $this->memberSettingRepository->set('password_reset_enabled', (bool) $validated['password_reset_enabled']);
+        }
+        if (array_key_exists('pwned_password_check_enabled', $validated)) {
+            $this->memberSettingRepository->set('pwned_password_check_enabled', (bool) $validated['pwned_password_check_enabled']);
+        }
 
-        $this->memberSettingRepository->set('members_session_lifetime_enabled', $validated['members_session_lifetime_enabled'] ? '1' : '0');
-        $this->memberSettingRepository->set('members_session_lifetime', (string) $validated['members_session_lifetime']);
+        if (array_key_exists('members_session_lifetime_enabled', $validated)) {
+            $this->memberSettingRepository->set('members_session_lifetime_enabled', $validated['members_session_lifetime_enabled'] ? '1' : '0');
+        }
+        if (array_key_exists('members_session_lifetime', $validated)) {
+            $this->memberSettingRepository->set('members_session_lifetime', (string) $validated['members_session_lifetime']);
+        }
 
-        $this->memberSettingRepository->set('two_factor_expire_minutes', (string) $validated['two_factor_expire_minutes']);
-        $this->memberSettingRepository->set('two_factor_resend_interval_seconds', (string) $validated['two_factor_resend_interval_seconds']);
-        
-        $passkeyValue = isset($validated['enabled_2fa_passkey']) && $validated['enabled_2fa_passkey'] ? '1' : '0';
-        $this->memberSettingRepository->set('enabled_2fa_passkey', $passkeyValue);
+        if (array_key_exists('login_notification_mode', $validated)) {
+            $this->memberSettingRepository->set('login_notification_mode', (int) $validated['login_notification_mode']);
+        }
+        if (array_key_exists('login_attempt_limit_enabled', $validated)) {
+            $this->memberSettingRepository->set('login_attempt_limit_enabled', $validated['login_attempt_limit_enabled'] ? '1' : '0');
+        }
+        if (array_key_exists('login_attempt_max_attempts', $validated)) {
+            $this->memberSettingRepository->set('login_attempt_max_attempts', (string) $validated['login_attempt_max_attempts']);
+        }
+        if (array_key_exists('login_attempt_time_window', $validated)) {
+            $this->memberSettingRepository->set('login_attempt_time_window', (string) $validated['login_attempt_time_window']);
+        }
+        if (array_key_exists('login_attempt_lockout_duration', $validated)) {
+            $this->memberSettingRepository->set('login_attempt_lockout_duration', (string) $validated['login_attempt_lockout_duration']);
+        }
+        if (array_key_exists('lockout_notification_enabled', $validated)) {
+            $this->memberSettingRepository->set('lockout_notification_enabled', $validated['lockout_notification_enabled'] ? '1' : '0');
+        }
 
-        $this->memberSettingRepository->set('2fa_max_attempts', (string) $validated['2fa_max_attempts']);
-        $this->memberSettingRepository->set('2fa_attempt_window', (string) $validated['2fa_attempt_window']);
-        $this->memberSettingRepository->set('2fa_lockout_duration', (string) $validated['2fa_lockout_duration']);
-        $this->memberSettingRepository->set('2fa_lockout_notification_enabled', $validated['2fa_lockout_notification_enabled'] ? '1' : '0');
+        if (array_key_exists('force_2fa', $validated)) {
+            $this->memberSettingRepository->set('force_2fa', (int) $validated['force_2fa']);
+        }
+        if (array_key_exists('two_factor_expire_minutes', $validated)) {
+            $this->memberSettingRepository->set('two_factor_expire_minutes', (string) $validated['two_factor_expire_minutes']);
+        }
+        if (array_key_exists('two_factor_resend_interval_seconds', $validated)) {
+            $this->memberSettingRepository->set('two_factor_resend_interval_seconds', (string) $validated['two_factor_resend_interval_seconds']);
+        }
+        if (array_key_exists('enabled_2fa_passkey', $validated)) {
+            $passkeyValue = $validated['enabled_2fa_passkey'] ? '1' : '0';
+            $this->memberSettingRepository->set('enabled_2fa_passkey', $passkeyValue);
+        }
+        if (array_key_exists('2fa_max_attempts', $validated)) {
+            $this->memberSettingRepository->set('2fa_max_attempts', (string) $validated['2fa_max_attempts']);
+        }
+        if (array_key_exists('2fa_attempt_window', $validated)) {
+            $this->memberSettingRepository->set('2fa_attempt_window', (string) $validated['2fa_attempt_window']);
+        }
+        if (array_key_exists('2fa_lockout_duration', $validated)) {
+            $this->memberSettingRepository->set('2fa_lockout_duration', (string) $validated['2fa_lockout_duration']);
+        }
+        if (array_key_exists('2fa_lockout_notification_enabled', $validated)) {
+            $this->memberSettingRepository->set('2fa_lockout_notification_enabled', $validated['2fa_lockout_notification_enabled'] ? '1' : '0');
+        }
+        if (array_key_exists('recovery_codes_count', $validated)) {
+            $this->memberSettingRepository->set('recovery_codes_count', (string) $validated['recovery_codes_count']);
+        }
+        if (array_key_exists('recovery_code_regenerate_interval', $validated)) {
+            $this->memberSettingRepository->set('recovery_code_regenerate_interval', (string) $validated['recovery_code_regenerate_interval']);
+        }
 
-        $this->memberSettingRepository->set('recovery_codes_count', (string) $validated['recovery_codes_count']);
-        $this->memberSettingRepository->set('recovery_code_regenerate_interval', (string) $validated['recovery_code_regenerate_interval']);
+        if (array_key_exists('captcha_admin_login_enabled', $validated)) {
+            $this->memberSettingRepository->set('captcha_admin_login_enabled', $request->boolean('captcha_admin_login_enabled') ? '1' : '0');
+        }
 
-        $this->memberSettingRepository->set('captcha_admin_login_enabled', $request->boolean('captcha_admin_login_enabled') ? '1' : '0');
-
-        return redirect()->route('admin.settings.members.settings')
-            ->with('success', __('admin.settings.members.settings.updated'));
+        return redirect()->back()
+            ->with('success', __('admin.members.settings.updated'));
     }
 
     private function isMailServerTested(): bool
