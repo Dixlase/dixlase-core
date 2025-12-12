@@ -58,7 +58,7 @@ class AdminMemberRolesController extends AdminLoggedInController
         $this->viewParams['permissionItems'] = $corePermissionItems;
         $this->viewParams['pluginPermissionGroups'] = $pluginPermissionGroups;
 
-        return view('admin.members.roles', $this->viewParams);
+        return view('admin.members.settings.roles', $this->viewParams);
     }
 
     /**

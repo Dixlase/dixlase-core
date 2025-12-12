@@ -21,7 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('layouts.admin')
 
 @section('content')
-    @include('admin.settings.members.partials.members-form', [
+    @include('admin.members.partials.members-form', [
         'member' => $member,
         'requirePassword' => false,
         'passwordMinLength' => $passwordMinLength,
@@ -33,7 +33,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'defaultTwoFactorMethod' => $defaultTwoFactorMethod,
         'isInitialAdmin' => $isInitialAdmin,
         'isMailServerTested' => $isMailServerTested,
-        'formAction' => route('admin.settings.members.update', ['member' => $member->id]),
+        'formAction' => route('admin.members.update', ['member' => $member->id]),
         'formMethod' => 'PATCH',
         'formId' => 'update-form',
         'includeForm' => true
@@ -42,8 +42,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 認証メール送信確認モーダル -->
     <x-modal
         id="verificationEmailModal"
-        :title="__('admin.settings.members.form.send_verification_email_title')"
-        :message="__('admin.settings.members.form.send_verification_email_confirm')"
+        :title="__('admin.members.form.send_verification_email_title')"
+        :message="__('admin.members.form.send_verification_email_confirm')"
         :confirm_label="__('common.send')"
         :cancel_label="__('common.cancel')"
         icon_type="info"
@@ -71,8 +71,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 回復コード削除確認モーダル -->
     <x-modal 
         id="deleteRecoveryCodesModal"
-        :title="__('admin.settings.members.form.confirm_delete_recovery_codes_title')"
-        :message="__('admin.settings.members.form.confirm_delete_recovery_codes_message')"
+        :title="__('admin.members.form.confirm_delete_recovery_codes_title')"
+        :message="__('admin.members.form.confirm_delete_recovery_codes_message')"
         :confirm_label="__('common.delete')"
         :cancel_label="__('common.cancel')"
         confirm_variant="danger"
@@ -87,8 +87,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <x-save
         id_confirmation="confirmationModal"
         :label="__('common.update')"
-        :title="__('admin.settings.members.edit.confirm_title')"
-        :message="__('admin.settings.members.edit.confirm_message')"
+        :title="__('admin.members.edit.confirm_title')"
+        :message="__('admin.members.edit.confirm_message')"
         :confirm_label="__('common.update')"
         :cancel_label="__('common.cancel')"
         form="update-form"
@@ -402,7 +402,7 @@ window.revokeRecoveryCodes = function(event) {
         if (data.success) {
             window.PasskeyResultModal.showSuccess(
                 'passkeyResultModal',
-                '{{ __('admin.settings.members.form.recovery_codes_delete_success_title') }}',
+                '{{ __('admin.members.form.recovery_codes_delete_success_title') }}',
                 data.message,
                 () => location.reload()
             );
@@ -420,7 +420,7 @@ window.revokeRecoveryCodes = function(event) {
         window.PasskeyResultModal.showError(
             'passkeyResultModal',
             '{{ __('common.error') }}',
-            '{{ __('admin.settings.members.form.recovery_codes_delete_error') }}'
+            '{{ __('admin.members.form.recovery_codes_delete_error') }}'
         );
     });
 };

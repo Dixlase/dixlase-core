@@ -22,7 +22,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 
-<form method="POST" action="{{ route('admin.members.roles.update') }}" id="member-roles-form" class="permission-management permission-form" novalidate>
+<form method="POST" action="{{ route('admin.members.settings.roles.update') }}" id="member-roles-form" class="permission-management permission-form" novalidate>
     @csrf
     
     {{-- コア機能の権限設定 --}}

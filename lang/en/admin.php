@@ -107,7 +107,9 @@ return [
                 'edit' => 'Edit',
                 'profile' => 'Profile Settings',
                 'roles' => 'Member Role Settings',
+                'roles_short' => 'Role Settings',
                 'settings' => 'Member Global Settings',
+                'overview' => 'Overview',
             ],
             'themes' => [
                 'text' => 'Theme Management',
@@ -1545,7 +1547,35 @@ tracking.example.com',
                 'nav' => [
                     'password' => 'Password Settings',
                     'session' => 'Session Settings',
-                    'authentication' => 'Authentication Settings',
+                    'auth' => 'Authentication Settings',
+                ],
+                // Overview page
+                'index' => [
+                    'description' => 'Manage global settings for member passwords, sessions, and authentication.',
+                    'password_min_length' => 'Min length',
+                    'characters' => ' chars',
+                    'requirements' => 'Requirements',
+                    'uppercase' => 'Uppercase',
+                    'number' => 'Number',
+                    'symbol' => 'Symbol',
+                    'no_requirements' => 'No additional requirements',
+                    'session_lifetime' => 'Session lifetime',
+                    'system_default' => 'System default',
+                    'custom_session_enabled' => 'Custom setting enabled',
+                    'custom_session_disabled' => 'Using system default',
+                    'two_factor' => 'Two-factor auth',
+                    'optional' => 'Optional',
+                    'required' => 'Required',
+                    'login_attempt_limit' => 'Login attempt limit',
+                    'roles_description' => 'Configure member roles and access control.',
+                    'force_logout_heading' => 'Force Logout',
+                    'force_logout_description' => 'Force logout all admin members. This will delete all sessions of currently logged-in members.',
+                    'force_logout_all_button' => 'Force Logout All Members',
+                    'force_logout_all_modal' => [
+                        'title' => 'Force Logout All Members Confirmation',
+                        'message' => 'Are you sure you want to force logout all members? This action will delete all currently logged-in member sessions.',
+                        'confirm_label' => 'Execute Force Logout',
+                    ],
                 ],
                 // Common
                 'minutes' => 'minutes',
@@ -1555,15 +1585,6 @@ tracking.example.com',
                 'codes' => 'codes',
                 'devices' => 'devices',
                 'mail_server_test_warning' => 'This feature will not work because mail server setup and testing are not complete.<br>To use this feature, please complete the mail server test in <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">basic settings</a>.',
-                // Force Logout (Overview page)
-                'force_logout_heading' => 'Force Logout',
-                'force_logout_description' => 'Force logout all admin members. This will delete all sessions of currently logged-in members.',
-                'force_logout_all_button' => 'Force Logout All Members',
-                'force_logout_all_modal' => [
-                    'title' => 'Force Logout All Members Confirmation',
-                    'message' => 'Are you sure you want to force logout all members? This action will delete all currently logged-in member sessions.',
-                    'confirm_label' => 'Execute Force Logout',
-                ],
 
                 // Password Settings
                 'password' => [

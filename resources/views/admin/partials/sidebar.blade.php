@@ -132,6 +132,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         $current_child_route_parts = explode('.', $route_name);
                                         $open_child_key = 'open_' . $child_key;
                                         $is_open_child = isset($current_child_route_parts[2]) && $current_child_route_parts[2] === $child_key;
+                                        
+                                        // 孫要素のルートが現在のルートと一致する場合も開く
+                                        if (!$is_open_child && isset($child_item['children']) && is_array($child_item['children'])) {
+                                            foreach ($child_item['children'] as $gc_item) {
+                                                if (isset($gc_item['route']) && $gc_item['route'] === $route_name) {
+                                                    $is_open_child = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
                                     @endphp
 
                                     @if(isset($child_item['icon']) && is_string($child_item['icon']) && isset($child_item['text']) && is_string($child_item['text']))
