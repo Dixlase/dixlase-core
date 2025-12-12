@@ -48,8 +48,8 @@ class AdminMemberSecurityController extends AdminLoggedInController
                 ->delete();
         }
 
-        return redirect()->route('admin.settings.members.edit', ['member' => $member->id])
-            ->with('success', __('admin.settings.members.messages.force_logout_success'));
+        return redirect()->route('admin.members.edit', ['member' => $member->id])
+            ->with('success', __('admin.members.messages.force_logout_success'));
     }
 
     /**
@@ -60,8 +60,8 @@ class AdminMemberSecurityController extends AdminLoggedInController
         \App\Models\Member2faAttempt::where('member_id', $member->id)->delete();
         \App\Models\MemberLoginAttempt::where('identifier', $member->email)->delete();
 
-        return redirect()->route('admin.settings.members.edit', ['member' => $member->id])
-            ->with('success', __('admin.settings.members.messages.unlock_lockout_success'));
+        return redirect()->route('admin.members.edit', ['member' => $member->id])
+            ->with('success', __('admin.members.messages.unlock_lockout_success'));
     }
 
     /**
@@ -78,12 +78,12 @@ class AdminMemberSecurityController extends AdminLoggedInController
                 ->whereNotNull('user_id')
                 ->delete();
             
-            return redirect()->route('admin.settings.members.settings')
-                ->with('success', __('admin.settings.members.force_logout_all_success', ['count' => $deletedCount]));
+            return redirect()->route('admin.members.settings')
+                ->with('success', __('admin.members.force_logout_all_success', ['count' => $deletedCount]));
         }
 
-        return redirect()->route('admin.settings.members.settings')
-            ->with('error', __('admin.settings.members.force_logout_all_error'));
+        return redirect()->route('admin.members.settings')
+            ->with('error', __('admin.members.force_logout_all_error'));
     }
 
     /**
@@ -95,7 +95,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
             if (!$this->isMailServerTested()) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('admin.settings.members.form.mail_server_not_tested')
+                    'message' => __('admin.members.form.mail_server_not_tested')
                 ], 400);
             }
 
@@ -111,18 +111,18 @@ class AdminMemberSecurityController extends AdminLoggedInController
 
             $member->sendEmailVerificationNotification('resend');
 
-            session()->flash('success', __('admin.settings.members.messages.verification_email_sent'));
+            session()->flash('success', __('admin.members.messages.verification_email_sent'));
 
             return response()->json([
                 'success' => true,
-                'redirect' => route('admin.settings.members.edit', ['member' => $member->id])
+                'redirect' => route('admin.members.edit', ['member' => $member->id])
             ]);
         } catch (\Exception $e) {
             \Log::error('Failed to send verification email: ' . $e->getMessage());
             
             return response()->json([
                 'success' => false,
-                'message' => __('admin.settings.members.messages.verification_email_failed')
+                'message' => __('admin.members.messages.verification_email_failed')
             ], 500);
         }
     }
@@ -183,7 +183,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
             
             return response()->json([
                 'success' => true,
-                'message' => __('admin.settings.members.form.recovery_codes_deleted', ['count' => $deletedCount])
+                'message' => __('admin.members.form.recovery_codes_deleted', ['count' => $deletedCount])
             ]);
         } catch (\Exception $e) {
             \Log::error('[Member Recovery Code Delete] Exception caught', [
@@ -193,7 +193,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
             
             return response()->json([
                 'success' => false,
-                'message' => __('admin.settings.members.form.recovery_codes_delete_error')
+                'message' => __('admin.members.form.recovery_codes_delete_error')
             ], 500);
         }
     }

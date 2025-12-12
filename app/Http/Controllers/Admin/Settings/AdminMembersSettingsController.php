@@ -224,7 +224,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         // メール設定テスト状況を取得
         $this->viewParams['isMailServerTested'] = $this->isMailServerTested();
 
-        return view('admin.settings.members.create', $this->viewParams);
+        return view('admin.members.create', $this->viewParams);
     }
 
     /**
@@ -262,20 +262,20 @@ class AdminMembersSettingsController extends AdminLoggedInController
         if ($isMailServerTested && $emailVerified === '0') {
             try {
                 $member->sendEmailVerificationNotification('create');
-                $message = __('admin.settings.members.messages.created_with_verification_email');
+                $message = __('admin.members.messages.created_with_verification_email');
             } catch (\Exception $e) {
                 \Log::error('Failed to send verification email', [
                     'member_id' => $member->id,
                     'error' => $e->getMessage()
                 ]);
-                $message = __('admin.settings.members.messages.created_but_email_failed');
+                $message = __('admin.members.messages.created_but_email_failed');
             }
         } else {
-            $message = __('admin.settings.members.messages.created');
+            $message = __('admin.members.messages.created');
         }
 
         // リダイレクト
-        return redirect()->route('admin.settings.members.edit', ['member' => $member->id])->with('success', $message);
+        return redirect()->route('admin.members.edit', ['member' => $member->id])->with('success', $message);
     }
 
 
@@ -378,7 +378,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['recoveryCodesCount'] = $recoveryCodeService->getRemainingCount($member);
         $this->viewParams['hasRecoveryCodes'] = $recoveryCodeService->hasRecoveryCodes($member);
 
-        return view('admin.settings.members.edit', $this->viewParams);
+        return view('admin.members.edit', $this->viewParams);
     }
 
     /**
@@ -441,19 +441,19 @@ class AdminMembersSettingsController extends AdminLoggedInController
                 // メールアドレス変更時は 'email_change'、それ以外は 'create'
                 $context = ($emailChanged && $wasVerified) ? 'email_change' : 'create';
                 $member->sendEmailVerificationNotification($context);
-                $message = __('admin.settings.members.messages.updated_with_verification_email');
+                $message = __('admin.members.messages.updated_with_verification_email');
             } catch (\Exception $e) {
                 \Log::error('Failed to send verification email', [
                     'member_id' => $member->id,
                     'error' => $e->getMessage()
                 ]);
-                $message = __('admin.settings.members.messages.updated_but_email_failed');
+                $message = __('admin.members.messages.updated_but_email_failed');
             }
         } else {
-            $message = __('admin.settings.members.messages.updated');
+            $message = __('admin.members.messages.updated');
         }
 
-        return redirect()->route('admin.settings.members.edit', ['member' => $id])->with('success', $message);
+        return redirect()->route('admin.members.edit', ['member' => $id])->with('success', $message);
     }
 
     /**
@@ -463,12 +463,12 @@ class AdminMembersSettingsController extends AdminLoggedInController
     {
         // 初期管理者アカウント（ID=1）の削除を防ぐ
         if ($member->id === 1) {
-            return redirect()->back()->withErrors(['delete' => __('admin.settings.members.messages.initial_member_cannot_delete')]);
+            return redirect()->back()->withErrors(['delete' => __('admin.members.messages.initial_member_cannot_delete')]);
         }
 
         $member->delete();
 
-        return redirect()->route('admin.settings.members.index')->with('success', __('admin.settings.members.messages.deleted'));
+        return redirect()->route('admin.members.index')->with('success', __('admin.members.messages.deleted'));
     }
 
     /**
@@ -487,8 +487,8 @@ class AdminMembersSettingsController extends AdminLoggedInController
                 ->delete();
         }
 
-        return redirect()->route('admin.settings.members.edit', ['member' => $member->id])
-            ->with('success', __('admin.settings.members.messages.force_logout_success'));
+        return redirect()->route('admin.members.edit', ['member' => $member->id])
+            ->with('success', __('admin.members.messages.force_logout_success'));
     }
 
     /**
@@ -502,8 +502,8 @@ class AdminMembersSettingsController extends AdminLoggedInController
         // ログイン試行記録も削除（identifierカラムはメールアドレス）
         \App\Models\MemberLoginAttempt::where('identifier', $member->email)->delete();
 
-        return redirect()->route('admin.settings.members.edit', ['member' => $member->id])
-            ->with('success', __('admin.settings.members.messages.unlock_lockout_success'));
+        return redirect()->route('admin.members.edit', ['member' => $member->id])
+            ->with('success', __('admin.members.messages.unlock_lockout_success'));
     }
 
     /**
@@ -521,12 +521,12 @@ class AdminMembersSettingsController extends AdminLoggedInController
                 ->whereNotNull('user_id')
                 ->delete();
             
-            return redirect()->route('admin.settings.members.settings')
-                ->with('success', __('admin.settings.members.force_logout_all_success', ['count' => $deletedCount]));
+            return redirect()->route('admin.members.settings')
+                ->with('success', __('admin.members.force_logout_all_success', ['count' => $deletedCount]));
         }
 
-        return redirect()->route('admin.settings.members.settings')
-            ->with('error', __('admin.settings.members.force_logout_all_error'));
+        return redirect()->route('admin.members.settings')
+            ->with('error', __('admin.members.force_logout_all_error'));
     }
 
     /**
@@ -539,7 +539,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
             if (!$this->isMailServerTested()) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('admin.settings.members.form.mail_server_not_tested')
+                    'message' => __('admin.members.form.mail_server_not_tested')
                 ], 400);
             }
 
@@ -560,19 +560,19 @@ class AdminMembersSettingsController extends AdminLoggedInController
             $member->sendEmailVerificationNotification('resend');
 
             // フラッシュメッセージをセッションに保存
-            session()->flash('success', __('admin.settings.members.messages.verification_email_sent'));
+            session()->flash('success', __('admin.members.messages.verification_email_sent'));
 
             // リダイレクトURLを返す
             return response()->json([
                 'success' => true,
-                'redirect' => route('admin.settings.members.edit', ['member' => $member->id])
+                'redirect' => route('admin.members.edit', ['member' => $member->id])
             ]);
         } catch (\Exception $e) {
             \Log::error('Failed to send verification email: ' . $e->getMessage());
             
             return response()->json([
                 'success' => false,
-                'message' => __('admin.settings.members.messages.verification_email_failed')
+                'message' => __('admin.members.messages.verification_email_failed')
             ], 500);
         }
     }
@@ -601,7 +601,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['permissionItems'] = $corePermissionItems;
         $this->viewParams['pluginPermissionGroups'] = $pluginPermissionGroups;
 
-        return view('admin.settings.members.roles', $this->viewParams);
+        return view('admin.members.roles', $this->viewParams);
     }
 
     /**
@@ -743,7 +743,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
     public function updateRoles(Request $request)
     {
 
-        $this->authorizeEdit('settings.members.roles');
+        $this->authorizeEdit('members.roles');
 
         // コア権限の更新
         $data = $request->input('permissions', []);
@@ -777,13 +777,13 @@ class AdminMembersSettingsController extends AdminLoggedInController
             }
         }
 
-        return redirect()->back()->with('success', __('admin.settings.members.messages.permissions_saved'));
+        return redirect()->back()->with('success', __('admin.members.messages.permissions_saved'));
     }
 
     protected function authorizeEdit(string $menuKey)
     {
         if (!\App\Helpers\AdminHelper::canEditMenu($menuKey)) {
-            abort(403, __('admin.settings.members.messages.insufficient_permissions'));
+            abort(403, __('admin.members.messages.insufficient_permissions'));
         }
     }
 
@@ -798,7 +798,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $passwordRequireSymbol = (bool) $this->memberSettingRepository->get('password_require_symbol', true);
         
         // パスワード条件設定の選択肢を準備（radio-card-group用）
-        $minLengthOptions = collect(__('admin.settings.members.settings.password_min_length_options'))
+        $minLengthOptions = collect(__('admin.members.settings.password_min_length_options'))
             ->map(fn($label, $key) => ['value' => (string) $key, 'label' => $label])
             ->values()
             ->toArray();
@@ -921,7 +921,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
         $this->viewParams['captchaAvailable'] = $captchaAvailable;
         $this->viewParams['captchaAdminLoginEnabled'] = $captchaAdminLoginEnabled;
 
-        return view('admin.settings.members.settings', $this->viewParams);
+        return view('admin.members.settings', $this->viewParams);
     }
 
     public function updateSettings(AdminSettingsMemberSettingsRequest $request)
@@ -971,8 +971,8 @@ class AdminMembersSettingsController extends AdminLoggedInController
         // CAPTCHA設定（管理画面ログイン用）の保存
         $this->memberSettingRepository->set('captcha_admin_login_enabled', $request->boolean('captcha_admin_login_enabled') ? '1' : '0');
 
-        return redirect()->route('admin.settings.members.settings')
-            ->with('success', __('admin.settings.members.settings.updated'));
+        return redirect()->route('admin.members.settings')
+            ->with('success', __('admin.members.settings.updated'));
     }
 
     /**
@@ -1033,7 +1033,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
             
             return response()->json([
                 'success' => true,
-                'message' => __('admin.settings.members.form.recovery_codes_deleted', ['count' => $deletedCount])
+                'message' => __('admin.members.form.recovery_codes_deleted', ['count' => $deletedCount])
             ]);
         } catch (\Exception $e) {
             \Log::error('[Member Recovery Code Delete] Exception caught', [
@@ -1043,7 +1043,7 @@ class AdminMembersSettingsController extends AdminLoggedInController
             
             return response()->json([
                 'success' => false,
-                'message' => __('admin.settings.members.form.recovery_codes_delete_error')
+                'message' => __('admin.members.form.recovery_codes_delete_error')
             ], 500);
         }
     }

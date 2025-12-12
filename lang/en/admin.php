@@ -1464,8 +1464,10 @@ tracking.example.com',
                 'suspicious_files' => 'Suspicious Files',
             ],
         ],
-        // Members
-        'members' => [
+    ],
+
+    // Members
+    'members' => [
             'index' => [
                 'heading' => 'Member Management',
                 'search_title' => 'Member Search',
@@ -1539,73 +1541,21 @@ tracking.example.com',
             
             'settings' => [
                 'heading' => 'Member Global Settings',
+                'updated' => 'Member global settings have been updated.',
                 'nav' => [
                     'password' => 'Password Settings',
                     'session' => 'Session Settings',
                     'authentication' => 'Authentication Settings',
                 ],
-                'password_conditions' => 'Password Conditions',
-                'login_notification_settings' => 'Login Notification Settings',
-                'two_factor_settings' => 'Two-Factor Authentication Settings',
-                'two_factor_method' => [
-                    'options' => [
-                        0 => 'Email Authentication',
-                        1 => 'Device Authentication',
-                        2 => 'Biometric Authentication',
-                        3 => 'Follow Profile Setting',
-                    ],
-                ],
-                'enabled_two_factor_methods_label' => 'Enabled Two-Factor Methods',
-                'enabled_two_factor_methods_help' => 'Email authentication is always enabled. Enable Passkey to allow members to choose their authentication method in profile settings.',
-                'email_always_enabled_note' => 'Email authentication is always enabled as the basic authentication method available to all members.',
-                'two_factor_expire_settings' => 'Two-Factor Authentication Expiration Settings',
-                'two_factor_expire_minutes' => 'Authentication Expiration Time',
-                'two_factor_expire_minutes_help' => 'Set the expiration time for email authentication codes and device authentication (1-60 minutes).',
-                'two_factor_resend_interval_seconds' => 'Authentication Email Resend Interval',
-                'two_factor_resend_interval_seconds_help' => 'Set the waiting time before authentication emails can be resent (60-600 seconds, 1-10 minutes).',
-                // Two-Factor Authentication Attempt Limit Settings
-                '2fa_attempt_limit_settings' => 'Two-Factor Authentication Attempt Limit Settings',
-                '2fa_max_attempts' => 'Maximum Attempts',
-                '2fa_max_attempts_help' => 'Set the maximum number of failed attempts for two-factor authentication code input (1-10 times).',
-                '2fa_attempt_window' => 'Attempt Window',
-                '2fa_attempt_window_help' => 'Set the time window for counting attempts (5-60 minutes).',
-                '2fa_lockout_duration' => 'Lockout Duration',
-                '2fa_lockout_duration_help' => 'Set the lockout duration when maximum attempts are reached (5-1440 minutes).',
-                '2fa_lockout_notification' => 'Lockout Notification',
-                '2fa_lockout_notification_help' => 'Set whether to send email notifications to members when locked out.',
-                'times' => 'times',
-                // Passkey settings
-                'passkey_settings' => 'Passkey Settings',
-                'passkey_enabled' => 'Passkey Feature',
-                'passkey_enabled_help' => 'Enable/disable Passkey (biometric authentication) feature.',
-                'max_passkey_devices' => 'Maximum Passkey Devices',
-                'max_passkey_devices_help' => 'Set the maximum number of Passkey devices per member (1-5 devices).',
-                'devices' => 'devices',
-                // Recovery code settings
-                'recovery_code_settings' => 'Recovery Code Settings',
-                'recovery_codes_count' => 'Recovery Codes Count',
-                'recovery_codes_count_help' => 'Set the number of recovery codes to generate per member (1-5 codes).',
-                'recovery_code_regenerate_interval' => 'Recovery Code Regeneration Interval',
-                'recovery_code_regenerate_interval_help' => 'Set the waiting time before recovery codes can be regenerated (1-168 hours).',
-                'codes' => 'codes',
-                'hours' => 'hours',
-                // 2FA verification screen settings
-                'two_factor_verification_settings' => '2FA Verification Screen Settings',
-                'two_factor_verification_timeout' => 'Verification Screen Timeout',
-                'two_factor_verification_timeout_help' => 'Set the session timeout for 2FA verification screen (5-60 minutes).',
-                // 2FA attempt limit settings
-                '2fa_attempt_limit_settings' => '2FA Attempt Limit Settings',
-                '2fa_max_attempts' => 'Maximum Attempts',
-                '2fa_max_attempts_help' => 'Set the maximum number of 2FA authentication attempts (1-10 attempts). Total across all authentication methods.',
-                '2fa_attempt_window' => 'Attempt Window',
-                '2fa_attempt_window_help' => 'Set the time window for counting attempts (5-60 minutes).',
-                '2fa_lockout_duration' => 'Lockout Duration',
-                '2fa_lockout_duration_help' => 'Set the lockout duration after exceeding maximum attempts (5-1440 minutes).',
-                '2fa_lockout_notification_enabled' => '2FA Lockout Notification',
-                '2fa_lockout_notification_enabled_help' => 'Send email notification when lockout occurs.',
-                'attempts' => 'attempts',
+                // Common
                 'minutes' => 'minutes',
                 'seconds' => 'seconds',
+                'times' => 'times',
+                'hours' => 'hours',
+                'codes' => 'codes',
+                'devices' => 'devices',
+                'mail_server_test_warning' => 'This feature will not work because mail server setup and testing are not complete.<br>To use this feature, please complete the mail server test in <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">basic settings</a>.',
+                // Force Logout (Overview page)
                 'force_logout_heading' => 'Force Logout',
                 'force_logout_description' => 'Force logout all admin members. This will delete all sessions of currently logged-in members.',
                 'force_logout_all_button' => 'Force Logout All Members',
@@ -1614,77 +1564,104 @@ tracking.example.com',
                     'message' => 'Are you sure you want to force logout all members? This action will delete all currently logged-in member sessions.',
                     'confirm_label' => 'Execute Force Logout',
                 ],
-                'confirm_label' => 'Update',
-                'cancel_label' => 'Back',
-                'updated' => 'Member global settings have been updated.',
-                'auto_selected_default_method' => 'Default two-factor authentication method has been automatically set to :method.',
-                'password_min_length' => 'Minimum Password Length',
-                'password_min_length_options' => [
-                    8 => '8 characters or more',
-                    12 => '12 characters or more',
-                    16 => '16 characters or more',
+
+                // Password Settings
+                'password' => [
+                    'heading' => 'Password Settings',
+                    'conditions' => 'Password Conditions',
+                    'min_length' => 'Minimum Password Length',
+                    'min_length_options' => [
+                        8 => '8 characters or more',
+                        12 => '12 characters or more',
+                        16 => '16 characters or more',
+                    ],
+                    'require_uppercase' => 'Require uppercase letters',
+                    'require_number' => 'Require numbers',
+                    'require_symbol' => 'Require symbols',
+                    'security_warning' => 'Please note that lowering the requirements increases security risks.',
+                    // Password Reset
+                    'reset_settings' => 'Password Reset Function Settings',
+                    'reset_enabled' => 'Password Reset Function',
+                    'reset_help' => 'Please note that enabling this feature may increase security risks.<br>When disabled, the password reset link will be hidden on the admin login screen and the password reset function will not be available.<br>To reset passwords when disabled, please use the member edit screen in the member management.',
+                    'reset_mail_test_required' => 'Mail server settings and tests are not completed, so the password reset function will not work even if enabled.<br>To use the password reset function, please complete the mail server test in <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">basic settings</a>.',
+                    // Dictionary Attack Protection
+                    'pwned_settings' => 'Password Dictionary Attack Protection',
+                    'pwned_check_enabled' => 'Dictionary Attack Protection',
+                    'pwned_help' => 'When enabled, password safety will be checked using the Have I Been Pwned API during member creation, editing, and password changes.<br>Prevents the use of passwords found in leaked databases.',
+                    'pwned_api_info' => 'This check uses the Have I Been Pwned API. It is secure as passwords themselves are not transmitted - only hashed information is used.',
                 ],
-                'password_require_uppercase' => 'Require uppercase letters',
-                'password_require_uppercase_options' => [
-                    1 => 'Required',
-                    0 => 'Not required',
+
+                // Session Settings
+                'session' => [
+                    'heading' => 'Session Settings',
+                    'admin_settings' => 'Admin Member Session Settings',
+                    'admin_settings_description' => 'Configure custom session lifetime for admin members. When enabled, this setting takes priority over the default value in security settings.',
+                    'lifetime_enabled' => 'Custom Session Lifetime',
+                    'lifetime_enabled_help' => 'When enabled, you can set a custom session lifetime for admin members. When disabled, the default value from security settings will be used.',
+                    'lifetime' => 'Session Lifetime',
+                    'lifetime_help' => 'Set the session lifetime for admin members in minutes (1-43200 minutes).',
                 ],
-                'password_require_number' => 'Require numbers',
-                'password_require_number_options' => [
-                    1 => 'Required',
-                    0 => 'Not required',
+
+                // Authentication Settings
+                'auth' => [
+                    'heading' => 'Authentication Settings',
+                    // Login Notification
+                    'login_notification_global_setting' => 'Global Login Notification Email Settings',
+                    'login_notification_mail_test_required' => 'Mail server settings and tests are not completed, so the login notification function will not work even if enabled.<br>To use the login notification function, please complete the mail server test in <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">basic settings</a>.',
+                    // Login Attempt Limiting
+                    'login_attempt_limit_settings' => 'Login Attempt Limiting Settings',
+                    'login_attempt_limit_enabled' => 'Login Attempt Limiting',
+                    'login_attempt_limit_help' => 'To prevent brute force attacks, login access will be temporarily restricted when consecutive login failures occur within a short time period.',
+                    'login_attempt_max_attempts' => 'Maximum Attempts',
+                    'login_attempt_max_attempts_help' => 'When login failures exceed this number, access will be temporarily restricted.',
+                    'login_attempt_time_window' => 'Time Window (minutes)',
+                    'login_attempt_time_window_help' => 'Failed attempts within this time period will be counted.',
+                    'login_attempt_lockout_duration' => 'Lockout Duration (minutes)',
+                    'login_attempt_lockout_duration_help' => 'Set the lockout duration in minutes (1-10080 minutes).',
+                    'lockout_notification_enabled' => 'Lockout Notification',
+                    'lockout_notification_help' => 'Send system error notifications when lockouts occur due to login attempt limits. The email will be sent to the email address set in basic settings.',
+                    'lockout_notification_mail_test_required' => 'To use lockout notifications, please complete the mail server test in <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">basic settings</a>.',
+                    // Two-Factor Authentication
+                    'two_factor_mode_global_setting' => 'Global Two-Factor Authentication Settings',
+                    'two_factor_mail_test_required' => 'Mail server settings and tests are not completed, so two-factor authentication (email authentication) will not work even if enabled.<br>To use the two-factor authentication function, please complete the mail server test in <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">basic settings</a>.',
+                    'enabled_two_factor_methods_label' => 'Enabled Two-Factor Methods',
+                    'enabled_two_factor_methods_help' => 'Email authentication is always enabled. Enable Passkey to allow members to choose their authentication method in profile settings.',
+                    'email_always_enabled_note' => 'Email authentication is always enabled as the basic authentication method available to all members.',
+                    'two_factor_expire_settings' => 'Two-Factor Authentication Expiration Settings',
+                    'two_factor_expire_minutes' => 'Authentication Expiration Time',
+                    'two_factor_expire_minutes_help' => 'Set the expiration time for email authentication codes and device authentication (1-60 minutes).',
+                    'two_factor_resend_interval_seconds' => 'Authentication Email Resend Interval',
+                    'two_factor_resend_interval_seconds_help' => 'Set the waiting time before authentication emails can be resent (60-600 seconds, 1-10 minutes).',
+                    // 2FA Attempt Limit
+                    '2fa_attempt_limit_settings' => '2FA Attempt Limit Settings',
+                    '2fa_max_attempts' => 'Maximum Attempts',
+                    '2fa_max_attempts_help' => 'Set the maximum number of 2FA authentication attempts (1-10 attempts). Total across all authentication methods.',
+                    '2fa_attempt_window' => 'Attempt Window',
+                    '2fa_attempt_window_help' => 'Set the time window for counting attempts (5-60 minutes).',
+                    '2fa_lockout_duration' => 'Lockout Duration',
+                    '2fa_lockout_duration_help' => 'Set the lockout duration after exceeding maximum attempts (5-1440 minutes).',
+                    '2fa_lockout_notification_enabled' => '2FA Lockout Notification',
+                    '2fa_lockout_notification_enabled_help' => 'Send email notification when lockout occurs.',
+                    // Passkey Settings
+                    'passkey_settings' => 'Passkey Settings',
+                    'passkey_enabled' => 'Passkey Feature',
+                    'passkey_enabled_help' => 'Enable/disable Passkey (biometric authentication) feature.',
+                    'max_passkey_devices' => 'Maximum Passkey Devices',
+                    'max_passkey_devices_help' => 'Set the maximum number of Passkey devices per member (1-5 devices).',
+                    // Recovery Code Settings
+                    'recovery_code_settings' => 'Recovery Code Settings',
+                    'recovery_codes_count' => 'Recovery Codes Count',
+                    'recovery_codes_count_help' => 'Set the number of recovery codes to generate per member (1-5 codes).',
+                    'recovery_code_regenerate_interval' => 'Recovery Code Regeneration Interval',
+                    'recovery_code_regenerate_interval_help' => 'Set the waiting time before recovery codes can be regenerated (1-168 hours).',
+                    // CAPTCHA Settings (Admin Login)
+                    'captcha_admin_login_settings' => 'CAPTCHA Settings (Admin Login)',
+                    'captcha_admin_login_settings_description' => 'Configure CAPTCHA authentication for admin login.',
+                    'captcha_admin_login_enabled' => 'Use CAPTCHA for Admin Login',
+                    'captcha_admin_login_help' => 'When enabled, CAPTCHA authentication will be required during admin login.',
+                    'captcha_not_enabled' => 'CAPTCHA is not enabled. Please enable CAPTCHA in <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">Security Settings</a>.',
+                    'captcha_not_authenticated' => 'CAPTCHA authentication test has not been completed. Please complete the authentication test in <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">Security Settings</a>.',
                 ],
-                'password_require_symbol' => 'Require symbols',
-                'password_require_symbol_options' => [
-                    1 => 'Required',
-                    0 => 'Not required',
-                ],
-                'password_security_warning' => 'Please note that lowering the requirements increases security risks.',
-                'login_notification_global_setting' => 'Global Login Notification Email Settings',
-                'two_factor_mode_global_setting' => 'Global Two-Factor Authentication Settings',
-                'two_factor_methods_label' => 'Available Two-Factor Authentication Methods',
-                'two_factor_methods_help' => 'Select the two-factor authentication methods that users can use. At least one must be enabled.',
-                // CAPTCHA settings (Admin Login)
-                'captcha_admin_login_settings' => 'CAPTCHA Settings (Admin Login)',
-                'captcha_admin_login_settings_description' => 'Configure CAPTCHA authentication for admin login.',
-                'captcha_admin_login_enabled' => 'Use CAPTCHA for Admin Login',
-                'captcha_admin_login_help' => 'When enabled, CAPTCHA authentication will be required during admin login.',
-                'captcha_not_enabled' => 'CAPTCHA is not enabled. Please enable CAPTCHA in <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">Security Settings</a>.',
-                'captcha_not_authenticated' => 'CAPTCHA authentication test has not been completed. Please complete the authentication test in <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">Security Settings</a>.',
-                'password_reset_settings' => 'Password Reset Function Settings',
-                'password_reset_enabled' => 'Password Reset Function',
-                'password_reset_help' => 'Please note that enabling this feature may increase security risks.<br>When disabled, the password reset link will be hidden on the admin login screen and the password reset function will not be available.<br>To reset passwords when disabled, please use the member edit screen in the member management.',
-                // Password dictionary attack protection settings
-                'pwned_password_settings' => 'Password Dictionary Attack Protection',
-                'pwned_password_check_enabled' => 'Dictionary Attack Protection',
-                'pwned_password_help' => 'When enabled, password safety will be checked using the Have I Been Pwned API during member creation, editing, and password changes.<br>Prevents the use of passwords found in leaked databases.',
-                'pwned_password_api_info' => 'This check uses the Have I Been Pwned API. It is secure as passwords themselves are not transmitted - only hashed information is used.',
-                // Mail function warning messages
-                'password_reset_mail_test_required' => 'Mail server settings and tests are not completed, so the password reset function will not work even if enabled.<br>To use the password reset function, please complete the mail server test in <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">basic settings</a>.',
-                'login_notification_mail_test_required' => 'Mail server settings and tests are not completed, so the login notification function will not work even if enabled.<br>To use the login notification function, please complete the mail server test in <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">basic settings</a>.',
-                'two_factor_mail_test_required' => 'Mail server settings and tests are not completed, so two-factor authentication (email authentication) will not work even if enabled.<br>To use the two-factor authentication function, please complete the mail server test in <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">basic settings</a>.',
-                'login_attempt_limit_settings' => 'Login Attempt Limiting Settings',
-                'login_attempt_limit_enabled' => 'Login Attempt Limiting',
-                'login_attempt_max_attempts' => 'Maximum Attempts',
-                'login_attempt_max_attempts_help' => 'When login failures exceed this number, access will be temporarily restricted.',
-                'login_attempt_time_window' => 'Time Window (minutes)',
-                'login_attempt_time_window_help' => 'Failed attempts within this time period will be counted.',
-                'login_attempt_lockout_duration' => 'Lockout Duration (minutes)',
-                'login_attempt_lockout_duration_help' => 'Set the lockout duration in minutes (1-10080 minutes).',
-                'lockout_notification_enabled' => 'Lockout Notification',
-                'lockout_notification_help' => 'Send system error notifications when lockouts occur due to login attempt limits. The email will be sent to the email address set in basic settings.',
-                'lockout_notification_mail_test_required' => 'To use lockout notifications, please complete the mail server test in <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">basic settings</a>.',
-                'mail_server_test_warning' => 'This feature will not work because mail server setup and testing are not complete.<br>To use this feature, please complete the mail server test in <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">basic settings</a>.',
-                'login_attempt_lockout_duration' => 'Lockout Duration (minutes)',
-                'login_attempt_lockout_duration_help' => 'When the limit is reached, login will be blocked for this duration.',
-                'login_attempt_limit_help' => 'To prevent brute force attacks, login access will be temporarily restricted when consecutive login failures occur within a short time period.',
-                // Admin Session Settings
-                'admin_session_settings' => 'Admin Member Session Settings',
-                'admin_session_settings_description' => 'Configure custom session lifetime for admin members. When enabled, this setting takes priority over the default value in security settings.',
-                'admin_session_lifetime_enabled' => 'Custom Session Lifetime',
-                'admin_session_lifetime_enabled_help' => 'When enabled, you can set a custom session lifetime for admin members. When disabled, the default value from security settings will be used.',
-                'admin_session_lifetime' => 'Session Lifetime',
-                'admin_session_lifetime_help' => 'Set the session lifetime for admin members in minutes (1-43200 minutes).',
             ],
             'messages' => [
                 'created' => 'New member has been created.',
@@ -1766,9 +1743,10 @@ tracking.example.com',
                 'author' => 'Author',
                 'contributor' => 'Contributor',
             ],
-        ],
-        // Themes
-        'themes' => [
+    ],
+
+    // Themes
+    'themes' => [
             'index' => [
                 'heading' => 'Theme Management',
                 'installed_heading' => 'Installed Themes',
@@ -1911,9 +1889,10 @@ tracking.example.com',
                 'enable_warning_invalid_signature' => 'Signature is invalid (possible tampering)',
                 'enable_warning_needs_attention' => 'Contains permissions that need review',
             ],
-        ],
-        // Plugins
-        'plugins' => [
+    ],
+
+    // Plugins
+    'plugins' => [
             'index' => [
                 'heading' => 'Plugin List',
                 'installed_heading' => 'Installed Plugins',
@@ -2393,9 +2372,7 @@ tracking.example.com',
             'save_confirmation_message' => 'Do you want to save the front page content?',
             'settings_save_confirmation_title' => 'Front Page Settings Save Confirmation',
             'settings_save_confirmation_message' => 'Do you want to save the front page settings?',
-        ],
     ],
-
 
     // Member force logout
     'force_logout_success' => ':name has been forcibly logged out.',
