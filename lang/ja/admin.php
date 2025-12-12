@@ -1493,6 +1493,11 @@ tracking.example.com',
 
             'settings' => [
                 'heading' => 'メンバー全体設定',
+                'nav' => [
+                    'password' => 'パスワード設定',
+                    'session' => 'セッション設定',
+                    'authentication' => '認証設定',
+                ],
                 'password_conditions' => 'パスワードの条件',
                 'enabled_two_factor_methods_label' => '有効な二段階認証方法',
                 'enabled_two_factor_methods_help' => 'メール認証は常に有効です。Passkeyを有効にすると、メンバーはプロフィール設定で認証方法を選択できます。',

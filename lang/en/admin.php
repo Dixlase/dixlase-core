@@ -1539,6 +1539,11 @@ tracking.example.com',
             
             'settings' => [
                 'heading' => 'Member Global Settings',
+                'nav' => [
+                    'password' => 'Password Settings',
+                    'session' => 'Session Settings',
+                    'authentication' => 'Authentication Settings',
+                ],
                 'password_conditions' => 'Password Conditions',
                 'login_notification_settings' => 'Login Notification Settings',
                 'two_factor_settings' => 'Two-Factor Authentication Settings',

@@ -89,6 +89,53 @@ return [
             'route' => 'admin.profile',
             'icon' => 'fas fa-fw fa-id-badge',
         ],
+        'members' => [
+            'text' => 'admin.nav.settings.members.text',
+            'icon' => 'fas fa-fw fa-users-cog',
+            'children' => [
+                'index' => [
+                    'text' => 'admin.nav.settings.members.index',
+                    'route' => 'admin.members.index',
+                    'icon' => 'fas fa-fw fa-users',
+                ],
+                'create' => [
+                    'text' => 'admin.nav.settings.members.create',
+                    'route' => 'admin.members.create',
+                    'icon' => 'fas fa-fw fa-user-plus',
+                ],
+                'settings' => [
+                    'text' => 'admin.nav.settings.members.settings',
+                    'icon' => 'fas fa-fw fa-user-cog',
+                    'children' => [
+                        'overview' => [
+                            'text' => 'admin.nav.settings.members.settings',
+                            'route' => 'admin.members.settings',
+                            'icon' => 'fas fa-fw fa-user-cog',
+                        ],
+                        'password' => [
+                            'text' => 'admin.members.settings.nav.password',
+                            'route' => 'admin.members.settings.password',
+                            'icon' => 'fas fa-fw fa-key',
+                        ],
+                        'session' => [
+                            'text' => 'admin.members.settings.nav.session',
+                            'route' => 'admin.members.settings.session',
+                            'icon' => 'fas fa-fw fa-clock',
+                        ],
+                        'authentication' => [
+                            'text' => 'admin.members.settings.nav.authentication',
+                            'route' => 'admin.members.settings.authentication',
+                            'icon' => 'fas fa-fw fa-shield-alt',
+                        ],
+                        'roles' => [
+                            'text' => 'admin.nav.settings.members.roles',
+                            'route' => 'admin.members.roles',
+                            'icon' => 'fas fa-fw fa-user-cog',
+                        ],
+                    ]
+                ],
+            ]
+        ],
         'settings' => [
             'text' => 'admin.nav.settings.text',
             'icon' => 'fas fa-fw fa-cogs',
@@ -167,32 +214,6 @@ return [
                             'text' => 'admin.nav.settings.security.integrity',
                             'route' => 'admin.settings.security.integrity',
                             'icon' => 'fas fa-fw fa-file-shield',
-                        ],
-                    ]
-                ],
-                'members' => [
-                    'text' => 'admin.nav.settings.members.text',
-                    'icon' => 'fas fa-fw fa-users-cog',
-                    'children' => [
-                        'index' => [
-                            'text' => 'admin.nav.settings.members.index',
-                            'route' => 'admin.settings.members.index',
-                            'icon' => 'fas fa-fw fa-users',
-                        ],
-                        'create' => [
-                            'text' => 'admin.nav.settings.members.create',
-                            'route' => 'admin.settings.members.create',
-                            'icon' => 'fas fa-fw fa-user-plus',
-                        ],
-                        'roles' => [
-                            'text' => 'admin.nav.settings.members.roles',
-                            'route' => 'admin.settings.members.roles',
-                            'icon' => 'fas fa-fw fa-user-cog',
-                        ],
-                        'settings' => [
-                            'text' => 'admin.nav.settings.members.settings',
-                            'route' => 'admin.settings.members.settings',
-                            'icon' => 'fas fa-fw fa-user-cog',
                         ],
                     ]
                 ],
@@ -421,8 +442,4 @@ return [
     'generateThumbnails' => true,
     'perPage' => 10,
     'mediaPath' => 'media',
-    'admin_url' => 'admin',
-
-
-
 ];
