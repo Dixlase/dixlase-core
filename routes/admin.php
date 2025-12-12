@@ -272,52 +272,49 @@ Route::prefix($adminUrl)->name('admin.')
             // メンバー管理（権限チェック付き）
             Route::middleware('check.menu.access:members')->prefix('members')->name('members.')->group(function () {
                 // メンバー一覧・CRUD
-                Route::get('/', [Members\AdminMemberIndexController::class, 'index'])->name('index');
-                Route::get('/create', [Members\AdminMemberIndexController::class, 'create'])->name('create');
-                Route::post('/', [Members\AdminMemberIndexController::class, 'store'])->name('store');
-                Route::get('/edit/{member}', [Members\AdminMemberIndexController::class, 'edit'])->name('edit');
-                Route::patch('/update/{member}', [Members\AdminMemberIndexController::class, 'update'])->name('update');
-                Route::delete('/destroy/{member}', [Members\AdminMemberIndexController::class, 'destroy'])
+                Route::get('/', [Members\AdminMemberController::class, 'index'])->name('index');
+                Route::get('/create', [Members\AdminMemberController::class, 'create'])->name('create');
+                Route::post('/', [Members\AdminMemberController::class, 'store'])->name('store');
+                Route::get('/edit/{member}', [Members\AdminMemberController::class, 'edit'])->name('edit');
+                Route::patch('/update/{member}', [Members\AdminMemberController::class, 'update'])->name('update');
+                Route::delete('/destroy/{member}', [Members\AdminMemberController::class, 'destroy'])
                     ->middleware('check.menu.edit:members.index')
                     ->name('destroy');
 
                 // セキュリティ操作
-                Route::delete('/passkey/{member}/{credentialId}', [Members\AdminMemberSecurityController::class, 'revokePasskey'])
+                Route::delete('/passkey/{member}/{credentialId}', [Members\AdminMemberController::class, 'revokePasskey'])
                     ->middleware('check.menu.edit:members.index')
                     ->name('passkey.revoke');
-                Route::delete('/recovery-codes/{member}', [Members\AdminMemberSecurityController::class, 'revokeRecoveryCodes'])
+                Route::delete('/recovery-codes/{member}', [Members\AdminMemberController::class, 'revokeRecoveryCodes'])
                     ->middleware('check.menu.edit:members.index')
                     ->name('recovery-codes.revoke');
-                Route::post('/force-logout/{member}', [Members\AdminMemberSecurityController::class, 'forceLogout'])
+                Route::post('/force-logout/{member}', [Members\AdminMemberController::class, 'forceLogout'])
                     ->middleware('check.menu.edit:members.index')
                     ->name('force-logout');
-                Route::post('/unlock-2fa/{member}', [Members\AdminMemberSecurityController::class, 'unlock2fa'])
+                Route::post('/unlock-2fa/{member}', [Members\AdminMemberController::class, 'unlock2fa'])
                     ->middleware('check.menu.edit:members.index')
                     ->name('unlock-2fa');
-                Route::post('/force-logout-all', [Members\AdminMemberSecurityController::class, 'forceLogoutAll'])
+                Route::post('/force-logout-all', [Members\AdminMemberSettingsController::class, 'forceLogoutAll'])
                     ->middleware('check.menu.edit:members.settings')
                     ->name('force-logout-all');
-                Route::post('/{member}/send-verification-email', [Members\AdminMemberSecurityController::class, 'sendVerificationEmail'])
+                Route::post('/{member}/send-verification-email', [Members\AdminMemberController::class, 'sendVerificationEmail'])
                     ->middleware('check.menu.edit:members.index')
                     ->name('send-verification-email');
 
                 // メンバー設定
                 Route::get('/settings', [Members\AdminMemberSettingsController::class, 'index'])->name('settings');
-                Route::get('/settings/password', [Members\AdminMemberSettingsController::class, 'password'])->name('settings.password');
-                Route::get('/settings/session', [Members\AdminMemberSettingsController::class, 'session'])->name('settings.session');
-                Route::get('/settings/auth', [Members\AdminMemberSettingsController::class, 'auth'])->name('settings.auth');
+                Route::get('/settings/password', [Members\AdminMemberPasswordController::class, 'index'])->name('settings.password');
+                Route::get('/settings/session', [Members\AdminMemberSessionController::class, 'index'])->name('settings.session');
+                Route::get('/settings/auth', [Members\AdminMemberAuthController::class, 'index'])->name('settings.auth');
                 Route::get('/settings/roles', [Members\AdminMemberRolesController::class, 'index'])->name('settings.roles');
 
-                Route::post('/settings', [Members\AdminMemberSettingsController::class, 'update'])
-                    ->middleware('check.menu.edit:members.settings')
-                    ->name('settings.update');
-                Route::post('/settings/password', [Members\AdminMemberSettingsController::class, 'update'])
+                Route::post('/settings/password', [Members\AdminMemberPasswordController::class, 'update'])
                     ->middleware('check.menu.edit:members.settings')
                     ->name('settings.password.update');
-                Route::post('/settings/session', [Members\AdminMemberSettingsController::class, 'update'])
+                Route::post('/settings/session', [Members\AdminMemberSessionController::class, 'update'])
                     ->middleware('check.menu.edit:members.settings')
                     ->name('settings.session.update');
-                Route::post('/settings/auth', [Members\AdminMemberSettingsController::class, 'update'])
+                Route::post('/settings/auth', [Members\AdminMemberAuthController::class, 'update'])
                     ->middleware('check.menu.edit:members.settings')
                     ->name('settings.auth.update');
                 Route::post('/settings/roles', [Members\AdminMemberRolesController::class, 'update'])
