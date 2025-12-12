@@ -155,18 +155,42 @@ class AdminMemberSettingsController extends AdminLoggedInController
             $settingsSection = 'password';
         } elseif (request()->routeIs('admin.members.settings.session')) {
             $settingsSection = 'session';
-        } elseif (request()->routeIs('admin.members.settings.authentication')) {
-            $settingsSection = 'authentication';
+        } elseif (request()->routeIs('admin.members.settings.auth')) {
+            $settingsSection = 'auth';
         }
 
         $viewName = match ($settingsSection) {
             'password' => 'admin.members.settings.password',
             'session' => 'admin.members.settings.session',
-            'authentication' => 'admin.members.settings.authentication',
-            default => 'admin.members.settings',
+            'auth' => 'admin.members.settings.auth',
+            default => 'admin.members.settings.index',
         };
 
         return view($viewName, $this->viewParams);
+    }
+
+    /**
+     * パスワード設定画面
+     */
+    public function password()
+    {
+        return $this->index();
+    }
+
+    /**
+     * セッション設定画面
+     */
+    public function session()
+    {
+        return $this->index();
+    }
+
+    /**
+     * 認証設定画面
+     */
+    public function auth()
+    {
+        return $this->index();
     }
 
     /**

@@ -28,16 +28,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- パスワード条件設定 -->
         <section>
-            <h2>{{ __('admin.members.settings.password_conditions') }}</h2>
+            <h2>{{ __('admin.members.settings.password.conditions') }}</h2>
             <fieldset>
-                <legend>{{ __('admin.members.settings.password_min_length') }}</legend>
+                <legend>{{ __('admin.members.settings.password.min_length') }}</legend>
                 <x-form.radio-card-group
                     name="password_min_length"
                     :options="$minLengthOptions"
                     :value="old('password_min_length', (string) $passwordMinLength)"
-                    :columns="4"
-                    direction="row"
-                    class="mb-3"
+                    :columns="3"
                 />
             </fieldset>
 
@@ -45,7 +43,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <x-form.toggle
                     name="password_require_uppercase"
-                    :label="__('admin.members.settings.password_require_uppercase')"
+                    :label="__('admin.members.settings.password.require_uppercase')"
                     :checked="old('password_require_uppercase', $passwordRequireUppercase)"
                 />
             </fieldset>
@@ -54,7 +52,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <x-form.toggle
                     name="password_require_number"
-                    :label="__('admin.members.settings.password_require_number')"
+                    :label="__('admin.members.settings.password.require_number')"
                     :checked="old('password_require_number', $passwordRequireNumber)"
                 />
             </fieldset>
@@ -63,18 +61,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <x-form.toggle
                     name="password_require_symbol"
-                    :label="__('admin.members.settings.password_require_symbol')"
+                    :label="__('admin.members.settings.password.require_symbol')"
                     :checked="old('password_require_symbol', $passwordRequireSymbol)"
                 />
             </fieldset>
             <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                {{ __('admin.members.settings.password_security_warning') }}
+                {{ __('admin.members.settings.password.security_warning') }}
             </p>
         </section>
 
         <!-- パスワードリセット機能設定 -->
         <section>
-            <h2>{{ __('admin.members.settings.password_reset_settings') }}</h2>
+            <h2>{{ __('admin.members.settings.password.reset_settings') }}</h2>
             @if(!$isMailServerTested)
                 <x-message
                     type="warning"
@@ -84,32 +82,32 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <x-form.toggle
                     name="password_reset_enabled"
-                    :label="__('admin.members.settings.password_reset_enabled')"
+                    :label="__('admin.members.settings.password.reset_enabled')"
                     :checked="old('password_reset_enabled', $passwordResetEnabled)"
                 />
                 <p class="mt-2">
-                    {!! __('admin.members.settings.password_reset_help') !!}
+                    {!! __('admin.members.settings.password.reset_help') !!}
                 </p>
             </fieldset>
         </section>
 
         <!-- パスワード辞書攻撃対策設定 -->
         <section>
-            <h2>{{ __('admin.members.settings.pwned_password_settings') }}</h2>
+            <h2>{{ __('admin.members.settings.password.pwned_settings') }}</h2>
 
             <fieldset>
                 <x-form.toggle
                     name="pwned_password_check_enabled"
-                    :label="__('admin.members.settings.pwned_password_check_enabled')"
+                    :label="__('admin.members.settings.password.pwned_check_enabled')"
                     :checked="old('pwned_password_check_enabled', $pwnedPasswordCheckEnabled)"
                 />
                 <p class="mt-2">
-                    {!! __('admin.members.settings.pwned_password_help') !!}
+                    {!! __('admin.members.settings.password.pwned_help') !!}
                 </p>
                 <!-- API情報 -->
                 <x-message
                     type="info"
-                    :message="__('admin.members.settings.pwned_password_api_info')"
+                    :message="__('admin.members.settings.password.pwned_api_info')"
                 />
             </fieldset>
         </section>

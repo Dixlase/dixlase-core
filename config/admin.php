@@ -108,9 +108,9 @@ return [
                     'icon' => 'fas fa-fw fa-user-cog',
                     'children' => [
                         'overview' => [
-                            'text' => 'admin.nav.settings.members.settings',
+                            'text' => 'admin.nav.settings.members.overview',
                             'route' => 'admin.members.settings',
-                            'icon' => 'fas fa-fw fa-user-cog',
+                            'icon' => 'fas fa-fw fa-list-alt',
                         ],
                         'password' => [
                             'text' => 'admin.members.settings.nav.password',
@@ -122,15 +122,15 @@ return [
                             'route' => 'admin.members.settings.session',
                             'icon' => 'fas fa-fw fa-clock',
                         ],
-                        'authentication' => [
-                            'text' => 'admin.members.settings.nav.authentication',
-                            'route' => 'admin.members.settings.authentication',
+                        'auth' => [
+                            'text' => 'admin.members.settings.nav.auth',
+                            'route' => 'admin.members.settings.auth',
                             'icon' => 'fas fa-fw fa-shield-alt',
                         ],
                         'roles' => [
-                            'text' => 'admin.nav.settings.members.roles',
-                            'route' => 'admin.members.roles',
-                            'icon' => 'fas fa-fw fa-user-cog',
+                            'text' => 'admin.nav.settings.members.roles_short',
+                            'route' => 'admin.members.settings.roles',
+                            'icon' => 'fas fa-fw fa-user-shield',
                         ],
                     ]
                 ],

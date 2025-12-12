@@ -22,9 +22,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="max-w-7xl mx-auto">
-    <form method="POST" action="{{ route('admin.members.settings.authentication.update') }}" id="member-settings-form">
+    <form method="POST" action="{{ route('admin.members.settings.auth.update') }}" id="member-settings-form">
         @csrf
-        <input type="hidden" name="settings_section" value="authentication">
+        <input type="hidden" name="settings_section" value="auth">
 
         <!-- ログイン通知設定 -->
         <section>

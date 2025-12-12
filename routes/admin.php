@@ -270,7 +270,7 @@ Route::prefix($adminUrl)->name('admin.')
 
             });
             // メンバー管理（権限チェック付き）
-            Route::middleware('check.menu.access:members')->prefix('settings/members')->name('members.')->group(function () {
+            Route::middleware('check.menu.access:members')->prefix('members')->name('members.')->group(function () {
                 // メンバー一覧・CRUD
                 Route::get('/', [Members\AdminMemberIndexController::class, 'index'])->name('index');
                 Route::get('/create', [Members\AdminMemberIndexController::class, 'create'])->name('create');
@@ -301,17 +301,12 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:members.index')
                     ->name('send-verification-email');
 
-                // 権限設定
-                Route::get('/roles', [Members\AdminMemberRolesController::class, 'index'])->name('roles');
-                Route::post('/roles', [Members\AdminMemberRolesController::class, 'update'])
-                    ->middleware('check.menu.edit:members.roles')
-                    ->name('roles.update');
-
                 // メンバー設定
                 Route::get('/settings', [Members\AdminMemberSettingsController::class, 'index'])->name('settings');
                 Route::get('/settings/password', [Members\AdminMemberSettingsController::class, 'password'])->name('settings.password');
                 Route::get('/settings/session', [Members\AdminMemberSettingsController::class, 'session'])->name('settings.session');
-                Route::get('/settings/authentication', [Members\AdminMemberSettingsController::class, 'authentication'])->name('settings.authentication');
+                Route::get('/settings/auth', [Members\AdminMemberSettingsController::class, 'auth'])->name('settings.auth');
+                Route::get('/settings/roles', [Members\AdminMemberRolesController::class, 'index'])->name('settings.roles');
 
                 Route::post('/settings', [Members\AdminMemberSettingsController::class, 'update'])
                     ->middleware('check.menu.edit:members.settings')
@@ -322,9 +317,12 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/settings/session', [Members\AdminMemberSettingsController::class, 'update'])
                     ->middleware('check.menu.edit:members.settings')
                     ->name('settings.session.update');
-                Route::post('/settings/authentication', [Members\AdminMemberSettingsController::class, 'update'])
+                Route::post('/settings/auth', [Members\AdminMemberSettingsController::class, 'update'])
                     ->middleware('check.menu.edit:members.settings')
-                    ->name('settings.authentication.update');
+                    ->name('settings.auth.update');
+                Route::post('/settings/roles', [Members\AdminMemberRolesController::class, 'update'])
+                    ->middleware('check.menu.edit:members.roles')
+                    ->name('settings.roles.update');
             });
 
             // テーマ設定（権限チェック付き）

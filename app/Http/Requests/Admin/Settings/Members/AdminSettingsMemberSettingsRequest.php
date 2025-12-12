@@ -12,6 +12,23 @@ use App\Models\BaseSetting;
 
 class AdminSettingsMemberSettingsRequest extends FormRequest
 {
+    private function settingsSection(): ?string
+    {
+        $section = $this->input('settings_section');
+
+        if ($this->routeIs('admin.members.settings.password.update')) {
+            return 'password';
+        }
+        if ($this->routeIs('admin.members.settings.session.update')) {
+            return 'session';
+        }
+        if ($this->routeIs('admin.members.settings.auth.update')) {
+            return 'auth';
+        }
+
+        return $section;
+    }
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -55,41 +72,48 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
      */
     public function rules(): array
     {
-        $rules = [
+        $section = $this->settingsSection();
+
+        $passwordRules = [
             'password_min_length' => 'required|integer|min:6|max:32',
             'password_require_uppercase' => 'required|boolean',
             'password_require_number' => 'required|boolean',
             'password_require_symbol' => 'required|boolean',
-            'login_notification_mode' => ['required', new Enum(LoginNotificationMode::class)],
-            'force_2fa' => ['required', new Enum(TwoFactorMode::class)],
             'password_reset_enabled' => 'required|boolean',
             'pwned_password_check_enabled' => 'required|boolean',
+        ];
+
+        $sessionRules = [
+            'members_session_lifetime_enabled' => 'required|boolean',
+            'members_session_lifetime' => 'required|integer|min:1|max:43200', // 最大30日
+        ];
+
+        $authenticationRules = [
+            'login_notification_mode' => ['required', new Enum(LoginNotificationMode::class)],
             'login_attempt_limit_enabled' => 'required|boolean',
             'login_attempt_max_attempts' => 'required|integer|min:1|max:100',
             'login_attempt_time_window' => 'required|integer|min:1|max:1440', // 最大24時間
             'login_attempt_lockout_duration' => 'required|integer|min:1|max:10080', // 最大1週間
             'lockout_notification_enabled' => 'required|boolean',
-            // 管理メンバー用セッション設定
-            'members_session_lifetime_enabled' => 'required|boolean',
-            'members_session_lifetime' => 'required|integer|min:1|max:43200', // 最大30日
-            // 二段階認証の有効期限設定
+            'force_2fa' => ['required', new Enum(TwoFactorMode::class)],
             'two_factor_expire_minutes' => 'required|integer|min:1|max:60', // 1-60分（メール認証）
             'two_factor_resend_interval_seconds' => 'required|integer|min:60|max:600', // 60-600秒（1-10分）
-            // Passkey有効/無効設定（メール認証は常に有効）
             'enabled_2fa_passkey' => 'nullable|boolean',
-            // 二段階認証試行制限設定
             '2fa_max_attempts' => 'required|integer|min:1|max:10',
             '2fa_attempt_window' => 'required|integer|min:5|max:60',
             '2fa_lockout_duration' => 'required|integer|min:5|max:1440',
             '2fa_lockout_notification_enabled' => 'required|boolean',
-            // 回復コード設定
             'recovery_codes_count' => 'required|integer|min:1|max:10',
             'recovery_code_regenerate_interval' => 'required|integer|min:1|max:168', // 1-168時間（1時間-7日間）
-            // CAPTCHA設定（管理画面ログイン用）
             'captcha_admin_login_enabled' => 'nullable|boolean',
         ];
 
-        return $rules;
+        return match ($section) {
+            'password' => $passwordRules,
+            'session' => $sessionRules,
+            'auth' => $authenticationRules,
+            default => array_merge($passwordRules, $sessionRules, $authenticationRules),
+        };
     }
 
     /**
