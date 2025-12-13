@@ -1,0 +1,90 @@
+name: Security Scan
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    # 毎週月曜日 9:00 JST (0:00 UTC)
+    - cron: '0 0 * * 1'
+
+jobs:
+  # ============================================
+  # Dependency Audit
+  # ============================================
+  composer-audit:
+    name: Composer Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Composer Audit
+        run: composer audit --format=json > composer-audit.json || true
+
+      - name: Upload audit results
+        uses: actions/upload-artifact@v4
+        with:
+          name: composer-audit
+          path: composer-audit.json
+          retention-days: 30
+
+  npm-audit:
+    name: NPM Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: NPM Audit
+        run: npm audit --json > npm-audit.json || true
+
+      - name: Upload audit results
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit
+          path: npm-audit.json
+          retention-days: 30
+
+  # ============================================
+  # SAST (Static Application Security Testing)
+  # ベータ版以降で有効化
+  # ============================================
+  # semgrep:
+  #   name: Semgrep SAST
+  #   runs-on: ubuntu-latest
+  #
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Run Semgrep
+  #       uses: returntocorp/semgrep-action@v1
+  #       with:
+  #         config: >-
+  #           p/php
+  #           p/laravel
+  #           p/security-audit
