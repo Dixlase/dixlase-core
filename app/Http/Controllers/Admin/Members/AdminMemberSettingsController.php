@@ -41,12 +41,18 @@ class AdminMemberSettingsController extends AdminLoggedInController
         $this->memberSettingRepository = $memberSettingRepository;
     }
 
+    /**
+     * メンバー設定概要画面
+     */
     public function index()
     {
         $this->loadViewParams();
         return view('admin.members.settings.index', $this->viewParams);
     }
 
+    /**
+     * 全メンバー強制ログアウト
+     */
     public function forceLogoutAll()
     {
         $currentUserId = Auth::guard('member')->id();
@@ -66,6 +72,9 @@ class AdminMemberSettingsController extends AdminLoggedInController
             ->with('error', __('admin.members.force_logout_all_error'));
     }
 
+    /**
+     * ビューパラメータを読み込む
+     */
     protected function loadViewParams(): void
     {
         $passwordMinLength = (int) $this->memberSettingRepository->get('password_min_length', 8);

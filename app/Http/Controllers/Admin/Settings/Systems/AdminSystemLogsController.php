@@ -75,7 +75,7 @@ class AdminSystemLogsController extends AdminLoggedInController
             $this->viewParams['logs'] = [[
                 'timestamp' => '',
                 'level' => '',
-                'message' => __('admin.settings.systems.logs.messages.file_not_found', ['filename' => $fileName]),
+                'message' => __('admin.systems.logs.system.messages.file_not_found', ['filename' => $fileName]),
                 'context' => [],
                 'parsed' => false
             ]];
@@ -150,7 +150,7 @@ class AdminSystemLogsController extends AdminLoggedInController
 
         if (!$filePath || !File::exists($filePath)) {
             return redirect()->route('admin.settings.systems.logs', ['type' => $type])
-                ->with('error', __('admin.settings.systems.logs.messages.download_error', ['filename' => $fileName]));
+                ->with('error', __('admin.systems.logs.system.messages.download_error', ['filename' => $fileName]));
         }
 
         $downloadFileName = basename($filePath);
@@ -174,14 +174,14 @@ class AdminSystemLogsController extends AdminLoggedInController
                 File::put($filePath, '');
                 $clearedFileName = basename($filePath);
                 return redirect()->route('admin.settings.systems.logs', ['type' => $type])
-                    ->with('success', __('admin.settings.systems.logs.messages.clear_success', ['filename' => $clearedFileName]));
+                    ->with('success', __('admin.systems.logs.system.messages.clear_success', ['filename' => $clearedFileName]));
             } else {
                 return redirect()->route('admin.settings.systems.logs', ['type' => $type])
-                    ->with('error', __('admin.settings.systems.logs.messages.clear_error', ['filename' => $fileName]));
+                    ->with('error', __('admin.systems.logs.system.messages.clear_error', ['filename' => $fileName]));
             }
         } catch (\Exception $e) {
             return redirect()->route('admin.settings.systems.logs', ['type' => $type])
-                ->with('error', __('admin.settings.systems.logs.messages.clear_failed', ['error' => $e->getMessage()]));
+                ->with('error', __('admin.systems.logs.system.messages.clear_failed', ['error' => $e->getMessage()]));
         }
     }
 
@@ -226,7 +226,7 @@ class AdminSystemLogsController extends AdminLoggedInController
                 $results['error'] = 'success';
             }
 
-            $message = __('admin.settings.systems.logs.test_success', ['results' => implode(', ', array_keys($results))]);
+            $message = __('admin.systems.logs.system.test_success', ['results' => implode(', ', array_keys($results))]);
             return redirect()->back()->with('success', $message);
 
         } catch (\Exception $e) {
@@ -357,6 +357,14 @@ class AdminSystemLogsController extends AdminLoggedInController
     }
 
     /**
+     * 監査ログ一覧（専用ページ）
+     */
+    public function auditIndex(Request $request)
+    {
+        return $this->auditLogsDb($request);
+    }
+
+    /**
      * 監査ログDB表示
      */
     protected function auditLogsDb(Request $request)
@@ -439,7 +447,7 @@ class AdminSystemLogsController extends AdminLoggedInController
 
         if (!Schema::hasTable('audit_logs')) {
             return redirect()->route('admin.settings.systems.logs', ['type' => 'audit', 'view' => 'db'])
-                ->with('error', __('admin.settings.audit_logs.table_not_exists'));
+                ->with('error', __('admin.systems.logs.audit.table_not_exists'));
         }
 
         $auditLog = AuditLog::findOrFail($id);
@@ -465,7 +473,7 @@ class AdminSystemLogsController extends AdminLoggedInController
     {
         if (!Schema::hasTable('audit_logs')) {
             return redirect()->route('admin.settings.systems.logs', ['type' => 'audit', 'view' => 'db'])
-                ->with('error', __('admin.settings.audit_logs.table_not_exists'));
+                ->with('error', __('admin.systems.logs.audit.table_not_exists'));
         }
 
         $query = AuditLog::query()->orderByDesc('occurred_at');
@@ -557,7 +565,7 @@ class AdminSystemLogsController extends AdminLoggedInController
     {
         if (!Schema::hasTable('audit_logs')) {
             return redirect()->route('admin.settings.systems.logs', ['type' => 'audit', 'view' => 'db'])
-                ->with('error', __('admin.settings.audit_logs.table_not_exists'));
+                ->with('error', __('admin.systems.logs.audit.table_not_exists'));
         }
 
         $days = (int) $request->input('days', 90);
@@ -572,7 +580,7 @@ class AdminSystemLogsController extends AdminLoggedInController
         }
 
         return redirect()->route('admin.settings.systems.logs', ['type' => 'audit', 'view' => 'db'])
-            ->with('success', __('admin.settings.audit_logs.cleanup_success', ['count' => $count]));
+            ->with('success', __('admin.systems.logs.audit.cleanup_success', ['count' => $count]));
     }
 
     /**

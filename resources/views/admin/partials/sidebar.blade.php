@@ -169,6 +169,42 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                                 <span class="text-xs text-gray-400">(閲覧のみ)</span>
                                                             @endif
                                                         </a>
+                                                    {{-- 4階層目: 孫項目がさらに子を持つ場合 --}}
+                                                    @elseif (isset($grand_child_item['children']) && is_array($grand_child_item['children']) && isset($grand_child_item['icon']) && isset($grand_child_item['text']))
+                                                        @php
+                                                            $open_grand_child_key = 'open_' . $grand_child_key;
+                                                            $is_open_grand_child = false;
+                                                            // 曾孫要素のルートが現在のルートと一致する場合は開く
+                                                            foreach ($grand_child_item['children'] as $ggc_item) {
+                                                                if (isset($ggc_item['route']) && $ggc_item['route'] === $route_name) {
+                                                                    $is_open_grand_child = true;
+                                                                    break;
+                                                                }
+                                                            }
+                                                        @endphp
+                                                        <div x-data="{ {{ $open_grand_child_key }}: {{ $is_open_grand_child ? 'true' : 'false' }} }">
+                                                            <button @click="{{ $open_grand_child_key }} = !{{ $open_grand_child_key }}" class="{{ $button_class }} sidebar-link">
+                                                                <i class="{{ $grand_child_item['icon'] }} mr-3"></i>
+                                                                <span>{{ __($grand_child_item['text']) }}</span>
+                                                                <svg class="{{ $arrow_class }}" :class="{ 'rotate-180': {{ $open_grand_child_key }} }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                                </svg>
+                                                            </button>
+                                                            <div x-show="{{ $open_grand_child_key }}" x-collapse class="ml-2 space-y-1">
+                                                                @foreach ($grand_child_item['children'] as $great_grand_child_key => $great_grand_child_item)
+                                                                    @php
+                                                                        $great_grand_child_role_key = $key . '.' . $child_key . '.' . $grand_child_key . '.' . $great_grand_child_key;
+                                                                    @endphp
+                                                                    @if (isset($great_grand_child_item['route']) && Route::has($great_grand_child_item['route']) && isset($great_grand_child_item['icon']) && isset($great_grand_child_item['text']) && (\App\Helpers\AdminHelper::canEditMenu($great_grand_child_role_key) || \App\Helpers\AdminHelper::canViewMenu($great_grand_child_role_key)))
+                                                                        <a href="{{ route($great_grand_child_item['route']) }}"
+                                                                        class="{{ $button_class }} {{ $great_grand_child_item['route'] === $route_name ? 'sidebar-link-active' : 'sidebar-link' }}">
+                                                                            <i class="{{ $great_grand_child_item['icon'] }} mr-3"></i>
+                                                                            <span>{{ __($great_grand_child_item['text']) }}</span>
+                                                                        </a>
+                                                                    @endif
+                                                                @endforeach
+                                                            </div>
+                                                        </div>
                                                     @endif
                                                 @endforeach
                                             </div>

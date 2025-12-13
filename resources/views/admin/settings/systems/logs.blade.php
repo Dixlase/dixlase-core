@@ -37,7 +37,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         />
     @endif
 
-    @include('admin::settings.systems.partials.logs-navigation', ['logType' => $logType])
+    @include('admin::settings.systems.partials.logs-navigation', ['logType' => $logType, 'pageType' => 'system'])
 
     
     <!-- Action Buttons -->
@@ -50,11 +50,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- Clear Button -->
         <form method="POST" action="{{ route('admin.settings.systems.logs.clear', ['type' => $logType]) }}" 
-            onsubmit="return confirm('{{ __('admin.settings.systems.logs.clear_confirm') }}')">
+            onsubmit="return confirm('{{ __('admin.systems.logs.system.clear_confirm') }}')">
             @csrf
             <button type="submit" class="action-button action-button--danger flex-shrink-0">
                 <i class="fas fa-trash mr-2"></i>
-                {{ __('admin.settings.systems.logs.clear') }}
+                {{ __('admin.systems.logs.system.clear') }}
             </button>
         </form>
     </nav>
@@ -76,7 +76,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- Pagination Controls -->
     <x-pagination
         :pagination="$pagination ?? null"
-        route="admin.settings.systems.logs"
+        route="admin.settings.systems.logs.system"
         :routeParams="array_filter([
             'type' => $logType,
             'per_page' => request('per_page')
@@ -211,7 +211,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endif
         @empty
             <div class="p-4 text-gray-600 dark:text-gray-300">
-                {{ __('admin.settings.systems.logs.no_logs') }}
+                {{ __('admin.systems.logs.system.no_logs') }}
             </div>
         @endforelse
     </section>
@@ -233,7 +233,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- Pagination Controls -->
     <x-pagination
         :pagination="$pagination ?? null"
-        route="admin.settings.systems.logs"
+        route="admin.settings.systems.logs.system"
         :routeParams="array_filter([
             'type' => $logType,
             'per_page' => request('per_page')
