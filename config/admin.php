@@ -269,9 +269,20 @@ return [
                             'icon' => 'fas fa-fw fa-key',
                         ],
                         'logs' => [
-                            'text' => 'admin.nav.settings.systems.logs',
-                            'route' => 'admin.settings.systems.logs',
+                            'text' => 'admin.nav.settings.systems.logs.text',
                             'icon' => 'fas fa-fw fa-file-alt',
+                            'children' => [
+                                'audit' => [
+                                    'text' => 'admin.nav.settings.systems.logs.audit',
+                                    'route' => 'admin.settings.systems.logs',
+                                    'icon' => 'fas fa-fw fa-clipboard-list',
+                                ],
+                                'system' => [
+                                    'text' => 'admin.nav.settings.systems.logs.system',
+                                    'route' => 'admin.settings.systems.logs.system',
+                                    'icon' => 'fas fa-fw fa-scroll',
+                                ],
+                            ]
                         ],
                         'info' => [
                             'text' => 'admin.nav.settings.systems.info',

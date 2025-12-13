@@ -37,7 +37,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         />
     @endif
 
-    @include('admin::settings.systems.partials.logs-navigation', ['logType' => 'audit', 'currentView' => 'db'])
+    @include('admin::settings.systems.partials.logs-navigation', ['logType' => 'audit', 'currentView' => 'db', 'pageType' => 'audit'])
 
     @if(!$tableExists)
     <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
@@ -47,7 +47,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </svg>
             <div class="ml-3">
                 <p class="text-sm text-yellow-700 dark:text-yellow-300">
-                    {{ __('admin.settings.audit_logs.table_not_exists') }}
+                    {{ __('admin.systems.logs.audit.table_not_exists') }}
                 </p>
             </div>
         </div>
@@ -61,7 +61,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <a href="{{ route('admin.settings.systems.audit-logs.export', request()->query()) }}" 
            class="action-button action-button--success flex-shrink-0">
             <i class="fas fa-download mr-2"></i>
-            {{ __('admin.settings.audit_logs.export_csv') }}
+            {{ __('admin.systems.logs.audit.export_csv') }}
         </a>
         @endif
     </nav>
@@ -73,7 +73,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @click="open = !open"
                     class="flex items-center justify-between w-full text-left">
                 <span class="text-lg font-medium text-gray-900 dark:text-white">
-                    {{ __('admin.settings.audit_logs.filters') }}
+                    {{ __('admin.systems.logs.audit.filters') }}
                 </span>
                 <svg class="w-5 h-5 text-gray-500 transform transition-transform" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -81,30 +81,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </button>
         </div>
         <div x-show="open" x-collapse>
-            <form method="GET" action="{{ route('admin.settings.systems.logs', ['type' => 'audit', 'view' => 'db']) }}" class="p-4">
-                <input type="hidden" name="type" value="audit">
-                <input type="hidden" name="view" value="db">
+            <form method="GET" action="{{ route('admin.settings.systems.logs') }}" class="p-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {{-- 検索 --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ __('admin.settings.audit_logs.search') }}
+                            {{ __('admin.systems.logs.audit.search') }}
                         </label>
                         <input type="text" name="search" value="{{ request('search') }}"
                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
-                               placeholder="{{ __('admin.settings.audit_logs.search_placeholder') }}">
+                               placeholder="{{ __('admin.systems.logs.audit.search_placeholder') }}">
                     </div>
 
                     {{-- カテゴリ --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ __('admin.settings.audit_logs.category') }}
+                            {{ __('admin.systems.logs.audit.category') }}
                         </label>
                         <select name="category" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
                             <option value="">{{ __('common.all') }}</option>
                             @foreach($categories as $category)
                             <option value="{{ $category }}" {{ request('category') == $category ? 'selected' : '' }}>
-                                {{ __('admin.settings.audit_logs.categories.' . $category, [], $category) }}
+                                {{ __('admin.systems.logs.audit.categories.' . $category, [], $category) }}
                             </option>
                             @endforeach
                         </select>
@@ -113,7 +111,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     {{-- アクション --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ __('admin.settings.audit_logs.action') }}
+                            {{ __('admin.systems.logs.audit.action') }}
                         </label>
                         <select name="action" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
                             <option value="">{{ __('common.all') }}</option>
@@ -128,13 +126,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     {{-- 重要度 --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ __('admin.settings.audit_logs.severity') }}
+                            {{ __('admin.systems.logs.audit.severity') }}
                         </label>
                         <select name="severity" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
                             <option value="">{{ __('common.all') }}</option>
                             @foreach($severities as $severity)
                             <option value="{{ $severity }}" {{ request('severity') == $severity ? 'selected' : '' }}>
-                                {{ __('admin.settings.audit_logs.severities.' . $severity) }}
+                                {{ __('admin.systems.logs.audit.severities.' . $severity) }}
                             </option>
                             @endforeach
                         </select>
@@ -143,13 +141,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     {{-- 結果 --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ __('admin.settings.audit_logs.outcome') }}
+                            {{ __('admin.systems.logs.audit.outcome') }}
                         </label>
                         <select name="outcome" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
                             <option value="">{{ __('common.all') }}</option>
                             @foreach($outcomes as $outcome)
                             <option value="{{ $outcome }}" {{ request('outcome') == $outcome ? 'selected' : '' }}>
-                                {{ __('admin.settings.audit_logs.outcomes.' . $outcome) }}
+                                {{ __('admin.systems.logs.audit.outcomes.' . $outcome) }}
                             </option>
                             @endforeach
                         </select>
@@ -158,7 +156,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     {{-- IPアドレス --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ __('admin.settings.audit_logs.ip_address') }}
+                            {{ __('admin.systems.logs.audit.ip_address') }}
                         </label>
                         <input type="text" name="ip_address" value="{{ request('ip_address') }}"
                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
@@ -168,7 +166,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     {{-- 開始日 --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ __('admin.settings.audit_logs.date_from') }}
+                            {{ __('admin.systems.logs.audit.date_from') }}
                         </label>
                         <input type="date" name="date_from" value="{{ request('date_from') }}"
                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
@@ -177,7 +175,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     {{-- 終了日 --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ __('admin.settings.audit_logs.date_to') }}
+                            {{ __('admin.systems.logs.audit.date_to') }}
                         </label>
                         <input type="date" name="date_to" value="{{ request('date_to') }}"
                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
@@ -185,7 +183,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
 
                 <div class="mt-4 flex justify-end space-x-2">
-                    <a href="{{ route('admin.settings.systems.logs', ['type' => 'audit', 'view' => 'db']) }}" 
+                    <a href="{{ route('admin.settings.systems.logs') }}" 
                        class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
                         {{ __('common.reset') }}
                     </a>
@@ -219,8 +217,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'prev_page' => $auditLogs->currentPage() > 1 ? $auditLogs->currentPage() - 1 : null,
             'next_page' => $auditLogs->hasMorePages() ? $auditLogs->currentPage() + 1 : null,
         ]"
-        route="admin.settings.systems.logs"
-        :routeParams="array_merge(['type' => 'audit', 'view' => 'db'], request()->except(['page', 'type', 'view']))"
+        route="admin.systems.logs"
+        :routeParams="request()->except(['page'])"
         :mobilePageRange="0"
         :desktopPageRange="2"
     />
@@ -235,7 +233,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <div class="flex items-center gap-2 flex-wrap">
                             {{-- カテゴリバッジ --}}
                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                {{ __('admin.settings.audit_logs.categories.' . $log->category, [], $log->category) }}
+                                {{ __('admin.systems.logs.audit.categories.' . $log->category, [], $log->category) }}
                             </span>
                             {{-- アクション --}}
                             <span class="text-sm font-medium text-gray-900 dark:text-white">
@@ -255,7 +253,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 ];
                             @endphp
                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $severityColors[$log->severity] ?? $severityColors['info'] }}">
-                                {{ __('admin.settings.audit_logs.severities.' . $log->severity) }}
+                                {{ __('admin.systems.logs.audit.severities.' . $log->severity) }}
                             </span>
                             {{-- 結果バッジ --}}
                             @php
@@ -268,14 +266,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 ];
                             @endphp
                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $outcomeColors[$log->outcome] ?? $outcomeColors['unknown'] }}">
-                                {{ __('admin.settings.audit_logs.outcomes.' . $log->outcome) }}
+                                {{ __('admin.systems.logs.audit.outcomes.' . $log->outcome) }}
                             </span>
                         </div>
                         <div class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                             @if($log->actor_name)
                                 <span class="font-medium">{{ $log->actor_name }}</span>
                             @else
-                                <span class="italic">{{ __('admin.settings.audit_logs.system') }}</span>
+                                <span class="italic">{{ __('admin.systems.logs.audit.system') }}</span>
                             @endif
                             @if($log->target_label)
                                 → {{ $log->target_label }}
@@ -297,7 +295,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </a>
         @empty
             <div class="p-8 text-center text-gray-500 dark:text-gray-400">
-                {{ __('admin.settings.audit_logs.no_logs') }}
+                {{ __('admin.systems.logs.audit.no_logs') }}
             </div>
         @endforelse
     </section>
@@ -323,8 +321,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'prev_page' => $auditLogs->currentPage() > 1 ? $auditLogs->currentPage() - 1 : null,
             'next_page' => $auditLogs->hasMorePages() ? $auditLogs->currentPage() + 1 : null,
         ]"
-        route="admin.settings.systems.logs"
-        :routeParams="array_merge(['type' => 'audit', 'view' => 'db'], request()->except(['page', 'type', 'view']))"
+        route="admin.systems.logs"
+        :routeParams="request()->except(['page'])"
         :mobilePageRange="0"
         :desktopPageRange="2"
     />
@@ -332,18 +330,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- Cleanup Section -->
     <div class="mt-6 bg-white dark:bg-gray-800 rounded-lg shadow p-4">
         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-            {{ __('admin.settings.audit_logs.cleanup_title') }}
+            {{ __('admin.systems.logs.audit.cleanup_title') }}
         </h3>
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            {{ __('admin.settings.audit_logs.cleanup_description') }}
+            {{ __('admin.systems.logs.audit.cleanup_description') }}
         </p>
         <form method="POST" action="{{ route('admin.settings.systems.audit-logs.cleanup') }}" 
-              onsubmit="return confirm('{{ __('admin.settings.audit_logs.cleanup_confirm') }}')">
+              onsubmit="return confirm('{{ __('admin.systems.logs.audit.cleanup_confirm') }}')">
             @csrf
             <div class="flex items-center gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        {{ __('admin.settings.audit_logs.cleanup_days') }}
+                        {{ __('admin.systems.logs.audit.cleanup_days') }}
                     </label>
                     <input type="number" name="days" value="90" min="0" 
                            class="w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
@@ -351,7 +349,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div class="pt-6">
                     <button type="submit" class="action-button action-button--danger">
                         <i class="fas fa-trash mr-2"></i>
-                        {{ __('admin.settings.audit_logs.cleanup_button') }}
+                        {{ __('admin.systems.logs.audit.cleanup_button') }}
                     </button>
                 </div>
             </div>

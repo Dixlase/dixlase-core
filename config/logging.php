@@ -86,9 +86,10 @@ return [
         ],
         
         'dixlase' => [
-            'driver' => 'single',
+            'driver' => 'daily',
             'path' => storage_path('logs/dixlase.log'),
             'level' => env('LOG_LEVEL', 'debug'),
+            'days' => env('LOG_DAILY_DAYS', 14),
             'replace_placeholders' => true,
         ],
 
@@ -156,7 +157,7 @@ return [
 
         //管理画面のアクティビティ
         'admin_activity' => [
-            'driver' => 'single',
+            'driver' => 'daily',
             'formatter' => env('LOG_STDERR_FORMATTER'),
             'path' => storage_path('logs/admin_activity.log'),
             'level' => 'info',
@@ -165,7 +166,7 @@ return [
 
         //管理画面のエラー
         'admin_error' => [
-            'driver' => 'single',
+            'driver' => 'daily',
             'formatter' => env('LOG_STDERR_FORMATTER'),
             'path' => storage_path('logs/admin_error.log'),
             'level' => 'error',
@@ -174,7 +175,7 @@ return [
 
         //フロントページの操作
         'front_activity' => [
-            'driver' => 'single',
+            'driver' => 'daily',
             'formatter' => env('LOG_STDERR_FORMATTER'),
             'path' => storage_path('logs/front_activity.log'),
             'level' => 'info',
@@ -183,7 +184,7 @@ return [
 
         //フロントページのエラー
         'front_error' => [
-            'driver' => 'single',
+            'driver' => 'daily',
             'formatter' => env('LOG_STDERR_FORMATTER'),
             'path' => storage_path('logs/front_error.log'),
             'level' => 'error',
@@ -207,7 +208,7 @@ return [
 
         // CSP違反レポートログ
         'csp' => [
-            'driver' => 'single',
+            'driver' => 'daily',
             'path' => storage_path('logs/csp_violations.log'),
             'level' => 'warning',
             'days' => env('LOG_DAILY_DAYS', 14),
