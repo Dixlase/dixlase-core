@@ -196,16 +196,16 @@ class AdminMemberIndexController extends AdminLoggedInController
         if ($isMailServerTested && $emailVerified === '0') {
             try {
                 $member->sendEmailVerificationNotification('create');
-                $message = __('admin.members.messages.created_with_verification_email');
+                $message = __('admin/members/create.messages.created_with_verification_email');
             } catch (\Exception $e) {
                 \Log::error('Failed to send verification email', [
                     'member_id' => $member->id,
                     'error' => $e->getMessage()
                 ]);
-                $message = __('admin.members.messages.created_but_email_failed');
+                $message = __('admin/members/create.messages.created_but_email_failed');
             }
         } else {
-            $message = __('admin.members.messages.created');
+            $message = __('admin/members/create.messages.created');
         }
 
         return redirect()->route('admin.members.edit', ['member' => $member->id])->with('success', $message);
@@ -335,16 +335,16 @@ class AdminMemberIndexController extends AdminLoggedInController
             try {
                 $context = ($emailChanged && $wasVerified) ? 'email_change' : 'create';
                 $member->sendEmailVerificationNotification($context);
-                $message = __('admin.members.messages.updated_with_verification_email');
+                $message = __('admin/members/edit.messages.updated_with_verification_email');
             } catch (\Exception $e) {
                 \Log::error('Failed to send verification email', [
                     'member_id' => $member->id,
                     'error' => $e->getMessage()
                 ]);
-                $message = __('admin.members.messages.updated_but_email_failed');
+                $message = __('admin/members/edit.messages.updated_but_email_failed');
             }
         } else {
-            $message = __('admin.members.messages.updated');
+            $message = __('admin/members/edit.messages.updated');
         }
 
         return redirect()->route('admin.members.edit', ['member' => $id])->with('success', $message);
@@ -356,12 +356,12 @@ class AdminMemberIndexController extends AdminLoggedInController
     public function destroy(Member $member)
     {
         if ($member->id === 1) {
-            return redirect()->back()->withErrors(['delete' => __('admin.members.messages.initial_member_cannot_delete')]);
+            return redirect()->back()->withErrors(['delete' => __('admin/members/index.messages.initial_member_cannot_delete')]);
         }
 
         $member->delete();
 
-        return redirect()->route('admin.members.index')->with('success', __('admin.members.messages.deleted'));
+        return redirect()->route('admin.members.index')->with('success', __('admin/members/edit.messages.deleted'));
     }
 
     private function isMailServerTested(): bool

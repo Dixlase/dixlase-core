@@ -42,8 +42,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 認証メール送信確認モーダル -->
     <x-modal
         id="verificationEmailModal"
-        :title="__('admin/members/index.form.send_verification_email_title')"
-        :message="__('admin/members/index.form.send_verification_email_confirm')"
+        :title="__('admin/members/form.send_verification_email_title')"
+        :message="__('admin/members/form.send_verification_email_confirm')"
         :confirm_label="__('common.send')"
         :cancel_label="__('common.cancel')"
         icon_type="info"
@@ -71,8 +71,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 回復コード削除確認モーダル -->
     <x-modal 
         id="deleteRecoveryCodesModal"
-        :title="__('admin/members/index.form.confirm_delete_recovery_codes_title')"
-        :message="__('admin/members/index.form.confirm_delete_recovery_codes_message')"
+        :title="__('admin/members/form.confirm_delete_recovery_codes_title')"
+        :message="__('admin/members/form.confirm_delete_recovery_codes_message')"
         :confirm_label="__('common.delete')"
         :cancel_label="__('common.cancel')"
         confirm_variant="danger"
@@ -87,8 +87,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <x-save
         id_confirmation="confirmationModal"
         :label="__('common.update')"
-        :title="__('admin/members/index.edit.confirm_title')"
-        :message="__('admin/members/index.edit.confirm_message')"
+        :title="__('admin/members/edit.confirm_title')"
+        :message="__('admin/members/edit.confirm_message')"
         :confirm_label="__('common.update')"
         :cancel_label="__('common.cancel')"
         form="update-form"
@@ -202,7 +202,7 @@ window.revokePasskey = function(event) {
     }
 
     const memberId = {{ $member->id }};
-    const url = `/admin/settings/members/passkey/${memberId}/${currentCredentialId}`;
+    const url = `/admin/members/passkey/${memberId}/${currentCredentialId}`;
     
     console.log('[Member Passkey Delete] Sending DELETE request', {
         url: url,
@@ -264,7 +264,7 @@ window.revokeAllPasskeys = function(event) {
     }
     
     const memberId = {{ $member->id }};
-    const url = `/admin/settings/members/passkey/${memberId}/all`;
+    const url = `/admin/members/passkey/${memberId}/all`;
     
     console.log('[Member Passkey Delete All] Sending DELETE request', {
         url: url,
@@ -375,7 +375,7 @@ window.revokeRecoveryCodes = function(event) {
     }
     
     const memberId = {{ $member->id }};
-    const url = `/admin/settings/members/recovery-codes/${memberId}`;
+    const url = `/admin/members/recovery-codes/${memberId}`;
     
     console.log('[Member Recovery Code Delete] Sending DELETE request', {
         url: url,
@@ -402,7 +402,7 @@ window.revokeRecoveryCodes = function(event) {
         if (data.success) {
             window.PasskeyResultModal.showSuccess(
                 'passkeyResultModal',
-                '{{ __('admin/members/index.form.recovery_codes_delete_success_title') }}',
+                '{{ __('admin/members/form.recovery_codes_delete_success_title') }}',
                 data.message,
                 () => location.reload()
             );
@@ -420,7 +420,7 @@ window.revokeRecoveryCodes = function(event) {
         window.PasskeyResultModal.showError(
             'passkeyResultModal',
             '{{ __('common.error') }}',
-            '{{ __('admin/members/index.form.recovery_codes_delete_error') }}'
+            '{{ __('admin/members/form.recovery_codes_delete_error') }}'
         );
     });
 };

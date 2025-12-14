@@ -19,9 +19,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @extends('layouts.auth')
-@section('title', __('admin.login.title'))
-@section('header', __('admin.login.header'))
-@section('description', __('admin.login.description'))
+@section('title', __('admin/auth.login.title'))
+@section('header', __('admin/auth.login.header'))
+@section('description', __('admin/auth.login.description'))
 
 @section('content')
     {{-- メール認証待ちメッセージ --}}
@@ -68,7 +68,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <x-form.checkbox
             id="remember_me"
             name="remember"
-            label="admin.login.remember_me"
+            label="admin/auth.login.remember_me"
             class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-500 dark:bg-gray-800 dark:text-indigo-400"
         />
 
@@ -85,7 +85,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             @if (Route::has('admin.password.request') && ($passwordResetEnabled ?? true))
                 <a class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 hover:underline" href="{{ route('admin.password.request') }}">
-                    {{ __('admin.login.forgot_password') }}
+                    {{ __('admin/auth.login.forgot_password') }}
                 </a>
             @endif
         </div>
@@ -94,7 +94,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('back_link')
     <a class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 hover:underline" href="{{ route('welcome') }}">
-        {{ __('admin.login.back_to_welcome') }}
+        {{ __('admin/auth.login.back_to_welcome') }}
     </a>
 @endsection
 

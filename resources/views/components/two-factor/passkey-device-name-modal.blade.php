@@ -63,12 +63,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 variant="secondary"
                 :label="$cancelLabel ?? __('common.cancel')"
                 onclick="window.PasskeyDeviceNameModal.cancel('{{ $modalId }}')"
+                class="mx-2"
             />
             <x-form.button
                 type="button"
                 variant="primary"
                 :label="$confirmLabel ?? __('common.ok')"
                 onclick="window.PasskeyDeviceNameModal.confirm('{{ $modalId }}')"
+                class="mx-2"
             />
         </div>
     </div>

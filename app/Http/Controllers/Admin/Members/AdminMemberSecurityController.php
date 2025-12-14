@@ -49,7 +49,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
         }
 
         return redirect()->route('admin.members.edit', ['member' => $member->id])
-            ->with('success', __('admin/members/messages.force_logout_success'));
+            ->with('success', __('admin/members/edit.messages.force_logout_success'));
     }
 
     /**
@@ -61,7 +61,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
         \App\Models\MemberLoginAttempt::where('identifier', $member->email)->delete();
 
         return redirect()->route('admin.members.edit', ['member' => $member->id])
-            ->with('success', __('admin/members/messages.unlock_lockout_success'));
+            ->with('success', __('admin/members/edit.messages.unlock_lockout_success'));
     }
 
     /**
@@ -111,7 +111,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
 
             $member->sendEmailVerificationNotification('resend');
 
-            session()->flash('success', __('admin/members/messages.verification_email_sent'));
+            session()->flash('success', __('admin/members/edit.messages.verification_email_sent'));
 
             return response()->json([
                 'success' => true,
@@ -122,7 +122,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
             
             return response()->json([
                 'success' => false,
-                'message' => __('admin/members/messages.verification_email_failed')
+                'message' => __('admin/members/edit.messages.verification_email_failed')
             ], 500);
         }
     }
