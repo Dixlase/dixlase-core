@@ -93,7 +93,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         {{-- メールアドレス確認フィールド（新規作成時 or 編集時にメールアドレス変更） --}}
         <fieldset id="email-confirmation-field" style="display: none;">
-            <legend>{{ __('admin.members.form.email_confirmation') }}</legend>
+            <legend>{{ __('admin/members/index.form.email_confirmation') }}</legend>
             <x-form.text
                 type="email"
                 id="email_confirmation"
@@ -105,7 +105,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 oncopy="return false"
                 oncut="return false"
             />
-            <p class="help-text">{{ __('admin.members.form.email_confirmation_help') }}</p>
+            <p class="help-text">{{ __('admin/members/index.form.email_confirmation_help') }}</p>
             <x-form.error
                 :messages="$errors->get('email_confirmation')"
             />
@@ -139,12 +139,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <!-- アカウント認証設定 -->
         <fieldset>
-            <legend>{{ __('admin.members.form.account_verification') }}</legend>
+            <legend>{{ __('admin/members/index.form.account_verification') }}</legend>
             
             @if(!$isMailServerTested)
                 <x-message
                     type="info"
-                    :message="__('admin.members.form.account_verification_disabled')"
+                    :message="__('admin/members/index.form.account_verification_disabled')"
                 />
                 <input type="hidden" name="email_verified" value="1">
             @else
@@ -153,8 +153,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @php
                         $emailVerifiedValue = old('email_verified', '0');
                         $emailVerificationOptions = [
-                            '0' => 'admin.members.form.account_verified_send_email',
-                            '1' => 'admin.members.form.account_verified',
+                            '0' => 'admin/members/index.form.account_verified_send_email',
+                            '1' => 'admin/members/index.form.account_verified',
                         ];
                     @endphp
                     <x-form.radio-group
@@ -162,14 +162,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :options="$emailVerificationOptions"
                         :value="$emailVerifiedValue"
                     />
-                    <p class="description-text">{{ __('admin.members.form.account_verification_help_create') }}</p>
+                    <p class="description-text">{{ __('admin/members/index.form.account_verification_help_create') }}</p>
                 @else
                     {{-- 編集時 --}}
                     @php
                         $emailVerifiedValue = old('email_verified', $member->hasVerifiedEmail() ? '1' : '0');
                         $emailVerificationOptionsEdit = [
-                            '0' => 'admin.members.form.account_unverified',
-                            '1' => 'admin.members.form.account_verified',
+                            '0' => 'admin/members/index.form.account_unverified',
+                            '1' => 'admin/members/index.form.account_verified',
                         ];
                     @endphp
                     <x-form.radio-group
@@ -177,7 +177,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :options="$emailVerificationOptionsEdit"
                         :value="$emailVerifiedValue"
                     />
-                    <p class="description-text">{{ __('admin.members.form.account_verification_help_edit') }}</p>
+                    <p class="description-text">{{ __('admin/members/index.form.account_verification_help_edit') }}</p>
                     
                     {{-- 認証メール送信ボタン --}}
                     <div class="mt-4">
@@ -186,7 +186,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 type="button"
                                 variant="secondary"
                                 size="sm"
-                                :label="__('admin.members.form.send_verification_email_button')"
+                                :label="__('admin/members/index.form.send_verification_email_button')"
                                 icon="fas fa-envelope"
                                 id="send-verification-email-btn"
                                 onclick="sendVerificationEmail({{ $member->id }})"
@@ -196,13 +196,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 type="button"
                                 variant="secondary"
                                 size="sm"
-                                :label="__('admin.members.form.send_verification_email_button')"
+                                :label="__('admin/members/index.form.send_verification_email_button')"
                                 icon="fas fa-envelope"
                                 :disabled="true"
                             />
                             <p class="text-sm text-yellow-600 dark:text-yellow-400 mt-2">
                                 <i class="fas fa-exclamation-triangle mr-1"></i>
-                                {{ __('admin.members.form.mail_server_not_tested') }}
+                                {{ __('admin/members/index.form.mail_server_not_tested') }}
                             </p>
                         @endif
                     </div>
@@ -254,7 +254,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- アカウントステータス -->
         <fieldset>
             <legend>
-                {{ __('admin.members.create.account_status') }}
+                {{ __('admin/members/index.create.account_status') }}
                 @if($isInitialAdmin)
                     <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">（初期管理者のため変更不可）</span>
                 @endif
@@ -262,7 +262,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             
             @if($isInitialAdmin)
                 <input type="hidden" name="status" value="1">
-                <p class="description-text">{{ __('admin.members.form.initial_admin_status_fixed') }}</p>
+                <p class="description-text">{{ __('admin/members/index.form.initial_admin_status_fixed') }}</p>
             @else
                 @php
                     $statusValue = old('status', (string) ($member->status->value ?? 1));
@@ -293,7 +293,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             
             @if($isInitialAdmin)
                 <input type="hidden" name="role" value="{{ $roleSuperAdminValue }}">
-                <p class="description-text">{{ __('admin.members.form.initial_admin_role_fixed') }}</p>
+                <p class="description-text">{{ __('admin/members/index.form.initial_admin_role_fixed') }}</p>
             @else
                 @php
                     $roleValue = old('role', $member->role->value ?? $roleAdminValue);
@@ -320,7 +320,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @if(!$isMailServerTested)
             <x-message
                 type="warning"
-                :message="__('admin.members.form.mail_server_not_tested')"
+                :message="__('admin/members/index.form.mail_server_not_tested')"
             />
         @endif
         
@@ -346,7 +346,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </fieldset>
         @else
             <fieldset>
-                <p class="description-text">{!! __('admin.members.form.login_notification_global_fixed', ['setting' => $loginNotificationModeLabel]) !!}</p>
+                <p class="description-text">{!! __('admin/members/index.form.login_notification_global_fixed', ['setting' => $loginNotificationModeLabel]) !!}</p>
             </fieldset>
         @endif
     </section>
@@ -357,7 +357,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @if(!$isMailServerTested)
             <x-message
                 type="warning"
-                :message="__('admin.members.form.mail_server_not_tested')"
+                :message="__('admin/members/index.form.mail_server_not_tested')"
             />
         @endif   
         
@@ -418,7 +418,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
         @else
             <fieldset>
-                <p class="description-text">{!! __('admin.members.form.two_factor_global_fixed', ['setting' => $twoFactorModeLabel]) !!}</p>
+                <p class="description-text">{!! __('admin/members/index.form.two_factor_global_fixed', ['setting' => $twoFactorModeLabel]) !!}</p>
             </fieldset>
         @endif
     </section>
@@ -547,7 +547,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             type="button"
                             variant="danger"
                             size="sm"
-                            :label="__('admin.members.form.delete_recovery_codes')"
+                            :label="__('admin/members/index.form.delete_recovery_codes')"
                             icon="fas fa-trash"
                             onclick="openModal('deleteRecoveryCodesModal')"
                         />
@@ -566,7 +566,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <li>{{ __('admin/profile.recovery_codes_info_1') }}</li>
                     <li>{{ __('admin/profile.recovery_codes_info_2') }}</li>
                     <li>{{ __('admin/profile.recovery_codes_info_3') }}</li>
-                    <li class="text-red-600 dark:text-red-400 font-semibold">{{ __('admin.members.form.recovery_codes_admin_note') }}</li>
+                    <li class="text-red-600 dark:text-red-400 font-semibold">{{ __('admin/members/index.form.recovery_codes_admin_note') }}</li>
                 </ul>
             </div>
         </div>
@@ -577,35 +577,35 @@ document.addEventListener('DOMContentLoaded', function() {
         <h2>{{ __('common.management_operations') }}</h2>
 
         <fieldset>
-            <legend>{{ __('admin.members.form.unlock_lockout') }}</legend>
-            <p class="mb-4">{{ __('admin.members.form.unlock_lockout_description') }}</p>
+            <legend>{{ __('admin/members/index.form.unlock_lockout') }}</legend>
+            <p class="mb-4">{{ __('admin/members/index.form.unlock_lockout_description') }}</p>
             <x-form.button
                 variant="info"
                 icon="fas fa-unlock"
-                :label="__('admin.members.form.unlock_lockout_button')"
+                :label="__('admin/members/index.form.unlock_lockout_button')"
                 onclick="openModal('unlockLockoutModal')"
             />
         </fieldset>
         
         <fieldset>
-            <legend>{{ __('admin.members.form.force_logout') }}</legend>
-            <p class="mb-4">{{ __('admin.members.form.force_logout_description') }}</p>
+            <legend>{{ __('admin/members/index.form.force_logout') }}</legend>
+            <p class="mb-4">{{ __('admin/members/index.form.force_logout_description') }}</p>
             <x-form.button
                 variant="warning"
                 icon="fas fa-sign-out-alt"
-                :label="__('admin.members.form.force_logout_button')"
+                :label="__('admin/members/index.form.force_logout_button')"
                 onclick="openModal('forceLogoutModal')"
             />
         </fieldset>
 
         @if(!$isInitialAdmin)
             <fieldset>
-                <legend>{{ __('admin.members.form.delete_member') }}</legend>
-                <p class="mb-4">{{ __('admin.members.form.delete_member_description') }}</p>
+                <legend>{{ __('admin/members/index.form.delete_member') }}</legend>
+                <p class="mb-4">{{ __('admin/members/index.form.delete_member_description') }}</p>
                 <x-form.button
                     variant="danger"
                     icon="fas fa-trash"
-                    :label="__('admin.members.form.delete_member_button')"
+                    :label="__('admin/members/index.form.delete_member_button')"
                     onclick="openModal('deleteMemberModal')"
                 />
             </fieldset>
@@ -639,9 +639,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     <x-modal
         id="forceLogoutModal"
-        :title="__('admin.members.modals.force_logout.title')"
-        :message="__('admin.members.modals.force_logout.message', ['name' => $member->name])"
-        :confirm_label="__('admin.members.modals.force_logout.confirm')"
+        :title="__('admin/members/index.modals.force_logout.title')"
+        :message="__('admin/members/index.modals.force_logout.message', ['name' => $member->name])"
+        :confirm_label="__('admin/members/index.modals.force_logout.confirm')"
         :cancel_label="__('common.cancel')"
         :form="$forceLogoutFormId"
         icon_type="warning"
@@ -650,9 +650,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <x-modal
         id="unlockLockoutModal"
-        :title="__('admin.members.modals.unlock_lockout.title')"
-        :message="__('admin.members.modals.unlock_lockout.message', ['name' => $member->name])"
-        :confirm_label="__('admin.members.modals.unlock_lockout.confirm')"
+        :title="__('admin/members/index.modals.unlock_lockout.title')"
+        :message="__('admin/members/index.modals.unlock_lockout.message', ['name' => $member->name])"
+        :confirm_label="__('admin/members/index.modals.unlock_lockout.confirm')"
         :cancel_label="__('common.cancel')"
         :form="$unlockLockoutFormId"
         icon_type="info"
@@ -662,8 +662,8 @@ document.addEventListener('DOMContentLoaded', function() {
     @if(!$isInitialAdmin)
         <x-modal
             id="deleteMemberModal"
-            :title="__('admin.members.modals.delete.title')"
-            :message="__('admin.members.modals.delete.message', ['name' => $member->name]) . "\n\n" . __('admin.members.modals.delete.warning')"
+            :title="__('admin/members/index.modals.delete.title')"
+            :message="__('admin/members/index.modals.delete.message', ['name' => $member->name]) . "\n\n" . __('admin/members/index.modals.delete.warning')"
             :confirm_label="__('common.delete')"
             :cancel_label="__('common.cancel')"
             :form="$deleteMemberFormId"

@@ -40,9 +40,9 @@
                     @endif
                 ">
                     @if($testStatus['connection_tested'] && $testStatus['send_tested'] && $testStatus['receive_tested'])
-                        {{ __('admin/settings/base/view_messages.mail_test_complete') }}
+                        {{ __('admin/settings/base/mail.view_messages.mail_test_complete') }}
                     @else
-                        {{ __('admin/settings/base/view_messages.mail_test_incomplete') }}
+                        {{ __('admin/settings/base/mail.view_messages.mail_test_incomplete') }}
                     @endif
                 </h3>
             </div>
@@ -54,7 +54,7 @@
             <div id="connection-test-status" class="flex items-center">
                 <i id="connection-test-icon" class="mr-2 {{ $testStatus['connection_tested'] ? 'fas fa-check-circle text-green-500' : 'fas fa-times-circle text-gray-400' }}"></i>
                 <span id="connection-test-text" class="text-sm {{ $testStatus['connection_tested'] ? 'text-green-700 dark:text-green-300' : 'text-gray-600 dark:text-gray-400' }}">
-                    1. {{ __('admin/settings/base/view_messages.connection_test') }}
+                    1. {{ __('admin/settings/base/mail.view_messages.connection_test') }}
                     <span id="connection-test-date">
                         @if($testStatus['connection_tested'] && $testStatus['connection_test_date'])
                             ({{ $testStatus['connection_test_date'] }})
@@ -67,7 +67,7 @@
             <div id="send-test-status" class="flex items-center">
                 <i id="send-test-icon" class="mr-2 {{ $testStatus['send_tested'] ? 'fas fa-check-circle text-green-500' : 'fas fa-times-circle text-gray-400' }}"></i>
                 <span id="send-test-text" class="text-sm {{ $testStatus['send_tested'] ? 'text-green-700 dark:text-green-300' : 'text-gray-600 dark:text-gray-400' }}">
-                    2. {{ __('admin/settings/base/view_messages.send_test') }}
+                    2. {{ __('admin/settings/base/mail.view_messages.send_test') }}
                     <span id="send-test-date">
                         @if($testStatus['send_tested'] && $testStatus['send_test_date'])
                             ({{ $testStatus['send_test_date'] }})
@@ -80,7 +80,7 @@
             <div id="receive-test-status" class="flex items-center">
                 <i id="receive-test-icon-main" class="mr-2 {{ $testStatus['receive_tested'] ? 'fas fa-check-circle text-green-500' : 'fas fa-times-circle text-gray-400' }}"></i>
                 <span id="receive-test-text-main" class="text-sm {{ $testStatus['receive_tested'] ? 'text-green-700 dark:text-green-300' : 'text-gray-600 dark:text-gray-400' }}">
-                    3. {{ __('admin/settings/base/view_messages.receive_test') }}
+                    3. {{ __('admin/settings/base/mail.view_messages.receive_test') }}
                     <span id="receive-test-date-main">
                         @if($testStatus['receive_tested'] && $testStatus['receive_test_date'])
                             ({{ $testStatus['receive_test_date'] }})

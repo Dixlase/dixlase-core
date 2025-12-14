@@ -16,6 +16,11 @@ return [
     'index' => [
         'heading' => 'メディアマスター',
         'upload_new_file' => '新しいファイルをアップロード',
+        'no_files' => 'ファイルがありません',
+        'upload_first_file' => '最初のファイルをアップロードしてください',
+        'preview' => 'プレビュー',
+        'download' => 'ダウンロード',
+        'delete' => '削除',
     ],
     'upload' => [
         'heading' => 'メディアアップロード',
