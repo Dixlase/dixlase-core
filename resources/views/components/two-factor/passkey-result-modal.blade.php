@@ -43,7 +43,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 type="button"
                 variant="primary"
                 :label="__('common.close')"
-                onclick="closeModal('{{ $modalId }}')"
+                onclick="window.PasskeyResultModal.close('{{ $modalId }}')"
                 class="mx-2"
             />
         </div>
