@@ -155,9 +155,11 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
         }
 
         try {
-            // フォームから送信されたシークレットキーを優先的に使用（保存前のテスト用）
+            // フォームから送信された値を優先的に使用（保存前のテスト用）
             $secretKey = $request->input('secret_key') ?: $this->securitySettingRepository->get('captcha_secret_key', '');
             $minScore = (float) ($request->input('min_score') ?: $this->securitySettingRepository->get('captcha_google_min_score', '0.5'));
+            $siteKey = $request->input('site_key') ?: $this->securitySettingRepository->get('captcha_site_key', '');
+            $projectId = $request->input('project_id') ?: $this->securitySettingRepository->get('captcha_google_project_id', '');
             
             if (empty($secretKey)) {
                 return response()->json([
@@ -166,7 +168,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
                 ]);
             }
             
-            $result = $this->verifyCaptchaToken($token, $secretKey, $driver, $minScore);
+            $result = $this->verifyCaptchaToken($token, $secretKey, $driver, $minScore, $siteKey, $projectId);
             
             if ($result['success']) {
                 // テスト結果を保存
@@ -210,10 +212,15 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
     /**
      * CAPTCHAトークンを検証
      */
-    protected function verifyCaptchaToken(string $token, string $secretKey, string $driver, float $minScore): array
+    protected function verifyCaptchaToken(string $token, string $secretKey, string $driver, float $minScore, ?string $siteKey = null, ?string $projectId = null): array
     {
+        // Google reCAPTCHA Enterpriseは別のAPIを使用
+        if ($driver === 'google_enterprise') {
+            return $this->verifyEnterpriseToken($token, $secretKey, $siteKey, $projectId, $minScore);
+        }
+        
         $verifyUrl = match ($driver) {
-            'google', 'google_enterprise' => 'https://www.google.com/recaptcha/api/siteverify',
+            'google' => 'https://www.google.com/recaptcha/api/siteverify',
             'turnstile' => 'https://challenges.cloudflare.com/turnstile/v0/siteverify',
             default => throw new \InvalidArgumentException("Unsupported CAPTCHA driver: {$driver}"),
         };
@@ -249,6 +256,83 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
         return [
             'success' => true,
             'score' => $data['score'] ?? null,
+        ];
+    }
+    
+    /**
+     * Google reCAPTCHA Enterpriseトークンを検証
+     */
+    protected function verifyEnterpriseToken(string $token, string $apiKey, ?string $siteKey, ?string $projectId, float $minScore): array
+    {
+        if (empty($apiKey)) {
+            return [
+                'success' => false,
+                'message' => __('admin.settings.security.captcha.test_enterprise_keys_missing'),
+            ];
+        }
+        
+        if (empty($projectId)) {
+            return [
+                'success' => false,
+                'message' => __('admin.settings.security.captcha.enterprise_project_id_required'),
+            ];
+        }
+        
+        // Google reCAPTCHA Enterprise API呼び出し
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+        ])->post("https://recaptchaenterprise.googleapis.com/v1/projects/{$projectId}/assessments?key={$apiKey}", [
+            'event' => [
+                'token' => $token,
+                'siteKey' => $siteKey ?? '',
+            ]
+        ]);
+        
+        if (!$response->successful()) {
+            Log::error('Google reCAPTCHA Enterprise API Error', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+            return [
+                'success' => false,
+                'message' => __('admin.settings.security.captcha_api_connection_failed'),
+            ];
+        }
+        
+        $data = $response->json();
+        
+        Log::info('Google reCAPTCHA Enterprise API Response', [
+            'token_valid' => $data['tokenProperties']['valid'] ?? false,
+            'score' => $data['riskAnalysis']['score'] ?? 'not_provided',
+            'reasons' => $data['riskAnalysis']['reasons'] ?? [],
+        ]);
+        
+        if (!($data['tokenProperties']['valid'] ?? false)) {
+            $reasons = $data['tokenProperties']['invalidReason'] ?? 'unknown';
+            return [
+                'success' => false,
+                'message' => __('admin.settings.security.captcha_validation_failed_with_errors', [
+                    'errors' => is_array($reasons) ? implode(', ', $reasons) : $reasons
+                ]),
+            ];
+        }
+        
+        $score = $data['riskAnalysis']['score'] ?? 0;
+        
+        if ($score < $minScore) {
+            return [
+                'success' => false,
+                'message' => __('admin.settings.security.captcha_validation_score_too_low', [
+                    'score' => $score,
+                    'min_score' => $minScore,
+                ]),
+                'score' => $score,
+            ];
+        }
+        
+        return [
+            'success' => true,
+            'score' => $score,
         ];
     }
 }

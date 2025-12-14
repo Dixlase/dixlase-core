@@ -32,7 +32,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </svg>
             </a>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-                {{ __('admin.systems.logs.audit.detail_title') }} #{{ $auditLog->id }}
+                {{ __('admin/settings/systems/logs.audit.detail_title') }} #{{ $auditLog->id }}
             </h1>
         </div>
     </div>
@@ -44,14 +44,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
                 <div class="p-4 border-b border-gray-200 dark:border-gray-700">
                     <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-                        {{ __('admin.systems.logs.audit.basic_info') }}
+                        {{ __('admin/settings/systems/logs.audit.basic_info') }}
                     </h2>
                 </div>
                 <div class="p-4">
                     <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                {{ __('admin.systems.logs.audit.occurred_at') }}
+                                {{ __('admin/settings/systems/logs.audit.occurred_at') }}
                             </dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white">
                                 {{ $auditLog->occurred_at?->format('Y-m-d H:i:s') }}
@@ -59,17 +59,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                {{ __('admin.systems.logs.audit.category') }}
+                                {{ __('admin/settings/systems/logs.audit.category') }}
                             </dt>
                             <dd class="mt-1">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                                    {{ __('admin.systems.logs.audit.categories.' . $auditLog->category, [], $auditLog->category) }}
+                                    {{ __('admin/settings/systems/logs.audit.categories.' . $auditLog->category, [], $auditLog->category) }}
                                 </span>
                             </dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                {{ __('admin.systems.logs.audit.action') }}
+                                {{ __('admin/settings/systems/logs.audit.action') }}
                             </dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono">
                                 {{ $auditLog->action }}
@@ -77,7 +77,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                {{ __('admin.systems.logs.audit.severity') }}
+                                {{ __('admin/settings/systems/logs.audit.severity') }}
                             </dt>
                             <dd class="mt-1">
                                 @php
@@ -93,13 +93,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     ];
                                 @endphp
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $severityColors[$auditLog->severity] ?? $severityColors['info'] }}">
-                                    {{ __('admin.systems.logs.audit.severities.' . $auditLog->severity) }}
+                                    {{ __('admin/settings/systems/logs.audit.severities.' . $auditLog->severity) }}
                                 </span>
                             </dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                {{ __('admin.systems.logs.audit.outcome') }}
+                                {{ __('admin/settings/systems/logs.audit.outcome') }}
                             </dt>
                             <dd class="mt-1">
                                 @php
@@ -112,14 +112,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     ];
                                 @endphp
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $outcomeColors[$auditLog->outcome] ?? $outcomeColors['unknown'] }}">
-                                    {{ __('admin.systems.logs.audit.outcomes.' . $auditLog->outcome) }}
+                                    {{ __('admin/settings/systems/logs.audit.outcomes.' . $auditLog->outcome) }}
                                 </span>
                             </dd>
                         </div>
                         @if($auditLog->plugin_name)
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                {{ __('admin.systems.logs.audit.plugin') }}
+                                {{ __('admin/settings/systems/logs.audit.plugin') }}
                             </dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white">
                                 {{ $auditLog->plugin_name }}
@@ -137,14 +137,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
                 <div class="p-4 border-b border-gray-200 dark:border-gray-700">
                     <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-                        {{ __('admin.systems.logs.audit.actor_target') }}
+                        {{ __('admin/settings/systems/logs.audit.actor_target') }}
                     </h2>
                 </div>
                 <div class="p-4">
                     <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                {{ __('admin.systems.logs.audit.actor') }}
+                                {{ __('admin/settings/systems/logs.audit.actor') }}
                             </dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white">
                                 @if($auditLog->actor_name)
@@ -155,13 +155,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     </span>
                                     @endif
                                 @else
-                                    <span class="text-gray-400 dark:text-gray-500">{{ __('admin.systems.logs.audit.system') }}</span>
+                                    <span class="text-gray-400 dark:text-gray-500">{{ __('admin/settings/systems/logs.audit.system') }}</span>
                                 @endif
                             </dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                {{ __('admin.systems.logs.audit.target') }}
+                                {{ __('admin/settings/systems/logs.audit.target') }}
                             </dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white">
                                 @if($auditLog->target_label || $auditLog->target_type)
@@ -179,7 +179,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         @if($auditLog->impersonated_by_id)
                         <div class="sm:col-span-2">
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                {{ __('admin.systems.logs.audit.impersonated_by') }}
+                                {{ __('admin/settings/systems/logs.audit.impersonated_by') }}
                             </dt>
                             <dd class="mt-1 text-sm text-yellow-600 dark:text-yellow-400">
                                 ID: {{ $auditLog->impersonated_by_id }}
@@ -195,7 +195,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
                 <div class="p-4 border-b border-gray-200 dark:border-gray-700">
                     <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-                        {{ __('admin.systems.logs.audit.context') }}
+                        {{ __('admin/settings/systems/logs.audit.context') }}
                     </h2>
                 </div>
                 <div class="p-4">
@@ -208,15 +208,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @if(isset($auditLog->context['diff']))
                     <div class="mb-4">
                         <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            {{ __('admin.systems.logs.audit.changes') }}
+                            {{ __('admin/settings/systems/logs.audit.changes') }}
                         </h3>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                 <thead class="bg-gray-50 dark:bg-gray-700">
                                     <tr>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">{{ __('admin.systems.logs.audit.field') }}</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">{{ __('admin.systems.logs.audit.before') }}</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">{{ __('admin.systems.logs.audit.after') }}</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">{{ __('admin/settings/systems/logs.audit.field') }}</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">{{ __('admin/settings/systems/logs.audit.before') }}</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">{{ __('admin/settings/systems/logs.audit.after') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -241,8 +241,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div x-data="{ showRaw: false }">
                         <button @click="showRaw = !showRaw" 
                                 class="text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300">
-                            <span x-show="!showRaw">{{ __('admin.systems.logs.audit.show_raw_json') }}</span>
-                            <span x-show="showRaw">{{ __('admin.systems.logs.audit.hide_raw_json') }}</span>
+                            <span x-show="!showRaw">{{ __('admin/settings/systems/logs.audit.show_raw_json') }}</span>
+                            <span x-show="showRaw">{{ __('admin/settings/systems/logs.audit.hide_raw_json') }}</span>
                         </button>
                         <div x-show="showRaw" x-collapse class="mt-2">
                             <pre class="p-3 bg-gray-900 text-gray-100 rounded-lg text-xs overflow-x-auto">{{ json_encode($auditLog->context, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
@@ -259,14 +259,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
                 <div class="p-4 border-b border-gray-200 dark:border-gray-700">
                     <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-                        {{ __('admin.systems.logs.audit.request_info') }}
+                        {{ __('admin/settings/systems/logs.audit.request_info') }}
                     </h2>
                 </div>
                 <div class="p-4">
                     <dl class="space-y-3">
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                {{ __('admin.systems.logs.audit.ip_address') }}
+                                {{ __('admin/settings/systems/logs.audit.ip_address') }}
                             </dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono">
                                 {{ $auditLog->ip_address ?? '-' }}
@@ -274,7 +274,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                {{ __('admin.systems.logs.audit.user_agent') }}
+                                {{ __('admin/settings/systems/logs.audit.user_agent') }}
                             </dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white break-all">
                                 {{ $auditLog->user_agent ?? '-' }}
@@ -282,7 +282,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                {{ __('admin.systems.logs.audit.request_id') }}
+                                {{ __('admin/settings/systems/logs.audit.request_id') }}
                             </dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono break-all">
                                 {{ $auditLog->request_id ?? '-' }}
@@ -290,7 +290,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                {{ __('admin.systems.logs.audit.session_id') }}
+                                {{ __('admin/settings/systems/logs.audit.session_id') }}
                             </dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono break-all">
                                 {{ $auditLog->session_id ? Str::limit($auditLog->session_id, 20) : '-' }}
@@ -305,10 +305,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
                 <div class="p-4 border-b border-gray-200 dark:border-gray-700">
                     <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-                        {{ __('admin.systems.logs.audit.related_logs') }}
+                        {{ __('admin/settings/systems/logs.audit.related_logs') }}
                     </h2>
                     <p class="text-sm text-gray-500 dark:text-gray-400">
-                        {{ __('admin.systems.logs.audit.same_request') }}
+                        {{ __('admin/settings/systems/logs.audit.same_request') }}
                     </p>
                 </div>
                 <div class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -332,7 +332,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 ];
                             @endphp
                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $relatedOutcomeColors[$related->outcome] ?? $relatedOutcomeColors['unknown'] }}">
-                                {{ __('admin.systems.logs.audit.outcomes.' . $related->outcome) }}
+                                {{ __('admin/settings/systems/logs.audit.outcomes.' . $related->outcome) }}
                             </span>
                         </div>
                     </a>
@@ -345,7 +345,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
                 <div class="p-4 border-b border-gray-200 dark:border-gray-700">
                     <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-                        {{ __('admin.systems.logs.audit.meta_info') }}
+                        {{ __('admin/settings/systems/logs.audit.meta_info') }}
                     </h2>
                 </div>
                 <div class="p-4">

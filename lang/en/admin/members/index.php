@@ -1,0 +1,140 @@
+<?php
+
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2025 exc-D inc.
+ * Website: https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ */
+
+return [
+    'heading' => 'Member Management',
+    'search_title' => 'Member Search',
+    'search_placeholder' => 'Search by member name or email address',
+    'table' => [
+        'unknown_role' => 'Unknown Role',
+        'caption' => 'Member List',
+    ],
+    'create' => [
+        'heading' => 'Create New Member',
+        'account_status' => 'Account Status',
+        'create_confirmation_title' => 'Create Confirmation',
+        'create_confirmation_message' => 'Do you want to create a member with this content?',
+    ],
+    'edit' => [
+        'heading' => 'Edit Member',
+        'confirm_message' => 'Do you want to update the member information with this content?',
+    ],
+    'form' => [
+        'password_change_only' => 'Password (only when changing)',
+        'login_notification' => 'Login Notification',
+        'two_factor_mode' => 'Two-Factor Authentication Mode',
+        'initial_admin_status_fixed' => 'This account is the initial administrator, so the status cannot be changed.',
+        'initial_admin_role_fixed' => 'Role is fixed to "Super Administrator" for the initial administrator.',
+        'mail_server_not_tested' => 'This function will not work because mail server settings and tests are not completed.',
+        'account_verification' => 'Account Verification',
+        'account_verification_disabled' => 'Account will be automatically verified because mail server setup and testing are not complete.',
+        'account_verified' => 'Verified',
+        'account_unverified' => 'Unverified',
+        'account_verified_send_email' => 'Send verification email',
+        'account_verification_help_create' => 'If you select "Send verification email", a verification email will be sent to the member when created.',
+        'account_verification_help_edit' => 'If you select "Unverified", the verification status will be reset. Use the button below to send a verification email.',
+        'send_verification_email_button' => 'Send Verification Email',
+        'send_verification_email_title' => 'Send Verification Email Confirmation',
+        'send_verification_email_confirm' => 'Are you sure you want to send the verification email? The account will be changed to unverified status.',
+        'email_confirmation' => 'Email Address (Confirmation)',
+        'email_confirmation_help' => 'Please re-enter the email address. To prevent input errors, you must enter the same email address as above.',
+        'login_notification_global_fixed' => 'Login notification setting is fixed to ":setting" by member global settings. <br>To change this, please set the global setting to "Use Profile Setting".',
+        'two_factor_global_fixed' => 'Two-factor authentication setting is fixed to ":setting" by member global settings. <br>To change this, please set the global setting to "Use Profile Setting".',
+        'force_logout' => 'Force Logout',
+        'force_logout_description' => 'Force this member to logout. Current session will be deleted.',
+        'force_logout_button' => 'Execute Force Logout',
+        'unlock_lockout' => 'Unlock Lockout',
+        'unlock_lockout_description' => 'Unlock login and two-factor authentication lockout for this member. Failed attempt records will be deleted.',
+        'unlock_lockout_button' => 'Unlock Lockout',
+        'delete_member' => 'Delete Member',
+        'delete_member_description' => 'Completely delete this member. This operation cannot be undone.',
+        'delete_member_button' => 'Delete Member',
+        'recovery_codes_admin_note' => 'Administrators cannot generate or regenerate recovery codes. Only the user can perform this action.',
+        'delete_recovery_codes' => 'Delete Recovery Codes',
+        'confirm_delete_recovery_codes_title' => 'Confirm Recovery Codes Deletion',
+        'confirm_delete_recovery_codes_message' => 'Are you sure you want to delete all recovery codes for this member? After deletion, only the member can regenerate them.',
+        'recovery_codes_deleted' => 'Recovery codes (:count) have been deleted.',
+        'recovery_codes_delete_success_title' => 'Recovery Codes Deletion Complete',
+        'recovery_codes_delete_error' => 'Failed to delete recovery codes.',
+    ],
+    'modals' => [
+        'force_logout' => [
+            'title' => 'Force Logout Confirmation',
+            'message' => 'Do you want to force logout :name?',
+            'confirm' => 'Execute Force Logout',
+        ],
+        'unlock_lockout' => [
+            'title' => 'Unlock Lockout Confirmation',
+            'message' => 'Do you want to unlock login and two-factor authentication lockout for :name?',
+            'confirm' => 'Unlock Lockout',
+        ],
+        'delete' => [
+            'title' => 'Delete Member Confirmation',
+            'message' => 'Do you want to completely delete :name?',
+            'warning' => 'This operation cannot be undone.',
+        ],
+    ],
+    'messages' => [
+        'created' => 'New member has been created.',
+        'created_with_verification_email' => 'A new member has been created.<br>A verification email has been sent to the created account\'s email address. <br>Please notify the member to complete account verification.',
+        'created_but_email_failed' => 'New member has been created, but failed to send verification email.',
+        'updated' => 'Member information has been updated.',
+        'updated_with_verification_email' => 'Member information has been updated. Verification email sent.',
+        'updated_but_email_failed' => 'Member information has been updated, but failed to send verification email.',
+        'verification_email_sent' => 'Verification email has been sent.',
+        'verification_email_failed' => 'Failed to send verification email.',
+        'unlock_lockout_success' => 'Lockout has been unlocked.',
+        'initial_member_role_protected' => 'The role of the initial member account cannot be changed.',
+        'initial_member_status_protected' => 'The initial member account cannot be deactivated.',
+        'initial_member_cannot_delete' => 'The initial member account cannot be deleted.',
+        'permissions_saved' => 'Permission settings have been saved.',
+        'insufficient_permissions' => 'You do not have permission to perform this operation.',
+        'deleted' => 'Member account has been deleted.',
+        'force_logout_success' => 'Member has been forcibly logged out.',
+    ],
+    'validation' => [
+        'mail_server_not_tested' => 'To enable lockout notification function, password reset function, login notification function, and two-factor authentication function, you must pass the mail server connection test in the basic settings.',
+        'mail_server_warning' => 'Mail Server Not Configured',
+        'mail_server_warning_message' => 'Lockout notification function, password reset function, login notification function, and two-factor authentication function will not work because mail server configuration and testing have not been completed.',
+        'mail_server_test_passed' => 'Mail server connection test passed. Lockout notification, password reset function, login notification function, and two-factor authentication function can be used.',
+        'please_configure_in' => 'Please configure mail server settings in the basic settings',
+        'name_required' => 'Name is required.',
+        'email_required' => 'Email address is required.',
+        'email_invalid' => 'Email address format is invalid.',
+        'email_unique' => 'This email address is already registered.',
+        'password_required' => 'Password is required.',
+        'password_min' => 'Password must be at least 8 characters.',
+        'password_confirmed' => 'Password confirmation does not match.',
+        'role_required' => 'Please select a role.',
+        'role_invalid' => 'Invalid role selected.',
+        'appearance_required' => 'Please select appearance setting.',
+        'appearance_invalid' => 'Invalid appearance setting selected.',
+        'status_required' => 'Please select status.',
+        'status_invalid' => 'Invalid status selected.',
+    ],
+    'force_setting_1' => 'Individual settings cannot be changed because',
+    'force_setting_2' => 'is selected in member global settings.',
+    'admin_operations' => 'Admin Operations',
+    'initial_admin_account' => 'Initial Admin Account',
+    'initial_admin_restriction' => 'This account is the initial administrator, so deletion and forced logout are not allowed. These operations are restricted to maintain system security.',
+    'force_logout_button' => 'Force Logout',
+    'delete_member_button' => 'Delete Member',
+    'role_options' => [
+        'super_admin' => 'Super Administrator',
+        'admin' => 'Administrator',
+        'editor' => 'Editor',
+        'author' => 'Author',
+        'contributor' => 'Contributor',
+    ],
+];

@@ -40,23 +40,23 @@ class AdminSystemCacheController extends AdminLoggedInController
     {
         $cacheInfo = [
             'config' => [
-                'name' => __('admin.settings.systems.cache.config_cache.name'),
-                'description' => __('admin.settings.systems.cache.config_cache.description'),
+                'name' => __('admin/settings/systems/cache.config_cache.name'),
+                'description' => __('admin/settings/systems/cache.config_cache.description'),
                 'command' => 'config:clear'
             ],
             'route' => [
-                'name' => __('admin.settings.systems.cache.route_cache.name'),
-                'description' => __('admin.settings.systems.cache.route_cache.description'),
+                'name' => __('admin/settings/systems/cache.route_cache.name'),
+                'description' => __('admin/settings/systems/cache.route_cache.description'),
                 'command' => 'route:clear'
             ],
             'view' => [
-                'name' => __('admin.settings.systems.cache.view_cache.name'),
-                'description' => __('admin.settings.systems.cache.view_cache.description'),
+                'name' => __('admin/settings/systems/cache.view_cache.name'),
+                'description' => __('admin/settings/systems/cache.view_cache.description'),
                 'command' => 'view:clear'
             ],
             'application' => [
-                'name' => __('admin.settings.systems.cache.application_cache.name'),
-                'description' => __('admin.settings.systems.cache.application_cache.description'),
+                'name' => __('admin/settings/systems/cache.application_cache.name'),
+                'description' => __('admin/settings/systems/cache.application_cache.description'),
                 'command' => 'cache:clear'
             ]
         ];
@@ -79,34 +79,34 @@ class AdminSystemCacheController extends AdminLoggedInController
             switch ($type) {
                 case 'config':
                     Artisan::call('config:clear');
-                    $message = __('admin.settings.systems.cache.success_config');
+                    $message = __('admin/settings/systems/cache.success_config');
                     break;
                 case 'route':
                     Artisan::call('route:clear');
-                    $message = __('admin.settings.systems.cache.success_route');
+                    $message = __('admin/settings/systems/cache.success_route');
                     break;
                 case 'view':
                     Artisan::call('view:clear');
-                    $message = __('admin.settings.systems.cache.success_view');
+                    $message = __('admin/settings/systems/cache.success_view');
                     break;
                 case 'application':
                     Artisan::call('cache:clear');
-                    $message = __('admin.settings.systems.cache.success_application');
+                    $message = __('admin/settings/systems/cache.success_application');
                     break;
                 case 'all':
                     Artisan::call('config:clear');
                     Artisan::call('route:clear');
                     Artisan::call('view:clear');
                     Artisan::call('cache:clear');
-                    $message = __('admin.settings.systems.cache.success_all');
+                    $message = __('admin/settings/systems/cache.success_all');
                     break;
                 default:
                     $success = false;
-                    $message = __('admin.settings.systems.cache.error_invalid_type');
+                    $message = __('admin/settings/systems/cache.error_invalid_type');
             }
         } catch (\Exception $e) {
             $success = false;
-            $message = __('admin.settings.systems.cache.error_general', ['error' => $e->getMessage()]);
+            $message = __('admin/settings/systems/cache.error_general', ['error' => $e->getMessage()]);
         }
 
         if ($success) {

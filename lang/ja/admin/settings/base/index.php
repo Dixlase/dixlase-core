@@ -1,0 +1,25 @@
+<?php
+
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2025 exc-D inc.
+ * Website: https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ */
+
+return [
+    'heading' => '基本設定概要',
+    'description' => '基本設定の概要と各機能の状態を確認できます。',
+    'locale' => '言語',
+    'admin_url' => '管理画面URL',
+    'mailer' => 'メーラー',
+    'mail_test_complete' => 'メールテスト完了',
+    'mail_test_required' => 'メールテスト未完了',
+    'maintenance_active' => 'メンテナンス中',
+    'maintenance_inactive' => '通常運用中',
+];
