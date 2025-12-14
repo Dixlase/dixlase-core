@@ -114,15 +114,23 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
         }
 
         try {
-            $secretKey = $this->securitySettingRepository->get('captcha_secret_key', '');
-            $minScore = (float) $this->securitySettingRepository->get('captcha_google_min_score', '0.5');
+            // フォームから送信されたシークレットキーを優先的に使用（保存前のテスト用）
+            $secretKey = $request->input('secret_key') ?: $this->securitySettingRepository->get('captcha_secret_key', '');
+            $minScore = (float) ($request->input('min_score') ?: $this->securitySettingRepository->get('captcha_google_min_score', '0.5'));
+            
+            if (empty($secretKey)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('admin.settings.security.captcha_secret_key_required'),
+                ]);
+            }
             
             $result = $this->verifyCaptchaToken($token, $secretKey, $driver, $minScore);
             
             if ($result['success']) {
                 // テスト結果を保存
                 $captchaTestService = app(CaptchaTestService::class);
-                $captchaTestService->saveTestResult(true);
+                $captchaTestService->saveCaptchaTestResult($driver, true);
                 
                 return response()->json([
                     'success' => true,
@@ -153,7 +161,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
     public function clearTest()
     {
         $captchaTestService = app(CaptchaTestService::class);
-        $captchaTestService->clearTestResult();
+        $captchaTestService->resetCaptchaTestResults();
         
         return response()->json(['success' => true]);
     }

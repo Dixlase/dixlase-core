@@ -321,7 +321,9 @@ function validateToken(token) {
         },
         body: JSON.stringify({
             token: token,
-            driver: document.getElementById('captcha_driver').value
+            driver: document.getElementById('captcha_driver').value,
+            secret_key: document.getElementById('captcha_secret_key').value,
+            min_score: document.getElementById('captcha_google_min_score')?.value || '0.5'
         })
     })
     .then(response => response.json())

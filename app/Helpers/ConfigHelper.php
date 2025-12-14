@@ -101,6 +101,40 @@ class ConfigHelper
     }
 
     /**
+     * Set value to database using specified model
+     * 
+     * @param string $key
+     * @param string $value
+     * @param string $model
+     * @return void
+     */
+    private static function setToDatabase(string $key, string $value, string $model = 'SecuritySetting'): void
+    {
+        try {
+            switch ($model) {
+                case 'BaseSetting':
+                    if (Schema::hasTable('base_settings')) {
+                        BaseSetting::setValue($key, $value);
+                    }
+                    break;
+                case 'MemberSetting':
+                    if (Schema::hasTable('members_settings')) {
+                        MemberSetting::setValue($key, $value);
+                    }
+                    break;
+                case 'SecuritySetting':
+                default:
+                    if (Schema::hasTable('security_settings')) {
+                        SecuritySetting::set($key, $value);
+                    }
+                    break;
+            }
+        } catch (\Exception $e) {
+            Log::error("Database write failed for {$model}::{$key}: " . $e->getMessage());
+        }
+    }
+
+    /**
      * Cast value to specified type
      * 
      * @param mixed $value
@@ -196,6 +230,39 @@ class ConfigHelper
     public static function getSessionLifetime(): int
     {
         return self::get('session.lifetime', 'session_lifetime', 120, 'int', 'SecuritySetting');
+    }
+
+    /**
+     * Set session driver
+     * 
+     * @param string $driver Session driver name
+     * @return void
+     */
+    public static function setSessionDriver(string $driver): void
+    {
+        self::setToDatabase('session_driver', $driver, 'SecuritySetting');
+    }
+
+    /**
+     * Set session encryption setting
+     * 
+     * @param bool $encrypt Whether session should be encrypted
+     * @return void
+     */
+    public static function setSessionEncrypt(bool $encrypt): void
+    {
+        self::setToDatabase('session_encrypt', $encrypt ? '1' : '0', 'SecuritySetting');
+    }
+
+    /**
+     * Set session lifetime
+     * 
+     * @param int $lifetime Session lifetime in minutes
+     * @return void
+     */
+    public static function setSessionLifetime(int $lifetime): void
+    {
+        self::setToDatabase('session_lifetime', (string) $lifetime, 'SecuritySetting');
     }
 
     // ===== App Configuration Methods =====
