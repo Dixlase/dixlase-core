@@ -205,7 +205,7 @@ function openDeleteModal(fileId, fileName) {
     
     // フォームのアクションを設定
     const form = document.getElementById('deleteForm');
-    form.action = `{{ route('admin.media.delete', '') }}/${fileId}`;
+    form.action = `{{ url('admin/media/delete') }}/${fileId}`;
     
     // モーダルを開く
     openModal('deleteModal');

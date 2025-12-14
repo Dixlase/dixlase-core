@@ -16,6 +16,8 @@ return [
     'index' => [
         'heading' => 'Media Master',
         'upload_new_file' => 'Upload New File',
+        'no_files' => 'No files found',
+        'upload_first_file' => 'Upload your first file',
         'download' => 'Download',
         'preview' => 'Preview',
         'delete' => 'Delete',

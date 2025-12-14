@@ -137,4 +137,17 @@ return [
         'captcha_not_enabled' => 'CAPTCHAが有効になっていません。<a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">セキュリティ設定</a>でCAPTCHAを有効にしてください。',
         'captcha_not_authenticated' => 'CAPTCHAの認証テストが完了していません。<a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">セキュリティ設定</a>で認証テストを行ってください。',
     ],
+    'roles' => [
+        'heading' => 'メンバー権限設定',
+        'core_permissions' => 'コア機能の権限',
+        'core_permissions_description' => 'Dixlaseの基本機能に対するアクセス権限を設定します',
+        'plugin_permissions' => 'プラグインの権限',
+        'plugin_permissions_description' => 'インストール済みプラグインに対するアクセス権限を設定します',
+        'access_roles' => '最低編集権限',
+        'access_roles_help' => '選択した権限以上のメンバーが編集できます',
+        'view_roles' => '最低閲覧権限',
+        'view_roles_help' => '選択した権限以上のメンバーが閲覧できます',
+        'confirm_title' => '権限設定更新の確認',
+        'confirm_message' => '権限設定を更新しますか？',
+    ],
 ];

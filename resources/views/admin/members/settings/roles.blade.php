@@ -32,8 +32,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <i class="fas fa-cog text-indigo-600 dark:text-indigo-400"></i>
             </div>
             <div>
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ __('admin.members.roles.core_permissions') }}</h2>
-                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin.members.roles.core_permissions_description') }}</p>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ __('admin/members/settings.roles.core_permissions') }}</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/members/settings.roles.core_permissions_description') }}</p>
             </div>
         </div>
         
@@ -90,8 +90,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <i class="fas fa-puzzle-piece text-purple-600 dark:text-purple-400"></i>
                 </div>
                 <div>
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ __('admin.members.roles.plugin_permissions') }}</h2>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin.members.roles.plugin_permissions_description') }}</p>
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ __('admin/members/settings.roles.plugin_permissions') }}</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/members/settings.roles.plugin_permissions_description') }}</p>
                 </div>
             </div>
             

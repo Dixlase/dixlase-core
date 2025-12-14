@@ -42,8 +42,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 認証メール送信確認モーダル -->
     <x-modal
         id="verificationEmailModal"
-        :title="__('admin.members.form.send_verification_email_title')"
-        :message="__('admin.members.form.send_verification_email_confirm')"
+        :title="__('admin/members/index.form.send_verification_email_title')"
+        :message="__('admin/members/index.form.send_verification_email_confirm')"
         :confirm_label="__('common.send')"
         :cancel_label="__('common.cancel')"
         icon_type="info"
@@ -53,7 +53,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- Passkey削除確認モーダル -->
     <x-modal 
         id="deletePasskeyModal"
-        :title="__('admin.profile.confirm_delete_passkey_title')"
+        :title="__('admin/profile.confirm_delete_passkey_title')"
         message=""
         :confirm_label="__('common.delete')"
         :cancel_label="__('common.cancel')"
@@ -62,8 +62,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- Passkey一括削除確認モーダル -->
     <x-modal 
         id="deleteAllPasskeysModal"
-        :title="__('admin.profile.confirm_delete_all_passkeys_title')"
-        :message="__('admin.profile.confirm_delete_all_passkeys_message')"
+        :title="__('admin/profile.confirm_delete_all_passkeys_title')"
+        :message="__('admin/profile.confirm_delete_all_passkeys_message')"
         :confirm_label="__('common.delete')"
         :cancel_label="__('common.cancel')"
     />
@@ -71,8 +71,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 回復コード削除確認モーダル -->
     <x-modal 
         id="deleteRecoveryCodesModal"
-        :title="__('admin.members.form.confirm_delete_recovery_codes_title')"
-        :message="__('admin.members.form.confirm_delete_recovery_codes_message')"
+        :title="__('admin/members/index.form.confirm_delete_recovery_codes_title')"
+        :message="__('admin/members/index.form.confirm_delete_recovery_codes_message')"
         :confirm_label="__('common.delete')"
         :cancel_label="__('common.cancel')"
         confirm_variant="danger"
@@ -87,8 +87,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <x-save
         id_confirmation="confirmationModal"
         :label="__('common.update')"
-        :title="__('admin.members.edit.confirm_title')"
-        :message="__('admin.members.edit.confirm_message')"
+        :title="__('admin/members/index.edit.confirm_title')"
+        :message="__('admin/members/index.edit.confirm_message')"
         :confirm_label="__('common.update')"
         :cancel_label="__('common.cancel')"
         form="update-form"
@@ -230,7 +230,7 @@ window.revokePasskey = function(event) {
         if (data.success) {
             window.PasskeyResultModal.showSuccess(
                 'passkeyResultModal',
-                '{{ __('admin.profile.passkey_delete_success_title') }}',
+                '{{ __('admin/profile.passkey_delete_success_title') }}',
                 data.message,
                 () => location.reload()
             );
@@ -248,7 +248,7 @@ window.revokePasskey = function(event) {
         window.PasskeyResultModal.showError(
             'passkeyResultModal',
             '{{ __('common.error') }}',
-            '{{ __('admin.profile.passkey_delete_error') }}'
+            '{{ __('admin/profile.passkey_delete_error') }}'
         );
     });
 };
@@ -291,7 +291,7 @@ window.revokeAllPasskeys = function(event) {
         if (data.success) {
             window.PasskeyResultModal.showSuccess(
                 'passkeyResultModal',
-                '{{ __('admin.profile.passkey_delete_success_title') }}',
+                '{{ __('admin/profile.passkey_delete_success_title') }}',
                 data.message,
                 () => location.reload()
             );
@@ -309,7 +309,7 @@ window.revokeAllPasskeys = function(event) {
         window.PasskeyResultModal.showError(
             'passkeyResultModal',
             '{{ __('common.error') }}',
-            '{{ __('admin.profile.passkey_delete_all_error') }}'
+            '{{ __('admin/profile.passkey_delete_all_error') }}'
         );
     });
 };
@@ -402,7 +402,7 @@ window.revokeRecoveryCodes = function(event) {
         if (data.success) {
             window.PasskeyResultModal.showSuccess(
                 'passkeyResultModal',
-                '{{ __('admin.members.form.recovery_codes_delete_success_title') }}',
+                '{{ __('admin/members/index.form.recovery_codes_delete_success_title') }}',
                 data.message,
                 () => location.reload()
             );
@@ -420,7 +420,7 @@ window.revokeRecoveryCodes = function(event) {
         window.PasskeyResultModal.showError(
             'passkeyResultModal',
             '{{ __('common.error') }}',
-            '{{ __('admin.members.form.recovery_codes_delete_error') }}'
+            '{{ __('admin/members/index.form.recovery_codes_delete_error') }}'
         );
     });
 };

@@ -50,11 +50,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- Clear Button -->
         <form method="POST" action="{{ route('admin.settings.systems.logs.clear', ['type' => $logType]) }}" 
-            onsubmit="return confirm('{{ __('admin.systems.logs.system.clear_confirm') }}')">
+            onsubmit="return confirm('{{ __('admin/settings/systems/logs.system.clear_confirm') }}')">
             @csrf
             <button type="submit" class="action-button action-button--danger flex-shrink-0">
                 <i class="fas fa-trash mr-2"></i>
-                {{ __('admin.systems.logs.system.clear') }}
+                {{ __('common.clear') }}
             </button>
         </form>
     </nav>

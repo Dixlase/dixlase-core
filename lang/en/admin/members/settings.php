@@ -137,4 +137,17 @@ return [
         'captcha_not_enabled' => 'CAPTCHA is not enabled. Please enable CAPTCHA in <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">Security Settings</a>.',
         'captcha_not_authenticated' => 'CAPTCHA authentication test has not been completed. Please complete the authentication test in <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">Security Settings</a>.',
     ],
+    'roles' => [
+        'heading' => 'Member Permissions',
+        'core_permissions' => 'Core Permissions',
+        'core_permissions_description' => 'Set access permissions for Dixlase core features',
+        'plugin_permissions' => 'Plugin Permissions',
+        'plugin_permissions_description' => 'Set access permissions for installed plugins',
+        'access_roles' => 'Minimum Edit Permission',
+        'access_roles_help' => 'Members with this permission level or higher can edit',
+        'view_roles' => 'Minimum View Permission',
+        'view_roles_help' => 'Members with this permission level or higher can view',
+        'confirm_title' => 'Confirm Permission Update',
+        'confirm_message' => 'Do you want to update the permission settings?',
+    ],
 ];

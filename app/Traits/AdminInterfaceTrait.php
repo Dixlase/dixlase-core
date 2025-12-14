@@ -73,32 +73,99 @@ trait AdminInterfaceTrait
         
         // プラグインのルートかどうかを判別（::が含まれている場合はプラグイン）
         if (strpos($routeName, '::') !== false) {
-            // 新しい形式: admin.plugin-name::admin.controller.action
-            if (strpos($routeName, 'admin.') === 0) {
-                // admin.を除去してプラグイン部分を取得
-                $withoutAdminPrefix = substr($routeName, 6); // 'admin.'を除去
-                [$pluginNamespace, $route] = explode('::', $withoutAdminPrefix, 2);
-                
-                $headingKey = $route . '.heading';
-                $this->heading = $pluginNamespace . '::' . $headingKey;
-            } else {
-                // 旧形式: plugin-name::admin.controller.action
-                [$pluginNamespace, $route] = explode('::', $routeName, 2);
-                $keys = explode('.', $route);
-                array_shift($keys); // 'admin'を除去
-                
-                $headingKey = implode('.', $keys) . '.heading';
-                $this->heading = $pluginNamespace . '::admin.' . $headingKey;
-            }
+            $this->heading = $this->resolvePluginHeadingKey($routeName);
         } else {
-            // コアの場合: admin.controller.action
-            $keys = explode('.', $routeName);
-            array_shift($keys); // 'admin'を除去
-            
-            $headingKey = implode('.', $keys) . '.heading';
-            $this->heading = 'admin.' . $headingKey;
+            $this->heading = $this->resolveCoreHeadingKey($routeName);
         }
         
         $this->viewParams['heading'] = $this->heading;
+    }
+
+    /**
+     * コアの翻訳キーを解決する
+     * ルート名から適切な翻訳ファイルパスとキーを自動判定
+     * 
+     * @param string $routeName ルート名（例: admin.settings.security.captcha）
+     * @return string 翻訳キー（例: admin/settings/security/captcha.heading）
+     */
+    protected function resolveCoreHeadingKey(string $routeName): string
+    {
+        // admin.controller.action → ['controller', 'action']
+        $keys = explode('.', $routeName);
+        array_shift($keys); // 'admin'を除去
+        
+        if (empty($keys)) {
+            return 'admin/dashboard.heading';
+        }
+        
+        // パターン1: 完全パス（例: admin/settings/security/captcha.heading）
+        $fullPath = 'admin/' . implode('/', $keys) . '.heading';
+        if (Lang::has($fullPath)) {
+            return $fullPath;
+        }
+        
+        // パターン2: 最後の要素がファイル内のキー（例: admin/media.index.heading）
+        if (count($keys) >= 2) {
+            $lastKey = array_pop($keys);
+            $filePath = 'admin/' . implode('/', $keys) . '.' . $lastKey . '.heading';
+            if (Lang::has($filePath)) {
+                return $filePath;
+            }
+        }
+        
+        // パターン3: 単一ファイルで直接heading（例: admin/dashboard.heading）
+        if (count($keys) === 1) {
+            $singlePath = 'admin/' . $keys[0] . '.heading';
+            if (Lang::has($singlePath)) {
+                return $singlePath;
+            }
+        }
+        
+        // フォールバック: 最初に試したパスを返す
+        return $fullPath;
+    }
+
+    /**
+     * プラグインの翻訳キーを解決する
+     * 
+     * @param string $routeName ルート名（例: admin.dixlase-inquiry::admin.settings.index）
+     * @return string 翻訳キー
+     */
+    protected function resolvePluginHeadingKey(string $routeName): string
+    {
+        // 新しい形式: admin.plugin-name::admin.controller.action
+        if (strpos($routeName, 'admin.') === 0) {
+            $withoutAdminPrefix = substr($routeName, 6); // 'admin.'を除去
+            [$pluginNamespace, $route] = explode('::', $withoutAdminPrefix, 2);
+            
+            // プラグイン内でも同様のロジックを適用
+            $keys = explode('.', $route);
+            
+            // パターン1: 完全パス
+            $fullPath = implode('/', $keys) . '.heading';
+            if (Lang::has($pluginNamespace . '::' . $fullPath)) {
+                return $pluginNamespace . '::' . $fullPath;
+            }
+            
+            // パターン2: 最後の要素がファイル内のキー
+            if (count($keys) >= 2) {
+                $lastKey = array_pop($keys);
+                $filePath = implode('/', $keys) . '.' . $lastKey . '.heading';
+                if (Lang::has($pluginNamespace . '::' . $filePath)) {
+                    return $pluginNamespace . '::' . $filePath;
+                }
+            }
+            
+            // フォールバック
+            return $pluginNamespace . '::' . $fullPath;
+        }
+        
+        // 旧形式: plugin-name::admin.controller.action
+        [$pluginNamespace, $route] = explode('::', $routeName, 2);
+        $keys = explode('.', $route);
+        array_shift($keys); // 'admin'を除去
+        
+        $headingKey = implode('.', $keys) . '.heading';
+        return $pluginNamespace . '::admin.' . $headingKey;
     }
 }

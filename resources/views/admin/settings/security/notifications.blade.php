@@ -65,7 +65,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         $logLevelOptions = [];
                         foreach (\App\Enums\LogLevel::getNotificationLevels() as $level) {
                             $levelString = \App\Enums\LogLevel::from($level)->toString();
-                            $logLevelOptions[$level] = 'admin.settings.security.notifications.log_level_options.' . $levelString;
+                            $logLevelOptions[$level] = 'admin/settings/security/notifications.log_level_options.' . $levelString;
                         }
                     @endphp
                     
