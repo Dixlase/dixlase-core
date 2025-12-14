@@ -126,4 +126,5 @@ return [
     ],
     'settings_updated' => 'CAPTCHA設定が更新されました。',
     'token_required' => 'CAPTCHAトークンが必要です',
+    'secret_key_required' => 'シークレットキーが必要です',
 ];

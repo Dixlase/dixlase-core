@@ -238,8 +238,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </section>
         @endunless
 
-        <!-- 二段階認証設定 -->
-        @if($force2fa === \App\Enums\TwoFactorMode::UseProfileSetting->value || $currentGlobalTwoFactorMode)
+        <!-- 二段階認証設定（メールサーバー設定済みの場合のみ表示） -->
+        @if($isMailServerTested && ($force2fa === \App\Enums\TwoFactorMode::UseProfileSetting->value || $currentGlobalTwoFactorMode))
             <section class="transition-colors-unified">
                 <h2>{{ __('common.two_factor_mode.label') }}</h2>
                 
@@ -321,7 +321,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </section>
     </form>
 
-    <!-- 2FA管理セクション -->
+    <!-- 2FA管理セクション（メールサーバー設定済みの場合のみ表示） -->
+    @if($isMailServerTested)
     <section class="mt-8 transition-colors-unified">
         <h2>{{ __('admin/profile.2fa_management') }}</h2>
 
@@ -430,6 +431,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>            
         </div>
     </section>
+    @endif
 
     <!-- 信頼済みデバイス削除モーダル -->
     @push('scripts')

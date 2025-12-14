@@ -291,7 +291,7 @@ function validateCaptchaWidget() {
     const secretKey = document.getElementById('captcha_secret_key').value;
     
     if (!driver || !siteKey || !secretKey) {
-        showTestResult('error', '{{ __("admin.settings.security.captcha.required_fields_empty") }}');
+        showTestResult('error', '{{ __("admin/settings/security/captcha.required_fields_empty") }}');
         return;
     }
     
@@ -389,7 +389,7 @@ function validateToken(token) {
         }
     })
     .catch(error => {
-        showTestResult('error', '{{ __("admin.settings.security.captcha.validation_error") }}');
+        showTestResult('error', '{{ __("admin/settings/security/captcha.validation_error") }}');
     });
 }
 
@@ -405,12 +405,12 @@ function showTestResult(type, message) {
         resultDiv.className = 'mb-4 p-3 border rounded-lg bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
         icon.className = 'fas fa-check-circle text-green-500 text-xl mr-3';
         title.className = 'font-semibold text-green-700 dark:text-green-300';
-        title.textContent = '{{ __("admin.settings.security.captcha.authentication_success_title") }}';
+        title.textContent = '{{ __("admin/settings/security/captcha.authentication_success_title") }}';
     } else {
         resultDiv.className = 'mb-4 p-3 border rounded-lg bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800';
         icon.className = 'fas fa-times-circle text-red-500 text-xl mr-3';
         title.className = 'font-semibold text-red-700 dark:text-red-300';
-        title.textContent = '{{ __("admin.settings.security.captcha.authentication_failed_title") }}';
+        title.textContent = '{{ __("admin/settings/security/captcha.authentication_failed_title") }}';
     }
     
     msg.textContent = message;
