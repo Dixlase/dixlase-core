@@ -28,37 +28,37 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <!-- システムエラー通知設定 -->
         <section>
-            <h2>{{ __('admin.settings.security.notifications.title') }}</h2>
-            <p>{{ __('admin.settings.security.notifications.description') }}</p>
+            <h2>{{ __('admin/settings/security/notifications.title') }}</h2>
+            <p>{{ __('admin/settings/security/notifications.description') }}</p>
 
             <!-- メールサーバー設定の確認メッセージ -->
             @if(!($mailConnectionTested && $mailSendTested && $mailReceiveTested))
                 <div class="mt-4">
                     <x-message
                         type="warning"
-                        :message="__('admin.settings.security.notifications.mail_test_required', ['url' => route('admin.settings.base.mail')])"
+                        :message="__('admin/settings/security/notifications.mail_test_required', ['url' => route('admin.settings.base.mail')])"
                     />
                 </div>
             @endif
 
             <!-- エラー通知機能の有効/無効 -->
             <fieldset>
-                <legend>{{ __('admin.settings.security.notifications.enabled') }}</legend>
+                <legend>{{ __('admin/settings/security/notifications.enabled') }}</legend>
                 
                 <x-form.toggle
-                    :label="__('admin.settings.security.notifications.enabled')"
+                    :label="__('admin/settings/security/notifications.enabled')"
                     id="notification_enabled"
                     name="notification_enabled"
                     :checked="$settings['notification_enabled'] ?? false"
                     xModel="notificationEnabled"
                 />
                 
-                <p>{{ __('admin.settings.security.notifications.enabled_help') }}</p>
+                <p>{{ __('admin/settings/security/notifications.enabled_help') }}</p>
             </fieldset>
 
             <!-- 通知するログレベル -->
             <fieldset>
-                <legend>{{ __('admin.settings.security.notifications.log_levels') }}</legend>
+                <legend>{{ __('admin/settings/security/notifications.log_levels') }}</legend>
                 
                 <div class="my-3" :class="{ 'opacity-50': !notificationEnabled }">
                     @php
@@ -78,7 +78,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     />
                 </div>
                 
-                <p>{{ __('admin.settings.security.notifications.log_levels_help') }}</p>
+                <p>{{ __('admin/settings/security/notifications.log_levels_help') }}</p>
             </fieldset>
         </section>
 

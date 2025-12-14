@@ -97,7 +97,7 @@ class AdminMemberRolesController extends AdminLoggedInController
             }
         }
 
-        return redirect()->back()->with('success', __('admin.members.messages.permissions_saved'));
+        return redirect()->back()->with('success', __('admin/members/messages.permissions_saved'));
     }
 
     /**
@@ -229,7 +229,7 @@ class AdminMemberRolesController extends AdminLoggedInController
     protected function authorizeEdit(string $menuKey)
     {
         if (!\App\Helpers\AdminHelper::canEditMenu($menuKey)) {
-            abort(403, __('admin.members.messages.insufficient_permissions'));
+            abort(403, __('admin/members/messages.insufficient_permissions'));
         }
     }
 }

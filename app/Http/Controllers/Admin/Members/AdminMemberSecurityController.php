@@ -49,7 +49,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
         }
 
         return redirect()->route('admin.members.edit', ['member' => $member->id])
-            ->with('success', __('admin.members.messages.force_logout_success'));
+            ->with('success', __('admin/members/messages.force_logout_success'));
     }
 
     /**
@@ -61,7 +61,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
         \App\Models\MemberLoginAttempt::where('identifier', $member->email)->delete();
 
         return redirect()->route('admin.members.edit', ['member' => $member->id])
-            ->with('success', __('admin.members.messages.unlock_lockout_success'));
+            ->with('success', __('admin/members/messages.unlock_lockout_success'));
     }
 
     /**
@@ -79,11 +79,11 @@ class AdminMemberSecurityController extends AdminLoggedInController
                 ->delete();
             
             return redirect()->route('admin.members.settings')
-                ->with('success', __('admin.members.force_logout_all_success', ['count' => $deletedCount]));
+                ->with('success', __('admin/members/force_logout_all_success', ['count' => $deletedCount]));
         }
 
         return redirect()->route('admin.members.settings')
-            ->with('error', __('admin.members.force_logout_all_error'));
+            ->with('error', __('admin/members/force_logout_all_error'));
     }
 
     /**
@@ -95,7 +95,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
             if (!$this->isMailServerTested()) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('admin.members.form.mail_server_not_tested')
+                    'message' => __('admin/members/form.mail_server_not_tested')
                 ], 400);
             }
 
@@ -111,7 +111,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
 
             $member->sendEmailVerificationNotification('resend');
 
-            session()->flash('success', __('admin.members.messages.verification_email_sent'));
+            session()->flash('success', __('admin/members/messages.verification_email_sent'));
 
             return response()->json([
                 'success' => true,
@@ -122,7 +122,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
             
             return response()->json([
                 'success' => false,
-                'message' => __('admin.members.messages.verification_email_failed')
+                'message' => __('admin/members/messages.verification_email_failed')
             ], 500);
         }
     }
@@ -140,7 +140,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
                 
                 return response()->json([
                     'success' => true,
-                    'message' => __('admin.profile.passkey_deleted_all', ['count' => $deletedCount])
+                    'message' => __('admin/profile.passkey_deleted_all', ['count' => $deletedCount])
                 ]);
             }
             
@@ -149,13 +149,13 @@ class AdminMemberSecurityController extends AdminLoggedInController
             if (!$deleted) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('admin.profile.passkey_not_found')
+                    'message' => __('admin/profile.passkey_not_found')
                 ], 404);
             }
 
             return response()->json([
                 'success' => true,
-                'message' => __('admin.profile.passkey_deleted')
+                'message' => __('admin/profile.passkey_deleted')
             ]);
         } catch (\Exception $e) {
             \Log::error('[Member Passkey Delete] Exception caught', [
@@ -166,7 +166,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
             
             return response()->json([
                 'success' => false,
-                'message' => __('admin.profile.passkey_delete_error')
+                'message' => __('admin/profile.passkey_delete_error')
             ], 500);
         }
     }
@@ -183,7 +183,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
             
             return response()->json([
                 'success' => true,
-                'message' => __('admin.members.form.recovery_codes_deleted', ['count' => $deletedCount])
+                'message' => __('admin/members/form.recovery_codes_deleted', ['count' => $deletedCount])
             ]);
         } catch (\Exception $e) {
             \Log::error('[Member Recovery Code Delete] Exception caught', [
@@ -193,7 +193,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
             
             return response()->json([
                 'success' => false,
-                'message' => __('admin.members.form.recovery_codes_delete_error')
+                'message' => __('admin/members/form.recovery_codes_delete_error')
             ], 500);
         }
     }

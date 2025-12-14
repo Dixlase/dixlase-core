@@ -100,13 +100,13 @@ class AdminDashboardController extends AdminLoggedInController
             
             return response()->json([
                 'success' => true,
-                'message' => __('admin.dashboard.method_switched_success')
+                'message' => __('admin/dashboard.method_switched_success')
             ]);
         }
         
         return response()->json([
             'success' => false,
-            'message' => __('admin.dashboard.method_switch_failed')
+            'message' => __('admin/dashboard.method_switch_failed')
         ], 400);
     }
 

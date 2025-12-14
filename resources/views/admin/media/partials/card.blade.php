@@ -25,7 +25,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <div class="media-card">
     <div class="media-card__preview">
-        <a href="{{ route('admin.media.preview', $file->id) }}" target="_blank" aria-label="{{ __('admin.media.index.preview') }} {{ $file->name }}">
+        <a href="{{ route('admin.media.preview', $file->id) }}" target="_blank" aria-label="{{ __('admin/media.index.preview') }} {{ $file->name }}">
             @if(in_array($file->type, ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']))
                 <img src="{{ asset('storage/' . $mediaPath . '/' . $file->path) }}" 
                      alt="{{ $file->name }}" 
@@ -66,23 +66,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <a href="{{ route('admin.media.download', $file->id) }}" 
                class="action-btn action-btn--download"
-               title="{{ __('admin.media.index.download') }}" 
-               aria-label="{{ __('admin.media.index.download') }} {{ $file->name }}">
+               title="{{ __('admin/media.index.download') }}" 
+               aria-label="{{ __('admin/media.index.download') }} {{ $file->name }}">
                 <i class="fas fa-download" aria-hidden="true"></i>
             </a>
 
             <a href="{{ route('admin.media.preview', $file->id) }}" 
                target="_blank" 
                class="action-btn action-btn--preview"
-               title="{{ __('admin.media.index.preview') }}" 
-               aria-label="{{ __('admin.media.index.preview') }} {{ $file->name }}">
+               title="{{ __('admin/media.index.preview') }}" 
+               aria-label="{{ __('admin/media.index.preview') }} {{ $file->name }}">
                 <i class="fas fa-eye" aria-hidden="true"></i>
             </a>
 
             <button type="button" 
                     class="action-btn action-btn--delete"
-                    title="{{ __('admin.media.index.delete') }}" 
-                    aria-label="{{ __('admin.media.index.delete') }} {{ $file->name }}"
+                    title="{{ __('admin/media.index.delete') }}" 
+                    aria-label="{{ __('admin/media.index.delete') }} {{ $file->name }}"
                     onclick="openDeleteModal({{ $file->id }}, '{{ addslashes($file->name) }}')">
                 <i class="fas fa-trash-alt" aria-hidden="true"></i>
             </button>

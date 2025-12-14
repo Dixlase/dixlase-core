@@ -202,7 +202,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         if (!$slug) {
             return response()->json([
                 'success' => false,
-                'message' => __('admin.settings.plugins.audit.invalid_slug'),
+                'message' => __('admin/settings/plugins.audit.invalid_slug'),
             ], 400);
         }
         
@@ -210,7 +210,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         
         return response()->json([
             'success' => true,
-            'message' => __('admin.settings.plugins.audit.completed'),
+            'message' => __('admin/settings/plugins.audit.completed'),
             'audit' => $result,
         ]);
     }
@@ -469,13 +469,13 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             );
 
             return redirect()->route('admin.settings.plugins.index')
-                ->with('success', str_replace('{name}', $plugin->translated_name, __('admin.settings.plugins.index.enabled.success')));
+                ->with('success', str_replace('{name}', $plugin->translated_name, __('admin/settings/plugins.index.enabled.success')));
         } catch (\Exception $e) {
             Log::error('Plugin enable failed', [
                 'plugin' => $plugin->name,
                 'error' => $e->getMessage()
             ]);
-            return back()->with('error', str_replace('{name}', $plugin->translated_name, __('admin.settings.plugins.index.enabled.failed')) . ": {$e->getMessage()}");
+            return back()->with('error', str_replace('{name}', $plugin->translated_name, __('admin/settings/plugins.index.enabled.failed')) . ": {$e->getMessage()}");
         }
     }
 

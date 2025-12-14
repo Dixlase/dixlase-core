@@ -45,8 +45,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <x-save
         id="confirmationModal"
         :label="__('common.create')"
-        :title="__('admin.members.create.create_confirmation_title')"
-        :message="__('admin.members.create.create_confirmation_message')"
+        :title="__('admin/members/index.create.create_confirmation_title')"
+        :message="__('admin/members/index.create.create_confirmation_message')"
         :confirm_label="__('common.create')"
         :cancel_label="__('common.back')"
         form="create-form"

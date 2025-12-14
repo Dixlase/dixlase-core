@@ -22,7 +22,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 
-<form method="POST" action="{{ route('admin.members.roles.update') }}" id="member-roles-form" class="permission-management permission-form" novalidate>
+<form method="POST" action="{{ route('admin.members.settings.roles.update') }}" id="member-roles-form" class="permission-management permission-form" novalidate>
     @csrf
     
     {{-- コア機能の権限設定 --}}
@@ -32,8 +32,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <i class="fas fa-cog text-indigo-600 dark:text-indigo-400"></i>
             </div>
             <div>
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ __('admin.members.roles.core_permissions') }}</h2>
-                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin.members.roles.core_permissions_description') }}</p>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ __('admin/members/roles.core_permissions') }}</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/members/roles.core_permissions_description') }}</p>
             </div>
         </div>
         
@@ -90,8 +90,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <i class="fas fa-puzzle-piece text-purple-600 dark:text-purple-400"></i>
                 </div>
                 <div>
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ __('admin.members.roles.plugin_permissions') }}</h2>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin.members.roles.plugin_permissions_description') }}</p>
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ __('admin/members/roles.plugin_permissions') }}</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/members/roles.plugin_permissions_description') }}</p>
                 </div>
             </div>
             

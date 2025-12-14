@@ -81,7 +81,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @endif
 
     <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
-        <h2 class="text-2xl font-bold mb-6 text-gray-700 dark:text-white">{{ __('admin.settings.themes.add.upload_title') }}</h2>
+        <h2 class="text-2xl font-bold mb-6 text-gray-700 dark:text-white">{{ __('admin/settings/themes.add.upload_title') }}</h2>
         <!-- Alpine.jsでファイルアップロードを管理 -->
         <form
             action="{{ route('admin.settings.themes.upload') }}"

@@ -156,7 +156,7 @@ class AdminFrontController extends AdminLoggedinController
 
         return redirect()
             ->route('admin.front.edit')
-            ->with('success', __('admin.settings.front.design_updated'));
+            ->with('success', __('admin/front.design_updated'));
     }
 
     /**
@@ -218,7 +218,7 @@ class AdminFrontController extends AdminLoggedinController
         $this->frontSettingRepository->set('front_description', $request->input('front_description'));
         
         return redirect()->route('admin.front.settings')
-            ->with('success', __('admin.settings.front.settings_updated'));
+            ->with('success', __('admin/front.settings_updated'));
     }
 
     /**

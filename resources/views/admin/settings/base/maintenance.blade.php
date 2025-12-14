@@ -27,26 +27,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- メンテナンスモード設定 -->
     <section>
-        <h2>{{ __('admin.settings.base.maintenance.maintenance_settings') }}</h2>
+        <h2>{{ __('admin/settings/base/maintenance.maintenance_settings') }}</h2>
         
         <fieldset>
             <x-form.toggle
                 name="maintenance_mode"
-                :label="__('admin.settings.base.maintenance.maintenance_mode')"
+                :label="__('admin/settings/base/maintenance.maintenance_mode')"
                 :checked="old('maintenance_mode', $settings['maintenance_mode'])"
             />
-            <p class="mt-2">{{ __('admin.settings.base.maintenance.maintenance_mode_help') }}</p>
+            <p class="mt-2">{{ __('admin/settings/base/maintenance.maintenance_mode_help') }}</p>
         </fieldset>
 
         <fieldset>
-            <legend>{{ __('admin.settings.base.maintenance.maintenance_message') }}</legend>
+            <legend>{{ __('admin/settings/base/maintenance.maintenance_message') }}</legend>
             <x-form.textarea
                 name="maintenance_message"
                 :value="old('maintenance_message', $settings['maintenance_message'])"
                 :rows="3"
                 class="input-full"
             />
-            <p>{{ __('admin.settings.base.maintenance.maintenance_message_help') }}</p>
+            <p>{{ __('admin/settings/base/maintenance.maintenance_message_help') }}</p>
         </fieldset>
     </section>
 

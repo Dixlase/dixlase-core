@@ -140,7 +140,7 @@ class TurnstileCaptchaDriver implements CaptchaDriver
     private function getErrorMessage(array $errorCodes): string
     {
         if (empty($errorCodes)) {
-            return __('admin.settings.security.turnstile_errors.unknown-error');
+            return __('admin/settings/security/turnstile_errors.unknown-error');
         }
 
         $messages = [];

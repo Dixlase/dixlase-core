@@ -81,6 +81,6 @@ class AdminBaseMaintenanceController extends AdminLoggedInController
         $this->baseSettingRepository->setMultiple($dbSettings);
 
         return redirect()->route('admin.settings.base.maintenance')
-            ->with('success', __('admin.settings.base.maintenance.settings_updated'));
+            ->with('success', __('admin/settings/base/maintenance.settings_updated'));
     }
 }

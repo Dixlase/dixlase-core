@@ -49,7 +49,7 @@ class AdminConfirmablePasswordController extends Controller
             'password' => $request->password,
         ])) {
             throw ValidationException::withMessages([
-                'password' => __('admin.auth.password'),
+                'password' => __('admin/auth.password'),
             ]);
         }
 

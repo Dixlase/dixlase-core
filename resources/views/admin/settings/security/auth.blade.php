@@ -27,44 +27,44 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <!-- セッション管理設定 -->
         <section>
-            <h2>{{ __('admin.settings.security.auth.session_management') }}</h2>
-            <p>{{ __('admin.settings.security.auth.session_management_description') }}</p>
+            <h2>{{ __('admin/settings/security/auth.session_management') }}</h2>
+            <p>{{ __('admin/settings/security/auth.session_management_description') }}</p>
 
             <!-- セッションドライバー -->
             <fieldset>
-                <legend>{{ __('admin.settings.security.auth.session_driver') }}</legend>
+                <legend>{{ __('admin/settings/security/auth.session_driver') }}</legend>
                                     
                 <x-form.select
                     id="session_driver"
                     name="session_driver"
                     :options="[
-                        'file' => __('admin.settings.security.auth.session_driver_file'),
-                        'database' => __('admin.settings.security.auth.session_driver_database'),
-                        'redis' => __('admin.settings.security.auth.session_driver_redis'),
-                        'memcached' => __('admin.settings.security.auth.session_driver_memcached'),
-                        'cookie' => __('admin.settings.security.auth.session_driver_cookie'),
-                        'array' => __('admin.settings.security.auth.session_driver_array'),
+                        'file' => __('admin/settings/security/auth.session_driver_file'),
+                        'database' => __('admin/settings/security/auth.session_driver_database'),
+                        'redis' => __('admin/settings/security/auth.session_driver_redis'),
+                        'memcached' => __('admin/settings/security/auth.session_driver_memcached'),
+                        'cookie' => __('admin/settings/security/auth.session_driver_cookie'),
+                        'array' => __('admin/settings/security/auth.session_driver_array'),
                     ]"
                     :value="old('session_driver', $settings['session_driver'])"
                     class="input-common input-xl"
                 />
                 
-                <p>{{ __('admin.settings.security.auth.session_driver_help') }}</p>
+                <p>{{ __('admin/settings/security/auth.session_driver_help') }}</p>
             </fieldset>
 
             <!-- セッション暗号化 -->
             <fieldset>
                 <x-form.toggle
                     name="session_encrypt"
-                    :label="__('admin.settings.security.auth.session_encrypt')"
+                    :label="__('admin/settings/security/auth.session_encrypt')"
                     :checked="old('session_encrypt', $settings['session_encrypt'])"
                 />
-                <p class="mt-2">{{ __('admin.settings.security.auth.session_encrypt_help') }}</p>
+                <p class="mt-2">{{ __('admin/settings/security/auth.session_encrypt_help') }}</p>
             </fieldset>
 
             <!-- デフォルトセッション有効時間 -->
             <fieldset>
-                <legend>{{ __('admin.settings.security.auth.session_lifetime') }}</legend>
+                <legend>{{ __('admin/settings/security/auth.session_lifetime') }}</legend>
                 
                 <div class="flex items-center space-x-3 mt-2">
                     <x-form.text
@@ -82,19 +82,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </span>
                 </div>
                 
-                <p id="session_lifetime_help">{{ __('admin.settings.security.auth.session_lifetime_help') }}</p>
+                <p id="session_lifetime_help">{{ __('admin/settings/security/auth.session_lifetime_help') }}</p>
             </fieldset>
         </section>
 
         <!-- パスワードセキュリティ設定 -->
         <section>
-            <h2>{{ __('admin.settings.security.auth.password_security_settings') }}</h2>
-            <p>{{ __('admin.settings.security.auth.password_security_description') }}</p>
+            <h2>{{ __('admin/settings/security/auth.password_security_settings') }}</h2>
+            <p>{{ __('admin/settings/security/auth.password_security_description') }}</p>
 
             <!-- パスワード漏洩チェック -->
             <fieldset>
-                <legend>{{ __('admin.settings.security.auth.pwned_password_check') }}</legend>
-                <p>{{ __('admin.settings.security.auth.pwned_password_check_help') }}</p>
+                <legend>{{ __('admin/settings/security/auth.pwned_password_check') }}</legend>
+                <p>{{ __('admin/settings/security/auth.pwned_password_check_help') }}</p>
                 
                 <x-form.toggle
                     :label="__('common.enabled')"
@@ -107,7 +107,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div class="flex items-start gap-2">
                         <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
                         <div class="text-sm text-blue-700 dark:text-blue-300">
-                            <p>{{ __('admin.settings.security.auth.pwned_password_api_info') }}</p>
+                            <p>{{ __('admin/settings/security/auth.pwned_password_api_info') }}</p>
                         </div>
                     </div>
                 </div>

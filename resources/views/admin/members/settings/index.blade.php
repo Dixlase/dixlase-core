@@ -111,7 +111,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-user-shield text-orange-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin.nav.settings.members.roles_short') }}</h3>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.members.roles_short') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>

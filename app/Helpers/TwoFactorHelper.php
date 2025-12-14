@@ -74,7 +74,7 @@ class TwoFactorHelper
         // メール設定チェック
         if (!$this->isMailConfigured()) {
             Log::error("[2FA] メール設定が未完了のため、二段階認証コードを送信できません");
-            throw new \Exception(__('admin.two_factor.mail_not_configured'));
+            throw new \Exception(__('admin/profile.two_factor.mail_not_configured'));
         }
         
         $code = $this->generateTwoFactorCode($user, $expireMinutes);
@@ -320,7 +320,7 @@ class TwoFactorHelper
                 return [
                     'success' => false,
                     'codes' => null,
-                    'message' => __('admin.profile.recovery_codes_regenerate_too_soon', [
+                    'message' => __('admin/profile.recovery_codes_regenerate_too_soon', [
                         'time' => $nextTime->format('Y-m-d H:i')
                     ]),
                     'next_time' => $nextTime->format('Y-m-d H:i'),
@@ -335,7 +335,7 @@ class TwoFactorHelper
             return [
                 'success' => true,
                 'codes' => $codes,
-                'message' => __('admin.profile.recovery_codes_regenerated'),
+                'message' => __('admin/profile.recovery_codes_regenerated'),
                 'next_time' => null,
             ];
         } catch (\Exception $e) {
@@ -344,7 +344,7 @@ class TwoFactorHelper
             return [
                 'success' => false,
                 'codes' => null,
-                'message' => __('admin.profile.recovery_codes_generation_error'),
+                'message' => __('admin/profile.recovery_codes_generation_error'),
                 'next_time' => null,
             ];
         }

@@ -22,8 +22,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
-    <h1 class="text-2xl font-bold mb-6">{{ __('admin.settings.security.index.heading') }}</h1>
-    <p class="text-gray-600 dark:text-gray-400 mb-8">{{ __('admin.settings.security.index.description') }}</p>
+    <h1 class="text-2xl font-bold mb-6">{{ __('admin/settings/security/index.heading') }}</h1>
+    <p class="text-gray-600 dark:text-gray-400 mb-8">{{ __('admin/settings/security/index.description') }}</p>
 
     <!-- セキュリティステータスカード -->
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
@@ -32,12 +32,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-user-lock text-blue-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin.nav.settings.security.auth') }}</h3>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.security.auth') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
             <div class="text-sm text-gray-600 dark:text-gray-400">
-                <p>{{ __('admin.settings.security.index.session_driver') }}: <span class="font-medium">{{ $sessionDriver }}</span></p>
+                <p>{{ __('admin/settings/security/index.session_driver') }}: <span class="font-medium">{{ $sessionDriver }}</span></p>
             </div>
         </a>
 
@@ -46,7 +46,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-robot text-purple-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin.nav.settings.security.captcha') }}</h3>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.security.captcha') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
@@ -54,16 +54,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @if($captchaEnabled)
                     @if($captchaTestResult)
                         <span class="inline-flex items-center text-green-600 dark:text-green-400">
-                            <i class="fas fa-check-circle mr-1"></i>{{ __('admin.settings.security.index.captcha_active') }}
+                            <i class="fas fa-check-circle mr-1"></i>{{ __('admin/settings/security/index.captcha_active') }}
                         </span>
                     @else
                         <span class="inline-flex items-center text-yellow-600 dark:text-yellow-400">
-                            <i class="fas fa-exclamation-triangle mr-1"></i>{{ __('admin.settings.security.index.captcha_test_required') }}
+                            <i class="fas fa-exclamation-triangle mr-1"></i>{{ __('admin/settings/security/index.captcha_test_required') }}
                         </span>
                     @endif
                 @else
                     <span class="inline-flex items-center text-gray-500">
-                        <i class="fas fa-times-circle mr-1"></i>{{ __('admin.settings.security.index.captcha_disabled') }}
+                        <i class="fas fa-times-circle mr-1"></i>{{ __('admin/settings/security/index.captcha_disabled') }}
                     </span>
                 @endif
             </div>
@@ -74,18 +74,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-network-wired text-green-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin.nav.settings.security.ip') }}</h3>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.security.ip') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
             <div class="text-sm text-gray-600 dark:text-gray-400">
                 @if($enableAllowedAdminIps || $enableBlockedAdminIps)
                     <span class="inline-flex items-center text-green-600 dark:text-green-400">
-                        <i class="fas fa-check-circle mr-1"></i>{{ __('admin.settings.security.index.ip_active') }}
+                        <i class="fas fa-check-circle mr-1"></i>{{ __('admin/settings/security/index.ip_active') }}
                     </span>
                 @else
                     <span class="inline-flex items-center text-gray-500">
-                        <i class="fas fa-minus-circle mr-1"></i>{{ __('admin.settings.security.index.ip_inactive') }}
+                        <i class="fas fa-minus-circle mr-1"></i>{{ __('admin/settings/security/index.ip_inactive') }}
                     </span>
                 @endif
             </div>
@@ -96,18 +96,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-code text-orange-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin.nav.settings.security.csp') }}</h3>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.security.csp') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
             <div class="text-sm">
                 @if($cspEnabled)
                     <span class="inline-flex items-center text-green-600 dark:text-green-400">
-                        <i class="fas fa-check-circle mr-1"></i>{{ __('admin.settings.security.index.csp_mode') }}: {{ $cspMode }}
+                        <i class="fas fa-check-circle mr-1"></i>{{ __('admin/settings/security/index.csp_mode') }}: {{ $cspMode }}
                     </span>
                 @else
                     <span class="inline-flex items-center text-gray-500">
-                        <i class="fas fa-times-circle mr-1"></i>{{ __('admin.settings.security.index.csp_disabled') }}
+                        <i class="fas fa-times-circle mr-1"></i>{{ __('admin/settings/security/index.csp_disabled') }}
                     </span>
                 @endif
             </div>
@@ -121,12 +121,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-puzzle-piece text-indigo-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin.nav.settings.security.extensions') }}</h3>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.security.extensions') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
             <div class="text-sm text-gray-600 dark:text-gray-400">
-                {{ __('admin.settings.security.index.extensions_desc') }}
+                {{ __('admin/settings/security/index.extensions_desc') }}
             </div>
         </a>
 
@@ -135,7 +135,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-bell text-yellow-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin.nav.settings.security.notifications') }}</h3>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.security.notifications') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
@@ -143,16 +143,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @if($notificationEnabled)
                     @if($mailTestComplete)
                         <span class="inline-flex items-center text-green-600 dark:text-green-400">
-                            <i class="fas fa-check-circle mr-1"></i>{{ __('admin.settings.security.index.notifications_active') }}
+                            <i class="fas fa-check-circle mr-1"></i>{{ __('admin/settings/security/index.notifications_active') }}
                         </span>
                     @else
                         <span class="inline-flex items-center text-yellow-600 dark:text-yellow-400">
-                            <i class="fas fa-exclamation-triangle mr-1"></i>{{ __('admin.settings.security.index.mail_test_required') }}
+                            <i class="fas fa-exclamation-triangle mr-1"></i>{{ __('admin/settings/security/index.mail_test_required') }}
                         </span>
                     @endif
                 @else
                     <span class="inline-flex items-center text-gray-500">
-                        <i class="fas fa-times-circle mr-1"></i>{{ __('admin.settings.security.index.notifications_disabled') }}
+                        <i class="fas fa-times-circle mr-1"></i>{{ __('admin/settings/security/index.notifications_disabled') }}
                     </span>
                 @endif
             </div>
@@ -163,7 +163,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                     <i class="fas fa-file-shield text-red-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin.nav.settings.security.integrity') }}</h3>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.security.integrity') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
@@ -171,24 +171,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @if($latestIntegrityAudit)
                     @if($latestIntegrityAudit->status === \App\Models\FileIntegrityAudit::STATUS_OK)
                         <span class="inline-flex items-center text-green-600 dark:text-green-400">
-                            <i class="fas fa-check-circle mr-1"></i>{{ __('admin.settings.security.index.integrity_ok') }}
+                            <i class="fas fa-check-circle mr-1"></i>{{ __('admin/settings/security/index.integrity_ok') }}
                         </span>
                     @elseif($latestIntegrityAudit->status === \App\Models\FileIntegrityAudit::STATUS_WARNING)
                         <span class="inline-flex items-center text-yellow-600 dark:text-yellow-400">
-                            <i class="fas fa-exclamation-triangle mr-1"></i>{{ __('admin.settings.security.index.integrity_warning') }}
+                            <i class="fas fa-exclamation-triangle mr-1"></i>{{ __('admin/settings/security/index.integrity_warning') }}
                         </span>
                     @else
                         <span class="inline-flex items-center text-red-600 dark:text-red-400">
-                            <i class="fas fa-times-circle mr-1"></i>{{ __('admin.settings.security.index.integrity_critical') }}
+                            <i class="fas fa-times-circle mr-1"></i>{{ __('admin/settings/security/index.integrity_critical') }}
                         </span>
                     @endif
                 @elseif(!$hasBaseline)
                     <span class="inline-flex items-center text-gray-500">
-                        <i class="fas fa-minus-circle mr-1"></i>{{ __('admin.settings.security.index.integrity_no_baseline') }}
+                        <i class="fas fa-minus-circle mr-1"></i>{{ __('admin/settings/security/index.integrity_no_baseline') }}
                     </span>
                 @else
                     <span class="inline-flex items-center text-gray-500">
-                        <i class="fas fa-minus-circle mr-1"></i>{{ __('admin.settings.security.index.integrity_not_scanned') }}
+                        <i class="fas fa-minus-circle mr-1"></i>{{ __('admin/settings/security/index.integrity_not_scanned') }}
                     </span>
                 @endif
             </div>
@@ -198,35 +198,35 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 最新のファイル整合性スキャン結果 -->
     @if($latestIntegrityAudit)
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ __('admin.settings.security.index.latest_integrity_scan') }}</h2>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ __('admin/settings/security/index.latest_integrity_scan') }}</h2>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin.settings.security.index.scan_date') }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/index.scan_date') }}</p>
                 <p class="font-medium text-gray-900 dark:text-white">{{ $latestIntegrityAudit->created_at->format('Y-m-d H:i') }}</p>
             </div>
             <div>
-                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin.settings.security.index.files_scanned') }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/index.files_scanned') }}</p>
                 <p class="font-medium text-gray-900 dark:text-white">{{ $latestIntegrityAudit->total_files_scanned }}</p>
             </div>
             <div>
-                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin.settings.security.index.status') }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/index.status') }}</p>
                 @if($latestIntegrityAudit->status === \App\Models\FileIntegrityAudit::STATUS_OK)
                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                        {{ __('admin.settings.security.integrity.status_ok') }}
+                        {{ __('admin/settings/security/integrity.status_ok') }}
                     </span>
                 @elseif($latestIntegrityAudit->status === \App\Models\FileIntegrityAudit::STATUS_WARNING)
                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                        {{ __('admin.settings.security.integrity.status_warning') }}
+                        {{ __('admin/settings/security/integrity.status_warning') }}
                     </span>
                 @else
                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                        {{ __('admin.settings.security.integrity.status_critical') }}
+                        {{ __('admin/settings/security/integrity.status_critical') }}
                     </span>
                 @endif
             </div>
             <div>
                 <a href="{{ route('admin.settings.security.integrity') }}" class="inline-flex items-center text-blue-600 dark:text-blue-400 hover:underline">
-                    {{ __('admin.settings.security.index.view_details') }}
+                    {{ __('admin/settings/security/index.view_details') }}
                     <i class="fas fa-arrow-right ml-1"></i>
                 </a>
             </div>

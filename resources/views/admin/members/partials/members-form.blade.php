@@ -117,7 +117,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <h2>{{ __('common.password_settings') }}</h2>
         
         <fieldset>
-            <legend>{{ $requirePassword ? __('common.password') : __('admin.profile.password_change_only') }}</legend>
+            <legend>{{ $requirePassword ? __('common.password') : __('admin/profile.password_change_only') }}</legend>
             <x-password-tools
                 id="password"
                 name="password"
@@ -222,12 +222,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :options="$localeOptions"
                 :value="old('locale', $member->locale?->value ?? null)"
                 :nullable="true"
-                :nullLabel="__('admin.profile.use_system_default')"
+                :nullLabel="__('admin/profile.use_system_default')"
             />
             <x-form.error
                 :messages="$errors->get('locale')"
             />
-            <p class="description-text">{{ __('admin.profile.language_help') }}</p>
+            <p class="description-text">{{ __('admin/profile.language_help') }}</p>
         </fieldset>
         
         <!-- 外観モード -->
@@ -406,7 +406,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @else
                     <input type="hidden" name="two_factor_method" value="{{ $currentMethod }}">
                     <p class="description-text">
-                        {{ __('admin.profile.single_method_available') }}: 
+                        {{ __('admin/profile.single_method_available') }}: 
                         <strong>{{ __($enabledTwoFactorMethods[$currentMethod]) }}</strong>
                     </p>
                 @endif
@@ -465,7 +465,7 @@ document.addEventListener('DOMContentLoaded', function() {
 @if(isset($member) && $member->exists)
     <!-- 2FA管理セクション -->
     <section class="mt-8">
-        <h2>{{ __('admin.profile.2fa_management') }}</h2>
+        <h2>{{ __('admin/profile.2fa_management') }}</h2>
 
         <!-- Passkeyデバイス -->
         @if($passkeyEnabled)
@@ -518,13 +518,13 @@ document.addEventListener('DOMContentLoaded', function() {
             <!-- Passkeyの説明 -->
             <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
                 <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                    <i class="fas fa-info-circle mr-2"></i>{{ __('admin.profile.passkey_info_title') }}
+                    <i class="fas fa-info-circle mr-2"></i>{{ __('admin/profile.passkey_info_title') }}
                 </h4>
                 <ul class="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-disc list-inside">
-                    <li>{{ __('admin.profile.passkey_info_1') }}</li>
-                    <li>{{ __('admin.profile.passkey_info_2') }}</li>
-                    <li>{{ __('admin.profile.passkey_info_3') }}</li>
-                    <li class="text-red-600 dark:text-red-400 font-semibold">{{ __('admin.profile.passkey_info_4') }}</li>
+                    <li>{{ __('admin/profile.passkey_info_1') }}</li>
+                    <li>{{ __('admin/profile.passkey_info_2') }}</li>
+                    <li>{{ __('admin/profile.passkey_info_3') }}</li>
+                    <li class="text-red-600 dark:text-red-400 font-semibold">{{ __('admin/profile.passkey_info_4') }}</li>
                 </ul>
             </div>
         </div>
@@ -560,12 +560,12 @@ document.addEventListener('DOMContentLoaded', function() {
             <!-- 回復コードの説明 -->
             <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
                 <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                    <i class="fas fa-info-circle mr-2"></i>{{ __('admin.profile.recovery_codes_info_title') }}
+                    <i class="fas fa-info-circle mr-2"></i>{{ __('admin/profile.recovery_codes_info_title') }}
                 </h4>
                 <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-1 list-disc list-inside">
-                    <li>{{ __('admin.profile.recovery_codes_info_1') }}</li>
-                    <li>{{ __('admin.profile.recovery_codes_info_2') }}</li>
-                    <li>{{ __('admin.profile.recovery_codes_info_3') }}</li>
+                    <li>{{ __('admin/profile.recovery_codes_info_1') }}</li>
+                    <li>{{ __('admin/profile.recovery_codes_info_2') }}</li>
+                    <li>{{ __('admin/profile.recovery_codes_info_3') }}</li>
                     <li class="text-red-600 dark:text-red-400 font-semibold">{{ __('admin.members.form.recovery_codes_admin_note') }}</li>
                 </ul>
             </div>

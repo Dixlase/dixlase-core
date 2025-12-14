@@ -62,6 +62,6 @@ class AdminMemberPasswordController extends AdminMemberSettingsController
         }
 
         return redirect()->back()
-            ->with('success', __('admin.members.settings.updated'));
+            ->with('success', __('admin/members/settings.updated'));
     }
 }

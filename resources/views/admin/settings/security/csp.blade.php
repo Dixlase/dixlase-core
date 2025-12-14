@@ -28,28 +28,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <!-- CSP設定 -->
         <section>
-            <h2>{{ __('admin.settings.security.csp.title') }}</h2>
-            <p>{{ __('admin.settings.security.csp.description') }}</p>
+            <h2>{{ __('admin/settings/security/csp.title') }}</h2>
+            <p>{{ __('admin/settings/security/csp.description') }}</p>
 
             <!-- CSP有効/無効 -->
             <fieldset class="mb-4">
-                <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.settings.security.csp.enabled') }}</legend>
+                <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin/settings/security/csp.enabled') }}</legend>
                 
                 <x-form.toggle
-                    :label="__('admin.settings.security.csp.enabled')"
+                    :label="__('admin/settings/security/csp.enabled')"
                     id="csp_enabled"
                     name="csp_enabled"
                     :checked="old('csp_enabled', $settings['csp_enabled'] ?? true)"
                     xModel="cspEnabled"
                 />
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin.settings.security.csp.enabled_help') }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/settings/security/csp.enabled_help') }}</p>
             </fieldset>
 
             <!-- CSP詳細設定（CSP有効時のみ操作可能） -->
             <div :class="{ 'opacity-50 pointer-events-none': !cspEnabled }">
                 <!-- CSPモード -->
                 <fieldset class="mb-4">
-                    <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.settings.security.csp.mode') }}</legend>
+                    <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin/settings/security/csp.mode') }}</legend>
                     
                     <!-- CSP無効時のデフォルト値 -->
                     <template x-if="!cspEnabled">
@@ -61,40 +61,40 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :options="[
                             [
                                 'value' => 'development',
-                                'label' => __('admin.settings.security.csp.mode_development'),
-                                'description' => __('admin.settings.security.csp.mode_development_desc'),
+                                'label' => __('admin/settings/security/csp.mode_development'),
+                                'description' => __('admin/settings/security/csp.mode_development_desc'),
                                 'icon' => 'fas fa-code',
                                 'color' => 'blue',
                                 'features' => [
-                                    __('admin.settings.security.csp.mode_development_feature1'),
-                                    __('admin.settings.security.csp.mode_development_feature2'),
-                                    __('admin.settings.security.csp.mode_development_feature3'),
+                                    __('admin/settings/security/csp.mode_development_feature1'),
+                                    __('admin/settings/security/csp.mode_development_feature2'),
+                                    __('admin/settings/security/csp.mode_development_feature3'),
                                 ],
                             ],
                             [
                                 'value' => 'standard',
-                                'label' => __('admin.settings.security.csp.mode_standard'),
-                                'description' => __('admin.settings.security.csp.mode_standard_desc'),
+                                'label' => __('admin/settings/security/csp.mode_standard'),
+                                'description' => __('admin/settings/security/csp.mode_standard_desc'),
                                 'icon' => 'fas fa-shield-alt',
                                 'color' => 'yellow',
-                                'badge' => __('admin.settings.security.csp.recommended'),
+                                'badge' => __('admin/settings/security/csp.recommended'),
                                 'badgeColor' => 'green',
                                 'features' => [
-                                    __('admin.settings.security.csp.mode_standard_feature1'),
-                                    __('admin.settings.security.csp.mode_standard_feature2'),
-                                    __('admin.settings.security.csp.mode_standard_feature3'),
+                                    __('admin/settings/security/csp.mode_standard_feature1'),
+                                    __('admin/settings/security/csp.mode_standard_feature2'),
+                                    __('admin/settings/security/csp.mode_standard_feature3'),
                                 ],
                             ],
                             [
                                 'value' => 'strict',
-                                'label' => __('admin.settings.security.csp.mode_strict'),
-                                'description' => __('admin.settings.security.csp.mode_strict_desc'),
+                                'label' => __('admin/settings/security/csp.mode_strict'),
+                                'description' => __('admin/settings/security/csp.mode_strict_desc'),
                                 'icon' => 'fas fa-lock',
                                 'color' => 'red',
                                 'features' => [
-                                    __('admin.settings.security.csp.mode_strict_feature1'),
-                                    __('admin.settings.security.csp.mode_strict_feature2'),
-                                    __('admin.settings.security.csp.mode_strict_feature3'),
+                                    __('admin/settings/security/csp.mode_strict_feature1'),
+                                    __('admin/settings/security/csp.mode_strict_feature2'),
+                                    __('admin/settings/security/csp.mode_strict_feature3'),
                                 ],
                             ],
                         ]"
@@ -105,57 +105,57 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 <!-- 違反をログに記録 -->
                 <fieldset class="mb-4">
-                    <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.settings.security.csp.log_violations') }}</legend>
+                    <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin/settings/security/csp.log_violations') }}</legend>
                     
                     <x-form.toggle
-                        :label="__('admin.settings.security.csp.log_violations')"
+                        :label="__('admin/settings/security/csp.log_violations')"
                         id="csp_log_violations"
                         name="csp_log_violations"
                         :checked="old('csp_log_violations', $settings['csp_log_violations'] ?? true)"
                     />
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin.settings.security.csp.log_violations_help') }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/settings/security/csp.log_violations_help') }}</p>
                 </fieldset>
 
                 <!-- 信頼済みドメイン -->
                 <fieldset class="mb-4">
-                    <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.settings.security.csp.trusted_domains') }}</legend>
+                    <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin/settings/security/csp.trusted_domains') }}</legend>
                     
                     <x-form.textarea
                         id="csp_trusted_domains"
                         name="csp_trusted_domains"
                         :value="old('csp_trusted_domains', $settings['csp_trusted_domains'] ?? '')"
-                        :placeholder="__('admin.settings.security.csp.trusted_domains_placeholder')"
+                        :placeholder="__('admin/settings/security/csp.trusted_domains_placeholder')"
                         rows="4"
                         class="input-xl"
                     />
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin.settings.security.csp.trusted_domains_help') }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/settings/security/csp.trusted_domains_help') }}</p>
                 </fieldset>
 
                 <!-- 拒否ドメイン -->
                 <fieldset class="mb-4">
-                    <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.settings.security.csp.denied_domains') }}</legend>
+                    <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin/settings/security/csp.denied_domains') }}</legend>
                     
                     <x-form.textarea
                         id="csp_denied_domains"
                         name="csp_denied_domains"
                         :value="old('csp_denied_domains', $settings['csp_denied_domains'] ?? '')"
-                        :placeholder="__('admin.settings.security.csp.denied_domains_placeholder')"
+                        :placeholder="__('admin/settings/security/csp.denied_domains_placeholder')"
                         rows="4"
                         class="input-xl"
                     />
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{!! __('admin.settings.security.csp.denied_domains_help') !!}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{!! __('admin/settings/security/csp.denied_domains_help') !!}</p>
                 </fieldset>
 
                 <!-- ブロックリスト照合設定 -->
                 <fieldset class="mb-4" x-data="{ blocklistEnabled: {{ old('csp_blocklist_check_enabled', $settings['csp_blocklist_check_enabled'] ?? false) ? 'true' : 'false' }} }">
-                    <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.settings.security.csp.blocklist_check_title') }}</legend>
+                    <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin/settings/security/csp.blocklist_check_title') }}</legend>
                     
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">{!! __('admin.settings.security.csp.blocklist_check_description') !!}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">{!! __('admin/settings/security/csp.blocklist_check_description') !!}</p>
 
                     <!-- 有効/無効 -->
                     <div class="mb-4">
                         <x-form.toggle
-                            :label="__('admin.settings.security.csp.blocklist_check_enabled')"
+                            :label="__('admin/settings/security/csp.blocklist_check_enabled')"
                             id="csp_blocklist_check_enabled"
                             name="csp_blocklist_check_enabled"
                             :checked="old('csp_blocklist_check_enabled', $settings['csp_blocklist_check_enabled'] ?? false)"
@@ -165,7 +165,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     <!-- 検出時のアクション -->
                     <div class="mb-4 pl-6" :class="{ 'opacity-50 pointer-events-none': !blocklistEnabled }">
-                        <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">{{ __('admin.settings.security.csp.blocklist_action_label') }}</p>
+                        <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">{{ __('admin/settings/security/csp.blocklist_action_label') }}</p>
                         
                         <!-- ブロックリスト無効時のデフォルト値 -->
                         <template x-if="!blocklistEnabled">
@@ -177,15 +177,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             :options="[
                                 [
                                     'value' => 'warn',
-                                    'label' => __('admin.settings.security.csp.blocklist_action_warn'),
-                                    'description' => __('admin.settings.security.csp.blocklist_action_warn_desc'),
+                                    'label' => __('admin/settings/security/csp.blocklist_action_warn'),
+                                    'description' => __('admin/settings/security/csp.blocklist_action_warn_desc'),
                                     'icon' => 'fas fa-exclamation-triangle',
                                     'color' => 'yellow',
                                 ],
                                 [
                                     'value' => 'block',
-                                    'label' => __('admin.settings.security.csp.blocklist_action_block'),
-                                    'description' => __('admin.settings.security.csp.blocklist_action_block_desc'),
+                                    'label' => __('admin/settings/security/csp.blocklist_action_block'),
+                                    'description' => __('admin/settings/security/csp.blocklist_action_block_desc'),
                                     'icon' => 'fas fa-ban',
                                     'color' => 'red',
                                 ],
@@ -197,7 +197,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     <!-- カテゴリ選択 -->
                     <div class="space-y-3 pl-6 mb-4" :class="{ 'opacity-50 pointer-events-none': !blocklistEnabled }">
-                        <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">{{ __('admin.settings.security.csp.blocklist_check_categories') }}</p>
+                        <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">{{ __('admin/settings/security/csp.blocklist_check_categories') }}</p>
                         @php
                             $enabledCategories = explode(',', old('csp_blocklist_enabled_categories', $settings['csp_blocklist_enabled_categories'] ?? ''));
                             $blocklistSources = config('csp.blocklist_sources', []);
@@ -237,17 +237,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 <!-- カスタムディレクティブ -->
                 <fieldset class="mb-4">
-                    <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.settings.security.csp.custom_directives') }}</legend>
+                    <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin/settings/security/csp.custom_directives') }}</legend>
                     
                     <x-form.textarea
                         id="csp_custom_directives"
                         name="csp_custom_directives"
                         :value="old('csp_custom_directives', $settings['csp_custom_directives'] ?? '')"
-                        :placeholder="__('admin.settings.security.csp.custom_directives_placeholder')"
+                        :placeholder="__('admin/settings/security/csp.custom_directives_placeholder')"
                         rows="4"
                         class="input-xl font-mono text-sm"
                     />
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin.settings.security.csp.custom_directives_help') }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/settings/security/csp.custom_directives_help') }}</p>
                 </fieldset>
             </div>
         </section>

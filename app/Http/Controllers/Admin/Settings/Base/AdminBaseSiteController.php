@@ -114,7 +114,7 @@ class AdminBaseSiteController extends AdminLoggedInController
         $this->baseSettingRepository->setMultiple($dbSettings);
 
         return redirect()->route('admin.settings.base.site')
-            ->with('success', __('admin.settings.base.site.settings_updated'));
+            ->with('success', __('admin/settings/base/site.settings_updated'));
     }
 
     /**

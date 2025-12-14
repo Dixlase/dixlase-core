@@ -432,13 +432,13 @@ class AdminProfileController extends AdminLoggedInController
         // メールアドレス変更時のメッセージ
         if ($emailChanged && $isMailServerTested) {
             // メールサーバー設定済み：認証メール送信を通知
-            $message = __('admin.profile.updated_with_email_verification');
+            $message = __('admin/profile.updated_with_email_verification');
         } elseif ($emailChanged && !$isMailServerTested) {
             // メールサーバー未設定：即時反映を通知
-            $message = __('admin.profile.updated_email_immediate');
+            $message = __('admin/profile.updated_email_immediate');
         } else {
             // メールアドレス変更なし
-            $message = __('admin.profile.updated');
+            $message = __('admin/profile.updated');
         }
 
         $redirect = redirect()->route('admin.profile')->with('success', $message);
@@ -473,14 +473,14 @@ class AdminProfileController extends AdminLoggedInController
         // ハッシュの検証
         if (!$emailVerificationHelper->verifyHash($member, $hash)) {
             return redirect()->route('admin.login')
-                ->with('error', __('admin.profile.email_verification_invalid'));
+                ->with('error', __('admin/profile.email_verification_invalid'));
         }
 
         // 認証が必要かチェック
         $verificationStatus = $emailVerificationHelper->needsVerification($member);
         if (!$verificationStatus['needs_verification']) {
             return redirect()->route('admin.login')
-                ->with('info', __('admin.profile.email_already_verified'));
+                ->with('info', __('admin/profile.email_already_verified'));
         }
 
         // ログイン状態をチェック
@@ -532,7 +532,7 @@ class AdminProfileController extends AdminLoggedInController
             
             return response()->json([
                 'success' => false,
-                'message' => __('admin.profile.passkey_register_options_error')
+                'message' => __('admin/profile.passkey_register_options_error')
             ], 500);
         }
     }
@@ -565,7 +565,7 @@ class AdminProfileController extends AdminLoggedInController
 
             return response()->json([
                 'success' => true,
-                'message' => __('admin.profile.passkey_registered'),
+                'message' => __('admin/profile.passkey_registered'),
                 'credential' => [
                     'id' => $credential->id,
                     'name' => $credential->name,
@@ -580,7 +580,7 @@ class AdminProfileController extends AdminLoggedInController
             
             return response()->json([
                 'success' => false,
-                'message' => __('admin.profile.passkey_register_error')
+                'message' => __('admin/profile.passkey_register_error')
             ], 500);
         }
     }
@@ -613,7 +613,7 @@ class AdminProfileController extends AdminLoggedInController
                 
                 return response()->json([
                     'success' => true,
-                    'message' => __('admin.profile.passkey_deleted_all', ['count' => $deletedCount])
+                    'message' => __('admin/profile.passkey_deleted_all', ['count' => $deletedCount])
                 ]);
             }
             
@@ -626,14 +626,14 @@ class AdminProfileController extends AdminLoggedInController
                 \Log::warning('[Passkey Delete] Credential not found');
                 return response()->json([
                     'success' => false,
-                    'message' => __('admin.profile.passkey_not_found')
+                    'message' => __('admin/profile.passkey_not_found')
                 ], 404);
             }
 
             \Log::info('[Passkey Delete] Successfully deleted');
             return response()->json([
                 'success' => true,
-                'message' => __('admin.profile.passkey_deleted')
+                'message' => __('admin/profile.passkey_deleted')
             ]);
         } catch (\Exception $e) {
             \Log::error('[Passkey Delete] Exception caught', [
@@ -645,7 +645,7 @@ class AdminProfileController extends AdminLoggedInController
             
             return response()->json([
                 'success' => false,
-                'message' => __('admin.profile.passkey_delete_error')
+                'message' => __('admin/profile.passkey_delete_error')
             ], 500);
         }
     }
@@ -708,13 +708,13 @@ class AdminProfileController extends AdminLoggedInController
             if ($deletedCount === 0) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('admin.profile.no_passkeys_to_delete')
+                    'message' => __('admin/profile.no_passkeys_to_delete')
                 ], 404);
             }
 
             return response()->json([
                 'success' => true,
-                'message' => __('admin.profile.all_passkeys_deleted', ['count' => $deletedCount])
+                'message' => __('admin/profile.all_passkeys_deleted', ['count' => $deletedCount])
             ]);
         } catch (\Exception $e) {
             \Log::error('[Passkey] 一括削除エラー', [
@@ -724,7 +724,7 @@ class AdminProfileController extends AdminLoggedInController
             
             return response()->json([
                 'success' => false,
-                'message' => __('admin.profile.passkey_delete_all_error')
+                'message' => __('admin/profile.passkey_delete_all_error')
             ], 500);
         }
     }
@@ -750,12 +750,12 @@ class AdminProfileController extends AdminLoggedInController
             return response()->json([
                 'success' => true,
                 'codes' => $codes,
-                'message' => __('admin.profile.recovery_codes_generated')
+                'message' => __('admin/profile.recovery_codes_generated')
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('admin.profile.recovery_codes_generation_error')
+                'message' => __('admin/profile.recovery_codes_generation_error')
             ], 500);
         }
     }

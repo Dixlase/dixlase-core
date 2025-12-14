@@ -27,7 +27,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- メールサーバー設定 -->
     <section>
-        <h2>{{ __('admin.settings.base.mail.mail_server_settings') }}</h2>
+        <h2>{{ __('admin/settings/base/mail.mail_server_settings') }}</h2>
 
         <x-mail-server-form
             :settings="$settings"
@@ -54,26 +54,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- システム管理者メールアドレス -->
     <section>
-        <h2>{{ __('admin.settings.base.mail.admin_email_settings') }}</h2>
-        <p>{{ __('admin.settings.base.mail.admin_email_settings_description') }}</p>
+        <h2>{{ __('admin/settings/base/mail.admin_email_settings') }}</h2>
+        <p>{{ __('admin/settings/base/mail.admin_email_settings_description') }}</p>
 
         <!-- メールサーバー設定の確認メッセージ -->
         @if(!($mailConnectionTested && $mailSendTested && $mailReceiveTested))
             <x-message
                 type="warning"
-                :message="__('admin.settings.base.mail.admin_email_mail_test_required')"
+                :message="__('admin/settings/base/mail.admin_email_mail_test_required')"
             />
         @endif
 
         <fieldset>
-            <legend>{{ __('admin.settings.base.mail.admin_email') }}</legend>
+            <legend>{{ __('admin/settings/base/mail.admin_email') }}</legend>
             <x-form.text
                 type="email"
                 name="system_admin_email"
                 :value="old('system_admin_email', $settings['system_admin_email'])"
                 class="input-lg"
             />
-            <p>{{ __('admin.settings.base.mail.admin_email_help') }}</p>
+            <p>{{ __('admin/settings/base/mail.admin_email_help') }}</p>
         </fieldset>
     </section>
 </form>
@@ -106,7 +106,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             
             if (event.data.type === 'mail_receive_test_completed') {
                 updateTestStatus('receive', true, null);
-                showNotification('success', '{{ __('admin.settings.base.mail.mail_receive_test_completed') }}');
+                showNotification('success', '{{ __('admin/settings/base/mail.mail_receive_test_completed') }}');
             }
         });
 
@@ -177,7 +177,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 if (state.receive_tested) {
                     updateTestStatus('receive', true, state.receive_test_date);
                     if (typeof showNotification === 'function') {
-                        showNotification('success', '{{ __('admin.settings.base.mail.mail_receive_test_completed') }}');
+                        showNotification('success', '{{ __('admin/settings/base/mail.mail_receive_test_completed') }}');
                     }
                 }
             }
@@ -250,7 +250,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 mainStatusDiv.className = 'mt-6 p-4 border rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800';
                 mainIcon.className = 'fas fa-exclamation-triangle text-yellow-400 text-xl';
                 mainTitle.className = 'text-sm font-medium text-yellow-800 dark:text-yellow-200';
-                mainTitle.textContent = '{{ __('admin.settings.base.mail.mail_test_incomplete') }}';
+                mainTitle.textContent = '{{ __('admin/settings/base/mail.mail_test_incomplete') }}';
             }
         }
         

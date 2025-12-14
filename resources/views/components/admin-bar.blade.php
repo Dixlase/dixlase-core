@@ -37,7 +37,7 @@
                     {{-- ダッシュボード --}}
                     <a href="{{ route('admin.dashboard') }}" class="px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm">
                         <i class="fas fa-home mr-1"></i>
-                        <span class="hidden md:inline">{{ __('admin.nav.dashboard') }}</span>
+                        <span class="hidden md:inline">{{ __('admin/nav.dashboard') }}</span>
                     </a>
                     
                     {{-- フロントページデザイン --}}
@@ -50,7 +50,7 @@
                     @if(Route::has('admin.settings.themes.settings'))
                         <a href="{{ route('admin.settings.themes.settings') }}" class="px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm">
                             <i class="fas fa-palette mr-1"></i>
-                            <span class="hidden md:inline">{{ __('admin.nav.settings.themes.settings') }}</span>
+                            <span class="hidden md:inline">{{ __('admin/nav.settings.themes.settings') }}</span>
                         </a>
                     @endif
 
@@ -109,7 +109,7 @@
                         <div class="bg-white dark:bg-black">
                             <a href="{{ route('admin.profile') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
                                 <i class="fas fa-user w-5 text-center mr-2 text-gray-500 dark:text-gray-400"></i>
-                                <span>{{ __('admin.nav.profile') }}</span>
+                                <span>{{ __('admin/nav.profile') }}</span>
                             </a>
                         </div>
                         <div class="border-t border-gray-200 dark:border-gray-700"></div>
@@ -176,7 +176,7 @@
                 <a href="{{ route('admin.profile') }}"
                    class="flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition">
                     <i class="fas fa-user w-5 text-center mr-3 text-gray-500 dark:text-gray-400"></i>
-                    <span>{{ __('admin.nav.profile') }}</span>
+                    <span>{{ __('admin/nav.profile') }}</span>
                 </a>
 
                 {{-- ログアウト --}}

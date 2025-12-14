@@ -96,6 +96,6 @@ class AdminSecurityCspController extends AdminLoggedInController
         $this->securitySettingRepository->set('csp_blocklist_enabled_categories', implode(',', $categories));
 
         return redirect()->route('admin.settings.security.csp')
-            ->with('success', __('admin.settings.security.csp_settings_updated'));
+            ->with('success', __('admin/settings/security/csp_settings_updated'));
     }
 }
