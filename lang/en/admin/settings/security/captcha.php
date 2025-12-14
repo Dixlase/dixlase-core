@@ -126,4 +126,5 @@ return [
     ],
     'settings_updated' => 'CAPTCHA settings have been updated.',
     'token_required' => 'CAPTCHA token is required',
+    'secret_key_required' => 'Secret key is required',
 ];

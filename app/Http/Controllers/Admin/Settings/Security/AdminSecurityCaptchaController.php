@@ -177,7 +177,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
                 
                 return response()->json([
                     'success' => true,
-                    'message' => __('admin/settings/security/captcha_validation_success_with_score', [
+                    'message' => __('admin/settings/security/captcha.validation_success_with_score', [
                         'score' => $result['score'] ?? 'N/A'
                     ]),
                     'score' => $result['score'] ?? null,
