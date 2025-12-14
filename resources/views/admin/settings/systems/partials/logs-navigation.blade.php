@@ -15,7 +15,7 @@
 <div class="mb-4">
     @if($pageType === 'system')
         {{-- システムログページ用ナビゲーション --}}
-        <h2>{{ __('admin.systems.logs.log_type_label') }}</h2>
+        <h2>{{ __('admin/settings/systems/logs.log_type_label') }}</h2>
         
         <!-- Admin Logs -->
         <div class="mb-4">
@@ -31,7 +31,7 @@
                         @if($type === 'error')
                             {{ __('common.error_log') }}
                         @else
-                            {{ __('admin.systems.logs.system.' . $type) }}
+                            {{ __('admin/settings/systems/logs.system.' . $type) }}
                         @endif
                     </a>
                 @endforeach
@@ -49,7 +49,7 @@
                             'nav-button--blue',
                             'nav-button--active' => $logType === $type
                         ])>
-                        {{ __('admin.systems.logs.system.' . $type) }}
+                        {{ __('admin/settings/systems/logs.system.' . $type) }}
                     </a>
                 @endforeach
             </nav>
@@ -57,7 +57,7 @@
         
         <!-- Security Logs -->
         <div class="mb-4">
-            <h3 class="mb-2 md:mb-0 md:mr-2 md:inline-block text-center md:text-left">{{ __('admin.systems.logs.system.security_logs_label') }}</h3>
+            <h3 class="mb-2 md:mb-0 md:mr-2 md:inline-block text-center md:text-left">{{ __('admin/settings/systems/logs.system.security_logs_label') }}</h3>
             <nav class="flex flex-wrap gap-2 justify-center md:justify-start">
                 <a href="{{ route('admin.settings.systems.logs.system', ['type' => 'csp']) }}"
                     @class([
@@ -65,13 +65,13 @@
                         'nav-button--blue',
                         'nav-button--active' => $logType === 'csp'
                     ])>
-                    {{ __('admin.systems.logs.system.csp') }}
+                    {{ __('admin/settings/systems/logs.system.csp') }}
                 </a>
             </nav>
         </div>
     @else
         {{-- 監査ログページ用ナビゲーション --}}
-        <h2>{{ __('admin.systems.logs.audit.heading') }}</h2>
+        <h2>{{ __('admin/settings/systems/logs.audit.heading') }}</h2>
         
         <div class="mb-4">
             <nav class="flex flex-wrap gap-2 justify-center md:justify-start">
@@ -81,7 +81,7 @@
                         'nav-button--blue',
                         'nav-button--active' => $currentView === 'db'
                     ])>
-                    {{ __('admin.systems.logs.audit_db') }}
+                    {{ __('admin/settings/systems/logs.audit_db') }}
                 </a>
                 <a href="{{ route('admin.settings.systems.logs.system', ['type' => 'audit']) }}"
                     @class([
@@ -89,7 +89,7 @@
                         'nav-button--blue',
                         'nav-button--active' => $currentView === 'file'
                     ])>
-                    {{ __('admin.systems.logs.audit_file') }}
+                    {{ __('admin/settings/systems/logs.audit_file') }}
                 </a>
             </nav>
         </div>

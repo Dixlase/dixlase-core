@@ -374,6 +374,8 @@ function validateToken(token) {
             token: token,
             driver: document.getElementById('captcha_driver').value,
             secret_key: document.getElementById('captcha_secret_key').value,
+            site_key: document.getElementById('captcha_site_key').value,
+            project_id: document.getElementById('captcha_google_project_id')?.value || '',
             min_score: document.getElementById('captcha_google_min_score')?.value || '0.5'
         })
     })

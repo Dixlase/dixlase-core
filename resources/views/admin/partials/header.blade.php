@@ -97,7 +97,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
                     <!-- Menu Items -->
                     <a href="{{ route('admin.profile') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 transition" role="menuitem">
-                        {{ __('admin.profile.heading') }}
+                        {{ __('admin/nav.profile') }}
                     </a>
                     <form method="POST" action="{{ route('admin.logout') }}" role="none">
                         @csrf
@@ -165,7 +165,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="space-y-2">
                 <a href="{{ route('admin.profile') }}"
                 class="flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition">
-                    <i class="fa-solid fa-user me-3"></i> {{ __('admin.profile.heading') }}
+                    <i class="fa-solid fa-user me-3"></i> {{ __('admin/nav.profile') }}
                 </a>
 
                 <!-- ログアウト -->

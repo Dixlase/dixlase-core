@@ -38,97 +38,97 @@ return [
 
     'nav' => [
         'dashboard' => [
-            'text' => 'admin.nav.dashboard',
+            'text' => 'admin/nav.dashboard',
             'route' => 'admin.dashboard',
             'icon' => 'fas fa-fw fa-tachometer-alt',
         ],
         'front' => [
-            'text' => 'admin.nav.front.text',
+            'text' => 'admin/nav.front.text',
             'icon' => 'fas fa-fw fa-desktop',
             'children' => [
                 'index' => [
-                    'text' => 'admin.nav.front.index',
+                    'text' => 'admin/nav.front.index',
                     'route' => 'admin.front.index',
                     'icon' => 'fas fa-fw fa-home',
                 ],
                 'edit' => [
-                    'text' => 'admin.nav.front.edit',
+                    'text' => 'admin/nav.front.edit',
                     'route' => 'admin.front.edit',
                     'icon' => 'fas fa-fw fa-edit',
                 ],
                 'settings' => [
-                    'text' => 'admin.nav.front.settings',
+                    'text' => 'admin/nav.front.settings',
                     'route' => 'admin.front.settings',
                     'icon' => 'fas fa-fw fa-sliders-h',
                 ],
             ]
         ],
         'media' => [
-            'text' => 'admin.nav.media.text',
+            'text' => 'admin/nav.media.text',
             'icon' => 'fas fa-fw fa-photo-video',
             'children' => [
                 'index' => [
-                    'text' => 'admin.nav.media.index',
+                    'text' => 'admin/nav.media.index',
                     'route' => 'admin.media.index',
                     'icon' => 'fas fa-fw fa-images',
                 ],
                 'upload' => [
-                    'text' => 'admin.nav.media.upload',
+                    'text' => 'admin/nav.media.upload',
                     'route' => 'admin.media.upload',
                     'icon' => 'fas fa-fw fa-upload',
                 ],
                 'settings' => [
-                    'text' => 'admin.nav.media.settings',
+                    'text' => 'admin/nav.media.settings',
                     'route' => 'admin.media.settings',
                     'icon' => 'fas fa-fw fa-cogs',
                 ],
             ]
         ],
         'profile' => [
-            'text' => 'admin.nav.profile',
+            'text' => 'admin/nav.profile',
             'route' => 'admin.profile',
             'icon' => 'fas fa-fw fa-id-badge',
         ],
         'members' => [
-            'text' => 'admin.nav.settings.members.text',
+            'text' => 'admin/nav.settings.members.text',
             'icon' => 'fas fa-fw fa-users-cog',
             'children' => [
                 'index' => [
-                    'text' => 'admin.nav.settings.members.index',
+                    'text' => 'admin/nav.settings.members.index',
                     'route' => 'admin.members.index',
                     'icon' => 'fas fa-fw fa-users',
                 ],
                 'create' => [
-                    'text' => 'admin.nav.settings.members.create',
+                    'text' => 'admin/nav.settings.members.create',
                     'route' => 'admin.members.create',
                     'icon' => 'fas fa-fw fa-user-plus',
                 ],
                 'settings' => [
-                    'text' => 'admin.nav.settings.members.settings',
+                    'text' => 'admin/nav.settings.members.settings',
                     'icon' => 'fas fa-fw fa-user-cog',
                     'children' => [
                         'overview' => [
-                            'text' => 'admin.nav.settings.members.overview',
+                            'text' => 'admin/nav.settings.members.overview',
                             'route' => 'admin.members.settings',
                             'icon' => 'fas fa-fw fa-list-alt',
                         ],
                         'password' => [
-                            'text' => 'admin.members.settings.nav.password',
+                            'text' => 'admin/nav.settings.members.settings_nav.password',
                             'route' => 'admin.members.settings.password',
                             'icon' => 'fas fa-fw fa-key',
                         ],
                         'session' => [
-                            'text' => 'admin.members.settings.nav.session',
+                            'text' => 'admin/nav.settings.members.settings_nav.session',
                             'route' => 'admin.members.settings.session',
                             'icon' => 'fas fa-fw fa-clock',
                         ],
                         'auth' => [
-                            'text' => 'admin.members.settings.nav.auth',
+                            'text' => 'admin/nav.settings.members.settings_nav.auth',
                             'route' => 'admin.members.settings.auth',
                             'icon' => 'fas fa-fw fa-shield-alt',
                         ],
                         'roles' => [
-                            'text' => 'admin.nav.settings.members.roles_short',
+                            'text' => 'admin/nav.settings.members.roles_short',
                             'route' => 'admin.members.settings.roles',
                             'icon' => 'fas fa-fw fa-user-shield',
                         ],
@@ -137,155 +137,155 @@ return [
             ]
         ],
         'settings' => [
-            'text' => 'admin.nav.settings.text',
+            'text' => 'admin/nav.settings.text',
             'icon' => 'fas fa-fw fa-cogs',
             'children' => [
                 'base' => [
-                    'text' => 'admin.nav.settings.base.text',
+                    'text' => 'admin/nav.settings.base.text',
                     'icon' => 'fas fa-fw fa-gear',
                     'children' => [
                         'index' => [
-                            'text' => 'admin.nav.settings.base.index',
+                            'text' => 'admin/nav.settings.base.index',
                             'route' => 'admin.settings.base.index',
                             'icon' => 'fas fa-fw fa-tachometer-alt',
                         ],
                         'site' => [
-                            'text' => 'admin.nav.settings.base.site',
+                            'text' => 'admin/nav.settings.base.site',
                             'route' => 'admin.settings.base.site',
                             'icon' => 'fas fa-fw fa-globe',
                         ],
                         'admin' => [
-                            'text' => 'admin.nav.settings.base.admin',
+                            'text' => 'admin/nav.settings.base.admin',
                             'route' => 'admin.settings.base.admin',
                             'icon' => 'fas fa-fw fa-cog',
                         ],
                         'mail' => [
-                            'text' => 'admin.nav.settings.base.mail',
+                            'text' => 'admin/nav.settings.base.mail',
                             'route' => 'admin.settings.base.mail',
                             'icon' => 'fas fa-fw fa-envelope',
                         ],
                         'maintenance' => [
-                            'text' => 'admin.nav.settings.base.maintenance',
+                            'text' => 'admin/nav.settings.base.maintenance',
                             'route' => 'admin.settings.base.maintenance',
                             'icon' => 'fas fa-fw fa-tools',
                         ],
                     ]
                 ],
                 'security' => [
-                    'text' => 'admin.nav.settings.security.text',
+                    'text' => 'admin/nav.settings.security.text',
                     'icon' => 'fas fa-fw fa-shield-alt',
                     'children' => [
                         'index' => [
-                            'text' => 'admin.nav.settings.security.index',
+                            'text' => 'admin/nav.settings.security.index',
                             'route' => 'admin.settings.security.index',
                             'icon' => 'fas fa-fw fa-tachometer-alt',
                         ],
                         'auth' => [
-                            'text' => 'admin.nav.settings.security.auth',
+                            'text' => 'admin/nav.settings.security.auth',
                             'route' => 'admin.settings.security.auth',
                             'icon' => 'fas fa-fw fa-user-lock',
                         ],
                         'captcha' => [
-                            'text' => 'admin.nav.settings.security.captcha',
+                            'text' => 'admin/nav.settings.security.captcha',
                             'route' => 'admin.settings.security.captcha',
                             'icon' => 'fas fa-fw fa-robot',
                         ],
                         'ip' => [
-                            'text' => 'admin.nav.settings.security.ip',
+                            'text' => 'admin/nav.settings.security.ip',
                             'route' => 'admin.settings.security.ip',
                             'icon' => 'fas fa-fw fa-network-wired',
                         ],
                         'extensions' => [
-                            'text' => 'admin.nav.settings.security.extensions',
+                            'text' => 'admin/nav.settings.security.extensions',
                             'route' => 'admin.settings.security.extensions',
                             'icon' => 'fas fa-fw fa-puzzle-piece',
                         ],
                         'csp' => [
-                            'text' => 'admin.nav.settings.security.csp',
+                            'text' => 'admin/nav.settings.security.csp',
                             'route' => 'admin.settings.security.csp',
                             'icon' => 'fas fa-fw fa-code',
                         ],
                         'notifications' => [
-                            'text' => 'admin.nav.settings.security.notifications',
+                            'text' => 'admin/nav.settings.security.notifications',
                             'route' => 'admin.settings.security.notifications',
                             'icon' => 'fas fa-fw fa-bell',
                         ],
                         'integrity' => [
-                            'text' => 'admin.nav.settings.security.integrity',
+                            'text' => 'admin/nav.settings.security.integrity',
                             'route' => 'admin.settings.security.integrity',
                             'icon' => 'fas fa-fw fa-file-shield',
                         ],
                     ]
                 ],
                 'themes' => [
-                    'text' => 'admin.nav.settings.themes.text',
+                    'text' => 'admin/nav.settings.themes.text',
                     'icon' => 'fas fa-fw fa-palette',
                     'children' => [
                         'index' => [
-                            'text' => 'admin.nav.settings.themes.index',
+                            'text' => 'admin/nav.settings.themes.index',
                             'route' => 'admin.settings.themes.index',
                             'icon' => 'fas fa-fw fa-brush',
                         ],
                         'add' => [
-                            'text' => 'admin.nav.settings.themes.add',
+                            'text' => 'admin/nav.settings.themes.add',
                             'route' => 'admin.settings.themes.add',
                             'icon' => 'fas fa-fw fa-plus',
                         ],
                     ]
                 ],
                 'plugins' => [
-                    'text' => 'admin.nav.settings.plugins.text',
+                    'text' => 'admin/nav.settings.plugins.text',
                     'icon' => 'fas fa-fw fa-puzzle-piece',
                     'children' => [
                         'index' => [
-                            'text' => 'admin.nav.settings.plugins.index',
+                            'text' => 'admin/nav.settings.plugins.index',
                             'route' => 'admin.settings.plugins.index',
                             'icon' => 'fas fa-fw fa-puzzle-piece',
                         ],
                         'add' => [
-                            'text' => 'admin.nav.settings.plugins.add',
+                            'text' => 'admin/nav.settings.plugins.add',
                             'route' => 'admin.settings.plugins.add',
                             'icon' => 'fas fa-fw fa-plus',
                         ],
                     ]
                 ],
                 'systems' => [
-                    'text' => 'admin.nav.settings.systems.text',
+                    'text' => 'admin/nav.settings.systems.text',
                     'icon' => 'fas fa-fw fa-server',
                     'children' => [
                         'cache' => [
-                            'text' => 'admin.nav.settings.systems.cache',
+                            'text' => 'admin/nav.settings.systems.cache',
                             'route' => 'admin.settings.systems.cache',
                             'icon' => 'fas fa-fw fa-trash-alt',
                         ],
                         'database' => [
-                            'text' => 'admin.nav.settings.systems.database',
+                            'text' => 'admin/nav.settings.systems.database',
                             'route' => 'admin.settings.systems.database',
                             'icon' => 'fas fa-fw fa-database',
                         ],
                         'api' => [
-                            'text' => 'admin.nav.settings.systems.api',
+                            'text' => 'admin/nav.settings.systems.api',
                             'route' => 'admin.settings.systems.api',
                             'icon' => 'fas fa-fw fa-key',
                         ],
                         'logs' => [
-                            'text' => 'admin.nav.settings.systems.logs.text',
+                            'text' => 'admin/nav.settings.systems.logs.text',
                             'icon' => 'fas fa-fw fa-file-alt',
                             'children' => [
                                 'audit' => [
-                                    'text' => 'admin.nav.settings.systems.logs.audit',
+                                    'text' => 'admin/nav.settings.systems.logs.audit',
                                     'route' => 'admin.settings.systems.logs',
                                     'icon' => 'fas fa-fw fa-clipboard-list',
                                 ],
                                 'system' => [
-                                    'text' => 'admin.nav.settings.systems.logs.system',
+                                    'text' => 'admin/nav.settings.systems.logs.system',
                                     'route' => 'admin.settings.systems.logs.system',
                                     'icon' => 'fas fa-fw fa-scroll',
                                 ],
                             ]
                         ],
                         'info' => [
-                            'text' => 'admin.nav.settings.systems.info',
+                            'text' => 'admin/nav.settings.systems.info',
                             'route' => 'admin.settings.systems.info',
                             'icon' => 'fas fa-fw fa-info-circle',
                         ],

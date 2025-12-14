@@ -1,0 +1,94 @@
+<?php
+
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2025 exc-D inc.
+ * Website: https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ */
+
+return [
+    'heading' => 'Database Management',
+    'description' => 'Clean up old database records to maintain system performance',
+    'all_cleanup_button' => 'Clean Up All',
+    'all_cleanup_description' => 'Clean up all database tables with a common retention period',
+    'all_cleanup_warning' => 'This operation cannot be undone.',
+    'all_tables' => 'All Tables',
+    'all_days_label' => 'Common Retention Days',
+    'all_days_help' => 'Setting 0 days will delete all records. Use individual cleanup for specific retention periods.',
+    'info_title' => 'Cleanup Target Description',
+    'info_login_attempts' => 'Delete old login attempt records.',
+    'info_password_reset' => 'Delete expired password reset tokens.',
+    'info_two_factor_attempts' => 'Delete old two-factor authentication attempt records.',
+    'info_two_factor_tokens' => 'Delete expired two-factor authentication tokens.',
+    'info_recovery_codes' => 'Delete old used recovery codes.',
+    'info_passkeys' => 'Permanently delete old deleted PASSKEYs.',
+    'info_cache' => 'Delete expired cache entries.',
+    'info_sessions' => 'Delete old session records.',
+    'login_attempts' => [
+        'name' => 'Login Attempts',
+        'description' => 'Clean up old login attempt records',
+        'invalid_days' => 'Days must be a non-negative integer.',
+    ],
+    'info_panel' => [
+        'title' => 'Important Notes',
+        'notes' => [
+            'irreversible' => 'Database cleanup is an irreversible operation. We recommend backing up necessary data before execution.',
+            'performance' => 'Regular cleanup helps improve system performance.',
+            'production' => 'Execute carefully in production environments, preferably during maintenance windows.',
+            'defaults' => 'Default settings are based on recommended values. Adjust as needed.',
+        ],
+    ],
+    'modal' => [
+        'title' => 'Database Cleanup Confirmation',
+        'message' => 'Do you want to execute this operation?',
+        'message_single' => 'Do you want to clean up :name?',
+        'message_all' => 'Do you want to clean up all database tables?',
+    ],
+    'password_reset_tokens' => [
+        'name' => 'Password Reset Tokens',
+        'description' => 'Clean up old password reset token records',
+        'invalid_days' => 'Days must be a non-negative integer.',
+    ],
+    'two_factor_attempts' => [
+        'name' => 'Two-Factor Authentication Attempts',
+        'description' => 'Clean up old two-factor authentication attempt records',
+        'invalid_days' => 'Days must be a non-negative integer.',
+    ],
+    'two_factor_tokens' => [
+        'name' => 'Two-Factor Authentication Tokens (Email)',
+        'description' => 'Clean up expired two-factor authentication (email) codes',
+        'default_days' => '7 days',
+    ],
+    'recovery_codes' => [
+        'name' => 'Recovery Codes',
+        'description' => 'Clean up used/invalidated recovery codes',
+        'default_days' => '90 days',
+    ],
+    'passkeys' => [
+        'name' => 'Two-Factor PASSKEY (Biometric)',
+        'description' => 'Clean up old deleted two-factor PASSKEYs (biometric)',
+        'default_days' => '90 days',
+    ],
+    'cache_data' => [
+        'name' => 'Cache Data',
+        'description' => 'Clean up expired cache entries and locks',
+        'default_days' => 'Expired only',
+    ],
+    'sessions' => [
+        'name' => 'Sessions',
+        'description' => 'Clean up old session records',
+        'default_days' => '7 days',
+    ],
+    'cleanup_success' => 'Successfully cleaned up :count record(s).',
+    'cleanup_error' => 'Error occurred during cleanup: :error',
+    'confirm_cleanup' => 'Are you sure you want to clean up :type records?',
+    'days_label' => 'Retention Days',
+    'days_zero_info' => 'Setting 0 days will delete all records',
+    'cleanup_button' => 'Clean Up',
+];

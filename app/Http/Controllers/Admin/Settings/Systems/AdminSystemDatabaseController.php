@@ -40,50 +40,50 @@ class AdminSystemDatabaseController extends AdminLoggedInController
     {
         $cleanupInfo = [
             'login_attempts' => [
-                'name' => __('admin.settings.systems.database.login_attempts.name'),
-                'description' => __('admin.settings.systems.database.login_attempts.description'),
+                'name' => __('admin/settings/systems/database.login_attempts.name'),
+                'description' => __('admin/settings/systems/database.login_attempts.description'),
                 'default_days' => 30,
                 'command' => 'dls:admin:cleanup-login-attempts'
             ],
             'password_reset_tokens' => [
-                'name' => __('admin.settings.systems.database.password_reset_tokens.name'),
-                'description' => __('admin.settings.systems.database.password_reset_tokens.description'),
+                'name' => __('admin/settings/systems/database.password_reset_tokens.name'),
+                'description' => __('admin/settings/systems/database.password_reset_tokens.description'),
                 'default_days' => 30,
                 'command' => 'dls:admin:cleanup-password-reset-tokens'
             ],
             'two_factor_attempts' => [
-                'name' => __('admin.settings.systems.database.two_factor_attempts.name'),
-                'description' => __('admin.settings.systems.database.two_factor_attempts.description'),
+                'name' => __('admin/settings/systems/database.two_factor_attempts.name'),
+                'description' => __('admin/settings/systems/database.two_factor_attempts.description'),
                 'default_days' => 30,
                 'command' => 'dls:admin:cleanup-two-factor-attempts'
             ],
             'two_factor_tokens' => [
-                'name' => __('admin.settings.systems.database.two_factor_tokens.name'),
-                'description' => __('admin.settings.systems.database.two_factor_tokens.description'),
+                'name' => __('admin/settings/systems/database.two_factor_tokens.name'),
+                'description' => __('admin/settings/systems/database.two_factor_tokens.description'),
                 'default_days' => 7,
                 'command' => 'dls:admin:cleanup-two-factor-tokens'
             ],
             'recovery_codes' => [
-                'name' => __('admin.settings.systems.database.recovery_codes.name'),
-                'description' => __('admin.settings.systems.database.recovery_codes.description'),
+                'name' => __('admin/settings/systems/database.recovery_codes.name'),
+                'description' => __('admin/settings/systems/database.recovery_codes.description'),
                 'default_days' => 90,
                 'command' => 'dls:admin:cleanup-recovery-codes'
             ],
             'passkeys' => [
-                'name' => __('admin.settings.systems.database.passkeys.name'),
-                'description' => __('admin.settings.systems.database.passkeys.description'),
+                'name' => __('admin/settings/systems/database.passkeys.name'),
+                'description' => __('admin/settings/systems/database.passkeys.description'),
                 'default_days' => 90,
                 'command' => 'dls:admin:cleanup-passkeys'
             ],
             'cache_data' => [
-                'name' => __('admin.settings.systems.database.cache_data.name'),
-                'description' => __('admin.settings.systems.database.cache_data.description'),
+                'name' => __('admin/settings/systems/database.cache_data.name'),
+                'description' => __('admin/settings/systems/database.cache_data.description'),
                 'default_days' => null,
                 'command' => 'dls:admin:cleanup-cache'
             ],
             'sessions' => [
-                'name' => __('admin.settings.systems.database.sessions.name'),
-                'description' => __('admin.settings.systems.database.sessions.description'),
+                'name' => __('admin/settings/systems/database.sessions.name'),
+                'description' => __('admin/settings/systems/database.sessions.description'),
                 'default_days' => 7,
                 'command' => 'dls:admin:cleanup-sessions'
             ]
@@ -115,42 +115,42 @@ class AdminSystemDatabaseController extends AdminLoggedInController
                     Artisan::call('dls:admin:cleanup-login-attempts', $options);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
-                    $message = __('admin.settings.systems.database.cleanup_success', ['count' => $count]);
+                    $message = __('admin/settings/systems/database.cleanup_success', ['count' => $count]);
                     break;
                 case 'password_reset_tokens':
                     $options = $days === 0 ? ['--days' => $days, '--force' => true] : ['--days' => $days];
                     Artisan::call('dls:admin:cleanup-password-reset-tokens', $options);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
-                    $message = __('admin.settings.systems.database.cleanup_success', ['count' => $count]);
+                    $message = __('admin/settings/systems/database.cleanup_success', ['count' => $count]);
                     break;
                 case 'trusted_devices':
                     $options = $days === 0 ? ['--days' => $days, '--force' => true] : ['--days' => $days];
                     Artisan::call('dls:admin:cleanup-trusted-devices', $options);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
-                    $message = __('admin.settings.systems.database.cleanup_success', ['count' => $count]);
+                    $message = __('admin/settings/systems/database.cleanup_success', ['count' => $count]);
                     break;
                 case 'two_factor_attempts':
                     $options = $days === 0 ? ['--days' => $days, '--force' => true] : ['--days' => $days];
                     Artisan::call('dls:admin:cleanup-two-factor-attempts', $options);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
-                    $message = __('admin.settings.systems.database.cleanup_success', ['count' => $count]);
+                    $message = __('admin/settings/systems/database.cleanup_success', ['count' => $count]);
                     break;
                 case 'two_factor_tokens':
                     $options = $days === 0 ? ['--days' => $days, '--force' => true] : ['--days' => $days];
                     Artisan::call('dls:admin:cleanup-two-factor-tokens', $options);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
-                    $message = __('admin.settings.systems.database.cleanup_success', ['count' => $count]);
+                    $message = __('admin/settings/systems/database.cleanup_success', ['count' => $count]);
                     break;
                 case 'recovery_codes':
                     $options = $days === 0 ? ['--days' => $days, '--force' => true] : ['--days' => $days];
                     Artisan::call('dls:admin:cleanup-recovery-codes', $options);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
-                    $message = __('admin.settings.systems.database.cleanup_success', ['count' => $count]);
+                    $message = __('admin/settings/systems/database.cleanup_success', ['count' => $count]);
                     break;
                 case 'all':
                     $totalCount = 0;
@@ -179,15 +179,15 @@ class AdminSystemDatabaseController extends AdminLoggedInController
                     $output = Artisan::output();
                     $totalCount += $this->extractCountFromOutput($output);
                     
-                    $message = __('admin.settings.systems.database.cleanup_success', ['count' => $totalCount]);
+                    $message = __('admin/settings/systems/database.cleanup_success', ['count' => $totalCount]);
                     break;
                 default:
                     $success = false;
-                    $message = __('admin.settings.systems.database.cleanup_error', ['error' => 'Invalid cleanup type']);
+                    $message = __('admin/settings/systems/database.cleanup_error', ['error' => 'Invalid cleanup type']);
             }
         } catch (\Exception $e) {
             $success = false;
-            $message = __('admin.settings.systems.database.cleanup_error', ['error' => $e->getMessage()]);
+            $message = __('admin/settings/systems/database.cleanup_error', ['error' => $e->getMessage()]);
         }
 
         if ($success) {

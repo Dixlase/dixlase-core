@@ -25,7 +25,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     
 
     <section>
-        <h2>{{ __('admin.settings.systems.cache.title') }}</h2>
+        <h2>{{ __('admin/settings/systems/cache.title') }}</h2>
         @foreach($cacheInfo as $type => $info)
         <section class="flex flex-col md:flex-row md:items-center justify-center md:justify-between">
             <div class="flex-1 mb-4 md:mb-0 md:mr-6">
@@ -53,9 +53,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <section class="flex flex-col md:flex-row md:items-center md:justify-between">
             <div class="flex-1 mb-4 md:mb-0 md:mr-6">
-                <h2>{{ __('admin.settings.systems.cache.clear_all_title') }}</h2>
-                <p>{{ __('admin.settings.systems.cache.clear_all_description') }}</p>
-                <p>{{ __('common.warning') }}: {{ __('admin.settings.systems.cache.clear_all_warning') }}</p>
+                <h2>{{ __('admin/settings/systems/cache.clear_all_title') }}</h2>
+                <p>{{ __('admin/settings/systems/cache.clear_all_description') }}</p>
+                <p>{{ __('common.warning') }}: {{ __('admin/settings/systems/cache.clear_all_warning') }}</p>
             </div>
             
             <div class="flex-shrink-0">
@@ -67,7 +67,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <x-form.button
                     type="button"
                     variant="danger"
-                    :label="__('admin.settings.systems.cache.clear_all_button')"
+                    :label="__('admin/settings/systems/cache.clear_all_button')"
                     icon="fas fa-trash-alt"
                     onclick="openModal('clearAllCacheModal')"
                 />
@@ -78,17 +78,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div>
                 <h2>{{ __('common.info') }}</h2>
                 <dl class="text-sm">
-                    <dt class="font-semibold">{{ __('admin.settings.systems.cache.config_cache.name') }}</dt>
-                    <dd class="font-normal mb-2">{{ __('admin.settings.systems.cache.info_config') }}</dd>
+                    <dt class="font-semibold">{{ __('admin/settings/systems/cache.config_cache.name') }}</dt>
+                    <dd class="font-normal mb-2">{{ __('admin/settings/systems/cache.info_config') }}</dd>
                     
-                    <dt class="font-semibold">{{ __('admin.settings.systems.cache.route_cache.name') }}</dt>
-                    <dd class="font-normal mb-2">{{ __('admin.settings.systems.cache.info_route') }}</dd>
+                    <dt class="font-semibold">{{ __('admin/settings/systems/cache.route_cache.name') }}</dt>
+                    <dd class="font-normal mb-2">{{ __('admin/settings/systems/cache.info_route') }}</dd>
                     
-                    <dt class="font-semibold">{{ __('admin.settings.systems.cache.view_cache.name') }}</dt>
-                    <dd class="font-normal mb-2">{{ __('admin.settings.systems.cache.info_view') }}</dd>
+                    <dt class="font-semibold">{{ __('admin/settings/systems/cache.view_cache.name') }}</dt>
+                    <dd class="font-normal mb-2">{{ __('admin/settings/systems/cache.info_view') }}</dd>
                     
-                    <dt class="font-semibold">{{ __('admin.settings.systems.cache.application_cache.name') }}</dt>
-                    <dd class="font-normal mb-2">{{ __('admin.settings.systems.cache.info_application') }}</dd>
+                    <dt class="font-semibold">{{ __('admin/settings/systems/cache.application_cache.name') }}</dt>
+                    <dd class="font-normal mb-2">{{ __('admin/settings/systems/cache.info_application') }}</dd>
                 </dl>
             </div>
     </section>
@@ -98,7 +98,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @foreach($cacheInfo as $type => $info)
     <x-modal
         id="clearCacheModal{{ ucfirst($type) }}"
-        :title="__('admin.settings.systems.cache.clear_confirm', ['name' => $info['name']])"
+        :title="__('admin/settings/systems/cache.clear_confirm', ['name' => $info['name']])"
         :message="$info['description']"
         :confirm_label="__('common.clear')"
         :cancel_label="__('common.cancel')"
@@ -111,9 +111,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <!-- Clear All Cache Modal -->
     <x-modal
         id="clearAllCacheModal"
-        :title="__('admin.settings.systems.cache.clear_all_title')"
-        :message="__('admin.settings.systems.cache.clear_all_description') . ' ' . __('admin.settings.systems.cache.clear_all_warning')"
-        :confirm_label="__('admin.settings.systems.cache.clear_all_button')"
+        :title="__('admin/settings/systems/cache.clear_all_title')"
+        :message="__('admin/settings/systems/cache.clear_all_description') . ' ' . __('admin/settings/systems/cache.clear_all_warning')"
+        :confirm_label="__('admin/settings/systems/cache.clear_all_button')"
         :cancel_label="__('common.cancel')"
         form="clearAllCacheForm"
         icon_type="danger"
