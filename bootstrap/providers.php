@@ -7,7 +7,6 @@ return [
     App\Providers\CaptchaServiceProvider::class,
     App\Providers\CspServiceProvider::class,
     App\Providers\EventServiceProvider::class,
-    App\Providers\MyTestServiceProvider::class,
     App\Providers\PluginMigrationServiceProvider::class,
     App\Providers\PluginServiceProvider::class,
     App\Providers\RepositoryServiceProvider::class,

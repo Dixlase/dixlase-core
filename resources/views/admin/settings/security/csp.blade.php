@@ -35,8 +35,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset class="mb-4">
                 <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.settings.security.csp.enabled') }}</legend>
                 
-                <x-form.hidden name="csp_enabled" value="0" />
-                
                 <x-form.toggle
                     :label="__('admin.settings.security.csp.enabled')"
                     id="csp_enabled"
@@ -52,6 +50,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <!-- CSPモード -->
                 <fieldset class="mb-4">
                     <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.settings.security.csp.mode') }}</legend>
+                    
+                    <!-- CSP無効時のデフォルト値 -->
+                    <template x-if="!cspEnabled">
+                        <input type="hidden" name="csp_mode" value="development">
+                    </template>
                     
                     <x-form.radio-card-group
                         name="csp_mode"
@@ -104,8 +107,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <fieldset class="mb-4">
                     <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin.settings.security.csp.log_violations') }}</legend>
                     
-                    <x-form.hidden name="csp_log_violations" value="0" />
-                    
                     <x-form.toggle
                         :label="__('admin.settings.security.csp.log_violations')"
                         id="csp_log_violations"
@@ -153,7 +154,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     <!-- 有効/無効 -->
                     <div class="mb-4">
-                        <x-form.hidden name="csp_blocklist_check_enabled" value="0" />
                         <x-form.toggle
                             :label="__('admin.settings.security.csp.blocklist_check_enabled')"
                             id="csp_blocklist_check_enabled"
@@ -166,6 +166,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <!-- 検出時のアクション -->
                     <div class="mb-4 pl-6" :class="{ 'opacity-50 pointer-events-none': !blocklistEnabled }">
                         <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">{{ __('admin.settings.security.csp.blocklist_action_label') }}</p>
+                        
+                        <!-- ブロックリスト無効時のデフォルト値 -->
+                        <template x-if="!blocklistEnabled">
+                            <input type="hidden" name="csp_blocklist_action" value="warn">
+                        </template>
+                        
                         <x-form.radio-card-group
                             name="csp_blocklist_action"
                             :options="[

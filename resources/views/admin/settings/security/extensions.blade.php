@@ -312,8 +312,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <legend>{{ __('admin.settings.security.extensions.notification.notify_on_install') }}</legend>
                 
-                <x-form.hidden name="extension_notify_on_install" value="0" />
-                
                 <x-form.toggle
                     :label="__('admin.settings.security.extensions.notification.notify_on_install')"
                     id="extension_notify_on_install"
@@ -326,8 +324,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <!-- アンインストール時に通知 -->
             <fieldset>
                 <legend>{{ __('admin.settings.security.extensions.notification.notify_on_uninstall') }}</legend>
-                
-                <x-form.hidden name="extension_notify_on_uninstall" value="0" />
                 
                 <x-form.toggle
                     :label="__('admin.settings.security.extensions.notification.notify_on_uninstall')"
@@ -342,8 +338,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <legend>{{ __('admin.settings.security.extensions.notification.notify_on_enable') }}</legend>
                 
-                <x-form.hidden name="extension_notify_on_enable" value="0" />
-                
                 <x-form.toggle
                     :label="__('admin.settings.security.extensions.notification.notify_on_enable')"
                     id="extension_notify_on_enable"
@@ -356,8 +350,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <!-- 無効化時に通知 -->
             <fieldset>
                 <legend>{{ __('admin.settings.security.extensions.notification.notify_on_disable') }}</legend>
-                
-                <x-form.hidden name="extension_notify_on_disable" value="0" />
                 
                 <x-form.toggle
                     :label="__('admin.settings.security.extensions.notification.notify_on_disable')"
@@ -372,8 +364,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <legend>{{ __('admin.settings.security.extensions.notification.notify_on_unhealthy') }}</legend>
                 
-                <x-form.hidden name="extension_notify_on_unhealthy" value="0" />
-                
                 <x-form.toggle
                     :label="__('admin.settings.security.extensions.notification.notify_on_unhealthy')"
                     id="extension_notify_on_unhealthy"
@@ -386,8 +376,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <!-- 操作ログ記録 -->
             <fieldset>
                 <legend>{{ __('admin.settings.security.extensions.notification.log_operations') }}</legend>
-                
-                <x-form.hidden name="extension_log_operations" value="0" />
                 
                 <x-form.toggle
                     :label="__('admin.settings.security.extensions.notification.log_operations')"

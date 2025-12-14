@@ -9,9 +9,11 @@
 
 <div class="flex items-center space-x-3" @if($xBind) :class="{{ $xBind }} ? '' : 'opacity-50'" @elseif($disabled) class="opacity-50" @endif>
     <label for="{{ $id }}" class="relative inline-flex items-center mb-2" @if($xBind) :class="{{ $xBind }} ? 'cursor-pointer' : 'cursor-not-allowed'" @else class="{{ $disabled ? 'cursor-not-allowed' : 'cursor-pointer' }}" @endif>
+        <input type="hidden" name="{{ $name }}" value="0">
         <input type="checkbox"
                id="{{ $id }}"
                name="{{ $name }}"
+               value="1"
                @if($xModel) x-model="{{ $xModel }}" @else {{ $checked ? 'checked' : '' }} @endif
                @if($xBind) :disabled="!{{ $xBind }}" @elseif($disabled) disabled @endif
                class="sr-only peer">
