@@ -63,9 +63,11 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
         }
         
         $captchaTestResult = $captchaTestService->getTestResult();
+        $captchaTestDetails = $captchaTestService->getCaptchaTestResult($settings['captcha_driver']);
 
         $this->viewParams['settings'] = $settings;
         $this->viewParams['captchaTestResult'] = $captchaTestResult;
+        $this->viewParams['captchaTestDetails'] = $captchaTestDetails;
 
         return view('admin.settings.security.captcha', $this->viewParams);
     }
@@ -80,22 +82,61 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
             'captcha_driver' => 'required_if:captcha_enabled,1|in:google,google_enterprise,turnstile',
             'captcha_site_key' => 'required_if:captcha_enabled,1|nullable|string|max:255',
             'captcha_secret_key' => 'required_if:captcha_enabled,1|nullable|string|max:255',
-            'captcha_google_version' => 'nullable|in:v2,v3',
+            'captcha_google_version' => 'nullable|in:v2_checkbox,v2_invisible,v3',
             'captcha_google_min_score' => 'nullable|numeric|min:0|max:1',
             'captcha_google_project_id' => 'nullable|string|max:255',
+            'captcha_authentication_result' => 'nullable|boolean',
         ]);
+
+        // 現在のCAPTCHA設定を取得
+        $currentDriver = $this->securitySettingRepository->get('captcha_driver', 'google');
+        $currentSiteKey = $this->securitySettingRepository->get('captcha_site_key', '');
+        $currentSecretKey = $this->securitySettingRepository->get('captcha_secret_key', '');
+        $currentVersion = $this->securitySettingRepository->get('captcha_google_version', 'v3');
+        $currentMinScore = $this->securitySettingRepository->get('captcha_google_min_score', '0.5');
+        
+        // 新しいCAPTCHA設定
+        $newDriver = $validated['captcha_driver'] ?? 'google';
+        $newSiteKey = $validated['captcha_site_key'] ?? '';
+        $newSecretKey = $validated['captcha_secret_key'] ?? '';
+        $newVersion = $validated['captcha_google_version'] ?? 'v3';
+        $newMinScore = $validated['captcha_google_min_score'] ?? '0.5';
+        
+        // CAPTCHA設定が変更されたかチェック
+        $captchaSettingsChanged = (
+            $currentDriver !== $newDriver ||
+            $currentSiteKey !== $newSiteKey ||
+            $currentSecretKey !== $newSecretKey ||
+            $currentVersion !== $newVersion ||
+            (string)$currentMinScore !== (string)$newMinScore
+        );
+        
+        // フォームから送信されたテスト結果を確認
+        $submittedTestResult = $request->boolean('captcha_authentication_result');
+        
+        // CAPTCHAテストサービス
+        $captchaTestService = app(CaptchaTestService::class);
+        
+        // CAPTCHA設定が変更された場合のテスト結果リセット処理
+        // ただし、フォームでテスト成功状態が送信された場合は保持
+        if ($captchaSettingsChanged && !$submittedTestResult) {
+            $captchaTestService->resetCaptchaTestResults();
+        } elseif ($submittedTestResult) {
+            // テスト結果をデータベースに保存（フォームから送信された値を使用）
+            $captchaTestService->saveCaptchaTestResult($newDriver, true);
+        }
 
         // CAPTCHA設定を更新
         $this->securitySettingRepository->set('captcha_enabled', $validated['captcha_enabled'] ?? false);
-        $this->securitySettingRepository->set('captcha_driver', $validated['captcha_driver'] ?? 'google');
-        $this->securitySettingRepository->set('captcha_site_key', $validated['captcha_site_key'] ?? '');
-        $this->securitySettingRepository->set('captcha_secret_key', $validated['captcha_secret_key'] ?? '');
+        $this->securitySettingRepository->set('captcha_driver', $newDriver);
+        $this->securitySettingRepository->set('captcha_site_key', $newSiteKey);
+        $this->securitySettingRepository->set('captcha_secret_key', $newSecretKey);
         $this->securitySettingRepository->set('captcha_google_version', $validated['captcha_google_version'] ?? 'v3');
         $this->securitySettingRepository->set('captcha_google_min_score', $validated['captcha_google_min_score'] ?? '0.5');
         $this->securitySettingRepository->set('captcha_google_project_id', $validated['captcha_google_project_id'] ?? '');
 
         return redirect()->route('admin.settings.security.captcha')
-            ->with('success', __('admin.settings.security.captcha_settings_updated'));
+            ->with('success', __('admin.settings.security.captcha.settings_updated'));
     }
 
     /**

@@ -28,8 +28,51 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     captchaVersion: '{{ old('captcha_google_version', $settings['captcha_google_version']) }}',
     captchaSiteKey: '{{ old('captcha_site_key', $settings['captcha_site_key']) }}',
     captchaSecretKey: '{{ old('captcha_secret_key', $settings['captcha_secret_key']) }}',
-    captchaProjectId: '{{ old('captcha_google_project_id', $settings['captcha_google_project_id']) }}'
-}">
+    captchaProjectId: '{{ old('captcha_google_project_id', $settings['captcha_google_project_id']) }}',
+    // 保存済みの値（変更検出用）
+    savedDriver: '{{ $settings['captcha_driver'] }}',
+    savedSiteKey: '{{ $settings['captcha_site_key'] }}',
+    savedSecretKey: '{{ $settings['captcha_secret_key'] }}',
+    savedVersion: '{{ $settings['captcha_google_version'] }}',
+    savedMinScore: '{{ $settings['captcha_google_min_score'] }}',
+    captchaMinScore: '{{ old('captcha_google_min_score', $settings['captcha_google_min_score']) }}',
+    captchaSettingsChanged: false,
+    
+    // 設定変更を検出してリセット
+    checkSettingsChanged() {
+        const changed = this.captchaDriver !== this.savedDriver ||
+                       this.captchaSiteKey !== this.savedSiteKey ||
+                       this.captchaSecretKey !== this.savedSecretKey ||
+                       this.captchaVersion !== this.savedVersion ||
+                       this.captchaMinScore !== this.savedMinScore;
+        if (changed && !this.captchaSettingsChanged) {
+            this.captchaSettingsChanged = true;
+            this.resetAuthenticationStatus();
+        }
+    },
+    
+    // 認証状態をリセット
+    resetAuthenticationStatus() {
+        const authInput = document.getElementById('captcha-authentication-result');
+        if (authInput) {
+            authInput.value = '0';
+        }
+        // 成功表示を非表示にして、テスト必要通知を表示
+        const successDisplay = document.getElementById('captcha-success-display');
+        const requiredNotice = document.getElementById('auth-test-required-notice');
+        if (successDisplay) successDisplay.style.display = 'none';
+        if (requiredNotice) requiredNotice.style.display = 'block';
+        // テスト結果メッセージを非表示
+        const testResult = document.getElementById('captcha-test-result');
+        if (testResult) testResult.style.display = 'none';
+    }
+}" x-init="
+    $watch('captchaDriver', () => checkSettingsChanged());
+    $watch('captchaSiteKey', () => checkSettingsChanged());
+    $watch('captchaSecretKey', () => checkSettingsChanged());
+    $watch('captchaVersion', () => checkSettingsChanged());
+    $watch('captchaMinScore', () => checkSettingsChanged());
+">
     <form id="security-captcha-form" method="POST" action="{{ route('admin.settings.security.captcha.update') }}">
         @csrf
         
@@ -154,6 +197,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :value="old('captcha_google_min_score', $settings['captcha_google_min_score'])"
                         type="number"
                         step="0.1"
+                        xModel="captchaMinScore"
                         x-bind:disabled="!captchaEnabled"
                         class="input-common input-sm"
                     />
@@ -167,48 +211,55 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div class="p-4 border rounded-lg bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
                         <h3 class="font-semibold text-gray-900 dark:text-white mb-3">{{ __('admin.settings.security.captcha.live_validation') }}</h3>
                         
-                        @if($captchaTestResult)
-                            <div class="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                                <div class="flex items-center text-green-600 dark:text-green-400">
-                                    <i class="fas fa-check-circle mr-2"></i>
-                                    <span>{{ __('admin.settings.security.captcha.validation_success') }}</span>
+                        <!-- 認証成功時の詳細表示 -->
+                        <div id="captcha-success-display" class="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg mb-3" style="{{ $captchaTestResult ? '' : 'display: none;' }}">
+                            <div class="flex items-center text-green-600 dark:text-green-400">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                <span class="font-semibold">{{ __('admin.settings.security.captcha.validation_success') }}</span>
+                            </div>
+                            @if($captchaTestDetails && isset($captchaTestDetails['tested_at']))
+                                <div class="mt-2 text-sm text-green-600 dark:text-green-400">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    {{ __('admin.settings.security.captcha.tested_at') }}: 
+                                    {{ \Carbon\Carbon::parse($captchaTestDetails['tested_at'])->format('Y-m-d H:i:s') }}
+                                </div>
+                            @endif
+                        </div>
+                        
+                        <!-- 認証テスト必要通知 -->
+                        <div id="auth-test-required-notice" class="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg mb-3" style="{{ $captchaTestResult ? 'display: none;' : '' }}">
+                            <div class="flex items-center text-yellow-600 dark:text-yellow-400">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                <span class="font-medium">{{ __('admin.settings.security.captcha.test_required_title') }}</span>
+                            </div>
+                            <p class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+                                {{ __('admin.settings.security.captcha.test_required_description') }}
+                            </p>
+                        </div>
+                        
+                        <!-- CAPTCHA Widget Container -->
+                        <div id="captcha-widget-container" class="mb-4"></div>
+                        
+                        <!-- Test Result Message (動的に表示) -->
+                        <div id="captcha-test-result" class="mb-4 p-3 border rounded-lg" style="display: none;">
+                            <div class="flex items-center">
+                                <i id="captcha-test-icon" class="mr-3 text-xl"></i>
+                                <div>
+                                    <h4 id="captcha-test-title" class="font-semibold"></h4>
+                                    <p id="captcha-test-message" class="text-sm mt-1"></p>
                                 </div>
                             </div>
-                        @else
-                            <div class="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg mb-3">
-                                <div class="flex items-center text-yellow-600 dark:text-yellow-400">
-                                    <i class="fas fa-exclamation-triangle mr-2"></i>
-                                    <span>{{ __('admin.settings.security.captcha.test_required_title') }}</span>
-                                </div>
-                                <p class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
-                                    {{ __('admin.settings.security.captcha.test_required_description') }}
-                                </p>
-                            </div>
-                            
-                            <!-- CAPTCHA Widget Container -->
-                            <div id="captcha-widget-container" class="mb-4"></div>
-                            
-                            <!-- Test Result Message -->
-                            <div id="captcha-test-result" class="mb-4 p-3 border rounded-lg" style="display: none;">
-                                <div class="flex items-center">
-                                    <i id="captcha-test-icon" class="mr-3"></i>
-                                    <div>
-                                        <h4 id="captcha-test-title" class="font-semibold"></h4>
-                                        <p id="captcha-test-message" class="text-sm mt-1"></p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Test Button -->
-                            <button type="button" 
-                                    id="captcha-validate-button"
-                                    class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                                    onclick="validateCaptchaWidget()"
-                                    x-show="captchaEnabled && captchaDriver && captchaSiteKey && captchaSecretKey"
-                                    :disabled="!captchaEnabled || !captchaDriver || !captchaSiteKey || !captchaSecretKey">
-                                {{ __('admin.settings.security.captcha.validate_button') }}
-                            </button>
-                        @endif
+                        </div>
+                        
+                        <!-- Test Button (常に表示) -->
+                        <button type="button" 
+                                id="captcha-validate-button"
+                                class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                                onclick="validateCaptchaWidget()"
+                                x-show="captchaEnabled && captchaDriver && captchaSiteKey && captchaSecretKey"
+                                :disabled="!captchaEnabled || !captchaDriver || !captchaSiteKey || !captchaSecretKey"
+                                x-text="captchaSettingsChanged ? '{{ __('admin.settings.security.captcha.validate_button') }}' : '{{ $captchaTestResult ? __('admin.settings.security.captcha.revalidate_button') : __('admin.settings.security.captcha.validate_button') }}'">
+                        </button>
                     </div>
                 </div>
             </div>
