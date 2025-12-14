@@ -710,6 +710,8 @@ return [
                 'live_validation_description' => 'CAPTCHAを有効にするには、保存前に認証テストを完了させてください。',
                 'validation_required' => 'CAPTCHA認証が未完了です',
                 'validate_button' => 'CAPTCHA認証を実行',
+                'revalidate_button' => 'CAPTCHA認証を再実行',
+                'tested_at' => '認証日時',
                 'validation_success' => 'CAPTCHA認証が成功しました',
                 'validation_failed' => 'CAPTCHA認証に失敗しました',
                 'validation_required_before_save' => 'CAPTCHAが有効な場合、設定を保存する前にCAPTCHA認証を完了してください。',
