@@ -45,11 +45,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <legend>{{ __('admin.settings.security.notifications.enabled') }}</legend>
                 
-                <x-form.hidden
-                    name="notification_enabled"
-                    value="0"
-                />
-                
                 <x-form.toggle
                     :label="__('admin.settings.security.notifications.enabled')"
                     id="notification_enabled"

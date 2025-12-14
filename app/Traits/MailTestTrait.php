@@ -228,6 +228,7 @@ trait MailTestTrait
                 // 管理画面時はmail_test_resultsに保存（フォーム保存時にDBに反映）
                 session(['mail_test_results.mail_connection_tested' => 1]);
                 session(['mail_test_results.mail_connection_test_date' => now()->toDateTimeString()]);
+                session()->save(); // セッションを強制保存
             }
             
             return response()->json([
@@ -249,7 +250,6 @@ trait MailTestTrait
     public function performMailTest($request, $context = 'admin')
     {
         try {
-            
             // 接続テストが完了しているかチェック
             if ($context === 'install') {
                 // インストール時はinstall_dataから確認
@@ -296,7 +296,14 @@ trait MailTestTrait
                 }
             } else {
                 // 管理画面では現在ログイン中のアカウントのメールアドレス
-                $testEmail = auth()->user()->email;
+                $member = \App\Helpers\AdminHelper::getMember();
+                if (!$member) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => __('mail.test_functions.member_not_found')
+                    ], 400);
+                }
+                $testEmail = $member->email;
             }
 
             // 認証トークンを生成
@@ -313,7 +320,7 @@ trait MailTestTrait
             if ($context === 'install') {
                 $verificationUrl = route('install.mail.verify-mail', ['token' => $verificationToken]);
             } else {
-                $verificationUrl = route('admin.settings.base.verify-mail', ['token' => $verificationToken]);
+                $verificationUrl = route('admin.settings.base.mail.verify-mail', ['token' => $verificationToken]);
             }
             
             // アプリケーション名を取得
@@ -364,6 +371,7 @@ trait MailTestTrait
                 // 管理画面時はmail_test_resultsに保存（フォーム保存時にDBに反映）
                 session(['mail_test_results.mail_send_tested' => 1]);
                 session(['mail_test_results.mail_send_test_date' => now()->toDateTimeString()]);
+                session()->save(); // セッションを強制保存
             }
 
             return response()->json([
@@ -372,7 +380,6 @@ trait MailTestTrait
             ]);
 
         } catch (\Exception $e) {
-            
             return response()->json([
                 'success' => false,
                 'message' => __('mail.test_functions.test_mail_failed', ['error' => $e->getMessage()])
@@ -439,6 +446,7 @@ trait MailTestTrait
                 // 管理画面時はmail_test_resultsに保存（フォーム保存時にDBに反映）
                 session(['mail_test_results.mail_receive_tested' => 1]);
                 session(['mail_test_results.mail_receive_test_date' => now()->toDateTimeString()]);
+                session()->save(); // セッションを強制保存
             }
             
             // トークンをクリア

@@ -63,28 +63,37 @@ class AdminSecurityCspController extends AdminLoggedInController
      */
     public function update(Request $request)
     {
-        $validated = $request->validate([
+        // CSP有効時のみモードを必須にする
+        $cspEnabled = filter_var($request->input('csp_enabled'), FILTER_VALIDATE_BOOLEAN);
+        
+        $rules = [
             'csp_enabled' => 'boolean',
-            'csp_mode' => 'required|in:development,standard,strict,report-only',
+            'csp_mode' => $cspEnabled ? 'required|in:development,standard,strict' : 'nullable|in:development,standard,strict',
             'csp_log_violations' => 'boolean',
             'csp_trusted_domains' => 'nullable|string',
             'csp_denied_domains' => 'nullable|string',
             'csp_custom_directives' => 'nullable|string',
             'csp_blocklist_check_enabled' => 'boolean',
-            'csp_blocklist_action' => 'required|in:warn,block',
-            'csp_blocklist_enabled_categories' => 'nullable|string',
-        ]);
+            'csp_blocklist_action' => $cspEnabled ? 'required|in:warn,block' : 'nullable|in:warn,block',
+            'csp_blocklist_categories' => 'nullable|array',
+            'csp_blocklist_categories.*' => 'string',
+        ];
+        
+        $validated = $request->validate($rules);
 
         // CSP設定を更新
-        $this->securitySettingRepository->set('csp_enabled', $validated['csp_enabled'] ?? true);
-        $this->securitySettingRepository->set('csp_mode', $validated['csp_mode']);
+        $this->securitySettingRepository->set('csp_enabled', $validated['csp_enabled'] ?? false);
+        $this->securitySettingRepository->set('csp_mode', $validated['csp_mode'] ?? 'development');
         $this->securitySettingRepository->set('csp_log_violations', $validated['csp_log_violations'] ?? true);
         $this->securitySettingRepository->set('csp_trusted_domains', $validated['csp_trusted_domains'] ?? '');
         $this->securitySettingRepository->set('csp_denied_domains', $validated['csp_denied_domains'] ?? '');
         $this->securitySettingRepository->set('csp_custom_directives', $validated['csp_custom_directives'] ?? '');
         $this->securitySettingRepository->set('csp_blocklist_check_enabled', $validated['csp_blocklist_check_enabled'] ?? false);
-        $this->securitySettingRepository->set('csp_blocklist_action', $validated['csp_blocklist_action']);
-        $this->securitySettingRepository->set('csp_blocklist_enabled_categories', $validated['csp_blocklist_enabled_categories'] ?? '');
+        $this->securitySettingRepository->set('csp_blocklist_action', $validated['csp_blocklist_action'] ?? 'warn');
+        
+        // カテゴリ配列をカンマ区切り文字列に変換
+        $categories = $validated['csp_blocklist_categories'] ?? [];
+        $this->securitySettingRepository->set('csp_blocklist_enabled_categories', implode(',', $categories));
 
         return redirect()->route('admin.settings.security.csp')
             ->with('success', __('admin.settings.security.csp_settings_updated'));
