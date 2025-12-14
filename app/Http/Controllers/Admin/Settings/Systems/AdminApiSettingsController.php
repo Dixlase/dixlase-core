@@ -93,7 +93,7 @@ class AdminApiSettingsController extends AdminLoggedInController
         ]);
         
         return redirect()->route('admin.settings.systems.api')
-            ->with('success', __('admin.settings.systems.api.update_success'));
+            ->with('success', __('admin/settings/systems/api.update_success'));
     }
 
     /**
@@ -146,7 +146,7 @@ class AdminApiSettingsController extends AdminLoggedInController
         session()->flash('generated_key_id', $result['model']->id);
         
         return redirect()->route('admin.settings.systems.api')
-            ->with('success', __('admin.settings.systems.api.key_generated'));
+            ->with('success', __('admin/settings/systems/api.key_generated'));
     }
 
     /**
@@ -166,7 +166,7 @@ class AdminApiSettingsController extends AdminLoggedInController
         ]);
         
         return redirect()->route('admin.settings.systems.api')
-            ->with('success', __('admin.settings.systems.api.key_revoked'));
+            ->with('success', __('admin/settings/systems/api.key_revoked'));
     }
 
     /**
@@ -205,6 +205,6 @@ class AdminApiSettingsController extends AdminLoggedInController
         session()->flash('generated_key_id', $result['model']->id);
         
         return redirect()->route('admin.settings.systems.api')
-            ->with('success', __('admin.settings.systems.api.key_regenerated'));
+            ->with('success', __('admin/settings/systems/api.key_regenerated'));
     }
 }

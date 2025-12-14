@@ -95,19 +95,19 @@ class AdminSettingsMemberStoreRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => __('admin.settings.members.validation.name_required'),
-            'email.required' => __('admin.settings.members.validation.email_required'),
-            'email.email' => __('admin.settings.members.validation.email_invalid'),
-            'email.unique' => __('admin.settings.members.validation.email_unique'),
-            'password.required' => __('admin.settings.members.validation.password_required'),
-            'password.min' => __('admin.settings.members.validation.password_min'),
-            'password.confirmed' => __('admin.settings.members.validation.password_confirmed'),
-            'role.required' => __('admin.settings.members.validation.role_required'),
-            'role.in' => __('admin.settings.members.validation.role_invalid'),
-            'appearance.required' => __('admin.settings.members.validation.appearance_required'),
-            'appearance.in' => __('admin.settings.members.validation.appearance_invalid'),
-            'status.required' => __('admin.settings.members.validation.status_required'),
-            'status.in' => __('admin.settings.members.validation.status_invalid'),
+            'name.required' => __('admin/members/validation.name_required'),
+            'email.required' => __('admin/members/validation.email_required'),
+            'email.email' => __('admin/members/validation.email_invalid'),
+            'email.unique' => __('admin/members/validation.email_unique'),
+            'password.required' => __('admin/members/validation.password_required'),
+            'password.min' => __('admin/members/validation.password_min'),
+            'password.confirmed' => __('admin/members/validation.password_confirmed'),
+            'role.required' => __('admin/members/validation.role_required'),
+            'role.in' => __('admin/members/validation.role_invalid'),
+            'appearance.required' => __('admin/members/validation.appearance_required'),
+            'appearance.in' => __('admin/members/validation.appearance_invalid'),
+            'status.required' => __('admin/members/validation.status_required'),
+            'status.in' => __('admin/members/validation.status_invalid'),
         ];
     }
 }

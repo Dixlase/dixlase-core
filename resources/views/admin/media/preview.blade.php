@@ -26,13 +26,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @if(in_array($media->type, ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']))
                 <img src="{{ asset('storage/' . config('admin.mediaPath') . '/' . $media->path) }}" alt="{{ $media->name }}" class="w-full h-auto object-cover rounded">
             @else
-                <p class="text-gray-700">{{ __('admin.media.preview.no_preview') }}</p>
+                <p class="text-gray-700">{{ __('admin/media.preview.no_preview') }}</p>
             @endif
 
             <p class="mt-4"><strong>{{ __('common.file_name') }}</strong> {{ $media->name }}</p>
             <p><strong>{{ __('common.file_type') }}</strong> {{ $media->type }}</p>
             <p><strong>{{ __('common.upload_date') }}</strong> {{ $media->created_at->format('Y-m-d H:i:s') }}</p>
-            <p><strong>{{ __('common.uploaded_by') }}</strong> {{ $media->member->name ?? __('admin.media.preview.unknown') }}</p>
+            <p><strong>{{ __('common.uploaded_by') }}</strong> {{ $media->member->name ?? __('admin/media.preview.unknown') }}</p>
             
             <!-- メディア情報編集フォーム -->
             <form action="{{ route('admin.media.update', $media->id) }}" method="POST" class="mt-6 space-y-4">
@@ -93,7 +93,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             
             <!-- メディアURL表示 -->
             <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <h3 class="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">{{ __('admin.media.preview.media_url') }}</h3>
+                <h3 class="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">{{ __('admin/media.preview.media_url') }}</h3>
                 <div class="flex items-center gap-2">
                     <input type="text" id="mediaUrl" value="{{ asset('storage/' . config('admin.mediaPath') . '/' . $media->path) }}" 
                            class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm" 
@@ -103,7 +103,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <i class="fas fa-copy"></i> {{ __('common.copy') }}
                     </button>
                 </div>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">{{ __('admin.media.preview.url_description') }}</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">{{ __('admin/media.preview.url_description') }}</p>
             </div>
 
             <div class="flex items-center gap-2 mt-4 justify-between">
@@ -127,8 +127,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <!-- 削除モーダル -->
                         <x-modal
                             id="deleteModal"
-                            :title="__('admin.media.preview.delete_confirmation')"
-                            :message="__('admin.media.preview.delete_message')"
+                            :title="__('admin/media.preview.delete_confirmation')"
+                            :message="__('admin/media.preview.delete_message')"
                             :confirm_label="__('common.delete')"
                             :cancel_label="__('common.cancel')"
                         />
@@ -170,7 +170,7 @@ function copyToClipboard() {
                 copyButton.innerHTML = originalText;
             }, 2000);
         } catch (e) {
-            alert('{{ __('admin.media.preview.copy_failed') }}');
+            alert('{{ __('admin/media.preview.copy_failed') }}');
         }
     });
 }

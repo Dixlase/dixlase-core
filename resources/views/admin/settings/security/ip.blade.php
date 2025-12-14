@@ -33,17 +33,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <!-- IPアクセス制御設定 -->
         <section>
-            <h2>{{ __('admin.settings.security.ip.title') }}</h2>
-            <p class="mb-2">{{ __('admin.settings.security.ip.description') }}</p>
+            <h2>{{ __('admin/settings/security/ip.title') }}</h2>
+            <p class="mb-2">{{ __('admin/settings/security/ip.description') }}</p>
             
             <!-- 管理画面IP制御 -->
             <section>
-                <h3>{{ __('admin.settings.security.ip.admin_access_control') }}</h3>
+                <h3>{{ __('admin/settings/security/ip.admin_access_control') }}</h3>
                 
                 <!-- 許可IP設定 -->
                 <fieldset>
                     <x-form.toggle
-                        :label="__('admin.settings.security.ip.enable_allowed_admin_ips')"
+                        :label="__('admin/settings/security/ip.enable_allowed_admin_ips')"
                         id="enable_allowed_admin_ips"
                         name="enable_allowed_admin_ips"
                         :checked="old('enable_allowed_admin_ips', $settings['enable_allowed_admin_ips'])"
@@ -53,7 +53,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div :class="{ 'opacity-50': !enableAllowedIPs }">
                         <x-form.label
                             for="allowed_admin_ips"
-                            :text="__('admin.settings.security.ip.allowed_admin_ips_list')"
+                            :text="__('admin/settings/security/ip.allowed_admin_ips_list')"
                             class="text-sm font-medium"
                         />
                         
@@ -62,19 +62,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             name="allowed_admin_ips"
                             :value="$settings['allowed_admin_ips']"
                             :rows="8"
-                            :placeholder="__('admin.settings.security.ip.ip_list_placeholder')"
+                            :placeholder="__('admin/settings/security/ip.ip_list_placeholder')"
                             class="input-xl"
                             x-bind:disabled="!enableAllowedIPs"
                         />
                         
-                        <p class="mb-3">{{ __('admin.settings.security.ip.admin_ip_help') }}</p>
+                        <p class="mb-3">{{ __('admin/settings/security/ip.admin_ip_help') }}</p>
                     </div>
                 </fieldset>
 
                 <!-- ブロックIP設定 -->
                 <fieldset>
                     <x-form.toggle
-                        :label="__('admin.settings.security.ip.enable_blocked_admin_ips')"
+                        :label="__('admin/settings/security/ip.enable_blocked_admin_ips')"
                         id="enable_blocked_admin_ips"
                         name="enable_blocked_admin_ips"
                         :checked="old('enable_blocked_admin_ips', $settings['enable_blocked_admin_ips'])"
@@ -84,7 +84,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div :class="{ 'opacity-50': !blockedAdminIps }">
                         <x-form.label
                             for="blocked_admin_ips"
-                            :text="__('admin.settings.security.ip.blocked_admin_ips_list')"
+                            :text="__('admin/settings/security/ip.blocked_admin_ips_list')"
                             class="text-sm font-medium"
                         />
                         
@@ -93,24 +93,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             name="blocked_admin_ips"
                             :value="$settings['blocked_admin_ips']"
                             :rows="8"
-                            :placeholder="__('admin.settings.security.ip.ip_list_placeholder')"
+                            :placeholder="__('admin/settings/security/ip.ip_list_placeholder')"
                             class="input-xl"
                             x-bind:disabled="!blockedAdminIps"
                         />
                         
-                        <p>{{ __('admin.settings.security.ip.admin_ip_help') }}</p>
+                        <p>{{ __('admin/settings/security/ip.admin_ip_help') }}</p>
                     </div>
                 </fieldset>
             </section>
 
             <!-- フロントエンドIP制御 -->
             <section>
-                <h3>{{ __('admin.settings.security.ip.front_access_control') }}</h3>
+                <h3>{{ __('admin/settings/security/ip.front_access_control') }}</h3>
                 
                 <!-- 許可IP設定 -->
                 <fieldset>
                     <x-form.toggle
-                        :label="__('admin.settings.security.ip.enable_allowed_front_ips')"
+                        :label="__('admin/settings/security/ip.enable_allowed_front_ips')"
                         id="enable_allowed_front_ips"
                         name="enable_allowed_front_ips"
                         :checked="old('enable_allowed_front_ips', $settings['enable_allowed_front_ips'])"
@@ -120,7 +120,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div :class="{ 'opacity-50': !enableAllowedFrontIPs }">
                         <x-form.label
                             for="allowed_front_ips"
-                            :text="__('admin.settings.security.ip.allowed_front_ips_list')"
+                            :text="__('admin/settings/security/ip.allowed_front_ips_list')"
                             class="text-sm font-medium"
                         />
                         
@@ -129,19 +129,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             name="allowed_front_ips"
                             :value="$settings['allowed_front_ips']"
                             :rows="8"
-                            :placeholder="__('admin.settings.security.ip.ip_list_placeholder')"
+                            :placeholder="__('admin/settings/security/ip.ip_list_placeholder')"
                             class="input-xl"
                             x-bind:disabled="!enableAllowedFrontIPs"
                         />
                         
-                        <p class="mb-3">{{ __('admin.settings.security.ip.front_ip_help') }}</p>
+                        <p class="mb-3">{{ __('admin/settings/security/ip.front_ip_help') }}</p>
                     </div>
                 </fieldset>
 
                 <!-- ブロックIP設定 -->
                 <fieldset>
                     <x-form.toggle
-                        :label="__('admin.settings.security.ip.enable_blocked_front_ips')"
+                        :label="__('admin/settings/security/ip.enable_blocked_front_ips')"
                         id="enable_blocked_front_ips"
                         name="enable_blocked_front_ips"
                         :checked="old('enable_blocked_front_ips', $settings['enable_blocked_front_ips'])"
@@ -151,7 +151,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div :class="{ 'opacity-50': !enableBlockedFrontIps }">
                         <x-form.label
                             for="blocked_front_ips"
-                            :text="__('admin.settings.security.ip.blocked_front_ips_list')"
+                            :text="__('admin/settings/security/ip.blocked_front_ips_list')"
                             class="text-sm font-medium"
                         />
                         
@@ -160,12 +160,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             name="blocked_front_ips"
                             :value="$settings['blocked_front_ips']"
                             :rows="8"
-                            :placeholder="__('admin.settings.security.ip.ip_list_placeholder')"
+                            :placeholder="__('admin/settings/security/ip.ip_list_placeholder')"
                             class="input-xl"
                             x-bind:disabled="!enableBlockedFrontIps"
                         />
                         
-                        <p>{{ __('admin.settings.security.ip.front_ip_help') }}</p>
+                        <p>{{ __('admin/settings/security/ip.front_ip_help') }}</p>
                     </div>
                 </fieldset>
             </section>

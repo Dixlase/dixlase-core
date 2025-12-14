@@ -67,7 +67,7 @@ class PasswordSecurityHelper
             'setting_key' => $settingKey,
             'api_endpoint' => config('security.pwned_passwords.api_endpoint', 'https://api.pwnedpasswords.com'),
             'timeout' => config('security.pwned_passwords.timeout', 5),
-            'description' => __('admin.settings.security.pwned_password_description')
+            'description' => __('admin/settings/security/pwned_password_description')
         ];
     }
 

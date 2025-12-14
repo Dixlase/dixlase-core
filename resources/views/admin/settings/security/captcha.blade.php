@@ -81,19 +81,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <!-- CAPTCHA設定 -->
         <section>
-            <h2>{{ __('admin.settings.security.captcha.title') }}</h2>
-            <p>{{ __('admin.settings.security.captcha.description') }}</p>
+            <h2>{{ __('admin/settings/security/captcha.title') }}</h2>
+            <p>{{ __('admin/settings/security/captcha.description') }}</p>
             
             <!-- CAPTCHA test required notice for enabled CAPTCHA -->
             @if($settings['captcha_enabled'] && !$captchaTestResult)
                 <x-message
                     type="warning"
-                    :message="__('admin.settings.security.captcha.test_required')"
+                    :message="__('admin/settings/security/captcha.test_required')"
                 />
             @endif
             
             <x-form.toggle
-                :label="__('admin.settings.security.captcha.enabled')"
+                :label="__('admin/settings/security/captcha.enabled')"
                 id="captcha_enabled"
                 name="captcha_enabled"
                 :checked="old('captcha_enabled', $settings['captcha_enabled'])"
@@ -103,10 +103,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="mt-4 space-y-4" :class="{ 'opacity-50 pointer-events-none': !captchaEnabled }">
                 <x-form.label
                     for="captcha_driver"
-                    :text="__('admin.settings.security.captcha.driver')"
+                    :text="__('admin/settings/security/captcha.driver')"
                 />
                 <x-form.select
-                    :label="__('admin.settings.security.captcha.driver')"
+                    :label="__('admin/settings/security/captcha.driver')"
                     id="captcha_driver"
                     name="captcha_driver"
                     :value="old('captcha_driver', $settings['captcha_driver'])"
@@ -123,7 +123,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <!-- Common CAPTCHA Settings -->
                 <x-form.label
                     for="captcha_site_key"
-                    :text="__('admin.settings.security.captcha.site_key')"
+                    :text="__('admin/settings/security/captcha.site_key')"
                 />
                 <x-form.text
                     id="captcha_site_key"
@@ -138,7 +138,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 <label for="captcha_secret_key" class="form-label text-lg" 
                        x-text="captchaDriver === 'google_enterprise' ? '{{ __("admin.settings.security.captcha.google_enterprise_secret_key") }}' : '{{ __("admin.settings.security.captcha.secret_key") }}'">
-                    {{ __('admin.settings.security.captcha.secret_key') }}
+                    {{ __('admin/settings/security/captcha.secret_key') }}
                 </label>
                 <x-form.text
                     id="captcha_secret_key"
@@ -155,13 +155,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div x-show="captchaDriver === 'google'">
                     <x-form.label
                         for="captcha_google_version"
-                        :text="__('admin.settings.security.captcha.google_version')"
+                        :text="__('admin/settings/security/captcha.google_version')"
                     />
                     <x-form.select
                         id="captcha_google_version"
                         name="captcha_google_version"
                         :value="old('captcha_google_version', $settings['captcha_google_version'])"
-                        :options="__('admin.settings.security.captcha.version_options')"
+                        :options="__('admin/settings/security/captcha.version_options')"
                         xModel="captchaVersion"
                         x-bind:disabled="!captchaEnabled"
                         class="input-common input-xl"
@@ -172,7 +172,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div x-show="captchaDriver === 'google_enterprise'">
                     <x-form.label
                         for="captcha_google_project_id"
-                        :text="__('admin.settings.security.captcha.google_project_id')"
+                        :text="__('admin/settings/security/captcha.google_project_id')"
                     />
                     <x-form.text
                         id="captcha_google_project_id"
@@ -189,7 +189,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div x-show="(captchaDriver === 'google' && captchaVersion === 'v3') || captchaDriver === 'google_enterprise'" class="mt-4">
                     <x-form.label
                         for="captcha_google_min_score"
-                        :text="__('admin.settings.security.captcha.google_min_score')"
+                        :text="__('admin/settings/security/captcha.google_min_score')"
                     />
                     <x-form.text
                         id="captcha_google_min_score"
@@ -202,25 +202,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         class="input-common input-sm"
                     />
                     <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        {{ __('admin.settings.security.captcha.min_score_description') }}
+                        {{ __('admin/settings/security/captcha.min_score_description') }}
                     </p>
                 </div>
 
                 <!-- CAPTCHA認証テストセクション -->
                 <div class="mt-6" x-show="captchaEnabled" id="captcha-test-section">
                     <div class="p-4 border rounded-lg bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-                        <h3 class="font-semibold text-gray-900 dark:text-white mb-3">{{ __('admin.settings.security.captcha.live_validation') }}</h3>
+                        <h3 class="font-semibold text-gray-900 dark:text-white mb-3">{{ __('admin/settings/security/captcha.live_validation') }}</h3>
                         
                         <!-- 認証成功時の詳細表示 -->
                         <div id="captcha-success-display" class="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg mb-3" style="{{ $captchaTestResult ? '' : 'display: none;' }}">
                             <div class="flex items-center text-green-600 dark:text-green-400">
                                 <i class="fas fa-check-circle mr-2"></i>
-                                <span class="font-semibold">{{ __('admin.settings.security.captcha.validation_success') }}</span>
+                                <span class="font-semibold">{{ __('admin/settings/security/captcha.validation_success') }}</span>
                             </div>
                             @if($captchaTestDetails && isset($captchaTestDetails['tested_at']))
                                 <div class="mt-2 text-sm text-green-600 dark:text-green-400">
                                     <i class="fas fa-clock mr-1"></i>
-                                    {{ __('admin.settings.security.captcha.tested_at') }}: 
+                                    {{ __('admin/settings/security/captcha.tested_at') }}: 
                                     {{ \Carbon\Carbon::parse($captchaTestDetails['tested_at'])->format('Y-m-d H:i:s') }}
                                 </div>
                             @endif
@@ -230,10 +230,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <div id="auth-test-required-notice" class="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg mb-3" style="{{ $captchaTestResult ? 'display: none;' : '' }}">
                             <div class="flex items-center text-yellow-600 dark:text-yellow-400">
                                 <i class="fas fa-exclamation-triangle mr-2"></i>
-                                <span class="font-medium">{{ __('admin.settings.security.captcha.test_required_title') }}</span>
+                                <span class="font-medium">{{ __('admin/settings/security/captcha.test_required_title') }}</span>
                             </div>
                             <p class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
-                                {{ __('admin.settings.security.captcha.test_required_description') }}
+                                {{ __('admin/settings/security/captcha.test_required_description') }}
                             </p>
                         </div>
                         
@@ -258,7 +258,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 onclick="validateCaptchaWidget()"
                                 x-show="captchaEnabled && captchaDriver && captchaSiteKey && captchaSecretKey"
                                 :disabled="!captchaEnabled || !captchaDriver || !captchaSiteKey || !captchaSecretKey"
-                                x-text="captchaSettingsChanged ? '{{ __('admin.settings.security.captcha.validate_button') }}' : '{{ $captchaTestResult ? __('admin.settings.security.captcha.revalidate_button') : __('admin.settings.security.captcha.validate_button') }}'">
+                                x-text="captchaSettingsChanged ? '{{ __('admin/settings/security/captcha.validate_button') }}' : '{{ $captchaTestResult ? __('admin/settings/security/captcha.revalidate_button') : __('admin/settings/security/captcha.validate_button') }}'">
                         </button>
                     </div>
                 </div>

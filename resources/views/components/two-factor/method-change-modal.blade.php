@@ -25,13 +25,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'autoOpen' => false,
 ])
 
-<x-modal :id="$modalId" :title="__('admin.dashboard.method_change_modal.title')" icon_type="info">
+<x-modal :id="$modalId" :title="__('admin/dashboard.method_change_modal.title')" icon_type="info">
     <div class="space-y-4">
         {{-- 説明メッセージ --}}
         <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <p class="text-sm text-blue-800 dark:text-blue-200">
                 <i class="fas fa-info-circle mr-2"></i>
-                {{ __('admin.dashboard.method_change_modal.message', [
+                {{ __('admin/dashboard.method_change_modal.message', [
                     'used_method' => $usedMethod ? $usedMethod->label() : '',
                     'current_method' => $currentMethod ? $currentMethod->label() : ''
                 ]) }}
@@ -40,7 +40,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         {{-- 質問 --}}
         <p class="text-gray-700 dark:text-gray-300">
-            {{ __('admin.dashboard.method_change_modal.question', [
+            {{ __('admin/dashboard.method_change_modal.question', [
                 'used_method' => $usedMethod ? $usedMethod->label() : ''
             ]) }}
         </p>
@@ -52,14 +52,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 onclick="dismissMethodChangeModal()"
                 class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-                {{ __('admin.dashboard.method_change_modal.keep_button') }}
+                {{ __('admin/dashboard.method_change_modal.keep_button') }}
             </button>
             <button
                 type="button"
                 onclick="switchToUsedMethod()"
                 class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-                {{ __('admin.dashboard.method_change_modal.switch_button') }}
+                {{ __('admin/dashboard.method_change_modal.switch_button') }}
             </button>
         </div>
     </div>
@@ -105,12 +105,12 @@ function switchToUsedMethod() {
                 }
             }, 500);
         } else {
-            showNotification(data.message || '{{ __('admin.dashboard.method_switch_failed') }}', 'error');
+            showNotification(data.message || '{{ __('admin/dashboard.method_switch_failed') }}', 'error');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showNotification('{{ __('admin.dashboard.method_switch_failed') }}', 'error');
+        showNotification('{{ __('admin/dashboard.method_switch_failed') }}', 'error');
     });
 }
 

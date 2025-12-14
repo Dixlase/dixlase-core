@@ -83,8 +83,8 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
         }
 
         $message = $audit->hasIssues()
-            ? __('admin.settings.security.integrity.scan_completed_with_issues', ['count' => $audit->total_files_scanned])
-            : __('admin.settings.security.integrity.scan_completed_ok', ['count' => $audit->total_files_scanned]);
+            ? __('admin/settings/security/integrity.scan_completed_with_issues', ['count' => $audit->total_files_scanned])
+            : __('admin/settings/security/integrity.scan_completed_ok', ['count' => $audit->total_files_scanned]);
 
         return redirect()->route('admin.settings.security.integrity')
             ->with($audit->hasIssues() ? 'warning' : 'success', $message);
@@ -105,15 +105,15 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
             return response()->json([
                 'success' => $result,
                 'message' => $result
-                    ? __('admin.settings.security.integrity.baseline_regenerated')
-                    : __('admin.settings.security.integrity.baseline_regeneration_failed'),
+                    ? __('admin/settings/security/integrity.baseline_regenerated')
+                    : __('admin/settings/security/integrity.baseline_regeneration_failed'),
             ]);
         }
 
         return redirect()->route('admin.settings.security.integrity')
             ->with($result ? 'success' : 'error', $result
-                ? __('admin.settings.security.integrity.baseline_regenerated')
-                : __('admin.settings.security.integrity.baseline_regeneration_failed'));
+                ? __('admin/settings/security/integrity.baseline_regenerated')
+                : __('admin/settings/security/integrity.baseline_regeneration_failed'));
     }
 
     /**

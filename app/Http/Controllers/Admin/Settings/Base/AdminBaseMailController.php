@@ -192,7 +192,7 @@ class AdminBaseMailController extends AdminLoggedInController
         }
 
         return redirect()->route('admin.settings.base.mail')
-            ->with('success', __('admin.settings.base.mail.settings_updated'));
+            ->with('success', __('admin/settings/base/mail.settings_updated'));
     }
 
     /**
@@ -214,7 +214,7 @@ class AdminBaseMailController extends AdminLoggedInController
         
         return response()->json([
             'success' => true,
-            'message' => __('admin.settings.base.mail.test_session_cleared')
+            'message' => __('admin/settings/base/mail.test_session_cleared')
         ]);
     }
 

@@ -70,18 +70,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div class="mt-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
                         <p class="text-sm text-yellow-800 dark:text-yellow-200">
                             <i class="fas fa-exclamation-triangle mr-2"></i>
-                            {!! __('admin.profile.pending_email_notice', ['email' => $pendingEmail]) !!}
+                            {!! __('admin/profile.pending_email_notice', ['email' => $pendingEmail]) !!}
                         </p>
                         <p class="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
-                            {{ __('admin.profile.current_email', ['email' => $member->email]) }}
+                            {{ __('admin/profile.current_email', ['email' => $member->email]) }}
                         </p>
                     </div>
                 @else
                     <p class="description-text">
                         @if($isMailServerTested)
-                            {!! __('admin.profile.email_change_help') !!}
+                            {!! __('admin/profile.email_change_help') !!}
                         @else
-                            {!! __('admin.profile.email_change_help_no_mail') !!}
+                            {!! __('admin/profile.email_change_help_no_mail') !!}
                         @endif
                     </p>
                 @endif
@@ -114,12 +114,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :options="$localeOptions"
                     :value="old('locale', $member->locale?->value)"
                     :nullable="true"
-                    :nullLabel="__('admin.profile.use_system_default')"
+                    :nullLabel="__('admin/profile.use_system_default')"
                 />
                 @error('locale')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
-                <p>{{ __('admin.profile.language_help') }}</p>
+                <p>{{ __('admin/profile.language_help') }}</p>
             </fieldset>
         </section>
 
@@ -128,7 +128,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <h2>{{ __('common.password_settings') }}</h2>
             
             <fieldset>
-                <legend>{{ __('admin.profile.password_change_only') }}</legend>
+                <legend>{{ __('admin/profile.password_change_only') }}</legend>
                 <x-password-tools
                     name="password"
                     id="profile_password"
@@ -230,7 +230,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 </span>
                             </p>
                             <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                {{ __('admin.profile.login_notification_global_setting_help') }}
+                                {{ __('admin/profile.login_notification_global_setting_help') }}
                             </p>
                         </div>
                     </fieldset>
@@ -323,7 +323,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- 2FA管理セクション -->
     <section class="mt-8 transition-colors-unified">
-        <h2>{{ __('admin.profile.2fa_management') }}</h2>
+        <h2>{{ __('admin/profile.2fa_management') }}</h2>
 
         <!-- Passkeyデバイス -->
         @if($passkeyEnabled)
@@ -379,12 +379,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <!-- Passkeyの説明 -->
             <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
                 <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                    <i class="fas fa-info-circle mr-2"></i>{{ __('admin.profile.passkey_info_title') }}
+                    <i class="fas fa-info-circle mr-2"></i>{{ __('admin/profile.passkey_info_title') }}
                 </h4>
                 <ul class="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-disc list-inside">
-                    <li>{{ __('admin.profile.passkey_info_1') }}</li>
-                    <li>{{ __('admin.profile.passkey_info_2') }}</li>
-                    <li>{{ __('admin.profile.passkey_info_3') }}</li>
+                    <li>{{ __('admin/profile.passkey_info_1') }}</li>
+                    <li>{{ __('admin/profile.passkey_info_2') }}</li>
+                    <li>{{ __('admin/profile.passkey_info_3') }}</li>
                 </ul>
             </div>
         </div>
@@ -417,15 +417,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <!-- 回復コードの説明 -->
             <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
                 <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                    <i class="fas fa-info-circle mr-2"></i>{{ __('admin.profile.recovery_codes_info_title') }}
+                    <i class="fas fa-info-circle mr-2"></i>{{ __('admin/profile.recovery_codes_info_title') }}
                 </h4>
                 <ul class="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-disc list-inside">
-                    <li>{{ __('admin.profile.recovery_codes_info_1') }}</li>
-                    <li>{{ __('admin.profile.recovery_codes_info_2') }}</li>
-                    <li>{{ __('admin.profile.recovery_codes_info_3') }}</li>
-                    <li>{{ __('admin.profile.recovery_codes_info_4') }}</li>
-                    <li>{{ __('admin.profile.recovery_codes_info_5') }}</li>
-                    <li>{{ __('admin.profile.recovery_codes_info_6') }}</li>
+                    <li>{{ __('admin/profile.recovery_codes_info_1') }}</li>
+                    <li>{{ __('admin/profile.recovery_codes_info_2') }}</li>
+                    <li>{{ __('admin/profile.recovery_codes_info_3') }}</li>
+                    <li>{{ __('admin/profile.recovery_codes_info_4') }}</li>
+                    <li>{{ __('admin/profile.recovery_codes_info_5') }}</li>
+                    <li>{{ __('admin/profile.recovery_codes_info_6') }}</li>
                 </ul>
             </div>            
         </div>
@@ -513,8 +513,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <x-modal 
         id="deleteTrustedDeviceModal"
-        :title="__('admin.profile.confirm_delete_device_title')"
-        :message="__('admin.profile.confirm_delete_device_message')"
+        :title="__('admin/profile.confirm_delete_device_title')"
+        :message="__('admin/profile.confirm_delete_device_message')"
         :confirm_label="__('common.delete')"
         :cancel_label="__('common.cancel')"
         icon_type="danger"
@@ -523,8 +523,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <x-modal 
         id="deleteAllTrustedDevicesModal"
-        :title="__('admin.profile.confirm_delete_all_devices_title')"
-        :message="__('admin.profile.confirm_delete_all_devices_message')"
+        :title="__('admin/profile.confirm_delete_all_devices_title')"
+        :message="__('admin/profile.confirm_delete_all_devices_message')"
         :confirm_label="__('common.delete')"
         :cancel_label="__('common.cancel')"
         icon_type="danger"
@@ -533,8 +533,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <x-modal 
         id="deletePasskeyModal"
-        :title="__('admin.profile.confirm_delete_passkey_title')"
-        :message="__('admin.profile.confirm_delete_passkey_message')"
+        :title="__('admin/profile.confirm_delete_passkey_title')"
+        :message="__('admin/profile.confirm_delete_passkey_message')"
         :confirm_label="__('common.delete')"
         :cancel_label="__('common.cancel')"
         icon_type="danger"
@@ -543,8 +543,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <x-modal 
         id="deleteAllPasskeysModal"
-        :title="__('admin.profile.confirm_delete_all_passkeys_title')"
-        :message="__('admin.profile.confirm_delete_all_passkeys_message')"
+        :title="__('admin/profile.confirm_delete_all_passkeys_title')"
+        :message="__('admin/profile.confirm_delete_all_passkeys_message')"
         :confirm_label="__('common.delete')"
         :cancel_label="__('common.cancel')"
         icon_type="danger"
@@ -587,8 +587,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <x-save
         id_confirmation="confirmProfileModal"
         :label="__('common.update')"
-        :title="__('admin.profile.confirm_title')"
-        :message="__('admin.profile.confirm_message')"
+        :title="__('admin/profile.confirm_title')"
+        :message="__('admin/profile.confirm_message')"
         :confirm_label="__('common.update')"
         :cancel_label="__('common.cancel')"
         form="profile-form"
@@ -622,7 +622,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         const modal = document.getElementById('deleteTrustedDeviceModal');
         const messageElement = modal.querySelector('.modal-message p');
         if (messageElement) {
-            messageElement.textContent = `{{ __('admin.profile.confirm_delete_device_message') }}\n\n${deviceName}`;
+            messageElement.textContent = `{{ __('admin/profile.confirm_delete_device_message') }}\n\n${deviceName}`;
         }
         openModal('deleteTrustedDeviceModal');
     };
@@ -643,7 +643,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             if (data.success) {
                 window.PasskeyResultModal.showSuccess(
                     'passkeyResultModal',
-                    '{{ __('admin.profile.device_delete_success_title') }}',
+                    '{{ __('admin/profile.device_delete_success_title') }}',
                     data.message,
                     () => location.reload()
                 );
@@ -661,7 +661,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             window.PasskeyResultModal.showError(
                 'passkeyResultModal',
                 '{{ __('common.error') }}',
-                '{{ __('admin.profile.delete_device_error') }}'
+                '{{ __('admin/profile.delete_device_error') }}'
             );
         });
     };
@@ -680,7 +680,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             if (data.success) {
                 window.PasskeyResultModal.showSuccess(
                     'passkeyResultModal',
-                    '{{ __('admin.profile.device_delete_success_title') }}',
+                    '{{ __('admin/profile.device_delete_success_title') }}',
                     data.message,
                     () => location.reload()
                 );
@@ -698,7 +698,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             window.PasskeyResultModal.showError(
                 'passkeyResultModal',
                 '{{ __('common.error') }}',
-                '{{ __('admin.profile.delete_all_devices_error') }}'
+                '{{ __('admin/profile.delete_all_devices_error') }}'
             );
         });
     };
@@ -711,7 +711,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         const modal = document.getElementById('deletePasskeyModal');
         const messageElement = modal.querySelector('.modal-message p');
         if (messageElement) {
-            messageElement.textContent = `{{ __('admin.profile.confirm_delete_passkey_message') }}\n\n${credentialName}`;
+            messageElement.textContent = `{{ __('admin/profile.confirm_delete_passkey_message') }}\n\n${credentialName}`;
         }
         openModal('deletePasskeyModal');
     };
@@ -747,7 +747,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 console.log('[Passkey Delete] Success');
                 window.PasskeyResultModal.showSuccess(
                     'passkeyResultModal',
-                    '{{ __('admin.profile.passkey_delete_success_title') }}',
+                    '{{ __('admin/profile.passkey_delete_success_title') }}',
                     data.message,
                     () => location.reload()
                 );
@@ -767,7 +767,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             window.PasskeyResultModal.showError(
                 'passkeyResultModal',
                 '{{ __('common.error') }}',
-                '{{ __('admin.profile.passkey_delete_error') }}'
+                '{{ __('admin/profile.passkey_delete_error') }}'
             );
         });
     };
@@ -786,7 +786,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             if (data.success) {
                 window.PasskeyResultModal.showSuccess(
                     'passkeyResultModal',
-                    '{{ __('admin.profile.passkey_delete_success_title') }}',
+                    '{{ __('admin/profile.passkey_delete_success_title') }}',
                     data.message,
                     () => location.reload()
                 );
@@ -804,7 +804,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             window.PasskeyResultModal.showError(
                 'passkeyResultModal',
                 '{{ __('common.error') }}',
-                '{{ __('admin.profile.passkey_delete_all_error') }}'
+                '{{ __('admin/profile.passkey_delete_all_error') }}'
             );
         });
     };
@@ -860,7 +860,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 window.PasskeyResultModal.showError(
                     'passkeyResultModal',
                     '{{ __('common.error') }}',
-                    '{{ __('admin.profile.passkey_not_supported') }}'
+                    '{{ __('admin/profile.passkey_not_supported') }}'
                 );
                 return;
             }
@@ -963,7 +963,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             if (result.success) {
                 window.PasskeyResultModal.showSuccess(
                     'passkeyResultModal',
-                    '{{ __('admin.profile.passkey_register_success_title') }}',
+                    '{{ __('admin/profile.passkey_register_success_title') }}',
                     result.message,
                     () => location.reload()
                 );
@@ -971,7 +971,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 window.PasskeyResultModal.showError(
                     'passkeyResultModal',
                     '{{ __('common.error') }}',
-                    result.message || '{{ __('admin.profile.passkey_register_error') }}'
+                    result.message || '{{ __('admin/profile.passkey_register_error') }}'
                 );
             }
 
@@ -980,11 +980,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             
             let errorMessage;
             if (error.name === 'NotAllowedError') {
-                errorMessage = '{{ __('admin.profile.passkey_cancelled') }}';
+                errorMessage = '{{ __('admin/profile.passkey_cancelled') }}';
             } else if (error.name === 'InvalidStateError') {
-                errorMessage = '{{ __('admin.profile.passkey_already_registered') }}';
+                errorMessage = '{{ __('admin/profile.passkey_already_registered') }}';
             } else {
-                errorMessage = '{{ __('admin.profile.passkey_register_error') }}\n\n' + error.message;
+                errorMessage = '{{ __('admin/profile.passkey_register_error') }}\n\n' + error.message;
             }
             
             window.PasskeyResultModal.showError(
@@ -1079,7 +1079,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 try {
                     // WebAuthn対応チェック
                     if (!window.PublicKeyCredential) {
-                        alert('{{ __('admin.profile.webauthn_not_supported') }}');
+                        alert('{{ __('admin/profile.webauthn_not_supported') }}');
                         return;
                     }
 
@@ -1122,7 +1122,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     });
 
                     // デバイス名を入力
-                    const deviceName = prompt('{{ __('admin.profile.enter_device_name') }}', '');
+                    const deviceName = prompt('{{ __('admin/profile.enter_device_name') }}', '');
 
                     // 登録
                     const registerResponse = await fetch('/admin/profile/biometric/register', {
@@ -1156,9 +1156,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 } catch (error) {
                     console.error('Biometric registration error:', error);
                     if (error.name === 'NotAllowedError') {
-                        alert('{{ __('admin.profile.biometric_cancelled') }}');
+                        alert('{{ __('admin/profile.biometric_cancelled') }}');
                     } else {
-                        alert('{{ __('admin.profile.biometric_registration_error') }}');
+                        alert('{{ __('admin/profile.biometric_registration_error') }}');
                     }
                 }
             });
@@ -1231,7 +1231,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <x-modal 
     id="recoveryCodesConfirmModal" 
     :title="__('two-factor.recovery_codes.generate')"
-    :message="__('admin.profile.recovery_codes_generate_confirm')"
+    :message="__('admin/profile.recovery_codes_generate_confirm')"
     confirm_label="{{ __('common.ok') }}"
     cancel_label="{{ __('common.cancel') }}"
     icon_type="warning"

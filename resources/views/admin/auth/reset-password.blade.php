@@ -19,18 +19,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @extends('layouts.auth')
-@section('title', __('admin.auth.reset_password.title'))
-@section('header', __('admin.auth.reset_password.header'))
-@section('description', __('admin.auth.reset_password.description'))
+@section('title', __('admin/auth.reset_password.title'))
+@section('header', __('admin/auth.reset_password.header'))
+@section('description', __('admin/auth.reset_password.description'))
 
 @section('content')
     <x-auth.reset-password
         :route="route('admin.password.store')"
         :token="$request->route('token')"
         :email="$request->email"
-        email-label="{{ __('admin.auth.reset_password.email') }}"
-        password-label="{{ __('admin.auth.reset_password.password') }}"
-        submit-text="{{ __('admin.auth.reset_password.reset_password_button') }}"
+        email-label="{{ __('admin/auth.reset_password.email') }}"
+        password-label="{{ __('admin/auth.reset_password.password') }}"
+        submit-text="{{ __('admin/auth.reset_password.reset_password_button') }}"
         password-min-length="{{ $passwordMinLength }}"
         password-require-uppercase="{{ $passwordRequireUppercase }}"
         password-require-symbol="{{ $passwordRequireSymbol }}"

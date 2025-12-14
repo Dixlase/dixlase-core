@@ -22,14 +22,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="max-w-7xl mx-auto">
-    <form method="POST" action="{{ route('admin.settings.members.settings.update') }}" id="member-settings-form">
+    <form method="POST" action="{{ route('admin.members.settings.update') }}" id="member-settings-form">
         @csrf
 
         <!-- パスワード条件設定 -->
         <section>
-            <h2>{{ __('admin.settings.members.settings.password_conditions') }}</h2>
+            <h2>{{ __('admin/members/settings.password_conditions') }}</h2>
             <fieldset>
-                <legend>{{ __('admin.settings.members.settings.password_min_length') }}</legend>
+                <legend>{{ __('admin/members/settings.password_min_length') }}</legend>
                 <x-form.radio-card-group
                     name="password_min_length"
                     :options="$minLengthOptions"
@@ -44,7 +44,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <x-form.toggle
                     name="password_require_uppercase"
-                    :label="__('admin.settings.members.settings.password_require_uppercase')"
+                    :label="__('admin/members/settings.password_require_uppercase')"
                     :checked="old('password_require_uppercase', $passwordRequireUppercase)"
                 />
             </fieldset>
@@ -53,7 +53,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <x-form.toggle
                     name="password_require_number"
-                    :label="__('admin.settings.members.settings.password_require_number')"
+                    :label="__('admin/members/settings.password_require_number')"
                     :checked="old('password_require_number', $passwordRequireNumber)"
                 />
             </fieldset>
@@ -62,33 +62,33 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <x-form.toggle
                     name="password_require_symbol"
-                    :label="__('admin.settings.members.settings.password_require_symbol')"
+                    :label="__('admin/members/settings.password_require_symbol')"
                     :checked="old('password_require_symbol', $passwordRequireSymbol)"
                 />
             </fieldset>
             <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                {{ __('admin.settings.members.settings.password_security_warning') }}
+                {{ __('admin/members/settings.password_security_warning') }}
             </p>
         </section>
 
         <!-- ログイン試行制限設定 -->
         <section>
-            <h2>{{ __('admin.settings.members.settings.login_attempt_limit_settings') }}</h2>
+            <h2>{{ __('admin/members/settings.login_attempt_limit_settings') }}</h2>
             @if(!$isMailServerTested)
                 <x-message
                     type="warning"
-                    :message="__('admin.settings.members.settings.mail_server_test_warning', ['url' => route('admin.settings.base.mail')])"
+                    :message="__('admin/members/settings.mail_server_test_warning', ['url' => route('admin.settings.base.mail')])"
                 />
             @endif
             <!-- 機能有効/無効 -->
             <fieldset>
                 <x-form.toggle
                     name="login_attempt_limit_enabled"
-                    :label="__('admin.settings.members.settings.login_attempt_limit_enabled')"
+                    :label="__('admin/members/settings.login_attempt_limit_enabled')"
                     :checked="old('login_attempt_limit_enabled', $loginAttemptLimitEnabled)"
                 />
                 <p class="mt-2">
-                    {{ __('admin.settings.members.settings.login_attempt_limit_help') }}
+                    {{ __('admin/members/settings.login_attempt_limit_help') }}
                 </p>
             </fieldset>
 
@@ -96,7 +96,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div>
                 <!-- 最大試行回数 -->
                 <fieldset>
-                    <legend>{{ __('admin.settings.members.settings.login_attempt_max_attempts') }}</legend>
+                    <legend>{{ __('admin/members/settings.login_attempt_max_attempts') }}</legend>
                     <x-form.text
                         type="number"
                         name="login_attempt_max_attempts"
@@ -106,13 +106,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         class="input-common input-sm"
                     />
                     <p>
-                        {{ __('admin.settings.members.settings.login_attempt_max_attempts_help') }}
+                        {{ __('admin/members/settings.login_attempt_max_attempts_help') }}
                     </p>
                 </fieldset>
 
                 <!-- 時間窓 -->
                 <fieldset>
-                    <legend>{{ __('admin.settings.members.settings.login_attempt_time_window') }}</legend>
+                    <legend>{{ __('admin/members/settings.login_attempt_time_window') }}</legend>
                     <x-form.text
                         type="number"
                         name="login_attempt_time_window"
@@ -122,13 +122,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         class="input-common input-sm"
                     />
                     <p>
-                        {{ __('admin.settings.members.settings.login_attempt_time_window_help') }}
+                        {{ __('admin/members/settings.login_attempt_time_window_help') }}
                     </p>
                 </fieldset>
 
                 <!-- ロックアウト時間 -->
                 <fieldset>
-                    <legend>{{ __('admin.settings.members.settings.login_attempt_lockout_duration') }}</legend>
+                    <legend>{{ __('admin/members/settings.login_attempt_lockout_duration') }}</legend>
                     <x-form.text
                         type="number"
                         name="login_attempt_lockout_duration"
@@ -138,18 +138,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         class="input-common input-sm"
                     />
                     <p>
-                        {{ __('admin.settings.members.settings.login_attempt_lockout_duration_help') }}
+                        {{ __('admin/members/settings.login_attempt_lockout_duration_help') }}
                     </p>
                 </fieldset>
                 <!-- ロックアウト通知設定 -->
                 <fieldset>
                     <x-form.toggle
                         name="lockout_notification_enabled"
-                        :label="__('admin.settings.members.settings.lockout_notification_enabled')"
+                        :label="__('admin/members/settings.lockout_notification_enabled')"
                         :checked="old('lockout_notification_enabled', $lockoutNotificationEnabled)"
                     />
                     <p class="mt-2">
-                        {!! __('admin.settings.members.settings.lockout_notification_help') !!}
+                        {!! __('admin/members/settings.lockout_notification_help') !!}
                     </p>
                 </fieldset>
             </div>
@@ -157,105 +157,98 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- CAPTCHA設定（管理画面ログイン用） -->
         <section>
-            <h2>{{ __('admin.settings.members.settings.captcha_admin_login_settings') }}</h2>
-            <p class="mb-2">{{ __('admin.settings.members.settings.captcha_admin_login_settings_description') }}</p>
+            <h2>{{ __('admin/members/settings.captcha_admin_login_settings') }}</h2>
+            <p class="mb-2">{{ __('admin/members/settings.captcha_admin_login_settings_description') }}</p>
             
             @if(!$captchaEnabled)
                 <x-message
                     type="warning"
-                    :message="__('admin.settings.members.settings.captcha_not_enabled', ['url' => route('admin.settings.security.captcha')])"
+                    :message="__('admin/members/settings.captcha_not_enabled', ['url' => route('admin.settings.security.captcha')])"
                 />
             @elseif(!$captchaAuthenticationResult)
                 <x-message
                     type="warning"
-                    :message="__('admin.settings.members.settings.captcha_not_authenticated', ['url' => route('admin.settings.security.captcha')])"
+                    :message="__('admin/members/settings.captcha_not_authenticated', ['url' => route('admin.settings.security.captcha')])"
                 />
             @endif
             
             <fieldset>
-                {{-- disabled時も値を保持するためのhiddenフィールド --}}
-                @if(!$captchaAvailable)
-                    <x-form.hidden
-                        name="captcha_admin_login_enabled"
-                        :value="$captchaAdminLoginEnabled ? '1' : '0'"
-                    />
-                @endif
                 <x-form.toggle
                     name="captcha_admin_login_enabled"
-                    :label="__('admin.settings.members.settings.captcha_admin_login_enabled')"
+                    :label="__('admin/members/settings.captcha_admin_login_enabled')"
                     :checked="old('captcha_admin_login_enabled', $captchaAdminLoginEnabled)"
                     :disabled="!$captchaAvailable"
                 />
                 <p class="mt-2">
-                    {{ __('admin.settings.members.settings.captcha_admin_login_help') }}
+                    {{ __('admin/members/settings.captcha_admin_login_help') }}
                 </p>
             </fieldset>
         </section>
 
         <!-- パスワードリセット機能設定 -->
         <section>
-            <h2>{{ __('admin.settings.members.settings.password_reset_settings') }}</h2>
+            <h2>{{ __('admin/members/settings.password_reset_settings') }}</h2>
             @if(!$isMailServerTested)
                 <x-message
                     type="warning"
-                    :message="__('admin.settings.members.settings.mail_server_test_warning', ['url' => route('admin.settings.base.mail')])"
+                    :message="__('admin/members/settings.mail_server_test_warning', ['url' => route('admin.settings.base.mail')])"
                 />
             @endif
             <fieldset>
                 <x-form.toggle
                     name="password_reset_enabled"
-                    :label="__('admin.settings.members.settings.password_reset_enabled')"
+                    :label="__('admin/members/settings.password_reset_enabled')"
                     :checked="old('password_reset_enabled', $passwordResetEnabled)"
                 />
                 <p class="mt-2">
-                    {!! __('admin.settings.members.settings.password_reset_help') !!}
+                    {!! __('admin/members/settings.password_reset_help') !!}
                 </p>
             </fieldset>
         </section>
 
         <!-- パスワード辞書攻撃対策設定 -->
         <section>
-            <h2>{{ __('admin.settings.members.settings.pwned_password_settings') }}</h2>
+            <h2>{{ __('admin/members/settings.pwned_password_settings') }}</h2>
 
             <fieldset>
                 <x-form.toggle
                     name="pwned_password_check_enabled"
-                    :label="__('admin.settings.members.settings.pwned_password_check_enabled')"
+                    :label="__('admin/members/settings.pwned_password_check_enabled')"
                     :checked="old('pwned_password_check_enabled', $pwnedPasswordCheckEnabled)"
                 />
                 <p class="mt-2">
-                    {!! __('admin.settings.members.settings.pwned_password_help') !!}
+                    {!! __('admin/members/settings.pwned_password_help') !!}
                 </p>
                 <!-- API情報 -->
                 <x-message
                     type="info"
-                    :message="__('admin.settings.members.settings.pwned_password_api_info')"
+                    :message="__('admin/members/settings.pwned_password_api_info')"
                 />
             </fieldset>
         </section>
 
         <!-- 管理メンバー用セッション設定 -->
         <section>
-            <h2>{{ __('admin.settings.members.settings.admin_session_settings') }}</h2>
+            <h2>{{ __('admin/members/settings.admin_session_settings') }}</h2>
             <p>
-                {{ __('admin.settings.members.settings.admin_session_settings_description') }}
+                {{ __('admin/members/settings.admin_session_settings_description') }}
             </p>
 
             <!-- セッション有効時間カスタマイズ有効/無効 -->
             <fieldset>
                 <x-form.toggle
                     name="members_session_lifetime_enabled"
-                    :label="__('admin.settings.members.settings.admin_session_lifetime_enabled')"
+                    :label="__('admin/members/settings.admin_session_lifetime_enabled')"
                     :checked="old('members_session_lifetime_enabled', $membersSessionLifetimeEnabled)"
                 />
                 <p class="mt-2">
-                    {{ __('admin.settings.members.settings.admin_session_lifetime_enabled_help') }}
+                    {{ __('admin/members/settings.admin_session_lifetime_enabled_help') }}
                 </p>
             </fieldset>
 
             <!-- 管理メンバー用セッション有効時間 -->
             <fieldset>
-                <legend>{{ __('admin.settings.members.settings.admin_session_lifetime') }}</legend>
+                <legend>{{ __('admin/members/settings.admin_session_lifetime') }}</legend>
                 <div class="flex items-center">
                     <x-form.text
                         type="number"
@@ -265,10 +258,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :max="43200"
                         class="input-common input-sm"
                     />
-                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.members.settings.minutes') }}</span>
+                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings.minutes') }}</span>
                 </div>
                 <p>
-                    {{ __('admin.settings.members.settings.admin_session_lifetime_help') }}
+                    {{ __('admin/members/settings.admin_session_lifetime_help') }}
                 </p>
             </fieldset>
         </section>
@@ -279,11 +272,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @if(!$isMailServerTested)
                 <x-message
                     type="warning"
-                    :message="__('admin.settings.members.settings.mail_server_test_warning', ['url' => route('admin.settings.base.mail')])"
+                    :message="__('admin/members/settings.mail_server_test_warning', ['url' => route('admin.settings.base.mail')])"
                 />
             @endif
             <fieldset>
-                <legend>{{ __('admin.settings.members.settings.login_notification_global_setting') }}</legend>
+                <legend>{{ __('admin/members/settings.login_notification_global_setting') }}</legend>
                 <x-form.radio-card-group
                     name="login_notification_mode"
                     :options="$loginNotificationGlobalOptions"
@@ -299,11 +292,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @if(!$isMailServerTested)
                 <x-message
                     type="warning"
-                    :message="__('admin.settings.members.settings.mail_server_test_warning', ['url' => route('admin.settings.base.mail')])"
+                    :message="__('admin/members/settings.mail_server_test_warning', ['url' => route('admin.settings.base.mail')])"
                 />
             @endif
             <fieldset>
-                <legend>{{ __('admin.settings.members.settings.two_factor_mode_global_setting') }}</legend>
+                <legend>{{ __('admin/members/settings.two_factor_mode_global_setting') }}</legend>
                 <x-form.radio-card-group
                     name="force_2fa"
                     :options="$twoFactorGlobalOptions"
@@ -314,7 +307,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <!-- 二段階認証方法設定 -->
             <fieldset>
-                <legend>{{ __('admin.settings.members.settings.enabled_two_factor_methods_label') }}</legend>
+                <legend>{{ __('admin/members/settings.enabled_two_factor_methods_label') }}</legend>
                 
                 <div class="space-y-6">
                     <!-- 認証方法一覧 -->
@@ -341,10 +334,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <!-- ヘルプテキスト -->
                     <div class="space-y-1">
                         <p class="text-sm text-gray-600 dark:text-gray-400">
-                            {{ __('admin.settings.members.settings.enabled_two_factor_methods_help') }}
+                            {{ __('admin/members/settings.enabled_two_factor_methods_help') }}
                         </p>
                         <p class="text-sm text-gray-600 dark:text-gray-400">
-                            {{ __('admin.settings.members.settings.email_always_enabled_note') }}
+                            {{ __('admin/members/settings.email_always_enabled_note') }}
                         </p>
                     </div>
                 </div>
@@ -352,13 +345,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <!-- 二段階認証の有効期限設定 -->
             <fieldset>
-                <legend>{{ __('admin.settings.members.settings.two_factor_expire_settings') }}</legend>
+                <legend>{{ __('admin/members/settings.two_factor_expire_settings') }}</legend>
                 
                 <div class="space-y-4">
                     <!-- 認証の有効期限（メール・デバイス共通） -->
                     <div>
                         <label for="two_factor_expire_minutes" class="block text-sm font-medium">
-                            {{ __('admin.settings.members.settings.two_factor_expire_minutes') }}
+                            {{ __('admin/members/settings.two_factor_expire_minutes') }}
                         </label>
                         <div class="mt-1 flex items-center space-x-2">
                             <x-form.text
@@ -370,17 +363,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 :max="60"
                                 class="input-common input-sm"
                             />
-                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.members.settings.minutes') }}</span>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings.minutes') }}</span>
                         </div>
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            {{ __('admin.settings.members.settings.two_factor_expire_minutes_help') }}
+                            {{ __('admin/members/settings.two_factor_expire_minutes_help') }}
                         </p>
                     </div>
 
                     <!-- 認証メール再送信間隔 -->
                     <div>
                         <label for="two_factor_resend_interval_seconds" class="block text-sm font-medium">
-                            {{ __('admin.settings.members.settings.two_factor_resend_interval_seconds') }}
+                            {{ __('admin/members/settings.two_factor_resend_interval_seconds') }}
                         </label>
                         <div class="mt-1 flex items-center space-x-2">
                             <x-form.text
@@ -393,10 +386,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 :step="60"
                                 class="input-common input-sm"
                             />
-                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.members.settings.seconds') }}</span>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings.seconds') }}</span>
                         </div>
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            {{ __('admin.settings.members.settings.two_factor_resend_interval_seconds_help') }}
+                            {{ __('admin/members/settings.two_factor_resend_interval_seconds_help') }}
                         </p>
                     </div>
 
@@ -405,13 +398,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <!-- 二段階認証試行制限設定 -->
             <fieldset>
-                <legend>{{ __('admin.settings.members.settings.2fa_attempt_limit_settings') }}</legend>
+                <legend>{{ __('admin/members/settings.2fa_attempt_limit_settings') }}</legend>
                 
                 <div class="space-y-4">
                     <!-- 最大試行回数 -->
                     <div>
                         <label for="2fa_max_attempts" class="block text-sm font-medium">
-                            {{ __('admin.settings.members.settings.2fa_max_attempts') }}
+                            {{ __('admin/members/settings.2fa_max_attempts') }}
                         </label>
                         <div class="mt-1 flex items-center space-x-2">
                             <x-form.text
@@ -423,17 +416,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 :max="10"
                                 class="input-common input-sm"
                             />
-                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.members.settings.times') }}</span>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings.times') }}</span>
                         </div>
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            {{ __('admin.settings.members.settings.2fa_max_attempts_help') }}
+                            {{ __('admin/members/settings.2fa_max_attempts_help') }}
                         </p>
                     </div>
 
                     <!-- 試行制限の時間枠 -->
                     <div>
                         <label for="2fa_attempt_window" class="block text-sm font-medium">
-                            {{ __('admin.settings.members.settings.2fa_attempt_window') }}
+                            {{ __('admin/members/settings.2fa_attempt_window') }}
                         </label>
                         <div class="mt-1 flex items-center space-x-2">
                             <x-form.text
@@ -445,17 +438,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 :max="60"
                                 class="input-common input-sm"
                             />
-                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.members.settings.minutes') }}</span>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings.minutes') }}</span>
                         </div>
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            {{ __('admin.settings.members.settings.2fa_attempt_window_help') }}
+                            {{ __('admin/members/settings.2fa_attempt_window_help') }}
                         </p>
                     </div>
 
                     <!-- ロックアウト時間 -->
                     <div>
                         <label for="2fa_lockout_duration" class="block text-sm font-medium">
-                            {{ __('admin.settings.members.settings.2fa_lockout_duration') }}
+                            {{ __('admin/members/settings.2fa_lockout_duration') }}
                         </label>
                         <div class="mt-1 flex items-center space-x-2">
                             <x-form.text
@@ -467,10 +460,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 :max="1440"
                                 class="input-common input-sm"
                             />
-                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.members.settings.minutes') }}</span>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings.minutes') }}</span>
                         </div>
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            {{ __('admin.settings.members.settings.2fa_lockout_duration_help') }}
+                            {{ __('admin/members/settings.2fa_lockout_duration_help') }}
                         </p>
                     </div>
 
@@ -478,11 +471,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div>
                         <x-form.toggle
                             name="2fa_lockout_notification_enabled"
-                            :label="__('admin.settings.members.settings.2fa_lockout_notification')"
+                            :label="__('admin/members/settings.2fa_lockout_notification')"
                             :checked="old('2fa_lockout_notification_enabled', $twoFaLockoutNotificationEnabled)"
                         />
                         <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                            {{ __('admin.settings.members.settings.2fa_lockout_notification_help') }}
+                            {{ __('admin/members/settings.2fa_lockout_notification_help') }}
                         </p>
                     </div>
                 </div>
@@ -490,13 +483,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <!-- 回復コード設定 -->
             <fieldset>
-                <legend>{{ __('admin.settings.members.settings.recovery_code_settings') }}</legend>
+                <legend>{{ __('admin/members/settings.recovery_code_settings') }}</legend>
                 
                 <div class="space-y-4">
                     <!-- 回復コード生成個数 -->
                     <div>
                         <label for="recovery_codes_count" class="block text-sm font-medium">
-                            {{ __('admin.settings.members.settings.recovery_codes_count') }}
+                            {{ __('admin/members/settings.recovery_codes_count') }}
                         </label>
                         <div class="mt-1 flex items-center space-x-2">
                             <x-form.text
@@ -508,17 +501,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 :max="10"
                                 class="input-common input-sm"
                             />
-                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.members.settings.codes') }}</span>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings.codes') }}</span>
                         </div>
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            {{ __('admin.settings.members.settings.recovery_codes_count_help') }}
+                            {{ __('admin/members/settings.recovery_codes_count_help') }}
                         </p>
                     </div>
 
                     <!-- 回復コード再生成間隔 -->
                     <div>
                         <label for="recovery_code_regenerate_interval" class="block text-sm font-medium">
-                            {{ __('admin.settings.members.settings.recovery_code_regenerate_interval') }}
+                            {{ __('admin/members/settings.recovery_code_regenerate_interval') }}
                         </label>
                         <div class="mt-1 flex items-center space-x-2">
                             <x-form.text
@@ -530,10 +523,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 :max="168"
                                 class="input-common input-sm"
                             />
-                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin.settings.members.settings.hours') }}</span>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings.hours') }}</span>
                         </div>
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            {{ __('admin.settings.members.settings.recovery_code_regenerate_interval_help') }}
+                            {{ __('admin/members/settings.recovery_code_regenerate_interval_help') }}
                         </p>
                     </div>
                 </div>
@@ -543,17 +536,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- 全メンバー強制ログアウト -->
     <section>
-        <h2>{{ __('admin.settings.members.settings.force_logout_heading') }}</h2>
-        <p class="mb-3">{{ __('admin.settings.members.settings.force_logout_description') }}</p>
+        <h2>{{ __('admin/members/settings.force_logout_heading') }}</h2>
+        <p class="mb-3">{{ __('admin/members/settings.force_logout_description') }}</p>
         <!-- 全メンバー強制ログアウト用フォーム -->
-        <form id="force-logout-all-form" action="{{ route('admin.settings.members.force-logout-all') }}" method="POST">
+        <form id="force-logout-all-form" action="{{ route('admin.members.force-logout-all') }}" method="POST">
             @csrf
         </form>
 
         <!-- 全メンバー強制ログアウトボタン -->
         <x-form.button
             type="button"
-            :label="__('admin.settings.members.settings.force_logout_all_button')"
+            :label="__('admin/members/settings.force_logout_all_button')"
             variant="warning"
             onclick="openModal('forceLogoutAllModal')"
         />
@@ -585,9 +578,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 全メンバー強制ログアウト確認モーダル -->
     <x-modal
         id="forceLogoutAllModal"
-        :title="__('admin.settings.members.settings.force_logout_all_modal.title')"
-        :message="__('admin.settings.members.settings.force_logout_all_modal.message')"
-        :confirm_label="__('admin.settings.members.settings.force_logout_all_modal.confirm_label')"
+        :title="__('admin/members/settings.force_logout_all_modal.title')"
+        :message="__('admin/members/settings.force_logout_all_modal.message')"
+        :confirm_label="__('admin/members/settings.force_logout_all_modal.confirm_label')"
         :cancel_label="__('common.cancel')"
         form="force-logout-all-form"
         icon_type="warning"

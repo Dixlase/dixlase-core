@@ -62,7 +62,7 @@
     <button type="button" 
             onclick="openMediaSelector('{{ $selectorId }}', '{{ $inputId }}', '{{ $previewId }}', false, '{{ $aspectRatio }}')"
             class="px-4 py-2 mb-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
-        <i class="fas fa-image mr-2"></i>{{ $buttonText ?? __('admin.settings.base.select_ogp_image') }}
+        <i class="fas fa-image mr-2"></i>{{ $buttonText ?? __('admin/settings/base/select_ogp_image') }}
     </button>
     
     @if($help)

@@ -315,7 +315,7 @@ class AdminLoginController extends AdminController
                     'new_email' => $member->email
                 ]);
                 
-                session()->flash('success', __('admin.profile.email_verification_success'));
+                session()->flash('success', __('admin/profile.email_verification_success'));
             } else {
                 // 新規アカウントの認証
                 $member->markEmailAsVerified();
@@ -325,7 +325,7 @@ class AdminLoginController extends AdminController
                     'email' => $member->email
                 ]);
                 
-                session()->flash('success', __('admin.profile.account_verification_success'));
+                session()->flash('success', __('admin/profile.account_verification_success'));
                 
                 // メールサーバー設定済みの場合のみ通知を送信
                 if (MailServerValidatorService::isMailServerTested()) {

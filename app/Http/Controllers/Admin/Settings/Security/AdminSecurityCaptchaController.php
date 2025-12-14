@@ -136,7 +136,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
         $this->securitySettingRepository->set('captcha_google_project_id', $validated['captcha_google_project_id'] ?? '');
 
         return redirect()->route('admin.settings.security.captcha')
-            ->with('success', __('admin.settings.security.captcha.settings_updated'));
+            ->with('success', __('admin/settings/security/captcha.settings_updated'));
     }
 
     /**
@@ -150,7 +150,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
         if (empty($token)) {
             return response()->json([
                 'success' => false,
-                'message' => __('admin.settings.security.captcha_token_required'),
+                'message' => __('admin/settings/security/captcha_token_required'),
             ]);
         }
 
@@ -164,7 +164,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
             if (empty($secretKey)) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('admin.settings.security.captcha_secret_key_required'),
+                    'message' => __('admin/settings/security/captcha_secret_key_required'),
                 ]);
             }
             
@@ -177,7 +177,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
                 
                 return response()->json([
                     'success' => true,
-                    'message' => __('admin.settings.security.captcha_validation_success_with_score', [
+                    'message' => __('admin/settings/security/captcha_validation_success_with_score', [
                         'score' => $result['score'] ?? 'N/A'
                     ]),
                     'score' => $result['score'] ?? null,
@@ -186,14 +186,14 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
             
             return response()->json([
                 'success' => false,
-                'message' => $result['message'] ?? __('admin.settings.security.captcha_validation_failed'),
+                'message' => $result['message'] ?? __('admin/settings/security/captcha_validation_failed'),
             ]);
             
         } catch (\Exception $e) {
             Log::error('CAPTCHA validation error', ['error' => $e->getMessage()]);
             return response()->json([
                 'success' => false,
-                'message' => __('admin.settings.security.captcha_api_connection_failed'),
+                'message' => __('admin/settings/security/captcha_api_connection_failed'),
             ]);
         }
     }
@@ -235,7 +235,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
         if (!($data['success'] ?? false)) {
             return [
                 'success' => false,
-                'message' => __('admin.settings.security.captcha_validation_failed_with_errors', [
+                'message' => __('admin/settings/security/captcha_validation_failed_with_errors', [
                     'errors' => implode(', ', $data['error-codes'] ?? ['unknown'])
                 ]),
             ];
@@ -245,7 +245,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
         if (isset($data['score']) && $data['score'] < $minScore) {
             return [
                 'success' => false,
-                'message' => __('admin.settings.security.captcha_validation_score_too_low', [
+                'message' => __('admin/settings/security/captcha_validation_score_too_low', [
                     'score' => $data['score'],
                     'min_score' => $minScore,
                 ]),
@@ -267,14 +267,14 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
         if (empty($apiKey)) {
             return [
                 'success' => false,
-                'message' => __('admin.settings.security.captcha.test_enterprise_keys_missing'),
+                'message' => __('admin/settings/security/captcha.test_enterprise_keys_missing'),
             ];
         }
         
         if (empty($projectId)) {
             return [
                 'success' => false,
-                'message' => __('admin.settings.security.captcha.enterprise_project_id_required'),
+                'message' => __('admin/settings/security/captcha.enterprise_project_id_required'),
             ];
         }
         
@@ -295,7 +295,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
             ]);
             return [
                 'success' => false,
-                'message' => __('admin.settings.security.captcha_api_connection_failed'),
+                'message' => __('admin/settings/security/captcha_api_connection_failed'),
             ];
         }
         
@@ -311,7 +311,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
             $reasons = $data['tokenProperties']['invalidReason'] ?? 'unknown';
             return [
                 'success' => false,
-                'message' => __('admin.settings.security.captcha_validation_failed_with_errors', [
+                'message' => __('admin/settings/security/captcha_validation_failed_with_errors', [
                     'errors' => is_array($reasons) ? implode(', ', $reasons) : $reasons
                 ]),
             ];
@@ -322,7 +322,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
         if ($score < $minScore) {
             return [
                 'success' => false,
-                'message' => __('admin.settings.security.captcha_validation_score_too_low', [
+                'message' => __('admin/settings/security/captcha_validation_score_too_low', [
                     'score' => $score,
                     'min_score' => $minScore,
                 ]),

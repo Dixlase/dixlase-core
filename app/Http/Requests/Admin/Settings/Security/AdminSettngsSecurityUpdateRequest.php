@@ -153,17 +153,17 @@ class AdminSettngsSecurityUpdateRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'allowed_admin_ips.regex' => __('admin.settings.security.validation.allowed_admin_ips_format'),
-            'blocked_admin_ips.regex' => __('admin.settings.security.validation.blocked_admin_ips_format'),
-            'allowed_front_ips.regex' => __('admin.settings.security.validation.allowed_front_ips_format'),
-            'blocked_front_ips.regex' => __('admin.settings.security.validation.blocked_front_ips_format'),
-            'captcha_google_version.in' => __('admin.settings.security.validation.captcha_google_version_invalid'),
-            'captcha_google_min_score.between' => __('admin.settings.security.validation.captcha_google_min_score_range'),
-            'captcha_driver.in' => __('admin.settings.security.validation.captcha_driver_invalid'),
+            'allowed_admin_ips.regex' => __('admin/settings/security/validation.allowed_admin_ips_format'),
+            'blocked_admin_ips.regex' => __('admin/settings/security/validation.blocked_admin_ips_format'),
+            'allowed_front_ips.regex' => __('admin/settings/security/validation.allowed_front_ips_format'),
+            'blocked_front_ips.regex' => __('admin/settings/security/validation.blocked_front_ips_format'),
+            'captcha_google_version.in' => __('admin/settings/security/validation.captcha_google_version_invalid'),
+            'captcha_google_min_score.between' => __('admin/settings/security/validation.captcha_google_min_score_range'),
+            'captcha_driver.in' => __('admin/settings/security/validation.captcha_driver_invalid'),
             // CAPTCHA必須バリデーションメッセージ
-            'captcha_site_key.required' => __('admin.settings.security.validation.captcha_site_key_required'),
-            'captcha_secret_key.required' => __('admin.settings.security.validation.captcha_secret_key_required'),
-            'captcha_google_project_id.required' => __('admin.settings.security.validation.captcha_google_project_id_required'),
+            'captcha_site_key.required' => __('admin/settings/security/validation.captcha_site_key_required'),
+            'captcha_secret_key.required' => __('admin/settings/security/validation.captcha_secret_key_required'),
+            'captcha_google_project_id.required' => __('admin/settings/security/validation.captcha_google_project_id_required'),
         ];
     }
 }

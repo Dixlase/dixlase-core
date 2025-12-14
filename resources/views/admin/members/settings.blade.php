@@ -23,25 +23,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 <div class="max-w-7xl mx-auto">
     <section>
-        <h2>{{ __('admin.members.settings.heading') }}</h2>
+        <h2>{{ __('admin/members/settings.heading') }}</h2>
 
         <div class="space-y-2">
             <a href="{{ route('admin.members.settings.password') }}" class="block">
-                {{ __('admin.members.settings.nav.password') }}
+                {{ __('admin/members/settings.nav.password') }}
             </a>
             <a href="{{ route('admin.members.settings.session') }}" class="block">
-                {{ __('admin.members.settings.nav.session') }}
+                {{ __('admin/members/settings.nav.session') }}
             </a>
             <a href="{{ route('admin.members.settings.authentication') }}" class="block">
-                {{ __('admin.members.settings.nav.authentication') }}
+                {{ __('admin/members/settings.nav.authentication') }}
             </a>
         </div>
     </section>
 
     <!-- 全メンバー強制ログアウト -->
     <section>
-        <h2>{{ __('admin.members.settings.force_logout_heading') }}</h2>
-        <p class="mb-3">{{ __('admin.members.settings.force_logout_description') }}</p>
+        <h2>{{ __('admin/members/settings.force_logout_heading') }}</h2>
+        <p class="mb-3">{{ __('admin/members/settings.force_logout_description') }}</p>
         <!-- 全メンバー強制ログアウト用フォーム -->
         <form id="force-logout-all-form" action="{{ route('admin.members.force-logout-all') }}" method="POST">
             @csrf
@@ -50,7 +50,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- 全メンバー強制ログアウトボタン -->
         <x-form.button
             type="button"
-            :label="__('admin.members.settings.force_logout_all_button')"
+            :label="__('admin/members/settings.force_logout_all_button')"
             variant="warning"
             onclick="openModal('forceLogoutAllModal')"
         />
@@ -61,9 +61,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 全メンバー強制ログアウト確認モーダル -->
     <x-modal
         id="forceLogoutAllModal"
-        :title="__('admin.members.settings.force_logout_all_modal.title')"
-        :message="__('admin.members.settings.force_logout_all_modal.message')"
-        :confirm_label="__('admin.members.settings.force_logout_all_modal.confirm_label')"
+        :title="__('admin/members/settings.force_logout_all_modal.title')"
+        :message="__('admin/members/settings.force_logout_all_modal.message')"
+        :confirm_label="__('admin/members/settings.force_logout_all_modal.confirm_label')"
         :cancel_label="__('common.cancel')"
         form="force-logout-all-form"
         icon_type="warning"

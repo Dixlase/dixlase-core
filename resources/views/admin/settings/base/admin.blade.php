@@ -27,26 +27,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- 管理画面設定 -->
     <section>
-        <h2>{{ __('admin.settings.base.admin.admin_panel_settings') }}</h2>
+        <h2>{{ __('admin/settings/base/admin.admin_panel_settings') }}</h2>
 
         <fieldset>
-            <legend>{{ __('admin.settings.base.admin.admin_url') }}</legend>
+            <legend>{{ __('admin/settings/base/admin.admin_url') }}</legend>
             <x-form.text
                 name="admin_url"
                 :value="old('admin_url', $settings['admin_url'])"
                 :required="true"
                 class="input-lg"
             />
-            <p>{!! __('admin.settings.base.admin.admin_url_help') !!}</p>
+            <p>{!! __('admin/settings/base/admin.admin_url_help') !!}</p>
         </fieldset>
 
         <fieldset>
             <x-form.toggle
                 name="force_ssl"
-                :label="__('admin.settings.base.admin.force_ssl')"
+                :label="__('admin/settings/base/admin.force_ssl')"
                 :checked="old('force_ssl', $settings['force_ssl'])"
             />
-            <p class="mt-2">{{ __('admin.settings.base.admin.force_ssl_help') }}</p>
+            <p class="mt-2">{{ __('admin/settings/base/admin.force_ssl_help') }}</p>
         </fieldset>
     </section>
 

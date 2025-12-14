@@ -26,7 +26,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <x-form.button
             type="link"
             :href="route('admin.media.upload')"
-            :label="__('admin.media.index.upload_new_file')"
+            :label="__('admin/media.index.upload_new_file')"
             variant="primary"
             icon="fas fa-plus"
         />
@@ -42,7 +42,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     id="search"
                     name="search"
                     :value="$search ?? ''"
-                    :placeholder="__('admin.media.search.file_name_placeholder')"
+                    :placeholder="__('admin/media.search.file_name_placeholder')"
                 />
             </fieldset>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
@@ -63,7 +63,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </fieldset>
 
                 <fieldset>
-                    <legend>{{ __('admin.media.search.date_from') }}</legend>
+                    <legend>{{ __('admin/media.search.date_from') }}</legend>
                     <x-form.text
                         type="date"
                         id="date_from"
@@ -73,7 +73,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </fieldset>
 
                 <fieldset>
-                    <legend>{{ __('admin.media.search.date_to') }}</legend>
+                    <legend>{{ __('admin/media.search.date_to') }}</legend>
                     <x-form.text
                         type="date"
                         id="date_to"
@@ -148,8 +148,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @else
             <div class="empty-state">
                 <i class="fas fa-images text-6xl"></i>
-                <p>{{ __('admin.media.index.no_files') }}</p>
-                <p class="description-text">{{ __('admin.media.index.upload_first_file') }}</p>
+                <p>{{ __('admin/media.index.no_files') }}</p>
+                <p class="description-text">{{ __('admin/media.index.upload_first_file') }}</p>
             </div>
         @endif
     </div>
@@ -173,7 +173,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <!-- 削除確認モーダル -->
 <x-modal
     id="deleteModal"
-    :title="__('admin.media.preview.delete_confirmation')"
+    :title="__('admin/media.preview.delete_confirmation')"
     message=""
     :confirm_label="__('common.delete')"
     :cancel_label="__('common.cancel')"
