@@ -38,6 +38,7 @@ class AdminSystemLogsController extends AdminLoggedInController
         'dixlase'  => 'dixlase.log',
         'front_activity' => 'front_activity.log',
         'front_error' => 'front_error.log',
+        'browser' => 'browser.log',
         'csp' => 'csp_violations.log',
         'audit' => 'audit.log',
     ];
@@ -48,19 +49,10 @@ class AdminSystemLogsController extends AdminLoggedInController
     }
 
     /**
-     * システムログ
+     * ファイルログ
      */
     public function index(Request $request, $type = 'activity')
     {
-        // 監査ログの場合は特別処理
-        if ($type === 'audit') {
-            $view = $request->input('view', 'db');
-            
-            if ($view === 'db') {
-                return $this->auditLogsDb($request);
-            }
-        }
-
         $fileName = $this->logPaths[$type] ?? $this->logPaths['activity'];
         $filePath = storage_path("logs/{$fileName}");
 
@@ -75,7 +67,7 @@ class AdminSystemLogsController extends AdminLoggedInController
             $this->viewParams['logs'] = [[
                 'timestamp' => '',
                 'level' => '',
-                'message' => __('admin/settings/systems/logs.system.messages.file_not_found', ['filename' => $fileName]),
+                'message' => __('admin/settings/systems/logs/files.messages.file_not_found', ['filename' => $fileName]),
                 'context' => [],
                 'parsed' => false
             ]];
@@ -665,7 +657,9 @@ class AdminSystemLogsController extends AdminLoggedInController
      */
     private function parseLogLine($line)
     {
-        $pattern = '/^\[([^\]]+)\]\s+([^:]+):\s+(.+?)(\s+\{.*\})?$/';
+        // パターン: [timestamp] level: message {json}
+        // JSONは行末に存在する場合のみキャプチャ
+        $pattern = '/^\[([^\]]+)\]\s+([^:]+):\s+(.+?)(\s+\{.+\})?\s*$/';
         
         if (!preg_match($pattern, $line, $matches)) {
             return [
@@ -679,15 +673,24 @@ class AdminSystemLogsController extends AdminLoggedInController
 
         $timestamp = $matches[1];
         $level = $matches[2];
-        $message = $matches[3];
+        $messageWithContext = $matches[3];
         $contextJson = isset($matches[4]) ? trim($matches[4]) : '';
 
+        // メッセージ内にJSONが含まれている場合の処理
+        // メッセージ部分からJSONを分離
+        $message = $messageWithContext;
         $context = [];
+        
+        // メッセージ内に{で始まるJSONがある場合
+        if (preg_match('/^(.+?)\s+(\{.+\})$/', $messageWithContext, $jsonMatches)) {
+            $message = trim($jsonMatches[1]);
+            $contextJson = $jsonMatches[2];
+        }
+        
         if (!empty($contextJson)) {
-            try {
-                $context = json_decode($contextJson, true) ?? [];
-            } catch (\Exception $e) {
-                $context = [];
+            $decoded = json_decode($contextJson, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $context = $decoded;
             }
         }
 

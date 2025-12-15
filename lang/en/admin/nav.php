@@ -137,7 +137,7 @@ return [
             'logs' => [
                 'text' => 'Log Management',
                 'audit' => 'Audit Logs',
-                'system' => 'System Logs',
+                'files' => 'File Logs',
             ],
             'info' => 'System Information',
         ],
