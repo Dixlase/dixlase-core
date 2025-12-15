@@ -50,7 +50,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- Clear Button -->
         <form method="POST" action="{{ route('admin.settings.systems.logs.clear', ['type' => $logType]) }}" 
-            onsubmit="return confirm('{{ __('admin/settings/systems/logs.system.clear_confirm') }}')">
+            onsubmit="return confirm('{{ __('admin/settings/systems/logs/files.clear_confirm') }}')">
             @csrf
             <button type="submit" class="action-button action-button--danger flex-shrink-0">
                 <i class="fas fa-trash mr-2"></i>
@@ -76,7 +76,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- Pagination Controls -->
     <x-pagination
         :pagination="$pagination ?? null"
-        route="admin.settings.systems.logs.system"
+        route="admin.settings.systems.logs.files"
         :routeParams="array_filter([
             'type' => $logType,
             'per_page' => request('per_page')
@@ -89,116 +89,127 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <section>
         @forelse ($logs as $log)
             @if ($log['parsed'])
-                <div class="border-b border-gray-200 dark:border-gray-700 p-2">
+                @php
+                    // ログレベルに応じた色を設定
+                    $level = strtolower($log['level'] ?? '');
+                    $levelColors = match(true) {
+                        str_contains($level, 'error'), str_contains($level, 'critical'), str_contains($level, 'alert'), str_contains($level, 'emergency') => [
+                            'bg' => 'bg-red-50 dark:bg-red-900/20',
+                            'border' => 'border-l-red-400',
+                            'dot' => 'bg-red-500',
+                            'label' => 'text-red-700 dark:text-red-300',
+                            'text' => 'text-red-600 dark:text-red-200',
+                        ],
+                        str_contains($level, 'warning'), str_contains($level, 'notice') => [
+                            'bg' => 'bg-yellow-50 dark:bg-yellow-900/20',
+                            'border' => 'border-l-yellow-400',
+                            'dot' => 'bg-yellow-500',
+                            'label' => 'text-yellow-700 dark:text-yellow-300',
+                            'text' => 'text-yellow-600 dark:text-yellow-200',
+                        ],
+                        str_contains($level, 'debug') => [
+                            'bg' => 'bg-gray-50 dark:bg-gray-800/50',
+                            'border' => 'border-l-gray-400',
+                            'dot' => 'bg-gray-500',
+                            'label' => 'text-gray-700 dark:text-gray-300',
+                            'text' => 'text-gray-600 dark:text-gray-400',
+                        ],
+                        default => [
+                            'bg' => 'bg-blue-50 dark:bg-blue-900/20',
+                            'border' => 'border-l-blue-400',
+                            'dot' => 'bg-blue-500',
+                            'label' => 'text-blue-700 dark:text-blue-300',
+                            'text' => 'text-blue-600 dark:text-blue-200',
+                        ],
+                    };
+                @endphp
+                <div class="border-b px-2 py-4 border-b-gray-600 border-l-4 {{ $levelColors['border'] }}">
                     <div class="text-sm space-y-2">
-                        <!-- 操作 (Action) - Blue -->
-                        <div class="bg-blue-50 dark:bg-blue-900/20 p-3 border-l-4 border-blue-400">
-                            <div class="flex items-start">
-                                <span class="inline-block w-2 h-2 bg-blue-500 mt-2 mr-2 flex-shrink-0"></span>
-                                <div class="flex-1 break-all">
-                                    <span class="font-semibold text-blue-700 dark:text-blue-300">{{ __('common.operation') }}:</span>
-                                    <span class="text-blue-600 dark:text-blue-200 ml-2">{{ $log['message'] }}</span>
-                                </div>
+                        <!-- 操作 (Action) - レベルに応じた色 -->
+                        <div class="flex items-start">
+                            <div class="flex-1 break-all">
+                                <span class="font-semibold {{ $levelColors['label'] }}">{{ __('common.operation') }}:</span>
+                                <span class="{{ $levelColors['text'] }} ml-2">{{ $log['message'] }}</span>
                             </div>
                         </div>
                         
                         @if (!empty($log['context']))
                             <!-- ID - Green -->
                             @if (isset($log['context']['id']))
-                                <div class="bg-green-50 dark:bg-green-900/20 p-3 border-l-4 border-green-400">
-                                    <div class="flex items-start">
-                                        <span class="inline-block w-2 h-2 bg-green-500 mt-2 mr-2 flex-shrink-0"></span>
-                                        <div class="flex-1 break-all">
-                                            <span class="font-semibold text-green-700 dark:text-green-300">{{ __('common.id') }}:</span>
-                                            <span class="text-green-600 dark:text-green-200 ml-2">{{ $log['context']['id'] }}</span>
-                                        </div>
-                                    </div>
+                                <div class="flex-1 break-all">
+                                    <span class="font-semibold">{{ __('common.id') }}:</span>
+                                    <span>{{ $log['context']['id'] }}</span>
                                 </div>
                             @endif
                             
-                            <!-- Name - Emerald -->
+                            <!-- Name -->
                             @if (isset($log['context']['name']))
-                                <div class="bg-emerald-50 dark:bg-emerald-900/20 p-3 border-l-4 border-emerald-400">
-                                    <div class="flex items-start">
-                                        <span class="inline-block w-2 h-2 bg-emerald-500 mt-2 mr-2 flex-shrink-0"></span>
-                                        <div class="flex-1 break-all">
-                                            <span class="font-semibold text-emerald-700 dark:text-emerald-300">{{ __('common.name') }}:</span>
-                                            <span class="text-emerald-600 dark:text-emerald-200 ml-2">{{ $log['context']['name'] }}</span>
-                                        </div>
-                                    </div>
+                                <div class="flex-1 break-all">
+                                    <span class="font-semibold">{{ __('common.name') }}:</span>
+                                    <span class="ml-2">{{ $log['context']['name'] }}</span>
                                 </div>
                             @endif
                             
                             <!-- Technical Info - Purple -->
                             @if (isset($log['context']['method']) || isset($log['context']['uri']) || isset($log['context']['route']) || isset($log['context']['controller']))
-                                <div class="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border-l-4 border-purple-400">
-                                    <div class="flex items-start">
-                                        <span class="inline-block w-2 h-2 bg-purple-500 rounded-full mt-2 mr-2 flex-shrink-0"></span>
-                                        <div class="flex-1 break-all space-y-1">
-                                            @if (isset($log['context']['method']))
-                                                <div>
-                                                    <span class="font-semibold text-purple-700 dark:text-purple-300">{{ __('common.method') }}:</span>
-                                                    <span class="text-purple-600 dark:text-purple-200 ml-2">{{ $log['context']['method'] }}</span>
-                                                </div>
-                                            @endif
-                                            @if (isset($log['context']['uri']))
-                                                <div>
-                                                    <span class="font-semibold text-purple-700 dark:text-purple-300">{{ __('common.uri') }}:</span>
-                                                    <span class="text-purple-600 dark:text-purple-200 ml-2">{{ $log['context']['uri'] }}</span>
-                                                </div>
-                                            @endif
-                                            @if (isset($log['context']['route']))
-                                                <div>
-                                                    <span class="font-semibold text-purple-700 dark:text-purple-300">{{ __('common.route') }}:</span>
-                                                    <span class="text-purple-600 dark:text-purple-200 ml-2">{{ $log['context']['route'] }}</span>
-                                                </div>
-                                            @endif
-                                            @if (isset($log['context']['controller']))
-                                                <div>
-                                                    <span class="font-semibold text-purple-700 dark:text-purple-300">{{ __('common.controller') }}:</span>
-                                                    <span class="text-purple-600 dark:text-purple-200 ml-2">{{ $log['context']['controller'] }}</span>
-                                                </div>
-                                            @endif
-                                        </div>
+                                <div class="flex items-start">
+                                    <div class="flex-1 break-all space-y-1">
+                                        @if (isset($log['context']['method']))
+                                            <div>
+                                                <span class="font-semibold">{{ __('common.method') }}:</span>
+                                                <span class="ml-2">{{ $log['context']['method'] }}</span>
+                                            </div>
+                                        @endif
+                                        @if (isset($log['context']['uri']))
+                                            <div>
+                                                <span class="font-semibold">{{ __('common.uri') }}:</span>
+                                                <span class="ml-2">{{ $log['context']['uri'] }}</span>
+                                            </div>
+                                        @endif
+                                        @if (isset($log['context']['route']))
+                                            <div>
+                                                <span class="font-semibold">{{ __('common.route') }}:</span>
+                                                <span class="ml-2">{{ $log['context']['route'] }}</span>
+                                            </div>
+                                        @endif
+                                        @if (isset($log['context']['controller']))
+                                            <div>
+                                                <span class="font-semibold">{{ __('common.controller') }}:</span>
+                                                <span class="ml-2">{{ $log['context']['controller'] }}</span>
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                             @endif
                             
-                            <!-- IP Address - Orange -->
+                            <!-- IP Address -->
                             @if (isset($log['context']['ip']))
-                                <div class="bg-orange-50 dark:bg-orange-900/20 p-3 border-l-4 border-orange-400">
-                                    <div class="flex items-start">
-                                        <span class="inline-block w-2 h-2 bg-orange-500 mt-2 mr-2 flex-shrink-0"></span>
-                                        <div class="flex-1 break-all">
-                                            <span class="font-semibold text-orange-700 dark:text-orange-300">{{ __('common.ip') }}:</span>
-                                            <span class="text-orange-600 dark:text-orange-200 ml-2">{{ $log['context']['ip'] }}</span>
-                                        </div>
+                                <div class="flex items-start">
+                                    <div class="flex-1 break-all">
+                                        <span class="font-semibold">{{ __('common.ip') }}:</span>
+                                        <span class="ml-2">{{ $log['context']['ip'] }}</span>
                                     </div>
                                 </div>
                             @endif
                             
                             <!-- User Agent - Indigo -->
                             @if (isset($log['context']['user_agent']))
-                                <div class="bg-indigo-50 dark:bg-indigo-900/20 p-3 border-l-4 border-indigo-400">
-                                    <div class="flex items-start">
-                                        <span class="inline-block w-2 h-2 bg-indigo-500 mt-2 mr-2 flex-shrink-0"></span>
-                                        <div class="flex-1 break-all">
-                                            <span class="font-semibold text-indigo-700 dark:text-indigo-300">{{ __('common.user_agent') }}:</span>
-                                            <span class="text-indigo-600 dark:text-indigo-200 ml-2">{{ $log['context']['user_agent'] }}</span>
-                                        </div>
+                                
+                                <div class="flex items-start">
+                                    <div class="flex-1 break-all">
+                                        <span class="font-semibold">{{ __('common.user_agent') }}:</span>
+                                        <span class="ml-2">{{ $log['context']['user_agent'] }}</span>
                                     </div>
                                 </div>
+
                             @endif
                         @endif
                         
                         <!-- Timestamp - Gray -->
-                        <div class="bg-gray-50 dark:bg-gray-800/50 p-3 border-l-4 border-gray-400">
-                            <div class="flex items-start">
-                                <span class="inline-block w-2 h-2 bg-gray-500 mt-2 mr-2 flex-shrink-0"></span>
-                                <div class="flex-1 break-all">
-                                    <span class="font-semibold text-gray-700 dark:text-gray-300">{{ __('common.time') }}:</span>
-                                    <span class="text-gray-600 dark:text-gray-400 ml-2">{{ $log['timestamp'] }}</span>
-                                </div>
+                        <div class="flex items-start">
+                            <div class="flex-1 break-all">
+                                <span class="font-semibold">{{ __('common.time') }}:</span>
+                                <span class="ml-2">{{ $log['timestamp'] }}</span>
                             </div>
                         </div>
                     </div>
@@ -233,7 +244,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- Pagination Controls -->
     <x-pagination
         :pagination="$pagination ?? null"
-        route="admin.settings.systems.logs.system"
+        route="admin.settings.systems.logs.files"
         :routeParams="array_filter([
             'type' => $logType,
             'per_page' => request('per_page')

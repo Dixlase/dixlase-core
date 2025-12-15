@@ -405,21 +405,21 @@ Route::prefix($adminUrl)->name('admin.')
                 // 監査ログ（/logs/ がデフォルト）
                 Route::get('/logs', [Systems\AdminSystemLogsController::class, 'auditIndex'])->name('logs');
                 
-                // システムログ
-                Route::get('/logs/system/{type?}', [Systems\AdminSystemLogsController::class, 'index'])->name('logs.system');
-                Route::get('/logs/system/{type}/download', [Systems\AdminSystemLogsController::class, 'download'])->name('logs.download');
-                Route::post('/logs/system/{type}/clear', [Systems\AdminSystemLogsController::class, 'clear'])
+                // ファイルログ
+                Route::get('/logs/files/{type?}', [Systems\AdminSystemLogsController::class, 'index'])->name('logs.files');
+                Route::get('/logs/files/{type}/download', [Systems\AdminSystemLogsController::class, 'download'])->name('logs.download');
+                Route::post('/logs/files/{type}/clear', [Systems\AdminSystemLogsController::class, 'clear'])
                     ->middleware('check.menu.edit:settings.systems')
                     ->name('logs.clear');
-                Route::post('/logs/system/test', [Systems\AdminSystemLogsController::class, 'test'])->name('logs.test');
-                Route::post('/logs/system/test-error', [Systems\AdminSystemLogsController::class, 'testError'])->name('logs.test-error');
-                Route::post('/logs/system/test-front', [Systems\AdminSystemLogsController::class, 'testFront'])->name('logs.test-front');
-                Route::post('/logs/system/test-front-error', [Systems\AdminSystemLogsController::class, 'testFrontError'])->name('logs.test-front-error');
-                Route::get('/audit-logs/{id}', [Systems\AdminSystemLogsController::class, 'auditShow'])->name('audit-logs.show');
-                Route::get('/audit-logs-export', [Systems\AdminSystemLogsController::class, 'auditExport'])->name('audit-logs.export');
-                Route::post('/audit-logs/cleanup', [Systems\AdminSystemLogsController::class, 'auditCleanup'])
+                Route::post('/logs/files/test', [Systems\AdminSystemLogsController::class, 'test'])->name('logs.test');
+                Route::post('/logs/files/test-error', [Systems\AdminSystemLogsController::class, 'testError'])->name('logs.test-error');
+                Route::post('/logs/files/test-front', [Systems\AdminSystemLogsController::class, 'testFront'])->name('logs.test-front');
+                Route::post('/logs/files/test-front-error', [Systems\AdminSystemLogsController::class, 'testFrontError'])->name('logs.test-front-error');
+                Route::get('/logs/audit/{id}', [Systems\AdminSystemLogsController::class, 'auditShow'])->name('logs.audit.show');
+                Route::get('/logs/audit-export', [Systems\AdminSystemLogsController::class, 'auditExport'])->name('logs.audit.export');
+                Route::post('/logs/audit/cleanup', [Systems\AdminSystemLogsController::class, 'auditCleanup'])
                     ->middleware('check.menu.edit:settings.systems')
-                    ->name('audit-logs.cleanup');
+                    ->name('logs.audit.cleanup');
                 
                 // システム情報
                 Route::get('/info', [Systems\AdminSystemInfoController::class, 'index'])->name('info');

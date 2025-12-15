@@ -104,16 +104,33 @@ trait AdminInterfaceTrait
             return $fullPath;
         }
         
-        // パターン2: 最後の要素がファイル内のキー（例: admin/media.index.heading）
+        // パターン2: ディレクトリ構造の場合、index.phpを参照（例: admin/settings/systems/logs/index.heading）
+        // admin.settings.systems.logs → admin/settings/systems/logs/index.heading
+        $indexPath = 'admin/' . implode('/', $keys) . '/index.heading';
+        if (Lang::has($indexPath)) {
+            return $indexPath;
+        }
+        
+        // パターン3: 親ディレクトリのindex.phpを参照（例: admin.settings.systems.logs.files → admin/settings/systems/logs/index.heading）
         if (count($keys) >= 2) {
-            $lastKey = array_pop($keys);
-            $filePath = 'admin/' . implode('/', $keys) . '.' . $lastKey . '.heading';
+            $parentKeys = array_slice($keys, 0, -1);
+            $parentIndexPath = 'admin/' . implode('/', $parentKeys) . '/index.heading';
+            if (Lang::has($parentIndexPath)) {
+                return $parentIndexPath;
+            }
+        }
+        
+        // パターン4: 最後の要素がファイル内のキー（例: admin/media.index.heading）
+        if (count($keys) >= 2) {
+            $keysCopy = $keys;
+            $lastKey = array_pop($keysCopy);
+            $filePath = 'admin/' . implode('/', $keysCopy) . '.' . $lastKey . '.heading';
             if (Lang::has($filePath)) {
                 return $filePath;
             }
         }
         
-        // パターン3: 単一ファイルで直接heading（例: admin/dashboard.heading）
+        // パターン5: 単一ファイルで直接heading（例: admin/dashboard.heading）
         if (count($keys) === 1) {
             $singlePath = 'admin/' . $keys[0] . '.heading';
             if (Lang::has($singlePath)) {

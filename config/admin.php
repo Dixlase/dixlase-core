@@ -277,9 +277,9 @@ return [
                                     'route' => 'admin.settings.systems.logs',
                                     'icon' => 'fas fa-fw fa-clipboard-list',
                                 ],
-                                'system' => [
-                                    'text' => 'admin/nav.settings.systems.logs.system',
-                                    'route' => 'admin.settings.systems.logs.system',
+                                'files' => [
+                                    'text' => 'admin/nav.settings.systems.logs.files',
+                                    'route' => 'admin.settings.systems.logs.files',
                                     'icon' => 'fas fa-fw fa-scroll',
                                 ],
                             ]
