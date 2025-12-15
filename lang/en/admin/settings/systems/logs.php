@@ -15,8 +15,8 @@
 return [
     'heading' => 'Log Information',
     'log_type_label' => 'Log Type:',
-    'audit_db' => 'DB Search',
-    'audit_file' => 'Raw Log',
+    'audit_db' => 'Audit Log',
+    'audit_file' => 'System Log',
     
     // System Logs
     'system' => [

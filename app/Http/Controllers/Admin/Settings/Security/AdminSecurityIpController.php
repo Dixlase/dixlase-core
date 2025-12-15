@@ -84,6 +84,6 @@ class AdminSecurityIpController extends AdminLoggedInController
         $this->securitySettingRepository->set('blocked_front_ips', $validated['blocked_front_ips'] ?? '');
 
         return redirect()->route('admin.settings.security.ip')
-            ->with('success', __('admin.settings.security.ip_settings_updated'));
+            ->with('success', __('admin/settings/security/ip_settings_updated'));
     }
 }
