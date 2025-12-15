@@ -15,8 +15,8 @@
 return [
     'heading' => 'ログ情報',
     'log_type_label' => 'ログ種別',
-    'audit_db' => 'DB検索',
-    'audit_file' => '生ログ',
+    'audit_db' => '監査ログ',
+    'audit_file' => 'システムログ',
     
     // システムログ
     'system' => [

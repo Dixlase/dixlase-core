@@ -86,7 +86,7 @@ class AdminBaseAdminController extends AdminLoggedInController
             }
 
             return redirect($newAdminLoginUrl)
-                ->with('success', __('admin.settings.base.admin.admin_url_changed'));
+                ->with('success', __('admin/settings/base/admin.admin_url_changed'));
         }
 
         // 通常のリダイレクト
@@ -96,6 +96,6 @@ class AdminBaseAdminController extends AdminLoggedInController
             $baseUrl = str_replace('http://', 'https://', $baseUrl);
         }
 
-        return redirect($baseUrl)->with('success', __('admin.settings.base.admin.settings_updated'));
+        return redirect($baseUrl)->with('success', __('admin/settings/base/admin.settings_updated'));
     }
 }

@@ -66,7 +66,7 @@ class CaptchaTestService
                 default:
                     return [
                         'success' => false,
-                        'message' => __('admin/settings/security/captcha_test_unsupported_driver') . ': ' . $driver
+                        'message' => __('admin/settings/security/captcha.test_unsupported_driver') . ': ' . $driver
                     ];
             }
         } catch (\Exception $e) {
@@ -78,7 +78,7 @@ class CaptchaTestService
             
             return [
                 'success' => false,
-                'message' => __('admin/settings/security/captcha_test_system_error') . ': ' . $e->getMessage()
+                'message' => __('admin/settings/security/captcha.test_system_error') . ': ' . $e->getMessage()
             ];
         }
     }
@@ -105,7 +105,7 @@ class CaptchaTestService
             ]);
             return [
                 'success' => false,
-                'message' => __('admin/settings/security/captcha_test_keys_missing')
+                'message' => __('admin/settings/security/captcha.test_keys_missing')
             ];
         }
         
@@ -139,7 +139,7 @@ class CaptchaTestService
         if (empty($siteKey) || empty($secretKey) || empty($projectId)) {
             return [
                 'success' => false,
-                'message' => __('admin/settings/security/captcha_test_enterprise_keys_missing')
+                'message' => __('admin/settings/security/captcha.test_enterprise_keys_missing')
             ];
         }
         
@@ -163,7 +163,7 @@ class CaptchaTestService
             
             return [
                 'success' => false,
-                'message' => __('admin/settings/security/captcha_api_connection_failed')
+                'message' => __('admin/settings/security/captcha.api_connection_failed')
             ];
         }
     }
@@ -179,7 +179,7 @@ class CaptchaTestService
         if (empty($siteKey) || empty($secretKey)) {
             return [
                 'success' => false,
-                'message' => __('admin/settings/security/captcha_test_keys_missing')
+                'message' => __('admin/settings/security/captcha.test_keys_missing')
             ];
         }
         
@@ -193,7 +193,7 @@ class CaptchaTestService
         if (!$response->successful()) {
             return [
                 'success' => false,
-                'message' => __('admin/settings/security/captcha_test_api_request_failed') . ': ' . $response->status()
+                'message' => __('admin/settings/security/captcha.test_api_request_failed') . ': ' . $response->status()
             ];
         }
         
@@ -203,13 +203,13 @@ class CaptchaTestService
         if (isset($data['error-codes']) && in_array('invalid-input-secret', $data['error-codes'])) {
             return [
                 'success' => false,
-                'message' => __('admin/settings/security/captcha_test_invalid_secret_key')
+                'message' => __('admin/settings/security/captcha.test_invalid_secret_key')
             ];
         }
         
         return [
             'success' => true,
-            'message' => __('admin/settings/security/captcha_test_turnstile_success')
+            'message' => __('admin/settings/security/captcha.test_turnstile_success')
         ];
     }
 
@@ -226,7 +226,7 @@ class CaptchaTestService
         if (!preg_match('/^6[A-Za-z0-9_-]{39}$/', $siteKey)) {
             return [
                 'valid' => false,
-                'message' => __('admin/settings/security/captcha_test_invalid_site_key_format')
+                'message' => __('admin/settings/security/captcha.test_invalid_site_key_format')
             ];
         }
         
@@ -261,7 +261,7 @@ class CaptchaTestService
         if ($version !== 'v3' && in_array('invalid-keys', $errorCodes)) {
             return [
                 'valid' => false,
-                'message' => __('admin/settings/security/captcha_test_key_version_mismatch_v2_to_v3')
+                'message' => __('admin/settings/security/captcha.test_key_version_mismatch_v2_to_v3')
             ];
         }
         
@@ -269,7 +269,7 @@ class CaptchaTestService
         if ($version === 'v3' && in_array('invalid-keys', $errorCodes)) {
             return [
                 'valid' => false,
-                'message' => __('admin/settings/security/captcha_test_key_version_mismatch_v3_to_v2')
+                'message' => __('admin/settings/security/captcha.test_key_version_mismatch_v3_to_v2')
             ];
         }
         
@@ -277,14 +277,14 @@ class CaptchaTestService
         if (in_array('invalid-input-secret', $errorCodes)) {
             return [
                 'valid' => false,
-                'message' => __('admin/settings/security/captcha_test_invalid_secret_verify')
+                'message' => __('admin/settings/security/captcha.test_invalid_secret_verify')
             ];
         }
         
         if (in_array('bad-request', $errorCodes)) {
             return [
                 'valid' => false,
-                'message' => __('admin/settings/security/captcha_test_bad_request')
+                'message' => __('admin/settings/security/captcha.test_bad_request')
             ];
         }
         

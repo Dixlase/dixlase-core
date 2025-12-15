@@ -217,7 +217,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'prev_page' => $auditLogs->currentPage() > 1 ? $auditLogs->currentPage() - 1 : null,
             'next_page' => $auditLogs->hasMorePages() ? $auditLogs->currentPage() + 1 : null,
         ]"
-        route="admin.systems.logs"
+        route="admin.settings.systems.logs"
         :routeParams="request()->except(['page'])"
         :mobilePageRange="0"
         :desktopPageRange="2"
@@ -321,7 +321,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'prev_page' => $auditLogs->currentPage() > 1 ? $auditLogs->currentPage() - 1 : null,
             'next_page' => $auditLogs->hasMorePages() ? $auditLogs->currentPage() + 1 : null,
         ]"
-        route="admin.systems.logs"
+        route="admin.settings.systems.logs"
         :routeParams="request()->except(['page'])"
         :mobilePageRange="0"
         :desktopPageRange="2"
