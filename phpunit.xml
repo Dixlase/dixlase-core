@@ -17,6 +17,14 @@
             <!-- カスタムのFeatureテスト -->
             <directory>custom/tests/Feature</directory>
         </testsuite>
+        <testsuite name="DixlaseDeveloper">
+            <!-- DixlaseDeveloper プラグインのテスト（プラグイン/テーマ/カスタム開発用） -->
+            <directory>plugins/DixlaseDeveloper/tests</directory>
+        </testsuite>
+        <testsuite name="DixlaseCoreDeveloper">
+            <!-- DixlaseCoreDeveloper プラグインのテスト（コア開発用） -->
+            <directory>plugins/DixlaseCoreDeveloper/tests</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>
