@@ -2,12 +2,17 @@
 
 namespace App\Services;
 
+use App\Contracts\FileIntegrity\FileIntegrityServiceInterface;
+use App\DTO\FileIntegrity\BaselineDTO;
+use App\DTO\FileIntegrity\FileChangeDTO;
+use App\DTO\FileIntegrity\ScanResultDTO;
+use App\DTO\FileIntegrity\ScanTargetDTO;
 use App\Models\FileIntegrityAudit;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
-class FileIntegrityService
+class FileIntegrityService implements FileIntegrityServiceInterface
 {
     /**
      * ハッシュアルゴリズム
@@ -552,5 +557,513 @@ class FileIntegrityService
         }
 
         return $result;
+    }
+
+    // ========================================
+    // Contract対応メソッド（DTO版）
+    // ========================================
+
+    /**
+     * ベースラインを生成（Contract対応）
+     * 
+     * @param ScanTargetDTO $target スキャン対象
+     * @return BaselineDTO
+     */
+    public function generateBaseline(ScanTargetDTO $target): BaselineDTO
+    {
+        $basePath = base_path();
+        $files = [];
+        $paths = !empty($target->paths) ? $target->paths : $this->corePaths;
+        $ignorePatterns = !empty($target->ignorePatterns) ? $target->ignorePatterns : $this->ignorePatterns;
+
+        foreach ($paths as $path) {
+            $fullPath = $this->normalizePath($basePath . DIRECTORY_SEPARATOR . $path);
+
+            if (is_dir($fullPath)) {
+                $this->scanDirectoryWithPatterns($fullPath, $basePath, $files, $ignorePatterns);
+            } elseif (is_file($fullPath)) {
+                $relativePath = $this->getRelativePath($fullPath, $basePath);
+                $files[$relativePath] = hash_file($target->hashAlgo, $fullPath);
+            }
+        }
+
+        return new BaselineDTO(
+            generatedAt: now()->toIso8601String(),
+            appVersion: config('app.version', '1.0.0'),
+            hashAlgo: $target->hashAlgo,
+            scope: $target->scope,
+            identifier: $target->identifier,
+            paths: $paths,
+            ignorePatterns: $ignorePatterns,
+            files: $files,
+        );
+    }
+
+    /**
+     * ベースラインを保存（Contract対応・オーバーロード）
+     * 
+     * @param BaselineDTO|array $baseline ベースライン
+     * @param string $filename ファイル名
+     * @return bool
+     */
+    public function saveBaselineDTO(BaselineDTO $baseline, string $filename = 'core_hashes.json'): bool
+    {
+        try {
+            if (!File::isDirectory($this->baselinePath)) {
+                File::makeDirectory($this->baselinePath, 0755, true);
+            }
+
+            $filePath = $this->baselinePath . DIRECTORY_SEPARATOR . $filename;
+            File::put($filePath, json_encode($baseline->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+            Log::channel('admin_activity')->info('ファイル整合性ベースラインを生成しました', [
+                'filename' => $filename,
+                'files_count' => $baseline->getFileCount(),
+                'version' => $baseline->appVersion,
+                'scope' => $baseline->scope,
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::channel('admin_error')->error('ベースライン保存エラー', [
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * ベースラインを読み込み（Contract対応）
+     * 
+     * @param string $filename ファイル名
+     * @return BaselineDTO|null
+     */
+    public function loadBaselineDTO(string $filename = 'core_hashes.json'): ?BaselineDTO
+    {
+        $filePath = $this->baselinePath . DIRECTORY_SEPARATOR . $filename;
+
+        if (!File::exists($filePath)) {
+            return null;
+        }
+
+        try {
+            $content = File::get($filePath);
+            $data = json_decode($content, true);
+            return BaselineDTO::fromArray($data);
+        } catch (\Exception $e) {
+            Log::channel('admin_error')->error('ベースライン読み込みエラー', [
+                'error' => $e->getMessage(),
+            ]);
+            return null;
+        }
+    }
+
+    /**
+     * ファイル整合性スキャンを実行（Contract対応）
+     * 
+     * @param ScanTargetDTO $target スキャン対象
+     * @param string $trigger トリガー
+     * @param string $initiatedByType 実行者タイプ
+     * @param int|null $initiatedById 実行者ID
+     * @return ScanResultDTO
+     */
+    public function scan(
+        ScanTargetDTO $target,
+        string $trigger = 'manual',
+        string $initiatedByType = 'system',
+        ?int $initiatedById = null
+    ): ScanResultDTO {
+        $startedAt = now();
+        $scanId = Str::uuid()->toString();
+        $filename = $target->getBaselineFilename();
+
+        // 監査レコードを作成
+        $audit = new FileIntegrityAudit([
+            'scope' => $target->scope,
+            'scope_identifier' => $target->identifier,
+            'trigger' => $trigger,
+            'initiated_by_type' => $initiatedByType,
+            'initiated_by_id' => $initiatedById,
+            'hash_algo' => $target->hashAlgo,
+            'started_at' => $startedAt,
+            'status' => FileIntegrityAudit::STATUS_OK,
+        ]);
+        $audit->save();
+
+        try {
+            // ベースラインを読み込み
+            $baseline = $this->loadBaselineDTO($filename);
+
+            if (!$baseline) {
+                // ベースラインがない場合は生成して保存
+                $baseline = $this->generateBaseline($target);
+                $this->saveBaselineDTO($baseline, $filename);
+
+                $audit->update([
+                    'status' => FileIntegrityAudit::STATUS_OK,
+                    'total_files_scanned' => $baseline->getFileCount(),
+                    'finished_at' => now(),
+                    'duration_ms' => now()->diffInMilliseconds($startedAt),
+                    'summary' => __('command.integrity.baseline_generated'),
+                    'baseline_version' => $baseline->appVersion,
+                ]);
+
+                return new ScanResultDTO(
+                    id: $scanId,
+                    scope: $target->scope,
+                    identifier: $target->identifier,
+                    status: ScanResultDTO::STATUS_OK,
+                    trigger: $trigger,
+                    initiatedByType: $initiatedByType,
+                    initiatedById: $initiatedById,
+                    hashAlgo: $target->hashAlgo,
+                    baselineVersion: $baseline->appVersion,
+                    totalFilesScanned: $baseline->getFileCount(),
+                    changedFiles: [],
+                    addedFiles: [],
+                    removedFiles: [],
+                    suspiciousFiles: [],
+                    startedAt: $startedAt->toIso8601String(),
+                    finishedAt: now()->toIso8601String(),
+                    durationMs: now()->diffInMilliseconds($startedAt),
+                    summary: __('command.integrity.baseline_generated'),
+                );
+            }
+
+            // 現在の状態を取得
+            $currentBaseline = $this->generateBaseline($target);
+
+            // 比較してDTOに変換
+            $changedFiles = [];
+            $addedFiles = [];
+            $removedFiles = [];
+
+            // 変更・削除されたファイルをチェック
+            foreach ($baseline->files as $path => $hash) {
+                if (!isset($currentBaseline->files[$path])) {
+                    $removedFiles[] = FileChangeDTO::removed($path, $hash);
+                } elseif ($currentBaseline->files[$path] !== $hash) {
+                    $changedFiles[] = FileChangeDTO::changed($path, $hash, $currentBaseline->files[$path]);
+                }
+            }
+
+            // 追加されたファイルをチェック
+            foreach ($currentBaseline->files as $path => $hash) {
+                if (!$baseline->hasFile($path)) {
+                    $addedFiles[] = FileChangeDTO::added($path, $hash);
+                }
+            }
+
+            // 疑わしいファイルをチェック
+            $suspiciousFiles = $this->checkSuspiciousFilesDTO();
+
+            // ステータスを判定
+            $status = $this->determineStatusDTO($changedFiles, $addedFiles, $removedFiles, $suspiciousFiles);
+
+            // サマリーを生成
+            $summary = $this->generateSummaryDTO($changedFiles, $addedFiles, $removedFiles, $suspiciousFiles, $status);
+
+            // 結果を更新
+            $audit->update([
+                'status' => $status,
+                'total_files_scanned' => $currentBaseline->getFileCount(),
+                'changed_files_count' => count($changedFiles),
+                'added_files_count' => count($addedFiles),
+                'removed_files_count' => count($removedFiles),
+                'suspicious_files_count' => count($suspiciousFiles),
+                'finished_at' => now(),
+                'duration_ms' => now()->diffInMilliseconds($startedAt),
+                'summary' => $summary,
+                'baseline_version' => $baseline->appVersion,
+                'result_payload' => [
+                    'changed' => array_map(fn($f) => $f->toArray(), $changedFiles),
+                    'added' => array_map(fn($f) => $f->toArray(), $addedFiles),
+                    'removed' => array_map(fn($f) => $f->toArray(), $removedFiles),
+                    'suspicious' => array_map(fn($f) => $f->toArray(), $suspiciousFiles),
+                ],
+            ]);
+
+            // 重大な問題があればログに記録
+            if ($status === ScanResultDTO::STATUS_CRITICAL) {
+                Log::channel('admin_error')->critical('ファイル改ざんを検知しました', [
+                    'audit_id' => $audit->id,
+                    'scope' => $target->scope,
+                    'identifier' => $target->identifier,
+                    'changed' => count($changedFiles),
+                    'added' => count($addedFiles),
+                    'removed' => count($removedFiles),
+                    'suspicious' => count($suspiciousFiles),
+                ]);
+            }
+
+            return new ScanResultDTO(
+                id: $scanId,
+                scope: $target->scope,
+                identifier: $target->identifier,
+                status: $status,
+                trigger: $trigger,
+                initiatedByType: $initiatedByType,
+                initiatedById: $initiatedById,
+                hashAlgo: $target->hashAlgo,
+                baselineVersion: $baseline->appVersion,
+                totalFilesScanned: $currentBaseline->getFileCount(),
+                changedFiles: $changedFiles,
+                addedFiles: $addedFiles,
+                removedFiles: $removedFiles,
+                suspiciousFiles: $suspiciousFiles,
+                startedAt: $startedAt->toIso8601String(),
+                finishedAt: now()->toIso8601String(),
+                durationMs: now()->diffInMilliseconds($startedAt),
+                summary: $summary,
+            );
+
+        } catch (\Exception $e) {
+            Log::channel('admin_error')->error('ファイル整合性スキャンエラー', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            $audit->update([
+                'status' => FileIntegrityAudit::STATUS_CRITICAL,
+                'finished_at' => now(),
+                'duration_ms' => now()->diffInMilliseconds($startedAt),
+                'summary' => __('command.integrity.scan_error', ['error' => $e->getMessage()]),
+            ]);
+
+            return new ScanResultDTO(
+                id: $scanId,
+                scope: $target->scope,
+                identifier: $target->identifier,
+                status: ScanResultDTO::STATUS_CRITICAL,
+                trigger: $trigger,
+                initiatedByType: $initiatedByType,
+                initiatedById: $initiatedById,
+                hashAlgo: $target->hashAlgo,
+                baselineVersion: null,
+                totalFilesScanned: 0,
+                changedFiles: [],
+                addedFiles: [],
+                removedFiles: [],
+                suspiciousFiles: [],
+                startedAt: $startedAt->toIso8601String(),
+                finishedAt: now()->toIso8601String(),
+                durationMs: now()->diffInMilliseconds($startedAt),
+                summary: __('command.integrity.scan_error', ['error' => $e->getMessage()]),
+            );
+        }
+    }
+
+    /**
+     * ベースラインを再生成（Contract対応）
+     * 
+     * @param ScanTargetDTO $target スキャン対象
+     * @param string $trigger トリガー
+     * @param string $initiatedByType 実行者タイプ
+     * @param int|null $initiatedById 実行者ID
+     * @return bool
+     */
+    public function regenerateBaselineDTO(
+        ScanTargetDTO $target,
+        string $trigger = 'manual',
+        string $initiatedByType = 'user',
+        ?int $initiatedById = null
+    ): bool {
+        $baseline = $this->generateBaseline($target);
+        $filename = $target->getBaselineFilename();
+        $result = $this->saveBaselineDTO($baseline, $filename);
+
+        if ($result) {
+            // 監査ログを記録
+            FileIntegrityAudit::create([
+                'scope' => $target->scope,
+                'scope_identifier' => $target->identifier,
+                'trigger' => $trigger,
+                'initiated_by_type' => $initiatedByType,
+                'initiated_by_id' => $initiatedById,
+                'status' => FileIntegrityAudit::STATUS_OK,
+                'hash_algo' => $target->hashAlgo,
+                'baseline_version' => $baseline->appVersion,
+                'total_files_scanned' => $baseline->getFileCount(),
+                'started_at' => now(),
+                'finished_at' => now(),
+                'duration_ms' => 0,
+                'summary' => __('command.integrity.baseline_regenerated'),
+            ]);
+
+            Log::channel('admin_activity')->info('ファイル整合性ベースラインを再生成しました', [
+                'scope' => $target->scope,
+                'identifier' => $target->identifier,
+                'initiated_by_type' => $initiatedByType,
+                'initiated_by_id' => $initiatedById,
+                'files_count' => $baseline->getFileCount(),
+            ]);
+        }
+
+        return $result;
+    }
+
+    /**
+     * ディレクトリを再帰的にスキャン（パターン指定版）
+     */
+    protected function scanDirectoryWithPatterns(string $directory, string $basePath, array &$files, array $ignorePatterns): void
+    {
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($directory, \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::SELF_FIRST
+        );
+
+        foreach ($iterator as $file) {
+            if ($file->isFile()) {
+                $fullPath = $file->getRealPath();
+                $relativePath = $this->getRelativePath($fullPath, $basePath);
+
+                // 除外パターンをチェック
+                if ($this->shouldIgnoreWithPatterns($relativePath, $ignorePatterns)) {
+                    continue;
+                }
+
+                $files[$relativePath] = hash_file($this->hashAlgo, $fullPath);
+            }
+        }
+    }
+
+    /**
+     * 除外すべきパスかどうか（パターン指定版）
+     */
+    protected function shouldIgnoreWithPatterns(string $path, array $ignorePatterns): bool
+    {
+        foreach ($ignorePatterns as $pattern) {
+            if ($path === $pattern) {
+                return true;
+            }
+
+            if (str_starts_with($path, $pattern . DIRECTORY_SEPARATOR) || str_starts_with($path, $pattern . '/')) {
+                return true;
+            }
+
+            if (str_contains($pattern, '*')) {
+                $regex = '/^' . str_replace(['*', '/'], ['.*', '\/'], $pattern) . '$/';
+                if (preg_match($regex, $path)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * 疑わしいファイルをチェック（DTO版）
+     * 
+     * @return array<FileChangeDTO>
+     */
+    protected function checkSuspiciousFilesDTO(): array
+    {
+        $suspicious = [];
+        $basePath = base_path();
+
+        foreach ($this->suspiciousLocations as $location) {
+            $fullPath = $basePath . DIRECTORY_SEPARATOR . $location;
+
+            if (!is_dir($fullPath)) {
+                continue;
+            }
+
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($fullPath, \RecursiveDirectoryIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::SELF_FIRST
+            );
+
+            foreach ($iterator as $file) {
+                if ($file->isFile() && strtolower($file->getExtension()) === 'php') {
+                    $relativePath = $this->getRelativePath($file->getRealPath(), $basePath);
+                    $suspicious[] = FileChangeDTO::suspicious(
+                        $relativePath,
+                        hash_file($this->hashAlgo, $file->getRealPath()),
+                        'php_in_uploads'
+                    );
+                }
+            }
+        }
+
+        // public直下の未知のPHPファイルをチェック
+        $publicPath = public_path();
+        $allowedPublicPhp = ['index.php'];
+
+        foreach (glob($publicPath . '/*.php') as $file) {
+            $filename = basename($file);
+            if (!in_array($filename, $allowedPublicPhp)) {
+                $relativePath = $this->getRelativePath($file, $basePath);
+                $suspicious[] = FileChangeDTO::suspicious(
+                    $relativePath,
+                    hash_file($this->hashAlgo, $file),
+                    'unknown_php_in_public'
+                );
+            }
+        }
+
+        return $suspicious;
+    }
+
+    /**
+     * ステータスを判定（DTO版）
+     * 
+     * @param array<FileChangeDTO> $changed
+     * @param array<FileChangeDTO> $added
+     * @param array<FileChangeDTO> $removed
+     * @param array<FileChangeDTO> $suspicious
+     * @return string
+     */
+    protected function determineStatusDTO(array $changed, array $added, array $removed, array $suspicious): string
+    {
+        if (!empty($suspicious)) {
+            return ScanResultDTO::STATUS_CRITICAL;
+        }
+
+        foreach ($removed as $file) {
+            if ($this->isCriticalFile($file->path)) {
+                return ScanResultDTO::STATUS_CRITICAL;
+            }
+        }
+
+        if (!empty($changed) || !empty($removed)) {
+            return ScanResultDTO::STATUS_WARNING;
+        }
+
+        if (!empty($added)) {
+            return ScanResultDTO::STATUS_WARNING;
+        }
+
+        return ScanResultDTO::STATUS_OK;
+    }
+
+    /**
+     * サマリーを生成（DTO版）
+     */
+    protected function generateSummaryDTO(array $changed, array $added, array $removed, array $suspicious, string $status): string
+    {
+        $parts = [];
+
+        if (!empty($changed)) {
+            $parts[] = __('command.integrity.summary_changed', ['count' => count($changed)]);
+        }
+
+        if (!empty($added)) {
+            $parts[] = __('command.integrity.summary_added', ['count' => count($added)]);
+        }
+
+        if (!empty($removed)) {
+            $parts[] = __('command.integrity.summary_removed', ['count' => count($removed)]);
+        }
+
+        if (!empty($suspicious)) {
+            $parts[] = __('command.integrity.summary_suspicious', ['count' => count($suspicious)]);
+        }
+
+        if (empty($parts)) {
+            return __('command.integrity.summary_ok');
+        }
+
+        return implode(', ', $parts);
     }
 }

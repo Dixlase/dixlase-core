@@ -1,0 +1,186 @@
+<?php
+
+namespace App\DTO\FileIntegrity;
+
+use JsonSerializable;
+
+/**
+ * ファイル変更DTO
+ * 
+ * ファイルの変更情報を保持する不変データオブジェクトです。
+ * 
+ * @package App\DTO\FileIntegrity
+ */
+final readonly class FileChangeDTO implements JsonSerializable
+{
+    public const TYPE_CHANGED = 'changed';
+    public const TYPE_ADDED = 'added';
+    public const TYPE_REMOVED = 'removed';
+    public const TYPE_SUSPICIOUS = 'suspicious';
+
+    /**
+     * @param string $path ファイルパス
+     * @param string $type 変更タイプ（changed, added, removed, suspicious）
+     * @param string|null $oldHash 変更前ハッシュ
+     * @param string|null $newHash 変更後ハッシュ
+     * @param string|null $reason 理由（suspiciousの場合）
+     */
+    public function __construct(
+        public string $path,
+        public string $type,
+        public ?string $oldHash = null,
+        public ?string $newHash = null,
+        public ?string $reason = null,
+    ) {}
+
+    /**
+     * 変更されたファイルを生成
+     * 
+     * @param string $path ファイルパス
+     * @param string $oldHash 変更前ハッシュ
+     * @param string $newHash 変更後ハッシュ
+     * @return self
+     */
+    public static function changed(string $path, string $oldHash, string $newHash): self
+    {
+        return new self(
+            path: $path,
+            type: self::TYPE_CHANGED,
+            oldHash: $oldHash,
+            newHash: $newHash,
+        );
+    }
+
+    /**
+     * 追加されたファイルを生成
+     * 
+     * @param string $path ファイルパス
+     * @param string $newHash ハッシュ
+     * @return self
+     */
+    public static function added(string $path, string $newHash): self
+    {
+        return new self(
+            path: $path,
+            type: self::TYPE_ADDED,
+            newHash: $newHash,
+        );
+    }
+
+    /**
+     * 削除されたファイルを生成
+     * 
+     * @param string $path ファイルパス
+     * @param string $oldHash 削除前ハッシュ
+     * @return self
+     */
+    public static function removed(string $path, string $oldHash): self
+    {
+        return new self(
+            path: $path,
+            type: self::TYPE_REMOVED,
+            oldHash: $oldHash,
+        );
+    }
+
+    /**
+     * 疑わしいファイルを生成
+     * 
+     * @param string $path ファイルパス
+     * @param string $hash ハッシュ
+     * @param string $reason 理由
+     * @return self
+     */
+    public static function suspicious(string $path, string $hash, string $reason): self
+    {
+        return new self(
+            path: $path,
+            type: self::TYPE_SUSPICIOUS,
+            newHash: $hash,
+            reason: $reason,
+        );
+    }
+
+    /**
+     * 変更タイプか
+     * 
+     * @return bool
+     */
+    public function isChanged(): bool
+    {
+        return $this->type === self::TYPE_CHANGED;
+    }
+
+    /**
+     * 追加タイプか
+     * 
+     * @return bool
+     */
+    public function isAdded(): bool
+    {
+        return $this->type === self::TYPE_ADDED;
+    }
+
+    /**
+     * 削除タイプか
+     * 
+     * @return bool
+     */
+    public function isRemoved(): bool
+    {
+        return $this->type === self::TYPE_REMOVED;
+    }
+
+    /**
+     * 疑わしいタイプか
+     * 
+     * @return bool
+     */
+    public function isSuspicious(): bool
+    {
+        return $this->type === self::TYPE_SUSPICIOUS;
+    }
+
+    /**
+     * JSON形式にシリアライズ
+     * 
+     * @return array<string,mixed>
+     */
+    public function jsonSerialize(): array
+    {
+        return array_filter([
+            'path' => $this->path,
+            'type' => $this->type,
+            'old_hash' => $this->oldHash,
+            'new_hash' => $this->newHash,
+            'reason' => $this->reason,
+        ], fn($v) => $v !== null);
+    }
+
+    /**
+     * 配列形式に変換
+     * 
+     * @return array<string,mixed>
+     */
+    public function toArray(): array
+    {
+        return $this->jsonSerialize();
+    }
+
+    /**
+     * 配列からDTOを生成
+     * 
+     * @param array<string,mixed> $data
+     * @return self
+     */
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            path: $data['path'],
+            type: $data['type'],
+            oldHash: $data['old_hash'] ?? null,
+            newHash: $data['new_hash'] ?? null,
+            reason: $data['reason'] ?? null,
+        );
+    }
+}
