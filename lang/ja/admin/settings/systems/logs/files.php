@@ -14,6 +14,8 @@
 
 return [
     'heading' => 'ファイルログ',
+    'date_latest' => '最新',
+    'date_select' => '日付を選択',
     'no_logs_found' => 'ログが見つかりません。',
     'activity' => 'アクティビティ',
     'error' => 'エラー',
@@ -37,4 +39,11 @@ return [
         'file_not_found' => 'ログファイルが存在しません：:filename',
     ],
     'test_success' => 'テストログを記録しました：:results',
+    'level_filter' => [
+        'label' => 'ログレベル',
+        'error' => 'エラー',
+        'warning' => '警告',
+        'normal' => '通常',
+        'debug' => 'デバッグ',
+    ],
 ];

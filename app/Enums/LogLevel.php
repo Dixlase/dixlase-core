@@ -144,4 +144,52 @@ enum LogLevel: int
             default => null,
         };
     }
+
+    /**
+     * Get filter group for this log level
+     * Groups: error (emergency, alert, critical, error), warning (warning, notice), normal (info), debug (debug)
+     */
+    public function getFilterGroup(): string
+    {
+        return match ($this) {
+            self::Emergency, self::Alert, self::Critical, self::Error => 'error',
+            self::Warning, self::Notice => 'warning',
+            self::Info => 'normal',
+            self::Debug => 'debug',
+        };
+    }
+
+    /**
+     * Get all filter groups with their log levels
+     */
+    public static function getFilterGroups(): array
+    {
+        return [
+            'error' => [self::Emergency, self::Alert, self::Critical, self::Error],
+            'warning' => [self::Warning, self::Notice],
+            'normal' => [self::Info],
+            'debug' => [self::Debug],
+        ];
+    }
+
+    /**
+     * Get log level strings for a filter group
+     */
+    public static function getLevelStringsForGroup(string $group): array
+    {
+        $groups = self::getFilterGroups();
+        if (!isset($groups[$group])) {
+            return [];
+        }
+        return array_map(fn($level) => $level->toString(), $groups[$group]);
+    }
+
+    /**
+     * Check if a log level string belongs to a filter group
+     */
+    public static function levelBelongsToGroup(string $levelString, string $group): bool
+    {
+        $levelStrings = self::getLevelStringsForGroup($group);
+        return in_array(strtolower($levelString), $levelStrings);
+    }
 }
