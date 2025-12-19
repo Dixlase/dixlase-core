@@ -38,7 +38,7 @@ return new class extends Migration
             $table->id();
             
             // 所有者
-            $table->foreignId('member_id')->constrained('members')->cascadeOnDelete();
+            $table->unsignedBigInteger('member_id')->index();
             
             // デバイス識別トークン（ハッシュ化して保存）
             $table->string('token', 255)->nullable()->index();

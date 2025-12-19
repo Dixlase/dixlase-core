@@ -22,6 +22,7 @@
 
 namespace App\Models;
 
+use App\Enums\OperationRiskLevel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Str;
@@ -539,5 +540,214 @@ class AuditLog extends Model
             self::OUTCOME_PENDING => 'text-yellow-600 bg-yellow-50',
             default => 'text-gray-600 bg-gray-50',
         };
+    }
+
+    // ========================================
+    // 操作リスクレベル判定（β版 強制再認証の基盤）
+    // ========================================
+
+    /**
+     * アクションからリスクレベルを取得
+     */
+    public static function getRiskLevelForAction(string $action): OperationRiskLevel
+    {
+        // Critical: システム設定・セキュリティ設定・APIキー操作
+        $criticalActions = [
+            self::ACTION_SETTINGS_UPDATED,      // 設定変更（セキュリティ設定含む）
+            self::ACTION_IP_BLOCKED,            // IPブロック
+            self::ACTION_IP_ALLOWED,            // IP許可
+            self::ACTION_LOCKOUT_RELEASED,      // ロックアウト解除
+            self::ACTION_PLUGIN_INSTALLED,      // プラグインインストール
+            self::ACTION_PLUGIN_UNINSTALLED,    // プラグインアンインストール
+            self::ACTION_THEME_INSTALLED,       // テーマインストール
+            self::ACTION_THEME_UNINSTALLED,     // テーマアンインストール
+        ];
+
+        // High: 削除・重要設定変更
+        $highActions = [
+            self::ACTION_MEMBER_DELETED,        // メンバー削除
+            self::ACTION_FORCED_LOGOUT,         // 強制ログアウト
+            self::ACTION_2FA_DISABLED,          // 2FA無効化
+            self::ACTION_DEVICE_BLOCKED,        // デバイスブロック
+            self::ACTION_DEVICE_REMOVED,        // デバイス削除
+            self::ACTION_PASSKEY_REVOKED,       // Passkey無効化
+            self::ACTION_PLUGIN_DISABLED,       // プラグイン無効化
+            self::ACTION_THEME_DISABLED,        // テーマ無効化
+            self::ACTION_ROLE_CHANGED,          // 権限変更
+        ];
+
+        // Medium: 編集・更新
+        $mediumActions = [
+            self::ACTION_PASSWORD_CHANGED,      // パスワード変更
+            self::ACTION_EMAIL_CHANGED,         // メールアドレス変更
+            self::ACTION_2FA_ENABLED,           // 2FA有効化
+            self::ACTION_DEVICE_TRUSTED,        // デバイス信頼
+            self::ACTION_PASSKEY_REGISTERED,    // Passkey登録
+            self::ACTION_MEMBER_CREATED,        // メンバー作成
+            self::ACTION_MEMBER_UPDATED,        // メンバー更新
+            self::ACTION_PLUGIN_ENABLED,        // プラグイン有効化
+            self::ACTION_PLUGIN_UPDATED,        // プラグイン更新
+            self::ACTION_THEME_ENABLED,         // テーマ有効化
+            self::ACTION_THEME_UPDATED,         // テーマ更新
+        ];
+
+        if (in_array($action, $criticalActions)) {
+            return OperationRiskLevel::Critical;
+        }
+        if (in_array($action, $highActions)) {
+            return OperationRiskLevel::High;
+        }
+        if (in_array($action, $mediumActions)) {
+            return OperationRiskLevel::Medium;
+        }
+
+        return OperationRiskLevel::Low;
+    }
+
+    /**
+     * このログのリスクレベルを取得
+     */
+    public function getRiskLevel(): OperationRiskLevel
+    {
+        return self::getRiskLevelForAction($this->action);
+    }
+
+    /**
+     * このログが危険な操作かどうか
+     */
+    public function isDangerousOperation(): bool
+    {
+        return $this->getRiskLevel()->isDangerous();
+    }
+
+    /**
+     * このログがクリティカルな操作かどうか
+     */
+    public function isCriticalOperation(): bool
+    {
+        return $this->getRiskLevel()->isCritical();
+    }
+
+    /**
+     * このログが再認証を必要とする操作かどうか（β版で実装予定）
+     */
+    public function requiresStepUpAuth(): bool
+    {
+        return $this->getRiskLevel()->requiresStepUpAuth();
+    }
+
+    /**
+     * リスクレベルのCSSクラスを取得
+     */
+    public function getRiskLevelColorClass(): string
+    {
+        return $this->getRiskLevel()->colorClass();
+    }
+
+    /**
+     * リスクレベルのバッジクラスを取得
+     */
+    public function getRiskLevelBadgeClass(): string
+    {
+        return $this->getRiskLevel()->badgeClass();
+    }
+
+    // ========================================
+    // スコープ（リスクレベル用）
+    // ========================================
+
+    /**
+     * 危険な操作のみ取得
+     */
+    public function scopeDangerousOperations($query)
+    {
+        $dangerousActions = [];
+        foreach (self::cases() as $action) {
+            if (self::getRiskLevelForAction($action)->isDangerous()) {
+                $dangerousActions[] = $action;
+            }
+        }
+        
+        // 定義済みアクションから危険なものを抽出
+        $allActions = [
+            self::ACTION_LOGIN, self::ACTION_LOGOUT, self::ACTION_LOGIN_FAILED,
+            self::ACTION_NEW_DEVICE_LOGIN, self::ACTION_PASSWORD_CHANGED,
+            self::ACTION_PASSWORD_RESET, self::ACTION_EMAIL_CHANGED,
+            self::ACTION_2FA_ENABLED, self::ACTION_2FA_DISABLED,
+            self::ACTION_2FA_CODE_SENT, self::ACTION_2FA_CODE_VERIFIED,
+            self::ACTION_2FA_CODE_FAILED, self::ACTION_RECOVERY_CODE_USED,
+            self::ACTION_PASSKEY_REGISTERED, self::ACTION_PASSKEY_REVOKED,
+            self::ACTION_DEVICE_TRUSTED, self::ACTION_DEVICE_BLOCKED,
+            self::ACTION_DEVICE_REMOVED, self::ACTION_IP_BLOCKED,
+            self::ACTION_IP_ALLOWED, self::ACTION_LOCKOUT_TRIGGERED,
+            self::ACTION_LOCKOUT_RELEASED, self::ACTION_STEP_UP_AUTH_REQUIRED,
+            self::ACTION_STEP_UP_AUTH_COMPLETED, self::ACTION_SESSION_CREATED,
+            self::ACTION_SESSION_DESTROYED, self::ACTION_FORCED_LOGOUT,
+            self::ACTION_PLUGIN_INSTALLED, self::ACTION_PLUGIN_ENABLED,
+            self::ACTION_PLUGIN_DISABLED, self::ACTION_PLUGIN_UNINSTALLED,
+            self::ACTION_PLUGIN_UPDATED, self::ACTION_THEME_INSTALLED,
+            self::ACTION_THEME_ENABLED, self::ACTION_THEME_DISABLED,
+            self::ACTION_THEME_UNINSTALLED, self::ACTION_THEME_UPDATED,
+            self::ACTION_SETTINGS_UPDATED, self::ACTION_MEMBER_CREATED,
+            self::ACTION_MEMBER_UPDATED, self::ACTION_MEMBER_DELETED,
+            self::ACTION_ROLE_CHANGED,
+        ];
+
+        $dangerous = array_filter($allActions, function ($action) {
+            return self::getRiskLevelForAction($action)->isDangerous();
+        });
+
+        return $query->whereIn('action', $dangerous);
+    }
+
+    /**
+     * クリティカルな操作のみ取得
+     */
+    public function scopeCriticalOperations($query)
+    {
+        $allActions = [
+            self::ACTION_SETTINGS_UPDATED, self::ACTION_IP_BLOCKED,
+            self::ACTION_IP_ALLOWED, self::ACTION_LOCKOUT_RELEASED,
+            self::ACTION_PLUGIN_INSTALLED, self::ACTION_PLUGIN_UNINSTALLED,
+            self::ACTION_THEME_INSTALLED, self::ACTION_THEME_UNINSTALLED,
+        ];
+
+        return $query->whereIn('action', $allActions);
+    }
+
+    /**
+     * 指定リスクレベル以上の操作を取得
+     */
+    public function scopeWithMinRiskLevel($query, OperationRiskLevel $minLevel)
+    {
+        $allActions = [
+            self::ACTION_LOGIN, self::ACTION_LOGOUT, self::ACTION_LOGIN_FAILED,
+            self::ACTION_NEW_DEVICE_LOGIN, self::ACTION_PASSWORD_CHANGED,
+            self::ACTION_PASSWORD_RESET, self::ACTION_EMAIL_CHANGED,
+            self::ACTION_2FA_ENABLED, self::ACTION_2FA_DISABLED,
+            self::ACTION_2FA_CODE_SENT, self::ACTION_2FA_CODE_VERIFIED,
+            self::ACTION_2FA_CODE_FAILED, self::ACTION_RECOVERY_CODE_USED,
+            self::ACTION_PASSKEY_REGISTERED, self::ACTION_PASSKEY_REVOKED,
+            self::ACTION_DEVICE_TRUSTED, self::ACTION_DEVICE_BLOCKED,
+            self::ACTION_DEVICE_REMOVED, self::ACTION_IP_BLOCKED,
+            self::ACTION_IP_ALLOWED, self::ACTION_LOCKOUT_TRIGGERED,
+            self::ACTION_LOCKOUT_RELEASED, self::ACTION_STEP_UP_AUTH_REQUIRED,
+            self::ACTION_STEP_UP_AUTH_COMPLETED, self::ACTION_SESSION_CREATED,
+            self::ACTION_SESSION_DESTROYED, self::ACTION_FORCED_LOGOUT,
+            self::ACTION_PLUGIN_INSTALLED, self::ACTION_PLUGIN_ENABLED,
+            self::ACTION_PLUGIN_DISABLED, self::ACTION_PLUGIN_UNINSTALLED,
+            self::ACTION_PLUGIN_UPDATED, self::ACTION_THEME_INSTALLED,
+            self::ACTION_THEME_ENABLED, self::ACTION_THEME_DISABLED,
+            self::ACTION_THEME_UNINSTALLED, self::ACTION_THEME_UPDATED,
+            self::ACTION_SETTINGS_UPDATED, self::ACTION_MEMBER_CREATED,
+            self::ACTION_MEMBER_UPDATED, self::ACTION_MEMBER_DELETED,
+            self::ACTION_ROLE_CHANGED,
+        ];
+
+        $filtered = array_filter($allActions, function ($action) use ($minLevel) {
+            return self::getRiskLevelForAction($action)->value >= $minLevel->value;
+        });
+
+        return $query->whereIn('action', $filtered);
     }
 }

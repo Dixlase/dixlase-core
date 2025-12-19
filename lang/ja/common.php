@@ -403,4 +403,20 @@ return [
     // メタ情報
     'meta_description' => 'メタディスクリプション',
     'ogp_image' => 'OGP画像',
+
+    // 操作リスクレベル（β版 強制再認証の基盤）
+    'operation_risk_level' => [
+        'low' => '低',
+        'low_description' => '閲覧・参照のみの操作',
+        'medium' => '中',
+        'medium_description' => '編集・更新を伴う操作',
+        'high' => '高',
+        'high_description' => '削除・重要設定変更を伴う操作',
+        'critical' => '重大',
+        'critical_description' => 'システム設定・セキュリティ設定・APIキー操作',
+        'dangerous_operation' => '危険な操作',
+        'critical_operation' => '重大な操作',
+        'requires_step_up_auth' => '追加認証が必要',
+        'step_up_auth_description' => 'この操作を実行するには追加の認証が必要です',
+    ],
 ];

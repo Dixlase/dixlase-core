@@ -15,7 +15,7 @@ return new class extends Migration
         // migration
         Schema::create($this->table, function (Blueprint $table) {
             $table->id();
-            $table->foreignId('member_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('member_id')->index();
             $table->string('code'); // hashed
             $table->timestamp('expires_at');
             $table->timestamps();
