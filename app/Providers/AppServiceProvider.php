@@ -42,6 +42,12 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Auth;
 use App\Enums\AppearanceMode;
 use App\Services\Plugin\PluginPermissionService;
+use App\Contracts\FileIntegrity\FileIntegrityServiceInterface;
+use App\Services\FileIntegrityService;
+use App\Contracts\Mail\MailServiceInterface;
+use App\Services\MailService;
+use App\Contracts\Logging\LogServiceInterface;
+use App\Services\LogService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -60,6 +66,15 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(PluginPermissionService::class, function ($app) {
             return new PluginPermissionService();
         });
+
+        // ファイル整合性サービスをバインド
+        $this->app->bind(FileIntegrityServiceInterface::class, FileIntegrityService::class);
+
+        // メール送信サービスをバインド
+        $this->app->bind(MailServiceInterface::class, MailService::class);
+
+        // ログ出力サービスをバインド
+        $this->app->bind(LogServiceInterface::class, LogService::class);
     }
 
     /**
