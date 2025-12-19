@@ -381,4 +381,20 @@ return [
     // Meta Information
     'meta_description' => 'Meta Description',
     'ogp_image' => 'OGP Image',
+
+    // Operation Risk Level (Foundation for β version step-up authentication)
+    'operation_risk_level' => [
+        'low' => 'Low',
+        'low_description' => 'View and reference only operations',
+        'medium' => 'Medium',
+        'medium_description' => 'Edit and update operations',
+        'high' => 'High',
+        'high_description' => 'Delete and important setting change operations',
+        'critical' => 'Critical',
+        'critical_description' => 'System settings, security settings, and API key operations',
+        'dangerous_operation' => 'Dangerous Operation',
+        'critical_operation' => 'Critical Operation',
+        'requires_step_up_auth' => 'Additional Authentication Required',
+        'step_up_auth_description' => 'Additional authentication is required to perform this operation',
+    ],
 ];

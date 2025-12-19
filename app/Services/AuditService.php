@@ -22,6 +22,7 @@
 
 namespace App\Services;
 
+use App\Enums\OperationRiskLevel;
 use App\Models\AuditLog;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -463,5 +464,148 @@ class AuditService
             ->orderByDesc('occurred_at')
             ->limit($limit)
             ->get();
+    }
+
+    // ========================================
+    // 重大操作ログ（β版 強制再認証の基盤）
+    // ========================================
+
+    /**
+     * 危険な操作をログ（High/Criticalレベル）
+     * 
+     * β版で強制再認証を実装する際の基盤
+     */
+    public function logDangerousOperation(string $action, array $data = []): ?AuditLog
+    {
+        $riskLevel = AuditLog::getRiskLevelForAction($action);
+        
+        // contextにリスクレベル情報を追加
+        $context = $data['context'] ?? [];
+        $context['risk_level'] = $riskLevel->toString();
+        $context['risk_level_value'] = $riskLevel->value;
+        $context['requires_step_up_auth'] = $riskLevel->requiresStepUpAuth();
+        $data['context'] = $context;
+
+        // 危険な操作は警告レベル以上で記録
+        if ($riskLevel->isDangerous() && !isset($data['severity'])) {
+            $data['severity'] = $riskLevel->isCritical() 
+                ? AuditLog::SEVERITY_CRITICAL 
+                : AuditLog::SEVERITY_WARNING;
+        }
+
+        return $this->log(array_merge($data, [
+            'action' => $action,
+        ]));
+    }
+
+    /**
+     * クリティカルな操作をログ
+     */
+    public function logCriticalOperation(string $action, array $data = []): ?AuditLog
+    {
+        $data['severity'] = $data['severity'] ?? AuditLog::SEVERITY_CRITICAL;
+        return $this->logDangerousOperation($action, $data);
+    }
+
+    /**
+     * 最近の危険な操作を取得
+     */
+    public function getRecentDangerousOperations(int $hours = 24, int $limit = 100)
+    {
+        return AuditLog::recent($hours)
+            ->dangerousOperations()
+            ->orderByDesc('occurred_at')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * 最近のクリティカルな操作を取得
+     */
+    public function getRecentCriticalOperations(int $hours = 24, int $limit = 100)
+    {
+        return AuditLog::recent($hours)
+            ->criticalOperations()
+            ->orderByDesc('occurred_at')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * 指定リスクレベル以上の操作を取得
+     */
+    public function getOperationsWithMinRiskLevel(
+        OperationRiskLevel $minLevel,
+        int $hours = 24,
+        int $limit = 100
+    ) {
+        return AuditLog::recent($hours)
+            ->withMinRiskLevel($minLevel)
+            ->orderByDesc('occurred_at')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * 行為者の危険な操作履歴を取得
+     */
+    public function getDangerousOperationsForActor(Model $actor, int $limit = 50)
+    {
+        return AuditLog::forActor($actor)
+            ->dangerousOperations()
+            ->orderByDesc('occurred_at')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * 対象に対する危険な操作履歴を取得
+     */
+    public function getDangerousOperationsForTarget(Model $target, int $limit = 50)
+    {
+        return AuditLog::forTarget($target)
+            ->dangerousOperations()
+            ->orderByDesc('occurred_at')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * 危険な操作の統計を取得
+     */
+    public function getDangerousOperationStats(int $hours = 24): array
+    {
+        $logs = AuditLog::recent($hours)->dangerousOperations()->get();
+
+        $stats = [
+            'total' => $logs->count(),
+            'by_risk_level' => [
+                'high' => 0,
+                'critical' => 0,
+            ],
+            'by_action' => [],
+            'by_actor' => [],
+        ];
+
+        foreach ($logs as $log) {
+            $riskLevel = $log->getRiskLevel();
+            
+            // リスクレベル別
+            if ($riskLevel->isCritical()) {
+                $stats['by_risk_level']['critical']++;
+            } else {
+                $stats['by_risk_level']['high']++;
+            }
+
+            // アクション別
+            $action = $log->action;
+            $stats['by_action'][$action] = ($stats['by_action'][$action] ?? 0) + 1;
+
+            // 行為者別
+            $actorKey = $log->actor_name ?? 'unknown';
+            $stats['by_actor'][$actorKey] = ($stats['by_actor'][$actorKey] ?? 0) + 1;
+        }
+
+        return $stats;
     }
 }

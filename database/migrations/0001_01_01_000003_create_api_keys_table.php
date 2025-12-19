@@ -48,7 +48,7 @@ return new class extends Migration
             $table->string('key_prefix', 20);
             
             // 作成者
-            $table->foreignId('created_by')->nullable()->constrained('members')->nullOnDelete();
+            $table->unsignedBigInteger('created_by')->nullable()->index();
             
             // 有効/無効
             $table->boolean('is_active')->default(true);

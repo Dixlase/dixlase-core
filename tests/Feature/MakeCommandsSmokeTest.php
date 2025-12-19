@@ -23,6 +23,7 @@
 namespace Tests\Feature;
 
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 
 /**
@@ -31,8 +32,39 @@ use Tests\TestCase;
  */
 class MakeCommandsSmokeTest extends TestCase
 {
+    /**
+     * テストで生成されたファイル/ディレクトリのパスを記録
+     */
+    protected array $generatedPaths = [];
+
+    /**
+     * テスト終了後に生成されたファイルをクリーンアップ
+     */
+    protected function tearDown(): void
+    {
+        foreach ($this->generatedPaths as $path) {
+            if (File::isDirectory($path)) {
+                File::deleteDirectory($path);
+            } elseif (File::exists($path)) {
+                File::delete($path);
+            }
+        }
+
+        parent::tearDown();
+    }
+
+    /**
+     * 生成されるファイルパスを記録
+     */
+    protected function trackGeneratedFile(string $path): void
+    {
+        $this->generatedPaths[] = $path;
+    }
+
     public function test_plugin_make_controller()
     {
+        $this->trackGeneratedFile(base_path('plugins/MyPlugin'));
+
         $exitCode = Artisan::call('make:plugin:controller', [
             'plugin' => 'MyPlugin',
             'name'   => 'MyPluginController',
@@ -43,6 +75,8 @@ class MakeCommandsSmokeTest extends TestCase
 
     public function test_custom_make_controller()
     {
+        $this->trackGeneratedFile(base_path('custom/app/Http/Controllers/MyCustomController.php'));
+
         $exitCode = Artisan::call('make:custom:controller', [
             'name'   => 'MyCustomController',
             '--force' => true,
@@ -52,6 +86,8 @@ class MakeCommandsSmokeTest extends TestCase
 
     public function test_plugin_make_factory()
     {
+        $this->trackGeneratedFile(base_path('plugins/MyPlugin'));
+
         $exitCode = Artisan::call('make:plugin:factory', [
             'plugin' => 'MyPlugin',
             'name'   => 'MyPluginFactory',
@@ -62,6 +98,8 @@ class MakeCommandsSmokeTest extends TestCase
 
     public function test_custom_make_factory()
     {
+        $this->trackGeneratedFile(base_path('custom/database/factories/MyCustomFactory.php'));
+
         $exitCode = Artisan::call('make:custom:factory', [
             'name'   => 'MyCustomFactory',
             '--force' => true,
@@ -71,6 +109,8 @@ class MakeCommandsSmokeTest extends TestCase
 
     public function test_custom_make_event()
     {
+        $this->trackGeneratedFile(base_path('custom/app/Events/MyCustomEvent.php'));
+
         $exitCode = Artisan::call('make:custom:event', [
             'name'   => 'MyCustomEvent',
             '--force' => true,
@@ -80,6 +120,8 @@ class MakeCommandsSmokeTest extends TestCase
 
     public function test_plugin_make_event()
     {
+        $this->trackGeneratedFile(base_path('plugins/MyPlugin'));
+
         $exitCode = Artisan::call('make:plugin:event', [
             'plugin' => 'MyPlugin',
             'name'   => 'MyPluginEvent',
@@ -94,11 +136,10 @@ class MakeCommandsSmokeTest extends TestCase
 
     public function test_make_job_no_error()
     {
-        // e.g. "php artisan make:job MyTestJob --force"
-        // (force は無いが例示)
+        $this->trackGeneratedFile(app_path('Jobs'));
+
         $exitCode = Artisan::call('make:job', [
             'name' => 'MyTestJob',
-            // Laravel標準 "make:job" には --force がある (v10以降)
             '--force' => true,
         ]);
         $this->assertEquals(0, $exitCode, 'make:job ended with an error.');
@@ -106,6 +147,8 @@ class MakeCommandsSmokeTest extends TestCase
 
     public function test_make_listener_no_error()
     {
+        $this->trackGeneratedFile(app_path('Listeners/MyTestListener.php'));
+
         $exitCode = Artisan::call('make:listener', [
             'name' => 'MyTestListener',
             '--force' => true,
@@ -115,6 +158,8 @@ class MakeCommandsSmokeTest extends TestCase
 
     public function test_make_middleware_no_error()
     {
+        $this->trackGeneratedFile(app_path('Http/Middleware/MyTestMiddleware.php'));
+
         $exitCode = Artisan::call('make:middleware', [
             'name' => 'MyTestMiddleware',
             '--force' => true,
@@ -126,13 +171,21 @@ class MakeCommandsSmokeTest extends TestCase
     {
         $exitCode = Artisan::call('make:migration', [
             'name' => 'create_test_table',
-            '--force' => true, // v10+ には --forceある
+            '--force' => true,
         ]);
         $this->assertEquals(0, $exitCode, 'make:migration ended with an error.');
+
+        // マイグレーションファイルはタイムスタンプ付きなのでパターンで削除
+        $files = glob(database_path('migrations/*_create_test_table.php'));
+        foreach ($files as $file) {
+            $this->trackGeneratedFile($file);
+        }
     }
 
     public function test_make_model_no_error()
     {
+        $this->trackGeneratedFile(app_path('Models/MyTestModel.php'));
+
         $exitCode = Artisan::call('make:model', [
             'name' => 'MyTestModel',
             '--force' => true,
@@ -142,6 +195,8 @@ class MakeCommandsSmokeTest extends TestCase
 
     public function test_make_notification_no_error()
     {
+        $this->trackGeneratedFile(app_path('Notifications/MyTestNotification.php'));
+
         $exitCode = Artisan::call('make:notification', [
             'name' => 'MyTestNotification',
             '--force' => true,
@@ -151,6 +206,8 @@ class MakeCommandsSmokeTest extends TestCase
 
     public function test_make_policy_no_error()
     {
+        $this->trackGeneratedFile(app_path('Policies/MyTestPolicy.php'));
+
         $exitCode = Artisan::call('make:policy', [
             'name' => 'MyTestPolicy',
             '--force' => true,
@@ -160,6 +217,8 @@ class MakeCommandsSmokeTest extends TestCase
 
     public function test_make_request_no_error()
     {
+        $this->trackGeneratedFile(app_path('Http/Requests/MyTestRequest.php'));
+
         $exitCode = Artisan::call('make:request', [
             'name' => 'MyTestRequest',
             '--force' => true,
@@ -169,6 +228,8 @@ class MakeCommandsSmokeTest extends TestCase
 
     public function test_make_seeder_no_error()
     {
+        $this->trackGeneratedFile(database_path('seeders/MyTestSeeder.php'));
+
         $exitCode = Artisan::call('make:seeder', [
             'name' => 'MyTestSeeder',
             '--force' => true,
@@ -178,6 +239,8 @@ class MakeCommandsSmokeTest extends TestCase
 
     public function test_make_provider_no_error()
     {
+        $this->trackGeneratedFile(app_path('Providers/MyTestServiceProvider.php'));
+
         $exitCode = Artisan::call('make:provider', [
             'name' => 'MyTestServiceProvider',
             '--force' => true,
@@ -187,6 +250,8 @@ class MakeCommandsSmokeTest extends TestCase
 
     public function test_make_test_no_error()
     {
+        $this->trackGeneratedFile(base_path('tests/Feature/MyTestClass.php'));
+
         $exitCode = Artisan::call('make:test', [
             'name' => 'MyTestClass',
             '--force' => true,
@@ -200,12 +265,12 @@ class MakeCommandsSmokeTest extends TestCase
      */
     public function test_make_trait_no_error()
     {
-        // 独自コマンドを仮定
+        $this->trackGeneratedFile(app_path('Traits/MyTestTrait.php'));
+
         $exitCode = Artisan::call('make:trait', [
             'name' => 'MyTestTrait',
             '--force' => true,
         ]);
-        // Laravel標準には無いので、コマンド自体が存在しない場合はエラーになるかもしれません
         $this->assertEquals(0, $exitCode, 'make:trait ended with an error.');
     }
 }

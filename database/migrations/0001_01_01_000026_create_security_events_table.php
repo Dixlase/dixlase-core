@@ -38,7 +38,7 @@ return new class extends Migration
             $table->id();
             
             // イベント発生者（nullable: システムイベントの場合はnull）
-            $table->foreignId('member_id')->nullable()->constrained('members')->nullOnDelete();
+            $table->unsignedBigInteger('member_id')->nullable()->index();
             
             // イベント種別
             $table->string('event_type', 50)->index();

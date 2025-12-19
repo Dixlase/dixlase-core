@@ -16,7 +16,7 @@ return new class extends Migration
     {
         Schema::create($this->table, function (Blueprint $table) {
             $table->id();
-            $table->foreignId('member_id')->constrained('members')->onDelete('cascade');
+            $table->unsignedBigInteger('member_id')->index();
             $table->string('code'); // ハッシュ化された回復コード
             $table->timestamp('used_at')->nullable(); // 使用日時
             $table->boolean('disabled')->default(false); // 無効化フラグ

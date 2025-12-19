@@ -45,7 +45,7 @@ return new class extends Migration
             $table->string('alt_text')->nullable();
             $table->string('path');
             $table->string('type');
-            $table->foreignId('uploaded_by')->nullable()->constrained('members')->onDelete('set null');
+            $table->unsignedBigInteger('uploaded_by')->nullable()->index();
             $table->timestamps();
             $table->softDeletes();
         });

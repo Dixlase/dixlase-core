@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('members_2fa_attempts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('member_id')->constrained('members')->onDelete('cascade');
+            $table->unsignedBigInteger('member_id')->index();
             $table->string('attempt_type', 20); // 'email', 'passkey', 'recovery_code'
             $table->string('ip_address', 45);
             $table->text('user_agent')->nullable();
