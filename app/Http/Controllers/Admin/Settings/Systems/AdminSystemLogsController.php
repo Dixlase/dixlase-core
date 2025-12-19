@@ -22,6 +22,7 @@
 
 namespace App\Http\Controllers\Admin\Settings\Systems;
 
+use App\Enums\LogLevel;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\AuditLog;
 use Illuminate\Http\Request;
@@ -54,11 +55,22 @@ class AdminSystemLogsController extends AdminLoggedInController
     public function index(Request $request, $type = 'activity')
     {
         $fileName = $this->logPaths[$type] ?? $this->logPaths['activity'];
-        $filePath = storage_path("logs/{$fileName}");
-
-        // dailyドライバーの場合、日付付きファイル名を探す
-        if (!File::exists($filePath)) {
-            $filePath = $this->findDailyLogFile($fileName);
+        $selectedDate = $request->input('date');
+        
+        // 利用可能な日付一覧を取得
+        $availableDates = $this->getAvailableLogDates($fileName);
+        $this->viewParams['availableDates'] = $availableDates;
+        $this->viewParams['selectedDate'] = $selectedDate;
+        
+        // 日付が指定されている場合はその日付のファイルを使用
+        if ($selectedDate) {
+            $filePath = $this->getLogFilePathByDate($fileName, $selectedDate);
+        } else {
+            $filePath = storage_path("logs/{$fileName}");
+            // dailyドライバーの場合、日付付きファイル名を探す
+            if (!File::exists($filePath)) {
+                $filePath = $this->findDailyLogFile($fileName);
+            }
         }
 
         $this->viewParams['logType'] = $type;
@@ -83,6 +95,13 @@ class AdminSystemLogsController extends AdminLoggedInController
                 'next_page' => null,
             ];
             $this->viewParams['logTypes'] = array_keys($this->logPaths);
+            $this->viewParams['levelFilters'] = ['error', 'warning', 'normal', 'debug'];
+            $this->viewParams['availableLevelFilters'] = [
+                'error' => __('admin/settings/systems/logs/files.level_filter.error'),
+                'warning' => __('admin/settings/systems/logs/files.level_filter.warning'),
+                'normal' => __('admin/settings/systems/logs/files.level_filter.normal'),
+                'debug' => __('admin/settings/systems/logs/files.level_filter.debug'),
+            ];
 
             return response()->view('admin::settings.systems.logs', $this->viewParams);
         }
@@ -93,6 +112,19 @@ class AdminSystemLogsController extends AdminLoggedInController
             $perPage = 50;
         }
         
+        // ログレベルフィルター（複数選択可能）
+        $levelFilters = $request->input('levels', ['error', 'warning', 'normal', 'debug']);
+        if (!is_array($levelFilters)) {
+            $levelFilters = [$levelFilters];
+        }
+        $this->viewParams['levelFilters'] = $levelFilters;
+        $this->viewParams['availableLevelFilters'] = [
+            'error' => __('admin/settings/systems/logs/files.level_filter.error'),
+            'warning' => __('admin/settings/systems/logs/files.level_filter.warning'),
+            'normal' => __('admin/settings/systems/logs/files.level_filter.normal'),
+            'debug' => __('admin/settings/systems/logs/files.level_filter.debug'),
+        ];
+        
         $currentPage = $request->get('page', 1);
         $maxLinesToRead = 5000;
         $lines = $this->readLogFileLines($filePath, $maxLinesToRead);
@@ -101,7 +133,20 @@ class AdminSystemLogsController extends AdminLoggedInController
         foreach ($lines as $line) {
             $parsedLog = $this->parseLogLine($line);
             if ($parsedLog) {
-                $parsedLogs[] = $parsedLog;
+                // ログレベルフィルタリング
+                $logLevel = strtolower($parsedLog['level'] ?? '');
+                $shouldInclude = false;
+                
+                foreach ($levelFilters as $filter) {
+                    if (LogLevel::levelBelongsToGroup($logLevel, $filter)) {
+                        $shouldInclude = true;
+                        break;
+                    }
+                }
+                
+                if ($shouldInclude) {
+                    $parsedLogs[] = $parsedLog;
+                }
             }
         }
 
@@ -113,8 +158,8 @@ class AdminSystemLogsController extends AdminLoggedInController
             'current_page' => $currentPage,
             'per_page' => $perPage,
             'total' => $totalLogs,
-            'last_page' => ceil($totalLogs / $perPage),
-            'from' => $offset + 1,
+            'last_page' => max(1, ceil($totalLogs / $perPage)),
+            'from' => $totalLogs > 0 ? $offset + 1 : 0,
             'to' => min($offset + $perPage, $totalLogs),
             'has_more_pages' => $currentPage < ceil($totalLogs / $perPage),
             'prev_page' => $currentPage > 1 ? $currentPage - 1 : null,
@@ -134,15 +179,21 @@ class AdminSystemLogsController extends AdminLoggedInController
     public function download(Request $request, $type = 'activity')
     {
         $fileName = $this->logPaths[$type] ?? $this->logPaths['activity'];
-        $filePath = storage_path("logs/{$fileName}");
-
-        if (!File::exists($filePath)) {
-            $filePath = $this->findDailyLogFile($fileName);
+        $selectedDate = $request->input('date');
+        
+        // 日付が指定されている場合はその日付のファイルを使用
+        if ($selectedDate) {
+            $filePath = $this->getLogFilePathByDate($fileName, $selectedDate);
+        } else {
+            $filePath = storage_path("logs/{$fileName}");
+            if (!File::exists($filePath)) {
+                $filePath = $this->findDailyLogFile($fileName);
+            }
         }
 
         if (!$filePath || !File::exists($filePath)) {
-            return redirect()->route('admin.settings.systems.logs', ['type' => $type])
-                ->with('error', __('admin/settings/systems/logs.system.messages.download_error', ['filename' => $fileName]));
+            return redirect()->route('admin.settings.systems.logs.files', ['type' => $type])
+                ->with('error', __('admin/settings/systems/logs/files.messages.download_error', ['filename' => $fileName]));
         }
 
         $downloadFileName = basename($filePath);
@@ -595,6 +646,74 @@ class AdminSystemLogsController extends AdminLoggedInController
         }
         
         return null;
+    }
+
+    /**
+     * 指定されたログファイルの利用可能な日付一覧を取得
+     */
+    protected function getAvailableLogDates(string $baseFileName): array
+    {
+        $logsPath = storage_path('logs');
+        $baseName = pathinfo($baseFileName, PATHINFO_FILENAME);
+        $extension = pathinfo($baseFileName, PATHINFO_EXTENSION);
+        
+        $dates = [];
+        
+        // 日付なしのファイルが存在する場合は「最新」として追加
+        $baseFilePath = "{$logsPath}/{$baseFileName}";
+        if (File::exists($baseFilePath)) {
+            $dates[''] = __('admin/settings/systems/logs/files.date_latest');
+        }
+        
+        // 日付付きファイルを検索（過去90日分）
+        for ($i = 0; $i < 90; $i++) {
+            $date = now()->subDays($i)->format('Y-m-d');
+            $dailyFileName = "{$baseName}-{$date}.{$extension}";
+            $dailyFilePath = "{$logsPath}/{$dailyFileName}";
+            
+            if (File::exists($dailyFilePath)) {
+                $fileSize = File::size($dailyFilePath);
+                $sizeLabel = $this->formatFileSize($fileSize);
+                $dates[$date] = $date . " ({$sizeLabel})";
+            }
+        }
+        
+        return $dates;
+    }
+
+    /**
+     * 指定された日付のログファイルパスを取得
+     */
+    protected function getLogFilePathByDate(string $baseFileName, string $date): ?string
+    {
+        $logsPath = storage_path('logs');
+        $baseName = pathinfo($baseFileName, PATHINFO_FILENAME);
+        $extension = pathinfo($baseFileName, PATHINFO_EXTENSION);
+        
+        $dailyFileName = "{$baseName}-{$date}.{$extension}";
+        $dailyFilePath = "{$logsPath}/{$dailyFileName}";
+        
+        if (File::exists($dailyFilePath)) {
+            return $dailyFilePath;
+        }
+        
+        return null;
+    }
+
+    /**
+     * ファイルサイズを人間が読みやすい形式にフォーマット
+     */
+    protected function formatFileSize(int $bytes): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB'];
+        $unitIndex = 0;
+        
+        while ($bytes >= 1024 && $unitIndex < count($units) - 1) {
+            $bytes /= 1024;
+            $unitIndex++;
+        }
+        
+        return round($bytes, 1) . ' ' . $units[$unitIndex];
     }
 
     /**

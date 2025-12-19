@@ -14,6 +14,8 @@
 
 return [
     'heading' => 'File Logs',
+    'date_latest' => 'Latest',
+    'date_select' => 'Select Date',
     'no_logs_found' => 'No logs found.',
     'activity' => 'Activity',
     'error' => 'Error',
@@ -37,4 +39,11 @@ return [
         'file_not_found' => 'Log file does not exist: :filename',
     ],
     'test_success' => 'Test log recorded: :results',
+    'level_filter' => [
+        'label' => 'Log Level',
+        'error' => 'Error',
+        'warning' => 'Warning',
+        'normal' => 'Normal',
+        'debug' => 'Debug',
+    ],
 ];

@@ -41,23 +41,74 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     
     <!-- Action Buttons -->
-    <nav class="flex flex-row items-center justify-center md:justify-end gap-2 mb-4">
-        <!-- Download Button -->
-        <a href="{{ route('admin.settings.systems.logs.download', ['type' => $logType]) }}" class="action-button action-button--success flex-shrink-0">
-            <i class="fas fa-download mr-2"></i>
-            {{ __('common.download') }}
-        </a>
+    <nav class="flex flex-row flex-wrap items-center justify-between gap-2 mb-4">
+        <!-- Date Selector -->
+        @if(!empty($availableDates) && count($availableDates) > 1)
+        <div class="flex items-center gap-2">
+            <label for="date-select" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {{ __('admin/settings/systems/logs/files.date_select') }}:
+            </label>
+            <select id="date-select" 
+                    onchange="window.location.href='{{ route('admin.settings.systems.logs.files', ['type' => $logType]) }}' + (this.value ? '?date=' + this.value : '')"
+                    class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white text-sm">
+                @foreach($availableDates as $dateValue => $dateLabel)
+                    <option value="{{ $dateValue }}" {{ ($selectedDate ?? '') === $dateValue ? 'selected' : '' }}>
+                        {{ $dateLabel }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        @else
+        <div></div>
+        @endif
 
-        <!-- Clear Button -->
-        <form method="POST" action="{{ route('admin.settings.systems.logs.clear', ['type' => $logType]) }}" 
-            onsubmit="return confirm('{{ __('admin/settings/systems/logs/files.clear_confirm') }}')">
-            @csrf
-            <button type="submit" class="action-button action-button--danger flex-shrink-0">
-                <i class="fas fa-trash mr-2"></i>
-                {{ __('common.clear') }}
-            </button>
-        </form>
+        <div class="flex items-center gap-2">
+            <!-- Download Button -->
+            <a href="{{ route('admin.settings.systems.logs.download', ['type' => $logType, 'date' => $selectedDate ?? '']) }}" class="action-button action-button--success flex-shrink-0">
+                <i class="fas fa-download mr-2"></i>
+                {{ __('common.download') }}
+            </a>
+
+            <!-- Clear Button -->
+            <form method="POST" action="{{ route('admin.settings.systems.logs.clear', ['type' => $logType]) }}" 
+                onsubmit="return confirm('{{ __('admin/settings/systems/logs/files.clear_confirm') }}')">
+                @csrf
+                <button type="submit" class="action-button action-button--danger flex-shrink-0">
+                    <i class="fas fa-trash mr-2"></i>
+                    {{ __('common.clear') }}
+                </button>
+            </form>
+        </div>
     </nav>
+
+    <!-- Log Level Filter -->
+    @if(!empty($availableLevelFilters))
+    <div class="mb-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+        <form id="level-filter-form" method="GET" action="{{ route('admin.settings.systems.logs.files', ['type' => $logType]) }}">
+            @if($selectedDate)
+                <input type="hidden" name="date" value="{{ $selectedDate }}">
+            @endif
+            @if(request('per_page'))
+                <input type="hidden" name="per_page" value="{{ request('per_page') }}">
+            @endif
+            <div class="flex flex-wrap items-center gap-4">
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {{ __('admin/settings/systems/logs/files.level_filter.label') }}:
+                </span>
+                <x-form.toggle-group
+                    name="levels"
+                    :options="$availableLevelFilters"
+                    :values="$levelFilters ?? ['error', 'warning', 'normal', 'debug']"
+                    flexDirection="row"
+                />
+                <button type="submit" class="action-button action-button--primary text-sm">
+                    <i class="fas fa-filter mr-1"></i>
+                    {{ __('common.filter') }}
+                </button>
+            </div>
+        </form>
+    </div>
+    @endif
 
     <!-- ページネーション制御 -->
     <x-pagination-controls
@@ -77,10 +128,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <x-pagination
         :pagination="$pagination ?? null"
         route="admin.settings.systems.logs.files"
-        :routeParams="array_filter([
-            'type' => $logType,
-            'per_page' => request('per_page')
-        ])"
+        :routeParams="array_merge(
+            array_filter([
+                'type' => $logType,
+                'per_page' => request('per_page'),
+                'date' => $selectedDate ?? null
+            ]),
+            isset($levelFilters) ? ['levels' => $levelFilters] : []
+        )"
         :mobilePageRange="0"
         :desktopPageRange="2"
     />
