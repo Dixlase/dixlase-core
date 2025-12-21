@@ -206,6 +206,22 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
                 'token_length' => strlen($token)
             ]);
 
+            // 障害時の挙動を設定から取得
+            $onFailure = config('security.external_services.captcha_on_failure', 'fail_closed');
+            
+            if ($onFailure === 'fail_open') {
+                Log::warning('CAPTCHA verification failed but fail_open is configured, allowing request', [
+                    'ip' => $request->ip(),
+                ]);
+                return new CaptchaResult(
+                    true,
+                    null,
+                    null,
+                    [],
+                    ['bypass' => true, 'reason' => 'fail_open_on_error', 'exception' => $e->getMessage()]
+                );
+            }
+
             return new CaptchaResult(
                 false,
                 null,

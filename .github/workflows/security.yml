@@ -70,6 +70,82 @@ jobs:
           retention-days: 30
 
   # ============================================
+  # PHPStan Static Analysis
+  # ============================================
+  phpstan:
+    name: PHPStan Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Run PHPStan
+        run: vendor/bin/phpstan analyse --error-format=json > phpstan-results.json || true
+
+      - name: Upload PHPStan results
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpstan-results
+          path: phpstan-results.json
+          retention-days: 30
+
+  # ============================================
+  # Security Summary Report
+  # ============================================
+  security-summary:
+    name: Security Summary
+    runs-on: ubuntu-latest
+    needs: [composer-audit, npm-audit, phpstan]
+    if: always()
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: security-reports
+
+      - name: Generate Summary
+        run: |
+          echo "# 🔒 Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Composer Audit" >> $GITHUB_STEP_SUMMARY
+          if [ -f security-reports/composer-audit/composer-audit.json ]; then
+            COMPOSER_VULNS=$(cat security-reports/composer-audit/composer-audit.json | jq -r '.advisories | length // 0' 2>/dev/null || echo "0")
+            echo "- Vulnerabilities found: **$COMPOSER_VULNS**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- Results not available" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## NPM Audit" >> $GITHUB_STEP_SUMMARY
+          if [ -f security-reports/npm-audit/npm-audit.json ]; then
+            NPM_VULNS=$(cat security-reports/npm-audit/npm-audit.json | jq -r '.metadata.vulnerabilities.total // 0' 2>/dev/null || echo "0")
+            echo "- Vulnerabilities found: **$NPM_VULNS**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- Results not available" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## PHPStan Analysis" >> $GITHUB_STEP_SUMMARY
+          if [ -f security-reports/phpstan-results/phpstan-results.json ]; then
+            PHPSTAN_ERRORS=$(cat security-reports/phpstan-results/phpstan-results.json | jq -r '.totals.file_errors // 0' 2>/dev/null || echo "0")
+            echo "- Errors found: **$PHPSTAN_ERRORS**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- Results not available" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "_Scan completed at $(date -u '+%Y-%m-%d %H:%M:%S UTC')_" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================
   # SAST (Static Application Security Testing)
   # ベータ版以降で有効化
   # ============================================
