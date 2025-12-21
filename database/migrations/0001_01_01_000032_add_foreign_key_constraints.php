@@ -94,6 +94,14 @@ return new class extends Migration
                 ->nullOnDelete();
         });
 
+        // file_integrity_audits.initiated_by_id -> members.id
+        Schema::table('file_integrity_audits', function (Blueprint $table) {
+            $table->foreign('initiated_by_id')
+                ->references('id')
+                ->on('members')
+                ->nullOnDelete();
+        });
+
         // ========================================
         // api_keys テーブルへの外部キー
         // ========================================
@@ -115,6 +123,11 @@ return new class extends Migration
         // api_request_logs
         Schema::table('api_request_logs', function (Blueprint $table) {
             $table->dropForeign(['api_key_id']);
+        });
+
+        // file_integrity_audits
+        Schema::table('file_integrity_audits', function (Blueprint $table) {
+            $table->dropForeign(['initiated_by_id']);
         });
 
         // security_events

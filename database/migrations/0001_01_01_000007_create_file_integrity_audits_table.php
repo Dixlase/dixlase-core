@@ -46,14 +46,8 @@ return new class extends Migration
             // 詳細情報
             $table->text('summary')->nullable();
             $table->json('result_payload')->nullable();
-
             $table->timestamps();
 
-            // 外部キー
-            $table->foreign('initiated_by_id')
-                ->references('id')
-                ->on('members')
-                ->onDelete('set null');
         });
     }
 

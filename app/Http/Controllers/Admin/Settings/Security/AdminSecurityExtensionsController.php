@@ -26,6 +26,7 @@ use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 use App\Enums\ExtensionSecurityLevel;
 use App\Enums\ExtensionSecurityPreset;
+use App\Enums\SecurityAction;
 use App\Models\BaseSetting;
 use Illuminate\Http\Request;
 
@@ -53,7 +54,7 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
             'extension_plugin_max_health_level' => (int) $this->securitySettingRepository->get('extension_plugin_max_health_level', ExtensionSecurityLevel::Warning->value),
             'extension_theme_max_health_level' => (int) $this->securitySettingRepository->get('extension_theme_max_health_level', ExtensionSecurityLevel::NeedsAttention->value),
             'extension_allow_logic_themes' => filter_var($this->securitySettingRepository->get('extension_allow_logic_themes', true), FILTER_VALIDATE_BOOLEAN),
-            'extension_permission_mismatch_action' => $this->securitySettingRepository->get('extension_permission_mismatch_action', 'warn'),
+            'extension_permission_mismatch_action' => $this->securitySettingRepository->get('extension_permission_mismatch_action', SecurityAction::default()->toString()),
             // Extension notification settings
             'extension_notify_on_install' => filter_var($this->securitySettingRepository->get('extension_notify_on_install', true), FILTER_VALIDATE_BOOLEAN),
             'extension_notify_on_uninstall' => filter_var($this->securitySettingRepository->get('extension_notify_on_uninstall', true), FILTER_VALIDATE_BOOLEAN),
@@ -90,7 +91,7 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
             'extension_plugin_max_health_level' => 'required|integer|min:0|max:3',
             'extension_theme_max_health_level' => 'required|integer|min:0|max:3',
             'extension_allow_logic_themes' => 'boolean',
-            'extension_permission_mismatch_action' => 'required|in:warn,block',
+            'extension_permission_mismatch_action' => 'required|' . SecurityAction::validationRule(),
             'extension_notify_on_install' => 'boolean',
             'extension_notify_on_uninstall' => 'boolean',
             'extension_notify_on_enable' => 'boolean',

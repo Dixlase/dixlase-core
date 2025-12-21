@@ -12,5 +12,6 @@ return [
     App\Providers\RepositoryServiceProvider::class,
     App\Providers\ShortcodeServiceProvider::class,
     App\Providers\ThemeServiceProvider::class,
+    App\Providers\WebhookServiceProvider::class,
     Themes\DixlaseDefaultTheme\App\Providers\DixlaseDefaultThemeServiceProvider::class,
 ];
