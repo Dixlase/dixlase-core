@@ -25,6 +25,7 @@ namespace App\Helpers;
 use App\Models\SecuritySetting;
 use App\Models\MemberSetting;
 use App\Services\CaptchaTestService;
+use App\Services\CaptchaFailoverService;
 use Illuminate\Support\Facades\Log;
 
 class CaptchaHelper
@@ -86,33 +87,46 @@ class CaptchaHelper
 
     /**
      * 現在のCAPTCHAドライバーを取得
+     * フェイルオーバー中の場合は一時的なアクティブプロバイダーを返す
      */
     public static function getDriver(): string
     {
-        return SecuritySetting::get('captcha_driver', 'google');
+        return CaptchaFailoverService::getActiveProvider();
     }
 
     /**
      * サイトキーを取得
+     * フェイルオーバー中の場合はアクティブプロバイダーのキーを返す
      */
     public static function getSiteKey(): string
     {
-        $siteKey = SecuritySetting::get('captcha_site_key', '');
+        $activeProvider = CaptchaFailoverService::getActiveProvider();
+        $config = CaptchaFailoverService::getProviderConfig($activeProvider);
         
-        // デバッグ用ログ
-        Log::info('CaptchaHelper getSiteKey debug', [
-            'site_key' => $siteKey,
-            'site_key_length' => strlen($siteKey)
-        ]);
+        // プロバイダー固有のキーがあればそれを使用
+        if (!empty($config['site_key'])) {
+            return $config['site_key'];
+        }
         
-        return $siteKey;
+        // フォールバック: 統一キー
+        return SecuritySetting::get('captcha_site_key', '');
     }
 
     /**
      * シークレットキーを取得
+     * フェイルオーバー中の場合はアクティブプロバイダーのキーを返す
      */
     public static function getSecretKey(): string
     {
+        $activeProvider = CaptchaFailoverService::getActiveProvider();
+        $config = CaptchaFailoverService::getProviderConfig($activeProvider);
+        
+        // プロバイダー固有のキーがあればそれを使用
+        if (!empty($config['secret_key'])) {
+            return $config['secret_key'];
+        }
+        
+        // フォールバック: 統一キー
         return SecuritySetting::get('captcha_secret_key', '');
     }
 

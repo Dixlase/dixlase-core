@@ -87,7 +87,7 @@ class SecuritySettingsTableSeeder extends Seeder
             ['value' => '0']
         );
 
-        // 統一キー設定（プロバイダー共通）
+        // 統一キー設定（プロバイダー共通・後方互換性用）
         SecuritySetting::updateOrCreate(
             ['name' => 'captcha_site_key'],
             ['value' => '']
@@ -98,7 +98,77 @@ class SecuritySettingsTableSeeder extends Seeder
             ['value' => '']
         );
 
-        
+        // Google reCAPTCHA プロバイダー固有設定
+        SecuritySetting::updateOrCreate(
+            ['name' => 'captcha_google_site_key'],
+            ['value' => '']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'captcha_google_secret_key'],
+            ['value' => '']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'captcha_google_enabled'],
+            ['value' => '0']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'captcha_google_verified'],
+            ['value' => '0']
+        );
+
+        // Google reCAPTCHA Enterprise プロバイダー固有設定
+        SecuritySetting::updateOrCreate(
+            ['name' => 'captcha_google_enterprise_site_key'],
+            ['value' => '']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'captcha_google_enterprise_secret_key'],
+            ['value' => '']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'captcha_google_enterprise_project_id'],
+            ['value' => '']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'captcha_google_enterprise_min_score'],
+            ['value' => '0.5']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'captcha_google_enterprise_enabled'],
+            ['value' => '0']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'captcha_google_enterprise_verified'],
+            ['value' => '0']
+        );
+
+        // Cloudflare Turnstile プロバイダー固有設定
+        SecuritySetting::updateOrCreate(
+            ['name' => 'captcha_turnstile_site_key'],
+            ['value' => '']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'captcha_turnstile_secret_key'],
+            ['value' => '']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'captcha_turnstile_enabled'],
+            ['value' => '0']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'captcha_turnstile_verified'],
+            ['value' => '0']
+        );
+
+        // フェイルオーバー設定
+        SecuritySetting::updateOrCreate(
+            ['name' => 'captcha_auto_failover_enabled'],
+            ['value' => '1']
+        );
+        SecuritySetting::updateOrCreate(
+            ['name' => 'captcha_failover_priority'],
+            ['value' => 'turnstile,google_enterprise,google']
+        );
 
         // IP Restriction settings
         SecuritySetting::updateOrCreate(

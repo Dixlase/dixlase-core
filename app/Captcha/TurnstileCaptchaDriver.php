@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Models\SecuritySetting;
 use App\Helpers\CaptchaHelper;
+use App\Services\CaptchaFailoverService;
 
 class TurnstileCaptchaDriver implements CaptchaDriver
 {
@@ -74,6 +75,8 @@ class TurnstileCaptchaDriver implements CaptchaDriver
             }
 
             if ($data['success']) {
+                // 成功を記録
+                CaptchaFailoverService::recordSuccess('turnstile');
                 return new CaptchaResult(true);
             }
 
@@ -92,6 +95,9 @@ class TurnstileCaptchaDriver implements CaptchaDriver
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+
+            // 失敗を記録（自動フェイルオーバーのトリガー）
+            CaptchaFailoverService::recordFailure('turnstile', $e->getMessage());
 
             // 障害時の挙動を設定から取得
             $onFailure = config('security.external_services.captcha_on_failure', 'fail_closed');
