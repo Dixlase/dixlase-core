@@ -53,11 +53,15 @@ class TurnstileCaptchaDriver implements CaptchaDriver
                 return new CaptchaResult(false, null, null, ['CAPTCHA token is missing']);
             }
             
-            $response = Http::asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
-                'secret' => $this->secretKey,
-                'response' => $token,
-                'remoteip' => $remoteIp,
-            ]);
+            $timeout = config('security.external_services.captcha_timeout', 10);
+            
+            $response = Http::timeout($timeout)
+                ->asForm()
+                ->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
+                    'secret' => $this->secretKey,
+                    'response' => $token,
+                    'remoteip' => $remoteIp,
+                ]);
 
             if (!$response->successful()) {
                 Log::error('Turnstile API request failed', [
