@@ -26,6 +26,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Helpers\CaptchaHelper;
+use App\Services\CaptchaFailoverService;
 
 class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
 {
@@ -193,6 +194,9 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
                 );
             }
 
+            // 成功を記録
+            CaptchaFailoverService::recordSuccess('google_enterprise');
+            
             return new CaptchaResult(true, $score, $action, [], ['score' => $score]);
 
         } catch (\Exception $e) {
@@ -205,6 +209,9 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
                 'site_key' => substr($this->config['site_key'] ?? '', 0, 10) . '...',
                 'token_length' => strlen($token)
             ]);
+
+            // 失敗を記録（自動フェイルオーバーのトリガー）
+            CaptchaFailoverService::recordFailure('google_enterprise', $e->getMessage());
 
             // 障害時の挙動を設定から取得
             $onFailure = config('security.external_services.captcha_on_failure', 'fail_closed');
