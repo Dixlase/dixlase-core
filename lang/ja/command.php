@@ -516,4 +516,29 @@ return [
         'notification_sent' => 'アラート通知を送信しました: :email',
         'notification_failed' => '通知の送信に失敗しました: :error',
     ],
+
+    // Webhook関連
+    'webhook' => [
+        'dead_letters' => [
+            'no_action' => 'アクションが指定されていません。以下のオプションを使用してください:',
+            'option_notify' => '未通知のデッドレターの通知を送信',
+            'option_cleanup' => '古いデッドレターレコードをクリーンアップ',
+            'option_stats' => 'デッドレター統計を表示',
+            'sending_notifications' => '未通知のデッドレターの通知を送信中...',
+            'notifications_sent' => ':count 件の通知を送信しました。',
+            'no_pending_notifications' => '保留中の通知はありません。',
+            'cleaning_up' => ':days 日以上前のデッドレターをクリーンアップ中...',
+            'cleanup_complete' => ':count 件のレコードを削除しました。',
+            'stats_title' => 'Webhookデッドレター統計（過去30日間）',
+            'stat_name' => '項目',
+            'stat_value' => '値',
+            'total' => '合計',
+            'pending' => '保留中',
+            'notified' => '通知済み',
+            'manually_retried' => '手動リトライ済み',
+            'by_event' => 'イベント別:',
+            'event' => 'イベント',
+            'count' => '件数',
+        ],
+    ],
 ];

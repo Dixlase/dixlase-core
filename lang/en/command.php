@@ -517,4 +517,29 @@ return [
         'notification_failed' => 'Failed to send notification: :error',
     ],
 
+    // Webhook related
+    'webhook' => [
+        'dead_letters' => [
+            'no_action' => 'No action specified. Use one of the following options:',
+            'option_notify' => 'Send notifications for unnotified dead letters',
+            'option_cleanup' => 'Clean up old dead letter records',
+            'option_stats' => 'Show dead letter statistics',
+            'sending_notifications' => 'Sending notifications for unnotified dead letters...',
+            'notifications_sent' => ':count notification(s) sent.',
+            'no_pending_notifications' => 'No pending notifications.',
+            'cleaning_up' => 'Cleaning up dead letters older than :days days...',
+            'cleanup_complete' => ':count record(s) deleted.',
+            'stats_title' => 'Webhook Dead Letter Statistics (Last 30 Days)',
+            'stat_name' => 'Metric',
+            'stat_value' => 'Value',
+            'total' => 'Total',
+            'pending' => 'Pending',
+            'notified' => 'Notified',
+            'manually_retried' => 'Manually Retried',
+            'by_event' => 'By Event:',
+            'event' => 'Event',
+            'count' => 'Count',
+        ],
+    ],
+
 ];

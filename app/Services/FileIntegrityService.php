@@ -100,9 +100,9 @@ class FileIntegrityService implements FileIntegrityServiceInterface
     }
 
     /**
-     * ベースラインをファイルに保存
+     * ベースラインをファイルに保存（配列版 - 内部使用）
      */
-    public function saveBaseline(array $baseline, string $filename = 'core_hashes.json'): bool
+    public function saveBaselineArray(array $baseline, string $filename = 'core_hashes.json'): bool
     {
         try {
             if (!File::isDirectory($this->baselinePath)) {
@@ -128,9 +128,42 @@ class FileIntegrityService implements FileIntegrityServiceInterface
     }
 
     /**
-     * ベースラインを読み込み
+     * ベースラインを保存（Contract対応）
+     * 
+     * @param BaselineDTO $baseline ベースライン
+     * @param string $filename ファイル名
+     * @return bool
      */
-    public function loadBaseline(string $filename = 'core_hashes.json'): ?array
+    public function saveBaseline(BaselineDTO $baseline, string $filename = 'core_hashes.json'): bool
+    {
+        try {
+            if (!File::isDirectory($this->baselinePath)) {
+                File::makeDirectory($this->baselinePath, 0755, true);
+            }
+
+            $filePath = $this->baselinePath . DIRECTORY_SEPARATOR . $filename;
+            File::put($filePath, json_encode($baseline->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+            Log::channel('admin_activity')->info('ファイル整合性ベースラインを生成しました', [
+                'filename' => $filename,
+                'files_count' => $baseline->getFileCount(),
+                'version' => $baseline->appVersion,
+                'scope' => $baseline->scope,
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::channel('admin_error')->error('ベースライン保存エラー', [
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * ベースラインを読み込み（配列版 - 内部使用）
+     */
+    public function loadBaselineArray(string $filename = 'core_hashes.json'): ?array
     {
         $filePath = $this->baselinePath . DIRECTORY_SEPARATOR . $filename;
 
@@ -141,6 +174,32 @@ class FileIntegrityService implements FileIntegrityServiceInterface
         try {
             $content = File::get($filePath);
             return json_decode($content, true);
+        } catch (\Exception $e) {
+            Log::channel('admin_error')->error('ベースライン読み込みエラー', [
+                'error' => $e->getMessage(),
+            ]);
+            return null;
+        }
+    }
+
+    /**
+     * ベースラインを読み込み（Contract対応）
+     * 
+     * @param string $filename ファイル名
+     * @return BaselineDTO|null
+     */
+    public function loadBaseline(string $filename = 'core_hashes.json'): ?BaselineDTO
+    {
+        $filePath = $this->baselinePath . DIRECTORY_SEPARATOR . $filename;
+
+        if (!File::exists($filePath)) {
+            return null;
+        }
+
+        try {
+            $content = File::get($filePath);
+            $data = json_decode($content, true);
+            return BaselineDTO::fromArray($data);
         } catch (\Exception $e) {
             Log::channel('admin_error')->error('ベースライン読み込みエラー', [
                 'error' => $e->getMessage(),
@@ -173,12 +232,12 @@ class FileIntegrityService implements FileIntegrityServiceInterface
 
         try {
             // ベースラインを読み込み
-            $baseline = $this->loadBaseline();
+            $baseline = $this->loadBaselineArray();
 
             if (!$baseline) {
                 // ベースラインがない場合は生成して保存
                 $baseline = $this->generateCoreBaseline();
-                $this->saveBaseline($baseline);
+                $this->saveBaselineArray($baseline);
 
                 $audit->update([
                     'status' => FileIntegrityAudit::STATUS_OK,
@@ -510,7 +569,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
      */
     public function getBaselineMeta(string $filename = 'core_hashes.json'): ?array
     {
-        $baseline = $this->loadBaseline($filename);
+        $baseline = $this->loadBaselineArray($filename);
         
         if (!$baseline || !isset($baseline['meta'])) {
             return null;
@@ -523,14 +582,16 @@ class FileIntegrityService implements FileIntegrityServiceInterface
 
     /**
      * ベースラインを再生成（現在の状態を基準にする）
+     * 
+     * @deprecated 新しいコードではregenerateBaselineWithTarget()を使用してください
      */
-    public function regenerateBaseline(
+    public function regenerateBaselineCore(
         string $trigger = FileIntegrityAudit::TRIGGER_MANUAL,
         string $initiatedByType = FileIntegrityAudit::INITIATED_BY_USER,
         ?int $initiatedById = null
     ): bool {
         $baseline = $this->generateCoreBaseline();
-        $result = $this->saveBaseline($baseline);
+        $result = $this->saveBaselineArray($baseline);
 
         if ($result) {
             // 監査ログを記録
@@ -600,65 +661,6 @@ class FileIntegrityService implements FileIntegrityServiceInterface
     }
 
     /**
-     * ベースラインを保存（Contract対応・オーバーロード）
-     * 
-     * @param BaselineDTO|array $baseline ベースライン
-     * @param string $filename ファイル名
-     * @return bool
-     */
-    public function saveBaselineDTO(BaselineDTO $baseline, string $filename = 'core_hashes.json'): bool
-    {
-        try {
-            if (!File::isDirectory($this->baselinePath)) {
-                File::makeDirectory($this->baselinePath, 0755, true);
-            }
-
-            $filePath = $this->baselinePath . DIRECTORY_SEPARATOR . $filename;
-            File::put($filePath, json_encode($baseline->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-            Log::channel('admin_activity')->info('ファイル整合性ベースラインを生成しました', [
-                'filename' => $filename,
-                'files_count' => $baseline->getFileCount(),
-                'version' => $baseline->appVersion,
-                'scope' => $baseline->scope,
-            ]);
-
-            return true;
-        } catch (\Exception $e) {
-            Log::channel('admin_error')->error('ベースライン保存エラー', [
-                'error' => $e->getMessage(),
-            ]);
-            return false;
-        }
-    }
-
-    /**
-     * ベースラインを読み込み（Contract対応）
-     * 
-     * @param string $filename ファイル名
-     * @return BaselineDTO|null
-     */
-    public function loadBaselineDTO(string $filename = 'core_hashes.json'): ?BaselineDTO
-    {
-        $filePath = $this->baselinePath . DIRECTORY_SEPARATOR . $filename;
-
-        if (!File::exists($filePath)) {
-            return null;
-        }
-
-        try {
-            $content = File::get($filePath);
-            $data = json_decode($content, true);
-            return BaselineDTO::fromArray($data);
-        } catch (\Exception $e) {
-            Log::channel('admin_error')->error('ベースライン読み込みエラー', [
-                'error' => $e->getMessage(),
-            ]);
-            return null;
-        }
-    }
-
-    /**
      * ファイル整合性スキャンを実行（Contract対応）
      * 
      * @param ScanTargetDTO $target スキャン対象
@@ -692,12 +694,12 @@ class FileIntegrityService implements FileIntegrityServiceInterface
 
         try {
             // ベースラインを読み込み
-            $baseline = $this->loadBaselineDTO($filename);
+            $baseline = $this->loadBaseline($filename);
 
             if (!$baseline) {
                 // ベースラインがない場合は生成して保存
                 $baseline = $this->generateBaseline($target);
-                $this->saveBaselineDTO($baseline, $filename);
+                $this->saveBaseline($baseline, $filename);
 
                 $audit->update([
                     'status' => FileIntegrityAudit::STATUS_OK,
@@ -862,7 +864,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
      * @param int|null $initiatedById 実行者ID
      * @return bool
      */
-    public function regenerateBaselineDTO(
+    public function regenerateBaseline(
         ScanTargetDTO $target,
         string $trigger = 'manual',
         string $initiatedByType = 'user',
@@ -870,7 +872,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
     ): bool {
         $baseline = $this->generateBaseline($target);
         $filename = $target->getBaselineFilename();
-        $result = $this->saveBaselineDTO($baseline, $filename);
+        $result = $this->saveBaseline($baseline, $filename);
 
         if ($result) {
             // 監査ログを記録

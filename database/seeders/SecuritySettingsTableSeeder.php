@@ -28,6 +28,10 @@ use App\Models\SecuritySetting;
 use App\Enums\LogLevel;
 use App\Enums\ExtensionSecurityLevel;
 use App\Enums\ExtensionSecurityPreset;
+use App\Enums\CspMode;
+use App\Enums\CspBlocklistAction;
+use App\Enums\SecurityAction;
+use App\Enums\CaptchaProvider;
 
 class SecuritySettingsTableSeeder extends Seeder
 {
@@ -55,7 +59,7 @@ class SecuritySettingsTableSeeder extends Seeder
 
         SecuritySetting::updateOrCreate(
             ['name' => 'captcha_driver'],
-            ['value' => 'google']
+            ['value' => CaptchaProvider::GOOGLE->value]
         );
 
         SecuritySetting::updateOrCreate(
@@ -192,7 +196,7 @@ class SecuritySettingsTableSeeder extends Seeder
         // 権限不一致時の動作（warn: 警告のみ, block: ブロック）
         SecuritySetting::updateOrCreate(
             ['name' => 'extension_permission_mismatch_action'],
-            ['value' => 'warn']
+            ['value' => SecurityAction::default()->toString()]
         );
 
         // Extension notification settings (拡張機能操作通知)
@@ -239,10 +243,10 @@ class SecuritySettingsTableSeeder extends Seeder
             ['value' => '1']
         );
 
-        // CSPモード（enforce: 強制, report-only: レポートのみ）
+        // CSPモード（development: 開発, standard: 標準, strict: 厳格）
         SecuritySetting::updateOrCreate(
             ['name' => 'csp_mode'],
-            ['value' => 'report-only']
+            ['value' => CspMode::default()->toString()]
         );
 
         // CSP違反をログに記録
@@ -267,6 +271,24 @@ class SecuritySettingsTableSeeder extends Seeder
         // カスタムディレクティブ（JSON形式）
         SecuritySetting::updateOrCreate(
             ['name' => 'csp_custom_directives'],
+            ['value' => '']
+        );
+
+        // CSPブロックリスト検出有効/無効
+        SecuritySetting::updateOrCreate(
+            ['name' => 'csp_blocklist_check_enabled'],
+            ['value' => '0']
+        );
+
+        // CSPブロックリスト検出時のアクション（warn: 警告, block: ブロック）
+        SecuritySetting::updateOrCreate(
+            ['name' => 'csp_blocklist_action'],
+            ['value' => CspBlocklistAction::default()->toString()]
+        );
+
+        // CSPブロックリスト有効カテゴリ（カンマ区切り）
+        SecuritySetting::updateOrCreate(
+            ['name' => 'csp_blocklist_enabled_categories'],
             ['value' => '']
         );
 

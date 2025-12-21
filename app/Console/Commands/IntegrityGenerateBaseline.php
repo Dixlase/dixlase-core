@@ -54,7 +54,7 @@ class IntegrityGenerateBaseline extends Command
         // 保存
         $this->output->write(__('command.integrity.saving_baseline'));
 
-        if ($service->saveBaseline($baseline)) {
+        if ($service->saveBaselineArray($baseline)) {
             $this->info(' ' . __('common.done'));
 
             // 監査ログを記録

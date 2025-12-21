@@ -728,7 +728,7 @@ class InstallController extends Controller
             try {
                 $fileIntegrityService = app(\App\Services\FileIntegrityService::class);
                 $baseline = $fileIntegrityService->generateCoreBaseline();
-                $fileIntegrityService->saveBaseline($baseline);
+                $fileIntegrityService->saveBaselineArray($baseline);
                 
                 // 監査ログを記録
                 \App\Models\FileIntegrityAudit::create([
@@ -845,15 +845,25 @@ class InstallController extends Controller
         // ✅ セッションデータから管理画面URLを先に取得
         $adminSlug = session('install_data.admin_url', 'admin');
         
-        // ✅ force_ssl設定を確認
+        // ✅ force_ssl設定を確認（.envから取得、base_settingsはフォールバック）
         $forceSsl = false;
-        try {
-            $forceSsl = DB::table('base_settings')
-                ->where('key', 'force_ssl')
-                ->value('value') === '1';
-        } catch (\Exception $e) {
-            Log::channel('install')->warning('force_ssl設定の取得に失敗: ' . $e->getMessage());
+        
+        // まず.envのFORCE_SSLを確認
+        $envForceSsl = env('FORCE_SSL');
+        if ($envForceSsl === 'true' || $envForceSsl === true) {
+            $forceSsl = true;
+        } else {
+            // base_settingsからも確認
+            try {
+                $forceSsl = DB::table('base_settings')
+                    ->where('name', 'force_ssl')
+                    ->value('value') === '1';
+            } catch (\Exception $e) {
+                Log::channel('install')->warning('force_ssl設定の取得に失敗: ' . $e->getMessage());
+            }
         }
+        
+        Log::channel('install')->info('force_ssl設定: ' . ($forceSsl ? 'true' : 'false'));
         
         // ✅ `.env` の `APP_URL` を確実に取得する
         $envAppUrl = env('APP_URL');
@@ -1033,20 +1043,56 @@ class InstallController extends Controller
 
 
         foreach ($values as $key => $value) {
+            // 値にスペース、特殊文字、または空の場合は引用符で囲む
+            $formattedValue = $this->formatEnvValue($value);
+            
             if (preg_match("/^{$key}=/m", $env)) {
                 // 既存の値を更新
                 $env = preg_replace(
                     "/^{$key}=.*/m",
-                    "{$key}={$value}",
+                    "{$key}={$formattedValue}",
                     $env
                 );
             } else {
                 // `.env` に存在しない場合は末尾に追加
-                $env .= "\n{$key}={$value}";
+                $env .= "\n{$key}={$formattedValue}";
             }
         }
 
         File::put($envPath, $env);
+    }
+    
+    /**
+     * .env用に値をフォーマットする
+     * スペースや特殊文字を含む場合は引用符で囲む
+     */
+    private function formatEnvValue($value): string
+    {
+        // nullの場合は空文字列
+        if ($value === null) {
+            return '';
+        }
+        
+        // booleanの場合は文字列に変換
+        if (is_bool($value)) {
+            return $value ? 'true' : 'false';
+        }
+        
+        $value = (string) $value;
+        
+        // 空文字列、スペース、特殊文字を含む場合は引用符で囲む
+        if ($value === '' || 
+            preg_match('/[\s"\'#$]/', $value) || 
+            str_contains($value, '=')) {
+            // 既に引用符で囲まれている場合はそのまま
+            if (preg_match('/^".*"$/', $value) || preg_match("/^'.*'$/", $value)) {
+                return $value;
+            }
+            // ダブルクォートで囲む（内部のダブルクォートはエスケープ）
+            return '"' . str_replace('"', '\\"', $value) . '"';
+        }
+        
+        return $value;
     }
 
     /**
