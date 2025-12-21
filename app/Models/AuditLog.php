@@ -57,13 +57,34 @@ class AuditLog extends Model
         'plugin_version',
         'context',
         'schema_version',
+        'record_hash',
+        'previous_hash',
+        'chain_sequence',
+        'hash_algorithm',
+        'verification_status',
+        'last_verified_at',
     ];
 
     protected $casts = [
         'occurred_at' => 'datetime',
         'context' => 'array',
         'schema_version' => 'integer',
+        'chain_sequence' => 'integer',
+        'last_verified_at' => 'datetime',
     ];
+
+    // ========================================
+    // ハッシュチェーン検証ステータス定数
+    // ========================================
+    public const VERIFICATION_VALID = 'valid';
+    public const VERIFICATION_INVALID = 'invalid';
+    public const VERIFICATION_SKIPPED = 'skipped';
+
+    // ハッシュアルゴリズム
+    public const HASH_ALGORITHM = 'sha256';
+
+    // 最初のレコードの previous_hash
+    public const GENESIS_HASH = 'genesis';
 
     // ========================================
     // Severity（重要度）定数
@@ -749,5 +770,227 @@ class AuditLog extends Model
         });
 
         return $query->whereIn('action', $filtered);
+    }
+
+    // ========================================
+    // ハッシュチェーン機能
+    // ========================================
+
+    /**
+     * このレコードのハッシュを計算
+     *
+     * @param string|null $previousHash 前レコードのハッシュ
+     * @return string SHA-256ハッシュ（64文字）
+     */
+    public function calculateHash(?string $previousHash = null): string
+    {
+        $previousHash = $previousHash ?? $this->previous_hash ?? self::GENESIS_HASH;
+
+        // ハッシュ計算対象のデータを構築
+        $data = implode('|', [
+            $this->id,
+            $this->occurred_at?->toIso8601String() ?? '',
+            $this->severity ?? '',
+            $this->outcome ?? '',
+            $this->category ?? '',
+            $this->action ?? '',
+            $this->actor_type ?? '',
+            $this->actor_id ?? '',
+            $this->target_type ?? '',
+            $this->target_id ?? '',
+            $this->ip_address ?? '',
+            json_encode($this->context ?? []),
+            $previousHash,
+        ]);
+
+        return hash(self::HASH_ALGORITHM, $data);
+    }
+
+    /**
+     * ハッシュチェーンを設定してレコードを保存
+     *
+     * @return bool
+     */
+    public function saveWithHashChain(): bool
+    {
+        // 前のレコードを取得
+        $previousLog = self::where('id', '<', $this->id)
+            ->whereNotNull('record_hash')
+            ->orderBy('id', 'desc')
+            ->first();
+
+        // previous_hashを設定
+        $this->previous_hash = $previousLog?->record_hash ?? self::GENESIS_HASH;
+
+        // chain_sequenceを設定
+        $this->chain_sequence = $previousLog ? ($previousLog->chain_sequence + 1) : 1;
+
+        // record_hashを計算
+        $this->record_hash = $this->calculateHash($this->previous_hash);
+
+        // hash_algorithmを設定
+        $this->hash_algorithm = self::HASH_ALGORITHM;
+
+        return $this->save();
+    }
+
+    /**
+     * このレコードのハッシュを検証
+     *
+     * @return bool
+     */
+    public function verifyHash(): bool
+    {
+        if (empty($this->record_hash)) {
+            return false;
+        }
+
+        $expectedHash = $this->calculateHash($this->previous_hash);
+        return hash_equals($expectedHash, $this->record_hash);
+    }
+
+    /**
+     * このレコードのチェーンリンクを検証（前レコードとの整合性）
+     *
+     * @return bool
+     */
+    public function verifyChainLink(): bool
+    {
+        // 最初のレコードの場合
+        if ($this->previous_hash === self::GENESIS_HASH) {
+            return $this->chain_sequence === 1;
+        }
+
+        // 前のレコードを取得
+        $previousLog = self::where('record_hash', $this->previous_hash)->first();
+
+        if (!$previousLog) {
+            return false;
+        }
+
+        // シーケンスの連続性を確認
+        return $previousLog->chain_sequence === ($this->chain_sequence - 1);
+    }
+
+    /**
+     * 検証ステータスを更新
+     *
+     * @param bool $isValid
+     */
+    public function markAsVerified(bool $isValid): void
+    {
+        $this->update([
+            'verification_status' => $isValid ? self::VERIFICATION_VALID : self::VERIFICATION_INVALID,
+            'last_verified_at' => now(),
+        ]);
+    }
+
+    /**
+     * ハッシュチェーンが有効かどうか
+     */
+    public function hasValidHashChain(): bool
+    {
+        return !empty($this->record_hash) && !empty($this->previous_hash);
+    }
+
+    /**
+     * 検証済みかどうか
+     */
+    public function isVerified(): bool
+    {
+        return $this->verification_status === self::VERIFICATION_VALID;
+    }
+
+    /**
+     * 改ざんが検知されたかどうか
+     */
+    public function isTampered(): bool
+    {
+        return $this->verification_status === self::VERIFICATION_INVALID;
+    }
+
+    // ========================================
+    // スコープ（ハッシュチェーン用）
+    // ========================================
+
+    /**
+     * ハッシュチェーンが設定されているレコード
+     */
+    public function scopeWithHashChain($query)
+    {
+        return $query->whereNotNull('record_hash');
+    }
+
+    /**
+     * ハッシュチェーンが未設定のレコード
+     */
+    public function scopeWithoutHashChain($query)
+    {
+        return $query->whereNull('record_hash');
+    }
+
+    /**
+     * 検証済みレコード
+     */
+    public function scopeVerified($query)
+    {
+        return $query->where('verification_status', self::VERIFICATION_VALID);
+    }
+
+    /**
+     * 改ざん検知されたレコード
+     */
+    public function scopeTampered($query)
+    {
+        return $query->where('verification_status', self::VERIFICATION_INVALID);
+    }
+
+    /**
+     * 未検証レコード
+     */
+    public function scopeUnverified($query)
+    {
+        return $query->whereNull('verification_status');
+    }
+
+    // ========================================
+    // 静的ヘルパー（ハッシュチェーン用）
+    // ========================================
+
+    /**
+     * 最新のハッシュを取得
+     *
+     * @return string|null
+     */
+    public static function getLatestHash(): ?string
+    {
+        return self::whereNotNull('record_hash')
+            ->orderBy('id', 'desc')
+            ->value('record_hash');
+    }
+
+    /**
+     * 最新のシーケンス番号を取得
+     *
+     * @return int
+     */
+    public static function getLatestSequence(): int
+    {
+        return (int) self::whereNotNull('chain_sequence')
+            ->orderBy('id', 'desc')
+            ->value('chain_sequence') ?? 0;
+    }
+
+    /**
+     * ハッシュチェーン付きでログを記録
+     *
+     * @param array $data
+     * @return self
+     */
+    public static function logWithHashChain(array $data): self
+    {
+        $log = self::log($data);
+        $log->saveWithHashChain();
+        return $log;
     }
 }
