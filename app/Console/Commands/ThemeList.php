@@ -49,7 +49,7 @@ class ThemeList extends Command
         $themes = DB::table('theme_settings')->get();
         
         if ($themes->isEmpty()) {
-            $this->info(__('command.theme_list.no_themes'));
+            $this->info(__('admin/command.theme_list.no_themes'));
             return;
         }
 
@@ -58,7 +58,7 @@ class ThemeList extends Command
                 'ID' => $theme->id,
                 'Name' => $theme->name,
                 'Directory' => $theme->directory,
-                'Status' => $theme->enabled_at ? __('command.theme_list.enabled') : __('command.theme_list.disabled'),
+                'Status' => $theme->enabled_at ? __('admin/command.theme_list.enabled') : __('admin/command.theme_list.disabled'),
             ];
         })->toArray();
 

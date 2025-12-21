@@ -85,17 +85,17 @@ class LockdownCommand extends Command
 
         // 確認
         if (!$this->option('force')) {
-            $this->warn(__('command.lockdown.warning'));
+            $this->warn(__('admin/command.lockdown.warning'));
             $this->newLine();
-            $this->line(__('command.lockdown.type') . ": {$type}");
-            $this->line(__('command.lockdown.reason') . ": {$reason}");
+            $this->line(__('admin/command.lockdown.type') . ": {$type}");
+            $this->line(__('admin/command.lockdown.reason') . ": {$reason}");
             if ($duration) {
-                $this->line(__('command.lockdown.duration') . ": {$duration} " . __('command.lockdown.minutes'));
+                $this->line(__('admin/command.lockdown.duration') . ": {$duration} " . __('admin/command.lockdown.minutes'));
             }
             $this->newLine();
 
-            if (!$this->confirm(__('command.lockdown.confirm_activate'))) {
-                $this->info(__('command.lockdown.cancelled'));
+            if (!$this->confirm(__('admin/command.lockdown.confirm_activate'))) {
+                $this->info(__('admin/command.lockdown.cancelled'));
                 return self::SUCCESS;
             }
         }
@@ -110,15 +110,15 @@ class LockdownCommand extends Command
             $allowedMembers
         );
 
-        $this->error(__('command.lockdown.activated'));
+        $this->error(__('admin/command.lockdown.activated'));
         $this->newLine();
         $this->table(
-            [__('command.lockdown.field'), __('command.lockdown.value')],
+            [__('admin/command.lockdown.field'), __('admin/command.lockdown.value')],
             [
-                [__('command.lockdown.type'), $lockdown->type],
-                [__('command.lockdown.reason'), $lockdown->reason],
-                [__('command.lockdown.triggered_at'), $lockdown->triggered_at->format('Y-m-d H:i:s')],
-                [__('command.lockdown.auto_release'), $lockdown->auto_release_at?->format('Y-m-d H:i:s') ?? '-'],
+                [__('admin/command.lockdown.type'), $lockdown->type],
+                [__('admin/command.lockdown.reason'), $lockdown->reason],
+                [__('admin/command.lockdown.triggered_at'), $lockdown->triggered_at->format('Y-m-d H:i:s')],
+                [__('admin/command.lockdown.auto_release'), $lockdown->auto_release_at?->format('Y-m-d H:i:s') ?? '-'],
             ]
         );
 
@@ -133,19 +133,19 @@ class LockdownCommand extends Command
         $lockdown = LockdownService::getStatus();
 
         if (!$lockdown) {
-            $this->info(__('command.lockdown.not_active'));
+            $this->info(__('admin/command.lockdown.not_active'));
             return self::SUCCESS;
         }
 
         // 確認
         if (!$this->option('force')) {
-            $this->info(__('command.lockdown.current_status'));
-            $this->line(__('command.lockdown.type') . ": {$lockdown->type}");
-            $this->line(__('command.lockdown.reason') . ": {$lockdown->reason}");
+            $this->info(__('admin/command.lockdown.current_status'));
+            $this->line(__('admin/command.lockdown.type') . ": {$lockdown->type}");
+            $this->line(__('admin/command.lockdown.reason') . ": {$lockdown->reason}");
             $this->newLine();
 
-            if (!$this->confirm(__('command.lockdown.confirm_deactivate'))) {
-                $this->info(__('command.lockdown.cancelled'));
+            if (!$this->confirm(__('admin/command.lockdown.confirm_deactivate'))) {
+                $this->info(__('admin/command.lockdown.cancelled'));
                 return self::SUCCESS;
             }
         }
@@ -153,7 +153,7 @@ class LockdownCommand extends Command
         $reason = $this->option('reason') ?? 'Deactivated via CLI';
         LockdownService::deactivate(null, $reason);
 
-        $this->info(__('command.lockdown.deactivated'));
+        $this->info(__('admin/command.lockdown.deactivated'));
 
         return self::SUCCESS;
     }
@@ -166,23 +166,23 @@ class LockdownCommand extends Command
         $lockdown = LockdownService::getStatus();
 
         if (!$lockdown) {
-            $this->info(__('command.lockdown.not_active'));
+            $this->info(__('admin/command.lockdown.not_active'));
             return self::SUCCESS;
         }
 
-        $this->error(__('command.lockdown.is_active'));
+        $this->error(__('admin/command.lockdown.is_active'));
         $this->newLine();
 
         $this->table(
-            [__('command.lockdown.field'), __('command.lockdown.value')],
+            [__('admin/command.lockdown.field'), __('admin/command.lockdown.value')],
             [
-                [__('command.lockdown.type'), $lockdown->type],
-                [__('command.lockdown.reason'), $lockdown->reason ?? '-'],
-                [__('command.lockdown.triggered_at'), $lockdown->triggered_at->format('Y-m-d H:i:s')],
-                [__('command.lockdown.duration'), $lockdown->triggered_at->diffForHumans(now(), true)],
-                [__('command.lockdown.auto_release'), $lockdown->auto_release_at?->format('Y-m-d H:i:s') ?? '-'],
-                [__('command.lockdown.allowed_ips'), $lockdown->allowed_ips ? implode(', ', $lockdown->allowed_ips) : '-'],
-                [__('command.lockdown.allowed_members'), $lockdown->allowed_members ? implode(', ', $lockdown->allowed_members) : '-'],
+                [__('admin/command.lockdown.type'), $lockdown->type],
+                [__('admin/command.lockdown.reason'), $lockdown->reason ?? '-'],
+                [__('admin/command.lockdown.triggered_at'), $lockdown->triggered_at->format('Y-m-d H:i:s')],
+                [__('admin/command.lockdown.duration'), $lockdown->triggered_at->diffForHumans(now(), true)],
+                [__('admin/command.lockdown.auto_release'), $lockdown->auto_release_at?->format('Y-m-d H:i:s') ?? '-'],
+                [__('admin/command.lockdown.allowed_ips'), $lockdown->allowed_ips ? implode(', ', $lockdown->allowed_ips) : '-'],
+                [__('admin/command.lockdown.allowed_members'), $lockdown->allowed_members ? implode(', ', $lockdown->allowed_members) : '-'],
             ]
         );
 
@@ -200,11 +200,11 @@ class LockdownCommand extends Command
             ->get();
 
         if ($history->isEmpty()) {
-            $this->info(__('command.lockdown.no_history'));
+            $this->info(__('admin/command.lockdown.no_history'));
             return self::SUCCESS;
         }
 
-        $this->info(__('command.lockdown.history_title'));
+        $this->info(__('admin/command.lockdown.history_title'));
         $this->newLine();
 
         $rows = $history->map(function ($item) {
@@ -219,11 +219,11 @@ class LockdownCommand extends Command
 
         $this->table(
             [
-                __('command.lockdown.datetime'),
-                __('command.lockdown.action'),
-                __('command.lockdown.type'),
-                __('command.lockdown.reason'),
-                __('command.lockdown.ip'),
+                __('admin/command.lockdown.datetime'),
+                __('admin/command.lockdown.action'),
+                __('admin/command.lockdown.type'),
+                __('admin/command.lockdown.reason'),
+                __('admin/command.lockdown.ip'),
             ],
             $rows
         );
@@ -236,12 +236,12 @@ class LockdownCommand extends Command
      */
     protected function handleUnknownAction(string $action): int
     {
-        $this->error(__('command.lockdown.unknown_action', ['action' => $action]));
-        $this->line(__('command.lockdown.available_actions'));
-        $this->line('  - activate   : ' . __('command.lockdown.action_activate'));
-        $this->line('  - deactivate : ' . __('command.lockdown.action_deactivate'));
-        $this->line('  - status     : ' . __('command.lockdown.action_status'));
-        $this->line('  - history    : ' . __('command.lockdown.action_history'));
+        $this->error(__('admin/command.lockdown.unknown_action', ['action' => $action]));
+        $this->line(__('admin/command.lockdown.available_actions'));
+        $this->line('  - activate   : ' . __('admin/command.lockdown.action_activate'));
+        $this->line('  - deactivate : ' . __('admin/command.lockdown.action_deactivate'));
+        $this->line('  - status     : ' . __('admin/command.lockdown.action_status'));
+        $this->line('  - history    : ' . __('admin/command.lockdown.action_history'));
 
         return self::FAILURE;
     }

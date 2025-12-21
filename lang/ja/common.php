@@ -112,15 +112,6 @@ return [
     ],
 
     // ロール・権限
-    'roles' => [
-        'super_admin' => '特権管理者',
-        'admin' => '管理者',
-        'editor' => '編集者',
-        'author' => '投稿者',
-        'contributor' => '寄稿者',
-        'receptionist' => '受付',
-        'guest' => 'ゲスト',
-    ],
     'permissions' => '権限',
     'role' => '権限',
 

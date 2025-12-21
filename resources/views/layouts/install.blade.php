@@ -80,8 +80,8 @@
                 <div class="flex justify-between items-center w-full max-w-xl mb-4">
                     <!-- Step Progress Indicator -->
                     @if(isset($current_step) && isset($total_steps))
-                        <nav aria-label="{{ __('install.installation_progress') }}" class="text-gray-600 dark:text-gray-300">
-                            {{ __('install.step_of_total', ['current' => $current_step, 'total' => $total_steps]) }}
+                        <nav aria-label="{{ __('admin/install.installation_progress') }}" class="text-gray-600 dark:text-gray-300">
+                            {{ __('admin/install.step_of_total', ['current' => $current_step, 'total' => $total_steps]) }}
                         </nav>
                     @else
                         <div aria-hidden="true"></div>
@@ -89,7 +89,7 @@
 
                     <!-- Language Selector -->
                     @if(isset($availableLocales) && isset($currentLocale))
-                        <div aria-label="{{ __('install.language_selection') }}">
+                        <div aria-label="{{ __('admin/install.language_selection') }}">
                             <form id="language-form" action="{{ route('install.language', ['locale' => '__locale__']) }}" method="POST">
                                 @csrf
                                 @php
@@ -125,12 +125,12 @@
             @if(session('error'))
                 <aside class="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 mb-4 rounded-lg border border-red-200 dark:border-red-800" role="alert" aria-live="polite">
                     @if(is_array(session('error')))
-                        <strong class="sr-only">{{ __('install.error_label') }}:</strong>
+                        <strong class="sr-only">{{ __('admin/install.error_label') }}:</strong>
                         @foreach(session('error') as $error)
                             <div>{{ $error }}</div>
                         @endforeach
                     @else
-                        <strong class="sr-only">{{ __('install.error_label') }}:</strong>
+                        <strong class="sr-only">{{ __('admin/install.error_label') }}:</strong>
                         {{ session('error') }}
                     @endif
                 </aside>
@@ -138,7 +138,7 @@
 
             @if(isset($errors) && $errors->any())
                 <aside class="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 mb-4 rounded-lg border border-red-200 dark:border-red-800" role="alert" aria-live="polite">
-                    <strong class="font-semibold">{{ __('install.validation_errors') }}:</strong>
+                    <strong class="font-semibold">{{ __('admin/install.validation_errors') }}:</strong>
                     <ul class="list-disc list-inside mt-2">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>

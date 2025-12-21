@@ -35,7 +35,8 @@ return new class extends Migration
      * - 誰が / いつ / どこから / 何に対して / 何をしたか を記録
      * - セキュリティ・設定変更は必ず記録（改ざん防止寄りの設計）
      * - プラグインも同じ形式でログを追加可能
-     * - α版でスキーマ固定、将来はJSONフィールド側を拡張
+     * - ハッシュチェーンによる改ざん検知
+     * - 日次署名による固定化
      */
     public function up(): void
     {
@@ -113,9 +114,34 @@ return new class extends Migration
             $table->json('context')->nullable();
             
             // ========================================
-            // 将来のフォーマット変更用
+            // フォーマットバージョン
             // ========================================
             $table->unsignedSmallInteger('schema_version')->default(1);
+            
+            // ========================================
+            // ハッシュチェーン用カラム（改ざん検知）
+            // ========================================
+            
+            // このレコードのハッシュ（SHA-256、64文字）
+            // 計算対象: occurred_at + severity + outcome + category + action + actor_type + actor_id + target_type + target_id + ip_address + context + previous_hash
+            $table->string('record_hash', 64)->nullable();
+            
+            // 前レコードのハッシュ（チェーン形成用）
+            // 最初のレコードは 'genesis' または null
+            $table->string('previous_hash', 64)->nullable();
+            
+            // チェーンシーケンス番号（連番、検証時に使用）
+            $table->unsignedBigInteger('chain_sequence')->nullable();
+            
+            // ハッシュアルゴリズム（将来の変更に備えて記録）
+            $table->string('hash_algorithm', 20)->default('sha256');
+            
+            // 検証ステータス（最後の検証結果）
+            // null: 未検証, valid: 検証OK, invalid: 改ざん検知, skipped: スキップ
+            $table->string('verification_status', 20)->nullable();
+            
+            // 最終検証日時
+            $table->timestamp('last_verified_at')->nullable();
             
             // 標準タイムスタンプ
             $table->timestamps();
@@ -129,6 +155,56 @@ return new class extends Migration
             $table->index(['category', 'severity', 'occurred_at']);
             $table->index(['ip_address', 'action', 'occurred_at']);
             $table->index(['plugin_name', 'action', 'occurred_at']);
+            
+            // ハッシュチェーン用インデックス
+            $table->index('record_hash');
+            $table->index('previous_hash');
+            $table->index('chain_sequence');
+            $table->index('verification_status');
+        });
+
+        // ========================================
+        // 日次署名テーブル（監査ログの日次固定化）
+        // ========================================
+        Schema::create('audit_log_daily_seals', function (Blueprint $table) {
+            $table->id();
+            
+            // 対象日（YYYY-MM-DD）
+            $table->date('seal_date')->unique();
+            
+            // その日の最初と最後のログID
+            $table->unsignedBigInteger('first_log_id');
+            $table->unsignedBigInteger('last_log_id');
+            
+            // その日のログ件数
+            $table->unsignedInteger('log_count');
+            
+            // その日の最終ハッシュ（チェーンの終端）
+            $table->string('final_hash', 64);
+            
+            // 日次署名（HMAC-SHA256）
+            // 計算対象: seal_date + first_log_id + last_log_id + log_count + final_hash
+            $table->string('daily_signature', 64);
+            
+            // 署名に使用したキーのバージョン（キーローテーション対応）
+            $table->unsignedSmallInteger('key_version')->default(1);
+            
+            // 署名アルゴリズム
+            $table->string('signature_algorithm', 30)->default('hmac-sha256');
+            
+            // 検証ステータス
+            $table->string('verification_status', 20)->default('valid');
+            
+            // 最終検証日時
+            $table->timestamp('last_verified_at')->nullable();
+            
+            // メタ情報（検証履歴など）
+            $table->json('metadata')->nullable();
+            
+            $table->timestamps();
+            
+            $table->index('seal_date');
+            $table->index('verification_status');
         });
     }
 
@@ -137,6 +213,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('audit_log_daily_seals');
         Schema::dropIfExists('audit_logs');
     }
 };

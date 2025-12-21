@@ -86,7 +86,7 @@ class CheckLockdown
      */
     protected function lockdownResponse(Request $request, LockdownStatus $lockdown): Response
     {
-        $message = $lockdown->reason ?: __('lockdown.default_message');
+        $message = $lockdown->reason ?: __('admin/lockdown.default_message');
 
         // APIリクエストの場合はJSONレスポンス
         if ($request->expectsJson() || $request->is('api/*')) {

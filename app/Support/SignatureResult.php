@@ -70,7 +70,7 @@ class SignatureResult
     {
         return self::failure(
             self::ERROR_MISSING_HEADERS,
-            __('api.signature.errors.missing_headers')
+            __('admin/api.signature.errors.missing_headers')
         );
     }
 
@@ -81,7 +81,7 @@ class SignatureResult
     {
         return self::failure(
             self::ERROR_TIMESTAMP_EXPIRED,
-            __('api.signature.errors.timestamp_expired')
+            __('admin/api.signature.errors.timestamp_expired')
         );
     }
 
@@ -92,7 +92,7 @@ class SignatureResult
     {
         return self::failure(
             self::ERROR_INVALID_API_KEY,
-            __('api.signature.errors.invalid_api_key')
+            __('admin/api.signature.errors.invalid_api_key')
         );
     }
 
@@ -103,7 +103,7 @@ class SignatureResult
     {
         return self::failure(
             self::ERROR_UNSUPPORTED_VERSION,
-            __('api.signature.errors.unsupported_version')
+            __('admin/api.signature.errors.unsupported_version')
         );
     }
 
@@ -114,7 +114,7 @@ class SignatureResult
     {
         return self::failure(
             self::ERROR_INVALID_SIGNATURE,
-            __('api.signature.errors.invalid_signature')
+            __('admin/api.signature.errors.invalid_signature')
         );
     }
 
@@ -125,7 +125,7 @@ class SignatureResult
     {
         return self::failure(
             self::ERROR_REVOKED_KEY,
-            __('api.signature.errors.revoked_key')
+            __('admin/api.signature.errors.revoked_key')
         );
     }
 
