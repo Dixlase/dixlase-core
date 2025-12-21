@@ -136,9 +136,12 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
                 'user_ip' => $request->ip()
             ]);
             
-            $httpResponse = Http::withHeaders([
-                'Content-Type' => 'application/json',
-            ])->post($apiUrl, $payload);
+            $timeout = config('security.external_services.captcha_timeout', 10);
+            
+            $httpResponse = Http::timeout($timeout)
+                ->withHeaders([
+                    'Content-Type' => 'application/json',
+                ])->post($apiUrl, $payload);
             
             if (!$httpResponse->successful()) {
                 Log::error('reCAPTCHA Enterprise API HTTP error', [

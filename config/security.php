@@ -121,8 +121,14 @@ return [
         // CAPTCHA障害時
         'captcha_on_failure' => env('CAPTCHA_ON_FAILURE', 'fail_closed'),
         
+        // CAPTCHAタイムアウト（秒）
+        'captcha_timeout' => env('CAPTCHA_TIMEOUT', 10),
+        
         // GeoIP障害時（将来用）
         'geoip_on_failure' => env('GEOIP_ON_FAILURE', 'fail_open'),
+        
+        // GeoIPタイムアウト（秒）（将来用）
+        'geoip_timeout' => env('GEOIP_TIMEOUT', 5),
     ],
 
 ];

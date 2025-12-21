@@ -272,6 +272,9 @@ class CaptchaFailoverService
                 ]
             );
         }
+
+        // 管理者に通知
+        self::notifyAdminOfFailover($failedProvider, $failoverProvider);
     }
 
     /**
@@ -421,5 +424,32 @@ class CaptchaFailoverService
             CaptchaProvider::TURNSTILE->value => 'captcha_turnstile',
             default => 'captcha_' . $provider,
         };
+    }
+
+    /**
+     * フェイルオーバー発生時に管理者へ通知
+     */
+    protected static function notifyAdminOfFailover(string $failedProvider, string $newProvider): void
+    {
+        try {
+            if (class_exists(\App\Services\SystemNotificationService::class)) {
+                $failedLabel = CaptchaProvider::tryFrom($failedProvider)?->label() ?? $failedProvider;
+                $newLabel = CaptchaProvider::tryFrom($newProvider)?->label() ?? $newProvider;
+
+                \App\Services\SystemNotificationService::send(
+                    __('security.captcha_failover_subject'),
+                    __('security.captcha_failover_message', [
+                        'from' => $failedLabel,
+                        'to' => $newLabel,
+                        'time' => now()->format('Y-m-d H:i:s'),
+                    ]),
+                    'warning'
+                );
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to send CAPTCHA failover notification', [
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }

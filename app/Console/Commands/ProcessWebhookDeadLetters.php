@@ -43,7 +43,10 @@ class ProcessWebhookDeadLetters extends Command
                             {--notify : Send notifications for unnotified dead letters}
                             {--cleanup : Clean up old dead letter records}
                             {--days=90 : Days to keep dead letters (for cleanup)}
-                            {--stats : Show dead letter statistics}';
+                            {--stats : Show dead letter statistics}
+                            {--list : List pending dead letters}
+                            {--retry= : Retry a specific dead letter by ID}
+                            {--retry-all : Retry all pending dead letters}';
 
     /**
      * The console command description.
@@ -61,6 +64,18 @@ class ProcessWebhookDeadLetters extends Command
             return $this->showStats();
         }
 
+        if ($this->option('list')) {
+            return $this->listPending();
+        }
+
+        if ($this->option('retry')) {
+            return $this->retryById((int) $this->option('retry'));
+        }
+
+        if ($this->option('retry-all')) {
+            return $this->retryAll();
+        }
+
         if ($this->option('notify')) {
             $this->sendNotifications();
         }
@@ -71,9 +86,12 @@ class ProcessWebhookDeadLetters extends Command
 
         if (!$this->option('notify') && !$this->option('cleanup') && !$this->option('stats')) {
             $this->info(__('admin/command.webhook.dead_letters.no_action'));
-            $this->line('  --notify   ' . __('admin/command.webhook.dead_letters.option_notify'));
-            $this->line('  --cleanup  ' . __('admin/command.webhook.dead_letters.option_cleanup'));
-            $this->line('  --stats    ' . __('admin/command.webhook.dead_letters.option_stats'));
+            $this->line('  --notify     ' . __('admin/command.webhook.dead_letters.option_notify'));
+            $this->line('  --cleanup    ' . __('admin/command.webhook.dead_letters.option_cleanup'));
+            $this->line('  --stats      ' . __('admin/command.webhook.dead_letters.option_stats'));
+            $this->line('  --list       ' . __('admin/command.webhook.dead_letters.option_list'));
+            $this->line('  --retry=ID   ' . __('admin/command.webhook.dead_letters.option_retry'));
+            $this->line('  --retry-all  ' . __('admin/command.webhook.dead_letters.option_retry_all'));
         }
 
         return self::SUCCESS;
@@ -143,6 +161,131 @@ class ProcessWebhookDeadLetters extends Command
                 $eventData
             );
         }
+
+        return self::SUCCESS;
+    }
+
+    /**
+     * List pending dead letters
+     */
+    protected function listPending(): int
+    {
+        $deadLetters = WebhookDeadLetterService::getPending();
+
+        if ($deadLetters->isEmpty()) {
+            $this->info(__('admin/command.webhook.dead_letters.no_pending'));
+            return self::SUCCESS;
+        }
+
+        $this->info(__('admin/command.webhook.dead_letters.pending_list_title'));
+        $this->newLine();
+
+        $rows = [];
+        foreach ($deadLetters as $dl) {
+            $rows[] = [
+                $dl->id,
+                $dl->event,
+                $dl->webhook->name ?? 'N/A',
+                $dl->total_attempts,
+                substr($dl->last_error ?? '', 0, 50) . (strlen($dl->last_error ?? '') > 50 ? '...' : ''),
+                $dl->created_at->format('Y-m-d H:i'),
+            ];
+        }
+
+        $this->table(
+            [
+                __('admin/command.webhook.dead_letters.col_id'),
+                __('admin/command.webhook.dead_letters.event'),
+                __('admin/command.webhook.dead_letters.col_webhook'),
+                __('admin/command.webhook.dead_letters.col_attempts'),
+                __('admin/command.webhook.dead_letters.col_error'),
+                __('admin/command.webhook.dead_letters.col_created'),
+            ],
+            $rows
+        );
+
+        $this->newLine();
+        $this->line(__('admin/command.webhook.dead_letters.retry_hint'));
+
+        return self::SUCCESS;
+    }
+
+    /**
+     * Retry a specific dead letter by ID
+     */
+    protected function retryById(int $id): int
+    {
+        $deadLetter = \App\Models\WebhookDeadLetter::find($id);
+
+        if (!$deadLetter) {
+            $this->error(__('admin/command.webhook.dead_letters.not_found', ['id' => $id]));
+            return self::FAILURE;
+        }
+
+        if (!$deadLetter->canRetry()) {
+            $this->error(__('admin/command.webhook.dead_letters.cannot_retry'));
+            return self::FAILURE;
+        }
+
+        try {
+            $delivery = WebhookDeadLetterService::retryDeadLetter($deadLetter);
+            $this->info(__('admin/command.webhook.dead_letters.retry_success', [
+                'id' => $id,
+                'delivery_id' => $delivery->id,
+            ]));
+
+            // Dispatch the job
+            \App\Jobs\SendWebhook::dispatch($delivery);
+            $this->info(__('admin/command.webhook.dead_letters.retry_queued'));
+
+            return self::SUCCESS;
+        } catch (\Exception $e) {
+            $this->error(__('admin/command.webhook.dead_letters.retry_failed', ['error' => $e->getMessage()]));
+            return self::FAILURE;
+        }
+    }
+
+    /**
+     * Retry all pending dead letters
+     */
+    protected function retryAll(): int
+    {
+        $deadLetters = \App\Models\WebhookDeadLetter::pending()->get();
+
+        if ($deadLetters->isEmpty()) {
+            $this->info(__('admin/command.webhook.dead_letters.no_pending'));
+            return self::SUCCESS;
+        }
+
+        $count = $deadLetters->count();
+        if (!$this->confirm(__('admin/command.webhook.dead_letters.confirm_retry_all', ['count' => $count]))) {
+            $this->info(__('admin/command.webhook.dead_letters.cancelled'));
+            return self::SUCCESS;
+        }
+
+        $success = 0;
+        $failed = 0;
+
+        foreach ($deadLetters as $deadLetter) {
+            if (!$deadLetter->canRetry()) {
+                $failed++;
+                continue;
+            }
+
+            try {
+                $delivery = WebhookDeadLetterService::retryDeadLetter($deadLetter);
+                \App\Jobs\SendWebhook::dispatch($delivery);
+                $success++;
+            } catch (\Exception $e) {
+                $failed++;
+                $this->warn("ID {$deadLetter->id}: {$e->getMessage()}");
+            }
+        }
+
+        $this->info(__('admin/command.webhook.dead_letters.retry_all_complete', [
+            'success' => $success,
+            'failed' => $failed,
+        ]));
 
         return self::SUCCESS;
     }
