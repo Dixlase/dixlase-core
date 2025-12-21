@@ -36,4 +36,16 @@ return [
     'external_service_failure' => '外部サービス障害',
     'hibp_failure_subject' => '【警告】Have I Been Pwned API障害',
     'hibp_failure_message' => 'Have I Been Pwned APIへの接続に失敗しました。パスワード漏洩チェックは一時的にスキップされています。',
+
+    // CAPTCHAバイパス通知
+    'captcha_bypass_subject' => '【緊急】CAPTCHAバイパスが有効化されました',
+    'captcha_bypass_message' => 'CAPTCHAバイパス（ブレークグラス）が有効化されました。
+
+スコープ: :scope
+理由: :reason
+有効期間: :minutes 分
+有効期限: :expires_at
+
+これは緊急復旧機能です。復旧完了後は自動的に無効化されます。
+手動で無効化するには: php artisan security:captcha-bypass disable',
 ];

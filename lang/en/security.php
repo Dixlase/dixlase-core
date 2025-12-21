@@ -36,4 +36,16 @@ To check status: php artisan captcha status',
     'external_service_failure' => 'External Service Failure',
     'hibp_failure_subject' => '[Warning] Have I Been Pwned API Failure',
     'hibp_failure_message' => 'Connection to Have I Been Pwned API failed. Password breach checking is temporarily skipped.',
+
+    // CAPTCHA Bypass notification
+    'captcha_bypass_subject' => '[CRITICAL] CAPTCHA Bypass Has Been Enabled',
+    'captcha_bypass_message' => 'CAPTCHA bypass (break-glass) has been enabled.
+
+Scope: :scope
+Reason: :reason
+Duration: :minutes minutes
+Expires at: :expires_at
+
+This is an emergency recovery feature. It will be automatically disabled after expiration.
+To manually disable: php artisan security:captcha-bypass disable',
 ];
