@@ -26,6 +26,7 @@ use App\Models\SecuritySetting;
 use App\Models\MemberSetting;
 use App\Services\CaptchaTestService;
 use App\Services\CaptchaFailoverService;
+use App\Services\CaptchaBypassService;
 use Illuminate\Support\Facades\Log;
 
 class CaptchaHelper
@@ -52,6 +53,12 @@ class CaptchaHelper
      */
     public static function shouldShowCaptcha(?string $formName = null): bool
     {
+        // 緊急バイパスがアクティブな場合はCAPTCHAを表示しない
+        $scope = self::getBypassScopeForForm($formName);
+        if (CaptchaBypassService::shouldSkipCaptcha($scope)) {
+            return false;
+        }
+
         $settings = self::getSettings();
         
         // 基本的なCAPTCHA有効性チェック
@@ -71,6 +78,25 @@ class CaptchaHelper
         }
 
         return true;
+    }
+
+    /**
+     * フォーム名からバイパススコープを取得
+     */
+    protected static function getBypassScopeForForm(?string $formName): string
+    {
+        return match ($formName) {
+            'admin_login' => 'admin_login',
+            default => 'all',
+        };
+    }
+
+    /**
+     * 緊急バイパスがアクティブかチェック
+     */
+    public static function isBypassActive(?string $scope = null): bool
+    {
+        return CaptchaBypassService::isActive($scope);
     }
 
     /**
