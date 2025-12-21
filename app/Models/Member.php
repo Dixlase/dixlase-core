@@ -33,11 +33,12 @@ use App\Enums\AppearanceMode;
 use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
 use App\Enums\Locale;
+use App\Traits\HasPermissions;
 
 
 class Member extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory, Notifiable, SoftDeletes, TwoFactorAuthenticatable;
+    use HasFactory, Notifiable, SoftDeletes, TwoFactorAuthenticatable, HasPermissions;
 
 
     /**
