@@ -1,5 +1,25 @@
 <?php
 
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2025 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -8,28 +28,16 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
+     * 
+     * Webhookデッドレターキューテーブル
+     * 
+     * 目的：
+     * - 最大リトライ回数を超えて失敗したWebhookの詳細記録
+     * - 手動リトライや調査のための情報保持
+     * - 障害分析・通知
      */
     public function up(): void
     {
-        Schema::table('webhook_deliveries', function (Blueprint $table) {
-            // 冪等性のためのイベントID（UUID）
-            $table->uuid('event_id')->after('id')->nullable();
-            
-            // リプレイ防止のためのnonce
-            $table->string('nonce', 64)->after('event_id')->nullable();
-            
-            // デッドレター関連
-            $table->boolean('is_dead_letter')->default(false)->after('error_message');
-            $table->timestamp('dead_letter_at')->nullable()->after('is_dead_letter');
-            $table->boolean('dead_letter_notified')->default(false)->after('dead_letter_at');
-            
-            // インデックス
-            $table->index('event_id');
-            $table->index('nonce');
-            $table->index('is_dead_letter');
-        });
-
-        // デッドレターキュー用テーブル（失敗したWebhookの詳細記録）
         Schema::create('webhook_dead_letters', function (Blueprint $table) {
             $table->id();
             $table->foreignId('webhook_id')->constrained()->onDelete('cascade');
@@ -64,19 +72,5 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('webhook_dead_letters');
-
-        Schema::table('webhook_deliveries', function (Blueprint $table) {
-            $table->dropIndex(['event_id']);
-            $table->dropIndex(['nonce']);
-            $table->dropIndex(['is_dead_letter']);
-            
-            $table->dropColumn([
-                'event_id',
-                'nonce',
-                'is_dead_letter',
-                'dead_letter_at',
-                'dead_letter_notified',
-            ]);
-        });
     }
 };

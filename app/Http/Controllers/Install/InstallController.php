@@ -131,17 +131,17 @@ class InstallController extends Controller
                 'regex:/[0-9]/',  // ✅ 数字を1文字以上含む
             ],
         ], [
-            'admin_name.required' => __('install.validation.admin_name_required'),
-            'admin_name.alpha_num' => __('install.validation.admin_name_alpha_num'),
-            'admin_name.min' => __('install.validation.admin_name_length'),
-            'admin_name.max' => __('install.validation.admin_name_length'),
-            'admin_password.regex' => __('install.password_requirements_error'), // エラーメッセージを設定
+            'admin_name.required' => __('admin/install.validation.admin_name_required'),
+            'admin_name.alpha_num' => __('admin/install.validation.admin_name_alpha_num'),
+            'admin_name.min' => __('admin/install.validation.admin_name_length'),
+            'admin_name.max' => __('admin/install.validation.admin_name_length'),
+            'admin_password.regex' => __('admin/install.password_requirements_error'), // エラーメッセージを設定
             'site_name.required' => __('validation.required', ['attribute' => __('validation.attributes.site_name')]),
             'admin_email.required' => __('validation.required', ['attribute' => __('validation.attributes.admin_email')]),
             'admin_email.email' => __('validation.email', ['attribute' => __('validation.attributes.admin_email')]),
             'admin_password.required' => __('validation.required', ['attribute' => __('validation.attributes.admin_password')]),
             'admin_password.min' => __('validation.min.string', ['attribute' => __('validation.attributes.admin_password'), 'min' => 8]),
-            'admin_password.regex' => __('install.password_requirements_error'), // 事前に言語ファイルに登録
+            'admin_password.regex' => __('admin/install.password_requirements_error'), // 事前に言語ファイルに登録
         ]);
 
         session([
@@ -190,7 +190,7 @@ class InstallController extends Controller
         // 2) ドメイン形式か簡易チェック
         if (!preg_match('/^[\w.\-]+(:\d+)?$/', $data['app_url'])) {
             return back()->withErrors([
-                'app_url' => __('validation.url', ['attribute' => __('install.app_url')])
+                'app_url' => __('validation.url', ['attribute' => __('admin/install.app_url')])
             ])->withInput();
         }
 
@@ -506,7 +506,7 @@ class InstallController extends Controller
             
             $route = 'install.' . ($firstMissing['step'] === 'settings' ? 'index' : $firstMissing['step']);
             return redirect()->route($route)
-                ->with('error', __('install.missing_required_fields') . " (不足フィールド: {$firstMissing['field']})");
+                ->with('error', __('admin/install.missing_required_fields') . " (不足フィールド: {$firstMissing['field']})");
         }
         
         // メールテスト結果をセッションから取得
@@ -742,7 +742,7 @@ class InstallController extends Controller
                     'started_at' => now(),
                     'finished_at' => now(),
                     'duration_ms' => 0,
-                    'summary' => __('command.integrity.baseline_generated'),
+                    'summary' => __('admin/command.integrity.baseline_generated'),
                 ]);
                 
                 Log::channel('install')->info('ファイル整合性ベースライン生成完了', [
@@ -800,21 +800,21 @@ class InstallController extends Controller
         
         // エラーがデータベース関連の場合
         if (strpos($errorMessage, 'database') !== false) {
-            return __('install.error.database');
+            return __('admin/install.error.database');
         }
         
         // エラーがファイルシステム関連の場合
         if (strpos($errorMessage, 'file') !== false || strpos($errorMessage, 'directory') !== false) {
-            return __('install.error.file_system');
+            return __('admin/install.error.file_system');
         }
         
         // エラーが環境変数関連の場合
         if (strpos($errorMessage, 'env') !== false || strpos($errorMessage, 'environment') !== false) {
-            return __('install.error.environment');
+            return __('admin/install.error.environment');
         }
         
         // エラーが不明な場合
-        return __('install.error.unknown');
+        return __('admin/install.error.unknown');
     }
 
     /**
@@ -1009,7 +1009,7 @@ class InstallController extends Controller
             $response = [
                 'success' => true,
                 'locale' => $locale,
-                'message' => __('install.language_changed')
+                'message' => __('admin/install.language_changed')
             ];
             
             // 常にJSONで返す（リダイレクトなし）＋ クッキーで永続化
@@ -1347,12 +1347,12 @@ class InstallController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => __('install.db_connection_success')
+                'message' => __('admin/install.db_connection_success')
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('install.db_connection_error', ['error' => $e->getMessage()])
+                'message' => __('admin/install.db_connection_error', ['error' => $e->getMessage()])
             ]);
         }
     }

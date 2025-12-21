@@ -244,7 +244,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
                     'total_files_scanned' => count($baseline['files']),
                     'finished_at' => now(),
                     'duration_ms' => now()->diffInMilliseconds($startedAt),
-                    'summary' => __('command.integrity.baseline_generated'),
+                    'summary' => __('admin/command.integrity.baseline_generated'),
                     'baseline_version' => $baseline['meta']['app_version'] ?? null,
                 ]);
 
@@ -304,7 +304,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
                 'status' => FileIntegrityAudit::STATUS_CRITICAL,
                 'finished_at' => now(),
                 'duration_ms' => now()->diffInMilliseconds($startedAt),
-                'summary' => __('command.integrity.scan_error', ['error' => $e->getMessage()]),
+                'summary' => __('admin/command.integrity.scan_error', ['error' => $e->getMessage()]),
             ]);
         }
 
@@ -482,23 +482,23 @@ class FileIntegrityService implements FileIntegrityServiceInterface
         $parts = [];
 
         if (!empty($result['changed'])) {
-            $parts[] = __('command.integrity.summary_changed', ['count' => count($result['changed'])]);
+            $parts[] = __('admin/command.integrity.summary_changed', ['count' => count($result['changed'])]);
         }
 
         if (!empty($result['added'])) {
-            $parts[] = __('command.integrity.summary_added', ['count' => count($result['added'])]);
+            $parts[] = __('admin/command.integrity.summary_added', ['count' => count($result['added'])]);
         }
 
         if (!empty($result['removed'])) {
-            $parts[] = __('command.integrity.summary_removed', ['count' => count($result['removed'])]);
+            $parts[] = __('admin/command.integrity.summary_removed', ['count' => count($result['removed'])]);
         }
 
         if (!empty($suspicious)) {
-            $parts[] = __('command.integrity.summary_suspicious', ['count' => count($suspicious)]);
+            $parts[] = __('admin/command.integrity.summary_suspicious', ['count' => count($suspicious)]);
         }
 
         if (empty($parts)) {
-            return __('command.integrity.summary_ok');
+            return __('admin/command.integrity.summary_ok');
         }
 
         return implode(', ', $parts);
@@ -607,7 +607,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
                 'started_at' => now(),
                 'finished_at' => now(),
                 'duration_ms' => 0,
-                'summary' => __('command.integrity.baseline_regenerated'),
+                'summary' => __('admin/command.integrity.baseline_regenerated'),
             ]);
 
             Log::channel('admin_activity')->info('ファイル整合性ベースラインを再生成しました', [
@@ -706,7 +706,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
                     'total_files_scanned' => $baseline->getFileCount(),
                     'finished_at' => now(),
                     'duration_ms' => now()->diffInMilliseconds($startedAt),
-                    'summary' => __('command.integrity.baseline_generated'),
+                    'summary' => __('admin/command.integrity.baseline_generated'),
                     'baseline_version' => $baseline->appVersion,
                 ]);
 
@@ -728,7 +728,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
                     startedAt: $startedAt->toIso8601String(),
                     finishedAt: now()->toIso8601String(),
                     durationMs: now()->diffInMilliseconds($startedAt),
-                    summary: __('command.integrity.baseline_generated'),
+                    summary: __('admin/command.integrity.baseline_generated'),
                 );
             }
 
@@ -829,7 +829,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
                 'status' => FileIntegrityAudit::STATUS_CRITICAL,
                 'finished_at' => now(),
                 'duration_ms' => now()->diffInMilliseconds($startedAt),
-                'summary' => __('command.integrity.scan_error', ['error' => $e->getMessage()]),
+                'summary' => __('admin/command.integrity.scan_error', ['error' => $e->getMessage()]),
             ]);
 
             return new ScanResultDTO(
@@ -850,7 +850,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
                 startedAt: $startedAt->toIso8601String(),
                 finishedAt: now()->toIso8601String(),
                 durationMs: now()->diffInMilliseconds($startedAt),
-                summary: __('command.integrity.scan_error', ['error' => $e->getMessage()]),
+                summary: __('admin/command.integrity.scan_error', ['error' => $e->getMessage()]),
             );
         }
     }
@@ -889,7 +889,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
                 'started_at' => now(),
                 'finished_at' => now(),
                 'duration_ms' => 0,
-                'summary' => __('command.integrity.baseline_regenerated'),
+                'summary' => __('admin/command.integrity.baseline_regenerated'),
             ]);
 
             Log::channel('admin_activity')->info('ファイル整合性ベースラインを再生成しました', [
@@ -1047,23 +1047,23 @@ class FileIntegrityService implements FileIntegrityServiceInterface
         $parts = [];
 
         if (!empty($changed)) {
-            $parts[] = __('command.integrity.summary_changed', ['count' => count($changed)]);
+            $parts[] = __('admin/command.integrity.summary_changed', ['count' => count($changed)]);
         }
 
         if (!empty($added)) {
-            $parts[] = __('command.integrity.summary_added', ['count' => count($added)]);
+            $parts[] = __('admin/command.integrity.summary_added', ['count' => count($added)]);
         }
 
         if (!empty($removed)) {
-            $parts[] = __('command.integrity.summary_removed', ['count' => count($removed)]);
+            $parts[] = __('admin/command.integrity.summary_removed', ['count' => count($removed)]);
         }
 
         if (!empty($suspicious)) {
-            $parts[] = __('command.integrity.summary_suspicious', ['count' => count($suspicious)]);
+            $parts[] = __('admin/command.integrity.summary_suspicious', ['count' => count($suspicious)]);
         }
 
         if (empty($parts)) {
-            return __('command.integrity.summary_ok');
+            return __('admin/command.integrity.summary_ok');
         }
 
         return implode(', ', $parts);

@@ -85,17 +85,17 @@ class AuditLogIntegrityCommand extends Command
     {
         $limit = (int) $this->option('limit');
 
-        $this->info(__('command.audit.integrity.building_chains'));
+        $this->info(__('admin/command.audit.integrity.building_chains'));
 
         $result = $this->service->buildPendingChains($limit);
 
-        $this->info(__('command.audit.integrity.build_complete', [
+        $this->info(__('admin/command.audit.integrity.build_complete', [
             'processed' => $result['processed'],
             'remaining' => $result['remaining'],
         ]));
 
         if (!empty($result['errors'])) {
-            $this->warn(__('command.audit.integrity.build_errors', [
+            $this->warn(__('admin/command.audit.integrity.build_errors', [
                 'count' => count($result['errors']),
             ]));
             foreach ($result['errors'] as $error) {
@@ -119,33 +119,33 @@ class AuditLogIntegrityCommand extends Command
             return $this->verifyDailySeal($date);
         }
 
-        $this->info(__('command.audit.integrity.verifying_chain'));
+        $this->info(__('admin/command.audit.integrity.verifying_chain'));
 
         $result = $this->service->verifyChain($fromId, $toId);
 
         $this->newLine();
         $this->table(
-            [__('command.audit.integrity.stat_name'), __('command.audit.integrity.stat_value')],
+            [__('admin/command.audit.integrity.stat_name'), __('admin/command.audit.integrity.stat_value')],
             [
-                [__('command.audit.integrity.total'), $result['total']],
-                [__('command.audit.integrity.valid'), $result['valid']],
-                [__('command.audit.integrity.invalid'), $result['invalid']],
+                [__('admin/command.audit.integrity.total'), $result['total']],
+                [__('admin/command.audit.integrity.valid'), $result['valid']],
+                [__('admin/command.audit.integrity.invalid'), $result['invalid']],
             ]
         );
 
         if ($result['is_valid']) {
-            $this->info(__('command.audit.integrity.chain_valid'));
+            $this->info(__('admin/command.audit.integrity.chain_valid'));
         } else {
-            $this->error(__('command.audit.integrity.chain_invalid'));
+            $this->error(__('admin/command.audit.integrity.chain_invalid'));
             
             if (!empty($result['errors'])) {
                 $this->newLine();
-                $this->warn(__('command.audit.integrity.tampered_records'));
+                $this->warn(__('admin/command.audit.integrity.tampered_records'));
                 foreach (array_slice($result['errors'], 0, 10) as $error) {
                     $this->line("  - ID {$error['id']}: " . implode(', ', $error['errors']));
                 }
                 if (count($result['errors']) > 10) {
-                    $this->line("  ... " . __('command.audit.integrity.and_more', [
+                    $this->line("  ... " . __('admin/command.audit.integrity.and_more', [
                         'count' => count($result['errors']) - 10,
                     ]));
                 }
@@ -165,36 +165,36 @@ class AuditLogIntegrityCommand extends Command
         try {
             $date = \Carbon\Carbon::parse($dateString);
         } catch (\Exception $e) {
-            $this->error(__('command.audit.integrity.invalid_date'));
+            $this->error(__('admin/command.audit.integrity.invalid_date'));
             return self::FAILURE;
         }
 
-        $this->info(__('command.audit.integrity.verifying_seal', [
+        $this->info(__('admin/command.audit.integrity.verifying_seal', [
             'date' => $date->format('Y-m-d'),
         ]));
 
         $result = $this->service->verifyDailySeal($date);
 
         if (!$result['exists']) {
-            $this->warn(__('command.audit.integrity.seal_not_found'));
+            $this->warn(__('admin/command.audit.integrity.seal_not_found'));
             return self::FAILURE;
         }
 
         $this->newLine();
         $this->table(
-            [__('command.audit.integrity.check'), __('command.audit.integrity.result')],
+            [__('admin/command.audit.integrity.check'), __('admin/command.audit.integrity.result')],
             [
-                [__('command.audit.integrity.signature'), $result['checks']['signature'] ? '✓' : '✗'],
-                [__('command.audit.integrity.log_count'), $result['checks']['log_count'] ? '✓' : '✗'],
-                [__('command.audit.integrity.final_hash'), $result['checks']['final_hash'] ? '✓' : '✗'],
-                [__('command.audit.integrity.chain'), $result['checks']['chain'] ? '✓' : '✗'],
+                [__('admin/command.audit.integrity.signature'), $result['checks']['signature'] ? '✓' : '✗'],
+                [__('admin/command.audit.integrity.log_count'), $result['checks']['log_count'] ? '✓' : '✗'],
+                [__('admin/command.audit.integrity.final_hash'), $result['checks']['final_hash'] ? '✓' : '✗'],
+                [__('admin/command.audit.integrity.chain'), $result['checks']['chain'] ? '✓' : '✗'],
             ]
         );
 
         if ($result['is_valid']) {
-            $this->info(__('command.audit.integrity.seal_valid'));
+            $this->info(__('admin/command.audit.integrity.seal_valid'));
         } else {
-            $this->error(__('command.audit.integrity.seal_invalid'));
+            $this->error(__('admin/command.audit.integrity.seal_invalid'));
             return self::FAILURE;
         }
 
@@ -213,18 +213,18 @@ class AuditLogIntegrityCommand extends Command
             return $this->createSingleSeal($date);
         }
 
-        $this->info(__('command.audit.integrity.creating_seals', ['days' => $days]));
+        $this->info(__('admin/command.audit.integrity.creating_seals', ['days' => $days]));
 
         $results = $this->service->createPendingSeals($days);
 
         if (empty($results)) {
-            $this->info(__('command.audit.integrity.no_pending_seals'));
+            $this->info(__('admin/command.audit.integrity.no_pending_seals'));
         } else {
             $this->table(
-                [__('command.audit.integrity.date'), __('command.audit.integrity.log_count'), __('command.audit.integrity.status')],
+                [__('admin/command.audit.integrity.date'), __('admin/command.audit.integrity.log_count'), __('admin/command.audit.integrity.status')],
                 array_map(fn($r) => [$r['date'], $r['log_count'], $r['status']], $results)
             );
-            $this->info(__('command.audit.integrity.seals_created', ['count' => count($results)]));
+            $this->info(__('admin/command.audit.integrity.seals_created', ['count' => count($results)]));
         }
 
         return self::SUCCESS;
@@ -238,11 +238,11 @@ class AuditLogIntegrityCommand extends Command
         try {
             $date = \Carbon\Carbon::parse($dateString);
         } catch (\Exception $e) {
-            $this->error(__('command.audit.integrity.invalid_date'));
+            $this->error(__('admin/command.audit.integrity.invalid_date'));
             return self::FAILURE;
         }
 
-        $this->info(__('command.audit.integrity.creating_seal', [
+        $this->info(__('admin/command.audit.integrity.creating_seal', [
             'date' => $date->format('Y-m-d'),
         ]));
 
@@ -253,12 +253,12 @@ class AuditLogIntegrityCommand extends Command
         $seal = $this->service->createDailySeal($date);
 
         if ($seal) {
-            $this->info(__('command.audit.integrity.seal_created', [
+            $this->info(__('admin/command.audit.integrity.seal_created', [
                 'date' => $date->format('Y-m-d'),
                 'log_count' => $seal->log_count,
             ]));
         } else {
-            $this->warn(__('command.audit.integrity.no_logs_for_date'));
+            $this->warn(__('admin/command.audit.integrity.no_logs_for_date'));
         }
 
         return self::SUCCESS;
@@ -271,31 +271,31 @@ class AuditLogIntegrityCommand extends Command
     {
         $stats = $this->service->getStats();
 
-        $this->info(__('command.audit.integrity.stats_title'));
+        $this->info(__('admin/command.audit.integrity.stats_title'));
         $this->newLine();
 
         $this->table(
-            [__('command.audit.integrity.stat_name'), __('command.audit.integrity.stat_value')],
+            [__('admin/command.audit.integrity.stat_name'), __('admin/command.audit.integrity.stat_value')],
             [
-                [__('command.audit.integrity.total_logs'), $stats['total_logs']],
-                [__('command.audit.integrity.with_hash'), $stats['with_hash_chain']],
-                [__('command.audit.integrity.without_hash'), $stats['without_hash_chain']],
-                [__('command.audit.integrity.verified'), $stats['verified']],
-                [__('command.audit.integrity.tampered'), $stats['tampered']],
-                [__('command.audit.integrity.unverified'), $stats['unverified']],
+                [__('admin/command.audit.integrity.total_logs'), $stats['total_logs']],
+                [__('admin/command.audit.integrity.with_hash'), $stats['with_hash_chain']],
+                [__('admin/command.audit.integrity.without_hash'), $stats['without_hash_chain']],
+                [__('admin/command.audit.integrity.verified'), $stats['verified']],
+                [__('admin/command.audit.integrity.tampered'), $stats['tampered']],
+                [__('admin/command.audit.integrity.unverified'), $stats['unverified']],
             ]
         );
 
         $this->newLine();
-        $this->info(__('command.audit.integrity.daily_seals_title'));
+        $this->info(__('admin/command.audit.integrity.daily_seals_title'));
 
         $this->table(
-            [__('command.audit.integrity.stat_name'), __('command.audit.integrity.stat_value')],
+            [__('admin/command.audit.integrity.stat_name'), __('admin/command.audit.integrity.stat_value')],
             [
-                [__('command.audit.integrity.total_seals'), $stats['daily_seals']['total']],
-                [__('command.audit.integrity.valid_seals'), $stats['daily_seals']['valid']],
-                [__('command.audit.integrity.invalid_seals'), $stats['daily_seals']['invalid']],
-                [__('command.audit.integrity.sealed_logs'), $stats['daily_seals']['total_logs']],
+                [__('admin/command.audit.integrity.total_seals'), $stats['daily_seals']['total']],
+                [__('admin/command.audit.integrity.valid_seals'), $stats['daily_seals']['valid']],
+                [__('admin/command.audit.integrity.invalid_seals'), $stats['daily_seals']['invalid']],
+                [__('admin/command.audit.integrity.sealed_logs'), $stats['daily_seals']['total_logs']],
             ]
         );
 
@@ -307,12 +307,12 @@ class AuditLogIntegrityCommand extends Command
      */
     protected function handleUnknownAction(string $action): int
     {
-        $this->error(__('command.audit.integrity.unknown_action', ['action' => $action]));
-        $this->line(__('command.audit.integrity.available_actions'));
-        $this->line('  - build   : ' . __('command.audit.integrity.action_build'));
-        $this->line('  - verify  : ' . __('command.audit.integrity.action_verify'));
-        $this->line('  - seal    : ' . __('command.audit.integrity.action_seal'));
-        $this->line('  - stats   : ' . __('command.audit.integrity.action_stats'));
+        $this->error(__('admin/command.audit.integrity.unknown_action', ['action' => $action]));
+        $this->line(__('admin/command.audit.integrity.available_actions'));
+        $this->line('  - build   : ' . __('admin/command.audit.integrity.action_build'));
+        $this->line('  - verify  : ' . __('admin/command.audit.integrity.action_verify'));
+        $this->line('  - seal    : ' . __('admin/command.audit.integrity.action_seal'));
+        $this->line('  - stats   : ' . __('admin/command.audit.integrity.action_stats'));
 
         return self::FAILURE;
     }

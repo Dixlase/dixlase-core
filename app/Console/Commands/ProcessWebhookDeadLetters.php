@@ -70,10 +70,10 @@ class ProcessWebhookDeadLetters extends Command
         }
 
         if (!$this->option('notify') && !$this->option('cleanup') && !$this->option('stats')) {
-            $this->info(__('command.webhook.dead_letters.no_action'));
-            $this->line('  --notify   ' . __('command.webhook.dead_letters.option_notify'));
-            $this->line('  --cleanup  ' . __('command.webhook.dead_letters.option_cleanup'));
-            $this->line('  --stats    ' . __('command.webhook.dead_letters.option_stats'));
+            $this->info(__('admin/command.webhook.dead_letters.no_action'));
+            $this->line('  --notify   ' . __('admin/command.webhook.dead_letters.option_notify'));
+            $this->line('  --cleanup  ' . __('admin/command.webhook.dead_letters.option_cleanup'));
+            $this->line('  --stats    ' . __('admin/command.webhook.dead_letters.option_stats'));
         }
 
         return self::SUCCESS;
@@ -84,14 +84,14 @@ class ProcessWebhookDeadLetters extends Command
      */
     protected function sendNotifications(): void
     {
-        $this->info(__('command.webhook.dead_letters.sending_notifications'));
+        $this->info(__('admin/command.webhook.dead_letters.sending_notifications'));
 
         $count = WebhookDeadLetterService::sendPendingNotifications();
 
         if ($count > 0) {
-            $this->info(__('command.webhook.dead_letters.notifications_sent', ['count' => $count]));
+            $this->info(__('admin/command.webhook.dead_letters.notifications_sent', ['count' => $count]));
         } else {
-            $this->info(__('command.webhook.dead_letters.no_pending_notifications'));
+            $this->info(__('admin/command.webhook.dead_letters.no_pending_notifications'));
         }
     }
 
@@ -102,11 +102,11 @@ class ProcessWebhookDeadLetters extends Command
     {
         $days = (int) $this->option('days');
         
-        $this->info(__('command.webhook.dead_letters.cleaning_up', ['days' => $days]));
+        $this->info(__('admin/command.webhook.dead_letters.cleaning_up', ['days' => $days]));
 
         $count = WebhookDeadLetterService::cleanup($days);
 
-        $this->info(__('command.webhook.dead_letters.cleanup_complete', ['count' => $count]));
+        $this->info(__('admin/command.webhook.dead_letters.cleanup_complete', ['count' => $count]));
     }
 
     /**
@@ -116,22 +116,22 @@ class ProcessWebhookDeadLetters extends Command
     {
         $stats = WebhookDeadLetterService::getStats();
 
-        $this->info(__('command.webhook.dead_letters.stats_title'));
+        $this->info(__('admin/command.webhook.dead_letters.stats_title'));
         $this->newLine();
 
         $this->table(
-            [__('command.webhook.dead_letters.stat_name'), __('command.webhook.dead_letters.stat_value')],
+            [__('admin/command.webhook.dead_letters.stat_name'), __('admin/command.webhook.dead_letters.stat_value')],
             [
-                [__('command.webhook.dead_letters.total'), $stats['total']],
-                [__('command.webhook.dead_letters.pending'), $stats['pending']],
-                [__('command.webhook.dead_letters.notified'), $stats['notified']],
-                [__('command.webhook.dead_letters.manually_retried'), $stats['manually_retried']],
+                [__('admin/command.webhook.dead_letters.total'), $stats['total']],
+                [__('admin/command.webhook.dead_letters.pending'), $stats['pending']],
+                [__('admin/command.webhook.dead_letters.notified'), $stats['notified']],
+                [__('admin/command.webhook.dead_letters.manually_retried'), $stats['manually_retried']],
             ]
         );
 
         if (!empty($stats['by_event'])) {
             $this->newLine();
-            $this->info(__('command.webhook.dead_letters.by_event'));
+            $this->info(__('admin/command.webhook.dead_letters.by_event'));
 
             $eventData = [];
             foreach ($stats['by_event'] as $event => $count) {
@@ -139,7 +139,7 @@ class ProcessWebhookDeadLetters extends Command
             }
 
             $this->table(
-                [__('command.webhook.dead_letters.event'), __('command.webhook.dead_letters.count')],
+                [__('admin/command.webhook.dead_letters.event'), __('admin/command.webhook.dead_letters.count')],
                 $eventData
             );
         }

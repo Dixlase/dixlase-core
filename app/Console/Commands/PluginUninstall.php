@@ -34,7 +34,7 @@ class PluginUninstall extends Command
     public function __construct()
     {
         parent::__construct();
-        $this->description = __('command.plugin_uninstall.description');
+        $this->description = __('admin/command.plugin_uninstall.description');
     }
 
     /**
@@ -64,14 +64,14 @@ class PluginUninstall extends Command
         $plugin = DB::table('plugins')->where('name', $pluginName)->first();
 
         if (!$plugin) {
-            $this->error(__('command.plugin_uninstall.not_found', ['pluginName' => $pluginName]));
+            $this->error(__('admin/command.plugin_uninstall.not_found', ['pluginName' => $pluginName]));
             return 1;
         }
 
         // 有効化状態チェック
         if (!is_null($plugin->enabled_at) && !$this->option('force')) {
-            $this->error(__('command.plugin_uninstall.still_enabled', ['pluginName' => $pluginName]));
-            $this->warn(__('command.plugin_uninstall.disable_first'));
+            $this->error(__('admin/command.plugin_uninstall.still_enabled', ['pluginName' => $pluginName]));
+            $this->warn(__('admin/command.plugin_uninstall.disable_first'));
             return 1;
         }
 
@@ -79,11 +79,11 @@ class PluginUninstall extends Command
 
         // アンインストール確認（--no-interactionオプションがない場合のみ）
         if (!$this->option('no-interaction')) {
-            $this->warn(__('command.plugin_uninstall.confirm', ['pluginName' => $pluginName]));
+            $this->warn(__('admin/command.plugin_uninstall.confirm', ['pluginName' => $pluginName]));
             $answer = $this->ask('yes/no を入力してください');
             
             if (!in_array(strtolower($answer), ['yes', 'y'])) {
-                $this->info(__('command.plugin_uninstall.cancelled'));
+                $this->info(__('admin/command.plugin_uninstall.cancelled'));
                 return 0;
             }
         }
@@ -93,31 +93,31 @@ class PluginUninstall extends Command
 
         // --forceオプションが指定されている場合のみ無効化を実行
         if (!is_null($plugin->enabled_at) && $this->option('force')) {
-            $this->warn(__('command.plugin_uninstall.force_disabling', ['pluginName' => $pluginName]));
+            $this->warn(__('admin/command.plugin_uninstall.force_disabling', ['pluginName' => $pluginName]));
             $this->disablePlugin($pluginName);
             $plugin = DB::table('plugins')->where('name', $pluginName)->first();
         }
         // マイグレーションのロールバック
         if ($this->option('rollback')) {
-            $this->info(__('command.plugin_uninstall.rollback_running'));
+            $this->info(__('admin/command.plugin_uninstall.rollback_running'));
             $migrator = new PluginMigrator(app(Filesystem::class), app(ConnectionResolverInterface::class), 'plugin_migrations', $plugin->slug);
             // 全てのマイグレーションをロールバックするため、stepを大きな値に設定
             $migrator->rollback($plugin->directory, ['step' => 999]);
-        } else if (!$this->option('no-interaction') && $this->confirm(__('command.plugin_uninstall.rollback_confirm', ['pluginName' => $pluginName]), false)) {
-            $this->info(__('command.plugin_uninstall.rollback_running'));
+        } else if (!$this->option('no-interaction') && $this->confirm(__('admin/command.plugin_uninstall.rollback_confirm', ['pluginName' => $pluginName]), false)) {
+            $this->info(__('admin/command.plugin_uninstall.rollback_running'));
             $migrator = new PluginMigrator(app(Filesystem::class), app(ConnectionResolverInterface::class), 'plugin_migrations', $plugin->slug);
             // 全てのマイグレーションをロールバックするため、stepを大きな値に設定
             $migrator->rollback($plugin->directory, ['step' => 999]);
         } else {
-            $this->info(__('command.plugin_uninstall.rollback_skipped'));
+            $this->info(__('admin/command.plugin_uninstall.rollback_skipped'));
         }
 
         // ディレクトリは削除しない（plugin:deleteコマンドを使用）
-        $this->info(__('command.plugin_uninstall.files_preserved'));
+        $this->info(__('admin/command.plugin_uninstall.files_preserved'));
 
         // データベースからプラグインを削除
         DB::table('plugins')->where('name', $pluginName)->delete();
-        $this->info(__('command.plugin_uninstall.database_removed', ['pluginName' => $pluginName]));
+        $this->info(__('admin/command.plugin_uninstall.database_removed', ['pluginName' => $pluginName]));
 
         // 注意: composer.local.jsonと.git/info/excludeの更新は、
         // プラグイン削除時（plugin:delete）に行うため、ここでは不要
@@ -129,8 +129,8 @@ class PluginUninstall extends Command
         // Clear enabled plugins cache
         PluginServiceProvider::clearEnabledPluginsCache();
 
-        $this->info(__('command.plugin_uninstall.completed', ['pluginName' => $pluginName]));
-        $this->info(__('command.plugin_uninstall.delete_hint'));
+        $this->info(__('admin/command.plugin_uninstall.completed', ['pluginName' => $pluginName]));
+        $this->info(__('admin/command.plugin_uninstall.delete_hint'));
         
         return 0;
     }

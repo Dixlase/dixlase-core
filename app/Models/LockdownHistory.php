@@ -122,11 +122,11 @@ class LockdownHistory extends Model
     public function getActionLabel(): string
     {
         return match ($this->action) {
-            self::ACTION_ACTIVATED => __('lockdown.actions.activated'),
-            self::ACTION_DEACTIVATED => __('lockdown.actions.deactivated'),
-            self::ACTION_EXTENDED => __('lockdown.actions.extended'),
-            self::ACTION_MODIFIED => __('lockdown.actions.modified'),
-            self::ACTION_AUTO_RELEASED => __('lockdown.actions.auto_released'),
+            self::ACTION_ACTIVATED => __('admin/lockdown.actions.activated'),
+            self::ACTION_DEACTIVATED => __('admin/lockdown.actions.deactivated'),
+            self::ACTION_EXTENDED => __('admin/lockdown.actions.extended'),
+            self::ACTION_MODIFIED => __('admin/lockdown.actions.modified'),
+            self::ACTION_AUTO_RELEASED => __('admin/lockdown.actions.auto_released'),
             default => $this->action,
         };
     }

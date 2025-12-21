@@ -65,7 +65,7 @@ class SyncGitExclude extends Command
     {
         // .gitディレクトリが存在しない場合はエラー
         if (!File::exists(base_path('.git'))) {
-            $this->error(__('command.git_sync.git_not_found'));
+            $this->error(__('admin/command.git_sync.git_not_found'));
             return self::FAILURE;
         }
 
@@ -98,7 +98,7 @@ class SyncGitExclude extends Command
         $themesOnly = $this->option('themes-only');
         $force = $this->option('force');
 
-        $this->info(__('command.git_sync.scanning'));
+        $this->info(__('admin/command.git_sync.scanning'));
         $this->newLine();
 
         // 現在の.git/info/excludeの内容を取得
@@ -143,20 +143,20 @@ class SyncGitExclude extends Command
 
         // 変更がない場合
         if ((!$hasPluginChanges || $themesOnly) && (!$hasThemeChanges || $pluginsOnly)) {
-            $this->info(__('command.git_sync.exclude_in_sync'));
+            $this->info(__('admin/command.git_sync.exclude_in_sync'));
             return self::SUCCESS;
         }
 
         // ドライランの場合は終了
         if ($dryRun) {
             $this->newLine();
-            $this->warn(__('command.git_sync.dry_run'));
+            $this->warn(__('admin/command.git_sync.dry_run'));
             return self::SUCCESS;
         }
 
         // 確認
-        if (!$force && !$this->confirm(__('command.git_sync.confirm_apply'), true)) {
-            $this->info(__('command.git_sync.cancelled'));
+        if (!$force && !$this->confirm(__('admin/command.git_sync.confirm_apply'), true)) {
+            $this->info(__('admin/command.git_sync.cancelled'));
             return self::SUCCESS;
         }
 
@@ -171,7 +171,7 @@ class SyncGitExclude extends Command
         );
 
         $this->newLine();
-        $this->info(__('command.git_sync.exclude_synced'));
+        $this->info(__('admin/command.git_sync.exclude_synced'));
 
         return self::SUCCESS;
     }
@@ -198,7 +198,7 @@ class SyncGitExclude extends Command
 
             // 既に追加されている場合はスキップ
             if (str_contains($content, $pluginPath)) {
-                $this->info(__('command.git_sync.already_exists', ['path' => $pluginPath]));
+                $this->info(__('admin/command.git_sync.already_exists', ['path' => $pluginPath]));
                 return true;
             }
 
@@ -209,12 +209,12 @@ class SyncGitExclude extends Command
             $content = implode("\n", $lines);
             File::put($excludePath, $content);
             
-            $this->info(__('command.git_sync.added', ['path' => $pluginPath]));
+            $this->info(__('admin/command.git_sync.added', ['path' => $pluginPath]));
             Log::info("Added plugin exclusion to .git/info/exclude: {$pluginPath}");
 
             return true;
         } catch (\Exception $e) {
-            $this->error(__('command.git_sync.failed', ['error' => $e->getMessage()]));
+            $this->error(__('admin/command.git_sync.failed', ['error' => $e->getMessage()]));
             Log::error("Failed to add plugin exclusion: " . $e->getMessage());
             return false;
         }
@@ -241,12 +241,12 @@ class SyncGitExclude extends Command
             $content = implode("\n", array_values($filteredLines));
             File::put($excludePath, $content);
 
-            $this->info(__('command.git_sync.removed', ['path' => $pluginPath]));
+            $this->info(__('admin/command.git_sync.removed', ['path' => $pluginPath]));
             Log::info("Removed plugin exclusion from .git/info/exclude: {$pluginPath}");
 
             return true;
         } catch (\Exception $e) {
-            $this->error(__('command.git_sync.failed', ['error' => $e->getMessage()]));
+            $this->error(__('admin/command.git_sync.failed', ['error' => $e->getMessage()]));
             Log::error("Failed to remove plugin exclusion: " . $e->getMessage());
             return false;
         }
@@ -272,7 +272,7 @@ class SyncGitExclude extends Command
             $themePath = "!themes/{$themeName}";
 
             if (str_contains($content, $themePath)) {
-                $this->info(__('command.git_sync.already_exists', ['path' => $themePath]));
+                $this->info(__('admin/command.git_sync.already_exists', ['path' => $themePath]));
                 return true;
             }
 
@@ -282,12 +282,12 @@ class SyncGitExclude extends Command
             $content = implode("\n", $lines);
             File::put($excludePath, $content);
             
-            $this->info(__('command.git_sync.added', ['path' => $themePath]));
+            $this->info(__('admin/command.git_sync.added', ['path' => $themePath]));
             Log::info("Added theme exclusion to .git/info/exclude: {$themePath}");
 
             return true;
         } catch (\Exception $e) {
-            $this->error(__('command.git_sync.failed', ['error' => $e->getMessage()]));
+            $this->error(__('admin/command.git_sync.failed', ['error' => $e->getMessage()]));
             Log::error("Failed to add theme exclusion: " . $e->getMessage());
             return false;
         }
@@ -314,12 +314,12 @@ class SyncGitExclude extends Command
             $content = implode("\n", array_values($filteredLines));
             File::put($excludePath, $content);
 
-            $this->info(__('command.git_sync.removed', ['path' => $themePath]));
+            $this->info(__('admin/command.git_sync.removed', ['path' => $themePath]));
             Log::info("Removed theme exclusion from .git/info/exclude: {$themePath}");
 
             return true;
         } catch (\Exception $e) {
-            $this->error(__('command.git_sync.failed', ['error' => $e->getMessage()]));
+            $this->error(__('admin/command.git_sync.failed', ['error' => $e->getMessage()]));
             Log::error("Failed to remove theme exclusion: " . $e->getMessage());
             return false;
         }
@@ -364,7 +364,7 @@ class SyncGitExclude extends Command
         $this->newLine();
 
         if (!empty($actualPlugins)) {
-            $this->info(__('command.git_sync.plugins_found'));
+            $this->info(__('admin/command.git_sync.plugins_found'));
             foreach ($actualPlugins as $plugin) {
                 $status = in_array($plugin, $currentPlugins) ? '<fg=green>✓</>' : '<fg=yellow>○</>';
                 $this->line("  {$status} {$plugin}");
@@ -373,7 +373,7 @@ class SyncGitExclude extends Command
         }
 
         if (!empty($actualThemes)) {
-            $this->info(__('command.git_sync.themes_found'));
+            $this->info(__('admin/command.git_sync.themes_found'));
             foreach ($actualThemes as $theme) {
                 $status = in_array($theme, $currentThemes) ? '<fg=green>✓</>' : '<fg=yellow>○</>';
                 $this->line("  {$status} {$theme}");
@@ -388,7 +388,7 @@ class SyncGitExclude extends Command
     protected function displayChanges(string $type, array $toAdd, array $toRemove): void
     {
         if (!empty($toAdd)) {
-            $this->info("{$type} " . __('command.git_sync.to_add'));
+            $this->info("{$type} " . __('admin/command.git_sync.to_add'));
             foreach ($toAdd as $name) {
                 $typeLower = strtolower($type);
                 $this->line("  <fg=green>+ !{$typeLower}/{$name}</>");
@@ -396,7 +396,7 @@ class SyncGitExclude extends Command
         }
 
         if (!empty($toRemove)) {
-            $this->warn("{$type} " . __('command.git_sync.to_remove'));
+            $this->warn("{$type} " . __('admin/command.git_sync.to_remove'));
             foreach ($toRemove as $name) {
                 $typeLower = strtolower($type);
                 $this->line("  <fg=red>- !{$typeLower}/{$name}</>");

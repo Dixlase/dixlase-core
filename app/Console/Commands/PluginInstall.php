@@ -63,7 +63,7 @@ class PluginInstall extends Command
         $composerPath = $pluginPath . '/composer.json';
 
         if (!File::exists($pluginPath)) {
-            $this->error(__('command.plugin.not_exists'));
+            $this->error(__('admin/command.plugin.not_exists'));
             return;
         }
 
@@ -100,7 +100,7 @@ class PluginInstall extends Command
             $composerData = json_decode(File::get($composerPath), true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
-                $this->error(__('command.make_plugin.installation.composer_parse_error', [
+                $this->error(__('admin/command.make_plugin.installation.composer_parse_error', [
                     'error' => json_last_error_msg()
                 ]));
                 return;
@@ -144,12 +144,12 @@ class PluginInstall extends Command
             ]
         );
 
-        $this->info(__('command.make_plugin.installation.installed', [
+        $this->info(__('admin/command.make_plugin.installation.installed', [
             'pluginName' => $pluginName
         ]));
 
         // マイグレーションを実行
-        $this->info(__('command.make_plugin.installation.migrating'));
+        $this->info(__('admin/command.make_plugin.installation.migrating'));
         $migrator = new PluginMigrator(app(Filesystem::class), app(ConnectionResolverInterface::class), 'plugin_migrations', $slug);
         $migrator->migrate($pluginName);
 
@@ -164,19 +164,19 @@ class PluginInstall extends Command
             ]);
         } elseif (app()->runningInConsole() && !app()->runningUnitTests()) {
             // CLIからの実行時のみ確認プロンプトを表示
-            if ($this->confirm(__('command.make_plugin.installation.enable_confirm', [
+            if ($this->confirm(__('admin/command.make_plugin.installation.enable_confirm', [
                 'pluginName' => $pluginName
             ]), false)) {
                 $this->call('dls:plugin:enable', [
                     'pluginName' => $pluginName
                 ]);
             } else {
-                $this->info(__('command.make_plugin.installation.enable_skipped', [
+                $this->info(__('admin/command.make_plugin.installation.enable_skipped', [
                     'pluginName' => $pluginName
                 ]));
             }
         } else {
-            $this->info(__('command.make_plugin.installation.enable_skipped', [
+            $this->info(__('admin/command.make_plugin.installation.enable_skipped', [
                 'pluginName' => $pluginName
             ]));
         }

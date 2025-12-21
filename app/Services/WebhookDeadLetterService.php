@@ -99,8 +99,8 @@ class WebhookDeadLetterService
             $summary = $deadLetter->getSummary();
             
             \App\Services\SystemNotificationService::send(
-                __('webhook.dead_letter.notification_subject'),
-                __('webhook.dead_letter.notification_message', [
+                __('admin/webhook.dead_letter.notification_subject'),
+                __('admin/webhook.dead_letter.notification_message', [
                     'event' => $summary['event'],
                     'webhook_name' => $summary['webhook_name'],
                     'attempts' => $summary['total_attempts'],

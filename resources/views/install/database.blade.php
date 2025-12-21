@@ -1,8 +1,8 @@
 @extends('layouts.install')
 
-@section('title', __('install.database_title'))
-@section('header', __('install.database_header'))
-@section('description', __('install.database_description'))
+@section('title', __('admin/install.database_title'))
+@section('header', __('admin/install.database_header'))
+@section('description', __('admin/install.database_description'))
 
 @section('content')
 <form action="{{ route('install.database.store') }}" method="POST" class="space-y-6">
@@ -10,13 +10,13 @@
 
     <!-- データベース接続設定セクション -->
     <section aria-labelledby="db-connection-heading">
-        <h2 id="db-connection-heading" class="sr-only">{{ __('install.database_connection_settings') }}</h2>
+        <h2 id="db-connection-heading" class="sr-only">{{ __('admin/install.database_connection_settings') }}</h2>
         
         <fieldset class="space-y-4">
-            <legend class="sr-only">{{ __('install.database_connection_details') }}</legend>
+            <legend class="sr-only">{{ __('admin/install.database_connection_details') }}</legend>
             
             <div>
-                <x-form.label for="db_connection" :text="__('install.db_connection')" :required="true" />
+                <x-form.label for="db_connection" :text="__('admin/install.db_connection')" :required="true" />
                 @php
                     $dbConnectionOptions = [
                         'mysql' => 'MySQL',
@@ -40,7 +40,7 @@
             @endphp
 
             <div>
-                <x-form.label for="db_host" :text="__('install.db_host')" :required="true" />
+                <x-form.label for="db_host" :text="__('admin/install.db_host')" :required="true" />
                 <x-form.text
                     name="db_host"
                     id="db_host"
@@ -51,7 +51,7 @@
             </div>
 
             <div>
-                <x-form.label for="db_port" :text="__('install.db_port')" :required="true" />
+                <x-form.label for="db_port" :text="__('admin/install.db_port')" :required="true" />
                 <x-form.text
                     type="number"
                     name="db_port"
@@ -63,7 +63,7 @@
             </div>
 
             <div>
-                <x-form.label for="db_database" :text="__('install.db_database')" :required="true" />
+                <x-form.label for="db_database" :text="__('admin/install.db_database')" :required="true" />
                 <x-form.text
                     name="db_database"
                     id="db_database"
@@ -74,7 +74,7 @@
             </div>
 
             <div>
-                <x-form.label for="db_username" :text="__('install.db_username')" :required="true" />
+                <x-form.label for="db_username" :text="__('admin/install.db_username')" :required="true" />
                 <x-form.text
                     name="db_username"
                     id="db_username"
@@ -85,7 +85,7 @@
             </div>
 
             <div>
-                <x-form.label for="db_password" :text="__('install.db_password')" :required="true" />
+                <x-form.label for="db_password" :text="__('admin/install.db_password')" :required="true" />
                 <div class="relative">
                     <x-form.text
                         type="password"
@@ -100,41 +100,41 @@
                         <i id="password-eye" class="fas fa-eye"></i>
                     </button>
                 </div>
-                <x-form.help-text :text="__('install.db_password_required')" />
+                <x-form.help-text :text="__('admin/install.db_password_required')" />
             </div>
         </fieldset>
     </section>
 
     <!-- データ保持設定セクション -->
     <section aria-labelledby="data-preservation-heading">
-        <h2 id="data-preservation-heading" class="sr-only">{{ __('install.data_preservation_settings') }}</h2>
+        <h2 id="data-preservation-heading" class="sr-only">{{ __('admin/install.data_preservation_settings') }}</h2>
         
         <fieldset>
-            <legend class="sr-only">{{ __('install.database_preservation_options') }}</legend>
+            <legend class="sr-only">{{ __('admin/install.database_preservation_options') }}</legend>
             
             <x-form.toggle
                 name="preserve_data"
                 id="preserve_data"
                 :checked="old('preserve_data', session('install_data.preserve_data', false))"
-                :label="__('install.preserve_database')"
+                :label="__('admin/install.preserve_database')"
             />
-            <x-form.help-text :text="__('install.preserve_database_help')" />
+            <x-form.help-text :text="__('admin/install.preserve_database_help')" />
         </fieldset>
     </section>
 
     <!-- 接続テストセクション -->
     <section aria-labelledby="connection-test-heading">
-        <h2 id="connection-test-heading" class="sr-only">{{ __('install.database_connection_test') }}</h2>
+        <h2 id="connection-test-heading" class="sr-only">{{ __('admin/install.database_connection_test') }}</h2>
         
         <div class="text-center space-y-3">
             <p id="db-test-result" class="text-sm text-red-600 dark:text-red-400" role="status" aria-live="polite">
-                {{ __('install.db_test_required') }}
+                {{ __('admin/install.db_test_required') }}
             </p>
             
             <x-form.button 
                 type="button"
                 variant="success"
-                :label="__('install.test_db_connection')"
+                :label="__('admin/install.test_db_connection')"
                 icon="fas fa-plug"
                 onclick="testDatabaseConnection()"
             />
@@ -144,17 +144,17 @@
 
 
     <!-- フォームナビゲーション -->
-    <nav aria-label="{{ __('install.form_navigation') }}" class="flex justify-between mt-6">
+    <nav aria-label="{{ __('admin/install.form_navigation') }}" class="flex justify-between mt-6">
         <a href="{{ route('install.environment') }}"
             class="inline-flex items-center justify-center font-semibold rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 px-4 py-2 text-sm bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500">
-            {{ __('install.back') }}
+            {{ __('admin/install.back') }}
         </a>
 
         <div class="relative group">
             <x-form.button 
                 type="submit"
                 id="next-button"
-                :label="__('install.next')"
+                :label="__('admin/install.next')"
                 variant="primary"
                 disabled
                 class="bg-blue-400 dark:bg-blue-400 hover:bg-blue-400 dark:hover:bg-blue-400 cursor-not-allowed"
@@ -163,7 +163,7 @@
                 class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity
                 bg-gray-800 dark:bg-gray-700 text-white text-xs rounded px-3 py-2 whitespace-nowrap z-10"
                 role="tooltip">
-                {{ __('install.tooltip_test_db') }}
+                {{ __('admin/install.tooltip_test_db') }}
             </div>
         </div>
     </nav>
@@ -243,7 +243,7 @@
             nextButton.classList.remove("bg-blue-400", "dark:bg-blue-400", "cursor-not-allowed");
             nextButton.classList.add("bg-blue-600", "dark:bg-blue-500", "hover:bg-blue-700", "dark:hover:bg-blue-600");
 
-            resultMessage.innerText = "{{ __('install.db_test_success') }}";
+            resultMessage.innerText = "{{ __('admin/install.db_test_success') }}";
             resultMessage.classList.remove("text-red-600", "dark:text-red-400");
             resultMessage.classList.add("text-green-600", "dark:text-green-400");
 

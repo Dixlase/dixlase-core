@@ -47,7 +47,7 @@ class ThemeInstall extends Command
         // Check if theme directory exists
         if (!file_exists($themeDir)) {
             \Log::error('ThemeInstall: Theme directory not found', ['themeDir' => $themeDir]);
-            $this->error(__('command.theme_install.theme_not_found', ['themeName' => $themeName]));
+            $this->error(__('admin/command.theme_install.theme_not_found', ['themeName' => $themeName]));
             return Command::FAILURE;
         }
 
@@ -62,7 +62,7 @@ class ThemeInstall extends Command
         
         if ($exists && !$this->option('force')) {
             \Log::warning('ThemeInstall: Theme already registered', ['themeName' => $themeName]);
-            $this->error(__('command.theme_install.already_registered', ['themeName' => $themeName]));
+            $this->error(__('admin/command.theme_install.already_registered', ['themeName' => $themeName]));
             return Command::FAILURE;
         }
         
@@ -266,8 +266,8 @@ class ThemeInstall extends Command
             $this->warn("Failed to execute theme seeder: " . $e->getMessage());
         }
 
-        $this->info(__('command.theme_install.registered', ['themeName' => $themeName]));
-        $this->info(__('command.theme_install.activate_help', ['themeName' => $themeName]));
+        $this->info(__('admin/command.theme_install.registered', ['themeName' => $themeName]));
+        $this->info(__('admin/command.theme_install.activate_help', ['themeName' => $themeName]));
 
         return Command::SUCCESS;
     }

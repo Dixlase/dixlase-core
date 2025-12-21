@@ -182,10 +182,10 @@ class LockdownStatus extends Model
     public function getTypeLabel(): string
     {
         return match ($this->type) {
-            self::TYPE_FULL => __('lockdown.types.full'),
-            self::TYPE_ADMIN => __('lockdown.types.admin'),
-            self::TYPE_API => __('lockdown.types.api'),
-            self::TYPE_LOGIN => __('lockdown.types.login'),
+            self::TYPE_FULL => __('admin/lockdown.types.full'),
+            self::TYPE_ADMIN => __('admin/lockdown.types.admin'),
+            self::TYPE_API => __('admin/lockdown.types.api'),
+            self::TYPE_LOGIN => __('admin/lockdown.types.login'),
             default => $this->type,
         };
     }
@@ -196,10 +196,10 @@ class LockdownStatus extends Model
     public static function getTypeOptions(): array
     {
         return [
-            self::TYPE_FULL => __('lockdown.types.full'),
-            self::TYPE_ADMIN => __('lockdown.types.admin'),
-            self::TYPE_API => __('lockdown.types.api'),
-            self::TYPE_LOGIN => __('lockdown.types.login'),
+            self::TYPE_FULL => __('admin/lockdown.types.full'),
+            self::TYPE_ADMIN => __('admin/lockdown.types.admin'),
+            self::TYPE_API => __('admin/lockdown.types.api'),
+            self::TYPE_LOGIN => __('admin/lockdown.types.login'),
         ];
     }
 }

@@ -45,7 +45,7 @@ class ThemeSymlink extends Command
     public function __construct()
     {
         parent::__construct();
-        $this->description = __('command.theme_symlink.description');
+        $this->description = __('admin/command.theme_symlink.description');
     }
 
     /**
@@ -59,16 +59,16 @@ class ThemeSymlink extends Command
         $themeDirName = $this->argument('theme');
 
         if (!in_array($action, ['create', 'remove'])) {
-            $this->error(__('command.theme_symlink.invalid_action'));
+            $this->error(__('admin/command.theme_symlink.invalid_action'));
             return 1;
         }
 
         if ($action === 'create') {
             $this->createThemeSymlink($themeDirName);
-            $this->info(__('command.theme_symlink.created', ['theme' => $themeDirName]));
+            $this->info(__('admin/command.theme_symlink.created', ['theme' => $themeDirName]));
         } else {
             $this->removeThemeSymlink($themeDirName);
-            $this->info(__('command.theme_symlink.removed', ['theme' => $themeDirName]));
+            $this->info(__('admin/command.theme_symlink.removed', ['theme' => $themeDirName]));
         }
 
         return 0;
