@@ -113,6 +113,34 @@ return new class extends Migration
                 ->on('api_keys')
                 ->nullOnDelete();
         });
+
+        // ========================================
+        // webhooks テーブルへの外部キー
+        // ========================================
+
+        // webhook_deliveries.webhook_id -> webhooks.id
+        Schema::table('webhook_deliveries', function (Blueprint $table) {
+            $table->foreign('webhook_id')
+                ->references('id')
+                ->on('webhooks')
+                ->cascadeOnDelete();
+        });
+
+        // webhook_dead_letters.webhook_id -> webhooks.id
+        Schema::table('webhook_dead_letters', function (Blueprint $table) {
+            $table->foreign('webhook_id')
+                ->references('id')
+                ->on('webhooks')
+                ->cascadeOnDelete();
+        });
+
+        // webhook_dead_letters.delivery_id -> webhook_deliveries.id
+        Schema::table('webhook_dead_letters', function (Blueprint $table) {
+            $table->foreign('delivery_id')
+                ->references('id')
+                ->on('webhook_deliveries')
+                ->cascadeOnDelete();
+        });
     }
 
     /**
@@ -120,6 +148,21 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // webhook_dead_letters.delivery_id
+        Schema::table('webhook_dead_letters', function (Blueprint $table) {
+            $table->dropForeign(['delivery_id']);
+        });
+
+        // webhook_dead_letters.webhook_id
+        Schema::table('webhook_dead_letters', function (Blueprint $table) {
+            $table->dropForeign(['webhook_id']);
+        });
+
+        // webhook_deliveries.webhook_id
+        Schema::table('webhook_deliveries', function (Blueprint $table) {
+            $table->dropForeign(['webhook_id']);
+        });
+
         // api_request_logs
         Schema::table('api_request_logs', function (Blueprint $table) {
             $table->dropForeign(['api_key_id']);

@@ -40,8 +40,8 @@ return new class extends Migration
     {
         Schema::create('webhook_dead_letters', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('webhook_id')->constrained()->onDelete('cascade');
-            $table->foreignId('delivery_id')->constrained('webhook_deliveries')->onDelete('cascade');
+            $table->unsignedBigInteger('webhook_id');
+            $table->unsignedBigInteger('delivery_id');
             $table->uuid('event_id');
             $table->string('event', 100);
             $table->json('payload');

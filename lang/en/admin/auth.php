@@ -17,6 +17,7 @@ return [
         'title' => 'Admin Login',
         'header' => 'Admin Login',
         'description' => 'Please log in to access the admin panel.',
+        'login_field' => 'Email or Account Name',
         'remember_me' => 'Remember me',
         'forgot_password' => 'Forgot your password?',
         'captcha' => 'Security Verification',

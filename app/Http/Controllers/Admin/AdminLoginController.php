@@ -113,12 +113,15 @@ class AdminLoginController extends AdminController
     public function store(AdminLoginRequest $request)
     {
         $lockoutService = app(AdminLoginLockoutService::class);
-        $email = $request->email;
+        $login = $request->login;
+        
+        // 入力値がメールアドレスかアカウント名かを判定
+        $isEmail = str_contains($login, '@');
 
         // CAPTCHA検証
         if (CaptchaHelper::shouldShowCaptcha('admin_login')) {
             Log::info('AdminLogin CAPTCHA verification start', [
-                'email' => $email,
+                'login' => $login,
                 'ip' => $request->ip(),
                 'driver' => CaptchaHelper::getDriver(),
                 'captcha_token_length' => strlen($request->input('g-recaptcha-response', ''))
@@ -128,7 +131,7 @@ class AdminLoginController extends AdminController
             $captchaResult = $captchaDriverInstance->verify($request);
             
             Log::info('AdminLogin CAPTCHA verification result', [
-                'email' => $email,
+                'login' => $login,
                 'ip' => $request->ip(),
                 'is_valid' => $captchaResult->isValid(),
                 'error_message' => $captchaResult->getErrorMessage(),
@@ -145,28 +148,34 @@ class AdminLoginController extends AdminController
         }
 
         // ロックアウト状態をチェック
-        if ($lockoutService->isLockedOut($email)) {
-            $remainingMinutes = $lockoutService->getLockoutRemainingMinutes($email);
+        if ($lockoutService->isLockedOut($login)) {
+            $remainingMinutes = $lockoutService->getLockoutRemainingMinutes($login);
             return back()->withErrors([
-                'email' => __('auth.lockout', ['minutes' => $remainingMinutes]),
+                'login' => __('auth.lockout', ['minutes' => $remainingMinutes]),
             ]);
         }
 
         // IPアドレスベースのロックアウトもチェック
         if ($lockoutService->isIpLockedOut($request->ip())) {
             return back()->withErrors([
-                'email' => __('auth.ip_lockout'),
+                'login' => __('auth.ip_lockout'),
             ]);
         }
 
-        // emailまたはpending_emailでメンバーを検索（メールアドレス変更待ちの場合に対応）
-        $member = Member::where('email', $email)
-            ->orWhere('pending_email', $email)
-            ->first();
+        // メールアドレスまたはアカウント名でメンバーを検索
+        if ($isEmail) {
+            // メールアドレスで検索（pending_emailも含む）
+            $member = Member::where('email', $login)
+                ->orWhere('pending_email', $login)
+                ->first();
+        } else {
+            // アカウント名で検索
+            $member = Member::where('account_name', $login)->first();
+        }
 
         if (!$member || !Hash::check($request->password, $member->password)) {
             // 失敗したログインを記録
-            $lockoutInfo = $lockoutService->handleFailedLogin($request, $email);
+            $lockoutInfo = $lockoutService->handleFailedLogin($request, $login);
             
             $errorMessage = __('auth.failed');
             if ($lockoutInfo['is_locked_out']) {
@@ -176,9 +185,13 @@ class AdminLoginController extends AdminController
             }
 
             return back()->withErrors([
-                'email' => $errorMessage,
+                'login' => $errorMessage,
             ]);
         }
+        
+        // ロックアウト用にメールアドレスを取得
+        $email = $member->email;
+        
         // 2FA 判定（有効な場合だけ進める）
         $twoFactor = app(AdminTwoFactorService::class);
         
