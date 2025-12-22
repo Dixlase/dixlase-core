@@ -50,7 +50,7 @@ class CheckInstallationSteps
     private function checkStepFields($stepName, $data)
     {
         $requiredKeys = [
-            'settings' => ['site_name', 'admin_name', 'admin_email', 'admin_password'],
+            'settings' => ['site_name', 'admin_account_name', 'admin_email', 'admin_password'],
             'environment' => ['app_env', 'app_debug', 'app_url', 'app_timezone'],
             'database' => ['db_connection', 'db_host', 'db_port', 'db_database', 'db_username'],
             'mail' => [],

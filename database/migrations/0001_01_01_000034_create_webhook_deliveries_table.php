@@ -48,7 +48,7 @@ return new class extends Migration
             // リプレイ防止のためのnonce
             $table->string('nonce', 64)->nullable();
             
-            $table->foreignId('webhook_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('webhook_id');
             $table->string('event', 100);
             $table->json('payload');
             $table->string('status', 16); // pending / success / failed / retrying

@@ -215,6 +215,7 @@ return [
 
     'attributes' => [
         // Basic fields
+        'login' => 'Email or Account Name',
         'email' => 'Email Address',
         'email_confirmation' => 'Email Address (Confirmation)',
         'password' => 'Password',

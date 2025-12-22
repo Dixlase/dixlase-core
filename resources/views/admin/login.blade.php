@@ -40,13 +40,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :widget="$captchaWidget ?? null"
         />
 
-        <!-- メールアドレス -->
+        <!-- メールアドレスまたはアカウント名 -->
         <x-auth.login-field
-            id="email"
-            type="email"
-            name="email"
-            :label="__('common.email')"
-            :value="old('email')"
+            id="login"
+            type="text"
+            name="login"
+            :label="__('admin/auth.login.login_field')"
+            :value="old('login')"
             :required="true"
             :autofocus="true"
             autocomplete="username"

@@ -17,6 +17,7 @@ return [
         'title' => '管理画面ログイン',
         'header' => '管理画面ログイン',
         'description' => '管理画面にアクセスするにはログインしてください。',
+        'login_field' => 'メールアドレスまたはアカウント名',
         'remember_me' => 'ログイン状態を保持する',
         'forgot_password' => 'パスワードをお忘れですか？',
         'captcha' => 'セキュリティ認証',
