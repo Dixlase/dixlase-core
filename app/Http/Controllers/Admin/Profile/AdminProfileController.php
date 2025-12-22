@@ -273,7 +273,8 @@ class AdminProfileController extends AdminLoggedInController
         
         // プロフィール更新
         $updateData = [
-            'name' => $validated['name'],
+            'account_name' => $validated['account_name'],
+            'member_name' => $validated['member_name'] ?? null,
             'description' => $validated['description'] ?? '',
             'locale' => $validated['locale'] ?? null,
             'appearance' => (int) $validated['appearance'] ?? null,
@@ -599,7 +600,7 @@ class AdminProfileController extends AdminLoggedInController
         $member = Auth::guard('member')->user();
         \Log::info('[Passkey Delete] Member authenticated', [
             'member_id' => $member->id,
-            'member_name' => $member->name,
+            'member_name' => $member->member_name ?? $member->account_name,
         ]);
         
         $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);

@@ -40,6 +40,10 @@ return [
     'required' => '必須',
     'optional' => '任意',
 
+    // メンバー関連
+    'account_name' => 'アカウント名',
+    'member_name' => '表示名',
+
     // フォーム操作
     'submit' => '送信',
     'send' => '送信',

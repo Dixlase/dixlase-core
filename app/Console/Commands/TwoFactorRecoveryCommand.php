@@ -94,7 +94,7 @@ class TwoFactorRecoveryCommand extends Command
         $this->warn(__('admin/command.two_factor_recovery.warning_disable'));
         $this->newLine();
 
-        if (!$this->option('force') && !$this->confirm(__('admin/command.two_factor_recovery.confirm_disable', ['name' => $member->name]))) {
+        if (!$this->option('force') && !$this->confirm(__('admin/command.two_factor_recovery.confirm_disable', ['name' => ($member->member_name ?? $member->account_name)]))) {
             $this->info(__('admin/command.two_factor_recovery.cancelled'));
             return self::SUCCESS;
         }
@@ -111,7 +111,7 @@ class TwoFactorRecoveryCommand extends Command
         // Clear any pending 2FA tokens
         $member->twoFactorTokens()->delete();
 
-        $this->info(__('admin/command.two_factor_recovery.disabled_success', ['name' => $member->name]));
+        $this->info(__('admin/command.two_factor_recovery.disabled_success', ['name' => ($member->member_name ?? $member->account_name)]));
 
         // Log to audit
         AuditService::log(
@@ -151,7 +151,7 @@ class TwoFactorRecoveryCommand extends Command
 
         // Check if 2FA is enabled
         if ($member->two_factor_mode === TwoFactorMode::DISABLED || $member->two_factor_mode === null) {
-            $this->error(__('admin/command.two_factor_recovery.2fa_not_enabled', ['name' => $member->name]));
+            $this->error(__('admin/command.two_factor_recovery.2fa_not_enabled', ['name' => ($member->member_name ?? $member->account_name)]));
             return self::FAILURE;
         }
 
@@ -159,7 +159,7 @@ class TwoFactorRecoveryCommand extends Command
         $this->warn(__('admin/command.two_factor_recovery.warning_reset_codes'));
         $this->newLine();
 
-        if (!$this->option('force') && !$this->confirm(__('admin/command.two_factor_recovery.confirm_reset_codes', ['name' => $member->name]))) {
+        if (!$this->option('force') && !$this->confirm(__('admin/command.two_factor_recovery.confirm_reset_codes', ['name' => ($member->member_name ?? $member->account_name)]))) {
             $this->info(__('admin/command.two_factor_recovery.cancelled'));
             return self::SUCCESS;
         }
@@ -172,7 +172,7 @@ class TwoFactorRecoveryCommand extends Command
             'two_factor_recovery_codes' => json_encode($hashedCodes),
         ]);
 
-        $this->info(__('admin/command.two_factor_recovery.codes_reset_success', ['name' => $member->name]));
+        $this->info(__('admin/command.two_factor_recovery.codes_reset_success', ['name' => ($member->member_name ?? $member->account_name)]));
         $this->newLine();
 
         // Display new codes
@@ -249,7 +249,7 @@ class TwoFactorRecoveryCommand extends Command
 
             $rows[] = [
                 $member->id,
-                $member->name,
+                ($member->member_name ?? $member->account_name),
                 $member->email,
                 $member->two_factor_mode?->label() ?? '-',
                 $codesCount > 0 ? $codesCount : __('admin/command.two_factor_recovery.no_codes'),
@@ -323,7 +323,7 @@ class TwoFactorRecoveryCommand extends Command
      */
     protected function showMemberTwoFactorStatus(Member $member): void
     {
-        $this->info(__('admin/command.two_factor_recovery.member_status_title', ['name' => $member->name]));
+        $this->info(__('admin/command.two_factor_recovery.member_status_title', ['name' => ($member->member_name ?? $member->account_name)]));
         $this->newLine();
 
         $hasRecoveryCodes = !empty($member->two_factor_recovery_codes);

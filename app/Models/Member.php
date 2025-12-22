@@ -62,7 +62,8 @@ class Member extends Authenticatable implements MustVerifyEmail
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'account_name',
+        'member_name',
         'email',
         'email_verified_at',
         'pending_email',

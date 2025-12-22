@@ -94,7 +94,7 @@ class RbacRecoveryCommand extends Command
         $this->warn(__('admin/command.rbac_recovery.warning_grant'));
         $this->newLine();
 
-        if (!$this->option('force') && !$this->confirm(__('admin/command.rbac_recovery.confirm_grant', ['name' => $member->name]))) {
+        if (!$this->option('force') && !$this->confirm(__('admin/command.rbac_recovery.confirm_grant', ['name' => ($member->member_name ?? $member->account_name)]))) {
             $this->info(__('admin/command.rbac_recovery.cancelled'));
             return self::SUCCESS;
         }
@@ -121,7 +121,7 @@ class RbacRecoveryCommand extends Command
             $member->roles()->attach($superAdminRole->id);
         }
 
-        $this->info(__('admin/command.rbac_recovery.grant_success', ['name' => $member->name]));
+        $this->info(__('admin/command.rbac_recovery.grant_success', ['name' => ($member->member_name ?? $member->account_name)]));
 
         // Log to audit
         AuditService::log(
@@ -296,7 +296,7 @@ class RbacRecoveryCommand extends Command
                 $roleNames = $member->roles->pluck('display_name')->join(', ') ?: '-';
                 $rows[] = [
                     $member->id,
-                    $member->name,
+                    ($member->member_name ?? $member->account_name),
                     $member->email,
                     $roleNames,
                 ];
@@ -396,7 +396,7 @@ class RbacRecoveryCommand extends Command
      */
     protected function showMemberPermissionStatus(Member $member): void
     {
-        $this->info(__('admin/command.rbac_recovery.member_status_title', ['name' => $member->name]));
+        $this->info(__('admin/command.rbac_recovery.member_status_title', ['name' => ($member->member_name ?? $member->account_name)]));
         $this->newLine();
 
         $roles = $member->roles->pluck('display_name')->join(', ') ?: __('admin/command.rbac_recovery.none');

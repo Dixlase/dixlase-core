@@ -71,7 +71,8 @@ class AdminMemberIndexController extends AdminLoggedInController
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('id', 'like', '%' . $search . '%')
-                      ->orWhere('name', 'like', '%' . $search . '%')
+                      ->orWhere('account_name', 'like', '%' . $search . '%')
+                      ->orWhere('member_name', 'like', '%' . $search . '%')
                       ->orWhere('email', 'like', '%' . $search . '%');
                 });
             })

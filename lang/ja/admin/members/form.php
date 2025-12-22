@@ -13,6 +13,8 @@
  */
 
 return [
+    'account_name_help' => 'ログインに使用するアカウント名です。3〜20文字の半角英数字を使用してください。',
+    'member_name_help' => '管理バーやプロフィールに表示される名前です。空欄の場合はアカウント名が表示されます。',
     'password_change_only' => 'パスワード（変更する場合のみ）',
     'login_notification' => 'ログイン通知',
     'two_factor_mode' => '二段階認証モード',
