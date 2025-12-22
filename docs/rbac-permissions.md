@@ -125,7 +125,7 @@ Route::get('/settings/security', [SecurityController::class, 'index'])
 ### Bladeテンプレートでの権限チェック
 
 ```blade
-@if(auth()->user()->can(\App\Enums\Permission::MEMBERS_CREATE))
+@if(auth()->user()->hasPermission(\App\Enums\Permission::MEMBERS_CREATE))
     <a href="{{ route('admin.members.create') }}">メンバー作成</a>
 @endif
 
@@ -140,7 +140,7 @@ Route::get('/settings/security', [SecurityController::class, 'index'])
 $member = Member::find(1);
 
 // 権限チェック
-if ($member->can(Permission::MEMBERS_VIEW)) {
+if ($member->hasPermission(Permission::MEMBERS_VIEW)) {
     // ...
 }
 

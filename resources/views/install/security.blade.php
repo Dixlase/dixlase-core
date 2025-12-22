@@ -1,9 +1,9 @@
 @extends('layouts.install')
 
-@section('title', __('admin/install.security_title'))
-@section('header', __('admin/install.security_header'))
+@section('title', __('install.security_title'))
+@section('header', __('install.security_header'))
 @section('description')
-    {!! __('admin/install.security_description') !!}
+    {!! __('install.security_description') !!}
 @endsection
 
 @section('content')
@@ -14,11 +14,11 @@
     <!-- IP制限設定セクション -->
     <section aria-labelledby="ip-restrictions-heading">
         <h2 id="ip-restrictions-heading" class="text-lg font-bold text-gray-900 dark:text-gray-100">
-            {{ __('admin/install.ip_restrictions') }}
+            {{ __('install.ip_restrictions') }}
         </h2>
         
         <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-            {{ __('admin/install.ip_address_format_instruction') }}
+            {{ __('install.ip_address_format_instruction') }}
         </p>
         <pre class="text-xs bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 p-3 rounded-lg mt-2 border border-gray-200 dark:border-gray-700">127.0.0.1
 192.168.1.1
@@ -27,7 +27,7 @@
         <!-- 管理画面IP制限 -->
         <fieldset class="mt-6 space-y-4">
             <legend class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">
-                {{ __('admin/install.admin_panel_ip_restrictions') }}
+                {{ __('install.admin_panel_ip_restrictions') }}
             </legend>
             
             <!-- 許可IPアドレス -->
@@ -36,7 +36,7 @@
                     name="enable_allowed_admin_ips"
                     id="enable_allowed_admin_ips"
                     :checked="old('enable_allowed_admin_ips', session('install_data.enable_allowed_admin_ips', '0')) == '1'"
-                    :label="__('admin/install.enable_allowed_admin_ips')"
+                    :label="__('install.enable_allowed_admin_ips')"
                 />
                 <x-form.textarea
                     name="allowed_admin_ips"
@@ -55,7 +55,7 @@
                     name="enable_blocked_admin_ips"
                     id="enable_blocked_admin_ips"
                     :checked="old('enable_blocked_admin_ips', session('install_data.enable_blocked_admin_ips', '0')) == '1'"
-                    :label="__('admin/install.enable_blocked_admin_ips')"
+                    :label="__('install.enable_blocked_admin_ips')"
                 />
                 <x-form.textarea
                     name="blocked_admin_ips"
@@ -71,7 +71,7 @@
         <!-- フロント画面IP制限 -->
         <fieldset class="mt-6 space-y-4">
             <legend class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">
-                {{ __('admin/install.front_panel_ip_restrictions') }}
+                {{ __('install.front_panel_ip_restrictions') }}
             </legend>
             
             <!-- 許可IPアドレス -->
@@ -80,7 +80,7 @@
                     name="enable_allowed_front_ips"
                     id="enable_allowed_front_ips"
                     :checked="old('enable_allowed_front_ips', session('install_data.enable_allowed_front_ips', '0')) == '1'"
-                    :label="__('admin/install.enable_allowed_front_ips')"
+                    :label="__('install.enable_allowed_front_ips')"
                 />
                 <x-form.textarea
                     name="allowed_front_ips"
@@ -98,7 +98,7 @@
                     name="enable_blocked_front_ips"
                     id="enable_blocked_front_ips"
                     :checked="old('enable_blocked_front_ips', session('install_data.enable_blocked_front_ips', '0')) == '1'"
-                    :label="__('admin/install.enable_blocked_front_ips')"
+                    :label="__('install.enable_blocked_front_ips')"
                 />
                 <x-form.textarea
                     name="blocked_front_ips"
@@ -113,15 +113,15 @@
     </section>
 
     <!-- フォームナビゲーション -->
-    <nav aria-label="{{ __('admin/install.form_navigation') }}" class="flex justify-between mt-6">
+    <nav aria-label="{{ __('install.form_navigation') }}" class="flex justify-between mt-6">
         <a href="{{ route('install.mail') }}"
             class="bg-gray-500 dark:bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-700 transition">
-            {{ __('admin/install.back') }}
+            {{ __('install.back') }}
         </a>
         <x-form.button
             type="submit"
             variant="primary"
-            :label="__('admin/install.next')"
+            :label="__('install.next')"
         />
     </nav>
 </form>

@@ -1,7 +1,7 @@
 <x-mail::message>
 # {{ __('mail.login_notification.title') }}
 
-{{ $toSystem ? __('mail.login_notification.system_message') : __('mail.login_notification.user_message', ['name' => $member->name]) }}
+{{ $toSystem ? __('mail.login_notification.system_message') : __('mail.login_notification.user_message', ['name' => $member->member_name ?? $member->account_name]) }}
 
 **{{ __('mail.login_notification.details_title') }}**
 

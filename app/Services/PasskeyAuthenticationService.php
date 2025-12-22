@@ -248,7 +248,7 @@ class PasskeyAuthenticationService
             'user' => [
                 'id' => base64_encode($member->id),
                 'name' => $member->email,
-                'displayName' => $member->name ?? $member->email,
+                'displayName' => $member->member_name ?? $member->account_name ?? $member->email,
             ],
             'pubKeyCredParams' => [
                 ['type' => 'public-key', 'alg' => -7],  // ES256

@@ -41,7 +41,7 @@ trait HasPermissions
      * @param Permission|string $permission
      * @return bool
      */
-    public function can(Permission|string $permission): bool
+    public function hasPermission(Permission|string $permission): bool
     {
         return PermissionService::memberCan($this, $permission);
     }
@@ -52,10 +52,10 @@ trait HasPermissions
      * @param array<Permission|string> $permissions
      * @return bool
      */
-    public function canAny(array $permissions): bool
+    public function hasAnyPermission(array $permissions): bool
     {
         foreach ($permissions as $permission) {
-            if ($this->can($permission)) {
+            if ($this->hasPermission($permission)) {
                 return true;
             }
         }
@@ -68,10 +68,10 @@ trait HasPermissions
      * @param array<Permission|string> $permissions
      * @return bool
      */
-    public function canAll(array $permissions): bool
+    public function hasAllPermissions(array $permissions): bool
     {
         foreach ($permissions as $permission) {
-            if (!$this->can($permission)) {
+            if (!$this->hasPermission($permission)) {
                 return false;
             }
         }
@@ -171,7 +171,7 @@ trait HasPermissions
     public function canPerformDangerous(Permission $permission): bool
     {
         if (!$permission->isDangerous()) {
-            return $this->can($permission);
+            return $this->hasPermission($permission);
         }
 
         // For dangerous actions, require super admin

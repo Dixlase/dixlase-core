@@ -291,7 +291,7 @@ trait MailTestTrait
                 if (!$testEmail) {
                     return response()->json([
                         'success' => false,
-                        'message' => __('admin/install.admin_email_not_found')
+                        'message' => __('install.admin_email_not_found')
                     ], 400);
                 }
             } else {

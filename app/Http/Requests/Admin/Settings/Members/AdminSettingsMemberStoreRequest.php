@@ -52,7 +52,8 @@ class AdminSettingsMemberStoreRequest extends FormRequest
         $isInitialAdmin = $member && $member->id === 1;
 
         $rules = [
-            'name' => 'required|string|max:255',
+            'account_name' => 'required|string|alpha_num|min:3|max:20',
+            'member_name' => 'nullable|string|max:255',
             'description' => 'nullable|string|max:1000',
             'email' => [
                 'required',
@@ -95,7 +96,10 @@ class AdminSettingsMemberStoreRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => __('admin/members/validation.name_required'),
+            'account_name.required' => __('admin/members/validation.account_name_required'),
+            'account_name.alpha_num' => __('admin/members/validation.account_name_alpha_num'),
+            'account_name.min' => __('admin/members/validation.account_name_length'),
+            'account_name.max' => __('admin/members/validation.account_name_length'),
             'email.required' => __('admin/members/validation.email_required'),
             'email.email' => __('admin/members/validation.email_invalid'),
             'email.unique' => __('admin/members/validation.email_unique'),

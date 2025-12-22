@@ -151,11 +151,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @foreach ($members as $member)
                         <tr>
                             <td data-label="{{ __('common.id') }}">{{ $member->id }}</td>
-                            <td data-label="{{ __('common.name') }}">
+                            <td data-label="{{ __('common.account_name') }}">
                                 <a href="{{ route('admin.members.edit', ['member' => $member->id]) }}" 
                                    class="hover:underline">
-                                    {{ $member->name }}
+                                    {{ $member->member_name ?? $member->account_name }}
                                 </a>
+                                @if($member->member_name)
+                                    <span class="text-xs text-gray-500 dark:text-gray-400 block">{{ $member->account_name }}</span>
+                                @endif
                             </td>
                             <td data-label="{{ __('common.email') }}">{{ $member->email }}</td>
                             <td data-label="{{ __('common.role') }}">{{ $member->role->label() }}</td>

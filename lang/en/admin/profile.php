@@ -20,6 +20,8 @@ return [
     'email' => 'Email Address',
     'use_system_default' => 'Use System Default',
     'language_help' => 'Individual language setting. If not selected, the system default language will be used.',
+    'account_name_help' => 'Account name used for login. Use 3-20 alphanumeric characters.',
+    'member_name_help' => 'Name displayed in the admin bar and profile. If left empty, the account name will be used.',
     'password_change_only' => 'Password (Enter only if changing)',
     'updated' => 'Profile has been updated.',
     'login_notification_global_setting_fixed' => 'Fixed by Global Setting',

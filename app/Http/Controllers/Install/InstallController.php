@@ -113,13 +113,14 @@ class InstallController extends Controller
     {
         $request->validate([
             'site_name' => 'required|string|max:255',
-            'admin_name' => [
+            'admin_account_name' => [
                 'required',
                 'string',
                 'alpha_num', // 半角英数字のみ
                 'min:3',
                 'max:20',
             ],
+            'admin_member_name' => 'nullable|string|max:255',
             'admin_email' => 'required|email',
             'admin_password' => [
                 'required',
@@ -131,22 +132,23 @@ class InstallController extends Controller
                 'regex:/[0-9]/',  // ✅ 数字を1文字以上含む
             ],
         ], [
-            'admin_name.required' => __('admin/install.validation.admin_name_required'),
-            'admin_name.alpha_num' => __('admin/install.validation.admin_name_alpha_num'),
-            'admin_name.min' => __('admin/install.validation.admin_name_length'),
-            'admin_name.max' => __('admin/install.validation.admin_name_length'),
-            'admin_password.regex' => __('admin/install.password_requirements_error'), // エラーメッセージを設定
+            'admin_account_name.required' => __('install.validation.admin_account_name_required'),
+            'admin_account_name.alpha_num' => __('install.validation.admin_account_name_alpha_num'),
+            'admin_account_name.min' => __('install.validation.admin_account_name_length'),
+            'admin_account_name.max' => __('install.validation.admin_account_name_length'),
+            'admin_password.regex' => __('install.password_requirements_error'), // エラーメッセージを設定
             'site_name.required' => __('validation.required', ['attribute' => __('validation.attributes.site_name')]),
             'admin_email.required' => __('validation.required', ['attribute' => __('validation.attributes.admin_email')]),
             'admin_email.email' => __('validation.email', ['attribute' => __('validation.attributes.admin_email')]),
             'admin_password.required' => __('validation.required', ['attribute' => __('validation.attributes.admin_password')]),
             'admin_password.min' => __('validation.min.string', ['attribute' => __('validation.attributes.admin_password'), 'min' => 8]),
-            'admin_password.regex' => __('admin/install.password_requirements_error'), // 事前に言語ファイルに登録
+            'admin_password.regex' => __('install.password_requirements_error'), // 事前に言語ファイルに登録
         ]);
 
         session([
             'install_data.site_name' => $request->site_name,
-            'install_data.admin_name' => $request->admin_name,
+            'install_data.admin_account_name' => $request->admin_account_name,
+            'install_data.admin_member_name' => $request->admin_member_name,
             'install_data.admin_email' => $request->admin_email,
             'install_data.admin_password' => Crypt::encryptString($request->admin_password), // ✅ 暗号化
         ]);
@@ -190,7 +192,7 @@ class InstallController extends Controller
         // 2) ドメイン形式か簡易チェック
         if (!preg_match('/^[\w.\-]+(:\d+)?$/', $data['app_url'])) {
             return back()->withErrors([
-                'app_url' => __('validation.url', ['attribute' => __('admin/install.app_url')])
+                'app_url' => __('validation.url', ['attribute' => __('install.app_url')])
             ])->withInput();
         }
 
@@ -452,7 +454,7 @@ class InstallController extends Controller
             'session_id' => session()->getId(),
             'session_keys' => array_keys($data),
             'has_site_name' => isset($data['site_name']),
-            'has_admin_name' => isset($data['admin_name']),
+            'has_admin_account_name' => isset($data['admin_account_name']),
             'has_admin_email' => isset($data['admin_email']),
             'has_admin_password' => isset($data['admin_password']),
             'has_app_env' => isset($data['app_env']),
@@ -470,7 +472,7 @@ class InstallController extends Controller
         // 必須フィールドのチェックと不足フィールドに基づく適切なステップへのリダイレクト
         $steps = [
             // 基本設定
-            'settings' => ['site_name', 'admin_name', 'admin_email', 'admin_password'],
+            'settings' => ['site_name', 'admin_account_name', 'admin_email', 'admin_password'],
             // 環境設定
             'environment' => ['app_env', 'app_url','admin_url', 'app_timezone'],
             // データベース設定
@@ -506,7 +508,7 @@ class InstallController extends Controller
             
             $route = 'install.' . ($firstMissing['step'] === 'settings' ? 'index' : $firstMissing['step']);
             return redirect()->route($route)
-                ->with('error', __('admin/install.missing_required_fields') . " (不足フィールド: {$firstMissing['field']})");
+                ->with('error', __('install.missing_required_fields') . " (不足フィールド: {$firstMissing['field']})");
         }
         
         // メールテスト結果をセッションから取得
@@ -800,21 +802,21 @@ class InstallController extends Controller
         
         // エラーがデータベース関連の場合
         if (strpos($errorMessage, 'database') !== false) {
-            return __('admin/install.error.database');
+            return __('install.error.database');
         }
         
         // エラーがファイルシステム関連の場合
         if (strpos($errorMessage, 'file') !== false || strpos($errorMessage, 'directory') !== false) {
-            return __('admin/install.error.file_system');
+            return __('install.error.file_system');
         }
         
         // エラーが環境変数関連の場合
         if (strpos($errorMessage, 'env') !== false || strpos($errorMessage, 'environment') !== false) {
-            return __('admin/install.error.environment');
+            return __('install.error.environment');
         }
         
         // エラーが不明な場合
-        return __('admin/install.error.unknown');
+        return __('install.error.unknown');
     }
 
     /**
@@ -1009,7 +1011,7 @@ class InstallController extends Controller
             $response = [
                 'success' => true,
                 'locale' => $locale,
-                'message' => __('admin/install.language_changed')
+                'message' => __('install.language_changed')
             ];
             
             // 常にJSONで返す（リダイレクトなし）＋ クッキーで永続化
@@ -1100,7 +1102,7 @@ class InstallController extends Controller
      */
     private function initializeDatabase(array $data, string $adminPassword)
     {
-        Log::channel('install')->info('initializeDatabase - 開始: admin_email=' . $data['admin_email'] . ', admin_name=' . $data['admin_name']);
+        Log::channel('install')->info('initializeDatabase - 開始: admin_email=' . $data['admin_email'] . ', admin_account_name=' . $data['admin_account_name']);
         
         // `base_settings` に基本設定を保存（.envとの同期用）
         Log::channel('install')->info('initializeDatabase - base_settings更新開始');
@@ -1243,7 +1245,8 @@ class InstallController extends Controller
             DB::connection('mysql')->table('members')
                 ->where('id', $admin->id)
                 ->update([
-                    'name' => $data['admin_name'],
+                    'account_name' => $data['admin_account_name'],
+                    'member_name' => $data['admin_member_name'] ?? null,
                     'locale' => $installLocale, // インストール時の言語設定を反映
                     'password' => Hash::make($adminPassword),
                     'role' => 10, // super_admin
@@ -1256,7 +1259,8 @@ class InstallController extends Controller
             // 新しい管理者を作成
             Log::channel('install')->info('initializeDatabase - 新規管理者作成開始');
             $memberId = DB::connection('mysql')->table('members')->insertGetId([
-                'name' => $data['admin_name'],
+                'account_name' => $data['admin_account_name'],
+                'member_name' => $data['admin_member_name'] ?? null,
                 'email' => $data['admin_email'],
                 'email_verified_at' => now(), // インストール時は自動的に認証済み
                 'locale' => $installLocale, // インストール時の言語設定を反映
@@ -1347,12 +1351,12 @@ class InstallController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => __('admin/install.db_connection_success')
+                'message' => __('install.db_connection_success')
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('admin/install.db_connection_error', ['error' => $e->getMessage()])
+                'message' => __('install.db_connection_error', ['error' => $e->getMessage()])
             ]);
         }
     }

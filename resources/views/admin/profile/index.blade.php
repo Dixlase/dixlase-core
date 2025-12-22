@@ -30,13 +30,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <h2>{{ __('common.basic_info') }}</h2>
             
             <fieldset>
-                <legend>{{ __('common.name') }}</legend>
+                <legend>{{ __('common.account_name') }}</legend>
                 <x-form.text
-                    name="name"
-                    :value="old('name', $member->name)"
+                    name="account_name"
+                    :value="old('account_name', $member->account_name)"
                     :required="true"
+                    pattern="^[a-zA-Z0-9]+$"
+                    minlength="3"
+                    maxlength="20"
                 />
-                @error('name')
+                <p class="description-text">{!! __('admin/profile.account_name_help') !!}</p>
+                @error('account_name')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </fieldset>
+
+            <fieldset>
+                <legend>{{ __('common.member_name') }}</legend>
+                <x-form.text
+                    name="member_name"
+                    :value="old('member_name', $member->member_name)"
+                />
+                <p class="description-text">{{ __('admin/profile.member_name_help') }}</p>
+                @error('member_name')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
             </fieldset>

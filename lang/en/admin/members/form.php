@@ -13,6 +13,8 @@
  */
 
 return [
+    'account_name_help' => 'Account name used for login. Use 3-20 alphanumeric characters.',
+    'member_name_help' => 'Name displayed in the admin bar and profile. If left empty, the account name will be used.',
     'password_change_only' => 'Password (only when changing)',
     'login_notification' => 'Login Notification',
     'two_factor_mode' => 'Two-Factor Authentication Mode',

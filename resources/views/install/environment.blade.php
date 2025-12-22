@@ -1,8 +1,8 @@
 @extends('layouts.install')
 
-@section('title', __('admin/install.environment_title'))
-@section('header', __('admin/install.environment_header'))
-@section('description', __('admin/install.environment_description'))
+@section('title', __('install.environment_title'))
+@section('header', __('install.environment_header'))
+@section('description', __('install.environment_description'))
 
 @section('content')
 
@@ -20,13 +20,13 @@
 
     <!-- 環境設定セクション -->
     <section aria-labelledby="env-settings-heading">
-        <h2 id="env-settings-heading" class="sr-only">{{ __('admin/install.environment_settings') }}</h2>
+        <h2 id="env-settings-heading" class="sr-only">{{ __('install.environment_settings') }}</h2>
         
         <fieldset class="space-y-4">
-            <legend class="sr-only">{{ __('admin/install.application_environment') }}</legend>
+            <legend class="sr-only">{{ __('install.application_environment') }}</legend>
             
             <div>
-                <x-form.label for="app_env" :text="__('admin/install.app_env')" :required="true" />
+                <x-form.label for="app_env" :text="__('install.app_env')" :required="true" />
                 @php
                     $envOptions = [
                         'local' => 'install.app_env_options.local',
@@ -45,27 +45,27 @@
             </div>
 
             <div>
-                <x-form.label for="app_debug" :text="__('admin/install.app_debug')" />
+                <x-form.label for="app_debug" :text="__('install.app_debug')" />
                 <x-form.toggle
                     name="app_debug"
                     id="app_debug"
                     :checked="old('app_debug', session('install_data.app_debug', '1')) == '1'"
-                    :label="__('admin/install.enable_debug')"
+                    :label="__('install.enable_debug')"
                 />
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1" id="debug-note">{{ __('admin/install.app_debug_note') }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1" id="debug-note">{{ __('install.app_debug_note') }}</p>
             </div>
         </fieldset>
     </section>
 
     <!-- URL設定セクション -->
     <section aria-labelledby="url-settings-heading">
-        <h2 id="url-settings-heading" class="sr-only">{{ __('admin/install.url_settings') }}</h2>
+        <h2 id="url-settings-heading" class="sr-only">{{ __('install.url_settings') }}</h2>
         
         <fieldset class="space-y-4">
-            <legend class="sr-only">{{ __('admin/install.application_url_configuration') }}</legend>
+            <legend class="sr-only">{{ __('install.application_url_configuration') }}</legend>
             
             <div>
-                <x-form.label for="app_url" :text="__('admin/install.app_url')" :required="true" />
+                <x-form.label for="app_url" :text="__('install.app_url')" :required="true" />
                 <div class="flex items-center">
                     <span id="protocol_display" class="p-2 bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-l-lg text-gray-700 dark:text-gray-300 text-sm">
                         {{ session('install_data.force_ssl', false) ? 'https://' : 'http://' }}
@@ -78,27 +78,27 @@
                         class="input-full rounded-r-lg rounded-l-none"
                     />
                 </div>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/install.app_url_note') }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('install.app_url_note') }}</p>
             </div>
 
             <x-form.toggle
                 name="force_ssl"
                 id="force_ssl"
                 :checked="session('install_data.force_ssl', false)"
-                :label="__('admin/install.force_ssl')"
+                :label="__('install.force_ssl')"
             />
         </fieldset>
     </section>
 
     <!-- 管理画面URL設定セクション -->
     <section aria-labelledby="admin-url-heading">
-        <h2 id="admin-url-heading" class="sr-only">{{ __('admin/install.admin_url_configuration') }}</h2>
+        <h2 id="admin-url-heading" class="sr-only">{{ __('install.admin_url_configuration') }}</h2>
         
         <fieldset>
-            <legend class="sr-only">{{ __('admin/install.admin_panel_url') }}</legend>
+            <legend class="sr-only">{{ __('install.admin_panel_url') }}</legend>
             
             <div>
-                <x-form.label for="admin_url" :text="__('admin/install.admin_url')" />
+                <x-form.label for="admin_url" :text="__('install.admin_url')" />
                 <div class="flex items-center">
                     <span id="admin_url_prefix" class="p-2 bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-l-lg text-gray-700 dark:text-gray-300 text-sm"></span>
                     <x-form.text
@@ -108,7 +108,7 @@
                         class="input-full rounded-r-lg rounded-l-none"
                     />
                 </div>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/install.admin_url_security_note') }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('install.admin_url_security_note') }}</p>
             </div>
         </fieldset>
     </section>
@@ -117,13 +117,13 @@
 
     <!-- タイムゾーン設定セクション -->
     <section aria-labelledby="timezone-heading">
-        <h2 id="timezone-heading" class="sr-only">{{ __('admin/install.timezone_configuration') }}</h2>
+        <h2 id="timezone-heading" class="sr-only">{{ __('install.timezone_configuration') }}</h2>
         
         <fieldset>
-            <legend class="sr-only">{{ __('admin/install.application_timezone') }}</legend>
+            <legend class="sr-only">{{ __('install.application_timezone') }}</legend>
             
             <div>
-                <x-form.label for="app_timezone" :text="is_array(__('admin/install.timezone')) ? __('admin/install.timezone.label') : __('admin/install.timezone')" :required="true" />
+                <x-form.label for="app_timezone" :text="is_array(__('install.timezone')) ? __('install.timezone.label') : __('install.timezone')" :required="true" />
             @php
                 // 現在のタイムゾーンを取得（セッションがあればそれを使い、なければブラウザのタイムゾーンを検出）
                 $currentTz = old('app_timezone', session('install_data.app_timezone', ''));
@@ -175,21 +175,21 @@
                         </option>
                     @endforeach
                 </select>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/install.timezone_note') }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('install.timezone_note') }}</p>
             </div>
         </fieldset>
     </section>
 
     <!-- フォームナビゲーション -->
-    <nav aria-label="{{ __('admin/install.form_navigation') }}" class="flex justify-between mt-6">
+    <nav aria-label="{{ __('install.form_navigation') }}" class="flex justify-between mt-6">
         <a href="{{ route('install.settings') }}"
             class="bg-gray-500 dark:bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-700 transition">
-            {{ __('admin/install.back') }}
+            {{ __('install.back') }}
         </a>
         <x-form.button
             type="submit"
             variant="primary"
-            :label="__('admin/install.next')"
+            :label="__('install.next')"
         />
     </nav>
 </form>

@@ -35,6 +35,10 @@ return [
     'required' => 'required',
     'optional' => 'optional',
 
+    // Member Related
+    'account_name' => 'Account Name',
+    'member_name' => 'Display Name',
+
     // System Operations
     'settings' => 'Settings',
     'profile' => 'Profile',
