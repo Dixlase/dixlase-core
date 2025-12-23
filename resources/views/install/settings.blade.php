@@ -133,7 +133,7 @@
     </nav>
 </form>
 
-<script>
+<script @cspNonce>
     // パスワード確認欄でコピー＆ペーストを禁止
     document.addEventListener('DOMContentLoaded', function() {
         const confirmInput = document.getElementById("admin_password_confirmation");

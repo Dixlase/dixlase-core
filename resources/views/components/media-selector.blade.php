@@ -110,7 +110,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @once
 @push('scripts')
-<script>
+<script @cspNonce>
 // グローバル変数
 window.mediaSelectorData = window.mediaSelectorData || {};
 

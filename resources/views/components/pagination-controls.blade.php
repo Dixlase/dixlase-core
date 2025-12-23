@@ -70,7 +70,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script @cspNonce>
 document.addEventListener('DOMContentLoaded', function() {
     const perPageSelect = document.getElementById('perPage');
     const sortBySelect = document.getElementById('sortBy');

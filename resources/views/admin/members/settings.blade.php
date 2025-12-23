@@ -71,7 +71,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     />
 @endsection
 @section('scripts')
-    <script>
+    <script @cspNonce>
         // Close modal when clicking outside
         document.addEventListener('DOMContentLoaded', function() {
             const modals = document.querySelectorAll('[id$="Modal"]');

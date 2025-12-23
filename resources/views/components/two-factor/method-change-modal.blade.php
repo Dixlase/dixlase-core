@@ -66,7 +66,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 </x-modal>
 
 @if($autoOpen)
-<script>
+<script @cspNonce>
 document.addEventListener('DOMContentLoaded', function() {
     const modal = FlowbiteInstances.getInstance('Modal', '{{ $modalId }}');
     if (modal) {
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 @endif
 
-<script>
+<script @cspNonce>
 function switchToUsedMethod() {
     fetch('{{ route('admin.dashboard.switch2faMethod') }}', {
         method: 'POST',

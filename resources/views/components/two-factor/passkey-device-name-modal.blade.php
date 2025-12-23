@@ -77,7 +77,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 </div>
 
 @push('scripts')
-<script>
+<script @cspNonce>
 // Passkeyデバイス名入力モーダルマネージャー
 if (typeof window.PasskeyDeviceNameModal === 'undefined') {
     window.PasskeyDeviceNameModal = {

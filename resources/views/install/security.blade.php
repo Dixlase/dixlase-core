@@ -126,7 +126,7 @@
     </nav>
 </form>
 
-<script>
+<script @cspNonce>
 document.addEventListener('DOMContentLoaded', function() {
     // ✅ チェックボックスの有効・無効を制御
     function toggleTextarea(checkboxId, textareaId) {

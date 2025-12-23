@@ -213,7 +213,7 @@
 
 </style>
 
-<script>
+<script @cspNonce>
     document.body.classList.add('has-admin-bar');
 </script>
 @endif

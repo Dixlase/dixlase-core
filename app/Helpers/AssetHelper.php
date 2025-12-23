@@ -86,7 +86,8 @@ HTML;
                             
                             // JSファイル
                             if (isset($entry['file']) && str_ends_with($entry['file'], '.js')) {
-                                $output .= '<script type="module" src="' . asset($assetBasePath . $entry['file']) . '"></script>';
+                                $nonce = function_exists('csp_nonce_attr') ? ' ' . csp_nonce_attr() : '';
+                                $output .= '<script type="module" src="' . asset($assetBasePath . $entry['file']) . '"' . $nonce . '></script>';
                             }
                             
                             // CSSファイル（エントリ自体がCSSの場合）

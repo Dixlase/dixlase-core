@@ -169,7 +169,7 @@
     </nav>
 </form>
 
-<script>
+<script @cspNonce>
     let isDbTestSuccessful = false;
 
     function togglePassword() {

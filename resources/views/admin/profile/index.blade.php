@@ -451,7 +451,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- 信頼済みデバイス削除モーダル -->
     @push('scripts')
-    <script>
+    <script @cspNonce>
         // モーダルの確認ボタンにイベントリスナーを追加
         document.addEventListener('DOMContentLoaded', function() {
             // 信頼済みデバイス削除
@@ -629,7 +629,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     }
 </style>
 
-<script>
+<script @cspNonce>
     // === グローバル関数（モーダルから呼び出される） ===
     
     // 信頼済みデバイス管理

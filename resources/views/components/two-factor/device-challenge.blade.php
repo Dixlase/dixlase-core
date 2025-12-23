@@ -104,7 +104,7 @@
     </div>
 </div>
 
-<script>
+<script @cspNonce>
 document.addEventListener('DOMContentLoaded', function() {
     let challengeId = null;
     let pollInterval = null;

@@ -995,7 +995,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @push('scripts')
-<script>
+<script @cspNonce>
 document.addEventListener('DOMContentLoaded', function() {
     // 監査メッセージ（翻訳対応）
     const auditMessages = {

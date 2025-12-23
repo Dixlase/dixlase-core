@@ -190,7 +190,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
 @push('scripts')
-<script>
+<script @cspNonce>
 let currentFileId = null;
 let currentFileName = '';
 

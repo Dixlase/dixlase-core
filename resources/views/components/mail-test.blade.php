@@ -174,7 +174,7 @@
     @endif
 </div>
 
-<script>
+<script @cspNonce>
     // 翻訳メッセージ
     const mailTestMessages = {
         mailReceiveVerified: @json(__('mail.js_messages.mail_receive_verified'))

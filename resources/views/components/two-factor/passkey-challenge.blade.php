@@ -79,7 +79,7 @@
     </div>
 </div>
 
-<script>
+<script @cspNonce>
 document.addEventListener('DOMContentLoaded', function() {
     let challengeData = null;
 

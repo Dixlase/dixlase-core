@@ -161,7 +161,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 </ul>
 
 
-<script>
+<script @cspNonce>
     window.PasswordMessages = {
         error: @json(__('components.password_messages.error')),
         weak: @json(__('components.password_messages.requirements.weak')),
