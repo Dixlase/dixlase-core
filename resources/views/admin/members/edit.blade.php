@@ -96,7 +96,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @push('scripts')
-<script>
+<script @cspNonce>
 let currentMemberId = null;
 let currentCredentialId = null;
 let currentPasskeyName = '';

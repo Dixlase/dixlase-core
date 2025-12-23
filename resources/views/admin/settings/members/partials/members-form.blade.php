@@ -443,7 +443,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
 
-<script>
+<script @cspNonce>
 document.addEventListener('DOMContentLoaded', function() {
     const emailInput = document.getElementById('email');
     const emailConfirmationField = document.getElementById('email-confirmation-field');

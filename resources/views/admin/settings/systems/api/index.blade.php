@@ -307,7 +307,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @push('scripts')
-<script>
+<script @cspNonce>
 function apiSettings() {
     return {
         showCreateModal: false,

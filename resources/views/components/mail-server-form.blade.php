@@ -30,7 +30,7 @@
 @endphp
 
 @if($isInstall)
-<script>
+<script @cspNonce>
 document.addEventListener('DOMContentLoaded', function() {
     // メール設定の入力フィールドを監視
     const mailInputs = document.querySelectorAll('.mail-setting-input');

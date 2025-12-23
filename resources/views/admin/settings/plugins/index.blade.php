@@ -1009,7 +1009,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @push('scripts')
-<script>
+<script @cspNonce>
 document.addEventListener('DOMContentLoaded', function() {
     const auditMessages = {
         scanning: @json(__('admin/settings/plugins.permissions.audit_scanning')),

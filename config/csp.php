@@ -132,10 +132,14 @@ return [
         // スクリプト
         // 'nonce' は自動的にリクエストごとのnonce値に置換される
         // 'strict-dynamic' でnonce付きスクリプトから読み込まれるスクリプトも許可
-        'script-src' => ["'self'", "'nonce'", "'strict-dynamic'"],
+        // 'unsafe-eval' はAlpine.jsが必要とするため追加
+        'script-src' => ["'self'", "'nonce'", "'strict-dynamic'", "'unsafe-eval'"],
 
         // スタイル
-        'style-src' => ["'self'", "'nonce'", "'unsafe-inline'"],
+        // 'unsafe-inline'はnonceと併用すると無視されるため、インラインスタイル（element.style）を許可するには
+        // nonceを使用しないか、unsafe-inlineのみを使用する必要がある
+        // Alpine.jsやJavaScriptでのスタイル操作を許可するためunsafe-inlineを使用
+        'style-src' => ["'self'", "'unsafe-inline'"],
 
         // 画像
         'img-src' => ["'self'", 'data:', 'blob:'],
@@ -294,6 +298,9 @@ return [
 
         // gstatic.comは特殊（Google系の静的リソース）
         'gstatic' => ['script-src', 'style-src', 'img-src', 'font-src', 'frame-src'],
+
+        // フォントサービスはスタイルシートとフォントファイルの両方を提供
+        'fonts' => ['style-src', 'font-src'],
     ],
 
     /*

@@ -119,7 +119,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 </div>
 
 @push('scripts')
-<script>
+<script @cspNonce>
 // モーダルマネージャーが未初期化の場合のみ実行（重複実行を防ぐ）
 if (typeof window.ModalManager === 'undefined') {
     // デバッグモード（本番環境では false に設定）

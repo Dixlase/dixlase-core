@@ -129,7 +129,7 @@
                 $currentTz = old('app_timezone', session('install_data.app_timezone', ''));
                 if (empty($currentTz)) {
                     // ブラウザのタイムゾーンを検出
-                    echo '<script>
+                    echo '<script @cspNonce>
                         try {
                             const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
                             document.cookie = `user_timezone=${userTimeZone};path=/;samesite=lax`;
@@ -194,7 +194,7 @@
     </nav>
 </form>
 
-<script>
+<script @cspNonce>
     // デバッグモードの有効・無効を切り替える
     function toggleDebugMode() {
         let envSelect = document.getElementById('app_env');

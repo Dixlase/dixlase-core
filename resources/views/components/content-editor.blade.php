@@ -227,7 +227,7 @@ $editorTypeEnum = is_string($editorType) ? ContentEditorType::from($editorType) 
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script>
+<script @cspNonce>
 // Alpine.js用の翻訳ヘルパー
 document.addEventListener('alpine:init', () => {
     Alpine.magic('t', () => {

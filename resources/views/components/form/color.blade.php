@@ -59,7 +59,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <x-form.error :name="$name" />
 </div>
 
-<script>
+<script @cspNonce>
     document.addEventListener('DOMContentLoaded', function() {
         const colorInput = document.getElementById('{{ $id ?? $name }}');
         const textInput = document.getElementById('{{ $id ?? $name }}_text');

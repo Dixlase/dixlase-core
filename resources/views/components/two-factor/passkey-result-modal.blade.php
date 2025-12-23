@@ -51,7 +51,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 </div>
 
 @push('scripts')
-<script>
+<script @cspNonce>
 // Passkey結果表示モーダルマネージャー
 if (typeof window.PasskeyResultModal === 'undefined') {
     window.PasskeyResultModal = {

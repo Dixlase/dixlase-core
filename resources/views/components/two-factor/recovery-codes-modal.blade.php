@@ -118,7 +118,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @if($autoOpen)
 @push('scripts')
-<script>
+<script @cspNonce>
     // モーダルを自動表示
     document.addEventListener('DOMContentLoaded', function() {
         openModal('{{ $modalId }}');
@@ -129,7 +129,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @if($clearSessionRoute)
 @push('scripts')
-<script>
+<script @cspNonce>
     // 自動生成モーダルを閉じるときにセッションをクリア
     document.addEventListener('DOMContentLoaded', function() {
         const closeBtn = document.getElementById('{{ $modalId }}-close-btn');
@@ -158,7 +158,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @once
 @push('scripts')
-<script>
+<script @cspNonce>
     // 回復コードモーダル用のグローバル変数
     window.recoveryCodesData = window.recoveryCodesData || {};
     

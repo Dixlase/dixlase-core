@@ -295,7 +295,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @push('scripts')
-<script>
+<script @cspNonce>
 // CAPTCHA validation functions
 function validateCaptchaWidget() {
     const driver = document.getElementById('captcha_driver').value;

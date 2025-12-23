@@ -78,7 +78,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @once
 @push('scripts')
-<script>
+<script @cspNonce>
 // ツールチップマネージャー
 if (typeof window.TooltipManager === 'undefined') {
     window.TooltipManager = {

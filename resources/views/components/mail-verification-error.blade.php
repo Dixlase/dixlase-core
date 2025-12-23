@@ -12,14 +12,14 @@
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
+    <script @cspNonce>
         tailwind.config = {
             darkMode: 'class',
         }
     </script>
     
     <!-- ダークモード自動判別スクリプト -->
-    <script>
+    <script @cspNonce>
         // ページ読み込み前にダークモードを適用
         (function() {
             // 1. 親ウィンドウの設定を確認
@@ -125,7 +125,7 @@
         </article>
     </main>
 
-    <script>
+    <script @cspNonce>
         function closeWindow() {
             // 親ウィンドウにエラーメッセージを送信
             if (window.opener) {

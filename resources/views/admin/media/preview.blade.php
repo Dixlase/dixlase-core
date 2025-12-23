@@ -141,7 +141,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('scripts')
-<script>
+<script @cspNonce>
 function copyToClipboard() {
     const urlInput = document.getElementById('mediaUrl');
     const copyButton = event.target.closest('button');

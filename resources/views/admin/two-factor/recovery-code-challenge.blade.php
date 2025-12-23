@@ -106,7 +106,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script @cspNonce>
 document.addEventListener('DOMContentLoaded', function() {
     const inputs = ['code1', 'code2', 'code3', 'code4'];
     const form = document.getElementById('recoveryCodeForm');

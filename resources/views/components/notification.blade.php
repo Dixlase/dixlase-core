@@ -19,7 +19,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 
-<script>
+<script @cspNonce>
     /**
      * 通知を表示する関数
      * @param {string} type - 'success' または 'error'

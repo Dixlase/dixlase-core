@@ -94,7 +94,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('scripts')
-<script>
+<script @cspNonce>
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('base-mail-form');
 

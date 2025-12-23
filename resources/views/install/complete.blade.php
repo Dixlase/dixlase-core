@@ -69,7 +69,7 @@
     </div>
 
     <!-- URLコピー機能 -->
-    <script>
+    <script @cspNonce>
         function copyToClipboard(elementId) {
             const element = document.getElementById(elementId);
             const text = element.textContent;

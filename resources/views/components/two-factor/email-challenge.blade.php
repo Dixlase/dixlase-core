@@ -84,7 +84,7 @@
     </form>
 </div>
 
-<script>
+<script @cspNonce>
 document.addEventListener('DOMContentLoaded', function() {
     const inputs = document.querySelectorAll('#code-inputs input');
     const hiddenInput = document.getElementById('hidden-code');
