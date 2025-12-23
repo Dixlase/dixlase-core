@@ -337,8 +337,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </section>
     </form>
 
-    <!-- 2FA管理セクション（メールサーバー設定済みの場合のみ表示） -->
-    @if($isMailServerTested)
+    <!-- 2FA管理セクション（メールサーバー設定済み、かつ二段階認証が有効の場合のみ表示） -->
+    @if($isMailServerTested && $force2fa !== \App\Enums\TwoFactorMode::Disabled->value)
     <section class="mt-8 transition-colors-unified">
         <h2>{{ __('admin/profile.2fa_management') }}</h2>
 
