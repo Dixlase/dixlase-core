@@ -77,6 +77,10 @@ class AdminSecurityIndexController extends AdminLoggedInController
         // セッション設定
         $sessionDriver = config('session.driver', 'file');
 
+        // 環境設定
+        $appEnv = config('app.env', 'local');
+        $appDebug = config('app.debug', false);
+
         $this->viewParams['mailTestComplete'] = $mailTestComplete;
         $this->viewParams['captchaEnabled'] = $captchaEnabled;
         $this->viewParams['captchaTestResult'] = $captchaTestResult;
@@ -88,6 +92,8 @@ class AdminSecurityIndexController extends AdminLoggedInController
         $this->viewParams['enableBlockedAdminIps'] = $enableBlockedAdminIps;
         $this->viewParams['notificationEnabled'] = $notificationEnabled;
         $this->viewParams['sessionDriver'] = $sessionDriver;
+        $this->viewParams['appEnv'] = $appEnv;
+        $this->viewParams['appDebug'] = $appDebug;
 
         return view('admin.settings.security.index', $this->viewParams);
     }

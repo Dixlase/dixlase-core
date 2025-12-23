@@ -258,6 +258,12 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:settings.security')
                     ->name('notifications.update');
                 
+                // 環境設定
+                Route::get('/environment', [Security\AdminSecurityEnvironmentController::class, 'index'])->name('environment');
+                Route::post('/environment', [Security\AdminSecurityEnvironmentController::class, 'update'])
+                    ->middleware('check.menu.edit:settings.security')
+                    ->name('environment.update');
+                
                 // ファイル整合性
                 Route::get('/integrity', [Security\AdminSecurityIntegrityController::class, 'index'])->name('integrity');
                 Route::post('/integrity/scan', [Security\AdminSecurityIntegrityController::class, 'scan'])

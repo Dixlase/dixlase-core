@@ -10,6 +10,8 @@ class EnvHelper
     // snake_case => ENV_KEY
     protected static array $envMap = [
         'app_name' => 'APP_NAME',
+        'app_env' => 'APP_ENV',
+        'app_debug' => 'APP_DEBUG',
         'locale' => 'APP_LOCALE',
         'fallback_locale' => 'APP_FALLBACK_LOCALE',
         'faker_locale' => 'APP_FAKER_LOCALE',

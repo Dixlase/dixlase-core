@@ -210,6 +210,11 @@ return [
                             'route' => 'admin.settings.security.notifications',
                             'icon' => 'fas fa-fw fa-bell',
                         ],
+                        'environment' => [
+                            'text' => 'admin/nav.settings.security.environment',
+                            'route' => 'admin.settings.security.environment',
+                            'icon' => 'fas fa-fw fa-cog',
+                        ],
                         'integrity' => [
                             'text' => 'admin/nav.settings.security.integrity',
                             'route' => 'admin.settings.security.integrity',

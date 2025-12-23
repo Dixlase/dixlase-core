@@ -32,6 +32,7 @@ return [
     'integrity_critical' => 'Critical Issues',
     'integrity_no_baseline' => 'No Baseline',
     'integrity_not_scanned' => 'Not Scanned',
+    'debug_enabled' => 'Debug ON',
     'latest_integrity_scan' => 'Latest File Integrity Scan',
     'scan_date' => 'Scan Date',
     'files_scanned' => 'Files Scanned',
