@@ -58,43 +58,57 @@ if (!function_exists('load_assets')) {
 </script>
 HTML;
         } else {
-            // 本番環境: manifest.jsonを解析
+            // 本番/ステージング環境: manifest.jsonを解析
+            // コアアセット（common, admin）は統合されたmanifest.jsonを使用
             $manifestPath = match ($type) {
-                'common' => public_path("assets/common/manifest.json"),
-                'admin' => public_path("assets/admin/manifest.json"),
-                'theme' => public_path("assets/theme/manifest.json"),
+                'common', 'admin' => public_path("assets/build/manifest.json"),
+                'theme' => public_path("assets/themes/{$name}/manifest.json"),
                 'plugin' => public_path("assets/plugins/{$name}/manifest.json"),
             };
 
-
+            // コアアセットのベースパス
+            $assetBasePath = match ($type) {
+                'common', 'admin' => 'assets/build/',
+                'theme' => "assets/themes/{$name}/",
+                'plugin' => "assets/plugins/{$name}/",
+            };
 
             if (file_exists($manifestPath)) {
                 $manifest = json_decode(file_get_contents($manifestPath), true);
 
                 if (!empty($manifest)) {
-                    // JSファイル
-                    foreach ($manifest as $key => $entry) {
-
-                        if (isset($entry['file'])) {
-                            $output .= '<script type="module" src="' . asset("assets/{$type}/" . ($type === 'plugin' || $type === 'theme' ? "{$name}/" : '') . $entry['file']) . '"></script>';
-                        }
-                    }
-                    // CSSファイル
-                    foreach ($manifest as $key => $entry) {
-                        if (isset($entry['css'])) {
-                            // CSSファイル
-                            foreach ($entry['css'] as $css) {
-                                $output .= '<link rel="stylesheet" href="' . asset("assets/{$type}/" . ($type === 'plugin' || $type === 'theme' ? "{$name}/" : '') . $css) . '">';
+                    // 指定されたファイルに対応するエントリを探す
+                    foreach ($files as $file) {
+                        $manifestKey = "{$basePath}/{$file}";
+                        
+                        if (isset($manifest[$manifestKey])) {
+                            $entry = $manifest[$manifestKey];
+                            
+                            // JSファイル
+                            if (isset($entry['file']) && str_ends_with($entry['file'], '.js')) {
+                                $output .= '<script type="module" src="' . asset($assetBasePath . $entry['file']) . '"></script>';
                             }
-                        }
-                    }
+                            
+                            // CSSファイル（エントリ自体がCSSの場合）
+                            if (isset($entry['file']) && str_ends_with($entry['file'], '.css')) {
+                                $output .= '<link rel="stylesheet" href="' . asset($assetBasePath . $entry['file']) . '">';
+                            }
+                            
+                            // CSSファイル（JSエントリに紐づくCSS）
+                            if (isset($entry['css'])) {
+                                foreach ($entry['css'] as $css) {
+                                    $output .= '<link rel="stylesheet" href="' . asset($assetBasePath . $css) . '">';
+                                }
+                            }
 
-                    // フォントやその他のアセット
-                    foreach ($manifest as $key => $entry) {
-                        if (isset($entry['assets'])) {
-
-                            foreach ($entry['assets'] as $asset) {
-                                $output .= '<link rel="preload" as="font" href="' . asset("assets/{$type}/" . ($type === 'plugin' || $type === 'theme' ? "{$name}/" : '') . $asset) . '" type="font/' . pathinfo($asset, PATHINFO_EXTENSION) . '" crossorigin="anonymous">';
+                            // フォントやその他のアセット
+                            if (isset($entry['assets'])) {
+                                foreach ($entry['assets'] as $asset) {
+                                    $ext = pathinfo($asset, PATHINFO_EXTENSION);
+                                    if (in_array($ext, ['woff', 'woff2', 'ttf', 'otf', 'eot'])) {
+                                        $output .= '<link rel="preload" as="font" href="' . asset($assetBasePath . $asset) . '" type="font/' . $ext . '" crossorigin="anonymous">';
+                                    }
+                                }
                             }
                         }
                     }
@@ -133,8 +147,7 @@ if (!function_exists('load_active_assets')) {
             null,
             [
                 'js/app.js',
-
-                'scss/app.scss',
+                'scss/style.scss',
             ]
         );
 

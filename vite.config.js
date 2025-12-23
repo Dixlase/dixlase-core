@@ -4,7 +4,7 @@ import fs from 'fs';
 import laravel from 'laravel-vite-plugin';
 import liveReload from 'vite-plugin-live-reload'
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
     plugins: [
         laravel({
             input: [
@@ -53,9 +53,11 @@ export default defineConfig({
             __dirname + '/storage/app/private/front/**/*.md',
         ]),
     ],
+    base: command === 'build' ? '/assets/build/' : '/', // 本番環境でのアセットのベースパス
     build: {
         manifest: 'manifest.json', // マニフェストファイルの出力先
         outDir: 'public/assets/build', // 出力先ディレクトリ
+        assetsDir: '.', // アセットディレクトリ（outDir相対）
         rollupOptions: {
             input: {
                 admin_js: path.resolve(__dirname, 'resources/src/admin/js/app.js'),
@@ -114,4 +116,4 @@ export default defineConfig({
             '@': path.resolve(__dirname, 'resources/src'),
         },
     },
-});
+}));
