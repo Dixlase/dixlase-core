@@ -46,6 +46,7 @@ return [
             'extensions' => 'Extensions',
             'csp' => 'CSP',
             'notifications' => 'Notifications',
+            'environment' => 'Environment',
             'integrity' => 'File Integrity',
         ],
         'members' => [

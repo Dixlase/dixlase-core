@@ -46,6 +46,7 @@ return [
             'extensions' => '拡張機能',
             'csp' => 'CSP',
             'notifications' => '通知',
+            'environment' => '環境設定',
             'integrity' => 'ファイル整合性',
         ],
         'members' => [

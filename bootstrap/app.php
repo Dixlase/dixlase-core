@@ -22,6 +22,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\ContentSecurityPolicy::class, // CSPヘッダー付与
         ]);
         
+        // CSPレポートエンドポイントをCSRF検証から除外
+        $middleware->validateCsrfTokens(except: [
+            'csp-report',
+        ]);
+        
         // 認証が必要なミドルウェアは後で実行
         $middleware->appendToGroup('web', [
             \App\Http\Middleware\SetMemberLocale::class, // 管理メンバー個別言語設定

@@ -32,6 +32,7 @@ return [
     'integrity_critical' => '重大な問題',
     'integrity_no_baseline' => 'ベースライン未生成',
     'integrity_not_scanned' => '未スキャン',
+    'debug_enabled' => 'デバッグON',
     'latest_integrity_scan' => '最新のファイル整合性スキャン',
     'scan_date' => 'スキャン日時',
     'files_scanned' => 'スキャンファイル数',

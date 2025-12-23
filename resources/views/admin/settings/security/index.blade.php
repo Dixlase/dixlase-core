@@ -158,6 +158,39 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </a>
 
+        <!-- 環境設定 -->
+        <a href="{{ route('admin.settings.security.environment') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center">
+                    <i class="fas fa-cog text-cyan-500 text-xl mr-3"></i>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.security.environment') }}</h3>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+            </div>
+            <div class="text-sm">
+                @php
+                    $envColors = [
+                        'local' => 'text-blue-600 dark:text-blue-400',
+                        'staging' => 'text-yellow-600 dark:text-yellow-400',
+                        'production' => 'text-green-600 dark:text-green-400',
+                    ];
+                    $envIcons = [
+                        'local' => 'fa-laptop-code',
+                        'staging' => 'fa-flask',
+                        'production' => 'fa-server',
+                    ];
+                @endphp
+                <span class="inline-flex items-center {{ $envColors[$appEnv] ?? $envColors['local'] }}">
+                    <i class="fas {{ $envIcons[$appEnv] ?? $envIcons['local'] }} mr-1"></i>{{ __('admin/settings/security/environment.env_options.' . $appEnv) }}
+                </span>
+                @if($appDebug)
+                    <span class="inline-flex items-center text-red-600 dark:text-red-400 ml-2">
+                        <i class="fas fa-bug mr-1"></i>{{ __('admin/settings/security/index.debug_enabled') }}
+                    </span>
+                @endif
+            </div>
+        </a>
+
         <!-- ファイル整合性 -->
         <a href="{{ route('admin.settings.security.integrity') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
