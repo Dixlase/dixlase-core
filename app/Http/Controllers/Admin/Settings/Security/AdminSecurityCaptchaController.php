@@ -44,14 +44,22 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
      */
     public function index()
     {
+        $currentDriver = $this->securitySettingRepository->get('captcha_driver', 'google');
+        
+        // プロバイダごとのキーを取得
+        $providerKeys = $this->getProviderKeys();
+        
         $settings = [
             'captcha_enabled' => filter_var($this->securitySettingRepository->get('captcha_enabled', false), FILTER_VALIDATE_BOOLEAN),
-            'captcha_driver' => $this->securitySettingRepository->get('captcha_driver', 'google'),
-            'captcha_site_key' => $this->securitySettingRepository->get('captcha_site_key', ''),
-            'captcha_secret_key' => $this->securitySettingRepository->get('captcha_secret_key', ''),
+            'captcha_driver' => $currentDriver,
+            // 現在のプロバイダのキーを表示用に設定
+            'captcha_site_key' => $providerKeys[$currentDriver]['site_key'] ?? '',
+            'captcha_secret_key' => $providerKeys[$currentDriver]['secret_key'] ?? '',
             'captcha_google_version' => $this->securitySettingRepository->get('captcha_google_version', 'v3'),
             'captcha_google_min_score' => $this->securitySettingRepository->get('captcha_google_min_score', '0.5'),
             'captcha_google_project_id' => $this->securitySettingRepository->get('captcha_google_project_id', ''),
+            // 全プロバイダのキー（JavaScript用）
+            'provider_keys' => $providerKeys,
         ];
 
         // CAPTCHAテスト結果を取得
@@ -129,8 +137,10 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
         // CAPTCHA設定を更新
         $this->securitySettingRepository->set('captcha_enabled', $validated['captcha_enabled'] ?? false);
         $this->securitySettingRepository->set('captcha_driver', $newDriver);
-        $this->securitySettingRepository->set('captcha_site_key', $newSiteKey);
-        $this->securitySettingRepository->set('captcha_secret_key', $newSecretKey);
+        
+        // プロバイダごとにキーを保存
+        $this->saveProviderKeys($newDriver, $newSiteKey, $newSecretKey);
+        
         $this->securitySettingRepository->set('captcha_google_version', $validated['captcha_google_version'] ?? 'v3');
         $this->securitySettingRepository->set('captcha_google_min_score', $validated['captcha_google_min_score'] ?? '0.5');
         $this->securitySettingRepository->set('captcha_google_project_id', $validated['captcha_google_project_id'] ?? '');
@@ -334,5 +344,42 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
             'success' => true,
             'score' => $score,
         ];
+    }
+    
+    /**
+     * プロバイダごとのキーを取得
+     */
+    protected function getProviderKeys(): array
+    {
+        return [
+            'google' => [
+                'site_key' => $this->securitySettingRepository->get('captcha_google_site_key', ''),
+                'secret_key' => $this->securitySettingRepository->get('captcha_google_secret_key', ''),
+            ],
+            'google_enterprise' => [
+                'site_key' => $this->securitySettingRepository->get('captcha_google_enterprise_site_key', ''),
+                'secret_key' => $this->securitySettingRepository->get('captcha_google_enterprise_secret_key', ''),
+            ],
+            'turnstile' => [
+                'site_key' => $this->securitySettingRepository->get('captcha_turnstile_site_key', ''),
+                'secret_key' => $this->securitySettingRepository->get('captcha_turnstile_secret_key', ''),
+            ],
+        ];
+    }
+    
+    /**
+     * プロバイダごとにキーを保存
+     */
+    protected function saveProviderKeys(string $driver, string $siteKey, string $secretKey): void
+    {
+        $keyPrefix = match ($driver) {
+            'google' => 'captcha_google',
+            'google_enterprise' => 'captcha_google_enterprise',
+            'turnstile' => 'captcha_turnstile',
+            default => 'captcha_google',
+        };
+        
+        $this->securitySettingRepository->set("{$keyPrefix}_site_key", $siteKey);
+        $this->securitySettingRepository->set("{$keyPrefix}_secret_key", $secretKey);
     }
 }

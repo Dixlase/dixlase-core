@@ -29,50 +29,60 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     captchaSiteKey: '{{ old('captcha_site_key', $settings['captcha_site_key']) }}',
     captchaSecretKey: '{{ old('captcha_secret_key', $settings['captcha_secret_key']) }}',
     captchaProjectId: '{{ old('captcha_google_project_id', $settings['captcha_google_project_id']) }}',
-    // 保存済みの値（変更検出用）
+    providerKeys: {{ Js::from($settings['provider_keys']) }},
     savedDriver: '{{ $settings['captcha_driver'] }}',
-    savedSiteKey: '{{ $settings['captcha_site_key'] }}',
-    savedSecretKey: '{{ $settings['captcha_secret_key'] }}',
     savedVersion: '{{ $settings['captcha_google_version'] }}',
     savedMinScore: '{{ $settings['captcha_google_min_score'] }}',
     captchaMinScore: '{{ old('captcha_google_min_score', $settings['captcha_google_min_score']) }}',
     captchaSettingsChanged: false,
-    
-    // 設定変更を検出してリセット
+    init() {
+        this.$watch('captchaDriver', (newDriver, oldDriver) => {
+            if (newDriver !== oldDriver) {
+                this.switchProviderKeys(newDriver)
+            }
+        })
+        this.$watch('captchaSiteKey', () => this.checkSettingsChanged())
+        this.$watch('captchaSecretKey', () => this.checkSettingsChanged())
+        this.$watch('captchaVersion', () => this.checkSettingsChanged())
+        this.$watch('captchaMinScore', () => this.checkSettingsChanged())
+    },
+    switchProviderKeys(newDriver) {
+        const keys = this.providerKeys[newDriver] || { site_key: '', secret_key: '' }
+        this.captchaSiteKey = keys.site_key || ''
+        this.captchaSecretKey = keys.secret_key || ''
+        this.resetAuthenticationStatus()
+        this.captchaSettingsChanged = true
+    },
     checkSettingsChanged() {
+        const savedKeys = this.providerKeys[this.savedDriver] || { site_key: '', secret_key: '' }
         const changed = this.captchaDriver !== this.savedDriver ||
-                       this.captchaSiteKey !== this.savedSiteKey ||
-                       this.captchaSecretKey !== this.savedSecretKey ||
+                       this.captchaSiteKey !== savedKeys.site_key ||
+                       this.captchaSecretKey !== savedKeys.secret_key ||
                        this.captchaVersion !== this.savedVersion ||
-                       this.captchaMinScore !== this.savedMinScore;
+                       this.captchaMinScore !== this.savedMinScore
         if (changed && !this.captchaSettingsChanged) {
-            this.captchaSettingsChanged = true;
-            this.resetAuthenticationStatus();
+            this.captchaSettingsChanged = true
+            this.resetAuthenticationStatus()
         }
     },
-    
-    // 認証状態をリセット
     resetAuthenticationStatus() {
-        const authInput = document.getElementById('captcha-authentication-result');
+        const authInput = document.getElementById('captcha-authentication-result')
         if (authInput) {
-            authInput.value = '0';
+            authInput.value = '0'
         }
-        // 成功表示を非表示にして、テスト必要通知を表示
-        const successDisplay = document.getElementById('captcha-success-display');
-        const requiredNotice = document.getElementById('auth-test-required-notice');
-        if (successDisplay) successDisplay.style.display = 'none';
-        if (requiredNotice) requiredNotice.style.display = 'block';
-        // テスト結果メッセージを非表示
-        const testResult = document.getElementById('captcha-test-result');
-        if (testResult) testResult.style.display = 'none';
+        const successDisplay = document.getElementById('captcha-success-display')
+        const requiredNotice = document.getElementById('auth-test-required-notice')
+        if (successDisplay) successDisplay.style.display = 'none'
+        if (requiredNotice) requiredNotice.style.display = 'block'
+        const testResult = document.getElementById('captcha-test-result')
+        if (testResult) testResult.style.display = 'none'
+        
+        // CAPTCHAウィジェットをクリア
+        if (typeof clearCaptchaWidget === 'function') {
+            clearCaptchaWidget()
+        }
     }
-}" x-init="
-    $watch('captchaDriver', () => checkSettingsChanged());
-    $watch('captchaSiteKey', () => checkSettingsChanged());
-    $watch('captchaSecretKey', () => checkSettingsChanged());
-    $watch('captchaVersion', () => checkSettingsChanged());
-    $watch('captchaMinScore', () => checkSettingsChanged());
-">
+}">
     <form id="security-captcha-form" method="POST" action="{{ route('admin.settings.security.captcha.update') }}">
         @csrf
         
@@ -137,7 +147,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 />
 
                 <label for="captcha_secret_key" class="form-label text-lg" 
-                       x-text="captchaDriver === 'google_enterprise' ? '{{ __("admin.settings.security.captcha.google_enterprise_secret_key") }}' : '{{ __("admin.settings.security.captcha.secret_key") }}'">
+                       x-text="captchaDriver === 'google_enterprise' ? '{{ __("admin/settings/security/captcha.google_enterprise_secret_key") }}' : '{{ __("admin/settings/security/captcha.secret_key") }}'">
                     {{ __('admin/settings/security/captcha.secret_key') }}
                 </label>
                 <x-form.text
@@ -251,15 +261,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             </div>
                         </div>
                         
-                        <!-- Test Button (常に表示) -->
+                        <!-- Test Button -->
                         <button type="button" 
                                 id="captcha-validate-button"
-                                class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                                class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed mb-3"
                                 onclick="validateCaptchaWidget()"
-                                x-show="captchaEnabled && captchaDriver && captchaSiteKey && captchaSecretKey"
-                                :disabled="!captchaEnabled || !captchaDriver || !captchaSiteKey || !captchaSecretKey"
+                                :disabled="!captchaEnabled || !captchaDriver"
                                 x-text="captchaSettingsChanged ? '{{ __('admin/settings/security/captcha.validate_button') }}' : '{{ $captchaTestResult ? __('admin/settings/security/captcha.revalidate_button') : __('admin/settings/security/captcha.validate_button') }}'">
                         </button>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                            {{ __('admin/settings/security/captcha.live_validation_description') }}
+                        </p>
                     </div>
                 </div>
             </div>
@@ -406,6 +418,14 @@ function showTestResult(type, message) {
         icon.className = 'fas fa-check-circle text-green-500 text-xl mr-3';
         title.className = 'font-semibold text-green-700 dark:text-green-300';
         title.textContent = '{{ __("admin/settings/security/captcha.authentication_success_title") }}';
+        
+        // 認証成功時に「認証テストが必要です」メッセージを非表示にする
+        const requiredNotice = document.getElementById('auth-test-required-notice');
+        if (requiredNotice) requiredNotice.style.display = 'none';
+        
+        // 認証成功表示を表示
+        const successDisplay = document.getElementById('captcha-success-display');
+        if (successDisplay) successDisplay.style.display = 'block';
     } else {
         resultDiv.className = 'mb-4 p-3 border rounded-lg bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800';
         icon.className = 'fas fa-times-circle text-red-500 text-xl mr-3';
@@ -414,6 +434,47 @@ function showTestResult(type, message) {
     }
     
     msg.textContent = message;
+}
+
+// CAPTCHAウィジェットをクリアする関数
+function clearCaptchaWidget() {
+    const container = document.getElementById('captcha-widget-container');
+    if (container) {
+        container.innerHTML = '';
+    }
+    
+    // 既存のスクリプトを削除
+    const recaptchaScript = document.getElementById('recaptcha-script');
+    if (recaptchaScript) recaptchaScript.remove();
+    
+    // Turnstileのスクリプトも削除（IDがないので全て検索）
+    document.querySelectorAll('script[src*="challenges.cloudflare.com"]').forEach(s => s.remove());
+    document.querySelectorAll('script[src*="recaptcha/enterprise"]').forEach(s => s.remove());
+    document.querySelectorAll('script[src*="recaptcha/api"]').forEach(s => s.remove());
+    
+    // Google reCAPTCHAの右下バッジを削除
+    document.querySelectorAll('.grecaptcha-badge').forEach(el => el.remove());
+    
+    // Google reCAPTCHAが追加するiframeやdivを削除
+    document.querySelectorAll('iframe[src*="recaptcha"]').forEach(el => el.remove());
+    document.querySelectorAll('div[style*="visibility: visible"]').forEach(el => {
+        if (el.querySelector('iframe[src*="recaptcha"]')) {
+            el.remove();
+        }
+    });
+    
+    // grecaptchaオブジェクトをリセット（存在する場合）
+    if (typeof grecaptcha !== 'undefined' && grecaptcha.reset) {
+        try { grecaptcha.reset(); } catch(e) {}
+    }
+    
+    // grecaptchaオブジェクト自体を削除（次回ロード時に再初期化されるように）
+    if (typeof grecaptcha !== 'undefined') {
+        try { 
+            delete window.grecaptcha;
+            delete window.___grecaptcha_cfg;
+        } catch(e) {}
+    }
 }
 </script>
 @endpush
