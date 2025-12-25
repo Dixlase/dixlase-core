@@ -33,6 +33,9 @@ return [
             'caption' => 'Uninstalled Themes List',
         ],
         'no_themes' => 'No themes are installed.',
+        'no_themes_description' => 'Add themes to customize your site\'s appearance.',
+        'add_theme' => 'Add Theme',
+        'uninstalled_description' => 'These themes have files present but are not yet installed.',
         'uninstall' => [
             'confirm_title' => 'Uninstall Confirmation',
             'confirm_message' => 'Do you want to uninstall theme [{name}]?',
