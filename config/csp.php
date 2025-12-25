@@ -135,6 +135,10 @@ return [
         // 'unsafe-eval' はAlpine.jsが必要とするため追加
         'script-src' => ["'self'", "'nonce'", "'strict-dynamic'", "'unsafe-eval'"],
 
+        // スクリプト属性（onclick等のイベントハンドラ属性）
+        // Alpine.jsの@click等のディレクティブはイベントハンドラ属性として展開されるため必要
+        'script-src-attr' => ["'unsafe-inline'"],
+
         // スタイル
         // 'unsafe-inline'はnonceと併用すると無視されるため、インラインスタイル（element.style）を許可するには
         // nonceを使用しないか、unsafe-inlineのみを使用する必要がある

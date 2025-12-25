@@ -42,14 +42,20 @@ custom/*
 # プラグイン: 個別のリポジトリとして管理（.git/info/excludeで追跡）
 # テーマ: DixlaseDefaultThemeはGit Submoduleとしてコアに同梱
 plugins/*
+!plugins/DixlaseDeploy/
 !plugins/DixlaseInquiry/
 !plugins/DixlaseMenu/
 !plugins/DixlasePages/
 !plugins/DixlaseUsers/
 !plugins/DixlaseBlog/
 !plugins/DixlaseDocs/
+!plugins/DixlaseDeveloper/
+!plugins/DixlaseCoreDeveloper/
+!plugins/DixlaseAuthority/
+!plugins/DixlaseBackup/
+!plugins/DixlaseMultilingual/
 themes/*
-!themes/DixlaseDefaultTheme/
+!themes/DixlaseDefaultTheme
 
 license-info.json
 license.txt
@@ -59,3 +65,16 @@ license.txt
 .cursor/
 .vscode/mcp.json
 .mcp.json
+lang/en/admin.php.bak
+lang/ja/admin.php.bak
+resources/views/admin/settings/security/old-index.blade.php
+resources/views/admin/settings/base/index.blade.php.old
+resources/views/admin/settings/security/index.blade.php.bak
+resources/views/admin/settings/members/edit.blade.php
+resources/views/admin/settings/members/create.blade.php
+app/Http/Controllers/Admin/Settings/AdminMembersSettingsController.php
+app/Http/Controllers/Admin/Settings/Members/AdminMemberSettingsController.php
+app/Http/Controllers/Admin/Settings/Members/AdminMemberSecurityController.php
+AdminSecuritySettingsController.php
+AdminBaseSettingsController.php
+AdminSystemsController.php

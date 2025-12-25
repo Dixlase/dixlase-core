@@ -30,6 +30,7 @@ use App\Models\MediaSetting;
 use App\Http\Requests\Admin\Media\AdminMediaStoreRequest;
 use App\Contracts\Repositories\MediaSettingRepositoryInterface;
 use App\Contracts\Repositories\MediaRepositoryInterface;
+use App\Services\Media\MediaSecurityService;
 
 class AdminMediaController extends AdminLoggedInController
 {
@@ -44,15 +45,22 @@ class AdminMediaController extends AdminLoggedInController
     protected MediaRepositoryInterface $mediaRepository;
 
     /**
+     * メディアセキュリティサービス
+     */
+    protected MediaSecurityService $mediaSecurityService;
+
+    /**
      * コンストラクタ
      */
     public function __construct(
         MediaSettingRepositoryInterface $mediaSettingRepository,
-        MediaRepositoryInterface $mediaRepository
+        MediaRepositoryInterface $mediaRepository,
+        MediaSecurityService $mediaSecurityService
     ) {
         parent::__construct();
         $this->mediaSettingRepository = $mediaSettingRepository;
         $this->mediaRepository = $mediaRepository;
+        $this->mediaSecurityService = $mediaSecurityService;
     }
     /**
      * Display a listing of the resource.
@@ -140,17 +148,30 @@ class AdminMediaController extends AdminLoggedInController
     {
         $file = $request->file('file');
         if (!$file) {
-            return redirect()->back()->withErrors(['file' => 'ファイルが取得できませんでした']);
+            return redirect()->back()->withErrors(['file' => __('admin/media.error.file_not_found')]);
         }
 
-        //メンバーIDを取得
+        // セキュリティチェック
+        $securityResult = $this->mediaSecurityService->validateUpload($file);
+        if (!$securityResult->isValid()) {
+            return redirect()->back()->withErrors(['file' => $securityResult->getFirstError()]);
+        }
+
+        // メンバーIDを取得
         $memberId = $this->member->id;
 
         try {
             $path = $file->store(config('admin.mediaPath'), config('admin.storageDisk'));
             $fileName = basename($path);
+            
+            // SVGファイルの場合、サニタイズを実行
+            $extension = strtolower($file->getClientOriginalExtension());
+            if ($extension === 'svg') {
+                $fullPath = Storage::disk(config('admin.storageDisk'))->path($path);
+                $this->mediaSecurityService->sanitizeSvgIfNeeded($fullPath);
+            }
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['file' => 'ファイルの保存に失敗しました']);
+            return redirect()->back()->withErrors(['file' => __('admin/media.error.save_failed')]);
         }
 
         $this->mediaRepository->create([
@@ -160,7 +181,13 @@ class AdminMediaController extends AdminLoggedInController
             'uploaded_by' => $memberId,
         ]);
 
-        return redirect()->route('admin.media.index')->with('success', 'ファイルが正常にアップロードされました。');
+        // 警告がある場合はセッションに保存
+        if ($securityResult->hasWarnings()) {
+            $warnings = array_map(fn($w) => $w['message'], $securityResult->getWarnings());
+            session()->flash('warnings', $warnings);
+        }
+
+        return redirect()->route('admin.media.index')->with('success', __('admin/media.success.uploaded'));
     }
 
 
@@ -202,10 +229,16 @@ class AdminMediaController extends AdminLoggedInController
         }
 
         if (!Storage::disk($disk)->exists($filePath)) {
-            abort(404, 'ファイルが存在しません');
+            abort(404, __('admin/media.error.file_not_exists'));
         }
 
-        return Storage::disk($disk)->download($filePath, $media->name);
+        // セキュアなダウンロードレスポンスを生成
+        $fullPath = Storage::disk($disk)->path($filePath);
+        return $this->mediaSecurityService->createSecureDownloadResponse(
+            $fullPath,
+            $media->name,
+            $media->type
+        );
     }
 
     public function preview(Media $media)
@@ -257,18 +290,20 @@ class AdminMediaController extends AdminLoggedInController
 
     public function settings()
     {
-
         $allowedFileTypes = $this->mediaSettingRepository->get('allowed_file_types', []);
-
         $maxFileSize = $this->mediaSettingRepository->get('max_file_size', '2048');
 
         $fileExtensions = config('admin.fileExtensions');
         $fileExtensionNames = config('admin.fileExtensionNames');
 
+        // セキュリティ設定を取得
+        $securitySettings = $this->mediaSecurityService->getSecuritySettings();
+
         $this->viewParams['allowedFileTypes'] = $allowedFileTypes;
         $this->viewParams['maxFileSize'] = $maxFileSize;
         $this->viewParams['fileExtensions'] = $fileExtensions;
         $this->viewParams['fileExtensionNames'] = $fileExtensionNames;
+        $this->viewParams['securitySettings'] = $securitySettings;
 
         return view('admin.media.settings', $this->viewParams);
     }
@@ -322,16 +357,44 @@ class AdminMediaController extends AdminLoggedInController
         $request->validate([
             'allowed_file_types' => 'array',
             'allowed_file_types.*' => 'in:' . implode(',', $fileExtensions),
-            'max_file_size' => 'required|integer|min:1|max:100', // 1MB to 100MB
+            'max_file_size' => 'required|integer|min:1|max:100', // 1MB to 100MB（レガシー互換用）
+            // ファイルタイプ別サイズ上限（MB）
+            'max_file_size_image' => 'required|integer|min:1|max:100',
+            'max_file_size_video' => 'required|integer|min:1|max:1000',
+            'max_file_size_document' => 'required|integer|min:1|max:100',
+            'max_file_size_archive' => 'required|integer|min:1|max:500',
+            // セキュリティ設定
+            'svg_sanitization_enabled' => 'boolean',
+            'zip_security_enabled' => 'boolean',
+            'mime_validation_enabled' => 'boolean',
+            // ZIP詳細設定
+            'zip_max_compression_ratio' => 'required|integer|min:10|max:1000',
+            'zip_max_file_count' => 'required|integer|min:10|max:10000',
         ]);
 
         $selectedTypes = $request->input('allowed_file_types', []);
         $maxFileSizeMB = $request->input('max_file_size');
         $maxFileSize = round($maxFileSizeMB * 1024); // Convert MB to KB for storage
 
+        // 基本設定
         $this->mediaSettingRepository->set('allowed_file_types', $selectedTypes);
         $this->mediaSettingRepository->set('max_file_size', $maxFileSize);
 
-        return redirect()->back()->with('success', 'メディア設定が更新されました。');
+        // ファイルタイプ別サイズ上限（MBからKBに変換）
+        $this->mediaSettingRepository->set('max_file_size_image', round($request->input('max_file_size_image') * 1024));
+        $this->mediaSettingRepository->set('max_file_size_video', round($request->input('max_file_size_video') * 1024));
+        $this->mediaSettingRepository->set('max_file_size_document', round($request->input('max_file_size_document') * 1024));
+        $this->mediaSettingRepository->set('max_file_size_archive', round($request->input('max_file_size_archive') * 1024));
+
+        // セキュリティ設定
+        $this->mediaSettingRepository->set('svg_sanitization_enabled', $request->boolean('svg_sanitization_enabled') ? '1' : '0');
+        $this->mediaSettingRepository->set('zip_security_enabled', $request->boolean('zip_security_enabled') ? '1' : '0');
+        $this->mediaSettingRepository->set('mime_validation_enabled', $request->boolean('mime_validation_enabled') ? '1' : '0');
+
+        // ZIP詳細設定
+        $this->mediaSettingRepository->set('zip_max_compression_ratio', $request->input('zip_max_compression_ratio'));
+        $this->mediaSettingRepository->set('zip_max_file_count', $request->input('zip_max_file_count'));
+
+        return redirect()->back()->with('success', __('admin/media.success.settings_updated'));
     }
 }

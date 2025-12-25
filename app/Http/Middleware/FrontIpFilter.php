@@ -24,6 +24,8 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
+use App\Models\BaseSetting;
 use Symfony\Component\HttpFoundation\Response;
 
 class FrontIpFilter
@@ -41,22 +43,34 @@ class FrontIpFilter
         }
 
         // Bypass if an admin is logged in
-        if (auth('admin')->check()) {
+        try {
+            $member = auth('member')->user();
+            if ($member && $member->is_admin) {
+                return $next($request);
+            }
+        } catch (\Exception $e) {
+            // Guard not available, continue with IP check
+        }
+
+        // Check if base_settings table exists
+        try {
+            if (!Schema::hasTable('base_settings')) {
+                return $next($request);
+            }
+        } catch (\Exception $e) {
             return $next($request);
         }
 
-        $settings = settings([
-            'enable_allowed_front_ips',
-            'allowed_front_ips',
-            'enable_blocked_front_ips',
-            'blocked_front_ips',
-        ]);
+        $enableAllowedFrontIps = BaseSetting::getValue('enable_allowed_front_ips', false);
+        $allowedFrontIps = BaseSetting::getValue('allowed_front_ips', '');
+        $enableBlockedFrontIps = BaseSetting::getValue('enable_blocked_front_ips', false);
+        $blockedFrontIps = BaseSetting::getValue('blocked_front_ips', '');
 
         $userIp = $request->ip();
 
         // Allowed IPs check
-        if (!empty($settings['enable_allowed_front_ips'])) {
-            $allowedIps = collect(explode(',', $settings['allowed_front_ips'] ?? ''))
+        if (!empty($enableAllowedFrontIps)) {
+            $allowedIps = collect(explode(',', $allowedFrontIps ?? ''))
                 ->map(fn ($ip) => trim($ip))
                 ->filter();
 
@@ -66,8 +80,8 @@ class FrontIpFilter
         }
 
         // Blocked IPs check
-        if (!empty($settings['enable_blocked_front_ips'])) {
-            $blockedIps = collect(explode(',', $settings['blocked_front_ips'] ?? ''))
+        if (!empty($enableBlockedFrontIps)) {
+            $blockedIps = collect(explode(',', $blockedFrontIps ?? ''))
                 ->map(fn ($ip) => trim($ip))
                 ->filter();
 
