@@ -129,6 +129,65 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </section>
 
+    {{-- プラグインのクリーンアップセクション --}}
+    @if(!empty($pluginCleanupInfo))
+    <section>
+        <h2>{{ __('admin/settings/systems/database.plugin_cleanup_heading') }}</h2>
+        <p class="mb-6">{{ __('admin/settings/systems/database.plugin_cleanup_description') }}</p>
+        
+        @php
+            $groupedByPlugin = collect($pluginCleanupInfo)->groupBy('plugin_slug');
+        @endphp
+        
+        @foreach($groupedByPlugin as $pluginSlug => $tables)
+            @php $firstTable = $tables->first(); @endphp
+            <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <h3 class="text-lg font-semibold mb-4 flex items-center">
+                    <i class="fas fa-puzzle-piece mr-2 text-purple-500"></i>
+                    {{ $firstTable['plugin_name'] }}
+                </h3>
+                
+                @foreach($tables as $key => $info)
+                <div class="flex flex-col md:flex-row md:items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
+                    <div class="flex-1 mb-3 md:mb-0 md:mr-6">
+                        <h4 class="font-medium">{{ $info['name'] }}</h4>
+                        <code class="text-xs text-gray-500 dark:text-gray-400">{{ $info['table'] }}</code>
+                        
+                        <form id="cleanupForm{{ Str::camel($key) }}" action="{{ route('admin.settings.systems.database.cleanup') }}" method="POST" class="mt-2">
+                            @csrf
+                            <input type="hidden" name="type" value="{{ $key }}">
+                            <div class="flex items-center gap-2">
+                                <label for="days_{{ Str::camel($key) }}" class="text-sm">
+                                    {{ __('admin/settings/systems/database.days_label') }}
+                                </label>
+                                <input type="number" 
+                                    id="days_{{ Str::camel($key) }}" 
+                                    name="days" 
+                                    value="{{ $info['default_days'] }}" 
+                                    min="0" 
+                                    max="365"
+                                    class="input-common input-sm w-20">
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="flex justify-end flex-shrink-0">
+                        <x-form.button
+                            type="button"
+                            variant="danger"
+                            size="sm"
+                            :label="__('admin/settings/systems/database.cleanup_button')"
+                            icon="fas fa-trash"
+                            onclick="openModal('cleanupModal{{ Str::camel($key) }}')"
+                        />
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        @endforeach
+    </section>
+    @endif
+
     <section class="info-section">
         <div>
             <h2>{{ __('admin/settings/systems/database.info_title') }}</h2>
@@ -199,3 +258,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     confirm-color="red"
     form="cleanupAllForm"
 />
+
+@if(!empty($pluginCleanupInfo))
+@foreach($pluginCleanupInfo as $key => $info)
+<x-modal
+    id="cleanupModal{{ Str::camel($key) }}"
+    title="{{ __('admin/settings/systems/database.modal.title') }}"
+    message="{{ __('admin/settings/systems/database.modal.message_plugin', ['name' => $info['name'], 'plugin' => $info['plugin_name']]) }}"
+    confirm-label="{{ __('common.execute') }}"
+    cancel-label="{{ __('common.cancel') }}"
+    icon-type="danger"
+    confirm-color="red"
+    form="cleanupForm{{ Str::camel($key) }}"
+/>
+@endforeach
+@endif

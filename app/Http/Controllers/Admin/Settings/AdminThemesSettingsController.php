@@ -368,6 +368,10 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 return redirect()->back()->with('error', 'テーマのインストールに失敗しました。');
             }
             
+            // .git/info/excludeと.gitignoreにテーマの除外ルールを追加
+            GitExcludeHelper::addThemeExclusion($themeDir);
+            GitIgnoreHelper::addThemeExclusion($themeDir);
+            
             // インストールされたテーマを取得して通知
             $theme = Theme::where('directory', $themeDir)->first();
             if ($theme) {
@@ -485,6 +489,10 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 return redirect()->back()->with('error', 'テーマの切り替えに失敗しました。');
             }
             
+            // .git/info/excludeと.gitignoreにテーマの除外ルールを追加
+            GitExcludeHelper::addThemeExclusion($theme->directory);
+            GitIgnoreHelper::addThemeExclusion($theme->directory);
+            
             // 拡張機能操作の通知・ログ記録
             $permissionService = app(ThemePermissionService::class);
             $summary = $permissionService->getSummary($theme->slug);
@@ -561,6 +569,10 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 ]);
                 return redirect()->back()->with('error', 'テーマの削除に失敗しました。');
             }
+            
+            // .git/info/excludeと.gitignoreからテーマの除外ルールを削除
+            GitExcludeHelper::removeThemeExclusion($themeDir);
+            GitIgnoreHelper::removeThemeExclusion($themeDir);
             
             return redirect()->route('admin.settings.themes.index')
                 ->with('success', 'テーマが正常に削除されました。');

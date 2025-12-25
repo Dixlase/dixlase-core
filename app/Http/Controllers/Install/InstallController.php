@@ -34,6 +34,8 @@ use App\Models\SecuritySetting;
 use Illuminate\Support\Facades\Crypt;
 use App\Traits\MailTestTrait;
 use App\Http\Requests\MailServerRequest;
+use App\Helpers\GitExcludeHelper;
+use App\Helpers\GitIgnoreHelper;
 
 /**
  * インストールコントローラー
@@ -718,6 +720,11 @@ class InstallController extends Controller
                         'theme' => $activeTheme->directory
                     ]);
                     Log::channel('install')->info('テーマシンボリックリンク作成完了', ['theme' => $activeTheme->directory]);
+                    
+                    // .git/info/excludeと.gitignoreにテーマの除外ルールを追加
+                    GitExcludeHelper::addThemeExclusion($activeTheme->directory);
+                    GitIgnoreHelper::addThemeExclusion($activeTheme->directory);
+                    Log::channel('install')->info('テーマGit除外ルール追加完了', ['theme' => $activeTheme->directory]);
                 } catch (\Exception $e) {
                     Log::channel('install')->error("シンボリックリンクの作成に失敗しました: {$e->getMessage()}");
                 }
