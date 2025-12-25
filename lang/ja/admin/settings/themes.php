@@ -69,6 +69,46 @@ return [
         'completed' => 'テーマのスキャンが完了しました。',
         'failed' => 'テーマのスキャンに失敗しました。',
     ],
+
+    // ========================================
+    // バッジラベル（カード表示用）
+    // ========================================
+    'badge_labels' => [
+        'health' => '健全性',
+        'signature' => '署名',
+        'permission' => '権限',
+        'csp' => 'CSP',
+    ],
+
+    // ========================================
+    // 検証状態
+    // ========================================
+    'verification' => [
+        // 署名
+        'signature_valid' => '署名：OK',
+        'signature_unsigned' => '署名：未署名',
+        'signature_invalid' => '署名：不一致',
+        'signature_pending' => '署名：検証待ち',
+        // 権限
+        'permission_ok' => '権限定義：OK',
+        'permission_undefined' => '権限定義：未定義',
+        'permission_mismatch' => '権限定義：不一致',
+        // CSP
+        'csp_ready' => 'CSP Ready',
+        'csp_compatible' => 'CSP互換',
+        'csp_inline_required' => 'インラインJS必須',
+        'csp_not_checked' => 'CSP未検証',
+    ],
+
+    // ========================================
+    // CSP適合性
+    // ========================================
+    'csp' => [
+        'status_label' => 'CSP適合性',
+        'ready_tooltip' => 'このテーマはCSP完全対応です。すべてのCSPモードで動作します。',
+        'inline_required_tooltip' => 'このテーマはインラインJavaScriptを必要とします。CSP厳格モードでは動作しません。',
+    ],
+
     'permissions' => [
         'health_status' => '健全性',
         'health_healthy' => '良好',

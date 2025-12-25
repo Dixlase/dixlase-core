@@ -171,40 +171,87 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         {{-- バッジ類 --}}
         @if($permissionSummary)
-        <div class="flex flex-wrap gap-1.5 mb-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-            {{-- 健全性/署名バッジ --}}
-            <button type="button" 
-                    class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $badgeColor }} cursor-pointer hover:opacity-80 transition-opacity"
-                    onclick="openModal('{{ $permissionModalId }}')">
-                <i class="{{ $badgeIcon }} mr-1"></i>
-                {{ $badgeLabel }}
-                <i class="fas fa-info-circle ml-1 text-xs opacity-60"></i>
-            </button>
+        <div class="mb-3 pt-3 border-t border-gray-100 dark:border-gray-700 space-y-2">
+            {{-- 健全性/署名 --}}
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/plugins.badge_labels.health') }}</span>
+                <button type="button" 
+                        class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $badgeColor }} cursor-pointer hover:opacity-80 transition-opacity"
+                        onclick="openModal('{{ $permissionModalId }}')">
+                    <i class="{{ $badgeIcon }} mr-1"></i>
+                    {{ $badgeLabel }}
+                    <i class="fas fa-info-circle ml-1 text-xs opacity-60"></i>
+                </button>
+            </div>
             
-            {{-- 不一致バッジ --}}
-            @if($hasMismatches)
-                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" title="{{ __('admin/settings/plugins.permissions.audit_mismatch_warning') }}">
-                    <i class="fas fa-code-branch mr-1"></i>
-                    {{ __('admin/settings/plugins.permissions.audit_mismatch_badge') }}
-                </span>
-            @endif
+            {{-- 署名ステータス --}}
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/plugins.badge_labels.signature') }}</span>
+                @if($signatureStatus === 'valid' || $signatureStatus === 'pending_verification')
+                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                        <i class="fas fa-check-circle mr-1"></i>
+                        {{ __('admin/settings/plugins.verification.signature_valid') }}
+                    </span>
+                @elseif($signatureStatus === 'invalid')
+                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                        <i class="fas fa-times-circle mr-1"></i>
+                        {{ __('admin/settings/plugins.verification.signature_invalid') }}
+                    </span>
+                @else
+                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                        <i class="fas fa-file-signature mr-1"></i>
+                        {{ __('admin/settings/plugins.verification.signature_unsigned') }}
+                    </span>
+                @endif
+            </div>
             
-            {{-- CSP互換性バッジ --}}
+            {{-- 権限定義 --}}
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/plugins.badge_labels.permission') }}</span>
+                @if($hasPermissions)
+                    @if($hasMismatches)
+                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" title="{{ __('admin/settings/plugins.permissions.audit_mismatch_warning') }}">
+                            <i class="fas fa-code-branch mr-1"></i>
+                            {{ __('admin/settings/plugins.verification.permission_mismatch') }}
+                        </span>
+                    @else
+                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                            <i class="fas fa-check-circle mr-1"></i>
+                            {{ __('admin/settings/plugins.verification.permission_ok') }}
+                        </span>
+                    @endif
+                @else
+                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                        <i class="fas fa-question-circle mr-1"></i>
+                        {{ __('admin/settings/plugins.verification.permission_undefined') }}
+                    </span>
+                @endif
+            </div>
+            
+            {{-- CSP互換性 --}}
             @php
                 $cspLoader = app(\App\Services\Csp\CspExtensionLoader::class);
                 $cspCompatibility = $cspLoader->getCspCompatibility('plugin', $pluginSlug);
             @endphp
-            @if($cspCompatibility['status'] === 'csp_ready' || $cspCompatibility['status'] === 'compatible')
-                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" title="{{ __('admin.settings.security.csp.badge_csp_ready_tooltip') }}">
-                    <i class="fas fa-shield-alt mr-1"></i>
-                    {{ __('admin.settings.security.csp.badge_csp_ready') }}
-                </span>
-            @elseif($cspCompatibility['requires_inline_js'])
-                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" title="{{ __('admin.settings.security.csp.badge_inline_required_tooltip') }}">
-                    <i class="fas fa-exclamation-triangle mr-1"></i>
-                    {{ __('admin.settings.security.csp.badge_inline_required') }}
-                </span>
-            @endif
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/plugins.badge_labels.csp') }}</span>
+                @if($cspCompatibility['status'] === 'csp_ready' || $cspCompatibility['status'] === 'compatible')
+                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" title="{{ __('admin/settings/plugins.csp.ready_tooltip') }}">
+                        <i class="fas fa-shield-alt mr-1"></i>
+                        {{ __('admin/settings/plugins.verification.csp_ready') }}
+                    </span>
+                @elseif($cspCompatibility['requires_inline_js'])
+                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" title="{{ __('admin/settings/plugins.csp.inline_required_tooltip') }}">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                        {{ __('admin/settings/plugins.verification.csp_inline_required') }}
+                    </span>
+                @else
+                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                        <i class="fas fa-question mr-1"></i>
+                        {{ __('admin/settings/plugins.verification.csp_not_checked') }}
+                    </span>
+                @endif
+            </div>
         </div>
         @endif
 

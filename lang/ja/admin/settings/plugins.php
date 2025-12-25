@@ -71,6 +71,159 @@ return [
         'enable_instruction' => 'から有効化してください。',
         'name' => 'プラグイン名',
     ],
+    // ========================================
+    // バッジラベル（カード表示用）
+    // ========================================
+    'badge_labels' => [
+        'health' => '健全性',
+        'signature' => '署名',
+        'permission' => '権限',
+        'csp' => 'CSP',
+    ],
+
+    // ========================================
+    // 健全性ステータス（PluginHealthStatus Enum）
+    // ========================================
+    'health_status' => [
+        'healthy' => '健全',
+        'healthy_description' => '宣言された権限・署名・構成に不一致は見つかりませんでした。',
+        'healthy_tooltip' => '宣言された権限・署名・構成に不一致は見つかりませんでした。',
+        'advisory' => '注意',
+        'advisory_description' => '軽微な指摘があります。動作に直ちに影響はありませんが、見直しを推奨します。',
+        'advisory_tooltip' => '軽微な指摘があります。動作に直ちに影響はありませんが、見直しを推奨します。',
+        'needs_attention' => '要確認',
+        'needs_attention_description' => '重要な指摘があります。有効化・運用前に内容を確認してください。',
+        'needs_attention_tooltip' => '重要な指摘があります。有効化・運用前に内容を確認してください。',
+        'not_verified' => '未確認',
+        'not_verified_description' => '検証情報が不足しています（未スキャン、権限定義なし、署名なし等）。',
+        'not_verified_tooltip' => '検証情報が不足しています（未スキャン、権限定義なし、署名なし等）。',
+    ],
+
+    // ========================================
+    // 信頼度レベル（PluginTrustLevel Enum）
+    // ========================================
+    'trust_level' => [
+        'official' => '公式',
+        'official_description' => 'Dixlase公式による配布です。',
+        'verified' => '認証済み',
+        'verified_description' => '認証済みパブリッシャーによる配布です。',
+        'partner' => 'パートナー',
+        'partner_description' => 'Dixlaseパートナーによる配布です。',
+        'community' => 'コミュニティ',
+        'community_description' => '未認証の配布者による配布です。',
+        'local' => 'ローカル',
+        'local_description' => '手動インストールまたはローカル開発です。',
+    ],
+
+    // ========================================
+    // 検証状態（PluginVerificationStatus Enum）
+    // ========================================
+    'verification' => [
+        // 署名
+        'signature_valid' => '署名：OK',
+        'signature_unsigned' => '署名：未署名',
+        'signature_invalid' => '署名：不一致',
+        'signature_pending' => '署名：検証待ち',
+        // 権限
+        'permission_ok' => '権限定義：OK',
+        'permission_undefined' => '権限定義：未定義',
+        'permission_mismatch' => '権限定義：不一致',
+        // スキャン
+        'scan_not_performed' => 'スキャン：未実行',
+        'scan_outdated' => 'スキャン：期限切れ',
+        'scan_completed' => 'スキャン：完了',
+        // CSP
+        'csp_ready' => 'CSP Ready',
+        'csp_compatible' => 'CSP互換',
+        'csp_inline_required' => 'インラインJS必須',
+        'csp_not_checked' => 'CSP未検証',
+    ],
+
+    // ========================================
+    // モーダル文言
+    // ========================================
+    'modal' => [
+        'health_check_title' => '健全性チェックの詳細',
+        'plugin_info' => 'プラグイン：:name（:slug）',
+        'version_info' => 'バージョン：:version',
+        'last_scan_info' => '最終スキャン：:date / スキャナ：v:version',
+
+        // 健全（Healthy）
+        'healthy_heading' => '健全（問題は検出されませんでした）',
+        'healthy_body' => '宣言された権限と検出された利用状況に不一致はありません。',
+        'healthy_note' => 'この結果は「現在のルールセット」に基づきます。',
+
+        // 注意（Advisory）
+        'advisory_heading' => '注意（見直し推奨）',
+        'advisory_body' => '軽微な指摘が :count 件あります。動作を妨げるものではありませんが、透明性のため確認を推奨します。',
+        'advisory_action_permission' => 'plugin.json の permission を実態に合わせて更新してください。',
+        'advisory_action_signature' => '本番運用する場合は署名を付与してください。',
+
+        // 要確認（NeedsAttention）
+        'needs_attention_heading' => '要確認（有効化前に確認してください）',
+        'needs_attention_body' => '重要な指摘が :count 件あります。現在のセキュリティ設定では、有効化が制限される場合があります。',
+        'needs_attention_action_reinstall' => '配布元のZIPを再取得し、再インストール後に再スキャンしてください。',
+        'needs_attention_action_document' => '意図した仕様であれば permission を明示し、設計意図をドキュメント化してください。',
+
+        // 未確認（NotVerified）
+        'not_verified_heading' => '未確認（検証情報が不足しています）',
+        'not_verified_body' => 'このプラグインは検証に必要な情報が不足しています。',
+        'not_verified_action_scan' => '再スキャンを実行してください。',
+        'not_verified_action_permission' => 'plugin.json に permission を定義してください。',
+        'not_verified_action_signature' => '本番配布時は署名を付与してください。',
+
+        // 指摘例
+        'issue_permission_undeclared' => '権限の宣言不足：:permission（検出：:file::line）',
+        'issue_permission_unused' => '未使用の権限が宣言されています：:permission',
+        'issue_signature_unsigned' => '未署名：開発モードでは許可されています（本番配布時は署名を推奨）',
+        'issue_signature_invalid' => '署名不一致：改ざんの可能性があります',
+        'issue_dangerous_api' => '推奨されないAPIの利用を検出：:api（:file::line）',
+
+        // 推奨アクション
+        'recommended_actions' => '推奨アクション',
+    ],
+
+    // ========================================
+    // ブロック時の文言
+    // ========================================
+    'block' => [
+        'title' => 'このプラグインは現在のセキュリティ設定では有効化できません',
+        'body' => '健全性チェックで「:status」と判定されました。',
+        'action' => 'セキュリティ設定で許可範囲を変更するか、指摘事項を解消して再スキャンしてください。',
+        'button_details' => '詳細を確認',
+        'button_security' => 'セキュリティ設定へ',
+        'button_cancel' => 'キャンセル',
+
+        // CSP厳格モード
+        'csp_strict_title' => 'CSP厳格モードでは有効化できません',
+        'csp_strict_body' => 'このプラグインはインラインJavaScriptを必要とするため、CSP厳格モードでは動作しません。',
+        'csp_strict_action' => 'CSPモードを「標準」または「開発」に変更するか、プラグインをCSP Readyに更新してください。',
+    ],
+
+    // ========================================
+    // CSP適合性
+    // ========================================
+    'csp' => [
+        'status_label' => 'CSP適合性',
+        'ready' => 'CSP Ready',
+        'ready_tooltip' => 'このプラグインはCSP完全対応です。すべてのCSPモードで動作します。',
+        'inline_required_tooltip' => 'このプラグインはインラインJavaScriptを必要とします。CSP厳格モードでは動作しません。',
+        'compatible' => 'CSP互換',
+        'compatible_tooltip' => 'このプラグインはnonce付きで動作します。標準モード以上で動作します。',
+        'inline_required' => 'インラインJS必須',
+        'inline_required_tooltip' => 'このプラグインはインラインJavaScriptを必要とします。CSP厳格モードでは動作しません。',
+        'not_checked' => '未検証',
+        'not_checked_tooltip' => 'CSP適合性は検証されていません。',
+
+        // CSP違反警告（CSP無効時でも表示）
+        'violation_detected' => 'CSP違反が検出されました',
+        'violation_count' => ':count件の違反',
+        'violation_note_disabled' => 'CSPは現在無効ですが、有効化した場合に問題が発生する可能性があります。',
+        'violation_note_dev' => '開発モードでは違反はログに記録されますが、ブロックされません。',
+        'violation_note_standard' => '標準モードでは一部の機能が動作しない可能性があります。',
+        'violation_note_strict' => '厳格モードではこのプラグインは有効化できません。',
+    ],
+
     'permissions' => [
         'health_status' => '健全性',
         'health_healthy' => '良好',

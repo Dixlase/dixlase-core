@@ -22,8 +22,9 @@ https://exc-d.com
                 type="button"
                 :label="__('common.settings')"
                 variant="primary"
-                size="sm"
+                size="xs"
                 icon="fas fa-cog"
+                class="py-2 px-3"
             />
         </a>
     @endif
@@ -37,8 +38,9 @@ https://exc-d.com
             type="submit"
             :label="__('common.disable')"
             variant="warning"
-            size="sm"
+            size="xs"
             icon="fas fa-pause"
+            class="py-2 px-3"
         />
     </form>
 @else
@@ -81,9 +83,10 @@ https://exc-d.com
                 type="button"
                 :label="__('common.enable')"
                 variant="success"
-                size="sm"
+                size="xs"
                 icon="fas fa-play"
                 onclick="openModal('{{ $enableModalId }}')"
+                class="py-2 px-3"
             />
             
             <x-modal
@@ -115,8 +118,9 @@ https://exc-d.com
                 type="submit"
                 :label="__('common.enable')"
                 variant="success"
-                size="sm"
+                size="xs"
                 icon="fas fa-play"
+                class="py-2 px-3"
             />
         @endif
     </form>
@@ -127,9 +131,10 @@ https://exc-d.com
             type="button"
             :label="__('common.uninstall')"
             variant="danger"
-            size="sm"
+            size="xs"
             icon="fas fa-trash"
             onclick="openModal('uninstallModal-{{ $plugin->id }}')"
+            class="py-2 px-3"
         />
 
         <x-modal

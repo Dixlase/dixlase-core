@@ -71,6 +71,159 @@ return [
         'enable_instruction' => 'to enable.',
         'name' => 'Plugin Name',
     ],
+    // ========================================
+    // Badge Labels (for card display)
+    // ========================================
+    'badge_labels' => [
+        'health' => 'Health',
+        'signature' => 'Signature',
+        'permission' => 'Permission',
+        'csp' => 'CSP',
+    ],
+
+    // ========================================
+    // Health Status (PluginHealthStatus Enum)
+    // ========================================
+    'health_status' => [
+        'healthy' => 'Healthy',
+        'healthy_description' => 'No discrepancies found in declared permissions, signature, or configuration.',
+        'healthy_tooltip' => 'No discrepancies found in declared permissions, signature, or configuration.',
+        'advisory' => 'Advisory',
+        'advisory_description' => 'Minor issues found. Does not immediately affect operation, but review is recommended.',
+        'advisory_tooltip' => 'Minor issues found. Does not immediately affect operation, but review is recommended.',
+        'needs_attention' => 'Needs Attention',
+        'needs_attention_description' => 'Important issues found. Please review before activation or operation.',
+        'needs_attention_tooltip' => 'Important issues found. Please review before activation or operation.',
+        'not_verified' => 'Not Verified',
+        'not_verified_description' => 'Verification information is insufficient (not scanned, no permission definition, unsigned, etc.).',
+        'not_verified_tooltip' => 'Verification information is insufficient (not scanned, no permission definition, unsigned, etc.).',
+    ],
+
+    // ========================================
+    // Trust Level (PluginTrustLevel Enum)
+    // ========================================
+    'trust_level' => [
+        'official' => 'Official',
+        'official_description' => 'Distributed by Dixlase official.',
+        'verified' => 'Verified',
+        'verified_description' => 'Distributed by a verified publisher.',
+        'partner' => 'Partner',
+        'partner_description' => 'Distributed by a Dixlase partner.',
+        'community' => 'Community',
+        'community_description' => 'Distributed by an unverified publisher.',
+        'local' => 'Local',
+        'local_description' => 'Manual installation or local development.',
+    ],
+
+    // ========================================
+    // Verification Status (PluginVerificationStatus Enum)
+    // ========================================
+    'verification' => [
+        // Signature
+        'signature_valid' => 'Signature: OK',
+        'signature_unsigned' => 'Signature: Unsigned',
+        'signature_invalid' => 'Signature: Invalid',
+        'signature_pending' => 'Signature: Pending',
+        // Permission
+        'permission_ok' => 'Permission: OK',
+        'permission_undefined' => 'Permission: Undefined',
+        'permission_mismatch' => 'Permission: Mismatch',
+        // Scan
+        'scan_not_performed' => 'Scan: Not Performed',
+        'scan_outdated' => 'Scan: Outdated',
+        'scan_completed' => 'Scan: Completed',
+        // CSP
+        'csp_ready' => 'CSP Ready',
+        'csp_compatible' => 'CSP Compatible',
+        'csp_inline_required' => 'Inline JS Required',
+        'csp_not_checked' => 'CSP Not Checked',
+    ],
+
+    // ========================================
+    // Modal Messages
+    // ========================================
+    'modal' => [
+        'health_check_title' => 'Health Check Details',
+        'plugin_info' => 'Plugin: :name (:slug)',
+        'version_info' => 'Version: :version',
+        'last_scan_info' => 'Last Scan: :date / Scanner: v:version',
+
+        // Healthy
+        'healthy_heading' => 'Healthy (No issues detected)',
+        'healthy_body' => 'No discrepancies between declared permissions and detected usage.',
+        'healthy_note' => 'This result is based on the current ruleset.',
+
+        // Advisory
+        'advisory_heading' => 'Advisory (Review Recommended)',
+        'advisory_body' => ':count minor issues found. Does not prevent operation, but review is recommended for transparency.',
+        'advisory_action_permission' => 'Update plugin.json permissions to match actual usage.',
+        'advisory_action_signature' => 'Add signature for production distribution.',
+
+        // Needs Attention
+        'needs_attention_heading' => 'Needs Attention (Review before activation)',
+        'needs_attention_body' => ':count important issues found. Activation may be restricted by current security settings.',
+        'needs_attention_action_reinstall' => 'Re-download from the original source and reinstall, then rescan.',
+        'needs_attention_action_document' => 'If intentional, explicitly declare permissions and document the design intent.',
+
+        // Not Verified
+        'not_verified_heading' => 'Not Verified (Insufficient verification information)',
+        'not_verified_body' => 'This plugin lacks information required for verification.',
+        'not_verified_action_scan' => 'Run a rescan.',
+        'not_verified_action_permission' => 'Define permissions in plugin.json.',
+        'not_verified_action_signature' => 'Add signature for production distribution.',
+
+        // Issue Examples
+        'issue_permission_undeclared' => 'Undeclared permission: :permission (detected: :file::line)',
+        'issue_permission_unused' => 'Unused permission declared: :permission',
+        'issue_signature_unsigned' => 'Unsigned: Allowed in development mode (signature recommended for production)',
+        'issue_signature_invalid' => 'Signature mismatch: Possible tampering',
+        'issue_dangerous_api' => 'Discouraged API usage detected: :api (:file::line)',
+
+        // Recommended Actions
+        'recommended_actions' => 'Recommended Actions',
+    ],
+
+    // ========================================
+    // Block Messages
+    // ========================================
+    'block' => [
+        'title' => 'This plugin cannot be activated with current security settings',
+        'body' => 'Health check determined status as ":status".',
+        'action' => 'Change security settings to allow this level, or resolve issues and rescan.',
+        'button_details' => 'View Details',
+        'button_security' => 'Security Settings',
+        'button_cancel' => 'Cancel',
+
+        // CSP Strict Mode
+        'csp_strict_title' => 'Cannot activate in CSP Strict Mode',
+        'csp_strict_body' => 'This plugin requires inline JavaScript and will not work in CSP strict mode.',
+        'csp_strict_action' => 'Change CSP mode to "Standard" or "Development", or update the plugin to be CSP Ready.',
+    ],
+
+    // ========================================
+    // CSP Compliance
+    // ========================================
+    'csp' => [
+        'status_label' => 'CSP Compliance',
+        'ready' => 'CSP Ready',
+        'ready_tooltip' => 'This plugin is fully CSP compliant. Works in all CSP modes.',
+        'inline_required_tooltip' => 'This plugin requires inline JavaScript. Will not work in CSP strict mode.',
+        'compatible' => 'CSP Compatible',
+        'compatible_tooltip' => 'This plugin works with nonce. Works in standard mode and above.',
+        'inline_required' => 'Inline JS Required',
+        'inline_required_tooltip' => 'This plugin requires inline JavaScript. Will not work in CSP strict mode.',
+        'not_checked' => 'Not Checked',
+        'not_checked_tooltip' => 'CSP compliance has not been verified.',
+
+        // CSP Violation Warning (shown even when CSP is disabled)
+        'violation_detected' => 'CSP violations detected',
+        'violation_count' => ':count violations',
+        'violation_note_disabled' => 'CSP is currently disabled, but issues may occur if enabled.',
+        'violation_note_dev' => 'In development mode, violations are logged but not blocked.',
+        'violation_note_standard' => 'In standard mode, some features may not work.',
+        'violation_note_strict' => 'In strict mode, this plugin cannot be activated.',
+    ],
+
     'permissions' => [
         'health_status' => 'Health Status',
         'health_healthy' => 'Healthy',

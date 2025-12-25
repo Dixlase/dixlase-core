@@ -19,7 +19,8 @@ https://exc-d.com
                 type="button"
                 :label="__('common.settings')"
                 variant="primary"
-                size="sm"
+                size="xs"
+                class="py-2 px-3"
                 icon="fas fa-cog"
             />
         </a>
@@ -67,7 +68,8 @@ https://exc-d.com
                 type="button"
                 :label="__('common.enable')"
                 variant="success"
-                size="sm"
+                size="xs"
+                class="py-2 px-3"
                 icon="fas fa-check"
                 onclick="openModal('{{ $enableModalId }}')"
             />
@@ -101,7 +103,8 @@ https://exc-d.com
                 type="submit"
                 :label="__('common.enable')"
                 variant="success"
-                size="sm"
+                size="xs"
+                class="py-2 px-3"
                 icon="fas fa-check"
             />
         @endif
@@ -113,7 +116,8 @@ https://exc-d.com
             type="button"
             :label="__('common.uninstall')"
             variant="danger"
-            size="sm"
+            size="xs"
+            class="py-2 px-3"
             icon="fas fa-trash"
             onclick="openModal('uninstallThemeModal-{{ $theme->id }}')"
         />

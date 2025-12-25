@@ -25,7 +25,8 @@ https://exc-d.com
         type="button"
         :label="__('common.install')"
         variant="success"
-        size="sm"
+        size="xs"
+        class="py-2 px-3"
         icon="fas fa-download"
         onclick="openModal('installThemeModal-{{ $theme['directory'] }}')"
     />
@@ -87,7 +88,8 @@ https://exc-d.com
         type="button"
         :label="__('common.delete')"
         variant="danger"
-        size="sm"
+        size="xs"
+        class="py-2 px-3"
         icon="fas fa-trash"
         onclick="openModal('deleteThemeModal-{{ $theme['directory'] }}')"
     />
