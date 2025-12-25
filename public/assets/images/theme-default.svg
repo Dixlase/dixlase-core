@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225" fill="none">
+  <defs>
+    <linearGradient id="themeBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ec4899;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f97316;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="themeIcon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0.7" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="225" fill="url(#themeBg)"/>
+  <g transform="translate(200, 112.5)">
+    <!-- Palette icon -->
+    <ellipse cx="0" cy="0" rx="45" ry="35" fill="url(#themeIcon)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+    <circle cx="-20" cy="-10" r="6" fill="#6366f1"/>
+    <circle cx="0" cy="-15" r="6" fill="#22c55e"/>
+    <circle cx="20" cy="-10" r="6" fill="#eab308"/>
+    <circle cx="-15" cy="10" r="6" fill="#ef4444"/>
+    <ellipse cx="20" cy="12" rx="12" ry="10" fill="url(#themeBg)"/>
+  </g>
+  <text x="200" y="185" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="500">Theme</text>
+</svg>

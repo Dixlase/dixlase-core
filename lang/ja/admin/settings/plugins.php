@@ -30,6 +30,9 @@ return [
             'caption' => 'インストール済みプラグイン一覧',
         ],
         'no_plugins' => 'プラグインがインストールされていません。',
+        'no_plugins_description' => 'プラグインを追加して、サイトの機能を拡張しましょう。',
+        'add_plugin' => 'プラグインを追加',
+        'uninstalled_description' => 'これらのプラグインはファイルが存在しますが、まだインストールされていません。',
         'buttons' => [],
         'uninstall' => [
             'confirm_title' => 'アンインストールの確認',

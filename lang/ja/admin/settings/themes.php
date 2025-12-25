@@ -33,6 +33,9 @@ return [
             'caption' => 'アンインストール済みテーマ一覧',
         ],
         'no_themes' => 'テーマがインストールされていません。',
+        'no_themes_description' => 'テーマを追加して、サイトの外観をカスタマイズしましょう。',
+        'add_theme' => 'テーマを追加',
+        'uninstalled_description' => 'これらのテーマはファイルが存在しますが、まだインストールされていません。',
         'uninstall' => [
             'confirm_title' => 'アンインストールの確認',
             'confirm_message' => 'テーマ [{name}] をアンインストールしますか？',

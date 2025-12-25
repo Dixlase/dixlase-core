@@ -30,6 +30,9 @@ return [
             'caption' => 'Installed Plugins List',
         ],
         'no_plugins' => 'No plugins are installed.',
+        'no_plugins_description' => 'Add plugins to extend your site\'s functionality.',
+        'add_plugin' => 'Add Plugin',
+        'uninstalled_description' => 'These plugins have files present but are not yet installed.',
         'buttons' => [],
         'uninstall' => [
             'confirm_title' => 'Uninstall Confirmation',

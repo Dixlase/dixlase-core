@@ -98,6 +98,8 @@ return [
     'disabled' => '無効',
     'active' => '有効',
     'inactive' => '無効',
+    'not_installed' => '未インストール',
+    'no_description' => '説明がありません',
     'available_methods' => '利用可能な方法',
     
     // テーマ

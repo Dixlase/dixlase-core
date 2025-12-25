@@ -96,6 +96,8 @@ return [
     'disabled' => 'Disabled',
     'active' => 'Active',
     'inactive' => 'Inactive',
+    'not_installed' => 'Not Installed',
+    'no_description' => 'No description available',
     'available_methods' => 'available methods',
     
     // Theme
