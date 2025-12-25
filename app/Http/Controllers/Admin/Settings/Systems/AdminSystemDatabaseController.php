@@ -25,6 +25,8 @@ namespace App\Http\Controllers\Admin\Settings\Systems;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 
 class AdminSystemDatabaseController extends AdminLoggedInController
 {
@@ -90,6 +92,10 @@ class AdminSystemDatabaseController extends AdminLoggedInController
         ];
 
         $this->viewParams['cleanupInfo'] = $cleanupInfo;
+        
+        // プラグインのクリーンアップ設定を取得
+        $pluginCleanupInfo = $this->getPluginCleanupInfo();
+        $this->viewParams['pluginCleanupInfo'] = $pluginCleanupInfo;
         
         return view('admin::settings.systems.database', $this->viewParams);
     }
@@ -182,8 +188,16 @@ class AdminSystemDatabaseController extends AdminLoggedInController
                     $message = __('admin/settings/systems/database.cleanup_success', ['count' => $totalCount]);
                     break;
                 default:
-                    $success = false;
-                    $message = __('admin/settings/systems/database.cleanup_error', ['error' => 'Invalid cleanup type']);
+                    // プラグインテーブルのクリーンアップを試行
+                    if (str_starts_with($type, 'plugin:')) {
+                        $result = $this->handlePluginTableCleanup($type, $days);
+                        $success = $result['success'];
+                        $message = $result['message'];
+                        $count = $result['count'] ?? 0;
+                    } else {
+                        $success = false;
+                        $message = __('admin/settings/systems/database.cleanup_error', ['error' => 'Invalid cleanup type']);
+                    }
             }
         } catch (\Exception $e) {
             $success = false;
@@ -195,6 +209,122 @@ class AdminSystemDatabaseController extends AdminLoggedInController
         } else {
             return redirect()->route('admin.settings.systems.database')->with('error', $message);
         }
+    }
+
+    /**
+     * プラグインのクリーンアップ設定を取得
+     */
+    private function getPluginCleanupInfo(): array
+    {
+        $pluginCleanupInfo = [];
+        
+        // 有効なプラグインを取得
+        $plugins = DB::table('plugins')
+            ->whereNotNull('enabled_at')
+            ->get();
+        
+        foreach ($plugins as $plugin) {
+            $pluginJsonPath = base_path("plugins/{$plugin->directory}/plugin.json");
+            
+            if (!File::exists($pluginJsonPath)) {
+                continue;
+            }
+            
+            try {
+                $pluginData = json_decode(File::get($pluginJsonPath), true);
+                
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    continue;
+                }
+                
+                $cleanupTables = $pluginData['cleanup']['tables'] ?? [];
+                
+                if (empty($cleanupTables)) {
+                    continue;
+                }
+                
+                $locale = app()->getLocale();
+                
+                foreach ($cleanupTables as $tableConfig) {
+                    $tableName = $tableConfig['name'] ?? '';
+                    if (empty($tableName)) {
+                        continue;
+                    }
+                    
+                    // 説明を取得（多言語対応）
+                    $description = $tableConfig['description'] ?? '';
+                    if (is_array($description)) {
+                        $description = $description[$locale] ?? $description['en'] ?? $description['ja'] ?? '';
+                    }
+                    
+                    $pluginCleanupInfo["plugin:{$plugin->slug}:{$tableName}"] = [
+                        'plugin_name' => $plugin->name,
+                        'plugin_slug' => $plugin->slug,
+                        'table' => $tableName,
+                        'name' => $description ?: $tableName,
+                        'description' => $description,
+                        'date_column' => $tableConfig['date_column'] ?? 'created_at',
+                        'default_days' => $tableConfig['default_days'] ?? 30,
+                    ];
+                }
+            } catch (\Exception $e) {
+                continue;
+            }
+        }
+        
+        return $pluginCleanupInfo;
+    }
+
+    /**
+     * プラグインテーブルのクリーンアップを処理
+     */
+    private function handlePluginTableCleanup(string $type, int $days): array
+    {
+        // type形式: plugin:slug:table_name
+        $parts = explode(':', $type, 3);
+        
+        if (count($parts) !== 3) {
+            return [
+                'success' => false,
+                'message' => __('admin/settings/systems/database.cleanup_error', ['error' => 'Invalid plugin cleanup type']),
+                'count' => 0,
+            ];
+        }
+        
+        $pluginSlug = $parts[1];
+        $tableName = $parts[2];
+        
+        // プラグインのクリーンアップ設定を取得して日付カラムを確認
+        $pluginCleanupInfo = $this->getPluginCleanupInfo();
+        $key = "plugin:{$pluginSlug}:{$tableName}";
+        
+        if (!isset($pluginCleanupInfo[$key])) {
+            return [
+                'success' => false,
+                'message' => __('admin/settings/systems/database.cleanup_error', ['error' => 'Table not allowed for cleanup']),
+                'count' => 0,
+            ];
+        }
+        
+        $dateColumn = $pluginCleanupInfo[$key]['date_column'];
+        
+        $options = [
+            '--plugin' => $pluginSlug,
+            '--table' => $tableName,
+            '--days' => $days,
+            '--date-column' => $dateColumn,
+            '--force' => true,
+        ];
+        
+        Artisan::call('dls:admin:cleanup-plugin-table', $options);
+        $output = Artisan::output();
+        $count = $this->extractCountFromOutput($output);
+        
+        return [
+            'success' => true,
+            'message' => __('admin/settings/systems/database.cleanup_success', ['count' => $count]),
+            'count' => $count,
+        ];
     }
 
     /**

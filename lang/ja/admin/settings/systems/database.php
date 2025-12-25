@@ -49,7 +49,10 @@ return [
         'message' => 'この操作を実行しますか？',
         'message_single' => ':name のクリーンアップを実行しますか？',
         'message_all' => 'すべてのデータベーステーブルのクリーンアップを実行しますか？',
+        'message_plugin' => 'プラグイン「:plugin」の :name のクリーンアップを実行しますか？',
     ],
+    'plugin_cleanup_heading' => 'プラグインデータのクリーンアップ',
+    'plugin_cleanup_description' => '有効なプラグインが提供するクリーンアップ対象テーブルです。各プラグインのplugin.jsonで定義されています。',
     'password_reset_tokens' => [
         'name' => 'パスワードリセットトークン',
         'description' => '古いパスワードリセットトークン記録をクリーンアップします',

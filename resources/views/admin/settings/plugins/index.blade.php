@@ -590,14 +590,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     <!-- 作者情報 -->
                                     <div class="mb-2">
                                         <span class="font-medium text-gray-700 dark:text-gray-300">{{ __('common.author') }}:</span>
-                                        @if($plugin['author'])
-                                            <span>{{ $plugin['author'] }}</span>
-                                            @if($plugin['email'])
-                                                <div class="text-xs text-gray-500 dark:text-gray-400">{{ $plugin['email'] }}</div>
+                                        @php
+                                            $authorName = $plugin['author'] ?? null;
+                                            $authorEmail = $plugin['email'] ?? null;
+                                            $authorUrl = $plugin['url'] ?? null;
+                                            if (is_array($authorName)) {
+                                                $authorEmail = $authorName['email'] ?? $authorEmail;
+                                                $authorUrl = $authorName['url'] ?? $authorName['homepage'] ?? $authorUrl;
+                                                $authorName = $authorName['name'] ?? null;
+                                            }
+                                        @endphp
+                                        @if($authorName)
+                                            <span>{{ $authorName }}</span>
+                                            @if($authorEmail)
+                                                <div class="text-xs text-gray-500 dark:text-gray-400">{{ $authorEmail }}</div>
                                             @endif
-                                            @if($plugin['url'])
+                                            @if($authorUrl)
                                                 <div class="text-xs">
-                                                    <a href="{{ $plugin['url'] }}" target="_blank" class="text-blue-600 hover:text-blue-800 dark:text-blue-400">{{ $plugin['url'] }}</a>
+                                                    <a href="{{ $authorUrl }}" target="_blank" class="text-blue-600 hover:text-blue-800 dark:text-blue-400">{{ $authorUrl }}</a>
                                                 </div>
                                             @endif
                                         @else

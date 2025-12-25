@@ -370,8 +370,20 @@ trait PluginLoaderTrait
             } elseif (isset($value['_insert_after'])) {
                 $this->insertOrderedConfig('admin.nav', $key, $value, $value['_insert_after'], 'after');
             } else {
-                // 直接追加
-                config(["admin.nav.{$key}" => $value]);
+                // 既存のキーがある場合はマージ、ない場合は追加
+                $existingValue = config("admin.nav.{$key}");
+                if ($existingValue !== null && is_array($existingValue)) {
+                    // 既存の設定がある場合、childrenのみをマージし、他のプロパティは保持
+                    if (isset($value['children']) && is_array($value['children'])) {
+                        $existingChildren = $existingValue['children'] ?? [];
+                        $existingValue['children'] = array_merge($existingChildren, $value['children']);
+                    }
+                    // 他のプロパティ（text, iconなど）は既存の設定を保持
+                    config(["admin.nav.{$key}" => $existingValue]);
+                } else {
+                    // 新規追加
+                    config(["admin.nav.{$key}" => $value]);
+                }
             }
         }
     }

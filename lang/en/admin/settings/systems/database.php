@@ -49,7 +49,10 @@ return [
         'message' => 'Do you want to execute this operation?',
         'message_single' => 'Do you want to clean up :name?',
         'message_all' => 'Do you want to clean up all database tables?',
+        'message_plugin' => 'Do you want to clean up :name from plugin ":plugin"?',
     ],
+    'plugin_cleanup_heading' => 'Plugin Data Cleanup',
+    'plugin_cleanup_description' => 'Cleanup targets provided by enabled plugins. Defined in each plugin\'s plugin.json.',
     'password_reset_tokens' => [
         'name' => 'Password Reset Tokens',
         'description' => 'Clean up old password reset token records',
