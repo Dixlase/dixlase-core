@@ -51,7 +51,8 @@ class EnsureEmailIsVerified
     public function handle($request, Closure $next, $redirectToRoute = null)
     {
         // 管理画面の場合はmemberガードを使用
-        $guard = $request->is('admin/*') ? 'member' : null;
+        // ※マイページ（user）の場合はプラグイン側のEnsureUserEmailIsVerifiedを使用
+        $guard = $request->is('admin/*') ? 'member' : 'web';
         $user = auth($guard)->user();
         
         if (
@@ -69,7 +70,13 @@ class EnsureEmailIsVerified
                 return redirect()->route('admin.verification.notice');
             }
             
-            return Redirect::guest(URL::route($redirectToRoute ?: 'mypage.verification.notice'));
+            // カスタムルートが指定されている場合
+            if ($redirectToRoute) {
+                return Redirect::guest(URL::route($redirectToRoute));
+            }
+            
+            // デフォルトはホームへリダイレクト
+            return Redirect::guest('/');
         }
 
         return $next($request);
