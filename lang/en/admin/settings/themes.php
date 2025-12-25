@@ -69,6 +69,46 @@ return [
         'completed' => 'Theme scan completed.',
         'failed' => 'Theme scan failed.',
     ],
+
+    // ========================================
+    // Badge Labels (for card display)
+    // ========================================
+    'badge_labels' => [
+        'health' => 'Health',
+        'signature' => 'Signature',
+        'permission' => 'Permission',
+        'csp' => 'CSP',
+    ],
+
+    // ========================================
+    // Verification Status
+    // ========================================
+    'verification' => [
+        // Signature
+        'signature_valid' => 'Signature: OK',
+        'signature_unsigned' => 'Signature: Unsigned',
+        'signature_invalid' => 'Signature: Invalid',
+        'signature_pending' => 'Signature: Pending',
+        // Permission
+        'permission_ok' => 'Permission: OK',
+        'permission_undefined' => 'Permission: Undefined',
+        'permission_mismatch' => 'Permission: Mismatch',
+        // CSP
+        'csp_ready' => 'CSP Ready',
+        'csp_compatible' => 'CSP Compatible',
+        'csp_inline_required' => 'Inline JS Required',
+        'csp_not_checked' => 'CSP Not Checked',
+    ],
+
+    // ========================================
+    // CSP Compliance
+    // ========================================
+    'csp' => [
+        'status_label' => 'CSP Compliance',
+        'ready_tooltip' => 'This theme is fully CSP compliant. Works in all CSP modes.',
+        'inline_required_tooltip' => 'This theme requires inline JavaScript. Will not work in CSP strict mode.',
+    ],
+
     'permissions' => [
         'health_status' => 'Health Status',
         'health_healthy' => 'Healthy',
