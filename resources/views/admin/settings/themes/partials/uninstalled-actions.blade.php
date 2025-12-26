@@ -10,7 +10,8 @@ https://exc-d.com
 @php
     $audit = $theme['permission_summary']['audit'] ?? [];
     $hasMismatches = $audit['has_mismatches'] ?? false;
-    $isNotScanned = empty($audit['audited_at'] ?? null);
+    $auditedAt = $audit['audited_at'] ?? null;
+    $isNotScanned = empty($auditedAt);
     $isUnsigned = ($theme['permission_summary']['signature']['status'] ?? 'unsigned') === 'unsigned';
     $isUndefined = !($theme['permission_summary']['has_permissions'] ?? false);
     $riskLevel = $theme['permission_summary']['risk_level'] ?? 'unknown';

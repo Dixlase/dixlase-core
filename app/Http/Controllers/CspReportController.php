@@ -24,6 +24,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
+use App\Models\SecuritySetting;
 
 /**
  * CSP Report Controller
@@ -33,6 +34,26 @@ use Illuminate\Support\Facades\Log;
  */
 class CspReportController extends Controller
 {
+    /**
+     * 開発ツール関連の除外パターン
+     * Vite開発サーバー、Windsurf/MCPブラウザプレビュー等
+     */
+    protected array $devToolPatterns = [
+        // Windsurf/MCP browser logger
+        'browser-logger',
+        '_boost',
+        // Vite開発サーバー
+        '@vite',
+        'vite/client',
+        '@react-refresh',
+        'hot-update',
+        // その他の開発ツール
+        'webpack-dev-server',
+        '__webpack_hmr',
+        'livereload',
+        'browser-sync',
+    ];
+
     /**
      * CSP違反レポートを受信
      */
@@ -50,10 +71,52 @@ class CspReportController extends Controller
             return response()->json(['status' => 'empty']);
         }
 
+        // 開発ツール関連の違反を除外
+        if ($this->isDevToolViolation($report)) {
+            return response()->json(['status' => 'excluded_dev_tool']);
+        }
+
         // ログに記録
         $this->logViolation($report, $request);
 
         return response()->json(['status' => 'received']);
+    }
+
+    /**
+     * 開発ツール関連の違反かどうかを判定
+     */
+    protected function isDevToolViolation(array $report): bool
+    {
+        // 設定で除外が無効な場合はfalse
+        try {
+            $excludeDevTools = SecuritySetting::get('csp_exclude_dev_tools', true);
+            if (!$excludeDevTools) {
+                return false;
+            }
+        } catch (\Exception $e) {
+            // データベース未設定時はデフォルトで除外
+        }
+
+        // チェック対象のフィールド
+        $fieldsToCheck = [
+            $report['blocked-uri'] ?? $report['blockedURL'] ?? '',
+            $report['source-file'] ?? $report['sourceFile'] ?? '',
+            $report['script-sample'] ?? '',
+        ];
+
+        foreach ($fieldsToCheck as $field) {
+            if (empty($field)) {
+                continue;
+            }
+
+            foreach ($this->devToolPatterns as $pattern) {
+                if (stripos($field, $pattern) !== false) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**

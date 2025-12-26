@@ -47,6 +47,7 @@ class AdminSecurityCspController extends AdminLoggedInController
             'csp_enabled' => filter_var($this->securitySettingRepository->get('csp_enabled', true), FILTER_VALIDATE_BOOLEAN),
             'csp_mode' => $this->securitySettingRepository->get('csp_mode', CspMode::default()->toString()),
             'csp_log_violations' => filter_var($this->securitySettingRepository->get('csp_log_violations', true), FILTER_VALIDATE_BOOLEAN),
+            'csp_exclude_dev_tools' => filter_var($this->securitySettingRepository->get('csp_exclude_dev_tools', true), FILTER_VALIDATE_BOOLEAN),
             'csp_trusted_domains' => $this->securitySettingRepository->get('csp_trusted_domains', ''),
             'csp_denied_domains' => $this->securitySettingRepository->get('csp_denied_domains', ''),
             'csp_custom_directives' => $this->securitySettingRepository->get('csp_custom_directives', ''),
@@ -72,6 +73,7 @@ class AdminSecurityCspController extends AdminLoggedInController
             'csp_enabled' => 'boolean',
             'csp_mode' => $cspEnabled ? 'required|' . CspMode::validationRule() : 'nullable|' . CspMode::validationRule(),
             'csp_log_violations' => 'boolean',
+            'csp_exclude_dev_tools' => 'boolean',
             'csp_trusted_domains' => 'nullable|string',
             'csp_denied_domains' => 'nullable|string',
             'csp_custom_directives' => 'nullable|string',
@@ -87,6 +89,7 @@ class AdminSecurityCspController extends AdminLoggedInController
         $this->securitySettingRepository->set('csp_enabled', $validated['csp_enabled'] ?? false);
         $this->securitySettingRepository->set('csp_mode', $validated['csp_mode'] ?? CspMode::default()->toString());
         $this->securitySettingRepository->set('csp_log_violations', $validated['csp_log_violations'] ?? true);
+        $this->securitySettingRepository->set('csp_exclude_dev_tools', $validated['csp_exclude_dev_tools'] ?? true);
         $this->securitySettingRepository->set('csp_trusted_domains', $validated['csp_trusted_domains'] ?? '');
         $this->securitySettingRepository->set('csp_denied_domains', $validated['csp_denied_domains'] ?? '');
         $this->securitySettingRepository->set('csp_custom_directives', $validated['csp_custom_directives'] ?? '');

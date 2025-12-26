@@ -362,5 +362,11 @@ class SecuritySettingsTableSeeder extends Seeder
             ['value' => '']
         );
 
+        // 開発ツール関連のCSP違反を除外（Vite開発サーバー、Windsurf/MCPブラウザプレビュー等）
+        SecuritySetting::updateOrCreate(
+            ['name' => 'csp_exclude_dev_tools'],
+            ['value' => '1']
+        );
+
     }
 }

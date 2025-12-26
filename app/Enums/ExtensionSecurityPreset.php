@@ -59,7 +59,7 @@ enum ExtensionSecurityPreset: string
      */
     public function translationKey(): string
     {
-        return 'admin.settings.security.extension_security.preset.' . $this->value;
+        return 'admin/settings/security/extensions.security.preset.' . $this->value;
     }
 
     /**
@@ -215,7 +215,7 @@ enum ExtensionSecurityPreset: string
             
             // 本番環境で使用不可の場合はバッジを追加
             if (!$preset->isProductionSafe()) {
-                $option['badge'] = 'admin.settings.security.extension_security.dev_only';
+                $option['badge'] = 'admin/settings/security/extensions.security.dev_only';
                 $option['badgeColor'] = 'yellow';
             }
             

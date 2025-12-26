@@ -38,6 +38,8 @@ return [
     'mode_strict_feature3' => 'Plugins with requires_inline_js: true cannot be enabled',
     'log_violations' => 'Log Violations',
     'log_violations_help' => 'Record CSP violations to log file (csp_violations.log).',
+    'exclude_dev_tools' => 'Exclude Dev Tool Violations',
+    'exclude_dev_tools_help' => 'Exclude CSP violations from development tools (Vite dev server, Windsurf/MCP browser preview, etc.) from logs.',
     'trusted_domains' => 'Trusted Domains',
     'trusted_domains_help' => 'Enter domains allowed to load external resources, one per line. You can add external CDNs required by plugins or themes.',
     'trusted_domains_placeholder' => 'https://cdn.example.com

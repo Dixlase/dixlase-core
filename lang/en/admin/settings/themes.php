@@ -185,6 +185,8 @@ return [
         'install_warning_confirm' => 'Do you want to install understanding the above?',
         'install_warning_risk' => 'This theme has the following notes:',
         'warning_not_scanned' => 'Code scan has not been run',
+        'risk_medium' => 'Medium health risk',
+        'risk_high' => 'High health risk',
         'enable_warning_title' => 'Pre-Activation Confirmation',
         'enable_warning_message' => 'This theme has the following notes:',
         'enable_warning_confirm' => 'Do you want to activate understanding the above?',
