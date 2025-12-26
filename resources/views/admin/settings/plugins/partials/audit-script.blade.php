@@ -128,15 +128,21 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.audit-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
             const slug = this.dataset.slug;
-            const btnText = this.querySelector('.audit-btn-text');
             const icon = this.querySelector('i');
-            const originalText = btnText.textContent;
-            const originalIcon = icon.className;
             const button = this;
             
+            // ボタンのテキストノードを取得（アイコン以外のテキスト）
+            const textNodes = Array.from(button.childNodes).filter(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim());
+            const originalText = textNodes.length > 0 ? textNodes[0].textContent.trim() : '';
+            const originalIcon = icon ? icon.className : '';
+            
             button.disabled = true;
-            btnText.textContent = auditMessages.scanning;
-            icon.className = 'fas fa-spinner fa-spin mr-1';
+            if (textNodes.length > 0) {
+                textNodes[0].textContent = ' ' + auditMessages.scanning;
+            }
+            if (icon) {
+                icon.className = 'fas fa-spinner fa-spin mr-2';
+            }
             
             fetch('{{ route("admin.settings.plugins.audit") }}', {
                 method: 'POST',
@@ -150,8 +156,12 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 button.disabled = false;
-                btnText.textContent = auditMessages.rescan;
-                icon.className = originalIcon;
+                if (textNodes.length > 0) {
+                    textNodes[0].textContent = ' ' + auditMessages.rescan;
+                }
+                if (icon) {
+                    icon.className = originalIcon;
+                }
                 
                 if (data.success) {
                     showAuditResultModal(slug, data.audit);
@@ -163,8 +173,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Audit error:', error);
                 alert(auditMessages.failed);
                 button.disabled = false;
-                btnText.textContent = originalText;
-                icon.className = originalIcon;
+                if (textNodes.length > 0) {
+                    textNodes[0].textContent = ' ' + originalText;
+                }
+                if (icon) {
+                    icon.className = originalIcon;
+                }
             });
         });
     });

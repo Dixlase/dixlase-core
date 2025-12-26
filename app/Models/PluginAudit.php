@@ -14,6 +14,11 @@ class PluginAudit extends Model
         'total_checked',
         'risk_level',
         'risk_reasons',
+        'signature_status',
+        'signature_signer',
+        'csp_status',
+        'csp_requires_inline_js',
+        'csp_requires_inline_css',
         'audited_at',
     ];
 
@@ -21,6 +26,8 @@ class PluginAudit extends Model
         'has_mismatches' => 'boolean',
         'mismatches' => 'array',
         'risk_reasons' => 'array',
+        'csp_requires_inline_js' => 'boolean',
+        'csp_requires_inline_css' => 'boolean',
         'audited_at' => 'datetime',
     ];
 
@@ -46,6 +53,11 @@ class PluginAudit extends Model
                 'total_checked' => $result['total_checked'] ?? 0,
                 'risk_level' => $result['risk_level'] ?? null,
                 'risk_reasons' => $result['risk_reasons'] ?? [],
+                'signature_status' => $result['signature_status'] ?? null,
+                'signature_signer' => $result['signature_signer'] ?? null,
+                'csp_status' => $result['csp_status'] ?? null,
+                'csp_requires_inline_js' => $result['csp_requires_inline_js'] ?? false,
+                'csp_requires_inline_css' => $result['csp_requires_inline_css'] ?? false,
                 'audited_at' => now(),
             ]
         );
@@ -63,6 +75,11 @@ class PluginAudit extends Model
             'total_checked' => $this->total_checked,
             'risk_level' => $this->risk_level,
             'risk_reasons' => $this->risk_reasons ?? [],
+            'signature_status' => $this->signature_status,
+            'signature_signer' => $this->signature_signer,
+            'csp_status' => $this->csp_status,
+            'csp_requires_inline_js' => $this->csp_requires_inline_js,
+            'csp_requires_inline_css' => $this->csp_requires_inline_css,
             'audited_at' => $this->audited_at?->toDateTimeString(),
         ];
     }
