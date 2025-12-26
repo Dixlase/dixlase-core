@@ -313,10 +313,10 @@ class SecuritySettingsTableSeeder extends Seeder
             ['value' => '1']
         );
 
-        // CSPモード（development: 開発, standard: 標準, strict: 厳格）
+        // CSPモード（0: 開発, 1: 標準, 2: 厳格）
         SecuritySetting::updateOrCreate(
             ['name' => 'csp_mode'],
-            ['value' => CspMode::default()->toString()]
+            ['value' => (string) CspMode::default()->value]
         );
 
         // CSP違反をログに記録
@@ -350,10 +350,10 @@ class SecuritySettingsTableSeeder extends Seeder
             ['value' => '0']
         );
 
-        // CSPブロックリスト検出時のアクション（warn: 警告, block: ブロック）
+        // CSPブロックリスト検出時のアクション（0: 警告, 1: ブロック）
         SecuritySetting::updateOrCreate(
             ['name' => 'csp_blocklist_action'],
-            ['value' => CspBlocklistAction::default()->toString()]
+            ['value' => (string) CspBlocklistAction::default()->value]
         );
 
         // CSPブロックリスト有効カテゴリ（カンマ区切り）

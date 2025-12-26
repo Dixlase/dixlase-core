@@ -53,14 +53,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     
                     <!-- CSP無効時のデフォルト値 -->
                     <template x-if="!cspEnabled">
-                        <input type="hidden" name="csp_mode" value="development">
+                        <input type="hidden" name="csp_mode" value="{{ \App\Enums\CspMode::default()->value }}">
                     </template>
                     
                     <x-form.radio-card-group
                         name="csp_mode"
                         :options="[
                             [
-                                'value' => 'development',
+                                'value' => '0',
                                 'label' => __('admin/settings/security/csp.mode_development'),
                                 'description' => __('admin/settings/security/csp.mode_development_desc'),
                                 'icon' => 'fas fa-code',
@@ -72,7 +72,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 ],
                             ],
                             [
-                                'value' => 'standard',
+                                'value' => '1',
                                 'label' => __('admin/settings/security/csp.mode_standard'),
                                 'description' => __('admin/settings/security/csp.mode_standard_desc'),
                                 'icon' => 'fas fa-shield-alt',
@@ -86,7 +86,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 ],
                             ],
                             [
-                                'value' => 'strict',
+                                'value' => '2',
                                 'label' => __('admin/settings/security/csp.mode_strict'),
                                 'description' => __('admin/settings/security/csp.mode_strict_desc'),
                                 'icon' => 'fas fa-lock',
@@ -98,7 +98,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 ],
                             ],
                         ]"
-                        :value="old('csp_mode', $settings['csp_mode'] ?? 'development')"
+                        :value="old('csp_mode', $settings['csp_mode'] ?? \App\Enums\CspMode::default()->value)"
                         :columns="3"
                     />
                 </fieldset>
@@ -182,28 +182,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         
                         <!-- ブロックリスト無効時のデフォルト値 -->
                         <template x-if="!blocklistEnabled">
-                            <input type="hidden" name="csp_blocklist_action" value="warn">
+                            <input type="hidden" name="csp_blocklist_action" value="{{ \App\Enums\CspBlocklistAction::default()->value }}">
                         </template>
                         
                         <x-form.radio-card-group
                             name="csp_blocklist_action"
                             :options="[
                                 [
-                                    'value' => 'warn',
+                                    'value' => '0',
                                     'label' => __('admin/settings/security/csp.blocklist_action_warn'),
                                     'description' => __('admin/settings/security/csp.blocklist_action_warn_desc'),
                                     'icon' => 'fas fa-exclamation-triangle',
                                     'color' => 'yellow',
                                 ],
                                 [
-                                    'value' => 'block',
+                                    'value' => '1',
                                     'label' => __('admin/settings/security/csp.blocklist_action_block'),
                                     'description' => __('admin/settings/security/csp.blocklist_action_block_desc'),
                                     'icon' => 'fas fa-ban',
                                     'color' => 'red',
                                 ],
                             ]"
-                            :value="old('csp_blocklist_action', $settings['csp_blocklist_action'] ?? 'warn')"
+                            :value="old('csp_blocklist_action', $settings['csp_blocklist_action'] ?? \App\Enums\CspBlocklistAction::default()->value)"
                             :columns="2"
                         />
                     </div>

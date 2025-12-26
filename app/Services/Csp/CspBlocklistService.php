@@ -231,10 +231,11 @@ class CspBlocklistService
     public function getBlocklistAction(): string
     {
         try {
-            $action = \App\Models\SecuritySetting::get('csp_blocklist_action', 'warn');
-            return in_array($action, ['warn', 'block']) ? $action : 'warn';
+            $actionValue = \App\Models\SecuritySetting::get('csp_blocklist_action', (string) \App\Enums\CspBlocklistAction::default()->value);
+            $action = \App\Enums\CspBlocklistAction::fromValue($actionValue);
+            return $action ? $action->toString() : \App\Enums\CspBlocklistAction::default()->toString();
         } catch (\Exception $e) {
-            return 'warn';
+            return \App\Enums\CspBlocklistAction::default()->toString();
         }
     }
 

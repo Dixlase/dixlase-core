@@ -272,6 +272,7 @@ document.addEventListener('DOMContentLoaded', function() {
             name="mail_password"
             id="mail_password"
             :value="old('mail_password')"
+            autocomplete="off"
             class="input-full"
         />
     @else
@@ -280,9 +281,11 @@ document.addEventListener('DOMContentLoaded', function() {
             :text="__('mail.server_settings.mail_password')"
         />
         <x-form.text
+            type="password"
             id="mail_password"
             name="mail_password"
             :value="old('mail_password', $settings['mail_password'])"
+            autocomplete="off"
             class="input-full"
         />
     @endif

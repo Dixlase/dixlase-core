@@ -80,6 +80,7 @@
                     id="db_username"
                     :value="old('db_username', session('install_data.db_username', $defaultDbUser))"
                     :required="true"
+                    autocomplete="off"
                     class="input-full"
                 />
             </div>
@@ -93,6 +94,7 @@
                         id="db_password"
                         :value="old('db_password', $defaultDbPassword)"
                         :required="true"
+                        autocomplete="off"
                         class="input-full pr-10"
                     />
                     <button type="button" onclick="togglePassword()" 
