@@ -7,13 +7,19 @@
 @section('content')
 
 @php
-    // ✅ 設定済みの APP_URL を取得（なければ現在の URL）
-    $defaultAppUrl = old('app_url', session('install_data.app_url', request()->getSchemeAndHttpHost()));
-
-    // ✅ `http://` または `https://` を除いたホストとポート番号を取得
-    $parsedHost = parse_url($defaultAppUrl, PHP_URL_HOST);
-    $parsedPort = parse_url($defaultAppUrl, PHP_URL_PORT);
-    $hostAndPort = $parsedHost . ($parsedPort ? ':' . $parsedPort : '');
+    // ✅ セッションから保存済みのapp_url（プロトコルなし）を取得
+    $savedAppUrl = session('install_data.app_url');
+    
+    if ($savedAppUrl) {
+        // セッションに保存されている場合はそのまま使用（プロトコルなしで保存されている）
+        $hostAndPort = old('app_url', $savedAppUrl);
+    } else {
+        // 初回アクセス時は現在のURLからホストとポートを取得
+        $currentUrl = request()->getSchemeAndHttpHost();
+        $parsedHost = parse_url($currentUrl, PHP_URL_HOST);
+        $parsedPort = parse_url($currentUrl, PHP_URL_PORT);
+        $hostAndPort = old('app_url', $parsedHost . ($parsedPort ? ':' . $parsedPort : ''));
+    }
 @endphp
 <form action="{{ route('install.environment.store') }}" method="POST" class="space-y-6">
     @csrf

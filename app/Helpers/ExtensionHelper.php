@@ -25,13 +25,23 @@ use App\Services\Csp\CspNonceGenerator;
 use Illuminate\Support\HtmlString;
 
 /**
- * Dixlase ヘルパークラス
+ * 拡張機能開発者向けヘルパークラス
  * 
- * CSPに対応したスクリプト・スタイルの出力を提供します。
+ * プラグイン・テーマ開発者向けの公開APIを提供します。
+ * 
+ * CSP機能:
+ * - CSPに対応したスクリプト・スタイルの出力
+ * - CSPモードの取得と設定
+ * - nonce生成とHTML属性の構築
+ * 
  * プラグイン・テーマ開発者はこのヘルパーを使用することで、
  * CSPモードに関係なく安全にインラインコードを出力できます。
+ * 
+ * 使用例:
+ * - ExtensionHelper::script('console.log("Hello");')
+ * - ExtensionHelper::getCspMode()
  */
-class Dixlase
+class ExtensionHelper
 {
     /**
      * CSP対応のインラインスクリプトを出力
@@ -126,9 +136,26 @@ class Dixlase
     public static function getCspMode(): string
     {
         try {
-            return \App\Models\SecuritySetting::get('csp_mode', 'development');
+            $modeValue = \App\Models\SecuritySetting::get('csp_mode', (string) \App\Enums\CspMode::default()->value);
+            $mode = \App\Enums\CspMode::fromValue($modeValue);
+            return $mode ? $mode->toString() : \App\Enums\CspMode::default()->toString();
         } catch (\Exception $e) {
-            return config('csp.mode', 'development');
+            return config('csp.mode', 'standard');
+        }
+    }
+
+    /**
+     * 現在のCSPモードEnumを取得
+     * 
+     * @return \App\Enums\CspMode
+     */
+    public static function getCspModeEnum(): \App\Enums\CspMode
+    {
+        try {
+            $modeValue = \App\Models\SecuritySetting::get('csp_mode', (string) \App\Enums\CspMode::default()->value);
+            return \App\Enums\CspMode::fromValue($modeValue) ?? \App\Enums\CspMode::default();
+        } catch (\Exception $e) {
+            return \App\Enums\CspMode::default();
         }
     }
 
@@ -140,7 +167,7 @@ class Dixlase
     public static function getCspModeConfig(): array
     {
         $mode = self::getCspMode();
-        return config("csp.modes.{$mode}", config('csp.modes.development'));
+        return config("csp.modes.{$mode}", config('csp.modes.standard'));
     }
 
     /**

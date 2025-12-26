@@ -29,6 +29,7 @@ use App\Models\FileIntegrityAudit;
 use App\Services\FileIntegrityService;
 use App\Services\CaptchaTestService;
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
+use App\Enums\CspMode;
 use Illuminate\Support\Facades\Log;
 
 class AdminSecurityIndexController extends AdminLoggedInController
@@ -65,7 +66,9 @@ class AdminSecurityIndexController extends AdminLoggedInController
 
         // CSP設定状態
         $cspEnabled = filter_var($this->securitySettingRepository->get('csp_enabled', true), FILTER_VALIDATE_BOOLEAN);
-        $cspMode = $this->securitySettingRepository->get('csp_mode', 'report-only');
+        $cspModeValue = $this->securitySettingRepository->get('csp_mode', (string) CspMode::default()->value);
+        $cspModeEnum = CspMode::fromValue($cspModeValue) ?? CspMode::default();
+        $cspMode = $cspModeEnum->label();
 
         // IP制限状態
         $enableAllowedAdminIps = filter_var($this->securitySettingRepository->get('enable_allowed_admin_ips', false), FILTER_VALIDATE_BOOLEAN);

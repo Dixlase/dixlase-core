@@ -180,6 +180,38 @@
         mailReceiveVerified: @json(__('mail.js_messages.mail_receive_verified'))
     };
 
+    // 通知表示関数
+    function showNotification(type, message, duration = 5000) {
+        // 既存の通知を削除
+        const existingNotification = document.getElementById('mail-test-notification');
+        if (existingNotification) {
+            existingNotification.remove();
+        }
+        
+        // 通知要素を作成
+        const notification = document.createElement('div');
+        notification.id = 'mail-test-notification';
+        notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-opacity duration-300 ${
+            type === 'success' ? 'bg-green-500 text-white' :
+            type === 'error' ? 'bg-red-500 text-white' :
+            'bg-blue-500 text-white'
+        }`;
+        notification.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} mr-2"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // 指定時間後に自動削除
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            setTimeout(() => notification.remove(), 300);
+        }, duration);
+    }
+
     // ページ読み込み時の初期化
     document.addEventListener('DOMContentLoaded', function() {
         

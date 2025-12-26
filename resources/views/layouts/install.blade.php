@@ -1,16 +1,20 @@
 <!DOCTYPE html>
-<html lang="{{ $currentLocale ?? 'en' }}" x-data="installTheme()" x-init="init()" :class="{ 'dark': isDark, 'light': !isDark }">
+<html lang="{{ $currentLocale ?? 'en' }}" x-data="installTheme()" :class="{ 'dark': isDark, 'light': !isDark }">
 <head>
     <script @cspNonce>
+        // ページ読み込み前にダークモードを即座に適用（フラッシュ防止）
+        (function() {
+            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+        
         // Alpine.js ダークモード検出関数
         function installTheme() {
             return {
-                isDark: false,
+                isDark: window.matchMedia('(prefers-color-scheme: dark)').matches,
                 
                 init() {
-                    // PCのダークモード設定を検出
-                    this.isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                    
                     // ダークモード設定の変更を監視
                     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
                         this.isDark = e.matches;
@@ -46,7 +50,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title') | {{ config('app.name') }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js" crossorigin="anonymous"></script>
 
         <!-- Scripts -->
@@ -63,7 +66,7 @@
 
 
 </head>
-<body class="bg-gray-100 dark:bg-black flex items-center justify-center min-h-screen transition-colors duration-200">
+<body class="bg-gray-100 dark:bg-black flex items-center justify-center min-h-screen">
     <div class="flex flex-col items-center w-full max-w-xl min-w-[400px] my-10">
 
         <!-- Site Logo -->
@@ -72,7 +75,7 @@
         </div>
 
         <!-- Main Installation Container -->
-        <main class="bg-white dark:bg-gray-900 shadow-lg rounded-lg p-8 max-w-xl w-full transition-colors duration-200" role="main">
+        <main class="bg-white dark:bg-gray-900 shadow-lg rounded-lg p-8 max-w-xl w-full" role="main">
 
             <!-- Installation Header -->
             <header class="mb-6">

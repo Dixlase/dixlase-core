@@ -317,6 +317,8 @@ return [
     |
     */
     'excluded_paths' => [
+        'install',          // インストール画面（DB未設定のため）
+        'install/*',        // インストール画面のサブパス
         '/csp-report',      // CSPレポートエンドポイント自体
         '/api/*',           // API（必要に応じて）
     ],

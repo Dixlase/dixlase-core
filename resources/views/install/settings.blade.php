@@ -75,6 +75,7 @@
                     id="admin_email"
                     :value="old('admin_email', session('install_data.admin_email', ''))"
                     :required="true"
+                    autocomplete="username"
                     class="input-full"
                 />
             </div>
@@ -111,6 +112,7 @@
                     name="admin_password_confirmation"
                     id="admin_password_confirmation"
                     :required="true"
+                    autocomplete="new-password"
                     ariaDescribedby="password_confirmation_help"
                     class="input-full"
                 />

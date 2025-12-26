@@ -45,14 +45,14 @@ class AdminSecurityCspController extends AdminLoggedInController
     {
         $settings = [
             'csp_enabled' => filter_var($this->securitySettingRepository->get('csp_enabled', true), FILTER_VALIDATE_BOOLEAN),
-            'csp_mode' => $this->securitySettingRepository->get('csp_mode', CspMode::default()->toString()),
+            'csp_mode' => $this->securitySettingRepository->get('csp_mode', (string) CspMode::default()->value),
             'csp_log_violations' => filter_var($this->securitySettingRepository->get('csp_log_violations', true), FILTER_VALIDATE_BOOLEAN),
             'csp_exclude_dev_tools' => filter_var($this->securitySettingRepository->get('csp_exclude_dev_tools', true), FILTER_VALIDATE_BOOLEAN),
             'csp_trusted_domains' => $this->securitySettingRepository->get('csp_trusted_domains', ''),
             'csp_denied_domains' => $this->securitySettingRepository->get('csp_denied_domains', ''),
             'csp_custom_directives' => $this->securitySettingRepository->get('csp_custom_directives', ''),
             'csp_blocklist_check_enabled' => filter_var($this->securitySettingRepository->get('csp_blocklist_check_enabled', false), FILTER_VALIDATE_BOOLEAN),
-            'csp_blocklist_action' => $this->securitySettingRepository->get('csp_blocklist_action', CspBlocklistAction::default()->toString()),
+            'csp_blocklist_action' => $this->securitySettingRepository->get('csp_blocklist_action', (string) CspBlocklistAction::default()->value),
             'csp_blocklist_enabled_categories' => $this->securitySettingRepository->get('csp_blocklist_enabled_categories', ''),
         ];
 
@@ -87,20 +87,20 @@ class AdminSecurityCspController extends AdminLoggedInController
 
         // CSP設定を更新
         $this->securitySettingRepository->set('csp_enabled', $validated['csp_enabled'] ?? false);
-        $this->securitySettingRepository->set('csp_mode', $validated['csp_mode'] ?? CspMode::default()->toString());
+        $this->securitySettingRepository->set('csp_mode', $validated['csp_mode'] ?? (string) CspMode::default()->value);
         $this->securitySettingRepository->set('csp_log_violations', $validated['csp_log_violations'] ?? true);
         $this->securitySettingRepository->set('csp_exclude_dev_tools', $validated['csp_exclude_dev_tools'] ?? true);
         $this->securitySettingRepository->set('csp_trusted_domains', $validated['csp_trusted_domains'] ?? '');
         $this->securitySettingRepository->set('csp_denied_domains', $validated['csp_denied_domains'] ?? '');
         $this->securitySettingRepository->set('csp_custom_directives', $validated['csp_custom_directives'] ?? '');
         $this->securitySettingRepository->set('csp_blocklist_check_enabled', $validated['csp_blocklist_check_enabled'] ?? false);
-        $this->securitySettingRepository->set('csp_blocklist_action', $validated['csp_blocklist_action'] ?? CspBlocklistAction::default()->toString());
+        $this->securitySettingRepository->set('csp_blocklist_action', $validated['csp_blocklist_action'] ?? (string) CspBlocklistAction::default()->value);
         
         // カテゴリ配列をカンマ区切り文字列に変換
         $categories = $validated['csp_blocklist_categories'] ?? [];
         $this->securitySettingRepository->set('csp_blocklist_enabled_categories', implode(',', $categories));
 
         return redirect()->route('admin.settings.security.csp')
-            ->with('success', __('admin/settings/security/csp_settings_updated'));
+            ->with('success', __('admin/settings/security/csp.settings_updated'));
     }
 }

@@ -328,9 +328,9 @@ class SecuritySettingsRegistry
             'csp_mode' => [
                 'category' => self::CATEGORY_CSP,
                 'source' => 'security_settings',
-                'type' => 'string',
-                'default' => 'standard',
-                'description' => 'CSPモード（development/standard/strict）',
+                'type' => 'int',
+                'default' => 1,
+                'description' => 'CSPモード（0: development, 1: standard, 2: strict）',
             ],
             'csp_log_violations' => [
                 'category' => self::CATEGORY_CSP,
@@ -363,9 +363,9 @@ class SecuritySettingsRegistry
             'csp_blocklist_action' => [
                 'category' => self::CATEGORY_CSP,
                 'source' => 'security_settings',
-                'type' => 'string',
-                'default' => 'warn',
-                'description' => 'CSPブロックリスト検出時のアクション',
+                'type' => 'int',
+                'default' => 0,
+                'description' => 'CSPブロックリスト検出時のアクション（0: warn, 1: block）',
             ],
 
             // =========================================================================

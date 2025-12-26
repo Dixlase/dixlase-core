@@ -101,6 +101,20 @@ enum CspMode: int
     }
 
     /**
+     * 数値からEnumを取得
+     */
+    public static function fromValue(int|string $value): ?self
+    {
+        $intValue = (int) $value;
+        return match ($intValue) {
+            0 => self::Development,
+            1 => self::Standard,
+            2 => self::Strict,
+            default => null,
+        };
+    }
+
+    /**
      * CSSクラスを取得（色分け用）
      */
     public function cssClass(): string
@@ -152,7 +166,7 @@ enum CspMode: int
      */
     public static function default(): self
     {
-        return self::Development;
+        return self::Standard;
     }
 
     /**
@@ -172,10 +186,18 @@ enum CspMode: int
     }
 
     /**
-     * バリデーションルール用の文字列を取得
+     * バリデーションルール用の文字列を取得（数値版）
      */
     public static function validationRule(): string
     {
-        return 'in:' . implode(',', self::getAllStrings());
+        return 'in:' . implode(',', self::getAllValues());
+    }
+
+    /**
+     * すべての数値を取得
+     */
+    public static function getAllValues(): array
+    {
+        return array_map(fn($case) => (string) $case->value, self::cases());
     }
 }

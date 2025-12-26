@@ -11,10 +11,23 @@ use Illuminate\Support\Facades\DB;
 class CheckInstallationReady
 {
     /**
+     * インストールチェックから除外するパス
+     */
+    protected array $excludedPaths = [
+        'csp-report',       // CSP違反レポートエンドポイント
+        '_boost/*',         // MCP/Windsurf開発ツール
+    ];
+
+    /**
      * Handle an incoming request.
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // 除外パスのチェック（CSPレポート等）
+        if ($this->isExcludedPath($request)) {
+            return $next($request);
+        }
+
         // インストール状態を事前チェック（ログ出力を最小限にするため）
         $installed = env('INSTALLED') ?? config('app.installed');
         $isInstalled = ($installed === 'true' || $installed === true);
@@ -311,5 +324,27 @@ class CheckInstallationReady
             }
             return false;
         }
+    }
+
+    /**
+     * 除外パスかどうかをチェック
+     */
+    protected function isExcludedPath(Request $request): bool
+    {
+        $path = $request->path();
+
+        foreach ($this->excludedPaths as $pattern) {
+            // ワイルドカードパターンをチェック
+            if (str_contains($pattern, '*')) {
+                $regex = str_replace(['*', '/'], ['.*', '\/'], $pattern);
+                if (preg_match("/^{$regex}$/", $path)) {
+                    return true;
+                }
+            } elseif ($path === $pattern) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

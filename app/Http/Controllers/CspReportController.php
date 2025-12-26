@@ -47,6 +47,9 @@ class CspReportController extends Controller
         'vite/client',
         '@react-refresh',
         'hot-update',
+        ':5173',            // Vite開発サーバーのデフォルトポート
+        'node_modules/.vite',
+        'node_modules/vite',
         // その他の開発ツール
         'webpack-dev-server',
         '__webpack_hmr',
@@ -116,7 +119,41 @@ class CspReportController extends Controller
             }
         }
 
+        // ローカル環境でのインラインスクリプト違反を除外
+        // Windsurf/MCPが注入するスクリプトはblocked_uri=inlineで報告される
+        if ($this->isLocalDevInlineViolation($report)) {
+            return true;
+        }
+
         return false;
+    }
+
+    /**
+     * 開発環境でのインラインスクリプト違反かどうかを判定
+     * Windsurf/MCPが注入するbrowser-loggerスクリプト等を検出
+     */
+    protected function isLocalDevInlineViolation(array $report): bool
+    {
+        // 本番環境ではfalse（ローカル・ステージングのみ対象）
+        if (app()->environment('production')) {
+            return false;
+        }
+
+        $blockedUri = $report['blocked-uri'] ?? $report['blockedURL'] ?? '';
+        $directive = $report['violated-directive'] ?? $report['effectiveDirective'] ?? '';
+
+        // インラインスクリプト違反かどうか
+        if ($blockedUri !== 'inline') {
+            return false;
+        }
+
+        // script-src関連の違反のみ対象
+        if (!str_contains($directive, 'script-src')) {
+            return false;
+        }
+
+        // 開発環境でのインラインスクリプト違反は開発ツールによるものと判断
+        return true;
     }
 
     /**
