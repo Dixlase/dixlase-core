@@ -61,10 +61,10 @@ enum ExtensionSecurityLevel: int
     public function translationKey(): string
     {
         return match ($this) {
-            self::Healthy => 'admin.settings.security.extension_security.health_level.healthy',
-            self::Warning => 'admin.settings.security.extension_security.health_level.warning',
-            self::NeedsAttention => 'admin.settings.security.extension_security.health_level.needs_attention',
-            self::NotVerified => 'admin.settings.security.extension_security.health_level.not_verified',
+            self::Healthy => 'admin/settings/security/extensions.security.health_level.healthy',
+            self::Warning => 'admin/settings/security/extensions.security.health_level.warning',
+            self::NeedsAttention => 'admin/settings/security/extensions.security.health_level.needs_attention',
+            self::NotVerified => 'admin/settings/security/extensions.security.health_level.not_verified',
         };
     }
 
@@ -82,10 +82,10 @@ enum ExtensionSecurityLevel: int
     public function shortLabel(): string
     {
         return match ($this) {
-            self::Healthy => __('admin/settings/security/extension_security.health_level_short.healthy'),
-            self::Warning => __('admin/settings/security/extension_security.health_level_short.warning'),
-            self::NeedsAttention => __('admin/settings/security/extension_security.health_level_short.needs_attention'),
-            self::NotVerified => __('admin/settings/security/extension_security.health_level_short.not_verified'),
+            self::Healthy => __('admin/settings/security/extensions.security.health_level_short.healthy'),
+            self::Warning => __('admin/settings/security/extensions.security.health_level_short.warning'),
+            self::NeedsAttention => __('admin/settings/security/extensions.security.health_level_short.needs_attention'),
+            self::NotVerified => __('admin/settings/security/extensions.security.health_level_short.not_verified'),
         };
     }
 
@@ -95,10 +95,10 @@ enum ExtensionSecurityLevel: int
     public function description(): string
     {
         return match ($this) {
-            self::Healthy => __('admin/settings/security/extension_security.health_level_description.healthy'),
-            self::Warning => __('admin/settings/security/extension_security.health_level_description.warning'),
-            self::NeedsAttention => __('admin/settings/security/extension_security.health_level_description.needs_attention'),
-            self::NotVerified => __('admin/settings/security/extension_security.health_level_description.not_verified'),
+            self::Healthy => __('admin/settings/security/extensions.security.health_level_description.healthy'),
+            self::Warning => __('admin/settings/security/extensions.security.health_level_description.warning'),
+            self::NeedsAttention => __('admin/settings/security/extensions.security.health_level_description.needs_attention'),
+            self::NotVerified => __('admin/settings/security/extensions.security.health_level_description.not_verified'),
         };
     }
 

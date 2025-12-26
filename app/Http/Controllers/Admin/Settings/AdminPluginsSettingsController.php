@@ -448,6 +448,9 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         $plugin = Plugin::findOrFail($id);
 
         try {
+            // 有効化前に監査を実行（最新の状態を確認）
+            $this->runPluginAudit($plugin->slug);
+            
             // コマンドを使用して有効化
             Artisan::call('dls:plugin:enable', [
                 'pluginName' => $plugin->name

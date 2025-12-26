@@ -246,6 +246,23 @@ https://exc-d.com
                     </span>
                 @endif
             </div>
+            
+            {{-- スキャンボタン --}}
+            @php
+                $auditedAt = $auditResult['audited_at'] ?? null;
+            @endphp
+            <div class="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+                <x-form.button
+                    type="button"
+                    :label="$auditedAt ? __('admin/settings/themes.permissions.audit_button_rescan') : __('admin/settings/themes.permissions.audit_button')"
+                    :variant="$auditedAt ? 'tertiary' : 'warning'"
+                    size="xs"
+                    icon="fas fa-search"
+                    class="theme-audit-btn w-full"
+                    :data-slug="$themeSlug"
+                    :title="$auditedAt ? __('admin/settings/themes.permissions.audit_last_scanned') . ': ' . \Carbon\Carbon::parse($auditedAt)->format('Y/m/d H:i') : __('admin/settings/themes.permissions.audit_not_scanned')"
+                />
+            </div>
         </div>
         @endif
 

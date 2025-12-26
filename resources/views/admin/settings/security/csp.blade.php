@@ -116,6 +116,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/settings/security/csp.log_violations_help') }}</p>
                 </fieldset>
 
+                <!-- 開発ツール関連の違反を除外 -->
+                <fieldset class="mb-4">
+                    <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin/settings/security/csp.exclude_dev_tools') }}</legend>
+                    
+                    <x-form.toggle
+                        :label="__('admin/settings/security/csp.exclude_dev_tools')"
+                        id="csp_exclude_dev_tools"
+                        name="csp_exclude_dev_tools"
+                        :checked="old('csp_exclude_dev_tools', $settings['csp_exclude_dev_tools'] ?? true)"
+                    />
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/settings/security/csp.exclude_dev_tools_help') }}</p>
+                </fieldset>
+
                 <!-- 信頼済みドメイン -->
                 <fieldset class="mb-4">
                     <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin/settings/security/csp.trusted_domains') }}</legend>

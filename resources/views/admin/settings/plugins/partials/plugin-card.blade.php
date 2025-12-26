@@ -252,6 +252,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </span>
                 @endif
             </div>
+            
+            {{-- スキャンボタン --}}
+            @php
+                $auditedAt = $auditResult['audited_at'] ?? null;
+            @endphp
+            <div class="flex justify-center items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+                <x-form.button
+                    type="button"
+                    :label="$auditedAt ? __('admin/settings/plugins.permissions.audit_button_rescan') : __('admin/settings/plugins.permissions.audit_button')"
+                    :variant="$auditedAt ? 'secondary' : 'warning'"
+                    size="sm"
+                    icon="fas fa-search"
+                    class="audit-btn"
+                    :data-slug="$pluginSlug"
+                    :title="$auditedAt ? __('admin/settings/plugins.permissions.audit_last_scanned') . ': ' . \Carbon\Carbon::parse($auditedAt)->format('Y/m/d H:i') : __('admin/settings/plugins.permissions.audit_not_scanned')"
+                />
+            </div>
         </div>
         @endif
 

@@ -38,6 +38,8 @@ return [
     'mode_strict_feature3' => 'requires_inline_js: true のプラグインは有効化不可',
     'log_violations' => '違反をログに記録',
     'log_violations_help' => 'CSP違反をログファイル（csp_violations.log）に記録します。',
+    'exclude_dev_tools' => '開発ツールの違反を除外',
+    'exclude_dev_tools_help' => 'Vite開発サーバー、Windsurf/MCPブラウザプレビュー等の開発ツールによるCSP違反をログから除外します。',
     'trusted_domains' => '信頼済みドメイン',
     'trusted_domains_help' => '外部リソースの読み込みを許可するドメインを1行に1つずつ入力してください。プラグインやテーマが必要とする外部CDN等を追加できます。',
     'trusted_domains_placeholder' => 'https://cdn.example.com

@@ -372,9 +372,12 @@ class AdminThemesSettingsController extends AdminLoggedInController
             GitExcludeHelper::addThemeExclusion($themeDir);
             GitIgnoreHelper::addThemeExclusion($themeDir);
             
-            // インストールされたテーマを取得して通知
+            // インストールされたテーマを取得して監査・通知
             $theme = Theme::where('directory', $themeDir)->first();
             if ($theme) {
+                // インストール後に監査を実行
+                $this->runThemeAudit($theme->slug);
+                
                 $permissionService = app(ThemePermissionService::class);
                 $summary = $permissionService->getSummary($theme->slug);
                 
@@ -474,6 +477,9 @@ class AdminThemesSettingsController extends AdminLoggedInController
         $theme = Theme::findOrFail($id);
 
         try {
+            // 有効化前に監査を実行（最新の状態を確認）
+            $this->runThemeAudit($theme->slug);
+            
             // Artisanコマンドを使用してテーマを切り替え
             $exitCode = Artisan::call('dls:theme:switch', [
                 'themeName' => $theme->slug,
