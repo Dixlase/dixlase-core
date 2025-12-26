@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
+use App\Models\PluginAudit;
 
 /**
  * プラグイン権限管理サービス
@@ -307,27 +308,45 @@ class PluginPermissionService
         $permissions = $this->getPermissions($pluginSlug);
         $signatureInfo = $this->getSignatureInfo($pluginSlug);
         
+        // 監査結果を取得
+        $audit = PluginAudit::getBySlug($pluginSlug);
+        $auditData = $audit ? $audit->toAuditArray() : [];
+        
         if ($permissions === null) {
+            // 権限定義がない場合でも、監査結果があればそれを使用
+            $riskLevel = $auditData['risk_level'] ?? 'unknown';
+            
             return [
                 'has_permissions' => false,
-                'risk_level' => 'unknown',
-                'risk_reasons' => [],
+                'risk_level' => $riskLevel,
+                'risk_reasons' => $auditData['risk_reasons'] ?? [],
                 'risk_score' => 0,
                 'categories' => [],
                 'signature' => $signatureInfo,
+                'audit' => $auditData,
             ];
         }
         
-        // リスクレベルと理由を計算
-        $riskResult = $this->calculateRiskLevelWithReasons($permissions);
+        // リスクレベルと理由を計算（監査結果があればそちらを優先）
+        if (!empty($auditData['risk_level'])) {
+            $riskLevel = $auditData['risk_level'];
+            $riskReasons = $auditData['risk_reasons'] ?? [];
+            $riskScore = $this->calculateRiskScore($riskLevel);
+        } else {
+            $riskResult = $this->calculateRiskLevelWithReasons($permissions);
+            $riskLevel = $riskResult['level'];
+            $riskReasons = $riskResult['reasons'];
+            $riskScore = $riskResult['score'];
+        }
         
         $baseSummary = [
             'has_permissions' => true,
-            'risk_level' => $riskResult['level'],
-            'risk_reasons' => $riskResult['reasons'],
-            'risk_score' => $riskResult['score'],
+            'risk_level' => $riskLevel,
+            'risk_reasons' => $riskReasons,
+            'risk_score' => $riskScore,
             'categories' => [],
             'signature' => $signatureInfo,
+            'audit' => $auditData,
         ];
 
         // カテゴリごとの権限をまとめる
@@ -452,6 +471,22 @@ class PluginPermissionService
     {
         $result = $this->calculateRiskLevelWithReasons($permissions);
         return $result['level'];
+    }
+
+    /**
+     * リスクレベル文字列からスコアを計算
+     *
+     * @param string $level
+     * @return int
+     */
+    protected function calculateRiskScore(string $level): int
+    {
+        return match ($level) {
+            'low' => 0,
+            'medium' => 3,
+            'high' => 6,
+            default => 0,
+        };
     }
 
     /**

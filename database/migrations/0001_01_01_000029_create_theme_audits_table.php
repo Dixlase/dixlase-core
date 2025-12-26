@@ -20,6 +20,21 @@ return new class extends Migration
             $table->integer('total_checked')->default(0);
             $table->string('risk_level')->nullable();
             $table->json('risk_reasons')->nullable();
+            
+            // 署名情報
+            $table->string('signature_status')->nullable()
+                ->comment('署名ステータス: official/verified/partner/signed/invalid/unsigned');
+            $table->string('signature_signer')->nullable()
+                ->comment('署名者名');
+            
+            // CSP互換性
+            $table->string('csp_status')->nullable()
+                ->comment('CSPステータス: csp_ready/compatible/inline_required/not_checked');
+            $table->boolean('csp_requires_inline_js')->default(false)
+                ->comment('インラインJSが必要か');
+            $table->boolean('csp_requires_inline_css')->default(false)
+                ->comment('インラインCSSが必要か');
+            
             $table->timestamp('audited_at')->nullable();
             $table->timestamps();
             

@@ -442,10 +442,77 @@ class PluginAudit extends Command
             }
         }
 
+        // リスクレベルと理由を計算
+        $riskResult = $this->calculateRiskLevel($detectedPerms, $mismatches);
+
         return [
             'mismatches' => $mismatches,
             'matches' => $matches,
             'total_checked' => count($detectedPerms),
+            'risk_level' => $riskResult['level'],
+            'risk_reasons' => $riskResult['reasons'],
+        ];
+    }
+
+    /**
+     * リスクレベルを計算
+     * 
+     * @param array $detectedPerms 検出された権限
+     * @param array $mismatches 不一致リスト
+     * @return array ['level' => string, 'reasons' => array]
+     */
+    protected function calculateRiskLevel(array $detectedPerms, array $mismatches): array
+    {
+        $reasons = [];
+        $level = 'low'; // デフォルトは良好
+
+        // 高リスク権限（使用されている場合）
+        $highRiskPermissions = [
+            'database.core_tables' => 'コアテーブルへのアクセス',
+            'members.write' => 'メンバー情報の書き込み',
+            'members.delete' => 'メンバーの削除',
+            'system.modify_routes' => 'ルートの変更',
+        ];
+
+        // 中リスク権限
+        $mediumRiskPermissions = [
+            'storage.public_uploads' => 'パブリックアップロード',
+            'settings.read_core' => 'コア設定の読み取り',
+            'mail.bulk_send' => '一括メール送信',
+            'system.register_middleware' => 'ミドルウェアの登録',
+            'system.register_blade_directives' => 'Blade指令の登録',
+        ];
+
+        // 高リスク権限のチェック
+        foreach ($highRiskPermissions as $perm => $description) {
+            if ($detectedPerms[$perm] ?? false) {
+                $level = 'high';
+                $reasons[] = $description;
+            }
+        }
+
+        // 中リスク権限のチェック（まだhighでない場合のみ）
+        if ($level !== 'high') {
+            foreach ($mediumRiskPermissions as $perm => $description) {
+                if ($detectedPerms[$perm] ?? false) {
+                    $level = 'medium';
+                    $reasons[] = $description;
+                }
+            }
+        }
+
+        // 未宣言の権限使用がある場合はリスクを上げる
+        $undeclaredCount = count(array_filter($mismatches, fn($m) => $m['type'] === 'undeclared_usage'));
+        if ($undeclaredCount > 0) {
+            if ($level === 'low') {
+                $level = 'medium';
+            }
+            $reasons[] = "未宣言の権限使用: {$undeclaredCount}件";
+        }
+
+        return [
+            'level' => $level,
+            'reasons' => $reasons,
         ];
     }
 
