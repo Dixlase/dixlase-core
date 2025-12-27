@@ -14,6 +14,7 @@
 
 return [
     'heading' => '認証・セッション設定',
+    'description' => 'セッション管理、パスワードセキュリティの設定を行います。',
     'session_management' => 'セッション管理設定',
     'session_management_description' => 'システム全体のセッション設定を管理します。',
     'session_driver' => 'セッションドライバー',

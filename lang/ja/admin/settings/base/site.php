@@ -14,6 +14,7 @@
 
 return [
     'heading' => 'サイト設定',
+    'description' => 'サイト名、説明、言語、OGP画像などの基本的なサイト情報を設定します。',
     'site_settings' => 'サイト設定',
     'app_name' => 'アプリケーション名',
     'site_description' => 'サイトの説明',

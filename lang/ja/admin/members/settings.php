@@ -56,6 +56,7 @@ return [
     'mail_server_test_warning' => 'メールサーバーの設定・テストが完了してないため、この機能は動作しません。<br>使用するには、<a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">基本設定</a>でメールサーバーのテストを完了してください。',
     'password' => [
         'heading' => 'パスワード設定',
+        'description' => 'メンバーのパスワードに関する条件やリセット機能、辞書攻撃対策を設定します。',
         'conditions' => 'パスワードの条件',
         'min_length' => 'パスワードの最小文字数',
         'min_length_options' => [
@@ -78,6 +79,7 @@ return [
     ],
     'session' => [
         'heading' => 'セッション設定',
+        'description' => '管理メンバー専用のセッション有効時間をカスタマイズできます。',
         'admin_settings' => '管理メンバー用セッション設定',
         'admin_settings_description' => '管理メンバー専用のセッション有効時間を設定します。有効にした場合、セキュリティ設定のデフォルト値より優先されます。',
         'lifetime_enabled' => 'カスタムセッション有効時間',
@@ -87,6 +89,7 @@ return [
     ],
     'auth' => [
         'heading' => '認証設定',
+        'description' => 'ログイン通知、試行制限、二段階認証、Passkey、CAPTCHA等の認証に関する設定を管理します。',
         'login_notification_global_setting' => 'ログイン通知メールの全体設定',
         'login_notification_mail_test_required' => 'メールサーバーの設定とテストが完了していないので、ログイン通知機能を有効にしても動作しません。<br>ログイン通知機能を使用するには、<a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">基本設定</a>でメールサーバーの設定とテストを完了してください。',
         'login_attempt_limit_settings' => 'ログイン試行制限設定',

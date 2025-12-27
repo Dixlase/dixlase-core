@@ -14,6 +14,7 @@
 
 return [
     'heading' => '管理画面設定',
+    'description' => '管理画面のURLパスやSSL強制などのアクセス設定を管理します。',
     'admin_panel_settings' => '管理画面設定',
     'admin_url' => '管理画面URL',
     'admin_url_help' => '管理画面にアクセスするためのURLパスを設定します。<br>本番環境では、「admin」など予測されやすいURLは避けることを推奨します。<br>注意！:管理画面URLを変更すると、一旦管理画面からログアウトされます。',
