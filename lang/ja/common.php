@@ -39,6 +39,7 @@ return [
     // ラベル
     'required' => '必須',
     'optional' => '任意',
+    'characters' => ':count文字',
 
     // メンバー関連
     'account_name' => 'アカウント名',

@@ -36,6 +36,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :options="$minLengthOptions"
                     :value="old('password_min_length', (string) $passwordMinLength)"
                     :columns="3"
+                    class="mb-4"
                 />
             </fieldset>
 

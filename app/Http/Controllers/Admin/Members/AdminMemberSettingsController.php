@@ -46,6 +46,8 @@ class AdminMemberSettingsController extends AdminLoggedInController
      */
     public function index()
     {
+        $this->addBreadcrumb('admin.members.index', __('admin/nav.settings.members.text'));
+        $this->addBreadcrumb('admin.members.settings', __('admin/members/settings.heading'));
         $this->loadViewParams();
         return view('admin.members.settings.index', $this->viewParams);
     }
@@ -77,6 +79,7 @@ class AdminMemberSettingsController extends AdminLoggedInController
      */
     protected function loadViewParams(): void
     {
+        $this->setBreadcrumbs();
         $passwordMinLength = (int) $this->memberSettingRepository->get('password_min_length', 8);
         $passwordRequireUppercase = (bool) $this->memberSettingRepository->get('password_require_uppercase', true);
         $passwordRequireNumber = (bool) $this->memberSettingRepository->get('password_require_number', true);

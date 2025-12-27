@@ -32,8 +32,9 @@ return [
     'none' => 'None',
     
     // Labels
-    'required' => 'required',
-    'optional' => 'optional',
+    'required' => 'Required',
+    'optional' => 'Optional',
+    'characters' => ':count characters',
 
     // Member Related
     'account_name' => 'Account Name',

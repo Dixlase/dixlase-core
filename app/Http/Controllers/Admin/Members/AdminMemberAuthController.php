@@ -31,6 +31,9 @@ class AdminMemberAuthController extends AdminMemberSettingsController
      */
     public function index()
     {
+        $this->addBreadcrumb('admin.members.index', __('admin/nav.settings.members.text'));
+        $this->addBreadcrumb('admin.members.settings', __('admin/members/settings.heading'));
+        $this->addBreadcrumb(null, __('admin/members/settings.auth.heading'));
         $this->loadViewParams();
         return view('admin.members.settings.auth', $this->viewParams);
     }

@@ -30,6 +30,7 @@ trait AdminLoggedInTrait
 {
     protected $member;
     protected $appearance;
+    protected $breadcrumbs = [];
 
     /**
      * ログイン後に共通で必要な初期化を行う
@@ -44,6 +45,25 @@ trait AdminLoggedInTrait
 
             return $next($request);
         });
+    }
+
+    /**
+     * パンくずリストに項目を追加
+     */
+    protected function addBreadcrumb(?string $route, string $label): void
+    {
+        $this->breadcrumbs[] = [
+            'route' => $route,
+            'label' => $label,
+        ];
+    }
+
+    /**
+     * パンくずリストをビューパラメータに設定
+     */
+    protected function setBreadcrumbs(): void
+    {
+        $this->viewParams['breadcrumbs'] = $this->breadcrumbs;
     }
 
     /**
