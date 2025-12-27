@@ -32,6 +32,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     :value="$currentValue"
     xModel="preset"
     :columns="4"
+    color="primary"
+    variant="filled"
+    :showCheck="true"
 />
 
 オプション配列の各要素:
@@ -39,11 +42,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 - label: (必須) 表示ラベル
 - description: (任意) 説明文
 - icon: (任意) FontAwesomeアイコンクラス
-- color: (任意) アクティブ時の色 (blue, green, yellow, orange, red, gray) デフォルト: blue
+- color: (任意) 個別オプションの色（グローバル設定を上書き）
 - badge: (任意) バッジテキスト（開発専用など）
 - badgeColor: (任意) バッジの色 (yellow, red, green, blue, gray) デフォルト: yellow
 - disabled: (任意) 無効化フラグ
 - features: (任意) 機能リスト（配列）
+
+グローバルプロパティ:
+- color: 選択時の色 (primary, secondary, success, warning, danger, blue, green, yellow, orange, red, purple, gray)
+- variant: スタイル (filled=背景色あり, outlined=ボーダーのみ)
+- showCheck: チェックアイコンを表示するか
 --}}
 
 @props([
@@ -51,10 +59,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'options' => [],
     'value' => null,
     'xModel' => null,
-    'columns' => 4,        // グリッドの列数 (1, 2, 3, 4)
-    'direction' => 'grid', // 'grid', 'row', 'col'
+    'columns' => 4,           // グリッドの列数 (1, 2, 3, 4)
+    'direction' => 'grid',    // 'grid', 'row', 'col'
     'disabled' => false,
     'class' => '',
+    'color' => 'primary',     // 選択時の色
+    'variant' => 'filled',    // 'filled' (背景色あり) or 'outlined' (ボーダーのみ)
+    'showCheck' => true,      // チェックアイコンを表示
 ])
 
 @php
@@ -74,60 +85,105 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         },
     };
     
-    // 色のマッピング
+    // 色のマッピング（ライト/ダークモード対応）
     $colorClasses = [
+        'primary' => [
+            'border' => 'border-blue-600 dark:border-blue-500',
+            'ring' => 'ring-blue-600 dark:ring-blue-500',
+            'bg' => 'bg-blue-50 dark:bg-blue-900/30',
+            'text' => 'text-blue-700 dark:text-blue-300',
+            'check' => 'text-blue-600 dark:text-blue-400',
+        ],
+        'secondary' => [
+            'border' => 'border-gray-600 dark:border-gray-400',
+            'ring' => 'ring-gray-600 dark:ring-gray-400',
+            'bg' => 'bg-gray-100 dark:bg-gray-700/50',
+            'text' => 'text-gray-700 dark:text-gray-200',
+            'check' => 'text-gray-600 dark:text-gray-300',
+        ],
+        'success' => [
+            'border' => 'border-green-600 dark:border-green-500',
+            'ring' => 'ring-green-600 dark:ring-green-500',
+            'bg' => 'bg-green-50 dark:bg-green-900/30',
+            'text' => 'text-green-700 dark:text-green-300',
+            'check' => 'text-green-600 dark:text-green-400',
+        ],
+        'warning' => [
+            'border' => 'border-yellow-500 dark:border-yellow-400',
+            'ring' => 'ring-yellow-500 dark:ring-yellow-400',
+            'bg' => 'bg-yellow-50 dark:bg-yellow-900/30',
+            'text' => 'text-yellow-700 dark:text-yellow-300',
+            'check' => 'text-yellow-600 dark:text-yellow-400',
+        ],
+        'danger' => [
+            'border' => 'border-red-600 dark:border-red-500',
+            'ring' => 'ring-red-600 dark:ring-red-500',
+            'bg' => 'bg-red-50 dark:bg-red-900/30',
+            'text' => 'text-red-700 dark:text-red-300',
+            'check' => 'text-red-600 dark:text-red-400',
+        ],
         'blue' => [
-            'border' => 'border-blue-500',
-            'ring' => 'ring-blue-500',
-            'bg' => 'bg-blue-50 dark:bg-blue-900/20',
-            'text' => 'text-blue-600 dark:text-blue-400',
+            'border' => 'border-blue-500 dark:border-blue-400',
+            'ring' => 'ring-blue-500 dark:ring-blue-400',
+            'bg' => 'bg-blue-50 dark:bg-blue-900/30',
+            'text' => 'text-blue-600 dark:text-blue-300',
+            'check' => 'text-blue-600 dark:text-blue-400',
         ],
         'green' => [
-            'border' => 'border-green-500',
-            'ring' => 'ring-green-500',
-            'bg' => 'bg-green-50 dark:bg-green-900/20',
-            'text' => 'text-green-600 dark:text-green-400',
+            'border' => 'border-green-500 dark:border-green-400',
+            'ring' => 'ring-green-500 dark:ring-green-400',
+            'bg' => 'bg-green-50 dark:bg-green-900/30',
+            'text' => 'text-green-600 dark:text-green-300',
+            'check' => 'text-green-600 dark:text-green-400',
         ],
         'yellow' => [
-            'border' => 'border-yellow-500',
-            'ring' => 'ring-yellow-500',
-            'bg' => 'bg-yellow-50 dark:bg-yellow-900/20',
-            'text' => 'text-yellow-600 dark:text-yellow-400',
+            'border' => 'border-yellow-500 dark:border-yellow-400',
+            'ring' => 'ring-yellow-500 dark:ring-yellow-400',
+            'bg' => 'bg-yellow-50 dark:bg-yellow-900/30',
+            'text' => 'text-yellow-600 dark:text-yellow-300',
+            'check' => 'text-yellow-600 dark:text-yellow-400',
         ],
         'orange' => [
-            'border' => 'border-orange-500',
-            'ring' => 'ring-orange-500',
-            'bg' => 'bg-orange-50 dark:bg-orange-900/20',
-            'text' => 'text-orange-600 dark:text-orange-400',
+            'border' => 'border-orange-500 dark:border-orange-400',
+            'ring' => 'ring-orange-500 dark:ring-orange-400',
+            'bg' => 'bg-orange-50 dark:bg-orange-900/30',
+            'text' => 'text-orange-600 dark:text-orange-300',
+            'check' => 'text-orange-600 dark:text-orange-400',
         ],
         'red' => [
-            'border' => 'border-red-500',
-            'ring' => 'ring-red-500',
-            'bg' => 'bg-red-50 dark:bg-red-900/20',
-            'text' => 'text-red-600 dark:text-red-400',
+            'border' => 'border-red-500 dark:border-red-400',
+            'ring' => 'ring-red-500 dark:ring-red-400',
+            'bg' => 'bg-red-50 dark:bg-red-900/30',
+            'text' => 'text-red-600 dark:text-red-300',
+            'check' => 'text-red-600 dark:text-red-400',
         ],
         'purple' => [
-            'border' => 'border-purple-500',
-            'ring' => 'ring-purple-500',
-            'bg' => 'bg-purple-50 dark:bg-purple-900/20',
-            'text' => 'text-purple-600 dark:text-purple-400',
+            'border' => 'border-purple-500 dark:border-purple-400',
+            'ring' => 'ring-purple-500 dark:ring-purple-400',
+            'bg' => 'bg-purple-50 dark:bg-purple-900/30',
+            'text' => 'text-purple-600 dark:text-purple-300',
+            'check' => 'text-purple-600 dark:text-purple-400',
         ],
         'gray' => [
-            'border' => 'border-gray-500',
-            'ring' => 'ring-gray-500',
-            'bg' => 'bg-gray-50 dark:bg-gray-900/20',
-            'text' => 'text-gray-600 dark:text-gray-400',
+            'border' => 'border-gray-500 dark:border-gray-400',
+            'ring' => 'ring-gray-500 dark:ring-gray-400',
+            'bg' => 'bg-gray-100 dark:bg-gray-700/50',
+            'text' => 'text-gray-600 dark:text-gray-300',
+            'check' => 'text-gray-600 dark:text-gray-400',
         ],
     ];
     
     // バッジ色のマッピング
     $badgeColorClasses = [
-        'yellow' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-        'red' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
-        'green' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-        'blue' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+        'yellow' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300',
+        'red' => 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300',
+        'green' => 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
+        'blue' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
         'gray' => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
     ];
+    
+    // グローバル色設定
+    $globalColors = $colorClasses[$color] ?? $colorClasses['primary'];
 @endphp
 
 <div class="{{ $layoutClasses }} {{ $class }}" x-data="{ selected: '{{ $currentValue }}' }">
@@ -137,27 +193,33 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             $optionLabel = $option['label'] ?? '';
             $optionDescription = $option['description'] ?? null;
             $optionIcon = $option['icon'] ?? null;
-            $optionColor = $option['color'] ?? 'blue';
+            $optionColor = $option['color'] ?? null;
             $optionBadge = $option['badge'] ?? null;
             $optionBadgeColor = $option['badgeColor'] ?? 'yellow';
             $optionDisabled = $option['disabled'] ?? false;
             $optionFeatures = $option['features'] ?? [];
             
-            $colors = $colorClasses[$optionColor] ?? $colorClasses['blue'];
+            // 個別色設定があればそれを使用、なければグローバル設定
+            $colors = $optionColor ? ($colorClasses[$optionColor] ?? $globalColors) : $globalColors;
             $badgeClass = $badgeColorClasses[$optionBadgeColor] ?? $badgeColorClasses['yellow'];
             
             $isDisabled = $disabled || $optionDisabled;
+            
+            // variant に応じた選択時のクラス
+            $selectedClasses = $variant === 'outlined' 
+                ? $colors['border'] . ' ring-3 ' . $colors['ring']
+                : $colors['border'] . ' ring-3 ' . $colors['ring'] . ' ' . $colors['bg'];
         @endphp
         
-        <label class="relative flex cursor-pointer rounded-lg border p-4 shadow-sm focus:outline-none transition-all {{ $isDisabled ? 'opacity-50 cursor-not-allowed' : '' }}"
+        <label class="relative flex cursor-pointer rounded-lg border p-4 shadow-sm focus:outline-none transition-all duration-150 {{ $isDisabled ? 'opacity-50 cursor-not-allowed' : '' }}"
                @if ($modelVar)
                    :class="{{ $modelVar }} === '{{ $optionValue }}' 
-                       ? '{{ $colors['border'] }} ring-2 {{ $colors['ring'] }} {{ $colors['bg'] }}' 
-                       : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'"
+                       ? '{{ $selectedClasses }}' 
+                       : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-500'"
                @else
                    :class="selected === '{{ $optionValue }}' 
-                       ? '{{ $colors['border'] }} ring-2 {{ $colors['ring'] }} {{ $colors['bg'] }}' 
-                       : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'"
+                       ? '{{ $selectedClasses }}' 
+                       : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-500'"
                @endif
                @click="selected = '{{ $optionValue }}'"
         >
@@ -168,9 +230,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                    @if (!$modelVar && $currentValue == $optionValue) checked @endif
                    @if ($isDisabled) disabled @endif
                    class="sr-only">
-            <span class="flex flex-1 items-center">
+            
+            <span class="flex flex-1">
                 <span class="flex flex-col justify-center">
-                    <span class="flex items-center gap-2 text-sm font-medium {{ $colors['text'] }}">
+                    <span class="flex items-center gap-2 text-sm font-medium text-gray-900 dark:text-white"
+                          @if ($modelVar)
+                              :class="{{ $modelVar }} === '{{ $optionValue }}' ? '{{ $colors['text'] }}' : 'text-gray-900 dark:text-white'"
+                          @else
+                              :class="selected === '{{ $optionValue }}' ? '{{ $colors['text'] }}' : 'text-gray-900 dark:text-white'"
+                          @endif
+                    >
                         @if ($optionIcon)
                             <i class="{{ $optionIcon }}"></i>
                         @endif
@@ -195,6 +264,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @endif
                 </span>
             </span>
+            
+            {{-- チェックアイコン --}}
+            @if ($showCheck)
+                <span class="absolute top-3 right-3 flex items-center justify-center"
+                      @if ($modelVar)
+                          x-show="{{ $modelVar }} === '{{ $optionValue }}'"
+                      @else
+                          x-show="selected === '{{ $optionValue }}'"
+                      @endif
+                      x-transition:enter="transition ease-out duration-100"
+                      x-transition:enter-start="opacity-0 scale-75"
+                      x-transition:enter-end="opacity-100 scale-100"
+                      x-transition:leave="transition ease-in duration-75"
+                      x-transition:leave-start="opacity-100 scale-100"
+                      x-transition:leave-end="opacity-0 scale-75"
+                >
+                    <i class="fas fa-check-circle text-lg {{ $colors['check'] }}"></i>
+                </span>
+            @endif
+            
+            {{-- ボーダーオーバーレイ --}}
             <span class="pointer-events-none absolute -inset-px rounded-lg" 
                   @if ($modelVar)
                       :class="{{ $modelVar }} === '{{ $optionValue }}' ? 'border-2 {{ $colors['border'] }}' : 'border border-transparent'"

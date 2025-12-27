@@ -47,28 +47,49 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <h2>{{ __('admin/media.settings.allowed_file_types') }}</h2>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
                 @foreach($fileExtensions as $extension)
-                    <label class="flex items-center space-x-2 cursor-pointer bg-gray-100 dark:bg-gray-700 p-3 rounded-lg shadow-sm hover:bg-gray-200 dark:hover:bg-gray-600">
-                        <input type="checkbox" name="allowed_file_types[]" value="{{ $extension }}" 
-                               class="form-checkbox h-5 w-5 text-blue-600 dark:text-blue-400"
-                               {{ in_array($extension, $allowedFileTypes) ? 'checked' : '' }}
-                               @if(in_array($extension, ['svg', 'zip', 'pdf', 'docx', 'tex']))
-                               x-on:change="updateRiskyType('{{ $extension }}', $event.target.checked)"
-                               @endif>
-                        <span class="text-sm text-gray-800 dark:text-gray-200">
-                            {{ $fileExtensionNames[$extension] ?? strtoupper($extension) }}(.{{ $extension }})
-                        </span>
-                        @if($extension === 'svg')
-                            <i class="fas fa-exclamation-triangle text-yellow-500 text-sm ml-1" title="{{ __('admin/media.settings.svg_warning') }}"></i>
-                        @elseif($extension === 'zip')
-                            <i class="fas fa-file-archive text-orange-500 text-sm ml-1" title="{{ __('admin/media.settings.zip_warning') }}"></i>
-                        @elseif($extension === 'pdf')
-                            <i class="fas fa-file-pdf text-red-400 text-sm ml-1" title="{{ __('admin/media.settings.pdf_warning') }}"></i>
-                        @elseif($extension === 'docx')
-                            <i class="fas fa-file-word text-blue-400 text-sm ml-1" title="{{ __('admin/media.settings.docx_warning') }}"></i>
-                        @elseif($extension === 'tex')
-                            <i class="fas fa-file-alt text-gray-400 text-sm ml-1" title="{{ __('admin/media.settings.tex_warning') }}"></i>
-                        @endif
-                    </label>
+                    @php
+                        $warningIcon = '';
+                        $warningTitle = '';
+                        if ($extension === 'svg') {
+                            $warningIcon = 'fas fa-exclamation-triangle text-yellow-500';
+                            $warningTitle = __('admin/media.settings.svg_warning');
+                        } elseif ($extension === 'zip') {
+                            $warningIcon = 'fas fa-file-archive text-orange-500';
+                            $warningTitle = __('admin/media.settings.zip_warning');
+                        } elseif ($extension === 'pdf') {
+                            $warningIcon = 'fas fa-file-pdf text-red-400';
+                            $warningTitle = __('admin/media.settings.pdf_warning');
+                        } elseif ($extension === 'docx') {
+                            $warningIcon = 'fas fa-file-word text-blue-400';
+                            $warningTitle = __('admin/media.settings.docx_warning');
+                        } elseif ($extension === 'tex') {
+                            $warningIcon = 'fas fa-file-alt text-gray-400';
+                            $warningTitle = __('admin/media.settings.tex_warning');
+                        }
+                    @endphp
+                    <div class="flex items-center justify-start bg-gray-100 dark:bg-gray-700 p-3 rounded-lg shadow-sm">
+                        <label for="file-type-{{ $extension }}" class="flex items-center cursor-pointer w-full">
+                            <div class="relative inline-flex items-center flex-shrink-0">
+                                <input type="checkbox" 
+                                       id="file-type-{{ $extension }}"
+                                       name="allowed_file_types[]"
+                                       value="{{ $extension }}"
+                                       class="sr-only peer"
+                                       {{ in_array($extension, $allowedFileTypes) ? 'checked' : '' }}
+                                       @if(in_array($extension, ['svg', 'zip', 'pdf', 'docx', 'tex']))
+                                       x-on:change="updateRiskyType('{{ $extension }}', $event.target.checked)"
+                                       @endif>
+                                <div class="w-11 h-6 bg-gray-200 dark:bg-gray-600 peer-checked:bg-indigo-600 rounded-full transition-colors peer-focus:outline-none"></div>
+                                <div class="absolute left-1 top-1 w-4 h-4 bg-white border border-gray-300 rounded-full transition-all peer-checked:translate-x-full peer-checked:border-white"></div>
+                            </div>
+                            <span class="ml-3 text-sm text-gray-800 dark:text-gray-200">
+                                {{ $fileExtensionNames[$extension] ?? strtoupper($extension) }}(.{{ $extension }})
+                            </span>
+                            @if($warningIcon)
+                                <i class="{{ $warningIcon }} text-sm ml-1" title="{{ $warningTitle }}"></i>
+                            @endif
+                        </label>
+                    </div>
                 @endforeach
             </div>
 
@@ -119,9 +140,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <span class="text-xs text-gray-500">(jpg, png, gif, webp, svg)</span>
                     </label>
                     <div class="flex items-center space-x-2">
-                        <input type="number" name="max_file_size_image" value="{{ round(($securitySettings['max_file_size_image'] ?? 10240) / 1024) }}" 
-                               class="form-input w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                               min="1" max="100" step="1" required>
+                        <x-form.text
+                            type="number"
+                            name="max_file_size_image"
+                            :value="round(($securitySettings['max_file_size_image'] ?? 10240) / 1024)"
+                            class="w-24"
+                            :min="1"
+                            :max="100"
+                            :step="1"
+                            :required="true"
+                        />
                         <span class="text-gray-600 dark:text-gray-400">MB</span>
                     </div>
                 </div>
@@ -133,9 +161,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <span class="text-xs text-gray-500">(mp4)</span>
                     </label>
                     <div class="flex items-center space-x-2">
-                        <input type="number" name="max_file_size_video" value="{{ round(($securitySettings['max_file_size_video'] ?? 307200) / 1024) }}" 
-                               class="form-input w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                               min="1" max="1000" step="1" required>
+                        <x-form.text
+                            type="number"
+                            name="max_file_size_video"
+                            :value="round(($securitySettings['max_file_size_video'] ?? 307200) / 1024)"
+                            class="w-24"
+                            :min="1"
+                            :max="1000"
+                            :step="1"
+                            :required="true"
+                        />
                         <span class="text-gray-600 dark:text-gray-400">MB</span>
                     </div>
                 </div>
@@ -147,9 +182,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <span class="text-xs text-gray-500">(pdf, docx, txt)</span>
                     </label>
                     <div class="flex items-center space-x-2">
-                        <input type="number" name="max_file_size_document" value="{{ round(($securitySettings['max_file_size_document'] ?? 30720) / 1024) }}" 
-                               class="form-input w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                               min="1" max="100" step="1" required>
+                        <x-form.text
+                            type="number"
+                            name="max_file_size_document"
+                            :value="round(($securitySettings['max_file_size_document'] ?? 30720) / 1024)"
+                            class="w-24"
+                            :min="1"
+                            :max="100"
+                            :step="1"
+                            :required="true"
+                        />
                         <span class="text-gray-600 dark:text-gray-400">MB</span>
                     </div>
                 </div>
@@ -161,9 +203,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <span class="text-xs text-gray-500">(zip)</span>
                     </label>
                     <div class="flex items-center space-x-2">
-                        <input type="number" name="max_file_size_archive" value="{{ round(($securitySettings['max_file_size_archive'] ?? 102400) / 1024) }}" 
-                               class="form-input w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                               min="1" max="500" step="1" required>
+                        <x-form.text
+                            type="number"
+                            name="max_file_size_archive"
+                            :value="round(($securitySettings['max_file_size_archive'] ?? 102400) / 1024)"
+                            class="w-24"
+                            :min="1"
+                            :max="500"
+                            :step="1"
+                            :required="true"
+                        />
                         <span class="text-gray-600 dark:text-gray-400">MB</span>
                     </div>
                 </div>
@@ -182,46 +231,52 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="space-y-4">
                 {{-- MIME実体検証 --}}
                 <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                    <label class="flex items-center justify-between cursor-pointer">
-                        <div>
+                    <div class="flex items-center justify-start">
+                        <x-form.toggle
+                            name="mime_validation_enabled"
+                            :checked="($securitySettings['mime_validation_enabled'] ?? true)"
+                        />
+                        <div class="ml-3">
                             <span class="font-medium text-gray-900 dark:text-gray-100">{{ __('admin/media.settings.mime_validation') }}</span>
                             <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/media.settings.mime_validation_description') }}</p>
                         </div>
-                        <input type="checkbox" name="mime_validation_enabled" value="1" 
-                               class="form-checkbox h-5 w-5 text-blue-600"
-                               {{ ($securitySettings['mime_validation_enabled'] ?? true) ? 'checked' : '' }}>
-                    </label>
+
+                    </div>
                 </div>
 
                 {{-- SVGサニタイズ --}}
                 <div class="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                    <label class="flex items-center justify-between cursor-pointer">
-                        <div>
+                    <div class="flex items-center justify-start">
+                        <x-form.toggle
+                            name="svg_sanitization_enabled"
+                            :checked="($securitySettings['svg_sanitization_enabled'] ?? true)"
+                        />
+                        <div class="ml-3">
                             <span class="font-medium text-gray-900 dark:text-gray-100">
                                 <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>{{ __('admin/media.settings.svg_sanitization') }}
                             </span>
                             <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/media.settings.svg_sanitization_description') }}</p>
                         </div>
-                        <input type="checkbox" name="svg_sanitization_enabled" value="1" 
-                               class="form-checkbox h-5 w-5 text-yellow-600"
-                               {{ ($securitySettings['svg_sanitization_enabled'] ?? true) ? 'checked' : '' }}>
-                    </label>
+
+                    </div>
                 </div>
 
                 {{-- ZIPセキュリティ --}}
                 <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                    <label class="flex items-center justify-between cursor-pointer">
-                        <div>
+                    <div class="flex items-center justify-start">
+                        <x-form.toggle
+                            name="zip_security_enabled"
+                            :checked="($securitySettings['zip_security_enabled'] ?? true)"
+                            :xModel="'showZipSettings'"
+                        />
+                        <div class="ml-3">
                             <span class="font-medium text-gray-900 dark:text-gray-100">
                                 <i class="fas fa-file-archive text-blue-500 mr-2"></i>{{ __('admin/media.settings.zip_security') }}
                             </span>
                             <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/media.settings.zip_security_description') }}</p>
                         </div>
-                        <input type="checkbox" name="zip_security_enabled" value="1" 
-                               class="form-checkbox h-5 w-5 text-blue-600"
-                               x-on:change="showZipSettings = $event.target.checked"
-                               {{ ($securitySettings['zip_security_enabled'] ?? true) ? 'checked' : '' }}>
-                    </label>
+
+                    </div>
 
                     {{-- ZIP詳細設定 --}}
                     <div x-show="showZipSettings" x-transition class="mt-4 pt-4 border-t border-blue-200 dark:border-blue-700">
@@ -231,10 +286,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     {{ __('admin/media.settings.zip_max_compression_ratio') }}
                                 </label>
                                 <div class="flex items-center space-x-2">
-                                    <input type="number" name="zip_max_compression_ratio" 
-                                           value="{{ $securitySettings['zip_max_compression_ratio'] ?? 100 }}" 
-                                           class="form-input w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                                           min="10" max="1000" step="10" required>
+                                    <x-form.text
+                                        type="number"
+                                        name="zip_max_compression_ratio"
+                                        :value="$securitySettings['zip_max_compression_ratio'] ?? 100"
+                                        class="w-24"
+                                        :min="10"
+                                        :max="1000"
+                                        :step="10"
+                                        :required="true"
+                                    />
                                     <span class="text-gray-600 dark:text-gray-400">{{ __('admin/media.settings.times') }}</span>
                                 </div>
                                 <p class="text-xs text-gray-500 mt-1">{{ __('admin/media.settings.zip_compression_ratio_help') }}</p>
@@ -244,10 +305,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     {{ __('admin/media.settings.zip_max_file_count') }}
                                 </label>
                                 <div class="flex items-center space-x-2">
-                                    <input type="number" name="zip_max_file_count" 
-                                           value="{{ $securitySettings['zip_max_file_count'] ?? 1000 }}" 
-                                           class="form-input w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                                           min="10" max="10000" step="10" required>
+                                    <x-form.text
+                                        type="number"
+                                        name="zip_max_file_count"
+                                        :value="$securitySettings['zip_max_file_count'] ?? 1000"
+                                        class="w-24"
+                                        :min="10"
+                                        :max="10000"
+                                        :step="10"
+                                        :required="true"
+                                    />
                                     <span class="text-gray-600 dark:text-gray-400">{{ __('admin/media.settings.files') }}</span>
                                 </div>
                             </div>

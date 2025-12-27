@@ -89,11 +89,33 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                       role="main">
 
                     <!-- Page Header -->
-                    <header class="mx-auto py-6 px-8 mb-10 bg-white text-gray-800 border-b border-gray-300 dark:border-gray-700 dark:bg-black dark:text-white {{ empty($transitionEnabled) ? '' : 'transition-colors-unified' }}">
+                    <header class="mx-auto py-6 px-8 mb-2 bg-white text-gray-800 border-b border-gray-300 dark:border-gray-700 dark:bg-black dark:text-white {{ empty($transitionEnabled) ? '' : 'transition-colors-unified' }}">
                         <h1 class="font-semibold text-xl leading-tight text-gray-800 dark:text-white">
                             {{ __($heading) }}
                         </h1>
                     </header>
+
+                    <!-- Breadcrumbs -->
+                    @if(!empty($breadcrumbs) && count($breadcrumbs) > 0)
+                        <nav class="w-full px-6 lg:px-8 mb-8">
+                            <ol class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+                                @foreach($breadcrumbs as $index => $breadcrumb)
+                                    @if($index > 0)
+                                        <li><i class="fas fa-chevron-right text-xs"></i></li>
+                                    @endif
+                                    <li>
+                                        @if(!empty($breadcrumb['route']))
+                                            <a href="{{ route($breadcrumb['route']) }}" class="hover:text-gray-700 dark:hover:text-gray-200">
+                                                {{ $breadcrumb['label'] }}
+                                            </a>
+                                        @else
+                                            <span class="text-gray-900 dark:text-white">{{ $breadcrumb['label'] }}</span>
+                                        @endif
+                                    </li>
+                                @endforeach
+                            </ol>
+                        </nav>
+                    @endif
 
                     <!-- Page Content -->
                     <article class="w-full px-6 lg:px-8 pb-8">
@@ -170,8 +192,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     }
                 }
             }
-
-
 
             // テーマストア（後方互換性のため）
             window.themeStore = {

@@ -38,6 +38,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     pattern="^[a-zA-Z0-9]+$"
                     minlength="3"
                     maxlength="20"
+                    class="w-full"
                 />
                 <p class="description-text">{!! __('admin/profile.account_name_help') !!}</p>
                 @error('account_name')
@@ -50,6 +51,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <x-form.text
                     name="member_name"
                     :value="old('member_name', $member->member_name)"
+                    class="w-full"
                 />
                 <p class="description-text">{{ __('admin/profile.member_name_help') }}</p>
                 @error('member_name')
@@ -63,6 +65,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     name="description"
                     :value="old('description', $member->description)"
                     :rows="3"
+                    class="w-full"
                 />
                 @error('description')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -77,6 +80,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     type="email"
                     :value="old('email', $member->email)"
                     :required="true"
+                    class="w-full"
                 />
                 @error('email')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -116,6 +120,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     onpaste="return false"
                     oncopy="return false"
                     oncut="return false"
+                    class="w-full"
                 />
                 <p class="description-text">{{ __('admin.settings.members.form.email_confirmation_help') }}</p>
                 @error('email_confirmation')
