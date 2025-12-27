@@ -31,6 +31,7 @@ trait AdminLoggedInTrait
     protected $member;
     protected $appearance;
     protected $breadcrumbs = [];
+    protected $description = null;
 
     /**
      * ログイン後に共通で必要な初期化を行う
@@ -64,6 +65,15 @@ trait AdminLoggedInTrait
     protected function setBreadcrumbs(): void
     {
         $this->viewParams['breadcrumbs'] = $this->breadcrumbs;
+    }
+
+    /**
+     * ページ説明を設定
+     */
+    protected function setDescription(string $description): void
+    {
+        $this->description = $description;
+        $this->viewParams['description'] = $this->description;
     }
 
     /**

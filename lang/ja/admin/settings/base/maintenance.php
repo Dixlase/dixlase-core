@@ -14,6 +14,7 @@
 
 return [
     'heading' => 'メンテナンス設定',
+    'description' => 'サイトのメンテナンスモードを有効化し、表示メッセージをカスタマイズできます。',
     'maintenance_settings' => 'メンテナンスモード設定',
     'maintenance_mode' => 'メンテナンスモード',
     'maintenance_mode_help' => 'メンテナンスモードを有効にすると、フロント画面にメンテナンス中のメッセージが表示されます。',

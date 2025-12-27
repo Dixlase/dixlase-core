@@ -14,6 +14,7 @@
 
 return [
     'heading' => 'メール設定',
+    'description' => 'メールサーバーの接続情報を設定し、接続・送信・受信テストを実行します。',
     'mail_server_settings' => 'メールサーバー設定',
     'admin_email_settings' => 'システム管理者メールアドレス',
     'admin_email_settings_description' => 'システム管理者のメールアドレスを設定します。エラー通知やシステム関連の重要な情報の送信先として使用されます。',

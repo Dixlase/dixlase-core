@@ -45,6 +45,12 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
      */
     public function index()
     {
+        $this->addBreadcrumb(null, __('admin/nav.settings.text'));
+        $this->addBreadcrumb('admin.settings.security.index', __('admin/nav.settings.security.text'));
+        $this->addBreadcrumb(null, __('admin/nav.settings.security.extensions'));
+        $this->setDescription(__('admin/settings/security/extensions.description'));
+        $this->setBreadcrumbs();
+        
         $settings = [
             // Extension security settings
             'extension_security_preset' => $this->securitySettingRepository->get('extension_security_preset', ExtensionSecurityPreset::Balanced->value),
