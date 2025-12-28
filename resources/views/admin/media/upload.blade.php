@@ -25,7 +25,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <form action="{{ route('admin.media.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6" x-data="{ fileName: '' }">
             @csrf
             <div class="flex flex-col gap-2">
-                <label for="media_file" class="font-medium">{{ __('admin/media.upload.select_file') }}</label>
+                <label for="media_file" class="font-medium">{{ __('admin/media/upload.select_file') }}</label>
                 <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-blue-500 transition duration-300">
                     <input type="file" name="file" id="media_file" accept=".jpg,.png,.gif,.mp4,.pdf,.docx"
                         class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
@@ -36,8 +36,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <svg class="w-12 h-12 text-blue-500 mb-3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 16v4m0 0H8m4 0h4m-4-4a4 4 0 01-4-4 4 4 0 014-4 4 4 0 014 4 4 4 0 01-4 4z"/>
                         </svg>
-                        <p class="text-sm" x-text="fileName || '{{ __('admin/media.upload.drag_drop_text') }}'"></p>
-                        <p class="text-xs text-gray-400 mt-1">{{ __('admin/media.upload.supported_formats') }}
+                        <p class="text-sm" x-text="fileName || '{{ __('admin/media/upload.drag_drop_text') }}'"></p>
+                        <p class="text-xs text-gray-400 mt-1">{{ __('admin/media/upload.supported_formats') }}
                             <strong>
                                 @foreach($allowedFileTypes as $extension)
                                     .{{ $extension }}

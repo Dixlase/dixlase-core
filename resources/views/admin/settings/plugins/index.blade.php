@@ -25,10 +25,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     {{-- インストール済みプラグイン一覧セクション --}}
     <section>
         <div class="flex items-center justify-between mb-6">
-            <h2 class="mb-0">{{ __('admin/settings/plugins.index.installed_heading') }}</h2>
+            <h2 class="mb-0">{{ __('admin/settings/plugins/index.installed_heading') }}</h2>
             <a href="{{ route('admin.settings.plugins.add') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">
                 <i class="fas fa-plus mr-2"></i>
-                {{ __('admin/settings/plugins.index.add_plugin') }}
+                {{ __('admin/settings/plugins/index.add_plugin') }}
             </a>
         </div>
 
@@ -44,11 +44,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
                         <i class="fas fa-puzzle-piece text-3xl text-gray-400"></i>
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">{{ __('admin/settings/plugins.index.no_plugins') }}</h3>
-                    <p class="text-gray-500 dark:text-gray-400 mb-6">{{ __('admin/settings/plugins.index.no_plugins_description') }}</p>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">{{ __('admin/settings/plugins/index.no_plugins') }}</h3>
+                    <p class="text-gray-500 dark:text-gray-400 mb-6">{{ __('admin/settings/plugins/index.no_plugins_description') }}</p>
                     <a href="{{ route('admin.settings.plugins.add') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">
                         <i class="fas fa-plus mr-2"></i>
-                        {{ __('admin/settings/plugins.index.add_plugin') }}
+                        {{ __('admin/settings/plugins/index.add_plugin') }}
                     </a>
                 </div>
             </div>
@@ -58,8 +58,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     {{-- アンインストール済みプラグイン一覧セクション --}}
     @if(count($uninstalledPlugins) > 0)
     <section class="mt-12">
-        <h2>{{ __('admin/settings/plugins.index.uninstalled_heading') }}</h2>
-        <p class="text-gray-600 dark:text-gray-400 mb-6">{{ __('admin/settings/plugins.index.uninstalled_description') }}</p>
+        <h2>{{ __('admin/settings/plugins/index.uninstalled_heading') }}</h2>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">{{ __('admin/settings/plugins/index.uninstalled_description') }}</p>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             @foreach ($uninstalledPlugins as $plugin)

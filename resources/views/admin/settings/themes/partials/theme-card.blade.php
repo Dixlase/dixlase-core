@@ -67,17 +67,17 @@ https://exc-d.com
             'partner' => 'fas fa-handshake',
         ];
         $badgeLabels = [
-            'official' => __('admin/settings/themes.permissions.signature_official'),
-            'verified' => __('admin/settings/themes.permissions.signature_verified'),
-            'partner' => __('admin/settings/themes.permissions.signature_partner'),
+            'official' => __('admin/settings/themes/index.permissions.signature_official'),
+            'verified' => __('admin/settings/themes/index.permissions.signature_verified'),
+            'partner' => __('admin/settings/themes/index.permissions.signature_partner'),
         ];
         $badgeColor = $badgeColors[$signatureType] ?? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
         $badgeIcon = $badgeIcons[$signatureType] ?? 'fas fa-check-circle';
-        $badgeLabel = $badgeLabels[$signatureType] ?? __('admin/settings/themes.permissions.signature_signed');
+        $badgeLabel = $badgeLabels[$signatureType] ?? __('admin/settings/themes/index.permissions.signature_signed');
     } elseif ($signatureStatus === 'invalid') {
         $badgeColor = 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
         $badgeIcon = 'fas fa-times-circle';
-        $badgeLabel = __('admin/settings/themes.permissions.signature_invalid');
+        $badgeLabel = __('admin/settings/themes/index.permissions.signature_invalid');
     } elseif ($hasPermissions) {
         $healthColors = [
             'low' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
@@ -96,11 +96,11 @@ https://exc-d.com
         ];
         $badgeColor = $healthColors[$riskLevel] ?? $healthColors['low'];
         $badgeIcon = $healthIcons[$riskLevel] ?? $healthIcons['low'];
-        $badgeLabel = __('admin/settings/themes.permissions.' . ($healthLabels[$riskLevel] ?? 'health_healthy'));
+        $badgeLabel = __('admin/settings/themes/index.permissions.' . ($healthLabels[$riskLevel] ?? 'health_healthy'));
     } else {
         $badgeColor = 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
         $badgeIcon = 'fas fa-exclamation-triangle';
-        $badgeLabel = __('admin/settings/themes.permissions.unknown');
+        $badgeLabel = __('admin/settings/themes/index.permissions.unknown');
     }
     
     $permissionModalId = 'permissionModal-theme-' . ($isModel ? $theme->id : $themeDirectory);
@@ -168,7 +168,7 @@ https://exc-d.com
         <div class="mb-3 pt-3 border-t border-gray-100 dark:border-gray-700 space-y-2">
             {{-- 健全性 --}}
             <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/themes.badge_labels.health') }}</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/themes/index.badge_labels.health') }}</span>
                 <button type="button" 
                         class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $badgeColor }} cursor-pointer hover:opacity-80 transition-opacity"
                         onclick="openModal('{{ $permissionModalId }}')">
@@ -180,44 +180,44 @@ https://exc-d.com
             
             {{-- 署名ステータス --}}
             <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/themes.badge_labels.signature') }}</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/themes/index.badge_labels.signature') }}</span>
                 @if($signatureStatus === 'valid' || $signatureStatus === 'pending_verification')
                     <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                         <i class="fas fa-check-circle mr-1"></i>
-                        {{ __('admin/settings/themes.verification.signature_valid') }}
+                        {{ __('admin/settings/themes/index.verification.signature_valid') }}
                     </span>
                 @elseif($signatureStatus === 'invalid')
                     <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
                         <i class="fas fa-times-circle mr-1"></i>
-                        {{ __('admin/settings/themes.verification.signature_invalid') }}
+                        {{ __('admin/settings/themes/index.verification.signature_invalid') }}
                     </span>
                 @else
                     <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
                         <i class="fas fa-file-signature mr-1"></i>
-                        {{ __('admin/settings/themes.verification.signature_unsigned') }}
+                        {{ __('admin/settings/themes/index.verification.signature_unsigned') }}
                     </span>
                 @endif
             </div>
             
             {{-- 権限定義 --}}
             <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/themes.badge_labels.permission') }}</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/themes/index.badge_labels.permission') }}</span>
                 @if($hasPermissions)
                     @if($hasMismatches)
-                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" title="{{ __('admin/settings/themes.permissions.audit_mismatch_warning') }}">
+                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" title="{{ __('admin/settings/themes/index.permissions.audit_mismatch_warning') }}">
                             <i class="fas fa-code-branch mr-1"></i>
-                            {{ __('admin/settings/themes.verification.permission_mismatch') }}
+                            {{ __('admin/settings/themes/index.verification.permission_mismatch') }}
                         </span>
                     @else
                         <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                             <i class="fas fa-check-circle mr-1"></i>
-                            {{ __('admin/settings/themes.verification.permission_ok') }}
+                            {{ __('admin/settings/themes/index.verification.permission_ok') }}
                         </span>
                     @endif
                 @else
                     <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
                         <i class="fas fa-question-circle mr-1"></i>
-                        {{ __('admin/settings/themes.verification.permission_undefined') }}
+                        {{ __('admin/settings/themes/index.verification.permission_undefined') }}
                     </span>
                 @endif
             </div>
@@ -228,21 +228,21 @@ https://exc-d.com
                 $cspCompatibility = $cspLoader->getCspCompatibility('theme', $themeSlug);
             @endphp
             <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/themes.badge_labels.csp') }}</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400 w-12 flex-shrink-0">{{ __('admin/settings/themes/index.badge_labels.csp') }}</span>
                 @if($cspCompatibility['status'] === 'csp_ready' || $cspCompatibility['status'] === 'compatible')
-                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" title="{{ __('admin/settings/themes.csp.ready_tooltip') }}">
+                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" title="{{ __('admin/settings/themes/index.csp.ready_tooltip') }}">
                         <i class="fas fa-shield-alt mr-1"></i>
-                        {{ __('admin/settings/themes.verification.csp_ready') }}
+                        {{ __('admin/settings/themes/index.verification.csp_ready') }}
                     </span>
                 @elseif($cspCompatibility['requires_inline_js'])
-                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" title="{{ __('admin/settings/themes.csp.inline_required_tooltip') }}">
+                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" title="{{ __('admin/settings/themes/index.csp.inline_required_tooltip') }}">
                         <i class="fas fa-exclamation-triangle mr-1"></i>
-                        {{ __('admin/settings/themes.verification.csp_inline_required') }}
+                        {{ __('admin/settings/themes/index.verification.csp_inline_required') }}
                     </span>
                 @else
                     <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
                         <i class="fas fa-question mr-1"></i>
-                        {{ __('admin/settings/themes.verification.csp_not_checked') }}
+                        {{ __('admin/settings/themes/index.verification.csp_not_checked') }}
                     </span>
                 @endif
             </div>
@@ -254,13 +254,13 @@ https://exc-d.com
             <div class="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
                 <x-form.button
                     type="button"
-                    :label="$auditedAt ? __('admin/settings/themes.permissions.audit_button_rescan') : __('admin/settings/themes.permissions.audit_button')"
+                    :label="$auditedAt ? __('admin/settings/themes/index.permissions.audit_button_rescan') : __('admin/settings/themes/index.permissions.audit_button')"
                     :variant="$auditedAt ? 'tertiary' : 'warning'"
                     size="xs"
                     icon="fas fa-search"
                     class="theme-audit-btn w-full"
                     :data-slug="$themeSlug"
-                    :title="$auditedAt ? __('admin/settings/themes.permissions.audit_last_scanned') . ': ' . \Carbon\Carbon::parse($auditedAt)->format('Y/m/d H:i') : __('admin/settings/themes.permissions.audit_not_scanned')"
+                    :title="$auditedAt ? __('admin/settings/themes/index.permissions.audit_last_scanned') . ': ' . \Carbon\Carbon::parse($auditedAt)->format('Y/m/d H:i') : __('admin/settings/themes/index.permissions.audit_not_scanned')"
                 />
             </div>
         </div>

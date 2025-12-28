@@ -15,6 +15,13 @@
 return [
     'heading' => 'メンバー全体設定',
     'description' => 'メンバーのパスワード、セッション、認証に関する全体設定を管理します。',
+    
+    'nav' => [
+        'password' => 'パスワード設定',
+        'session' => 'セッション設定',
+        'auth' => '認証設定',
+    ],
+    
     'password_min_length' => '最小文字数',
     'characters' => '文字',
     'requirements' => '必須条件',
@@ -39,4 +46,11 @@ return [
         'message' => '全てのメンバーを強制的にログアウトしますか？この操作により、現在ログイン中の全メンバーのセッションが削除されます。',
         'confirm_label' => '強制ログアウト実行',
     ],
+    
+    // 共通単位
+    'minutes' => '分',
+    'seconds' => '秒',
+    'hours' => '時間',
+    'times' => '回',
+    'codes' => '個',
 ];
