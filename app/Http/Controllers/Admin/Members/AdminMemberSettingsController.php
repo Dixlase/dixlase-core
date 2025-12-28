@@ -85,7 +85,7 @@ class AdminMemberSettingsController extends AdminLoggedInController
         $passwordRequireNumber = (bool) $this->memberSettingRepository->get('password_require_number', true);
         $passwordRequireSymbol = (bool) $this->memberSettingRepository->get('password_require_symbol', true);
         
-        $minLengthOptions = collect(__('admin/members/settings.password.min_length_options'))
+        $minLengthOptions = collect(__('admin/members/settings/password.min_length_options'))
             ->map(fn($label, $key) => ['value' => (string) $key, 'label' => $label])
             ->values()
             ->toArray();

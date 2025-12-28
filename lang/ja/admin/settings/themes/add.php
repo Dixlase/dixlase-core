@@ -17,6 +17,9 @@ return [
     'description' => 'ZIPファイルをアップロードして新しいテーマをインストールします。',
     'upload_title' => 'テーマをアップロード',
     'file_select_label' => 'ファイルを選択',
+    'drag_drop_text' => 'ここにファイルをドラッグするか、クリックしてアップロード',
+    'supported_format' => '対応形式:',
+    'upload_limit' => 'アップロード可能ファイルサイズ上限:',
     'upload_button' => 'アップロードして追加',
     'name' => 'テーマ名',
 ];

@@ -36,7 +36,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 />
             @endif
             <fieldset>
-                <legend>{{ __('admin/members/settings.auth.login_notification_global_setting') }}</legend>
+                <legend>{{ __('admin/members/settings/auth.login_notification_global_setting') }}</legend>
                 <x-form.radio-card-group
                     name="login_notification_mode"
                     :options="$loginNotificationGlobalOptions"
@@ -48,7 +48,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- ログイン試行制限設定 -->
         <section>
-            <h2>{{ __('admin/members/settings.auth.login_attempt_limit_settings') }}</h2>
+            <h2>{{ __('admin/members/settings/auth.login_attempt_limit_settings') }}</h2>
             @if(!$isMailServerTested)
                 <x-message
                     type="warning"
@@ -58,17 +58,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <x-form.toggle
                     name="login_attempt_limit_enabled"
-                    :label="__('admin/members/settings.auth.login_attempt_limit_enabled')"
+                    :label="__('admin/members/settings/auth.login_attempt_limit_enabled')"
                     :checked="old('login_attempt_limit_enabled', $loginAttemptLimitEnabled)"
                 />
                 <p class="mt-2">
-                    {{ __('admin/members/settings.auth.login_attempt_limit_help') }}
+                    {{ __('admin/members/settings/auth.login_attempt_limit_help') }}
                 </p>
             </fieldset>
 
             <div>
                 <fieldset>
-                    <legend>{{ __('admin/members/settings.auth.login_attempt_max_attempts') }}</legend>
+                    <legend>{{ __('admin/members/settings/auth.login_attempt_max_attempts') }}</legend>
                     <x-form.text
                         type="number"
                         name="login_attempt_max_attempts"
@@ -78,12 +78,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         class="input-common input-sm"
                     />
                     <p>
-                        {{ __('admin/members/settings.auth.login_attempt_max_attempts_help') }}
+                        {{ __('admin/members/settings/auth.login_attempt_max_attempts_help') }}
                     </p>
                 </fieldset>
 
                 <fieldset>
-                    <legend>{{ __('admin/members/settings.auth.login_attempt_time_window') }}</legend>
+                    <legend>{{ __('admin/members/settings/auth.login_attempt_time_window') }}</legend>
                     <x-form.text
                         type="number"
                         name="login_attempt_time_window"
@@ -93,12 +93,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         class="input-common input-sm"
                     />
                     <p>
-                        {{ __('admin/members/settings.auth.login_attempt_time_window_help') }}
+                        {{ __('admin/members/settings/auth.login_attempt_time_window_help') }}
                     </p>
                 </fieldset>
 
                 <fieldset>
-                    <legend>{{ __('admin/members/settings.auth.login_attempt_lockout_duration') }}</legend>
+                    <legend>{{ __('admin/members/settings/auth.login_attempt_lockout_duration') }}</legend>
                     <x-form.text
                         type="number"
                         name="login_attempt_lockout_duration"
@@ -108,18 +108,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         class="input-common input-sm"
                     />
                     <p>
-                        {{ __('admin/members/settings.auth.login_attempt_lockout_duration_help') }}
+                        {{ __('admin/members/settings/auth.login_attempt_lockout_duration_help') }}
                     </p>
                 </fieldset>
 
                 <fieldset>
                     <x-form.toggle
                         name="lockout_notification_enabled"
-                        :label="__('admin/members/settings.auth.lockout_notification_enabled')"
+                        :label="__('admin/members/settings/auth.lockout_notification_enabled')"
                         :checked="old('lockout_notification_enabled', $lockoutNotificationEnabled)"
                     />
                     <p class="mt-2">
-                        {!! __('admin/members/settings.auth.lockout_notification_help') !!}
+                        {!! __('admin/members/settings/auth.lockout_notification_help') !!}
                     </p>
                 </fieldset>
             </div>
@@ -135,7 +135,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 />
             @endif
             <fieldset>
-                <legend>{{ __('admin/members/settings.auth.two_factor_mode_global_setting') }}</legend>
+                <legend>{{ __('admin/members/settings/auth.two_factor_mode_global_setting') }}</legend>
                 <x-form.radio-card-group
                     name="force_2fa"
                     :options="$twoFactorGlobalOptions"
@@ -145,7 +145,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </fieldset>
 
             <fieldset>
-                <legend>{{ __('admin/members/settings.auth.enabled_two_factor_methods_label') }}</legend>
+                <legend>{{ __('admin/members/settings/auth.enabled_two_factor_methods_label') }}</legend>
 
                 <div class="space-y-6">
                     <div class="space-y-3">
@@ -168,22 +168,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     <div class="space-y-1">
                         <p class="text-sm text-gray-600 dark:text-gray-400">
-                            {{ __('admin/members/settings.auth.enabled_two_factor_methods_help') }}
+                            {{ __('admin/members/settings/auth.enabled_two_factor_methods_help') }}
                         </p>
                         <p class="text-sm text-gray-600 dark:text-gray-400">
-                            {{ __('admin/members/settings.auth.email_always_enabled_note') }}
+                            {{ __('admin/members/settings/auth.email_always_enabled_note') }}
                         </p>
                     </div>
                 </div>
             </fieldset>
 
             <fieldset>
-                <legend>{{ __('admin/members/settings.auth.two_factor_expire_settings') }}</legend>
+                <legend>{{ __('admin/members/settings/auth.two_factor_expire_settings') }}</legend>
 
                 <div class="space-y-4">
                     <div>
                         <label for="two_factor_expire_minutes" class="block text-sm font-medium">
-                            {{ __('admin/members/settings.auth.two_factor_expire_minutes') }}
+                            {{ __('admin/members/settings/auth.two_factor_expire_minutes') }}
                         </label>
                         <div class="mt-1 flex items-center space-x-2">
                             <x-form.text
@@ -195,16 +195,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 :max="60"
                                 class="input-common input-sm"
                             />
-                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings.minutes') }}</span>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings/index.minutes') }}</span>
                         </div>
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            {{ __('admin/members/settings.auth.two_factor_expire_minutes_help') }}
+                            {{ __('admin/members/settings/auth.two_factor_expire_minutes_help') }}
                         </p>
                     </div>
 
                     <div>
                         <label for="two_factor_resend_interval_seconds" class="block text-sm font-medium">
-                            {{ __('admin/members/settings.auth.two_factor_resend_interval_seconds') }}
+                            {{ __('admin/members/settings/auth.two_factor_resend_interval_seconds') }}
                         </label>
                         <div class="mt-1 flex items-center space-x-2">
                             <x-form.text
@@ -217,22 +217,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 :step="60"
                                 class="input-common input-sm"
                             />
-                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings.seconds') }}</span>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings/index.seconds') }}</span>
                         </div>
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            {{ __('admin/members/settings.auth.two_factor_resend_interval_seconds_help') }}
+                            {{ __('admin/members/settings/auth.two_factor_resend_interval_seconds_help') }}
                         </p>
                     </div>
                 </div>
             </fieldset>
 
             <fieldset>
-                <legend>{{ __('admin/members/settings.auth.2fa_attempt_limit_settings') }}</legend>
+                <legend>{{ __('admin/members/settings/auth.2fa_attempt_limit_settings') }}</legend>
 
                 <div class="space-y-4">
                     <div>
                         <label for="2fa_max_attempts" class="block text-sm font-medium">
-                            {{ __('admin/members/settings.auth.2fa_max_attempts') }}
+                            {{ __('admin/members/settings/auth.2fa_max_attempts') }}
                         </label>
                         <div class="mt-1 flex items-center space-x-2">
                             <x-form.text
@@ -244,16 +244,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 :max="10"
                                 class="input-common input-sm"
                             />
-                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings.times') }}</span>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings/index.times') }}</span>
                         </div>
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            {{ __('admin/members/settings.auth.2fa_max_attempts_help') }}
+                            {{ __('admin/members/settings/auth.2fa_max_attempts_help') }}
                         </p>
                     </div>
 
                     <div>
                         <label for="2fa_attempt_window" class="block text-sm font-medium">
-                            {{ __('admin/members/settings.auth.2fa_attempt_window') }}
+                            {{ __('admin/members/settings/auth.2fa_attempt_window') }}
                         </label>
                         <div class="mt-1 flex items-center space-x-2">
                             <x-form.text
@@ -265,16 +265,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 :max="60"
                                 class="input-common input-sm"
                             />
-                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings.minutes') }}</span>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings/index.minutes') }}</span>
                         </div>
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            {{ __('admin/members/settings.auth.2fa_attempt_window_help') }}
+                            {{ __('admin/members/settings/auth.2fa_attempt_window_help') }}
                         </p>
                     </div>
 
                     <div>
                         <label for="2fa_lockout_duration" class="block text-sm font-medium">
-                            {{ __('admin/members/settings.auth.2fa_lockout_duration') }}
+                            {{ __('admin/members/settings/auth.2fa_lockout_duration') }}
                         </label>
                         <div class="mt-1 flex items-center space-x-2">
                             <x-form.text
@@ -286,33 +286,33 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 :max="1440"
                                 class="input-common input-sm"
                             />
-                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings.minutes') }}</span>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings/index.minutes') }}</span>
                         </div>
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            {{ __('admin/members/settings.auth.2fa_lockout_duration_help') }}
+                            {{ __('admin/members/settings/auth.2fa_lockout_duration_help') }}
                         </p>
                     </div>
 
                     <div>
                         <x-form.toggle
                             name="2fa_lockout_notification_enabled"
-                            :label="__('admin/members/settings.auth.2fa_lockout_notification_enabled')"
+                            :label="__('admin/members/settings/auth.2fa_lockout_notification_enabled')"
                             :checked="old('2fa_lockout_notification_enabled', $twoFaLockoutNotificationEnabled)"
                         />
                         <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                            {{ __('admin/members/settings.auth.2fa_lockout_notification_enabled_help') }}
+                            {{ __('admin/members/settings/auth.2fa_lockout_notification_enabled_help') }}
                         </p>
                     </div>
                 </div>
             </fieldset>
 
             <fieldset>
-                <legend>{{ __('admin/members/settings.auth.recovery_code_settings') }}</legend>
+                <legend>{{ __('admin/members/settings/auth.recovery_code_settings') }}</legend>
 
                 <div class="space-y-4">
                     <div>
                         <label for="recovery_codes_count" class="block text-sm font-medium">
-                            {{ __('admin/members/settings.auth.recovery_codes_count') }}
+                            {{ __('admin/members/settings/auth.recovery_codes_count') }}
                         </label>
                         <div class="mt-1 flex items-center space-x-2">
                             <x-form.text
@@ -324,16 +324,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 :max="10"
                                 class="input-common input-sm"
                             />
-                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings.codes') }}</span>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings/index.codes') }}</span>
                         </div>
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            {{ __('admin/members/settings.auth.recovery_codes_count_help') }}
+                            {{ __('admin/members/settings/auth.recovery_codes_count_help') }}
                         </p>
                     </div>
 
                     <div>
                         <label for="recovery_code_regenerate_interval" class="block text-sm font-medium">
-                            {{ __('admin/members/settings.auth.recovery_code_regenerate_interval') }}
+                            {{ __('admin/members/settings/auth.recovery_code_regenerate_interval') }}
                         </label>
                         <div class="mt-1 flex items-center space-x-2">
                             <x-form.text
@@ -345,10 +345,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 :max="168"
                                 class="input-common input-sm"
                             />
-                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings.hours') }}</span>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings/index.hours') }}</span>
                         </div>
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            {{ __('admin/members/settings.auth.recovery_code_regenerate_interval_help') }}
+                            {{ __('admin/members/settings/auth.recovery_code_regenerate_interval_help') }}
                         </p>
                     </div>
                 </div>
@@ -357,18 +357,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- CAPTCHA設定（管理画面ログイン用） -->
         <section>
-            <h2>{{ __('admin/members/settings.auth.captcha_admin_login_settings') }}</h2>
-            <p class="mb-2">{{ __('admin/members/settings.auth.captcha_admin_login_settings_description') }}</p>
+            <h2>{{ __('admin/members/settings/auth.captcha_admin_login_settings') }}</h2>
+            <p class="mb-2">{{ __('admin/members/settings/auth.captcha_admin_login_settings_description') }}</p>
 
             @if(!$captchaEnabled)
                 <x-message
                     type="warning"
-                    :message="__('admin/members/settings.auth.captcha_not_enabled', ['url' => route('admin.settings.security.captcha')])"
+                    :message="__('admin/members/settings/auth.captcha_not_enabled', ['url' => route('admin.settings.security.captcha')])"
                 />
             @elseif(!$captchaAuthenticationResult)
                 <x-message
                     type="warning"
-                    :message="__('admin/members/settings.auth.captcha_not_authenticated', ['url' => route('admin.settings.security.captcha')])"
+                    :message="__('admin/members/settings/auth.captcha_not_authenticated', ['url' => route('admin.settings.security.captcha')])"
                 />
             @endif
 
@@ -381,12 +381,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
                 <x-form.toggle
                     name="captcha_admin_login_enabled"
-                    :label="__('admin/members/settings.auth.captcha_admin_login_enabled')"
+                    :label="__('admin/members/settings/auth.captcha_admin_login_enabled')"
                     :checked="old('captcha_admin_login_enabled', $captchaAdminLoginEnabled)"
                     :disabled="!$captchaAvailable"
                 />
                 <p class="mt-2">
-                    {{ __('admin/members/settings.auth.captcha_admin_login_help') }}
+                    {{ __('admin/members/settings/auth.captcha_admin_login_help') }}
                 </p>
             </fieldset>
         </section>

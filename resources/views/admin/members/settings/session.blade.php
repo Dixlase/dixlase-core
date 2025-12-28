@@ -28,26 +28,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- 管理メンバー用セッション設定 -->
         <section>
-            <h2>{{ __('admin/members/settings.session.admin_settings') }}</h2>
+            <h2>{{ __('admin/members/settings/session.admin_settings') }}</h2>
             <p>
-                {{ __('admin/members/settings.session.admin_settings_description') }}
+                {{ __('admin/members/settings/session.admin_settings_description') }}
             </p>
 
             <!-- セッション有効時間カスタマイズ有効/無効 -->
             <fieldset>
                 <x-form.toggle
                     name="members_session_lifetime_enabled"
-                    :label="__('admin/members/settings.session.lifetime_enabled')"
+                    :label="__('admin/members/settings/session.lifetime_enabled')"
                     :checked="old('members_session_lifetime_enabled', $membersSessionLifetimeEnabled)"
                 />
                 <p class="mt-2">
-                    {{ __('admin/members/settings.session.lifetime_enabled_help') }}
+                    {{ __('admin/members/settings/session.lifetime_enabled_help') }}
                 </p>
             </fieldset>
 
             <!-- 管理メンバー用セッション有効時間 -->
             <fieldset>
-                <legend>{{ __('admin/members/settings.session.lifetime') }}</legend>
+                <legend>{{ __('admin/members/settings/session.lifetime') }}</legend>
                 <div class="flex items-center">
                     <x-form.text
                         type="number"
@@ -57,10 +57,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :max="43200"
                         class="input-common input-sm"
                     />
-                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings.minutes') }}</span>
+                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings/index.minutes') }}</span>
                 </div>
                 <p>
-                    {{ __('admin/members/settings.session.lifetime_help') }}
+                    {{ __('admin/members/settings/session.lifetime_help') }}
                 </p>
             </fieldset>
         </section>

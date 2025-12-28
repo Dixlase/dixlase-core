@@ -54,22 +54,22 @@ https://exc-d.com
         $auditedAtForEnable = $plugin->permission_summary['audit']['audited_at'] ?? null;
         
         if ($signatureStatus === 'invalid') {
-            $enableWarnings[] = __('admin/settings/plugins.permissions.enable_warning_invalid_signature');
+            $enableWarnings[] = __('admin/settings/plugins/index.permissions.enable_warning_invalid_signature');
         }
         if ($signatureStatus === 'unsigned' || $signatureStatus === 'none') {
-            $enableWarnings[] = __('admin/settings/plugins.permissions.install_warning_unsigned');
+            $enableWarnings[] = __('admin/settings/plugins/index.permissions.install_warning_unsigned');
         }
         if (!$hasPermissions) {
-            $enableWarnings[] = __('admin/settings/plugins.permissions.install_warning_undefined');
+            $enableWarnings[] = __('admin/settings/plugins/index.permissions.install_warning_undefined');
         }
         if ($riskLevel === 'high') {
-            $enableWarnings[] = __('admin/settings/plugins.permissions.enable_warning_high_risk');
+            $enableWarnings[] = __('admin/settings/plugins/index.permissions.enable_warning_high_risk');
         }
         if ($hasMismatchesForEnable) {
-            $enableWarnings[] = __('admin/settings/plugins.permissions.install_warning_mismatch');
+            $enableWarnings[] = __('admin/settings/plugins/index.permissions.install_warning_mismatch');
         }
         if (!$auditedAtForEnable) {
-            $enableWarnings[] = __('admin/settings/plugins.permissions.warning_not_scanned');
+            $enableWarnings[] = __('admin/settings/plugins/index.permissions.warning_not_scanned');
         }
         
         $hasEnableWarnings = !empty($enableWarnings);
@@ -91,7 +91,7 @@ https://exc-d.com
             
             <x-modal
                 :id="$enableModalId"
-                :title="__('admin/settings/plugins.permissions.enable_warning_title')"
+                :title="__('admin/settings/plugins/index.permissions.enable_warning_title')"
                 icon_type="warning"
                 :confirm_label="__('common.enable')"
                 :cancel_label="__('common.cancel')"
@@ -99,7 +99,7 @@ https://exc-d.com
                 confirm_color="yellow">
                 <div class="text-left">
                     <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">
-                        {{ __('admin/settings/plugins.permissions.enable_warning_message', ['name' => $plugin->translated_name]) }}
+                        {{ __('admin/settings/plugins/index.permissions.enable_warning_message', ['name' => $plugin->translated_name]) }}
                     </p>
                     <div class="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 mb-3">
                         <ul class="text-sm text-yellow-700 dark:text-yellow-300 space-y-1 ml-4 list-disc">
@@ -109,7 +109,7 @@ https://exc-d.com
                         </ul>
                     </div>
                     <p class="text-sm text-gray-600 dark:text-gray-400">
-                        {{ __('admin/settings/plugins.permissions.enable_warning_confirm') }}
+                        {{ __('admin/settings/plugins/index.permissions.enable_warning_confirm') }}
                     </p>
                 </div>
             </x-modal>
@@ -139,13 +139,13 @@ https://exc-d.com
 
         <x-modal
             id="uninstallModal-{{ $plugin->id }}"
-            :title="__('admin/settings/plugins.index.uninstall.confirm_title')"
-            :message="str_replace('{name}', $plugin->name, __('admin/settings/plugins.index.uninstall.confirm_message'))"
+            :title="__('admin/settings/plugins/index.uninstall.confirm_title')"
+            :message="str_replace('{name}', $plugin->name, __('admin/settings/plugins/index.uninstall.confirm_message'))"
             :confirm_label="__('common.uninstall')"
             :cancel_label="__('common.cancel')"
             :checkbox="true"
             checkbox_name="remove_db_data"
-            checkbox_label="{!! __('admin/settings/plugins.index.uninstall.remove_data_checkbox') !!}"
+            checkbox_label="{!! __('admin/settings/plugins/index.uninstall.remove_data_checkbox') !!}"
             form="uninstallForm-{{ $plugin->id }}"
             icon_type="danger"
             confirm_color="red"

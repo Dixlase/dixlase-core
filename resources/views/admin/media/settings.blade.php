@@ -44,7 +44,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         {{-- 許可するファイルタイプ --}}
         <div class="mb-6">
-            <h2>{{ __('admin/media.settings.allowed_file_types') }}</h2>
+            <h2>{{ __('admin/media/settings.allowed_file_types') }}</h2>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
                 @foreach($fileExtensions as $extension)
                     @php
@@ -52,19 +52,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         $warningTitle = '';
                         if ($extension === 'svg') {
                             $warningIcon = 'fas fa-exclamation-triangle text-yellow-500';
-                            $warningTitle = __('admin/media.settings.svg_warning');
+                            $warningTitle = __('admin/media/settings.svg_warning');
                         } elseif ($extension === 'zip') {
                             $warningIcon = 'fas fa-file-archive text-orange-500';
-                            $warningTitle = __('admin/media.settings.zip_warning');
+                            $warningTitle = __('admin/media/settings.zip_warning');
                         } elseif ($extension === 'pdf') {
                             $warningIcon = 'fas fa-file-pdf text-red-400';
-                            $warningTitle = __('admin/media.settings.pdf_warning');
+                            $warningTitle = __('admin/media/settings.pdf_warning');
                         } elseif ($extension === 'docx') {
                             $warningIcon = 'fas fa-file-word text-blue-400';
-                            $warningTitle = __('admin/media.settings.docx_warning');
+                            $warningTitle = __('admin/media/settings.docx_warning');
                         } elseif ($extension === 'tex') {
                             $warningIcon = 'fas fa-file-alt text-gray-400';
-                            $warningTitle = __('admin/media.settings.tex_warning');
+                            $warningTitle = __('admin/media/settings.tex_warning');
                         }
                     @endphp
                     <div class="flex items-center justify-start bg-gray-100 dark:bg-gray-700 p-3 rounded-lg shadow-sm">
@@ -98,28 +98,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div class="flex items-start">
                     <i class="fas fa-exclamation-triangle text-yellow-500 mt-0.5 mr-3"></i>
                     <div>
-                        <h3 class="font-medium text-yellow-800 dark:text-yellow-200">{{ __('admin/media.settings.risky_types_warning_title') }}</h3>
-                        <p class="text-sm text-yellow-700 dark:text-yellow-300 mt-1">{{ __('admin/media.settings.risky_types_warning_description') }}</p>
+                        <h3 class="font-medium text-yellow-800 dark:text-yellow-200">{{ __('admin/media/settings.risky_types_warning_title') }}</h3>
+                        <p class="text-sm text-yellow-700 dark:text-yellow-300 mt-1">{{ __('admin/media/settings.risky_types_warning_description') }}</p>
                         <ul class="mt-2 space-y-1 text-sm text-yellow-700 dark:text-yellow-300">
                             <li x-show="riskyTypes.svg" x-transition class="flex items-center">
                                 <i class="fas fa-exclamation-triangle text-yellow-500 mr-2 w-4"></i>
-                                <strong>SVG:</strong>&nbsp;{{ __('admin/media.settings.risk.svg') }}
+                                <strong>SVG:</strong>&nbsp;{{ __('admin/media/settings.risk.svg') }}
                             </li>
                             <li x-show="riskyTypes.zip" x-transition class="flex items-center">
                                 <i class="fas fa-file-archive text-orange-500 mr-2 w-4"></i>
-                                <strong>ZIP:</strong>&nbsp;{{ __('admin/media.settings.risk.zip') }}
+                                <strong>ZIP:</strong>&nbsp;{{ __('admin/media/settings.risk.zip') }}
                             </li>
                             <li x-show="riskyTypes.pdf" x-transition class="flex items-center">
                                 <i class="fas fa-file-pdf text-red-400 mr-2 w-4"></i>
-                                <strong>PDF:</strong>&nbsp;{{ __('admin/media.settings.risk.pdf') }}
+                                <strong>PDF:</strong>&nbsp;{{ __('admin/media/settings.risk.pdf') }}
                             </li>
                             <li x-show="riskyTypes.docx" x-transition class="flex items-center">
                                 <i class="fas fa-file-word text-blue-400 mr-2 w-4"></i>
-                                <strong>DOCX:</strong>&nbsp;{{ __('admin/media.settings.risk.docx') }}
+                                <strong>DOCX:</strong>&nbsp;{{ __('admin/media/settings.risk.docx') }}
                             </li>
                             <li x-show="riskyTypes.tex" x-transition class="flex items-center">
                                 <i class="fas fa-file-alt text-gray-400 mr-2 w-4"></i>
-                                <strong>TEX:</strong>&nbsp;{{ __('admin/media.settings.risk.tex') }}
+                                <strong>TEX:</strong>&nbsp;{{ __('admin/media/settings.risk.tex') }}
                             </li>
                         </ul>
                     </div>
@@ -129,14 +129,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         {{-- ファイルタイプ別サイズ上限 --}}
         <div class="mb-6">
-            <h2 class="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">{{ __('admin/media.settings.file_size_limits') }}</h2>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ __('admin/media.settings.file_size_limits_description') }}</p>
+            <h2 class="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">{{ __('admin/media/settings.file_size_limits') }}</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ __('admin/media/settings.file_size_limits_description') }}</p>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {{-- 画像 --}}
                 <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        <i class="fas fa-image text-green-500 mr-2"></i>{{ __('admin/media.settings.category.image') }}
+                        <i class="fas fa-image text-green-500 mr-2"></i>{{ __('admin/media/settings.category.image') }}
                         <span class="text-xs text-gray-500">(jpg, png, gif, webp, svg)</span>
                     </label>
                     <div class="flex items-center space-x-2">
@@ -157,7 +157,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 {{-- 動画 --}}
                 <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        <i class="fas fa-video text-purple-500 mr-2"></i>{{ __('admin/media.settings.category.video') }}
+                        <i class="fas fa-video text-purple-500 mr-2"></i>{{ __('admin/media/settings.category.video') }}
                         <span class="text-xs text-gray-500">(mp4)</span>
                     </label>
                     <div class="flex items-center space-x-2">
@@ -178,7 +178,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 {{-- ドキュメント --}}
                 <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        <i class="fas fa-file-alt text-blue-500 mr-2"></i>{{ __('admin/media.settings.category.document') }}
+                        <i class="fas fa-file-alt text-blue-500 mr-2"></i>{{ __('admin/media/settings.category.document') }}
                         <span class="text-xs text-gray-500">(pdf, docx, txt)</span>
                     </label>
                     <div class="flex items-center space-x-2">
@@ -199,7 +199,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 {{-- アーカイブ --}}
                 <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        <i class="fas fa-file-archive text-orange-500 mr-2"></i>{{ __('admin/media.settings.category.archive') }}
+                        <i class="fas fa-file-archive text-orange-500 mr-2"></i>{{ __('admin/media/settings.category.archive') }}
                         <span class="text-xs text-gray-500">(zip)</span>
                     </label>
                     <div class="flex items-center space-x-2">
@@ -225,7 +225,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {{-- セキュリティ設定 --}}
         <div class="mb-6">
             <h2 class="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">
-                <i class="fas fa-shield-alt text-blue-500 mr-2"></i>{{ __('admin/media.settings.security') }}
+                <i class="fas fa-shield-alt text-blue-500 mr-2"></i>{{ __('admin/media/settings.security') }}
             </h2>
 
             <div class="space-y-4">
@@ -237,8 +237,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             :checked="($securitySettings['mime_validation_enabled'] ?? true)"
                         />
                         <div class="ml-3">
-                            <span class="font-medium text-gray-900 dark:text-gray-100">{{ __('admin/media.settings.mime_validation') }}</span>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/media.settings.mime_validation_description') }}</p>
+                            <span class="font-medium text-gray-900 dark:text-gray-100">{{ __('admin/media/settings.mime_validation') }}</span>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/media/settings.mime_validation_description') }}</p>
                         </div>
 
                     </div>
@@ -253,9 +253,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         />
                         <div class="ml-3">
                             <span class="font-medium text-gray-900 dark:text-gray-100">
-                                <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>{{ __('admin/media.settings.svg_sanitization') }}
+                                <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>{{ __('admin/media/settings.svg_sanitization') }}
                             </span>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/media.settings.svg_sanitization_description') }}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/media/settings.svg_sanitization_description') }}</p>
                         </div>
 
                     </div>
@@ -271,9 +271,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         />
                         <div class="ml-3">
                             <span class="font-medium text-gray-900 dark:text-gray-100">
-                                <i class="fas fa-file-archive text-blue-500 mr-2"></i>{{ __('admin/media.settings.zip_security') }}
+                                <i class="fas fa-file-archive text-blue-500 mr-2"></i>{{ __('admin/media/settings.zip_security') }}
                             </span>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/media.settings.zip_security_description') }}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/media/settings.zip_security_description') }}</p>
                         </div>
 
                     </div>
@@ -283,7 +283,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    {{ __('admin/media.settings.zip_max_compression_ratio') }}
+                                    {{ __('admin/media/settings.zip_max_compression_ratio') }}
                                 </label>
                                 <div class="flex items-center space-x-2">
                                     <x-form.text
@@ -296,13 +296,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         :step="10"
                                         :required="true"
                                     />
-                                    <span class="text-gray-600 dark:text-gray-400">{{ __('admin/media.settings.times') }}</span>
+                                    <span class="text-gray-600 dark:text-gray-400">{{ __('admin/media/settings.times') }}</span>
                                 </div>
-                                <p class="text-xs text-gray-500 mt-1">{{ __('admin/media.settings.zip_compression_ratio_help') }}</p>
+                                <p class="text-xs text-gray-500 mt-1">{{ __('admin/media/settings.zip_compression_ratio_help') }}</p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    {{ __('admin/media.settings.zip_max_file_count') }}
+                                    {{ __('admin/media/settings.zip_max_file_count') }}
                                 </label>
                                 <div class="flex items-center space-x-2">
                                     <x-form.text
@@ -315,7 +315,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         :step="10"
                                         :required="true"
                                     />
-                                    <span class="text-gray-600 dark:text-gray-400">{{ __('admin/media.settings.files') }}</span>
+                                    <span class="text-gray-600 dark:text-gray-400">{{ __('admin/media/settings.files') }}</span>
                                 </div>
                             </div>
                         </div>

@@ -54,4 +54,5 @@ return [
     'zip_compression_ratio_help' => '展開後サイズ / 圧縮サイズの上限（ZIP爆弾対策）',
     'zip_max_file_count' => '最大ファイル数',
     'times' => '倍',
+    'files' => '個',
 ];

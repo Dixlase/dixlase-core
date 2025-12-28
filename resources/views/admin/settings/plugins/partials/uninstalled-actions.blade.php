@@ -34,7 +34,7 @@ https://exc-d.com
 
     <x-modal
         id="installModal-{{ $plugin['directory'] }}"
-        :title="$hasWarnings ? __('admin/settings/plugins.permissions.install_warning_title') : __('admin/settings/plugins.index.install.confirm_title')"
+        :title="$hasWarnings ? __('admin/settings/plugins/index.permissions.install_warning_title') : __('admin/settings/plugins/index.install.confirm_title')"
         :confirm_label="__('common.install')"
         :cancel_label="__('common.cancel')"
         form="installForm-{{ $plugin['directory'] }}"
@@ -44,38 +44,38 @@ https://exc-d.com
         @if($hasWarnings)
             <div class="text-left">
                 <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">
-                    {{ str_replace('{name}', $plugin['name'], __('admin/settings/plugins.index.install.confirm_message')) }}
+                    {{ str_replace('{name}', $plugin['name'], __('admin/settings/plugins/index.install.confirm_message')) }}
                 </p>
                 <div class="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 mb-3">
                     <p class="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
                         <i class="fas fa-exclamation-triangle mr-1"></i>
-                        {{ __('admin/settings/plugins.permissions.install_warning_risk') }}
+                        {{ __('admin/settings/plugins/index.permissions.install_warning_risk') }}
                     </p>
                     <ul class="text-sm text-yellow-700 dark:text-yellow-300 space-y-1 ml-5 list-disc">
                         @if($isUndefined)
-                            <li>{{ __('admin/settings/plugins.permissions.install_warning_undefined') }}</li>
+                            <li>{{ __('admin/settings/plugins/index.permissions.install_warning_undefined') }}</li>
                         @endif
                         @if($isUnsigned)
-                            <li>{{ __('admin/settings/plugins.permissions.install_warning_unsigned') }}</li>
+                            <li>{{ __('admin/settings/plugins/index.permissions.install_warning_unsigned') }}</li>
                         @endif
                         @if($hasMismatches)
-                            <li>{{ __('admin/settings/plugins.permissions.install_warning_mismatch') }}</li>
+                            <li>{{ __('admin/settings/plugins/index.permissions.install_warning_mismatch') }}</li>
                         @endif
                         @if($isNotScanned)
-                            <li>{{ __('admin/settings/plugins.permissions.warning_not_scanned') }}</li>
+                            <li>{{ __('admin/settings/plugins/index.permissions.warning_not_scanned') }}</li>
                         @endif
                         @if(in_array($riskLevel, ['medium', 'high']))
-                            <li>{{ __('admin/settings/plugins.permissions.risk_' . $riskLevel) }}</li>
+                            <li>{{ __('admin/settings/plugins/index.permissions.risk_' . $riskLevel) }}</li>
                         @endif
                     </ul>
                 </div>
                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                    {{ __('admin/settings/plugins.permissions.install_warning_confirm') }}
+                    {{ __('admin/settings/plugins/index.permissions.install_warning_confirm') }}
                 </p>
             </div>
         @else
             <p class="text-sm text-gray-700 dark:text-gray-300">
-                {{ str_replace('{name}', $plugin['name'], __('admin/settings/plugins.index.install.confirm_message')) }}
+                {{ str_replace('{name}', $plugin['name'], __('admin/settings/plugins/index.install.confirm_message')) }}
             </p>
         @endif
     </x-modal>
@@ -97,8 +97,8 @@ https://exc-d.com
 
     <x-modal
         id="deleteModal-{{ $plugin['directory'] }}"
-        :title="__('admin/settings/plugins.index.delete.confirm_title')"
-        :message="str_replace('{name}', $plugin['name'], __('admin/settings/plugins.index.delete.confirm_message'))"
+        :title="__('admin/settings/plugins/index.delete.confirm_title')"
+        :message="str_replace('{name}', $plugin['name'], __('admin/settings/plugins/index.delete.confirm_message'))"
         :confirm_label="__('common.delete')"
         :cancel_label="__('common.cancel')"
         form="deleteForm-{{ $plugin['directory'] }}"

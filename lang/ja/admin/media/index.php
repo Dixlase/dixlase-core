@@ -21,4 +21,10 @@ return [
     'preview' => 'プレビュー',
     'download' => 'ダウンロード',
     'delete' => '削除',
+    
+    'search' => [
+        'file_name_placeholder' => 'ファイル名で検索',
+        'date_from' => '開始日',
+        'date_to' => '終了日',
+    ],
 ];

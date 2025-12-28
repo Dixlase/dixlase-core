@@ -11,15 +11,15 @@ https://exc-d.com
 <script @cspNonce>
 document.addEventListener('DOMContentLoaded', function() {
     const auditMessages = {
-        scanning: @json(__('admin/settings/plugins.permissions.audit_scanning')),
-        rescan: @json(__('admin/settings/plugins.permissions.audit_button_rescan')),
-        completed: @json(__('admin/settings/plugins.index.audit.completed')),
-        failed: @json(__('admin/settings/plugins.index.audit.failed')),
-        resultTitle: @json(__('admin/settings/plugins.permissions.audit_result_title') ?? 'スキャン結果'),
-        noIssues: @json(__('admin/settings/plugins.permissions.audit_no_issues') ?? '問題は検出されませんでした'),
-        mismatchFound: @json(__('admin/settings/plugins.permissions.audit_mismatch_title')),
-        undeclaredUsage: @json(__('admin/settings/plugins.permissions.audit_undeclared_usage')),
-        unusedDeclaration: @json(__('admin/settings/plugins.permissions.audit_unused_declaration')),
+        scanning: @json(__('admin/settings/plugins/index.permissions.audit_scanning')),
+        rescan: @json(__('admin/settings/plugins/index.permissions.audit_button_rescan')),
+        completed: @json(__('admin/settings/plugins/index.audit.completed')),
+        failed: @json(__('admin/settings/plugins/index.audit.failed')),
+        resultTitle: @json(__('admin/settings/plugins/index.permissions.audit_result_title') ?? 'スキャン結果'),
+        noIssues: @json(__('admin/settings/plugins/index.permissions.audit_no_issues') ?? '問題は検出されませんでした'),
+        mismatchFound: @json(__('admin/settings/plugins/index.permissions.audit_mismatch_title')),
+        undeclaredUsage: @json(__('admin/settings/plugins/index.permissions.audit_undeclared_usage')),
+        unusedDeclaration: @json(__('admin/settings/plugins/index.permissions.audit_unused_declaration')),
         close: @json(__('common.close')),
     };
     
@@ -46,17 +46,17 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         const healthStyle = healthColors[riskLevel] || healthColors['unknown'];
         const healthLabels = {
-            'low': @json(__('admin/settings/plugins.permissions.health_healthy')),
-            'medium': @json(__('admin/settings/plugins.permissions.health_warning')),
-            'high': @json(__('admin/settings/plugins.permissions.health_needs_attention')),
-            'unknown': @json(__('admin/settings/plugins.permissions.health_not_verified'))
+            'low': @json(__('admin/settings/plugins/index.permissions.health_healthy')),
+            'medium': @json(__('admin/settings/plugins/index.permissions.health_warning')),
+            'high': @json(__('admin/settings/plugins/index.permissions.health_needs_attention')),
+            'unknown': @json(__('admin/settings/plugins/index.permissions.health_not_verified'))
         };
         
         contentHtml += `
             <div class="p-3 rounded-lg ${healthStyle.bg} border ${healthStyle.border} mb-3">
                 <div class="flex items-center gap-2 ${healthStyle.text}">
                     <i class="fas ${healthStyle.icon}"></i>
-                    <span class="font-semibold">${@json(__('admin/settings/plugins.badge_labels.health'))}: ${healthLabels[riskLevel] || healthLabels['unknown']}</span>
+                    <span class="font-semibold">${@json(__('admin/settings/plugins/index.badge_labels.health'))}: ${healthLabels[riskLevel] || healthLabels['unknown']}</span>
                 </div>
             </div>
         `;
@@ -93,9 +93,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         contentHtml += `
             <div class="mt-3 text-xs text-gray-500 dark:text-gray-400">
-                ${@json(__('admin/settings/plugins.permissions.audit_stats'))}: ${audit.total_checked || 0} / 
-                ${@json(__('admin/settings/plugins.permissions.audit_matches'))}: ${audit.matches_count || 0} / 
-                ${@json(__('admin/settings/plugins.permissions.audit_mismatches'))}: ${(audit.mismatches || []).length}
+                ${@json(__('admin/settings/plugins/index.permissions.audit_stats'))}: ${audit.total_checked || 0} / 
+                ${@json(__('admin/settings/plugins/index.permissions.audit_matches'))}: ${audit.matches_count || 0} / 
+                ${@json(__('admin/settings/plugins/index.permissions.audit_mismatches'))}: ${(audit.mismatches || []).length}
             </div>
         `;
         
