@@ -178,6 +178,59 @@ Route::prefix($adminUrl)->name('admin.')
             Route::post('/profile/recovery-codes/regenerate', [AdminProfileController::class, 'regenerateRecoveryCodes'])->name('profile.recovery-codes.regenerate');
             Route::post('/profile/recovery-codes/clear-session', [AdminProfileController::class, 'clearRecoveryCodesSession'])->name('profile.recovery-codes.clear-session');
 
+            // メンバー管理（権限チェック付き）
+            Route::middleware('check.menu.access:members')->prefix('members')->name('members.')->group(function () {
+                // メンバー一覧・CRUD
+                Route::get('/', [Members\AdminMemberController::class, 'index'])->name('index');
+                Route::get('/create', [Members\AdminMemberController::class, 'create'])->name('create');
+                Route::post('/', [Members\AdminMemberController::class, 'store'])->name('store');
+                Route::get('/edit/{member}', [Members\AdminMemberController::class, 'edit'])->name('edit');
+                Route::patch('/update/{member}', [Members\AdminMemberController::class, 'update'])->name('update');
+                Route::delete('/destroy/{member}', [Members\AdminMemberController::class, 'destroy'])
+                    ->middleware('check.menu.edit:members.index')
+                    ->name('destroy');
+
+                // セキュリティ操作
+                Route::delete('/passkey/{member}/{credentialId}', [Members\AdminMemberController::class, 'revokePasskey'])
+                    ->middleware('check.menu.edit:members.index')
+                    ->name('passkey.revoke');
+                Route::delete('/recovery-codes/{member}', [Members\AdminMemberController::class, 'revokeRecoveryCodes'])
+                    ->middleware('check.menu.edit:members.index')
+                    ->name('recovery-codes.revoke');
+                Route::post('/force-logout/{member}', [Members\AdminMemberController::class, 'forceLogout'])
+                    ->middleware('check.menu.edit:members.index')
+                    ->name('force-logout');
+                Route::post('/unlock-2fa/{member}', [Members\AdminMemberController::class, 'unlock2fa'])
+                    ->middleware('check.menu.edit:members.index')
+                    ->name('unlock-2fa');
+                Route::post('/force-logout-all', [Members\AdminMemberSettingsController::class, 'forceLogoutAll'])
+                    ->middleware('check.menu.edit:members.settings')
+                    ->name('force-logout-all');
+                Route::post('/{member}/send-verification-email', [Members\AdminMemberController::class, 'sendVerificationEmail'])
+                    ->middleware('check.menu.edit:members.index')
+                    ->name('send-verification-email');
+
+                // メンバー設定
+                Route::get('/settings', [Members\AdminMemberSettingsController::class, 'index'])->name('settings.index');
+                Route::get('/settings/password', [Members\AdminMemberPasswordController::class, 'index'])->name('settings.password');
+                Route::get('/settings/session', [Members\AdminMemberSessionController::class, 'index'])->name('settings.session');
+                Route::get('/settings/auth', [Members\AdminMemberAuthController::class, 'index'])->name('settings.auth');
+                Route::get('/settings/roles', [Members\AdminMemberRolesController::class, 'index'])->name('settings.roles');
+
+                Route::post('/settings/password', [Members\AdminMemberPasswordController::class, 'update'])
+                    ->middleware('check.menu.edit:members.settings')
+                    ->name('settings.password.update');
+                Route::post('/settings/session', [Members\AdminMemberSessionController::class, 'update'])
+                    ->middleware('check.menu.edit:members.settings')
+                    ->name('settings.session.update');
+                Route::post('/settings/auth', [Members\AdminMemberAuthController::class, 'update'])
+                    ->middleware('check.menu.edit:members.settings')
+                    ->name('settings.auth.update');
+                Route::post('/settings/roles', [Members\AdminMemberRolesController::class, 'update'])
+                    ->middleware('check.menu.edit:members.roles')
+                    ->name('settings.roles.update');
+            });
+            
             // 全体設定
             // 基本設定（権限チェック付き）
             Route::middleware('check.menu.access:settings.base')->prefix('settings/base')->name('settings.base.')->group(function () {
@@ -275,58 +328,7 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::get('/integrity/{audit}', [Security\AdminSecurityIntegrityController::class, 'show'])->name('integrity.show');
 
             });
-            // メンバー管理（権限チェック付き）
-            Route::middleware('check.menu.access:members')->prefix('members')->name('members.')->group(function () {
-                // メンバー一覧・CRUD
-                Route::get('/', [Members\AdminMemberController::class, 'index'])->name('index');
-                Route::get('/create', [Members\AdminMemberController::class, 'create'])->name('create');
-                Route::post('/', [Members\AdminMemberController::class, 'store'])->name('store');
-                Route::get('/edit/{member}', [Members\AdminMemberController::class, 'edit'])->name('edit');
-                Route::patch('/update/{member}', [Members\AdminMemberController::class, 'update'])->name('update');
-                Route::delete('/destroy/{member}', [Members\AdminMemberController::class, 'destroy'])
-                    ->middleware('check.menu.edit:members.index')
-                    ->name('destroy');
-
-                // セキュリティ操作
-                Route::delete('/passkey/{member}/{credentialId}', [Members\AdminMemberController::class, 'revokePasskey'])
-                    ->middleware('check.menu.edit:members.index')
-                    ->name('passkey.revoke');
-                Route::delete('/recovery-codes/{member}', [Members\AdminMemberController::class, 'revokeRecoveryCodes'])
-                    ->middleware('check.menu.edit:members.index')
-                    ->name('recovery-codes.revoke');
-                Route::post('/force-logout/{member}', [Members\AdminMemberController::class, 'forceLogout'])
-                    ->middleware('check.menu.edit:members.index')
-                    ->name('force-logout');
-                Route::post('/unlock-2fa/{member}', [Members\AdminMemberController::class, 'unlock2fa'])
-                    ->middleware('check.menu.edit:members.index')
-                    ->name('unlock-2fa');
-                Route::post('/force-logout-all', [Members\AdminMemberSettingsController::class, 'forceLogoutAll'])
-                    ->middleware('check.menu.edit:members.settings')
-                    ->name('force-logout-all');
-                Route::post('/{member}/send-verification-email', [Members\AdminMemberController::class, 'sendVerificationEmail'])
-                    ->middleware('check.menu.edit:members.index')
-                    ->name('send-verification-email');
-
-                // メンバー設定
-                Route::get('/settings', [Members\AdminMemberSettingsController::class, 'index'])->name('settings');
-                Route::get('/settings/password', [Members\AdminMemberPasswordController::class, 'index'])->name('settings.password');
-                Route::get('/settings/session', [Members\AdminMemberSessionController::class, 'index'])->name('settings.session');
-                Route::get('/settings/auth', [Members\AdminMemberAuthController::class, 'index'])->name('settings.auth');
-                Route::get('/settings/roles', [Members\AdminMemberRolesController::class, 'index'])->name('settings.roles');
-
-                Route::post('/settings/password', [Members\AdminMemberPasswordController::class, 'update'])
-                    ->middleware('check.menu.edit:members.settings')
-                    ->name('settings.password.update');
-                Route::post('/settings/session', [Members\AdminMemberSessionController::class, 'update'])
-                    ->middleware('check.menu.edit:members.settings')
-                    ->name('settings.session.update');
-                Route::post('/settings/auth', [Members\AdminMemberAuthController::class, 'update'])
-                    ->middleware('check.menu.edit:members.settings')
-                    ->name('settings.auth.update');
-                Route::post('/settings/roles', [Members\AdminMemberRolesController::class, 'update'])
-                    ->middleware('check.menu.edit:members.roles')
-                    ->name('settings.roles.update');
-            });
+            
 
             // テーマ設定（権限チェック付き）
             Route::middleware('check.menu.access:settings.themes')->group(function () {
@@ -409,7 +411,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('database.cleanup');
                 
                 // 監査ログ（/logs/ がデフォルト）
-                Route::get('/logs', [Systems\AdminSystemLogsController::class, 'auditIndex'])->name('logs');
+                Route::get('/logs', [Systems\AdminSystemLogsController::class, 'auditIndex'])->name('logs.index');
                 
                 // ファイルログ
                 Route::get('/logs/files/{type?}', [Systems\AdminSystemLogsController::class, 'index'])->name('logs.files');

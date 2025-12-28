@@ -14,6 +14,7 @@
 
 return [
     'heading' => '新規メンバー作成',
+    'description' => '新しいメンバーアカウントを作成します。メールアドレス、パスワード、権限などを設定できます。',
     'account_status' => 'アカウントの状態',
     'create_confirmation_title' => '作成確認',
     'create_confirmation_message' => 'この内容でメンバーを作成しますか？',

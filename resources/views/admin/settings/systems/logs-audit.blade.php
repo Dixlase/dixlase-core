@@ -81,7 +81,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </button>
         </div>
         <div x-show="open" x-collapse>
-            <form method="GET" action="{{ route('admin.settings.systems.logs') }}" class="p-4">
+            <form method="GET" action="{{ route('admin.settings.systems.logs.index') }}" class="p-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {{-- 検索 --}}
                     <div>
@@ -183,7 +183,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
 
                 <div class="mt-4 flex justify-end space-x-2">
-                    <a href="{{ route('admin.settings.systems.logs') }}" 
+                    <a href="{{ route('admin.settings.systems.logs.index') }}" 
                        class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
                         {{ __('common.reset') }}
                     </a>

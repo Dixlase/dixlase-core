@@ -45,7 +45,6 @@ class AdminSecurityAuthController extends AdminLoggedInController
         $this->addBreadcrumb(null, __('admin/nav.settings.text'));
         $this->addBreadcrumb('admin.settings.security.index', __('admin/nav.settings.security.text'));
         $this->addBreadcrumb(null, __('admin/nav.settings.security.auth'));
-        $this->setDescription(__('admin/settings/security/auth.description'));
         $this->setBreadcrumbs();
         
         $settings = [
