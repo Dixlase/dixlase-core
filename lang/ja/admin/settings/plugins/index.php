@@ -13,7 +13,7 @@
  */
 
 return [
-    'heading' => 'プラグイン一覧',
+    'heading' => 'プラグイン管理',
     'description' => 'インストール済みプラグインの管理、新しいプラグインの追加、プラグインの有効化・無効化を行います。',
     'installed_heading' => 'インストール済みプラグイン',
     'uninstalled_heading' => 'アンインストール済みプラグイン',

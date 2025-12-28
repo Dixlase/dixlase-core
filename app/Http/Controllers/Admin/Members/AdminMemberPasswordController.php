@@ -31,9 +31,6 @@ class AdminMemberPasswordController extends AdminMemberSettingsController
      */
     public function index()
     {
-        $this->addBreadcrumb('admin.members.index', __('admin/nav.settings.members.text'));
-        $this->addBreadcrumb('admin.members.settings.index', __('admin/members/settings.heading'));
-        $this->addBreadcrumb(null, __('admin/members/settings.password.heading'));
         $this->loadViewParams();
         return view('admin.members.settings.password', $this->viewParams);
     }

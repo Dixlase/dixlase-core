@@ -41,10 +41,6 @@ class AdminSecurityIpController extends AdminLoggedInController
      */
     public function index()
     {
-        $this->addBreadcrumb(null, __('admin/nav.settings.text'));
-        $this->addBreadcrumb('admin.settings.security.index', __('admin/nav.settings.security.text'));
-        $this->addBreadcrumb(null, __('admin/nav.settings.security.ip'));
-        $this->setBreadcrumbs();
         
         $settings = [
             'enable_allowed_admin_ips' => filter_var($this->securitySettingRepository->get('enable_allowed_admin_ips', false), FILTER_VALIDATE_BOOLEAN),

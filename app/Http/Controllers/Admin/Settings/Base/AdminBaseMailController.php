@@ -48,10 +48,6 @@ class AdminBaseMailController extends AdminLoggedInController
      */
     public function index(Request $request)
     {
-        $this->addBreadcrumb(null, __('admin/nav.settings.text'));
-        $this->addBreadcrumb('admin.settings.base.index', __('admin/nav.settings.base.text'));
-        $this->addBreadcrumb(null, __('admin/nav.settings.base.mail'));
-        $this->setBreadcrumbs();
         // メール受信テスト状態更新のリクエストを処理
         if ($request->isMethod('post') && $request->input('action') === 'update_receive_test_status') {
             $mailTestResults = session('mail_test_results', []);

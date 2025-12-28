@@ -13,7 +13,7 @@
  */
 
 return [
-    'heading' => 'セキュリティ設定概要',
+    'heading' => 'セキュリティ設定',
     'description' => 'セキュリティ設定の概要と各機能の状態を確認できます。',
     'session_driver' => 'セッションドライバー',
     'captcha_active' => 'CAPTCHA有効',

@@ -13,7 +13,7 @@
  */
 
 return [
-    'heading' => '基本設定概要',
+    'heading' => '基本設定',
     'description' => '基本設定の概要と各機能の状態を確認できます。',
     'locale' => '言語',
     'admin_url' => '管理画面URL',

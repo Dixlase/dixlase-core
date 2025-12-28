@@ -44,10 +44,6 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
      */
     public function index()
     {
-        $this->addBreadcrumb(null, __('admin/nav.settings.text'));
-        $this->addBreadcrumb('admin.settings.security.index', __('admin/nav.settings.security.text'));
-        $this->addBreadcrumb(null, __('admin/nav.settings.security.captcha'));
-        $this->setBreadcrumbs();
         
         $currentDriver = $this->securitySettingRepository->get('captcha_driver', 'google');
         

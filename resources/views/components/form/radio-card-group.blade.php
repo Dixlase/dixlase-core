@@ -125,7 +125,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'blue' => [
             'border' => 'border-blue-500 dark:border-blue-400',
             'ring' => 'ring-blue-500 dark:ring-blue-400',
-            'bg' => 'bg-blue-50 dark:bg-blue-900/30',
+            'bg' => 'bg-blue-50 dark:bg-blue-900/20',
             'text' => 'text-blue-600 dark:text-blue-300',
             'check' => 'text-blue-600 dark:text-blue-400',
         ],
@@ -175,11 +175,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     
     // バッジ色のマッピング
     $badgeColorClasses = [
-        'yellow' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300',
-        'red' => 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300',
-        'green' => 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
-        'blue' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-        'gray' => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+        'yellow' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100',
+        'red' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100',
+        'green' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100',
+        'blue' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100',
+        'gray' => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100',
     ];
     
     // グローバル色設定

@@ -73,6 +73,240 @@ trait AdminLoggedInTrait
     }
 
     /**
+     * ルート名から自動的にパンくずリストを生成
+     * 例: admin.members.settings.index → ダッシュボード > メンバー管理 > メンバー全体設定
+     */
+    protected function generateBreadcrumbsFromRoute(): void
+    {
+        $routeName = request()->route()?->getName();
+        
+        if (!$routeName) {
+            return;
+        }
+        
+        // プラグインのルート名の場合
+        if (str_contains($routeName, '::')) {
+            $this->generatePluginBreadcrumbs($routeName);
+        } else {
+            $this->generateCoreBreadcrumbs($routeName);
+        }
+        
+        $this->setBreadcrumbs();
+    }
+
+    /**
+     * コアのパンくずリストを生成
+     */
+    protected function generateCoreBreadcrumbs(string $routeName): void
+    {
+        // admin. を除去
+        $parts = explode('.', $routeName);
+        array_shift($parts); // 'admin' を除去
+        
+        if (empty($parts)) {
+            return;
+        }
+        
+        // 最後が 'index' の場合は除去（重複を避けるため）
+        if (end($parts) === 'index') {
+            array_pop($parts);
+        }
+        
+        if (empty($parts)) {
+            return;
+        }
+        
+        // 各階層のパンくずを生成
+        $currentPath = 'admin';
+        $translationPath = 'admin';
+        
+        foreach ($parts as $index => $part) {
+            $currentPath .= '.' . $part;
+            $translationPath .= '/' . $part;
+            
+            // 最後の要素（現在のページ）はリンクなし
+            $route = null;
+            if ($index < count($parts) - 1) {
+                // 中間ルートが存在するかチェック（.index を付けて試行）
+                $indexRouteName = $currentPath . '.index';
+                if (\Route::has($indexRouteName)) {
+                    $route = $indexRouteName;
+                } elseif (\Route::has($currentPath)) {
+                    $route = $currentPath;
+                }
+            }
+            
+            // 翻訳キーを試行: index.heading または nav.{part}
+            $label = $this->resolveBreadcrumbLabel($translationPath, $part);
+            
+            if ($label) {
+                $this->addBreadcrumb($route, $label);
+            }
+        }
+    }
+
+    /**
+     * プラグインのパンくずリストを生成
+     */
+    protected function generatePluginBreadcrumbs(string $routeName): void
+    {
+        // プラグイン名とルート部分を分離
+        [$pluginPrefix, $route] = explode('::', $routeName, 2);
+        
+        // admin. を除去
+        $parts = explode('.', $route);
+        if ($parts[0] === 'admin') {
+            array_shift($parts);
+        }
+        
+        if (empty($parts)) {
+            return;
+        }
+        
+        // 最後が 'index' の場合は除去（重複を避けるため）
+        if (end($parts) === 'index') {
+            array_pop($parts);
+        }
+        
+        if (empty($parts)) {
+            return;
+        }
+        
+        // 各階層のパンくずを生成
+        $currentPath = 'admin';
+        $translationPath = 'admin';
+        
+        foreach ($parts as $index => $part) {
+            $currentPath .= '.' . $part;
+            $translationPath .= '/' . $part;
+            
+            // 最後の要素（現在のページ）はリンクなし
+            $route = null;
+            if ($index < count($parts) - 1) {
+                // 中間ルートが存在するかチェック（.index を付けて試行）
+                $indexRouteName = $pluginPrefix . '::' . $currentPath . '.index';
+                if (\Route::has($indexRouteName)) {
+                    $route = $indexRouteName;
+                } else {
+                    $fullRouteName = $pluginPrefix . '::' . $currentPath;
+                    if (\Route::has($fullRouteName)) {
+                        $route = $fullRouteName;
+                    }
+                }
+            }
+            
+            // 翻訳キーを試行
+            $label = $this->resolvePluginBreadcrumbLabel($pluginPrefix, $translationPath, $part);
+            
+            if ($label) {
+                $this->addBreadcrumb($route, $label);
+            }
+        }
+    }
+
+    /**
+     * コアの翻訳ラベルを解決
+     */
+    protected function resolveBreadcrumbLabel(string $translationPath, string $part): ?string
+    {
+        // パターン1: {path}/index.heading
+        $indexKey = $translationPath . '/index.heading';
+        if (\Lang::has($indexKey)) {
+            return __($indexKey);
+        }
+        
+        // パターン2: {path}.heading
+        $headingKey = $translationPath . '.heading';
+        if (\Lang::has($headingKey)) {
+            return __($headingKey);
+        }
+        
+        // パターン3: 親のnav.{part}
+        $pathParts = explode('/', $translationPath);
+        if (count($pathParts) >= 2) {
+            $lastPart = array_pop($pathParts);
+            $parentPath = implode('/', $pathParts);
+            $navKey = $parentPath . '/index.nav.' . $lastPart;
+            if (\Lang::has($navKey)) {
+                return __($navKey);
+            }
+        }
+        
+        // パターン4: admin/nav.{part}.text（配列の場合）
+        $navTextKey = 'admin/nav.' . $part . '.text';
+        if (\Lang::has($navTextKey)) {
+            return __($navTextKey);
+        }
+        
+        // パターン5: admin/nav.{part}（文字列の場合）
+        $navKey = 'admin/nav.' . $part;
+        if (\Lang::has($navKey)) {
+            $value = __($navKey);
+            // 配列が返ってきた場合は .text を試す
+            if (is_array($value) && isset($value['text'])) {
+                return $value['text'];
+            }
+            // 文字列の場合はそのまま返す
+            if (is_string($value)) {
+                return $value;
+            }
+        }
+        
+        return null;
+    }
+
+    /**
+     * プラグインの翻訳ラベルを解決
+     */
+    protected function resolvePluginBreadcrumbLabel(string $pluginPrefix, string $translationPath, string $part): ?string
+    {
+        // パターン1: plugin::{path}/index.heading
+        $indexKey = $pluginPrefix . '::' . $translationPath . '/index.heading';
+        if (\Lang::has($indexKey)) {
+            return __($indexKey);
+        }
+        
+        // パターン2: plugin::{path}.heading
+        $headingKey = $pluginPrefix . '::' . $translationPath . '.heading';
+        if (\Lang::has($headingKey)) {
+            return __($headingKey);
+        }
+        
+        // パターン3: 親のnav.{part}
+        $pathParts = explode('/', $translationPath);
+        if (count($pathParts) >= 2) {
+            $lastPart = array_pop($pathParts);
+            $parentPath = implode('/', $pathParts);
+            $navKey = $pluginPrefix . '::' . $parentPath . '/index.nav.' . $lastPart;
+            if (\Lang::has($navKey)) {
+                return __($navKey);
+            }
+        }
+        
+        // パターン4: plugin::admin/nav.{part}.text（配列の場合）
+        $navTextKey = $pluginPrefix . '::admin/nav.' . $part . '.text';
+        if (\Lang::has($navTextKey)) {
+            return __($navTextKey);
+        }
+        
+        // パターン5: plugin::admin/nav.{part}（文字列の場合）
+        $navKey = $pluginPrefix . '::admin/nav.' . $part;
+        if (\Lang::has($navKey)) {
+            $value = __($navKey);
+            // 配列が返ってきた場合は .text を試す
+            if (is_array($value) && isset($value['text'])) {
+                return $value['text'];
+            }
+            // 文字列の場合はそのまま返す
+            if (is_string($value)) {
+                return $value;
+            }
+        }
+        
+        return null;
+    }
+
+    /**
      * ページ説明を設定
      * 引数なしで呼び出すと、現在のルート名から自動的に翻訳キーを生成して説明を取得
      */
