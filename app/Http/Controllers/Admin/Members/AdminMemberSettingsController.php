@@ -47,8 +47,7 @@ class AdminMemberSettingsController extends AdminLoggedInController
     public function index()
     {
         $this->addBreadcrumb('admin.members.index', __('admin/nav.settings.members.text'));
-        $this->addBreadcrumb('admin.members.settings', __('admin/members/settings.heading'));
-        $this->setDescription(__('admin/members/settings.index.description'));
+        $this->addBreadcrumb('admin.members.settings.index', __('admin/members/settings.heading'));
         $this->loadViewParams();
         return view('admin.members.settings.index', $this->viewParams);
     }

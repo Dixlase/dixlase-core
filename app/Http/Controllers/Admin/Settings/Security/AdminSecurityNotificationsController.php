@@ -46,7 +46,6 @@ class AdminSecurityNotificationsController extends AdminLoggedInController
         $this->addBreadcrumb(null, __('admin/nav.settings.text'));
         $this->addBreadcrumb('admin.settings.security.index', __('admin/nav.settings.security.text'));
         $this->addBreadcrumb(null, __('admin/nav.settings.security.notifications'));
-        $this->setDescription(__('admin/settings/security/notifications.description'));
         $this->setBreadcrumbs();
         
         $settings = [

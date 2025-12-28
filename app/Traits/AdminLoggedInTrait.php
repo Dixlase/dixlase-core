@@ -44,6 +44,11 @@ trait AdminLoggedInTrait
             $transition = config('admin.transition_class');
             $this->viewParams['transition'] = $transition;
 
+            // ページ説明を自動設定
+            if ($this->description === null) {
+                $this->setDescription();
+            }
+
             return $next($request);
         });
     }
@@ -69,11 +74,55 @@ trait AdminLoggedInTrait
 
     /**
      * ページ説明を設定
+     * 引数なしで呼び出すと、現在のルート名から自動的に翻訳キーを生成して説明を取得
      */
-    protected function setDescription(string $description): void
+    protected function setDescription(?string $description = null): void
     {
+        if ($description === null) {
+            $description = $this->getDescriptionFromRoute();
+        }
+        
         $this->description = $description;
         $this->viewParams['description'] = $this->description;
+    }
+
+    /**
+     * 現在のルート名から翻訳キーを生成して説明を取得
+     */
+    protected function getDescriptionFromRoute(): ?string
+    {
+        $routeName = request()->route()?->getName();
+        
+        if (!$routeName) {
+            return null;
+        }
+        
+        // プラグインのルート名の場合、プレフィックスを処理
+        // 例: users-plugin::admin.users.index -> users-plugin::admin/users/index.description
+        if (str_contains($routeName, '::')) {
+            [$pluginPrefix, $route] = explode('::', $routeName, 2);
+            
+            // ルート部分をパスに変換
+            $routePath = str_replace('.', '/', $route);
+            
+            // プラグインの翻訳キー形式: プラグイン名::パス.description
+            $translationKey = $pluginPrefix . '::' . $routePath . '.description';
+        } else {
+            // 通常のルート名を翻訳キーに変換
+            // 例: admin.members.settings -> admin/members/settings.description
+            //     admin.settings.base.site -> admin/settings/base/site.description
+            $translationKey = str_replace('.', '/', $routeName) . '.description';
+        }
+        
+        // 翻訳が存在するかチェック
+        $translation = __($translationKey);
+        
+        // 翻訳キーがそのまま返ってきた場合は翻訳が存在しない
+        if ($translation === $translationKey) {
+            return null;
+        }
+        
+        return $translation;
     }
 
     /**

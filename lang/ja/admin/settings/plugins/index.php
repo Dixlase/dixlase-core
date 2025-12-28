@@ -13,67 +13,52 @@
  */
 
 return [
-    'index' => [
-        'heading' => 'プラグイン一覧',
-        'installed_heading' => 'インストール済みプラグイン',
-        'uninstalled_heading' => 'アンインストール済みプラグイン',
-        'systems' => [
-            'text' => 'システム',
-            'cache' => 'キャッシュ管理',
-            'database' => 'データベース管理',
-            'logs' => 'システムログ',
-            'info' => 'システム情報',
-        ],
-        'table' => [
-            'id' => 'ID',
-            'name' => 'プラグイン名',
-            'caption' => 'インストール済みプラグイン一覧',
-        ],
-        'no_plugins' => 'プラグインがインストールされていません。',
-        'no_plugins_description' => 'プラグインを追加して、サイトの機能を拡張しましょう。',
-        'add_plugin' => 'プラグインを追加',
-        'uninstalled_description' => 'これらのプラグインはファイルが存在しますが、まだインストールされていません。',
-        'buttons' => [],
-        'uninstall' => [
-            'confirm_title' => 'アンインストールの確認',
-            'confirm_message' => 'プラグイン [{name}] をアンインストールしますか？',
-            'remove_data_checkbox' => 'プラグインのインストール時に作成されたデータベースのテーブルを削除する。<br><br><span class="text-red-600 font-semibold">注意！テーブル削除するとプラグインで作成したデータが失われます！</span>',
-        ],
-        'install' => [
-            'confirm_title' => 'インストールの確認',
-            'confirm_message' => 'プラグイン [{name}] をインストールしますか？',
-        ],
-        'enabled' => [
-            'confirm_message' => 'プラグイン [{name}] を有効化しますか？',
-            'success' => '{name}を有効化しました',
-            'failed' => '{name}の有効化に失敗しました',
-        ],
-        'delete' => [
-            'confirm_title' => '削除の確認',
-            'confirm_message' => 'プラグイン [{name}] のファイルとフォルダを完全に削除しますか？この操作は取り消せません。',
-        ],
-        'audit' => [
-            'invalid_slug' => 'プラグインスラッグが無効です。',
-            'completed' => 'プラグインのスキャンが完了しました。',
-            'failed' => 'プラグインのスキャンに失敗しました。',
-        ],
+    'heading' => 'プラグイン一覧',
+    'description' => 'インストール済みプラグインの管理、新しいプラグインの追加、プラグインの有効化・無効化を行います。',
+    'installed_heading' => 'インストール済みプラグイン',
+    'uninstalled_heading' => 'アンインストール済みプラグイン',
+    'systems' => [
+        'text' => 'システム',
+        'cache' => 'キャッシュ管理',
+        'database' => 'データベース管理',
+        'logs' => 'システムログ',
+        'info' => 'システム情報',
     ],
-    'add' => [
-        'heading' => 'プラグインを追加',
-        'upload_title' => 'プラグインアップロード',
-        'file_select_label' => 'ZIPファイルを選択:',
-        'drag_drop_text' => 'ここにファイルをドラッグするか、クリックしてアップロード',
-        'supported_format' => '対応形式:',
-        'upload_limit' => 'アップロード可能ファイルサイズ上限:',
-        'upload_button' => 'アップロードして追加',
-        'enable_plugin_text' => 'プラグインを有効化する場合は',
-        'enable_from_here' => 'こちら',
-        'enable_instruction' => 'から有効化してください。',
+    'table' => [
+        'id' => 'ID',
         'name' => 'プラグイン名',
+        'caption' => 'インストール済みプラグイン一覧',
     ],
-    // ========================================
+    'no_plugins' => 'プラグインがインストールされていません。',
+    'no_plugins_description' => 'プラグインを追加して、サイトの機能を拡張しましょう。',
+    'add_plugin' => 'プラグインを追加',
+    'uninstalled_description' => 'これらのプラグインはファイルが存在しますが、まだインストールされていません。',
+    'buttons' => [],
+    'uninstall' => [
+        'confirm_title' => 'アンインストールの確認',
+        'confirm_message' => 'プラグイン [{name}] をアンインストールしますか？',
+        'remove_data_checkbox' => 'プラグインのインストール時に作成されたデータベースのテーブルを削除する。<br><br><span class="text-red-600 font-semibold">注意！テーブル削除するとプラグインで作成したデータが失われます！</span>',
+    ],
+    'install' => [
+        'confirm_title' => 'インストールの確認',
+        'confirm_message' => 'プラグイン [{name}] をインストールしますか？',
+    ],
+    'enabled' => [
+        'confirm_message' => 'プラグイン [{name}] を有効化しますか？',
+        'success' => '{name}を有効化しました',
+        'failed' => '{name}の有効化に失敗しました',
+    ],
+    'delete' => [
+        'confirm_title' => '削除の確認',
+        'confirm_message' => 'プラグイン [{name}] のファイルとフォルダを完全に削除しますか？この操作は取り消せません。',
+    ],
+    'audit' => [
+        'invalid_slug' => 'プラグインスラッグが無効です。',
+        'completed' => 'プラグインのスキャンが完了しました。',
+        'failed' => 'プラグインのスキャンに失敗しました。',
+    ],
+    
     // バッジラベル（カード表示用）
-    // ========================================
     'badge_labels' => [
         'health' => '健全性',
         'signature' => '署名',
@@ -81,9 +66,7 @@ return [
         'csp' => 'CSP',
     ],
 
-    // ========================================
     // 健全性ステータス（PluginHealthStatus Enum）
-    // ========================================
     'health_status' => [
         'healthy' => '健全',
         'healthy_description' => '宣言された権限・署名・構成に不一致は見つかりませんでした。',
@@ -99,9 +82,7 @@ return [
         'not_verified_tooltip' => '検証情報が不足しています（未スキャン、権限定義なし、署名なし等）。',
     ],
 
-    // ========================================
     // 信頼度レベル（PluginTrustLevel Enum）
-    // ========================================
     'trust_level' => [
         'official' => '公式',
         'official_description' => 'Dixlase公式による配布です。',
@@ -115,9 +96,7 @@ return [
         'local_description' => '手動インストールまたはローカル開発です。',
     ],
 
-    // ========================================
     // 検証状態（PluginVerificationStatus Enum）
-    // ========================================
     'verification' => [
         // 署名
         'signature_valid' => '署名：OK',
@@ -139,9 +118,7 @@ return [
         'csp_not_checked' => 'CSP未検証',
     ],
 
-    // ========================================
     // モーダル文言
-    // ========================================
     'modal' => [
         'health_check_title' => '健全性チェックの詳細',
         'plugin_info' => 'プラグイン：:name（:slug）',
@@ -183,9 +160,7 @@ return [
         'recommended_actions' => '推奨アクション',
     ],
 
-    // ========================================
     // ブロック時の文言
-    // ========================================
     'block' => [
         'title' => 'このプラグインは現在のセキュリティ設定では有効化できません',
         'body' => '健全性チェックで「:status」と判定されました。',
@@ -200,9 +175,7 @@ return [
         'csp_strict_action' => 'CSPモードを「標準」または「開発」に変更するか、プラグインをCSP Readyに更新してください。',
     ],
 
-    // ========================================
     // CSP適合性
-    // ========================================
     'csp' => [
         'status_label' => 'CSP適合性',
         'ready' => 'CSP Ready',

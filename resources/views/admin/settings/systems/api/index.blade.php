@@ -263,8 +263,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('admin/settings/systems/api.description') }}</label>
-                                <textarea name="description" rows="2" class="input-full" placeholder="{{ __('admin/settings/systems/api.description_placeholder') }}"></textarea>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ __('admin/settings/systems/api.key_description') }}</label>
+                                <textarea name="description" rows="2" class="input-full" placeholder="{{ __('admin/settings/systems/api.key_description_placeholder') }}"></textarea>
                             </div>
                         </div>
                     </div>
@@ -369,7 +369,7 @@ function apiSettings() {
                 
                 ${key.description ? `
                 <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
-                    <div class="text-gray-500 dark:text-gray-400 text-sm mb-2">{{ __('admin/settings/systems/api.description') }}</div>
+                    <div class="text-gray-500 dark:text-gray-400 text-sm mb-2">{{ __('admin/settings/systems/api.key_description') }}</div>
                     <div class="text-sm">${key.description}</div>
                 </div>
                 ` : ''}

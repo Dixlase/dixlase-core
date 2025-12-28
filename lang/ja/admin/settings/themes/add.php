@@ -13,6 +13,10 @@
  */
 
 return [
-    'heading' => 'システム情報',
-    'description' => 'サーバー環境、PHPバージョン、データベース情報などのシステム情報を確認します。',
+    'heading' => 'テーマを追加',
+    'description' => 'ZIPファイルをアップロードして新しいテーマをインストールします。',
+    'upload_title' => 'テーマをアップロード',
+    'file_select_label' => 'ファイルを選択',
+    'upload_button' => 'アップロードして追加',
+    'name' => 'テーマ名',
 ];

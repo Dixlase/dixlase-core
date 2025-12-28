@@ -46,7 +46,6 @@ class AdminBaseMaintenanceController extends AdminLoggedInController
         $this->addBreadcrumb(null, __('admin/nav.settings.text'));
         $this->addBreadcrumb('admin.settings.base.index', __('admin/nav.settings.base.text'));
         $this->addBreadcrumb(null, __('admin/nav.settings.base.maintenance'));
-        $this->setDescription(__('admin/settings/base/maintenance.description'));
         $this->setBreadcrumbs();
         
         $settings = [

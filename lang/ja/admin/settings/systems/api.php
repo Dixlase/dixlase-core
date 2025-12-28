@@ -14,6 +14,7 @@
 
 return [
     'heading' => 'API管理',
+    'description' => 'REST APIの有効化、APIキーの管理、署名検証などのAPI設定を行います。',
     'general_settings' => '基本設定',
     'api_enabled' => 'APIを有効にする',
     'api_enabled_help' => '外部システムからのAPI経由でのアクセスを許可します。',
@@ -50,8 +51,8 @@ return [
     'expires_at' => '有効期限',
     'expires_at_help' => '空欄の場合は無期限。',
     'no_expiry' => '無期限',
-    'description' => '説明',
-    'description_placeholder' => 'このAPIキーの用途を記載',
+    'key_description' => '説明',
+    'key_description_placeholder' => 'このAPIキーの用途を記載',
     'created_at' => '作成日時',
     'generate' => 'キーを生成',
     'regenerate' => '再生成',

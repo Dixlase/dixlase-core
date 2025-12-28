@@ -14,6 +14,7 @@
 
 return [
     'heading' => 'メンバー管理',
+    'description' => '登録されているメンバーの一覧表示、検索、編集、削除を行います。',
     'search_title' => 'メンバー検索',
     'search_placeholder' => 'メンバー名またはメールアドレスで検索',
     'table' => [

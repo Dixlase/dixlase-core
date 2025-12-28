@@ -37,7 +37,6 @@ class AdminSecurityEnvironmentController extends AdminLoggedInController
         $this->addBreadcrumb(null, __('admin/nav.settings.text'));
         $this->addBreadcrumb('admin.settings.security.index', __('admin/nav.settings.security.text'));
         $this->addBreadcrumb(null, __('admin/nav.settings.security.environment'));
-        $this->setDescription(__('admin/settings/security/environment.description'));
         $this->setBreadcrumbs();
         
         $settings = [

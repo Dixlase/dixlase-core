@@ -44,7 +44,6 @@ class AdminSecurityIpController extends AdminLoggedInController
         $this->addBreadcrumb(null, __('admin/nav.settings.text'));
         $this->addBreadcrumb('admin.settings.security.index', __('admin/nav.settings.security.text'));
         $this->addBreadcrumb(null, __('admin/nav.settings.security.ip'));
-        $this->setDescription(__('admin/settings/security/ip.description'));
         $this->setBreadcrumbs();
         
         $settings = [

@@ -109,7 +109,7 @@ return [
                     'children' => [
                         'overview' => [
                             'text' => 'admin/nav.settings.members.overview',
-                            'route' => 'admin.members.settings',
+                            'route' => 'admin.members.settings.index',
                             'icon' => 'fas fa-fw fa-list-alt',
                         ],
                         'password' => [
@@ -279,7 +279,7 @@ return [
                             'children' => [
                                 'audit' => [
                                     'text' => 'admin/nav.settings.systems.logs.audit',
-                                    'route' => 'admin.settings.systems.logs',
+                                    'route' => 'admin.settings.systems.logs.index',
                                     'icon' => 'fas fa-fw fa-clipboard-list',
                                 ],
                                 'files' => [

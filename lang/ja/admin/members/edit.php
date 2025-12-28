@@ -14,6 +14,7 @@
 
 return [
     'heading' => 'メンバー編集',
+    'description' => 'メンバーの情報を編集します。権限、ステータス、セキュリティ設定などを変更できます。',
     'confirm_title' => '更新確認',
     'confirm_message' => 'この内容でメンバー情報を更新しますか？',
     'modals' => [
