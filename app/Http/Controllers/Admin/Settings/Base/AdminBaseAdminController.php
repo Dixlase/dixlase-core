@@ -44,10 +44,6 @@ class AdminBaseAdminController extends AdminLoggedInController
      */
     public function index()
     {
-        $this->addBreadcrumb(null, __('admin/nav.settings.text'));
-        $this->addBreadcrumb('admin.settings.base.index', __('admin/nav.settings.base.text'));
-        $this->addBreadcrumb(null, __('admin/nav.settings.base.admin'));
-        $this->setBreadcrumbs();
         
         $settings = [
             'admin_url' => $this->baseSettingRepository->get('admin_url', config('admin.admin_url')),

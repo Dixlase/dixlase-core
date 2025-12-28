@@ -43,10 +43,6 @@ class AdminSecurityNotificationsController extends AdminLoggedInController
      */
     public function index()
     {
-        $this->addBreadcrumb(null, __('admin/nav.settings.text'));
-        $this->addBreadcrumb('admin.settings.security.index', __('admin/nav.settings.security.text'));
-        $this->addBreadcrumb(null, __('admin/nav.settings.security.notifications'));
-        $this->setBreadcrumbs();
         
         $settings = [
             'notification_enabled' => filter_var($this->securitySettingRepository->get('notification_enabled', true), FILTER_VALIDATE_BOOLEAN),

@@ -42,9 +42,6 @@ class AdminBaseIndexController extends AdminLoggedInController
      */
     public function index()
     {
-        $this->addBreadcrumb(null, __('admin/nav.settings.text'));
-        $this->addBreadcrumb('admin.settings.base.index', __('admin/nav.settings.base.text'));
-        $this->setBreadcrumbs();
         
         // サイト設定
         $appName = ConfigHelper::getAppName();

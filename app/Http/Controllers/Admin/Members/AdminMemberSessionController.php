@@ -31,9 +31,6 @@ class AdminMemberSessionController extends AdminMemberSettingsController
      */
     public function index()
     {
-        $this->addBreadcrumb('admin.members.index', __('admin/nav.settings.members.text'));
-        $this->addBreadcrumb('admin.members.settings.index', __('admin/members/settings.heading'));
-        $this->addBreadcrumb(null, __('admin/members/settings.session.heading'));
         $this->loadViewParams();
         return view('admin.members.settings.session', $this->viewParams);
     }

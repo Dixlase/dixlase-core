@@ -78,7 +78,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 'icon' => 'fas fa-shield-alt',
                                 'color' => 'yellow',
                                 'badge' => __('admin/settings/security/csp.recommended'),
-                                'badgeColor' => 'green',
+                                'badgeColor' => 'yellow',
                                 'features' => [
                                     __('admin/settings/security/csp.mode_standard_feature1'),
                                     __('admin/settings/security/csp.mode_standard_feature2'),
