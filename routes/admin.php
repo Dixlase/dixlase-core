@@ -411,10 +411,10 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('database.cleanup');
                 
                 // 監査ログ（/logs/ がデフォルト）
-                Route::get('/logs', [Systems\AdminSystemLogsController::class, 'auditIndex'])->name('logs.index');
+                Route::get('/logs', [Systems\AdminSystemLogsController::class, 'index'])->name('logs.index');
                 
                 // ファイルログ
-                Route::get('/logs/files/{type?}', [Systems\AdminSystemLogsController::class, 'index'])->name('logs.files');
+                Route::get('/logs/files/{type?}', [Systems\AdminSystemLogsController::class, 'files'])->name('logs.files');
                 Route::get('/logs/files/{type}/download', [Systems\AdminSystemLogsController::class, 'download'])->name('logs.download');
                 Route::post('/logs/files/{type}/clear', [Systems\AdminSystemLogsController::class, 'clear'])
                     ->middleware('check.menu.edit:settings.systems')
@@ -423,7 +423,7 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/logs/files/test-error', [Systems\AdminSystemLogsController::class, 'testError'])->name('logs.test-error');
                 Route::post('/logs/files/test-front', [Systems\AdminSystemLogsController::class, 'testFront'])->name('logs.test-front');
                 Route::post('/logs/files/test-front-error', [Systems\AdminSystemLogsController::class, 'testFrontError'])->name('logs.test-front-error');
-                Route::get('/logs/audit/{id}', [Systems\AdminSystemLogsController::class, 'auditShow'])->name('logs.audit.show');
+                Route::get('/logs/audit/{id}', [Systems\AdminSystemLogsController::class, 'show'])->name('logs.audit.show');
                 Route::get('/logs/audit-export', [Systems\AdminSystemLogsController::class, 'auditExport'])->name('logs.audit.export');
                 Route::post('/logs/audit/cleanup', [Systems\AdminSystemLogsController::class, 'auditCleanup'])
                     ->middleware('check.menu.edit:settings.systems')

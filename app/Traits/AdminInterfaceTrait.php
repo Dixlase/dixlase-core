@@ -44,7 +44,6 @@ trait AdminInterfaceTrait
         $this->getBaseSettings();
         $this->setRouteName();
         $this->setHeading();
-        $this->generateBreadcrumbsFromRoute();
     }
 
     protected function getSiteName()

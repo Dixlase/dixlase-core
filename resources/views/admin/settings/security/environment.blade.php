@@ -34,6 +34,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <h2>{{ __('admin/settings/security/environment.title') }}</h2>
             <p>{{ __('admin/settings/security/environment.description') }}</p>
 
+            <!-- 動作環境 -->
+            <fieldset>
+                <legend>{{ __('admin/settings/security/environment.app_env') }}</legend>
+                
+                <div class="my-3">
+                    <x-form.radio-card-group
+                        name="app_env"
+                        :options="\App\Enums\AppEnvironment::getRadioCardOptions()"
+                        :value="old('app_env', $settings['app_env'])"
+                        xModel="appEnv"
+                        columns="3"
+                    />
+                </div>
+            </fieldset>
+
             <!-- 本番環境でデバッグモードONの警告 -->
             <template x-if="appEnv === 'production' && appDebug">
                 <div class="mt-4">
@@ -43,57 +58,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     />
                 </div>
             </template>
-
-            <!-- 動作環境 -->
-            <fieldset>
-                <legend>{{ __('admin/settings/security/environment.app_env') }}</legend>
-                
-                <div class="my-3">
-                    <x-form.radio-group
-                        name="app_env"
-                        :options="[
-                            'local' => __('admin/settings/security/environment.env_options.local'),
-                            'staging' => __('admin/settings/security/environment.env_options.staging'),
-                            'production' => __('admin/settings/security/environment.env_options.production'),
-                        ]"
-                        :value="old('app_env', $settings['app_env'])"
-                        xModel="appEnv"
-                    />
-                </div>
-                
-                <p>{!! __('admin/settings/security/environment.app_env_help') !!}</p>
-
-                <!-- 環境ごとの説明 -->
-                <div class="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                    <template x-if="appEnv === 'local'">
-                        <div class="flex items-start">
-                            <i class="fas fa-laptop-code text-blue-500 text-xl mr-3 mt-0.5"></i>
-                            <div>
-                                <h4 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/security/environment.env_options.local') }}</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ __('admin/settings/security/environment.env_descriptions.local') }}</p>
-                            </div>
-                        </div>
-                    </template>
-                    <template x-if="appEnv === 'staging'">
-                        <div class="flex items-start">
-                            <i class="fas fa-flask text-yellow-500 text-xl mr-3 mt-0.5"></i>
-                            <div>
-                                <h4 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/security/environment.env_options.staging') }}</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ __('admin/settings/security/environment.env_descriptions.staging') }}</p>
-                            </div>
-                        </div>
-                    </template>
-                    <template x-if="appEnv === 'production'">
-                        <div class="flex items-start">
-                            <i class="fas fa-server text-green-500 text-xl mr-3 mt-0.5"></i>
-                            <div>
-                                <h4 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/settings/security/environment.env_options.production') }}</h4>
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ __('admin/settings/security/environment.env_descriptions.production') }}</p>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-            </fieldset>
 
             <!-- デバッグモード -->
             <fieldset>

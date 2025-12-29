@@ -58,46 +58,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     
                     <x-form.radio-card-group
                         name="csp_mode"
-                        :options="[
-                            [
-                                'value' => '0',
-                                'label' => __('admin/settings/security/csp.mode_development'),
-                                'description' => __('admin/settings/security/csp.mode_development_desc'),
-                                'icon' => 'fas fa-code',
-                                'color' => 'blue',
-                                'features' => [
-                                    __('admin/settings/security/csp.mode_development_feature1'),
-                                    __('admin/settings/security/csp.mode_development_feature2'),
-                                    __('admin/settings/security/csp.mode_development_feature3'),
-                                ],
-                            ],
-                            [
-                                'value' => '1',
-                                'label' => __('admin/settings/security/csp.mode_standard'),
-                                'description' => __('admin/settings/security/csp.mode_standard_desc'),
-                                'icon' => 'fas fa-shield-alt',
-                                'color' => 'yellow',
-                                'badge' => __('admin/settings/security/csp.recommended'),
-                                'badgeColor' => 'yellow',
-                                'features' => [
-                                    __('admin/settings/security/csp.mode_standard_feature1'),
-                                    __('admin/settings/security/csp.mode_standard_feature2'),
-                                    __('admin/settings/security/csp.mode_standard_feature3'),
-                                ],
-                            ],
-                            [
-                                'value' => '2',
-                                'label' => __('admin/settings/security/csp.mode_strict'),
-                                'description' => __('admin/settings/security/csp.mode_strict_desc'),
-                                'icon' => 'fas fa-lock',
-                                'color' => 'red',
-                                'features' => [
-                                    __('admin/settings/security/csp.mode_strict_feature1'),
-                                    __('admin/settings/security/csp.mode_strict_feature2'),
-                                    __('admin/settings/security/csp.mode_strict_feature3'),
-                                ],
-                            ],
-                        ]"
+                        :options="\App\Enums\CspMode::getRadioCardOptions()"
                         :value="old('csp_mode', $settings['csp_mode'] ?? \App\Enums\CspMode::default()->value)"
                         :columns="3"
                     />

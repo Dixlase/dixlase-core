@@ -133,8 +133,8 @@ enum ExtensionSecurityPreset: string
     public function cssClass(): string
     {
         return match ($this) {
-            self::Strict => 'text-green-600 dark:text-green-400',
-            self::Balanced => 'text-blue-600 dark:text-blue-400',
+            self::Strict => 'text-red-600 dark:text-red-400',
+            self::Balanced => 'text-green-600 dark:text-green-400',
             self::Development => 'text-yellow-600 dark:text-yellow-400',
             self::Custom => 'text-purple-600 dark:text-purple-400',
         };
@@ -194,8 +194,8 @@ enum ExtensionSecurityPreset: string
     public function colorName(): string
     {
         return match ($this) {
-            self::Strict => 'green',
-            self::Balanced => 'blue',
+            self::Strict => 'red',
+            self::Balanced => 'green',
             self::Development => 'yellow',
             self::Custom => 'purple',
         };
