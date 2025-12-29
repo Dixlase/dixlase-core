@@ -20,11 +20,15 @@
  */
 
 return [
+    // Admin Panel
+    'admin_panel' => 'Admin Panel',
+
     // Basic Operations
     'create' => 'Create',
     'add' => 'Add',
     'edit' => 'Edit',
     'save' => 'Save',
+    'update' => 'Update',
     'delete' => 'Delete',
     'copy' => 'Copy',
     'copied' => 'Copied',
@@ -315,6 +319,7 @@ return [
     'description' => 'Description',
     'email' => 'Email Address',
     'security_settings' => 'Security Settings',
+    'password_settings' => 'Password Settings',
     'account_settings' => 'Account Settings',
     'management_operations' => 'Management Operations',
     'appearance_settings' => 'Appearance Settings',

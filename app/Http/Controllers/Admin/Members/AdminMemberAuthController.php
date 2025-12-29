@@ -31,7 +31,6 @@ class AdminMemberAuthController extends AdminMemberSettingsController
      */
     public function index()
     {
-        $this->loadViewParams();
         return view('admin.members.settings.auth', $this->viewParams);
     }
 

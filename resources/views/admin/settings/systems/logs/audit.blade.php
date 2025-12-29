@@ -37,7 +37,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         />
     @endif
 
-    @include('admin::settings.systems.partials.logs-navigation', ['logType' => 'audit', 'currentView' => 'db', 'pageType' => 'audit'])
+    @include('admin::settings.systems.logs.navigation', ['logType' => 'audit', 'currentView' => 'db', 'pageType' => 'audit'])
 
     @if(!$tableExists)
     <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">

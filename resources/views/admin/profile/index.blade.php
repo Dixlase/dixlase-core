@@ -192,19 +192,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         " data-profile-theme>
             <h2>{{ __('common.appearance_settings') }}</h2>
             
-            <fieldset>
-                <legend>{{ __('common.appearance_mode') }}</legend>
-                <x-form.radio-group
-                    name="appearance"
-                    :options="[
-                        '0' => __('common.auto'),
-                        '1' => __('common.light'),
-                        '2' => __('common.dark')
-                    ]"
-                    :value="$appearanceValue"
-                    xModel="localTheme"
-                />
-            </fieldset>
+            <x-form.radio-card-group
+                name="appearance"
+                :options="[
+                    ['value' => '0', 'label' => __('common.auto'), 'description' => 'システムの設定に従います', 'icon' => 'fas fa-adjust'],
+                    ['value' => '1', 'label' => __('common.light'), 'description' => 'ライトモードで表示', 'icon' => 'fas fa-sun'],
+                    ['value' => '2', 'label' => __('common.dark'), 'description' => 'ダークモードで表示', 'icon' => 'fas fa-moon'],
+                ]"
+                :value="$appearanceValue"
+                xModel="localTheme"
+                :columns="3"
+                color="primary"
+                variant="filled"
+                :showCheck="true"
+            />
         </section>
 
         <!-- ログイン通知設定 -->

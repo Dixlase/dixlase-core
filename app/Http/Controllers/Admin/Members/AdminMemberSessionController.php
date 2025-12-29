@@ -31,7 +31,6 @@ class AdminMemberSessionController extends AdminMemberSettingsController
      */
     public function index()
     {
-        $this->loadViewParams();
         return view('admin.members.settings.session', $this->viewParams);
     }
 

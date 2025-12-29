@@ -26,13 +26,13 @@ namespace App\Enums;
  */
 enum ExtensionSecurityPreset: string
 {
+
     /**
-     * 厳格モード（推奨）
-     * - 署名必須
-     * - 権限定義必須
-     * - 健全性「良好」のみ許可
+     * 開発・検証モード
+     * - 未署名や未定義もインストール可（警告表示）
+     * - 本番環境では選択不可にすることも検討
      */
-    case Strict = 'strict';
+    case Development = 'development';
 
     /**
      * バランスモード
@@ -41,12 +41,15 @@ enum ExtensionSecurityPreset: string
      */
     case Balanced = 'balanced';
 
+
+
     /**
-     * 開発・検証モード
-     * - 未署名や未定義もインストール可（警告表示）
-     * - 本番環境では選択不可にすることも検討
+     * 厳格モード（推奨）
+     * - 署名必須
+     * - 権限定義必須
+     * - 健全性「良好」のみ許可
      */
-    case Development = 'development';
+    case Strict = 'strict';
 
     /**
      * カスタムモード
