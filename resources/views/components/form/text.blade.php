@@ -67,6 +67,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @if ($ariaLabel) aria-label="{{ $ariaLabel }}" @endif
     @if ($autocomplete) autocomplete="{{ $autocomplete }}" @endif
     @if ($xModel) x-model="{{ $xModel }}" @endif
-    class="input-common {{ $class }}"
+    class="input-common my-2 {{ $class }}"
     value="{{ old($name, $value) }}"
     >

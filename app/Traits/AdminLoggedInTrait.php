@@ -116,6 +116,9 @@ trait AdminLoggedInTrait
             return;
         }
         
+        // 先頭に「管理画面」を追加（ダッシュボードへのリンク）
+        $this->addBreadcrumb('admin.dashboard', __('common.admin_panel'));
+        
         // 各階層のパンくずを生成
         $currentPath = 'admin';
         $translationPath = 'admin';
@@ -171,6 +174,9 @@ trait AdminLoggedInTrait
         if (empty($parts)) {
             return;
         }
+        
+        // 先頭に「管理画面」を追加（ダッシュボードへのリンク）
+        $this->addBreadcrumb('admin.dashboard', __('common.admin_panel'));
         
         // 各階層のパンくずを生成
         $currentPath = 'admin';

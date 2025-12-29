@@ -103,7 +103,7 @@ class AdminSystemLogsController extends AdminLoggedInController
                 'debug' => __('admin/settings/systems/logs/files.level_filter.debug'),
             ];
 
-            return response()->view('admin::settings.systems.logs', $this->viewParams);
+            return response()->view('admin::settings.systems.logs.index', $this->viewParams);
         }
 
         $perPage = $request->input('per_page', 50);
@@ -170,7 +170,7 @@ class AdminSystemLogsController extends AdminLoggedInController
         $this->viewParams['pagination'] = $pagination;
         $this->viewParams['logTypes'] = array_keys($this->logPaths);
 
-        return view('admin::settings.systems.logs', $this->viewParams);
+        return view('admin::settings.systems.logs.index', $this->viewParams);
     }
 
     /**
@@ -422,7 +422,7 @@ class AdminSystemLogsController extends AdminLoggedInController
             $this->viewParams['severities'] = [];
             $this->viewParams['outcomes'] = [];
             $this->viewParams['tableExists'] = false;
-            return view('admin::settings.systems.logs-audit', $this->viewParams);
+            return view('admin::settings.systems.logs.audit', $this->viewParams);
         }
 
         $query = AuditLog::query()->orderByDesc('occurred_at');
@@ -477,7 +477,7 @@ class AdminSystemLogsController extends AdminLoggedInController
         $this->viewParams['outcomes'] = ['success', 'failure', 'denied', 'pending', 'unknown'];
         $this->viewParams['tableExists'] = true;
 
-        return view('admin::settings.systems.logs-audit', $this->viewParams);
+        return view('admin::settings.systems.logs.audit', $this->viewParams);
     }
 
     /**
@@ -506,7 +506,7 @@ class AdminSystemLogsController extends AdminLoggedInController
         $this->viewParams['auditLog'] = $auditLog;
         $this->viewParams['relatedLogs'] = $relatedLogs;
 
-        return view('admin::settings.systems.logs-audit-show', $this->viewParams);
+        return view('admin::settings.systems.logs.audit-show', $this->viewParams);
     }
 
     /**

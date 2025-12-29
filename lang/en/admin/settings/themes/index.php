@@ -13,56 +13,45 @@
  */
 
 return [
-    'index' => [
-        'heading' => 'Theme Management',
-        'installed_heading' => 'Installed Themes',
-        'uninstalled_heading' => 'Uninstalled Themes',
-        'title' => 'Themes',
-        'available_themes' => 'Available Themes',
-        'currently_active' => 'Currently Active',
-        'activate_confirm' => 'Do you want to activate this theme?',
-        'delete_confirm' => 'Are you sure you want to delete this?',
-        'activate_button' => 'Activate',
-        'delete_button' => 'Delete',
-        'settings_button' => 'Settings',
-        'table' => [
-            'caption' => 'Installed Themes List',
-            'name' => 'Theme Name',
-        ],
-        'uninstalled_table' => [
-            'caption' => 'Uninstalled Themes List',
-        ],
-        'no_themes' => 'No themes are installed.',
-        'no_themes_description' => 'Add themes to customize your site\'s appearance.',
-        'add_theme' => 'Add Theme',
-        'uninstalled_description' => 'These themes have files present but are not yet installed.',
-        'uninstall' => [
-            'confirm_title' => 'Uninstall Confirmation',
-            'confirm_message' => 'Do you want to uninstall theme [{name}]?',
-            'remove_data_checkbox' => 'Delete database tables created during theme installation.<br><br><span class="text-red-600 font-semibold">Warning! Deleting tables will lose data created by the theme!</span>',
-        ],
-        'install' => [
-            'confirm_title' => 'Install Confirmation',
-            'confirm_message' => 'Do you want to install theme [{name}]?',
-        ],
-        'switch' => [
-            'confirm_title' => 'Activation Confirmation',
-            'confirm_message' => 'Do you want to activate theme [{name}]?',
-        ],
-        'delete' => [
-            'confirm_title' => 'Delete Confirmation',
-            'confirm_message' => 'Do you want to permanently delete theme [{name}] files and folders? This action cannot be undone.',
-        ],
-    ],
-    'add' => [
-        'heading' => 'Add Theme',
-        'upload_title' => 'Upload Theme',
-        'file_select_label' => 'Select File',
-        'upload_button' => 'Upload and Add',
+    'heading' => 'Theme Management',
+    'description' => 'Manage installed themes, add new themes, and switch themes.',
+    'installed_heading' => 'Installed Themes',
+    'uninstalled_heading' => 'Uninstalled Themes',
+    'title' => 'Themes',
+    'available_themes' => 'Available Themes',
+    'currently_active' => 'Currently Active',
+    'activate_confirm' => 'Do you want to activate this theme?',
+    'delete_confirm' => 'Are you sure you want to delete this?',
+    'activate_button' => 'Activate',
+    'delete_button' => 'Delete',
+    'settings_button' => 'Settings',
+    'table' => [
+        'caption' => 'Installed Themes List',
         'name' => 'Theme Name',
     ],
-    'settings' => [
-        'heading' => 'Theme Settings',
+    'uninstalled_table' => [
+        'caption' => 'Uninstalled Themes List',
+    ],
+    'no_themes' => 'No themes are installed.',
+    'no_themes_description' => 'Add themes to customize your site\'s appearance.',
+    'add_theme' => 'Add Theme',
+    'uninstalled_description' => 'These themes have files present but are not yet installed.',
+    'uninstall' => [
+        'confirm_title' => 'Uninstall Confirmation',
+        'confirm_message' => 'Do you want to uninstall theme [{name}]?',
+        'remove_data_checkbox' => 'Delete database tables created during theme installation.<br><br><span class="text-red-600 font-semibold">Warning! Deleting tables will lose data created by the theme!</span>',
+    ],
+    'install' => [
+        'confirm_title' => 'Install Confirmation',
+        'confirm_message' => 'Do you want to install theme [{name}]?',
+    ],
+    'switch' => [
+        'confirm_title' => 'Activation Confirmation',
+        'confirm_message' => 'Do you want to activate theme [{name}]?',
+    ],
+    'delete' => [
+        'confirm_title' => 'Delete Confirmation',
+        'confirm_message' => 'Do you want to permanently delete theme [{name}] files and folders? This action cannot be undone.',
     ],
     'audit' => [
         'invalid_slug' => 'Invalid theme slug.',
@@ -70,9 +59,7 @@ return [
         'failed' => 'Theme scan failed.',
     ],
 
-    // ========================================
     // Badge Labels (for card display)
-    // ========================================
     'badge_labels' => [
         'health' => 'Health',
         'signature' => 'Signature',
@@ -80,9 +67,7 @@ return [
         'csp' => 'CSP',
     ],
 
-    // ========================================
     // Verification Status
-    // ========================================
     'verification' => [
         // Signature
         'signature_valid' => 'Signature: OK',
@@ -100,9 +85,7 @@ return [
         'csp_not_checked' => 'CSP Not Checked',
     ],
 
-    // ========================================
     // CSP Compliance
-    // ========================================
     'csp' => [
         'status_label' => 'CSP Compliance',
         'ready_tooltip' => 'This theme is fully CSP compliant. Works in all CSP modes.',
@@ -129,10 +112,10 @@ return [
         'audit_result_title' => 'Scan Results',
         'audit_mismatch_found' => 'Permission mismatch detected',
         'audit_no_issues' => 'No issues detected',
-        'audit_mismatch_badge' => 'Mismatch',
         'audit_stats' => 'Check Items',
         'audit_matches' => 'Matches',
         'audit_mismatches' => 'Mismatches',
+        'audit_mismatch_badge' => 'Mismatch',
         'no_permissions' => 'Permission information is not defined',
         'details_title' => 'Theme Details',
         'no_special_permissions' => 'No special permissions',

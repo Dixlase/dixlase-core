@@ -36,7 +36,45 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'class' => '',
     'flexDirection' => 'col',
     'cardStyle' => false,  // カード形式で表示
+    'color' => 'blue',  // ON時の背景色
 ])
+
+@php
+    // 色のマッピング（ライト/ダークモード対応）
+    $colorClasses = [
+        'primary' => 'peer-checked:bg-blue-600 dark:peer-checked:bg-blue-500',
+        'secondary' => 'peer-checked:bg-gray-600 dark:peer-checked:bg-gray-400',
+        'success' => 'peer-checked:bg-green-600 dark:peer-checked:bg-green-500',
+        'warning' => 'peer-checked:bg-yellow-500 dark:peer-checked:bg-yellow-400',
+        'danger' => 'peer-checked:bg-red-600 dark:peer-checked:bg-red-500',
+        'blue' => 'peer-checked:bg-blue-600 dark:peer-checked:bg-blue-500',
+        'green' => 'peer-checked:bg-green-600 dark:peer-checked:bg-green-500',
+        'yellow' => 'peer-checked:bg-yellow-500 dark:peer-checked:bg-yellow-400',
+        'orange' => 'peer-checked:bg-orange-500 dark:peer-checked:bg-orange-400',
+        'red' => 'peer-checked:bg-red-600 dark:peer-checked:bg-red-500',
+        'purple' => 'peer-checked:bg-purple-600 dark:peer-checked:bg-purple-500',
+        'gray' => 'peer-checked:bg-gray-600 dark:peer-checked:bg-gray-400',
+    ];
+    
+    // disabled時の色マッピング
+    $disabledColorClasses = [
+        'primary' => 'bg-blue-900 dark:bg-blue-900',
+        'secondary' => 'bg-gray-700 dark:bg-gray-700',
+        'success' => 'bg-green-900 dark:bg-green-900',
+        'warning' => 'bg-yellow-800 dark:bg-yellow-800',
+        'danger' => 'bg-red-900 dark:bg-red-900',
+        'blue' => 'bg-blue-900 dark:bg-blue-900',
+        'green' => 'bg-green-900 dark:bg-green-900',
+        'yellow' => 'bg-yellow-800 dark:bg-yellow-800',
+        'orange' => 'bg-orange-800 dark:bg-orange-800',
+        'red' => 'bg-red-900 dark:bg-red-900',
+        'purple' => 'bg-purple-900 dark:bg-purple-900',
+        'gray' => 'bg-gray-700 dark:bg-gray-700',
+    ];
+    
+    $checkedClass = $colorClasses[$color] ?? $colorClasses['blue'];
+    $disabledCheckedClass = $disabledColorClasses[$color] ?? $disabledColorClasses['blue'];
+@endphp
 
 <div @class([
     'flex',
@@ -77,9 +115,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                @if($xBindDisabled) x-bind:disabled="{{ $xBindDisabled }}" @endif
                                class="sr-only peer">
                         <div class="w-11 h-6 rounded-full transition-colors peer-focus:outline-none
-                            {{ $disabled && $isChecked ? 'bg-indigo-900 dark:bg-indigo-900' : '' }}
+                            {{ $disabled && $isChecked ? $disabledCheckedClass : '' }}
                             {{ $disabled && !$isChecked ? 'bg-gray-300 dark:bg-gray-700' : '' }}
-                            {{ !$disabled ? 'bg-gray-200 dark:bg-gray-600 peer-checked:bg-indigo-600' : '' }}
+                            {{ !$disabled ? 'bg-gray-200 dark:bg-gray-600 ' . $checkedClass : '' }}
                         "></div>
                         <div class="absolute left-1 top-1 w-4 h-4 bg-white border border-gray-300 rounded-full transition-all peer-checked:translate-x-full peer-checked:border-white"></div>
                     </div>
@@ -109,9 +147,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                            @if($xBindDisabled) x-bind:disabled="{{ $xBindDisabled }}" @endif
                            class="sr-only peer">
                     <div class="w-11 h-6 rounded-full transition-colors peer-focus:outline-none
-                        {{ $disabled && $isChecked ? 'bg-indigo-900 dark:bg-indigo-900' : '' }}
+                        {{ $disabled && $isChecked ? $disabledCheckedClass : '' }}
                         {{ $disabled && !$isChecked ? 'bg-gray-300 dark:bg-gray-700' : '' }}
-                        {{ !$disabled ? 'bg-gray-200 dark:bg-gray-600 peer-checked:bg-indigo-600' : '' }}
+                        {{ !$disabled ? 'bg-gray-200 dark:bg-gray-600 ' . $checkedClass : '' }}
                     "></div>
                     <div class="absolute left-1 top-1 w-4 h-4 bg-white border border-gray-300 rounded-full transition-all peer-checked:translate-x-full peer-checked:border-white"></div>
                 </label>

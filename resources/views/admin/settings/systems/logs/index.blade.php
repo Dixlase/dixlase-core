@@ -37,7 +37,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         />
     @endif
 
-    @include('admin::settings.systems.partials.logs-navigation', ['logType' => $logType, 'pageType' => 'system'])
+    @include('admin::settings.systems.logs.navigation', ['logType' => $logType, 'pageType' => 'system'])
 
     
     <!-- Action Buttons -->

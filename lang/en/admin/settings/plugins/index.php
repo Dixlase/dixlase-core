@@ -13,67 +13,52 @@
  */
 
 return [
-    'index' => [
-        'heading' => 'Plugin List',
-        'installed_heading' => 'Installed Plugins',
-        'uninstalled_heading' => 'Uninstalled Plugins',
-        'systems' => [
-            'text' => 'System',
-            'cache' => 'Cache Management',
-            'database' => 'Database Management',
-            'logs' => 'System Logs',
-            'info' => 'System Information',
-        ],
-        'table' => [
-            'id' => 'ID',
-            'name' => 'Plugin Name',
-            'caption' => 'Installed Plugins List',
-        ],
-        'no_plugins' => 'No plugins are installed.',
-        'no_plugins_description' => 'Add plugins to extend your site\'s functionality.',
-        'add_plugin' => 'Add Plugin',
-        'uninstalled_description' => 'These plugins have files present but are not yet installed.',
-        'buttons' => [],
-        'uninstall' => [
-            'confirm_title' => 'Uninstall Confirmation',
-            'confirm_message' => 'Do you want to uninstall plugin [{name}]?',
-            'remove_data_checkbox' => 'Delete database tables created during plugin installation.<br><br><span class="text-red-600 font-semibold">Warning! Deleting tables will lose data created by the plugin!</span>',
-        ],
-        'install' => [
-            'confirm_title' => 'Install Confirmation',
-            'confirm_message' => 'Do you want to install plugin [{name}]?',
-        ],
-        'enabled' => [
-            'confirm_message' => 'Do you want to enable plugin [{name}]?',
-            'success' => '{name} has been enabled',
-            'failed' => 'Failed to enable {name}',
-        ],
-        'delete' => [
-            'confirm_title' => 'Delete Confirmation',
-            'confirm_message' => 'Do you want to permanently delete plugin [{name}] files and folders? This action cannot be undone.',
-        ],
-        'audit' => [
-            'invalid_slug' => 'Invalid plugin slug.',
-            'completed' => 'Plugin scan completed.',
-            'failed' => 'Plugin scan failed.',
-        ],
+    'heading' => 'Plugin Management',
+    'description' => 'Manage installed plugins, add new plugins, and enable or disable plugins.',
+    'installed_heading' => 'Installed Plugins',
+    'uninstalled_heading' => 'Uninstalled Plugins',
+    'systems' => [
+        'text' => 'System',
+        'cache' => 'Cache Management',
+        'database' => 'Database Management',
+        'logs' => 'System Logs',
+        'info' => 'System Information',
     ],
-    'add' => [
-        'heading' => 'Add Plugin',
-        'upload_title' => 'Plugin Upload',
-        'file_select_label' => 'Select ZIP File:',
-        'drag_drop_text' => 'Drag file here or click to upload',
-        'supported_format' => 'Supported format:',
-        'upload_limit' => 'Maximum upload file size:',
-        'upload_button' => 'Upload and Add',
-        'enable_plugin_text' => 'To enable the plugin,',
-        'enable_from_here' => 'click here',
-        'enable_instruction' => 'to enable.',
+    'table' => [
+        'id' => 'ID',
         'name' => 'Plugin Name',
+        'caption' => 'Installed Plugins List',
     ],
-    // ========================================
+    'no_plugins' => 'No plugins are installed.',
+    'no_plugins_description' => 'Add plugins to extend your site\'s functionality.',
+    'add_plugin' => 'Add Plugin',
+    'uninstalled_description' => 'These plugins have files present but are not yet installed.',
+    'buttons' => [],
+    'uninstall' => [
+        'confirm_title' => 'Uninstall Confirmation',
+        'confirm_message' => 'Do you want to uninstall plugin [{name}]?',
+        'remove_data_checkbox' => 'Delete database tables created during plugin installation.<br><br><span class="text-red-600 font-semibold">Warning! Deleting tables will lose data created by the plugin!</span>',
+    ],
+    'install' => [
+        'confirm_title' => 'Install Confirmation',
+        'confirm_message' => 'Do you want to install plugin [{name}]?',
+    ],
+    'enabled' => [
+        'confirm_message' => 'Do you want to enable plugin [{name}]?',
+        'success' => '{name} has been enabled',
+        'failed' => 'Failed to enable {name}',
+    ],
+    'delete' => [
+        'confirm_title' => 'Delete Confirmation',
+        'confirm_message' => 'Do you want to permanently delete plugin [{name}] files and folders? This action cannot be undone.',
+    ],
+    'audit' => [
+        'invalid_slug' => 'Invalid plugin slug.',
+        'completed' => 'Plugin scan completed.',
+        'failed' => 'Plugin scan failed.',
+    ],
+    
     // Badge Labels (for card display)
-    // ========================================
     'badge_labels' => [
         'health' => 'Health',
         'signature' => 'Signature',
@@ -81,9 +66,7 @@ return [
         'csp' => 'CSP',
     ],
 
-    // ========================================
     // Health Status (PluginHealthStatus Enum)
-    // ========================================
     'health_status' => [
         'healthy' => 'Healthy',
         'healthy_description' => 'No discrepancies found in declared permissions, signature, or configuration.',
@@ -99,9 +82,7 @@ return [
         'not_verified_tooltip' => 'Verification information is insufficient (not scanned, no permission definition, unsigned, etc.).',
     ],
 
-    // ========================================
     // Trust Level (PluginTrustLevel Enum)
-    // ========================================
     'trust_level' => [
         'official' => 'Official',
         'official_description' => 'Distributed by Dixlase official.',
@@ -115,9 +96,7 @@ return [
         'local_description' => 'Manual installation or local development.',
     ],
 
-    // ========================================
     // Verification Status (PluginVerificationStatus Enum)
-    // ========================================
     'verification' => [
         // Signature
         'signature_valid' => 'Signature: OK',
@@ -139,9 +118,7 @@ return [
         'csp_not_checked' => 'CSP Not Checked',
     ],
 
-    // ========================================
     // Modal Messages
-    // ========================================
     'modal' => [
         'health_check_title' => 'Health Check Details',
         'plugin_info' => 'Plugin: :name (:slug)',
@@ -183,9 +160,7 @@ return [
         'recommended_actions' => 'Recommended Actions',
     ],
 
-    // ========================================
     // Block Messages
-    // ========================================
     'block' => [
         'title' => 'This plugin cannot be activated with current security settings',
         'body' => 'Health check determined status as ":status".',
@@ -200,9 +175,7 @@ return [
         'csp_strict_action' => 'Change CSP mode to "Standard" or "Development", or update the plugin to be CSP Ready.',
     ],
 
-    // ========================================
     // CSP Compliance
-    // ========================================
     'csp' => [
         'status_label' => 'CSP Compliance',
         'ready' => 'CSP Ready',

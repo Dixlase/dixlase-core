@@ -58,12 +58,12 @@ class EnvHelper
             $escapedKey = preg_quote($envKey, '/');
             $value = str_replace(["\r", "\n"], '', $value);
 
-            // "null" や特殊文字を安全に扱うために整形（例：空白や改行も）
-            $value = str_replace(["\r", "\n"], '', $value);
+            // 値を適切にエスケープ・クォート
+            $formattedValue = static::formatEnvValue($value);
 
             // 既存のキーを置換、なければ追記
             $pattern = "/^{$escapedKey}=.*/m";
-            $replacement = "{$envKey}={$value}";
+            $replacement = "{$envKey}={$formattedValue}";
 
             if (preg_match($pattern, $envContent)) {
                 $envContent = preg_replace($pattern, $replacement, $envContent);
@@ -77,5 +77,42 @@ class EnvHelper
         sleep(1);
 
         Artisan::call('config:clear');
+    }
+
+    /**
+     * .env用に値を適切にフォーマット
+     * 
+     * @param mixed $value
+     * @return string
+     */
+    protected static function formatEnvValue($value): string
+    {
+        // null値の処理
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        // 文字列に変換
+        $value = (string) $value;
+
+        // true/falseの処理
+        if (in_array(strtolower($value), ['true', 'false'], true)) {
+            return strtolower($value);
+        }
+
+        // 数値のみの場合はクォート不要
+        if (is_numeric($value)) {
+            return $value;
+        }
+
+        // スペース、特殊文字、#を含む場合はダブルクォートで囲む
+        if (preg_match('/[\s#\$\(\)\[\]\{\}\|\&\;\<\>\?\*\'\"]/', $value)) {
+            // 既存のダブルクォートとバックスラッシュをエスケープ
+            $escaped = str_replace(['\\', '"'], ['\\\\', '\\"'], $value);
+            return "\"{$escaped}\"";
+        }
+
+        // それ以外はそのまま
+        return $value;
     }
 }
