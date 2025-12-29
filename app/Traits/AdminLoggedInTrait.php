@@ -41,8 +41,42 @@ trait AdminLoggedInTrait
         $this->middleware(function ($request, $next) {
             $this->setMember();
 
+            \Log::debug('AdminLoggedInTrait: Before locale setting', [
+                'has_member' => !is_null($this->member),
+                'member_id' => $this->member->id ?? null,
+                'member_locale' => $this->member->locale ?? null,
+                'current_locale' => app()->getLocale(),
+            ]);
+
+            // メンバーの言語設定を適用（SetMemberLocaleミドルウェアと同じロジック）
+            if ($this->member && $this->member->locale) {
+                $locale = $this->member->locale instanceof \App\Enums\Locale 
+                    ? $this->member->locale->value 
+                    : $this->member->locale;
+                
+                \Log::debug('AdminLoggedInTrait: Locale extracted', [
+                    'locale' => $locale,
+                    'is_valid' => \App\Enums\Locale::isValid($locale),
+                ]);
+                
+                if (\App\Enums\Locale::isValid($locale)) {
+                    app()->setLocale($locale);
+                    \Log::debug('AdminLoggedInTrait: Locale set', [
+                        'new_locale' => app()->getLocale(),
+                    ]);
+                }
+            }
+
             $transition = config('admin.transition_class');
             $this->viewParams['transition'] = $transition;
+
+            // パンくずリストを自動生成（ロケール設定後に実行）
+            if (empty($this->breadcrumbs)) {
+                \Log::debug('AdminLoggedInTrait: Generating breadcrumbs', [
+                    'locale_before_generation' => app()->getLocale(),
+                ]);
+                $this->generateBreadcrumbsFromRoute();
+            }
 
             // ページ説明を自動設定
             if ($this->description === null) {
@@ -78,6 +112,11 @@ trait AdminLoggedInTrait
      */
     protected function generateBreadcrumbsFromRoute(): void
     {
+        \Log::debug('generateBreadcrumbsFromRoute called', [
+            'locale' => app()->getLocale(),
+            'backtrace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5),
+        ]);
+        
         $routeName = request()->route()?->getName();
         
         if (!$routeName) {
@@ -215,16 +254,27 @@ trait AdminLoggedInTrait
      */
     protected function resolveBreadcrumbLabel(string $translationPath, string $part): ?string
     {
+        // デバッグ: 現在のロケールを確認
+        \Log::debug('Breadcrumb Label Resolution', [
+            'locale' => app()->getLocale(),
+            'translationPath' => $translationPath,
+            'part' => $part,
+        ]);
+        
         // パターン1: {path}/index.heading
         $indexKey = $translationPath . '/index.heading';
         if (\Lang::has($indexKey)) {
-            return __($indexKey);
+            $label = __($indexKey);
+            \Log::debug('Pattern 1 matched', ['key' => $indexKey, 'label' => $label]);
+            return $label;
         }
         
         // パターン2: {path}.heading
         $headingKey = $translationPath . '.heading';
         if (\Lang::has($headingKey)) {
-            return __($headingKey);
+            $label = __($headingKey);
+            \Log::debug('Pattern 2 matched', ['key' => $headingKey, 'label' => $label]);
+            return $label;
         }
         
         // パターン3: 親のnav.{part}
@@ -234,14 +284,18 @@ trait AdminLoggedInTrait
             $parentPath = implode('/', $pathParts);
             $navKey = $parentPath . '/index.nav.' . $lastPart;
             if (\Lang::has($navKey)) {
-                return __($navKey);
+                $label = __($navKey);
+                \Log::debug('Pattern 3 matched', ['key' => $navKey, 'label' => $label]);
+                return $label;
             }
         }
         
         // パターン4: admin/nav.{part}.text（配列の場合）
         $navTextKey = 'admin/nav.' . $part . '.text';
         if (\Lang::has($navTextKey)) {
-            return __($navTextKey);
+            $label = __($navTextKey);
+            \Log::debug('Pattern 4 matched', ['key' => $navTextKey, 'label' => $label]);
+            return $label;
         }
         
         // パターン5: admin/nav.{part}（文字列の場合）
@@ -250,14 +304,17 @@ trait AdminLoggedInTrait
             $value = __($navKey);
             // 配列が返ってきた場合は .text を試す
             if (is_array($value) && isset($value['text'])) {
+                \Log::debug('Pattern 5 matched (array)', ['key' => $navKey, 'label' => $value['text']]);
                 return $value['text'];
             }
             // 文字列の場合はそのまま返す
             if (is_string($value)) {
+                \Log::debug('Pattern 5 matched (string)', ['key' => $navKey, 'label' => $value]);
                 return $value;
             }
         }
         
+        \Log::debug('No pattern matched', ['translationPath' => $translationPath, 'part' => $part]);
         return null;
     }
 

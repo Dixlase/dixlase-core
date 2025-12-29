@@ -132,8 +132,8 @@ enum CspMode: int
     public function colorName(): string
     {
         return match ($this) {
-            self::Development => 'blue',
-            self::Standard => 'yellow',
+            self::Development => 'yellow',
+            self::Standard => 'green',
             self::Strict => 'red',
         };
     }
@@ -199,5 +199,45 @@ enum CspMode: int
     public static function getAllValues(): array
     {
         return array_map(fn($case) => (string) $case->value, self::cases());
+    }
+
+    /**
+     * 機能リストを取得
+     */
+    public function features(): array
+    {
+        $baseKey = $this->translationKey();
+        return [
+            __($baseKey . '_feature1'),
+            __($baseKey . '_feature2'),
+            __($baseKey . '_feature3'),
+        ];
+    }
+
+    /**
+     * radio-card-groupコンポーネント用のオプション配列を取得
+     */
+    public static function getRadioCardOptions(): array
+    {
+        $options = [];
+        foreach (self::cases() as $mode) {
+            $option = [
+                'value' => (string) $mode->value,
+                'label' => $mode->translationKey(),
+                'description' => $mode->translationKey() . '_desc',
+                'icon' => $mode->iconClass(),
+                'color' => $mode->colorName(),
+                'features' => $mode->features(),
+            ];
+            
+            // 標準モードには推奨バッジを追加
+            if ($mode === self::Standard) {
+                $option['badge'] = 'admin/settings/security/csp.recommended';
+                $option['badgeColor'] = 'yellow';
+            }
+            
+            $options[] = $option;
+        }
+        return $options;
     }
 }

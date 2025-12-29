@@ -52,7 +52,7 @@ class AdminSystemLogsController extends AdminLoggedInController
     /**
      * ファイルログ
      */
-    public function index(Request $request, $type = 'activity')
+    public function files(Request $request, $type = 'activity')
     {
         $fileName = $this->logPaths[$type] ?? $this->logPaths['activity'];
         $selectedDate = $request->input('date');
@@ -130,6 +130,7 @@ class AdminSystemLogsController extends AdminLoggedInController
         $lines = $this->readLogFileLines($filePath, $maxLinesToRead);
 
         $parsedLogs = [];
+        
         foreach ($lines as $line) {
             $parsedLog = $this->parseLogLine($line);
             if ($parsedLog) {
@@ -170,7 +171,7 @@ class AdminSystemLogsController extends AdminLoggedInController
         $this->viewParams['pagination'] = $pagination;
         $this->viewParams['logTypes'] = array_keys($this->logPaths);
 
-        return view('admin::settings.systems.logs.index', $this->viewParams);
+        return view('admin::settings.systems.logs.files', $this->viewParams);
     }
 
     /**
@@ -400,9 +401,9 @@ class AdminSystemLogsController extends AdminLoggedInController
     }
 
     /**
-     * 監査ログ一覧（専用ページ）
+     * 監査ログ一覧（データベース）
      */
-    public function auditIndex(Request $request)
+    public function index(Request $request)
     {
         return $this->auditLogsDb($request);
     }
@@ -477,13 +478,13 @@ class AdminSystemLogsController extends AdminLoggedInController
         $this->viewParams['outcomes'] = ['success', 'failure', 'denied', 'pending', 'unknown'];
         $this->viewParams['tableExists'] = true;
 
-        return view('admin::settings.systems.logs.audit', $this->viewParams);
+        return view('admin::settings.systems.logs.index', $this->viewParams);
     }
 
     /**
-     * 監査ログ詳細表示
+     * 監査ログ詳細
      */
-    public function auditShow(Request $request, $id)
+    public function show(Request $request, $id)
     {
         $this->viewParams['logType'] = 'audit';
         $this->viewParams['auditView'] = 'db';
@@ -506,7 +507,7 @@ class AdminSystemLogsController extends AdminLoggedInController
         $this->viewParams['auditLog'] = $auditLog;
         $this->viewParams['relatedLogs'] = $relatedLogs;
 
-        return view('admin::settings.systems.logs.audit-show', $this->viewParams);
+        return view('admin::settings.systems.logs.show', $this->viewParams);
     }
 
     /**
@@ -791,9 +792,16 @@ class AdminSystemLogsController extends AdminLoggedInController
         }
 
         $timestamp = $matches[1];
-        $level = $matches[2];
+        $levelRaw = $matches[2];
         $messageWithContext = $matches[3];
         $contextJson = isset($matches[4]) ? trim($matches[4]) : '';
+        
+        // Extract level from "local.INFO" format
+        $level = $levelRaw;
+        if (strpos($levelRaw, '.') !== false) {
+            $parts = explode('.', $levelRaw);
+            $level = end($parts);
+        }
 
         // メッセージ内にJSONが含まれている場合の処理
         // メッセージ部分からJSONを分離

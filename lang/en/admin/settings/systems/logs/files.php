@@ -14,6 +14,7 @@
 
 return [
     'heading' => 'File Logs',
+    'description' => 'View, download, and clear application log files by date.',
     'date_latest' => 'Latest',
     'date_select' => 'Select Date',
     'no_logs_found' => 'No logs found.',
