@@ -76,5 +76,6 @@ tracking.example.com',
     'badge_inline_required_tooltip' => 'このプラグインはインラインJSを必要とします。厳格モードでは使用できません。',
     'strict_mode_blocked' => '厳格モードでは有効化できません',
     'strict_mode_blocked_reason' => 'このプラグインはインラインJSを必要とするため、CSP厳格モードでは有効化できません。',
+    'development_mode_warning' => 'CSP開発モードはすべてのスクリプトを許可するため、セキュリティリスクがあります。本番環境では標準モードまたは厳格モードの使用を推奨します。',
     'settings_updated' => 'CSP設定が更新されました。',
 ];

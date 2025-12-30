@@ -95,7 +95,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             value=""
             :required="$required"
             autocomplete="new-password"
-            class="password-confirmation-input"
+            class="password-confirmation-input w-full"
         />
     </fieldset>
 @endif

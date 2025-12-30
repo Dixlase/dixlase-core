@@ -120,8 +120,8 @@ enum CspMode: int
     public function cssClass(): string
     {
         return match ($this) {
-            self::Development => 'text-blue-600 dark:text-blue-400',
-            self::Standard => 'text-yellow-600 dark:text-yellow-400',
+            self::Development => 'text-yellow-600 dark:text-yellow-400',
+            self::Standard => 'text-green-600 dark:text-green-400',
             self::Strict => 'text-red-600 dark:text-red-400',
         };
     }
@@ -133,7 +133,7 @@ enum CspMode: int
     {
         return match ($this) {
             self::Development => 'yellow',
-            self::Standard => 'green',
+            self::Standard => 'blue',
             self::Strict => 'red',
         };
     }
@@ -233,7 +233,7 @@ enum CspMode: int
             // 標準モードには推奨バッジを追加
             if ($mode === self::Standard) {
                 $option['badge'] = 'admin/settings/security/csp.recommended';
-                $option['badgeColor'] = 'yellow';
+                $option['badgeColor'] = 'blue';
             }
             
             $options[] = $option;

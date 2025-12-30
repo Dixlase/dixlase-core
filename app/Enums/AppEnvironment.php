@@ -71,7 +71,7 @@ enum AppEnvironment: string
     {
         return match ($this) {
             self::Local => 'yellow',
-            self::Staging => 'green',
+            self::Staging => 'blue',
             self::Production => 'red',
         };
     }

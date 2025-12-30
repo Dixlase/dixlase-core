@@ -118,6 +118,6 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
         $this->securitySettingRepository->set('extension_log_operations', $validated['extension_log_operations'] ?? true);
 
         return redirect()->route('admin.settings.security.extensions')
-            ->with('success', __('admin/settings/security/extensions_settings_updated'));
+            ->with('success', __('admin/settings/security/extensions.settings_updated'));
     }
 }

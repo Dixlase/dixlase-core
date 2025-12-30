@@ -22,7 +22,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
-<div x-data="{ cspEnabled: {{ old('csp_enabled', $settings['csp_enabled']) ? 'true' : 'false' }} }">
+<div x-data="{ 
+    cspEnabled: {{ old('csp_enabled', $settings['csp_enabled']) ? 'true' : 'false' }},
+    cspMode: '{{ old('csp_mode', $settings['csp_mode'] ?? \App\Enums\CspMode::default()->value) }}',
+    appEnv: '{{ config('app.env') }}'
+}">
     <form id="security-csp-form" method="POST" action="{{ route('admin.settings.security.csp.update') }}">
         @csrf
         
@@ -60,9 +64,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         name="csp_mode"
                         :options="\App\Enums\CspMode::getRadioCardOptions()"
                         :value="old('csp_mode', $settings['csp_mode'] ?? \App\Enums\CspMode::default()->value)"
+                        xModel="cspMode"
                         :columns="3"
                     />
                 </fieldset>
+
+                <!-- 開発モードの警告 -->
+                <template x-if="cspMode === '0'">
+                    <div class="mt-4">
+                        <x-message
+                            type="warning"
+                            :message="__('admin/settings/security/csp.development_mode_warning')"
+                        />
+                    </div>
+                </template>
 
                 <!-- 違反をログに記録 -->
                 <fieldset class="mb-4">

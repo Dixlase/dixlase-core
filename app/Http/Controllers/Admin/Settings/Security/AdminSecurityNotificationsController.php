@@ -81,6 +81,6 @@ class AdminSecurityNotificationsController extends AdminLoggedInController
         $this->securitySettingRepository->set('notification_log_levels', implode(',', $logLevels));
 
         return redirect()->route('admin.settings.security.notifications')
-            ->with('success', __('admin/settings/security/notifications_settings_updated'));
+            ->with('success', __('admin/settings/security/notifications.settings_updated'));
     }
 }
