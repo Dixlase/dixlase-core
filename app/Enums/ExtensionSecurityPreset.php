@@ -194,9 +194,9 @@ enum ExtensionSecurityPreset: string
     public function colorName(): string
     {
         return match ($this) {
-            self::Strict => 'red',
-            self::Balanced => 'green',
             self::Development => 'yellow',
+            self::Balanced => 'blue',
+            self::Strict => 'red',
             self::Custom => 'purple',
         };
     }

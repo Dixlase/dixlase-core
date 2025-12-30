@@ -64,6 +64,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 pattern="^[a-zA-Z0-9]+$"
                 minlength="3"
                 maxlength="20"
+                class="w-full"
             />
             <p class="description-text">{{ __('admin/members/form.account_name_help') }}</p>
             <x-form.error
@@ -78,6 +79,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 name="member_name"
                 :value="old('member_name', $member->member_name ?? '')"
                 maxlength="255"
+                class="w-full"
             />
             <p class="description-text">{{ __('admin/members/form.member_name_help') }}</p>
             <x-form.error
@@ -87,8 +89,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <fieldset>
             <legend>{{ __('common.description') }}</legend>
-            <textarea name="description" id="description" rows="3" 
-                class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded px-3 py-2">{{ old('description', $member->description ?? '') }}</textarea>
+            <x-form.textarea
+                id="description"
+                name="description"
+                :value="old('description', $member->description ?? '')"
+                rows="3"
+                class="w-full"
+            />
             <x-form.error
                 :messages="$errors->get('description')"
             />
@@ -103,6 +110,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :value="old('email', $member->email ?? '')"
                 :required="true"
                 autocomplete="email"
+                class="w-full"
             />
             <x-form.error
                 :messages="$errors->get('email')"
@@ -122,6 +130,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 onpaste="return false"
                 oncopy="return false"
                 oncut="return false"
+                class="w-full"
             />
             <p class="help-text">{{ __('admin/members/form.email_confirmation_help') }}</p>
             <x-form.error
@@ -171,14 +180,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @php
                         $emailVerifiedValue = old('email_verified', '0');
                         $emailVerificationOptions = [
-                            '0' => 'admin/members/form.account_verified_send_email',
-                            '1' => 'admin/members/form.account_verified',
+                            ['value' => '0', 'label' => 'admin/members/form.account_verified_send_email'],
+                            ['value' => '1', 'label' => 'admin/members/form.account_verified'],
                         ];
                     @endphp
-                    <x-form.radio-group
+                    <x-form.radio-card-group
                         name="email_verified"
                         :options="$emailVerificationOptions"
                         :value="$emailVerifiedValue"
+                        :columns="2"
                     />
                     <p class="description-text">{{ __('admin/members/form.account_verification_help_create') }}</p>
                 @else
@@ -186,14 +196,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @php
                         $emailVerifiedValue = old('email_verified', $member->hasVerifiedEmail() ? '1' : '0');
                         $emailVerificationOptionsEdit = [
-                            '0' => 'admin/members/form.account_unverified',
-                            '1' => 'admin/members/form.account_verified',
+                            ['value' => '0', 'label' => 'admin/members/form.account_unverified'],
+                            ['value' => '1', 'label' => 'admin/members/form.account_verified'],
                         ];
                     @endphp
-                    <x-form.radio-group
+                    <x-form.radio-card-group
                         name="email_verified"
                         :options="$emailVerificationOptionsEdit"
                         :value="$emailVerifiedValue"
+                        :columns="2"
                     />
                     <p class="description-text">{{ __('admin/members/form.account_verification_help_edit') }}</p>
                     
@@ -254,15 +265,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @php
                 $appearanceValue = old('appearance', (string) ($member->appearance->value ?? 0));
                 $appearanceOptions = [
-                    '0' => 'common.auto',
-                    '1' => 'common.light',
-                    '2' => 'common.dark',
+                    ['value' => '0', 'label' => 'common.auto', 'icon' => 'fas fa-adjust'],
+                    ['value' => '1', 'label' => 'common.light', 'icon' => 'fas fa-sun'],
+                    ['value' => '2', 'label' => 'common.dark', 'icon' => 'fas fa-moon'],
                 ];
             @endphp
-            <x-form.radio-group
+            <x-form.radio-card-group
                 name="appearance"
                 :options="$appearanceOptions"
                 :value="$appearanceValue"
+                :columns="3"
             />
             <x-form.error
                 :messages="$errors->get('appearance')"
@@ -285,14 +297,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @php
                     $statusValue = old('status', (string) ($member->status->value ?? 1));
                     $statusOptions = [
-                        '1' => 'components.status.active',
-                        '0' => 'components.status.inactive',
+                        ['value' => '1', 'label' => 'components.status.active', 'icon' => 'fas fa-check-circle', 'color' => 'green'],
+                        ['value' => '0', 'label' => 'components.status.inactive', 'icon' => 'fas fa-times-circle', 'color' => 'gray'],
                     ];
                 @endphp
-                <x-form.radio-group
+                <x-form.radio-card-group
                     name="status"
                     :options="$statusOptions"
                     :value="$statusValue"
+                    :columns="2"
                 />
             @endif
             <x-form.error
@@ -317,13 +330,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     $roleValue = old('role', $member->role->value ?? $roleAdminValue);
                     $roleOptions = [];
                     foreach ($roles as $role) {
-                        $roleOptions[$role->value] = $role->label();
+                        $roleOptions[] = [
+                            'value' => $role->value,
+                            'label' => $role->label(),
+                            'icon' => 'fas fa-user-shield',
+                        ];
                     }
                 @endphp
-                <x-form.radio-group
+                <x-form.radio-card-group
                     name="role"
                     :options="$roleOptions"
                     :value="$roleValue"
+                    :columns="4"
                 />
             @endif
             <x-form.error

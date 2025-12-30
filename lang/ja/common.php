@@ -63,6 +63,7 @@ return [
     'close' => '閉じる',
     'index' => '一覧',
     'select' => '選択',
+    'please_select' => '選択してください',
     'search' => '検索',
     'loading' => '読み込み中',
     'new' => '新規作成',
@@ -139,6 +140,10 @@ return [
     'unknown' => '不明',
     'value' => '値',
     'status' => '状態',
+    'basic_info' => '基本情報',
+    'contact_info' => '連絡先情報',
+    'other_info' => 'その他の情報',
+    'account_settings' => 'アカウント設定',
 
     // 認証情報
     'email' => 'メールアドレス',

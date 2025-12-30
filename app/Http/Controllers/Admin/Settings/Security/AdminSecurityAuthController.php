@@ -78,6 +78,6 @@ class AdminSecurityAuthController extends AdminLoggedInController
         $this->securitySettingRepository->set('pwned_password_check_enabled', $validated['pwned_password_check_enabled'] ?? false);
 
         return redirect()->route('admin.settings.security.auth')
-            ->with('success', __('admin/settings/security/auth_settings_updated'));
+            ->with('success', __('admin/settings/security/auth.settings_updated'));
     }
 }

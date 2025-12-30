@@ -76,5 +76,6 @@ tracking.example.com',
     'badge_inline_required_tooltip' => 'This plugin requires inline JS. Cannot be used in strict mode.',
     'strict_mode_blocked' => 'Cannot enable in strict mode',
     'strict_mode_blocked_reason' => 'This plugin requires inline JS and cannot be enabled in CSP strict mode.',
+    'development_mode_warning' => 'CSP development mode allows all scripts, which poses security risks. It is recommended to use standard or strict mode in production environments.',
     'settings_updated' => 'CSP settings have been updated.',
 ];

@@ -64,6 +64,8 @@ return [
     'close' => 'Close',
     'finish' => 'Finish',
     'index' => 'Index',
+    'select' => 'Select',
+    'please_select' => 'Please select',
     'new' => 'New',
     'view_site' => 'View Site',
     'design' => 'Design',
@@ -104,6 +106,10 @@ return [
     'not_installed' => 'Not Installed',
     'no_description' => 'No description available',
     'available_methods' => 'available methods',
+    'basic_info' => 'Basic Information',
+    'contact_info' => 'Contact Information',
+    'other_info' => 'Other Information',
+    'account_settings' => 'Account Settings',
     
     // Theme
     'auto' => 'Auto',
