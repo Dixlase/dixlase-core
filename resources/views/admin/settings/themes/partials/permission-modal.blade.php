@@ -137,17 +137,27 @@ https://exc-d.com
                         <ul class="space-y-1">
                             @foreach($attentionReasons as $reason)
                                 @php
-                                    $reasonKey = str_replace('.', '_', $reason['key']);
-                                    $severityColor = $reason['severity'] === 'high' 
-                                        ? 'text-orange-600 dark:text-orange-400' 
-                                        : 'text-yellow-600 dark:text-yellow-400';
-                                    $severityIcon = $reason['severity'] === 'high' 
-                                        ? 'fas fa-exclamation-circle' 
-                                        : 'fas fa-info-circle';
+                                    // 後方互換性: 文字列の場合と配列の場合の両方に対応
+                                    if (is_string($reason)) {
+                                        // 古い形式（文字列）
+                                        $reasonText = $reason;
+                                        $severityColor = 'text-yellow-600 dark:text-yellow-400';
+                                        $severityIcon = 'fas fa-info-circle';
+                                    } else {
+                                        // 新しい形式（配列）
+                                        $reasonKey = str_replace('.', '_', $reason['key'] ?? '');
+                                        $reasonText = __('admin/settings/themes/index.permissions.attention_reason_' . $reasonKey);
+                                        $severityColor = ($reason['severity'] ?? 'medium') === 'high' 
+                                            ? 'text-orange-600 dark:text-orange-400' 
+                                            : 'text-yellow-600 dark:text-yellow-400';
+                                        $severityIcon = ($reason['severity'] ?? 'medium') === 'high' 
+                                            ? 'fas fa-exclamation-circle' 
+                                            : 'fas fa-info-circle';
+                                    }
                                 @endphp
                                 <li class="flex items-start text-xs {{ $severityColor }}">
                                     <i class="{{ $severityIcon }} mr-2 mt-0.5 flex-shrink-0"></i>
-                                    <span>{{ __('admin/settings/themes/index.permissions.attention_reason_' . $reasonKey) }}</span>
+                                    <span>{{ $reasonText }}</span>
                                 </li>
                             @endforeach
                         </ul>

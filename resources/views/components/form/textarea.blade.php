@@ -37,7 +37,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @if($id) id="{{ $id }}" @endif
     rows="{{ $rows }}"
     placeholder="{{ $placeholder }}"
-    class="input-common {{ $class }}"
+    class="input-common input-full {{ $class }}"
     @if($required) required @endif
     @if($readonly) readonly @endif
     {{ $xBindReadonly ? "x-bind:readonly=$xBindReadonly" : '' }}

@@ -32,19 +32,38 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'id_confirmation' => 'confirmationModal',        // Modal ID
     'id_delete' => 'deleteModal',                  // Delete modal ID
     'onclick' => null,                       // Custom onclick function (optional)
+    'back_url' => null,                      // Back button URL (optional)
+    'back_label' => __('common.back'),       // Back button text
 
 
 ])
 
-<!-- {{ __('common.save') }} -->
-<x-form.button
-    type="button"
-    variant="primary"
-    :label="$label ?? __('common.save')"
-    icon="fas fa-save"
-    onclick="openModal('{{ $id_confirmation }}')"
-    class="save-button"
-/>
+<div class="flex justify-between items-center">
+
+
+    <!-- {{ __('common.save') }} -->
+    <x-form.button
+        type="button"
+        variant="primary"
+        :label="$label ?? __('common.save')"
+        icon="fas fa-save"
+        onclick="openModal('{{ $id_confirmation }}')"
+        class="save-button"
+    />
+
+    @if($back_url)
+        <!-- {{ __('common.back') }} -->
+        <x-form.button
+            type="link"
+            variant="tertiary"
+            :label="$back_label ?? __('common.back')"
+            icon="fas fa-arrow-left"
+            :href="$back_url"
+        />
+    @else
+        <div></div>
+    @endif
+</div>
 
 <!-- {{ __('common.save_confirmation_title') }} -->
 @push('modals')

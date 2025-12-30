@@ -225,6 +225,19 @@ $editorTypeEnum = is_string($editorType) ? ContentEditorType::from($editorType) 
     </div>
 </div>
 
+@php
+$editorTranslations = [
+    'common.content_editor.gui' => __('common.content_editor.gui'),
+    'common.content_editor.gui_description' => __('common.content_editor.gui_description'),
+    'common.content_editor.markdown' => __('common.content_editor.markdown'),
+    'common.content_editor.markdown_description' => __('common.content_editor.markdown_description'),
+    'common.content_editor.html' => __('common.content_editor.html'),
+    'common.content_editor.html_description' => __('common.content_editor.html_description'),
+    'common.content_editor.blade' => __('common.content_editor.blade'),
+    'common.content_editor.blade_description' => __('common.content_editor.blade_description'),
+];
+@endphp
+
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script @cspNonce>
@@ -232,16 +245,7 @@ $editorTypeEnum = is_string($editorType) ? ContentEditorType::from($editorType) 
 document.addEventListener('alpine:init', () => {
     Alpine.magic('t', () => {
         return (key) => {
-            const translations = @json([
-                'common.content_editor.gui' => __('common.content_editor.gui'),
-                'common.content_editor.gui_description' => __('common.content_editor.gui_description'),
-                'common.content_editor.markdown' => __('common.content_editor.markdown'),
-                'common.content_editor.markdown_description' => __('common.content_editor.markdown_description'),
-                'common.content_editor.html' => __('common.content_editor.html'),
-                'common.content_editor.html_description' => __('common.content_editor.html_description'),
-                'common.content_editor.blade' => __('common.content_editor.blade'),
-                'common.content_editor.blade_description' => __('common.content_editor.blade_description'),
-            ]);
+            const translations = @json($editorTranslations);
             return translations[key] || key;
         };
     });

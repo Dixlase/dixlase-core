@@ -29,7 +29,8 @@ return Application::configure(basePath: dirname(__DIR__))
         
         // 認証が必要なミドルウェアは後で実行
         $middleware->appendToGroup('web', [
-            \App\Http\Middleware\SetMemberLocale::class, // 管理メンバー個別言語設定
+            \App\Http\Middleware\SetLocale::class, // フロントページ言語設定（管理メンバー優先）
+            \App\Http\Middleware\SetMemberLocale::class, // 管理メンバー個別言語設定（管理画面用）
         ]);
 
         // Register route middleware aliases
