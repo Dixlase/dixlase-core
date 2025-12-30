@@ -191,21 +191,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             $watch('localTheme', () => applyLocalTheme(true));
         " data-profile-theme>
             <h2>{{ __('common.appearance_settings') }}</h2>
-            
-            <x-form.radio-card-group
-                name="appearance"
-                :options="[
-                    ['value' => '0', 'label' => __('common.auto'), 'description' => 'システムの設定に従います', 'icon' => 'fas fa-adjust'],
-                    ['value' => '1', 'label' => __('common.light'), 'description' => 'ライトモードで表示', 'icon' => 'fas fa-sun'],
-                    ['value' => '2', 'label' => __('common.dark'), 'description' => 'ダークモードで表示', 'icon' => 'fas fa-moon'],
-                ]"
-                :value="$appearanceValue"
-                xModel="localTheme"
-                :columns="3"
-                color="primary"
-                variant="filled"
-                :showCheck="true"
-            />
+            <div class="lg:w-1/2">
+                <x-form.radio-card-group
+                    name="appearance"
+                    :options="[
+                        ['value' => '0', 'label' => __('common.auto'), 'description' => 'システムの設定に従います', 'icon' => 'fas fa-adjust'],
+                        ['value' => '1', 'label' => __('common.light'), 'description' => 'ライトモードで表示', 'icon' => 'fas fa-sun'],
+                        ['value' => '2', 'label' => __('common.dark'), 'description' => 'ダークモードで表示', 'icon' => 'fas fa-moon'],
+                    ]"
+                    :value="$appearanceValue"
+                    xModel="localTheme"
+                    :columns="3"
+                    color="primary"
+                    variant="filled"
+                    :showCheck="true"
+                />
+            </div>
         </section>
 
         <!-- ログイン通知設定 -->
