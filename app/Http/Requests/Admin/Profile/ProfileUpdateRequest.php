@@ -8,7 +8,7 @@ use App\Enums\LoginNotificationMode;
 use App\Enums\TwoFactorMethod;
 use App\Enums\TwoFactorMode;
 use App\Models\MemberSetting;
-use App\Rules\NotPwnedPassword;
+use App\Services\PasswordValidationService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Enum;
@@ -32,36 +32,22 @@ class ProfileUpdateRequest extends FormRequest
     {
         $member = Auth::guard('member')->user();
         
-        // パスワード条件を全体設定から取得
-        $minLength = (int) MemberSetting::getValue('password_min_length', 8);
-        $requireUppercase = (bool) MemberSetting::getValue('password_require_uppercase', true);
-        $requireSymbol = (bool) MemberSetting::getValue('password_require_symbol', false);
+        // パスワード設定を取得
+        $passwordMinLength = (int) MemberSetting::getValue('password_min_length', 8);
+        $passwordRequireUppercase = (bool) MemberSetting::getValue('password_require_uppercase', true);
+        $passwordRequireNumber = (bool) MemberSetting::getValue('password_require_number', true);
+        $passwordRequireSymbol = (bool) MemberSetting::getValue('password_require_symbol', false);
+        $passwordCheckPwned = (bool) MemberSetting::getValue('password_check_pwned', false);
 
-        // パスワードのルールを動的に構築
-        $passwordRules = ['nullable', "min:$minLength"];
-
-        // パスワードが入力されている場合のみ確認を必須にする
-        if ($this->filled('password') && $this->filled('password_confirmation')) {
-            $passwordRules[] = 'confirmed';
-        }
-
-        // パスワードが入力されている場合のみ複雑性チェックを適用
-        if ($this->filled('password')) {
-            // 常に小文字と数字を必須にする
-            $passwordRules[] = 'regex:/[a-z]/'; // 小文字
-            $passwordRules[] = 'regex:/[0-9]/'; // 数字
-
-            // 条件に応じて大文字と記号を追加
-            if ($requireUppercase) {
-                $passwordRules[] = 'regex:/[A-Z]/'; // 大文字
-            }
-            if ($requireSymbol) {
-                $passwordRules[] = 'regex:/[!@#$%^&*(),.?":{}|<>]/'; // 記号
-            }
-            
-            // パスワード辞書攻撃対策
-            $passwordRules[] = new NotPwnedPassword();
-        }
+        // パスワードバリデーションルールを構築（任意入力）
+        $passwordRules = PasswordValidationService::buildPasswordRules(
+            $passwordMinLength,
+            $passwordRequireUppercase,
+            $passwordRequireNumber,
+            $passwordRequireSymbol,
+            false, // プロフィール更新時は任意
+            $passwordCheckPwned
+        );
 
         $rules = [
             'account_name' => 'required|string|alpha_num|min:3|max:20',

@@ -134,7 +134,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     @hasSection('save')
                         <div class="sticky bottom-0 z-30 backdrop-blur-sm bg-white/75 dark:bg-gray-900/75 border-t border-gray-200 dark:border-gray-700 px-4 sm:px-6 lg:px-8 py-3">
-                            <div class="w-full mx-auto">
+                            <div class="w-full mx-auto flex justify-center">
                                 @yield('save')
                             </div>
                         </div>

@@ -25,7 +25,8 @@ namespace App\Http\Requests\Admin\Settings\Members;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Enums\MemberRole;
-use App\Rules\NotPwnedPassword;
+use App\Models\MemberSetting;
+use App\Services\PasswordValidationService;
 
 class AdminSettingsMemberStoreRequest extends FormRequest
 {
@@ -51,6 +52,23 @@ class AdminSettingsMemberStoreRequest extends FormRequest
         // 初期メンバー（ID=1）かどうか
         $isInitialAdmin = $member && $member->id === 1;
 
+        // パスワード設定を取得
+        $passwordMinLength = (int) MemberSetting::getValue('password_min_length', 8);
+        $passwordRequireUppercase = (bool) MemberSetting::getValue('password_require_uppercase', true);
+        $passwordRequireNumber = (bool) MemberSetting::getValue('password_require_number', true);
+        $passwordRequireSymbol = (bool) MemberSetting::getValue('password_require_symbol', false);
+        $passwordCheckPwned = (bool) MemberSetting::getValue('password_check_pwned', false);
+
+        // パスワードバリデーションルールを構築
+        $passwordRules = PasswordValidationService::buildPasswordRules(
+            $passwordMinLength,
+            $passwordRequireUppercase,
+            $passwordRequireNumber,
+            $passwordRequireSymbol,
+            !$isUpdate, // 新規作成時は必須、編集時は任意
+            $passwordCheckPwned
+        );
+
         $rules = [
             'account_name' => 'required|string|alpha_num|min:3|max:20',
             'member_name' => 'nullable|string|max:255',
@@ -62,9 +80,7 @@ class AdminSettingsMemberStoreRequest extends FormRequest
                     ->ignore($this->route('member'))
                     ->whereNull('deleted_at'), // 削除されていないメンバーのみをチェック
             ],
-            'password' => $isUpdate 
-                ? ['nullable', 'string', 'min:8', new NotPwnedPassword()]
-                : ['required', 'string', 'min:8', new NotPwnedPassword()],
+            'password' => $passwordRules,
             // 初期メンバーの場合はroleを任意（フィールドが送信されないため）
             'role' => $isInitialAdmin 
                 ? ['nullable', Rule::in(array_column(MemberRole::cases(), 'value'))]

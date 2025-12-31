@@ -23,6 +23,7 @@
 namespace App\Http\Controllers\Admin\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\MemberSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
@@ -37,7 +38,7 @@ class AdminPasswordResetLinkController extends Controller
      */
     public function create(): View
     {
-        $this->abortIfPasswordResetUnavailable();
+        $this->abortIfPasswordResetUnavailable(fn($key, $default) => MemberSetting::getValue($key, $default));
         
         return view('admin.auth.forgot-password');
     }
@@ -49,7 +50,7 @@ class AdminPasswordResetLinkController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $this->abortIfPasswordResetUnavailable();
+        $this->abortIfPasswordResetUnavailable(fn($key, $default) => MemberSetting::getValue($key, $default));
         
         $request->validate($this->getPasswordResetLinkValidationRules());
 

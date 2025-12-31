@@ -157,6 +157,11 @@ return [
 
     // Personal Information
     'gender' => 'Gender',
+    'gender_male' => 'Male',
+    'gender_female' => 'Female',
+    'gender_non_binary' => 'Non-binary',
+    'gender_other' => 'Other',
+    'prefer_not_to_say' => 'Prefer not to say',
     'birthday' => 'Birthday',
 
     // File Related
@@ -376,6 +381,8 @@ return [
         'gui' => 'GUI Editor',
         'gui_description' => 'Intuitive drag & drop editing (coming soon)',
         'gui_coming_soon' => 'GUI editor is coming soon',
+        'coming_soon_badge' => 'Coming Soon',
+        'advanced_badge' => 'Advanced',
         'markdown' => 'Markdown',
         'markdown_description' => 'Write in Markdown syntax. Preview available.',
         'markdown_editor' => 'Markdown Editor',
