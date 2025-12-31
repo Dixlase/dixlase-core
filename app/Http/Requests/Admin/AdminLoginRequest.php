@@ -25,13 +25,19 @@ namespace App\Http\Requests\Admin;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
+use App\Services\AdminLoginLockoutService;
 
 class AdminLoginRequest extends FormRequest
 {
+    protected AdminLoginLockoutService $lockoutService;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->lockoutService = new AdminLoginLockoutService();
+    }
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -60,48 +66,62 @@ class AdminLoginRequest extends FormRequest
      */
     public function authenticate(string $guard = 'member'): void
     {
-        $this->ensureIsNotRateLimited();
+        $login = $this->input('login');
+        $ipAddress = $this->ip();
 
-        if (! Auth::guard($guard)->attempt($this->only('email', 'password'))) {
+        // ロックアウトチェック
+        $this->ensureIsNotLockedOut($login, $ipAddress);
 
-            RateLimiter::hit($this->throttleKey());
+        // 認証試行
+        if (!Auth::guard($guard)->attempt($this->only('login', 'password'))) {
+            // 失敗時の処理
+            $lockoutInfo = $this->lockoutService->handleFailedLogin($this, $login);
+
+            if ($lockoutInfo['is_locked_out'] || $lockoutInfo['is_ip_locked_out']) {
+                throw ValidationException::withMessages([
+                    'login' => $this->lockoutService->generateLockoutMessage($lockoutInfo),
+                ]);
+            }
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'login' => trans('auth.failed'),
             ]);
         }
 
-        RateLimiter::clear($this->throttleKey());
+        // 成功時の処理
+        $this->lockoutService->handleSuccessfulLogin($login);
     }
 
     /**
-     * Ensure the login request is not rate limited.
+     * Ensure the login request is not locked out.
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function ensureIsNotRateLimited(): void
+    protected function ensureIsNotLockedOut(string $login, string $ipAddress): void
     {
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
-            return;
+        // ユーザーベースのロックアウトチェック
+        if ($this->lockoutService->isLockedOut($login)) {
+            $remainingMinutes = $this->lockoutService->getLockoutRemainingMinutes($login);
+            event(new Lockout($this));
+
+            throw ValidationException::withMessages([
+                'login' => trans('auth.throttle', [
+                    'seconds' => ($remainingMinutes ?? 30) * 60,
+                    'minutes' => $remainingMinutes ?? 30,
+                ]),
+            ]);
         }
 
-        event(new Lockout($this));
+        // IPベースのロックアウトチェック
+        if ($this->lockoutService->isIpLockedOut($ipAddress)) {
+            event(new Lockout($this));
 
-        $seconds = RateLimiter::availableIn($this->throttleKey());
-
-        throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
-                'seconds' => $seconds,
-                'minutes' => ceil($seconds / 60),
-            ]),
-        ]);
-    }
-
-    /**
-     * Get the rate limiting throttle key for the request.
-     */
-    public function throttleKey(): string
-    {
-        return Str::transliterate(Str::lower($this->string('login')) . '|' . $this->ip());
+            throw ValidationException::withMessages([
+                'login' => trans('auth.throttle', [
+                    'seconds' => 1800,
+                    'minutes' => 30,
+                ]),
+            ]);
+        }
     }
 }
