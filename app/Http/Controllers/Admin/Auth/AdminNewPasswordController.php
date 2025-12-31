@@ -23,6 +23,7 @@
 namespace App\Http\Controllers\Admin\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\MemberSetting;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -41,13 +42,21 @@ class AdminNewPasswordController extends Controller
      */
     public function create(Request $request): View
     {
-        $this->abortIfPasswordResetUnavailable();
+        $this->abortIfPasswordResetUnavailable(fn($key, $default) => MemberSetting::getValue($key, $default));
         
-        $passwordRequirements = $this->getPasswordRequirements();
+        // パスワード設定を取得
+        $passwordMinLength = (int) MemberSetting::getValue('password_min_length', 8);
+        $passwordRequireUppercase = (bool) MemberSetting::getValue('password_require_uppercase', true);
+        $passwordRequireNumber = (bool) MemberSetting::getValue('password_require_number', true);
+        $passwordRequireSymbol = (bool) MemberSetting::getValue('password_require_symbol', false);
         
-        return view('admin.auth.reset-password', array_merge([
+        return view('admin.auth.reset-password', [
             'request' => $request,
-        ], $passwordRequirements));
+            'passwordMinLength' => $passwordMinLength,
+            'passwordRequireUppercase' => $passwordRequireUppercase,
+            'passwordRequireNumber' => $passwordRequireNumber,
+            'passwordRequireSymbol' => $passwordRequireSymbol,
+        ]);
     }
 
     /**
@@ -57,7 +66,20 @@ class AdminNewPasswordController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate($this->getPasswordResetValidationRules());
+        // パスワード設定を取得
+        $passwordMinLength = (int) MemberSetting::getValue('password_min_length', 8);
+        $passwordRequireUppercase = (bool) MemberSetting::getValue('password_require_uppercase', true);
+        $passwordRequireNumber = (bool) MemberSetting::getValue('password_require_number', true);
+        $passwordRequireSymbol = (bool) MemberSetting::getValue('password_require_symbol', false);
+        $passwordCheckPwned = (bool) MemberSetting::getValue('password_check_pwned', false);
+
+        $request->validate($this->getPasswordResetValidationRules(
+            $passwordMinLength,
+            $passwordRequireUppercase,
+            $passwordRequireNumber,
+            $passwordRequireSymbol,
+            $passwordCheckPwned
+        ));
 
         // Here we will attempt to reset the user's password. If it is successful we
         // will update the password on an actual user model and persist it to the

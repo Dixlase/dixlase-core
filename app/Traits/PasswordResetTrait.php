@@ -24,59 +24,63 @@ namespace App\Traits;
 
 use App\Models\MemberSetting;
 use App\Services\MailServerValidatorService;
+use App\Services\PasswordValidationService;
 
 trait PasswordResetTrait
 {
     /**
      * Check if password reset is enabled and mail server is configured
-     *
-     * @param string $settingKey The setting key for password reset enabled (default: 'password_reset_enabled')
+     * 
+     * @param callable $settingGetter 設定取得用のコールバック関数
      * @return bool
      */
-    protected function isPasswordResetAvailable(string $settingKey = 'password_reset_enabled'): bool
+    protected function isPasswordResetAvailable(callable $settingGetter): bool
     {
-        $passwordResetEnabled = (bool) MemberSetting::getValue($settingKey, true);
+        $passwordResetEnabled = (bool) $settingGetter('password_reset_enabled', true);
         return $passwordResetEnabled && MailServerValidatorService::canSendMail();
     }
 
     /**
-     * Get password requirements from settings
-     *
-     * @return array
-     */
-    protected function getPasswordRequirements(): array
-    {
-        return [
-            'passwordMinLength' => (int) MemberSetting::getValue('password_min_length', 8),
-            'passwordRequireUppercase' => (bool) MemberSetting::getValue('password_require_uppercase', true),
-            'passwordRequireSymbol' => (bool) MemberSetting::getValue('password_require_symbol', false),
-        ];
-    }
-
-    /**
      * Abort with 404 if password reset is not available
-     *
-     * @param string $settingKey The setting key for password reset enabled
+     * 
+     * @param callable $settingGetter 設定取得用のコールバック関数
      * @return void
      */
-    protected function abortIfPasswordResetUnavailable(string $settingKey = 'password_reset_enabled'): void
+    protected function abortIfPasswordResetUnavailable(callable $settingGetter): void
     {
-        if (!$this->isPasswordResetAvailable($settingKey)) {
+        if (!$this->isPasswordResetAvailable($settingGetter)) {
             abort(404);
         }
     }
 
     /**
      * Get common validation rules for password reset
-     *
+     * 
+     * @param int $minLength 最小文字数
+     * @param bool $requireUppercase 大文字・小文字の混在を必須にするか
+     * @param bool $requireNumber 数字を必須にするか
+     * @param bool $requireSymbol 記号を必須にするか
+     * @param bool $checkPwned 漏洩パスワードチェックを行うか
      * @return array
      */
-    protected function getPasswordResetValidationRules(): array
-    {
+    protected function getPasswordResetValidationRules(
+        int $minLength,
+        bool $requireUppercase,
+        bool $requireNumber,
+        bool $requireSymbol,
+        bool $checkPwned = false
+    ): array {
         return [
             'token' => ['required'],
             'email' => ['required', 'email'],
-            'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
+            'password' => PasswordValidationService::buildPasswordRules(
+                $minLength,
+                $requireUppercase,
+                $requireNumber,
+                $requireSymbol,
+                true,
+                $checkPwned
+            ),
         ];
     }
 

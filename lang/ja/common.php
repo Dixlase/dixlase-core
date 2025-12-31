@@ -158,6 +158,11 @@ return [
 
     // 個人情報
     'gender' => '性別',
+    'gender_male' => '男性',
+    'gender_female' => '女性',
+    'gender_non_binary' => 'ノンバイナリー',
+    'gender_other' => 'その他',
+    'prefer_not_to_say' => '回答しない',
     'birthday' => '誕生日',
 
     // ファイル関連
@@ -395,6 +400,8 @@ return [
         'gui' => 'GUIエディタ',
         'gui_description' => 'ドラッグ&ドロップで直感的に編集（将来実装予定）',
         'gui_coming_soon' => 'GUIエディタは近日実装予定です',
+        'coming_soon_badge' => '近日公開',
+        'advanced_badge' => '上級者向け',
         'markdown' => 'Markdown',
         'markdown_description' => 'Markdown記法で記述。プレビュー機能付き。',
         'markdown_editor' => 'Markdownエディタ',

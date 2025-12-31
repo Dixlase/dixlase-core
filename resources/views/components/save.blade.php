@@ -40,17 +40,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <div class="flex justify-between items-center">
 
-
-    <!-- {{ __('common.save') }} -->
-    <x-form.button
-        type="button"
-        variant="primary"
-        :label="$label ?? __('common.save')"
-        icon="fas fa-save"
-        onclick="openModal('{{ $id_confirmation }}')"
-        class="save-button"
-    />
-
     @if($back_url)
         <!-- {{ __('common.back') }} -->
         <x-form.button
@@ -59,10 +48,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :label="$back_label ?? __('common.back')"
             icon="fas fa-arrow-left"
             :href="$back_url"
+            class="mx-2"
         />
-    @else
-        <div></div>
     @endif
+    <x-form.button
+        type="button"
+        variant="primary"
+        :label="$label ?? __('common.save')"
+        icon="fas fa-save"
+        onclick="openModal('{{ $id_confirmation }}')"
+        class="save-button mx-2"
+    />
+
+
 </div>
 
 <!-- {{ __('common.save_confirmation_title') }} -->

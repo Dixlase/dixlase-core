@@ -84,26 +84,28 @@ $editorTypeEnum = is_string($editorType) ? ContentEditorType::from($editorType) 
             'text' => __('common.content_storage.label'),
         ])
         
-        <div class="space-y-2">
-            @foreach(ContentStorageType::optionsWithDescription() as $value => $option)
-            <label class="flex items-start p-3 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                   :class="storageType === '{{ $value }}' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-600'">
-                <input type="radio" 
-                       name="{{ $storageFieldName }}" 
-                       value="{{ $value }}"
-                       x-model="storageType"
-                       class="mt-1 mr-3">
-                <div class="flex-1">
-                    <div class="font-medium text-gray-900 dark:text-gray-100">
-                        {{ $option['label'] }}
-                    </div>
-                    <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        {{ $option['description'] }}
-                    </div>
-                </div>
-            </label>
-            @endforeach
-        </div>
+        @php
+        $storageOptions = [];
+        foreach(ContentStorageType::optionsWithDescription() as $value => $option) {
+            $storageOptions[] = [
+                'value' => $value,
+                'label' => $option['label'],
+                'description' => $option['description'],
+                'icon' => $value === 'database' ? 'fas fa-database' : 'fas fa-file-code',
+            ];
+        }
+        @endphp
+        
+        <x-form.radio-card-group
+            :name="$storageFieldName"
+            :options="$storageOptions"
+            :value="$storageTypeEnum->value"
+            xModel="storageType"
+            :columns="2"
+            color="blue"
+            variant="filled"
+            :showCheck="true"
+        />
     </div>
     @else
     <input type="hidden" name="{{ $storageFieldName }}" x-model="storageType">
@@ -117,20 +119,82 @@ $editorTypeEnum = is_string($editorType) ? ContentEditorType::from($editorType) 
             'text' => __('common.content_editor.label'),
         ])
         
-        <div class="space-y-2">
-            <template x-for="editor in availableEditors" :key="editor">
-                <label class="flex items-start p-3 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                       :class="editorType === editor ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-600'">
-                    <input type="radio" 
-                           name="{{ $editorFieldName }}" 
-                           :value="editor"
-                           x-model="editorType"
-                           class="mt-1 mr-3">
-                    <div class="flex-1">
-                        <div class="font-medium text-gray-900 dark:text-gray-100" x-text="$t(`common.content_editor.${editor}`)"></div>
-                        <div class="text-sm text-gray-600 dark:text-gray-400 mt-1" x-text="$t(`common.content_editor.${editor}_description`)"></div>
-                    </div>
-                </label>
+        @php
+        $editorIcons = [
+            'gui' => 'fas fa-magic',
+            'markdown' => 'fab fa-markdown',
+            'html' => 'fas fa-code',
+            'blade' => 'fab fa-laravel',
+        ];
+        $editorColors = [
+            'gui' => 'purple',
+            'markdown' => 'blue',
+            'html' => 'orange',
+            'blade' => 'red',
+        ];
+        @endphp
+        
+        <div x-data="{
+            editorIcons: {{ Js::from($editorIcons) }},
+            editorColors: {{ Js::from($editorColors) }},
+            editorOptions: [],
+            updateEditorOptions() {
+                this.editorOptions = this.availableEditors.map(editor => ({
+                    value: editor,
+                    label: this.$t(`common.content_editor.${editor}`),
+                    description: this.$t(`common.content_editor.${editor}_description`),
+                    icon: this.editorIcons[editor] || 'fas fa-file',
+                    color: this.editorColors[editor] || 'gray',
+                    disabled: editor === 'gui'
+                }));
+            }
+        }" x-init="updateEditorOptions(); $watch('availableEditors', () => updateEditorOptions())">
+            <template x-if="editorOptions.length > 0">
+                <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                    <template x-for="option in editorOptions" :key="option.value">
+                        <label class="relative flex cursor-pointer rounded-lg border p-4 shadow-sm focus:outline-none transition-all duration-150"
+                               :class="[
+                                   option.disabled ? 'opacity-50 cursor-not-allowed' : '',
+                                   editorType === option.value 
+                                       ? 'border-blue-600 dark:border-blue-500 ring-3 ring-blue-600 dark:ring-blue-500 bg-blue-50 dark:bg-blue-900/30' 
+                                       : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-500'
+                               ]"
+                               @click="if (!option.disabled) editorType = option.value">
+                            <input type="radio" 
+                                   name="{{ $editorFieldName }}" 
+                                   :value="option.value"
+                                   x-model="editorType"
+                                   :disabled="option.disabled"
+                                   class="sr-only">
+                            
+                            <span class="flex flex-1">
+                                <span class="flex flex-col justify-center">
+                                    <span class="flex items-center gap-2 text-sm font-medium"
+                                          :class="editorType === option.value ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white'">
+                                        <i :class="option.icon"></i>
+                                        <span x-text="option.label"></span>
+                                    </span>
+                                    <span class="mt-1 text-xs text-gray-500 dark:text-gray-400" x-text="option.description"></span>
+                                </span>
+                            </span>
+                            
+                            <span class="absolute top-3 right-3 flex items-center justify-center"
+                                  x-show="editorType === option.value && !option.disabled"
+                                  x-transition:enter="transition ease-out duration-100"
+                                  x-transition:enter-start="opacity-0 scale-75"
+                                  x-transition:enter-end="opacity-100 scale-100"
+                                  x-transition:leave="transition ease-in duration-75"
+                                  x-transition:leave-start="opacity-100 scale-100"
+                                  x-transition:leave-end="opacity-0 scale-75">
+                                <i class="fas fa-check-circle text-lg text-blue-600 dark:text-blue-400"></i>
+                            </span>
+                            
+                            <span class="pointer-events-none absolute -inset-px rounded-lg" 
+                                  :class="editorType === option.value ? 'border-2 border-blue-600 dark:border-blue-500' : 'border border-transparent'"
+                                  aria-hidden="true"></span>
+                        </label>
+                    </template>
+                </div>
             </template>
         </div>
     </div>
