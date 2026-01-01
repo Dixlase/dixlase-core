@@ -192,7 +192,8 @@ class CaptchaBypassService
     {
         try {
             if (class_exists(\App\Services\SystemNotificationService::class)) {
-                \App\Services\SystemNotificationService::send(
+                $notificationService = app(\App\Services\SystemNotificationService::class);
+                $notificationService->sendAdminNotification(
                     __('security.captcha_bypass_subject'),
                     __('security.captcha_bypass_message', [
                         'scope' => $scope,
@@ -200,7 +201,11 @@ class CaptchaBypassService
                         'minutes' => $minutes,
                         'expires_at' => now()->addMinutes($minutes)->format('Y-m-d H:i:s'),
                     ]),
-                    'critical'
+                    [
+                        'scope' => $scope,
+                        'reason' => $reason,
+                        'minutes' => $minutes,
+                    ]
                 );
             }
         } catch (\Exception $e) {

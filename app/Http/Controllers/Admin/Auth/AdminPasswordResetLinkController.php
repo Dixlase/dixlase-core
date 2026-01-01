@@ -24,21 +24,20 @@ namespace App\Http\Controllers\Admin\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\MemberSetting;
+use App\Services\PasswordValidationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
-use App\Traits\PasswordResetTrait;
 use Illuminate\View\View;
 
 class AdminPasswordResetLinkController extends Controller
 {
-    use PasswordResetTrait;
     /**
      * Display the password reset link request view.
      */
     public function create(): View
     {
-        $this->abortIfPasswordResetUnavailable(fn($key, $default) => MemberSetting::getValue($key, $default));
+        PasswordValidationService::abortIfPasswordResetUnavailable(fn($key, $default = null) => MemberSetting::getValue($key, $default));
         
         return view('admin.auth.forgot-password');
     }
@@ -50,9 +49,9 @@ class AdminPasswordResetLinkController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $this->abortIfPasswordResetUnavailable(fn($key, $default) => MemberSetting::getValue($key, $default));
+        PasswordValidationService::abortIfPasswordResetUnavailable(fn($key, $default = null) => MemberSetting::getValue($key, $default));
         
-        $request->validate($this->getPasswordResetLinkValidationRules());
+        $request->validate(PasswordValidationService::getPasswordResetLinkValidationRules());
 
         // メールアドレスに対応するメンバーを確認
         $member = \App\Models\Member::where('email', $request->email)->first();

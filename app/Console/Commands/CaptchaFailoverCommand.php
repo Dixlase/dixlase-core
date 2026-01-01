@@ -29,9 +29,9 @@ use App\Enums\CaptchaProvider;
 /**
  * CAPTCHAフェイルオーバー管理コマンド
  */
-class CaptchaCommand extends Command
+class CaptchaFailoverCommand extends Command
 {
-    protected $signature = 'captcha 
+    protected $signature = 'dls:admin:captcha-failover 
                             {action? : status / switch / reset / providers}
                             {--provider= : 切り替え先のプロバイダー}
                             {--permanent : 永続的な切り替え}

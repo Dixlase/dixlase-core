@@ -265,4 +265,17 @@ return [
     'password_uppercase_required' => 'The password must contain uppercase letters.',
     'password_symbol_required' => 'The password must contain symbols.',
 
+    /*
+    |--------------------------------------------------------------------------
+    | Password Requirements Description Messages
+    |--------------------------------------------------------------------------
+    */
+
+    'password_requirements' => [
+        'min_length' => 'At least :length characters',
+        'mixed_case' => 'mixed case letters',
+        'numbers' => 'numbers',
+        'symbols' => 'symbols',
+    ],
+
 ];

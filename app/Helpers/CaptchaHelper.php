@@ -211,6 +211,32 @@ class CaptchaHelper
     }
 
     /**
+     * 指定されたフォームでCAPTCHAが有効かチェック（設定取得関数を指定）
+     * 
+     * @param string $formName フォーム名
+     * @param callable $settingGetter 設定取得関数
+     * @return bool
+     */
+    public static function isEnabledForFormWithSettings(string $formName, callable $settingGetter): bool
+    {
+        // 基本的なCAPTCHA設定をチェック
+        if (!self::isEnabled()) {
+            return false;
+        }
+
+        // 緊急バイパスがアクティブな場合はCAPTCHAを無効化
+        $scope = self::getBypassScopeForForm($formName);
+        if (CaptchaBypassService::shouldSkipCaptcha($scope)) {
+            return false;
+        }
+
+        // フォーム固有の設定をチェック
+        $formEnabled = $settingGetter($formName);
+        
+        return filter_var($formEnabled, FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
      * CAPTCHA設定の妥当性をチェック
      */
     public static function validateSettings(): array
