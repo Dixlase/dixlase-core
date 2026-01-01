@@ -143,6 +143,8 @@ return [
             'length_simple' => ':min or more characters',
 
             // Special messages for optional cases
+            'lowercase_optional_note' => 'Include lowercase letters',
+            'number_optional_note' => 'Include numbers',
             'uppercase_optional_note' => 'Include uppercase letters',
             'symbol_optional_note' => 'Including symbols（!@#$%^&*-_=+ etc.)',
 

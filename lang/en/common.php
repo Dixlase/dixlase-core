@@ -57,6 +57,8 @@ return [
     'send' => 'Send',
     'sending' => 'Sending',
     'reset' => 'Reset',
+    'resend' => 'Resend',
+    'logout' => 'Logout',
 
     // Navigation
     'back' => 'Back',

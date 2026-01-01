@@ -19,17 +19,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @props([
-    'action',
-    'emailLabel',
-    'submitText'
+    'route',
+    'loginRoute' => null,
 ])
 
-<form method="POST" action="{{ $action }}">
+<form method="POST" action="{{ $route }}">
     @csrf
     
     <section>
         <fieldset>
-            <legend class="sr-only">{{ $emailLabel }}</legend>
+            <legend class="sr-only">{{ __('admin/auth.forgot_password.email_label') }}</legend>
             
             <x-form.text
                 type="email"
@@ -56,4 +55,4 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             class="w-full"
         />
     </section>
-</x-form>
+</form>

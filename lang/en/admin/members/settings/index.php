@@ -47,6 +47,9 @@ return [
         'confirm_label' => 'Execute Force Logout',
     ],
     
+    // Messages
+    'updated' => 'Settings have been updated.',
+    
     // Common units
     'minutes' => 'minutes',
     'seconds' => 'seconds',

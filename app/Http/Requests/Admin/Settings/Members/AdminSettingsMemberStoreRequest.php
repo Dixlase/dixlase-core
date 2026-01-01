@@ -55,6 +55,7 @@ class AdminSettingsMemberStoreRequest extends FormRequest
         // パスワード設定を取得
         $passwordMinLength = (int) MemberSetting::getValue('password_min_length', 8);
         $passwordRequireUppercase = (bool) MemberSetting::getValue('password_require_uppercase', true);
+        $passwordRequireLowercase = (bool) MemberSetting::getValue('password_require_lowercase', true);
         $passwordRequireNumber = (bool) MemberSetting::getValue('password_require_number', true);
         $passwordRequireSymbol = (bool) MemberSetting::getValue('password_require_symbol', false);
         $passwordCheckPwned = (bool) MemberSetting::getValue('password_check_pwned', false);
@@ -63,6 +64,7 @@ class AdminSettingsMemberStoreRequest extends FormRequest
         $passwordRules = PasswordValidationService::buildPasswordRules(
             $passwordMinLength,
             $passwordRequireUppercase,
+            $passwordRequireLowercase,
             $passwordRequireNumber,
             $passwordRequireSymbol,
             !$isUpdate, // 新規作成時は必須、編集時は任意

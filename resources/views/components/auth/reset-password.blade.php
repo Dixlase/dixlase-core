@@ -19,7 +19,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @props([
-    'action',
+    'route',
     'token',
     'email' => '',
     'emailLabel',
@@ -30,7 +30,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'passwordRequireSymbol' => false
 ])
 
-<form method="POST" action="{{ $action }}">
+<form method="POST" action="{{ $route }}">
     @csrf
 
     <x-form.hidden

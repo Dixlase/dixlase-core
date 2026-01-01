@@ -39,7 +39,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <x-form.button
                 type="submit"
                 variant="primary"
-                :label="__('admin/auth.verification.resend_button')"
+                :label="__('common.resend')"
             />
         </form>
 
@@ -48,7 +48,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <x-form.button
                 type="submit"
                 variant="secondary"
-                :label="__('admin/auth.verification.logout_button')"
+                :label="__('common.logout')"
             />
         </form>
     </div>
