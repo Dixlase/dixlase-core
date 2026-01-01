@@ -38,7 +38,8 @@ class PasswordValidationService
      * パスワードバリデーションルールを構築
      * 
      * @param int $minLength 最小文字数
-     * @param bool $requireUppercase 大文字・小文字の混在を必須にするか
+     * @param bool $requireUppercase 大文字を必須にするか
+     * @param bool $requireLowercase 小文字を必須にするか
      * @param bool $requireNumber 数字を必須にするか
      * @param bool $requireSymbol 記号を必須にするか
      * @param bool $isRequired パスワード入力を必須にするか
@@ -48,6 +49,7 @@ class PasswordValidationService
     public static function buildPasswordRules(
         int $minLength,
         bool $requireUppercase,
+        bool $requireLowercase,
         bool $requireNumber,
         bool $requireSymbol,
         bool $isRequired = true,
@@ -58,8 +60,13 @@ class PasswordValidationService
         // Laravelのパスワードルールビルダーを使用
         $passwordRule = Password::min($minLength);
 
-        if ($requireUppercase) {
+        // 大文字と小文字の両方が必須の場合はmixedCaseを使用
+        if ($requireUppercase && $requireLowercase) {
             $passwordRule->mixedCase();
+        } elseif ($requireUppercase) {
+            $passwordRule->letters()->uncompromised();
+        } elseif ($requireLowercase) {
+            $passwordRule->letters();
         }
 
         if ($requireNumber) {

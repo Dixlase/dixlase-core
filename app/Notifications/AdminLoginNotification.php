@@ -101,13 +101,18 @@ class AdminLoginNotification extends Notification
     {
         $message = new MailMessage;
 
+        // Determine display name with fallback priority: display_name -> account_name -> email
+        $displayName = $notifiable->member_name
+            ?? $notifiable->account_name 
+            ?? $notifiable->email;
+
         // Set subject based on notification type
         if ($this->isSystemNotification) {
             $message->subject(__('mail.login_notification.subject_system'));
             $message->greeting(__('mail.login_notification.system_message'));
         } else {
-            $message->subject(__('mail.login_notification.subject_user', ['name' => $notifiable->name]));
-            $message->greeting(__('mail.login_notification.user_message', ['name' => $notifiable->name]));
+            $message->subject(__('mail.login_notification.subject_user', ['name' => $displayName]));
+            $message->greeting(__('mail.login_notification.user_message', ['name' => $displayName]));
         }
 
         // Add login details

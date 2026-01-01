@@ -47,6 +47,9 @@ return [
         'confirm_label' => '強制ログアウト実行',
     ],
     
+    // メッセージ
+    'updated' => '設定を更新しました。',
+    
     // 共通単位
     'minutes' => '分',
     'seconds' => '秒',

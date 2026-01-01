@@ -109,11 +109,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         : __('components.password_messages.requirements.length_simple', ['min' => $minLength]);
     $lengthText = $lengthBase . '（' . __('common.required') . '）';
 
-    // 小文字の要件（常に必須）
-    $lowercaseText = __('components.password_messages.requirements.lowercase') . '（' . __('common.required') . '）';
+    // 小文字の要件（必須 or 任意）
+    if ($requireLowercase) {
+        $lowercaseText = __('components.password_messages.requirements.lowercase') . '（' . __('common.required') . '）';
+    } else {
+        $lowercaseText = __('components.password_messages.requirements.lowercase_optional_note') . '（' . __('common.optional') . '）';
+    }
 
-    // 数字の要件（常に必須）
-    $numberText = __('components.password_messages.requirements.number') . '（' . __('common.required') . '）';
+    // 数字の要件（必須 or 任意）
+    if ($requireNumber) {
+        $numberText = __('components.password_messages.requirements.number') . '（' . __('common.required') . '）';
+    } else {
+        $numberText = __('components.password_messages.requirements.number_optional_note') . '（' . __('common.optional') . '）';
+    }
 
     // 大文字の要件（必須 or 任意）
     if ($requireUppercase) {

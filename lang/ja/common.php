@@ -56,6 +56,8 @@ return [
     'clear' => 'クリア',
     'cancel' => 'キャンセル',
     'confirm' => '確認',
+    'resend' => '再送信',
+    'logout' => 'ログアウト',
 
     // ナビゲーション
     'back' => '戻る',

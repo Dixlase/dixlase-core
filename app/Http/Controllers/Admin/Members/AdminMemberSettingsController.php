@@ -86,6 +86,7 @@ class AdminMemberSettingsController extends AdminLoggedInController
     {
         $passwordMinLength = (int) $this->memberSettingRepository->get('password_min_length', 8);
         $passwordRequireUppercase = (bool) $this->memberSettingRepository->get('password_require_uppercase', true);
+        $passwordRequireLowercase = (bool) $this->memberSettingRepository->get('password_require_lowercase', true);
         $passwordRequireNumber = (bool) $this->memberSettingRepository->get('password_require_number', true);
         $passwordRequireSymbol = (bool) $this->memberSettingRepository->get('password_require_symbol', true);
         
@@ -151,6 +152,7 @@ class AdminMemberSettingsController extends AdminLoggedInController
 
         $this->viewParams['passwordMinLength'] = $passwordMinLength;
         $this->viewParams['passwordRequireUppercase'] = $passwordRequireUppercase;
+        $this->viewParams['passwordRequireLowercase'] = $passwordRequireLowercase;
         $this->viewParams['passwordRequireNumber'] = $passwordRequireNumber;
         $this->viewParams['passwordRequireSymbol'] = $passwordRequireSymbol;
         $this->viewParams['minLengthOptions'] = $minLengthOptions;

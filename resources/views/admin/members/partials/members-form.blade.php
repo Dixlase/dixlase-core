@@ -23,6 +23,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'requirePassword' => false,
     'passwordMinLength' => 8,
     'passwordRequireUppercase' => false,
+    'passwordRequireLowercase' => true,
+    'passwordRequireNumber' => true,
     'passwordRequireSymbol' => false,
     'roles' => [],
     'twoFactorMode' => null,
@@ -151,6 +153,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :required="$requirePassword"
                 :minLength="$passwordMinLength"
                 :requireUppercase="$passwordRequireUppercase"
+                :requireLowercase="$passwordRequireLowercase"
+                :requireNumber="$passwordRequireNumber"
                 :requireSymbol="$passwordRequireSymbol"
                 :showConfirmation="true"
             />

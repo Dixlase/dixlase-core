@@ -142,6 +142,8 @@ return [
             'length_simple' => ':min文字以上',
 
             // 任意の場合の特別メッセージ
+            'lowercase_optional_note' => '小文字を含む',
+            'number_optional_note' => '数字を含む',
             'uppercase_optional_note' => '大文字を含む',
             'symbol_optional_note' => '記号（!@#$%^&*-_=+など）',
 
