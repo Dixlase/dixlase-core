@@ -55,8 +55,15 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
             return '';
         }
 
+        // Get CSP nonce if available
+        $nonce = '';
+        if (function_exists('csp_nonce')) {
+            $nonceValue = csp_nonce();
+            $nonce = $nonceValue ? ' nonce="' . $nonceValue . '"' : '';
+        }
+
         $siteKey = $this->config['site_key'];
-        return "<script src=\"https://www.google.com/recaptcha/enterprise.js?render={$siteKey}\"></script>";
+        return "<script src=\"https://www.google.com/recaptcha/enterprise.js?render={$siteKey}\"{$nonce}></script>";
     }
 
     public function renderWidget(array $options = []): string
@@ -69,6 +76,13 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
         $action = $options['action'] ?? 'submit';
         $scriptTag = $this->renderScript();
         
+        // Get CSP nonce for inline script
+        $nonce = '';
+        if (function_exists('csp_nonce')) {
+            $nonceValue = csp_nonce();
+            $nonce = $nonceValue ? ' nonce="' . $nonceValue . '"' : '';
+        }
+        
         Log::info('GoogleRecaptchaEnterpriseDriver renderWidget', [
             'siteKey' => $siteKey,
             'action' => $action
@@ -76,7 +90,7 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
         
         return $scriptTag . "
             <input type=\"hidden\" id=\"g-recaptcha-response\" name=\"g-recaptcha-response\" value=\"\">
-            <script>
+            <script{$nonce}>
                 document.addEventListener('DOMContentLoaded', function() {
                     if (typeof grecaptcha !== 'undefined' && grecaptcha.enterprise) {
                         grecaptcha.enterprise.ready(function() {

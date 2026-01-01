@@ -151,7 +151,14 @@ class TurnstileCaptchaDriver implements CaptchaDriver
             $attributeString .= sprintf(' %s="%s"', $key, htmlspecialchars($value));
         }
 
-        $scriptTag = '<script src="' . $this->getScriptUrl() . '" async defer></script>';
+        // Get CSP nonce if available
+        $nonce = '';
+        if (function_exists('csp_nonce')) {
+            $nonceValue = csp_nonce();
+            $nonce = $nonceValue ? ' nonce="' . $nonceValue . '"' : '';
+        }
+
+        $scriptTag = '<script src="' . $this->getScriptUrl() . '" async defer' . $nonce . '></script>';
         $widgetTag = sprintf('<div%s></div>', $attributeString);
         
         return $scriptTag . "\n" . $widgetTag;

@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title') | {{ config('app.name') }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js" crossorigin="anonymous"></script>
 
     <!-- Dark Mode Detection Script -->
     <script @cspNonce>
@@ -26,17 +24,7 @@
         });
     </script>
 
-    <!-- Scripts -->
-    @if (app()->environment('local'))
-        {{-- 開発環境ではリソースを直接読み込み --}}
-        @vite([
-            'resources/src/common/js/app.js',
-            'resources/src/common/scss/style.scss'
-        ])
-    @else
-        {{-- 本番環境ではmanifest.jsonを読み込み --}}
-        @vite(['resources/src/common/js/app.js', 'resources/src/common/scss/style.scss'], 'build')
-    @endif
+
 </head>
 <body class="bg-gray-100 dark:bg-black flex items-center justify-center min-h-screen transition-colors duration-300">
     <div class="flex flex-col items-center w-full max-w-lg min-w-[400px]">
@@ -76,10 +64,11 @@
         @endif
     </div>
     
-    <!-- Page Scripts -->
-    @hasSection('scripts')
-        @yield('scripts')
-    @endif
+    <!-- Scripts -->
+    @vite([
+        'resources/src/common/js/app.js',
+        'resources/src/common/scss/style.scss'
+    ], 'assets/build')
     
     @stack('scripts')
 </body>

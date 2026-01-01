@@ -52,7 +52,14 @@ class GoogleRecaptchaV2Driver implements CaptchaDriver
             return '';
         }
 
-        return "<script src=\"https://www.google.com/recaptcha/api.js\" async defer></script>";
+        // Get CSP nonce if available
+        $nonce = '';
+        if (function_exists('csp_nonce')) {
+            $nonceValue = csp_nonce();
+            $nonce = $nonceValue ? ' nonce="' . $nonceValue . '"' : '';
+        }
+
+        return "<script src=\"https://www.google.com/recaptcha/api.js\" async defer{$nonce}></script>";
     }
 
     public function renderWidget(array $options = []): string

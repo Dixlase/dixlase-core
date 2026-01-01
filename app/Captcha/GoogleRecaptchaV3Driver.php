@@ -51,8 +51,15 @@ class GoogleRecaptchaV3Driver implements CaptchaDriver
             return '';
         }
 
+        // Get CSP nonce if available
+        $nonce = '';
+        if (function_exists('csp_nonce')) {
+            $nonceValue = csp_nonce();
+            $nonce = $nonceValue ? ' nonce="' . $nonceValue . '"' : '';
+        }
+
         $siteKey = $this->config['site_key'];
-        return "<script src=\"https://www.google.com/recaptcha/api.js?render={$siteKey}\"></script>";
+        return "<script src=\"https://www.google.com/recaptcha/api.js?render={$siteKey}\"{$nonce}></script>";
     }
 
     public function renderWidget(array $options = []): string
@@ -65,6 +72,13 @@ class GoogleRecaptchaV3Driver implements CaptchaDriver
         $action = $options['action'] ?? 'submit';
         $scriptTag = $this->renderScript();
         
+        // Get CSP nonce for inline script
+        $nonce = '';
+        if (function_exists('csp_nonce')) {
+            $nonceValue = csp_nonce();
+            $nonce = $nonceValue ? ' nonce="' . $nonceValue . '"' : '';
+        }
+        
         Log::info('GoogleRecaptchaV3Driver renderWidget', [
             'siteKey' => $siteKey,
             'action' => $action
@@ -72,7 +86,7 @@ class GoogleRecaptchaV3Driver implements CaptchaDriver
         
         return $scriptTag . "
             <input type=\"hidden\" id=\"g-recaptcha-response\" name=\"g-recaptcha-response\" value=\"\">
-            <script>
+            <script{$nonce}>
                 console.log('CAPTCHA v3 Debug - Site Key:', '$siteKey');
                 console.log('CAPTCHA v3 Debug - Action:', '$action');
                 document.addEventListener('DOMContentLoaded', function() {
