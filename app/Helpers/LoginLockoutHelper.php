@@ -335,11 +335,11 @@ class LoginLockoutHelper
      * 指定した識別子の失敗記録をクリア
      *
      * @param string $identifier
-     * @return int 削除された記録数
+     * @return void
      */
-    public static function clearFailedAttempts(string $identifier): int
+    public static function clearFailedAttempts(string $identifier): void
     {
-        return MemberLoginAttempt::clearFailedAttempts($identifier);
+        MemberLoginAttempt::clearFailedAttempts($identifier);
     }
 
     /**

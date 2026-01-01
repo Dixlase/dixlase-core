@@ -77,7 +77,7 @@ class CspExtensionLoader
     public function loadPlugins(): void
     {
         try {
-            $plugins = Plugin::where('is_active', true)->get();
+            $plugins = Plugin::whereNotNull('enabled_at')->get();
             
             foreach ($plugins as $plugin) {
                 $this->loadPlugin($plugin->slug);

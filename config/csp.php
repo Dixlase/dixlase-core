@@ -133,7 +133,8 @@ return [
         // 'nonce' は自動的にリクエストごとのnonce値に置換される
         // 'strict-dynamic' でnonce付きスクリプトから読み込まれるスクリプトも許可
         // 'unsafe-eval' はAlpine.jsが必要とするため追加
-        'script-src' => ["'self'", "'nonce'", "'strict-dynamic'", "'unsafe-eval'"],
+        // CAPTCHA用: Cloudflare Turnstile, Google reCAPTCHA
+        'script-src' => ["'self'", "'nonce'", "'strict-dynamic'", "'unsafe-eval'", 'https://challenges.cloudflare.com', 'https://www.google.com', 'https://www.gstatic.com'],
 
         // スクリプト属性（onclick等のイベントハンドラ属性）
         // Alpine.jsの@click等のディレクティブはイベントハンドラ属性として展開されるため必要
@@ -143,7 +144,8 @@ return [
         // 'unsafe-inline'はnonceと併用すると無視されるため、インラインスタイル（element.style）を許可するには
         // nonceを使用しないか、unsafe-inlineのみを使用する必要がある
         // Alpine.jsやJavaScriptでのスタイル操作を許可するためunsafe-inlineを使用
-        'style-src' => ["'self'", "'unsafe-inline'"],
+        // 開発環境のViteサーバーからのスタイルシート読み込みを許可
+        'style-src' => ["'self'", "'unsafe-inline'", 'https://localhost:5173'],
 
         // 画像
         'img-src' => ["'self'", 'data:', 'blob:'],
@@ -152,7 +154,8 @@ return [
         'font-src' => ["'self'", 'data:'],
 
         // 接続先（XHR, fetch, WebSocket等）
-        'connect-src' => ["'self'"],
+        // Vite開発サーバー（WebSocket）とCAPTCHA用（Cloudflare Turnstile, Google reCAPTCHA）
+        'connect-src' => ["'self'", 'wss://localhost:5173', 'https://localhost:5173', 'https://challenges.cloudflare.com', 'https://www.google.com'],
 
         // メディア（audio, video）
         'media-src' => ["'self'"],
@@ -161,7 +164,8 @@ return [
         'object-src' => ["'none'"],
 
         // フレーム
-        'frame-src' => ["'self'"],
+        // CAPTCHA用: Cloudflare Turnstile, Google reCAPTCHA
+        'frame-src' => ["'self'", 'https://challenges.cloudflare.com', 'https://www.google.com', 'https://www.gstatic.com'],
 
         // フレーム祖先（このページを埋め込める親）
         'frame-ancestors' => ["'self'"],
