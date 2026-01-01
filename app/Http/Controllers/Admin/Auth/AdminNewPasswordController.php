@@ -24,25 +24,24 @@ namespace App\Http\Controllers\Admin\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\MemberSetting;
+use App\Services\PasswordValidationService;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use App\Traits\PasswordResetTrait;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
 class AdminNewPasswordController extends Controller
 {
-    use PasswordResetTrait;
     /**
      * Display the password reset view.
      */
     public function create(Request $request): View
     {
-        $this->abortIfPasswordResetUnavailable(fn($key, $default) => MemberSetting::getValue($key, $default));
+        PasswordValidationService::abortIfPasswordResetUnavailable(fn($key, $default = null) => MemberSetting::getValue($key, $default));
         
         // パスワード設定を取得
         $passwordMinLength = (int) MemberSetting::getValue('password_min_length', 8);
@@ -73,7 +72,7 @@ class AdminNewPasswordController extends Controller
         $passwordRequireSymbol = (bool) MemberSetting::getValue('password_require_symbol', false);
         $passwordCheckPwned = (bool) MemberSetting::getValue('password_check_pwned', false);
 
-        $request->validate($this->getPasswordResetValidationRules(
+        $request->validate(PasswordValidationService::getPasswordResetValidationRules(
             $passwordMinLength,
             $passwordRequireUppercase,
             $passwordRequireNumber,

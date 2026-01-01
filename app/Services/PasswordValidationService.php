@@ -24,6 +24,7 @@ namespace App\Services;
 
 use Illuminate\Validation\Rules\Password;
 use App\Rules\NotPwnedPassword;
+use App\Services\MailServerValidatorService;
 
 /**
  * パスワードバリデーションサービス
@@ -99,36 +100,88 @@ class PasswordValidationService
     ): string {
         $descriptions = [];
 
-        if ($locale === 'ja') {
-            $descriptions[] = "最小{$minLength}文字";
-            
-            if ($requireUppercase) {
-                $descriptions[] = "大文字と小文字を含む";
-            }
-            
-            if ($requireNumber) {
-                $descriptions[] = "数字を含む";
-            }
-            
-            if ($requireSymbol) {
-                $descriptions[] = "記号を含む";
-            }
-        } else {
-            $descriptions[] = "At least {$minLength} characters";
-            
-            if ($requireUppercase) {
-                $descriptions[] = "mixed case letters";
-            }
-            
-            if ($requireNumber) {
-                $descriptions[] = "numbers";
-            }
-            
-            if ($requireSymbol) {
-                $descriptions[] = "symbols";
-            }
+        $descriptions[] = __('validation.password_requirements.min_length', ['length' => $minLength]);
+        
+        if ($requireUppercase) {
+            $descriptions[] = __('validation.password_requirements.mixed_case');
+        }
+        
+        if ($requireNumber) {
+            $descriptions[] = __('validation.password_requirements.numbers');
+        }
+        
+        if ($requireSymbol) {
+            $descriptions[] = __('validation.password_requirements.symbols');
         }
 
         return implode($locale === 'ja' ? '、' : ', ', $descriptions);
+    }
+
+    /**
+     * パスワードリセットが利用可能かチェック
+     * 
+     * @param callable $settingGetter 設定取得用のコールバック関数
+     * @return bool
+     */
+    public static function isPasswordResetAvailable(callable $settingGetter): bool
+    {
+        $passwordResetEnabled = (bool) $settingGetter('password_reset_enabled', true);
+        return $passwordResetEnabled && MailServerValidatorService::canSendMail();
+    }
+
+    /**
+     * パスワードリセットが利用不可の場合404エラーを返す
+     * 
+     * @param callable $settingGetter 設定取得用のコールバック関数
+     * @return void
+     */
+    public static function abortIfPasswordResetUnavailable(callable $settingGetter): void
+    {
+        if (!self::isPasswordResetAvailable($settingGetter)) {
+            abort(404);
+        }
+    }
+
+    /**
+     * パスワードリセット用のバリデーションルールを取得
+     * 
+     * @param int $minLength 最小文字数
+     * @param bool $requireUppercase 大文字・小文字の混在を必須にするか
+     * @param bool $requireNumber 数字を必須にするか
+     * @param bool $requireSymbol 記号を必須にするか
+     * @param bool $checkPwned 漏洩パスワードチェックを行うか
+     * @return array
+     */
+    public static function getPasswordResetValidationRules(
+        int $minLength,
+        bool $requireUppercase,
+        bool $requireNumber,
+        bool $requireSymbol,
+        bool $checkPwned = false
+    ): array {
+        return [
+            'token' => ['required'],
+            'email' => ['required', 'email'],
+            'password' => self::buildPasswordRules(
+                $minLength,
+                $requireUppercase,
+                $requireNumber,
+                $requireSymbol,
+                true,
+                $checkPwned
+            ),
+        ];
+    }
+
+    /**
+     * パスワードリセットリンク送信用のバリデーションルールを取得
+     *
+     * @return array
+     */
+    public static function getPasswordResetLinkValidationRules(): array
+    {
+        return [
+            'email' => ['required', 'email'],
+        ];
     }
 }

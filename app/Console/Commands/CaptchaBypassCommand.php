@@ -39,7 +39,7 @@ class CaptchaBypassCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'security:captcha-bypass
+    protected $signature = 'dls:admin:captcha-bypass
                             {action=status : Action to perform (enable, disable, status)}
                             {--minutes=10 : Duration in minutes (max 60)}
                             {--scope=admin_login : Scope of bypass (admin_login, all)}
@@ -118,19 +118,19 @@ class CaptchaBypassCommand extends Command
             ]));
 
             // Log to audit
-            AuditService::log(
-                action: 'captcha_bypass_enabled',
-                category: 'security',
-                severity: 'critical',
-                outcome: 'success',
-                context: [
+            app(AuditService::class)->log([
+                'action' => 'captcha_bypass_enabled',
+                'category' => 'security',
+                'severity' => 'critical',
+                'outcome' => 'success',
+                'context' => [
                     'minutes' => $minutes,
                     'scope' => $scope,
                     'reason' => $reason,
                     'expires_at' => $expiresAt->toIso8601String(),
                     'triggered_by' => 'cli',
-                ]
-            );
+                ],
+            ]);
 
             return self::SUCCESS;
         }
@@ -154,16 +154,16 @@ class CaptchaBypassCommand extends Command
         $this->info(__('admin/command.captcha_bypass.disabled'));
 
         // Log to audit
-        AuditService::log(
-            action: 'captcha_bypass_disabled',
-            category: 'security',
-            severity: 'warning',
-            outcome: 'success',
-            context: [
+        app(AuditService::class)->log([
+            'action' => 'captcha_bypass_disabled',
+            'category' => 'security',
+            'severity' => 'warning',
+            'outcome' => 'success',
+            'context' => [
                 'triggered_by' => 'cli',
                 'manual_disable' => true,
-            ]
-        );
+            ],
+        ]);
 
         return self::SUCCESS;
     }

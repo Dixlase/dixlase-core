@@ -22,7 +22,7 @@
 
 namespace App\Services;
 
-use App\Traits\LoginNotificationsTrait;
+use App\Services\MailServerValidatorService;
 use App\Traits\DeviceDetectionTrait;
 use App\Enums\LoginNotificationMode;
 use Illuminate\Database\Eloquent\Model;
@@ -37,7 +37,7 @@ use Illuminate\Support\Facades\Log;
  */
 class LoginNotificationService
 {
-    use LoginNotificationsTrait, DeviceDetectionTrait;
+    use DeviceDetectionTrait;
 
     /**
      * ログイン通知を処理する
@@ -124,5 +124,108 @@ class LoginNotificationService
 
         // ログイン情報を記録
         $this->recordLoginInfo($user, $request);
+    }
+
+    /**
+     * ログイン情報を記録する
+     */
+    protected function recordLoginInfo(Model $user, Request $request): void
+    {
+        $user->last_login_ip = $request->ip();
+        $user->last_login_ua = $request->userAgent();
+        $user->last_login_at = now();
+        $user->save();
+    }
+
+    /**
+     * ログイン詳細データを準備する
+     */
+    protected function prepareLoginDetails(Request $request): array
+    {
+        return [
+            'datetime' => now()->format('Y-m-d H:i:s'),
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ];
+    }
+
+    /**
+     * メール送信が可能かチェックし、不可の場合はログを出力
+     */
+    protected function canSendNotification(Model $user, string $context = 'Login notification'): bool
+    {
+        if (!MailServerValidatorService::canSendMail()) {
+            Log::info($context . ' skipped: ' . MailServerValidatorService::getMailDisabledReason(), [
+                'user_id' => $user->id,
+                'user_type' => get_class($user),
+                'ip' => request()->ip()
+            ]);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * ユーザー通知を送信すべきかどうかを判定する
+     */
+    protected function shouldSendUserNotification(
+        Model $user, 
+        string $ip, 
+        string $ua, 
+        callable $getGlobalSetting
+    ): bool {
+        $globalSetting = $getGlobalSetting();
+        $globalMode = LoginNotificationMode::tryFrom((int) $globalSetting);
+
+        return match ($globalMode) {
+            LoginNotificationMode::Disabled => false,
+            LoginNotificationMode::Always => true,
+            LoginNotificationMode::OnlyNewDevice => $this->isNewDevice($user, $ip, $ua),
+            LoginNotificationMode::UseProfileSetting => $this->shouldSendBasedOnProfile($user, $ip, $ua),
+            default => false,
+        };
+    }
+
+    /**
+     * プロフィール設定に基づいて通知を送信すべきかを判定
+     */
+    protected function shouldSendBasedOnProfile(Model $user, string $ip, string $ua): bool
+    {
+        $profileValue = $user->login_notification_mode ?? 0;
+        $profileMode = $this->mapProfileValueToEnum($profileValue);
+        
+        Log::info('Profile-based notification decision', [
+            'user_email' => $user->email,
+            'profile_value' => $profileValue,
+            'profile_mode' => $profileMode->name,
+            'profile_mode_value' => $profileMode->value,
+        ]);
+        
+        $result = match ($profileMode) {
+            LoginNotificationMode::Disabled => false,
+            LoginNotificationMode::Always => true,
+            LoginNotificationMode::OnlyNewDevice => $this->isNewDevice($user, $ip, $ua),
+            default => false,
+        };
+        
+        Log::info('Profile notification result', [
+            'user_email' => $user->email,
+            'should_send' => $result,
+        ]);
+        
+        return $result;
+    }
+
+    /**
+     * プロフィール設定の値をLoginNotificationMode enumにマッピング
+     */
+    protected function mapProfileValueToEnum(int $profileValue): LoginNotificationMode
+    {
+        return match ($profileValue) {
+            0 => LoginNotificationMode::Disabled,
+            2 => LoginNotificationMode::OnlyNewDevice,
+            3 => LoginNotificationMode::Always,
+            default => LoginNotificationMode::Disabled,
+        };
     }
 }
