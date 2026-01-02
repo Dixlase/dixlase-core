@@ -72,16 +72,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </fieldset>
 
         <fieldset>
-            <legend>{{ __('common.member_name') }}</legend>
+            <legend>{{ __('common.display_name') }}</legend>
             <x-form.text
-                id="member_name"
-                name="member_name"
-                :value="old('member_name', $member->member_name ?? '')"
+                id="display_name"
+                name="display_name"
+                :value="old('display_name', $member->display_name ?? '')"
                 maxlength="255"
             />
-            <p class="description-text">{{ __('admin/members/form.member_name_help') }}</p>
+            <p class="description-text">{{ __('admin/members/form.display_name_help') }}</p>
             <x-form.error
-                :messages="$errors->get('member_name')"
+                :messages="$errors->get('display_name')"
             />
         </fieldset>
 
@@ -658,7 +658,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <x-modal
         id="forceLogoutModal"
         :title="__('admin.members.modals.force_logout.title')"
-        :message="__('admin.members.modals.force_logout.message', ['name' => $member->member_name ?? $member->account_name])"
+        :message="__('admin.members.modals.force_logout.message', ['name' => $member->display_name ?? $member->account_name])"
         :confirm_label="__('admin.members.modals.force_logout.confirm')"
         :cancel_label="__('common.cancel')"
         :form="$forceLogoutFormId"
@@ -669,7 +669,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <x-modal
         id="unlockLockoutModal"
         :title="__('admin.members.modals.unlock_lockout.title')"
-        :message="__('admin.members.modals.unlock_lockout.message', ['name' => $member->member_name ?? $member->account_name])"
+        :message="__('admin.members.modals.unlock_lockout.message', ['name' => $member->display_name ?? $member->account_name])"
         :confirm_label="__('admin.members.modals.unlock_lockout.confirm')"
         :cancel_label="__('common.cancel')"
         :form="$unlockLockoutFormId"
@@ -681,7 +681,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <x-modal
             id="deleteMemberModal"
             :title="__('admin.members.modals.delete.title')"
-            :message="__('admin.members.modals.delete.message', ['name' => $member->member_name ?? $member->account_name]) . "\n\n" . __('admin.members.modals.delete.warning')"
+            :message="__('admin.members.modals.delete.message', ['name' => $member->display_name ?? $member->account_name]) . "\n\n" . __('admin.members.modals.delete.warning')"
             :confirm_label="__('common.delete')"
             :cancel_label="__('common.cancel')"
             :form="$deleteMemberFormId"

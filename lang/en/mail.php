@@ -351,7 +351,7 @@ Clicking this link will complete the full mail functionality test.',
         'thanks' => 'Thank you for your attention',
     ],
 
-    // Email Verification
+    // Email Verification (Member)
     'member_verify_email' => [
         'subject' => 'Verify Your Email Address',
         'subject_account' => 'Verify Your Member Account',

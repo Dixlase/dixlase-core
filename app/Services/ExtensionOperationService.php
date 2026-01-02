@@ -81,7 +81,7 @@ class ExtensionOperationService
             'slug' => $extensionData['slug'] ?? null,
             'version' => $extensionData['version'] ?? null,
             'health_status' => $extensionData['health_status'] ?? $extensionData['risk_level'] ?? 'unknown',
-            'operated_by' => $member ? ($member->member_name ?? $member->account_name) : 'System',
+            'operated_by' => $member ? ($member->display_name ?? $member->account_name) : 'System',
             'operated_by_id' => $member ? $member->id : null,
             'operated_at' => now()->format('Y-m-d H:i:s'),
             'operation' => $operation,

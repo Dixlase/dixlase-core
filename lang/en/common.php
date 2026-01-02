@@ -28,6 +28,7 @@ return [
     'add' => 'Add',
     'edit' => 'Edit',
     'save' => 'Save',
+    'saved' => 'Saved',
     'update' => 'Update',
     'delete' => 'Delete',
     'copy' => 'Copy',
@@ -42,7 +43,7 @@ return [
 
     // Member Related
     'account_name' => 'Account Name',
-    'member_name' => 'Display Name',
+    'display_name' => 'Display Name',
 
     // System Operations
     'settings' => 'Settings',

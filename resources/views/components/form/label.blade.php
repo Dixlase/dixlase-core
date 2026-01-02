@@ -29,8 +29,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <label for="{{ $for }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 {{ $class }}">
     @if ($key)
         {{ __($key) }}
-    @else
+    @elseif ($text)
         {{ $text }}
+    @else
+        {{ $slot }}
     @endif
     @if ($required)
         <span class="text-red-500 ml-1" aria-label="required">*</span>

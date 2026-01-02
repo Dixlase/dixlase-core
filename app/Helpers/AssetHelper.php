@@ -495,3 +495,23 @@ if (!function_exists('load_front_assets')) {
     }
 }
 
+if (!function_exists('load_auth_assets')) {
+    /**
+     * 認証画面用：共通アセットのみを読み込む（管理画面、テーマ、プラグインのアセットは含まない）
+     *
+     * @return string
+     */
+    function load_auth_assets(): string
+    {
+        $output = '';
+
+        // 共通アセット（Alpine.js、Tailwind CSS等）のみを読み込み
+        $output .= load_assets('common', null, ['js/app.js', 'scss/style.scss']);
+
+        // x-cloak用スタイルを追加
+        $output .= render_x_cloak_style();
+
+        return $output;
+    }
+}
+

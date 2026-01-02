@@ -19,7 +19,7 @@ return [
     'use_system_default' => 'システムデフォルトを使用',
     'language_help' => '個別の言語設定です。未選択の場合はシステムのデフォルト言語が使用されます。',
     'account_name_help' => 'ログインに使用するアカウント名です。3〜20文字の半角英数字を使用してください。',
-    'member_name_help' => '管理バーやプロフィールに表示される名前です。空欄の場合はアカウント名が表示されます。',
+    'display_name_help' => '管理バーやプロフィールに表示される名前です。空欄の場合はアカウント名が表示されます。',
     'password_change_only' => 'パスワード（変更する場合のみ入力）',
     'updated' => 'プロフィールが更新されました。',
     'login_notification_global_setting_help' => 'この設定はメンバー全体設定で制御されています。',

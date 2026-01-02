@@ -54,17 +54,17 @@
             </div>
 
             <div>
-                <x-form.label for="admin_member_name" :text="__('install.admin_member_name')" />
+                <x-form.label for="admin_display_name" :text="__('install.admin_display_name')" />
                 <x-form.text
-                    name="admin_member_name"
-                    id="admin_member_name"
-                    :value="old('admin_member_name', session('install_data.admin_member_name', ''))"
+                    name="admin_display_name"
+                    id="admin_display_name"
+                    :value="old('admin_display_name', session('install_data.admin_display_name', ''))"
                     maxlength="255"
-                    :placeholder="__('install.admin_member_name_placeholder')"
-                    ariaDescribedby="admin_member_name_help"
+                    :placeholder="__('install.admin_display_name_placeholder')"
+                    ariaDescribedby="admin_display_name_help"
                     class="input-full"
                 />
-                <x-form.help-text :text="__('install.admin_member_name_requirements')" id="admin_member_name_help" />
+                <x-form.help-text :text="__('install.admin_display_name_requirements')" id="admin_display_name_help" />
             </div>
 
             <div>

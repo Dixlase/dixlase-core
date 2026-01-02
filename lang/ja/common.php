@@ -33,6 +33,7 @@ return [
     'edit' => '編集',
     'update' => '更新',
     'save' => '保存',
+    'saved' => '保存しました',
     'delete' => '削除',
     'copy' => 'コピー',
     'copied' => 'コピー済み',
@@ -46,7 +47,7 @@ return [
 
     // メンバー関連
     'account_name' => 'アカウント名',
-    'member_name' => '表示名',
+    'display_name' => '表示名',
 
     // フォーム操作
     'submit' => '送信',

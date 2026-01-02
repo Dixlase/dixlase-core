@@ -50,8 +50,8 @@
         <ul class="space-y-1 text-gray-700 dark:text-gray-300">
             <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.site_name') }}:</strong> {{ $data['site_name'] }}</li>
             <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.admin_account_name') }}:</strong> {{ $data['admin_account_name'] }}</li>
-            @if(!empty($data['admin_member_name']))
-            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.admin_member_name') }}:</strong> {{ $data['admin_member_name'] }}</li>
+            @if(!empty($data['admin_display_name']))
+            <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.admin_display_name') }}:</strong> {{ $data['admin_display_name'] }}</li>
             @endif
             <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.admin_email') }}:</strong> {{ $data['admin_email'] }}</li>
             <li><strong class="text-gray-900 dark:text-gray-100">{{ __('install.admin_password') }}:</strong> <span class="text-gray-500 dark:text-gray-400">●●●●●</span></li>
