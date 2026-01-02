@@ -18,21 +18,37 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-@extends('layouts.auth')
-@section('title', __('admin/auth.reset_password.title'))
-@section('header', __('admin/auth.reset_password.header'))
-@section('description', __('admin/auth.reset_password.description'))
+@props([
+    'layout' => 'layouts.auth',
+    'title',
+    'header',
+    'description',
+    'route',
+    'token',
+    'email',
+    'emailLabel',
+    'passwordLabel',
+    'submitText',
+    'passwordMinLength' => 8,
+    'passwordRequireUppercase' => true,
+    'passwordRequireSymbol' => false,
+])
+
+@extends($layout)
+@section('title', $title)
+@section('header', $header)
+@section('description', $description)
 
 @section('content')
     <x-auth.reset-password
-        :route="route('admin.password.store')"
-        :token="$request->route('token')"
-        :email="$request->email"
-        email-label="{{ __('admin/auth.reset_password.email') }}"
-        password-label="{{ __('admin/auth.reset_password.password') }}"
-        submit-text="{{ __('admin/auth.reset_password.reset_password_button') }}"
-        password-min-length="{{ $passwordMinLength }}"
-        password-require-uppercase="{{ $passwordRequireUppercase }}"
-        password-require-symbol="{{ $passwordRequireSymbol }}"
+        :route="$route"
+        :token="$token"
+        :email="$email"
+        :emailLabel="$emailLabel"
+        :passwordLabel="$passwordLabel"
+        :submitText="$submitText"
+        :passwordMinLength="$passwordMinLength"
+        :passwordRequireUppercase="$passwordRequireUppercase"
+        :passwordRequireSymbol="$passwordRequireSymbol"
     />
 @endsection

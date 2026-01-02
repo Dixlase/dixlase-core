@@ -18,22 +18,25 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-@extends('layouts.auth')
-@section('title', __('admin/auth.forgot_password.title'))
-@section('header', __('admin/auth.forgot_password.header'))
+@props([
+    'layout' => 'layouts.auth',
+    'title',
+    'header',
+    'description',
+    'route',
+    'loginRoute' => null,
+])
+
+@extends($layout)
+@section('title', $title)
+@section('header', $header)
 @section('description')
-    {!! __('admin/auth.forgot_password.description') !!}
+    {!! $description !!}
 @endsection
 
 @section('content')
     <x-auth.forgot-password
-        :route="route('admin.password.email')"
-        :loginRoute="route('admin.login')"
+        :route="$route"
+        :loginRoute="$loginRoute"
     />
-@endsection
-
-@section('back_link')
-    <a class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 hover:underline" href="{{ route('admin.login') }}">
-        {{ __('admin/auth.forgot_password.back_to_login') }}
-    </a>
 @endsection
