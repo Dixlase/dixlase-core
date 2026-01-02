@@ -24,37 +24,40 @@ namespace App\Http\Controllers\Admin\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\MemberSetting;
-use App\Services\PasswordValidationService;
-use Illuminate\Auth\Events\PasswordReset;
+use App\Traits\PasswordResetTrait;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
 class AdminNewPasswordController extends Controller
 {
+    use PasswordResetTrait;
+
     /**
      * Display the password reset view.
      */
     public function create(Request $request): View
     {
-        PasswordValidationService::abortIfPasswordResetUnavailable(fn($key, $default = null) => MemberSetting::getValue($key, $default));
+        $settingsGetter = fn($key, $default = null) => MemberSetting::getValue($key, $default);
+        $this->validatePasswordResetAvailability($settingsGetter);
         
         // パスワード設定を取得
-        $passwordMinLength = (int) MemberSetting::getValue('password_min_length', 8);
-        $passwordRequireUppercase = (bool) MemberSetting::getValue('password_require_uppercase', true);
-        $passwordRequireNumber = (bool) MemberSetting::getValue('password_require_number', true);
-        $passwordRequireSymbol = (bool) MemberSetting::getValue('password_require_symbol', false);
+        $passwordSettings = $this->getPasswordSettings($settingsGetter);
         
-        return view('admin.auth.reset-password', [
-            'request' => $request,
-            'passwordMinLength' => $passwordMinLength,
-            'passwordRequireUppercase' => $passwordRequireUppercase,
-            'passwordRequireNumber' => $passwordRequireNumber,
-            'passwordRequireSymbol' => $passwordRequireSymbol,
+        return view('auth.reset-password', [
+            'title' => __('admin/auth.reset_password.title'),
+            'header' => __('admin/auth.reset_password.header'),
+            'description' => __('admin/auth.reset_password.description'),
+            'route' => route('admin.password.store'),
+            'token' => $request->route('token'),
+            'email' => $request->email,
+            'emailLabel' => __('admin/auth.reset_password.email'),
+            'passwordLabel' => __('admin/auth.reset_password.password'),
+            'submitText' => __('admin/auth.reset_password.reset_password_button'),
+            'passwordMinLength' => $passwordSettings['min_length'],
+            'passwordRequireUppercase' => $passwordSettings['require_uppercase'],
+            'passwordRequireSymbol' => $passwordSettings['require_symbol'],
         ]);
     }
 
@@ -65,20 +68,11 @@ class AdminNewPasswordController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        // パスワード設定を取得
-        $passwordMinLength = (int) MemberSetting::getValue('password_min_length', 8);
-        $passwordRequireUppercase = (bool) MemberSetting::getValue('password_require_uppercase', true);
-        $passwordRequireNumber = (bool) MemberSetting::getValue('password_require_number', true);
-        $passwordRequireSymbol = (bool) MemberSetting::getValue('password_require_symbol', false);
-        $passwordCheckPwned = (bool) MemberSetting::getValue('password_check_pwned', false);
-
-        $request->validate(PasswordValidationService::getPasswordResetValidationRules(
-            $passwordMinLength,
-            $passwordRequireUppercase,
-            $passwordRequireNumber,
-            $passwordRequireSymbol,
-            $passwordCheckPwned
-        ));
+        $settingsGetter = fn($key, $default = null) => MemberSetting::getValue($key, $default);
+        
+        // パスワード設定を取得してバリデーション
+        $passwordSettings = $this->getPasswordSettings($settingsGetter);
+        $request->validate($this->getPasswordResetValidationRules($passwordSettings));
 
         // Here we will attempt to reset the user's password. If it is successful we
         // will update the password on an actual user model and persist it to the
@@ -86,12 +80,7 @@ class AdminNewPasswordController extends Controller
         $status = Password::broker('members')->reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user) use ($request) {
-                $user->forceFill([
-                    'password' => Hash::make($request->password),
-                    'remember_token' => Str::random(60),
-                ])->save();
-
-                event(new PasswordReset($user));
+                $this->performPasswordReset($user, $request->password);
             }
         );
 

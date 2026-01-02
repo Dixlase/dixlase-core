@@ -39,6 +39,15 @@ class AdminEmailVerificationPromptController extends Controller
         
         return $member && $member->hasVerifiedEmail()
             ? redirect()->intended(route('admin.dashboard'))
-            : view('admin::auth.verification-notice');
+            : view('auth.verification-notice', [
+                'title' => __('auth.verification_required'),
+                'header' => __('auth.verification_required'),
+                'resendRoute' => route('admin.verification.send'),
+                'logoutRoute' => route('admin.logout'),
+                'message' => __('auth.verification_notice_message'),
+                'resentMessage' => __('auth.verification_link_sent'),
+                'resendButtonText' => __('common.resend'),
+                'logoutButtonText' => __('common.logout'),
+            ]);
     }
 }
