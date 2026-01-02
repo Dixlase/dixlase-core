@@ -151,7 +151,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @yield('modals')
         @endif
         @stack('modals')
-
         <script @cspNonce>
             // Alpine.js関数を先に定義
             function appearanceTheme(defaultValue) {

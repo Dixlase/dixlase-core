@@ -55,7 +55,6 @@ plugins/*
 !plugins/DixlaseBackup/
 !plugins/DixlaseMultilingual/
 themes/*
-!themes/DixlaseDefaultTheme
 !themes/DixlaseDefaultTheme/
 
 license-info.json

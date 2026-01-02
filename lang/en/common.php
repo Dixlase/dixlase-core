@@ -90,6 +90,7 @@ return [
     // Authentication
     'login' => 'Login',
     'logout' => 'Logout',
+    'back_to_site' => 'Back to Site',
 
     // Confirmation & Response
     'yes' => 'Yes',

@@ -92,6 +92,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </form>
 @endsection
 
+
 @section('back_link')
     <a class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 hover:underline" href="{{ route('welcome') }}">
         {{ __('admin/auth.login.back_to_welcome') }}
