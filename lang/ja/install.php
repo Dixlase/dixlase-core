@@ -31,9 +31,9 @@ return [
     'admin_account_name' => 'アカウント名',
     'admin_account_name_placeholder' => '半角英数字で入力（例: siteadmin2025）',
     'admin_account_name_requirements' => '3〜20文字の半角英数字を使用してください。<br>本番環境では安易に推測できる名前（admin、administrator、root、user、test、demo、dixlase、manager、webmasterなど）は避けてください。',
-    'admin_member_name' => '表示名',
-    'admin_member_name_placeholder' => '管理バーに表示される名前（例: 山田 太郎）',
-    'admin_member_name_requirements' => '管理バーやプロフィールに表示される名前です。空欄の場合はアカウント名が表示されます。',
+    'admin_display_name' => '表示名',
+    'admin_display_name_placeholder' => '管理バーに表示される名前（例: 山田 太郎）',
+    'admin_display_name_requirements' => '管理バーやプロフィールに表示される名前です。空欄の場合はアカウント名が表示されます。',
     'validation' => [
         'admin_account_name_required' => 'アカウント名を入力してください。',
         'admin_account_name_alpha_num' => 'アカウント名は半角英数字のみ使用できます。',

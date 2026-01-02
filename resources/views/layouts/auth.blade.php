@@ -24,7 +24,8 @@
         });
     </script>
 
-
+    <!-- Scripts -->
+    {!! load_auth_assets() !!}
 </head>
 <body class="bg-gray-100 dark:bg-black flex items-center justify-center min-h-screen transition-colors duration-300">
     <div class="flex flex-col items-center w-full max-w-lg min-w-[400px]">
@@ -63,12 +64,6 @@
             </div>
         @endif
     </div>
-    
-    <!-- Scripts -->
-    @vite([
-        'resources/src/common/js/app.js',
-        'resources/src/common/scss/style.scss'
-    ], 'assets/build')
     
     @stack('scripts')
 </body>

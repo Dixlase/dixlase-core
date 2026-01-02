@@ -47,14 +47,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </fieldset>
 
             <fieldset>
-                <legend>{{ __('common.member_name') }}</legend>
+                <legend>{{ __('common.display_name') }}</legend>
                 <x-form.text
-                    name="member_name"
-                    :value="old('member_name', $member->member_name)"
+                    name="display_name"
+                    :value="old('display_name', $member->display_name)"
                     class="w-full"
                 />
-                <p class="description-text">{{ __('admin/profile.member_name_help') }}</p>
-                @error('member_name')
+                <p class="description-text">{{ __('admin/profile.display_name_help') }}</p>
+                @error('display_name')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
             </fieldset>

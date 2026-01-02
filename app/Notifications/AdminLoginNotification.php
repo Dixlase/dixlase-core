@@ -102,7 +102,7 @@ class AdminLoginNotification extends Notification
         $message = new MailMessage;
 
         // Determine display name with fallback priority: display_name -> account_name -> email
-        $displayName = $notifiable->member_name
+        $displayName = $notifiable->display_name
             ?? $notifiable->account_name 
             ?? $notifiable->email;
 

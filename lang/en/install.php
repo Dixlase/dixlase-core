@@ -28,9 +28,9 @@ return [
     'admin_account_name' => 'Account Name',
     'admin_account_name_placeholder' => 'Enter alphanumeric characters (e.g., siteadmin2025)',
     'admin_account_name_requirements' => 'Use 3-20 alphanumeric characters.<br>In production, avoid easily guessable names such as admin, administrator, root, user, test, demo, dixlase, manager, or webmaster.',
-    'admin_member_name' => 'Display Name',
-    'admin_member_name_placeholder' => 'Name displayed in admin bar (e.g., John Doe)',
-    'admin_member_name_requirements' => 'This name will be displayed in the admin bar and profile. If left empty, the account name will be used.',
+    'admin_display_name' => 'Display Name',
+    'admin_display_name_placeholder' => 'Name displayed in admin bar (e.g., John Doe)',
+    'admin_display_name_requirements' => 'This name will be displayed in the admin bar and profile. If left empty, the account name will be used.',
     'validation' => [
         'admin_account_name_required' => 'Please enter an account name.',
         'admin_account_name_alpha_num' => 'Account name must contain only alphanumeric characters.',

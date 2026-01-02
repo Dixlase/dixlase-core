@@ -53,7 +53,7 @@ class ProfileUpdateRequest extends FormRequest
 
         $rules = [
             'account_name' => 'required|string|alpha_num|min:3|max:20',
-            'member_name' => 'nullable|string|max:255',
+            'display_name' => 'nullable|string|max:255',
             'description' => 'nullable|string|max:1000',
             'email' => 'required|string|email|max:255|unique:members,email,' . $member->id,
             'locale' => 'nullable|string|in:' . implode(',', Locale::values()),

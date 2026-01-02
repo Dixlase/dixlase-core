@@ -154,9 +154,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <td data-label="{{ __('common.account_name') }}">
                                 <a href="{{ route('admin.members.edit', ['member' => $member->id]) }}" 
                                    class="hover:underline">
-                                    {{ $member->member_name ?? $member->account_name }}
+                                    {{ $member->display_name ?? $member->account_name }}
                                 </a>
-                                @if($member->member_name)
+                                @if($member->display_name)
                                     <span class="text-xs text-gray-500 dark:text-gray-400 block">{{ $member->account_name }}</span>
                                 @endif
                             </td>

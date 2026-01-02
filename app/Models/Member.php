@@ -63,7 +63,7 @@ class Member extends Authenticatable implements MustVerifyEmail
      */
     protected $fillable = [
         'account_name',
-        'member_name',
+        'display_name',
         'email',
         'email_verified_at',
         'pending_email',

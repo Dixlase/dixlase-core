@@ -122,7 +122,7 @@ class InstallController extends Controller
                 'min:3',
                 'max:20',
             ],
-            'admin_member_name' => 'nullable|string|max:255',
+            'admin_display_name' => 'nullable|string|max:255',
             'admin_email' => 'required|email',
             'admin_password' => [
                 'required',
@@ -150,7 +150,7 @@ class InstallController extends Controller
         session([
             'install_data.site_name' => $request->site_name,
             'install_data.admin_account_name' => $request->admin_account_name,
-            'install_data.admin_member_name' => $request->admin_member_name,
+            'install_data.admin_display_name' => $request->admin_display_name,
             'install_data.admin_email' => $request->admin_email,
             'install_data.admin_password' => Crypt::encryptString($request->admin_password), // ✅ 暗号化
         ]);
@@ -1253,7 +1253,7 @@ class InstallController extends Controller
                 ->where('id', $admin->id)
                 ->update([
                     'account_name' => $data['admin_account_name'],
-                    'member_name' => $data['admin_member_name'] ?? null,
+                    'display_name' => $data['admin_display_name'] ?? null,
                     'locale' => $installLocale, // インストール時の言語設定を反映
                     'password' => Hash::make($adminPassword),
                     'role' => 10, // super_admin
@@ -1267,7 +1267,7 @@ class InstallController extends Controller
             Log::channel('install')->info('initializeDatabase - 新規管理者作成開始');
             $memberId = DB::connection('mysql')->table('members')->insertGetId([
                 'account_name' => $data['admin_account_name'],
-                'member_name' => $data['admin_member_name'] ?? null,
+                'display_name' => $data['admin_display_name'] ?? null,
                 'email' => $data['admin_email'],
                 'email_verified_at' => now(), // インストール時は自動的に認証済み
                 'locale' => $installLocale, // インストール時の言語設定を反映

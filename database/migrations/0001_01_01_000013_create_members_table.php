@@ -38,7 +38,7 @@ return new class extends Migration
         Schema::create($this->table, function (Blueprint $table) {
             $table->id();
             $table->string('account_name'); // ログイン用アカウント名（半角英数字）
-            $table->string('member_name')->nullable(); // 表示名（管理バー等に表示）
+            $table->string('display_name')->nullable(); // 表示名（管理バー等に表示）
             $table->string('description')->nullable();
             $table->string('email'); 
             $table->timestamp('email_verified_at')->nullable(); // メール認証日時

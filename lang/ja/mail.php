@@ -351,7 +351,7 @@ return [
         'thanks' => 'よろしくお願いいたします',
     ],
 
-    // メール認証
+    // メール認証（メンバー用）
     'member_verify_email' => [
         'subject' => 'メールアドレスの確認',
         'subject_account' => 'メンバーアカウントの確認',
