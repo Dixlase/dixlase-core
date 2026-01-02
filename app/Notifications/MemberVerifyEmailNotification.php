@@ -22,21 +22,14 @@
 
 namespace App\Notifications;
 
+use App\Traits\EmailVerificationTrait;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\URL;
 
 class MemberVerifyEmailNotification extends Notification
 {
-    use Queueable;
-
-    /**
-     * @var string コンテキスト（'create', 'email_change', または 'resend'）
-     */
-    protected $context;
+    use Queueable, EmailVerificationTrait;
 
     /**
      * Create a new notification instance.
@@ -63,24 +56,12 @@ class MemberVerifyEmailNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $verificationUrl = $this->verificationUrl($notifiable);
+        $prefix = 'mail.member_verify_email';
+        $verificationUrl = $this->generateVerificationUrl($notifiable, 'admin.verification.verify', 'member');
 
-        // コンテキストに応じて件名を切り替え
-        $subjectKey = $this->context === 'email_change'
-            ? 'mail.member_verify_email.subject'
-            : 'mail.member_verify_email.subject_account';
-
-        // コンテキストに応じてメッセージを切り替え
-        $messageKey = match($this->context) {
-            'email_change' => 'mail.member_verify_email.message_email_change',
-            'resend' => 'mail.member_verify_email.message_resend',
-            default => 'mail.member_verify_email.message_create',
-        };
-
-        // コンテキストに応じてボタンラベルを切り替え
-        $actionKey = $this->context === 'email_change' 
-            ? 'mail.member_verify_email.action_change_email'
-            : 'mail.member_verify_email.action_verify_account';
+        $subjectKey = $this->getSubjectKey($prefix);
+        $messageKey = $this->getMessageKey($prefix);
+        $actionKey = $this->getActionKey($prefix);
 
         return (new MailMessage)
             ->subject(__($subjectKey))
@@ -89,33 +70,10 @@ class MemberVerifyEmailNotification extends Notification
             ->action(__($actionKey), $verificationUrl)
             ->line(__('mail.member_verify_email.manual_verification'))
             ->line($verificationUrl)
-            ->line(__('mail.member_verify_email.expiration', ['minutes' => Config::get('auth.verification.expire', 60)]))
+            ->line(__('mail.member_verify_email.expiration', ['minutes' => $this->getExpirationMinutes()]))
             ->line('') // 空白行
             ->line(__('mail.member_verify_email.security_notice'))
             ->salutation(__('mail.member_verify_email.regards'));
     }
 
-    /**
-     * Get the verification URL for the given notifiable.
-     */
-    protected function verificationUrl(object $notifiable): string
-    {
-        $url = URL::temporarySignedRoute(
-            'admin.verification.verify',
-            Carbon::now()->addMinutes(Config::get('auth.verification.expire', 60)),
-            [
-                'id' => $notifiable->getKey(),
-                'hash' => sha1($notifiable->getEmailForVerification()),
-            ]
-        );
-        
-        \Log::info('Email verification URL generated', [
-            'member_id' => $notifiable->getKey(),
-            'email' => $notifiable->getEmailForVerification(),
-            'url' => $url,
-            'context' => $this->context
-        ]);
-        
-        return $url;
-    }
 }
