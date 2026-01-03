@@ -9,7 +9,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class MembersLockoutNotificationMail extends Mailable
+class LockoutNotificationMail extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -35,7 +35,7 @@ class MembersLockoutNotificationMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.members_lockout_notification',
+            markdown: 'emails.lockout_notification',
         );
     }
 

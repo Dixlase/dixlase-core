@@ -39,7 +39,9 @@ return [
         'datetime' => 'Date & Time:',
         'ip_address' => 'IP Address:',
         'user_agent' => 'User-Agent:',
+        'user_id' => 'User ID:',
         'security_notice' => 'If you do not recognize this login, please change your password immediately.',
+        'access_site' => 'Access Site',
         'regards' => 'Regards',
     ],
 
@@ -351,15 +353,15 @@ Clicking this link will complete the full mail functionality test.',
         'thanks' => 'Thank you for your attention',
     ],
 
-    // Email Verification (Member)
-    'member_verify_email' => [
+    // Email Verification (Common)
+    'verify_email' => [
         'subject' => 'Verify Your Email Address',
-        'subject_account' => 'Verify Your Member Account',
+        'subject_account' => 'Verify Your :type Account',
         'greeting' => 'Hello :name!',
-        'message_create' => 'Your member account has been successfully created. Please click the button below to complete your account verification.',
-        'message_email_change' => 'Your account email address has been changed. Please click the button below to complete the email address change.',
-        'message_resend' => 'Your account verification is required. Please click the button below to complete your account verification.',
-        'action_verify_account' => 'Verify Account',
+        'message_create' => 'Thank you for registering. Please click the button below to complete your email verification.',
+        'message_email_change' => 'Your email address has been changed. Please click the button below to complete the email address change.',
+        'message_resend' => 'Email verification is required. Please click the button below to complete the verification.',
+        'action_verify_account' => 'Verify Email Address',
         'action_change_email' => 'Change Email Address',
         'manual_verification' => 'If you cannot click the button, please copy and paste the following URL into your browser:',
         'expiration' => 'This verification link will expire in :minutes minutes.',

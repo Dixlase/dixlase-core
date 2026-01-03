@@ -14,5 +14,5 @@
 {{ __('mail.two_factor.security_notice') }}
 
 {{ __('mail.two_factor.regards') }}<br><br>
-{{ $appName }}
+{{ $appName ?? config('app.name') }}
 </x-mail::message>

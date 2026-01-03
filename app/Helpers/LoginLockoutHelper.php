@@ -301,7 +301,7 @@ class LoginLockoutHelper
             ];
 
             // Mailableクラスを使用してメール送信
-            $lockoutMail = new \App\Mail\MembersLockoutNotificationMail($details);
+            $lockoutMail = new \App\Mail\LockoutNotificationMail($details);
             
             \Mail::to($notificationEmail)->send($lockoutMail);
 

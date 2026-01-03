@@ -62,4 +62,75 @@ return [
     'verification_member_mismatch' => 'ログインしたアカウントと認証待ちのアカウントが一致しません。',
     'verification_invalid' => '認証トークンが無効です。',
     'verification_failed' => 'メール認証に失敗しました。もう一度お試しください。',
+
+    // 共通フィールド
+    'login_title' => ':name ログイン',
+    'login_description' => ':name アカウントにログインしてください。',
+    'email' => 'メールアドレス',
+    'password' => 'パスワード',
+    'remember_me' => 'ログイン状態を保持する',
+    'login' => 'ログイン',
+    'forgot_password' => 'パスワードをお忘れですか？',
+    'no_account' => 'アカウントをお持ちでない方は',
+    'register' => '新規登録',
+
+    // アカウント状態
+    'account_inactive' => 'このアカウントは無効化されています。',
+    'account_suspended' => 'このアカウントは停止されています。',
+    'email_not_verified' => 'メールアドレスの認証が完了していません。',
+
+    // 二段階認証（共通）
+    'two_factor_title' => '二段階認証',
+    'two_factor_description' => '登録されたメールアドレスに認証コードを送信しました。',
+    'two_factor_code' => '認証コード',
+    'two_factor_verify' => '認証する',
+    'two_factor_resend' => 'コードを再送信',
+    'two_factor_invalid' => '認証コードが正しくありません。',
+    'two_factor_expired' => '認証コードの有効期限が切れました。',
+    'two_factor_sent' => '認証コードを送信しました。',
+    'two_factor_send_failed' => '認証コードの送信に失敗しました。',
+    'two_factor_resend_success' => '認証コードを再送信しました。',
+    'recovery_code_invalid' => '回復コードが正しくありません。',
+    'session_expired' => 'セッションの有効期限が切れました。再度ログインしてください。',
+
+    // パスワードリセット（共通）
+    'reset_password_title' => 'パスワードリセット',
+    'reset_password_description' => 'メールアドレスを入力してください。パスワードリセット用のリンクをお送りします。',
+    'reset_password_button' => 'リセットリンクを送信',
+    'reset_password_sent' => 'パスワードリセット用のリンクをメールで送信しました。',
+    'new_password' => '新しいパスワード',
+    'confirm_password' => 'パスワード（確認）',
+    'reset_password' => 'パスワードをリセット',
+    'reset_password_success' => 'パスワードがリセットされました。',
+    'delete_account' => 'アカウントを削除',
+
+    // メール認証（共通）
+    'verify_email_title' => 'メールアドレスの認証',
+    'verify_email_description' => 'ご登録いただいたメールアドレスに認証リンクを送信しました。',
+    'verify_email_message' => 'ご登録ありがとうございます。メールアドレスに送信された認証リンクをクリックして、アカウントの認証を完了してください。メールが届いていない場合は、再送信ボタンをクリックしてください。',
+    'verify_email_resend' => '認証メールを再送信',
+    'verify_email_sent' => '新しい認証リンクをメールアドレスに送信しました。',
+    'verify_email_success' => 'メールアドレスの認証が完了しました。',
+    'back_to_login' => 'ログイン画面に戻る',
+
+    // ログアウト
+    'logout' => 'ログアウト',
+    'logout_success' => 'ログアウトしました。',
+
+    // 新規登録（共通）
+    'register_title' => '新規登録',
+    'register_description' => 'アカウント情報を入力してください。',
+    'account_name' => 'アカウント名',
+    'account_name_placeholder' => '半角英数字とアンダースコア（3〜20文字）',
+    'account_name_help' => 'ログインに使用するアカウント名です。半角英数字とアンダースコア（_）のみ使用できます。',
+    'display_name' => '表示名',
+    'password_confirmation' => 'パスワード（確認）',
+    'register_button' => '登録する',
+    'already_registered' => 'すでにアカウントをお持ちの方は',
+    'register_success' => '登録が完了しました。',
+    'send_password_reset_link' => 'パスワードリセットリンクを送信',
+
+    // その他
+    'password_incorrect' => 'パスワードが正しくありません。',
 ];
+

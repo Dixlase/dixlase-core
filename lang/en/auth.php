@@ -63,4 +63,75 @@ return [
     'verification_member_mismatch' => 'The logged-in account does not match the account pending verification.',
     'verification_invalid' => 'The verification token is invalid.',
     'verification_failed' => 'Email verification failed. Please try again.',
+
+    // Common Fields
+    'login_title' => ':type Login',
+    'login_description' => 'Please log in to your :type account.',
+    'email' => 'Email Address',
+    'password' => 'Password',
+    'remember_me' => 'Remember Me',
+    'login' => 'Login',
+    'forgot_password' => 'Forgot your password?',
+    'no_account' => "Don't have an account?",
+    'register' => 'Register',
+
+    // Account Status
+    'account_inactive' => 'This account has been deactivated.',
+    'account_suspended' => 'This account has been suspended.',
+    'email_not_verified' => 'Email address has not been verified.',
+
+    // Two-Factor Authentication (Common)
+    'two_factor_title' => 'Two-Factor Authentication',
+    'two_factor_description' => 'A verification code has been sent to your registered email address.',
+    'two_factor_code' => 'Verification Code',
+    'two_factor_verify' => 'Verify',
+    'two_factor_resend' => 'Resend Code',
+    'two_factor_invalid' => 'The verification code is invalid.',
+    'two_factor_expired' => 'The verification code has expired.',
+    'two_factor_sent' => 'Verification code has been sent.',
+    'two_factor_send_failed' => 'Failed to send verification code.',
+    'two_factor_resend_success' => 'Verification code has been resent.',
+    'recovery_code_invalid' => 'The recovery code is invalid.',
+    'session_expired' => 'Your session has expired. Please log in again.',
+
+    // Password Reset (Common)
+    'reset_password_title' => 'Reset Password',
+    'reset_password_description' => 'Enter your email address and we will send you a password reset link.',
+    'reset_password_button' => 'Send Reset Link',
+    'reset_password_sent' => 'We have emailed your password reset link.',
+    'new_password' => 'New Password',
+    'confirm_password' => 'Confirm Password',
+    'reset_password' => 'Reset Password',
+    'reset_password_success' => 'Your password has been reset.',
+    'delete_account' => 'Delete Account',
+
+    // Email Verification (Common)
+    'verify_email_title' => 'Verify Email Address',
+    'verify_email_description' => 'A verification link has been sent to your registered email address.',
+    'verify_email_message' => 'Thank you for registering. Please click the verification link sent to your email address to complete account verification. If you did not receive the email, click the resend button.',
+    'verify_email_resend' => 'Resend Verification Email',
+    'verify_email_sent' => 'A new verification link has been sent to your email address.',
+    'verify_email_success' => 'Email address has been verified.',
+    'back_to_login' => 'Back to Login',
+
+    // Logout
+    'logout' => 'Logout',
+    'logout_success' => 'You have been logged out.',
+
+    // Registration (Common)
+    'register_title' => 'Register',
+    'register_description' => 'Please enter your account information.',
+    'account_name' => 'Account Name',
+    'account_name_placeholder' => 'Alphanumeric and underscore (3-20 characters)',
+    'account_name_help' => 'Account name used for login. Only alphanumeric characters and underscores (_) are allowed.',
+    'display_name' => 'Display Name',
+    'password_confirmation' => 'Confirm Password',
+    'register_button' => 'Register',
+    'already_registered' => 'Already have an account?',
+    'register_success' => 'Registration completed.',
+    'send_password_reset_link' => 'Send Password Reset Link',
+
+    // Other
+    'password_incorrect' => 'The password is incorrect.',
 ];
+
