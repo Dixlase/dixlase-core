@@ -261,16 +261,12 @@ class AdminMemberController extends AdminLoggedInController
         $member->update($validated);
         $id = $member->id;
 
-        $shouldSendEmail = $isMailServerTested && (
-            ($emailVerified === '0' && !$wasVerified) ||
-            ($emailVerified === '0' && $wasVerified) ||
-            ($emailChanged && $wasVerified)
-        );
+        // メールアドレスが変更され、かつ以前は認証済みだった場合のみ認証メールを送信
+        $shouldSendEmail = $isMailServerTested && $emailChanged && $wasVerified;
         
         if ($shouldSendEmail && !$member->hasVerifiedEmail()) {
             try {
-                $context = ($emailChanged && $wasVerified) ? 'email_change' : 'create';
-                $member->sendEmailVerificationNotification($context);
+                $member->sendEmailVerificationNotification('email_change');
                 $message = __('admin/members/edit.messages.updated_with_verification_email');
             } catch (\Exception $e) {
                 \Log::error('Failed to send verification email', [
