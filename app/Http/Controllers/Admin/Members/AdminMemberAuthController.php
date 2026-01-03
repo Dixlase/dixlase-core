@@ -96,6 +96,10 @@ class AdminMemberAuthController extends AdminMemberSettingsController
             $this->memberSettingRepository->set('captcha_admin_login_enabled', $request->boolean('captcha_admin_login_enabled') ? '1' : '0');
         }
 
+        if (array_key_exists('captcha_password_reset_enabled', $validated)) {
+            $this->memberSettingRepository->set('captcha_password_reset_enabled', $request->boolean('captcha_password_reset_enabled') ? '1' : '0');
+        }
+
         return redirect()->back()
             ->with('success', __('admin/members/settings.updated'));
     }

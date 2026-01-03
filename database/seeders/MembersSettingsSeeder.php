@@ -62,6 +62,7 @@ class MembersSettingsSeeder extends Seeder
 
             // CAPTCHA設定（管理画面ログイン用）
             ['key' => 'captcha_admin_login_enabled', 'value' => '0'], // デフォルト: 無効
+            ['key' => 'captcha_password_reset_enabled', 'value' => '0'], // デフォルト: 無効
 
         ];
 

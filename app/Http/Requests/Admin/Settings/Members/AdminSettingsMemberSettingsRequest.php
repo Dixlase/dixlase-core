@@ -60,8 +60,9 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
             // 二段階認証設定
             'enabled_2fa_passkey' => filter_var($this->input('enabled_2fa_passkey'), FILTER_VALIDATE_BOOLEAN),
             '2fa_lockout_notification_enabled' => filter_var($this->input('2fa_lockout_notification_enabled'), FILTER_VALIDATE_BOOLEAN),
-            // CAPTCHA設定（管理画面ログイン用）
+            // CAPTCHA設定
             'captcha_admin_login_enabled' => filter_var($this->input('captcha_admin_login_enabled'), FILTER_VALIDATE_BOOLEAN),
+            'captcha_password_reset_enabled' => filter_var($this->input('captcha_password_reset_enabled'), FILTER_VALIDATE_BOOLEAN),
         ]);
     }
 
@@ -106,6 +107,7 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
             'recovery_codes_count' => 'required|integer|min:1|max:10',
             'recovery_code_regenerate_interval' => 'required|integer|min:1|max:168', // 1-168時間（1時間-7日間）
             'captcha_admin_login_enabled' => 'nullable|boolean',
+            'captcha_password_reset_enabled' => 'nullable|boolean',
         ];
 
         return match ($section) {
