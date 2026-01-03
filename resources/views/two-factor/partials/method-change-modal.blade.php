@@ -18,12 +18,13 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-@props([
-    'modalId' => 'methodChangeModal',
-    'usedMethod' => null,
-    'currentMethod' => null,
-    'autoOpen' => false,
-])
+{{-- パーシャル用変数のデフォルト値設定 --}}
+@php
+    $modalId = $modalId ?? 'methodChangeModal';
+    $usedMethod = $usedMethod ?? null;
+    $currentMethod = $currentMethod ?? null;
+    $autoOpen = $autoOpen ?? false;
+@endphp
 
 <x-modal :id="$modalId" :title="__('admin/dashboard.method_change_modal.title')" icon_type="info">
     <div class="space-y-4">

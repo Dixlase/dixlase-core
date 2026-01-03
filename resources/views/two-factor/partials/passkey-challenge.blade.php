@@ -1,8 +1,7 @@
-@props([
-    'challengeAction',
-    'verifyAction',
-    'context' => 'admin'
-])
+{{-- パーシャル用変数のデフォルト値設定 --}}
+@php
+    $context = $context ?? 'admin';
+@endphp
 
 <div id="passkey-auth-container">
     <!-- 認証待機状態 -->

@@ -18,9 +18,10 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-@props([
-    'modalId' => 'passkeyResultModal',
-])
+{{-- パーシャル用変数のデフォルト値設定 --}}
+@php
+    $modalId = $modalId ?? 'passkeyResultModal';
+@endphp
 
 <div id="{{ $modalId }}" class="modal">
     <div class="modal-overlay"></div>

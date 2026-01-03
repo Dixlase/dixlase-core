@@ -18,15 +18,16 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-@props([
-    'modalId' => 'passkeyDeviceNameModal',
-    'title' => null,
-    'message' => null,
-    'inputLabel' => null,
-    'inputPlaceholder' => '',
-    'confirmLabel' => null,
-    'cancelLabel' => null,
-])
+{{-- パーシャル用変数のデフォルト値設定 --}}
+@php
+    $modalId = $modalId ?? 'passkeyDeviceNameModal';
+    $title = $title ?? null;
+    $message = $message ?? null;
+    $inputLabel = $inputLabel ?? null;
+    $inputPlaceholder = $inputPlaceholder ?? '';
+    $confirmLabel = $confirmLabel ?? null;
+    $cancelLabel = $cancelLabel ?? null;
+@endphp
 
 <div id="{{ $modalId }}" class="modal">
     <div class="modal-overlay" onclick="closeModal('{{ $modalId }}')"></div>

@@ -8,24 +8,24 @@
 @section('description', __('two-factor.email.prompt'))
 
 @section('content')
-    <x-two-factor.email-challenge
-        :action="route('admin.two-factor.email.verify')"
-        :resend-action="route('admin.two-factor.email.resend')"
-        :title="__('two-factor.email.code_title')"
-        :prompt="__('two-factor.email.code_prompt')"
-        :submit-text="__('two-factor.email.verify')"
-        :resend-text="__('two-factor.email.resend')"
-        :expire-minutes="$expireMinutes"
-        :resend-interval-seconds="$resendIntervalSeconds"
-        context="admin"
-    />
+    @include('two-factor.partials.email-challenge', [
+        'action' => route('admin.two-factor.email.verify'),
+        'resendAction' => route('admin.two-factor.email.resend'),
+        'title' => __('two-factor.email.code_title'),
+        'prompt' => __('two-factor.email.code_prompt'),
+        'submitText' => __('two-factor.email.verify'),
+        'resendText' => __('two-factor.email.resend'),
+        'expireMinutes' => $expireMinutes,
+        'resendIntervalSeconds' => $resendIntervalSeconds,
+        'context' => 'admin'
+    ])
 
     <!-- 別の認証方法へのリンク -->
-    <x-two-factor.alternative-methods
-        :methods="$availableMethods"
-        :current-method="$currentMethod"
-        context="admin"
-    />
+    @include('two-factor.partials.alternative-methods', [
+        'methods' => $availableMethods,
+        'currentMethod' => $currentMethod,
+        'context' => 'admin'
+    ])
 @endsection
 
 @section('back_link')

@@ -1,9 +1,10 @@
-@props([
-    'methods' => [],
-    'currentMethod' => null,
-    'context' => 'admin',
-    'showRecoveryCode' => true
-])
+{{-- パーシャル用変数のデフォルト値設定 --}}
+@php
+    $methods = $methods ?? [];
+    $currentMethod = $currentMethod ?? null;
+    $context = $context ?? 'admin';
+    $showRecoveryCode = $showRecoveryCode ?? true;
+@endphp
 <p class="my-4 text-center text-gray-800 dark:text-white">{{ __('two-factor.switch_method_prompt') }}</p>
 <div class="mt-4 text-center space-y-2">
     @php
