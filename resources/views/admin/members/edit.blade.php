@@ -79,7 +79,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     />
 
     <!-- Passkey結果表示モーダル -->
-    <x-two-factor.passkey-result-modal modalId="passkeyResultModal" />
+    @include('two-factor.partials.passkey-result-modal', [
+        'modalId' => 'passkeyResultModal'
+    ])
 @endsection
 
 @section('save')

@@ -1,16 +1,15 @@
-@props([
-    'challengeAction',
-    'verifyAction',
-    'resendAction' => null,
-    'title' => 'デバイス認証',
-    'prompt' => 'デバイスでの認証を確認してください',
-    'context' => 'admin',
-    'pollInterval' => 2000,
-    'maxRetries' => 30,
-    'autoStart' => false,
-    'expireMinutes' => 10,
-    'resendIntervalSeconds' => 60
-])
+{{-- パーシャル用変数のデフォルト値設定 --}}
+@php
+    $resendAction = $resendAction ?? null;
+    $title = $title ?? 'デバイス認証';
+    $prompt = $prompt ?? 'デバイスでの認証を確認してください';
+    $context = $context ?? 'admin';
+    $pollInterval = $pollInterval ?? 2000;
+    $maxRetries = $maxRetries ?? 30;
+    $autoStart = $autoStart ?? false;
+    $expireMinutes = $expireMinutes ?? 10;
+    $resendIntervalSeconds = $resendIntervalSeconds ?? 60;
+@endphp
 
 <div id="device-auth-container">
     <div class="text-center">

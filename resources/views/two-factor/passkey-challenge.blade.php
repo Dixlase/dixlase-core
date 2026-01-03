@@ -8,18 +8,18 @@
 @section('description', __('two-factor.passkey.prompt'))
 
 @section('content')
-    <x-two-factor.passkey-challenge
-        :challenge-action="route('admin.two-factor.passkey.challenge')"
-        :verify-action="route('admin.two-factor.passkey.verify')"
-        context="admin"
-    />
+    @include('two-factor.partials.passkey-challenge', [
+        'challengeAction' => route('admin.two-factor.passkey.challenge'),
+        'verifyAction' => route('admin.two-factor.passkey.verify'),
+        'context' => 'admin'
+    ])
 
     <!-- 別の認証方法へのリンク -->
-    <x-two-factor.alternative-methods
-        :methods="$availableMethods"
-        :current-method="$currentMethod"
-        context="admin"
-    />
+    @include('two-factor.partials.alternative-methods', [
+        'methods' => $availableMethods,
+        'currentMethod' => $currentMethod,
+        'context' => 'admin'
+    ])
 @endsection
 
 @section('back_link')

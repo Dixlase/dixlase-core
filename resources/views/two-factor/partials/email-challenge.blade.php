@@ -1,18 +1,18 @@
-@props([
-    'action',
-    'resendAction' => null,
-    'title' => '認証コード入力',
-    'prompt' => '送信された認証コードを入力してください',
-    'submitText' => '認証',
-    'resendText' => '再送信',
-    'expireMinutes' => 10,
-    'resendIntervalSeconds' => 60,
-    'codeLength' => 6,
-    'autoSubmit' => true,
-    'showExpireTime' => true,
-    'showResend' => true,
-    'context' => 'admin'
-])
+{{-- パーシャル用変数のデフォルト値設定 --}}
+@php
+    $resendAction = $resendAction ?? null;
+    $title = $title ?? '認証コード入力';
+    $prompt = $prompt ?? '送信された認証コードを入力してください';
+    $submitText = $submitText ?? '認証';
+    $resendText = $resendText ?? '再送信';
+    $expireMinutes = $expireMinutes ?? 10;
+    $resendIntervalSeconds = $resendIntervalSeconds ?? 60;
+    $codeLength = $codeLength ?? 6;
+    $autoSubmit = $autoSubmit ?? true;
+    $showExpireTime = $showExpireTime ?? true;
+    $showResend = $showResend ?? true;
+    $context = $context ?? 'admin';
+@endphp
 
 <div class="text-center">
     <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
