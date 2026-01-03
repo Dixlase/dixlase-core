@@ -172,9 +172,10 @@ class PasswordValidationService
             'password' => self::buildPasswordRules(
                 $minLength,
                 $requireUppercase,
+                true, // requireLowercase - always required
                 $requireNumber,
                 $requireSymbol,
-                true,
+                true, // isRequired
                 $checkPwned
             ),
         ];

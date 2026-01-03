@@ -45,8 +45,8 @@ trait PasswordResetTrait
     {
         return [
             'min_length' => (int) $settingsGetter('password_min_length', 8),
-            'require_uppercase' => (bool) $settingsGetter('password_require_uppercase', true),
-            'require_number' => (bool) $settingsGetter('password_require_number', true),
+            'require_uppercase' => (bool) $settingsGetter('password_require_uppercase', false),
+            'require_number' => (bool) $settingsGetter('password_require_number', false),
             'require_symbol' => (bool) $settingsGetter('password_require_symbol', false),
             'check_pwned' => (bool) $settingsGetter('password_check_pwned', false),
         ];

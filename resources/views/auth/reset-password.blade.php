@@ -30,7 +30,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'passwordLabel',
     'submitText',
     'passwordMinLength' => 8,
-    'passwordRequireUppercase' => true,
+    'passwordRequireUppercase' => false,
+    'passwordRequireNumber' => false,
     'passwordRequireSymbol' => false,
 ])
 
@@ -49,6 +50,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :submitText="$submitText"
         :passwordMinLength="$passwordMinLength"
         :passwordRequireUppercase="$passwordRequireUppercase"
+        :passwordRequireNumber="$passwordRequireNumber"
         :passwordRequireSymbol="$passwordRequireSymbol"
     />
 @endsection

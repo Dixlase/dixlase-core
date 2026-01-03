@@ -21,7 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @props(['widget' => null, 'enabled' => false])
 
 @if($enabled && $widget)
-    <div class="captcha-container flex justify-center items-center">
+    <div class="captcha-container flex justify-center items-center my-3">
         {!! $widget !!}
     </div>
     
