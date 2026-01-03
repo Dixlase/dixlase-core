@@ -172,74 +172,80 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <fieldset>
             <legend>{{ __('admin/members/form.account_verification') }}</legend>
             
+
+            
+            @if(!isset($member) || !$member->exists)
+                {{-- 新規作成時 --}}
+                @php
+                    $emailVerifiedValue = old('email_verified', $isMailServerTested ? '0' : '1');
+                    $emailVerificationOptions = [
+                        ['value' => '0', 'label' => 'admin/members/form.account_verified_send_email'],
+                        ['value' => '1', 'label' => 'admin/members/form.account_verified'],
+                    ];
+                @endphp
+                <x-form.radio-card-group
+                    name="email_verified"
+                    :options="$emailVerificationOptions"
+                    :value="$emailVerifiedValue"
+                    :columns="2"
+                    :disabled="!$isMailServerTested"
+                />
+                <p class="description-text">{{ __('admin/members/form.account_verification_help_create') }}</p>
+            @else
+                {{-- 編集時 --}}
+                @php
+                    $emailVerifiedValue = old('email_verified', $member->hasVerifiedEmail() ? '1' : '0');
+                    $emailVerificationOptionsEdit = [
+                        ['value' => '0', 'label' => 'admin/members/form.account_unverified'],
+                        ['value' => '1', 'label' => 'admin/members/form.account_verified'],
+                    ];
+                @endphp
+                <x-form.radio-card-group
+                    name="email_verified"
+                    :options="$emailVerificationOptionsEdit"
+                    :value="$emailVerifiedValue"
+                    :columns="2"
+                    :disabled="!$isMailServerTested"
+                />
+                <p class="description-text">{{ __('admin/members/form.account_verification_help_edit') }}</p>
+                
+                {{-- 認証メール送信ボタン（編集時のみ） --}}
+                <div class="my-4">
+                    @if($isMailServerTested)
+                        <x-form.button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            :label="__('admin/members/form.send_verification_email_button')"
+                            icon="fas fa-envelope"
+                            id="send-verification-email-btn"
+                            onclick="sendVerificationEmail({{ $member->id }})"
+                        />
+                    @else
+                        <x-form.button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            :label="__('admin/members/form.send_verification_email_button')"
+                            icon="fas fa-envelope"
+                            id="send-verification-email-btn"
+                            :disabled="true"
+                        />
+                    @endif
+                </div>
+                @if(!$isMailServerTested)
+                    <p class="text-sm text-yellow-600 dark:text-yellow-400 mt-2">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                        {{ __('admin/members/form.mail_server_not_tested') }}
+                    </p>
+                @endif
+            @endif
+
             @if(!$isMailServerTested)
                 <x-message
                     type="info"
                     :message="__('admin/members/form.account_verification_disabled')"
                 />
-                <input type="hidden" name="email_verified" value="1">
-            @else
-                @if(!isset($member) || !$member->exists)
-                    {{-- 新規作成時 --}}
-                    @php
-                        $emailVerifiedValue = old('email_verified', '0');
-                        $emailVerificationOptions = [
-                            ['value' => '0', 'label' => 'admin/members/form.account_verified_send_email'],
-                            ['value' => '1', 'label' => 'admin/members/form.account_verified'],
-                        ];
-                    @endphp
-                    <x-form.radio-card-group
-                        name="email_verified"
-                        :options="$emailVerificationOptions"
-                        :value="$emailVerifiedValue"
-                        :columns="2"
-                    />
-                    <p class="description-text">{{ __('admin/members/form.account_verification_help_create') }}</p>
-                @else
-                    {{-- 編集時 --}}
-                    @php
-                        $emailVerifiedValue = old('email_verified', $member->hasVerifiedEmail() ? '1' : '0');
-                        $emailVerificationOptionsEdit = [
-                            ['value' => '0', 'label' => 'admin/members/form.account_unverified'],
-                            ['value' => '1', 'label' => 'admin/members/form.account_verified'],
-                        ];
-                    @endphp
-                    <x-form.radio-card-group
-                        name="email_verified"
-                        :options="$emailVerificationOptionsEdit"
-                        :value="$emailVerifiedValue"
-                        :columns="2"
-                    />
-                    <p class="description-text">{{ __('admin/members/form.account_verification_help_edit') }}</p>
-                    
-                    {{-- 認証メール送信ボタン --}}
-                    <div class="mt-4">
-                        @if($isMailServerTested)
-                            <x-form.button
-                                type="button"
-                                variant="secondary"
-                                size="sm"
-                                :label="__('admin/members/form.send_verification_email_button')"
-                                icon="fas fa-envelope"
-                                id="send-verification-email-btn"
-                                onclick="sendVerificationEmail({{ $member->id }})"
-                            />
-                        @else
-                            <x-form.button
-                                type="button"
-                                variant="secondary"
-                                size="sm"
-                                :label="__('admin/members/form.send_verification_email_button')"
-                                icon="fas fa-envelope"
-                                :disabled="true"
-                            />
-                            <p class="text-sm text-yellow-600 dark:text-yellow-400 mt-2">
-                                <i class="fas fa-exclamation-triangle mr-1"></i>
-                                {{ __('admin/members/form.mail_server_not_tested') }}
-                            </p>
-                        @endif
-                    </div>
-                @endif
             @endif
             
             <x-form.error

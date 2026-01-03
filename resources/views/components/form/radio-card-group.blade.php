@@ -211,17 +211,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 : $colors['border'] . ' ring-3 ' . $colors['ring'] . ' ' . $colors['bg'];
         @endphp
         
-        <label class="relative flex cursor-pointer rounded-lg border p-4 shadow-sm focus:outline-none transition-all duration-150 {{ $isDisabled ? 'opacity-50 cursor-not-allowed' : '' }}"
+        <label class="relative flex rounded-lg border p-4 shadow-sm focus:outline-none transition-all duration-150 {{ $isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer' }}"
                @if ($modelVar)
                    :class="{{ $modelVar }} === '{{ $optionValue }}' 
                        ? '{{ $selectedClasses }}' 
-                       : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-500'"
+                       : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 {{ $isDisabled ? '' : 'hover:border-gray-300 dark:hover:border-gray-500' }}'"
                @else
                    :class="selected === '{{ $optionValue }}' 
                        ? '{{ $selectedClasses }}' 
-                       : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-500'"
+                       : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 {{ $isDisabled ? '' : 'hover:border-gray-300 dark:hover:border-gray-500' }}'"
                @endif
-               @click="selected = '{{ $optionValue }}'"
+               @if (!$isDisabled) @click="selected = '{{ $optionValue }}'" @endif
         >
             <input type="radio" 
                    name="{{ $name }}" 
