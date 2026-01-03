@@ -21,10 +21,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @props([
     'route',
     'loginRoute' => null,
+    'captchaEnabled' => false,
+    'captchaWidget' => null,
 ])
 
 <form method="POST" action="{{ $route }}">
     @csrf
+
+    <x-captcha
+        :enabled="$captchaEnabled"
+        :widget="$captchaWidget"
+    />
     
     <section>
         <fieldset>

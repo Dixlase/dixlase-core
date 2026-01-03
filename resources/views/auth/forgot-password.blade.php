@@ -25,6 +25,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'description',
     'route',
     'loginRoute' => null,
+    'captchaEnabled' => false,
+    'captchaWidget' => null,
 ])
 
 @extends($layout)
@@ -38,5 +40,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <x-auth.forgot-password
         :route="$route"
         :loginRoute="$loginRoute"
+        :captchaEnabled="$captchaEnabled"
+        :captchaWidget="$captchaWidget"
     />
 @endsection

@@ -373,21 +373,33 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endif
 
             <fieldset>
-                @if(!$captchaAvailable)
-                    <x-form.hidden
+                <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    {{ __('admin/members/settings/auth.captcha_screens') }}
+                </legend>
+                <div class="space-y-3">
+                    @if(!$captchaAvailable)
+                        <x-form.hidden
+                            name="captcha_admin_login_enabled"
+                            :value="$captchaAdminLoginEnabled ? '1' : '0'"
+                        />
+                        <x-form.hidden
+                            name="captcha_password_reset_enabled"
+                            :value="$captchaPasswordResetEnabled ? '1' : '0'"
+                        />
+                    @endif
+                    <x-form.toggle
                         name="captcha_admin_login_enabled"
-                        :value="$captchaAdminLoginEnabled ? '1' : '0'"
+                        :label="__('admin/members/settings/auth.captcha_admin_login_enabled')"
+                        :checked="old('captcha_admin_login_enabled', $captchaAdminLoginEnabled)"
+                        :disabled="!$captchaAvailable"
                     />
-                @endif
-                <x-form.toggle
-                    name="captcha_admin_login_enabled"
-                    :label="__('admin/members/settings/auth.captcha_admin_login_enabled')"
-                    :checked="old('captcha_admin_login_enabled', $captchaAdminLoginEnabled)"
-                    :disabled="!$captchaAvailable"
-                />
-                <p class="mt-2">
-                    {{ __('admin/members/settings/auth.captcha_admin_login_help') }}
-                </p>
+                    <x-form.toggle
+                        name="captcha_password_reset_enabled"
+                        :label="__('admin/members/settings/auth.captcha_password_reset_enabled')"
+                        :checked="old('captcha_password_reset_enabled', $captchaPasswordResetEnabled)"
+                        :disabled="!$captchaAvailable"
+                    />
+                </div>
             </fieldset>
         </section>
     </form>

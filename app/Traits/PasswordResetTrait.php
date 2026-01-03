@@ -24,6 +24,7 @@ namespace App\Traits;
 
 use App\Services\PasswordValidationService;
 use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
@@ -89,6 +90,32 @@ trait PasswordResetTrait
     protected function getPasswordResetLinkValidationRules(): array
     {
         return PasswordValidationService::getPasswordResetLinkValidationRules();
+    }
+
+    /**
+     * CAPTCHAを検証（有効な場合のみ）
+     *
+     * @param Request $request リクエスト
+     * @param bool $captchaEnabled CAPTCHA有効フラグ
+     * @return array|null エラーがある場合は ['email' => string, 'errors' => array]、成功時はnull
+     */
+    protected function validateCaptcha(Request $request, bool $captchaEnabled): ?array
+    {
+        if (!$captchaEnabled) {
+            return null;
+        }
+
+        $captchaDriver = app(\App\Captcha\CaptchaDriver::class);
+        $result = $captchaDriver->verify($request);
+
+        if (!$result->isValid()) {
+            return [
+                'email' => $request->input('email'),
+                'errors' => ['captcha' => $result->getErrorMessage() ?? __('auth.captcha_failed')],
+            ];
+        }
+
+        return null;
     }
 
     /**

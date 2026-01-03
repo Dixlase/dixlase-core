@@ -184,11 +184,13 @@ class AdminMemberSettingsController extends AdminLoggedInController
         $captchaEnabled = filter_var(SecuritySetting::get('captcha_enabled', false), FILTER_VALIDATE_BOOLEAN);
         $captchaAuthenticationResult = filter_var(SecuritySetting::get('captcha_authentication_result', false), FILTER_VALIDATE_BOOLEAN);
         $captchaAdminLoginEnabled = (bool) $this->memberSettingRepository->get('captcha_admin_login_enabled', false);
+        $captchaPasswordResetEnabled = (bool) $this->memberSettingRepository->get('captcha_password_reset_enabled', false);
         $captchaAvailable = $captchaEnabled && $captchaAuthenticationResult;
         $this->viewParams['captchaEnabled'] = $captchaEnabled;
         $this->viewParams['captchaAuthenticationResult'] = $captchaAuthenticationResult;
         $this->viewParams['captchaAvailable'] = $captchaAvailable;
         $this->viewParams['captchaAdminLoginEnabled'] = $captchaAdminLoginEnabled;
+        $this->viewParams['captchaPasswordResetEnabled'] = $captchaPasswordResetEnabled;
     }
 
     protected function isMailServerTested(): bool
