@@ -167,6 +167,11 @@ return [
     'gender_other' => 'Other',
     'prefer_not_to_say' => 'Prefer not to say',
     'birthday' => 'Birthday',
+    'name_info' => 'Name Information',
+    
+    // Dangerous Operations
+    'danger_zone' => 'Danger Zone',
+    'send_password_reset_link' => 'Send Password Reset Link',
 
     // File Related
     'file_name' => 'File Name',
@@ -323,18 +328,10 @@ return [
     // Global Setting Control Messages (Account Type Support)
     'global_setting_controlled' => [
         'two_factor' => 'This setting is controlled by the :account_type global settings and cannot be changed.',
-        'two_factor_method' => 'This authentication method is controlled by the :account_type global settings and cannot be changed.',
     ],
-    'notification_settings' => 'Notification Settings',
-    'login_notification_settings' => 'Login Notification Settings',
 
-    // Settings Sections
-    'basic_info' => 'Basic Information',
-    'name' => 'Name',
-    'description' => 'Description',
-    'email' => 'Email Address',
-    'security_settings' => 'Security Settings',
-    'password_settings' => 'Password Settings',
+    // Profile & Settings Common Items
+    'account_verification_success' => 'Account verification completed.',
     'account_settings' => 'Account Settings',
     'management_operations' => 'Management Operations',
     'appearance_settings' => 'Appearance Settings',

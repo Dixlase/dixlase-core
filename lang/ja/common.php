@@ -168,6 +168,11 @@ return [
     'gender_other' => 'その他',
     'prefer_not_to_say' => '回答しない',
     'birthday' => '誕生日',
+    'name_info' => '名前情報',
+    
+    // 危険な操作
+    'danger_zone' => '危険な操作',
+    'send_password_reset_link' => 'パスワードリセットリンクを送信',
 
     // ファイル関連
     'file_name' => 'ファイル名',
@@ -334,6 +339,7 @@ return [
     ],
 
     // プロフィール・設定関連の汎用項目
+    'account_verification_success' => 'アカウント認証が完了しました。',
 
     // 基本項目
     'basic_info' => '基本情報',

@@ -14,15 +14,7 @@
 @if($isAuthenticated)
 @props(['isAdminLayout' => false])
 
-{{-- デバッグ情報 --}}
-<script @cspNonce>
-    console.log('Admin Bar: Authenticated =', {{ $isAuthenticated ? 'true' : 'false' }});
-    console.log('Admin Bar: isAdminLayout =', {{ $isAdminLayout ? 'true' : 'false' }});
-    console.log('Admin Bar: Alpine loaded =', typeof Alpine !== 'undefined');
-</script>
-
 <div x-data="{ openSidebar: false, openUserMenu: false, userMenuOpen: false }" 
-     x-init="console.log('Admin Bar: x-data initialized', { openSidebar, openUserMenu, userMenuOpen })"
      id="admin-bar" class="fixed top-0 left-0 right-0 backdrop-blur-sm text-gray-700 dark:text-white bg-white/75 dark:bg-gray-900/75 border-b border-gray-300 dark:border-gray-700 shadow-md" style="z-index: 9999;">
     <div class="w-full mx-auto px-4">
         <div class="flex items-center justify-between h-12">
