@@ -128,7 +128,7 @@ function confirmSendVerificationEmail() {
         }
     }
     
-    fetch(`/admin/settings/members/${currentMemberId}/send-verification-email`, {
+    fetch(`/admin/members/${currentMemberId}/send-verification-email`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
