@@ -185,7 +185,7 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::get('/create', [Members\AdminMemberController::class, 'create'])->name('create');
                 Route::post('/', [Members\AdminMemberController::class, 'store'])->name('store');
                 Route::get('/edit/{member}', [Members\AdminMemberController::class, 'edit'])->name('edit');
-                Route::patch('/update/{member}', [Members\AdminMemberController::class, 'update'])->name('update');
+                Route::post('/update/{member}', [Members\AdminMemberController::class, 'update'])->name('update');
                 Route::delete('/destroy/{member}', [Members\AdminMemberController::class, 'destroy'])
                     ->middleware('check.menu.edit:members.index')
                     ->name('destroy');
