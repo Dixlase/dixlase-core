@@ -34,7 +34,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'isInitialAdmin' => $isInitialAdmin,
         'isMailServerTested' => $isMailServerTested,
         'formAction' => route('admin.members.update', ['member' => $member->id]),
-        'formMethod' => 'PATCH',
+        'formMethod' => 'POST',
         'formId' => 'update-form',
         'includeForm' => true
     ])

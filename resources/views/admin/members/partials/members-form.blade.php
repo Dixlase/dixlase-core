@@ -677,35 +677,53 @@ document.addEventListener('DOMContentLoaded', function() {
         $deleteMemberFormId = 'deleteMemberForm-' . $member->id;
     @endphp
     
+    @php
+        $forceLogoutModalTitle = __('admin/members/edit.modals.force_logout.title');
+        $forceLogoutModalMessage = __('admin/members/edit.modals.force_logout.message', ['name' => $member->display_name ?? $member->account_name]);
+        $forceLogoutConfirmLabel = __('admin/members/edit.modals.force_logout.confirm');
+        $forceLogoutCancelLabel = __('common.cancel');
+    @endphp
     <x-modal
         id="forceLogoutModal"
-        :title="__('admin/members/edit.modals.force_logout.title')"
-        :message="__('admin/members/edit.modals.force_logout.message', ['name' => $member->display_name ?? $member->account_name])"
-        :confirm_label="__('admin/members/edit.modals.force_logout.confirm')"
-        :cancel_label="__('common.cancel')"
+        :title="$forceLogoutModalTitle"
+        :message="$forceLogoutModalMessage"
+        :confirm_label="$forceLogoutConfirmLabel"
+        :cancel_label="$forceLogoutCancelLabel"
         :form="$forceLogoutFormId"
         icon_type="warning"
         confirm_color="yellow"
     />
 
+    @php
+        $unlockModalTitle = __('admin/members/edit.modals.unlock_lockout.title');
+        $unlockModalMessage = __('admin/members/edit.modals.unlock_lockout.message', ['name' => $member->display_name ?? $member->account_name]);
+        $unlockConfirmLabel = __('admin/members/edit.modals.unlock_lockout.confirm');
+        $unlockCancelLabel = __('common.cancel');
+    @endphp
     <x-modal
         id="unlockLockoutModal"
-        :title="__('admin/members/edit.modals.unlock_lockout.title')"
-        :message="__('admin/members/edit.modals.unlock_lockout.message', ['name' => $member->display_name ?? $member->account_name])"
-        :confirm_label="__('admin/members/edit.modals.unlock_lockout.confirm')"
-        :cancel_label="__('common.cancel')"
+        :title="$unlockModalTitle"
+        :message="$unlockModalMessage"
+        :confirm_label="$unlockConfirmLabel"
+        :cancel_label="$unlockCancelLabel"
         :form="$unlockLockoutFormId"
         icon_type="info"
         confirm_color="blue"
     />
 
     @if(!$isInitialAdmin)
+        @php
+            $deleteModalTitle = __('admin/members/edit.modals.delete.title');
+            $deleteModalMessage = __('admin/members/edit.modals.delete.message', ['name' => $member->display_name ?? $member->account_name]) . "\n\n" . __('admin/members/edit.modals.delete.warning');
+            $deleteConfirmLabel = __('common.delete');
+            $deleteCancelLabel = __('common.cancel');
+        @endphp
         <x-modal
             id="deleteMemberModal"
-            :title="__('admin/members/edit.modals.delete.title')"
-            :message="__('admin/members/edit.modals.delete.message', ['name' => $member->display_name ?? $member->account_name]) . "\n\n" . __('admin/members/edit.modals.delete.warning')"
-            :confirm_label="__('common.delete')"
-            :cancel_label="__('common.cancel')"
+            :title="$deleteModalTitle"
+            :message="$deleteModalMessage"
+            :confirm_label="$deleteConfirmLabel"
+            :cancel_label="$deleteCancelLabel"
             :form="$deleteMemberFormId"
             icon_type="danger"
             confirm_color="red"
