@@ -48,7 +48,7 @@ return [
     ],
     
     // Messages
-    'updated' => 'Settings have been updated.',
+    'updated' => 'Member settings have been updated.',
     
     // Common units
     'minutes' => 'minutes',

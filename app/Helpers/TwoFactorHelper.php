@@ -81,7 +81,7 @@ class TwoFactorHelper
 
         // メール送信
         try {
-            if ($mailClass === \App\Mail\MembersTwoFactorCodeMail::class) {
+            if ($mailClass === \App\Mail\TwoFactorCodeMail::class) {
                 // 汎用メールクラスの場合はコンテキストを渡す
                 Mail::to($user->email)->send(new $mailClass($code, $context));
             } else {

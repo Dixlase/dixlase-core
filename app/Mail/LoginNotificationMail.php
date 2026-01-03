@@ -7,16 +7,15 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class MembersLoginNotificationMail  extends Mailable
+class LoginNotificationMail extends Mailable
 {
     use SerializesModels;
-
 
     /**
      * Create a new message instance.
      */
     public function __construct(
-        public $member,
+        public $user,
         public $ip,
         public $ua,
         public $datetime,
@@ -32,7 +31,7 @@ class MembersLoginNotificationMail  extends Mailable
     {
         $subject = $this->toSystem
             ? __('mail.login_notification.subject_system')
-            : __('mail.login_notification.subject_user', ['name' => $this->member->name]);
+            : __('mail.login_notification.subject_user', ['name' => $this->user->name ?? $this->user->account_name]);
 
         return new Envelope(subject: $subject);
     }
@@ -43,9 +42,9 @@ class MembersLoginNotificationMail  extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.members_login_notification',
+            markdown: 'emails.login_notification',
             with: [
-                'member' => $this->member,
+                'user' => $this->user,
                 'ip' => $this->ip,
                 'ua' => $this->ua,
                 'datetime' => $this->datetime,

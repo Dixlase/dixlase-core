@@ -2,33 +2,36 @@
 
 namespace App\Mail;
 
-use App\Models\Member;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class MembersTwoFactorDeviceMail extends Mailable
+class TwoFactorDeviceMail extends Mailable
 {
     use Queueable, SerializesModels;
 
     public string $token;
-    public Member $member;
+    public $user; // Member or User model
     public string $ipAddress;
     public string $userAgent;
     public string $timestamp;
+    public string $approveRoute;
+    public string $denyRoute;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(string $token, Member $member, string $ipAddress, string $userAgent)
+    public function __construct(string $token, $user, string $ipAddress, string $userAgent, string $approveRoute = 'admin.device-auth.approve', string $denyRoute = 'admin.device-auth.deny')
     {
         $this->token = $token;
-        $this->member = $member;
+        $this->user = $user;
         $this->ipAddress = $ipAddress;
         $this->userAgent = $userAgent;
         $this->timestamp = now()->format('Y-m-d H:i:s');
+        $this->approveRoute = $approveRoute;
+        $this->denyRoute = $denyRoute;
     }
 
     /**
@@ -47,15 +50,15 @@ class MembersTwoFactorDeviceMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.members_two_factor_device',
+            markdown: 'emails.two_factor_device',
             with: [
                 'token' => $this->token,
-                'member' => $this->member,
+                'user' => $this->user,
                 'ipAddress' => $this->ipAddress,
                 'userAgent' => $this->userAgent,
                 'timestamp' => $this->timestamp,
-                'approveUrl' => route('admin.device-auth.approve', ['token' => $this->token]),
-                'denyUrl' => route('admin.device-auth.deny', ['token' => $this->token]),
+                'approveUrl' => route($this->approveRoute, ['token' => $this->token]),
+                'denyUrl' => route($this->denyRoute, ['token' => $this->token]),
             ],
         );
     }

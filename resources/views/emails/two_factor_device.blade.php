@@ -1,7 +1,7 @@
 <x-mail::message>
 # {{ __('mail.two_factor.device.title') }}
 
-{{ __('mail.two_factor.device.greeting', ['name' => $member->display_name ?? $member->account_name]) }}
+{{ __('mail.two_factor.device.greeting', ['name' => $user->display_name ?? $user->account_name ?? $user->name ?? $user->email]) }}
 
 {{ __('mail.two_factor.device.message') }}
 
