@@ -165,4 +165,44 @@ return [
         'password' => 'Password',
         'submit' => 'Confirm',
     ],
+
+    // ===========================================
+    // Authentication Mode (Two-Factor & Notification Settings)
+    // ===========================================
+    'authentication_mode' => [
+        'two_factor' => [
+            'disabled' => 'Disabled',
+            'different_device' => 'Different device/IP login',
+            'always' => 'Always enabled',
+            'use_profile_setting' => 'Follow profile settings',
+        ],
+        'notification' => [
+            'disabled' => 'Disabled',
+            'different_device' => 'Notify only on different device/IP login',
+            'always' => 'Always notify',
+            'use_profile_setting' => 'Follow profile settings',
+        ],
+    ],
+
+    // Two-Factor Authentication Details
+    'two_factor_authentication' => 'Two-Factor Authentication',
+    'two_factor_description' => 'Enhance your security by setting up additional authentication at login.',
+    'two_factor_global_setting_fixed' => 'This setting is fixed by global configuration.',
+    'two_factor_method_global_setting_fixed' => 'This authentication method is fixed by global configuration.',
+    'two_factor_help' => 'When two-factor authentication is enabled, additional verification is required at login.<br>This significantly improves account security by preventing unauthorized access even if your password is compromised.',
+    'two_factor_method_help' => [
+        'single' => 'The authentication method is fixed by :account_type global settings.',
+        'multiple' => 'You can choose from available authentication methods according to :account_type global settings.',
+    ],
+
+    // Login Notification Details
+    'login_notification_mode' => [
+        'label' => 'Login Notification Settings',
+        'options' => [
+            0 => 'Disabled',
+            1 => 'Only for different device/IP',
+            2 => 'Enabled',
+            3 => 'Follow :account_type profile settings',
+        ]
+    ],
 ];
