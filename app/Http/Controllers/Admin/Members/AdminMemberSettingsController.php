@@ -96,10 +96,13 @@ class AdminMemberSettingsController extends AdminLoggedInController
 
         $loginNotification = (int) $this->memberSettingRepository->get('login_notification_mode', AuthenticationMode::UseProfileSetting->value);
         $loginNotificationGlobalOptions = collect(config('admin.global_login_notification_mail_mode'))
-            ->map(fn ($value) => [
-                'value' => (string) $value,
-                'label' => __('common.login_notification_mode.options.' . $value),
-            ])
+            ->map(function ($value) {
+                $mode = AuthenticationMode::tryFrom($value);
+                return [
+                    'value' => (string) $value,
+                    'label' => $mode ? $mode->notificationLabel() : '',
+                ];
+            })
             ->values()
             ->toArray();
 
@@ -110,10 +113,13 @@ class AdminMemberSettingsController extends AdminLoggedInController
         }
         
         $twoFactorGlobalOptions = collect(config('admin.global_two_factor_mode'))
-            ->map(fn ($value) => [
-                'value' => (string) $value,
-                'label' => str_replace(':account_type', __('common.account_types.member'), __('common.two_factor_mode.options.' . $value)),
-            ])
+            ->map(function ($value) {
+                $mode = AuthenticationMode::tryFrom($value);
+                return [
+                    'value' => (string) $value,
+                    'label' => $mode ? $mode->twoFactorLabel() : '',
+                ];
+            })
             ->values()
             ->toArray();
         

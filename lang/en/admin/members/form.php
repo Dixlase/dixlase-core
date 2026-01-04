@@ -51,4 +51,7 @@ return [
     'recovery_codes_deleted' => 'Recovery codes (:count) have been deleted.',
     'recovery_codes_delete_success_title' => 'Recovery Codes Deletion Complete',
     'recovery_codes_delete_error' => 'Failed to delete recovery codes.',
+    'two_factor_method_note' => 'Global authentication method settings can be changed in',
+    'change_in_global_settings' => 'Member Global Settings',
+    'passkey_disabled_globally' => 'Disabled in global settings',
 ];

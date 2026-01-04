@@ -310,28 +310,47 @@ class AdminMemberController extends AdminLoggedInController
         $this->viewParams['loginNotificationMode'] = $loginNotificationMode;
         $loginNotificationEnum = AuthenticationMode::tryFrom($loginNotificationMode);
         $this->viewParams['loginNotificationModeLabel'] = $loginNotificationEnum ? $loginNotificationEnum->notificationLabel() : '';
+        
+        // radio-card-group用の通知設定オプション配列を生成
+        $loginNotificationOptions = [];
+        foreach (AuthenticationMode::forProfile() as $case) {
+            $loginNotificationOptions[] = [
+                'value' => (string)$case->value,
+                'label' => $case->notificationLabel(),
+            ];
+        }
+        $this->viewParams['loginNotificationModeOptions'] = $loginNotificationOptions;
 
         $force2fa = (int) $this->memberSettingRepository->get('force_2fa', AuthenticationMode::Disabled->value);
         $this->viewParams['force2fa'] = $force2fa;
         $twoFactorEnum = AuthenticationMode::tryFrom($force2fa);
         $this->viewParams['twoFactorModeLabel'] = $twoFactorEnum ? $twoFactorEnum->twoFactorLabel() : '';
         
-        $enabledTwoFactorMethodsString = $this->memberSettingRepository->get('enabled_two_factor_methods', (string)TwoFactorMethod::EMAIL->value);
-        $enabledTwoFactorMethods = ($enabledTwoFactorMethodsString !== null && $enabledTwoFactorMethodsString !== '') ? explode(',', $enabledTwoFactorMethodsString) : [];
+        // radio-card-group用の二段階認証オプション配列を生成
+        $twoFactorOptions = [];
+        foreach (AuthenticationMode::forProfile() as $case) {
+            $twoFactorOptions[] = [
+                'value' => (string)$case->value,
+                'label' => $case->twoFactorLabel(),
+            ];
+        }
+        $this->viewParams['twoFactorModeOptions'] = $twoFactorOptions;
         
-        $twoFactorMethodOptions = [];
-        foreach ($enabledTwoFactorMethods as $method) {
-            $methodInt = (int)$method;
-            $methodEnum = TwoFactorMethod::tryFrom($methodInt);
-            if ($methodEnum) {
-                $twoFactorMethodOptions[$methodEnum->value] = $methodEnum->translationKey();
-            }
+        // メール認証は常に有効
+        $twoFactorMethodOptions = [
+            TwoFactorMethod::EMAIL->value => TwoFactorMethod::EMAIL->translationKey(),
+        ];
+        
+        // 全体設定でパスキー認証が有効な場合は追加
+        $passkeyEnabled = $this->memberSettingRepository->get('enabled_2fa_passkey', '0') === '1';
+        if ($passkeyEnabled) {
+            $twoFactorMethodOptions[TwoFactorMethod::PASSKEY->value] = TwoFactorMethod::PASSKEY->translationKey();
         }
         
         $this->viewParams['enabledTwoFactorMethods'] = $twoFactorMethodOptions;
-        $this->viewParams['defaultTwoFactorMethod'] = (int) $this->memberSettingRepository->get('default_two_factor_method', TwoFactorMethod::EMAIL->value);
         $this->viewParams['twoFactorMode'] = AuthenticationMode::from($this->viewParams['force2fa']);
-        $this->viewParams['twoFactorModeOptions'] = AuthenticationMode::twoFactorTranslationOptions();
+        $this->viewParams['twoFactorUseProfileSettingValue'] = AuthenticationMode::UseProfileSetting->value;
+        $this->viewParams['loginNotificationUseProfileSettingValue'] = AuthenticationMode::UseProfileSetting->value;
         $this->viewParams['isMailServerTested'] = $this->isMailServerTested();
     }
 

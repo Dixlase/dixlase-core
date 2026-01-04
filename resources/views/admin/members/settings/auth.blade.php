@@ -127,7 +127,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- 二段階認証設定 -->
         <section>
-            <h2>{{ __('common.two_factor_settings') }}</h2>
+            <h2>{{ __('auth.two_factor_settings') }}</h2>
             @if(!$isMailServerTested)
                 <x-message
                     type="warning"
@@ -145,22 +145,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </fieldset>
 
             <fieldset>
-                <legend>{{ __('admin/members/settings/auth.enabled_two_factor_methods_label') }}</legend>
+                <legend>{{ __('auth.two_factor_method.label') }}</legend>
 
                 <div class="space-y-6">
                     <div class="space-y-3">
                         <div class="flex items-center space-x-3">
                             <div class="flex items-center">
                                 <i class="fas fa-check-circle text-green-600 dark:text-green-400 mr-2"></i>
-                                <span class="text-sm font-medium">{{ __('common.two_factor_method.numbered_options.0') }}</span>
+                                <span class="text-sm font-medium">{{ __('auth.two_factor_method.options.email') }}</span>
                             </div>
-                            <span class="text-xs text-gray-500 dark:text-gray-400">（常に有効）</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">{{ __('admin/members/settings/auth.email_always_enabled_note') }}</span>
                         </div>
 
                         <div class="flex items-center space-x-3">
                             <x-form.toggle
                                 name="enabled_2fa_passkey"
-                                :label="__('common.two_factor_method.numbered_options.1')"
+                                :label="__('auth.two_factor_method.options.passkey')"
                                 :checked="old('enabled_2fa_passkey', $passkeyEnabled ?? false)"
                             />
                         </div>
@@ -169,9 +169,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div class="space-y-1">
                         <p class="text-sm text-gray-600 dark:text-gray-400">
                             {{ __('admin/members/settings/auth.enabled_two_factor_methods_help') }}
-                        </p>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">
-                            {{ __('admin/members/settings/auth.email_always_enabled_note') }}
                         </p>
                     </div>
                 </div>

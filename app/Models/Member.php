@@ -50,6 +50,7 @@ class Member extends Authenticatable implements MustVerifyEmail
         'password' => 'hashed',
         'role' => MemberRole::class,
         'status' => MemberStatus::class,
+        'login_notification_mode' => AuthenticationMode::class,
         'two_factor_mode' => AuthenticationMode::class,
         'appearance' => AppearanceMode::class,
         'locale' => Locale::class,
@@ -72,10 +73,9 @@ class Member extends Authenticatable implements MustVerifyEmail
         'role',
         'appearance',
         'status',
-        'login_notification',
+        'login_notification_mode',
         'two_factor_mode',
-        'two_factor_method',
-        'last_2fa_method',
+        'two_factor_passkey_enabled',
         'description',
     ];
 
