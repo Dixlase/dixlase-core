@@ -347,7 +347,12 @@ class AdminMemberController extends AdminLoggedInController
             $twoFactorMethodOptions[TwoFactorMethod::PASSKEY->value] = TwoFactorMethod::PASSKEY->translationKey();
         }
         
+        // デフォルトの認証方法を取得
+        $defaultTwoFactorMethod = (int) $this->memberSettingRepository->get('default_two_factor_method', TwoFactorMethod::EMAIL->value);
+        
         $this->viewParams['enabledTwoFactorMethods'] = $twoFactorMethodOptions;
+        $this->viewParams['defaultTwoFactorMethod'] = $defaultTwoFactorMethod;
+        $this->viewParams['passkeyEnabled'] = $passkeyEnabled;
         $this->viewParams['twoFactorMode'] = AuthenticationMode::from($this->viewParams['force2fa']);
         $this->viewParams['twoFactorUseProfileSettingValue'] = AuthenticationMode::UseProfileSetting->value;
         $this->viewParams['loginNotificationUseProfileSettingValue'] = AuthenticationMode::UseProfileSetting->value;

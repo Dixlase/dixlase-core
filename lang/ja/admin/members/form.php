@@ -54,4 +54,7 @@ return [
     'two_factor_method_note' => '認証方法の全体設定は',
     'change_in_global_settings' => 'メンバー全体設定',
     'passkey_disabled_globally' => '全体設定で無効',
+    'default_two_factor_method' => 'デフォルトの認証方法',
+    'default_two_factor_method_help' => '二段階認証時に最初に表示される認証方法を選択します。',
+    'passkey_disabled_default_email_only' => 'パスキー認証を無効にしているため、デフォルトの認証方法は自動的にメール認証になります。',
 ];

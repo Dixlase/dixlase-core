@@ -30,12 +30,12 @@ class MembersSettingsSeeder extends Seeder
             ['key' => 'pwned_password_check_enabled', 'value' => '0'], // デフォルト: 無効
 
             // ログイン通知設定
-            ['key' => 'login_notification_mode', 'value' => '0'], // 0 = UseProfileSetting（プロファイルに任せる）
+            ['key' => 'login_notification_mode', 'value' => '3'], // 0=無効, 1=異なるデバイス, 2=常に有効, 3=プロフィール設定に従う
             ['key' => 'send_login_notice_to_system', 'value' => '0'], // デフォルト: システム通知無効
             ['key' => 'system_login_notice_email', 'value' => ''], // デフォルト: 空（管理者メールアドレス）
 
             // 二段階認証設定
-            ['key' => 'force_2fa', 'value' => '0'], // 0 = 無効, 1 = 有効, 2 = プロフィール設定を反映
+            ['key' => 'force_2fa', 'value' => '3'], // 0=無効, 1=異なるデバイス, 2=常に有効, 3=プロフィール設定に従う
             ['key' => 'default_two_factor_method', 'value' => '0'], // デフォルトの認証方法はメール認証
             ['key' => 'two_factor_expire_minutes', 'value' => '5'], // デフォルト: 5分（メール認証）
             ['key' => 'two_factor_resend_interval_seconds', 'value' => '60'], // デフォルト: 60秒

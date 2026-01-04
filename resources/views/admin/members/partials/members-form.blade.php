@@ -410,17 +410,44 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif   
         
         @if($force2fa === $twoFactorUseProfileSettingValue)
+            @php
+                // two_factor_modeが整数値の場合とEnumの場合の両方に対応
+                $currentTwoFactorMode = $member->two_factor_mode ?? $twoFactorMode->value;
+                if ($currentTwoFactorMode instanceof \App\Enums\AuthenticationMode) {
+                    $currentTwoFactorMode = $currentTwoFactorMode->value;
+                }
+                $twoFactorModeValue = old('two_factor_mode', (string)$currentTwoFactorMode);
+                $passkeyGloballyEnabled = in_array(\App\Enums\TwoFactorMethod::PASSKEY->value, array_keys($enabledTwoFactorMethods ?? []));
+                $initialPasskeyEnabled = old('two_factor_passkey_enabled', $member->two_factor_passkey_enabled ?? true);
+                $initialTwoFactorMode = old('two_factor_mode', (string)$currentTwoFactorMode);
+            @endphp
+            
+            <div x-data="{ 
+                passkeyEnabled: {{ $passkeyGloballyEnabled && $initialPasskeyEnabled ? 'true' : 'false' }},
+                twoFactorEnabled: '{{ $initialTwoFactorMode }}' !== '0',
+                init() {
+                    this.$watch('passkeyEnabled', value @php echo '=>'; @endphp {
+                        if (!value) {
+                            const emailRadio = document.querySelector('input[name=\'default_two_factor_method\'][value=\'0\']');
+                            if (emailRadio) {
+                                emailRadio.checked = true;
+                                emailRadio.dispatchEvent(new Event('change', { bubbles: true }));
+                            }
+                        }
+                    });
+                    
+                    const twoFactorModeRadios = document.querySelectorAll('input[name=\'two_factor_mode\']');
+                    twoFactorModeRadios.forEach(radio @php echo '=>'; @endphp {
+                        radio.addEventListener('change', (e) @php echo '=>'; @endphp {
+                            this.twoFactorEnabled = e.target.value !== '0';
+                        });
+                    });
+                }
+            }">
+            
             <!-- 二段階認証有効/無効 -->
             <fieldset>
                 <legend>{{ __('auth.two_factor_authentication') }}</legend>
-                @php
-                    // two_factor_modeが整数値の場合とEnumの場合の両方に対応
-                    $currentTwoFactorMode = $member->two_factor_mode ?? $twoFactorMode->value;
-                    if ($currentTwoFactorMode instanceof \App\Enums\AuthenticationMode) {
-                        $currentTwoFactorMode = $currentTwoFactorMode->value;
-                    }
-                    $twoFactorModeValue = old('two_factor_mode', (string)$currentTwoFactorMode);
-                @endphp
                 <x-form.radio-card-group
                     name="two_factor_mode"
                     :options="$twoFactorModeOptions"
@@ -433,58 +460,95 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </fieldset>
             
             <!-- 二段階認証方法設定 -->
-            <fieldset>
-                <legend>{{ __('auth.two_factor_method.label') }}</legend>
+                <fieldset>
+                    <legend>{{ __('auth.two_factor_method.label') }}</legend>
 
-                <div class="space-y-6">
-                    <div class="space-y-3">
-                        <div class="flex items-center space-x-3">
-                            <div class="flex items-center">
-                                <i class="fas fa-check-circle text-green-600 dark:text-green-400 mr-2"></i>
-                                <span class="text-sm font-medium">{{ __('auth.two_factor_method.options.email') }}</span>
-                            </div>
-                            <span class="text-xs text-gray-500 dark:text-gray-400">{{ __('admin/members/settings/auth.email_always_enabled_note') }}</span>
-                        </div>
-
-                        @php
-                            $passkeyGloballyEnabled = in_array(\App\Enums\TwoFactorMethod::PASSKEY->value, array_keys($enabledTwoFactorMethods ?? []));
-                        @endphp
-                        
-                        @if($passkeyGloballyEnabled)
-                            {{-- 全体設定でパスキーが有効な場合：個別に設定可能 --}}
+                    <div class="space-y-6">
+                        <div class="space-y-3">
                             <div class="flex items-center space-x-3">
+                                <div class="flex items-center">
+                                    <i class="fas fa-check-circle text-green-600 dark:text-green-400 mr-2"></i>
+                                    <span class="text-sm font-medium">{{ __('auth.two_factor_method.options.email') }}</span>
+                                </div>
+                                <span class="text-xs text-gray-500 dark:text-gray-400">{{ __('admin/members/settings/auth.email_always_enabled_note') }}</span>
+                            </div>
+                            
+                            @if($passkeyGloballyEnabled)
+                            {{-- 全体設定でパスキーが有効な場合：個別に設定可能 --}}
+                            <div class="flex items-center space-x-3" :class="{ 'opacity-50 pointer-events-none': !twoFactorEnabled }">
                                 <x-form.toggle
                                     name="two_factor_passkey_enabled"
                                     :label="__('auth.two_factor_method.options.passkey')"
-                                    :checked="old('two_factor_passkey_enabled', $member->two_factor_passkey_enabled ?? true)"
+                                    :checked="$initialPasskeyEnabled"
+                                    xModel="passkeyEnabled"
                                 />
                             </div>
-                        @else
-                            {{-- 全体設定でパスキーが無効な場合：表示のみ --}}
-                            <div class="flex items-center space-x-3">
-                                <div class="flex items-center">
-                                    <i class="fas fa-times-circle text-gray-400 dark:text-gray-600 mr-2"></i>
-                                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                        {{ __('auth.two_factor_method.options.passkey') }}
+                            @else
+                                {{-- 全体設定でパスキーが無効な場合：表示のみ --}}
+                                <div class="flex items-center space-x-3">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-times-circle text-gray-400 dark:text-gray-600 mr-2"></i>
+                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                            {{ __('auth.two_factor_method.options.passkey') }}
+                                        </span>
+                                    </div>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">
+                                        {{ __('admin/members/form.passkey_disabled_globally') }}
                                     </span>
                                 </div>
-                                <span class="text-xs text-gray-500 dark:text-gray-400">
-                                    {{ __('admin/members/form.passkey_disabled_globally') }}
-                                </span>
-                            </div>
-                        @endif
-                    </div>
+                            @endif
+                        </div>
 
-                    <div class="space-y-1">
-                        <p class="text-sm text-gray-600 dark:text-gray-400">
-                            {{ __('admin/members/form.two_factor_method_note') }}
-                            <a href="{{ route('admin.members.settings.auth') }}" class="text-blue-600 dark:text-blue-400 hover:underline">
-                                {{ __('admin/members/form.change_in_global_settings') }}
-                            </a>
-                        </p>
+                        <div class="space-y-1">
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                {{ __('admin/members/form.two_factor_method_note') }}
+                                <a href="{{ route('admin.members.settings.auth') }}" class="text-blue-600 dark:text-blue-400 hover:underline">
+                                    {{ __('admin/members/form.change_in_global_settings') }}
+                                </a>
+                            </p>
+                        </div>
                     </div>
-                </div>
-            </fieldset>
+                </fieldset>
+
+                <!-- デフォルトの認証方法（パスキーが有効な場合のみ表示） -->
+                @if($passkeyGloballyEnabled)
+                    <fieldset>
+                        <legend>{{ __('admin/members/form.default_two_factor_method') }}</legend>
+                        @php
+                            $defaultMethodOptions = [
+                                ['value' => '0', 'label' => __('auth.two_factor_method.options.email')],
+                                ['value' => '1', 'label' => __('auth.two_factor_method.options.passkey')],
+                            ];
+                            $currentDefaultMethod = old('default_two_factor_method', (string)($member->default_two_factor_method ?? $defaultTwoFactorMethod));
+                        @endphp
+                        
+                        <div x-show="!passkeyEnabled" class="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
+                            <p class="text-sm text-blue-800 dark:text-blue-200">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                {{ __('admin/members/form.passkey_disabled_default_email_only') }}
+                            </p>
+                        </div>
+                        
+                        <div :class="{ 'opacity-50 pointer-events-none': !twoFactorEnabled || !passkeyEnabled }">
+                            <x-form.radio-card-group
+                                name="default_two_factor_method"
+                                :options="$defaultMethodOptions"
+                                :value="$currentDefaultMethod"
+                                :columns="2"
+                            />
+                        </div>
+                        
+                        <input type="hidden" x-ref="defaultMethodHidden" name="default_two_factor_method_override" :value="passkeyEnabled ? '' : '0'">
+                        
+                        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                            {{ __('admin/members/form.default_two_factor_method_help') }}
+                        </p>
+                        <x-form.error
+                            :messages="$errors->get('default_two_factor_method')"
+                        />
+                    </fieldset>
+                @endif
+            </div>
         @else
             <fieldset>
                 <p class="description-text">{!! __('admin/members/form.two_factor_global_fixed', ['setting' => $twoFactorModeLabel]) !!}</p>
