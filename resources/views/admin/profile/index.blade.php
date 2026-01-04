@@ -267,8 +267,34 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- 二段階認証設定（メールサーバー設定済みの場合のみ表示） -->
         @if($isMailServerTested && ($force2fa === \App\Enums\AuthenticationMode::UseProfileSetting->value || $currentGlobalTwoFactorMode))
+            @php
+                $member = Auth::guard('member')->user();
+                $passkeyGloballyEnabled = in_array(\App\Enums\TwoFactorMethod::PASSKEY->value, array_keys($enabledTwoFactorMethods ?? []));
+                $initialPasskeyEnabled = old('two_factor_passkey_enabled', $member->two_factor_passkey_enabled ?? true);
+                $initialTwoFactorMode = old('two_factor_mode', (string)($twoFactorMode?->value ?? 0));
+            @endphp
+            
             <section class="transition-colors-unified">
                 <h2>{{ __('auth.two_factor_mode.label') }}</h2>
+                
+            <div x-data="{ 
+                passkeyEnabled: {{ $passkeyGloballyEnabled && $initialPasskeyEnabled ? 'true' : 'false' }},
+                twoFactorMode: '{{ $initialTwoFactorMode }}',
+                get twoFactorEnabled() {
+                    return this.twoFactorMode !== '0';
+                },
+                init() {
+                    this.$watch('passkeyEnabled', value @php echo '=>'; @endphp {
+                        if (!value) {
+                            const emailRadio = document.querySelector('input[name=\'default_two_factor_method\'][value=\'0\']');
+                            if (emailRadio) {
+                                emailRadio.checked = true;
+                                emailRadio.dispatchEvent(new Event('change', { bubbles: true }));
+                            }
+                        }
+                    });
+                }
+            }">
                 
                 @if($force2fa === \App\Enums\AuthenticationMode::UseProfileSetting->value)
                     <fieldset>
@@ -278,6 +304,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             :options="$profileTwoFactorOptions"
                             :value="old('two_factor_mode', (string) ($twoFactorMode?->value ?? 0))"
                             :columns="3"
+                            xModel="twoFactorMode"
                         />
                         <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{!! __('auth.two_factor_help') !!}</p>
                     </fieldset>
@@ -308,19 +335,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             </div>
                             <span class="text-xs text-gray-500 dark:text-gray-400">{{ __('admin/members/settings/auth.email_always_enabled_note') }}</span>
                         </div>
-
-                        @php
-                            $passkeyGloballyEnabled = in_array(\App\Enums\TwoFactorMethod::PASSKEY->value, array_keys($enabledTwoFactorMethods ?? []));
-                            $member = Auth::guard('member')->user();
-                        @endphp
                         
                         @if($passkeyGloballyEnabled)
                             {{-- 全体設定でパスキーが有効な場合：個別に設定可能 --}}
-                            <div class="flex items-center space-x-3">
+                            <div class="flex items-center space-x-3" :class="{ 'opacity-50 pointer-events-none': !twoFactorEnabled }">
                                 <x-form.toggle
                                     name="two_factor_passkey_enabled"
                                     :label="__('auth.two_factor_method.options.passkey')"
-                                    :checked="old('two_factor_passkey_enabled', $member->two_factor_passkey_enabled ?? true)"
+                                    :checked="$initialPasskeyEnabled"
+                                    xModel="passkeyEnabled"
                                 />
                             </div>
                         @else
@@ -365,12 +388,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         ];
                         $currentDefaultMethod = old('default_two_factor_method', (string)($member->default_two_factor_method ?? $defaultTwoFactorMethod));
                     @endphp
-                    <x-form.radio-card-group
-                        name="default_two_factor_method"
-                        :options="$defaultMethodOptions"
-                        :value="$currentDefaultMethod"
-                        :columns="2"
-                    />
+                    
+                    <div x-show="!passkeyEnabled" class="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
+                        <p class="text-sm text-blue-800 dark:text-blue-200">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            {{ __('admin/members/form.passkey_disabled_default_email_only') }}
+                        </p>
+                    </div>
+                    
+                    <div :class="{ 'opacity-50 pointer-events-none': !twoFactorEnabled || !passkeyEnabled }">
+                        <x-form.radio-card-group
+                            name="default_two_factor_method"
+                            :options="$defaultMethodOptions"
+                            :value="$currentDefaultMethod"
+                            :columns="2"
+                        />
+                    </div>
+                    
                     <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
                         {{ __('admin/members/form.default_two_factor_method_help') }}
                     </p>
@@ -380,6 +414,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </fieldset>
             @endif
             
+            </div>
         @endif
         </section>
     </form>

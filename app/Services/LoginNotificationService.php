@@ -192,7 +192,9 @@ class LoginNotificationService
     protected function shouldSendBasedOnProfile(Model $user, string $ip, string $ua): bool
     {
         $profileValue = $user->login_notification_mode ?? 0;
-        $profileMode = $this->mapProfileValueToEnum($profileValue);
+        // Enumオブジェクトの場合は値を取得、整数の場合はそのまま使用
+        $profileValueInt = $profileValue instanceof AuthenticationMode ? $profileValue->value : $profileValue;
+        $profileMode = $this->mapProfileValueToEnum($profileValueInt);
         
         Log::info('Profile-based notification decision', [
             'user_email' => $user->email,
