@@ -4,9 +4,8 @@ namespace App\Http\Requests\Admin\Profile;
 
 use App\Enums\AppearanceMode;
 use App\Enums\Locale;
-use App\Enums\LoginNotificationMode;
+use App\Enums\AuthenticationMode;
 use App\Enums\TwoFactorMethod;
-use App\Enums\TwoFactorMode;
 use App\Models\MemberSetting;
 use App\Services\PasswordValidationService;
 use Illuminate\Foundation\Http\FormRequest;
@@ -59,8 +58,8 @@ class ProfileUpdateRequest extends FormRequest
             'locale' => 'nullable|string|in:' . implode(',', Locale::values()),
             'password' => $passwordRules,
             'appearance' => ['nullable', new Enum(AppearanceMode::class)],
-            'login_notification_mode' => ['nullable', new Enum(LoginNotificationMode::class)],
-            'two_factor_mode' => ['nullable', new Enum(TwoFactorMode::class)],
+            'login_notification_mode' => ['nullable', new Enum(AuthenticationMode::class)],
+            'two_factor_mode' => ['nullable', new Enum(AuthenticationMode::class)],
             'two_factor_method' => 'nullable|integer',
         ];
 
@@ -75,11 +74,11 @@ class ProfileUpdateRequest extends FormRequest
         if ($passkeyEnabledForValidation) {
             $enabledTwoFactorMethods[] = TwoFactorMethod::PASSKEY->value;
         }
-        $force2faValue = (int) MemberSetting::getValue('force_2fa', TwoFactorMode::UseProfileSetting->value);
+        $force2faValue = (int) MemberSetting::getValue('force_2fa', AuthenticationMode::UseProfileSetting->value);
         
         // フィールドが表示・編集可能な場合のみ認証方法選択をバリデーション
         // UseProfileSettingの場合のみフィールドが編集可能（Alwaysの場合は表示のみまたは非表示）
-        if ($force2faValue === TwoFactorMode::UseProfileSetting->value && !empty($enabledTwoFactorMethods)) {
+        if ($force2faValue === AuthenticationMode::UseProfileSetting->value && !empty($enabledTwoFactorMethods)) {
             // 有効な認証方法が1つだけの場合はその方法を強制
             if (count($enabledTwoFactorMethods) === 1) {
                 $rules['two_factor_method'] = 'required|integer|in:' . $enabledTwoFactorMethods[0];

@@ -25,8 +25,7 @@ namespace App\Http\Controllers\Admin\Members;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\BaseSetting;
 use App\Models\SecuritySetting;
-use App\Enums\TwoFactorMode;
-use App\Enums\LoginNotificationMode;
+use App\Enums\AuthenticationMode;
 use App\Contracts\Repositories\MemberSettingRepositoryInterface;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -95,7 +94,7 @@ class AdminMemberSettingsController extends AdminLoggedInController
             ->values()
             ->toArray();
 
-        $loginNotification = (int) $this->memberSettingRepository->get('login_notification_mode', LoginNotificationMode::UseProfileSetting->value);
+        $loginNotification = (int) $this->memberSettingRepository->get('login_notification_mode', AuthenticationMode::UseProfileSetting->value);
         $loginNotificationGlobalOptions = collect(config('admin.global_login_notification_mail_mode'))
             ->map(fn ($value) => [
                 'value' => (string) $value,
@@ -104,7 +103,7 @@ class AdminMemberSettingsController extends AdminLoggedInController
             ->values()
             ->toArray();
 
-        $force2fa = (int) $this->memberSettingRepository->get('force_2fa', TwoFactorMode::Disabled->value);
+        $force2fa = (int) $this->memberSettingRepository->get('force_2fa', AuthenticationMode::Disabled->value);
         
         if (old('force_2fa') !== null) {
             $force2fa = (int) old('force_2fa');

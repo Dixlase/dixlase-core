@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use App\Enums\TwoFactorMethod;
-use App\Enums\TwoFactorMode;
+use App\Enums\AuthenticationMode;
 use App\Models\Member;
 use App\Models\Member2faToken;
 use App\Models\MemberSetting;
@@ -149,7 +149,7 @@ class TwoFactorTraitTest extends TestCase
 
         $result = $this->service->requiresTwoFactor(
             $member,
-            TwoFactorMode::Disabled->value,
+            AuthenticationMode::Disabled->value,
             [TwoFactorMethod::EMAIL->value]
         );
 
@@ -165,7 +165,7 @@ class TwoFactorTraitTest extends TestCase
 
         $result = $this->service->requiresTwoFactor(
             $member,
-            TwoFactorMode::Always->value,
+            AuthenticationMode::Always->value,
             [TwoFactorMethod::EMAIL->value]
         );
 
@@ -181,7 +181,7 @@ class TwoFactorTraitTest extends TestCase
 
         $result = $this->service->requiresTwoFactor(
             $member,
-            TwoFactorMode::Always->value,
+            AuthenticationMode::Always->value,
             []
         );
 

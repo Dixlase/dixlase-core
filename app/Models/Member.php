@@ -28,7 +28,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Fortify\TwoFactorAuthenticatable;
-use App\Enums\TwoFactorMode;
+use App\Enums\AuthenticationMode;
 use App\Enums\AppearanceMode;
 use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
@@ -50,7 +50,7 @@ class Member extends Authenticatable implements MustVerifyEmail
         'password' => 'hashed',
         'role' => MemberRole::class,
         'status' => MemberStatus::class,
-        'two_factor_mode' => TwoFactorMode::class,
+        'two_factor_mode' => AuthenticationMode::class,
         'appearance' => AppearanceMode::class,
         'locale' => Locale::class,
     ];

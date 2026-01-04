@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Log;
 use App\Traits\TwoFactorTrait;
 use App\Models\MemberSetting;
 use App\Enums\TwoFactorMethod;
-use App\Enums\TwoFactorMode;
+use App\Enums\AuthenticationMode;
 
 class TwoFactorHelper
 {
@@ -98,60 +98,59 @@ class TwoFactorHelper
     }
 
     /**
-     * システム設定から二段階認証設定を取得
+     * 二段階認証設定を取得（メンバーまたはユーザー）
      *
+     * @param string|null $settingModelClass 設定モデルクラス名（null=MemberSetting）
      * @return array
      */
-    public function getSystemTwoFactorSettings(): array
+    public function getTwoFactorSettings(?string $settingModelClass = null): array
     {
+        $settingModelClass = $settingModelClass ?? \App\Models\MemberSetting::class;
+        
         return [
-            'force_2fa' => (int) \App\Models\MemberSetting::getValue('force_2fa', 0),
-            'enabled_methods' => $this->getEnabledTwoFactorMethods(),
-            'default_method' => (int) \App\Models\MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value),
+            'force_2fa' => (int) $settingModelClass::getValue('force_2fa', '0'),
+            'enabled_methods' => $this->getEnabledTwoFactorMethods($settingModelClass),
+            'default_method' => (int) $settingModelClass::getValue('default_two_factor_method', (string)TwoFactorMethod::EMAIL->value),
         ];
     }
 
     /**
      * 有効な二段階認証方法を取得
-     * メール認証は常に有効、Passkeyはenabled_2fa_passkey設定で制御
      *
+     * @param string|null $settingModelClass 設定モデルクラス名（null=MemberSetting）
      * @return array
      */
-    public function getEnabledTwoFactorMethods(): array
+    public function getEnabledTwoFactorMethods(?string $settingModelClass = null): array
     {
-        // メール認証は常に有効
-        $enabledMethods = [TwoFactorMethod::EMAIL->value];
+        $settingModelClass = $settingModelClass ?? \App\Models\MemberSetting::class;
+        $methods = [];
         
-        // Passkeyが有効な場合は追加
-        $passkeyEnabled = \App\Models\MemberSetting::getValue('enabled_2fa_passkey', '0');
-        if ($passkeyEnabled === '1') {
-            $enabledMethods[] = TwoFactorMethod::PASSKEY->value;
+        // メール認証
+        if ($settingModelClass::getValue('enabled_2fa_email', '1') === '1') {
+            $methods[] = TwoFactorMethod::EMAIL->value;
         }
         
-        return $enabledMethods;
-    }
-
-    /**
-     * ユーザーの二段階認証設定を取得
-     *
-     * @param mixed $user ユーザーモデル
-     * @return array 設定配列
-     */
-    public function getUserTwoFactorSettings($user): array
-    {
-        return [
-            'mode' => $user->two_factor_mode,
-            'method' => $user->two_factor_method,
-        ];
+        // Passkey認証
+        if ($settingModelClass::getValue('enabled_2fa_passkey', '0') === '1') {
+            $methods[] = TwoFactorMethod::PASSKEY->value;
+        }
+        
+        // 少なくとも1つの方法は有効にする（デフォルトはメール）
+        if (empty($methods)) {
+            $methods[] = TwoFactorMethod::EMAIL->value;
+        }
+        
+        return $methods;
     }
 
     /**
      * 二段階認証が有効かどうかを判定
      *
      * @param mixed $user ユーザーモデル
+     * @param string|null $settingModelClass 設定モデルクラス名（null=MemberSetting）
      * @return bool
      */
-    public function isTwoFactorEnabled($user): bool
+    public function isTwoFactorEnabled($user, ?string $settingModelClass = null): bool
     {
         // メール設定が未完了の場合は二段階認証を無効化
         if (!$this->isMailConfigured()) {
@@ -159,26 +158,26 @@ class TwoFactorHelper
             return false;
         }
         
-        $systemSettings = $this->getSystemTwoFactorSettings();
+        $systemSettings = $this->getTwoFactorSettings($settingModelClass);
         $force2fa = $systemSettings['force_2fa'] ?? 0;
         
-        // 全体設定: 0=Disabled（無効）, 1=Always（常に有効）, 2=UseProfileSetting（プロフィール設定に従う）
+        // 全体設定: 0=Disabled（無効）, 1=DifferentDevice（異なるデバイス）, 2=Always（常に有効）, 3=UseProfileSetting（プロフィール設定に従う）
         
         // 無効の場合
-        if ($force2fa === TwoFactorMode::Disabled->value) {
+        if ($force2fa === AuthenticationMode::Disabled->value) {
             return false;
         }
         
         // 全体設定で常に有効の場合
-        if ($force2fa === TwoFactorMode::Always->value) {
+        if ($force2fa === AuthenticationMode::Always->value) {
             return true;
         }
         
         // プロフィール設定を使用する場合（force_2fa = UseProfileSetting）
         $userMode = $user->two_factor_mode;
         
-        // TwoFactorMode Enumの場合
-        if ($userMode instanceof \App\Enums\TwoFactorMode) {
+        // AuthenticationMode Enumの場合
+        if ($userMode instanceof \App\Enums\AuthenticationMode) {
             return $userMode->value > 0; // Disabled(0)以外は有効
         }
         
@@ -190,14 +189,16 @@ class TwoFactorHelper
      * 使用する認証方法を決定
      *
      * @param mixed $user ユーザーモデル
+     * @param string|null $settingModelClass 設定モデルクラス名（null=MemberSetting）
      * @return int 認証方法
      */
-    public function getEffectiveAuthMethod($user): int
+    public function getEffectiveAuthMethod($user, ?string $settingModelClass = null): int
     {
+        $settingModelClass = $settingModelClass ?? \App\Models\MemberSetting::class;
         $userMethod = $user->two_factor_method ?? null;
-        $defaultMethod = (int) \App\Models\MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value);
-        $enabledMethods = $this->getEnabledTwoFactorMethods();
-        $globalTwoFactorMode = (int) \App\Models\MemberSetting::getValue('force_2fa', TwoFactorMode::Disabled->value);
+        $defaultMethod = (int) $settingModelClass::getValue('default_two_factor_method', (string)TwoFactorMethod::EMAIL->value);
+        $enabledMethods = $this->getEnabledTwoFactorMethods($settingModelClass);
+        $globalTwoFactorMode = (int) $settingModelClass::getValue('force_2fa', (string)AuthenticationMode::Disabled->value);
 
         Log::info('[2FA] getEffectiveAuthMethod', [
             'user_id' => $user->id,
@@ -208,7 +209,7 @@ class TwoFactorHelper
         ]);
 
         // グローバル設定が「プロフィール設定に従う」(3)以外の場合は、デフォルト認証方法を強制
-        if ($globalTwoFactorMode !== TwoFactorMode::UseProfileSetting->value) {
+        if ($globalTwoFactorMode !== AuthenticationMode::UseProfileSetting->value) {
             if (in_array($defaultMethod, $enabledMethods, true)) {
                 Log::info('[2FA] Using global default method (forced)', ['method' => $defaultMethod, 'global_mode' => $globalTwoFactorMode]);
                 return $defaultMethod;

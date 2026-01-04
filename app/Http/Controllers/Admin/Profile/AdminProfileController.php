@@ -26,8 +26,7 @@ use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Profile\ProfileUpdateRequest;
 
 use App\Enums\AppearanceMode;
-use App\Enums\LoginNotificationMode;
-use App\Enums\TwoFactorMode;
+use App\Enums\AuthenticationMode;
 use App\Enums\TwoFactorMethod;
 use App\Rules\NotPwnedPassword;
 use App\Enums\Locale;
@@ -139,12 +138,12 @@ class AdminProfileController extends AdminLoggedInController
         // ログイン通知設定の追加
         $loginNoticeGlobal = (int) MemberSetting::getValue(
             'login_notification_mode',
-            LoginNotificationMode::UseProfileSetting->value
+            AuthenticationMode::UseProfileSetting->value
         );
         $loginNotificationMode = Auth::guard('member')->user()->login_notification_mode;
 
-        $loginNotificationOptions = collect(LoginNotificationMode::forProfile())
-            ->mapWithKeys(fn($case) => [$case->value => $case->label()])
+        $loginNotificationOptions = collect(AuthenticationMode::forProfile())
+            ->mapWithKeys(fn($case) => [$case->value => $case->notificationLabel()])
             ->toArray();
 
         $this->viewParams['loginNoticeGlobal'] = $loginNoticeGlobal;
@@ -154,7 +153,7 @@ class AdminProfileController extends AdminLoggedInController
         // 二段階認証設定の追加
         $force2fa = (int) MemberSetting::getValue(
             'force_2fa',
-            TwoFactorMode::UseProfileSetting->value
+            AuthenticationMode::UseProfileSetting->value
         );
         $twoFactorMode = Auth::guard('member')->user()->two_factor_mode;
 
@@ -171,11 +170,11 @@ class AdminProfileController extends AdminLoggedInController
 
         // プロフィール用の二段階認証オプション
         // 全体設定が「プロフィール設定を反映」の場合は、無効/異なる端末時のみ/常に有効から選択可能
-        if ($force2fa === TwoFactorMode::UseProfileSetting->value) {
+        if ($force2fa === AuthenticationMode::UseProfileSetting->value) {
             $profileTwoFactorOptions = [
-                TwoFactorMode::Disabled->value => __('common.two_factor_mode.options.' . TwoFactorMode::Disabled->value), // 無効
-                TwoFactorMode::DifferentDevice->value => __('common.two_factor_mode.options.' . TwoFactorMode::DifferentDevice->value), // 異なるデバイス・IP時のみ
-                TwoFactorMode::Always->value => __('common.two_factor_mode.options.' . TwoFactorMode::Always->value), // 常に有効
+                AuthenticationMode::Disabled->value => __('auth.authentication_mode.two_factor.disabled'),
+                AuthenticationMode::DifferentDevice->value => __('auth.authentication_mode.two_factor.different_device'),
+                AuthenticationMode::Always->value => __('auth.authentication_mode.two_factor.always'),
             ];
         } else {
             // 従来通り（無効、有効のみ）
@@ -217,14 +216,14 @@ class AdminProfileController extends AdminLoggedInController
 
         // 認証方法選択を表示するかどうか
         // 二段階認証が有効で、かつ複数の認証方法がある場合のみ選択可能
-        $is2FAEnabled = ($force2fa === TwoFactorMode::Always->value) || 
-                        ($force2fa === TwoFactorMode::UseProfileSetting->value && $twoFactorMode !== TwoFactorMode::Disabled->value);
+        $is2FAEnabled = ($force2fa === AuthenticationMode::Always->value) || 
+                        ($force2fa === AuthenticationMode::UseProfileSetting->value && $twoFactorMode !== AuthenticationMode::Disabled->value);
         $showMethodSelection = $is2FAEnabled && count($availableMethodOptions) > 1;
         
         // 全体設定が Always の場合は現在の設定を表示用として取得
         $currentGlobalTwoFactorMode = null;
-        if ($force2fa === TwoFactorMode::Always->value) {
-            $currentGlobalTwoFactorMode = TwoFactorMode::from($force2fa);
+        if ($force2fa === AuthenticationMode::Always->value) {
+            $currentGlobalTwoFactorMode = AuthenticationMode::from($force2fa);
         }
 
         $this->viewParams['force2fa'] = $force2fa;
@@ -325,9 +324,9 @@ class AdminProfileController extends AdminLoggedInController
             $member->password = Hash::make($validated['password']);
         }
 
-        // login_notification_mode は全体設定が 0 のときだけ上書き
-        $globalLogin = (int) MemberSetting::getValue('login_notification_mode', LoginNotificationMode::UseProfileSetting->value);
-        if ($globalLogin === LoginNotificationMode::UseProfileSetting->value && array_key_exists('login_notification_mode', $validated)) {
+        // login_notification_mode は全体設定が UseProfileSetting のときだけ上書き
+        $globalLogin = (int) MemberSetting::getValue('login_notification_mode', AuthenticationMode::UseProfileSetting->value);
+        if ($globalLogin === AuthenticationMode::UseProfileSetting->value && array_key_exists('login_notification_mode', $validated)) {
             $member->login_notification_mode = (int) $validated['login_notification_mode'];
         }
 
@@ -335,13 +334,13 @@ class AdminProfileController extends AdminLoggedInController
         $oldTwoFactorMode = is_int($member->two_factor_mode) ? $member->two_factor_mode : $member->two_factor_mode->value;
         
         // two_factor_mode は全体設定が UseProfileSetting のときだけ上書き
-        $force2fa = (int) MemberSetting::getValue('force_2fa', TwoFactorMode::UseProfileSetting->value);
-        if ($force2fa === TwoFactorMode::UseProfileSetting->value && array_key_exists('two_factor_mode', $validated)) {
+        $force2fa = (int) MemberSetting::getValue('force_2fa', AuthenticationMode::UseProfileSetting->value);
+        if ($force2fa === AuthenticationMode::UseProfileSetting->value && array_key_exists('two_factor_mode', $validated)) {
             $member->two_factor_mode = (int) $validated['two_factor_mode'];
         }
 
         // two_factor_method の処理
-        if (in_array($force2fa, [TwoFactorMode::UseProfileSetting->value, TwoFactorMode::Always->value])) {
+        if (in_array($force2fa, [AuthenticationMode::UseProfileSetting->value, AuthenticationMode::Always->value])) {
             // 有効な認証方法を再度取得
             $passkeyEnabledForSave = MemberSetting::getValue('enabled_2fa_passkey', '0') === '1';
             $enabledTwoFactorMethods = [TwoFactorMethod::EMAIL->value];
@@ -373,25 +372,25 @@ class AdminProfileController extends AdminLoggedInController
         
         \Log::info('[Profile] Recovery code generation check', [
             'force2fa' => $force2fa,
-            'force2fa_expected' => TwoFactorMode::UseProfileSetting->value,
+            'force2fa_expected' => AuthenticationMode::UseProfileSetting->value,
             'has_two_factor_mode_in_validated' => array_key_exists('two_factor_mode', $validated),
             'oldTwoFactorMode' => $oldTwoFactorMode,
             'newTwoFactorMode' => isset($validated['two_factor_mode']) ? (int) $validated['two_factor_mode'] : null,
         ]);
         
-        if ($force2fa === TwoFactorMode::UseProfileSetting->value && array_key_exists('two_factor_mode', $validated)) {
+        if ($force2fa === AuthenticationMode::UseProfileSetting->value && array_key_exists('two_factor_mode', $validated)) {
             $newTwoFactorMode = (int) $validated['two_factor_mode'];
             
             \Log::info('[Profile] Inside 2FA check block', [
                 'oldTwoFactorMode' => $oldTwoFactorMode,
                 'newTwoFactorMode' => $newTwoFactorMode,
-                'Disabled_value' => TwoFactorMode::Disabled->value,
-                'Always_value' => TwoFactorMode::Always->value,
+                'Disabled_value' => AuthenticationMode::Disabled->value,
+                'Always_value' => AuthenticationMode::Always->value,
             ]);
             
             // 無効→有効に変更された場合
-            if ($oldTwoFactorMode === TwoFactorMode::Disabled->value && 
-                $newTwoFactorMode === TwoFactorMode::Always->value) {
+            if ($oldTwoFactorMode === AuthenticationMode::Disabled->value && 
+                $newTwoFactorMode === AuthenticationMode::Always->value) {
                 
                 $recoveryCodeService = app(\App\Services\RecoveryCodeService::class);
                 
