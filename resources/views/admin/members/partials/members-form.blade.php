@@ -376,7 +376,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <legend>{{ __('common.login_notification') }}</legend>
                 @php
                     // login_notification_modeが整数値の場合とEnumの場合の両方に対応
-                    $currentLoginNotification = $member->login_notification_mode ?? 0;
+                    // 新規作成時は「常に有効」をデフォルトに
+                    $currentLoginNotification = $member->login_notification_mode ?? \App\Enums\AuthenticationMode::Always->value;
                     if ($currentLoginNotification instanceof \App\Enums\AuthenticationMode) {
                         $currentLoginNotification = $currentLoginNotification->value;
                     }
@@ -412,7 +413,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @if($force2fa === $twoFactorUseProfileSettingValue)
             @php
                 // two_factor_modeが整数値の場合とEnumの場合の両方に対応
-                $currentTwoFactorMode = $member->two_factor_mode ?? $twoFactorMode->value;
+                // 新規作成時は「常に有効」をデフォルトに
+                $currentTwoFactorMode = $member->two_factor_mode ?? \App\Enums\AuthenticationMode::Always->value;
                 if ($currentTwoFactorMode instanceof \App\Enums\AuthenticationMode) {
                     $currentTwoFactorMode = $currentTwoFactorMode->value;
                 }
@@ -424,7 +426,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             
             <div x-data="{ 
                 passkeyEnabled: {{ $passkeyGloballyEnabled && $initialPasskeyEnabled ? 'true' : 'false' }},
-                twoFactorEnabled: '{{ $initialTwoFactorMode }}' !== '0',
+                twoFactorMode: '{{ $initialTwoFactorMode }}',
+                get twoFactorEnabled() {
+                    return this.twoFactorMode !== '0';
+                },
                 init() {
                     this.$watch('passkeyEnabled', value @php echo '=>'; @endphp {
                         if (!value) {
@@ -434,13 +439,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 emailRadio.dispatchEvent(new Event('change', { bubbles: true }));
                             }
                         }
-                    });
-                    
-                    const twoFactorModeRadios = document.querySelectorAll('input[name=\'two_factor_mode\']');
-                    twoFactorModeRadios.forEach(radio @php echo '=>'; @endphp {
-                        radio.addEventListener('change', (e) @php echo '=>'; @endphp {
-                            this.twoFactorEnabled = e.target.value !== '0';
-                        });
                     });
                 }
             }">
@@ -453,6 +451,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :options="$twoFactorModeOptions"
                     :value="$twoFactorModeValue"
                     :columns="3"
+                    xModel="twoFactorMode"
                 />
                 <x-form.error
                     :messages="$errors->get('two_factor_mode')"
