@@ -60,31 +60,13 @@ class ProfileUpdateRequest extends FormRequest
             'appearance' => ['nullable', new Enum(AppearanceMode::class)],
             'login_notification_mode' => ['nullable', new Enum(AuthenticationMode::class)],
             'two_factor_mode' => ['nullable', new Enum(AuthenticationMode::class)],
-            'two_factor_method' => 'nullable|integer',
+            'two_factor_passkey_enabled' => 'nullable|boolean',
+            'default_two_factor_method' => 'nullable|integer|in:0,1',
         ];
 
         // メールアドレスが変更された場合は確認フィールドを必須に
         if ($this->input('email') !== $member->email) {
             $rules['email_confirmation'] = 'required|email|same:email';
-        }
-
-        // 二段階認証方法のバリデーション（有効な方法の中から選択されているかチェック）
-        $passkeyEnabledForValidation = MemberSetting::getValue('enabled_2fa_passkey', '0') === '1';
-        $enabledTwoFactorMethods = [TwoFactorMethod::EMAIL->value];
-        if ($passkeyEnabledForValidation) {
-            $enabledTwoFactorMethods[] = TwoFactorMethod::PASSKEY->value;
-        }
-        $force2faValue = (int) MemberSetting::getValue('force_2fa', AuthenticationMode::UseProfileSetting->value);
-        
-        // フィールドが表示・編集可能な場合のみ認証方法選択をバリデーション
-        // UseProfileSettingの場合のみフィールドが編集可能（Alwaysの場合は表示のみまたは非表示）
-        if ($force2faValue === AuthenticationMode::UseProfileSetting->value && !empty($enabledTwoFactorMethods)) {
-            // 有効な認証方法が1つだけの場合はその方法を強制
-            if (count($enabledTwoFactorMethods) === 1) {
-                $rules['two_factor_method'] = 'required|integer|in:' . $enabledTwoFactorMethods[0];
-            } else {
-                $rules['two_factor_method'] = 'required|integer|in:' . implode(',', $enabledTwoFactorMethods);
-            }
         }
 
         return $rules;

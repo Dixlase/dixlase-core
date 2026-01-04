@@ -54,4 +54,7 @@ return [
     'two_factor_method_note' => 'Global authentication method settings can be changed in',
     'change_in_global_settings' => 'Member Global Settings',
     'passkey_disabled_globally' => 'Disabled in global settings',
+    'default_two_factor_method' => 'Default Authentication Method',
+    'default_two_factor_method_help' => 'Select the authentication method to be displayed first during two-factor authentication.',
+    'passkey_disabled_default_email_only' => 'Passkey authentication is disabled, so the default authentication method is automatically set to email authentication.',
 ];
