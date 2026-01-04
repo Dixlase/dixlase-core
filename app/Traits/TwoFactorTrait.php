@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Member2faToken;
-use App\Enums\TwoFactorMode;
+use App\Enums\AuthenticationMode;
 use App\Enums\TwoFactorMethod;
 use App\Traits\DeviceDetectionTrait;
 
@@ -112,7 +112,7 @@ trait TwoFactorTrait
 
         // 現在の設定に基づいて2FAが必要かチェック
         $modeValue = $this->getEffectiveTwoFactorMode($user, $forceSetting);
-        $mode = TwoFactorMode::tryFrom($modeValue);
+        $mode = AuthenticationMode::tryFrom($modeValue);
 
         // Passkeyが有効な場合は常に2FAを要求
         if (in_array(TwoFactorMethod::PASSKEY->value, $enabledMethods)) {
@@ -120,7 +120,7 @@ trait TwoFactorTrait
         }
 
         return match ($mode) {
-            TwoFactorMode::Always => true,
+            AuthenticationMode::Always => true,
             default => false,
         };
     }
@@ -135,21 +135,21 @@ trait TwoFactorTrait
     protected function getEffectiveTwoFactorMode($user, int $forceSetting): int
     {
         // システム設定で2FAが無効化されている場合
-        if ($forceSetting === TwoFactorMode::Disabled->value) {
-            return TwoFactorMode::Disabled->value;
+        if ($forceSetting === AuthenticationMode::Disabled->value) {
+            return AuthenticationMode::Disabled->value;
         }
 
         // システム設定で強制されている場合
-        if ($forceSetting === TwoFactorMode::Always->value) {
-            return TwoFactorMode::Always->value;
+        if ($forceSetting === AuthenticationMode::Always->value) {
+            return AuthenticationMode::Always->value;
         }
 
         // プロフィール設定を使用する場合
-        if ($forceSetting === TwoFactorMode::UseProfileSetting->value) {
+        if ($forceSetting === AuthenticationMode::UseProfileSetting->value) {
             return $this->checkMemberSetting($user);
         }
 
-        return TwoFactorMode::Disabled->value;
+        return AuthenticationMode::Disabled->value;
     }
 
     /**
@@ -164,12 +164,12 @@ trait TwoFactorTrait
 
         // null の場合はデフォルトで無効
         if ($mode === null) {
-            return TwoFactorMode::Disabled->value;
+            return AuthenticationMode::Disabled->value;
         }
 
         return match ($mode) {
-            TwoFactorMode::Always => TwoFactorMode::Always->value,
-            default => TwoFactorMode::Disabled->value,
+            AuthenticationMode::Always => AuthenticationMode::Always->value,
+            default => AuthenticationMode::Disabled->value,
         };
     }
 

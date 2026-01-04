@@ -5,8 +5,7 @@ namespace App\Http\Requests\Admin\Settings\Members;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Enum;
-use App\Enums\LoginNotificationMode;
-use App\Enums\TwoFactorMode;
+use App\Enums\AuthenticationMode;
 use App\Enums\TwoFactorMethod;
 use App\Models\BaseSetting;
 
@@ -90,13 +89,13 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
         ];
 
         $authenticationRules = [
-            'login_notification_mode' => ['required', new Enum(LoginNotificationMode::class)],
+            'login_notification_mode' => ['required', new Enum(AuthenticationMode::class)],
             'login_attempt_limit_enabled' => 'required|boolean',
             'login_attempt_max_attempts' => 'required|integer|min:1|max:100',
             'login_attempt_time_window' => 'required|integer|min:1|max:1440', // 最大24時間
             'login_attempt_lockout_duration' => 'required|integer|min:1|max:10080', // 最大1週間
             'lockout_notification_enabled' => 'required|boolean',
-            'force_2fa' => ['required', new Enum(TwoFactorMode::class)],
+            'force_2fa' => ['required', new Enum(AuthenticationMode::class)],
             'two_factor_expire_minutes' => 'required|integer|min:1|max:60', // 1-60分（メール認証）
             'two_factor_resend_interval_seconds' => 'required|integer|min:60|max:600', // 60-600秒（1-10分）
             'enabled_2fa_passkey' => 'nullable|boolean',

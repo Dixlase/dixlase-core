@@ -22,7 +22,7 @@
 
 namespace App\Console\Commands;
 
-use App\Enums\TwoFactorMode;
+use App\Enums\AuthenticationMode;
 use App\Models\Member;
 use App\Services\AuditService;
 use Illuminate\Console\Command;
@@ -104,7 +104,7 @@ class TwoFactorRecoveryCommand extends Command
 
         // Disable 2FA
         $member->update([
-            'two_factor_mode' => TwoFactorMode::DISABLED,
+            'two_factor_mode' => AuthenticationMode::Disabled->value,
             'two_factor_recovery_codes' => null,
         ]);
 
@@ -150,7 +150,7 @@ class TwoFactorRecoveryCommand extends Command
         }
 
         // Check if 2FA is enabled
-        if ($member->two_factor_mode === TwoFactorMode::DISABLED || $member->two_factor_mode === null) {
+        if ($member->two_factor_mode === AuthenticationMode::Disabled->value || $member->two_factor_mode === null) {
             $this->error(__('admin/command.two_factor_recovery.2fa_not_enabled', ['name' => ($member->display_name ?? $member->account_name)]));
             return self::FAILURE;
         }
@@ -231,7 +231,7 @@ class TwoFactorRecoveryCommand extends Command
     protected function listMembers(): int
     {
         $members = Member::whereNotNull('two_factor_mode')
-            ->where('two_factor_mode', '!=', TwoFactorMode::DISABLED)
+            ->where('two_factor_mode', '!=', AuthenticationMode::Disabled->value)
             ->get();
 
         if ($members->isEmpty()) {
@@ -350,10 +350,10 @@ class TwoFactorRecoveryCommand extends Command
 
         $totalMembers = Member::count();
         $membersWithTwoFactor = Member::whereNotNull('two_factor_mode')
-            ->where('two_factor_mode', '!=', TwoFactorMode::DISABLED)
+            ->where('two_factor_mode', '!=', AuthenticationMode::Disabled->value)
             ->count();
         $membersWithoutRecoveryCodes = Member::whereNotNull('two_factor_mode')
-            ->where('two_factor_mode', '!=', TwoFactorMode::DISABLED)
+            ->where('two_factor_mode', '!=', AuthenticationMode::Disabled->value)
             ->whereNull('two_factor_recovery_codes')
             ->count();
 

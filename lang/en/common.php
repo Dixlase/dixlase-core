@@ -262,68 +262,13 @@ return [
     'error_log' => 'Error Log',
     'login_log' => 'Login Log',
 
-    // ===========================================
-    // Two-Factor Authentication (Site-wide common only)
-    // ===========================================
-    'two_factor_authentication' => 'Two-Factor Authentication',
-    'two_factor_settings' => 'Two-Factor Authentication Settings',
-    'two_factor_global_setting_fixed' => 'This setting is fixed by global settings.',
-    'two_factor_method_global_setting_fixed' => 'This authentication method is fixed by global settings.',
-    
-    // Two-Factor Authentication Mode (Numbered keys)
-    'two_factor_mode' => [
-        'label' => 'Two-Factor Authentication Settings',
-        'options' => [
-            0 => 'Disabled (No 2FA)',
-            1 => 'Only for Different Device/IP',
-            2 => 'Always Enabled (Required for all members)',
-            3 => 'Follow Member Profile Settings',
-        ]
-    ],
-    
-    // Two-Factor Authentication Method (Numbered keys)
-    'two_factor_method' => [
-        'label' => 'Two-Factor Authentication Method',
-        'numbered_options' => [
-            0 => 'Email Authentication',
-            1 => 'Passkey (Biometric)',
-        ],
-        'options' => [
-            'email' => 'Email Authentication',
-            'passkey' => 'Passkey Authentication',
-        ]
-    ],
-    
-    // Two-Factor Authentication Help Text
-    'two_factor_help' => 'When two-factor authentication is enabled, additional authentication will be required at login. Even if your password is compromised, it prevents unauthorized access by third parties and significantly improves account security.',
-    'two_factor_method_help' => [
-        'single' => 'The authentication method is fixed by :account_type global settings.',
-        'multiple' => 'You can choose from available authentication methods set by :account_type global settings.',
-    ],
-    
-    'save_confirmation' => 'Save Confirmation',
-    'update_confirmation' => 'Update Confirmation',
-    'create_confirmation' => 'Create Confirmation',
-    'delete_confirmation' => 'Delete Confirmation',
-
-
     // Save Confirmation Dialog (Detailed)
     'save_confirmation_title' => 'Save Confirmation',
     'save_confirmation_message' => 'Do you want to save the changes?',
     'update_confirmation_title' => 'Update Confirmation',
     'update_confirmation_message' => 'Do you want to update the settings with this content?',
 
-    // Login notification
     'login_notification' => 'Login Notification',
-    'login_notification_mode' => [
-        'label' => 'Login Notification Mode',
-        'options' => [
-            0 => 'Disabled',
-            1 => 'New devices only',
-            2 => 'Always notify',
-            3 => 'Follow profile of member settings',
-        ],
-    ],
 
     // Global Setting Control Messages (Account Type Support)
     'global_setting_controlled' => [

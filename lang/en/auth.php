@@ -133,5 +133,71 @@ return [
 
     // Other
     'password_incorrect' => 'The password is incorrect.',
+
+    // ===========================================
+    // Authentication Mode (Common for 2FA and Notifications)
+    // ===========================================
+    'authentication_mode' => [
+        'two_factor' => [
+            'disabled' => 'Disabled',
+            'different_device' => 'Different Device/IP Only',
+            'always' => 'Always Enabled',
+            'use_profile_setting' => 'Follow Profile Settings',
+        ],
+        'notification' => [
+            'disabled' => 'Disabled',
+            'different_device' => 'Notify on Different Device/IP Only',
+            'always' => 'Always Notify',
+            'use_profile_setting' => 'Follow Profile Settings',
+        ],
+    ],
+
+    // Two-Factor Authentication Settings
+    'two_factor_authentication' => 'Two-Factor Authentication',
+    'two_factor_settings' => 'Two-Factor Authentication Settings',
+    'two_factor_global_setting_fixed' => 'This setting is fixed by global settings.',
+    'two_factor_method_global_setting_fixed' => 'This authentication method is fixed by global settings.',
+    
+    // Two-Factor Authentication Mode (For backward compatibility)
+    'two_factor_mode' => [
+        'label' => 'Two-Factor Authentication Settings',
+        'options' => [
+            0 => 'Disabled (No 2FA)',
+            1 => 'Only for Different Device/IP',
+            2 => 'Always Enabled (Required for all members)',
+            3 => 'Follow Member Profile Settings',
+        ]
+    ],
+    
+    // Two-Factor Authentication Method
+    'two_factor_method' => [
+        'label' => 'Two-Factor Authentication Method',
+        'numbered_options' => [
+            0 => 'Email Authentication',
+            1 => 'Passkey (Biometric)',
+        ],
+        'options' => [
+            'email' => 'Email Authentication',
+            'passkey' => 'Passkey Authentication (Biometric)',
+        ]
+    ],
+    
+    // Two-Factor Authentication Help Text
+    'two_factor_help' => 'When two-factor authentication is enabled, you will need additional authentication when logging in.<br>Even if your password is leaked, it prevents unauthorized access by third parties and significantly improves account security.',
+    'two_factor_method_help' => [
+        'single' => 'The authentication method is fixed by :account_type global settings.',
+        'multiple' => 'You can choose from available authentication methods set by :account_type global settings.',
+    ],
+    
+    // Login Notification Settings
+    'login_notification_mode' => [
+        'label' => 'Login Notification Settings',
+        'options' => [
+            0 => 'Disabled',
+            1 => 'Only for Different Device/IP',
+            2 => 'Enabled',
+            3 => 'Follow :account_type Profile Settings',
+        ]
+    ],
 ];
 

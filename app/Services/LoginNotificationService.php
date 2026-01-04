@@ -24,7 +24,7 @@ namespace App\Services;
 
 use App\Services\MailServerValidatorService;
 use App\Traits\DeviceDetectionTrait;
-use App\Enums\LoginNotificationMode;
+use App\Enums\AuthenticationMode;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -175,13 +175,13 @@ class LoginNotificationService
         callable $getGlobalSetting
     ): bool {
         $globalSetting = $getGlobalSetting();
-        $globalMode = LoginNotificationMode::tryFrom((int) $globalSetting);
+        $globalMode = AuthenticationMode::tryFrom((int) $globalSetting);
 
         return match ($globalMode) {
-            LoginNotificationMode::Disabled => false,
-            LoginNotificationMode::Always => true,
-            LoginNotificationMode::OnlyNewDevice => $this->isNewDevice($user, $ip, $ua),
-            LoginNotificationMode::UseProfileSetting => $this->shouldSendBasedOnProfile($user, $ip, $ua),
+            AuthenticationMode::Disabled => false,
+            AuthenticationMode::Always => true,
+            AuthenticationMode::DifferentDevice => $this->isNewDevice($user, $ip, $ua),
+            AuthenticationMode::UseProfileSetting => $this->shouldSendBasedOnProfile($user, $ip, $ua),
             default => false,
         };
     }
@@ -202,9 +202,9 @@ class LoginNotificationService
         ]);
         
         $result = match ($profileMode) {
-            LoginNotificationMode::Disabled => false,
-            LoginNotificationMode::Always => true,
-            LoginNotificationMode::OnlyNewDevice => $this->isNewDevice($user, $ip, $ua),
+            AuthenticationMode::Disabled => false,
+            AuthenticationMode::Always => true,
+            AuthenticationMode::DifferentDevice => $this->isNewDevice($user, $ip, $ua),
             default => false,
         };
         
@@ -217,15 +217,15 @@ class LoginNotificationService
     }
 
     /**
-     * プロフィール設定の値をLoginNotificationMode enumにマッピング
+     * プロフィール設定の値をAuthenticationMode enumにマッピング
      */
-    protected function mapProfileValueToEnum(int $profileValue): LoginNotificationMode
+    protected function mapProfileValueToEnum(int $profileValue): AuthenticationMode
     {
         return match ($profileValue) {
-            0 => LoginNotificationMode::Disabled,
-            2 => LoginNotificationMode::OnlyNewDevice,
-            3 => LoginNotificationMode::Always,
-            default => LoginNotificationMode::Disabled,
+            0 => AuthenticationMode::Disabled,
+            1 => AuthenticationMode::DifferentDevice,
+            2 => AuthenticationMode::Always,
+            default => AuthenticationMode::Disabled,
         };
     }
 }

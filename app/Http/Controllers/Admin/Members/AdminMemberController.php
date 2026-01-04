@@ -26,9 +26,8 @@ use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Members\AdminSettingsMemberStoreRequest;
 use Illuminate\Http\Request;
 use App\Models\Member;
-use App\Enums\TwoFactorMode;
 use App\Enums\TwoFactorMethod;
-use App\Enums\LoginNotificationMode;
+use App\Enums\AuthenticationMode;
 use App\Enums\AppearanceMode;
 use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
@@ -116,8 +115,8 @@ class AdminMemberController extends AdminLoggedInController
         $this->viewParams['roleOptions'] = MemberRole::translationOptions();
         $this->viewParams['roleAdminValue'] = MemberRole::ADMIN->value;
         $this->viewParams['roleSuperAdminValue'] = MemberRole::SUPER_ADMIN->value;
-        $this->viewParams['loginNotificationUseProfileSettingValue'] = LoginNotificationMode::UseProfileSetting->value;
-        $this->viewParams['twoFactorUseProfileSettingValue'] = TwoFactorMode::UseProfileSetting->value;
+        $this->viewParams['loginNotificationUseProfileSettingValue'] = AuthenticationMode::UseProfileSetting->value;
+        $this->viewParams['twoFactorUseProfileSettingValue'] = AuthenticationMode::UseProfileSetting->value;
         $this->viewParams['roleValue'] = (int) request()->old('role', MemberRole::ADMIN->value);
         $this->viewParams['appearanceOptions'] = AppearanceMode::translationOptions();
         $this->viewParams['localeOptions'] = \App\Enums\Locale::availableOptions();
@@ -194,8 +193,8 @@ class AdminMemberController extends AdminLoggedInController
         $this->viewParams['localeOptions'] = \App\Enums\Locale::availableOptions();
         $this->viewParams['roleAdminValue'] = MemberRole::ADMIN->value;
         $this->viewParams['roleSuperAdminValue'] = MemberRole::SUPER_ADMIN->value;
-        $this->viewParams['loginNotificationUseProfileSettingValue'] = LoginNotificationMode::UseProfileSetting->value;
-        $this->viewParams['twoFactorUseProfileSettingValue'] = TwoFactorMode::UseProfileSetting->value;
+        $this->viewParams['loginNotificationUseProfileSettingValue'] = AuthenticationMode::UseProfileSetting->value;
+        $this->viewParams['twoFactorUseProfileSettingValue'] = AuthenticationMode::UseProfileSetting->value;
         
         if ($isInitialAdmin) {
             $this->viewParams['statusOptions'] = [
@@ -307,39 +306,35 @@ class AdminMemberController extends AdminLoggedInController
         $this->viewParams['passwordRequireNumber'] = (bool) $this->memberSettingRepository->get('password_require_number', true);
         $this->viewParams['passwordRequireSymbol'] = (bool) $this->memberSettingRepository->get('password_require_symbol', true);
 
-        $loginNotificationMode = (int) $this->memberSettingRepository->get('login_notification_mode', LoginNotificationMode::UseProfileSetting->value);
+        $loginNotificationMode = (int) $this->memberSettingRepository->get('login_notification_mode', AuthenticationMode::UseProfileSetting->value);
         $this->viewParams['loginNotificationMode'] = $loginNotificationMode;
-        $loginNotificationEnum = LoginNotificationMode::tryFrom($loginNotificationMode);
-        $this->viewParams['loginNotificationModeLabel'] = $loginNotificationEnum ? $loginNotificationEnum->label() : '';
+        $loginNotificationEnum = AuthenticationMode::tryFrom($loginNotificationMode);
+        $this->viewParams['loginNotificationModeLabel'] = $loginNotificationEnum ? $loginNotificationEnum->notificationLabel() : '';
 
-        $force2fa = (int) $this->memberSettingRepository->get('force_2fa', TwoFactorMode::Disabled->value);
+        $force2fa = (int) $this->memberSettingRepository->get('force_2fa', AuthenticationMode::Disabled->value);
         $this->viewParams['force2fa'] = $force2fa;
-        $twoFactorEnum = TwoFactorMode::tryFrom($force2fa);
-        $this->viewParams['twoFactorModeLabel'] = $twoFactorEnum ? $twoFactorEnum->label() : '';
+        $twoFactorEnum = AuthenticationMode::tryFrom($force2fa);
+        $this->viewParams['twoFactorModeLabel'] = $twoFactorEnum ? $twoFactorEnum->twoFactorLabel() : '';
         
         $enabledTwoFactorMethodsString = $this->memberSettingRepository->get('enabled_two_factor_methods', (string)TwoFactorMethod::EMAIL->value);
         $enabledTwoFactorMethods = ($enabledTwoFactorMethodsString !== null && $enabledTwoFactorMethodsString !== '') ? explode(',', $enabledTwoFactorMethodsString) : [];
         
         $twoFactorMethodOptions = [];
-        foreach ($enabledTwoFactorMethods as $methodValue) {
-            if (is_numeric($methodValue)) {
-                $method = TwoFactorMethod::tryFrom((int)$methodValue);
-                if ($method) {
-                    $twoFactorMethodOptions[$methodValue] = $method->translationKey();
-                }
+        foreach ($enabledTwoFactorMethods as $method) {
+            $methodInt = (int)$method;
+            $methodEnum = TwoFactorMethod::tryFrom($methodInt);
+            if ($methodEnum) {
+                $twoFactorMethodOptions[$methodEnum->value] = $methodEnum->translationKey();
             }
         }
         
         $this->viewParams['enabledTwoFactorMethods'] = $twoFactorMethodOptions;
         $this->viewParams['defaultTwoFactorMethod'] = (int) $this->memberSettingRepository->get('default_two_factor_method', TwoFactorMethod::EMAIL->value);
-        $this->viewParams['twoFactorMode'] = TwoFactorMode::from($this->viewParams['force2fa']);
-        $this->viewParams['twoFactorModeOptions'] = TwoFactorMode::translationOptions();
+        $this->viewParams['twoFactorMode'] = AuthenticationMode::from($this->viewParams['force2fa']);
+        $this->viewParams['twoFactorModeOptions'] = AuthenticationMode::twoFactorTranslationOptions();
         $this->viewParams['isMailServerTested'] = $this->isMailServerTested();
     }
 
-    /**
-     * メンバー強制ログアウト
-     */
     public function forceLogout(Member $member)
     {
         $sessionTable = config('session.table', 'sessions');

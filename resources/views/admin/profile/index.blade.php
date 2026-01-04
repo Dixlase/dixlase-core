@@ -262,11 +262,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endunless
 
         <!-- 二段階認証設定（メールサーバー設定済みの場合のみ表示） -->
-        @if($isMailServerTested && ($force2fa === \App\Enums\TwoFactorMode::UseProfileSetting->value || $currentGlobalTwoFactorMode))
+        @if($isMailServerTested && ($force2fa === \App\Enums\AuthenticationMode::UseProfileSetting->value || $currentGlobalTwoFactorMode))
             <section class="transition-colors-unified">
                 <h2>{{ __('common.two_factor_mode.label') }}</h2>
                 
-                @if($force2fa === \App\Enums\TwoFactorMode::UseProfileSetting->value)
+                @if($force2fa === \App\Enums\AuthenticationMode::UseProfileSetting->value)
                     <fieldset>
                         <legend>{{ __('common.two_factor_mode.label') }}</legend>
                         <x-form.radio-group
@@ -345,7 +345,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </form>
 
     <!-- 2FA管理セクション（メールサーバー設定済み、かつ二段階認証が有効の場合のみ表示） -->
-    @if($isMailServerTested && $force2fa !== \App\Enums\TwoFactorMode::Disabled->value)
+    @if($isMailServerTested && $force2fa !== \App\Enums\AuthenticationMode::Disabled->value)
     <section class="mt-8 transition-colors-unified">
         <h2>{{ __('admin/profile.2fa_management') }}</h2>
 
