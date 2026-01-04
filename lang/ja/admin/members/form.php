@@ -51,4 +51,7 @@ return [
     'recovery_codes_deleted' => '回復コード（:count件）を削除しました。',
     'recovery_codes_delete_success_title' => '回復コード削除完了',
     'recovery_codes_delete_error' => '回復コードの削除に失敗しました。',
+    'two_factor_method_note' => '認証方法の全体設定は',
+    'change_in_global_settings' => 'メンバー全体設定',
+    'passkey_disabled_globally' => '全体設定で無効',
 ];

@@ -375,19 +375,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <fieldset>
                 <legend>{{ __('common.login_notification') }}</legend>
                 @php
-                    $loginNotificationValue = old('login_notification', (string) ($member->login_notification->value ?? 0));
-                    $loginNotificationOptions = [
-                        '0' => 'common.disabled',
-                        '1' => 'common.enabled',
-                    ];
+                    // login_notification_modeが整数値の場合とEnumの場合の両方に対応
+                    $currentLoginNotification = $member->login_notification_mode ?? 0;
+                    if ($currentLoginNotification instanceof \App\Enums\AuthenticationMode) {
+                        $currentLoginNotification = $currentLoginNotification->value;
+                    }
+                    $loginNotificationValue = old('login_notification_mode', (string)$currentLoginNotification);
                 @endphp
-                <x-form.radio-group
-                    name="login_notification"
-                    :options="$loginNotificationOptions"
+                <x-form.radio-card-group
+                    name="login_notification_mode"
+                    :options="$loginNotificationModeOptions"
                     :value="$loginNotificationValue"
+                    :columns="3"
                 />
                 <x-form.error
-                    :messages="$errors->get('login_notification')"
+                    :messages="$errors->get('login_notification_mode')"
                 />
             </fieldset>
         @else
@@ -399,7 +401,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- 二段階認証設定セクション -->
     <section>
-        <h2>{{ __('common.two_factor_settings') }}</h2>
+        <h2>{{ __('auth.two_factor_settings') }}</h2>
         @if(!$isMailServerTested)
             <x-message
                 type="warning"
@@ -410,14 +412,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @if($force2fa === $twoFactorUseProfileSettingValue)
             <!-- 二段階認証有効/無効 -->
             <fieldset>
-                <legend>{{ __('common.two_factor_authentication') }}</legend>
+                <legend>{{ __('auth.two_factor_authentication') }}</legend>
                 @php
-                    $twoFactorModeValue = old('two_factor_mode', $member->two_factor_mode->value ?? $twoFactorMode->value);
+                    // two_factor_modeが整数値の場合とEnumの場合の両方に対応
+                    $currentTwoFactorMode = $member->two_factor_mode ?? $twoFactorMode->value;
+                    if ($currentTwoFactorMode instanceof \App\Enums\AuthenticationMode) {
+                        $currentTwoFactorMode = $currentTwoFactorMode->value;
+                    }
+                    $twoFactorModeValue = old('two_factor_mode', (string)$currentTwoFactorMode);
                 @endphp
-                <x-form.radio-group
+                <x-form.radio-card-group
                     name="two_factor_mode"
                     :options="$twoFactorModeOptions"
                     :value="$twoFactorModeValue"
+                    :columns="3"
                 />
                 <x-form.error
                     :messages="$errors->get('two_factor_mode')"
@@ -425,43 +433,58 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </fieldset>
             
             <!-- 二段階認証方法設定 -->
-            @if(!empty($enabledTwoFactorMethods))
-                <fieldset>
-                <legend>
-                    {{ __('common.two_factor_method.label') }}
-                    @if(count($enabledTwoFactorMethods) > 1)
-                        <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">
-                            ({{ count($enabledTwoFactorMethods) }} {{ __('common.available_methods') }})
-                        </span>
-                    @endif
-                </legend>
+            <fieldset>
+                <legend>{{ __('auth.two_factor_method.label') }}</legend>
 
-                @php
-                    $currentTwoFactorMethod = old('two_factor_method', $member?->two_factor_method ?? $defaultTwoFactorMethod);
-                    $currentMethodValid = array_key_exists($currentTwoFactorMethod, $enabledTwoFactorMethods);
-                    $defaultMethod = $defaultTwoFactorMethod ?? array_key_first($enabledTwoFactorMethods);
-                    $currentMethod = $currentMethodValid ? $currentTwoFactorMethod : $defaultMethod;
-                @endphp
+                <div class="space-y-6">
+                    <div class="space-y-3">
+                        <div class="flex items-center space-x-3">
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle text-green-600 dark:text-green-400 mr-2"></i>
+                                <span class="text-sm font-medium">{{ __('auth.two_factor_method.options.email') }}</span>
+                            </div>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">{{ __('admin/members/settings/auth.email_always_enabled_note') }}</span>
+                        </div>
 
-                @if(count($enabledTwoFactorMethods) > 1)
-                    <x-form.radio-group
-                        name="two_factor_method"
-                        :options="$enabledTwoFactorMethods"
-                        :value="$currentMethod"
-                    />
-                @else
-                    <input type="hidden" name="two_factor_method" value="{{ $currentMethod }}">
-                    <p class="description-text">
-                        {{ __('admin/profile.single_method_available') }}: 
-                        <strong>{{ __($enabledTwoFactorMethods[$currentMethod]) }}</strong>
-                    </p>
-                @endif
-                
-                <x-form.error
-                    :messages="$errors->get('two_factor_method')"
-                />
+                        @php
+                            $passkeyGloballyEnabled = in_array(\App\Enums\TwoFactorMethod::PASSKEY->value, array_keys($enabledTwoFactorMethods ?? []));
+                        @endphp
+                        
+                        @if($passkeyGloballyEnabled)
+                            {{-- 全体設定でパスキーが有効な場合：個別に設定可能 --}}
+                            <div class="flex items-center space-x-3">
+                                <x-form.toggle
+                                    name="two_factor_passkey_enabled"
+                                    :label="__('auth.two_factor_method.options.passkey')"
+                                    :checked="old('two_factor_passkey_enabled', $member->two_factor_passkey_enabled ?? true)"
+                                />
+                            </div>
+                        @else
+                            {{-- 全体設定でパスキーが無効な場合：表示のみ --}}
+                            <div class="flex items-center space-x-3">
+                                <div class="flex items-center">
+                                    <i class="fas fa-times-circle text-gray-400 dark:text-gray-600 mr-2"></i>
+                                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                        {{ __('auth.two_factor_method.options.passkey') }}
+                                    </span>
+                                </div>
+                                <span class="text-xs text-gray-500 dark:text-gray-400">
+                                    {{ __('admin/members/form.passkey_disabled_globally') }}
+                                </span>
+                            </div>
+                        @endif
+                    </div>
+
+                    <div class="space-y-1">
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            {{ __('admin/members/form.two_factor_method_note') }}
+                            <a href="{{ route('admin.members.settings.auth') }}" class="text-blue-600 dark:text-blue-400 hover:underline">
+                                {{ __('admin/members/form.change_in_global_settings') }}
+                            </a>
+                        </p>
+                    </div>
+                </div>
             </fieldset>
-        @endif
         @else
             <fieldset>
                 <p class="description-text">{!! __('admin/members/form.two_factor_global_fixed', ['setting' => $twoFactorModeLabel]) !!}</p>
