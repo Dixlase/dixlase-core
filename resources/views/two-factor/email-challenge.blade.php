@@ -8,9 +8,13 @@
 @section('description', __('two-factor.email.prompt'))
 
 @section('content')
+    @php
+        $verifyAction = $action ?? route('admin.two-factor.email.verify');
+        $resendRoute = $resendAction ?? route('admin.two-factor.email.resend');
+    @endphp
     @include('two-factor.partials.email-challenge', [
-        'action' => route('admin.two-factor.email.verify'),
-        'resendAction' => route('admin.two-factor.email.resend'),
+        'action' => $verifyAction,
+        'resendAction' => $resendRoute,
         'title' => __('two-factor.email.code_title'),
         'prompt' => __('two-factor.email.code_prompt'),
         'submitText' => __('two-factor.email.verify'),
@@ -29,7 +33,10 @@
 @endsection
 
 @section('back_link')
-    <a href="{{ route('admin.login') }}" class="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
+    @php
+        $backRoute = $loginRoute ?? route('admin.login');
+    @endphp
+    <a href="{{ $backRoute }}" class="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
         ← {{ __('two-factor.back_to_login') }}
     </a>
 @endsection

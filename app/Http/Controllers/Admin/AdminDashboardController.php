@@ -65,64 +65,6 @@ class AdminDashboardController extends AdminLoggedInController
         $this->viewParams['canRegenerateRecoveryCodes'] = $recoveryCodeService->canRegenerate($user);
         $this->viewParams['nextRegenerateTime'] = $recoveryCodeService->getNextRegenerateTime($user);
 
-        // 認証方法の変更を検知
-        $shouldShowMethodChangeModal = false;
-        $usedMethod = null;
-        $currentMethod = null;
-        
-        if ($user->last_2fa_method !== null && $user->two_factor_method !== null) {
-            // 最後に使用した認証方法と現在のデフォルト認証方法が異なる場合
-            if ($user->last_2fa_method !== $user->two_factor_method) {
-                $shouldShowMethodChangeModal = true;
-                $usedMethod = TwoFactorMethod::from($user->last_2fa_method);
-                $currentMethod = TwoFactorMethod::from($user->two_factor_method);
-            }
-        }
-        
-        $this->viewParams['shouldShowMethodChangeModal'] = $shouldShowMethodChangeModal;
-        $this->viewParams['usedMethod'] = $usedMethod;
-        $this->viewParams['currentMethod'] = $currentMethod;
-
         return view('admin::dashboard', $this->viewParams);
-    }
-
-    /**
-     * 今回使用した認証方法をデフォルトに設定
-     */
-    public function switchToUsedMethod(Request $request)
-    {
-        $user = Auth::guard('member')->user();
-        
-        if ($user->last_2fa_method !== null) {
-            // last_2fa_methodをtwo_factor_methodに設定
-            $user->two_factor_method = $user->last_2fa_method;
-            $user->save();
-            
-            return response()->json([
-                'success' => true,
-                'message' => __('admin/dashboard.method_switched_success')
-            ]);
-        }
-        
-        return response()->json([
-            'success' => false,
-            'message' => __('admin/dashboard.method_switch_failed')
-        ], 400);
-    }
-
-    /**
-     * 認証方法変更モーダルを閉じる（last_2fa_methodをtwo_factor_methodに同期）
-     */
-    public function dismissMethodChangeModal(Request $request)
-    {
-        $user = Auth::guard('member')->user();
-        
-        // last_2fa_methodをtwo_factor_methodに同期して、次回モーダルを表示しない
-        $user->last_2fa_method = $user->two_factor_method;
-        $user->save();
-        
-        return response()->json([
-            'success' => true
-        ]);
     }
 }

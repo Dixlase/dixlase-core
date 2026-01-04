@@ -8,9 +8,13 @@
 @section('description', __('two-factor.passkey.prompt'))
 
 @section('content')
+    @php
+        $passkeyChallenge = $challengeAction ?? route('admin.two-factor.passkey.challenge');
+        $passkeyVerify = $verifyAction ?? route('admin.two-factor.passkey.verify');
+    @endphp
     @include('two-factor.partials.passkey-challenge', [
-        'challengeAction' => route('admin.two-factor.passkey.challenge'),
-        'verifyAction' => route('admin.two-factor.passkey.verify'),
+        'challengeAction' => $passkeyChallenge,
+        'verifyAction' => $passkeyVerify,
         'context' => 'admin'
     ])
 
@@ -23,7 +27,10 @@
 @endsection
 
 @section('back_link')
-    <a href="{{ route('admin.login') }}" class="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
+    @php
+        $backRoute = $loginRoute ?? route('admin.login');
+    @endphp
+    <a href="{{ $backRoute }}" class="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
         ← {{ __('two-factor.back_to_login') }}
     </a>
 @endsection

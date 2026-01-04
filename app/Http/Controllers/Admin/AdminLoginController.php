@@ -489,6 +489,9 @@ class AdminLoginController extends AdminController
             'currentMethod' => $currentMethod,
             'expireMinutes' => $twoFactorExpireMinutes,
             'resendIntervalSeconds' => $twoFactorResendIntervalSeconds,
+            'action' => route('admin.two-factor.email.verify'),
+            'resendAction' => route('admin.two-factor.email.resend'),
+            'loginRoute' => route('admin.login'),
         ]);
     }
 
@@ -550,10 +553,6 @@ class AdminLoginController extends AdminController
         // 成功したログインを記録（失敗記録をクリア）
         app(AdminLoginLockoutService::class)->handleSuccessfulLogin($member->email);
         $attemptService->handleSuccess($member);
-
-        // 最後に使用した二段階認証方法を更新
-        $member->last_2fa_method = TwoFactorMethod::EMAIL->value;
-        $member->save();
 
         // 回復コードが未生成の場合は自動生成
         $twoFactorHelper = app(TwoFactorHelper::class);
@@ -745,6 +744,9 @@ class AdminLoginController extends AdminController
             'currentMethod' => $currentMethod,
             'expireMinutes' => $twoFactorExpireMinutes,
             'resendIntervalSeconds' => $twoFactorResendIntervalSeconds,
+            'action' => route('admin.two-factor.email.verify'),
+            'resendAction' => route('admin.two-factor.email.resend'),
+            'loginRoute' => route('admin.login'),
         ]);
     }
 
@@ -784,6 +786,9 @@ class AdminLoginController extends AdminController
         return view('two-factor.passkey-challenge', [
             'availableMethods' => $availableMethods,
             'currentMethod' => $currentMethod,
+            'challengeAction' => route('admin.two-factor.passkey.challenge'),
+            'verifyAction' => route('admin.two-factor.passkey.verify'),
+            'loginRoute' => route('admin.login'),
         ]);
     }
 
@@ -893,10 +898,6 @@ class AdminLoginController extends AdminController
                 // 認証成功 - ログイン処理
                 $lockoutService = app(AdminLoginLockoutService::class);
                 $lockoutService->handleSuccessfulLogin($member->email);
-
-                // 最後に使用した二段階認証方法を更新
-                $member->last_2fa_method = TwoFactorMethod::PASSKEY->value;
-                $member->save();
 
                 // 回復コードが未生成の場合は自動生成
                 $twoFactorHelper = app(TwoFactorHelper::class);
