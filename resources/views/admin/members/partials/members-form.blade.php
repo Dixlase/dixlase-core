@@ -103,42 +103,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             />
         </fieldset>
 
-        <fieldset>
-            <legend>{{ __('common.email') }}</legend>
-            <x-form.text
-                type="email"
+        <div id="email-input-wrapper">
+            <x-email-input
                 id="email"
                 name="email"
                 :value="old('email', $member->email ?? '')"
-                :required="true"
-                autocomplete="email"
-                class="w-full"
+                :required="false"
+                :showConfirmation="true"
+                :showConfirmationOnChange="isset($member) && $member->exists"
             />
             <x-form.error
                 :messages="$errors->get('email')"
             />
-        </fieldset>
-
-        {{-- メールアドレス確認フィールド（新規作成時 or 編集時にメールアドレス変更） --}}
-        <fieldset id="email-confirmation-field" style="display: none;">
-            <legend>{{ __('admin/members/form.email_confirmation') }}</legend>
-            <x-form.text
-                type="email"
-                id="email_confirmation"
-                name="email_confirmation"
-                :value="old('email_confirmation')"
-                :required="false"
-                autocomplete="off"
-                onpaste="return false"
-                oncopy="return false"
-                oncut="return false"
-                class="w-full"
-            />
-            <p class="help-text">{{ __('admin/members/form.email_confirmation_help') }}</p>
-            <x-form.error
-                :messages="$errors->get('email_confirmation')"
-            />
-        </fieldset>
+            <div id="email-confirmation-wrapper" style="display: none;">
+                <x-form.error
+                    :messages="$errors->get('email_confirmation')"
+                />
+            </div>
+        </div>
     </section>
 
     <!-- パスワード設定セクション -->
@@ -157,6 +139,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :requireNumber="$passwordRequireNumber"
                 :requireSymbol="$passwordRequireSymbol"
                 :showConfirmation="true"
+                :showConfirmationOnChange="isset($member) && $member->exists"
             />
             <x-form.error
                 :messages="$errors->get('password')"
@@ -560,12 +543,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <script @cspNonce>
 document.addEventListener('DOMContentLoaded', function() {
     const emailInput = document.getElementById('email');
-    const emailConfirmationField = document.getElementById('email-confirmation-field');
+    const emailConfirmationFieldset = document.querySelector('fieldset:has(#email_confirmation)');
+    const emailConfirmationWrapper = document.getElementById('email-confirmation-wrapper');
     const emailConfirmationInput = document.getElementById('email_confirmation');
+    
+    if (!emailInput || !emailConfirmationFieldset || !emailConfirmationInput) {
+        return;
+    }
     
     @if(!isset($member) || !$member->exists)
         // 新規作成時は常に表示
-        emailConfirmationField.style.display = 'block';
+        emailConfirmationFieldset.style.display = 'block';
+        if (emailConfirmationWrapper) {
+            emailConfirmationWrapper.style.display = 'block';
+        }
         emailConfirmationInput.required = true;
     @else
         // 編集時は元のメールアドレスを保存
@@ -573,7 +564,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // バリデーションエラーがある場合、または old値がある場合は初期表示
         @if($errors->has('email_confirmation') || old('email_confirmation'))
-            emailConfirmationField.style.display = 'block';
+            emailConfirmationFieldset.style.display = 'block';
+            if (emailConfirmationWrapper) {
+                emailConfirmationWrapper.style.display = 'block';
+            }
             emailConfirmationInput.required = true;
         @endif
         
@@ -581,11 +575,17 @@ document.addEventListener('DOMContentLoaded', function() {
         emailInput.addEventListener('input', function() {
             if (this.value !== originalEmail && this.value !== '') {
                 // メールアドレスが変更された場合は確認フィールドを表示
-                emailConfirmationField.style.display = 'block';
+                emailConfirmationFieldset.style.display = 'block';
+                if (emailConfirmationWrapper) {
+                    emailConfirmationWrapper.style.display = 'block';
+                }
                 emailConfirmationInput.required = true;
             } else {
                 // 元に戻した場合は確認フィールドを非表示
-                emailConfirmationField.style.display = 'none';
+                emailConfirmationFieldset.style.display = 'none';
+                if (emailConfirmationWrapper) {
+                    emailConfirmationWrapper.style.display = 'none';
+                }
                 emailConfirmationInput.required = false;
                 emailConfirmationInput.value = '';
             }

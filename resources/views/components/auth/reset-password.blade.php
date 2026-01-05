@@ -66,7 +66,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <x-password-tools 
                 name="password" 
                 id="password" 
-                :required="true"
+                :required="false"
                 :minLength="$passwordMinLength"
                 :requireUppercase="$passwordRequireUppercase"
                 :requireLowercase="true"

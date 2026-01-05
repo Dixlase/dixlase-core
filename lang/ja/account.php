@@ -22,7 +22,7 @@
 
 return [
     // 共通マイページ翻訳キー
-    'title' => 'マイページ',
+    //'title' => 'マイページ',
     'dashboard' => 'ダッシュボード',
     'welcome' => ':nameさん、こんにちは',
     'dashboard_description' => 'アカウント情報の確認や設定の変更ができます。',

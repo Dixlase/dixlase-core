@@ -112,9 +112,9 @@ return [
     'available_methods' => '利用可能な方法',
     
     // テーマ
-    'auto' => '自動',
-    'light' => 'ライト',
-    'dark' => 'ダーク',
+    //'auto' => '自動',
+    //'light' => 'ライト',
+    //'dark' => 'ダーク',
 
     // 言語
     'ja' => '日本語',
@@ -206,8 +206,8 @@ return [
     // デザイン・表示
     'color' => 'カラー',
     'font' => 'フォント',
-    'admin_theme' => '管理画面テーマ',
-    'appearance_mode' => '外観モード',
+    //'admin_theme' => '管理画面テーマ',
+    //'appearance_mode' => '外観モード',
 
     // システム設定
     'site_name' => 'サイト名',
@@ -271,6 +271,7 @@ return [
     ],
 
     // ログイン通知
+    /*
     'login_notification' => 'ログイン通知',
     'login_notification_mode' => [
         'label' => 'ログイン通知モード',
@@ -283,6 +284,7 @@ return [
         ],
     ],
     'notification_settings' => '通知設定',
+    */
 
     // 全体設定による制御メッセージ（アカウント種別対応）
     'global_setting_fixed' => [

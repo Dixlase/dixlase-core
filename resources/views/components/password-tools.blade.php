@@ -21,7 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @props([
     'name' => 'password',
     'id' => 'password',
-    'required' => false,
+    'required' => true,
 
     // 新しく追加するパスワードルール（JSにも渡す）
     'minLength' => 8,
@@ -35,6 +35,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     // 確認欄の表示を制御（true = 表示, false = 非表示）
     'showConfirmation' => false,
+    
+    // 変更時のみ確認欄を表示（true = 入力時に確認欄を表示, false = 常に表示）
+    'showConfirmationOnChange' => false,
 ])
 
 <div class="relative">
@@ -48,55 +51,74 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         class="password-input input-full"
     />
 
+    <!-- パスワードツールバー -->
+    <div class="absolute top-0 right-2 h-full flex items-center gap-1" role="toolbar" aria-label="{{ __('components.password_messages.toolbar_label') }}">
     <!-- 自動生成ボタン -->
-    <div class="group absolute top-0 right-20 h-full flex items-center">
-        <button type="button" class="px-2 py-1 text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300"
-            onclick="PasswordTools.generatePassword('{{ $id }}', '{{ $id }}_confirmation')">
-            <i class="fa-solid fa-random"></i>
+        <div class="group relative">
+            <button 
+                type="button" 
+                class="px-2 py-1 text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 transition-colors"
+                onclick="PasswordTools.generatePassword('{{ $id }}', '{{ $id }}_confirmation')"
+                aria-label="{{ __('components.password_messages.tooltip.generate') }}"
+                title="{{ __('components.password_messages.tooltip.generate') }}">
+                <i class="fa-solid fa-random" aria-hidden="true"></i>
         </button>
-        <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block
-            text-xs rounded bg-gray-800 text-white px-2 py-1 whitespace-nowrap z-10">
+            <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block text-xs rounded bg-gray-800 text-white px-2 py-1 whitespace-nowrap z-10 pointer-events-none" role="tooltip">
             {{ __('components.password_messages.tooltip.generate') }}
         </span>
     </div>
 
-    <!-- コピー -->
-    <div class="group absolute top-0 right-12 h-full flex items-center">
-        <button type="button" class="px-2 py-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-            onclick="PasswordTools.copyPassword('{{ $id }}')">
-            <i class="fa-solid fa-copy"></i>
+        <!-- コピーボタン -->
+        <div class="group relative">
+            <button 
+                type="button" 
+                class="px-2 py-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                onclick="PasswordTools.copyPassword('{{ $id }}')"
+                aria-label="{{ __('components.password_messages.tooltip.copy') }}"
+                title="{{ __('components.password_messages.tooltip.copy') }}">
+                <i class="fa-solid fa-copy" aria-hidden="true"></i>
         </button>
-        <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block
-            text-xs rounded bg-gray-800 text-white px-2 py-1 whitespace-nowrap z-10">
+            <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block text-xs rounded bg-gray-800 text-white px-2 py-1 whitespace-nowrap z-10 pointer-events-none" role="tooltip">
             {{ __('components.password_messages.tooltip.copy') }}
         </span>
     </div>
 
-    <!-- 表示切り替え -->
-    <div class="group absolute top-0 right-2 h-full flex items-center">
-        <button type="button" class="px-2 py-1 text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white"
-            onclick="PasswordTools.togglePassword('{{ $id }}', '{{ $id }}_confirmation', '{{ $id }}-eye')">
-            <i id="{{ $id }}-eye" class="fa-solid fa-eye"></i>
+        <!-- 表示切り替えボタン -->
+        <div class="group relative">
+            <button 
+                type="button" 
+                class="px-2 py-1 text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white transition-colors"
+                onclick="PasswordTools.togglePassword('{{ $id }}', '{{ $id }}_confirmation', '{{ $id }}-eye')"
+                aria-label="{{ __('components.password_messages.tooltip.toggle') }}"
+                aria-pressed="false"
+                title="{{ __('components.password_messages.tooltip.toggle') }}">
+                <i id="{{ $id }}-eye" class="fa-solid fa-eye" aria-hidden="true"></i>
         </button>
-        <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block
-            text-xs rounded bg-gray-800 text-white px-2 py-1 whitespace-nowrap z-10">
+            <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block text-xs rounded bg-gray-800 text-white px-2 py-1 whitespace-nowrap z-10 pointer-events-none" role="tooltip">
             {{ __('components.password_messages.tooltip.toggle') }}
         </span>
     </div>
 </div>
+</div>
 
 @if($showConfirmation)
-    <fieldset>
+    <fieldset id="{{ $id }}-confirmation-fieldset" @if($showConfirmationOnChange) style="display: none;" @endif>
         <legend class="text-gray-700 dark:text-gray-300">{{ __('common.password') }}（{{ __('common.confirm') }}）</legend>
-        <x-form.text
-            type="password"
-            :id="$id . '_confirmation'"
-            :name="$name . '_confirmation'"
-            value=""
-            :required="$required"
-            autocomplete="new-password"
-            class="password-confirmation-input w-full"
-        />
+        <div class="relative">
+            <x-form.text
+                type="password"
+                :id="$id . '_confirmation'"
+                :name="$name . '_confirmation'"
+                value=""
+                :required="$required"
+                autocomplete="new-password"
+                class="password-confirmation-input w-full"
+            />
+            <!-- パスワード一致判定アイコン -->
+            <div id="{{ $id }}-match-indicator" class="absolute top-0 right-2 h-full flex items-center" style="display: none;">
+                <i id="{{ $id }}-match-icon" class="fas fa-check text-green-500"></i>
+            </div>
+        </div>
     </fieldset>
 @endif
 
@@ -429,26 +451,98 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 
                 textElement.textContent = `${displayText}${suffix}`;
             }
+        },
+
+        checkPasswordMatch: function(passwordId = 'password') {
+            const passwordInput = document.getElementById(passwordId);
+            const confirmInput = document.getElementById(passwordId + '_confirmation');
+            const matchIndicator = document.getElementById(passwordId + '-match-indicator');
+            const matchIcon = document.getElementById(passwordId + '-match-icon');
+
+            if (!passwordInput || !confirmInput || !matchIndicator || !matchIcon) {
+                return;
+            }
+
+            const password = passwordInput.value;
+            const confirm = confirmInput.value;
+
+            // 確認欄が空の場合はアイコンを非表示
+            if (confirm === '') {
+                matchIndicator.style.display = 'none';
+                return;
+            }
+
+            // 確認欄に入力がある場合はアイコンを表示
+            matchIndicator.style.display = 'flex';
+
+            // パスワードが一致しているかチェック
+            if (password === confirm && password !== '') {
+                // 一致: 緑のチェックマーク
+                matchIcon.className = 'fas fa-check text-green-500';
+            } else {
+                // 不一致: 赤のバツマーク
+                matchIcon.className = 'fas fa-times text-red-500';
+            }
         }
     };
 
     // パスワード入力フィールドのイベントリスナーを設定
     (function() {
         const passwordId = '{{ $id }}';
+        const showConfirmation = {{ $showConfirmation ? 'true' : 'false' }};
+        const showConfirmationOnChange = {{ $showConfirmationOnChange ? 'true' : 'false' }};
         
         const setupPasswordListener = function() {
             const passwordInput = document.getElementById(passwordId);
+            const confirmInput = document.getElementById(passwordId + '_confirmation');
+            const confirmationFieldset = document.getElementById(passwordId + '-confirmation-fieldset');
+            
             if (passwordInput && !passwordInput.hasAttribute('data-password-listener')) {
                 passwordInput.setAttribute('data-password-listener', 'true');
                 passwordInput.addEventListener('keyup', function() {
                     if (typeof PasswordTools !== 'undefined' && typeof PasswordTools.checkPasswordStrength === 'function') {
                         PasswordTools.checkPasswordStrength(passwordId);
                     }
+                    // 確認欄が表示されている場合は一致判定も実行
+                    if (showConfirmation && typeof PasswordTools !== 'undefined' && typeof PasswordTools.checkPasswordMatch === 'function') {
+                        PasswordTools.checkPasswordMatch(passwordId);
+                    }
                 });
+                
+                // 変更時のみ確認欄を表示する場合のイベントリスナー
+                if (showConfirmationOnChange && confirmationFieldset) {
+                    passwordInput.addEventListener('input', function() {
+                        if (this.value !== '') {
+                            // パスワードが入力された場合は確認欄を表示
+                            confirmationFieldset.style.display = 'block';
+                            if (confirmInput) {
+                                confirmInput.required = true;
+                            }
+                        } else {
+                            // パスワードが空の場合は確認欄を非表示
+                            confirmationFieldset.style.display = 'none';
+                            if (confirmInput) {
+                                confirmInput.required = false;
+                                confirmInput.value = '';
+                            }
+                        }
+                    });
+                }
+                
                 // 初期チェック
                 if (typeof PasswordTools !== 'undefined' && typeof PasswordTools.checkPasswordStrength === 'function') {
                     PasswordTools.checkPasswordStrength(passwordId);
                 }
+            }
+
+            // 確認欄のイベントリスナーを設定
+            if (showConfirmation && confirmInput && !confirmInput.hasAttribute('data-password-listener')) {
+                confirmInput.setAttribute('data-password-listener', 'true');
+                confirmInput.addEventListener('keyup', function() {
+                    if (typeof PasswordTools !== 'undefined' && typeof PasswordTools.checkPasswordMatch === 'function') {
+                        PasswordTools.checkPasswordMatch(passwordId);
+                    }
+                });
             }
         };
 

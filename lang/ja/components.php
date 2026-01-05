@@ -117,8 +117,18 @@ return [
         'delete_message' => 'この操作は取り消せません。本当に削除しますか？',
     ],
 
+    // メールアドレス入力関連
+    'email_input' => [
+        'confirmation_label' => 'メールアドレス（確認）',
+        'confirmation_help' => 'コピー＆ペーストは無効です。手入力で確認してください。',
+        'match_status' => 'メールアドレス一致状態',
+        'match_success' => '一致しています',
+        'match_error' => '一致していません',
+    ],
+
     // パスワードツール関連
     'password_messages' => [
+        'toolbar_label' => 'パスワードツール',
         'strength' => [
             'error' => 'パスワードが条件を満たしていません',
             'normal' => '普通の強度',
@@ -126,6 +136,7 @@ return [
         ],
         'tooltip' => [
             'generate' => '自動生成',
+            'copy' => 'コピー',
             'toggle' => '表示切替',
         ],
         'copied' => 'パスワードがコピーされました！',

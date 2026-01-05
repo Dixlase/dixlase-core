@@ -118,8 +118,18 @@ return [
         'delete_message' => 'This action cannot be undone. Are you sure you want to delete this?',
     ],
 
+    // Email input related
+    'email_input' => [
+        'confirmation_label' => 'Email Address (Confirmation)',
+        'confirmation_help' => 'Copy & paste is disabled. Please type manually to confirm.',
+        'match_status' => 'Email address match status',
+        'match_success' => 'Matched',
+        'match_error' => 'Not matched',
+    ],
+
     // Password tools related
     'password_messages' => [
+        'toolbar_label' => 'Password Tools',
         'strength' => [
             'error' => 'Password does not meet requirements',
             'normal' => 'Normal strength',
@@ -127,6 +137,7 @@ return [
         ],
         'tooltip' => [
             'generate' => 'Generate',
+            'copy' => 'Copy',
             'toggle' => 'Toggle visibility',
         ],
         'copied' => 'Password copied!',

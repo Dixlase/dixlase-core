@@ -94,7 +94,7 @@
                 <x-password-tools
                     name="admin_password"
                     id="admin_password"
-                    :required="true"
+                    :required="false"
                     :showConfirmation="false"
                     :minLength="8"
                     :requireUppercase="true"
