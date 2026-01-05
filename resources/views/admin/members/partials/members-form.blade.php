@@ -257,16 +257,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <legend>{{ __('common.appearance_mode') }}</legend>
             @php
                 $appearanceValue = old('appearance', (string) ($member->appearance->value ?? 0));
-                $appearanceOptions = [
-                    ['value' => '0', 'label' => 'common.auto', 'icon' => 'fas fa-adjust'],
-                    ['value' => '1', 'label' => 'common.light', 'icon' => 'fas fa-sun'],
-                    ['value' => '2', 'label' => 'common.dark', 'icon' => 'fas fa-moon'],
-                ];
             @endphp
-            <x-form.radio-card-group
+            <x-appearance-mode-selector
                 name="appearance"
-                :options="$appearanceOptions"
                 :value="$appearanceValue"
+                :enableRealtimeSwitch="false"
                 :columns="3"
             />
             <x-form.error

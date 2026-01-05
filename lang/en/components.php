@@ -167,4 +167,14 @@ return [
         ],
         'error' => 'Password does not meet requirements.',
     ],
+
+    // Appearance mode selector
+    'appearance_mode' => [
+        'auto' => 'Auto',
+        'light' => 'Light',
+        'dark' => 'Dark',
+        'auto_description' => 'Follow system settings',
+        'light_description' => 'Display in light mode',
+        'dark_description' => 'Display in dark mode',
+    ],
 ];
