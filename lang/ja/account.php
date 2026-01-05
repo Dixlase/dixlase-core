@@ -166,43 +166,7 @@ return [
         'submit' => '確認',
     ],
 
-    // ===========================================
-    // 認証モード（二段階認証・通知設定共通）
-    // ===========================================
-    'authentication_mode' => [
-        'two_factor' => [
-            'disabled' => '無効',
-            'different_device' => '異なるデバイス・IPでのログイン時',
-            'always' => '常に有効',
-            'use_profile_setting' => 'プロフィール設定に従う',
-        ],
-        'notification' => [
-            'disabled' => '無効',
-            'different_device' => '異なるデバイス・IPでのログイン時のみ通知',
-            'always' => '常に通知',
-            'use_profile_setting' => 'プロフィール設定に従う',
-        ],
-    ],
-
-    // 二段階認証詳細設定
+    // 二段階認証詳細設定（Myページ専用）
     'two_factor_authentication' => '二段階認証',
     'two_factor_description' => 'セキュリティを強化するため、ログイン時に追加の認証を設定できます。',
-    'two_factor_global_setting_fixed' => 'この設定は全体設定により固定されています。',
-    'two_factor_method_global_setting_fixed' => 'この認証方法は全体設定により固定されています。',
-    'two_factor_help' => '二段階認証を有効にすると、ログイン時に追加の認証が必要になります。<br>万が一パスワードが漏れても第三者によるアクセスを防ぎ、アカウントのセキュリティが大幅に向上します。',
-    'two_factor_method_help' => [
-        'single' => ':account_typeの全体設定により、認証方法が固定されています。',
-        'multiple' => ':account_typeの全体設定により、利用可能な認証方法から選択できます。',
-    ],
-
-    // ログイン通知詳細設定
-    'login_notification_mode' => [
-        'label' => 'ログイン通知の設定',
-        'options' => [
-            0 => '無効',
-            1 => '異なる端末/IP時のみ有効',
-            2 => '有効',
-            3 => ':account_typeのプロフィール設定を反映',
-        ]
-    ],
 ];

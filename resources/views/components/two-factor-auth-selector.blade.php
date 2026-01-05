@@ -42,34 +42,47 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     // オプションを取得
     if ($excludeUseProfileSetting) {
         // プロフィール設定用（UseProfileSettingを除く）
-        $options = [];
-        foreach (AuthenticationMode::forProfile() as $case) {
-            $options[] = [
-                'value' => (string) $case->value,
-                'label' => $case->twoFactorLabel(),
-                'icon' => match($case) {
-                    AuthenticationMode::Disabled => 'fas fa-shield-alt',
-                    AuthenticationMode::DifferentDevice => 'fas fa-shield-virus',
-                    AuthenticationMode::Always => 'fas fa-shield-check',
-                    default => 'fas fa-shield-alt',
-                },
-            ];
-        }
+        $options = [
+            [
+                'value' => (string) AuthenticationMode::Disabled->value,
+                'label' => __('components.two_factor.options.disabled'),
+                'icon' => 'fas fa-shield-alt',
+            ],
+            [
+                'value' => (string) AuthenticationMode::DifferentDevice->value,
+                'label' => __('components.two_factor.options.different_device'),
+                'icon' => 'fas fa-shield-virus',
+            ],
+            [
+                'value' => (string) AuthenticationMode::Always->value,
+                'label' => __('components.two_factor.options.always'),
+                'icon' => 'fas fa-shield-check',
+            ],
+        ];
     } else {
         // 全体設定用（全オプション）
-        $options = [];
-        foreach (AuthenticationMode::cases() as $case) {
-            $options[] = [
-                'value' => (string) $case->value,
-                'label' => $case->twoFactorLabel(),
-                'icon' => match($case) {
-                    AuthenticationMode::Disabled => 'fas fa-shield-alt',
-                    AuthenticationMode::DifferentDevice => 'fas fa-shield-virus',
-                    AuthenticationMode::Always => 'fas fa-shield-check',
-                    AuthenticationMode::UseProfileSetting => 'fas fa-user-cog',
-                },
-            ];
-        }
+        $options = [
+            [
+                'value' => (string) AuthenticationMode::Disabled->value,
+                'label' => __('components.two_factor.options.disabled'),
+                'icon' => 'fas fa-shield-alt',
+            ],
+            [
+                'value' => (string) AuthenticationMode::DifferentDevice->value,
+                'label' => __('components.two_factor.options.different_device'),
+                'icon' => 'fas fa-shield-virus',
+            ],
+            [
+                'value' => (string) AuthenticationMode::Always->value,
+                'label' => __('components.two_factor.options.always'),
+                'icon' => 'fas fa-shield-check',
+            ],
+            [
+                'value' => (string) AuthenticationMode::UseProfileSetting->value,
+                'label' => __('common.use_profile_setting'),
+                'icon' => 'fas fa-user-cog',
+            ],
+        ];
     }
     
     $initialPasskeyEnabled = old('two_factor_passkey_enabled', $passkeyEnabled);
@@ -98,7 +111,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @if($showSettings || $excludeUseProfileSetting)
         {{-- 設定可能な場合 --}}
         <fieldset>
-            <legend>{{ __('auth.two_factor_mode.label') }}</legend>
+            <legend>{{ __('components.two_factor.mode_label') }}</legend>
             <x-form.radio-card-group
                 :name="$name"
                 :options="$options"
@@ -106,12 +119,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :columns="$columns"
                 xModel="twoFactorMode"
             />
-            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{!! __('auth.two_factor_help') !!}</p>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{!! __('components.two_factor.help') !!}</p>
         </fieldset>
     @elseif($isFixedByGlobal)
         {{-- 全体設定で固定されている場合 --}}
         <fieldset>
-            <legend>{{ __('auth.two_factor_mode.label') }}</legend>
+            <legend>{{ __('components.two_factor.mode_label') }}</legend>
             <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
                 <p class="text-sm">
                     @php
@@ -130,16 +143,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     {{-- 二段階認証方法設定 --}}
     <fieldset>
-        <legend>{{ __('auth.two_factor_method.label') }}</legend>
+        <legend>{{ __('components.two_factor.method_label') }}</legend>
 
         <div class="space-y-6">
             <div class="space-y-3">
                 <div class="flex items-center space-x-3">
                     <div class="flex items-center">
                         <i class="fas fa-check-circle text-green-600 dark:text-green-400 mr-2"></i>
-                        <span class="text-sm font-medium">{{ __('auth.two_factor_method.options.email') }}</span>
+                        <span class="text-sm font-medium">{{ __('components.two_factor.email_always_enabled') }}</span>
                     </div>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ __('admin/members/settings/auth.email_always_enabled_note') }}</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ __('components.two_factor.email_always_enabled') }}</span>
                 </div>
                 
                 @if($passkeyGloballyEnabled)
@@ -147,7 +160,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div class="flex items-center space-x-3" :class="{ 'opacity-50 pointer-events-none': !twoFactorEnabled }">
                         <x-form.toggle
                             name="two_factor_passkey_enabled"
-                            :label="__('auth.two_factor_method.options.passkey')"
+                            :label="__('components.two_factor.passkey')"
                             :checked="$initialPasskeyEnabled"
                             xModel="passkeyEnabled"
                         />
@@ -158,11 +171,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <div class="flex items-center">
                             <i class="fas fa-times-circle text-gray-400 dark:text-gray-600 mr-2"></i>
                             <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                {{ __('auth.two_factor_method.options.passkey') }}
+                                {{ __('components.two_factor.passkey') }}
                             </span>
                         </div>
                         <span class="text-xs text-gray-500 dark:text-gray-400">
-                            {{ __('admin/members/form.passkey_disabled_globally') }}
+                            {{ __('components.two_factor.passkey_disabled_globally') }}
                         </span>
                     </div>
                 @endif
@@ -170,9 +183,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <div class="space-y-1">
                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                    {{ __('admin/members/form.two_factor_method_note') }}
+                    {{ __('components.two_factor.method_note') }}
                     <a href="{{ route('admin.members.settings.auth') }}" class="text-blue-600 dark:text-blue-400 hover:underline">
-                        {{ __('admin/members/form.change_in_global_settings') }}
+                        {{ __('components.two_factor.change_in_global_settings') }}
                     </a>
                 </p>
             </div>
@@ -186,11 +199,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     {{-- デフォルトの認証方法（パスキーが有効な場合のみ表示） --}}
     @if($passkeyGloballyEnabled)
         <fieldset>
-            <legend>{{ __('admin/members/form.default_two_factor_method') }}</legend>
+            <legend>{{ __('components.two_factor.default_method') }}</legend>
             @php
                 $defaultMethodOptions = [
-                    ['value' => '0', 'label' => __('auth.two_factor_method.options.email')],
-                    ['value' => '1', 'label' => __('auth.two_factor_method.options.passkey')],
+                    ['value' => '0', 'label' => __('common.email')],
+                    ['value' => '1', 'label' => __('components.two_factor.passkey')],
                 ];
                 $currentDefaultMethod = old('default_two_factor_method', $defaultTwoFactorMethod);
             @endphp
@@ -198,7 +211,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div x-show="!passkeyEnabled" class="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
                 <p class="text-sm text-blue-800 dark:text-blue-200">
                     <i class="fas fa-info-circle mr-1"></i>
-                    {{ __('admin/members/form.passkey_disabled_default_email_only') }}
+                    {{ __('components.two_factor.passkey_disabled_default_email_only') }}
                 </p>
             </div>
             
@@ -212,7 +225,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
             
             <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                {{ __('admin/members/form.default_two_factor_method_help') }}
+                {{ __('components.two_factor.default_method_help') }}
             </p>
             <x-form.error
                 :messages="$errors->get('default_two_factor_method')"
