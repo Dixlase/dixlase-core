@@ -149,38 +149,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             $appearanceValue = old('appearance', (string) ($member->appearance->value ?? 0));
         @endphp
 
-        <section class="transition-colors-unified" x-data="{
-            localTheme: '{{ $appearanceValue }}',
-            savedTheme: '{{ $appearanceValue }}',
-            applyLocalTheme(enableTransition = false) {
-                const isDark = this.localTheme === '2' || (this.localTheme === '0' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-                // トランジションを有効にする
-                if (enableTransition) {
-                    document.documentElement.classList.add('theme-ready');
-                }
-                document.documentElement.classList.toggle('dark', isDark);
-                document.documentElement.classList.toggle('light', !isDark);
-            },
-            resetToSavedTheme() {
-                this.localTheme = this.savedTheme;
-                this.applyLocalTheme(false);
-            }
-        }" x-init="
-            // 初期化時に保存された値でDOMをリセット（トランジションなし）
-            resetToSavedTheme();
-            $watch('localTheme', () => applyLocalTheme(true));
-        " data-profile-theme>
+        <section class="transition-colors-unified">
             <h2>{{ __('common.appearance_settings') }}</h2>
             <div class="lg:w-1/2">
-                <x-form.radio-card-group
+                <x-appearance-mode-selector
                     name="appearance"
-                    :options="[
-                        ['value' => '0', 'label' => __('common.auto'), 'description' => 'システムの設定に従います', 'icon' => 'fas fa-adjust'],
-                        ['value' => '1', 'label' => __('common.light'), 'description' => 'ライトモードで表示', 'icon' => 'fas fa-sun'],
-                        ['value' => '2', 'label' => __('common.dark'), 'description' => 'ダークモードで表示', 'icon' => 'fas fa-moon'],
-                    ]"
                     :value="$appearanceValue"
-                    xModel="localTheme"
+                    :enableRealtimeSwitch="true"
                     :columns="3"
                     color="primary"
                     variant="filled"

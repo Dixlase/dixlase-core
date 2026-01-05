@@ -166,4 +166,14 @@ return [
         ],
         'error' => 'パスワードが条件を満たしていません。',
     ],
+
+    // 外観モード選択
+    'appearance_mode' => [
+        'auto' => '自動',
+        'light' => 'ライト',
+        'dark' => 'ダーク',
+        'auto_description' => 'システムの設定に従います',
+        'light_description' => 'ライトモードで表示',
+        'dark_description' => 'ダークモードで表示',
+    ],
 ];
