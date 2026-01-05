@@ -166,324 +166,54 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- ログイン通知設定 -->
         @php
-            // 0 = 無効, 1 = 異なる端末/IP時のみ有効, 2 = 常に有効, 3 = プロフィール設定を反映
-            $globalLoginNotification = (int) ($loginNoticeGlobal ?? 0);
-            
-            // 現在の通知モードを取得 (フォーム送信後の値 or 現在のユーザー設定 or デフォルト値 1 = 無効)
             $loginNotificationModeValue = $loginNotificationMode instanceof \App\Enums\AuthenticationMode 
                 ? $loginNotificationMode->value 
                 : ($loginNotificationMode ?? 1);
-            $currentLoginNotificationMode = old('login_notification_mode', (string) $loginNotificationModeValue);
-            
-            // 全体設定が「無効」の場合はセクションを非表示
-            $hideLoginNotificationSection = ($globalLoginNotification === 0);
-            
-            // 全体設定が「プロフィール設定を反映」の場合は設定を表示
-            $showLoginNotificationSettings = ($globalLoginNotification === 3);
         @endphp
 
-        <!-- ログイン通知設定 -->
-        @unless($hideLoginNotificationSection)
-            <section class="transition-colors-unified">
-                <h2>{{ __('auth.login_notification_mode.label') }}</h2>
-                
-                @if($showLoginNotificationSettings)
-                    <fieldset>
-                        <legend>{{ __('auth.login_notification_mode.label') }}</legend>
-                        <x-form.radio-card-group
-                            name="login_notification_mode"
-                            :options="$loginNotificationOptions"
-                            :value="old('login_notification_mode', (string) ($loginNotificationMode?->value ?? 0))"
-                            :columns="3"
-                        />
-                        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ __('auth.login_notification_mode.help') }}</p>
-                    </fieldset>
-                @else
-                    <fieldset>
-                        <legend>{{ __('auth.login_notification_mode.label') }}</legend>
-                        <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
-                            <p class="text-sm text-gray-700 dark:text-gray-300">
-                                <span class="font-medium">
-                                    @if($globalLoginNotification === 1)
-                                        {{ __('common.login_notification_mode.options.1') }}
-                                    @elseif($globalLoginNotification === 2)
-                                        {{ __('common.login_notification_mode.options.2') }}
-                                    @endif
-                                </span>
-                            </p>
-                            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                {{ __('admin/profile.login_notification_global_setting_help') }}
-                            </p>
-                        </div>
-                    </fieldset>
-                @endif
-            </section>
-        @endunless
+        <section class="transition-colors-unified">
+            <h2>{{ __('auth.login_notification_mode.label') }}</h2>
+            <x-login-notification-selector
+                name="login_notification_mode"
+                :value="old('login_notification_mode', (string) $loginNotificationModeValue)"
+                :globalSetting="(int) ($loginNoticeGlobal ?? 0)"
+                :excludeUseProfileSetting="true"
+                :columns="3"
+            />
+        </section>
 
         <!-- 二段階認証設定（メールサーバー設定済みの場合のみ表示） -->
         @if($isMailServerTested && ($force2fa === \App\Enums\AuthenticationMode::UseProfileSetting->value || $currentGlobalTwoFactorMode))
             @php
                 $member = Auth::guard('member')->user();
                 $passkeyGloballyEnabled = in_array(\App\Enums\TwoFactorMethod::PASSKEY->value, array_keys($enabledTwoFactorMethods ?? []));
-                $initialPasskeyEnabled = old('two_factor_passkey_enabled', $member->two_factor_passkey_enabled ?? true);
-                $initialTwoFactorMode = old('two_factor_mode', (string)($twoFactorMode?->value ?? 0));
             @endphp
             
             <section class="transition-colors-unified">
                 <h2>{{ __('auth.two_factor_mode.label') }}</h2>
                 
-            <div x-data="{ 
-                passkeyEnabled: {{ $passkeyGloballyEnabled && $initialPasskeyEnabled ? 'true' : 'false' }},
-                twoFactorMode: '{{ $initialTwoFactorMode }}',
-                get twoFactorEnabled() {
-                    return this.twoFactorMode !== '0';
-                },
-                init() {
-                    this.$watch('passkeyEnabled', value @php echo '=>'; @endphp {
-                        if (!value) {
-                            const emailRadio = document.querySelector('input[name=\'default_two_factor_method\'][value=\'0\']');
-                            if (emailRadio) {
-                                emailRadio.checked = true;
-                                emailRadio.dispatchEvent(new Event('change', { bubbles: true }));
-                            }
-                        }
-                    });
-                }
-            }">
-                
-                @if($force2fa === \App\Enums\AuthenticationMode::UseProfileSetting->value)
-                    <fieldset>
-                        <legend>{{ __('auth.two_factor_mode.label') }}</legend>
-                        <x-form.radio-card-group
-                            name="two_factor_mode"
-                            :options="$profileTwoFactorOptions"
-                            :value="old('two_factor_mode', (string) ($twoFactorMode?->value ?? 0))"
-                            :columns="3"
-                            xModel="twoFactorMode"
-                        />
-                        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{!! __('auth.two_factor_help') !!}</p>
-                    </fieldset>
-                @elseif($currentGlobalTwoFactorMode)
-                    <fieldset>
-                        <legend>{{ __('auth.two_factor_mode.label') }}</legend>
-                        <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
-                            <p class="text-sm">
-                                {{ str_replace(':account_type', __('common.account_types.member'), __('common.two_factor_mode.options.' . $currentGlobalTwoFactorMode->value)) }}
-                            </p>
-                            <p class="text-xs mt-1">
-                                {{ __('common.two_factor_global_setting_fixed') }}
-                            </p>
-                        </div>
-                    </fieldset>
-                @endif
-
-            <!-- 二段階認証方法設定 -->
-            <fieldset>
-                <legend>{{ __('auth.two_factor_method.label') }}</legend>
-
-                <div class="space-y-6">
-                    <div class="space-y-3">
-                        <div class="flex items-center space-x-3">
-                            <div class="flex items-center">
-                                <i class="fas fa-check-circle text-green-600 dark:text-green-400 mr-2"></i>
-                                <span class="text-sm font-medium">{{ __('auth.two_factor_method.options.email') }}</span>
-                            </div>
-                            <span class="text-xs text-gray-500 dark:text-gray-400">{{ __('admin/members/settings/auth.email_always_enabled_note') }}</span>
-                        </div>
-                        
-                        @if($passkeyGloballyEnabled)
-                            {{-- 全体設定でパスキーが有効な場合：個別に設定可能 --}}
-                            <div class="flex items-center space-x-3" :class="{ 'opacity-50 pointer-events-none': !twoFactorEnabled }">
-                                <x-form.toggle
-                                    name="two_factor_passkey_enabled"
-                                    :label="__('auth.two_factor_method.options.passkey')"
-                                    :checked="$initialPasskeyEnabled"
-                                    xModel="passkeyEnabled"
-                                />
-                            </div>
-                        @else
-                            {{-- 全体設定でパスキーが無効な場合：表示のみ --}}
-                            <div class="flex items-center space-x-3">
-                                <div class="flex items-center">
-                                    <i class="fas fa-times-circle text-gray-400 dark:text-gray-600 mr-2"></i>
-                                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                        {{ __('auth.two_factor_method.options.passkey') }}
-                                    </span>
-                                </div>
-                                <span class="text-xs text-gray-500 dark:text-gray-400">
-                                    {{ __('admin/members/form.passkey_disabled_globally') }}
-                                </span>
-                            </div>
-                        @endif
-                    </div>
-
-                    <div class="space-y-1">
-                        <p class="text-sm text-gray-600 dark:text-gray-400">
-                            {{ __('admin/members/form.two_factor_method_note') }}
-                            <a href="{{ route('admin.members.settings.auth') }}" class="text-blue-600 dark:text-blue-400 hover:underline">
-                                {{ __('admin/members/form.change_in_global_settings') }}
-                            </a>
-                        </p>
-                    </div>
-                </div>
-
-                @error('two_factor_passkey_enabled')
-                    <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                @enderror
-            </fieldset>
-
-            <!-- デフォルトの認証方法（パスキーが有効な場合のみ表示） -->
-            @if($passkeyGloballyEnabled)
-                <fieldset>
-                    <legend>{{ __('admin/members/form.default_two_factor_method') }}</legend>
-                    @php
-                        $defaultMethodOptions = [
-                            ['value' => '0', 'label' => __('auth.two_factor_method.options.email')],
-                            ['value' => '1', 'label' => __('auth.two_factor_method.options.passkey')],
-                        ];
-                        $currentDefaultMethod = old('default_two_factor_method', (string)($member->default_two_factor_method ?? $defaultTwoFactorMethod));
-                    @endphp
-                    
-                    <div x-show="!passkeyEnabled" class="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
-                        <p class="text-sm text-blue-800 dark:text-blue-200">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            {{ __('admin/members/form.passkey_disabled_default_email_only') }}
-                        </p>
-                    </div>
-                    
-                    <div :class="{ 'opacity-50 pointer-events-none': !twoFactorEnabled || !passkeyEnabled }">
-                        <x-form.radio-card-group
-                            name="default_two_factor_method"
-                            :options="$defaultMethodOptions"
-                            :value="$currentDefaultMethod"
-                            :columns="2"
-                        />
-                    </div>
-                    
-                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                        {{ __('admin/members/form.default_two_factor_method_help') }}
-                    </p>
-                    <x-form.error
-                        :messages="$errors->get('default_two_factor_method')"
-                    />
-                </fieldset>
-            @endif
-            
-            </div>
+                <x-two-factor-auth-selector
+                    name="two_factor_mode"
+                    :value="old('two_factor_mode', (string) ($twoFactorMode?->value ?? 0))"
+                    :globalSetting="$force2fa"
+                    :excludeUseProfileSetting="true"
+                    :passkeyGloballyEnabled="$passkeyGloballyEnabled"
+                    :passkeyEnabled="$member->two_factor_passkey_enabled ?? true"
+                    :defaultTwoFactorMethod="(string) ($member->default_two_factor_method ?? $defaultTwoFactorMethod)"
+                    :columns="3"
+                />
+            </section>
         @endif
-        </section>
     </form>
 
     <!-- 2FA管理セクション（メールサーバー設定済み、かつ二段階認証が有効の場合のみ表示） -->
     @if($isMailServerTested && $force2fa !== \App\Enums\AuthenticationMode::Disabled->value)
-    <section class="mt-8 transition-colors-unified">
-        <h2>{{ __('admin/profile.2fa_management') }}</h2>
-
-        <!-- Passkeyデバイス -->
-        @if($passkeyEnabled)
-        <div>
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold">Passkeyデバイス</h3>
-                @if(!$passkeyDevices->isEmpty())
-                    <button 
-                        type="button"
-                        onclick="openModal('deleteAllPasskeysModal')"
-                        class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
-                        <i class="fas fa-trash-alt mr-1"></i>全て削除
-                    </button>
-                @endif
-            </div>
-            
-            @if($passkeyDevices->isEmpty())
-                <p class="text-gray-600 dark:text-gray-400 mb-4">Passkeyデバイスが登録されていません</p>
-            @else
-                <div class="space-y-4 mb-4">
-                    @foreach($passkeyDevices as $device)
-                        <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4 flex items-start justify-between">
-                            <div class="flex-1">
-                                <div class="flex items-center mb-2">
-                                    <i class="fas fa-key text-green-600 dark:text-green-400 mr-2"></i>
-                                    <h4 class="font-semibold">{{ $device->name }}</h4>
-                                </div>
-                                <div class="text-sm text-gray-600 dark:text-gray-400">
-                                    <p><strong>登録日時:</strong> {{ $device->created_at->format('Y-m-d H:i') }}</p>
-                                    @if($device->last_used_at)
-                                        <p><strong>最終使用:</strong> {{ $device->last_used_at->format('Y-m-d H:i') }}</p>
-                                    @endif
-                                </div>
-                            </div>
-                            <button 
-                                type="button"
-                                onclick="openDeletePasskeyModal('{{ $device->id }}', '{{ $device->name }}')"
-                                class="ml-4 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
-                                削除
-                            </button>
-                        </div>
-                    @endforeach
-                </div>
-            @endif
-            <!-- 新しいPasskeyを追加 -->
-            <button 
-                type="button"
-                onclick="registerPasskey()"
-                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
-                <i class="fas fa-plus mr-2"></i>Passkeyを追加
-            </button>
-
-            <!-- Passkeyの説明 -->
-            <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
-                <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                    <i class="fas fa-info-circle mr-2"></i>{{ __('admin/profile.passkey_info_title') }}
-                </h4>
-                <ul class="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-disc list-inside">
-                    <li>{{ __('admin/profile.passkey_info_1') }}</li>
-                    <li>{{ __('admin/profile.passkey_info_2') }}</li>
-                    <li>{{ __('admin/profile.passkey_info_3') }}</li>
-                </ul>
-            </div>
-        </div>
-        @endif
-
-        <!-- 回復コード -->
-        <div class="mb-8">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold">{{ __('two-factor.recovery_codes.title') }}</h3>
-            </div>
-
-            @if($hasRecoveryCodes)
-                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
-                    <p class="text-sm text-blue-800 dark:text-blue-200">
-                        <i class="fas fa-info-circle mr-2"></i>
-                        {{ __('two-factor.recovery_codes.remaining', ['count' => $recoveryCodesCount]) }}
-                    </p>
-                </div>
-            @else
-                <p class="text-gray-600 dark:text-gray-400 mb-4">{{ __('two-factor.recovery_codes.not_generated') }}</p>
-            @endif
-            
-            <button 
-                type="button"
-                onclick="openModal('recoveryCodesConfirmModal')"
-                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                <i class="fas fa-{{ $hasRecoveryCodes ? 'sync-alt' : 'plus' }} mr-2"></i>{{ __('two-factor.recovery_codes.' . ($hasRecoveryCodes ? 'regenerate' : 'generate')) }}
-            </button>
-            
-            <!-- 回復コードの説明 -->
-            <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
-                <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                    <i class="fas fa-info-circle mr-2"></i>{{ __('admin/profile.recovery_codes_info_title') }}
-                </h4>
-                <ul class="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-disc list-inside">
-                    <li>{{ __('admin/profile.recovery_codes_info_1') }}</li>
-                    <li>{{ __('admin/profile.recovery_codes_info_2') }}</li>
-                    <li>{{ __('admin/profile.recovery_codes_info_3') }}</li>
-                    <li>{{ __('admin/profile.recovery_codes_info_4') }}</li>
-                    <li>{{ __('admin/profile.recovery_codes_info_5') }}</li>
-                    <li>{{ __('admin/profile.recovery_codes_info_6') }}</li>
-                </ul>
-            </div>            
-        </div>
-    </section>
+        <x-two-factor-management
+            :passkeyEnabled="$passkeyEnabled"
+            :passkeyDevices="$passkeyDevices"
+            :hasRecoveryCodes="$hasRecoveryCodes"
+            :recoveryCodesCount="$recoveryCodesCount"
+        />
     @endif
 
     <!-- 信頼済みデバイス削除モーダル -->
