@@ -35,6 +35,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'icon_type' => 'info',     // アイコンタイプ: warning, danger, info, success
     'confirm_color' => 'blue',     // 確認ボタンの色: blue, red, green, yellow
     'close_only' => false,        // 閉じるボタンのみ表示モード
+    'dismissible' => true,        // 背景クリックで閉じるかどうか（デフォルト: true）
 ])
 
 @php
@@ -52,7 +53,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endphp
 
 <div id="{{ $id }}" class="modal">
-    <div class="modal-overlay" onclick="closeModal('{{ $id }}')"></div>
+    <div class="modal-overlay" @if($dismissible) onclick="closeModal('{{ $id }}')" @endif></div>
     <div class="modal-container" onclick="event.stopPropagation()">
         <div class="modal-content">
             @if(!$hasCustomContent)

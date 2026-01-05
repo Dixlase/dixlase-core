@@ -72,61 +72,40 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @enderror
             </fieldset>
 
-            <fieldset>
-                <legend>{{ __('common.email') }}</legend>
-                <x-form.text
-                    name="email"
-                    id="profile_email"
-                    type="email"
-                    :value="old('email', $member->email)"
-                    :required="true"
-                    class="w-full"
-                />
-                @error('email')
-                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
-                
-                @if($hasPendingEmail)
-                    <div class="mt-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
-                        <p class="text-sm text-yellow-800 dark:text-yellow-200">
-                            <i class="fas fa-exclamation-triangle mr-2"></i>
-                            {!! __('admin/profile.pending_email_notice', ['email' => $pendingEmail]) !!}
-                        </p>
-                        <p class="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
-                            {{ __('admin/profile.current_email', ['email' => $member->email]) }}
-                        </p>
-                    </div>
-                @else
-                    <p class="description-text">
-                        @if($isMailServerTested)
-                            {!! __('admin/profile.email_change_help') !!}
-                        @else
-                            {!! __('admin/profile.email_change_help_no_mail') !!}
-                        @endif
+            <x-email-input
+                id="profile_email"
+                name="email"
+                :value="old('email', $member->email)"
+                :required="false"
+                :showConfirmation="true"
+                :showConfirmationOnChange="true"
+            />
+            @error('email')
+                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+            @enderror
+            @error('email_confirmation')
+                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+            @enderror
+            
+            @if($hasPendingEmail)
+                <div class="mt-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
+                    <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        {!! __('admin/profile.pending_email_notice', ['email' => $pendingEmail]) !!}
                     </p>
-                @endif
-            </fieldset>
-
-            {{-- メールアドレス確認フィールド（メールアドレス変更時のみ表示） --}}
-            <fieldset id="profile-email-confirmation-field" style="display: none;">
-                <legend>{{ __('admin.settings.members.form.email_confirmation') }}</legend>
-                <x-form.text
-                    type="email"
-                    id="profile_email_confirmation"
-                    name="email_confirmation"
-                    :value="old('email_confirmation')"
-                    :required="false"
-                    autocomplete="off"
-                    onpaste="return false"
-                    oncopy="return false"
-                    oncut="return false"
-                    class="w-full"
-                />
-                <p class="description-text">{{ __('admin.settings.members.form.email_confirmation_help') }}</p>
-                @error('email_confirmation')
-                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
-            </fieldset>
+                    <p class="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
+                        {{ __('admin/profile.current_email', ['email' => $member->email]) }}
+                    </p>
+                </div>
+            @else
+                <p class="description-text">
+                    @if($isMailServerTested)
+                        {!! __('admin/profile.email_change_help') !!}
+                    @else
+                        {!! __('admin/profile.email_change_help_no_mail') !!}
+                    @endif
+                </p>
+            @endif
 
             <fieldset>
                 <legend>{{ __('common.locale') }}</legend>
@@ -160,6 +139,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :requireNumber="true"
                     :requireSymbol="$passwordRequireSymbol"
                     :showConfirmation="true"
+                    :showConfirmationOnChange="true"
                 />
             </fieldset>
         </section>

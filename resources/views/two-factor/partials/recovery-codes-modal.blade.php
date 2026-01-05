@@ -30,7 +30,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     $clearSessionRoute = $clearSessionRoute ?? null; // セッションクリア用ルート（自動生成時のみ）
 @endphp
 
-<x-modal :id="$modalId" :title="$error ? __('common.error') : ($title ?? __('two-factor.recovery_codes.title'))" :icon_type="$error ? 'danger' : 'warning'">
+<x-modal :id="$modalId" :title="$error ? __('common.error') : ($title ?? __('two-factor.recovery_codes.title'))" :icon_type="$error ? 'danger' : 'warning'" :dismissible="false">
     <div class="space-y-4">
         @if($error)
             {{-- エラー表示モード --}}
