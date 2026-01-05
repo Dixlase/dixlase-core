@@ -1,0 +1,223 @@
+{{--
+This file is part of Dixlase.
+
+Copyright (C) 2025 exc-D inc.
+https://exc-d.com
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+--}}
+
+@props([
+    'name' => 'two_factor_mode',
+    'value' => '0',
+    'globalSetting' => null, // 全体設定の値（0=無効, 1=異なる端末時のみ, 2=常に有効, 3=プロフィール設定に従う）
+    'excludeUseProfileSetting' => false, // プロフィール設定に従う選択肢を除外するか
+    'passkeyGloballyEnabled' => false, // パスキーが全体で有効か
+    'passkeyEnabled' => true, // パスキーが個別に有効か
+    'defaultTwoFactorMethod' => '0', // デフォルトの二段階認証方法（0=メール, 1=パスキー）
+    'columns' => 3,
+])
+
+@php
+    use App\Enums\AuthenticationMode;
+    use App\Enums\TwoFactorMethod;
+    
+    // 全体設定が「プロフィール設定を反映」の場合は設定を表示
+    $showSettings = ($globalSetting === AuthenticationMode::UseProfileSetting->value);
+    
+    // 全体設定で固定されている場合
+    $isFixedByGlobal = !$showSettings && !$excludeUseProfileSetting && $globalSetting !== null;
+    
+    // オプションを取得
+    if ($excludeUseProfileSetting) {
+        // プロフィール設定用（UseProfileSettingを除く）
+        $options = [];
+        foreach (AuthenticationMode::forProfile() as $case) {
+            $options[] = [
+                'value' => (string) $case->value,
+                'label' => $case->twoFactorLabel(),
+                'icon' => match($case) {
+                    AuthenticationMode::Disabled => 'fas fa-shield-alt',
+                    AuthenticationMode::DifferentDevice => 'fas fa-shield-virus',
+                    AuthenticationMode::Always => 'fas fa-shield-check',
+                    default => 'fas fa-shield-alt',
+                },
+            ];
+        }
+    } else {
+        // 全体設定用（全オプション）
+        $options = [];
+        foreach (AuthenticationMode::cases() as $case) {
+            $options[] = [
+                'value' => (string) $case->value,
+                'label' => $case->twoFactorLabel(),
+                'icon' => match($case) {
+                    AuthenticationMode::Disabled => 'fas fa-shield-alt',
+                    AuthenticationMode::DifferentDevice => 'fas fa-shield-virus',
+                    AuthenticationMode::Always => 'fas fa-shield-check',
+                    AuthenticationMode::UseProfileSetting => 'fas fa-user-cog',
+                },
+            ];
+        }
+    }
+    
+    $initialPasskeyEnabled = old('two_factor_passkey_enabled', $passkeyEnabled);
+    $initialTwoFactorMode = old('two_factor_mode', $value);
+@endphp
+
+<div x-data="{ 
+    passkeyEnabled: {{ $passkeyGloballyEnabled && $initialPasskeyEnabled ? 'true' : 'false' }},
+    twoFactorMode: '{{ $initialTwoFactorMode }}',
+    get twoFactorEnabled() {
+        return this.twoFactorMode !== '0';
+    },
+    init() {
+        this.$watch('passkeyEnabled', value @php echo '=>'; @endphp {
+            if (!value) {
+                const emailRadio = document.querySelector('input[name=\'default_two_factor_method\'][value=\'0\']');
+                if (emailRadio) {
+                    emailRadio.checked = true;
+                    emailRadio.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            }
+        });
+    }
+}">
+    
+    @if($showSettings || $excludeUseProfileSetting)
+        {{-- 設定可能な場合 --}}
+        <fieldset>
+            <legend>{{ __('auth.two_factor_mode.label') }}</legend>
+            <x-form.radio-card-group
+                :name="$name"
+                :options="$options"
+                :value="$value"
+                :columns="$columns"
+                xModel="twoFactorMode"
+            />
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{!! __('auth.two_factor_help') !!}</p>
+        </fieldset>
+    @elseif($isFixedByGlobal)
+        {{-- 全体設定で固定されている場合 --}}
+        <fieldset>
+            <legend>{{ __('auth.two_factor_mode.label') }}</legend>
+            <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
+                <p class="text-sm">
+                    @php
+                        $globalMode = AuthenticationMode::tryFrom($globalSetting);
+                        if ($globalMode) {
+                            echo str_replace(':account_type', __('common.account_types.member'), $globalMode->twoFactorLabel());
+                        }
+                    @endphp
+                </p>
+                <p class="text-xs mt-1">
+                    {{ __('common.two_factor_global_setting_fixed') }}
+                </p>
+            </div>
+        </fieldset>
+    @endif
+
+    {{-- 二段階認証方法設定 --}}
+    <fieldset>
+        <legend>{{ __('auth.two_factor_method.label') }}</legend>
+
+        <div class="space-y-6">
+            <div class="space-y-3">
+                <div class="flex items-center space-x-3">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-600 dark:text-green-400 mr-2"></i>
+                        <span class="text-sm font-medium">{{ __('auth.two_factor_method.options.email') }}</span>
+                    </div>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ __('admin/members/settings/auth.email_always_enabled_note') }}</span>
+                </div>
+                
+                @if($passkeyGloballyEnabled)
+                    {{-- 全体設定でパスキーが有効な場合：個別に設定可能 --}}
+                    <div class="flex items-center space-x-3" :class="{ 'opacity-50 pointer-events-none': !twoFactorEnabled }">
+                        <x-form.toggle
+                            name="two_factor_passkey_enabled"
+                            :label="__('auth.two_factor_method.options.passkey')"
+                            :checked="$initialPasskeyEnabled"
+                            xModel="passkeyEnabled"
+                        />
+                    </div>
+                @else
+                    {{-- 全体設定でパスキーが無効な場合：表示のみ --}}
+                    <div class="flex items-center space-x-3">
+                        <div class="flex items-center">
+                            <i class="fas fa-times-circle text-gray-400 dark:text-gray-600 mr-2"></i>
+                            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                {{ __('auth.two_factor_method.options.passkey') }}
+                            </span>
+                        </div>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                            {{ __('admin/members/form.passkey_disabled_globally') }}
+                        </span>
+                    </div>
+                @endif
+            </div>
+
+            <div class="space-y-1">
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                    {{ __('admin/members/form.two_factor_method_note') }}
+                    <a href="{{ route('admin.members.settings.auth') }}" class="text-blue-600 dark:text-blue-400 hover:underline">
+                        {{ __('admin/members/form.change_in_global_settings') }}
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        @error('two_factor_passkey_enabled')
+            <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+        @enderror
+    </fieldset>
+
+    {{-- デフォルトの認証方法（パスキーが有効な場合のみ表示） --}}
+    @if($passkeyGloballyEnabled)
+        <fieldset>
+            <legend>{{ __('admin/members/form.default_two_factor_method') }}</legend>
+            @php
+                $defaultMethodOptions = [
+                    ['value' => '0', 'label' => __('auth.two_factor_method.options.email')],
+                    ['value' => '1', 'label' => __('auth.two_factor_method.options.passkey')],
+                ];
+                $currentDefaultMethod = old('default_two_factor_method', $defaultTwoFactorMethod);
+            @endphp
+            
+            <div x-show="!passkeyEnabled" class="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
+                <p class="text-sm text-blue-800 dark:text-blue-200">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    {{ __('admin/members/form.passkey_disabled_default_email_only') }}
+                </p>
+            </div>
+            
+            <div :class="{ 'opacity-50 pointer-events-none': !twoFactorEnabled || !passkeyEnabled }">
+                <x-form.radio-card-group
+                    name="default_two_factor_method"
+                    :options="$defaultMethodOptions"
+                    :value="$currentDefaultMethod"
+                    :columns="2"
+                />
+            </div>
+            
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                {{ __('admin/members/form.default_two_factor_method_help') }}
+            </p>
+            <x-form.error
+                :messages="$errors->get('default_two_factor_method')"
+            />
+        </fieldset>
+    @endif
+    
+</div>
