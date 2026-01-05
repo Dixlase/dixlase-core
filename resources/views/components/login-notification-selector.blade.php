@@ -38,34 +38,47 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     // オプションを取得
     if ($excludeUseProfileSetting) {
         // プロフィール設定用（UseProfileSettingを除く）
-        $options = [];
-        foreach (AuthenticationMode::forProfile() as $case) {
-            $options[] = [
-                'value' => (string) $case->value,
-                'label' => $case->notificationLabel(),
-                'icon' => match($case) {
-                    AuthenticationMode::Disabled => 'fas fa-bell-slash',
-                    AuthenticationMode::DifferentDevice => 'fas fa-exclamation-triangle',
-                    AuthenticationMode::Always => 'fas fa-bell',
-                    default => 'fas fa-bell',
-                },
-            ];
-        }
+        $options = [
+            [
+                'value' => (string) AuthenticationMode::Disabled->value,
+                'label' => __('components.login_notification.options.disabled'),
+                'icon' => 'fas fa-bell-slash',
+            ],
+            [
+                'value' => (string) AuthenticationMode::DifferentDevice->value,
+                'label' => __('components.login_notification.options.different_device'),
+                'icon' => 'fas fa-exclamation-triangle',
+            ],
+            [
+                'value' => (string) AuthenticationMode::Always->value,
+                'label' => __('components.login_notification.options.always'),
+                'icon' => 'fas fa-bell',
+            ],
+        ];
     } else {
         // 全体設定用（全オプション）
-        $options = [];
-        foreach (AuthenticationMode::cases() as $case) {
-            $options[] = [
-                'value' => (string) $case->value,
-                'label' => $case->notificationLabel(),
-                'icon' => match($case) {
-                    AuthenticationMode::Disabled => 'fas fa-bell-slash',
-                    AuthenticationMode::DifferentDevice => 'fas fa-exclamation-triangle',
-                    AuthenticationMode::Always => 'fas fa-bell',
-                    AuthenticationMode::UseProfileSetting => 'fas fa-user-cog',
-                },
-            ];
-        }
+        $options = [
+            [
+                'value' => (string) AuthenticationMode::Disabled->value,
+                'label' => __('components.login_notification.options.disabled'),
+                'icon' => 'fas fa-bell-slash',
+            ],
+            [
+                'value' => (string) AuthenticationMode::DifferentDevice->value,
+                'label' => __('components.login_notification.options.different_device'),
+                'icon' => 'fas fa-exclamation-triangle',
+            ],
+            [
+                'value' => (string) AuthenticationMode::Always->value,
+                'label' => __('components.login_notification.options.always'),
+                'icon' => 'fas fa-bell',
+            ],
+            [
+                'value' => (string) AuthenticationMode::UseProfileSetting->value,
+                'label' => __('common.use_profile_setting'),
+                'icon' => 'fas fa-user-cog',
+            ],
+        ];
     }
 @endphp
 
@@ -73,19 +86,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @if($showSettings || $excludeUseProfileSetting)
         {{-- 設定可能な場合 --}}
         <fieldset>
-            <legend>{{ __('auth.login_notification_mode.label') }}</legend>
+            <legend>{{ __('components.login_notification.label') }}</legend>
             <x-form.radio-card-group
                 :name="$name"
                 :options="$options"
                 :value="$value"
                 :columns="$columns"
             />
-            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ __('auth.login_notification_mode.help') }}</p>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ __('components.login_notification.help') }}</p>
         </fieldset>
     @else
         {{-- 全体設定で固定されている場合 --}}
         <fieldset>
-            <legend>{{ __('auth.login_notification_mode.label') }}</legend>
+            <legend>{{ __('components.login_notification.label') }}</legend>
             <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
                 <p class="text-sm text-gray-700 dark:text-gray-300">
                     <span class="font-medium">
@@ -97,7 +110,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </span>
                 </p>
                 <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                    {{ __('admin/profile.login_notification_global_setting_help') }}
+                    {{ __('components.login_notification.global_setting_help') }}
                 </p>
             </div>
         </fieldset>
