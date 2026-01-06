@@ -288,8 +288,8 @@ return [
 
     // 全体設定による制御メッセージ（アカウント種別対応）
     'global_setting_fixed' => [
-        'two_factor' => 'この設定は:account_type全体設定で制御されており、変更できません。',
-        'two_factor_method' => 'この認証方法は:account_type全体設定で制御されており、変更できません。',
+        'two_fa' => 'この設定は:account_type全体設定で制御されており、変更できません。',
+        'two_fa_method' => 'この認証方法は:account_type全体設定で制御されており、変更できません。',
     ],
 
     // プロフィール・設定関連の汎用項目

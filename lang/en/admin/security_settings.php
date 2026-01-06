@@ -18,8 +18,8 @@ return [
     // Setting labels
     'labels' => [
         // Authentication
-        'two_factor_enabled' => 'Two-Factor Authentication',
-        'two_factor_mode' => 'Two-Factor Mode',
+        'two_fa_enabled' => 'Two-Factor Authentication',
+        'two_fa_mode' => 'Two-Factor Mode',
         'password_min_length' => 'Minimum Password Length',
         'password_require_mixed_case' => 'Require Mixed Case',
         'password_require_numbers' => 'Require Numbers',

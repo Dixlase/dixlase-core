@@ -230,7 +230,7 @@ return [
     ],
 
     // Cleanup Two-Factor Tokens Command
-    'cleanup_two_factor_tokens' => [
+    'cleanup_two_fa_tokens' => [
         'days_zero_warning' => 'Days set to 0 - this will delete ALL two-factor token records.',
         'confirm_delete_all' => 'Are you sure you want to delete ALL two-factor token records? This action cannot be undone.',
         'operation_cancelled' => 'Operation cancelled.',
@@ -842,7 +842,7 @@ return [
     ],
 
     // Two-Factor Recovery (Break-glass)
-    'two_factor_recovery' => [
+    'two_fa_recovery' => [
         'warning_disable' => '⚠️ Warning: Disabling two-factor authentication will reduce account security.',
         'confirm_disable' => 'Disable two-factor authentication for :name?',
         'cancelled' => 'Operation cancelled.',

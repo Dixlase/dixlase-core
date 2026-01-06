@@ -191,7 +191,7 @@ return [
     ],
 
     // 二段階認証設定
-    'two_factor' => [
+    'two_fa' => [
         'mode_label' => '二段階認証モード',
         'help' => '二段階認証を有効にすると、ログイン時に追加の認証が必要になります。',
         'method_label' => '二段階認証方法',
@@ -212,7 +212,7 @@ return [
     ],
 
     // 二段階認証管理
-    'two_factor_management' => [
+    'two_fa_management' => [
         'title' => '二段階認証管理',
         'passkey_devices' => 'Passkeyデバイス',
         'no_passkey_devices' => 'Passkeyデバイスが登録されていません',

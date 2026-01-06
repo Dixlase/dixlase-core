@@ -197,7 +197,7 @@ return [
         'attribute-name' => [
             'rule-name' => 'custom-message',
         ],
-        'default_two_factor_method' => [
+        'default_two_fa_method' => [
             'in_enabled_methods' => 'The default two-factor method must be selected from the enabled methods.',
         ],
     ],
@@ -232,8 +232,8 @@ return [
         // Profile & Security related
         'appearance' => 'Appearance Settings',
         'login_notification_mode' => 'Login Notification Settings',
-        'two_factor_mode' => 'Two-Factor Authentication Settings',
-        'two_factor_method' => 'Two-Factor Authentication Method',
+        'two_fa_mode' => 'Two-Factor Authentication Settings',
+        'two_fa_method' => 'Two-Factor Authentication Method',
         
         // Installation related
         'site_name' => 'Site Name',

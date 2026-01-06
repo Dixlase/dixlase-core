@@ -186,7 +186,7 @@ return [
         'attribute-name' => [
             'rule-name' => 'custom-message',
         ],
-        'default_two_factor_method' => [
+        'default_two_fa_method' => [
             'in_enabled_methods' => 'デフォルトの二段階認証方法は有効な方法の中から選択してください。',
         ],
     ],
@@ -221,8 +221,8 @@ return [
         // プロフィール・セキュリティ関連
         'appearance' => '外観設定',
         'login_notification_mode' => 'ログイン通知設定',
-        'two_factor_mode' => '二段階認証設定',
-        'two_factor_method' => '二段階認証方法',
+        'two_fa_mode' => '二段階認証設定',
+        'two_fa_method' => '二段階認証方法',
         
         // インストール関連
         'site_name' => 'サイト名',

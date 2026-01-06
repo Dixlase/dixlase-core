@@ -46,7 +46,7 @@ return [
     ],
 
     // Two-Factor Authentication Email
-    'two_factor' => [
+    'two_fa' => [
         // Common Messages
         'security_notice' => 'If you did not attempt to log in, a third party may have tried to access your account.  
 There is a risk of unauthorized access, so please change your password immediately or contact your system administrator.',
