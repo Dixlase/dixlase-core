@@ -199,10 +199,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <dd class="font-normal mb-2">{{ __('admin/settings/systems/database.info_password_reset') }}</dd>
                 
                 <dt class="font-semibold">{{ __('admin/settings/systems/database.two_fa_attempts.name') }}</dt>
-                <dd class="font-normal mb-2">{{ __('admin/settings/systems/database.info_two_factor_attempts') }}</dd>
+                <dd class="font-normal mb-2">{{ __('admin/settings/systems/database.info_two_fa_attempts') }}</dd>
                 
                 <dt class="font-semibold">{{ __('admin/settings/systems/database.two_fa_tokens.name') }}</dt>
-                <dd class="font-normal mb-2">{{ __('admin/settings/systems/database.info_two_factor_tokens') }}</dd>
+                <dd class="font-normal mb-2">{{ __('admin/settings/systems/database.info_two_fa_tokens') }}</dd>
                 
                 <dt class="font-semibold">{{ __('admin/settings/systems/database.recovery_codes.name') }}</dt>
                 <dd class="font-normal mb-2">{{ __('admin/settings/systems/database.info_recovery_codes') }}</dd>
