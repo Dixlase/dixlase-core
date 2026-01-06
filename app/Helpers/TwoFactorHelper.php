@@ -195,7 +195,7 @@ class TwoFactorHelper
     public function getEffectiveAuthMethod($user, ?string $settingModelClass = null): int
     {
         $settingModelClass = $settingModelClass ?? \App\Models\MemberSetting::class;
-        $userMethod = $user->two_factor_method ?? null;
+        $userMethod = $user->default_two_factor_method ?? null;
         $defaultMethod = (int) $settingModelClass::getValue('default_two_factor_method', (string)TwoFactorMethod::EMAIL->value);
         $enabledMethods = $this->getEnabledTwoFactorMethods($settingModelClass);
         $globalTwoFactorMode = (int) $settingModelClass::getValue('force_2fa', (string)AuthenticationMode::Disabled->value);
