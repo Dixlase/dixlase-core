@@ -69,7 +69,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         }
                     @endphp
                     
-                    <x-form.toggle-group
+                    <x-form.toggle_group
                         name="notification_log_levels"
                         :options="$logLevelOptions"
                         :values="$settings['notification_log_levels'] ?? \App\Enums\LogLevel::getDefaultNotificationLevels()"

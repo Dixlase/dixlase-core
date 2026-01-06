@@ -93,7 +93,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <legend>{{ __('admin/settings/security/extensions.security.preset_label') }}</legend>
                 
                 <div class="mt-3">
-                    <x-form.radio-card-group
+                    <x-form.radio_card_group
                         name="extension_security_preset"
                         :options="\App\Enums\ExtensionSecurityPreset::getRadioCardOptions()"
                         :value="old('extension_security_preset', $settings['extension_security_preset'])"
@@ -266,7 +266,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <p>{{ __('admin/settings/security/extensions.security.permission_mismatch_help') }}</p>
                     
                     <div class="mt-3">
-                        <x-form.radio-card-group
+                        <x-form.radio_card_group
                             name="extension_permission_mismatch_action"
                             :options="[
                                 [

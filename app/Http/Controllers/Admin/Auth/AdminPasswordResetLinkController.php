@@ -55,7 +55,7 @@ class AdminPasswordResetLinkController extends Controller
             $captchaWidget = $loginHelper->generateCaptchaWidget('admin_password_reset');
         }
         
-        return view('auth.forgot-password', [
+        return view('auth.forgot_password', [
             'title' => __('admin/auth.forgot_password.title'),
             'header' => __('admin/auth.forgot_password.header'),
             'description' => __('admin/auth.forgot_password.description'),

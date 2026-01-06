@@ -24,23 +24,33 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'header',
     'description',
     'route',
-    'loginRoute' => null,
-    'captchaEnabled' => false,
-    'captchaWidget' => null,
+    'token',
+    'email',
+    'emailLabel',
+    'passwordLabel',
+    'submitText',
+    'passwordMinLength' => 8,
+    'passwordRequireUppercase' => false,
+    'passwordRequireNumber' => false,
+    'passwordRequireSymbol' => false,
 ])
 
 @extends($layout)
 @section('title', $title)
 @section('header', $header)
-@section('description')
-    {!! $description !!}
-@endsection
+@section('description', $description)
 
 @section('content')
-    <x-auth.forgot-password
+    <x-auth.reset_password
         :route="$route"
-        :loginRoute="$loginRoute"
-        :captchaEnabled="$captchaEnabled"
-        :captchaWidget="$captchaWidget"
+        :token="$token"
+        :email="$email"
+        :emailLabel="$emailLabel"
+        :passwordLabel="$passwordLabel"
+        :submitText="$submitText"
+        :passwordMinLength="$passwordMinLength"
+        :passwordRequireUppercase="$passwordRequireUppercase"
+        :passwordRequireNumber="$passwordRequireNumber"
+        :passwordRequireSymbol="$passwordRequireSymbol"
     />
 @endsection

@@ -95,7 +95,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
                     {{ __('admin/settings/systems/logs/files.level_filter.label') }}:
                 </span>
-                <x-form.toggle-group
+                <x-form.toggle_group
                     name="levels"
                     :options="$availableLevelFilters"
                     :values="$levelFilters ?? ['error', 'warning', 'normal', 'debug']"

@@ -45,7 +45,7 @@ class AdminNewPasswordController extends Controller
         // パスワード設定を取得
         $passwordSettings = $this->getPasswordSettings($settingsGetter);
         
-        return view('auth.reset-password', [
+        return view('auth.reset_password', [
             'title' => __('admin/auth.reset_password.title'),
             'header' => __('admin/auth.reset_password.header'),
             'description' => __('admin/auth.reset_password.description'),
