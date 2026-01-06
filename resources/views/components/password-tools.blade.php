@@ -476,12 +476,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             matchIndicator.style.display = 'flex';
 
             // パスワードが一致しているかチェック
+            // FontAwesomeのSVG変換に対応するため、classList操作を使用
             if (password === confirm && password !== '') {
                 // 一致: 緑のチェックマーク
-                matchIcon.className = 'fas fa-check text-green-500';
+                matchIcon.classList.remove('fa-times', 'text-red-500');
+                matchIcon.classList.add('fa-check', 'text-green-500');
             } else {
                 // 不一致: 赤のバツマーク
-                matchIcon.className = 'fas fa-times text-red-500';
+                matchIcon.classList.remove('fa-check', 'text-green-500');
+                matchIcon.classList.add('fa-times', 'text-red-500');
+            }
+            
+            // 必須のクラスが存在することを確認（FontAwesome変換後も維持）
+            if (!matchIcon.classList.contains('fas')) {
+                matchIcon.classList.add('fas');
             }
         }
     };
