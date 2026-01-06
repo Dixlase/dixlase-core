@@ -210,7 +210,7 @@ class AdminMemberController extends AdminLoggedInController
 
         $this->loadMemberFormParams();
 
-        $passkeyEnabled = $this->memberSettingRepository->get('enabled_2fa_passkey', '0') === '1';
+        $passkeyEnabled = $this->memberSettingRepository->get('enabled_two_fa_passkey', '0') === '1';
         $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
         $this->viewParams['passkeyDevices'] = $passkeyService->getDevices($member);
         $this->viewParams['passkeyEnabled'] = $passkeyEnabled;
@@ -321,7 +321,7 @@ class AdminMemberController extends AdminLoggedInController
         }
         $this->viewParams['loginNotificationModeOptions'] = $loginNotificationOptions;
 
-        $force2fa = (int) $this->memberSettingRepository->get('force_2fa', AuthenticationMode::Disabled->value);
+        $force2fa = (int) $this->memberSettingRepository->get('force_two_fa', AuthenticationMode::Disabled->value);
         $this->viewParams['force2fa'] = $force2fa;
         $twoFactorEnum = AuthenticationMode::tryFrom($force2fa);
         $this->viewParams['twoFactorModeLabel'] = $twoFactorEnum ? $twoFactorEnum->twoFactorLabel() : '';
@@ -342,16 +342,16 @@ class AdminMemberController extends AdminLoggedInController
         ];
         
         // 全体設定でパスキー認証が有効な場合は追加
-        $passkeyEnabled = $this->memberSettingRepository->get('enabled_2fa_passkey', '0') === '1';
+        $passkeyEnabled = $this->memberSettingRepository->get('enabled_two_fa_passkey', '0') === '1';
         if ($passkeyEnabled) {
             $twoFactorMethodOptions[TwoFactorMethod::PASSKEY->value] = TwoFactorMethod::PASSKEY->translationKey();
         }
         
         // デフォルトの認証方法を取得
-        $defaultTwoFactorMethod = (int) $this->memberSettingRepository->get('default_two_factor_method', TwoFactorMethod::EMAIL->value);
+        $defaultTwoFaMethod = (int) $this->memberSettingRepository->get('default_two_fa_method', TwoFactorMethod::EMAIL->value);
         
         $this->viewParams['enabledTwoFactorMethods'] = $twoFactorMethodOptions;
-        $this->viewParams['defaultTwoFactorMethod'] = $defaultTwoFactorMethod;
+        $this->viewParams['defaultTwoFaMethod'] = $defaultTwoFaMethod;
         $this->viewParams['passkeyEnabled'] = $passkeyEnabled;
         $this->viewParams['twoFactorMode'] = AuthenticationMode::from($this->viewParams['force2fa']);
         $this->viewParams['twoFactorUseProfileSettingValue'] = AuthenticationMode::UseProfileSetting->value;

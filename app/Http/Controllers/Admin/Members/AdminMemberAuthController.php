@@ -60,30 +60,30 @@ class AdminMemberAuthController extends AdminMemberSettingsController
             $this->memberSettingRepository->set('lockout_notification_enabled', $validated['lockout_notification_enabled'] ? '1' : '0');
         }
 
-        if (array_key_exists('force_2fa', $validated)) {
-            $this->memberSettingRepository->set('force_2fa', (int) $validated['force_2fa']);
+        if (array_key_exists('force_two_fa', $validated)) {
+            $this->memberSettingRepository->set('force_two_fa', (int) $validated['force_two_fa']);
         }
-        if (array_key_exists('two_factor_expire_minutes', $validated)) {
-            $this->memberSettingRepository->set('two_factor_expire_minutes', (string) $validated['two_factor_expire_minutes']);
+        if (array_key_exists('two_fa_expire_minutes', $validated)) {
+            $this->memberSettingRepository->set('two_fa_expire_minutes', (string) $validated['two_fa_expire_minutes']);
         }
-        if (array_key_exists('two_factor_resend_interval_seconds', $validated)) {
-            $this->memberSettingRepository->set('two_factor_resend_interval_seconds', (string) $validated['two_factor_resend_interval_seconds']);
+        if (array_key_exists('two_fa_resend_interval_seconds', $validated)) {
+            $this->memberSettingRepository->set('two_fa_resend_interval_seconds', (string) $validated['two_fa_resend_interval_seconds']);
         }
-        if (array_key_exists('two_factor_passkey_enabled', $validated)) {
-            $passkeyValue = $validated['two_factor_passkey_enabled'] ? '1' : '0';
-            $this->memberSettingRepository->set('two_factor_passkey_enabled', $passkeyValue);
+        if (array_key_exists('enabled_two_fa_passkey', $validated)) {
+            $passkeyValue = $validated['enabled_two_fa_passkey'] ? '1' : '0';
+            $this->memberSettingRepository->set('enabled_two_fa_passkey', $passkeyValue);
         }
-        if (array_key_exists('2fa_max_attempts', $validated)) {
-            $this->memberSettingRepository->set('2fa_max_attempts', (string) $validated['2fa_max_attempts']);
+        if (array_key_exists('two_fa_max_attempts', $validated)) {
+            $this->memberSettingRepository->set('two_fa_max_attempts', (string) $validated['two_fa_max_attempts']);
         }
-        if (array_key_exists('2fa_attempt_window', $validated)) {
-            $this->memberSettingRepository->set('2fa_attempt_window', (string) $validated['2fa_attempt_window']);
+        if (array_key_exists('two_fa_attempt_window', $validated)) {
+            $this->memberSettingRepository->set('two_fa_attempt_window', (string) $validated['two_fa_attempt_window']);
         }
-        if (array_key_exists('2fa_lockout_duration', $validated)) {
-            $this->memberSettingRepository->set('2fa_lockout_duration', (string) $validated['2fa_lockout_duration']);
+        if (array_key_exists('two_fa_lockout_duration', $validated)) {
+            $this->memberSettingRepository->set('two_fa_lockout_duration', (string) $validated['two_fa_lockout_duration']);
         }
-        if (array_key_exists('2fa_lockout_notification_enabled', $validated)) {
-            $this->memberSettingRepository->set('2fa_lockout_notification_enabled', $validated['2fa_lockout_notification_enabled'] ? '1' : '0');
+        if (array_key_exists('two_fa_lockout_notification_enabled', $validated)) {
+            $this->memberSettingRepository->set('two_fa_lockout_notification_enabled', $validated['two_fa_lockout_notification_enabled'] ? '1' : '0');
         }
         if (array_key_exists('recovery_codes_count', $validated)) {
             $this->memberSettingRepository->set('recovery_codes_count', (string) $validated['recovery_codes_count']);

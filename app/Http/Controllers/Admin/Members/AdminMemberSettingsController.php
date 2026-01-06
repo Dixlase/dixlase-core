@@ -106,10 +106,10 @@ class AdminMemberSettingsController extends AdminLoggedInController
             ->values()
             ->toArray();
 
-        $force2fa = (int) $this->memberSettingRepository->get('force_2fa', AuthenticationMode::Disabled->value);
+        $force2fa = (int) $this->memberSettingRepository->get('force_two_fa', AuthenticationMode::Disabled->value);
         
-        if (old('force_2fa') !== null) {
-            $force2fa = (int) old('force_2fa');
+        if (old('force_two_fa') !== null) {
+            $force2fa = (int) old('force_two_fa');
         }
         
         $twoFactorGlobalOptions = collect(config('admin.global_two_factor_mode'))
@@ -123,11 +123,11 @@ class AdminMemberSettingsController extends AdminLoggedInController
             ->values()
             ->toArray();
         
-        $passkeyDbValue = $this->memberSettingRepository->get('two_factor_passkey_enabled', '0');
+        $passkeyDbValue = $this->memberSettingRepository->get('enabled_two_fa_passkey', '0');
         $passkeyEnabled = $passkeyDbValue === '1';
         
-        if (old('two_factor_passkey_enabled') !== null) {
-            $passkeyEnabled = (bool) old('two_factor_passkey_enabled');
+        if (old('enabled_two_fa_passkey') !== null) {
+            $passkeyEnabled = (bool) old('enabled_two_fa_passkey');
         }
 
         $passwordResetEnabled = (bool) $this->memberSettingRepository->get('password_reset_enabled', true);
@@ -141,13 +141,13 @@ class AdminMemberSettingsController extends AdminLoggedInController
         $membersSessionLifetimeEnabled = (bool) $this->memberSettingRepository->get('members_session_lifetime_enabled', false);
         $membersSessionLifetime = (int) $this->memberSettingRepository->get('members_session_lifetime', 120);
 
-        $twoFactorExpireMinutes = (int) $this->memberSettingRepository->get('two_factor_expire_minutes', config('two-factor.code_expiration', 5));
-        $twoFactorResendIntervalSeconds = (int) $this->memberSettingRepository->get('two_factor_resend_interval_seconds', config('two-factor.resend_interval', 60));
+        $twoFaExpireMinutes = (int) $this->memberSettingRepository->get('two_fa_expire_minutes', config('two-factor.code_expiration', 5));
+        $twoFaResendIntervalSeconds = (int) $this->memberSettingRepository->get('two_fa_resend_interval_seconds', config('two-factor.resend_interval', 60));
 
-        $twoFaMaxAttempts = (int) $this->memberSettingRepository->get('2fa_max_attempts', 5);
-        $twoFaAttemptWindow = (int) $this->memberSettingRepository->get('2fa_attempt_window', 15);
-        $twoFaLockoutDuration = (int) $this->memberSettingRepository->get('2fa_lockout_duration', 30);
-        $twoFaLockoutNotificationEnabled = (bool) $this->memberSettingRepository->get('2fa_lockout_notification_enabled', true);
+        $twoFaMaxAttempts = (int) $this->memberSettingRepository->get('two_fa_max_attempts', 5);
+        $twoFaAttemptWindow = (int) $this->memberSettingRepository->get('two_fa_attempt_window', 15);
+        $twoFaLockoutDuration = (int) $this->memberSettingRepository->get('two_fa_lockout_duration', 30);
+        $twoFaLockoutNotificationEnabled = (bool) $this->memberSettingRepository->get('two_fa_lockout_notification_enabled', true);
 
         $recoveryCodesCount = (int) $this->memberSettingRepository->get('recovery_codes_count', 5);
         $recoveryCodeRegenerateInterval = (int) $this->memberSettingRepository->get('recovery_code_regenerate_interval', 24);
@@ -175,8 +175,8 @@ class AdminMemberSettingsController extends AdminLoggedInController
         $this->viewParams['lockoutNotificationEnabled'] = $lockoutNotificationEnabled;
         $this->viewParams['membersSessionLifetimeEnabled'] = $membersSessionLifetimeEnabled;
         $this->viewParams['membersSessionLifetime'] = $membersSessionLifetime;
-        $this->viewParams['twoFactorExpireMinutes'] = $twoFactorExpireMinutes;
-        $this->viewParams['twoFactorResendIntervalSeconds'] = $twoFactorResendIntervalSeconds;
+        $this->viewParams['twoFaExpireMinutes'] = $twoFaExpireMinutes;
+        $this->viewParams['twoFaResendIntervalSeconds'] = $twoFaResendIntervalSeconds;
         $this->viewParams['twoFaMaxAttempts'] = $twoFaMaxAttempts;
         $this->viewParams['twoFaAttemptWindow'] = $twoFaAttemptWindow;
         $this->viewParams['twoFaLockoutDuration'] = $twoFaLockoutDuration;

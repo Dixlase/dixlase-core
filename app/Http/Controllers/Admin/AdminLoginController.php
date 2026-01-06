@@ -456,7 +456,7 @@ class AdminLoginController extends AdminController
         $currentMethod = TwoFactorMethod::EMAIL->value;
 
         // Passkeyが有効かチェック
-        $passkeyEnabled = MemberSetting::getValue('enabled_2fa_passkey', '0') === '1';
+        $passkeyEnabled = MemberSetting::getValue('enabled_two_fa_passkey', '0') === '1';
         
         // メンバーがPasskeyを登録しているかチェック
         $passkeyService = app(PasskeyAuthenticationService::class);
@@ -481,14 +481,14 @@ class AdminLoginController extends AdminController
         }
 
         // 二段階認証の設定値を取得（メンバー設定 > コンフィグ）
-        $twoFactorExpireMinutes = (int) MemberSetting::getValue('two_factor_expire_minutes', config('two-factor.code_expiration', 5));
-        $twoFactorResendIntervalSeconds = (int) MemberSetting::getValue('two_factor_resend_interval_seconds', config('two-factor.resend_interval', 60));
+        $twoFaExpireMinutes = (int) MemberSetting::getValue('two_fa_expire_minutes', config('two-factor.code_expiration', 5));
+        $twoFaResendIntervalSeconds = (int) MemberSetting::getValue('two_fa_resend_interval_seconds', config('two-factor.resend_interval', 60));
 
         return view('two-factor.email-challenge', [
             'availableMethods' => $availableMethods,
             'currentMethod' => $currentMethod,
-            'expireMinutes' => $twoFactorExpireMinutes,
-            'resendIntervalSeconds' => $twoFactorResendIntervalSeconds,
+            'expireMinutes' => $twoFaExpireMinutes,
+            'resendIntervalSeconds' => $twoFaResendIntervalSeconds,
             'action' => route('admin.two-factor.email.verify'),
             'resendAction' => route('admin.two-factor.email.resend'),
             'loginRoute' => route('admin.login'),
@@ -537,7 +537,7 @@ class AdminLoginController extends AdminController
         if (!$isValid) {
             // 最大試行回数に達したかチェック
             if ($attemptService->hasReachedMaxAttempts($member)) {
-                $lockoutDuration = (int) MemberSetting::getValue('2fa_lockout_duration', 30);
+                $lockoutDuration = (int) MemberSetting::getValue('two_fa_lockout_duration', 30);
                 session()->forget(['login.id', 'login.remember']);
                 return redirect()->route('admin.login')
                     ->withErrors(['email' => __('two-factor.lockout.locked', ['minutes' => $lockoutDuration])]);
@@ -668,7 +668,7 @@ class AdminLoginController extends AdminController
         if (!$isValid) {
             // 最大試行回数に達したかチェック
             if ($attemptService->hasReachedMaxAttempts($member)) {
-                $lockoutDuration = (int) MemberSetting::getValue('2fa_lockout_duration', 30);
+                $lockoutDuration = (int) MemberSetting::getValue('two_fa_lockout_duration', 30);
                 session()->forget(['login.id', 'login.remember']);
                 return redirect()->route('admin.login')
                     ->withErrors(['email' => __('two-factor.lockout.locked', ['minutes' => $lockoutDuration])]);
@@ -736,14 +736,14 @@ class AdminLoginController extends AdminController
         }
 
         // 二段階認証の設定値を取得（メンバー設定 > コンフィグ）
-        $twoFactorExpireMinutes = (int) MemberSetting::getValue('two_factor_expire_minutes', config('two-factor.code_expiration', 5));
-        $twoFactorResendIntervalSeconds = (int) MemberSetting::getValue('two_factor_resend_interval_seconds', config('two-factor.resend_interval', 60));
+        $twoFaExpireMinutes = (int) MemberSetting::getValue('two_fa_expire_minutes', config('two-factor.code_expiration', 5));
+        $twoFaResendIntervalSeconds = (int) MemberSetting::getValue('two_fa_resend_interval_seconds', config('two-factor.resend_interval', 60));
 
         return view('two-factor.email-challenge', [
             'availableMethods' => $availableMethods,
             'currentMethod' => $currentMethod,
-            'expireMinutes' => $twoFactorExpireMinutes,
-            'resendIntervalSeconds' => $twoFactorResendIntervalSeconds,
+            'expireMinutes' => $twoFaExpireMinutes,
+            'resendIntervalSeconds' => $twoFaResendIntervalSeconds,
             'action' => route('admin.two-factor.email.verify'),
             'resendAction' => route('admin.two-factor.email.resend'),
             'loginRoute' => route('admin.login'),
