@@ -25,9 +25,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'passwordRequireUppercase' => false,
     'passwordRequireSymbol' => false,
     'roles' => [],
-    'twoFactorMode' => null,
-    'enabledTwoFactorMethods' => [],
-    'defaultTwoFactorMethod' => null,
+    'twoFaMode' => null,
+    'enabledTwoFaMethods' => [],
+    'defaultTwoFaMethod' => null,
     'isInitialAdmin' => false,
     'isMailServerTested' => false,
     'formAction' => null,        // フォームのaction URL
@@ -379,17 +379,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             />
         @endif   
         
-        @if($force2fa === $twoFactorUseProfileSettingValue)
+        @if($force2fa === $twoFaUseProfileSettingValue)
             <!-- 二段階認証有効/無効 -->
             <fieldset>
                 <legend>{{ __('common.two_fa_authentication') }}</legend>
                 @php
-                    $twoFactorModeValue = old('two_fa_mode', $member->two_fa_mode->value ?? $twoFactorMode->value);
+                    $twoFaModeValue = old('two_fa_mode', $member->two_fa_mode->value ?? $twoFaMode->value);
                 @endphp
                 <x-form.radio-group
                     name="two_fa_mode"
-                    :options="$twoFactorModeOptions"
-                    :value="$twoFactorModeValue"
+                    :options="$twoFaModeOptions"
+                    :value="$twoFaModeValue"
                 />
                 <x-form.error
                     :messages="$errors->get('two_fa_mode')"
@@ -397,35 +397,35 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </fieldset>
             
             <!-- 二段階認証方法設定 -->
-            @if(!empty($enabledTwoFactorMethods))
+            @if(!empty($enabledTwoFaMethods))
                 <fieldset>
                 <legend>
                     {{ __('common.two_fa_method.label') }}
-                    @if(count($enabledTwoFactorMethods) > 1)
+                    @if(count($enabledTwoFaMethods) > 1)
                         <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">
-                            ({{ count($enabledTwoFactorMethods) }} {{ __('common.available_methods') }})
+                            ({{ count($enabledTwoFaMethods) }} {{ __('common.available_methods') }})
                         </span>
                     @endif
                 </legend>
 
                 @php
-                    $currentTwoFaMethod = old('two_fa_method', $member?->two_fa_method ?? $defaultTwoFactorMethod);
-                    $currentMethodValid = array_key_exists($currentTwoFaMethod, $enabledTwoFactorMethods);
-                    $defaultMethod = $defaultTwoFactorMethod ?? array_key_first($enabledTwoFactorMethods);
+                    $currentTwoFaMethod = old('two_fa_method', $member?->two_fa_method ?? $defaultTwoFaMethod);
+                    $currentMethodValid = array_key_exists($currentTwoFaMethod, $enabledTwoFaMethods);
+                    $defaultMethod = $defaultTwoFaMethod ?? array_key_first($enabledTwoFaMethods);
                     $currentMethod = $currentMethodValid ? $currentTwoFaMethod : $defaultMethod;
                 @endphp
 
-                @if(count($enabledTwoFactorMethods) > 1)
+                @if(count($enabledTwoFaMethods) > 1)
                     <x-form.radio-group
                         name="two_fa_method"
-                        :options="$enabledTwoFactorMethods"
+                        :options="$enabledTwoFaMethods"
                         :value="$currentMethod"
                     />
                 @else
                     <input type="hidden" name="two_fa_method" value="{{ $currentMethod }}">
                     <p class="description-text">
                         {{ __('admin/profile.single_method_available') }}: 
-                        <strong>{{ __($enabledTwoFactorMethods[$currentMethod]) }}</strong>
+                        <strong>{{ __($enabledTwoFaMethods[$currentMethod]) }}</strong>
                     </p>
                 @endif
                 
@@ -436,7 +436,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
         @else
             <fieldset>
-                <p class="description-text">{!! __('admin.members.form.two_fa_global_fixed', ['setting' => $twoFactorModeLabel]) !!}</p>
+                <p class="description-text">{!! __('admin.members.form.two_fa_global_fixed', ['setting' => $twoFaModeLabel]) !!}</p>
             </fieldset>
         @endif
     </section>

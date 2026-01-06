@@ -25,7 +25,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'excludeUseProfileSetting' => false, // プロフィール設定に従う選択肢を除外するか
     'passkeyGloballyEnabled' => false, // パスキーが全体で有効か
     'passkeyEnabled' => true, // パスキーが個別に有効か
-    'defaultTwoFactorMethod' => '0', // デフォルトの二段階認証方法（0=メール, 1=パスキー）
+    'defaultTwoFaMethod' => '0', // デフォルトの二段階認証方法（0=メール, 1=パスキー）
     'columns' => 3,
     'globalSettingsUrl' => null, // 全体設定へのリンクURL（nullの場合は注意書きを非表示）
 ])
@@ -92,9 +92,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <div x-data="{ 
     passkeyEnabled: {{ $passkeyGloballyEnabled && $initialPasskeyEnabled ? 'true' : 'false' }},
-    twoFactorMode: '{{ $initialTwoFactorMode }}',
-    get twoFactorEnabled() {
-        return this.twoFactorMode !== '0';
+    twoFaMode: '{{ $initialTwoFactorMode }}',
+    get twoFaEnabled() {
+        return this.twoFaMode !== '0';
     },
     init() {
         this.$watch('passkeyEnabled', value @php echo '=>'; @endphp {
@@ -131,7 +131,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @php
                         $globalMode = AuthenticationMode::tryFrom($globalSetting);
                         if ($globalMode) {
-                            echo str_replace(':account_type', __('common.account_types.member'), $globalMode->twoFactorLabel());
+                            echo str_replace(':account_type', __('common.account_types.member'), $globalMode->twoFaLabel());
                         }
                     @endphp
                 </p>
@@ -158,7 +158,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 
                 @if($passkeyGloballyEnabled || $globalSetting === null)
                     {{-- 全体設定でパスキーが有効な場合、または全体設定画面の場合：個別に設定可能 --}}
-                    <div class="flex items-center space-x-3" :class="{ 'opacity-50 pointer-events-none': !twoFactorEnabled }">
+                    <div class="flex items-center space-x-3" :class="{ 'opacity-50 pointer-events-none': !twoFaEnabled }">
                         <x-form.toggle
                             name="two_fa_passkey_enabled"
                             :label="__('components.two_fa.passkey')"
@@ -208,7 +208,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     ['value' => '0', 'label' => __('common.email')],
                     ['value' => '1', 'label' => __('components.two_fa.passkey')],
                 ];
-                $currentDefaultMethod = old('default_two_fa_method', $defaultTwoFactorMethod);
+                $currentDefaultMethod = old('default_two_fa_method', $defaultTwoFaMethod);
             @endphp
             
             <div x-show="!passkeyEnabled" class="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
@@ -218,7 +218,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </p>
             </div>
             
-            <div :class="{ 'opacity-50 pointer-events-none': !twoFactorEnabled || !passkeyEnabled }">
+            <div :class="{ 'opacity-50 pointer-events-none': !twoFaEnabled || !passkeyEnabled }">
                 <x-form.radio-card-group
                     name="default_two_fa_method"
                     :options="$defaultMethodOptions"
