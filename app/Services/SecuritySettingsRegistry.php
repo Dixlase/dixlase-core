@@ -87,14 +87,14 @@ class SecuritySettingsRegistry
             // =========================================================================
             // 認証設定 (auth)
             // =========================================================================
-            'two_factor_enabled' => [
+            'two_fa_enabled' => [
                 'category' => self::CATEGORY_AUTH,
                 'source' => 'members_settings',
                 'type' => 'bool',
                 'default' => false,
                 'description' => '二段階認証の有効/無効',
             ],
-            'two_factor_mode' => [
+            'two_fa_mode' => [
                 'category' => self::CATEGORY_AUTH,
                 'source' => 'members_settings',
                 'type' => 'string',

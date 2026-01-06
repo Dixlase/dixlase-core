@@ -206,7 +206,7 @@ class SecurityResetCommand extends Command
 
         // Group by category
         $categories = [
-            'auth' => ['two_factor_enabled', 'two_factor_mode', 'password_reset_enabled'],
+            'auth' => ['two_fa_enabled', 'two_fa_mode', 'password_reset_enabled'],
             'captcha' => ['captcha_enabled', 'captcha_driver', 'captcha_authentication_result'],
             'ip' => ['ip_whitelist_enabled', 'ip_blacklist_enabled'],
             'lockdown' => ['lockdown_active', 'lockdown_type'],
@@ -268,7 +268,7 @@ class SecurityResetCommand extends Command
         $settings = [];
         
         $keys = [
-            'two_factor_enabled', 'two_factor_mode',
+            'two_fa_enabled', 'two_fa_mode',
             'captcha_enabled', 'captcha_driver', 'captcha_site_key', 'captcha_authentication_result',
             'ip_whitelist_enabled', 'ip_blacklist_enabled',
             'lockdown_active', 'lockdown_type',
@@ -304,8 +304,8 @@ class SecurityResetCommand extends Command
     protected function getFullDefaultSettings(): array
     {
         return [
-            'two_factor_enabled' => false,
-            'two_factor_mode' => 'disabled',
+            'two_fa_enabled' => false,
+            'two_fa_mode' => 'disabled',
             'captcha_enabled' => false,
             'captcha_driver' => 'google',
             'captcha_authentication_result' => false,
@@ -327,8 +327,8 @@ class SecurityResetCommand extends Command
     {
         return match ($category) {
             'auth' => [
-                'two_factor_enabled' => false,
-                'two_factor_mode' => 'disabled',
+                'two_fa_enabled' => false,
+                'two_fa_mode' => 'disabled',
             ],
             'captcha' => [
                 'captcha_enabled' => false,

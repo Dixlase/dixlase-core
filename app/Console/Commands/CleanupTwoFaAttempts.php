@@ -52,14 +52,14 @@ class CleanupTwoFaAttempts extends Command
         // --allオプションまたは--days=0で全レコード削除
         if ($deleteAll || $days === 0) {
             if (!$deleteAll && $days === 0) {
-                $this->info(__('admin.cleanup_two_factor_attempts.days_zero_warning'));
+                $this->info(__('admin.cleanup_two_fa_attempts.days_zero_warning'));
             }
             
             // --forceオプションがない場合のみ確認を求める
             if (!$this->option('force')) {
                 if (app()->runningInConsole() && php_sapi_name() === 'cli') {
-                    if (!$this->confirm(__('admin.cleanup_two_factor_attempts.confirm_delete_all'))) {
-                        $this->info(__('admin.cleanup_two_factor_attempts.operation_cancelled'));
+                    if (!$this->confirm(__('admin.cleanup_two_fa_attempts.confirm_delete_all'))) {
+                        $this->info(__('admin.cleanup_two_fa_attempts.operation_cancelled'));
                         return 0;
                     }
                 } else {
@@ -68,14 +68,14 @@ class CleanupTwoFaAttempts extends Command
                 }
             }
             
-            $this->info(__('admin.cleanup_two_factor_attempts.deleting_all'));
+            $this->info(__('admin.cleanup_two_fa_attempts.deleting_all'));
             $deletedCount = MemberTwoFaAttempt::query()->delete();
             
             if ($deletedCount > 0) {
-                $this->info(__('admin.cleanup_two_factor_attempts.deleted_all_success', ['count' => $deletedCount]));
+                $this->info(__('admin.cleanup_two_fa_attempts.deleted_all_success', ['count' => $deletedCount]));
                 $this->line("DELETED_COUNT: {$deletedCount}");
             } else {
-                $this->info(__('admin.cleanup_two_factor_attempts.no_records_found'));
+                $this->info(__('admin.cleanup_two_fa_attempts.no_records_found'));
                 $this->line("DELETED_COUNT: 0");
             }
             
@@ -83,21 +83,21 @@ class CleanupTwoFaAttempts extends Command
         }
         
         if ($days < 0) {
-            $this->error(__('admin.cleanup_two_factor_attempts.invalid_days'));
+            $this->error(__('admin.cleanup_two_fa_attempts.invalid_days'));
             return 1;
         }
 
-        $this->info(__('admin.cleanup_two_factor_attempts.cleaning_up', ['days' => $days]));
+        $this->info(__('admin.cleanup_two_fa_attempts.cleaning_up', ['days' => $days]));
 
         // 古い試行履歴を削除
         $deletedCount = MemberTwoFaAttempt::where('created_at', '<', now()->subDays($days))
             ->delete();
 
         if ($deletedCount > 0) {
-            $this->info(__('admin.cleanup_two_factor_attempts.deleted_old_success', ['count' => $deletedCount]));
+            $this->info(__('admin.cleanup_two_fa_attempts.deleted_old_success', ['count' => $deletedCount]));
             $this->line("DELETED_COUNT: {$deletedCount}");
         } else {
-            $this->info(__('admin.cleanup_two_factor_attempts.no_old_records_found'));
+            $this->info(__('admin.cleanup_two_fa_attempts.no_old_records_found'));
             $this->line("DELETED_COUNT: 0");
         }
 

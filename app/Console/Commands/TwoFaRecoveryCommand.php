@@ -91,11 +91,11 @@ class TwoFaRecoveryCommand extends Command
         $this->showMemberTwoFaStatus($member);
 
         // Confirm action
-        $this->warn(__('admin/command.two_factor_recovery.warning_disable'));
+        $this->warn(__('admin/command.two_fa_recovery.warning_disable'));
         $this->newLine();
 
-        if (!$this->option('force') && !$this->confirm(__('admin/command.two_factor_recovery.confirm_disable', ['name' => ($member->display_name ?? $member->account_name)]))) {
-            $this->info(__('admin/command.two_factor_recovery.cancelled'));
+        if (!$this->option('force') && !$this->confirm(__('admin/command.two_fa_recovery.confirm_disable', ['name' => ($member->display_name ?? $member->account_name)]))) {
+            $this->info(__('admin/command.two_fa_recovery.cancelled'));
             return self::SUCCESS;
         }
 
@@ -111,7 +111,7 @@ class TwoFaRecoveryCommand extends Command
         // Clear any pending 2FA tokens
         $member->twoFactorTokens()->delete();
 
-        $this->info(__('admin/command.two_factor_recovery.disabled_success', ['name' => ($member->display_name ?? $member->account_name)]));
+        $this->info(__('admin/command.two_fa_recovery.disabled_success', ['name' => ($member->display_name ?? $member->account_name)]));
 
         // Log to audit
         AuditService::log(
@@ -129,7 +129,7 @@ class TwoFaRecoveryCommand extends Command
             ]
         );
 
-        $this->warn(__('admin/command.two_factor_recovery.security_notice'));
+        $this->warn(__('admin/command.two_fa_recovery.security_notice'));
 
         return self::SUCCESS;
     }
@@ -151,16 +151,16 @@ class TwoFaRecoveryCommand extends Command
 
         // Check if 2FA is enabled
         if ($member->two_fa_mode === AuthenticationMode::Disabled->value || $member->two_fa_mode === null) {
-            $this->error(__('admin/command.two_factor_recovery.2fa_not_enabled', ['name' => ($member->display_name ?? $member->account_name)]));
+            $this->error(__('admin/command.two_fa_recovery.2fa_not_enabled', ['name' => ($member->display_name ?? $member->account_name)]));
             return self::FAILURE;
         }
 
         // Confirm action
-        $this->warn(__('admin/command.two_factor_recovery.warning_reset_codes'));
+        $this->warn(__('admin/command.two_fa_recovery.warning_reset_codes'));
         $this->newLine();
 
-        if (!$this->option('force') && !$this->confirm(__('admin/command.two_factor_recovery.confirm_reset_codes', ['name' => ($member->display_name ?? $member->account_name)]))) {
-            $this->info(__('admin/command.two_factor_recovery.cancelled'));
+        if (!$this->option('force') && !$this->confirm(__('admin/command.two_fa_recovery.confirm_reset_codes', ['name' => ($member->display_name ?? $member->account_name)]))) {
+            $this->info(__('admin/command.two_fa_recovery.cancelled'));
             return self::SUCCESS;
         }
 
@@ -172,11 +172,11 @@ class TwoFaRecoveryCommand extends Command
             'two_fa_recovery_codes' => json_encode($hashedCodes),
         ]);
 
-        $this->info(__('admin/command.two_factor_recovery.codes_reset_success', ['name' => ($member->display_name ?? $member->account_name)]));
+        $this->info(__('admin/command.two_fa_recovery.codes_reset_success', ['name' => ($member->display_name ?? $member->account_name)]));
         $this->newLine();
 
         // Display new codes
-        $this->warn(__('admin/command.two_factor_recovery.new_codes_warning'));
+        $this->warn(__('admin/command.two_fa_recovery.new_codes_warning'));
         $this->newLine();
         
         foreach ($codes as $index => $code) {
@@ -184,7 +184,7 @@ class TwoFaRecoveryCommand extends Command
         }
         
         $this->newLine();
-        $this->warn(__('admin/command.two_factor_recovery.codes_save_warning'));
+        $this->warn(__('admin/command.two_fa_recovery.codes_save_warning'));
 
         // Log to audit
         AuditService::log(
@@ -235,11 +235,11 @@ class TwoFaRecoveryCommand extends Command
             ->get();
 
         if ($members->isEmpty()) {
-            $this->info(__('admin/command.two_factor_recovery.no_members_with_2fa'));
+            $this->info(__('admin/command.two_fa_recovery.no_members_with_2fa'));
             return self::SUCCESS;
         }
 
-        $this->info(__('admin/command.two_factor_recovery.members_with_2fa', ['count' => $members->count()]));
+        $this->info(__('admin/command.two_fa_recovery.members_with_2fa', ['count' => $members->count()]));
         $this->newLine();
 
         $rows = [];
@@ -252,17 +252,17 @@ class TwoFaRecoveryCommand extends Command
                 ($member->display_name ?? $member->account_name),
                 $member->email,
                 $member->two_fa_mode?->label() ?? '-',
-                $codesCount > 0 ? $codesCount : __('admin/command.two_factor_recovery.no_codes'),
+                $codesCount > 0 ? $codesCount : __('admin/command.two_fa_recovery.no_codes'),
             ];
         }
 
         $this->table(
             [
-                __('admin/command.two_factor_recovery.col_id'),
-                __('admin/command.two_factor_recovery.col_name'),
-                __('admin/command.two_factor_recovery.col_email'),
-                __('admin/command.two_factor_recovery.col_mode'),
-                __('admin/command.two_factor_recovery.col_recovery_codes'),
+                __('admin/command.two_fa_recovery.col_id'),
+                __('admin/command.two_fa_recovery.col_name'),
+                __('admin/command.two_fa_recovery.col_email'),
+                __('admin/command.two_fa_recovery.col_mode'),
+                __('admin/command.two_fa_recovery.col_recovery_codes'),
             ],
             $rows
         );
@@ -278,11 +278,11 @@ class TwoFaRecoveryCommand extends Command
         $identifier = $this->option('member');
 
         if (!$identifier) {
-            $identifier = $this->ask(__('admin/command.two_factor_recovery.member_prompt'));
+            $identifier = $this->ask(__('admin/command.two_fa_recovery.member_prompt'));
         }
 
         if (!$identifier) {
-            $this->error(__('admin/command.two_factor_recovery.member_required'));
+            $this->error(__('admin/command.two_fa_recovery.member_required'));
             return null;
         }
 
@@ -292,7 +292,7 @@ class TwoFaRecoveryCommand extends Command
             : Member::where('email', $identifier)->first();
 
         if (!$member) {
-            $this->error(__('admin/command.two_factor_recovery.member_not_found', ['identifier' => $identifier]));
+            $this->error(__('admin/command.two_fa_recovery.member_not_found', ['identifier' => $identifier]));
             return null;
         }
 
@@ -307,11 +307,11 @@ class TwoFaRecoveryCommand extends Command
         $reason = $this->option('reason');
 
         if (!$reason) {
-            $reason = $this->ask(__('admin/command.two_factor_recovery.reason_prompt'));
+            $reason = $this->ask(__('admin/command.two_fa_recovery.reason_prompt'));
         }
 
         if (!$reason) {
-            $this->error(__('admin/command.two_factor_recovery.reason_required'));
+            $this->error(__('admin/command.two_fa_recovery.reason_required'));
             return null;
         }
 
@@ -323,19 +323,19 @@ class TwoFaRecoveryCommand extends Command
      */
     protected function showMemberTwoFaStatus(Member $member): void
     {
-        $this->info(__('admin/command.two_factor_recovery.member_status_title', ['name' => ($member->display_name ?? $member->account_name)]));
+        $this->info(__('admin/command.two_fa_recovery.member_status_title', ['name' => ($member->display_name ?? $member->account_name)]));
         $this->newLine();
 
-        $hasRecoveryCodes = !empty($member->two_factor_recovery_codes);
-        $codesCount = $hasRecoveryCodes ? count(json_decode($member->two_factor_recovery_codes, true) ?? []) : 0;
+        $hasRecoveryCodes = !empty($member->two_fa_recovery_codes);
+        $codesCount = $hasRecoveryCodes ? count(json_decode($member->two_fa_recovery_codes, true) ?? []) : 0;
 
         $this->table(
-            [__('admin/command.two_factor_recovery.field'), __('admin/command.two_factor_recovery.value')],
+            [__('admin/command.two_fa_recovery.field'), __('admin/command.two_fa_recovery.value')],
             [
-                [__('admin/command.two_factor_recovery.member_id'), $member->id],
-                [__('admin/command.two_factor_recovery.email'), $member->email],
-                [__('admin/command.two_factor_recovery.two_fa_mode'), $member->two_fa_mode?->label() ?? __('admin/command.two_factor_recovery.disabled')],
-                [__('admin/command.two_factor_recovery.recovery_codes_remaining'), $codesCount > 0 ? $codesCount : __('admin/command.two_factor_recovery.none')],
+                [__('admin/command.two_fa_recovery.member_id'), $member->id],
+                [__('admin/command.two_fa_recovery.email'), $member->email],
+                [__('admin/command.two_fa_recovery.two_fa_mode'), $member->two_fa_mode?->label() ?? __('admin/command.two_fa_recovery.disabled')],
+                [__('admin/command.two_fa_recovery.recovery_codes_remaining'), $codesCount > 0 ? $codesCount : __('admin/command.two_fa_recovery.none')],
             ]
         );
     }
@@ -345,7 +345,7 @@ class TwoFaRecoveryCommand extends Command
      */
     protected function showSystemTwoFaStatus(): void
     {
-        $this->info(__('admin/command.two_factor_recovery.system_status_title'));
+        $this->info(__('admin/command.two_fa_recovery.system_status_title'));
         $this->newLine();
 
         $totalMembers = Member::count();
@@ -358,17 +358,17 @@ class TwoFaRecoveryCommand extends Command
             ->count();
 
         $this->table(
-            [__('admin/command.two_factor_recovery.metric'), __('admin/command.two_factor_recovery.value')],
+            [__('admin/command.two_fa_recovery.metric'), __('admin/command.two_fa_recovery.value')],
             [
-                [__('admin/command.two_factor_recovery.total_members'), $totalMembers],
-                [__('admin/command.two_factor_recovery.members_with_2fa'), $membersWithTwoFa],
-                [__('admin/command.two_factor_recovery.members_without_codes'), $membersWithoutRecoveryCodes],
+                [__('admin/command.two_fa_recovery.total_members'), $totalMembers],
+                [__('admin/command.two_fa_recovery.members_with_2fa'), $membersWithTwoFa],
+                [__('admin/command.two_fa_recovery.members_without_codes'), $membersWithoutRecoveryCodes],
             ]
         );
 
         if ($membersWithoutRecoveryCodes > 0) {
             $this->newLine();
-            $this->warn(__('admin/command.two_factor_recovery.warning_no_codes', ['count' => $membersWithoutRecoveryCodes]));
+            $this->warn(__('admin/command.two_fa_recovery.warning_no_codes', ['count' => $membersWithoutRecoveryCodes]));
         }
     }
 
@@ -389,12 +389,12 @@ class TwoFaRecoveryCommand extends Command
      */
     protected function invalidAction(string $action): int
     {
-        $this->error(__('admin/command.two_factor_recovery.invalid_action', ['action' => $action]));
-        $this->line(__('admin/command.two_factor_recovery.valid_actions'));
-        $this->line('  - disable     : ' . __('admin/command.two_factor_recovery.action_disable'));
-        $this->line('  - reset-codes : ' . __('admin/command.two_factor_recovery.action_reset_codes'));
-        $this->line('  - status      : ' . __('admin/command.two_factor_recovery.action_status'));
-        $this->line('  - list        : ' . __('admin/command.two_factor_recovery.action_list'));
+        $this->error(__('admin/command.two_fa_recovery.invalid_action', ['action' => $action]));
+        $this->line(__('admin/command.two_fa_recovery.valid_actions'));
+        $this->line('  - disable     : ' . __('admin/command.two_fa_recovery.action_disable'));
+        $this->line('  - reset-codes : ' . __('admin/command.two_fa_recovery.action_reset_codes'));
+        $this->line('  - status      : ' . __('admin/command.two_fa_recovery.action_status'));
+        $this->line('  - list        : ' . __('admin/command.two_fa_recovery.action_list'));
 
         return self::FAILURE;
     }

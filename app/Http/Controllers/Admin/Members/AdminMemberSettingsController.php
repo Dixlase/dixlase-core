@@ -141,8 +141,8 @@ class AdminMemberSettingsController extends AdminLoggedInController
         $membersSessionLifetimeEnabled = (bool) $this->memberSettingRepository->get('members_session_lifetime_enabled', false);
         $membersSessionLifetime = (int) $this->memberSettingRepository->get('members_session_lifetime', 120);
 
-        $twoFaExpireMinutes = (int) $this->memberSettingRepository->get('two_fa_expire_minutes', config('two-factor.code_expiration', 5));
-        $twoFaResendIntervalSeconds = (int) $this->memberSettingRepository->get('two_fa_resend_interval_seconds', config('two-factor.resend_interval', 60));
+        $twoFaExpireMinutes = (int) $this->memberSettingRepository->get('two_fa_expire_minutes', config('two-fa.code_expiration', 5));
+        $twoFaResendIntervalSeconds = (int) $this->memberSettingRepository->get('two_fa_resend_interval_seconds', config('two-fa.resend_interval', 60));
 
         $twoFaMaxAttempts = (int) $this->memberSettingRepository->get('two_fa_max_attempts', 5);
         $twoFaAttemptWindow = (int) $this->memberSettingRepository->get('two_fa_attempt_window', 15);

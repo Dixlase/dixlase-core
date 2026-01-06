@@ -398,12 +398,12 @@ class PasskeyAuthenticationService
                 Log::info("[Passkey] IP+UA認証成功: ユーザーID {$member->id}");
                 
                 // Cookieを再設定
-                $tokenLength = config('two-factor.device_token_length', 64);
+                $tokenLength = config('two-fa.device_token_length', 64);
                 $newToken = Str::random($tokenLength);
                 $hashedToken = hash('sha256', $newToken);
                 $trustedDevice->update(['token' => $hashedToken]);
                 
-                $cookieConfig = config('two-factor.device_cookie', []);
+                $cookieConfig = config('two-fa.device_cookie', []);
                 cookie()->queue(
                     $cookieConfig['name'] ?? 'trusted_device_token',
                     $newToken,
@@ -426,7 +426,7 @@ class PasskeyAuthenticationService
         // 有効期限チェック
         $expirationDays = (int) \App\Models\MemberSetting::getValue(
             'trusted_device_expire_days',
-            config('two-factor.device_expiration_days', 30)
+            config('two-fa.device_expiration_days', 30)
         );
         
         $expirationDate = $trustedDevice->updated_at->addDays($expirationDays);

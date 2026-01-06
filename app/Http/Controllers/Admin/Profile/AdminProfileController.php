@@ -207,7 +207,7 @@ class AdminProfileController extends AdminLoggedInController
             }
             
             // ユーザーの設定を更新
-            $user->two_factor_method = $currentTwoFaMethod;
+            $user->two_fa_method = $currentTwoFaMethod;
             $user->save();
         }
 

@@ -26,7 +26,7 @@ trait TwoFaTrait
         
         // デフォルトの有効期限設定（メンバー設定 > コンフィグ）
         if ($expireMinutes === null) {
-            $expireMinutes = (int) \App\Models\MemberSetting::getValue('two_factor_expire_minutes', config('two-factor.code_expiration', 5));
+            $expireMinutes = (int) \App\Models\MemberSetting::getValue('two_fa_expire_minutes', config('two-fa.code_expiration', 5));
         }
 
         // 古いコードを削除
@@ -72,7 +72,7 @@ trait TwoFaTrait
      * @param array $defaultMethods デフォルトの認証方法
      * @return array 有効な認証方法の配列
      */
-    public function getEnabledTwoFaMethods(string $settingsKey = 'enabled_two_factor_methods', array $defaultMethods = null): array
+    public function getEnabledTwoFaMethods(string $settingsKey = 'enabled_two_fa_methods', array $defaultMethods = null): array
     {
         if ($defaultMethods === null) {
             $defaultMethods = [TwoFaMethod::EMAIL->value];
@@ -160,7 +160,7 @@ trait TwoFaTrait
      */
     protected function checkMemberSetting($user): int
     {
-        $mode = $user->two_factor_mode;
+        $mode = $user->two_fa_mode;
 
         // null の場合はデフォルトで無効
         if ($mode === null) {
