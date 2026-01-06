@@ -32,7 +32,7 @@ class CleanupTwoFaTokens extends Command
         // --allオプションまたは--days=0で全レコード削除
         if ($deleteAll || $days === 0) {
             if (!$deleteAll && $days === 0) {
-                $this->info(__('admin.cleanup_two_factor_tokens.days_zero_warning'));
+                $this->info(__('admin.cleanup_two_fa_tokens.days_zero_warning'));
             }
             
             // --forceオプションがない場合のみ確認を求める
@@ -40,8 +40,8 @@ class CleanupTwoFaTokens extends Command
             if (!$this->option('force')) {
                 // コマンドラインから実行されている場合のみ確認プロンプトを表示
                 if (app()->runningInConsole() && php_sapi_name() === 'cli') {
-                    if (!$this->confirm(__('admin.cleanup_two_factor_tokens.confirm_delete_all'))) {
-                        $this->info(__('admin.cleanup_two_factor_tokens.operation_cancelled'));
+                    if (!$this->confirm(__('admin.cleanup_two_fa_tokens.confirm_delete_all'))) {
+                        $this->info(__('admin.cleanup_two_fa_tokens.operation_cancelled'));
                         return 0;
                     }
                 } else {
@@ -51,14 +51,14 @@ class CleanupTwoFaTokens extends Command
                 }
             }
             
-            $this->info(__('admin.cleanup_two_factor_tokens.deleting_all'));
+            $this->info(__('admin.cleanup_two_fa_tokens.deleting_all'));
             $deletedCount = MemberTwoFaToken::query()->delete();
             
             if ($deletedCount > 0) {
-                $this->info(__('admin.cleanup_two_factor_tokens.deleted_all_success', ['count' => $deletedCount]));
+                $this->info(__('admin.cleanup_two_fa_tokens.deleted_all_success', ['count' => $deletedCount]));
                 $this->line("DELETED_COUNT: {$deletedCount}");
             } else {
-                $this->info(__('admin.cleanup_two_factor_tokens.no_records_found'));
+                $this->info(__('admin.cleanup_two_fa_tokens.no_records_found'));
                 $this->line("DELETED_COUNT: 0");
             }
             
@@ -66,11 +66,11 @@ class CleanupTwoFaTokens extends Command
         }
         
         if ($days < 1) {
-            $this->error(__('admin.cleanup_two_factor_tokens.invalid_days'));
+            $this->error(__('admin.cleanup_two_fa_tokens.invalid_days'));
             return 1;
         }
 
-        $this->info(__('admin.cleanup_two_factor_tokens.cleaning_up', ['days' => $days]));
+        $this->info(__('admin.cleanup_two_fa_tokens.cleaning_up', ['days' => $days]));
 
         // 期限切れのトークンと古いトークンを削除
         $deletedCount = MemberTwoFaToken::where('expires_at', '<', now())
@@ -78,10 +78,10 @@ class CleanupTwoFaTokens extends Command
             ->delete();
 
         if ($deletedCount > 0) {
-            $this->info(__('admin.cleanup_two_factor_tokens.deleted_old_success', ['count' => $deletedCount]));
+            $this->info(__('admin.cleanup_two_fa_tokens.deleted_old_success', ['count' => $deletedCount]));
             $this->line("DELETED_COUNT: {$deletedCount}");
         } else {
-            $this->info(__('admin.cleanup_two_factor_tokens.no_old_records_found'));
+            $this->info(__('admin.cleanup_two_fa_tokens.no_old_records_found'));
             $this->line("DELETED_COUNT: 0");
         }
 

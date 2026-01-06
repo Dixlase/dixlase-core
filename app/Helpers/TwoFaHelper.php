@@ -74,7 +74,7 @@ class TwoFaHelper
         // メール設定チェック
         if (!$this->isMailConfigured()) {
             Log::error("[2FA] メール設定が未完了のため、二段階認証コードを送信できません");
-            throw new \Exception(__('admin/profile.two_factor.mail_not_configured'));
+            throw new \Exception(__('admin/profile.two_fa.mail_not_configured'));
         }
         
         $code = $this->generateTwoFaCode($user, $expireMinutes);
@@ -110,7 +110,7 @@ class TwoFaHelper
         return [
             'force_2fa' => (int) $settingModelClass::getValue('force_2fa', '0'),
             'enabled_methods' => $this->getEnabledTwoFaMethods($settingModelClass),
-            'default_method' => (int) $settingModelClass::getValue('default_two_factor_method', (string)TwoFaMethod::EMAIL->value),
+            'default_method' => (int) $settingModelClass::getValue('default_two_fa_method', (string)TwoFaMethod::EMAIL->value),
         ];
     }
 

@@ -34,7 +34,7 @@ class TwoFaCodeMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: __('mail.two_factor.email.subject', ['app_name' => $this->appName]),
+            subject: __('mail.two_fa.email.subject', ['app_name' => $this->appName]),
         );
     }
 

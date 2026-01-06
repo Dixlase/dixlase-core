@@ -21,10 +21,10 @@ enum AuthenticationMode: int
     public function twoFactorLabel(): string
     {
         return match ($this) {
-            self::Disabled => __('auth.authentication_mode.two_factor.disabled'),
-            self::DifferentDevice => __('auth.authentication_mode.two_factor.different_device'),
-            self::Always => __('auth.authentication_mode.two_factor.always'),
-            self::UseProfileSetting => __('auth.authentication_mode.two_factor.use_profile_setting'),
+            self::Disabled => __('auth.authentication_mode.two_fa.disabled'),
+            self::DifferentDevice => __('auth.authentication_mode.two_fa.different_device'),
+            self::Always => __('auth.authentication_mode.two_fa.always'),
+            self::UseProfileSetting => __('auth.authentication_mode.two_fa.use_profile_setting'),
         };
     }
 
@@ -47,10 +47,10 @@ enum AuthenticationMode: int
     public function twoFactorTranslationKey(): string
     {
         return match ($this) {
-            self::Disabled => 'auth.authentication_mode.two_factor.disabled',
-            self::DifferentDevice => 'auth.authentication_mode.two_factor.different_device',
-            self::Always => 'auth.authentication_mode.two_factor.always',
-            self::UseProfileSetting => 'auth.authentication_mode.two_factor.use_profile_setting',
+            self::Disabled => 'auth.authentication_mode.two_fa.disabled',
+            self::DifferentDevice => 'auth.authentication_mode.two_fa.different_device',
+            self::Always => 'auth.authentication_mode.two_fa.always',
+            self::UseProfileSetting => 'auth.authentication_mode.two_fa.use_profile_setting',
         };
     }
 

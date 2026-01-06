@@ -53,15 +53,15 @@ class AdminSystemDatabaseController extends AdminLoggedInController
                 'default_days' => 30,
                 'command' => 'dls:admin:cleanup-password-reset-tokens'
             ],
-            'two_factor_attempts' => [
-                'name' => __('admin/settings/systems/database.two_factor_attempts.name'),
-                'description' => __('admin/settings/systems/database.two_factor_attempts.description'),
+            'two_fa_attempts' => [
+                'name' => __('admin/settings/systems/database.two_fa_attempts.name'),
+                'description' => __('admin/settings/systems/database.two_fa_attempts.description'),
                 'default_days' => 30,
                 'command' => 'dls:admin:cleanup-two-factor-attempts'
             ],
-            'two_factor_tokens' => [
-                'name' => __('admin/settings/systems/database.two_factor_tokens.name'),
-                'description' => __('admin/settings/systems/database.two_factor_tokens.description'),
+            'two_fa_tokens' => [
+                'name' => __('admin/settings/systems/database.two_fa_tokens.name'),
+                'description' => __('admin/settings/systems/database.two_fa_tokens.description'),
                 'default_days' => 7,
                 'command' => 'dls:admin:cleanup-two-factor-tokens'
             ],
@@ -137,14 +137,14 @@ class AdminSystemDatabaseController extends AdminLoggedInController
                     $count = $this->extractCountFromOutput($output);
                     $message = __('admin/settings/systems/database.cleanup_success', ['count' => $count]);
                     break;
-                case 'two_factor_attempts':
+                case 'two_fa_attempts':
                     $options = $days === 0 ? ['--days' => $days, '--force' => true] : ['--days' => $days];
                     Artisan::call('dls:admin:cleanup-two-factor-attempts', $options);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
                     $message = __('admin/settings/systems/database.cleanup_success', ['count' => $count]);
                     break;
-                case 'two_factor_tokens':
+                case 'two_fa_tokens':
                     $options = $days === 0 ? ['--days' => $days, '--force' => true] : ['--days' => $days];
                     Artisan::call('dls:admin:cleanup-two-factor-tokens', $options);
                     $output = Artisan::output();
@@ -165,8 +165,8 @@ class AdminSystemDatabaseController extends AdminLoggedInController
                     $cleanupTypes = [
                         'login_attempts',
                         'password_reset_tokens',
-                        'two_factor_attempts',
-                        'two_factor_tokens',
+                        'two_fa_attempts',
+                        'two_fa_tokens',
                         'recovery_codes',
                         'passkeys',
                         'sessions'
