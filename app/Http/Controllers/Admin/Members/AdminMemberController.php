@@ -26,7 +26,7 @@ use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Members\AdminSettingsMemberStoreRequest;
 use Illuminate\Http\Request;
 use App\Models\Member;
-use App\Enums\TwoFactorMethod;
+use App\Enums\TwoFaMethod;
 use App\Enums\AuthenticationMode;
 use App\Enums\AppearanceMode;
 use App\Enums\MemberRole;
@@ -338,19 +338,19 @@ class AdminMemberController extends AdminLoggedInController
         
         // メール認証は常に有効
         $twoFactorMethodOptions = [
-            TwoFactorMethod::EMAIL->value => TwoFactorMethod::EMAIL->translationKey(),
+            TwoFaMethod::EMAIL->value => TwoFaMethod::EMAIL->translationKey(),
         ];
         
         // 全体設定でパスキー認証が有効な場合は追加
         $passkeyEnabled = $this->memberSettingRepository->get('enabled_two_fa_passkey', '0') === '1';
         if ($passkeyEnabled) {
-            $twoFactorMethodOptions[TwoFactorMethod::PASSKEY->value] = TwoFactorMethod::PASSKEY->translationKey();
+            $twoFactorMethodOptions[TwoFaMethod::PASSKEY->value] = TwoFaMethod::PASSKEY->translationKey();
         }
         
         // デフォルトの認証方法を取得
-        $defaultTwoFaMethod = (int) $this->memberSettingRepository->get('default_two_fa_method', TwoFactorMethod::EMAIL->value);
+        $defaultTwoFaMethod = (int) $this->memberSettingRepository->get('default_two_fa_method', TwoFaMethod::EMAIL->value);
         
-        $this->viewParams['enabledTwoFactorMethods'] = $twoFactorMethodOptions;
+        $this->viewParams['enabledTwoFaMethods'] = $twoFactorMethodOptions;
         $this->viewParams['defaultTwoFaMethod'] = $defaultTwoFaMethod;
         $this->viewParams['passkeyEnabled'] = $passkeyEnabled;
         $this->viewParams['twoFactorMode'] = AuthenticationMode::from($this->viewParams['force2fa']);

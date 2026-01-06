@@ -5,14 +5,14 @@ namespace App\Console\Commands;
 use App\Models\MemberTwoFaToken;
 use Illuminate\Console\Command;
 
-class CleanupTwoFactorTokens extends Command
+class CleanupTwoFaTokens extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'dls:admin:cleanup-two-factor-tokens {--days=7 : Number of days to keep two-factor token records} {--all : Delete all two-factor token records} {--force : Force deletion without confirmation}';
+    protected $signature = 'dls:admin:cleanup-two-fa-tokens {--days=7 : Number of days to keep two-factor token records} {--all : Delete all two-factor token records} {--force : Force deletion without confirmation}';
 
     /**
      * The console command description.

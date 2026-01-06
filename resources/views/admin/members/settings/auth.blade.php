@@ -135,7 +135,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :message="__('admin/members/settings.mail_server_test_warning', ['url' => route('admin.settings.base.mail')])"
                 />
             @endif
-            <x-two-factor-auth-selector
+            <x-two-fa-auth-selector
                 name="force_2fa"
                 :value="old('force_2fa', (string) $force2fa)"
                 :globalSetting="null"

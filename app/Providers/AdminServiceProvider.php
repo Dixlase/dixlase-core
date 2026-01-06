@@ -25,7 +25,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use App\Policies\AdminPolicy;
 use Illuminate\Support\Facades\Gate;
-use App\Services\AdminTwoFactorService;
+use App\Services\AdminTwoFaService;
 use App\Services\AdminLoginLockoutService;
 use Laravel\Fortify\Contracts\TwoFactorAuthenticationProvider;
 
@@ -40,7 +40,7 @@ class AdminServiceProvider extends ServiceProvider
 
         $this->app->singleton(
             TwoFactorAuthenticationProvider::class,
-            AdminTwoFactorService::class
+            AdminTwoFaService::class
         );
 
         $this->app->singleton(AdminLoginLockoutService::class);

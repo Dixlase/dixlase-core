@@ -27,7 +27,7 @@ use App\Http\Requests\Admin\Profile\ProfileUpdateRequest;
 
 use App\Enums\AppearanceMode;
 use App\Enums\AuthenticationMode;
-use App\Enums\TwoFactorMethod;
+use App\Enums\TwoFaMethod;
 use App\Rules\NotPwnedPassword;
 use App\Enums\Locale;
 use App\Models\MemberSetting;
@@ -166,14 +166,14 @@ class AdminProfileController extends AdminLoggedInController
         $passkeyEnabled = MemberSetting::getValue('enabled_two_fa_passkey', '0') === '1';
         
         // メール認証は常に有効、Passkeyは設定に応じて（連想配列形式）
-        $enabledTwoFactorMethods = [
-            TwoFactorMethod::EMAIL->value => TwoFactorMethod::EMAIL->translationKey(),
+        $enabledTwoFaMethods = [
+            TwoFaMethod::EMAIL->value => TwoFaMethod::EMAIL->translationKey(),
         ];
         if ($passkeyEnabled) {
-            $enabledTwoFactorMethods[TwoFactorMethod::PASSKEY->value] = TwoFactorMethod::PASSKEY->translationKey();
+            $enabledTwoFaMethods[TwoFaMethod::PASSKEY->value] = TwoFaMethod::PASSKEY->translationKey();
         }
         
-        $defaultTwoFaMethod = (int) MemberSetting::getValue('default_two_fa_method', TwoFactorMethod::EMAIL->value);
+        $defaultTwoFaMethod = (int) MemberSetting::getValue('default_two_fa_method', TwoFaMethod::EMAIL->value);
 
         // radio-card-group用の二段階認証オプション配列を生成
         // 全体設定が「プロフィール設定を反映」の場合は、無効/異なる端末時のみ/常に有効から選択可能
@@ -195,19 +195,19 @@ class AdminProfileController extends AdminLoggedInController
 
         // 現在のユーザーの認証方法を取得
         $user = Auth::guard('member')->user();
-        $currentTwoFactorMethod = $user->default_two_fa_method ?? $defaultTwoFaMethod;
+        $currentTwoFaMethod = $user->default_two_fa_method ?? $defaultTwoFaMethod;
         
         // 現在のメソッドが有効なメソッドに含まれていない場合はデフォルトを使用
-        if (!array_key_exists((int)$currentTwoFactorMethod, $enabledTwoFactorMethods) && !empty($enabledTwoFactorMethods)) {
-            $currentTwoFactorMethod = $defaultTwoFaMethod;
+        if (!array_key_exists((int)$currentTwoFaMethod, $enabledTwoFaMethods) && !empty($enabledTwoFaMethods)) {
+            $currentTwoFaMethod = $defaultTwoFaMethod;
             
             // デフォルトメソッドも有効でない場合は最初の有効なメソッドを使用
-            if (!array_key_exists($currentTwoFactorMethod, $enabledTwoFactorMethods)) {
-                $currentTwoFactorMethod = array_key_first($enabledTwoFactorMethods);
+            if (!array_key_exists($currentTwoFaMethod, $enabledTwoFaMethods)) {
+                $currentTwoFaMethod = array_key_first($enabledTwoFaMethods);
             }
             
             // ユーザーの設定を更新
-            $user->two_factor_method = $currentTwoFactorMethod;
+            $user->two_factor_method = $currentTwoFaMethod;
             $user->save();
         }
 
@@ -220,9 +220,9 @@ class AdminProfileController extends AdminLoggedInController
         $this->viewParams['force2fa'] = $force2fa;
         $this->viewParams['twoFaMode'] = $twoFaMode;
         $this->viewParams['profileTwoFactorOptions'] = $profileTwoFactorOptions;
-        $this->viewParams['enabledTwoFactorMethods'] = $enabledTwoFactorMethods;
+        $this->viewParams['enabledTwoFaMethods'] = $enabledTwoFaMethods;
         $this->viewParams['passkeyEnabled'] = $passkeyEnabled;
-        $this->viewParams['currentTwoFactorMethod'] = $currentTwoFactorMethod;
+        $this->viewParams['currentTwoFaMethod'] = $currentTwoFaMethod;
         $this->viewParams['defaultTwoFaMethod'] = $defaultTwoFaMethod;
         $this->viewParams['currentGlobalTwoFactorMode'] = $currentGlobalTwoFactorMode;
 
@@ -379,7 +379,7 @@ class AdminProfileController extends AdminLoggedInController
                 
                 if (!$hasRecoveryCodes) {
                     try {
-                        $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
+                        $twoFactorHelper = app(\App\Helpers\TwoFaHelper::class);
                         $codes = $twoFactorHelper->generateRecoveryCodes($member, true);
                         $shouldGenerateRecoveryCodes = true;
                         
@@ -631,7 +631,7 @@ class AdminProfileController extends AdminLoggedInController
     public function revokeTrustedDevice(Request $request, int $deviceId)
     {
         $member = Auth::guard('member')->user();
-        $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
+        $twoFactorHelper = app(\App\Helpers\TwoFaHelper::class);
         
         $result = $twoFactorHelper->revokeTrustedDevice($member, $deviceId);
         
@@ -651,7 +651,7 @@ class AdminProfileController extends AdminLoggedInController
     public function revokeAllTrustedDevices(Request $request)
     {
         $member = Auth::guard('member')->user();
-        $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
+        $twoFactorHelper = app(\App\Helpers\TwoFaHelper::class);
         
         $result = $twoFactorHelper->revokeAllTrustedDevices($member);
 
@@ -710,7 +710,7 @@ class AdminProfileController extends AdminLoggedInController
     public function generateRecoveryCodes(Request $request)
     {
         $member = Auth::guard('member')->user();
-        $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
+        $twoFactorHelper = app(\App\Helpers\TwoFaHelper::class);
         $recoveryCodeService = app(\App\Services\RecoveryCodeService::class);
 
         // 既に回復コードが存在する場合は再生成として扱う
@@ -741,7 +741,7 @@ class AdminProfileController extends AdminLoggedInController
     public function regenerateRecoveryCodes(Request $request)
     {
         $member = Auth::guard('member')->user();
-        $twoFactorHelper = app(\App\Helpers\TwoFactorHelper::class);
+        $twoFactorHelper = app(\App\Helpers\TwoFaHelper::class);
 
         $result = $twoFactorHelper->regenerateRecoveryCodes($member);
 

@@ -9,7 +9,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class TwoFactorCodeMail extends Mailable
+class TwoFaCodeMail extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -41,7 +41,7 @@ class TwoFactorCodeMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.two_factor_code',
+            markdown: 'emails.two_fa_code',
             with: [
                 'code' => $this->code,
                 'appName' => $this->appName,

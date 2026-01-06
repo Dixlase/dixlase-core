@@ -7,10 +7,10 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
 use App\Models\MemberTwoFaToken;
 use App\Enums\AuthenticationMode;
-use App\Enums\TwoFactorMethod;
+use App\Enums\TwoFaMethod;
 use App\Traits\DeviceDetectionTrait;
 
-trait TwoFactorTrait
+trait TwoFaTrait
 {
     use DeviceDetectionTrait;
     /**
@@ -72,10 +72,10 @@ trait TwoFactorTrait
      * @param array $defaultMethods デフォルトの認証方法
      * @return array 有効な認証方法の配列
      */
-    public function getEnabledTwoFactorMethods(string $settingsKey = 'enabled_two_factor_methods', array $defaultMethods = null): array
+    public function getEnabledTwoFaMethods(string $settingsKey = 'enabled_two_factor_methods', array $defaultMethods = null): array
     {
         if ($defaultMethods === null) {
-            $defaultMethods = [TwoFactorMethod::EMAIL->value];
+            $defaultMethods = [TwoFaMethod::EMAIL->value];
         }
 
         $settingsValue = $this->getSettingValue($settingsKey, json_encode($defaultMethods));
@@ -115,7 +115,7 @@ trait TwoFactorTrait
         $mode = AuthenticationMode::tryFrom($modeValue);
 
         // Passkeyが有効な場合は常に2FAを要求
-        if (in_array(TwoFactorMethod::PASSKEY->value, $enabledMethods)) {
+        if (in_array(TwoFaMethod::PASSKEY->value, $enabledMethods)) {
             return true;
         }
 
