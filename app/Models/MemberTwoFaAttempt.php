@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Member2faAttempt extends Model
+class MemberTwoFaAttempt extends Model
 {
     protected $table = 'members_two_fa_attempts';
     

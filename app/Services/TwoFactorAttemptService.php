@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\Member;
-use App\Models\Member2faAttempt;
+use App\Models\MemberTwoFaAttempt;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
@@ -14,7 +14,7 @@ class TwoFactorAttemptService
      */
     public function recordAttempt(Member $member, string $attemptType, bool $success): void
     {
-        Member2faAttempt::record($member->id, $attemptType, $success);
+        MemberTwoFaAttempt::record($member->id, $attemptType, $success);
 
         Log::info('[2FA Attempt] Recorded', [
             'member_id' => $member->id,
@@ -63,7 +63,7 @@ class TwoFactorAttemptService
         $maxAttempts = $this->getMaxAttempts();
         $timeWindow = $this->getAttemptWindow();
 
-        $failedAttempts = Member2faAttempt::getFailedAttemptsCount($member->id, $timeWindow);
+        $failedAttempts = MemberTwoFaAttempt::getFailedAttemptsCount($member->id, $timeWindow);
 
         Log::info('[2FA Attempt] Check max attempts', [
             'member_id' => $member->id,
@@ -81,7 +81,7 @@ class TwoFactorAttemptService
     {
         $maxAttempts = $this->getMaxAttempts();
         $timeWindow = $this->getAttemptWindow();
-        $failedAttempts = Member2faAttempt::getFailedAttemptsCount($member->id, $timeWindow);
+        $failedAttempts = MemberTwoFaAttempt::getFailedAttemptsCount($member->id, $timeWindow);
 
         return max(0, $maxAttempts - $failedAttempts);
     }
@@ -95,7 +95,7 @@ class TwoFactorAttemptService
         $timeWindow = $this->getAttemptWindow();
 
         // 時間枠内の失敗試行を取得
-        $attempts = Member2faAttempt::where('member_id', $member->id)
+        $attempts = MemberTwoFaAttempt::where('member_id', $member->id)
             ->where('success', false)
             ->where('created_at', '>=', Carbon::now()->subMinutes($timeWindow))
             ->orderBy('created_at', 'desc')

@@ -5,7 +5,7 @@ namespace Tests\Unit;
 use App\Enums\TwoFactorMethod;
 use App\Enums\AuthenticationMode;
 use App\Models\Member;
-use App\Models\Member2faToken;
+use App\Models\MemberTwoFaToken;
 use App\Models\MemberSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -50,7 +50,7 @@ class TwoFactorTraitTest extends TestCase
             'member_id' => $member->id,
         ]);
 
-        $token = Member2faToken::where('member_id', $member->id)->first();
+        $token = MemberTwoFaToken::where('member_id', $member->id)->first();
         $this->assertTrue(Hash::check($code, $token->code));
     }
 
@@ -63,11 +63,11 @@ class TwoFactorTraitTest extends TestCase
 
         // 最初のコード生成
         $this->service->generateTwoFactorCode($member);
-        $this->assertEquals(1, Member2faToken::where('member_id', $member->id)->count());
+        $this->assertEquals(1, MemberTwoFaToken::where('member_id', $member->id)->count());
 
         // 2回目のコード生成
         $this->service->generateTwoFactorCode($member);
-        $this->assertEquals(1, Member2faToken::where('member_id', $member->id)->count());
+        $this->assertEquals(1, MemberTwoFaToken::where('member_id', $member->id)->count());
     }
 
     /**
@@ -105,7 +105,7 @@ class TwoFactorTraitTest extends TestCase
         $code = $this->service->generateTwoFactorCode($member, 1);
 
         // トークンの有効期限を過去に設定
-        Member2faToken::where('member_id', $member->id)
+        MemberTwoFaToken::where('member_id', $member->id)
             ->update(['expires_at' => now()->subMinutes(5)]);
 
         $result = $this->service->validateTwoFactorCode($member, $code);
@@ -209,7 +209,7 @@ class TwoFactorTraitTest extends TestCase
 
         $this->service->generateTwoFactorCode($member, $expireMinutes);
 
-        $token = Member2faToken::where('member_id', $member->id)->first();
+        $token = MemberTwoFaToken::where('member_id', $member->id)->first();
 
         // 有効期限が約10分後であることを確認（1分の誤差を許容）
         $expectedExpiry = now()->addMinutes($expireMinutes);

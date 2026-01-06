@@ -24,7 +24,7 @@ namespace Tests\Unit;
 
 use App\Helpers\TwoFactorHelper;
 use App\Models\Member;
-use App\Models\Member2faToken;
+use App\Models\MemberTwoFaToken;
 use App\Services\EmailAuthenticationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -64,7 +64,7 @@ class EmailAuthenticationServiceTest extends TestCase
         $code = '123456';
 
         // トークンを直接作成
-        Member2faToken::create([
+        MemberTwoFaToken::create([
             'member_id' => $member->id,
             'code' => Hash::make($code),
             'expires_at' => now()->addMinutes(5),
@@ -82,7 +82,7 @@ class EmailAuthenticationServiceTest extends TestCase
     {
         $member = Member::factory()->create();
 
-        Member2faToken::create([
+        MemberTwoFaToken::create([
             'member_id' => $member->id,
             'code' => Hash::make('123456'),
             'expires_at' => now()->addMinutes(5),
@@ -101,7 +101,7 @@ class EmailAuthenticationServiceTest extends TestCase
         $member = Member::factory()->create();
         $code = '123456';
 
-        Member2faToken::create([
+        MemberTwoFaToken::create([
             'member_id' => $member->id,
             'code' => Hash::make($code),
             'expires_at' => now()->subMinutes(5),
@@ -120,14 +120,14 @@ class EmailAuthenticationServiceTest extends TestCase
         $member = Member::factory()->create();
 
         // アクティブなトークン
-        Member2faToken::create([
+        MemberTwoFaToken::create([
             'member_id' => $member->id,
             'code' => Hash::make('111111'),
             'expires_at' => now()->addMinutes(5),
         ]);
 
         // 期限切れトークン
-        Member2faToken::create([
+        MemberTwoFaToken::create([
             'member_id' => $member->id,
             'code' => Hash::make('222222'),
             'expires_at' => now()->subMinutes(5),
@@ -148,14 +148,14 @@ class EmailAuthenticationServiceTest extends TestCase
         $member = Member::factory()->create();
 
         // アクティブなトークン
-        Member2faToken::create([
+        MemberTwoFaToken::create([
             'member_id' => $member->id,
             'code' => Hash::make('111111'),
             'expires_at' => now()->addMinutes(5),
         ]);
 
         // 期限切れトークン
-        Member2faToken::create([
+        MemberTwoFaToken::create([
             'member_id' => $member->id,
             'code' => Hash::make('222222'),
             'expires_at' => now()->subMinutes(5),
@@ -164,7 +164,7 @@ class EmailAuthenticationServiceTest extends TestCase
         $deleted = $this->service->cleanupExpiredTokens();
 
         $this->assertEquals(1, $deleted);
-        $this->assertEquals(1, Member2faToken::count());
+        $this->assertEquals(1, MemberTwoFaToken::count());
     }
 
     /**
@@ -174,7 +174,7 @@ class EmailAuthenticationServiceTest extends TestCase
     {
         $member = Member::factory()->create();
 
-        Member2faToken::create([
+        MemberTwoFaToken::create([
             'member_id' => $member->id,
             'code' => Hash::make('123456'),
             'expires_at' => now()->addMinutes(5),
@@ -194,7 +194,7 @@ class EmailAuthenticationServiceTest extends TestCase
         $member = Member::factory()->create();
 
         // 期限切れトークンのみ
-        Member2faToken::create([
+        MemberTwoFaToken::create([
             'member_id' => $member->id,
             'code' => Hash::make('123456'),
             'expires_at' => now()->subMinutes(5),
@@ -213,13 +213,13 @@ class EmailAuthenticationServiceTest extends TestCase
         $member = Member::factory()->create();
 
         // 複数のトークンを作成
-        Member2faToken::create([
+        MemberTwoFaToken::create([
             'member_id' => $member->id,
             'code' => Hash::make('111111'),
             'expires_at' => now()->addMinutes(5),
         ]);
 
-        Member2faToken::create([
+        MemberTwoFaToken::create([
             'member_id' => $member->id,
             'code' => Hash::make('222222'),
             'expires_at' => now()->addMinutes(10),
@@ -228,7 +228,7 @@ class EmailAuthenticationServiceTest extends TestCase
         $deleted = $this->service->revokeUserTokens($member);
 
         $this->assertEquals(2, $deleted);
-        $this->assertEquals(0, Member2faToken::where('member_id', $member->id)->count());
+        $this->assertEquals(0, MemberTwoFaToken::where('member_id', $member->id)->count());
     }
 
     /**
@@ -239,7 +239,7 @@ class EmailAuthenticationServiceTest extends TestCase
         $member = Member::factory()->create();
 
         // 2分前のトークン
-        $token = Member2faToken::create([
+        $token = MemberTwoFaToken::create([
             'member_id' => $member->id,
             'code' => Hash::make('123456'),
             'expires_at' => now()->addMinutes(3),
@@ -260,7 +260,7 @@ class EmailAuthenticationServiceTest extends TestCase
         $member = Member::factory()->create();
 
         // 直近のトークン
-        Member2faToken::create([
+        MemberTwoFaToken::create([
             'member_id' => $member->id,
             'code' => Hash::make('123456'),
             'expires_at' => now()->addMinutes(5),
@@ -291,7 +291,7 @@ class EmailAuthenticationServiceTest extends TestCase
         $member = Member::factory()->create();
 
         // 直近のトークン
-        Member2faToken::create([
+        MemberTwoFaToken::create([
             'member_id' => $member->id,
             'code' => Hash::make('123456'),
             'expires_at' => now()->addMinutes(5),
@@ -310,13 +310,13 @@ class EmailAuthenticationServiceTest extends TestCase
         $member1 = Member::factory()->create();
         $member2 = Member::factory()->create();
 
-        Member2faToken::create([
+        MemberTwoFaToken::create([
             'member_id' => $member1->id,
             'code' => Hash::make('111111'),
             'expires_at' => now()->addMinutes(5),
         ]);
 
-        Member2faToken::create([
+        MemberTwoFaToken::create([
             'member_id' => $member2->id,
             'code' => Hash::make('222222'),
             'expires_at' => now()->addMinutes(5),
@@ -324,7 +324,7 @@ class EmailAuthenticationServiceTest extends TestCase
 
         $this->service->revokeUserTokens($member1);
 
-        $this->assertEquals(0, Member2faToken::where('member_id', $member1->id)->count());
-        $this->assertEquals(1, Member2faToken::where('member_id', $member2->id)->count());
+        $this->assertEquals(0, MemberTwoFaToken::where('member_id', $member1->id)->count());
+        $this->assertEquals(1, MemberTwoFaToken::where('member_id', $member2->id)->count());
     }
 }

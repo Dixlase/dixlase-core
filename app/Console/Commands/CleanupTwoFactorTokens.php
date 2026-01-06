@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Member2faToken;
+use App\Models\MemberTwoFaToken;
 use Illuminate\Console\Command;
 
 class CleanupTwoFactorTokens extends Command
@@ -52,7 +52,7 @@ class CleanupTwoFactorTokens extends Command
             }
             
             $this->info(__('admin.cleanup_two_factor_tokens.deleting_all'));
-            $deletedCount = Member2faToken::query()->delete();
+            $deletedCount = MemberTwoFaToken::query()->delete();
             
             if ($deletedCount > 0) {
                 $this->info(__('admin.cleanup_two_factor_tokens.deleted_all_success', ['count' => $deletedCount]));
@@ -73,7 +73,7 @@ class CleanupTwoFactorTokens extends Command
         $this->info(__('admin.cleanup_two_factor_tokens.cleaning_up', ['days' => $days]));
 
         // 期限切れのトークンと古いトークンを削除
-        $deletedCount = Member2faToken::where('expires_at', '<', now())
+        $deletedCount = MemberTwoFaToken::where('expires_at', '<', now())
             ->orWhere('created_at', '<', now()->subDays($days))
             ->delete();
 

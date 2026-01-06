@@ -6,10 +6,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class MembersTwoFactorDevice extends Model
+class MembersTwoFaDevice extends Model
 {
     use HasFactory;
-    protected $table = 'members_two_factor_devices';
+    protected $table = 'members_two_fa_devices';
 
     protected $fillable = [
         'member_id',

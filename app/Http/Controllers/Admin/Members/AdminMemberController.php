@@ -378,7 +378,7 @@ class AdminMemberController extends AdminLoggedInController
      */
     public function unlock2fa(Member $member)
     {
-        \App\Models\Member2faAttempt::where('member_id', $member->id)->delete();
+        \App\Models\MemberTwoFaAttempt::where('member_id', $member->id)->delete();
         \App\Models\MemberLoginAttempt::where('identifier', $member->email)->delete();
 
         return redirect()->route('admin.members.edit', ['member' => $member->id])

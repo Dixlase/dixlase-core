@@ -23,7 +23,7 @@
 namespace Tests\Unit;
 
 use App\Models\Member;
-use App\Models\Member2faRecoveryCode;
+use App\Models\MemberTwoFaRecoveryCode;
 use App\Services\RecoveryCodeService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -81,7 +81,7 @@ class RecoveryCodeServiceTest extends TestCase
 
         $codes = $this->service->generate($member);
 
-        $savedCodes = Member2faRecoveryCode::where('member_id', $member->id)
+        $savedCodes = MemberTwoFaRecoveryCode::where('member_id', $member->id)
             ->where('disabled', false)
             ->count();
 
@@ -97,7 +97,7 @@ class RecoveryCodeServiceTest extends TestCase
 
         // 最初の生成
         $this->service->generate($member);
-        $firstCount = Member2faRecoveryCode::where('member_id', $member->id)
+        $firstCount = MemberTwoFaRecoveryCode::where('member_id', $member->id)
             ->where('disabled', false)
             ->count();
 
@@ -105,7 +105,7 @@ class RecoveryCodeServiceTest extends TestCase
         $this->service->generate($member);
 
         // 古いコードは無効化されている
-        $disabledCount = Member2faRecoveryCode::where('member_id', $member->id)
+        $disabledCount = MemberTwoFaRecoveryCode::where('member_id', $member->id)
             ->where('disabled', true)
             ->count();
 
@@ -164,7 +164,7 @@ class RecoveryCodeServiceTest extends TestCase
         $codes = $this->service->generate($member);
 
         // コードを無効化
-        Member2faRecoveryCode::where('member_id', $member->id)->update(['disabled' => true]);
+        MemberTwoFaRecoveryCode::where('member_id', $member->id)->update(['disabled' => true]);
 
         $result = $this->service->validate($member, $codes[0]);
 
@@ -301,7 +301,7 @@ class RecoveryCodeServiceTest extends TestCase
         $this->service->generate($member);
 
         // 生成日時を25時間前に設定
-        Member2faRecoveryCode::where('member_id', $member->id)
+        MemberTwoFaRecoveryCode::where('member_id', $member->id)
             ->update(['created_at' => Carbon::now()->subHours(25)]);
 
         $result = $this->service->canRegenerate($member);
