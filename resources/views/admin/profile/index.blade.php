@@ -186,7 +186,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @if($isMailServerTested && ($force2fa === \App\Enums\AuthenticationMode::UseProfileSetting->value || $currentGlobalTwoFaMode))
             @php
                 $member = Auth::guard('member')->user();
-                $passkeyGloballyEnabled = in_array(\App\Enums\TwoFactorMethod::PASSKEY->value, array_keys($enabledTwoFactorMethods ?? []));
+                $passkeyGloballyEnabled = in_array(\App\Enums\TwoFactorMethod::PASSKEY->value, array_keys($enabledTwoFaMethods ?? []));
             @endphp
             
             <section class="transition-colors-unified">
@@ -194,7 +194,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 
                 <x-two-fa-auth-selector
                     name="two_fa_mode"
-                    :value="old('two_fa_mode', (string) ($twoFactorMode?->value ?? 0))"
+                    :value="old('two_fa_mode', (string) ($twoFaMode?->value ?? 0))"
                     :globalSetting="$force2fa"
                     :excludeUseProfileSetting="true"
                     :passkeyGloballyEnabled="$passkeyGloballyEnabled"

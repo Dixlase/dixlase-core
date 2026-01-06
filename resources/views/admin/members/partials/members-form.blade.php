@@ -27,9 +27,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'passwordRequireNumber' => true,
     'passwordRequireSymbol' => false,
     'roles' => [],
-    'twoFactorMode' => null,
-    'enabledTwoFactorMethods' => [],
-    'defaultTwoFactorMethod' => null,
+    'twoFaMode' => null,
+    'enabledTwoFaMethods' => [],
+    'defaultTwoFaMethod' => null,
     'isInitialAdmin' => false,
     'isMailServerTested' => false,
     'formAction' => null,        // フォームのaction URL
@@ -379,7 +379,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             if ($currentTwoFaMode instanceof \App\Enums\AuthenticationMode) {
                 $currentTwoFaMode = $currentTwoFaMode->value;
             }
-            $passkeyGloballyEnabled = in_array(\App\Enums\TwoFactorMethod::PASSKEY->value, array_keys($enabledTwoFactorMethods ?? []));
+            $passkeyGloballyEnabled = in_array(\App\Enums\TwoFactorMethod::PASSKEY->value, array_keys($enabledTwoFaMethods ?? []));
             $initialPasskeyEnabled = old('two_fa_passkey_enabled', $member->two_fa_passkey_enabled ?? true);
         @endphp
         
