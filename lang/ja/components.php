@@ -186,6 +186,7 @@ return [
             'disabled' => '無効',
             'different_device' => '異なるデバイス・IPでのログイン時のみ通知',
             'always' => '常に通知',
+            'use_profile_setting' => 'プロフィール設定に従う',
         ],
     ],
 
@@ -206,6 +207,7 @@ return [
             'disabled' => '無効',
             'different_device' => '異なるデバイス・IPでのログイン時',
             'always' => '常に有効',
+            'use_profile_setting' => 'プロフィール設定に従う',
         ],
     ],
 
@@ -270,5 +272,9 @@ return [
         'confirm_delete_all_passkeys_message' => '本当に全てのPasskeyを削除しますか？',
         'recovery_codes_confirm_title' => '回復コードの生成',
         'recovery_codes_confirm_message' => '回復コードを生成しますか？既存のコードは無効になります。',
+        'confirm_delete_recovery_codes_title' => '回復コードの削除',
+        'confirm_delete_recovery_codes_message' => '本当に全ての回復コードを削除しますか？',
+        'recovery_codes_delete_success' => '回復コードの削除に成功しました',
+        'recovery_codes_delete_error' => '回復コードの削除に失敗しました',
     ],
 ];

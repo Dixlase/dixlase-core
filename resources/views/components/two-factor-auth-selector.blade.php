@@ -27,14 +27,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'passkeyEnabled' => true, // パスキーが個別に有効か
     'defaultTwoFactorMethod' => '0', // デフォルトの二段階認証方法（0=メール, 1=パスキー）
     'columns' => 3,
+    'globalSettingsUrl' => null, // 全体設定へのリンクURL（nullの場合は注意書きを非表示）
 ])
 
 @php
     use App\Enums\AuthenticationMode;
     use App\Enums\TwoFactorMethod;
     
-    // 全体設定が「プロフィール設定を反映」の場合は設定を表示
-    $showSettings = ($globalSetting === AuthenticationMode::UseProfileSetting->value);
+    // 全体設定が「プロフィール設定を反映」の場合、またはglobalSettingがnull（全体設定画面）の場合は設定を表示
+    $showSettings = ($globalSetting === AuthenticationMode::UseProfileSetting->value) || ($globalSetting === null);
     
     // 全体設定で固定されている場合
     $isFixedByGlobal = !$showSettings && !$excludeUseProfileSetting && $globalSetting !== null;
@@ -79,14 +80,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             ],
             [
                 'value' => (string) AuthenticationMode::UseProfileSetting->value,
-                'label' => __('common.use_profile_setting'),
+                'label' => __('components.two_factor.options.use_profile_setting'),
                 'icon' => 'fas fa-user-cog',
             ],
         ];
     }
     
     $initialPasskeyEnabled = old('two_factor_passkey_enabled', $passkeyEnabled);
-    $initialTwoFactorMode = old('two_factor_mode', $value);
+    $initialTwoFactorMode = old($name, $value);
 @endphp
 
 <div x-data="{ 
@@ -155,8 +156,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <span class="text-xs text-gray-500 dark:text-gray-400">{{ __('components.two_factor.email_always_enabled') }}</span>
                 </div>
                 
-                @if($passkeyGloballyEnabled)
-                    {{-- 全体設定でパスキーが有効な場合：個別に設定可能 --}}
+                @if($passkeyGloballyEnabled || $globalSetting === null)
+                    {{-- 全体設定でパスキーが有効な場合、または全体設定画面の場合：個別に設定可能 --}}
                     <div class="flex items-center space-x-3" :class="{ 'opacity-50 pointer-events-none': !twoFactorEnabled }">
                         <x-form.toggle
                             name="two_factor_passkey_enabled"
@@ -181,14 +182,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
             </div>
 
-            <div class="space-y-1">
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                    {{ __('components.two_factor.method_note') }}
-                    <a href="{{ route('admin.members.settings.auth') }}" class="text-blue-600 dark:text-blue-400 hover:underline">
-                        {{ __('components.two_factor.change_in_global_settings') }}
-                    </a>
-                </p>
-            </div>
+            @if($globalSettingsUrl)
+                <div class="space-y-1">
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        {{ __('components.two_factor.method_note') }}
+                        <a href="{{ $globalSettingsUrl }}" class="text-blue-600 dark:text-blue-400 hover:underline">
+                            {{ __('components.two_factor.change_in_global_settings') }}
+                        </a>
+                    </p>
+                </div>
+            @endif
         </div>
 
         @error('two_factor_passkey_enabled')
@@ -196,8 +199,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @enderror
     </fieldset>
 
-    {{-- デフォルトの認証方法（パスキーが有効な場合のみ表示） --}}
-    @if($passkeyGloballyEnabled)
+    {{-- デフォルトの認証方法（パスキーが全体設定で有効、またはユーザーが個別に有効にしている場合に表示） --}}
+    @if($passkeyGloballyEnabled || $initialPasskeyEnabled)
         <fieldset>
             <legend>{{ __('components.two_factor.default_method') }}</legend>
             @php

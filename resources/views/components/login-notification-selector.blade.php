@@ -32,8 +32,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     // 全体設定が無効の場合はセクションを非表示
     $hideSection = ($globalSetting === AuthenticationMode::Disabled->value);
     
-    // 全体設定が「プロフィール設定を反映」の場合は設定を表示
-    $showSettings = ($globalSetting === AuthenticationMode::UseProfileSetting->value);
+    // 全体設定が「プロフィール設定を反映」の場合、またはglobalSettingがnull（全体設定画面）の場合は設定を表示
+    $showSettings = ($globalSetting === AuthenticationMode::UseProfileSetting->value) || ($globalSetting === null);
     
     // オプションを取得
     if ($excludeUseProfileSetting) {
@@ -75,7 +75,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             ],
             [
                 'value' => (string) AuthenticationMode::UseProfileSetting->value,
-                'label' => __('common.use_profile_setting'),
+                'label' => __('components.login_notification.options.use_profile_setting'),
                 'icon' => 'fas fa-user-cog',
             ],
         ];

@@ -25,12 +25,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'recoveryCodesCount' => 0,
     'trustedDevices' => null,
     'showTrustedDevices' => false,
+    'hideAddButtons' => false,
+    'hideGenerateButton' => false,
+    'adminContext' => false,
     'routes' => [
         'passkey_register_options' => '',
         'passkey_register' => '',
         'passkey_delete' => '',
         'passkey_delete_all' => '',
         'recovery_codes_generate' => '',
+        'recovery_codes_delete' => '',
         'trusted_device_delete' => '',
         'trusted_device_delete_all' => '',
     ],
@@ -84,6 +88,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         @endif
         
+        @if(!$hideAddButtons)
         <!-- 新しいPasskeyを追加 -->
         <button 
             type="button"
@@ -91,6 +96,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
             <i class="fas fa-plus mr-2"></i>{{ __('components.two_factor_management.add_passkey') }}
         </button>
+        @endif
 
         <!-- Passkeyの説明 -->
         <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
@@ -114,21 +120,33 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         @if($hasRecoveryCodes)
             <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
-                <p class="text-sm text-blue-800 dark:text-blue-200">
-                    <i class="fas fa-info-circle mr-2"></i>
-                    {{ __('components.two_factor_management.recovery_codes_remaining', ['count' => $recoveryCodesCount]) }}
-                </p>
+                <div class="flex items-center justify-between">
+                    <p class="text-sm text-blue-800 dark:text-blue-200">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        {{ __('components.two_factor_management.recovery_codes_remaining', ['count' => $recoveryCodesCount]) }}
+                    </p>
+                    @if($adminContext && isset($routes['recovery_codes_delete']))
+                    <button 
+                        type="button"
+                        onclick="openModal('deleteRecoveryCodesModal')"
+                        class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">
+                        <i class="fas fa-trash mr-1"></i>{{ __('components.two_factor_management.delete') }}
+                    </button>
+                    @endif
+                </div>
             </div>
         @else
             <p class="text-gray-600 dark:text-gray-400 mb-4">{{ __('components.two_factor_management.recovery_codes_not_generated') }}</p>
         @endif
         
+        @if(!$hideGenerateButton)
         <button 
             type="button"
             onclick="openModal('recoveryCodesConfirmModal')"
             class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
             <i class="fas fa-{{ $hasRecoveryCodes ? 'sync-alt' : 'plus' }} mr-2"></i>{{ __('components.two_factor_management.recovery_codes_' . ($hasRecoveryCodes ? 'regenerate' : 'generate')) }}
         </button>
+        @endif
         
         <!-- 回復コードの説明 -->
         <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
@@ -644,6 +662,66 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         }
     };
     
+    // 回復コード削除（管理画面用）
+    window.deleteRecoveryCodes = function() {
+        if (!config.routes.recovery_codes_delete) {
+            console.error('[Recovery Codes Delete] No delete route configured');
+            return;
+        }
+        
+        fetch(config.routes.recovery_codes_delete, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': config.csrfToken,
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (typeof closeModal === 'function') {
+                closeModal('deleteRecoveryCodesModal');
+            }
+            if (data.success) {
+                if (window.PasskeyResultModal) {
+                    window.PasskeyResultModal.showSuccess(
+                        'passkeyResultModal',
+                        '{{ __('components.two_factor_management.recovery_codes_delete_success') }}',
+                        data.message,
+                        () => location.reload()
+                    );
+                } else {
+                    alert(data.message);
+                    location.reload();
+                }
+            } else {
+                if (window.PasskeyResultModal) {
+                    window.PasskeyResultModal.showError(
+                        'passkeyResultModal',
+                        config.translations.error,
+                        data.message
+                    );
+                } else {
+                    alert(data.message);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('[Recovery Codes Delete] Error:', error);
+            if (typeof closeModal === 'function') {
+                closeModal('deleteRecoveryCodesModal');
+            }
+            if (window.PasskeyResultModal) {
+                window.PasskeyResultModal.showError(
+                    'passkeyResultModal',
+                    config.translations.error,
+                    '{{ __('components.two_factor_management.recovery_codes_delete_error') }}'
+                );
+            } else {
+                alert('{{ __('components.two_factor_management.recovery_codes_delete_error') }}');
+            }
+        });
+    };
+    
     // 信頼済みデバイス削除モーダルを開く
     window.openDeleteTrustedDeviceModal = function(deviceId, deviceName) {
         currentDeviceId = deviceId;
@@ -808,6 +886,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             });
         }
 
+        // 回復コード削除（管理画面用）
+        const deleteRecoveryCodesBtn = document.querySelector('#deleteRecoveryCodesModal .modal-actions button[type="button"]:last-child');
+        if (deleteRecoveryCodesBtn) {
+            deleteRecoveryCodesBtn.addEventListener('click', deleteRecoveryCodes);
+        }
+
         // 手動生成回復コードモーダルを閉じた時にページリロード
         const manualRecoveryCodesCloseBtn = document.getElementById('manualRecoveryCodesModal-close-btn');
         if (manualRecoveryCodesCloseBtn) {
@@ -877,6 +961,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     icon_type="warning"
     confirm_color="blue"
 />
+
+<!-- 回復コード削除確認モーダル（管理画面用） -->
+@if($adminContext)
+<x-modal 
+    id="deleteRecoveryCodesModal"
+    :title="__('components.two_factor_management.confirm_delete_recovery_codes_title')"
+    :message="__('components.two_factor_management.confirm_delete_recovery_codes_message')"
+    :confirm_label="__('common.delete')"
+    :cancel_label="__('common.cancel')"
+    icon_type="danger"
+    confirm_color="red"
+/>
+@endif
 
 <!-- 回復コード表示モーダル（手動生成用・エラー表示兼用） -->
 @include('two-factor.partials.recovery-codes-modal', [

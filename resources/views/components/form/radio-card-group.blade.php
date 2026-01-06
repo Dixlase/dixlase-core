@@ -211,7 +211,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 : $colors['border'] . ' ring-3 ' . $colors['ring'] . ' ' . $colors['bg'];
         @endphp
         
-        <label class="relative flex rounded-lg border p-4 shadow-sm focus:outline-none transition-all duration-150 {{ $isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer' }}"
+        <label class="relative flex rounded-lg border p-4 pr-6 shadow-sm focus:outline-none transition-all duration-150 {{ $isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer' }}"
                @if ($modelVar)
                    :class="{{ $modelVar }} === '{{ $optionValue }}' 
                        ? '{{ $selectedClasses }}' 
@@ -267,7 +267,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             
             {{-- チェックアイコン --}}
             @if ($showCheck)
-                <span class="absolute top-3 right-3 flex items-center justify-center"
+                <span class="absolute top-1 right-2 flex items-center justify-center"
                       @if ($modelVar)
                           x-show="{{ $modelVar }} === '{{ $optionValue }}'"
                       @else

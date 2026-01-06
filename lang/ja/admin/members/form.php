@@ -57,4 +57,5 @@ return [
     'default_two_factor_method' => 'デフォルトの認証方法',
     'default_two_factor_method_help' => '二段階認証時に最初に表示される認証方法を選択します。',
     'passkey_disabled_default_email_only' => 'パスキー認証を無効にしているため、デフォルトの認証方法は自動的にメール認証になります。',
+    '2fa_management_admin_note' => '管理者はPasskeyデバイスの追加や回復コードの生成はできません。削除のみ可能です。追加・生成はメンバー本人のみが実行できます。',
 ];

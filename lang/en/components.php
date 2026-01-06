@@ -187,6 +187,7 @@ return [
             'disabled' => 'Disabled',
             'different_device' => 'Notify only on different device/IP login',
             'always' => 'Always notify',
+            'use_profile_setting' => 'Use Profile Setting',
         ],
     ],
 
@@ -207,6 +208,7 @@ return [
             'disabled' => 'Disabled',
             'different_device' => 'Different device/IP login',
             'always' => 'Always enabled',
+            'use_profile_setting' => 'Use Profile Setting',
         ],
     ],
 
@@ -271,5 +273,9 @@ return [
         'confirm_delete_all_passkeys_message' => 'Are you sure you want to delete all Passkeys?',
         'recovery_codes_confirm_title' => 'Generate Recovery Codes',
         'recovery_codes_confirm_message' => 'Do you want to generate recovery codes? Existing codes will be invalidated.',
+        'confirm_delete_recovery_codes_title' => 'Delete Recovery Codes',
+        'confirm_delete_recovery_codes_message' => 'Are you sure you want to delete all recovery codes?',
+        'recovery_codes_delete_success' => 'Recovery codes deleted successfully',
+        'recovery_codes_delete_error' => 'Failed to delete recovery codes',
     ],
 ];
