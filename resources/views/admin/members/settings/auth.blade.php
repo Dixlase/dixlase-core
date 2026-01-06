@@ -128,7 +128,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- 二段階認証設定 -->
         <section>
-            <h2>{{ __('auth.two_factor_settings') }}</h2>
+            <h2>{{ __('auth.two_fa_settings') }}</h2>
             @if(!$isMailServerTested)
                 <x-message
                     type="warning"
@@ -142,25 +142,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :excludeUseProfileSetting="false"
                 :passkeyGloballyEnabled="true"
                 :passkeyEnabled="old('enabled_2fa_passkey', $passkeyEnabled ?? false)"
-                :defaultTwoFactorMethod="'0'"
+                :defaultTwoFaMethod="'0'"
                 :columns="4"
                 :globalSettingsUrl="null"
             />
 
             <fieldset>
-                <legend>{{ __('admin/members/settings/auth.two_factor_expire_settings') }}</legend>
+                <legend>{{ __('admin/members/settings/auth.two_fa_expire_settings') }}</legend>
 
                 <div class="space-y-4">
                     <div>
-                        <label for="two_factor_expire_minutes" class="block text-sm font-medium">
-                            {{ __('admin/members/settings/auth.two_factor_expire_minutes') }}
+                        <label for="two_fa_expire_minutes" class="block text-sm font-medium">
+                            {{ __('admin/members/settings/auth.two_fa_expire_minutes') }}
                         </label>
                         <div class="mt-1 flex items-center space-x-2">
                             <x-form.text
                                 type="number"
-                                id="two_factor_expire_minutes"
-                                name="two_factor_expire_minutes"
-                                :value="old('two_factor_expire_minutes', $twoFactorExpireMinutes)"
+                                id="two_fa_expire_minutes"
+                                name="two_fa_expire_minutes"
+                                :value="old('two_fa_expire_minutes', $twoFactorExpireMinutes)"
                                 :min="1"
                                 :max="60"
                                 class="input-common input-sm"
@@ -168,20 +168,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings/index.minutes') }}</span>
                         </div>
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            {{ __('admin/members/settings/auth.two_factor_expire_minutes_help') }}
+                            {{ __('admin/members/settings/auth.two_fa_expire_minutes_help') }}
                         </p>
                     </div>
 
                     <div>
-                        <label for="two_factor_resend_interval_seconds" class="block text-sm font-medium">
-                            {{ __('admin/members/settings/auth.two_factor_resend_interval_seconds') }}
+                        <label for="two_fa_resend_interval_seconds" class="block text-sm font-medium">
+                            {{ __('admin/members/settings/auth.two_fa_resend_interval_seconds') }}
                         </label>
                         <div class="mt-1 flex items-center space-x-2">
                             <x-form.text
                                 type="number"
-                                id="two_factor_resend_interval_seconds"
-                                name="two_factor_resend_interval_seconds"
-                                :value="old('two_factor_resend_interval_seconds', $twoFactorResendIntervalSeconds)"
+                                id="two_fa_resend_interval_seconds"
+                                name="two_fa_resend_interval_seconds"
+                                :value="old('two_fa_resend_interval_seconds', $twoFactorResendIntervalSeconds)"
                                 :min="60"
                                 :max="600"
                                 :step="60"
@@ -190,7 +190,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings/index.seconds') }}</span>
                         </div>
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            {{ __('admin/members/settings/auth.two_factor_resend_interval_seconds_help') }}
+                            {{ __('admin/members/settings/auth.two_fa_resend_interval_seconds_help') }}
                         </p>
                     </div>
                 </div>
