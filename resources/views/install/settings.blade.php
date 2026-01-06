@@ -95,7 +95,7 @@
                     name="admin_password"
                     id="admin_password"
                     :required="false"
-                    :showConfirmation="false"
+                    :showConfirmation="true"
                     :minLength="8"
                     :requireUppercase="true"
                     :requireLowercase="true"
@@ -103,20 +103,6 @@
                     :requireSymbol="true"
                     :recommendedLength="12"
                 />
-            </div>
-
-            <div>
-                <x-form.label for="admin_password_confirmation" :text="__('install.admin_password_confirmation')" :required="true" />
-                <x-form.text
-                    type="password"
-                    name="admin_password_confirmation"
-                    id="admin_password_confirmation"
-                    :required="true"
-                    autocomplete="new-password"
-                    ariaDescribedby="password_confirmation_help"
-                    class="input-full"
-                />
-                <p id="password_confirmation_help" class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ __('install.admin_password_confirmation_note') }}</p>
             </div>
         </fieldset>
     </section>
