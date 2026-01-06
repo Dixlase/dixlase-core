@@ -30,7 +30,7 @@ class TwoFaTraitTest extends TestCase
     {
         $member = Member::factory()->create();
 
-        $code = $this->service->generateTwoFactorCode($member);
+        $code = $this->service->generateTwoFaCode($member);
 
         $this->assertIsString($code);
         $this->assertEquals(6, strlen($code));
@@ -44,7 +44,7 @@ class TwoFaTraitTest extends TestCase
     {
         $member = Member::factory()->create();
 
-        $code = $this->service->generateTwoFactorCode($member);
+        $code = $this->service->generateTwoFaCode($member);
 
         $this->assertDatabaseHas('members_two_factor_tokens', [
             'member_id' => $member->id,
@@ -62,11 +62,11 @@ class TwoFaTraitTest extends TestCase
         $member = Member::factory()->create();
 
         // 最初のコード生成
-        $this->service->generateTwoFactorCode($member);
+        $this->service->generateTwoFaCode($member);
         $this->assertEquals(1, MemberTwoFaToken::where('member_id', $member->id)->count());
 
         // 2回目のコード生成
-        $this->service->generateTwoFactorCode($member);
+        $this->service->generateTwoFaCode($member);
         $this->assertEquals(1, MemberTwoFaToken::where('member_id', $member->id)->count());
     }
 
@@ -76,9 +76,9 @@ class TwoFaTraitTest extends TestCase
     public function test_validate_two_factor_code_returns_true_for_valid_code(): void
     {
         $member = Member::factory()->create();
-        $code = $this->service->generateTwoFactorCode($member);
+        $code = $this->service->generateTwoFaCode($member);
 
-        $result = $this->service->validateTwoFactorCode($member, $code);
+        $result = $this->service->validateTwoFaCode($member, $code);
 
         $this->assertTrue($result);
     }
@@ -89,9 +89,9 @@ class TwoFaTraitTest extends TestCase
     public function test_validate_two_factor_code_returns_false_for_invalid_code(): void
     {
         $member = Member::factory()->create();
-        $this->service->generateTwoFactorCode($member);
+        $this->service->generateTwoFaCode($member);
 
-        $result = $this->service->validateTwoFactorCode($member, '000000');
+        $result = $this->service->validateTwoFaCode($member, '000000');
 
         $this->assertFalse($result);
     }
@@ -102,13 +102,13 @@ class TwoFaTraitTest extends TestCase
     public function test_validate_two_factor_code_returns_false_for_expired_code(): void
     {
         $member = Member::factory()->create();
-        $code = $this->service->generateTwoFactorCode($member, 1);
+        $code = $this->service->generateTwoFaCode($member, 1);
 
         // トークンの有効期限を過去に設定
         MemberTwoFaToken::where('member_id', $member->id)
             ->update(['expires_at' => now()->subMinutes(5)]);
 
-        $result = $this->service->validateTwoFactorCode($member, $code);
+        $result = $this->service->validateTwoFaCode($member, $code);
 
         $this->assertFalse($result);
     }
@@ -119,9 +119,9 @@ class TwoFaTraitTest extends TestCase
     public function test_validate_two_factor_code_deletes_token_after_success(): void
     {
         $member = Member::factory()->create();
-        $code = $this->service->generateTwoFactorCode($member);
+        $code = $this->service->generateTwoFaCode($member);
 
-        $this->service->validateTwoFactorCode($member, $code);
+        $this->service->validateTwoFaCode($member, $code);
 
         $this->assertDatabaseMissing('members_two_factor_tokens', [
             'member_id' => $member->id,
@@ -135,7 +135,7 @@ class TwoFaTraitTest extends TestCase
     {
         $member = Member::factory()->create();
 
-        $result = $this->service->validateTwoFactorCode($member, '123456');
+        $result = $this->service->validateTwoFaCode($member, '123456');
 
         $this->assertFalse($result);
     }
@@ -147,7 +147,7 @@ class TwoFaTraitTest extends TestCase
     {
         $member = Member::factory()->create();
 
-        $result = $this->service->requiresTwoFactor(
+        $result = $this->service->requiresTwoFa(
             $member,
             AuthenticationMode::Disabled->value,
             [TwoFaMethod::EMAIL->value]
@@ -163,7 +163,7 @@ class TwoFaTraitTest extends TestCase
     {
         $member = Member::factory()->create();
 
-        $result = $this->service->requiresTwoFactor(
+        $result = $this->service->requiresTwoFa(
             $member,
             AuthenticationMode::Always->value,
             [TwoFaMethod::EMAIL->value]
@@ -179,7 +179,7 @@ class TwoFaTraitTest extends TestCase
     {
         $member = Member::factory()->create();
 
-        $result = $this->service->requiresTwoFactor(
+        $result = $this->service->requiresTwoFa(
             $member,
             AuthenticationMode::Always->value,
             []
@@ -207,7 +207,7 @@ class TwoFaTraitTest extends TestCase
         $member = Member::factory()->create();
         $expireMinutes = 10;
 
-        $this->service->generateTwoFactorCode($member, $expireMinutes);
+        $this->service->generateTwoFaCode($member, $expireMinutes);
 
         $token = MemberTwoFaToken::where('member_id', $member->id)->first();
 

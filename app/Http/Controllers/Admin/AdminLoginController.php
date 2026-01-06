@@ -407,7 +407,7 @@ class AdminLoginController extends AdminController
         return to_route('admin.login');
     }
 
-    public function showTwoFactorForm()
+    public function showTwoFaForm()
     {
         if (!session()->has('login.id')) {
             return redirect()->route('admin.login');

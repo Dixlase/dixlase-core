@@ -183,7 +183,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </section>
 
         <!-- 二段階認証設定（メールサーバー設定済みの場合のみ表示） -->
-        @if($isMailServerTested && ($force2fa === \App\Enums\AuthenticationMode::UseProfileSetting->value || $currentGlobalTwoFactorMode))
+        @if($isMailServerTested && ($force2fa === \App\Enums\AuthenticationMode::UseProfileSetting->value || $currentGlobalTwoFaMode))
             @php
                 $member = Auth::guard('member')->user();
                 $passkeyGloballyEnabled = in_array(\App\Enums\TwoFactorMethod::PASSKEY->value, array_keys($enabledTwoFactorMethods ?? []));

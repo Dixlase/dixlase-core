@@ -77,7 +77,7 @@ class TwoFaHelper
             throw new \Exception(__('admin/profile.two_factor.mail_not_configured'));
         }
         
-        $code = $this->generateTwoFactorCode($user, $expireMinutes);
+        $code = $this->generateTwoFaCode($user, $expireMinutes);
 
         // メール送信
         try {
@@ -103,7 +103,7 @@ class TwoFaHelper
      * @param string|null $settingModelClass 設定モデルクラス名（null=MemberSetting）
      * @return array
      */
-    public function getTwoFactorSettings(?string $settingModelClass = null): array
+    public function getTwoFaSettings(?string $settingModelClass = null): array
     {
         $settingModelClass = $settingModelClass ?? \App\Models\MemberSetting::class;
         
@@ -150,7 +150,7 @@ class TwoFaHelper
      * @param string|null $settingModelClass 設定モデルクラス名（null=MemberSetting）
      * @return bool
      */
-    public function isTwoFactorEnabled($user, ?string $settingModelClass = null): bool
+    public function isTwoFaEnabled($user, ?string $settingModelClass = null): bool
     {
         // メール設定が未完了の場合は二段階認証を無効化
         if (!$this->isMailConfigured()) {
@@ -158,7 +158,7 @@ class TwoFaHelper
             return false;
         }
         
-        $systemSettings = $this->getTwoFactorSettings($settingModelClass);
+        $systemSettings = $this->getTwoFaSettings($settingModelClass);
         $force2fa = $systemSettings['force_2fa'] ?? 0;
         
         // 全体設定: 0=Disabled（無効）, 1=DifferentDevice（異なるデバイス）, 2=Always（常に有効）, 3=UseProfileSetting（プロフィール設定に従う）
@@ -198,7 +198,7 @@ class TwoFaHelper
         $userMethod = $user->default_two_fa_method ?? null;
         $defaultMethod = (int) $settingModelClass::getValue('default_two_fa_method', (string)TwoFaMethod::EMAIL->value);
         $enabledMethods = $this->getEnabledTwoFaMethods($settingModelClass);
-        $globalTwoFactorMode = (int) $settingModelClass::getValue('force_2fa', (string)AuthenticationMode::Disabled->value);
+        $globalTwoFaMode = (int) $settingModelClass::getValue('force_2fa', (string)AuthenticationMode::Disabled->value);
         
         // ユーザーがパスキーを無効にしている場合は、有効な方法からパスキーを除外
         $userPasskeyEnabled = $user->two_fa_passkey_enabled ?? true;
@@ -213,16 +213,16 @@ class TwoFaHelper
             'user_id' => $user->id,
             'user_method' => $userMethod,
             'default_method' => $defaultMethod,
-            'global_mode' => $globalTwoFactorMode,
+            'global_mode' => $globalTwoFaMode,
             'enabled_methods' => $enabledMethods,
             'user_passkey_enabled' => $userPasskeyEnabled,
             'user_enabled_methods' => $userEnabledMethods,
         ]);
 
         // グローバル設定が「プロフィール設定に従う」(3)以外の場合は、デフォルト認証方法を強制
-        if ($globalTwoFactorMode !== AuthenticationMode::UseProfileSetting->value) {
+        if ($globalTwoFaMode !== AuthenticationMode::UseProfileSetting->value) {
             if (in_array($defaultMethod, $userEnabledMethods, true)) {
-                Log::info('[2FA] Using global default method (forced)', ['method' => $defaultMethod, 'global_mode' => $globalTwoFactorMode]);
+                Log::info('[2FA] Using global default method (forced)', ['method' => $defaultMethod, 'global_mode' => $globalTwoFaMode]);
                 return $defaultMethod;
             }
         }
@@ -269,7 +269,7 @@ class TwoFaHelper
      *
      * @return array 統計情報
      */
-    public function getTwoFactorStats(): array
+    public function getTwoFaStats(): array
     {
         // 実装例：実際の統計取得ロジックを追加
         return [

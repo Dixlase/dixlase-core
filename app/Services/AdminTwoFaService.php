@@ -77,7 +77,7 @@ class AdminTwoFaService
      */
     public function has($member): bool
     {
-        return $this->helper->isTwoFactorEnabled($member);
+        return $this->helper->isTwoFaEnabled($member);
     }
 
     /**
@@ -99,7 +99,7 @@ class AdminTwoFaService
      */
     public function isRequired($user): bool
     {
-        return $this->helper->isTwoFactorEnabled($user);
+        return $this->helper->isTwoFaEnabled($user);
     }
 
     /**
@@ -109,7 +109,7 @@ class AdminTwoFaService
      */
     public function getSystemSettings(): array
     {
-        return $this->helper->getSystemTwoFactorSettings();
+        return $this->helper->getSystemTwoFaSettings();
     }
 
     /**

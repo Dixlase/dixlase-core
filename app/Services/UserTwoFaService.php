@@ -84,7 +84,7 @@ class UserTwoFaService
     {
         // プラグイン独自の設定システムを使用する場合は、
         // ここでプラグインの設定を取得するロジックを実装
-        return $this->helper->isTwoFactorEnabled($user);
+        return $this->helper->isTwoFaEnabled($user);
     }
 
     /**
@@ -162,7 +162,7 @@ class UserTwoFaService
         // ];
         
         // デフォルトはシステム設定を使用
-        return $this->helper->getSystemTwoFactorSettings();
+        return $this->helper->getSystemTwoFaSettings();
     }
 
     /**
