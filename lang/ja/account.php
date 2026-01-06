@@ -104,12 +104,12 @@ return [
     'notification_updated' => '通知設定を更新しました。',
 
     // 二段階認証設定
-    'two_factor_settings' => '二段階認証設定',
-    'two_factor_mode' => '二段階認証モード',
+    'two_fa_settings' => '二段階認証設定',
+    'two_fa_mode' => '二段階認証モード',
     'two_factor_mode_disabled' => '無効',
     'two_factor_mode_always' => '常に有効',
     'two_factor_mode_new_device' => '新しいデバイスのみ',
-    'two_factor_method' => '認証方法',
+    'two_fa_method' => '認証方法',
     'two_factor_method_email' => 'メール認証',
     'two_factor_method_passkey' => 'パスキー',
     'two_factor_method_recovery' => '回復コード',
@@ -167,6 +167,6 @@ return [
     ],
 
     // 二段階認証詳細設定（Myページ専用）
-    'two_factor_authentication' => '二段階認証',
-    'two_factor_description' => 'セキュリティを強化するため、ログイン時に追加の認証を設定できます。',
+    'two_fa_authentication' => '二段階認証',
+    'two_fa_description' => 'セキュリティを強化するため、ログイン時に追加の認証を設定できます。',
 ];

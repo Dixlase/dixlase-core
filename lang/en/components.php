@@ -192,7 +192,7 @@ return [
     ],
 
     // Two-factor authentication settings
-    'two_factor' => [
+    'two_fa' => [
         'mode_label' => 'Two-Factor Authentication Mode',
         'help' => 'When enabled, additional authentication is required at login.',
         'method_label' => 'Two-Factor Authentication Method',
@@ -213,7 +213,7 @@ return [
     ],
 
     // Two-factor authentication management
-    'two_factor_management' => [
+    'two_fa_management' => [
         'title' => 'Two-Factor Authentication Management',
         'passkey_devices' => 'Passkey Devices',
         'no_passkey_devices' => 'No passkey devices registered',

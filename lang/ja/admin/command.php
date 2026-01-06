@@ -230,7 +230,7 @@ return [
     ],
 
     // 二段階認証トークンクリーンアップコマンド
-    'cleanup_two_factor_tokens' => [
+    'cleanup_two_fa_tokens' => [
         'days_zero_warning' => '日数が0に設定されています - すべての二段階認証トークン記録が削除されます。',
         'confirm_delete_all' => 'すべての二段階認証トークン記録を削除してもよろしいですか？この操作は元に戻すことができません。',
         'operation_cancelled' => '操作がキャンセルされました。',
@@ -842,7 +842,7 @@ return [
     ],
 
     // 二段階認証復旧（ブレークグラス）
-    'two_factor_recovery' => [
+    'two_fa_recovery' => [
         'warning_disable' => '⚠️ 警告: 二段階認証を無効化すると、アカウントのセキュリティが低下します。',
         'confirm_disable' => ':name の二段階認証を無効化しますか？',
         'cancelled' => '操作がキャンセルされました。',

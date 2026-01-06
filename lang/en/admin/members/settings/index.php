@@ -33,7 +33,7 @@ return [
     'system_default' => 'System Default',
     'custom_session_enabled' => 'Custom Settings Enabled',
     'custom_session_disabled' => 'Using System Default',
-    'two_factor' => 'Two-Factor Authentication',
+    'two_fa' => 'Two-Factor Authentication',
     'optional' => 'Optional',
     'required' => 'Required',
     'login_attempt_limit' => 'Login Attempt Limit',

@@ -104,12 +104,12 @@ return [
     'notification_updated' => 'Notification settings have been updated.',
 
     // Two-Factor Authentication Settings
-    'two_factor_settings' => 'Two-Factor Authentication Settings',
-    'two_factor_mode' => 'Two-Factor Authentication Mode',
+    'two_fa_settings' => 'Two-Factor Authentication Settings',
+    'two_fa_mode' => 'Two-Factor Authentication Mode',
     'two_factor_mode_disabled' => 'Disabled',
     'two_factor_mode_always' => 'Always Enabled',
     'two_factor_mode_new_device' => 'New Devices Only',
-    'two_factor_method' => 'Authentication Method',
+    'two_fa_method' => 'Authentication Method',
     'two_factor_method_email' => 'Email Authentication',
     'two_factor_method_passkey' => 'Passkey',
     'two_factor_method_recovery' => 'Recovery Code',
@@ -167,6 +167,6 @@ return [
     ],
 
     // Two-Factor Authentication Details (My Page specific)
-    'two_factor_authentication' => 'Two-Factor Authentication',
-    'two_factor_description' => 'Enhance your security by setting up additional authentication at login.',
+    'two_fa_authentication' => 'Two-Factor Authentication',
+    'two_fa_description' => 'Enhance your security by setting up additional authentication at login.',
 ];

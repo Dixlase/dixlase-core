@@ -33,7 +33,7 @@ return [
     'system_default' => 'システムデフォルト',
     'custom_session_enabled' => 'カスタム設定有効',
     'custom_session_disabled' => 'システムデフォルト使用',
-    'two_factor' => '二段階認証',
+    'two_fa' => '二段階認証',
     'optional' => '任意',
     'required' => '必須',
     'login_attempt_limit' => 'ログイン試行制限',

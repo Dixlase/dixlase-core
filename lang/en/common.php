@@ -272,7 +272,7 @@ return [
 
     // Global Setting Control Messages (Account Type Support)
     'global_setting_controlled' => [
-        'two_factor' => 'This setting is controlled by the :account_type global settings and cannot be changed.',
+        'two_fa' => 'This setting is controlled by the :account_type global settings and cannot be changed.',
     ],
 
     // Profile & Settings Common Items

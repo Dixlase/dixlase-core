@@ -24,8 +24,8 @@ return [
     'info_title' => 'Cleanup Target Description',
     'info_login_attempts' => 'Delete old login attempt records.',
     'info_password_reset' => 'Delete expired password reset tokens.',
-    'info_two_factor_attempts' => 'Delete old two-factor authentication attempt records.',
-    'info_two_factor_tokens' => 'Delete expired two-factor authentication tokens.',
+    'info_two_fa_attempts' => 'Delete old two-factor authentication attempt records.',
+    'info_two_fa_tokens' => 'Delete expired two-factor authentication tokens.',
     'info_recovery_codes' => 'Delete old used recovery codes.',
     'info_passkeys' => 'Permanently delete old deleted PASSKEYs.',
     'info_cache' => 'Delete expired cache entries.',
@@ -58,12 +58,12 @@ return [
         'description' => 'Clean up old password reset token records',
         'invalid_days' => 'Days must be a non-negative integer.',
     ],
-    'two_factor_attempts' => [
+    'two_fa_attempts' => [
         'name' => 'Two-Factor Authentication Attempts',
         'description' => 'Clean up old two-factor authentication attempt records',
         'invalid_days' => 'Days must be a non-negative integer.',
     ],
-    'two_factor_tokens' => [
+    'two_fa_tokens' => [
         'name' => 'Two-Factor Authentication Tokens (Email)',
         'description' => 'Clean up expired two-factor authentication (email) codes',
         'default_days' => '7 days',
