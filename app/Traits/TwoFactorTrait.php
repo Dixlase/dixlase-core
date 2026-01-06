@@ -5,7 +5,7 @@ namespace App\Traits;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
-use App\Models\Member2faToken;
+use App\Models\MemberTwoFaToken;
 use App\Enums\AuthenticationMode;
 use App\Enums\TwoFactorMethod;
 use App\Traits\DeviceDetectionTrait;
@@ -30,10 +30,10 @@ trait TwoFactorTrait
         }
 
         // 古いコードを削除
-        Member2faToken::where('member_id', $user->id)->delete();
+        MemberTwoFaToken::where('member_id', $user->id)->delete();
 
         // 新しいコードを保存
-        Member2faToken::create([
+        MemberTwoFaToken::create([
             'member_id' => $user->id,
             'code' => Hash::make($code),
             'expires_at' => now()->addMinutes($expireMinutes),
@@ -53,7 +53,7 @@ trait TwoFactorTrait
      */
     public function validateTwoFactorCode($user, string $inputCode): bool
     {
-        $token = Member2faToken::where('member_id', $user->id)->latest()->first();
+        $token = MemberTwoFaToken::where('member_id', $user->id)->latest()->first();
 
         if (!$token || now()->greaterThan($token->expires_at) || !Hash::check($inputCode, $token->code)) {
             return false;

@@ -95,8 +95,8 @@ class EmailAuthenticationService
     public function getStats(): array
     {
         try {
-            $totalTokens = \App\Models\Member2faToken::count();
-            $activeTokens = \App\Models\Member2faToken::where('expires_at', '>', now())->count();
+            $totalTokens = \App\Models\MemberTwoFaToken::count();
+            $activeTokens = \App\Models\MemberTwoFaToken::where('expires_at', '>', now())->count();
             $expiredTokens = $totalTokens - $activeTokens;
 
             return [
@@ -124,7 +124,7 @@ class EmailAuthenticationService
     public function cleanupExpiredTokens(): int
     {
         try {
-            $deleted = \App\Models\Member2faToken::where('expires_at', '<', now())->delete();
+            $deleted = \App\Models\MemberTwoFaToken::where('expires_at', '<', now())->delete();
             Log::info("[Email Auth] 期限切れトークンクリーンアップ: {$deleted}件削除");
             return $deleted;
         } catch (\Exception $e) {
@@ -137,11 +137,11 @@ class EmailAuthenticationService
      * 特定ユーザーのアクティブなトークンを取得
      *
      * @param mixed $user ユーザーモデル
-     * @return \App\Models\Member2faToken|null
+     * @return \App\Models\MemberTwoFaToken|null
      */
     public function getActiveToken($user)
     {
-        return \App\Models\Member2faToken::where('member_id', $user->id)
+        return \App\Models\MemberTwoFaToken::where('member_id', $user->id)
             ->where('expires_at', '>', now())
             ->latest()
             ->first();
@@ -156,7 +156,7 @@ class EmailAuthenticationService
     public function revokeUserTokens($user): int
     {
         try {
-            $deleted = \App\Models\Member2faToken::where('member_id', $user->id)->delete();
+            $deleted = \App\Models\MemberTwoFaToken::where('member_id', $user->id)->delete();
             Log::info("[Email Auth] ユーザートークン無効化: ユーザーID {$user->id}, {$deleted}件削除");
             return $deleted;
         } catch (\Exception $e) {
@@ -174,7 +174,7 @@ class EmailAuthenticationService
      */
     public function canResendCode($user, int $limitMinutes = 1): bool
     {
-        $lastToken = \App\Models\Member2faToken::where('member_id', $user->id)
+        $lastToken = \App\Models\MemberTwoFaToken::where('member_id', $user->id)
             ->latest()
             ->first();
 

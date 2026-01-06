@@ -22,7 +22,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Member2faRecoveryCode;
+use App\Models\MemberTwoFaRecoveryCode;
 use Illuminate\Console\Command;
 
 class CleanupRecoveryCodes extends Command
@@ -69,7 +69,7 @@ class CleanupRecoveryCodes extends Command
             }
             
             $this->info(__('admin.cleanup_recovery_codes.deleting_all'));
-            $deletedCount = Member2faRecoveryCode::where(function($query) {
+            $deletedCount = MemberTwoFaRecoveryCode::where(function($query) {
                 $query->where('used_at', '!=', null)
                       ->orWhere('disabled', 1);
             })->delete();
@@ -93,7 +93,7 @@ class CleanupRecoveryCodes extends Command
         $this->info(__('admin.cleanup_recovery_codes.cleaning_up', ['days' => $days]));
 
         // 使用済みまたは無効化された古い回復コードを削除
-        $deletedCount = Member2faRecoveryCode::where(function($query) use ($days) {
+        $deletedCount = MemberTwoFaRecoveryCode::where(function($query) use ($days) {
             $query->where(function($q) use ($days) {
                 $q->where('used_at', '!=', null)
                   ->where('used_at', '<', now()->subDays($days));

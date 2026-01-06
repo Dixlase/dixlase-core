@@ -100,7 +100,7 @@ class Member extends Authenticatable implements MustVerifyEmail
      */
     public function webauthnCredentials()
     {
-        return $this->hasMany(Member2faPasskey::class);
+        return $this->hasMany(MemberTwoFaPasskey::class);
     }
 
     /**

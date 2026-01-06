@@ -30,7 +30,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Member;
 use App\Models\MemberSetting;
-use App\Models\MembersTwoFactorDevice;
+use App\Models\MembersTwoFaDevice;
 use Illuminate\Support\Facades\Hash;
 use App\Services\AdminTwoFactorService;
 use App\Services\AdminLoginNotificationService;
@@ -42,7 +42,7 @@ use App\Helpers\CaptchaHelper;
 use App\Helpers\TwoFactorHelper;
 use App\Enums\TwoFactorMethod;
 use App\Models\BaseSetting;
-use App\Models\Member2faToken;
+use App\Models\MemberTwoFaToken;
 use App\Services\TwoFactorAttemptService;
 use App\Services\PasskeyAuthenticationService;
 use App\Services\RecoveryCodeService;
@@ -429,7 +429,7 @@ class AdminLoginController extends AdminController
         }
 
         // 既存の有効なコードがあるかチェック
-        $hasValidToken = Member2faToken::where('member_id', $member->id)
+        $hasValidToken = MemberTwoFaToken::where('member_id', $member->id)
             ->where('expires_at', '>', now())
             ->exists();
 

@@ -22,7 +22,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Member2faAttempt;
+use App\Models\MemberTwoFaAttempt;
 use Illuminate\Console\Command;
 
 class CleanupTwoFactorAttempts extends Command
@@ -69,7 +69,7 @@ class CleanupTwoFactorAttempts extends Command
             }
             
             $this->info(__('admin.cleanup_two_factor_attempts.deleting_all'));
-            $deletedCount = Member2faAttempt::query()->delete();
+            $deletedCount = MemberTwoFaAttempt::query()->delete();
             
             if ($deletedCount > 0) {
                 $this->info(__('admin.cleanup_two_factor_attempts.deleted_all_success', ['count' => $deletedCount]));
@@ -90,7 +90,7 @@ class CleanupTwoFactorAttempts extends Command
         $this->info(__('admin.cleanup_two_factor_attempts.cleaning_up', ['days' => $days]));
 
         // 古い試行履歴を削除
-        $deletedCount = Member2faAttempt::where('created_at', '<', now()->subDays($days))
+        $deletedCount = MemberTwoFaAttempt::where('created_at', '<', now()->subDays($days))
             ->delete();
 
         if ($deletedCount > 0) {

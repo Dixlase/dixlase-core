@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\Member;
-use App\Models\Member2faRecoveryCode;
+use App\Models\MemberTwoFaRecoveryCode;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
@@ -23,7 +23,7 @@ class RecoveryCodeService
         $count = max(1, min(5, $count)); // 1-5の範囲に制限
 
         // 既存の回復コードを全て無効化
-        Member2faRecoveryCode::where('member_id', $member->id)->update(['disabled' => true]);
+        MemberTwoFaRecoveryCode::where('member_id', $member->id)->update(['disabled' => true]);
 
         $codes = [];
         for ($i = 0; $i < $count; $i++) {
@@ -32,7 +32,7 @@ class RecoveryCodeService
             $codes[] = $code;
 
             // ハッシュ化して保存
-            Member2faRecoveryCode::create([
+            MemberTwoFaRecoveryCode::create([
                 'member_id' => $member->id,
                 'code' => Hash::make($code),
                 'disabled' => false,
@@ -72,7 +72,7 @@ class RecoveryCodeService
         $code = preg_replace('/[\s\-]/', '', $code);
 
         // 有効な回復コードを取得
-        $recoveryCodes = Member2faRecoveryCode::where('member_id', $member->id)
+        $recoveryCodes = MemberTwoFaRecoveryCode::where('member_id', $member->id)
             ->where('disabled', false)
             ->whereNull('used_at')
             ->get();
@@ -103,7 +103,7 @@ class RecoveryCodeService
      */
     public function getRemainingCount(Member $member): int
     {
-        return Member2faRecoveryCode::where('member_id', $member->id)
+        return MemberTwoFaRecoveryCode::where('member_id', $member->id)
             ->where('disabled', false)
             ->whereNull('used_at')
             ->count();
@@ -118,7 +118,7 @@ class RecoveryCodeService
     public function canRegenerate(Member $member): bool
     {
         // 最後に生成した日時を取得
-        $lastGenerated = Member2faRecoveryCode::where('member_id', $member->id)
+        $lastGenerated = MemberTwoFaRecoveryCode::where('member_id', $member->id)
             ->orderBy('created_at', 'desc')
             ->first();
 
@@ -138,7 +138,7 @@ class RecoveryCodeService
      */
     public function getNextRegenerateTime(Member $member): ?Carbon
     {
-        $lastGenerated = Member2faRecoveryCode::where('member_id', $member->id)
+        $lastGenerated = MemberTwoFaRecoveryCode::where('member_id', $member->id)
             ->orderBy('created_at', 'desc')
             ->first();
 
@@ -155,7 +155,7 @@ class RecoveryCodeService
      */
     public function hasRecoveryCodes(Member $member): bool
     {
-        return Member2faRecoveryCode::where('member_id', $member->id)
+        return MemberTwoFaRecoveryCode::where('member_id', $member->id)
             ->where('disabled', false)
             ->exists();
     }
@@ -179,11 +179,11 @@ class RecoveryCodeService
      */
     public function revokeAll(Member $member): int
     {
-        $count = Member2faRecoveryCode::where('member_id', $member->id)
+        $count = MemberTwoFaRecoveryCode::where('member_id', $member->id)
             ->where('disabled', false)
             ->count();
 
-        Member2faRecoveryCode::where('member_id', $member->id)
+        MemberTwoFaRecoveryCode::where('member_id', $member->id)
             ->update(['disabled' => true]);
 
         Log::info('[Recovery Code] All codes revoked by admin', [

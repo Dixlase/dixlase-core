@@ -286,7 +286,7 @@ class TwoFactorHelper
      */
     public function cleanupExpiredTokens(): int
     {
-        return \App\Models\Member2faToken::where('expires_at', '<', now())->delete();
+        return \App\Models\MemberTwoFaToken::where('expires_at', '<', now())->delete();
     }
 
     /**
@@ -495,7 +495,7 @@ class TwoFactorHelper
     public function revokeAllBiometric($user): array
     {
         try {
-            $count = \App\Models\MembersTwoFactorDevice::where('member_id', $user->id)->delete();
+            $count = \App\Models\MembersTwoFaDevice::where('member_id', $user->id)->delete();
             
             Log::info("[Biometric Auth] 一括削除成功: ユーザーID {$user->id}, 削除数: {$count}");
 
