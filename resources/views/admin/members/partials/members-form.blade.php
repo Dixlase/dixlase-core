@@ -390,7 +390,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :excludeUseProfileSetting="true"
             :passkeyGloballyEnabled="$passkeyGloballyEnabled"
             :passkeyEnabled="$initialPasskeyEnabled"
-            :defaultTwoFaMethod="(string)($member->default_two_factor_method ?? $defaultTwoFactorMethod)"
+            :defaultTwoFaMethod="(string)($member->default_two_fa_method ?? $defaultTwoFaMethod)"
             :columns="3"
             :globalSettingsUrl="route('admin.members.settings.auth')"
         />

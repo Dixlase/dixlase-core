@@ -199,7 +199,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :excludeUseProfileSetting="true"
                     :passkeyGloballyEnabled="$passkeyGloballyEnabled"
                     :passkeyEnabled="$member->two_fa_passkey_enabled ?? true"
-                    :defaultTwoFaMethod="(string) ($member->default_two_factor_method ?? $defaultTwoFactorMethod)"
+                    :defaultTwoFaMethod="(string) ($member->default_two_fa_method ?? $defaultTwoFaMethod)"
                     :columns="3"
                 />
             </section>

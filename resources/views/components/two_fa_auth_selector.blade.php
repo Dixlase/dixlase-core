@@ -19,7 +19,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @props([
-    'name' => 'two_factor_mode',
+    'name' => 'two_fa_mode',
     'value' => '0',
     'globalSetting' => null, // 全体設定の値（0=無効, 1=異なる端末時のみ, 2=常に有効, 3=プロフィール設定に従う）
     'excludeUseProfileSetting' => false, // プロフィール設定に従う選択肢を除外するか
@@ -99,7 +99,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     init() {
         this.$watch('passkeyEnabled', value @php echo '=>'; @endphp {
             if (!value) {
-                const emailRadio = document.querySelector('input[name=\'default_two_factor_method\'][value=\'0\']');
+                const emailRadio = document.querySelector('input[name=\'default_two_fa_method\'][value=\'0\']');
                 if (emailRadio) {
                     emailRadio.checked = true;
                     emailRadio.dispatchEvent(new Event('change', { bubbles: true }));
@@ -220,7 +220,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             
             <div :class="{ 'opacity-50 pointer-events-none': !twoFactorEnabled || !passkeyEnabled }">
                 <x-form.radio-card-group
-                    name="default_two_factor_method"
+                    name="default_two_fa_method"
                     :options="$defaultMethodOptions"
                     :value="$currentDefaultMethod"
                     :columns="2"
