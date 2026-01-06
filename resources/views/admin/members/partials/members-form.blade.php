@@ -366,7 +366,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- 二段階認証設定セクション -->
     <section>
-        <h2>{{ __('auth.two_factor_settings') }}</h2>
+        <h2>{{ __('auth.two_fa_settings') }}</h2>
         @if(!$isMailServerTested)
             <x-message
                 type="warning"
@@ -375,22 +375,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
         
         @php
-            $currentTwoFactorMode = $member->two_factor_mode ?? \App\Enums\AuthenticationMode::Always->value;
-            if ($currentTwoFactorMode instanceof \App\Enums\AuthenticationMode) {
-                $currentTwoFactorMode = $currentTwoFactorMode->value;
+            $currentTwoFaMode = $member->two_fa_mode ?? \App\Enums\AuthenticationMode::Always->value;
+            if ($currentTwoFaMode instanceof \App\Enums\AuthenticationMode) {
+                $currentTwoFaMode = $currentTwoFaMode->value;
             }
             $passkeyGloballyEnabled = in_array(\App\Enums\TwoFactorMethod::PASSKEY->value, array_keys($enabledTwoFactorMethods ?? []));
-            $initialPasskeyEnabled = old('two_factor_passkey_enabled', $member->two_factor_passkey_enabled ?? true);
+            $initialPasskeyEnabled = old('two_fa_passkey_enabled', $member->two_fa_passkey_enabled ?? true);
         @endphp
         
         <x-two-fa-auth-selector
-            name="two_factor_mode"
-            :value="old('two_factor_mode', (string)$currentTwoFactorMode)"
+            name="two_fa_mode"
+            :value="old('two_fa_mode', (string)$currentTwoFaMode)"
             :globalSetting="$force2fa"
             :excludeUseProfileSetting="true"
             :passkeyGloballyEnabled="$passkeyGloballyEnabled"
             :passkeyEnabled="$initialPasskeyEnabled"
-            :defaultTwoFactorMethod="(string)($member->default_two_factor_method ?? $defaultTwoFactorMethod)"
+            :defaultTwoFaMethod="(string)($member->default_two_factor_method ?? $defaultTwoFactorMethod)"
             :columns="3"
             :globalSettingsUrl="route('admin.members.settings.auth')"
         />

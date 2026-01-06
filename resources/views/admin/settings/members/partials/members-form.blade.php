@@ -371,7 +371,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- 二段階認証設定セクション -->
     <section>
-        <h2>{{ __('common.two_factor_settings') }}</h2>
+        <h2>{{ __('common.two_fa_settings') }}</h2>
         @if(!$isMailServerTested)
             <x-message
                 type="warning"
@@ -382,17 +382,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @if($force2fa === $twoFactorUseProfileSettingValue)
             <!-- 二段階認証有効/無効 -->
             <fieldset>
-                <legend>{{ __('common.two_factor_authentication') }}</legend>
+                <legend>{{ __('common.two_fa_authentication') }}</legend>
                 @php
-                    $twoFactorModeValue = old('two_factor_mode', $member->two_factor_mode->value ?? $twoFactorMode->value);
+                    $twoFactorModeValue = old('two_fa_mode', $member->two_fa_mode->value ?? $twoFactorMode->value);
                 @endphp
                 <x-form.radio-group
-                    name="two_factor_mode"
+                    name="two_fa_mode"
                     :options="$twoFactorModeOptions"
                     :value="$twoFactorModeValue"
                 />
                 <x-form.error
-                    :messages="$errors->get('two_factor_mode')"
+                    :messages="$errors->get('two_fa_mode')"
                 />
             </fieldset>
             
@@ -400,7 +400,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @if(!empty($enabledTwoFactorMethods))
                 <fieldset>
                 <legend>
-                    {{ __('common.two_factor_method.label') }}
+                    {{ __('common.two_fa_method.label') }}
                     @if(count($enabledTwoFactorMethods) > 1)
                         <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">
                             ({{ count($enabledTwoFactorMethods) }} {{ __('common.available_methods') }})
@@ -409,20 +409,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </legend>
 
                 @php
-                    $currentTwoFactorMethod = old('two_factor_method', $member?->two_factor_method ?? $defaultTwoFactorMethod);
-                    $currentMethodValid = array_key_exists($currentTwoFactorMethod, $enabledTwoFactorMethods);
+                    $currentTwoFaMethod = old('two_fa_method', $member?->two_fa_method ?? $defaultTwoFactorMethod);
+                    $currentMethodValid = array_key_exists($currentTwoFaMethod, $enabledTwoFactorMethods);
                     $defaultMethod = $defaultTwoFactorMethod ?? array_key_first($enabledTwoFactorMethods);
-                    $currentMethod = $currentMethodValid ? $currentTwoFactorMethod : $defaultMethod;
+                    $currentMethod = $currentMethodValid ? $currentTwoFaMethod : $defaultMethod;
                 @endphp
 
                 @if(count($enabledTwoFactorMethods) > 1)
                     <x-form.radio-group
-                        name="two_factor_method"
+                        name="two_fa_method"
                         :options="$enabledTwoFactorMethods"
                         :value="$currentMethod"
                     />
                 @else
-                    <input type="hidden" name="two_factor_method" value="{{ $currentMethod }}">
+                    <input type="hidden" name="two_fa_method" value="{{ $currentMethod }}">
                     <p class="description-text">
                         {{ __('admin/profile.single_method_available') }}: 
                         <strong>{{ __($enabledTwoFactorMethods[$currentMethod]) }}</strong>
@@ -430,13 +430,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
                 
                 <x-form.error
-                    :messages="$errors->get('two_factor_method')"
+                    :messages="$errors->get('two_fa_method')"
                 />
             </fieldset>
         @endif
         @else
             <fieldset>
-                <p class="description-text">{!! __('admin.members.form.two_factor_global_fixed', ['setting' => $twoFactorModeLabel]) !!}</p>
+                <p class="description-text">{!! __('admin.members.form.two_fa_global_fixed', ['setting' => $twoFactorModeLabel]) !!}</p>
             </fieldset>
         @endif
     </section>

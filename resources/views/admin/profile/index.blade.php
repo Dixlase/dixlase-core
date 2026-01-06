@@ -190,16 +190,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endphp
             
             <section class="transition-colors-unified">
-                <h2>{{ __('auth.two_factor_mode.label') }}</h2>
+                <h2>{{ __('auth.two_fa_mode.label') }}</h2>
                 
                 <x-two-fa-auth-selector
-                    name="two_factor_mode"
-                    :value="old('two_factor_mode', (string) ($twoFactorMode?->value ?? 0))"
+                    name="two_fa_mode"
+                    :value="old('two_fa_mode', (string) ($twoFactorMode?->value ?? 0))"
                     :globalSetting="$force2fa"
                     :excludeUseProfileSetting="true"
                     :passkeyGloballyEnabled="$passkeyGloballyEnabled"
-                    :passkeyEnabled="$member->two_factor_passkey_enabled ?? true"
-                    :defaultTwoFactorMethod="(string) ($member->default_two_factor_method ?? $defaultTwoFactorMethod)"
+                    :passkeyEnabled="$member->two_fa_passkey_enabled ?? true"
+                    :defaultTwoFaMethod="(string) ($member->default_two_factor_method ?? $defaultTwoFactorMethod)"
                     :columns="3"
                 />
             </section>

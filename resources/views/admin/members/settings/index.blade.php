@@ -84,7 +84,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
             <div class="text-sm text-gray-600 dark:text-gray-400">
                 <p>
-                    {{ __('admin/members/settings/index.two_factor') }}:
+                    {{ __('admin/members/settings/index.two_fa') }}:
                     @if($force2fa == 0)
                         <span class="text-gray-500">{{ __('common.disabled') }}</span>
                     @elseif($force2fa == 1)
