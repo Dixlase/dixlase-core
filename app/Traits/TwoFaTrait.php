@@ -20,7 +20,7 @@ trait TwoFaTrait
      * @param int $expireMinutes 有効期限（分）
      * @return string 生成されたコード
      */
-    public function generateTwoFactorCode($user, int $expireMinutes = null): string
+    public function generateTwoFaCode($user, int $expireMinutes = null): string
     {
         $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         
@@ -51,7 +51,7 @@ trait TwoFaTrait
      * @param string $inputCode 入力されたコード
      * @return bool 検証結果
      */
-    public function validateTwoFactorCode($user, string $inputCode): bool
+    public function validateTwoFaCode($user, string $inputCode): bool
     {
         $token = MemberTwoFaToken::where('member_id', $user->id)->latest()->first();
 
@@ -103,7 +103,7 @@ trait TwoFaTrait
      * @param array $enabledMethods 有効な認証方法
      * @return bool 2FAが必要かどうか
      */
-    public function requiresTwoFactor($user, int $forceSetting, array $enabledMethods): bool
+    public function requiresTwoFa($user, int $forceSetting, array $enabledMethods): bool
     {
         // 有効な認証方法がない場合は2FAを無効化
         if (empty($enabledMethods)) {
@@ -111,7 +111,7 @@ trait TwoFaTrait
         }
 
         // 現在の設定に基づいて2FAが必要かチェック
-        $modeValue = $this->getEffectiveTwoFactorMode($user, $forceSetting);
+        $modeValue = $this->getEffectiveTwoFaMode($user, $forceSetting);
         $mode = AuthenticationMode::tryFrom($modeValue);
 
         // Passkeyが有効な場合は常に2FAを要求
@@ -132,7 +132,7 @@ trait TwoFaTrait
      * @param int $forceSetting システム設定の強制2FA設定
      * @return int 有効な2FAモード
      */
-    protected function getEffectiveTwoFactorMode($user, int $forceSetting): int
+    protected function getEffectiveTwoFaMode($user, int $forceSetting): int
     {
         // システム設定で2FAが無効化されている場合
         if ($forceSetting === AuthenticationMode::Disabled->value) {

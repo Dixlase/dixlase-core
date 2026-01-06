@@ -43,7 +43,7 @@ class EmailAuthenticationService
      */
     public function validateCode($user, string $inputCode): bool
     {
-        return $this->helper->validateTwoFactorCode($user, $inputCode);
+        return $this->helper->validateTwoFaCode($user, $inputCode);
     }
 
     /**
@@ -56,7 +56,7 @@ class EmailAuthenticationService
      */
     public function generateAndSendCodeWithCustomMail($user, string $mailClass, int $expireMinutes = null): string
     {
-        $code = $this->helper->generateTwoFactorCode($user, $expireMinutes);
+        $code = $this->helper->generateTwoFaCode($user, $expireMinutes);
 
         // カスタムメールクラスでメール送信
         try {

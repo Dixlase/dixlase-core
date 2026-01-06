@@ -177,17 +177,17 @@ class AdminProfileController extends AdminLoggedInController
 
         // radio-card-group用の二段階認証オプション配列を生成
         // 全体設定が「プロフィール設定を反映」の場合は、無効/異なる端末時のみ/常に有効から選択可能
-        $profileTwoFactorOptions = [];
+        $profileTwoFaOptions = [];
         if ($force2fa === AuthenticationMode::UseProfileSetting->value) {
             foreach (AuthenticationMode::forProfile() as $case) {
-                $profileTwoFactorOptions[] = [
+                $profileTwoFaOptions[] = [
                     'value' => (string)$case->value,
                     'label' => $case->twoFactorLabel(),
                 ];
             }
         } else {
             // 従来通り（無効、有効のみ）
-            $profileTwoFactorOptions = [
+            $profileTwoFaOptions = [
                 ['value' => '0', 'label' => __('common.two_fa_mode.options.0')],
                 ['value' => '1', 'label' => __('common.two_fa_mode.options.1')],
             ];
@@ -212,19 +212,19 @@ class AdminProfileController extends AdminLoggedInController
         }
 
         // 全体設定が Always の場合は現在の設定を表示用として取得
-        $currentGlobalTwoFactorMode = null;
+        $currentGlobalTwoFaMode = null;
         if ($force2fa === AuthenticationMode::Always->value) {
-            $currentGlobalTwoFactorMode = AuthenticationMode::from($force2fa);
+            $currentGlobalTwoFaMode = AuthenticationMode::from($force2fa);
         }
 
         $this->viewParams['force2fa'] = $force2fa;
         $this->viewParams['twoFaMode'] = $twoFaMode;
-        $this->viewParams['profileTwoFactorOptions'] = $profileTwoFactorOptions;
+        $this->viewParams['profileTwoFaOptions'] = $profileTwoFaOptions;
         $this->viewParams['enabledTwoFaMethods'] = $enabledTwoFaMethods;
         $this->viewParams['passkeyEnabled'] = $passkeyEnabled;
         $this->viewParams['currentTwoFaMethod'] = $currentTwoFaMethod;
         $this->viewParams['defaultTwoFaMethod'] = $defaultTwoFaMethod;
-        $this->viewParams['currentGlobalTwoFactorMode'] = $currentGlobalTwoFactorMode;
+        $this->viewParams['currentGlobalTwoFaMode'] = $currentGlobalTwoFaMode;
 
         // pending_email がある場合の情報を渡す
         $this->viewParams['hasPendingEmail'] = !empty(Auth::guard('member')->user()->pending_email);
@@ -322,7 +322,7 @@ class AdminProfileController extends AdminLoggedInController
         }
 
         // 二段階認証モードの変更を検出するため、保存前の値を取得（整数値として）
-        $oldTwoFactorMode = is_int($member->two_fa_mode) ? $member->two_fa_mode : $member->two_fa_mode->value;
+        $oldTwoFaMode = is_int($member->two_fa_mode) ? $member->two_fa_mode : $member->two_fa_mode->value;
         
         // two_fa_mode は全体設定が UseProfileSetting のときだけ上書き
         $force2fa = (int) MemberSetting::getValue('force_two_fa', AuthenticationMode::UseProfileSetting->value);
@@ -349,23 +349,23 @@ class AdminProfileController extends AdminLoggedInController
             'force2fa' => $force2fa,
             'force2fa_expected' => AuthenticationMode::UseProfileSetting->value,
             'has_two_fa_mode_in_validated' => array_key_exists('two_fa_mode', $validated),
-            'oldTwoFactorMode' => $oldTwoFactorMode,
-            'newTwoFactorMode' => isset($validated['two_fa_mode']) ? (int) $validated['two_fa_mode'] : null,
+            'oldTwoFaMode' => $oldTwoFaMode,
+            'newTwoFaMode' => isset($validated['two_fa_mode']) ? (int) $validated['two_fa_mode'] : null,
         ]);
         
         if ($force2fa === AuthenticationMode::UseProfileSetting->value && array_key_exists('two_fa_mode', $validated)) {
-            $newTwoFactorMode = (int) $validated['two_fa_mode'];
+            $newTwoFaMode = (int) $validated['two_fa_mode'];
             
             \Log::info('[Profile] Inside 2FA check block', [
-                'oldTwoFactorMode' => $oldTwoFactorMode,
-                'newTwoFactorMode' => $newTwoFactorMode,
+                'oldTwoFaMode' => $oldTwoFaMode,
+                'newTwoFaMode' => $newTwoFaMode,
                 'Disabled_value' => AuthenticationMode::Disabled->value,
                 'Always_value' => AuthenticationMode::Always->value,
             ]);
             
             // 無効→有効に変更された場合
-            if ($oldTwoFactorMode === AuthenticationMode::Disabled->value && 
-                $newTwoFactorMode === AuthenticationMode::Always->value) {
+            if ($oldTwoFaMode === AuthenticationMode::Disabled->value && 
+                $newTwoFaMode === AuthenticationMode::Always->value) {
                 
                 $recoveryCodeService = app(\App\Services\RecoveryCodeService::class);
                 

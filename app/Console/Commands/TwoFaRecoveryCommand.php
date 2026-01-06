@@ -64,7 +64,7 @@ class TwoFaRecoveryCommand extends Command
         $action = $this->argument('action');
 
         return match ($action) {
-            'disable' => $this->disableTwoFactor(),
+            'disable' => $this->disableTwoFa(),
             'reset-codes' => $this->resetRecoveryCodes(),
             'status' => $this->showStatus(),
             'list' => $this->listMembers(),
@@ -75,7 +75,7 @@ class TwoFaRecoveryCommand extends Command
     /**
      * Disable two-factor authentication for a member
      */
-    protected function disableTwoFactor(): int
+    protected function disableTwoFa(): int
     {
         $member = $this->findMember();
         if (!$member) {
@@ -88,7 +88,7 @@ class TwoFaRecoveryCommand extends Command
         }
 
         // Show current 2FA status
-        $this->showMemberTwoFactorStatus($member);
+        $this->showMemberTwoFaStatus($member);
 
         // Confirm action
         $this->warn(__('admin/command.two_factor_recovery.warning_disable'));
@@ -217,9 +217,9 @@ class TwoFaRecoveryCommand extends Command
             if (!$member) {
                 return self::FAILURE;
             }
-            $this->showMemberTwoFactorStatus($member);
+            $this->showMemberTwoFaStatus($member);
         } else {
-            $this->showSystemTwoFactorStatus();
+            $this->showSystemTwoFaStatus();
         }
 
         return self::SUCCESS;
@@ -321,7 +321,7 @@ class TwoFaRecoveryCommand extends Command
     /**
      * Show member's 2FA status
      */
-    protected function showMemberTwoFactorStatus(Member $member): void
+    protected function showMemberTwoFaStatus(Member $member): void
     {
         $this->info(__('admin/command.two_factor_recovery.member_status_title', ['name' => ($member->display_name ?? $member->account_name)]));
         $this->newLine();
@@ -343,13 +343,13 @@ class TwoFaRecoveryCommand extends Command
     /**
      * Show system-wide 2FA status
      */
-    protected function showSystemTwoFactorStatus(): void
+    protected function showSystemTwoFaStatus(): void
     {
         $this->info(__('admin/command.two_factor_recovery.system_status_title'));
         $this->newLine();
 
         $totalMembers = Member::count();
-        $membersWithTwoFactor = Member::whereNotNull('two_fa_mode')
+        $membersWithTwoFa = Member::whereNotNull('two_fa_mode')
             ->where('two_fa_mode', '!=', AuthenticationMode::Disabled->value)
             ->count();
         $membersWithoutRecoveryCodes = Member::whereNotNull('two_fa_mode')
@@ -361,7 +361,7 @@ class TwoFaRecoveryCommand extends Command
             [__('admin/command.two_factor_recovery.metric'), __('admin/command.two_factor_recovery.value')],
             [
                 [__('admin/command.two_factor_recovery.total_members'), $totalMembers],
-                [__('admin/command.two_factor_recovery.members_with_2fa'), $membersWithTwoFactor],
+                [__('admin/command.two_factor_recovery.members_with_2fa'), $membersWithTwoFa],
                 [__('admin/command.two_factor_recovery.members_without_codes'), $membersWithoutRecoveryCodes],
             ]
         );
