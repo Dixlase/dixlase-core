@@ -69,10 +69,10 @@ return new class extends Migration
             $table->string('failure_reason', 50)->nullable();
             
             // 2FA使用フラグ
-            $table->boolean('used_2fa')->default(false);
+            $table->boolean('used_two_fa')->default(false);
             
             // 2FA方式（email, passkey, recovery_code）
-            $table->string('two_factor_method', 20)->nullable();
+            $table->string('two_fa_method', 20)->nullable();
             
             // 信頼済みデバイスからのログインか
             $table->boolean('from_trusted_device')->default(false);

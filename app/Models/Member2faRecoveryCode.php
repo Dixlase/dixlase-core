@@ -10,7 +10,7 @@ class Member2faRecoveryCode extends Model
 {
     use HasFactory;
 
-    protected $table = 'members_2fa_recovery_codes';
+    protected $table = 'members_two_fa_recovery_codes';
 
     protected $fillable = [
         'member_id',

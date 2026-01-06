@@ -100,12 +100,12 @@ class TwoFactorRecoveryCommand extends Command
         }
 
         // Store previous state for audit
-        $previousMode = $member->two_factor_mode;
+        $previousMode = $member->two_fa_mode;
 
         // Disable 2FA
         $member->update([
-            'two_factor_mode' => AuthenticationMode::Disabled->value,
-            'two_factor_recovery_codes' => null,
+            'two_fa_mode' => AuthenticationMode::Disabled->value,
+            'two_fa_recovery_codes' => null,
         ]);
 
         // Clear any pending 2FA tokens
@@ -150,7 +150,7 @@ class TwoFactorRecoveryCommand extends Command
         }
 
         // Check if 2FA is enabled
-        if ($member->two_factor_mode === AuthenticationMode::Disabled->value || $member->two_factor_mode === null) {
+        if ($member->two_fa_mode === AuthenticationMode::Disabled->value || $member->two_fa_mode === null) {
             $this->error(__('admin/command.two_factor_recovery.2fa_not_enabled', ['name' => ($member->display_name ?? $member->account_name)]));
             return self::FAILURE;
         }
@@ -169,7 +169,7 @@ class TwoFactorRecoveryCommand extends Command
         $hashedCodes = array_map(fn($code) => Hash::make($code), $codes);
 
         $member->update([
-            'two_factor_recovery_codes' => json_encode($hashedCodes),
+            'two_fa_recovery_codes' => json_encode($hashedCodes),
         ]);
 
         $this->info(__('admin/command.two_factor_recovery.codes_reset_success', ['name' => ($member->display_name ?? $member->account_name)]));
@@ -188,7 +188,7 @@ class TwoFactorRecoveryCommand extends Command
 
         // Log to audit
         AuditService::log(
-            action: 'two_factor_recovery_codes_reset',
+            action: 'two_fa_recovery_codes_reset',
             category: 'security',
             severity: 'critical',
             outcome: 'success',
@@ -230,8 +230,8 @@ class TwoFactorRecoveryCommand extends Command
      */
     protected function listMembers(): int
     {
-        $members = Member::whereNotNull('two_factor_mode')
-            ->where('two_factor_mode', '!=', AuthenticationMode::Disabled->value)
+        $members = Member::whereNotNull('two_fa_mode')
+            ->where('two_fa_mode', '!=', AuthenticationMode::Disabled->value)
             ->get();
 
         if ($members->isEmpty()) {
@@ -244,14 +244,14 @@ class TwoFactorRecoveryCommand extends Command
 
         $rows = [];
         foreach ($members as $member) {
-            $hasRecoveryCodes = !empty($member->two_factor_recovery_codes);
-            $codesCount = $hasRecoveryCodes ? count(json_decode($member->two_factor_recovery_codes, true) ?? []) : 0;
+            $hasRecoveryCodes = !empty($member->two_fa_recovery_codes);
+            $codesCount = $hasRecoveryCodes ? count(json_decode($member->two_fa_recovery_codes, true) ?? []) : 0;
 
             $rows[] = [
                 $member->id,
                 ($member->display_name ?? $member->account_name),
                 $member->email,
-                $member->two_factor_mode?->label() ?? '-',
+                $member->two_fa_mode?->label() ?? '-',
                 $codesCount > 0 ? $codesCount : __('admin/command.two_factor_recovery.no_codes'),
             ];
         }
@@ -334,7 +334,7 @@ class TwoFactorRecoveryCommand extends Command
             [
                 [__('admin/command.two_factor_recovery.member_id'), $member->id],
                 [__('admin/command.two_factor_recovery.email'), $member->email],
-                [__('admin/command.two_factor_recovery.two_factor_mode'), $member->two_factor_mode?->label() ?? __('admin/command.two_factor_recovery.disabled')],
+                [__('admin/command.two_factor_recovery.two_fa_mode'), $member->two_fa_mode?->label() ?? __('admin/command.two_factor_recovery.disabled')],
                 [__('admin/command.two_factor_recovery.recovery_codes_remaining'), $codesCount > 0 ? $codesCount : __('admin/command.two_factor_recovery.none')],
             ]
         );
@@ -349,12 +349,12 @@ class TwoFactorRecoveryCommand extends Command
         $this->newLine();
 
         $totalMembers = Member::count();
-        $membersWithTwoFactor = Member::whereNotNull('two_factor_mode')
-            ->where('two_factor_mode', '!=', AuthenticationMode::Disabled->value)
+        $membersWithTwoFactor = Member::whereNotNull('two_fa_mode')
+            ->where('two_fa_mode', '!=', AuthenticationMode::Disabled->value)
             ->count();
-        $membersWithoutRecoveryCodes = Member::whereNotNull('two_factor_mode')
-            ->where('two_factor_mode', '!=', AuthenticationMode::Disabled->value)
-            ->whereNull('two_factor_recovery_codes')
+        $membersWithoutRecoveryCodes = Member::whereNotNull('two_fa_mode')
+            ->where('two_fa_mode', '!=', AuthenticationMode::Disabled->value)
+            ->whereNull('two_fa_recovery_codes')
             ->count();
 
         $this->table(

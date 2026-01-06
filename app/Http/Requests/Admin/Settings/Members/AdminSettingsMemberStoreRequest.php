@@ -92,9 +92,9 @@ class AdminSettingsMemberStoreRequest extends FormRequest
             'status' => 'required|numeric|in:0,1',
             'email_verified' => 'nullable|numeric|in:0,1',
             'login_notification_mode' => 'nullable|numeric|in:0,1,2',
-            'two_factor_mode' => 'nullable|numeric|in:0,1,2',
-            'two_factor_passkey_enabled' => 'nullable|boolean',
-            'default_two_factor_method' => 'nullable|integer|in:0,1',
+            'two_fa_mode' => 'nullable|numeric|in:0,1,2',
+            'two_fa_passkey_enabled' => 'nullable|boolean',
+            'default_two_fa_method' => 'nullable|integer|in:0,1',
         ];
 
         // メールアドレス確認のバリデーション

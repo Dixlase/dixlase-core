@@ -160,7 +160,7 @@ class AdminProfileController extends AdminLoggedInController
             'force_two_fa',
             AuthenticationMode::UseProfileSetting->value
         );
-        $twoFaMode = Auth::guard('member')->user()->two_factor_mode;
+        $twoFaMode = Auth::guard('member')->user()->two_fa_mode;
 
         // グローバル設定で有効な二段階認証方法を取得
         $passkeyEnabled = MemberSetting::getValue('enabled_two_fa_passkey', '0') === '1';
@@ -188,18 +188,18 @@ class AdminProfileController extends AdminLoggedInController
         } else {
             // 従来通り（無効、有効のみ）
             $profileTwoFactorOptions = [
-                ['value' => '0', 'label' => __('common.two_factor_mode.options.0')],
-                ['value' => '1', 'label' => __('common.two_factor_mode.options.1')],
+                ['value' => '0', 'label' => __('common.two_fa_mode.options.0')],
+                ['value' => '1', 'label' => __('common.two_fa_mode.options.1')],
             ];
         }
 
         // 現在のユーザーの認証方法を取得
         $user = Auth::guard('member')->user();
-        $currentTwoFactorMethod = $user->two_factor_method ?? $defaultTwoFactorMethod;
+        $currentTwoFactorMethod = $user->default_two_fa_method ?? $defaultTwoFaMethod;
         
         // 現在のメソッドが有効なメソッドに含まれていない場合はデフォルトを使用
         if (!array_key_exists((int)$currentTwoFactorMethod, $enabledTwoFactorMethods) && !empty($enabledTwoFactorMethods)) {
-            $currentTwoFactorMethod = $defaultTwoFactorMethod;
+            $currentTwoFactorMethod = $defaultTwoFaMethod;
             
             // デフォルトメソッドも有効でない場合は最初の有効なメソッドを使用
             if (!array_key_exists($currentTwoFactorMethod, $enabledTwoFactorMethods)) {
@@ -322,17 +322,17 @@ class AdminProfileController extends AdminLoggedInController
         }
 
         // 二段階認証モードの変更を検出するため、保存前の値を取得（整数値として）
-        $oldTwoFactorMode = is_int($member->two_factor_mode) ? $member->two_factor_mode : $member->two_factor_mode->value;
+        $oldTwoFactorMode = is_int($member->two_fa_mode) ? $member->two_fa_mode : $member->two_fa_mode->value;
         
-        // two_factor_mode は全体設定が UseProfileSetting のときだけ上書き
+        // two_fa_mode は全体設定が UseProfileSetting のときだけ上書き
         $force2fa = (int) MemberSetting::getValue('force_two_fa', AuthenticationMode::UseProfileSetting->value);
-        if ($force2fa === AuthenticationMode::UseProfileSetting->value && array_key_exists('two_factor_mode', $validated)) {
-            $member->two_factor_mode = (int) $validated['two_factor_mode'];
+        if ($force2fa === AuthenticationMode::UseProfileSetting->value && array_key_exists('two_fa_mode', $validated)) {
+            $member->two_fa_mode = (int) $validated['two_fa_mode'];
         }
 
-        // two_factor_passkey_enabled の処理
-        if (array_key_exists('two_factor_passkey_enabled', $validated)) {
-            $member->two_factor_passkey_enabled = (bool) $validated['two_factor_passkey_enabled'];
+        // two_fa_passkey_enabled の処理
+        if (array_key_exists('two_fa_passkey_enabled', $validated)) {
+            $member->two_fa_passkey_enabled = (bool) $validated['two_fa_passkey_enabled'];
         }
 
         // default_two_fa_method の処理
@@ -348,13 +348,13 @@ class AdminProfileController extends AdminLoggedInController
         \Log::info('[Profile] Recovery code generation check', [
             'force2fa' => $force2fa,
             'force2fa_expected' => AuthenticationMode::UseProfileSetting->value,
-            'has_two_factor_mode_in_validated' => array_key_exists('two_factor_mode', $validated),
+            'has_two_fa_mode_in_validated' => array_key_exists('two_fa_mode', $validated),
             'oldTwoFactorMode' => $oldTwoFactorMode,
-            'newTwoFactorMode' => isset($validated['two_factor_mode']) ? (int) $validated['two_factor_mode'] : null,
+            'newTwoFactorMode' => isset($validated['two_fa_mode']) ? (int) $validated['two_fa_mode'] : null,
         ]);
         
-        if ($force2fa === AuthenticationMode::UseProfileSetting->value && array_key_exists('two_factor_mode', $validated)) {
-            $newTwoFactorMode = (int) $validated['two_factor_mode'];
+        if ($force2fa === AuthenticationMode::UseProfileSetting->value && array_key_exists('two_fa_mode', $validated)) {
+            $newTwoFactorMode = (int) $validated['two_fa_mode'];
             
             \Log::info('[Profile] Inside 2FA check block', [
                 'oldTwoFactorMode' => $oldTwoFactorMode,

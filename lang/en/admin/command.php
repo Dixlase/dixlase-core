@@ -872,7 +872,7 @@ return [
         'value' => 'Value',
         'member_id' => 'Member ID',
         'email' => 'Email',
-        'two_factor_mode' => 'Two-Factor Mode',
+        'two_fa_mode' => 'Two-Factor Mode',
         'recovery_codes_remaining' => 'Recovery Codes Remaining',
         'disabled' => 'Disabled',
         'none' => 'None',

@@ -9,7 +9,7 @@ class Member2faToken extends Model
 {
     use HasFactory;
 
-    protected $table = 'members_2fa_tokens';
+    protected $table = 'members_two_fa_tokens';
 
     protected $fillable = [
         'member_id',

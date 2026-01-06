@@ -203,8 +203,8 @@ class AdminLoginController extends AdminController
             'email' => $member->email,
             'has_2fa' => $twoFactor->has($member),
             'mail_server_tested' => $mailServerTested,
-            'two_factor_mode' => $member->two_factor_mode,
-            'two_factor_method' => $member->two_factor_method,
+            'two_fa_mode' => $member->two_fa_mode,
+            'default_two_fa_method' => $member->default_two_fa_method,
         ]);
         
         if ($twoFactor->has($member) && $mailServerTested) {

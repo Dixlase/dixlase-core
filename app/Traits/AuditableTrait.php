@@ -179,7 +179,7 @@ trait AuditableTrait
         // 除外リスト
         $exclude = property_exists($this, 'auditExclude') 
             ? $this->auditExclude 
-            : ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'];
+            : ['password', 'remember_token', 'two_factor_secret', 'two_fa_recovery_codes'];
 
         // 含めるリスト（指定がある場合はこれらのみ）
         if (property_exists($this, 'auditInclude') && !empty($this->auditInclude)) {
