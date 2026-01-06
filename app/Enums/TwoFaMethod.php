@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum TwoFactorMethod: int
+enum TwoFaMethod: int
 {
     case EMAIL = 0;
     case PASSKEY = 1;

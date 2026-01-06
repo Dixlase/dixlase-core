@@ -2,28 +2,28 @@
 
 namespace App\Services;
 
-use App\Helpers\TwoFactorHelper;
+use App\Helpers\TwoFaHelper;
 use App\Services\EmailAuthenticationService;
 use App\Services\PasskeyAuthenticationService;
 use App\Services\RecoveryCodeService;
-use App\Services\TwoFactorAttemptService;
-use App\Enums\TwoFactorMethod;
+use App\Services\TwoFaAttemptService;
+use App\Enums\TwoFaMethod;
 use Illuminate\Support\Facades\Log;
 
-class AdminTwoFactorService
+class AdminTwoFaService
 {
-    protected TwoFactorHelper $helper;
+    protected TwoFaHelper $helper;
     protected EmailAuthenticationService $emailAuth;
     protected PasskeyAuthenticationService $passkeyAuth;
     protected RecoveryCodeService $recoveryCode;
-    protected TwoFactorAttemptService $attemptService;
+    protected TwoFaAttemptService $attemptService;
 
     public function __construct(
-        TwoFactorHelper $helper,
+        TwoFaHelper $helper,
         EmailAuthenticationService $emailAuth,
         PasskeyAuthenticationService $passkeyAuth,
         RecoveryCodeService $recoveryCode,
-        TwoFactorAttemptService $attemptService
+        TwoFaAttemptService $attemptService
     ) {
         $this->helper = $helper;
         $this->emailAuth = $emailAuth;
@@ -44,8 +44,8 @@ class AdminTwoFactorService
         $effectiveMethod = $method ?? $this->helper->getEffectiveAuthMethod($user);
         
         return match ($effectiveMethod) {
-            TwoFactorMethod::EMAIL->value => $this->generateEmailCode($user),
-            TwoFactorMethod::PASSKEY->value => $this->generatePasskeyChallenge($user),
+            TwoFaMethod::EMAIL->value => $this->generateEmailCode($user),
+            TwoFaMethod::PASSKEY->value => $this->generatePasskeyChallenge($user),
             default => $this->generateEmailCode($user),
         };
     }
@@ -63,8 +63,8 @@ class AdminTwoFactorService
         $effectiveMethod = $method ?? $this->helper->getEffectiveAuthMethod($user);
         
         return match ($effectiveMethod) {
-            TwoFactorMethod::EMAIL->value => $this->validateEmailCode($user, $input),
-            TwoFactorMethod::PASSKEY->value => $this->validatePasskeyAuth($user, $input),
+            TwoFaMethod::EMAIL->value => $this->validateEmailCode($user, $input),
+            TwoFaMethod::PASSKEY->value => $this->validatePasskeyAuth($user, $input),
             default => $this->validateEmailCode($user, $input),
         };
     }
@@ -138,15 +138,15 @@ class AdminTwoFactorService
 
         foreach ($systemSettings['enabled_methods'] as $method) {
             $available = match ($method) {
-                TwoFactorMethod::EMAIL->value => true,
-                TwoFactorMethod::PASSKEY->value => $this->passkeyAuth->isAvailable(),
+                TwoFaMethod::EMAIL->value => true,
+                TwoFaMethod::PASSKEY->value => $this->passkeyAuth->isAvailable(),
                 default => false,
             };
 
             if ($available) {
                 $methods[] = [
                     'value' => $method,
-                    'label' => TwoFactorMethod::from($method)->label(),
+                    'label' => TwoFaMethod::from($method)->label(),
                     'setup_required' => $this->isSetupRequired($user, $method),
                 ];
             }
@@ -165,8 +165,8 @@ class AdminTwoFactorService
     private function isSetupRequired($user, int $method): bool
     {
         return match ($method) {
-            TwoFactorMethod::EMAIL->value => false, // メール認証は常に利用可能
-            TwoFactorMethod::PASSKEY->value => !$this->passkeyAuth->hasCredentials($user),
+            TwoFaMethod::EMAIL->value => false, // メール認証は常に利用可能
+            TwoFaMethod::PASSKEY->value => !$this->passkeyAuth->hasCredentials($user),
             default => true,
         };
     }

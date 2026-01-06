@@ -25,14 +25,14 @@ namespace App\Console\Commands;
 use App\Models\MemberTwoFaAttempt;
 use Illuminate\Console\Command;
 
-class CleanupTwoFactorAttempts extends Command
+class CleanupTwoFaAttempts extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'dls:admin:cleanup-two-factor-attempts {--days=30 : Number of days to keep 2FA attempt records} {--all : Delete all 2FA attempt records} {--force : Force deletion without confirmation}';
+    protected $signature = 'dls:admin:cleanup-two-fa-attempts {--days=30 : Number of days to keep 2FA attempt records} {--all : Delete all 2FA attempt records} {--force : Force deletion without confirmation}';
 
     /**
      * The console command description.

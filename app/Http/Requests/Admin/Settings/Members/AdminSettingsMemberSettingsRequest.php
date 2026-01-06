@@ -6,7 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Enum;
 use App\Enums\AuthenticationMode;
-use App\Enums\TwoFactorMethod;
+use App\Enums\TwoFaMethod;
 use App\Models\BaseSetting;
 
 class AdminSettingsMemberSettingsRequest extends FormRequest

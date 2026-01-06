@@ -8,7 +8,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class TwoFactorDeviceMail extends Mailable
+class TwoFaDeviceMail extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -50,7 +50,7 @@ class TwoFactorDeviceMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.two_factor_device',
+            markdown: 'emails.two_fa_device',
             with: [
                 'token' => $this->token,
                 'user' => $this->user,

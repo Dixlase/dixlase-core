@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\Enums\TwoFactorMethod;
+use App\Enums\TwoFaMethod;
 use App\Enums\AuthenticationMode;
 use App\Models\Member;
 use App\Models\MemberTwoFaToken;
@@ -11,7 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-class TwoFactorTraitTest extends TestCase
+class TwoFaTraitTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -150,7 +150,7 @@ class TwoFactorTraitTest extends TestCase
         $result = $this->service->requiresTwoFactor(
             $member,
             AuthenticationMode::Disabled->value,
-            [TwoFactorMethod::EMAIL->value]
+            [TwoFaMethod::EMAIL->value]
         );
 
         $this->assertFalse($result);
@@ -166,7 +166,7 @@ class TwoFactorTraitTest extends TestCase
         $result = $this->service->requiresTwoFactor(
             $member,
             AuthenticationMode::Always->value,
-            [TwoFactorMethod::EMAIL->value]
+            [TwoFaMethod::EMAIL->value]
         );
 
         $this->assertTrue($result);
@@ -193,10 +193,10 @@ class TwoFactorTraitTest extends TestCase
      */
     public function test_get_enabled_two_factor_methods_returns_default(): void
     {
-        $methods = $this->service->getEnabledTwoFactorMethods();
+        $methods = $this->service->getEnabledTwoFaMethods();
 
         $this->assertIsArray($methods);
-        $this->assertContains(TwoFactorMethod::EMAIL->value, $methods);
+        $this->assertContains(TwoFaMethod::EMAIL->value, $methods);
     }
 
     /**
@@ -221,11 +221,11 @@ class TwoFactorTraitTest extends TestCase
 }
 
 /**
- * テスト用のTwoFactorTraitを使用するサービスクラス
+ * テスト用のTwoFaTraitを使用するサービスクラス
  */
 class TestTwoFactorService
 {
-    use \App\Traits\TwoFactorTrait;
+    use \App\Traits\TwoFaTrait;
 
     protected function getSettingValue(string $key, $default = null)
     {

@@ -2,16 +2,16 @@
 
 namespace App\Services;
 
-use App\Helpers\TwoFactorHelper;
-use App\Mail\TwoFactorCodeMail;
+use App\Helpers\TwoFaHelper;
+use App\Mail\TwoFaCodeMail;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 
 class EmailAuthenticationService
 {
-    protected TwoFactorHelper $helper;
+    protected TwoFaHelper $helper;
 
-    public function __construct(TwoFactorHelper $helper)
+    public function __construct(TwoFaHelper $helper)
     {
         $this->helper = $helper;
     }
@@ -28,7 +28,7 @@ class EmailAuthenticationService
     {
         return $this->helper->generateAndSendCode(
             $user,
-            TwoFactorCodeMail::class,
+            TwoFaCodeMail::class,
             $expireMinutes,
             $context
         );

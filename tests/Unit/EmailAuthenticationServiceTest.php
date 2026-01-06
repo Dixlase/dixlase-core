@@ -22,7 +22,7 @@
 
 namespace Tests\Unit;
 
-use App\Helpers\TwoFactorHelper;
+use App\Helpers\TwoFaHelper;
 use App\Models\Member;
 use App\Models\MemberTwoFaToken;
 use App\Services\EmailAuthenticationService;

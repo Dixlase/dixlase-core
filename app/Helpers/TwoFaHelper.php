@@ -4,14 +4,14 @@ namespace App\Helpers;
 
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
-use App\Traits\TwoFactorTrait;
+use App\Traits\TwoFaTrait;
 use App\Models\MemberSetting;
-use App\Enums\TwoFactorMethod;
+use App\Enums\TwoFaMethod;
 use App\Enums\AuthenticationMode;
 
-class TwoFactorHelper
+class TwoFaHelper
 {
-    use TwoFactorTrait;
+    use TwoFaTrait;
 
     /**
      * 設定値を取得する（MemberSettingから）
@@ -81,7 +81,7 @@ class TwoFactorHelper
 
         // メール送信
         try {
-            if ($mailClass === \App\Mail\TwoFactorCodeMail::class) {
+            if ($mailClass === \App\Mail\TwoFaCodeMail::class) {
                 // 汎用メールクラスの場合はコンテキストを渡す
                 Mail::to($user->email)->send(new $mailClass($code, $context));
             } else {
@@ -109,8 +109,8 @@ class TwoFactorHelper
         
         return [
             'force_2fa' => (int) $settingModelClass::getValue('force_2fa', '0'),
-            'enabled_methods' => $this->getEnabledTwoFactorMethods($settingModelClass),
-            'default_method' => (int) $settingModelClass::getValue('default_two_factor_method', (string)TwoFactorMethod::EMAIL->value),
+            'enabled_methods' => $this->getEnabledTwoFaMethods($settingModelClass),
+            'default_method' => (int) $settingModelClass::getValue('default_two_factor_method', (string)TwoFaMethod::EMAIL->value),
         ];
     }
 
@@ -120,24 +120,24 @@ class TwoFactorHelper
      * @param string|null $settingModelClass 設定モデルクラス名（null=MemberSetting）
      * @return array
      */
-    public function getEnabledTwoFactorMethods(?string $settingModelClass = null): array
+    public function getEnabledTwoFaMethods(?string $settingModelClass = null): array
     {
         $settingModelClass = $settingModelClass ?? \App\Models\MemberSetting::class;
         $methods = [];
         
         // メール認証
         if ($settingModelClass::getValue('enabled_2fa_email', '1') === '1') {
-            $methods[] = TwoFactorMethod::EMAIL->value;
+            $methods[] = TwoFaMethod::EMAIL->value;
         }
         
         // Passkey認証
         if ($settingModelClass::getValue('enabled_2fa_passkey', '0') === '1') {
-            $methods[] = TwoFactorMethod::PASSKEY->value;
+            $methods[] = TwoFaMethod::PASSKEY->value;
         }
         
         // 少なくとも1つの方法は有効にする（デフォルトはメール）
         if (empty($methods)) {
-            $methods[] = TwoFactorMethod::EMAIL->value;
+            $methods[] = TwoFaMethod::EMAIL->value;
         }
         
         return $methods;
@@ -196,8 +196,8 @@ class TwoFactorHelper
     {
         $settingModelClass = $settingModelClass ?? \App\Models\MemberSetting::class;
         $userMethod = $user->default_two_fa_method ?? null;
-        $defaultMethod = (int) $settingModelClass::getValue('default_two_fa_method', (string)TwoFactorMethod::EMAIL->value);
-        $enabledMethods = $this->getEnabledTwoFactorMethods($settingModelClass);
+        $defaultMethod = (int) $settingModelClass::getValue('default_two_fa_method', (string)TwoFaMethod::EMAIL->value);
+        $enabledMethods = $this->getEnabledTwoFaMethods($settingModelClass);
         $globalTwoFactorMode = (int) $settingModelClass::getValue('force_2fa', (string)AuthenticationMode::Disabled->value);
         
         // ユーザーがパスキーを無効にしている場合は、有効な方法からパスキーを除外
@@ -205,7 +205,7 @@ class TwoFactorHelper
         $userEnabledMethods = $enabledMethods;
         if (!$userPasskeyEnabled) {
             $userEnabledMethods = array_values(array_filter($enabledMethods, function($method) {
-                return $method !== TwoFactorMethod::PASSKEY->value;
+                return $method !== TwoFaMethod::PASSKEY->value;
             }));
         }
 
@@ -240,7 +240,7 @@ class TwoFactorHelper
         }
 
         // 有効な方法の最初のものを使用
-        $fallbackMethod = !empty($userEnabledMethods) ? $userEnabledMethods[0] : TwoFactorMethod::EMAIL->value;
+        $fallbackMethod = !empty($userEnabledMethods) ? $userEnabledMethods[0] : TwoFaMethod::EMAIL->value;
         Log::info('[2FA] Using fallback method', ['method' => $fallbackMethod]);
         return $fallbackMethod;
     }
@@ -257,9 +257,9 @@ class TwoFactorHelper
         $contextPrefix = ucfirst($context);
         
         return match ($method) {
-            TwoFactorMethod::EMAIL->value => "App\\Mail\\{$contextPrefix}TwoFactorLoginCodeMail",
-            TwoFactorMethod::DEVICE->value => "App\\Mail\\{$contextPrefix}TwoFactorDeviceVerificationMail",
-            TwoFactorMethod::BIOMETRIC->value => "App\\Mail\\{$contextPrefix}TwoFactorBiometricMail",
+            TwoFaMethod::EMAIL->value => "App\\Mail\\{$contextPrefix}TwoFactorLoginCodeMail",
+            TwoFaMethod::DEVICE->value => "App\\Mail\\{$contextPrefix}TwoFactorDeviceVerificationMail",
+            TwoFaMethod::BIOMETRIC->value => "App\\Mail\\{$contextPrefix}TwoFactorBiometricMail",
             default => "App\\Mail\\{$contextPrefix}TwoFactorLoginCodeMail",
         };
     }

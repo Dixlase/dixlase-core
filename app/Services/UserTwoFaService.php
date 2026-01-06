@@ -2,11 +2,11 @@
 
 namespace App\Services;
 
-use App\Helpers\TwoFactorHelper;
+use App\Helpers\TwoFaHelper;
 use App\Services\EmailAuthenticationService;
 use App\Services\DeviceAuthenticationService;
 use App\Services\BiometricAuthenticationService;
-use App\Enums\TwoFactorMethod;
+use App\Enums\TwoFaMethod;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -16,15 +16,15 @@ use Illuminate\Support\Facades\Log;
  * サンプル実装です。プラグイン独自の設定システムを使用する場合は、
  * 必要に応じてカスタマイズしてください。
  */
-class UserTwoFactorService
+class UserTwoFaService
 {
-    protected TwoFactorHelper $helper;
+    protected TwoFaHelper $helper;
     protected EmailAuthenticationService $emailAuth;
     protected DeviceAuthenticationService $deviceAuth;
     protected BiometricAuthenticationService $biometricAuth;
 
     public function __construct(
-        TwoFactorHelper $helper,
+        TwoFaHelper $helper,
         EmailAuthenticationService $emailAuth,
         DeviceAuthenticationService $deviceAuth,
         BiometricAuthenticationService $biometricAuth
@@ -47,9 +47,9 @@ class UserTwoFactorService
         $effectiveMethod = $method ?? $this->getEffectiveAuthMethod($user);
         
         return match ($effectiveMethod) {
-            TwoFactorMethod::EMAIL->value => $this->generateEmailCode($user),
-            TwoFactorMethod::DEVICE->value => $this->generateDeviceChallenge($user),
-            TwoFactorMethod::BIOMETRIC->value => $this->generateBiometricChallenge($user),
+            TwoFaMethod::EMAIL->value => $this->generateEmailCode($user),
+            TwoFaMethod::DEVICE->value => $this->generateDeviceChallenge($user),
+            TwoFaMethod::BIOMETRIC->value => $this->generateBiometricChallenge($user),
             default => $this->generateEmailCode($user),
         };
     }
@@ -67,9 +67,9 @@ class UserTwoFactorService
         $effectiveMethod = $method ?? $this->getEffectiveAuthMethod($user);
         
         return match ($effectiveMethod) {
-            TwoFactorMethod::EMAIL->value => $this->validateEmailCode($user, $input),
-            TwoFactorMethod::DEVICE->value => $this->validateDeviceAuth($user, $input),
-            TwoFactorMethod::BIOMETRIC->value => $this->validateBiometricAuth($user, $input),
+            TwoFaMethod::EMAIL->value => $this->validateEmailCode($user, $input),
+            TwoFaMethod::DEVICE->value => $this->validateDeviceAuth($user, $input),
+            TwoFaMethod::BIOMETRIC->value => $this->validateBiometricAuth($user, $input),
             default => $this->validateEmailCode($user, $input),
         };
     }
@@ -126,16 +126,16 @@ class UserTwoFactorService
 
         foreach ($systemSettings['enabled_methods'] as $method) {
             $available = match ($method) {
-                TwoFactorMethod::EMAIL->value => true,
-                TwoFactorMethod::DEVICE->value => true,
-                TwoFactorMethod::BIOMETRIC->value => $this->biometricAuth->isAvailable(),
+                TwoFaMethod::EMAIL->value => true,
+                TwoFaMethod::DEVICE->value => true,
+                TwoFaMethod::BIOMETRIC->value => $this->biometricAuth->isAvailable(),
                 default => false,
             };
 
             if ($available) {
                 $methods[] = [
                     'value' => $method,
-                    'label' => TwoFactorMethod::from($method)->label(),
+                    'label' => TwoFaMethod::from($method)->label(),
                     'setup_required' => $this->isSetupRequired($user, $method),
                 ];
             }
@@ -175,9 +175,9 @@ class UserTwoFactorService
     private function isSetupRequired($user, int $method): bool
     {
         return match ($method) {
-            TwoFactorMethod::EMAIL->value => false, // メール認証は常に利用可能
-            TwoFactorMethod::DEVICE->value => !$this->deviceAuth->isTrustedDevice($user),
-            TwoFactorMethod::BIOMETRIC->value => !$this->biometricAuth->hasCredentials($user),
+            TwoFaMethod::EMAIL->value => false, // メール認証は常に利用可能
+            TwoFaMethod::DEVICE->value => !$this->deviceAuth->isTrustedDevice($user),
+            TwoFaMethod::BIOMETRIC->value => !$this->biometricAuth->hasCredentials($user),
             default => true,
         };
     }

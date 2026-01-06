@@ -26,7 +26,7 @@ use App\Http\Controllers\Admin\AdminLoggedInController;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use App\Enums\TwoFactorMethod;
+use App\Enums\TwoFaMethod;
 use Illuminate\Http\Request;
 
 class AdminDashboardController extends AdminLoggedInController

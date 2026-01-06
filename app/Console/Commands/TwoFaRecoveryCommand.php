@@ -36,14 +36,14 @@ use Illuminate\Support\Facades\Hash;
  * - デバイス認証できない（デバイス紛失等）
  * - 回復コードを使い切った
  */
-class TwoFactorRecoveryCommand extends Command
+class TwoFaRecoveryCommand extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'security:2fa-recovery
+    protected $signature = 'security:two-fa-recovery
                             {action=status : Action to perform (disable, reset-codes, status, list)}
                             {--member= : Member ID or email to recover}
                             {--reason= : Reason for recovery (required)}

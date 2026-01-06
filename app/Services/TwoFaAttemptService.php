@@ -7,7 +7,7 @@ use App\Models\MemberTwoFaAttempt;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
-class TwoFactorAttemptService
+class TwoFaAttemptService
 {
     /**
      * 2FA試行を記録

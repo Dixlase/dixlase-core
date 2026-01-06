@@ -5,7 +5,7 @@ namespace App\Http\Requests\Admin\Profile;
 use App\Enums\AppearanceMode;
 use App\Enums\Locale;
 use App\Enums\AuthenticationMode;
-use App\Enums\TwoFactorMethod;
+use App\Enums\TwoFaMethod;
 use App\Models\MemberSetting;
 use App\Services\PasswordValidationService;
 use Illuminate\Foundation\Http\FormRequest;
