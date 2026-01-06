@@ -9,8 +9,8 @@
 
 @section('content')
     @php
-        $passkeyChallenge = $challengeAction ?? route('admin.two-factor.passkey.challenge');
-        $passkeyVerify = $verifyAction ?? route('admin.two-factor.passkey.verify');
+        $passkeyChallenge = $challengeAction ?? route('admin.two-fa.passkey.challenge');
+        $passkeyVerify = $verifyAction ?? route('admin.two-fa.passkey.verify');
     @endphp
     @include('two-factor.partials.passkey-challenge', [
         'challengeAction' => $passkeyChallenge,

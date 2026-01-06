@@ -8,7 +8,7 @@
 @section('description', __('two-factor.recovery_code.prompt'))
 
 @section('content')
-    <form method="POST" action="{{ route('admin.two-factor.recovery-code.confirm') }}" class="space-y-6" id="recoveryCodeForm">
+    <form method="POST" action="{{ route('admin.two-fa.recovery-code.confirm') }}" class="space-y-6" id="recoveryCodeForm">
         @csrf
 
         <!-- 回復コード入力 -->
@@ -93,7 +93,7 @@
 
     <!-- 別の認証方法に戻る -->
     <div class="mt-6 text-center">
-        <a href="{{ route('admin.two-factor.email.show') }}" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+        <a href="{{ route('admin.two-fa.email.show') }}" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
             {{ __('two-factor.recovery_code.back_to_2fa') }}
         </a>
     </div>
