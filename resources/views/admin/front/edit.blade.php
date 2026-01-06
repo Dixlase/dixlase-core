@@ -46,7 +46,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @method('PUT')
 
         <!-- コンテンツエディタ -->
-        <x-content-editor
+        <x-content_editor
             :storageType="old('storage_type', $frontPage->storage_type->value ?? 'database')"
             :editorType="old('editor_type', $frontPage->editor_type->value ?? 'html')"
             :title="old('title', $frontPage->title ?? '')"

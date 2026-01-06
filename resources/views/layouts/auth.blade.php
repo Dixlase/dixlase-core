@@ -54,7 +54,7 @@
             @endif
             <h1 class="text-2xl font-bold text-gray-800 dark:text-white mb-4 text-center">@yield('header')</h1>
             <div class="text-gray-600 dark:text-gray-300 mb-6 text-center">@yield('description')</div>
-            <x-flash-message />
+            <x-flash_message />
             @yield('content')
         </div>
 

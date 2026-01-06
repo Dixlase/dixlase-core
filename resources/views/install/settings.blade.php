@@ -50,7 +50,7 @@
                     ariaDescribedby="admin_account_name_help"
                     class="input-full"
                 />
-                <x-form.help-text :text="__('install.admin_account_name_requirements')" id="admin_account_name_help" />
+                <x-form.help_text :text="__('install.admin_account_name_requirements')" id="admin_account_name_help" />
             </div>
 
             <div>
@@ -64,7 +64,7 @@
                     ariaDescribedby="admin_display_name_help"
                     class="input-full"
                 />
-                <x-form.help-text :text="__('install.admin_display_name_requirements')" id="admin_display_name_help" />
+                <x-form.help_text :text="__('install.admin_display_name_requirements')" id="admin_display_name_help" />
             </div>
 
             <div>

@@ -104,7 +104,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </fieldset>
 
         <div id="email-input-wrapper">
-            <x-email-input
+            <x-email_input
                 id="email"
                 name="email"
                 :value="old('email', $member->email ?? '')"
@@ -166,7 +166,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         ['value' => '1', 'label' => 'admin/members/form.account_verified'],
                     ];
                 @endphp
-                <x-form.radio-card-group
+                <x-form.radio_card_group
                     name="email_verified"
                     :options="$emailVerificationOptions"
                     :value="$emailVerifiedValue"
@@ -183,7 +183,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         ['value' => '1', 'label' => 'admin/members/form.account_verified'],
                     ];
                 @endphp
-                <x-form.radio-card-group
+                <x-form.radio_card_group
                     name="email_verified"
                     :options="$emailVerificationOptionsEdit"
                     :value="$emailVerifiedValue"
@@ -258,7 +258,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @php
                 $appearanceValue = old('appearance', (string) ($member->appearance->value ?? 0));
             @endphp
-            <x-appearance-mode-selector
+            <x-appearance_mode_selector
                 name="appearance"
                 :value="$appearanceValue"
                 :enableRealtimeSwitch="false"
@@ -289,7 +289,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         ['value' => '0', 'label' => 'components.status.inactive', 'icon' => 'fas fa-times-circle', 'color' => 'gray'],
                     ];
                 @endphp
-                <x-form.radio-card-group
+                <x-form.radio_card_group
                     name="status"
                     :options="$statusOptions"
                     :value="$statusValue"
@@ -325,7 +325,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         ];
                     }
                 @endphp
-                <x-form.radio-card-group
+                <x-form.radio_card_group
                     name="role"
                     :options="$roleOptions"
                     :value="$roleValue"

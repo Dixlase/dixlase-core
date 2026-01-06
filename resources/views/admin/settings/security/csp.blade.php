@@ -60,7 +60,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <input type="hidden" name="csp_mode" value="{{ \App\Enums\CspMode::default()->value }}">
                     </template>
                     
-                    <x-form.radio-card-group
+                    <x-form.radio_card_group
                         name="csp_mode"
                         :options="\App\Enums\CspMode::getRadioCardOptions()"
                         :value="old('csp_mode', $settings['csp_mode'] ?? \App\Enums\CspMode::default()->value)"
@@ -161,7 +161,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <input type="hidden" name="csp_blocklist_action" value="{{ \App\Enums\CspBlocklistAction::default()->value }}">
                         </template>
                         
-                        <x-form.radio-card-group
+                        <x-form.radio_card_group
                             name="csp_blocklist_action"
                             :options="[
                                 [

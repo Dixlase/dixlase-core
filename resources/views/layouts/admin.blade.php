@@ -49,7 +49,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           x-init="$nextTick(() => { sidebarReady = true }); $watch('sidebarCollapsed', value => localStorage.setItem('sidebarCollapsed', value))">
         <div class="min-h-screen">
             <!-- Admin Bar (Header) -->
-            <x-admin-bar :isAdminLayout="true" />
+            <x-admin_bar :isAdminLayout="true" />
 
 
             <div class="min-h-screen flex">
@@ -128,7 +128,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     <!-- Page Content -->
                     <article class="w-full px-6 lg:px-8 pb-8 mt-8">
-                        <x-flash-message />
+                        <x-flash_message />
                         @yield('content')
                     </article>
 

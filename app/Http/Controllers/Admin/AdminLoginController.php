@@ -484,7 +484,7 @@ class AdminLoginController extends AdminController
         $twoFaExpireMinutes = (int) MemberSetting::getValue('two_fa_expire_minutes', config('two-fa.code_expiration', 5));
         $twoFaResendIntervalSeconds = (int) MemberSetting::getValue('two_fa_resend_interval_seconds', config('two-fa.resend_interval', 60));
 
-        return view('two-factor.email-challenge', [
+        return view('two_factor.email_challenge', [
             'availableMethods' => $availableMethods,
             'currentMethod' => $currentMethod,
             'expireMinutes' => $twoFaExpireMinutes,
@@ -631,7 +631,7 @@ class AdminLoginController extends AdminController
                 ->withErrors(['email' => __('two-factor.lockout.message', ['minutes' => $remainingMinutes])]);
         }
 
-        return view('two-factor.recovery-code-challenge');
+        return view('two_factor.recovery_code_challenge');
     }
 
     /**
@@ -739,7 +739,7 @@ class AdminLoginController extends AdminController
         $twoFaExpireMinutes = (int) MemberSetting::getValue('two_fa_expire_minutes', config('two-fa.code_expiration', 5));
         $twoFaResendIntervalSeconds = (int) MemberSetting::getValue('two_fa_resend_interval_seconds', config('two-fa.resend_interval', 60));
 
-        return view('two-factor.email-challenge', [
+        return view('two_factor.email_challenge', [
             'availableMethods' => $availableMethods,
             'currentMethod' => $currentMethod,
             'expireMinutes' => $twoFaExpireMinutes,
@@ -783,7 +783,7 @@ class AdminLoginController extends AdminController
             }
         }
 
-        return view('two-factor.passkey-challenge', [
+        return view('two_factor.passkey_challenge', [
             'availableMethods' => $availableMethods,
             'currentMethod' => $currentMethod,
             'challengeAction' => route('admin.two-factor.passkey.challenge'),

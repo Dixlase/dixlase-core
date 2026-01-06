@@ -72,7 +72,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @enderror
             </fieldset>
 
-            <x-email-input
+            <x-email_input
                 id="profile_email"
                 name="email"
                 :value="old('email', $member->email)"
@@ -152,7 +152,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <section class="transition-colors-unified">
             <h2>{{ __('common.appearance_settings') }}</h2>
             <div class="lg:w-1/2">
-                <x-appearance-mode-selector
+                <x-appearance_mode_selector
                     name="appearance"
                     :value="$appearanceValue"
                     :enableRealtimeSwitch="true"
