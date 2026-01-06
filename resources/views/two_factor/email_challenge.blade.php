@@ -9,8 +9,8 @@
 
 @section('content')
     @php
-        $verifyAction = $action ?? route('admin.two-factor.email.verify');
-        $resendRoute = $resendAction ?? route('admin.two-factor.email.resend');
+        $verifyAction = $action ?? route('admin.two-fa.email.verify');
+        $resendRoute = $resendAction ?? route('admin.two-fa.email.resend');
     @endphp
     @include('two-factor.partials.email-challenge', [
         'action' => $verifyAction,

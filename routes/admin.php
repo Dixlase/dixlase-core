@@ -69,18 +69,18 @@ Route::prefix($adminUrl)->name('admin.')
         Route::post('/login', [AdminLoginController::class, 'store'])->name('login.store');
 
         // 二段階認証（メール）
-        Route::get('/two-factor-email', [AdminLoginController::class, 'showEmailForm'])->name('two-factor.email.show');
-        Route::post('/two-factor-email/verify', [AdminLoginController::class, 'verifyEmail'])->name('two-factor.email.verify');
-        Route::post('/two-factor-email/resend', [AdminLoginController::class, 'resendEmailCode'])->name('two-factor.email.resend');
+        Route::get('/two-fa-email', [AdminLoginController::class, 'showEmailForm'])->name('two-fa.email.show');
+        Route::post('/two-fa-email/verify', [AdminLoginController::class, 'verifyEmail'])->name('two-fa.email.verify');
+        Route::post('/two-fa-email/resend', [AdminLoginController::class, 'resendEmailCode'])->name('two-fa.email.resend');
         
         // Passkey認証
-        Route::get('/two-factor-passkey', [AdminLoginController::class, 'showPasskeyForm'])->name('two-factor.passkey.show');
-        Route::post('/two-factor-passkey/challenge', [AdminLoginController::class, 'getPasskeyChallenge'])->name('two-factor.passkey.challenge');
-        Route::post('/two-factor-passkey/verify', [AdminLoginController::class, 'verifyPasskey'])->name('two-factor.passkey.verify');
+        Route::get('/two-fa-passkey', [AdminLoginController::class, 'showPasskeyForm'])->name('two-fa.passkey.show');
+        Route::post('/two-fa-passkey/challenge', [AdminLoginController::class, 'getPasskeyChallenge'])->name('two-fa.passkey.challenge');
+        Route::post('/two-fa-passkey/verify', [AdminLoginController::class, 'verifyPasskey'])->name('two-fa.passkey.verify');
         
         // 回復コード
-        Route::get('/two-factor-recovery', [AdminLoginController::class, 'showRecoveryCodeForm'])->name('two-factor.recovery-code.show');
-        Route::post('/two-factor-recovery', [AdminLoginController::class, 'confirmRecoveryCode'])->name('two-factor.recovery-code.confirm');
+        Route::get('/two-fa-recovery', [AdminLoginController::class, 'showRecoveryCodeForm'])->name('two-fa.recovery-code.show');
+        Route::post('/two-fa-recovery', [AdminLoginController::class, 'confirmRecoveryCode'])->name('two-fa.recovery-code.confirm');
         
 
 

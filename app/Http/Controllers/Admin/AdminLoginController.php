@@ -425,7 +425,7 @@ class AdminLoginController extends AdminController
         if ($attemptService->isLockedOut($member)) {
             $remainingMinutes = $attemptService->getRemainingLockoutTime($member);
             return redirect()->route('admin.login')
-                ->withErrors(['email' => __('two-factor.lockout.message', ['minutes' => $remainingMinutes])]);
+                ->withErrors(['email' => __('two-fa.lockout.message', ['minutes' => $remainingMinutes])]);
         }
 
         // 既存の有効なコードがあるかチェック
@@ -489,8 +489,8 @@ class AdminLoginController extends AdminController
             'currentMethod' => $currentMethod,
             'expireMinutes' => $twoFaExpireMinutes,
             'resendIntervalSeconds' => $twoFaResendIntervalSeconds,
-            'action' => route('admin.two-factor.email.verify'),
-            'resendAction' => route('admin.two-factor.email.resend'),
+            'action' => route('admin.two-fa.email.verify'),
+            'resendAction' => route('admin.two-fa.email.resend'),
             'loginRoute' => route('admin.login'),
         ]);
     }
@@ -501,9 +501,9 @@ class AdminLoginController extends AdminController
     protected function getTwoFaMethodRoute(int $method): string
     {
         return match($method) {
-            TwoFaMethod::EMAIL->value => route('admin.two-factor.email.show'),
-            TwoFaMethod::PASSKEY->value => route('admin.two-factor.passkey.show'),
-            default => route('admin.two-factor.email.show'),
+            TwoFaMethod::EMAIL->value => route('admin.two-fa.email.show'),
+            TwoFaMethod::PASSKEY->value => route('admin.two-fa.passkey.show'),
+            default => route('admin.two-fa.email.show'),
         };
     }
 
@@ -526,7 +526,7 @@ class AdminLoginController extends AdminController
             $remainingMinutes = $attemptService->getRemainingLockoutTime($member);
             session()->forget(['login.id', 'login.remember']);
             return redirect()->route('admin.login')
-                ->withErrors(['email' => __('two-factor.lockout.message', ['minutes' => $remainingMinutes])]);
+                ->withErrors(['email' => __('two-fa.lockout.message', ['minutes' => $remainingMinutes])]);
         }
 
         $twoFactor = app(AdminTwoFaService::class);
@@ -540,13 +540,13 @@ class AdminLoginController extends AdminController
                 $lockoutDuration = (int) MemberSetting::getValue('two_fa_lockout_duration', 30);
                 session()->forget(['login.id', 'login.remember']);
                 return redirect()->route('admin.login')
-                    ->withErrors(['email' => __('two-factor.lockout.locked', ['minutes' => $lockoutDuration])]);
+                    ->withErrors(['email' => __('two-fa.lockout.locked', ['minutes' => $lockoutDuration])]);
             }
             
             // 残り試行回数を取得
             $remainingAttempts = $attemptService->getRemainingAttempts($member);
             return back()->withErrors([
-                'code' => __('two-factor.email.invalid_with_attempts', ['attempts' => $remainingAttempts])
+                'code' => __('two-fa.email.invalid_with_attempts', ['attempts' => $remainingAttempts])
             ]);
         }
 
@@ -603,7 +603,7 @@ class AdminLoginController extends AdminController
 
         return response()->json([
             'success' => true,
-            'message' => __('two-factor.email.resend_success')
+            'message' => __('two-fa.email.resend_success')
         ]);
     }
 
@@ -628,7 +628,7 @@ class AdminLoginController extends AdminController
         if ($attemptService->isLockedOut($member)) {
             $remainingMinutes = $attemptService->getRemainingLockoutTime($member);
             return redirect()->route('admin.login')
-                ->withErrors(['email' => __('two-factor.lockout.message', ['minutes' => $remainingMinutes])]);
+                ->withErrors(['email' => __('two-fa.lockout.message', ['minutes' => $remainingMinutes])]);
         }
 
         return view('two_factor.recovery_code_challenge');
@@ -656,7 +656,7 @@ class AdminLoginController extends AdminController
             $remainingMinutes = $attemptService->getRemainingLockoutTime($member);
             session()->forget(['login.id', 'login.remember']);
             return redirect()->route('admin.login')
-                ->withErrors(['email' => __('two-factor.lockout.message', ['minutes' => $remainingMinutes])]);
+                ->withErrors(['email' => __('two-fa.lockout.message', ['minutes' => $remainingMinutes])]);
         }
 
         $recoveryCodeService = app(RecoveryCodeService::class);
@@ -671,13 +671,13 @@ class AdminLoginController extends AdminController
                 $lockoutDuration = (int) MemberSetting::getValue('two_fa_lockout_duration', 30);
                 session()->forget(['login.id', 'login.remember']);
                 return redirect()->route('admin.login')
-                    ->withErrors(['email' => __('two-factor.lockout.locked', ['minutes' => $lockoutDuration])]);
+                    ->withErrors(['email' => __('two-fa.lockout.locked', ['minutes' => $lockoutDuration])]);
             }
 
             // 残り試行回数を取得
             $remainingAttempts = $attemptService->getRemainingAttempts($member);
             return back()->withErrors([
-                'recovery_code' => __('two-factor.recovery_code.invalid_with_attempts', ['attempts' => $remainingAttempts])
+                'recovery_code' => __('two-fa.recovery_code.invalid_with_attempts', ['attempts' => $remainingAttempts])
             ]);
         }
 
@@ -744,8 +744,8 @@ class AdminLoginController extends AdminController
             'currentMethod' => $currentMethod,
             'expireMinutes' => $twoFaExpireMinutes,
             'resendIntervalSeconds' => $twoFaResendIntervalSeconds,
-            'action' => route('admin.two-factor.email.verify'),
-            'resendAction' => route('admin.two-factor.email.resend'),
+            'action' => route('admin.two-fa.email.verify'),
+            'resendAction' => route('admin.two-fa.email.resend'),
             'loginRoute' => route('admin.login'),
         ]);
     }
@@ -786,8 +786,8 @@ class AdminLoginController extends AdminController
         return view('two_factor.passkey_challenge', [
             'availableMethods' => $availableMethods,
             'currentMethod' => $currentMethod,
-            'challengeAction' => route('admin.two-factor.passkey.challenge'),
-            'verifyAction' => route('admin.two-factor.passkey.verify'),
+            'challengeAction' => route('admin.two-fa.passkey.challenge'),
+            'verifyAction' => route('admin.two-fa.passkey.verify'),
             'loginRoute' => route('admin.login'),
         ]);
     }

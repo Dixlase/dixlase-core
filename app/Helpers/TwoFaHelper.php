@@ -394,7 +394,7 @@ class TwoFaHelper
                 return [
                     'success' => false,
                     'challenge' => null,
-                    'message' => __('two-factor.biometric.https_required'),
+                    'message' => __('two-fa.biometric.https_required'),
                 ];
             }
 
@@ -414,7 +414,7 @@ class TwoFaHelper
             return [
                 'success' => false,
                 'challenge' => null,
-                'message' => __('two-factor.biometric.challenge_generation_failed'),
+                'message' => __('two-fa.biometric.challenge_generation_failed'),
             ];
         }
     }
@@ -439,14 +439,14 @@ class TwoFaHelper
 
             return [
                 'success' => true,
-                'message' => __('two-factor.biometric.registered_successfully'),
+                'message' => __('two-fa.biometric.registered_successfully'),
             ];
         } catch (\Exception $e) {
             Log::error("[Biometric Registration] 登録エラー: " . $e->getMessage());
             
             return [
                 'success' => false,
-                'message' => __('two-factor.biometric.registration_failed'),
+                'message' => __('two-fa.biometric.registration_failed'),
             ];
         }
     }
@@ -468,12 +468,12 @@ class TwoFaHelper
 
                 return [
                     'success' => true,
-                    'message' => __('two-factor.biometric.revoked_successfully'),
+                    'message' => __('two-fa.biometric.revoked_successfully'),
                 ];
             } else {
                 return [
                     'success' => false,
-                    'message' => __('two-factor.biometric.not_found'),
+                    'message' => __('two-fa.biometric.not_found'),
                 ];
             }
         } catch (\Exception $e) {
@@ -481,7 +481,7 @@ class TwoFaHelper
             
             return [
                 'success' => false,
-                'message' => __('two-factor.biometric.revocation_failed'),
+                'message' => __('two-fa.biometric.revocation_failed'),
             ];
         }
     }
@@ -502,7 +502,7 @@ class TwoFaHelper
             return [
                 'success' => true,
                 'count' => $count,
-                'message' => __('two-factor.biometric.all_revoked_successfully', ['count' => $count]),
+                'message' => __('two-fa.biometric.all_revoked_successfully', ['count' => $count]),
             ];
         } catch (\Exception $e) {
             Log::error("[Biometric Auth] 一括削除エラー: " . $e->getMessage());
@@ -510,7 +510,7 @@ class TwoFaHelper
             return [
                 'success' => false,
                 'count' => 0,
-                'message' => __('two-factor.biometric.revoke_all_failed'),
+                'message' => __('two-fa.biometric.revoke_all_failed'),
             ];
         }
     }
@@ -536,12 +536,12 @@ class TwoFaHelper
 
                 return [
                     'success' => true,
-                    'message' => __('two-factor.trusted_device.revoked_successfully'),
+                    'message' => __('two-fa.trusted_device.revoked_successfully'),
                 ];
             } else {
                 return [
                     'success' => false,
-                    'message' => __('two-factor.trusted_device.not_found'),
+                    'message' => __('two-fa.trusted_device.not_found'),
                 ];
             }
         } catch (\Exception $e) {
@@ -549,7 +549,7 @@ class TwoFaHelper
             
             return [
                 'success' => false,
-                'message' => __('two-factor.trusted_device.revocation_failed'),
+                'message' => __('two-fa.trusted_device.revocation_failed'),
             ];
         }
     }
@@ -570,7 +570,7 @@ class TwoFaHelper
             return [
                 'success' => true,
                 'count' => $count,
-                'message' => __('two-factor.trusted_device.all_revoked_successfully', ['count' => $count]),
+                'message' => __('two-fa.trusted_device.all_revoked_successfully', ['count' => $count]),
             ];
         } catch (\Exception $e) {
             Log::error("[Device Auth] 一括削除エラー: " . $e->getMessage());
@@ -578,7 +578,7 @@ class TwoFaHelper
             return [
                 'success' => false,
                 'count' => 0,
-                'message' => __('two-factor.trusted_device.revoke_all_failed'),
+                'message' => __('two-fa.trusted_device.revoke_all_failed'),
             ];
         }
     }

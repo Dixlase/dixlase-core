@@ -57,13 +57,13 @@ class AdminSystemDatabaseController extends AdminLoggedInController
                 'name' => __('admin/settings/systems/database.two_fa_attempts.name'),
                 'description' => __('admin/settings/systems/database.two_fa_attempts.description'),
                 'default_days' => 30,
-                'command' => 'dls:admin:cleanup-two-factor-attempts'
+                'command' => 'dls:admin:cleanup-two-fa-attempts'
             ],
             'two_fa_tokens' => [
                 'name' => __('admin/settings/systems/database.two_fa_tokens.name'),
                 'description' => __('admin/settings/systems/database.two_fa_tokens.description'),
                 'default_days' => 7,
-                'command' => 'dls:admin:cleanup-two-factor-tokens'
+                'command' => 'dls:admin:cleanup-two-fa-tokens'
             ],
             'recovery_codes' => [
                 'name' => __('admin/settings/systems/database.recovery_codes.name'),
@@ -139,14 +139,14 @@ class AdminSystemDatabaseController extends AdminLoggedInController
                     break;
                 case 'two_fa_attempts':
                     $options = $days === 0 ? ['--days' => $days, '--force' => true] : ['--days' => $days];
-                    Artisan::call('dls:admin:cleanup-two-factor-attempts', $options);
+                    Artisan::call('dls:admin:cleanup-two-fa-attempts', $options);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
                     $message = __('admin/settings/systems/database.cleanup_success', ['count' => $count]);
                     break;
                 case 'two_fa_tokens':
                     $options = $days === 0 ? ['--days' => $days, '--force' => true] : ['--days' => $days];
-                    Artisan::call('dls:admin:cleanup-two-factor-tokens', $options);
+                    Artisan::call('dls:admin:cleanup-two-fa-tokens', $options);
                     $output = Artisan::output();
                     $count = $this->extractCountFromOutput($output);
                     $message = __('admin/settings/systems/database.cleanup_success', ['count' => $count]);
