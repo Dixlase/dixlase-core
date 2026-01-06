@@ -12,7 +12,7 @@ class Member2faPasskey extends BaseWebAuthnCredential
      *
      * @var string
      */
-    protected $table = 'members_2fa_passkeys';
+    protected $table = 'members_two_fa_passkeys';
 
     /**
      * The attributes that are mass assignable.

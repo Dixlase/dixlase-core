@@ -174,7 +174,7 @@ class TwoFactorHelper
         }
         
         // プロフィール設定を使用する場合（force_2fa = UseProfileSetting）
-        $userMode = $user->two_factor_mode;
+        $userMode = $user->two_fa_mode;
         
         // AuthenticationMode Enumの場合
         if ($userMode instanceof \App\Enums\AuthenticationMode) {
@@ -195,13 +195,13 @@ class TwoFactorHelper
     public function getEffectiveAuthMethod($user, ?string $settingModelClass = null): int
     {
         $settingModelClass = $settingModelClass ?? \App\Models\MemberSetting::class;
-        $userMethod = $user->default_two_factor_method ?? null;
-        $defaultMethod = (int) $settingModelClass::getValue('default_two_factor_method', (string)TwoFactorMethod::EMAIL->value);
+        $userMethod = $user->default_two_fa_method ?? null;
+        $defaultMethod = (int) $settingModelClass::getValue('default_two_fa_method', (string)TwoFactorMethod::EMAIL->value);
         $enabledMethods = $this->getEnabledTwoFactorMethods($settingModelClass);
         $globalTwoFactorMode = (int) $settingModelClass::getValue('force_2fa', (string)AuthenticationMode::Disabled->value);
         
         // ユーザーがパスキーを無効にしている場合は、有効な方法からパスキーを除外
-        $userPasskeyEnabled = $user->two_factor_passkey_enabled ?? true;
+        $userPasskeyEnabled = $user->two_fa_passkey_enabled ?? true;
         $userEnabledMethods = $enabledMethods;
         if (!$userPasskeyEnabled) {
             $userEnabledMethods = array_values(array_filter($enabledMethods, function($method) {

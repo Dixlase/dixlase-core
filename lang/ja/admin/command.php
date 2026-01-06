@@ -872,7 +872,7 @@ return [
         'value' => '値',
         'member_id' => 'メンバーID',
         'email' => 'メールアドレス',
-        'two_factor_mode' => '二段階認証モード',
+        'two_fa_mode' => '二段階認証モード',
         'recovery_codes_remaining' => '回復コード残数',
         'disabled' => '無効',
         'none' => 'なし',

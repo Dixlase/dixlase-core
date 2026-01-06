@@ -6,24 +6,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-
-    protected $table = 'members_2fa_recovery_codes';
-
+    protected $table = 'members_two_fa_tokens';
     /**
      * Run the migrations.
      */
     public function up(): void
     {
+        // migration
         Schema::create($this->table, function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('member_id')->index();
-            $table->string('code'); // ハッシュ化された回復コード
-            $table->timestamp('used_at')->nullable(); // 使用日時
-            $table->boolean('disabled')->default(false); // 無効化フラグ
+            $table->string('code'); // hashed
+            $table->timestamp('expires_at');
             $table->timestamps();
-            
-            // インデックス
-            $table->index(['member_id', 'disabled', 'used_at'], 'idx_member_active');
         });
     }
 

@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
 
-    protected $table = 'members_2fa_passkeys';
+    protected $table = 'members_two_fa_passkeys';
 
     /**
      * Run the migrations.

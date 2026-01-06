@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('members_2fa_attempts', function (Blueprint $table) {
+        Schema::create('members_two_fa_attempts', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('member_id')->index();
             $table->string('attempt_type', 20); // 'email', 'passkey', 'recovery_code'
@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('members_2fa_attempts');
+        Schema::dropIfExists('members_two_fa_attempts');
     }
 };

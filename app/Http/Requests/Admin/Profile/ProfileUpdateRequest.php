@@ -59,8 +59,8 @@ class ProfileUpdateRequest extends FormRequest
             'password' => $passwordRules,
             'appearance' => ['nullable', new Enum(AppearanceMode::class)],
             'login_notification_mode' => ['nullable', new Enum(AuthenticationMode::class)],
-            'two_factor_mode' => ['nullable', new Enum(AuthenticationMode::class)],
-            'two_factor_passkey_enabled' => 'nullable|boolean',
+            'two_fa_mode' => ['nullable', new Enum(AuthenticationMode::class)],
+            'two_fa_passkey_enabled' => 'nullable|boolean',
             'default_two_fa_method' => 'nullable|integer|in:0,1',
         ];
 
