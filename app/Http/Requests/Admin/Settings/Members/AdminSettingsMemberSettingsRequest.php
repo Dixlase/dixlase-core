@@ -57,8 +57,8 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
             // 管理メンバー用セッション設定
             'members_session_lifetime_enabled' => filter_var($this->input('members_session_lifetime_enabled'), FILTER_VALIDATE_BOOLEAN),
             // 二段階認証設定
-            'two_factor_passkey_enabled' => filter_var($this->input('two_factor_passkey_enabled'), FILTER_VALIDATE_BOOLEAN),
-            '2fa_lockout_notification_enabled' => filter_var($this->input('2fa_lockout_notification_enabled'), FILTER_VALIDATE_BOOLEAN),
+            'enabled_two_fa_passkey' => filter_var($this->input('enabled_two_fa_passkey'), FILTER_VALIDATE_BOOLEAN),
+            'two_fa_lockout_notification_enabled' => filter_var($this->input('two_fa_lockout_notification_enabled'), FILTER_VALIDATE_BOOLEAN),
             // CAPTCHA設定
             'captcha_admin_login_enabled' => filter_var($this->input('captcha_admin_login_enabled'), FILTER_VALIDATE_BOOLEAN),
             'captcha_password_reset_enabled' => filter_var($this->input('captcha_password_reset_enabled'), FILTER_VALIDATE_BOOLEAN),
@@ -95,14 +95,14 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
             'login_attempt_time_window' => 'required|integer|min:1|max:1440', // 最大24時間
             'login_attempt_lockout_duration' => 'required|integer|min:1|max:10080', // 最大1週間
             'lockout_notification_enabled' => 'required|boolean',
-            'force_2fa' => ['required', new Enum(AuthenticationMode::class)],
-            'two_factor_expire_minutes' => 'required|integer|min:1|max:60', // 1-60分（メール認証）
-            'two_factor_resend_interval_seconds' => 'required|integer|min:60|max:600', // 60-600秒（1-10分）
-            'two_factor_passkey_enabled' => 'nullable|boolean',
-            '2fa_max_attempts' => 'required|integer|min:1|max:10',
-            '2fa_attempt_window' => 'required|integer|min:5|max:60',
-            '2fa_lockout_duration' => 'required|integer|min:5|max:1440',
-            '2fa_lockout_notification_enabled' => 'required|boolean',
+            'force_two_fa' => ['required', new Enum(AuthenticationMode::class)],
+            'two_fa_expire_minutes' => 'required|integer|min:1|max:60', // 1-60分（メール認証）
+            'two_fa_resend_interval_seconds' => 'required|integer|min:60|max:600', // 60-600秒（1-10分）
+            'enabled_two_fa_passkey' => 'nullable|boolean',
+            'two_fa_max_attempts' => 'required|integer|min:1|max:10',
+            'two_fa_attempt_window' => 'required|integer|min:5|max:60',
+            'two_fa_lockout_duration' => 'required|integer|min:5|max:1440',
+            'two_fa_lockout_notification_enabled' => 'required|boolean',
             'recovery_codes_count' => 'required|integer|min:1|max:10',
             'recovery_code_regenerate_interval' => 'required|integer|min:1|max:168', // 1-168時間（1時間-7日間）
             'captcha_admin_login_enabled' => 'nullable|boolean',

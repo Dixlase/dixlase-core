@@ -126,7 +126,7 @@ class TwoFactorAttemptService
      */
     protected function getMaxAttempts(): int
     {
-        return (int) \App\Models\MemberSetting::getValue('2fa_max_attempts', 5);
+        return (int) \App\Models\MemberSetting::getValue('two_fa_max_attempts', 5);
     }
 
     /**
@@ -134,7 +134,7 @@ class TwoFactorAttemptService
      */
     protected function getAttemptWindow(): int
     {
-        return (int) \App\Models\MemberSetting::getValue('2fa_attempt_window', 15);
+        return (int) \App\Models\MemberSetting::getValue('two_fa_attempt_window', 15);
     }
 
     /**
@@ -142,7 +142,7 @@ class TwoFactorAttemptService
      */
     protected function getLockoutDuration(): int
     {
-        return (int) \App\Models\MemberSetting::getValue('2fa_lockout_duration', 30);
+        return (int) \App\Models\MemberSetting::getValue('two_fa_lockout_duration', 30);
     }
 
     /**
@@ -150,6 +150,6 @@ class TwoFactorAttemptService
      */
     public function isLockoutNotificationEnabled(): bool
     {
-        return (bool) \App\Models\MemberSetting::getValue('2fa_lockout_notification_enabled', true);
+        return (bool) \App\Models\MemberSetting::getValue('two_fa_lockout_notification_enabled', true);
     }
 }

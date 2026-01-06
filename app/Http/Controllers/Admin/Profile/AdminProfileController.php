@@ -157,13 +157,13 @@ class AdminProfileController extends AdminLoggedInController
 
         // 二段階認証設定の追加
         $force2fa = (int) MemberSetting::getValue(
-            'force_2fa',
+            'force_two_fa',
             AuthenticationMode::UseProfileSetting->value
         );
-        $twoFactorMode = Auth::guard('member')->user()->two_factor_mode;
+        $twoFaMode = Auth::guard('member')->user()->two_factor_mode;
 
         // グローバル設定で有効な二段階認証方法を取得
-        $passkeyEnabled = MemberSetting::getValue('enabled_2fa_passkey', '0') === '1';
+        $passkeyEnabled = MemberSetting::getValue('enabled_two_fa_passkey', '0') === '1';
         
         // メール認証は常に有効、Passkeyは設定に応じて（連想配列形式）
         $enabledTwoFactorMethods = [
@@ -173,7 +173,7 @@ class AdminProfileController extends AdminLoggedInController
             $enabledTwoFactorMethods[TwoFactorMethod::PASSKEY->value] = TwoFactorMethod::PASSKEY->translationKey();
         }
         
-        $defaultTwoFactorMethod = (int) MemberSetting::getValue('default_two_factor_method', TwoFactorMethod::EMAIL->value);
+        $defaultTwoFaMethod = (int) MemberSetting::getValue('default_two_fa_method', TwoFactorMethod::EMAIL->value);
 
         // radio-card-group用の二段階認証オプション配列を生成
         // 全体設定が「プロフィール設定を反映」の場合は、無効/異なる端末時のみ/常に有効から選択可能
@@ -218,12 +218,12 @@ class AdminProfileController extends AdminLoggedInController
         }
 
         $this->viewParams['force2fa'] = $force2fa;
-        $this->viewParams['twoFactorMode'] = $twoFactorMode;
+        $this->viewParams['twoFaMode'] = $twoFaMode;
         $this->viewParams['profileTwoFactorOptions'] = $profileTwoFactorOptions;
         $this->viewParams['enabledTwoFactorMethods'] = $enabledTwoFactorMethods;
         $this->viewParams['passkeyEnabled'] = $passkeyEnabled;
         $this->viewParams['currentTwoFactorMethod'] = $currentTwoFactorMethod;
-        $this->viewParams['defaultTwoFactorMethod'] = $defaultTwoFactorMethod;
+        $this->viewParams['defaultTwoFaMethod'] = $defaultTwoFaMethod;
         $this->viewParams['currentGlobalTwoFactorMode'] = $currentGlobalTwoFactorMode;
 
         // pending_email がある場合の情報を渡す
@@ -325,7 +325,7 @@ class AdminProfileController extends AdminLoggedInController
         $oldTwoFactorMode = is_int($member->two_factor_mode) ? $member->two_factor_mode : $member->two_factor_mode->value;
         
         // two_factor_mode は全体設定が UseProfileSetting のときだけ上書き
-        $force2fa = (int) MemberSetting::getValue('force_2fa', AuthenticationMode::UseProfileSetting->value);
+        $force2fa = (int) MemberSetting::getValue('force_two_fa', AuthenticationMode::UseProfileSetting->value);
         if ($force2fa === AuthenticationMode::UseProfileSetting->value && array_key_exists('two_factor_mode', $validated)) {
             $member->two_factor_mode = (int) $validated['two_factor_mode'];
         }
@@ -335,9 +335,9 @@ class AdminProfileController extends AdminLoggedInController
             $member->two_factor_passkey_enabled = (bool) $validated['two_factor_passkey_enabled'];
         }
 
-        // default_two_factor_method の処理
-        if (array_key_exists('default_two_factor_method', $validated)) {
-            $member->default_two_factor_method = (int) $validated['default_two_factor_method'];
+        // default_two_fa_method の処理
+        if (array_key_exists('default_two_fa_method', $validated)) {
+            $member->default_two_fa_method = (int) $validated['default_two_fa_method'];
         }
 
         $member->save();
