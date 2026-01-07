@@ -129,7 +129,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <fieldset>
             <legend>{{ $requirePassword ? __('common.password') : __('admin/profile.password_change_only') }}</legend>
-            <x-password-tools
+            <x-password_tools
                 id="password"
                 name="password"
                 :required="$requirePassword"
@@ -355,7 +355,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             }
         @endphp
         
-        <x-login-notification-selector
+        <x-login_notification_selector
             name="login_notification_mode"
             :value="old('login_notification_mode', (string)$currentLoginNotification)"
             :globalSetting="$loginNotificationMode"
@@ -383,7 +383,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             $initialPasskeyEnabled = old('two_fa_passkey_enabled', $member->two_fa_passkey_enabled ?? true);
         @endphp
         
-        <x-two-fa-auth-selector
+        <x-two_fa_auth_selector
             name="two_fa_mode"
             :value="old('two_fa_mode', (string)$currentTwoFaMode)"
             :globalSetting="$force2fa"
@@ -410,7 +410,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </p>
         </div>
         
-        <x-two-fa-management
+        <x-two_fa_management
             :passkeyEnabled="$passkeyEnabled"
             :passkeyDevices="$passkeyDevices"
             :hasRecoveryCodes="$hasRecoveryCodes"

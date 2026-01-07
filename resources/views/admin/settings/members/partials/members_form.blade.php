@@ -136,7 +136,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <fieldset>
             <legend>{{ $requirePassword ? __('common.password') : __('admin/profile.password_change_only') }}</legend>
-            <x-password-tools
+            <x-password_tools
                 id="password"
                 name="password"
                 :required="$requirePassword"

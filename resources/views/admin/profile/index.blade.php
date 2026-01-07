@@ -129,7 +129,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             
             <fieldset>
                 <legend>{{ __('admin/profile.password_change_only') }}</legend>
-                <x-password-tools
+                <x-password_tools
                     name="password"
                     id="profile_password"
                     :required="false"
@@ -173,7 +173,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <section class="transition-colors-unified">
             <h2>{{ __('auth.login_notification_mode.label') }}</h2>
-            <x-login-notification-selector
+            <x-login_notification_selector
                 name="login_notification_mode"
                 :value="old('login_notification_mode', (string) $loginNotificationModeValue)"
                 :globalSetting="(int) ($loginNoticeGlobal ?? 0)"
@@ -192,7 +192,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <section class="transition-colors-unified">
                 <h2>{{ __('auth.two_fa_mode.label') }}</h2>
                 
-                <x-two-fa-auth-selector
+                <x-two_fa_auth_selector
                     name="two_fa_mode"
                     :value="old('two_fa_mode', (string) ($twoFaMode?->value ?? 0))"
                     :globalSetting="$force2fa"
@@ -208,7 +208,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- 2FA管理セクション（メールサーバー設定済み、かつ二段階認証が有効の場合のみ表示） -->
     @if($isMailServerTested && $force2fa !== \App\Enums\AuthenticationMode::Disabled->value)
-        <x-two-fa-management
+        <x-two_fa_management
             :passkeyEnabled="$passkeyEnabled"
             :passkeyDevices="$passkeyDevices"
             :hasRecoveryCodes="$hasRecoveryCodes"
