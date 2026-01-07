@@ -12,7 +12,7 @@
         $verifyAction = $action ?? route('admin.two-fa.email.verify');
         $resendRoute = $resendAction ?? route('admin.two-fa.email.resend');
     @endphp
-    @include('two-factor.partials.email-challenge', [
+    @include('two_factor.partials.email_challenge', [
         'action' => $verifyAction,
         'resendAction' => $resendRoute,
         'title' => __('two-factor.email.code_title'),
@@ -25,7 +25,7 @@
     ])
 
     <!-- 別の認証方法へのリンク -->
-    @include('two-factor.partials.alternative-methods', [
+    @include('two_factor.partials.alternative_methods', [
         'methods' => $availableMethods,
         'currentMethod' => $currentMethod,
         'context' => 'admin'

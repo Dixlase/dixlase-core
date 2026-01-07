@@ -158,6 +158,8 @@ class AdminMemberController extends AdminLoggedInController
         
         unset($validated['email_verified']);
 
+
+
         $member = Member::create($validated);
 
         if ($isMailServerTested && $emailVerified === '0') {
@@ -210,7 +212,7 @@ class AdminMemberController extends AdminLoggedInController
 
         $this->loadMemberFormParams();
 
-        $passkeyEnabled = $this->memberSettingRepository->get('enabled_two_fa_passkey', '0') === '1';
+        $passkeyEnabled = $this->memberSettingRepository->get('two_fa_passkey_enabled', '0') === '1';
         $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
         $this->viewParams['passkeyDevices'] = $passkeyService->getDevices($member);
         $this->viewParams['passkeyEnabled'] = $passkeyEnabled;
@@ -342,7 +344,7 @@ class AdminMemberController extends AdminLoggedInController
         ];
         
         // 全体設定でパスキー認証が有効な場合は追加
-        $passkeyEnabled = $this->memberSettingRepository->get('enabled_two_fa_passkey', '0') === '1';
+        $passkeyEnabled = $this->memberSettingRepository->get('two_fa_passkey_enabled', '0') === '1';
         if ($passkeyEnabled) {
             $twoFactorMethodOptions[TwoFaMethod::PASSKEY->value] = TwoFaMethod::PASSKEY->translationKey();
         }
@@ -353,7 +355,7 @@ class AdminMemberController extends AdminLoggedInController
         $this->viewParams['enabledTwoFaMethods'] = $twoFactorMethodOptions;
         $this->viewParams['defaultTwoFaMethod'] = $defaultTwoFaMethod;
         $this->viewParams['passkeyEnabled'] = $passkeyEnabled;
-        $this->viewParams['twoFactorMode'] = AuthenticationMode::from($this->viewParams['force2fa']);
+        $this->viewParams['twoFaMode'] = AuthenticationMode::from($this->viewParams['force2fa']);
         $this->viewParams['twoFactorUseProfileSettingValue'] = AuthenticationMode::UseProfileSetting->value;
         $this->viewParams['loginNotificationUseProfileSettingValue'] = AuthenticationMode::UseProfileSetting->value;
         $this->viewParams['isMailServerTested'] = $this->isMailServerTested();

@@ -163,7 +163,7 @@ class AdminProfileController extends AdminLoggedInController
         $twoFaMode = Auth::guard('member')->user()->two_fa_mode;
 
         // グローバル設定で有効な二段階認証方法を取得
-        $passkeyEnabled = MemberSetting::getValue('enabled_two_fa_passkey', '0') === '1';
+        $passkeyEnabled = MemberSetting::getValue('two_fa_passkey_enabled', '0') === '1';
         
         // メール認証は常に有効、Passkeyは設定に応じて（連想配列形式）
         $enabledTwoFaMethods = [

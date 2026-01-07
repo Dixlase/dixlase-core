@@ -136,12 +136,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 />
             @endif
             <x-two_fa_auth_selector
-                name="force_2fa"
-                :value="old('force_2fa', (string) $force2fa)"
+                name="force_two_fa"
+                :value="old('force_two_fa', (string) $force2fa)"
                 :globalSetting="null"
                 :excludeUseProfileSetting="false"
                 :passkeyGloballyEnabled="true"
-                :passkeyEnabled="old('enabled_2fa_passkey', $passkeyEnabled ?? false)"
+                :passkeyEnabled="old('two_fa_passkey_enabled', $passkeyEnabled ?? false)"
                 :defaultTwoFaMethod="'0'"
                 :columns="4"
                 :globalSettingsUrl="null"
@@ -201,15 +201,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 <div class="space-y-4">
                     <div>
-                        <label for="2fa_max_attempts" class="block text-sm font-medium">
+                        <label for="two_fa_max_attempts" class="block text-sm font-medium">
                             {{ __('admin/members/settings/auth.2fa_max_attempts') }}
                         </label>
                         <div class="mt-1 flex items-center space-x-2">
                             <x-form.text
                                 type="number"
-                                id="2fa_max_attempts"
-                                name="2fa_max_attempts"
-                                :value="old('2fa_max_attempts', $twoFaMaxAttempts)"
+                                id="two_fa_max_attempts"
+                                name="two_fa_max_attempts"
+                                :value="old('two_fa_max_attempts', $twoFaMaxAttempts)"
                                 :min="1"
                                 :max="10"
                                 class="input-common input-sm"
@@ -222,15 +222,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
 
                     <div>
-                        <label for="2fa_attempt_window" class="block text-sm font-medium">
+                        <label for="two_fa_attempt_window" class="block text-sm font-medium">
                             {{ __('admin/members/settings/auth.2fa_attempt_window') }}
                         </label>
                         <div class="mt-1 flex items-center space-x-2">
                             <x-form.text
                                 type="number"
-                                id="2fa_attempt_window"
-                                name="2fa_attempt_window"
-                                :value="old('2fa_attempt_window', $twoFaAttemptWindow)"
+                                id="two_fa_attempt_window"
+                                name="two_fa_attempt_window"
+                                :value="old('two_fa_attempt_window', $twoFaAttemptWindow)"
                                 :min="5"
                                 :max="60"
                                 class="input-common input-sm"
@@ -243,15 +243,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
 
                     <div>
-                        <label for="2fa_lockout_duration" class="block text-sm font-medium">
+                        <label for="two_fa_lockout_duration" class="block text-sm font-medium">
                             {{ __('admin/members/settings/auth.2fa_lockout_duration') }}
                         </label>
                         <div class="mt-1 flex items-center space-x-2">
                             <x-form.text
                                 type="number"
-                                id="2fa_lockout_duration"
-                                name="2fa_lockout_duration"
-                                :value="old('2fa_lockout_duration', $twoFaLockoutDuration)"
+                                id="two_fa_lockout_duration"
+                                name="two_fa_lockout_duration"
+                                :value="old('two_fa_lockout_duration', $twoFaLockoutDuration)"
                                 :min="5"
                                 :max="1440"
                                 class="input-common input-sm"

@@ -456,7 +456,7 @@ class AdminLoginController extends AdminController
         $currentMethod = TwoFaMethod::EMAIL->value;
 
         // Passkeyが有効かチェック
-        $passkeyEnabled = MemberSetting::getValue('enabled_two_fa_passkey', '0') === '1';
+        $passkeyEnabled = MemberSetting::getValue('two_fa_passkey_enabled', '0') === '1';
         
         // メンバーがPasskeyを登録しているかチェック
         $passkeyService = app(PasskeyAuthenticationService::class);
