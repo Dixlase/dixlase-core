@@ -976,7 +976,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endif
 
 <!-- 回復コード表示モーダル（手動生成用・エラー表示兼用） -->
-@include('two-factor.partials.recovery-codes-modal', [
+@include('two_factor.partials.recovery_codes_modal', [
     'modalId' => 'manualRecoveryCodesModal',
     'title' => __('two-factor.recovery_codes.title'),
     'codes' => [],
@@ -984,11 +984,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 ])
 
 <!-- Passkeyデバイス名入力モーダル -->
-@include('two-factor.partials.passkey-device-name-modal', [
+@include('two_factor.partials.passkey_device_name_modal', [
     'modalId' => 'passkeyDeviceNameModal'
 ])
 
 <!-- Passkey登録結果モーダル -->
-@include('two-factor.partials.passkey-result-modal', [
+@include('two_factor.partials.passkey_result_modal', [
     'modalId' => 'passkeyResultModal'
 ])

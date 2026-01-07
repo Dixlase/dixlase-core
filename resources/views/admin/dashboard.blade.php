@@ -37,7 +37,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- 認証方法変更確認モーダル -->
     @if($shouldShowMethodChangeModal ?? false)
-        @include('two-factor.partials.method-change-modal', [
+        @include('two_factor.partials.method_change_modal', [
             'modalId' => 'methodChangeModal',
             'usedMethod' => $usedMethod,
             'currentMethod' => $currentMethod,
@@ -47,7 +47,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- 自動生成された回復コード表示モーダル -->
     @if(session('auto_generated_recovery_codes'))
-        @include('two-factor.partials.recovery-codes-modal', [
+        @include('two_factor.partials.recovery-codes-modal', [
             'modalId' => 'recoveryCodesModal',
             'title' => __('two-factor.recovery_codes.auto_generated_title'),
             'codes' => session('auto_generated_recovery_codes'),

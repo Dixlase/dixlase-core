@@ -123,11 +123,11 @@ class AdminMemberSettingsController extends AdminLoggedInController
             ->values()
             ->toArray();
         
-        $passkeyDbValue = $this->memberSettingRepository->get('enabled_two_fa_passkey', '0');
+        $passkeyDbValue = $this->memberSettingRepository->get('two_fa_passkey_enabled', '0');
         $passkeyEnabled = $passkeyDbValue === '1';
         
-        if (old('enabled_two_fa_passkey') !== null) {
-            $passkeyEnabled = (bool) old('enabled_two_fa_passkey');
+        if (old('two_fa_passkey_enabled') !== null) {
+            $passkeyEnabled = (bool) old('two_fa_passkey_enabled');
         }
 
         $passwordResetEnabled = (bool) $this->memberSettingRepository->get('password_reset_enabled', true);

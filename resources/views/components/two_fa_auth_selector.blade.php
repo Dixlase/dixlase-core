@@ -32,7 +32,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @php
     use App\Enums\AuthenticationMode;
-    use App\Enums\TwoFactorMethod;
+    use App\Enums\TwoFaMethod;
     
     // 全体設定が「プロフィール設定を反映」の場合、またはglobalSettingがnull（全体設定画面）の場合は設定を表示
     $showSettings = ($globalSetting === AuthenticationMode::UseProfileSetting->value) || ($globalSetting === null);
@@ -118,7 +118,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :options="$options"
                 :value="$value"
                 :columns="$columns"
-                xModel="twoFactorMode"
+                xModel="twoFaMode"
             />
             <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{!! __('components.two_fa.help') !!}</p>
         </fieldset>

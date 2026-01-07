@@ -21,7 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('layouts.admin')
 
 @section('content')
-    @include('admin.members.partials.members-form', [
+    @include('admin.members.partials.members_form', [
         'member' => $member,
         'requirePassword' => false,
         'passwordMinLength' => $passwordMinLength,
@@ -79,7 +79,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     />
 
     <!-- Passkey結果表示モーダル -->
-    @include('two-factor.partials.passkey-result-modal', [
+    @include('two_factor.partials.passkey_result_modal', [
         'modalId' => 'passkeyResultModal'
     ])
 @endsection
