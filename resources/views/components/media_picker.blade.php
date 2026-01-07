@@ -76,7 +76,7 @@
 
 <!-- メディア選択モーダル -->
 @push('modals')
-    <x-media-selector
+    <x-media_selector
         :id="$selectorId"
         :inputId="$inputId"
         :previewId="$previewId"

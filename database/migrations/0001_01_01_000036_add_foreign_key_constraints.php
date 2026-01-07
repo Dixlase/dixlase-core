@@ -54,24 +54,24 @@ return new class extends Migration
                 ->nullOnDelete();
         });
 
-        // members_2fa_attempts.member_id -> members.id
-        Schema::table('members_2fa_attempts', function (Blueprint $table) {
+        // members_two_fa_attempts.member_id -> members.id
+        Schema::table('members_two_fa_attempts', function (Blueprint $table) {
             $table->foreign('member_id')
                 ->references('id')
                 ->on('members')
                 ->cascadeOnDelete();
         });
 
-        // members_2fa_recovery_codes.member_id -> members.id
-        Schema::table('members_2fa_recovery_codes', function (Blueprint $table) {
+        // members_two_fa_recovery_codes.member_id -> members.id
+        Schema::table('members_two_fa_recovery_codes', function (Blueprint $table) {
             $table->foreign('member_id')
                 ->references('id')
                 ->on('members')
                 ->cascadeOnDelete();
         });
 
-        // members_2fa_tokens.member_id -> members.id
-        Schema::table('members_2fa_tokens', function (Blueprint $table) {
+        // members_two_fa_tokens.member_id -> members.id
+        Schema::table('members_two_fa_tokens', function (Blueprint $table) {
             $table->foreign('member_id')
                 ->references('id')
                 ->on('members')
@@ -183,18 +183,18 @@ return new class extends Migration
             $table->dropForeign(['member_id']);
         });
 
-        // members_2fa_tokens
-        Schema::table('members_2fa_tokens', function (Blueprint $table) {
+        // members_two_fa_tokens
+        Schema::table('members_two_fa_tokens', function (Blueprint $table) {
             $table->dropForeign(['member_id']);
         });
 
-        // members_2fa_recovery_codes
-        Schema::table('members_2fa_recovery_codes', function (Blueprint $table) {
+        // members_two_fa_recovery_codes
+        Schema::table('members_two_fa_recovery_codes', function (Blueprint $table) {
             $table->dropForeign(['member_id']);
         });
 
-        // members_2fa_attempts
-        Schema::table('members_2fa_attempts', function (Blueprint $table) {
+        // members_two_fa_attempts
+        Schema::table('members_two_fa_attempts', function (Blueprint $table) {
             $table->dropForeign(['member_id']);
         });
 

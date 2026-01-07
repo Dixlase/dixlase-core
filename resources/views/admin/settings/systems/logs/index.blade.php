@@ -197,7 +197,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </div>
 
     <!-- Pagination Controls -->
-    <x-pagination-controls
+    <x-pagination_controls
         :paginator="$auditLogs"
         :perPageOptions="[25, 50, 100, 200]"
         :currentPerPage="request('per_page', 50)"
@@ -301,7 +301,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </section>
 
     <!-- Pagination Controls -->
-    <x-pagination-controls
+    <x-pagination_controls
         :paginator="$auditLogs"
         :perPageOptions="[25, 50, 100, 200]"
         :currentPerPage="request('per_page', 50)"
