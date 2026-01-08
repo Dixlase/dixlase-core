@@ -28,8 +28,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'passwordRequireSymbol' => false,
     'roles' => [],
     'twoFaMode' => null,
-    'enabledTwoFaMethods' => [],
-    'defaultTwoFaMethod' => null,
+    'twoFaEnabledMethods' => [],
+    'twoFaDefaultMethod' => null,
     'isInitialAdmin' => false,
     'isMailServerTested' => false,
     'formAction' => null,        // フォームのaction URL
@@ -379,7 +379,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             if ($currentTwoFaMode instanceof \App\Enums\AuthenticationMode) {
                 $currentTwoFaMode = $currentTwoFaMode->value;
             }
-            $passkeyGloballyEnabled = in_array(\App\Enums\TwoFaMethod::PASSKEY->value, array_keys($enabledTwoFaMethods ?? []));
+            $twoFaPasskeyGloballyEnabled = in_array(\App\Enums\TwoFaMethod::PASSKEY->value, array_keys($twoFaEnabledMethods ?? []));
             $initialPasskeyEnabled = old('two_fa_passkey_enabled', $member->two_fa_passkey_enabled ?? true);
         @endphp
         
@@ -388,9 +388,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :value="old('two_fa_mode', (string)$currentTwoFaMode)"
             :globalSetting="$forceTwoFa"
             :excludeUseProfileSetting="true"
-            :passkeyGloballyEnabled="$passkeyGloballyEnabled"
+            :passkeyGloballyEnabled="$twoFaPasskeyGloballyEnabled"
             :passkeyEnabled="$initialPasskeyEnabled"
-            :defaultTwoFaMethod="(string)($member->default_two_fa_method ?? $defaultTwoFaMethod)"
+            :defaultTwoFaMethod="(string)($member->default_two_fa_method ?? $twoFaDefaultMethod)"
             :columns="3"
             :globalSettingsUrl="route('admin.members.settings.auth')"
         />
@@ -411,7 +411,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
         
         <x-two-fa-management
-            :passkeyEnabled="$passkeyEnabled"
+            :passkeyEnabled="$twoFaPasskeyEnabled"
             :passkeyDevices="$passkeyDevices"
             :hasRecoveryCodes="$hasRecoveryCodes"
             :recoveryCodesCount="$recoveryCodesCount"

@@ -333,34 +333,34 @@ class AdminMemberController extends AdminLoggedInController
         $this->viewParams['twoFactorModeLabel'] = $twoFactorEnum ? $twoFactorEnum->twoFactorLabel() : '';
         
         // radio-card-group用の二段階認証オプション配列を生成
-        $twoFactorOptions = [];
+        $twoFaModeOptions = [];
         foreach (AuthenticationMode::forProfile() as $case) {
-            $twoFactorOptions[] = [
+            $twoFaModeOptions[] = [
                 'value' => (string)$case->value,
                 'label' => $case->twoFactorLabel(),
             ];
         }
-        $this->viewParams['twoFactorModeOptions'] = $twoFactorOptions;
+        $this->viewParams['twoFactorModeOptions'] = $twoFaModeOptions;
         
         // メール認証は常に有効
-        $twoFactorMethodOptions = [
+        $twoFaMethodOptions = [
             TwoFaMethod::EMAIL->value => TwoFaMethod::EMAIL->translationKey(),
         ];
         
         // 全体設定でパスキー認証が有効な場合は追加
         $twoFaPasskeyEnabled = $this->memberSettingRepository->get('two_fa_passkey_enabled', '0') === '1';
         if ($twoFaPasskeyEnabled) {
-            $twoFactorMethodOptions[TwoFaMethod::PASSKEY->value] = TwoFaMethod::PASSKEY->translationKey();
+            $twoFaMethodOptions[TwoFaMethod::PASSKEY->value] = TwoFaMethod::PASSKEY->translationKey();
         }
         
         // デフォルトの認証方法を取得
         $twoFaDefaultMethod = (int) $this->memberSettingRepository->get('default_two_fa_method', TwoFaMethod::EMAIL->value);
         
-        $this->viewParams['enabledTwoFaMethods'] = $twoFactorMethodOptions;
-        $this->viewParams['defaultTwoFaMethod'] = $twoFaDefaultMethod;
-        $this->viewParams['passkeyEnabled'] = $twoFaPasskeyEnabled;
+        $this->viewParams['twoFaEnabledMethods'] = $twoFaMethodOptions;
+        $this->viewParams['twoFaDefaultMethod'] = $twoFaDefaultMethod;
+        $this->viewParams['twoFaPasskeyEnabled'] = $twoFaPasskeyEnabled;
         $this->viewParams['twoFaMode'] = AuthenticationMode::from($this->viewParams['forceTwoFa']);
-        $this->viewParams['twoFactorUseProfileSettingValue'] = AuthenticationMode::UseProfileSetting->value;
+        $this->viewParams['twoFaUseProfileSettingValue'] = AuthenticationMode::UseProfileSetting->value;
         $this->viewParams['loginNotificationUseProfileSettingValue'] = AuthenticationMode::UseProfileSetting->value;
         $this->viewParams['isMailServerTested'] = $this->isMailServerTested();
     }

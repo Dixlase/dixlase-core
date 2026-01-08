@@ -155,26 +155,31 @@ class AdminMemberSettingsController extends AdminLoggedInController
         $isMailServerTested = $this->isMailServerTested();
         $mailConnectionTestDate = BaseSetting::getValue('mail_connection_test_date');
 
+        // パスワード設定
         $this->viewParams['passwordMinLength'] = $passwordMinLength;
         $this->viewParams['passwordRequireUppercase'] = $passwordRequireUppercase;
         $this->viewParams['passwordRequireLowercase'] = $passwordRequireLowercase;
         $this->viewParams['passwordRequireNumber'] = $passwordRequireNumber;
         $this->viewParams['passwordRequireSymbol'] = $passwordRequireSymbol;
         $this->viewParams['minLengthOptions'] = $minLengthOptions;
-        $this->viewParams['loginNotification'] = $loginNotification;
-        $this->viewParams['loginNotificationGlobalOptions'] = $loginNotificationGlobalOptions;
-        $this->viewParams['forceTwoFa'] = $twoFaForceMode;
-        $this->viewParams['twoFactorGlobalOptions'] = $twoFactorGlobalOptions;
-        $this->viewParams['passkeyMode'] = $twoFaPasskeyMode;
         $this->viewParams['passwordResetEnabled'] = $passwordResetEnabled;
         $this->viewParams['pwnedPasswordCheckEnabled'] = $pwnedPasswordCheckEnabled;
+
+        // ログイン通知設定
+        $this->viewParams['loginNotification'] = $loginNotification;
+        $this->viewParams['loginNotificationGlobalOptions'] = $loginNotificationGlobalOptions;
+
+        // ログイン試行制限設定
         $this->viewParams['loginAttemptLimitEnabled'] = $loginAttemptLimitEnabled;
         $this->viewParams['loginAttemptMaxAttempts'] = $loginAttemptMaxAttempts;
         $this->viewParams['loginAttemptTimeWindow'] = $loginAttemptTimeWindow;
         $this->viewParams['loginAttemptLockoutDuration'] = $loginAttemptLockoutDuration;
         $this->viewParams['lockoutNotificationEnabled'] = $lockoutNotificationEnabled;
-        $this->viewParams['membersSessionLifetimeEnabled'] = $membersSessionLifetimeEnabled;
-        $this->viewParams['membersSessionLifetime'] = $membersSessionLifetime;
+
+        // 二段階認証設定
+        $this->viewParams['twoFaForceMode'] = $twoFaForceMode;
+        $this->viewParams['twoFaGlobalOptions'] = $twoFactorGlobalOptions;
+        $this->viewParams['twoFaPasskeyMode'] = $twoFaPasskeyMode;
         $this->viewParams['twoFaExpireMinutes'] = $twoFaExpireMinutes;
         $this->viewParams['twoFaResendIntervalSeconds'] = $twoFaResendIntervalSeconds;
         $this->viewParams['twoFaMaxAttempts'] = $twoFaMaxAttempts;
@@ -183,9 +188,16 @@ class AdminMemberSettingsController extends AdminLoggedInController
         $this->viewParams['twoFaLockoutNotificationEnabled'] = $twoFaLockoutNotificationEnabled;
         $this->viewParams['recoveryCodesCount'] = $recoveryCodesCount;
         $this->viewParams['recoveryCodeRegenerateInterval'] = $recoveryCodeRegenerateInterval;
+
+        // セッション設定
+        $this->viewParams['membersSessionLifetimeEnabled'] = $membersSessionLifetimeEnabled;
+        $this->viewParams['membersSessionLifetime'] = $membersSessionLifetime;
+
+        // メールサーバー設定状態
         $this->viewParams['isMailServerTested'] = $isMailServerTested;
         $this->viewParams['mailConnectionTestDate'] = $mailConnectionTestDate;
 
+        // CAPTCHA設定
         $captchaEnabled = filter_var(SecuritySetting::get('captcha_enabled', false), FILTER_VALIDATE_BOOLEAN);
         $captchaAuthenticationResult = filter_var(SecuritySetting::get('captcha_authentication_result', false), FILTER_VALIDATE_BOOLEAN);
         $captchaAdminLoginEnabled = (bool) $this->memberSettingRepository->get('captcha_admin_login_enabled', false);
