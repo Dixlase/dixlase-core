@@ -39,7 +39,7 @@ class RecoveryCodeServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new RecoveryCodeService();
+        $this->service = new TwoFaRecoveryCodeService();
     }
 
     /**

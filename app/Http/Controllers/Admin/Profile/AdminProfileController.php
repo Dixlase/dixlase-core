@@ -256,11 +256,11 @@ class AdminProfileController extends AdminLoggedInController
         $this->viewParams['isMailServerTested'] = MailServerValidatorService::isMailServerTested();
 
         // Passkeyデバイス一覧を取得
-        $twoFaPasskeyService = app(\App\Services\PasskeyAuthenticationService::class);
+        $twoFaPasskeyService = app(\App\Services\TwoFaPasskeyService::class);
         $this->viewParams['twoFaPasskeyDevices'] = $twoFaPasskeyService->getDevices($user);
 
         // 回復コード情報を取得
-        $twoFaRecoveryCodeService = app(\App\Services\RecoveryCodeService::class);
+        $twoFaRecoveryCodeService = app(\App\Services\TwoFaRecoveryCodeService::class);
         $this->viewParams['twoFaRecoveryCodesCount'] = $twoFaRecoveryCodeService->getRemainingCount($user);
         $this->viewParams['twoFaHasRecoveryCodes'] = $twoFaRecoveryCodeService->hasRecoveryCodes($user);
         $this->viewParams['twoFaCanRegenerateRecoveryCodes'] = $twoFaRecoveryCodeService->canRegenerate($user);
@@ -389,7 +389,7 @@ class AdminProfileController extends AdminLoggedInController
             if ($twoFaOldMode === AuthenticationMode::Disabled->value && 
                 $twoFaNewMode === AuthenticationMode::Always->value) {
                 
-                $twoFaRecoveryCodeService = app(\App\Services\RecoveryCodeService::class);
+                $twoFaRecoveryCodeService = app(\App\Services\TwoFaRecoveryCodeService::class);
                 
                 // 回復コードが存在しない場合は生成
                 $twoFaHasRecoveryCodes = $twoFaRecoveryCodeService->hasRecoveryCodes($member);
@@ -511,7 +511,7 @@ class AdminProfileController extends AdminLoggedInController
     public function passkeyRegisterOptions(Request $request)
     {
         $member = Auth::guard('member')->user();
-        $twoFaPasskeyService = app(\App\Services\PasskeyAuthenticationService::class);
+        $twoFaPasskeyService = app(\App\Services\TwoFaPasskeyService::class);
         
         try {
             // WebAuthn登録チャレンジを生成
@@ -550,7 +550,7 @@ class AdminProfileController extends AdminLoggedInController
             'device_name' => 'nullable|string|max:255',
         ]);
 
-        $twoFaPasskeyService = app(\App\Services\PasskeyAuthenticationService::class);
+        $twoFaPasskeyService = app(\App\Services\TwoFaPasskeyService::class);
         
         try {
             // WebAuthn認証情報を登録
@@ -599,7 +599,7 @@ class AdminProfileController extends AdminLoggedInController
             'display_name' => $member->display_name ?? $member->account_name,
         ]);
         
-        $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
+        $passkeyService = app(\App\Services\TwoFaPasskeyService::class);
         
         try {
             // 一括削除の場合
@@ -689,7 +689,7 @@ class AdminProfileController extends AdminLoggedInController
     public function revokeAllPasskeys(Request $request)
     {
         $member = Auth::guard('member')->user();
-        $twoFaPasskeyService = app(\App\Services\PasskeyAuthenticationService::class);
+        $twoFaPasskeyService = app(\App\Services\TwoFaPasskeyService::class);
         
         try {
             // すべてのPasskeyを取得して削除
@@ -733,7 +733,7 @@ class AdminProfileController extends AdminLoggedInController
     {
         $member = Auth::guard('member')->user();
         $twoFactorHelper = app(\App\Helpers\TwoFaHelper::class);
-        $twoFaRecoveryCodeService = app(\App\Services\RecoveryCodeService::class);
+        $twoFaRecoveryCodeService = app(\App\Services\TwoFaRecoveryCodeService::class);
 
         // 既に回復コードが存在する場合は再生成として扱う
         if ($twoFaRecoveryCodeService->hasRecoveryCodes($member)) {

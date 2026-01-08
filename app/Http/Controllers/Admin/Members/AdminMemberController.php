@@ -213,11 +213,11 @@ class AdminMemberController extends AdminLoggedInController
         $this->loadMemberFormParams();
 
         $twoFaPasskeyEnabled = $this->memberSettingRepository->get('two_fa_passkey_enabled', '0') === '1';
-        $twoFaPasskeyService = app(\App\Services\PasskeyAuthenticationService::class);
+        $twoFaPasskeyService = app(\App\Services\TwoFaPasskeyService::class);
         $this->viewParams['twoFaPasskeyDevices'] = $twoFaPasskeyService->getDevices($member);
         $this->viewParams['twoFaPasskeyEnabled'] = $twoFaPasskeyEnabled;
 
-        $twoFaRecoveryCodeService = app(\App\Services\RecoveryCodeService::class);
+        $twoFaRecoveryCodeService = app(\App\Services\TwoFaRecoveryCodeService::class);
         $this->viewParams['twoFaRecoveryCodesCount'] = $twoFaRecoveryCodeService->getRemainingCount($member);
         $this->viewParams['twoFaHasRecoveryCodes'] = $twoFaRecoveryCodeService->hasRecoveryCodes($member);
 
@@ -437,7 +437,7 @@ class AdminMemberController extends AdminLoggedInController
      */
     public function revokePasskey(Request $request, Member $member, string $credentialId)
     {
-        $twoFaPasskeyService = app(\App\Services\PasskeyAuthenticationService::class);
+        $twoFaPasskeyService = app(\App\Services\TwoFaPasskeyService::class);
         
         try {
             if ($credentialId === 'all') {
@@ -481,7 +481,7 @@ class AdminMemberController extends AdminLoggedInController
      */
     public function revokeRecoveryCodes(Request $request, Member $member)
     {
-        $twoFaRecoveryCodeService = app(\App\Services\RecoveryCodeService::class);
+        $twoFaRecoveryCodeService = app(\App\Services\TwoFaRecoveryCodeService::class);
         
         try {
             $deletedCount = $twoFaRecoveryCodeService->revokeAll($member);

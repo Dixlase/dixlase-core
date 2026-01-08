@@ -8,7 +8,7 @@ use App\Models\MembersTrustedDevice;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
-class PasskeyAuthenticationService
+class TwoFaPasskeyService
 {
     /**
      * Passkeyが利用可能かどうか

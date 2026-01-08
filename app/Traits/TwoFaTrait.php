@@ -182,7 +182,7 @@ trait TwoFaTrait
      */
     protected function isFromTrustedDevice($user): bool
     {
-        $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
+        $passkeyService = app(\App\Services\TwoFaPasskeyService::class);
         return $passkeyService->isTrustedDevice($user);
     }
 

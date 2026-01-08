@@ -14,15 +14,15 @@ class AdminTwoFaService
 {
     protected TwoFaHelper $helper;
     protected EmailAuthenticationService $emailAuth;
-    protected PasskeyAuthenticationService $passkeyAuth;
-    protected RecoveryCodeService $recoveryCode;
+    protected TwoFaPasskeyService $passkeyAuth;
+    protected TwoFaRecoveryCodeService $recoveryCode;
     protected TwoFaAttemptService $attemptService;
 
     public function __construct(
         TwoFaHelper $helper,
         EmailAuthenticationService $emailAuth,
-        PasskeyAuthenticationService $passkeyAuth,
-        RecoveryCodeService $recoveryCode,
+        TwoFaPasskeyService $passkeyAuth,
+        TwoFaRecoveryCodeService $recoveryCode,
         TwoFaAttemptService $attemptService
     ) {
         $this->helper = $helper;

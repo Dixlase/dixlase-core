@@ -132,7 +132,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
      */
     public function revokePasskey(Request $request, Member $member, string $credentialId)
     {
-        $twoFaPasskeyService = app(\App\Services\PasskeyAuthenticationService::class);
+        $twoFaPasskeyService = app(\App\Services\TwoFaPasskeyService::class);
         
         try {
             if ($credentialId === 'all') {
@@ -176,7 +176,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
      */
     public function revokeRecoveryCodes(Request $request, Member $member)
     {
-        $twoFaRecoveryCodeService = app(\App\Services\RecoveryCodeService::class);
+        $twoFaRecoveryCodeService = app(\App\Services\TwoFaRecoveryCodeService::class);
         
         try {
             $deletedCount = $twoFaRecoveryCodeService->revokeAll($member);
