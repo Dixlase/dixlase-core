@@ -270,22 +270,6 @@ return [
         'published_description' => '即座に公開されます。',
     ],
 
-    // ログイン通知
-    /*
-    'login_notification' => 'ログイン通知',
-    'login_notification_mode' => [
-        'label' => 'ログイン通知モード',
-        'help' => 'ログイン時にメール通知を送信するタイミングを設定します。',
-        'options' => [
-            0 => '無効',
-            1 => '新しいデバイスのみ',
-            2 => '常に通知',
-            3 => 'メンバーのプロフィール設定に従う',
-        ],
-    ],
-    'notification_settings' => '通知設定',
-    */
-
     // 全体設定による制御メッセージ（アカウント種別対応）
     'global_setting_fixed' => [
         'two_fa' => 'この設定は:account_type全体設定で制御されており、変更できません。',

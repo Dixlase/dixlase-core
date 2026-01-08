@@ -57,6 +57,7 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
             // 管理メンバー用セッション設定
             'members_session_lifetime_enabled' => filter_var($this->input('members_session_lifetime_enabled'), FILTER_VALIDATE_BOOLEAN),
             // 二段階認証設定
+            'passkey_two_fa_enabled' => filter_var($this->input('passkey_two_fa_enabled'), FILTER_VALIDATE_BOOLEAN),
             'two_fa_passkey_enabled' => filter_var($this->input('two_fa_passkey_enabled'), FILTER_VALIDATE_BOOLEAN),
             'two_fa_lockout_notification_enabled' => filter_var($this->input('two_fa_lockout_notification_enabled'), FILTER_VALIDATE_BOOLEAN),
             // CAPTCHA設定
@@ -98,6 +99,7 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
             'force_two_fa' => ['required', new Enum(AuthenticationMode::class)],
             'two_fa_expire_minutes' => 'required|integer|min:1|max:60', // 1-60分（メール認証）
             'two_fa_resend_interval_seconds' => 'required|integer|min:60|max:600', // 60-600秒（1-10分）
+            'passkey_two_fa_enabled' => 'nullable|boolean',
             'two_fa_passkey_enabled' => 'nullable|boolean',
             'two_fa_max_attempts' => 'required|integer|min:1|max:10',
             'two_fa_attempt_window' => 'required|integer|min:5|max:60',

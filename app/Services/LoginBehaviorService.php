@@ -222,7 +222,7 @@ class LoginBehaviorService
             'unique_users' => $attempts->pluck('identifier')->unique()->count(),
             'unique_ips' => $attempts->pluck('ip_address')->unique()->count(),
             'high_risk_count' => $attempts->where('risk_score', '>=', 50)->count(),
-            'used_2fa_count' => $attempts->where('used_2fa', true)->count(),
+            'used_two_fa_count' => $attempts->where('used_two_fa', true)->count(),
             'failure_reasons' => $attempts->where('successful', false)
                 ->pluck('failure_reason')
                 ->filter()

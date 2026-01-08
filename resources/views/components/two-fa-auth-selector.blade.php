@@ -37,8 +37,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     // 全体設定が「プロフィール設定を反映」の場合、またはglobalSettingがnull（全体設定画面）の場合は設定を表示
     $showSettings = ($globalSetting === AuthenticationMode::UseProfileSetting->value) || ($globalSetting === null);
     
-    // 全体設定で固定されている場合
-    $isFixedByGlobal = !$showSettings && !$excludeUseProfileSetting && $globalSetting !== null;
+    // 全体設定で固定されている場合（excludeUseProfileSettingがtrueでも、globalSettingが0,1,2の場合は固定）
+    $isFixedByGlobal = !$showSettings && $globalSetting !== null;
     
     // オプションを取得
     if ($excludeUseProfileSetting) {
@@ -160,7 +160,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     {{-- 全体設定でパスキーが有効な場合、または全体設定画面の場合：個別に設定可能 --}}
                     <div class="flex items-center space-x-3" :class="{ 'opacity-50 pointer-events-none': !twoFaEnabled }">
                         <x-form.toggle
-                            name="two_fa_passkey_enabled"
+                            name="passkey_two_fa_enabled"
                             :label="__('components.two_fa.passkey')"
                             :checked="$initialPasskeyEnabled"
                             xModel="passkeyEnabled"
@@ -194,7 +194,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endif
         </div>
 
-        @error('two_fa_passkey_enabled')
+        @error('passkey_two_fa_enabled')
             <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
         @enderror
     </fieldset>

@@ -137,7 +137,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endif
             <x-two-fa-auth-selector
                 name="force_two_fa"
-                :value="old('force_two_fa', (string) $force2fa)"
+                :value="old('force_two_fa', (string) $forceTwoFa)"
                 :globalSetting="null"
                 :excludeUseProfileSetting="false"
                 :passkeyGloballyEnabled="true"

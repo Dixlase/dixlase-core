@@ -201,7 +201,7 @@ class AdminLoginController extends AdminController
         Log::info('[2FA Login] 二段階認証チェック', [
             'member_id' => $member->id,
             'email' => $member->email,
-            'has_2fa' => $twoFactor->has($member),
+            'has_two_fa' => $twoFactor->has($member),
             'mail_server_tested' => $mailServerTested,
             'two_fa_mode' => $member->two_fa_mode,
             'default_two_fa_method' => $member->default_two_fa_method,
@@ -218,7 +218,7 @@ class AdminLoginController extends AdminController
                 ]);
                 
                 return back()->withErrors([
-                    'email' => __('auth.2fa_locked_out', [
+                    'email' => __('auth.two_fa_locked_out', [
                         'minutes' => $lockoutStatus['remaining_minutes']
                     ]),
                 ]);

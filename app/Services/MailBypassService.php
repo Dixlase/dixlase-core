@@ -36,7 +36,7 @@ use Illuminate\Support\Facades\Log;
  * 
  * 特徴:
  * - 時間制限付き（最大120分）
- * - スコープ指定可能（2fa, password_reset, all）
+ * - スコープ指定可能（two_fa, password_reset, all）
  * - 監査ログに必ず記録
  * - 自動で期限切れ
  */
@@ -116,7 +116,7 @@ class MailBypassService
         // スコープが指定されている場合、スコープもチェック
         if ($scope !== null) {
             $data = Cache::get(self::CACHE_KEY_BYPASS_DATA, []);
-            $bypassScope = $data['scope'] ?? '2fa';
+            $bypassScope = $data['scope'] ?? 'two_fa';
             
             // 'all' スコープは全てにマッチ
             if ($bypassScope === 'all') {
@@ -132,9 +132,9 @@ class MailBypassService
     /**
      * 2FAメール認証をスキップすべきかチェック
      */
-    public static function shouldSkip2faMail(): bool
+    public static function shouldSkipTwoFaMail(): bool
     {
-        return self::isActive('2fa');
+        return self::isActive('two_fa');
     }
 
     /**

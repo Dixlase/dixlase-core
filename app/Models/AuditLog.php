@@ -132,13 +132,13 @@ class AuditLog extends Model
     public const ACTION_EMAIL_CHANGED = 'email_changed';
 
     // ========================================
-    // Action（アクション）定数 - 2FA関連
+    // Action（アクション）定数 - Two-FA関連
     // ========================================
-    public const ACTION_2FA_ENABLED = '2fa_enabled';
-    public const ACTION_2FA_DISABLED = '2fa_disabled';
-    public const ACTION_2FA_CODE_SENT = '2fa_code_sent';
-    public const ACTION_2FA_CODE_VERIFIED = '2fa_code_verified';
-    public const ACTION_2FA_CODE_FAILED = '2fa_code_failed';
+    public const ACTION_TWO_FA_ENABLED = 'two_fa_enabled';
+    public const ACTION_TWO_FA_DISABLED = 'two_fa_disabled';
+    public const ACTION_TWO_FA_CODE_SENT = 'two_fa_code_sent';
+    public const ACTION_TWO_FA_CODE_VERIFIED = 'two_fa_code_verified';
+    public const ACTION_TWO_FA_CODE_FAILED = 'two_fa_code_failed';
     public const ACTION_RECOVERY_CODE_USED = 'recovery_code_used';
     public const ACTION_PASSKEY_REGISTERED = 'passkey_registered';
     public const ACTION_PASSKEY_REVOKED = 'passkey_revoked';
