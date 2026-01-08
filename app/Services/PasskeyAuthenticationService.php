@@ -116,7 +116,7 @@ class PasskeyAuthenticationService
      */
     public function getMaxDevices(): int
     {
-        return (int) \App\Models\MemberSetting::getValue('max_passkey_devices', 3);
+        return (int) \App\Models\MemberSetting::getValue('two_fa_passkey_max_devices', 3);
     }
 
     /**

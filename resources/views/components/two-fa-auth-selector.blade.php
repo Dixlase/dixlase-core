@@ -155,31 +155,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
                     <span class="text-xs text-gray-500 dark:text-gray-400">{{ __('components.two_fa.email_always_enabled') }}</span>
                 </div>
-                
-                @if($passkeyGloballyEnabled || $globalSetting === null)
-                    {{-- 全体設定でパスキーが有効な場合、または全体設定画面の場合：個別に設定可能 --}}
-                    <div class="flex items-center space-x-3" :class="{ 'opacity-50 pointer-events-none': !twoFaEnabled }">
-                        <x-form.toggle
-                            name="passkey_two_fa_enabled"
-                            :label="__('components.two_fa.passkey')"
-                            :checked="$initialPasskeyEnabled"
-                            xModel="passkeyEnabled"
-                        />
-                    </div>
-                @else
-                    {{-- 全体設定でパスキーが無効な場合：表示のみ --}}
-                    <div class="flex items-center space-x-3">
-                        <div class="flex items-center">
-                            <i class="fas fa-times-circle text-gray-400 dark:text-gray-600 mr-2"></i>
-                            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                {{ __('components.two_fa.passkey') }}
-                            </span>
-                        </div>
-                        <span class="text-xs text-gray-500 dark:text-gray-400">
-                            {{ __('components.two_fa.passkey_disabled_globally') }}
-                        </span>
-                    </div>
-                @endif
             </div>
 
             @if($globalSettingsUrl)
@@ -193,10 +168,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             @endif
         </div>
-
-        @error('passkey_two_fa_enabled')
-            <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-        @enderror
     </fieldset>
 
     {{-- デフォルトの認証方法（パスキーが全体設定で有効、またはユーザーが個別に有効にしている場合に表示） --}}

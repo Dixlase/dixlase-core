@@ -61,7 +61,7 @@ class ProfileUpdateRequest extends FormRequest
             'login_notification_mode' => ['nullable', new Enum(AuthenticationMode::class)],
             'two_fa_mode' => ['nullable', new Enum(AuthenticationMode::class)],
             'two_fa_passkey_enabled' => 'nullable|boolean',
-            'default_two_fa_method' => 'nullable|integer|in:0,1',
+            'two_fa_default_method' => 'nullable|integer|in:0,1',
         ];
 
         // メールアドレスが変更された場合は確認フィールドを必須に

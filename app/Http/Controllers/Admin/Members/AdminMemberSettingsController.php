@@ -123,11 +123,11 @@ class AdminMemberSettingsController extends AdminLoggedInController
             ->values()
             ->toArray();
         
-        $passkeyDbValue = $this->memberSettingRepository->get('two_fa_passkey_enabled', '0');
-        $passkeyEnabled = $passkeyDbValue === '1';
+        // パスキーモード設定（0=無効, 1=有効, 2=プロフィール設定に従う）
+        $passkeyMode = (int) $this->memberSettingRepository->get('two_fa_passkey_mode', '2');
         
-        if (old('two_fa_passkey_enabled') !== null) {
-            $passkeyEnabled = (bool) old('two_fa_passkey_enabled');
+        if (old('two_fa_passkey_mode') !== null) {
+            $passkeyMode = (int) old('two_fa_passkey_mode');
         }
 
         $passwordResetEnabled = (bool) $this->memberSettingRepository->get('password_reset_enabled', true);
@@ -149,8 +149,8 @@ class AdminMemberSettingsController extends AdminLoggedInController
         $twoFaLockoutDuration = (int) $this->memberSettingRepository->get('two_fa_lockout_duration', 30);
         $twoFaLockoutNotificationEnabled = (bool) $this->memberSettingRepository->get('two_fa_lockout_notification_enabled', true);
 
-        $recoveryCodesCount = (int) $this->memberSettingRepository->get('recovery_codes_count', 5);
-        $recoveryCodeRegenerateInterval = (int) $this->memberSettingRepository->get('recovery_code_regenerate_interval', 24);
+        $recoveryCodesCount = (int) $this->memberSettingRepository->get('two_fa_recovery_codes_count', 5);
+        $recoveryCodeRegenerateInterval = (int) $this->memberSettingRepository->get('two_fa_recovery_code_regenerate_interval', 24);
 
         $isMailServerTested = $this->isMailServerTested();
         $mailConnectionTestDate = BaseSetting::getValue('mail_connection_test_date');
@@ -165,7 +165,7 @@ class AdminMemberSettingsController extends AdminLoggedInController
         $this->viewParams['loginNotificationGlobalOptions'] = $loginNotificationGlobalOptions;
         $this->viewParams['forceTwoFa'] = $forceTwoFa;
         $this->viewParams['twoFactorGlobalOptions'] = $twoFactorGlobalOptions;
-        $this->viewParams['passkeyEnabled'] = $passkeyEnabled;
+        $this->viewParams['passkeyMode'] = $passkeyMode;
         $this->viewParams['passwordResetEnabled'] = $passwordResetEnabled;
         $this->viewParams['pwnedPasswordCheckEnabled'] = $pwnedPasswordCheckEnabled;
         $this->viewParams['loginAttemptLimitEnabled'] = $loginAttemptLimitEnabled;
