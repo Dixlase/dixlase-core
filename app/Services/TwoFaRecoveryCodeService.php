@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
-class RecoveryCodeService
+class TwoFaRecoveryCodeService
 {
     /**
      * 回復コードを生成

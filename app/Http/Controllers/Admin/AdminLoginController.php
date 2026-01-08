@@ -815,7 +815,7 @@ class AdminLoginController extends AdminController
         }
 
         try {
-            $twoFaPasskeyService = app(\App\Services\PasskeyAuthenticationService::class);
+            $twoFaPasskeyService = app(\App\Services\TwoFaPasskeyService::class);
 
             // Passkey認証が利用可能かチェック
             if (!$twoFaPasskeyService->isAvailable()) {
@@ -888,7 +888,7 @@ class AdminLoginController extends AdminController
         ]);
 
         try {
-            $twoFaPasskeyService = app(\App\Services\PasskeyAuthenticationService::class);
+            $twoFaPasskeyService = app(\App\Services\TwoFaPasskeyService::class);
             $credentialData = $request->input('response');
 
             // 認証レスポンスを検証
