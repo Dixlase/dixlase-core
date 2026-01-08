@@ -156,9 +156,9 @@ class UserTwoFaService
     {
         // 例：プラグイン独自の設定を取得
         // return [
-        //     'force_2fa' => (int) PluginSetting::get('user_force_2fa', 0),
-        //     'enabled_methods' => json_decode(PluginSetting::get('user_enabled_2fa_methods', '[0]'), true),
-        //     'default_method' => (int) PluginSetting::get('user_default_2fa_method', 0),
+        //     'force_two_fa' => (int) PluginSetting::get('user_force_two_fa', 0),
+        //     'enabled_methods' => json_decode(PluginSetting::get('user_enabled_two_fa_methods', '[0]'), true),
+        //     'default_method' => (int) PluginSetting::get('user_default_two_fa_method', 0),
         // ];
         
         // デフォルトはシステム設定を使用

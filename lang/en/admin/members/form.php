@@ -57,5 +57,5 @@ return [
     'default_two_fa_method' => 'Default Authentication Method',
     'default_two_factor_method_help' => 'Select the authentication method to be displayed first during two-factor authentication.',
     'passkey_disabled_default_email_only' => 'Passkey authentication is disabled, so the default authentication method is automatically set to email authentication.',
-    '2fa_management_admin_note' => 'Administrators cannot add Passkey devices or generate recovery codes. Only deletion is allowed. Addition and generation can only be performed by the member themselves.',
+    'two_fa_management_admin_note' => 'Administrators cannot add Passkey devices or generate recovery codes. Only deletion is allowed. Addition and generation can only be performed by the member themselves.',
 ];

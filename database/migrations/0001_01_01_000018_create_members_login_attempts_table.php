@@ -65,7 +65,7 @@ return new class extends Migration
             $table->unsignedInteger('seconds_since_last_login')->nullable();
             
             // ログイン失敗理由（詳細分析用）
-            // invalid_password, account_locked, 2fa_failed, etc.
+            // invalid_password, account_locked, two_fa_failed, etc.
             $table->string('failure_reason', 50)->nullable();
             
             // 2FA使用フラグ

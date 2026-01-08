@@ -53,9 +53,9 @@ class AdminMemberSecurityController extends AdminLoggedInController
     }
 
     /**
-     * 2FAロックアウト解除
+     * Two-FAロックアウト解除
      */
-    public function unlock2fa(Member $member)
+    public function unlockTwoFa(Member $member)
     {
         \App\Models\MemberTwoFaAttempt::where('member_id', $member->id)->delete();
         \App\Models\MemberLoginAttempt::where('identifier', $member->email)->delete();

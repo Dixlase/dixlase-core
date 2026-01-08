@@ -39,7 +39,7 @@ return [
     'updated_email_immediate' => 'プロフィールが更新されました。メールアドレスが変更されました。',
     
     // 2FA管理（プロフィール画面固有）
-    '2fa_management' => '二段階認証管理',
+    'two_fa_management' => '二段階認証管理',
     'recovery_codes' => '回復コード',
     'passkey_devices' => 'Passkey(生体認証)デバイス',
     

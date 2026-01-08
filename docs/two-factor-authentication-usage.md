@@ -63,7 +63,7 @@ Dixlaseの二段階認証システムは、以下のコンポーネントで構�
 
 Dixlaseの二段階認証システムは、既存の`MemberSetting`システムと完全に連携しています：
 
-- **グローバル設定**: `force_2fa`, `enabled_two_factor_methods`, `default_two_factor_method`
+- **グローバル設定**: `force_two_fa`, `enabled_two_factor_methods`, `default_two_factor_method`
 - **ユーザー設定**: `two_factor_mode`, `two_factor_method`（Memberモデルの属性）
 
 ### 2. TwoFactorTraitを使用する場合
@@ -100,7 +100,7 @@ class YourTwoFactorService
     
     public function isRequired($user)
     {
-        $forceSetting = (int) $this->getSettingValue('force_2fa', 0);
+        $forceSetting = (int) $this->getSettingValue('force_two_fa', 0);
         $enabledMethods = $this->getEnabledTwoFactorMethods();
         
         return $this->requiresTwoFactor($user, $forceSetting, $enabledMethods);
@@ -463,7 +463,7 @@ public function revokeBiometric($user, string $credentialId): bool
 二段階認証システムは以下のテーブルを使用します：
 
 - `members_two_factor_tokens`: 認証コードの保存
-- `members_settings`: システム設定（force_2fa, enabled_two_factor_methods等）
+- `members_settings`: システム設定（force_two_fa, enabled_two_factor_methods等）
 - `members_trusted_devices`: 信頼済みデバイス（オプション）
 
 ユーザーモデルには以下のカラムが必要です：

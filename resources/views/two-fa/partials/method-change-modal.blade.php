@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script @cspNonce>
 function switchToUsedMethod() {
-    fetch('{{ route('admin.dashboard.switch2faMethod') }}', {
+    fetch('{{ route('admin.dashboard.switchTwoFaMethod') }}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

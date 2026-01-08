@@ -102,7 +102,7 @@ TEXT,
         'invalid' => '回復コードが無効です。',
         'invalid_with_attempts' => '回復コードが無効です。残り試行回数: :attempts回',
         'use_recovery_code' => '回復コード',
-        'back_to_2fa' => '二段階認証に戻る',
+        'back_to_two_fa' => '二段階認証に戻る',
     ],
 
     // 共通

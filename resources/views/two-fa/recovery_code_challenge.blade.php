@@ -94,7 +94,7 @@
     <!-- 別の認証方法に戻る -->
     <div class="mt-6 text-center">
         <a href="{{ route('admin.two-fa.email.show') }}" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-            {{ __('two_fa.recovery_code.back_to_2fa') }}
+            {{ __('two_fa.recovery_code.back_to_two_fa') }}
         </a>
     </div>
 @endsection

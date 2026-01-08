@@ -102,7 +102,7 @@ TEXT,
         'invalid' => 'Invalid recovery code.',
         'invalid_with_attempts' => 'Invalid recovery code. Remaining attempts: :attempts',
         'use_recovery_code' => 'Use Recovery Code',
-        'back_to_2fa' => 'Back to Two-Factor Authentication',
+        'back_to_two_fa' => 'Back to Two-Factor Authentication',
     ],
 
     // Common
