@@ -60,10 +60,10 @@ class AdminDashboardController extends AdminLoggedInController
         // 回復コード情報を取得
         $user = Auth::guard('member')->user();
         $twoFaRecoveryCodeService = app(\App\Services\RecoveryCodeService::class);
-        $this->viewParams['recoveryCodesCount'] = $twoFaRecoveryCodeService->getRemainingCount($user);
-        $this->viewParams['hasRecoveryCodes'] = $twoFaRecoveryCodeService->hasRecoveryCodes($user);
-        $this->viewParams['canRegenerateRecoveryCodes'] = $twoFaRecoveryCodeService->canRegenerate($user);
-        $this->viewParams['nextRegenerateTime'] = $twoFaRecoveryCodeService->getNextRegenerateTime($user);
+        $this->viewParams['twoFaRecoveryCodesCount'] = $twoFaRecoveryCodeService->getRemainingCount($user);
+        $this->viewParams['twoFaHasRecoveryCodes'] = $twoFaRecoveryCodeService->hasRecoveryCodes($user);
+        $this->viewParams['twoFaCanRegenerateRecoveryCodes'] = $twoFaRecoveryCodeService->canRegenerate($user);
+        $this->viewParams['twoFaNextRegenerateTime'] = $twoFaRecoveryCodeService->getNextRegenerateTime($user);
 
         return view('admin::dashboard', $this->viewParams);
     }

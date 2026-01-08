@@ -149,8 +149,8 @@ class AdminMemberSettingsController extends AdminLoggedInController
         $twoFaLockoutDuration = (int) $this->memberSettingRepository->get('two_fa_lockout_duration', 30);
         $twoFaLockoutNotificationEnabled = (bool) $this->memberSettingRepository->get('two_fa_lockout_notification_enabled', true);
 
-        $recoveryCodesCount = (int) $this->memberSettingRepository->get('two_fa_recovery_codes_count', 5);
-        $recoveryCodeRegenerateInterval = (int) $this->memberSettingRepository->get('two_fa_recovery_code_regenerate_interval', 24);
+        $twoFaRecoveryCodesCount = (int) $this->memberSettingRepository->get('two_fa_recovery_codes_count', 5);
+        $twoFaRecoveryCodeRegenerateInterval = (int) $this->memberSettingRepository->get('two_fa_recovery_code_regenerate_interval', 24);
 
         $isMailServerTested = $this->isMailServerTested();
         $mailConnectionTestDate = BaseSetting::getValue('mail_connection_test_date');
@@ -186,8 +186,8 @@ class AdminMemberSettingsController extends AdminLoggedInController
         $this->viewParams['twoFaAttemptWindow'] = $twoFaAttemptWindow;
         $this->viewParams['twoFaLockoutDuration'] = $twoFaLockoutDuration;
         $this->viewParams['twoFaLockoutNotificationEnabled'] = $twoFaLockoutNotificationEnabled;
-        $this->viewParams['recoveryCodesCount'] = $recoveryCodesCount;
-        $this->viewParams['recoveryCodeRegenerateInterval'] = $recoveryCodeRegenerateInterval;
+        $this->viewParams['twoFaRecoveryCodesCount'] = $twoFaRecoveryCodesCount;
+        $this->viewParams['twoFaRecoveryCodeRegenerateInterval'] = $twoFaRecoveryCodeRegenerateInterval;
 
         // セッション設定
         $this->viewParams['membersSessionLifetimeEnabled'] = $membersSessionLifetimeEnabled;
