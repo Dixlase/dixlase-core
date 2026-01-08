@@ -459,8 +459,8 @@ class AdminLoginController extends AdminController
         $twoFaPasskeyEnabled = MemberSetting::getValue('two_fa_passkey_enabled', '0') === '1';
         
         // メンバーがPasskeyを登録していてかチェック
-        $passkeyService = app(PasskeyAuthenticationService::class);
-        $twoFaHasPasskey = $passkeyService->hasDevices($member);
+        $twoFaPasskeyService = app(PasskeyAuthenticationService::class);
+        $twoFaHasPasskey = $twoFaPasskeyService->hasDevices($member);
         
         // 有効な認証方法のリストを作成
         $availableMethods = [];
@@ -659,8 +659,8 @@ class AdminLoginController extends AdminController
                 ->withErrors(['email' => __('two_fa.lockout.message', ['minutes' => $remainingMinutes])]);
         }
 
-        $recoveryCodeService = app(RecoveryCodeService::class);
-        $isValid = $recoveryCodeService->validate($member, $request->recovery_code);
+        $twoFaRecoveryCodeService = app(RecoveryCodeService::class);
+        $isValid = $twoFaRecoveryCodeService->validate($member, $request->recovery_code);
 
         // 試行を記録
         $attemptService->recordAttempt($member, 'recovery_code', $isValid);
@@ -815,10 +815,10 @@ class AdminLoginController extends AdminController
         }
 
         try {
-            $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
+            $twoFaPasskeyService = app(\App\Services\PasskeyAuthenticationService::class);
 
             // Passkey認証が利用可能かチェック
-            if (!$passkeyService->isAvailable()) {
+            if (!$twoFaPasskeyService->isAvailable()) {
                 return response()->json([
                     'success' => false,
                     'message' => __('auth.passkey_https_required')
@@ -826,7 +826,7 @@ class AdminLoginController extends AdminController
             }
 
             // メンバーがPasskeyを登録しているかチェック
-            $credentials = $passkeyService->getCredentials($member);
+            $credentials = $twoFaPasskeyService->getCredentials($member);
             if ($credentials->isEmpty()) {
                 return response()->json([
                     'success' => false,
@@ -835,7 +835,7 @@ class AdminLoginController extends AdminController
             }
 
             // 認証チャレンジを生成
-            $options = $passkeyService->generateAuthenticationChallenge($member);
+            $options = $twoFaPasskeyService->generateAuthenticationChallenge($member);
 
             Log::info('[Passkey Auth] チャレンジ生成成功', [
                 'member_id' => $member->id,
@@ -888,11 +888,11 @@ class AdminLoginController extends AdminController
         ]);
 
         try {
-            $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
+            $twoFaPasskeyService = app(\App\Services\PasskeyAuthenticationService::class);
             $credentialData = $request->input('response');
 
             // 認証レスポンスを検証
-            $isValid = $passkeyService->verifyAssertion($member, $credentialData);
+            $isValid = $twoFaPasskeyService->verifyAssertion($member, $credentialData);
 
             if ($isValid) {
                 // 認証成功 - ログイン処理

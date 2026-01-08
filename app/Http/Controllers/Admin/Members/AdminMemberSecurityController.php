@@ -132,19 +132,19 @@ class AdminMemberSecurityController extends AdminLoggedInController
      */
     public function revokePasskey(Request $request, Member $member, string $credentialId)
     {
-        $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
+        $twoFaPasskeyService = app(\App\Services\PasskeyAuthenticationService::class);
         
         try {
             if ($credentialId === 'all') {
-                $deletedCount = $passkeyService->revokeAllCredentials($member);
+                $deletedCount = $twoFaPasskeyService->revokeAllCredentials($member);
                 
                 return response()->json([
                     'success' => true,
-                    'message' => __('admin/profile.passkey_deleted_all', ['count' => $deletedCount])
+                    'message' => __('admin/members/form.passkey_all_deleted', ['count' => $deletedCount])
                 ]);
             }
             
-            $deleted = $passkeyService->revokeCredential($member, $credentialId);
+            $deleted = $twoFaPasskeyService->revokeCredential($member, $credentialId);
             
             if (!$deleted) {
                 return response()->json([
@@ -176,10 +176,10 @@ class AdminMemberSecurityController extends AdminLoggedInController
      */
     public function revokeRecoveryCodes(Request $request, Member $member)
     {
-        $recoveryCodeService = app(\App\Services\RecoveryCodeService::class);
+        $twoFaRecoveryCodeService = app(\App\Services\RecoveryCodeService::class);
         
         try {
-            $deletedCount = $recoveryCodeService->revokeAll($member);
+            $deletedCount = $twoFaRecoveryCodeService->revokeAll($member);
             
             return response()->json([
                 'success' => true,
