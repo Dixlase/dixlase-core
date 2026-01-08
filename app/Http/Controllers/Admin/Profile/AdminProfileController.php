@@ -257,15 +257,14 @@ class AdminProfileController extends AdminLoggedInController
 
         // Passkeyデバイス一覧を取得
         $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
-        $this->viewParams['passkeyDevices'] = $passkeyService->getDevices($user);
-        $this->viewParams['passkeyEnabled'] = $passkeyEnabled;
+        $this->viewParams['twoFaPasskeyDevices'] = $passkeyService->getDevices($user);
 
         // 回復コード情報を取得
         $recoveryCodeService = app(\App\Services\RecoveryCodeService::class);
-        $this->viewParams['recoveryCodesCount'] = $recoveryCodeService->getRemainingCount($user);
-        $this->viewParams['hasRecoveryCodes'] = $recoveryCodeService->hasRecoveryCodes($user);
-        $this->viewParams['canRegenerateRecoveryCodes'] = $recoveryCodeService->canRegenerate($user);
-        $this->viewParams['nextRegenerateTime'] = $recoveryCodeService->getNextRegenerateTime($user);
+        $this->viewParams['twoFaRecoveryCodesCount'] = $recoveryCodeService->getRemainingCount($user);
+        $this->viewParams['twoFaHasRecoveryCodes'] = $recoveryCodeService->hasRecoveryCodes($user);
+        $this->viewParams['twoFaCanRegenerateRecoveryCodes'] = $recoveryCodeService->canRegenerate($user);
+        $this->viewParams['twoFaNextRegenerateTime'] = $recoveryCodeService->getNextRegenerateTime($user);
 
         return view('admin.profile.index', $this->viewParams);
     }
