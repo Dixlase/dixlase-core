@@ -21,8 +21,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @props([
     'passkeyEnabled' => false,
     'passkeyDevices' => null,
-    'hasRecoveryCodes' => false,
-    'recoveryCodesCount' => 0,
+    'twoFaHasRecoveryCodes' => false,
+    'twoFaRecoveryCodesCount' => 0,
     'trustedDevices' => null,
     'showTrustedDevices' => false,
     'hideAddButtons' => false,
@@ -118,12 +118,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <h3 class="text-lg font-semibold">{{ __('components.two_fa_management.recovery_codes_title') }}</h3>
         </div>
 
-        @if($hasRecoveryCodes)
+        @if($twoFaHasRecoveryCodes)
             <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
                 <div class="flex items-center justify-between">
                     <p class="text-sm text-blue-800 dark:text-blue-200">
                         <i class="fas fa-info-circle mr-2"></i>
-                        {{ __('components.two_fa_management.recovery_codes_remaining', ['count' => $recoveryCodesCount]) }}
+                        {{ __('components.two_fa_management.recovery_codes_remaining', ['count' => $twoFaRecoveryCodesCount]) }}
                     </p>
                     @if($adminContext && isset($routes['recovery_codes_delete']))
                     <button 
@@ -144,7 +144,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             type="button"
             onclick="openModal('recoveryCodesConfirmModal')"
             class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-            <i class="fas fa-{{ $hasRecoveryCodes ? 'sync-alt' : 'plus' }} mr-2"></i>{{ __('components.two_fa_management.recovery_codes_' . ($hasRecoveryCodes ? 'regenerate' : 'generate')) }}
+            <i class="fas fa-{{ $twoFaHasRecoveryCodes ? 'sync-alt' : 'plus' }} mr-2"></i>{{ __('components.two_fa_management.recovery_codes_' . ($twoFaHasRecoveryCodes ? 'regenerate' : 'generate')) }}
         </button>
         @endif
         

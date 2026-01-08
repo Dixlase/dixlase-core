@@ -249,8 +249,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <x-two-fa-management
             :passkeyEnabled="$twoFaPasskeyEnabled"
             :passkeyDevices="$twoFaPasskeyDevices"
-            :hasRecoveryCodes="$twoFaHasRecoveryCodes"
-            :recoveryCodesCount="$twoFaRecoveryCodesCount"
+            :twoFaHasRecoveryCodes="$twoFaHasRecoveryCodes"
+            :twoFaRecoveryCodesCount="$twoFaRecoveryCodesCount"
             :trustedDevices="$trustedDevices ?? collect()"
             :showTrustedDevices="true"
             :routes="[
