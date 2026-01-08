@@ -106,10 +106,10 @@ class AdminMemberSettingsController extends AdminLoggedInController
             ->values()
             ->toArray();
 
-        $forceTwoFa = (int) $this->memberSettingRepository->get('force_two_fa', AuthenticationMode::Disabled->value);
+        $twoFaForceMode = (int) $this->memberSettingRepository->get('force_two_fa', AuthenticationMode::Disabled->value);
         
         if (old('force_two_fa') !== null) {
-            $forceTwoFa = (int) old('force_two_fa');
+            $twoFaForceMode = (int) old('force_two_fa');
         }
         
         $twoFactorGlobalOptions = collect(config('admin.global_two_factor_mode'))
@@ -124,10 +124,10 @@ class AdminMemberSettingsController extends AdminLoggedInController
             ->toArray();
         
         // パスキーモード設定（0=無効, 1=有効, 2=プロフィール設定に従う）
-        $passkeyMode = (int) $this->memberSettingRepository->get('two_fa_passkey_mode', '2');
+        $twoFaPasskeyMode = (int) $this->memberSettingRepository->get('two_fa_passkey_mode', '2');
         
         if (old('two_fa_passkey_mode') !== null) {
-            $passkeyMode = (int) old('two_fa_passkey_mode');
+            $twoFaPasskeyMode = (int) old('two_fa_passkey_mode');
         }
 
         $passwordResetEnabled = (bool) $this->memberSettingRepository->get('password_reset_enabled', true);
@@ -163,9 +163,9 @@ class AdminMemberSettingsController extends AdminLoggedInController
         $this->viewParams['minLengthOptions'] = $minLengthOptions;
         $this->viewParams['loginNotification'] = $loginNotification;
         $this->viewParams['loginNotificationGlobalOptions'] = $loginNotificationGlobalOptions;
-        $this->viewParams['forceTwoFa'] = $forceTwoFa;
+        $this->viewParams['forceTwoFa'] = $twoFaForceMode;
         $this->viewParams['twoFactorGlobalOptions'] = $twoFactorGlobalOptions;
-        $this->viewParams['passkeyMode'] = $passkeyMode;
+        $this->viewParams['passkeyMode'] = $twoFaPasskeyMode;
         $this->viewParams['passwordResetEnabled'] = $passwordResetEnabled;
         $this->viewParams['pwnedPasswordCheckEnabled'] = $pwnedPasswordCheckEnabled;
         $this->viewParams['loginAttemptLimitEnabled'] = $loginAttemptLimitEnabled;

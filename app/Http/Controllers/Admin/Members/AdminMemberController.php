@@ -212,10 +212,10 @@ class AdminMemberController extends AdminLoggedInController
 
         $this->loadMemberFormParams();
 
-        $passkeyEnabled = $this->memberSettingRepository->get('two_fa_passkey_enabled', '0') === '1';
+        $twoFaPasskeyEnabled = $this->memberSettingRepository->get('two_fa_passkey_enabled', '0') === '1';
         $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
         $this->viewParams['passkeyDevices'] = $passkeyService->getDevices($member);
-        $this->viewParams['passkeyEnabled'] = $passkeyEnabled;
+        $this->viewParams['passkeyEnabled'] = $twoFaPasskeyEnabled;
 
         $recoveryCodeService = app(\App\Services\RecoveryCodeService::class);
         $this->viewParams['recoveryCodesCount'] = $recoveryCodeService->getRemainingCount($member);
@@ -323,13 +323,13 @@ class AdminMemberController extends AdminLoggedInController
         }
         $this->viewParams['loginNotificationModeOptions'] = $loginNotificationOptions;
 
-        $forceTwoFa = (int) $this->memberSettingRepository->get('force_two_fa', AuthenticationMode::Disabled->value);
+        $twoFaForceMode = (int) $this->memberSettingRepository->get('force_two_fa', AuthenticationMode::Disabled->value);
         // Enumオブジェクトの場合は整数値に変換
-        if ($forceTwoFa instanceof AuthenticationMode) {
-            $forceTwoFa = $forceTwoFa->value;
+        if ($twoFaForceMode instanceof AuthenticationMode) {
+            $twoFaForceMode = $twoFaForceMode->value;
         }
-        $this->viewParams['forceTwoFa'] = $forceTwoFa;
-        $twoFactorEnum = AuthenticationMode::tryFrom($forceTwoFa);
+        $this->viewParams['forceTwoFa'] = $twoFaForceMode;
+        $twoFactorEnum = AuthenticationMode::tryFrom($twoFaForceMode);
         $this->viewParams['twoFactorModeLabel'] = $twoFactorEnum ? $twoFactorEnum->twoFactorLabel() : '';
         
         // radio-card-group用の二段階認証オプション配列を生成
@@ -348,17 +348,17 @@ class AdminMemberController extends AdminLoggedInController
         ];
         
         // 全体設定でパスキー認証が有効な場合は追加
-        $passkeyEnabled = $this->memberSettingRepository->get('two_fa_passkey_enabled', '0') === '1';
-        if ($passkeyEnabled) {
+        $twoFaPasskeyEnabled = $this->memberSettingRepository->get('two_fa_passkey_enabled', '0') === '1';
+        if ($twoFaPasskeyEnabled) {
             $twoFactorMethodOptions[TwoFaMethod::PASSKEY->value] = TwoFaMethod::PASSKEY->translationKey();
         }
         
         // デフォルトの認証方法を取得
-        $defaultTwoFaMethod = (int) $this->memberSettingRepository->get('default_two_fa_method', TwoFaMethod::EMAIL->value);
+        $twoFaDefaultMethod = (int) $this->memberSettingRepository->get('default_two_fa_method', TwoFaMethod::EMAIL->value);
         
         $this->viewParams['enabledTwoFaMethods'] = $twoFactorMethodOptions;
-        $this->viewParams['defaultTwoFaMethod'] = $defaultTwoFaMethod;
-        $this->viewParams['passkeyEnabled'] = $passkeyEnabled;
+        $this->viewParams['defaultTwoFaMethod'] = $twoFaDefaultMethod;
+        $this->viewParams['passkeyEnabled'] = $twoFaPasskeyEnabled;
         $this->viewParams['twoFaMode'] = AuthenticationMode::from($this->viewParams['forceTwoFa']);
         $this->viewParams['twoFactorUseProfileSettingValue'] = AuthenticationMode::UseProfileSetting->value;
         $this->viewParams['loginNotificationUseProfileSettingValue'] = AuthenticationMode::UseProfileSetting->value;
