@@ -323,9 +323,13 @@ class AdminMemberController extends AdminLoggedInController
         }
         $this->viewParams['loginNotificationModeOptions'] = $loginNotificationOptions;
 
-        $force2fa = (int) $this->memberSettingRepository->get('force_two_fa', AuthenticationMode::Disabled->value);
-        $this->viewParams['force2fa'] = $force2fa;
-        $twoFactorEnum = AuthenticationMode::tryFrom($force2fa);
+        $forceTwoFa = (int) $this->memberSettingRepository->get('force_two_fa', AuthenticationMode::Disabled->value);
+        // Enumオブジェクトの場合は整数値に変換
+        if ($forceTwoFa instanceof AuthenticationMode) {
+            $forceTwoFa = $forceTwoFa->value;
+        }
+        $this->viewParams['forceTwoFa'] = $forceTwoFa;
+        $twoFactorEnum = AuthenticationMode::tryFrom($forceTwoFa);
         $this->viewParams['twoFactorModeLabel'] = $twoFactorEnum ? $twoFactorEnum->twoFactorLabel() : '';
         
         // radio-card-group用の二段階認証オプション配列を生成
@@ -355,7 +359,7 @@ class AdminMemberController extends AdminLoggedInController
         $this->viewParams['enabledTwoFaMethods'] = $twoFactorMethodOptions;
         $this->viewParams['defaultTwoFaMethod'] = $defaultTwoFaMethod;
         $this->viewParams['passkeyEnabled'] = $passkeyEnabled;
-        $this->viewParams['twoFaMode'] = AuthenticationMode::from($this->viewParams['force2fa']);
+        $this->viewParams['twoFaMode'] = AuthenticationMode::from($this->viewParams['forceTwoFa']);
         $this->viewParams['twoFactorUseProfileSettingValue'] = AuthenticationMode::UseProfileSetting->value;
         $this->viewParams['loginNotificationUseProfileSettingValue'] = AuthenticationMode::UseProfileSetting->value;
         $this->viewParams['isMailServerTested'] = $this->isMailServerTested();

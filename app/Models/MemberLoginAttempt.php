@@ -45,7 +45,7 @@ class MemberLoginAttempt extends Model
         'country_code',
         'seconds_since_last_login',
         'failure_reason',
-        'used_2fa',
+        'used_two_fa',
         'two_fa_method',
         'from_trusted_device',
         'risk_score',
@@ -55,7 +55,7 @@ class MemberLoginAttempt extends Model
     protected $casts = [
         'successful' => 'boolean',
         'attempted_at' => 'datetime',
-        'used_2fa' => 'boolean',
+        'used_two_fa' => 'boolean',
         'from_trusted_device' => 'boolean',
         'login_hour' => 'integer',
         'login_day_of_week' => 'integer',
@@ -70,8 +70,8 @@ class MemberLoginAttempt extends Model
     public const FAILURE_INVALID_PASSWORD = 'invalid_password';
     public const FAILURE_ACCOUNT_LOCKED = 'account_locked';
     public const FAILURE_ACCOUNT_DISABLED = 'account_disabled';
-    public const FAILURE_2FA_FAILED = '2fa_failed';
-    public const FAILURE_2FA_EXPIRED = '2fa_expired';
+    public const FAILURE_TWO_FA_FAILED = 'two_fa_failed';
+    public const FAILURE_TWO_FA_EXPIRED = 'two_fa_expired';
     public const FAILURE_IP_BLOCKED = 'ip_blocked';
     public const FAILURE_CAPTCHA_FAILED = 'captcha_failed';
     public const FAILURE_UNKNOWN = 'unknown';
@@ -216,7 +216,7 @@ class MemberLoginAttempt extends Model
             'country_code' => $behaviorData['country_code'] ?? null,
             'seconds_since_last_login' => $behaviorData['seconds_since_last_login'] ?? $secondsSinceLast,
             'failure_reason' => $behaviorData['failure_reason'] ?? null,
-            'used_2fa' => $behaviorData['used_2fa'] ?? false,
+            'used_two_fa' => $behaviorData['used_two_fa'] ?? false,
             'two_fa_method' => $behaviorData['two_fa_method'] ?? null,
             'from_trusted_device' => $behaviorData['from_trusted_device'] ?? false,
             'risk_score' => $behaviorData['risk_score'] ?? null,
@@ -401,7 +401,7 @@ class MemberLoginAttempt extends Model
             'unique_ips' => $attempts->pluck('ip_address')->unique()->count(),
             'unique_devices' => $attempts->pluck('device_fingerprint')->filter()->unique()->count(),
             'unique_countries' => $attempts->pluck('country_code')->filter()->unique()->count(),
-            'used_2fa_count' => $attempts->where('used_2fa', true)->count(),
+            'used_two_fa_count' => $attempts->where('used_two_fa', true)->count(),
             'from_trusted_device_count' => $attempts->where('from_trusted_device', true)->count(),
             'failure_reasons' => $failed->pluck('failure_reason')->filter()->countBy()->toArray(),
             'average_risk_score' => $attempts->whereNotNull('risk_score')->avg('risk_score'),
@@ -447,9 +447,9 @@ class MemberLoginAttempt extends Model
     /**
      * 2FAを使用したログイン試行を取得
      */
-    public function scopeUsed2fa($query)
+    public function scopeUsedTwoFa($query)
     {
-        return $query->where('used_2fa', true);
+        return $query->where('used_two_fa', true);
     }
 
     /**

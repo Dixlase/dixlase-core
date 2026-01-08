@@ -386,7 +386,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <x-two-fa-auth-selector
             name="two_fa_mode"
             :value="old('two_fa_mode', (string)$currentTwoFaMode)"
-            :globalSetting="$force2fa"
+            :globalSetting="$forceTwoFa"
             :excludeUseProfileSetting="true"
             :passkeyGloballyEnabled="$passkeyGloballyEnabled"
             :passkeyEnabled="$initialPasskeyEnabled"

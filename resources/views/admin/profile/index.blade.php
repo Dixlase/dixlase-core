@@ -183,7 +183,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </section>
 
         <!-- 二段階認証設定（メールサーバー設定済みの場合のみ表示） -->
-        @if($isMailServerTested && ($force2fa === \App\Enums\AuthenticationMode::UseProfileSetting->value || $currentGlobalTwoFaMode))
+        @if($isMailServerTested && ($forceTwoFa === \App\Enums\AuthenticationMode::UseProfileSetting->value || $currentGlobalTwoFaMode))
             @php
                 $member = Auth::guard('member')->user();
                 $passkeyGloballyEnabled = in_array(\App\Enums\TwoFaMethod::PASSKEY->value, array_keys($enabledTwoFaMethods ?? []));
@@ -195,7 +195,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <x-two-fa-auth-selector
                     name="two_fa_mode"
                     :value="old('two_fa_mode', (string) ($twoFaMode?->value ?? 0))"
-                    :globalSetting="$force2fa"
+                    :globalSetting="$forceTwoFa"
                     :excludeUseProfileSetting="true"
                     :passkeyGloballyEnabled="$passkeyGloballyEnabled"
                     :passkeyEnabled="$member->two_fa_passkey_enabled ?? true"
@@ -207,7 +207,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </form>
 
     <!-- 2FA管理セクション（メールサーバー設定済み、かつ二段階認証が有効の場合のみ表示） -->
-    @if($isMailServerTested && $force2fa !== \App\Enums\AuthenticationMode::Disabled->value)
+    @if($isMailServerTested && $forceTwoFa !== \App\Enums\AuthenticationMode::Disabled->value)
         <x-two-fa-management
             :passkeyEnabled="$passkeyEnabled"
             :passkeyDevices="$passkeyDevices"

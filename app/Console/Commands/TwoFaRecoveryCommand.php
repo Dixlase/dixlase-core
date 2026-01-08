@@ -151,7 +151,7 @@ class TwoFaRecoveryCommand extends Command
 
         // Check if 2FA is enabled
         if ($member->two_fa_mode === AuthenticationMode::Disabled->value || $member->two_fa_mode === null) {
-            $this->error(__('admin/command.two_fa_recovery.2fa_not_enabled', ['name' => ($member->display_name ?? $member->account_name)]));
+            $this->error(__('admin/command.two_fa_recovery.two_fa_not_enabled', ['name' => ($member->display_name ?? $member->account_name)]));
             return self::FAILURE;
         }
 
@@ -235,11 +235,11 @@ class TwoFaRecoveryCommand extends Command
             ->get();
 
         if ($members->isEmpty()) {
-            $this->info(__('admin/command.two_fa_recovery.no_members_with_2fa'));
+            $this->info(__('admin/command.two_fa_recovery.no_members_with_two_fa'));
             return self::SUCCESS;
         }
 
-        $this->info(__('admin/command.two_fa_recovery.members_with_2fa', ['count' => $members->count()]));
+        $this->info(__('admin/command.two_fa_recovery.members_with_two_fa', ['count' => $members->count()]));
         $this->newLine();
 
         $rows = [];
@@ -361,7 +361,7 @@ class TwoFaRecoveryCommand extends Command
             [__('admin/command.two_fa_recovery.metric'), __('admin/command.two_fa_recovery.value')],
             [
                 [__('admin/command.two_fa_recovery.total_members'), $totalMembers],
-                [__('admin/command.two_fa_recovery.members_with_2fa'), $membersWithTwoFa],
+                [__('admin/command.two_fa_recovery.members_with_two_fa'), $membersWithTwoFa],
                 [__('admin/command.two_fa_recovery.members_without_codes'), $membersWithoutRecoveryCodes],
             ]
         );

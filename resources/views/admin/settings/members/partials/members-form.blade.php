@@ -379,7 +379,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             />
         @endif   
         
-        @if($force2fa === $twoFaUseProfileSettingValue)
+        @if($forceTwoFa === $twoFaUseProfileSettingValue)
             <!-- 二段階認証有効/無効 -->
             <fieldset>
                 <legend>{{ __('common.two_fa_authentication') }}</legend>

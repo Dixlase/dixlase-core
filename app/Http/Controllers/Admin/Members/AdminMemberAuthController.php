@@ -69,7 +69,10 @@ class AdminMemberAuthController extends AdminMemberSettingsController
         if (array_key_exists('two_fa_resend_interval_seconds', $validated)) {
             $this->memberSettingRepository->set('two_fa_resend_interval_seconds', (string) $validated['two_fa_resend_interval_seconds']);
         }
-        if (array_key_exists('two_fa_passkey_enabled', $validated)) {
+        if (array_key_exists('passkey_two_fa_enabled', $validated)) {
+            $passkeyValue = $validated['passkey_two_fa_enabled'] ? '1' : '0';
+            $this->memberSettingRepository->set('two_fa_passkey_enabled', $passkeyValue);
+        } elseif (array_key_exists('two_fa_passkey_enabled', $validated)) {
             $passkeyValue = $validated['two_fa_passkey_enabled'] ? '1' : '0';
             $this->memberSettingRepository->set('two_fa_passkey_enabled', $passkeyValue);
         }

@@ -93,7 +93,7 @@ class AdminSettingsMemberStoreRequest extends FormRequest
             'email_verified' => 'nullable|numeric|in:0,1',
             'login_notification_mode' => 'nullable|numeric|in:0,1,2',
             'two_fa_mode' => 'nullable|numeric|in:0,1,2',
-            'two_fa_passkey_enabled' => 'nullable|boolean',
+            'two_fa_passkey_enabled' => 'nullable|integer|in:0,1',
             'default_two_fa_method' => 'nullable|integer|in:0,1',
         ];
 
@@ -107,6 +107,22 @@ class AdminSettingsMemberStoreRequest extends FormRequest
         }
 
         return $rules;
+    }
+
+    /**
+     * バリデーション後の処理
+     */
+    protected function passedValidation()
+    {
+        // 全体設定で二段階認証が強制されている場合、個別設定を上書き
+        $globalTwoFaMode = (int) MemberSetting::getValue('force_two_fa', 3); // 3 = プロフィール設定に従う
+        
+        if ($globalTwoFaMode !== 3) {
+            // 全体設定が「プロフィール設定に従う」以外の場合、全体設定を強制
+            $this->merge([
+                'two_fa_mode' => $globalTwoFaMode,
+            ]);
+        }
     }
 
     /**

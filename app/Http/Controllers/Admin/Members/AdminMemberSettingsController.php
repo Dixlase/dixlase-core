@@ -106,10 +106,10 @@ class AdminMemberSettingsController extends AdminLoggedInController
             ->values()
             ->toArray();
 
-        $force2fa = (int) $this->memberSettingRepository->get('force_two_fa', AuthenticationMode::Disabled->value);
+        $forceTwoFa = (int) $this->memberSettingRepository->get('force_two_fa', AuthenticationMode::Disabled->value);
         
         if (old('force_two_fa') !== null) {
-            $force2fa = (int) old('force_two_fa');
+            $forceTwoFa = (int) old('force_two_fa');
         }
         
         $twoFactorGlobalOptions = collect(config('admin.global_two_factor_mode'))
@@ -163,7 +163,7 @@ class AdminMemberSettingsController extends AdminLoggedInController
         $this->viewParams['minLengthOptions'] = $minLengthOptions;
         $this->viewParams['loginNotification'] = $loginNotification;
         $this->viewParams['loginNotificationGlobalOptions'] = $loginNotificationGlobalOptions;
-        $this->viewParams['force2fa'] = $force2fa;
+        $this->viewParams['forceTwoFa'] = $forceTwoFa;
         $this->viewParams['twoFactorGlobalOptions'] = $twoFactorGlobalOptions;
         $this->viewParams['passkeyEnabled'] = $passkeyEnabled;
         $this->viewParams['passwordResetEnabled'] = $passwordResetEnabled;

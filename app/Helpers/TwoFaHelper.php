@@ -108,7 +108,7 @@ class TwoFaHelper
         $settingModelClass = $settingModelClass ?? \App\Models\MemberSetting::class;
         
         return [
-            'force_2fa' => (int) $settingModelClass::getValue('force_2fa', '0'),
+            'force_two_fa' => (int) $settingModelClass::getValue('force_two_fa', '0'),
             'enabled_methods' => $this->getEnabledTwoFaMethods($settingModelClass),
             'default_method' => (int) $settingModelClass::getValue('default_two_fa_method', (string)TwoFaMethod::EMAIL->value),
         ];
@@ -126,12 +126,12 @@ class TwoFaHelper
         $methods = [];
         
         // メール認証
-        if ($settingModelClass::getValue('enabled_2fa_email', '1') === '1') {
+        if ($settingModelClass::getValue('enabled_two_fa_email', '1') === '1') {
             $methods[] = TwoFaMethod::EMAIL->value;
         }
         
         // Passkey認証
-        if ($settingModelClass::getValue('enabled_2fa_passkey', '0') === '1') {
+        if ($settingModelClass::getValue('enabled_two_fa_passkey', '0') === '1') {
             $methods[] = TwoFaMethod::PASSKEY->value;
         }
         
@@ -159,21 +159,21 @@ class TwoFaHelper
         }
         
         $systemSettings = $this->getTwoFaSettings($settingModelClass);
-        $force2fa = $systemSettings['force_2fa'] ?? 0;
+        $forceTwoFa = $systemSettings['force_two_fa'] ?? 0;
         
         // 全体設定: 0=Disabled（無効）, 1=DifferentDevice（異なるデバイス）, 2=Always（常に有効）, 3=UseProfileSetting（プロフィール設定に従う）
         
         // 無効の場合
-        if ($force2fa === AuthenticationMode::Disabled->value) {
+        if ($forceTwoFa === AuthenticationMode::Disabled->value) {
             return false;
         }
         
         // 全体設定で常に有効の場合
-        if ($force2fa === AuthenticationMode::Always->value) {
+        if ($forceTwoFa === AuthenticationMode::Always->value) {
             return true;
         }
         
-        // プロフィール設定を使用する場合（force_2fa = UseProfileSetting）
+        // プロフィール設定を使用する場合（force_two_fa = UseProfileSetting）
         $userMode = $user->two_fa_mode;
         
         // AuthenticationMode Enumの場合
@@ -273,7 +273,7 @@ class TwoFaHelper
     {
         // 実装例：実際の統計取得ロジックを追加
         return [
-            'total_users_with_2fa' => 0,
+            'total_users_with_two_fa' => 0,
             'active_tokens' => 0,
             'failed_attempts_today' => 0,
         ];

@@ -29,7 +29,7 @@ use Illuminate\Console\Command;
 /**
  * メール送信緊急バイパスコマンド（ブレークグラス）
  * 
- * SMTPサーバー障害時に、メール依存機能（2FA、パスワードリセット等）を
+ * SMTPサーバー障害時に、メール依存機能（Two-FA、パスワードリセット等）を
  * 一時的にバイパスする緊急復旧機能
  */
 class MailBypassCommand extends Command
@@ -42,7 +42,7 @@ class MailBypassCommand extends Command
     protected $signature = 'security:mail-bypass
                             {action=status : Action to perform (enable, disable, status)}
                             {--minutes=30 : Duration in minutes (max 120)}
-                            {--scope=2fa : Scope of bypass (2fa, password_reset, all)}
+                            {--scope=two_fa : Scope of bypass (two_fa, password_reset, all)}
                             {--reason= : Reason for enabling bypass (required)}';
 
     /**
@@ -77,7 +77,7 @@ class MailBypassCommand extends Command
         $reason = $this->option('reason');
 
         // Validate scope
-        if (!in_array($scope, ['2fa', 'password_reset', 'all'])) {
+        if (!in_array($scope, ['two_fa', 'password_reset', 'all'])) {
             $this->error(__('admin/command.mail_bypass.invalid_scope', ['scope' => $scope]));
             return self::FAILURE;
         }
@@ -196,8 +196,8 @@ class MailBypassCommand extends Command
             $this->newLine();
             $this->warn(__('admin/command.mail_bypass.affected_features'));
             
-            if ($status['scope'] === 'all' || $status['scope'] === '2fa') {
-                $this->line('  - ' . __('admin/command.mail_bypass.feature_2fa'));
+            if ($status['scope'] === 'all' || $status['scope'] === 'two_fa') {
+                $this->line('  - ' . __('admin/command.mail_bypass.feature_two_fa'));
             }
             if ($status['scope'] === 'all' || $status['scope'] === 'password_reset') {
                 $this->line('  - ' . __('admin/command.mail_bypass.feature_password_reset'));

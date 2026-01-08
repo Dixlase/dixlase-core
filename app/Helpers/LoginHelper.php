@@ -50,50 +50,50 @@ class LoginHelper
     }
 
     /**
-     * 2FAが必要かチェック
+     * Two-FAが必要かチェック
      *
      * @param mixed $user ユーザーモデル
-     * @param string $twoFactorServiceClass 2FAサービスクラス名
-     * @return array ['needs_2fa' => bool, 'lockout_status' => array|null]
+     * @param string $twoFactorServiceClass Two-FAサービスクラス名
+     * @return array ['needs_two_fa' => bool, 'lockout_status' => array|null]
      */
     public function check2FARequired($user, string $twoFactorServiceClass): array
     {
         $twoFactorService = app($twoFactorServiceClass);
         
-        // メールサーバーのテストが完了していない場合は2FAをスキップ
+        // メールサーバーのテストが完了していない場合はTwo-FAをスキップ
         $mailServerTested = \App\Services\MailServerValidatorService::isMailServerTested();
         
-        Log::info('[Login] 2FA check', [
+        Log::info('[Login] Two-FA check', [
             'user_id' => $user->id,
-            'has_2fa' => $twoFactorService->has($user),
+            'has_two_fa' => $twoFactorService->has($user),
             'mail_server_tested' => $mailServerTested,
         ]);
 
         if (!$twoFactorService->has($user) || !$mailServerTested) {
             return [
-                'needs_2fa' => false,
+                'needs_two_fa' => false,
                 'lockout_status' => null,
             ];
         }
 
-        // 2FAロックアウトチェック
+        // Two-FAロックアウトチェック
         $lockoutStatus = $twoFactorService->checkLockout($user);
         
         if ($lockoutStatus['locked_out']) {
-            Log::warning('[Login] User is locked out from 2FA', [
+            Log::warning('[Login] User is locked out from Two-FA', [
                 'user_id' => $user->id,
                 'remaining_minutes' => $lockoutStatus['remaining_minutes'],
             ]);
         }
 
         return [
-            'needs_2fa' => true,
+            'needs_two_fa' => true,
             'lockout_status' => $lockoutStatus,
         ];
     }
 
     /**
-     * 2FAセッションを準備
+     * Two-FAセッションを準備
      *
      * @param mixed $user ユーザーモデル
      * @param bool $remember Remember me
@@ -106,14 +106,14 @@ class LoginHelper
             'login.remember' => $remember,
         ]);
 
-        Log::info('[Login] 2FA session prepared', [
+        Log::info('[Login] Two-FA session prepared', [
             'user_id' => $user->id,
             'remember' => $remember,
         ]);
     }
 
     /**
-     * ログインを完了（2FAなし）
+     * ログインを完了（Two-FAなし）
      *
      * @param mixed $user ユーザーモデル
      * @param bool $remember Remember me
@@ -233,7 +233,7 @@ class LoginHelper
      */
     public function get2FALockoutMessage(array $lockoutStatus, string $translationPrefix = 'auth'): string
     {
-        return __("{$translationPrefix}.2fa_locked_out", [
+        return __("{$translationPrefix}.two_fa_locked_out", [
             'minutes' => $lockoutStatus['remaining_minutes']
         ]);
     }

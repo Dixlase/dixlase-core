@@ -156,7 +156,7 @@ class AdminProfileController extends AdminLoggedInController
         $this->viewParams['loginNotificationOptions'] = $loginNotificationOptions;
 
         // 二段階認証設定の追加
-        $force2fa = (int) MemberSetting::getValue(
+        $forceTwoFa = (int) MemberSetting::getValue(
             'force_two_fa',
             AuthenticationMode::UseProfileSetting->value
         );
@@ -178,7 +178,7 @@ class AdminProfileController extends AdminLoggedInController
         // radio-card-group用の二段階認証オプション配列を生成
         // 全体設定が「プロフィール設定を反映」の場合は、無効/異なる端末時のみ/常に有効から選択可能
         $profileTwoFaOptions = [];
-        if ($force2fa === AuthenticationMode::UseProfileSetting->value) {
+        if ($forceTwoFa === AuthenticationMode::UseProfileSetting->value) {
             foreach (AuthenticationMode::forProfile() as $case) {
                 $profileTwoFaOptions[] = [
                     'value' => (string)$case->value,
@@ -213,11 +213,11 @@ class AdminProfileController extends AdminLoggedInController
 
         // 全体設定が Always の場合は現在の設定を表示用として取得
         $currentGlobalTwoFaMode = null;
-        if ($force2fa === AuthenticationMode::Always->value) {
-            $currentGlobalTwoFaMode = AuthenticationMode::from($force2fa);
+        if ($forceTwoFa === AuthenticationMode::Always->value) {
+            $currentGlobalTwoFaMode = AuthenticationMode::from($forceTwoFa);
         }
 
-        $this->viewParams['force2fa'] = $force2fa;
+        $this->viewParams['forceTwoFa'] = $forceTwoFa;
         $this->viewParams['twoFaMode'] = $twoFaMode;
         $this->viewParams['profileTwoFaOptions'] = $profileTwoFaOptions;
         $this->viewParams['enabledTwoFaMethods'] = $enabledTwoFaMethods;
@@ -325,8 +325,8 @@ class AdminProfileController extends AdminLoggedInController
         $oldTwoFaMode = is_int($member->two_fa_mode) ? $member->two_fa_mode : $member->two_fa_mode->value;
         
         // two_fa_mode は全体設定が UseProfileSetting のときだけ上書き
-        $force2fa = (int) MemberSetting::getValue('force_two_fa', AuthenticationMode::UseProfileSetting->value);
-        if ($force2fa === AuthenticationMode::UseProfileSetting->value && array_key_exists('two_fa_mode', $validated)) {
+        $forceTwoFa = (int) MemberSetting::getValue('force_two_fa', AuthenticationMode::UseProfileSetting->value);
+        if ($forceTwoFa === AuthenticationMode::UseProfileSetting->value && array_key_exists('two_fa_mode', $validated)) {
             $member->two_fa_mode = (int) $validated['two_fa_mode'];
         }
 
@@ -346,14 +346,14 @@ class AdminProfileController extends AdminLoggedInController
         $shouldGenerateRecoveryCodes = false;
         
         \Log::info('[Profile] Recovery code generation check', [
-            'force2fa' => $force2fa,
-            'force2fa_expected' => AuthenticationMode::UseProfileSetting->value,
+            'forceTwoFa' => $forceTwoFa,
+            'forceTwoFa_expected' => AuthenticationMode::UseProfileSetting->value,
             'has_two_fa_mode_in_validated' => array_key_exists('two_fa_mode', $validated),
             'oldTwoFaMode' => $oldTwoFaMode,
             'newTwoFaMode' => isset($validated['two_fa_mode']) ? (int) $validated['two_fa_mode'] : null,
         ]);
         
-        if ($force2fa === AuthenticationMode::UseProfileSetting->value && array_key_exists('two_fa_mode', $validated)) {
+        if ($forceTwoFa === AuthenticationMode::UseProfileSetting->value && array_key_exists('two_fa_mode', $validated)) {
             $newTwoFaMode = (int) $validated['two_fa_mode'];
             
             \Log::info('[Profile] Inside 2FA check block', [
