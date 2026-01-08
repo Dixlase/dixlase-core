@@ -140,9 +140,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :value="old('two_fa_force_mode', (string) $twoFaForceMode)"
                 :globalSetting="null"
                 :excludeUseProfileSetting="false"
-                :passkeyGloballyEnabled="true"
-                :passkeyEnabled="old('passkey_two_fa_enabled', $passkeyEnabled ?? false)"
-                :defaultTwoFaMethod="'0'"
+                :twoFaPasskeyGloballyEnabled="true"
+                :twoFaPasskeyEnabled="old('passkey_two_fa_enabled', $passkeyEnabled ?? false)"
+                :twoFaDefaultMethod="'0'"
                 :columns="4"
                 :globalSettingsUrl="null"
             />

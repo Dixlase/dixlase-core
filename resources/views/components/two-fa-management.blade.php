@@ -19,12 +19,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @props([
-    'passkeyEnabled' => false,
-    'passkeyDevices' => null,
+    'twoFaPasskeyEnabled' => false,
+    'twoFaPasskeyDevices' => null,
     'twoFaHasRecoveryCodes' => false,
     'twoFaRecoveryCodesCount' => 0,
-    'trustedDevices' => null,
-    'showTrustedDevices' => false,
+    'twoFaTrustedDevices' => null,
+    'twoFaShowTrustedDevices' => false,
     'hideAddButtons' => false,
     'hideGenerateButton' => false,
     'adminContext' => false,
@@ -45,11 +45,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <h2>{{ __('components.two_fa_management.title') }}</h2>
 
     <!-- Passkeyデバイス -->
-    @if($passkeyEnabled)
+    @if($twoFaPasskeyEnabled)
     <div>
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-semibold">{{ __('components.two_fa_management.passkey_devices') }}</h3>
-            @if($passkeyDevices && !$passkeyDevices->isEmpty())
+            @if($twoFaPasskeyDevices && !$twoFaPasskeyDevices->isEmpty())
                 <button 
                     type="button"
                     onclick="openModal('deleteAllPasskeysModal')"
@@ -59,11 +59,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endif
         </div>
         
-        @if(!$passkeyDevices || $passkeyDevices->isEmpty())
+        @if(!$twoFaPasskeyDevices || $twoFaPasskeyDevices->isEmpty())
             <p class="text-gray-600 dark:text-gray-400 mb-4">{{ __('components.two_fa_management.no_passkey_devices') }}</p>
         @else
             <div class="space-y-4 mb-4">
-                @foreach($passkeyDevices as $device)
+                @foreach($twoFaPasskeyDevices as $device)
                     <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4 flex items-start justify-between">
                         <div class="flex-1">
                             <div class="flex items-center mb-2">
@@ -165,11 +165,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </div>
 
     <!-- 信頼済みデバイス管理 -->
-    @if($showTrustedDevices)
+    @if($twoFaShowTrustedDevices)
     <div class="mb-8">
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-semibold">{{ __('components.two_fa_management.trusted_devices_title') }}</h3>
-            @if($trustedDevices && !$trustedDevices->isEmpty())
+            @if($twoFaTrustedDevices && !$twoFaTrustedDevices->isEmpty())
                 <button 
                     type="button"
                     onclick="openModal('deleteAllTrustedDevicesModal')"
@@ -179,11 +179,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endif
         </div>
         
-        @if(!$trustedDevices || $trustedDevices->isEmpty())
+        @if(!$twoFaTrustedDevices || $twoFaTrustedDevices->isEmpty())
             <p class="text-gray-600 dark:text-gray-400 mb-4">{{ __('components.two_fa_management.no_trusted_devices') }}</p>
         @else
             <div class="space-y-4 mb-4">
-                @foreach($trustedDevices as $device)
+                @foreach($twoFaTrustedDevices as $device)
                     <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4 flex items-start justify-between">
                         <div class="flex-1">
                             <div class="flex items-center mb-2">

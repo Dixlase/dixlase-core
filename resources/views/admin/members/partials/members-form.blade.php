@@ -388,9 +388,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :value="old('two_fa_mode', (string)$currentTwoFaMode)"
             :globalSetting="$forceTwoFa"
             :excludeUseProfileSetting="true"
-            :passkeyGloballyEnabled="$twoFaPasskeyGloballyEnabled"
-            :passkeyEnabled="$initialPasskeyEnabled"
-            :defaultTwoFaMethod="(string)($member->default_two_fa_method ?? $twoFaDefaultMethod)"
+            :twoFaPasskeyGloballyEnabled="$twoFaPasskeyGloballyEnabled"
+            :twoFaPasskeyEnabled="$initialPasskeyEnabled"
+            :twoFaDefaultMethod="(string)($member->default_two_fa_method ?? $twoFaDefaultMethod)"
             :columns="3"
             :globalSettingsUrl="route('admin.members.settings.auth')"
         />
@@ -411,12 +411,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
         
         <x-two-fa-management
-            :passkeyEnabled="$twoFaPasskeyEnabled"
-            :passkeyDevices="$twoFaPasskeyDevices"
+            :twoFaPasskeyEnabled="$twoFaPasskeyEnabled"
+            :twoFaPasskeyDevices="$twoFaPasskeyDevices"
             :twoFaHasRecoveryCodes="$twoFaHasRecoveryCodes"
             :twoFaRecoveryCodesCount="$twoFaRecoveryCodesCount"
-            :trustedDevices="collect()"
-            :showTrustedDevices="false"
+            :twoFaTrustedDevices="collect()"
+            :twoFaShowTrustedDevices="false"
             :hideAddButtons="true"
             :hideGenerateButton="true"
             :adminContext="true"

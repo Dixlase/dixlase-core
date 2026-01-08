@@ -23,9 +23,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'value' => '0',
     'globalSetting' => null, // 全体設定の値（0=無効, 1=異なる端末時のみ, 2=常に有効, 3=プロフィール設定に従う）
     'excludeUseProfileSetting' => false, // プロフィール設定に従う選択肢を除外するか
-    'passkeyGloballyEnabled' => false, // パスキーが全体で有効か
-    'passkeyEnabled' => true, // パスキーが個別に有効か
-    'defaultTwoFaMethod' => '0', // デフォルトの二段階認証方法（0=メール, 1=パスキー）
+    'twoFaPasskeyGloballyEnabled' => false, // パスキーが全体で有効か
+    'twoFaPasskeyEnabled' => true, // パスキーが個別に有効か
+    'twoFaDefaultMethod' => '0', // デフォルトの二段階認証方法（0=メール, 1=パスキー）
     'columns' => 3,
     'globalSettingsUrl' => null, // 全体設定へのリンクURL（nullの場合は注意書きを非表示）
 ])
@@ -86,12 +86,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         ];
     }
     
-    $initialPasskeyEnabled = old('two_fa_passkey_enabled', $passkeyEnabled);
+    $initialPasskeyEnabled = old('two_fa_passkey_enabled', $twoFaPasskeyEnabled);
     $initialTwoFactorMode = old($name, $value);
 @endphp
 
 <div x-data="{ 
-    passkeyEnabled: {{ $passkeyGloballyEnabled && $initialPasskeyEnabled ? 'true' : 'false' }},
+    passkeyEnabled: {{ $twoFaPasskeyGloballyEnabled && $initialPasskeyEnabled ? 'true' : 'false' }},
     twoFaMode: '{{ $initialTwoFactorMode }}',
     get twoFaEnabled() {
         return this.twoFaMode !== '0';
@@ -171,7 +171,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </fieldset>
 
     {{-- デフォルトの認証方法（パスキーが全体設定で有効、またはユーザーが個別に有効にしている場合に表示） --}}
-    @if($passkeyGloballyEnabled || $initialPasskeyEnabled)
+    @if($twoFaPasskeyGloballyEnabled || $initialPasskeyEnabled)
         <fieldset>
             <legend>{{ __('components.two_fa.default_method') }}</legend>
             @php
@@ -179,7 +179,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     ['value' => '0', 'label' => __('common.email')],
                     ['value' => '1', 'label' => __('components.two_fa.passkey')],
                 ];
-                $currentDefaultMethod = old('default_two_fa_method', $defaultTwoFaMethod);
+                $currentDefaultMethod = old('default_two_fa_method', $twoFaDefaultMethod);
             @endphp
             
             <div x-show="!passkeyEnabled" class="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">

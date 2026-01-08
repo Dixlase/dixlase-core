@@ -197,9 +197,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :value="old('two_fa_mode', (string) ($twoFaMode?->value ?? 0))"
                     :globalSetting="$twoFaForceMode"
                     :excludeUseProfileSetting="true"
-                    :passkeyGloballyEnabled="$twoFaPasskeyGloballyEnabled"
-                    :passkeyEnabled="$currentPasskeyEnabled"
-                    :defaultTwoFaMethod="(string) (Auth::guard('member')->user()->two_fa_default_method ?? $twoFaDefaultMethod)"
+                    :twoFaPasskeyGloballyEnabled="$twoFaPasskeyGloballyEnabled"
+                    :twoFaPasskeyEnabled="$currentPasskeyEnabled"
+                    :twoFaDefaultMethod="(string) (Auth::guard('member')->user()->two_fa_default_method ?? $twoFaDefaultMethod)"
                     :columns="3"
                 />
             </section>
@@ -247,12 +247,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 2FA管理セクション（メールサーバー設定済み、かつ二段階認証が有効の場合のみ表示） -->
     @if($isMailServerTested && $twoFaForceMode !== \App\Enums\AuthenticationMode::Disabled->value)
         <x-two-fa-management
-            :passkeyEnabled="$twoFaPasskeyEnabled"
-            :passkeyDevices="$twoFaPasskeyDevices"
+            :twoFaPasskeyEnabled="$twoFaPasskeyEnabled"
+            :twoFaPasskeyDevices="$twoFaPasskeyDevices"
             :twoFaHasRecoveryCodes="$twoFaHasRecoveryCodes"
             :twoFaRecoveryCodesCount="$twoFaRecoveryCodesCount"
-            :trustedDevices="$trustedDevices ?? collect()"
-            :showTrustedDevices="true"
+            :twoFaTrustedDevices="$trustedDevices ?? collect()"
+            :twoFaShowTrustedDevices="true"
             :routes="[
                 'passkey_register_options' => route('admin.profile.passkey.register-options'),
                 'passkey_register' => route('admin.profile.passkey.register'),
