@@ -115,9 +115,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 <fieldset>
                     <x-form.toggle
-                        name="lockout_notification_enabled"
+                        name="login_attempt_lockout_notification_enabled"
                         :label="__('admin/members/settings/auth.lockout_notification_enabled')"
-                        :checked="old('lockout_notification_enabled', $lockoutNotificationEnabled)"
+                        :checked="old('login_attempt_lockout_notification_enabled', $lockoutNotificationEnabled)"
                     />
                     <p class="mt-2">
                         {!! __('admin/members/settings/auth.lockout_notification_help') !!}

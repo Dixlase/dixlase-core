@@ -49,7 +49,7 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
             'password_require_symbol' => filter_var($this->input('password_require_symbol'), FILTER_VALIDATE_BOOLEAN),
             // ログイン試行制限設定
             'login_attempt_limit_enabled' => filter_var($this->input('login_attempt_limit_enabled'), FILTER_VALIDATE_BOOLEAN),
-            'lockout_notification_enabled' => filter_var($this->input('lockout_notification_enabled'), FILTER_VALIDATE_BOOLEAN),
+            'login_attempt_lockout_notification_enabled' => filter_var($this->input('login_attempt_lockout_notification_enabled'), FILTER_VALIDATE_BOOLEAN),
             // パスワードリセット機能設定
             'password_reset_enabled' => filter_var($this->input('password_reset_enabled'), FILTER_VALIDATE_BOOLEAN),
             // パスワード辞書攻撃対策設定
@@ -93,7 +93,7 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
             'login_attempt_max_attempts' => 'required|integer|min:1|max:100',
             'login_attempt_time_window' => 'required|integer|min:1|max:1440', // 最大24時間
             'login_attempt_lockout_duration' => 'required|integer|min:1|max:10080', // 最大1週間
-            'lockout_notification_enabled' => 'required|boolean',
+            'login_attempt_lockout_notification_enabled' => 'required|boolean',
             'two_fa_force_mode' => ['required', new Enum(AuthenticationMode::class)],
             'two_fa_expire_minutes' => 'required|integer|min:1|max:60', // 1-60分（メール認証）
             'two_fa_resend_interval_seconds' => 'required|integer|min:60|max:600', // 60-600秒（1-10分）
