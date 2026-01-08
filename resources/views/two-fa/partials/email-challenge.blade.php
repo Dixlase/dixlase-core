@@ -50,7 +50,7 @@
         @if($showExpireTime)
             <div class="mb-4">
                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                    {{ __('two-factor.email.expire_label') }}: <span id="expire-time">{{ $expireMinutes }}分</span>
+                    {{ __('two_fa.email.expire_label') }}: <span id="expire-time">{{ $expireMinutes }}分</span>
                 </p>
             </div>
         @endif
@@ -203,11 +203,11 @@ document.addEventListener('DOMContentLoaded', function() {
             expireTime--;
             const minutes = Math.floor(expireTime / 60);
             const seconds = expireTime % 60;
-            expireElement.textContent = `${minutes}分${seconds.toString().padStart(2, '0')}{{ __('two-factor.email.seconds_suffix') }}`;
+            expireElement.textContent = `${minutes}分${seconds.toString().padStart(2, '0')}{{ __('two_fa.email.seconds_suffix') }}`;
             
             if (expireTime <= 0) {
                 clearInterval(expireInterval);
-                expireElement.textContent = '{{ __('two-factor.email.expired') }}';
+                expireElement.textContent = '{{ __('two_fa.email.expired') }}';
                 inputs.forEach(input => input.disabled = true);
                 submitButton.disabled = true;
             }
@@ -249,12 +249,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateHiddenInput();
                 updateSubmitButton();
             } else {
-                showFlashMessage(data.message || '{{ __('two-factor.email.resend_failed') }}', 'error');
+                showFlashMessage(data.message || '{{ __('two_fa.email.resend_failed') }}', 'error');
             }
         })
         .catch(error => {
             console.error('Resend error:', error);
-            showFlashMessage('{{ __('two-factor.email.network_error') }}', 'error');
+            showFlashMessage('{{ __('two_fa.email.network_error') }}', 'error');
         });
     };
 
@@ -265,7 +265,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         countdownInterval = setInterval(() => {
             resendCountdown--;
-            document.getElementById('resend-countdown').textContent = `(${resendCountdown}{{ __('two-factor.email.seconds_suffix') }})`;
+            document.getElementById('resend-countdown').textContent = `(${resendCountdown}{{ __('two_fa.email.seconds_suffix') }})`;
             
             if (resendCountdown <= 0) {
                 clearInterval(countdownInterval);

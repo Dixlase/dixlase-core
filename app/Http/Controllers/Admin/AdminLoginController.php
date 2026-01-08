@@ -425,7 +425,7 @@ class AdminLoginController extends AdminController
         if ($attemptService->isLockedOut($member)) {
             $remainingMinutes = $attemptService->getRemainingLockoutTime($member);
             return redirect()->route('admin.login')
-                ->withErrors(['email' => __('two-fa.lockout.message', ['minutes' => $remainingMinutes])]);
+                ->withErrors(['email' => __('two_fa.lockout.message', ['minutes' => $remainingMinutes])]);
         }
 
         // 既存の有効なコードがあるかチェック
@@ -526,7 +526,7 @@ class AdminLoginController extends AdminController
             $remainingMinutes = $attemptService->getRemainingLockoutTime($member);
             session()->forget(['login.id', 'login.remember']);
             return redirect()->route('admin.login')
-                ->withErrors(['email' => __('two-fa.lockout.message', ['minutes' => $remainingMinutes])]);
+                ->withErrors(['email' => __('two_fa.lockout.message', ['minutes' => $remainingMinutes])]);
         }
 
         $twoFactor = app(AdminTwoFaService::class);
@@ -540,13 +540,13 @@ class AdminLoginController extends AdminController
                 $lockoutDuration = (int) MemberSetting::getValue('two_fa_lockout_duration', 30);
                 session()->forget(['login.id', 'login.remember']);
                 return redirect()->route('admin.login')
-                    ->withErrors(['email' => __('two-fa.lockout.locked', ['minutes' => $lockoutDuration])]);
+                    ->withErrors(['email' => __('two_fa.lockout.locked', ['minutes' => $lockoutDuration])]);
             }
             
             // 残り試行回数を取得
             $remainingAttempts = $attemptService->getRemainingAttempts($member);
             return back()->withErrors([
-                'code' => __('two-fa.email.invalid_with_attempts', ['attempts' => $remainingAttempts])
+                'code' => __('two_fa.email.invalid_with_attempts', ['attempts' => $remainingAttempts])
             ]);
         }
 
@@ -603,7 +603,7 @@ class AdminLoginController extends AdminController
 
         return response()->json([
             'success' => true,
-            'message' => __('two-fa.email.resend_success')
+            'message' => __('two_fa.email.resend_success')
         ]);
     }
 
@@ -628,7 +628,7 @@ class AdminLoginController extends AdminController
         if ($attemptService->isLockedOut($member)) {
             $remainingMinutes = $attemptService->getRemainingLockoutTime($member);
             return redirect()->route('admin.login')
-                ->withErrors(['email' => __('two-fa.lockout.message', ['minutes' => $remainingMinutes])]);
+                ->withErrors(['email' => __('two_fa.lockout.message', ['minutes' => $remainingMinutes])]);
         }
 
         return view('two-fa.recovery_code_challenge');
@@ -656,7 +656,7 @@ class AdminLoginController extends AdminController
             $remainingMinutes = $attemptService->getRemainingLockoutTime($member);
             session()->forget(['login.id', 'login.remember']);
             return redirect()->route('admin.login')
-                ->withErrors(['email' => __('two-fa.lockout.message', ['minutes' => $remainingMinutes])]);
+                ->withErrors(['email' => __('two_fa.lockout.message', ['minutes' => $remainingMinutes])]);
         }
 
         $recoveryCodeService = app(RecoveryCodeService::class);
@@ -671,13 +671,13 @@ class AdminLoginController extends AdminController
                 $lockoutDuration = (int) MemberSetting::getValue('two_fa_lockout_duration', 30);
                 session()->forget(['login.id', 'login.remember']);
                 return redirect()->route('admin.login')
-                    ->withErrors(['email' => __('two-fa.lockout.locked', ['minutes' => $lockoutDuration])]);
+                    ->withErrors(['email' => __('two_fa.lockout.locked', ['minutes' => $lockoutDuration])]);
             }
 
             // 残り試行回数を取得
             $remainingAttempts = $attemptService->getRemainingAttempts($member);
             return back()->withErrors([
-                'recovery_code' => __('two-fa.recovery_code.invalid_with_attempts', ['attempts' => $remainingAttempts])
+                'recovery_code' => __('two_fa.recovery_code.invalid_with_attempts', ['attempts' => $remainingAttempts])
             ]);
         }
 

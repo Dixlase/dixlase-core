@@ -551,7 +551,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <!-- 回復コード -->
         <div class="mb-8">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold">{{ __('two-factor.recovery_codes.title') }}</h3>
+                <h3 class="text-lg font-semibold">{{ __('two_fa.recovery_codes.title') }}</h3>
             </div>
 
             @if($hasRecoveryCodes)
@@ -559,7 +559,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="flex items-center justify-between">
                         <p class="text-sm text-blue-800 dark:text-blue-200">
                             <i class="fas fa-info-circle mr-2"></i>
-                            {{ __('two-factor.recovery_codes.remaining', ['count' => $recoveryCodesCount]) }}
+                            {{ __('two_fa.recovery_codes.remaining', ['count' => $recoveryCodesCount]) }}
                         </p>
                         <x-form.button
                             type="button"
@@ -572,7 +572,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
             @else
-                <p class="text-gray-600 dark:text-gray-400 mb-4">{{ __('two-factor.recovery_codes.not_generated') }}</p>
+                <p class="text-gray-600 dark:text-gray-400 mb-4">{{ __('two_fa.recovery_codes.not_generated') }}</p>
             @endif
 
             <!-- 回復コードの説明 -->
