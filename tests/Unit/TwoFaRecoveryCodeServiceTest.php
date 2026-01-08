@@ -24,17 +24,17 @@ namespace Tests\Unit;
 
 use App\Models\Member;
 use App\Models\MemberTwoFaRecoveryCode;
-use App\Services\RecoveryCodeService;
+use App\Services\TwoFaRecoveryCodeService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-class RecoveryCodeServiceTest extends TestCase
+class TwoFaRecoveryCodeServiceTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected RecoveryCodeService $service;
+    protected TwoFaRecoveryCodeService $service;
 
     protected function setUp(): void
     {
