@@ -137,7 +137,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endif
             <x-two-fa-auth-selector
                 name="two_fa_force_mode"
-                :value="old('two_fa_force_mode', (string) $forceTwoFa)"
+                :value="old('two_fa_force_mode', (string) $twoFaForceMode)"
                 :globalSetting="null"
                 :excludeUseProfileSetting="false"
                 :passkeyGloballyEnabled="true"
@@ -156,7 +156,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @php
                     use App\Enums\PasskeyMode;
                     $passkeyModeOptions = PasskeyMode::getGlobalOptions();
-                    $currentPasskeyMode = old('two_fa_passkey_mode', $passkeyMode ?? '2');
+                    $currentPasskeyMode = old('two_fa_passkey_mode', $twoFaPasskeyMode ?? '2');
                 @endphp
                 
                 <x-form.radio-card-group

@@ -238,15 +238,15 @@ class AdminProfileController extends AdminLoggedInController
             $twoFaCurrentGlobalMode = AuthenticationMode::from($twoFaForceMode);
         }
 
-        $this->viewParams['forceTwoFa'] = $twoFaForceMode;
+        $this->viewParams['twoFaForceMode'] = $twoFaForceMode;
         $this->viewParams['twoFaMode'] = $twoFaMode;
-        $this->viewParams['profileTwoFaOptions'] = $twoFaProfileOptions;
-        $this->viewParams['enabledTwoFaMethods'] = $twoFaEnabledMethods;
-        $this->viewParams['passkeyMode'] = $twoFaPasskeyMode;
-        $this->viewParams['passkeyEnabled'] = $twoFaPasskeyEnabled;
-        $this->viewParams['currentTwoFaMethod'] = $twoFaCurrentMethod;
-        $this->viewParams['defaultTwoFaMethod'] = $twoFaDefaultMethod;
-        $this->viewParams['currentGlobalTwoFaMode'] = $twoFaCurrentGlobalMode;
+        $this->viewParams['twoFaProfileOptions'] = $twoFaProfileOptions;
+        $this->viewParams['twoFaEnabledMethods'] = $twoFaEnabledMethods;
+        $this->viewParams['twoFaPasskeyMode'] = $twoFaPasskeyMode;
+        $this->viewParams['twoFaPasskeyEnabled'] = $twoFaPasskeyEnabled;
+        $this->viewParams['twoFaCurrentMethod'] = $twoFaCurrentMethod;
+        $this->viewParams['twoFaDefaultMethod'] = $twoFaDefaultMethod;
+        $this->viewParams['twoFaCurrentGlobalMode'] = $twoFaCurrentGlobalMode;
 
         // pending_email がある場合の情報を渡す
         $this->viewParams['hasPendingEmail'] = !empty(Auth::guard('member')->user()->pending_email);

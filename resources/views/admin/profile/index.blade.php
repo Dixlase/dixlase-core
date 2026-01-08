@@ -183,23 +183,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </section>
 
         <!-- 二段階認証設定（メールサーバー設定済みの場合のみ表示） -->
-        @if($isMailServerTested && ($forceTwoFa === \App\Enums\AuthenticationMode::UseProfileSetting->value || $currentGlobalTwoFaMode))
+        @if($isMailServerTested && ($twoFaForceMode === \App\Enums\AuthenticationMode::UseProfileSetting->value || $twoFaCurrentGlobalMode))
             @php
                 $member = Auth::guard('member')->user();
-                $passkeyGloballyEnabled = in_array(\App\Enums\TwoFaMethod::PASSKEY->value, array_keys($enabledTwoFaMethods ?? []));
+                $twoFaPasskeyGloballyEnabled = in_array(\App\Enums\TwoFaMethod::PASSKEY->value, array_keys($twoFaEnabledMethods ?? []));
             @endphp
             
             <section class="transition-colors-unified">
-                <h2>{{ __('auth.two_fa_mode.label') }}</h2>
-                
+                <h2>{{ __('auth.two_fa_settings') }}</h2>
+
                 <x-two-fa-auth-selector
                     name="two_fa_mode"
                     :value="old('two_fa_mode', (string) ($twoFaMode?->value ?? 0))"
-                    :globalSetting="$forceTwoFa"
+                    :globalSetting="$twoFaForceMode"
                     :excludeUseProfileSetting="true"
-                    :passkeyGloballyEnabled="$passkeyGloballyEnabled"
+                    :passkeyGloballyEnabled="$twoFaPasskeyGloballyEnabled"
                     :passkeyEnabled="$currentPasskeyEnabled"
-                    :defaultTwoFaMethod="(string) (Auth::guard('member')->user()->two_fa_default_method ?? $defaultTwoFaMethod)"
+                    :defaultTwoFaMethod="(string) (Auth::guard('member')->user()->two_fa_default_method ?? $twoFaDefaultMethod)"
                     :columns="3"
                 />
             </section>
@@ -245,9 +245,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </form>
 
     <!-- 2FA管理セクション（メールサーバー設定済み、かつ二段階認証が有効の場合のみ表示） -->
-    @if($isMailServerTested && $forceTwoFa !== \App\Enums\AuthenticationMode::Disabled->value)
+    @if($isMailServerTested && $twoFaForceMode !== \App\Enums\AuthenticationMode::Disabled->value)
         <x-two-fa-management
-            :passkeyEnabled="$passkeyEnabled"
+            :passkeyEnabled="$twoFaPasskeyEnabled"
             :passkeyDevices="$passkeyDevices"
             :hasRecoveryCodes="$hasRecoveryCodes"
             :recoveryCodesCount="$recoveryCodesCount"
