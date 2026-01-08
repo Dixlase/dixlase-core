@@ -23,7 +23,7 @@
     <!-- 認証待機状態 -->
     <div id="device-waiting" class="text-center">
         <button id="start-device-auth" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
-            {{ __('two-factor.device.start_button') }}
+            {{ __('two_fa.device.start_button') }}
         </button>
     </div>
 
@@ -33,7 +33,7 @@
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
         </div>
         <p class="text-xs text-gray-500 dark:text-gray-400 mt-4">
-            {{ __('two-factor.device.expire_label') }}: <span id="expire-time">{{ $expireMinutes }}分</span>
+            {{ __('two_fa.device.expire_label') }}: <span id="expire-time">{{ $expireMinutes }}分</span>
         </p>
         
         @if($resendAction)
@@ -44,7 +44,7 @@
                 id="resend-device-button"
                 class="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-                {{ __('two-factor.device.resend_button') }}
+                {{ __('two_fa.device.resend_button') }}
             </button>
             <span id="resend-device-countdown" class="text-xs text-gray-500 dark:text-gray-400 ml-2 hidden"></span>
         </div>
@@ -59,10 +59,10 @@
             </svg>
         </div>
         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-            {{ __('two-factor.device.success_title') }}
+            {{ __('two_fa.device.success_title') }}
         </h3>
         <p class="text-sm text-gray-600 dark:text-gray-400">
-            {{ __('two-factor.device.success_message') }}
+            {{ __('two_fa.device.success_message') }}
         </p>
     </div>
 
@@ -74,13 +74,13 @@
             </svg>
         </div>
         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-            {{ __('two-factor.device.error_title') }}
+            {{ __('two_fa.device.error_title') }}
         </h3>
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-4" id="device-error-message">
-            {{ __('two-factor.device.error_message') }}
+            {{ __('two_fa.device.error_message') }}
         </p>
         <button id="retry-device-auth" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
-            {{ __('two-factor.device.retry_button') }}
+            {{ __('two_fa.device.retry_button') }}
         </button>
     </div>
 
@@ -92,13 +92,13 @@
             </svg>
         </div>
         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-            {{ __('two-factor.device.timeout_title') }}
+            {{ __('two_fa.device.timeout_title') }}
         </h3>
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            {{ __('two-factor.device.timeout_message') }}
+            {{ __('two_fa.device.timeout_message') }}
         </p>
         <button id="retry-timeout-auth" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
-            {{ __('two-factor.device.retry_button') }}
+            {{ __('two_fa.device.retry_button') }}
         </button>
     </div>
 </div>
@@ -135,12 +135,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 startPolling();
                 startCountdown();
             } else {
-                showError(data.message || '{{ __('two-factor.device.challenge_start_failed') }}');
+                showError(data.message || '{{ __('two_fa.device.challenge_start_failed') }}');
             }
         })
         .catch(error => {
             console.error('Device challenge error:', error);
-            showError('{{ __('two-factor.device.network_error') }}');
+            showError('{{ __('two_fa.device.network_error') }}');
         });
     }
 
@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (retryCount >= {{ $maxRetries }}) {
                     stopPolling();
                     stopCountdown();
-                    showError('{{ __('two-factor.device.network_error') }}');
+                    showError('{{ __('two_fa.device.network_error') }}');
                 }
             });
         }, {{ $pollInterval }});
@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!resendButton) return;
         
         resendButton.disabled = true;
-        resendButton.textContent = '{{ __('two-factor.device.sending') }}';
+        resendButton.textContent = '{{ __('two_fa.device.sending') }}';
         
         fetch('{{ $resendAction }}', {
             method: 'POST',
@@ -273,17 +273,17 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                resendButton.textContent = '{{ __('two-factor.device.resend_button') }}';
+                resendButton.textContent = '{{ __('two_fa.device.resend_button') }}';
                 
                 // 再送信クールダウン
                 let countdown = {{ $resendIntervalSeconds }};
-                resendCountdown.textContent = `(${countdown}{{ __('two-factor.device.seconds_suffix') }}後に再送信可能)`;
+                resendCountdown.textContent = `(${countdown}{{ __('two_fa.device.seconds_suffix') }}後に再送信可能)`;
                 resendCountdown.classList.remove('hidden');
                 
                 const countdownInterval = setInterval(() => {
                     countdown--;
                     if (countdown > 0) {
-                        resendCountdown.textContent = `(${countdown}{{ __('two-factor.device.seconds_suffix') }}後に再送信可能)`;
+                        resendCountdown.textContent = `(${countdown}{{ __('two_fa.device.seconds_suffix') }}後に再送信可能)`;
                     } else {
                         clearInterval(countdownInterval);
                         resendCountdown.classList.add('hidden');
@@ -291,14 +291,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }, 1000);
             } else {
-                resendButton.textContent = '{{ __('two-factor.device.resend_button') }}';
+                resendButton.textContent = '{{ __('two_fa.device.resend_button') }}';
                 resendButton.disabled = false;
                 alert(data.message || '再送信に失敗しました');
             }
         })
         .catch(error => {
             console.error('Resend error:', error);
-            resendButton.textContent = '{{ __('two-factor.device.resend_button') }}';
+            resendButton.textContent = '{{ __('two_fa.device.resend_button') }}';
             resendButton.disabled = false;
             alert('ネットワークエラーが発生しました');
         });

@@ -1,11 +1,11 @@
 @extends('layouts.auth')
 
-@section('title', __('two-factor.recovery_code.title'))
+@section('title', __('two_fa.recovery_code.title'))
 @section('icon')
 ["fas fa-life-ring", "fas fa-key"]
 @endsection
-@section('header', __('two-factor.recovery_code.title'))
-@section('description', __('two-factor.recovery_code.prompt'))
+@section('header', __('two_fa.recovery_code.title'))
+@section('description', __('two_fa.recovery_code.prompt'))
 
 @section('content')
     <form method="POST" action="{{ route('admin.two-fa.recovery-code.confirm') }}" class="space-y-6" id="recoveryCodeForm">
@@ -14,7 +14,7 @@
         <!-- 回復コード入力 -->
         <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                {{ __('two-factor.recovery_code.code_label') }}
+                {{ __('two_fa.recovery_code.code_label') }}
             </label>
             
             <!-- 5桁×4ブロックの入力フィールド -->
@@ -76,7 +76,7 @@
                 <p class="mt-2 text-sm text-red-600 dark:text-red-400 text-center">{{ $message }}</p>
             @enderror
             <p class="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
-                {{ __('two-factor.recovery_code.format_hint') }}
+                {{ __('two_fa.recovery_code.format_hint') }}
             </p>
         </div>
 
@@ -86,7 +86,7 @@
                 type="submit"
                 class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600"
             >
-                {{ __('two-factor.recovery_code.submit') }}
+                {{ __('two_fa.recovery_code.submit') }}
             </button>
         </div>
     </form>
@@ -94,14 +94,14 @@
     <!-- 別の認証方法に戻る -->
     <div class="mt-6 text-center">
         <a href="{{ route('admin.two-fa.email.show') }}" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-            {{ __('two-factor.recovery_code.back_to_2fa') }}
+            {{ __('two_fa.recovery_code.back_to_2fa') }}
         </a>
     </div>
 @endsection
 
 @section('back_link')
     <a href="{{ route('admin.login') }}" class="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
-        ← {{ __('two-factor.back_to_login') }}
+        ← {{ __('two_fa.back_to_login') }}
     </a>
 @endsection
 
@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // 全て5桁入力されているかチェック
         if (code1.length !== 5 || code2.length !== 5 || code3.length !== 5 || code4.length !== 5) {
             e.preventDefault();
-            alert('{{ __("two-factor.recovery_code.format_hint") }}');
+            alert('{{ __("two_fa.recovery_code.format_hint") }}');
             return false;
         }
         

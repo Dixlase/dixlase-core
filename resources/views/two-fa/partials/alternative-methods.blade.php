@@ -5,7 +5,7 @@
     $context = $context ?? 'admin';
     $showRecoveryCode = $showRecoveryCode ?? true;
 @endphp
-<p class="my-4 text-center text-gray-800 dark:text-white">{{ __('two-factor.switch_method_prompt') }}</p>
+<p class="my-4 text-center text-gray-800 dark:text-white">{{ __('two_fa.switch_method_prompt') }}</p>
 <div class="mt-4 text-center space-y-2">
     @php
         // 利用可能な認証方法（現在の方法を除く）
@@ -30,7 +30,7 @@
     @if($showRecoveryCode)
         <div>
             <a href="{{ route($context . '.two-factor.recovery-code.show') }}" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-                <i class="fas fa-life-ring mr-1"></i>{{ __('two-factor.recovery_code.use_recovery_code') }}
+                <i class="fas fa-life-ring mr-1"></i>{{ __('two_fa.recovery_code.use_recovery_code') }}
             </a>
         </div>
     @endif

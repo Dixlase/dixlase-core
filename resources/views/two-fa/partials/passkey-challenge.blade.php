@@ -10,7 +10,7 @@
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
             </svg>
-            {{ __('two-factor.passkey.start_auth') }}
+            {{ __('two_fa.passkey.start_auth') }}
         </button>
     </div>
 
@@ -22,10 +22,10 @@
             </svg>
         </div>
         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-            {{ __('two-factor.passkey.waiting_title') }}
+            {{ __('two_fa.passkey.waiting_title') }}
         </h3>
         <p class="text-sm text-gray-600 dark:text-gray-400">
-            {{ __('two-factor.passkey.waiting_message') }}
+            {{ __('two_fa.passkey.waiting_message') }}
         </p>
     </div>
 
@@ -37,10 +37,10 @@
             </svg>
         </div>
         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-            {{ __('two-factor.passkey.success_title') }}
+            {{ __('two_fa.passkey.success_title') }}
         </h3>
         <p class="text-sm text-gray-600 dark:text-gray-400">
-            {{ __('two-factor.passkey.success_message') }}
+            {{ __('two_fa.passkey.success_message') }}
         </p>
     </div>
 
@@ -52,13 +52,13 @@
             </svg>
         </div>
         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-            {{ __('two-factor.passkey.error_title') }}
+            {{ __('two_fa.passkey.error_title') }}
         </h3>
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-4" id="passkey-error-message">
-            {{ __('two-factor.passkey.error_message') }}
+            {{ __('two_fa.passkey.error_message') }}
         </p>
         <button id="retry-passkey-auth" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
-            {{ __('two-factor.passkey.retry') }}
+            {{ __('two_fa.passkey.retry') }}
         </button>
     </div>
 
@@ -70,10 +70,10 @@
             </svg>
         </div>
         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-            {{ __('two-factor.passkey.unsupported_title') }}
+            {{ __('two_fa.passkey.unsupported_title') }}
         </h3>
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            {{ __('two-factor.passkey.unsupported_message') }}
+            {{ __('two_fa.passkey.unsupported_message') }}
         </p>
     </div>
 </div>
