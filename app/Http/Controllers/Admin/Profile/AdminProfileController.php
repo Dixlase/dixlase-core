@@ -256,15 +256,15 @@ class AdminProfileController extends AdminLoggedInController
         $this->viewParams['isMailServerTested'] = MailServerValidatorService::isMailServerTested();
 
         // Passkeyデバイス一覧を取得
-        $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
-        $this->viewParams['twoFaPasskeyDevices'] = $passkeyService->getDevices($user);
+        $twoFaPasskeyService = app(\App\Services\PasskeyAuthenticationService::class);
+        $this->viewParams['twoFaPasskeyDevices'] = $twoFaPasskeyService->getDevices($user);
 
         // 回復コード情報を取得
-        $recoveryCodeService = app(\App\Services\RecoveryCodeService::class);
-        $this->viewParams['twoFaRecoveryCodesCount'] = $recoveryCodeService->getRemainingCount($user);
-        $this->viewParams['twoFaHasRecoveryCodes'] = $recoveryCodeService->hasRecoveryCodes($user);
-        $this->viewParams['twoFaCanRegenerateRecoveryCodes'] = $recoveryCodeService->canRegenerate($user);
-        $this->viewParams['twoFaNextRegenerateTime'] = $recoveryCodeService->getNextRegenerateTime($user);
+        $twoFaRecoveryCodeService = app(\App\Services\RecoveryCodeService::class);
+        $this->viewParams['twoFaRecoveryCodesCount'] = $twoFaRecoveryCodeService->getRemainingCount($user);
+        $this->viewParams['twoFaHasRecoveryCodes'] = $twoFaRecoveryCodeService->hasRecoveryCodes($user);
+        $this->viewParams['twoFaCanRegenerateRecoveryCodes'] = $twoFaRecoveryCodeService->canRegenerate($user);
+        $this->viewParams['twoFaNextRegenerateTime'] = $twoFaRecoveryCodeService->getNextRegenerateTime($user);
 
         return view('admin.profile.index', $this->viewParams);
     }
@@ -389,17 +389,17 @@ class AdminProfileController extends AdminLoggedInController
             if ($twoFaOldMode === AuthenticationMode::Disabled->value && 
                 $twoFaNewMode === AuthenticationMode::Always->value) {
                 
-                $recoveryCodeService = app(\App\Services\RecoveryCodeService::class);
+                $twoFaRecoveryCodeService = app(\App\Services\RecoveryCodeService::class);
                 
                 // 回復コードが存在しない場合は生成
-                $hasRecoveryCodes = $recoveryCodeService->hasRecoveryCodes($member);
+                $twoFaHasRecoveryCodes = $twoFaRecoveryCodeService->hasRecoveryCodes($member);
                 
                 \Log::info('[Profile] Recovery codes existence check', [
                     'member_id' => $member->id,
                     'has_recovery_codes' => $hasRecoveryCodes,
                 ]);
                 
-                if (!$hasRecoveryCodes) {
+                if (!$twoFaHasRecoveryCodes) {
                     try {
                         $twoFactorHelper = app(\App\Helpers\TwoFaHelper::class);
                         $codes = $twoFactorHelper->generateRecoveryCodes($member, true);
@@ -511,11 +511,11 @@ class AdminProfileController extends AdminLoggedInController
     public function passkeyRegisterOptions(Request $request)
     {
         $member = Auth::guard('member')->user();
-        $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
+        $twoFaPasskeyService = app(\App\Services\PasskeyAuthenticationService::class);
         
         try {
             // WebAuthn登録チャレンジを生成
-            $options = $passkeyService->generateRegistrationChallenge($member);
+            $options = $twoFaPasskeyService->generateRegistrationChallenge($member);
             
             return response()->json([
                 'success' => true,
@@ -550,11 +550,11 @@ class AdminProfileController extends AdminLoggedInController
             'device_name' => 'nullable|string|max:255',
         ]);
 
-        $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
+        $twoFaPasskeyService = app(\App\Services\PasskeyAuthenticationService::class);
         
         try {
             // WebAuthn認証情報を登録
-            $credential = $passkeyService->registerCredential(
+            $credential = $twoFaPasskeyService->registerCredential(
                 $member,
                 $request->input('credential'),
                 $request->input('device_name')
@@ -689,15 +689,15 @@ class AdminProfileController extends AdminLoggedInController
     public function revokeAllPasskeys(Request $request)
     {
         $member = Auth::guard('member')->user();
-        $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
+        $twoFaPasskeyService = app(\App\Services\PasskeyAuthenticationService::class);
         
         try {
             // すべてのPasskeyを取得して削除
-            $credentials = $passkeyService->getCredentials($member);
+            $credentials = $twoFaPasskeyService->getCredentials($member);
             $deletedCount = 0;
             
             foreach ($credentials as $credential) {
-                if ($passkeyService->revokeCredential($member, $credential->id)) {
+                if ($twoFaPasskeyService->revokeCredential($member, $credential->id)) {
                     $deletedCount++;
                 }
             }
@@ -733,10 +733,10 @@ class AdminProfileController extends AdminLoggedInController
     {
         $member = Auth::guard('member')->user();
         $twoFactorHelper = app(\App\Helpers\TwoFaHelper::class);
-        $recoveryCodeService = app(\App\Services\RecoveryCodeService::class);
+        $twoFaRecoveryCodeService = app(\App\Services\RecoveryCodeService::class);
 
         // 既に回復コードが存在する場合は再生成として扱う
-        if ($recoveryCodeService->hasRecoveryCodes($member)) {
+        if ($twoFaRecoveryCodeService->hasRecoveryCodes($member)) {
             return $this->regenerateRecoveryCodes($request);
         }
 
