@@ -95,7 +95,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
                     {{ __('admin/settings/systems/logs/files.level_filter.label') }}:
                 </span>
-                <x-form.toggle_group
+                <x-form.toggle-group
                     name="levels"
                     :options="$availableLevelFilters"
                     :values="$levelFilters ?? ['error', 'warning', 'normal', 'debug']"
@@ -111,7 +111,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @endif
 
     <!-- ページネーション制御 -->
-    <x-pagination_controls
+    <x-pagination-controls
         :paginator="(object) [
             'total' => $pagination['total'] ?? 0,
             'currentPage' => $pagination['current_page'] ?? 1,
@@ -283,7 +283,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </section>
 
     <!-- ページネーション制御 -->
-    <x-pagination_controls
+    <x-pagination-controls
         :paginator="(object) [
             'total' => $pagination['total'] ?? 0,
             'currentPage' => $pagination['current_page'] ?? 1,

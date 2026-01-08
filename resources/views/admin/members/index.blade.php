@@ -114,7 +114,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <h2 class="sr-only">{{ __('admin/members/index.heading') }}</h2>
 
         <!-- ページネーション制御 -->
-        <x-pagination_controls
+        <x-pagination-controls
             :paginator="$members"
             :perPageOptions="[10, 25, 50, 100]"
             :currentPerPage="request('per_page', 25)"

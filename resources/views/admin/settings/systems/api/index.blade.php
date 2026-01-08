@@ -51,7 +51,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <fieldset>
                 <legend>{{ __('admin/settings/systems/api.api_enabled') }}</legend>
-                <x-form.radio_group
+                <x-form.radio-group
                     name="api_enabled"
                     :options="[
                         '1' => __('common.enabled'),
@@ -64,7 +64,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <fieldset>
                 <legend>{{ __('admin/settings/systems/api.signature_required') }}</legend>
-                <x-form.radio_group
+                <x-form.radio-group
                     name="api_signature_required"
                     :options="[
                         '1' => __('common.required'),

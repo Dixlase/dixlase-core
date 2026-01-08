@@ -39,7 +39,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <legend>{{ __('admin/settings/security/environment.app_env') }}</legend>
                 
                 <div class="my-3">
-                    <x-form.radio_card_group
+                    <x-form.radio-card-group
                         name="app_env"
                         :options="\App\Enums\AppEnvironment::getRadioCardOptions()"
                         :value="old('app_env', $settings['app_env'])"

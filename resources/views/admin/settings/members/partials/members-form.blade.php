@@ -136,7 +136,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <fieldset>
             <legend>{{ $requirePassword ? __('common.password') : __('admin/profile.password_change_only') }}</legend>
-            <x-password_tools
+            <x-password-tools
                 id="password"
                 name="password"
                 :required="$requirePassword"
@@ -175,7 +175,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             '1' => 'admin.members.form.account_verified',
                         ];
                     @endphp
-                    <x-form.radio_group
+                    <x-form.radio-group
                         name="email_verified"
                         :options="$emailVerificationOptions"
                         :value="$emailVerifiedValue"
@@ -190,7 +190,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             '1' => 'admin.members.form.account_verified',
                         ];
                     @endphp
-                    <x-form.radio_group
+                    <x-form.radio-group
                         name="email_verified"
                         :options="$emailVerificationOptionsEdit"
                         :value="$emailVerifiedValue"
@@ -259,7 +259,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     '2' => 'common.dark',
                 ];
             @endphp
-            <x-form.radio_group
+            <x-form.radio-group
                 name="appearance"
                 :options="$appearanceOptions"
                 :value="$appearanceValue"
@@ -289,7 +289,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         '0' => 'components.status.inactive',
                     ];
                 @endphp
-                <x-form.radio_group
+                <x-form.radio-group
                     name="status"
                     :options="$statusOptions"
                     :value="$statusValue"
@@ -320,7 +320,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         $roleOptions[$role->value] = $role->label();
                     }
                 @endphp
-                <x-form.radio_group
+                <x-form.radio-group
                     name="role"
                     :options="$roleOptions"
                     :value="$roleValue"
@@ -353,7 +353,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         '1' => 'common.enabled',
                     ];
                 @endphp
-                <x-form.radio_group
+                <x-form.radio-group
                     name="login_notification"
                     :options="$loginNotificationOptions"
                     :value="$loginNotificationValue"
@@ -386,7 +386,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @php
                     $twoFaModeValue = old('two_fa_mode', $member->two_fa_mode->value ?? $twoFaMode->value);
                 @endphp
-                <x-form.radio_group
+                <x-form.radio-group
                     name="two_fa_mode"
                     :options="$twoFaModeOptions"
                     :value="$twoFaModeValue"
@@ -416,7 +416,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endphp
 
                 @if(count($enabledTwoFaMethods) > 1)
-                    <x-form.radio_group
+                    <x-form.radio-group
                         name="two_fa_method"
                         :options="$enabledTwoFaMethods"
                         :value="$currentMethod"

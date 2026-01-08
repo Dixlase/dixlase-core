@@ -22,25 +22,35 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'layout' => 'layouts.auth',
     'title',
     'header',
-    'resendRoute',
-    'logoutRoute',
-    'message',
-    'resentMessage',
-    'resendButtonText',
-    'logoutButtonText',
+    'description',
+    'route',
+    'token',
+    'email',
+    'emailLabel',
+    'passwordLabel',
+    'submitText',
+    'passwordMinLength' => 8,
+    'passwordRequireUppercase' => false,
+    'passwordRequireNumber' => false,
+    'passwordRequireSymbol' => false,
 ])
 
 @extends($layout)
 @section('title', $title)
 @section('header', $header)
+@section('description', $description)
 
 @section('content')
-    <x-auth.verification_notice
-        :resendRoute="$resendRoute"
-        :logoutRoute="$logoutRoute"
-        :message="$message"
-        :resentMessage="$resentMessage"
-        :resendButtonText="$resendButtonText"
-        :logoutButtonText="$logoutButtonText"
+    <x-auth.reset-password
+        :route="$route"
+        :token="$token"
+        :email="$email"
+        :emailLabel="$emailLabel"
+        :passwordLabel="$passwordLabel"
+        :submitText="$submitText"
+        :passwordMinLength="$passwordMinLength"
+        :passwordRequireUppercase="$passwordRequireUppercase"
+        :passwordRequireNumber="$passwordRequireNumber"
+        :passwordRequireSymbol="$passwordRequireSymbol"
     />
 @endsection

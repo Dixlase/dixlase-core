@@ -14,7 +14,7 @@
     <section aria-labelledby="mail-server-heading">
         <h2 id="mail-server-heading" class="sr-only">{{ __('install.mail_server_settings') }}</h2>
         
-        <x-mail_server_form
+        <x-mail-server-form
             :settings="[]"
             context="install"
             :admin_email="$admin_email"
@@ -25,7 +25,7 @@
     <section aria-labelledby="mail-test-heading">
         <h2 id="mail-test-heading" class="sr-only">{{ __('install.mail_connection_test') }}</h2>
         
-        <x-mail_test
+        <x-mail-test
             context="install"
             :connectionTestRoute="route('install.mail.test-connection')"
             :mailTestRoute="route('install.mail.test-send')"

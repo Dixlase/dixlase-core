@@ -22,25 +22,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'layout' => 'layouts.auth',
     'title',
     'header',
-    'description',
-    'route',
-    'loginRoute' => null,
-    'captchaEnabled' => false,
-    'captchaWidget' => null,
+    'resendRoute',
+    'logoutRoute',
+    'message',
+    'resentMessage',
+    'resendButtonText',
+    'logoutButtonText',
 ])
 
 @extends($layout)
 @section('title', $title)
 @section('header', $header)
-@section('description')
-    {!! $description !!}
-@endsection
 
 @section('content')
-    <x-auth.forgot_password
-        :route="$route"
-        :loginRoute="$loginRoute"
-        :captchaEnabled="$captchaEnabled"
-        :captchaWidget="$captchaWidget"
+    <x-auth.verification-notice
+        :resendRoute="$resendRoute"
+        :logoutRoute="$logoutRoute"
+        :message="$message"
+        :resentMessage="$resentMessage"
+        :resendButtonText="$resendButtonText"
+        :logoutButtonText="$logoutButtonText"
     />
 @endsection

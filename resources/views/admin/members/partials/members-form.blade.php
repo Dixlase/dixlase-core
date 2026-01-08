@@ -104,7 +104,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </fieldset>
 
         <div id="email-input-wrapper">
-            <x-email_input
+            <x-email-input
                 id="email"
                 name="email"
                 :value="old('email', $member->email ?? '')"
@@ -129,7 +129,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <fieldset>
             <legend>{{ $requirePassword ? __('common.password') : __('admin/profile.password_change_only') }}</legend>
-            <x-password_tools
+            <x-password-tools
                 id="password"
                 name="password"
                 :required="$requirePassword"
@@ -166,7 +166,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         ['value' => '1', 'label' => 'admin/members/form.account_verified'],
                     ];
                 @endphp
-                <x-form.radio_card_group
+                <x-form.radio-card-group
                     name="email_verified"
                     :options="$emailVerificationOptions"
                     :value="$emailVerifiedValue"
@@ -183,7 +183,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         ['value' => '1', 'label' => 'admin/members/form.account_verified'],
                     ];
                 @endphp
-                <x-form.radio_card_group
+                <x-form.radio-card-group
                     name="email_verified"
                     :options="$emailVerificationOptionsEdit"
                     :value="$emailVerifiedValue"
@@ -258,7 +258,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @php
                 $appearanceValue = old('appearance', (string) ($member->appearance->value ?? 0));
             @endphp
-            <x-appearance_mode_selector
+            <x-appearance-mode-selector
                 name="appearance"
                 :value="$appearanceValue"
                 :enableRealtimeSwitch="false"
@@ -289,7 +289,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         ['value' => '0', 'label' => 'components.status.inactive', 'icon' => 'fas fa-times-circle', 'color' => 'gray'],
                     ];
                 @endphp
-                <x-form.radio_card_group
+                <x-form.radio-card-group
                     name="status"
                     :options="$statusOptions"
                     :value="$statusValue"
@@ -325,7 +325,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         ];
                     }
                 @endphp
-                <x-form.radio_card_group
+                <x-form.radio-card-group
                     name="role"
                     :options="$roleOptions"
                     :value="$roleValue"
@@ -355,7 +355,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             }
         @endphp
         
-        <x-login_notification_selector
+        <x-login-notification-selector
             name="login_notification_mode"
             :value="old('login_notification_mode', (string)$currentLoginNotification)"
             :globalSetting="$loginNotificationMode"
@@ -383,7 +383,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             $initialPasskeyEnabled = old('two_fa_passkey_enabled', $member->two_fa_passkey_enabled ?? true);
         @endphp
         
-        <x-two_fa_auth_selector
+        <x-two-fa-auth-selector
             name="two_fa_mode"
             :value="old('two_fa_mode', (string)$currentTwoFaMode)"
             :globalSetting="$force2fa"
@@ -410,7 +410,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </p>
         </div>
         
-        <x-two_fa_management
+        <x-two-fa-management
             :passkeyEnabled="$passkeyEnabled"
             :passkeyDevices="$passkeyDevices"
             :hasRecoveryCodes="$hasRecoveryCodes"

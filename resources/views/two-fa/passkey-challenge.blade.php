@@ -12,14 +12,14 @@
         $passkeyChallenge = $challengeAction ?? route('admin.two-fa.passkey.challenge');
         $passkeyVerify = $verifyAction ?? route('admin.two-fa.passkey.verify');
     @endphp
-    @include('two_factor.partials.passkey_challenge', [
+    @include('two-fa.partials.passkey-challenge', [
         'challengeAction' => $passkeyChallenge,
         'verifyAction' => $passkeyVerify,
         'context' => 'admin'
     ])
 
     <!-- 別の認証方法へのリンク -->
-    @include('two_factor.partials.alternative_methods', [
+    @include('two-fa.partials.alternative-methods', [
         'methods' => $availableMethods,
         'currentMethod' => $currentMethod,
         'context' => 'admin'

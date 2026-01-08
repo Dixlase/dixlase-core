@@ -105,7 +105,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 上部のページネーションと表示件数設定 -->
     @if($media->hasPages() || $media->count() > 0)
         <div class="media-controls">
-            <x-pagination_controls
+            <x-pagination-controls
                 :paginator="$media"
                 :perPageOptions="[10, 25, 50, 100]"
                 :currentPerPage="request('per_page', 25)"

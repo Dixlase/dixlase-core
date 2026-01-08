@@ -79,7 +79,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         // localThemeの変更を監視してリアルタイムに反映
         $watch('localTheme', () => applyLocalTheme(true));
     ">
-        <x-form.radio_card_group
+        <x-form.radio-card-group
             :name="$name"
             :options="$appearanceOptions"
             :value="$value"
@@ -91,7 +91,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         />
     </div>
 @else
-    <x-form.radio_card_group
+    <x-form.radio-card-group
         :name="$name"
         :options="$appearanceOptions"
         :value="$value"

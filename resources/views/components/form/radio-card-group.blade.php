@@ -22,7 +22,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 ラベルと説明付きのラジオボタンカードグループコンポーネント
 
 使用例:
-<x-form.radio_card_group
+<x-form.radio-card-group
     name="preset"
     :options="[
         ['value' => 'strict', 'label' => '厳格', 'description' => '最も安全な設定', 'icon' => 'fas fa-shield-alt', 'color' => 'green'],
