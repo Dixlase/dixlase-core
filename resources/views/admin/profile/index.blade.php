@@ -198,10 +198,48 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :globalSetting="$forceTwoFa"
                     :excludeUseProfileSetting="true"
                     :passkeyGloballyEnabled="$passkeyGloballyEnabled"
-                    :passkeyEnabled="$member->two_fa_passkey_enabled ?? true"
-                    :defaultTwoFaMethod="(string) ($member->default_two_fa_method ?? $defaultTwoFaMethod)"
+                    :passkeyEnabled="$currentPasskeyEnabled"
+                    :defaultTwoFaMethod="(string) (Auth::guard('member')->user()->two_fa_default_method ?? $defaultTwoFaMethod)"
                     :columns="3"
                 />
+            </section>
+
+            {{-- パスキー設定セクション --}}
+            <section class="transition-colors-unified">
+                <h2>{{ __('common.passkey_mode.label') }}</h2>
+                
+                @if($isPasskeyEditable)
+                    {{-- プロフィール設定に従う場合：トグルで編集可能 --}}
+                    <fieldset>
+                        <legend>{{ __('common.passkey_mode.help.profile_editable') }}</legend>
+                        <x-form.toggle
+                            name="two_fa_passkey_enabled"
+                            :label="__('common.passkey_mode.options.enabled')"
+                            :checked="old('two_fa_passkey_enabled', $currentPasskeyEnabled)"
+                        />
+                    </fieldset>
+                @else
+                    {{-- 全体設定で強制されている場合：表示のみ --}}
+                    <fieldset>
+                        <legend>
+                            @if($forcedPasskeyValue === false)
+                                {{ __('common.passkey_mode.help.profile_forced_disabled') }}
+                            @else
+                                {{ __('common.passkey_mode.help.profile_forced_enabled') }}
+                            @endif
+                        </legend>
+                        <div class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                            <i class="fas {{ $forcedPasskeyValue ? 'fa-check-circle text-green-600 dark:text-green-400' : 'fa-times-circle text-gray-400 dark:text-gray-600' }}"></i>
+                            <span class="text-sm font-medium {{ $forcedPasskeyValue ? 'text-green-800 dark:text-green-200' : 'text-gray-600 dark:text-gray-400' }}">
+                                {{ $forcedPasskeyValue ? __('common.passkey_mode.options.enabled') : __('common.passkey_mode.options.disabled') }}
+                            </span>
+                        </div>
+                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            {{ __('common.global_setting_fixed.two_fa', ['account_type' => __('admin/members/index.member')]) }}
+                        </p>
+                    </fieldset>
+                @endif
             </section>
         @endif
     </form>

@@ -136,16 +136,40 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 />
             @endif
             <x-two-fa-auth-selector
-                name="force_two_fa"
-                :value="old('force_two_fa', (string) $forceTwoFa)"
+                name="two_fa_force_mode"
+                :value="old('two_fa_force_mode', (string) $forceTwoFa)"
                 :globalSetting="null"
                 :excludeUseProfileSetting="false"
                 :passkeyGloballyEnabled="true"
-                :passkeyEnabled="old('two_fa_passkey_enabled', $passkeyEnabled ?? false)"
+                :passkeyEnabled="old('passkey_two_fa_enabled', $passkeyEnabled ?? false)"
                 :defaultTwoFaMethod="'0'"
                 :columns="4"
                 :globalSettingsUrl="null"
             />
+
+            <fieldset>
+                <legend>{{ __('common.passkey_mode.label') }}</legend>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    {{ __('common.passkey_mode.help.global') }}
+                </p>
+                
+                @php
+                    use App\Enums\PasskeyMode;
+                    $passkeyModeOptions = PasskeyMode::getGlobalOptions();
+                    $currentPasskeyMode = old('two_fa_passkey_mode', $passkeyMode ?? '2');
+                @endphp
+                
+                <x-form.radio-card-group
+                    name="two_fa_passkey_mode"
+                    :options="$passkeyModeOptions"
+                    :value="$currentPasskeyMode"
+                    :columns="3"
+                />
+                
+                @error('two_fa_passkey_mode')
+                    <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                @enderror
+            </fieldset>
 
             <fieldset>
                 <legend>{{ __('admin/members/settings/auth.two_fa_expire_settings') }}</legend>
@@ -281,15 +305,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 <div class="space-y-4">
                     <div>
-                        <label for="recovery_codes_count" class="block text-sm font-medium">
+                        <label for="two_fa_recovery_codes_count" class="block text-sm font-medium">
                             {{ __('admin/members/settings/auth.recovery_codes_count') }}
                         </label>
                         <div class="mt-1 flex items-center space-x-2">
                             <x-form.text
                                 type="number"
-                                id="recovery_codes_count"
-                                name="recovery_codes_count"
-                                :value="old('recovery_codes_count', $recoveryCodesCount ?? 5)"
+                                id="two_fa_recovery_codes_count"
+                                name="two_fa_recovery_codes_count"
+                                :value="old('two_fa_recovery_codes_count', $recoveryCodesCount ?? 5)"
                                 :min="1"
                                 :max="10"
                                 class="input-common input-sm"
@@ -302,15 +326,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
 
                     <div>
-                        <label for="recovery_code_regenerate_interval" class="block text-sm font-medium">
+                        <label for="two_fa_recovery_code_regenerate_interval" class="block text-sm font-medium">
                             {{ __('admin/members/settings/auth.recovery_code_regenerate_interval') }}
                         </label>
                         <div class="mt-1 flex items-center space-x-2">
                             <x-form.text
                                 type="number"
-                                id="recovery_code_regenerate_interval"
-                                name="recovery_code_regenerate_interval"
-                                :value="old('recovery_code_regenerate_interval', $recoveryCodeRegenerateInterval ?? 24)"
+                                id="two_fa_recovery_code_regenerate_interval"
+                                name="two_fa_recovery_code_regenerate_interval"
+                                :value="old('two_fa_recovery_code_regenerate_interval', $recoveryCodeRegenerateInterval ?? 24)"
                                 :min="1"
                                 :max="168"
                                 class="input-common input-sm"

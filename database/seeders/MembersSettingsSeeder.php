@@ -35,14 +35,14 @@ class MembersSettingsSeeder extends Seeder
             ['key' => 'system_login_notice_email', 'value' => ''], // デフォルト: 空（管理者メールアドレス）
 
             // 二段階認証設定
-            ['key' => 'force_two_fa', 'value' => '3'], // 0=無効, 1=異なるデバイス, 2=常に有効, 3=プロフィール設定に従う
-            ['key' => 'default_two_fa_method', 'value' => '0'], // デフォルトの認証方法はメール認証
+            ['key' => 'two_fa_force_mode', 'value' => '3'], // 0=無効, 1=異なるデバイス, 2=常に有効, 3=プロフィール設定に従う
+            ['key' => 'two_fa_default_method', 'value' => '0'], // デフォルトの認証方法はメール認証
             ['key' => 'two_fa_expire_minutes', 'value' => '5'], // デフォルト: 5分（メール認証）
             ['key' => 'two_fa_resend_interval_seconds', 'value' => '60'], // デフォルト: 60秒
-            ['key' => 'two_fa_passkey_enabled', 'value' => '0'], // Passkey機能有効/無効（デフォルト: 無効）
-            ['key' => 'max_passkey_devices', 'value' => '3'], // Passkey最大登録数（1-5）
-            ['key' => 'recovery_codes_count', 'value' => '5'], // 回復コード生成個数（1-5）
-            ['key' => 'recovery_code_regenerate_interval', 'value' => '24'], // 回復コード再生成間隔（時間）
+            ['key' => 'two_fa_passkey_mode', 'value' => '2'], // 0=無効, 1=有効, 2=プロフィール設定に従う（デフォルト: プロフィール設定に従う）
+            ['key' => 'two_fa_passkey_max_devices', 'value' => '3'], // Passkey最大登録数（1-5）
+            ['key' => 'two_fa_recovery_codes_count', 'value' => '5'], // 回復コード生成個数（1-5）
+            ['key' => 'two_fa_recovery_code_regenerate_interval', 'value' => '24'], // 回復コード再生成間隔（時間）
             ['key' => 'two_fa_verification_timeout', 'value' => '10'], // 2FA認証待ち画面タイムアウト（5-60分）
             ['key' => 'two_fa_max_attempts', 'value' => '5'], // 2FA試行制限（1-10回）
             ['key' => 'two_fa_attempt_window', 'value' => '15'], // 2FA試行制限時間枠（5-60分）

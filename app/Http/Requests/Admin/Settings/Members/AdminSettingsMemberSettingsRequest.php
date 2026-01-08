@@ -57,8 +57,6 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
             // 管理メンバー用セッション設定
             'members_session_lifetime_enabled' => filter_var($this->input('members_session_lifetime_enabled'), FILTER_VALIDATE_BOOLEAN),
             // 二段階認証設定
-            'passkey_two_fa_enabled' => filter_var($this->input('passkey_two_fa_enabled'), FILTER_VALIDATE_BOOLEAN),
-            'two_fa_passkey_enabled' => filter_var($this->input('two_fa_passkey_enabled'), FILTER_VALIDATE_BOOLEAN),
             'two_fa_lockout_notification_enabled' => filter_var($this->input('two_fa_lockout_notification_enabled'), FILTER_VALIDATE_BOOLEAN),
             // CAPTCHA設定
             'captcha_admin_login_enabled' => filter_var($this->input('captcha_admin_login_enabled'), FILTER_VALIDATE_BOOLEAN),
@@ -96,17 +94,16 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
             'login_attempt_time_window' => 'required|integer|min:1|max:1440', // 最大24時間
             'login_attempt_lockout_duration' => 'required|integer|min:1|max:10080', // 最大1週間
             'lockout_notification_enabled' => 'required|boolean',
-            'force_two_fa' => ['required', new Enum(AuthenticationMode::class)],
+            'two_fa_force_mode' => ['required', new Enum(AuthenticationMode::class)],
             'two_fa_expire_minutes' => 'required|integer|min:1|max:60', // 1-60分（メール認証）
             'two_fa_resend_interval_seconds' => 'required|integer|min:60|max:600', // 60-600秒（1-10分）
-            'passkey_two_fa_enabled' => 'nullable|boolean',
-            'two_fa_passkey_enabled' => 'nullable|boolean',
+            'two_fa_passkey_mode' => 'required|integer|in:0,1,2', // 0=無効, 1=有効, 2=プロフィール設定に従う
             'two_fa_max_attempts' => 'required|integer|min:1|max:10',
             'two_fa_attempt_window' => 'required|integer|min:5|max:60',
             'two_fa_lockout_duration' => 'required|integer|min:5|max:1440',
             'two_fa_lockout_notification_enabled' => 'required|boolean',
-            'recovery_codes_count' => 'required|integer|min:1|max:10',
-            'recovery_code_regenerate_interval' => 'required|integer|min:1|max:168', // 1-168時間（1時間-7日間）
+            'two_fa_recovery_codes_count' => 'required|integer|min:1|max:10',
+            'two_fa_recovery_code_regenerate_interval' => 'required|integer|min:1|max:168', // 1-168時間（1時間-7日間）
             'captcha_admin_login_enabled' => 'nullable|boolean',
             'captcha_password_reset_enabled' => 'nullable|boolean',
         ];

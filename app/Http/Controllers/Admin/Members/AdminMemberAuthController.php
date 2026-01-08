@@ -69,12 +69,8 @@ class AdminMemberAuthController extends AdminMemberSettingsController
         if (array_key_exists('two_fa_resend_interval_seconds', $validated)) {
             $this->memberSettingRepository->set('two_fa_resend_interval_seconds', (string) $validated['two_fa_resend_interval_seconds']);
         }
-        if (array_key_exists('passkey_two_fa_enabled', $validated)) {
-            $passkeyValue = $validated['passkey_two_fa_enabled'] ? '1' : '0';
-            $this->memberSettingRepository->set('two_fa_passkey_enabled', $passkeyValue);
-        } elseif (array_key_exists('two_fa_passkey_enabled', $validated)) {
-            $passkeyValue = $validated['two_fa_passkey_enabled'] ? '1' : '0';
-            $this->memberSettingRepository->set('two_fa_passkey_enabled', $passkeyValue);
+        if (array_key_exists('two_fa_passkey_mode', $validated)) {
+            $this->memberSettingRepository->set('two_fa_passkey_mode', (string) $validated['two_fa_passkey_mode']);
         }
         if (array_key_exists('two_fa_max_attempts', $validated)) {
             $this->memberSettingRepository->set('two_fa_max_attempts', (string) $validated['two_fa_max_attempts']);
@@ -88,11 +84,11 @@ class AdminMemberAuthController extends AdminMemberSettingsController
         if (array_key_exists('two_fa_lockout_notification_enabled', $validated)) {
             $this->memberSettingRepository->set('two_fa_lockout_notification_enabled', $validated['two_fa_lockout_notification_enabled'] ? '1' : '0');
         }
-        if (array_key_exists('recovery_codes_count', $validated)) {
-            $this->memberSettingRepository->set('recovery_codes_count', (string) $validated['recovery_codes_count']);
+        if (array_key_exists('two_fa_recovery_codes_count', $validated)) {
+            $this->memberSettingRepository->set('two_fa_recovery_codes_count', (string) $validated['two_fa_recovery_codes_count']);
         }
-        if (array_key_exists('recovery_code_regenerate_interval', $validated)) {
-            $this->memberSettingRepository->set('recovery_code_regenerate_interval', (string) $validated['recovery_code_regenerate_interval']);
+        if (array_key_exists('two_fa_recovery_code_regenerate_interval', $validated)) {
+            $this->memberSettingRepository->set('two_fa_recovery_code_regenerate_interval', (string) $validated['two_fa_recovery_code_regenerate_interval']);
         }
 
         if (array_key_exists('captcha_admin_login_enabled', $validated)) {

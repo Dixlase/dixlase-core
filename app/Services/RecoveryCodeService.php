@@ -19,7 +19,7 @@ class RecoveryCodeService
     public function generate(Member $member): array
     {
         // 生成個数を設定から取得（1-5個、デフォルト5個）
-        $count = (int) \App\Models\MemberSetting::getValue('recovery_codes_count', 5);
+        $count = (int) \App\Models\MemberSetting::getValue('two_fa_recovery_codes_count', 5);
         $count = max(1, min(5, $count)); // 1-5の範囲に制限
 
         // 既存の回復コードを全て無効化
@@ -127,7 +127,7 @@ class RecoveryCodeService
         }
 
         // 24時間経過しているかチェック
-        $interval = (int) \App\Models\MemberSetting::getValue('recovery_code_regenerate_interval', 24);
+        $interval = (int) \App\Models\MemberSetting::getValue('two_fa_recovery_code_regenerate_interval', 24);
         $canRegenerateAt = $lastGenerated->created_at->addHours($interval);
 
         return Carbon::now()->greaterThanOrEqualTo($canRegenerateAt);
@@ -146,7 +146,7 @@ class RecoveryCodeService
             return null;
         }
 
-        $interval = (int) \App\Models\MemberSetting::getValue('recovery_code_regenerate_interval', 24);
+        $interval = (int) \App\Models\MemberSetting::getValue('two_fa_recovery_code_regenerate_interval', 24);
         return $lastGenerated->created_at->addHours($interval);
     }
 

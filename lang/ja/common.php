@@ -380,4 +380,25 @@ return [
         'requires_step_up_auth' => '追加認証が必要',
         'step_up_auth_description' => 'この操作を実行するには追加の認証が必要です',
     ],
+
+    // パスキーモード設定
+    'passkey_mode' => [
+        'label' => 'パスキー設定',
+        'options' => [
+            'disabled' => '無効',
+            'enabled' => '有効',
+            'use_profile_setting' => 'プロフィール設定に従う',
+        ],
+        'descriptions' => [
+            'disabled' => 'パスキー認証を使用しません',
+            'enabled' => 'パスキー認証を常に使用できます',
+            'use_profile_setting' => 'メンバーが個別に設定できます',
+        ],
+        'help' => [
+            'global' => 'メンバー全体のパスキー認証の利用可否を設定します',
+            'profile_forced_disabled' => '全体設定により、パスキー認証は無効に設定されています',
+            'profile_forced_enabled' => '全体設定により、パスキー認証は有効に設定されています',
+            'profile_editable' => 'パスキー認証の利用可否を設定できます',
+        ],
+    ],
 ];

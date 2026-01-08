@@ -76,7 +76,7 @@ class Member extends Authenticatable implements MustVerifyEmail
         'login_notification_mode',
         'two_fa_mode',
         'two_fa_passkey_enabled',
-        'default_two_fa_method',
+        'two_fa_default_method',
         'description',
     ];
 

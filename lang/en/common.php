@@ -359,4 +359,25 @@ return [
         'requires_step_up_auth' => 'Additional Authentication Required',
         'step_up_auth_description' => 'Additional authentication is required to perform this operation',
     ],
+
+    // Passkey Mode Settings
+    'passkey_mode' => [
+        'label' => 'Passkey Settings',
+        'options' => [
+            'disabled' => 'Disabled',
+            'enabled' => 'Enabled',
+            'use_profile_setting' => 'Follow Profile Settings',
+        ],
+        'descriptions' => [
+            'disabled' => 'Passkey authentication is not available',
+            'enabled' => 'Passkey authentication is always available',
+            'use_profile_setting' => 'Members can configure individually',
+        ],
+        'help' => [
+            'global' => 'Configure passkey authentication availability for all members',
+            'profile_forced_disabled' => 'Passkey authentication is disabled by global settings',
+            'profile_forced_enabled' => 'Passkey authentication is enabled by global settings',
+            'profile_editable' => 'You can configure passkey authentication availability',
+        ],
+    ],
 ];
