@@ -136,7 +136,7 @@ class AdminMemberSettingsController extends AdminLoggedInController
         $loginAttemptMaxAttempts = (int) $this->memberSettingRepository->get('login_attempt_max_attempts', 5);
         $loginAttemptTimeWindow = (int) $this->memberSettingRepository->get('login_attempt_time_window', 15);
         $loginAttemptLockoutDuration = (int) $this->memberSettingRepository->get('login_attempt_lockout_duration', 30);
-        $lockoutNotificationEnabled = (bool) $this->memberSettingRepository->get('lockout_notification_enabled', true);
+        $lockoutNotificationEnabled = (bool) $this->memberSettingRepository->get('login_attempt_lockout_notification_enabled', true);
 
         $membersSessionLifetimeEnabled = (bool) $this->memberSettingRepository->get('members_session_lifetime_enabled', false);
         $membersSessionLifetime = (int) $this->memberSettingRepository->get('members_session_lifetime', 120);

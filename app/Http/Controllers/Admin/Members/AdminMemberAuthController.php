@@ -56,8 +56,8 @@ class AdminMemberAuthController extends AdminMemberSettingsController
         if (array_key_exists('login_attempt_lockout_duration', $validated)) {
             $this->memberSettingRepository->set('login_attempt_lockout_duration', (string) $validated['login_attempt_lockout_duration']);
         }
-        if (array_key_exists('lockout_notification_enabled', $validated)) {
-            $this->memberSettingRepository->set('lockout_notification_enabled', $validated['lockout_notification_enabled'] ? '1' : '0');
+        if (array_key_exists('login_attempt_lockout_notification_enabled', $validated)) {
+            $this->memberSettingRepository->set('login_attempt_lockout_notification_enabled', $validated['login_attempt_lockout_notification_enabled'] ? '1' : '0');
         }
 
         if (array_key_exists('force_two_fa', $validated)) {

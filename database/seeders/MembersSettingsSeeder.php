@@ -31,8 +31,8 @@ class MembersSettingsSeeder extends Seeder
 
             // ログイン通知設定
             ['key' => 'login_notification_mode', 'value' => '3'], // 0=無効, 1=異なるデバイス, 2=常に有効, 3=プロフィール設定に従う
-            ['key' => 'send_login_notice_to_system', 'value' => '0'], // デフォルト: システム通知無効
-            ['key' => 'system_login_notice_email', 'value' => ''], // デフォルト: 空（管理者メールアドレス）
+            ['key' => 'login_notification_send_to_system', 'value' => '0'], // デフォルト: システム通知無効
+            ['key' => 'login_notification_system_email', 'value' => ''], // デフォルト: 空（管理者メールアドレス）
 
             // 二段階認証設定
             ['key' => 'two_fa_force_mode', 'value' => '3'], // 0=無効, 1=異なるデバイス, 2=常に有効, 3=プロフィール設定に従う
@@ -54,7 +54,7 @@ class MembersSettingsSeeder extends Seeder
             ['key' => 'login_attempt_max_attempts', 'value' => '5'], // デフォルト: 5回
             ['key' => 'login_attempt_time_window', 'value' => '15'], // デフォルト: 15分
             ['key' => 'login_attempt_lockout_duration', 'value' => '30'], // デフォルト: 30分
-            ['key' => 'lockout_notification_enabled', 'value' => '1'], // デフォルト: 有効
+            ['key' => 'login_attempt_lockout_notification_enabled', 'value' => '1'], // デフォルト: 有効
 
             // 管理メンバー用セッション設定
             ['key' => 'members_session_lifetime_enabled', 'value' => '0'], // デフォルト: 無効（セキュリティ設定のデフォルト値を使用）
