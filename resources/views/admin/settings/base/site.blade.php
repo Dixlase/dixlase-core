@@ -94,7 +94,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <fieldset>
             <legend>{{ __('admin/settings/base/site.default_ogp_image') }}</legend>
             
-            <x-media_picker
+            <x-media-picker
                 name="default_ogp_image_id"
                 :value="$settings['default_ogp_image_id']"
                 :media="$defaultOgpImage"

@@ -113,7 +113,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {{-- 設定可能な場合 --}}
         <fieldset>
             <legend>{{ __('components.two_fa.mode_label') }}</legend>
-            <x-form.radio_card_group
+            <x-form.radio-card-group
                 :name="$name"
                 :options="$options"
                 :value="$value"
@@ -219,7 +219,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
             
             <div :class="{ 'opacity-50 pointer-events-none': !twoFaEnabled || !passkeyEnabled }">
-                <x-form.radio_card_group
+                <x-form.radio-card-group
                     name="default_two_fa_method"
                     :options="$defaultMethodOptions"
                     :value="$currentDefaultMethod"

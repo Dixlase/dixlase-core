@@ -41,7 +41,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         />
 
         <!-- メールアドレスまたはアカウント名 -->
-        <x-auth.login_field
+        <x-auth.login-field
             id="login"
             type="text"
             name="login"
@@ -53,7 +53,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         />
 
         <!-- パスワード -->
-        <x-auth.login_field
+        <x-auth.login-field
             id="password"
             type="password"
             name="password"

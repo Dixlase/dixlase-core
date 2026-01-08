@@ -102,7 +102,7 @@
                         <i id="password-eye" class="fas fa-eye"></i>
                     </button>
                 </div>
-                <x-form.help_text :text="__('install.db_password_required')" />
+                <x-form.help-text :text="__('install.db_password_required')" />
             </div>
         </fieldset>
     </section>
@@ -120,7 +120,7 @@
                 :checked="old('preserve_data', session('install_data.preserve_data', false))"
                 :label="__('install.preserve_database')"
             />
-            <x-form.help_text :text="__('install.preserve_database_help')" />
+            <x-form.help-text :text="__('install.preserve_database_help')" />
         </fieldset>
     </section>
 

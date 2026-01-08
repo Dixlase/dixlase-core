@@ -37,7 +37,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endif
             <fieldset>
                 <legend>{{ __('admin/members/settings/auth.login_notification_global_setting') }}</legend>
-                <x-login_notification_selector
+                <x-login-notification-selector
                     name="login_notification_mode"
                     :value="old('login_notification_mode', (string) $loginNotification)"
                     :globalSetting="null"
@@ -135,7 +135,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :message="__('admin/members/settings.mail_server_test_warning', ['url' => route('admin.settings.base.mail')])"
                 />
             @endif
-            <x-two_fa_auth_selector
+            <x-two-fa-auth-selector
                 name="force_two_fa"
                 :value="old('force_two_fa', (string) $force2fa)"
                 :globalSetting="null"

@@ -63,7 +63,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <fieldset>
             <legend class="block font-medium text-sm text-gray-700 dark:text-gray-200 mb-2">{{ $passwordLabel }}</legend>
             
-            <x-password_tools 
+            <x-password-tools 
                 name="password" 
                 id="password" 
                 :required="false"

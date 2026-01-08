@@ -50,7 +50,7 @@
                     ariaDescribedby="admin_account_name_help"
                     class="input-full"
                 />
-                <x-form.help_text :text="__('install.admin_account_name_requirements')" id="admin_account_name_help" />
+                <x-form.help-text :text="__('install.admin_account_name_requirements')" id="admin_account_name_help" />
             </div>
 
             <div>
@@ -64,7 +64,7 @@
                     ariaDescribedby="admin_display_name_help"
                     class="input-full"
                 />
-                <x-form.help_text :text="__('install.admin_display_name_requirements')" id="admin_display_name_help" />
+                <x-form.help-text :text="__('install.admin_display_name_requirements')" id="admin_display_name_help" />
             </div>
 
             <div>
@@ -91,7 +91,7 @@
             
             <div>
                 <x-form.label for="admin_password" :text="__('install.admin_password')" :required="true" />
-                <x-password_tools
+                <x-password-tools
                     name="admin_password"
                     id="admin_password"
                     :required="false"

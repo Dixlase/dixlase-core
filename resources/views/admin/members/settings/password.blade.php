@@ -31,7 +31,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <h2>{{ __('admin/members/settings/password.conditions') }}</h2>
             <fieldset>
                 <legend>{{ __('admin/members/settings/password.min_length') }}</legend>
-                <x-form.radio_card_group
+                <x-form.radio-card-group
                     name="password_min_length"
                     :options="$minLengthOptions"
                     :value="old('password_min_length', (string) $passwordMinLength)"

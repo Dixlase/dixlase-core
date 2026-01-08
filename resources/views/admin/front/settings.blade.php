@@ -56,7 +56,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <fieldset>
                 <legend>{{ __('admin.settings.front.front_ogp_image') }}</legend>
-                <x-media_picker
+                <x-media-picker
                     name="front_ogp_image_id"
                     :value="$settings['front_ogp_image_id']"
                     :media="$frontOgpImage"

@@ -96,7 +96,7 @@ $editorTypeEnum = is_string($editorType) ? ContentEditorType::from($editorType) 
         }
         @endphp
         
-        <x-form.radio_card_group
+        <x-form.radio-card-group
             :name="$storageFieldName"
             :options="$storageOptions"
             :value="$storageTypeEnum->value"
