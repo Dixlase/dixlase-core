@@ -35,8 +35,8 @@ return [
     // Security
     'security' => 'Security',
     'security_description' => 'Manage your password and two-factor authentication settings.',
-    '2fa_enabled' => 'Two-Factor Authentication: Enabled',
-    '2fa_disabled' => 'Two-Factor Authentication: Disabled',
+    'two_fa_enabled' => 'Two-Factor Authentication: Enabled',
+    'two_fa_disabled' => 'Two-Factor Authentication: Disabled',
 
     // Account Information
     'account_info' => 'Account Information',

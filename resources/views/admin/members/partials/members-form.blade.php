@@ -401,12 +401,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @if(isset($member) && $member->exists)
     <!-- 2FA管理セクション -->
     <section class="mt-8">
-        <h2>{{ __('admin/profile.2fa_management') }}</h2>
+        <h2>{{ __('admin/profile.two_fa_management') }}</h2>
         
         <div class="mb-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
             <p class="text-sm text-yellow-800 dark:text-yellow-200">
                 <i class="fas fa-info-circle mr-2"></i>
-                {{ __('admin/members/form.2fa_management_admin_note') }}
+                {{ __('admin/members/form.two_fa_management_admin_note') }}
             </p>
         </div>
         
@@ -476,7 +476,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @csrf
     </form>
 
-    <form id="unlockLockoutForm-{{ $member->id }}" method="POST" action="{{ route('admin.members.unlock-2fa', $member->id) }}" style="display: none;">
+    <form id="unlockLockoutForm-{{ $member->id }}" method="POST" action="{{ route('admin.members.unlock-two-fa', $member->id) }}" style="display: none;">
         @csrf
     </form>
 

@@ -197,12 +197,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </fieldset>
 
             <fieldset>
-                <legend>{{ __('admin/members/settings/auth.2fa_attempt_limit_settings') }}</legend>
+                <legend>{{ __('admin/members/settings/auth.two_fa_attempt_limit_settings') }}</legend>
 
                 <div class="space-y-4">
                     <div>
                         <label for="two_fa_max_attempts" class="block text-sm font-medium">
-                            {{ __('admin/members/settings/auth.2fa_max_attempts') }}
+                            {{ __('admin/members/settings/auth.two_fa_max_attempts') }}
                         </label>
                         <div class="mt-1 flex items-center space-x-2">
                             <x-form.text
@@ -217,13 +217,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings/index.times') }}</span>
                         </div>
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            {{ __('admin/members/settings/auth.2fa_max_attempts_help') }}
+                            {{ __('admin/members/settings/auth.two_fa_max_attempts_help') }}
                         </p>
                     </div>
 
                     <div>
                         <label for="two_fa_attempt_window" class="block text-sm font-medium">
-                            {{ __('admin/members/settings/auth.2fa_attempt_window') }}
+                            {{ __('admin/members/settings/auth.two_fa_attempt_window') }}
                         </label>
                         <div class="mt-1 flex items-center space-x-2">
                             <x-form.text
@@ -238,13 +238,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings/index.minutes') }}</span>
                         </div>
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            {{ __('admin/members/settings/auth.2fa_attempt_window_help') }}
+                            {{ __('admin/members/settings/auth.two_fa_attempt_window_help') }}
                         </p>
                     </div>
 
                     <div>
                         <label for="two_fa_lockout_duration" class="block text-sm font-medium">
-                            {{ __('admin/members/settings/auth.2fa_lockout_duration') }}
+                            {{ __('admin/members/settings/auth.two_fa_lockout_duration') }}
                         </label>
                         <div class="mt-1 flex items-center space-x-2">
                             <x-form.text
@@ -259,18 +259,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <span class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/settings/index.minutes') }}</span>
                         </div>
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            {{ __('admin/members/settings/auth.2fa_lockout_duration_help') }}
+                            {{ __('admin/members/settings/auth.two_fa_lockout_duration_help') }}
                         </p>
                     </div>
 
                     <div>
                         <x-form.toggle
-                            name="2fa_lockout_notification_enabled"
-                            :label="__('admin/members/settings/auth.2fa_lockout_notification_enabled')"
-                            :checked="old('2fa_lockout_notification_enabled', $twoFaLockoutNotificationEnabled)"
+                            name="two_fa_lockout_notification_enabled"
+                            :label="__('admin/members/settings/auth.two_fa_lockout_notification_enabled')"
+                            :checked="old('two_fa_lockout_notification_enabled', $twoFaLockoutNotificationEnabled)"
                         />
                         <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                            {{ __('admin/members/settings/auth.2fa_lockout_notification_enabled_help') }}
+                            {{ __('admin/members/settings/auth.two_fa_lockout_notification_enabled_help') }}
                         </p>
                     </div>
                 </div>

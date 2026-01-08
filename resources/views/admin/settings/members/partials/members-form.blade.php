@@ -483,7 +483,7 @@ document.addEventListener('DOMContentLoaded', function() {
 @if(isset($member) && $member->exists)
     <!-- 2FA管理セクション -->
     <section class="mt-8">
-        <h2>{{ __('admin/profile.2fa_management') }}</h2>
+        <h2>{{ __('admin/profile.two_fa_management') }}</h2>
 
         <!-- Passkeyデバイス -->
         @if($passkeyEnabled)
@@ -637,7 +637,7 @@ document.addEventListener('DOMContentLoaded', function() {
         @csrf
     </form>
 
-    <form id="unlockLockoutForm-{{ $member->id }}" method="POST" action="{{ route('admin.members.unlock-2fa', $member->id) }}" style="display: none;">
+    <form id="unlockLockoutForm-{{ $member->id }}" method="POST" action="{{ route('admin.members.unlock-two-fa', $member->id) }}" style="display: none;">
         @csrf
     </form>
 

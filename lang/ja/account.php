@@ -35,8 +35,8 @@ return [
     // セキュリティ
     'security' => 'セキュリティ',
     'security_description' => 'パスワードや二段階認証の設定を管理します。',
-    '2fa_enabled' => '二段階認証: 有効',
-    '2fa_disabled' => '二段階認証: 無効',
+    'two_fa_enabled' => '二段階認証: 有効',
+    'two_fa_disabled' => '二段階認証: 無効',
 
     // アカウント情報
     'account_info' => 'アカウント情報',

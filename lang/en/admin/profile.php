@@ -43,7 +43,7 @@ return [
     'updated_email_immediate' => 'Profile has been updated. Email address has been changed.',
     
     // 2FA Management (Profile-specific)
-    '2fa_management' => 'Two-Factor Authentication Management',
+    'two_fa_management' => 'Two-Factor Authentication Management',
     'recovery_codes' => 'Recovery Codes',
     'passkey_devices' => 'Passkey (Biometric) Devices',
     

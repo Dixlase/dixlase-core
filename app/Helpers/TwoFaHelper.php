@@ -198,7 +198,7 @@ class TwoFaHelper
         $userMethod = $user->default_two_fa_method ?? null;
         $defaultMethod = (int) $settingModelClass::getValue('default_two_fa_method', (string)TwoFaMethod::EMAIL->value);
         $enabledMethods = $this->getEnabledTwoFaMethods($settingModelClass);
-        $globalTwoFaMode = (int) $settingModelClass::getValue('force_2fa', (string)AuthenticationMode::Disabled->value);
+        $globalTwoFaMode = (int) $settingModelClass::getValue('force_two_fa', (string)AuthenticationMode::Disabled->value);
         
         // ユーザーがパスキーを無効にしている場合は、有効な方法からパスキーを除外
         $userPasskeyEnabled = $user->two_fa_passkey_enabled ?? true;

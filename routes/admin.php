@@ -110,7 +110,7 @@ Route::prefix($adminUrl)->name('admin.')
 
             // ダッシュボード（全員アクセス可能）
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-            Route::post('/dashboard/switch-2fa-method', [AdminDashboardController::class, 'switchToUsedMethod'])->name('dashboard.switch2faMethod');
+            Route::post('/dashboard/switch-two-fa-method', [AdminDashboardController::class, 'switchToUsedMethod'])->name('dashboard.switchTwoFaMethod');
             Route::post('/dashboard/dismiss-method-change', [AdminDashboardController::class, 'dismissMethodChangeModal'])->name('dashboard.dismissMethodChange');
             
             // フロントページ管理（権限チェック付き）
@@ -200,9 +200,9 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/force-logout/{member}', [Members\AdminMemberController::class, 'forceLogout'])
                     ->middleware('check.menu.edit:members.index')
                     ->name('force-logout');
-                Route::post('/unlock-2fa/{member}', [Members\AdminMemberController::class, 'unlock2fa'])
+                Route::post('/unlock-two-fa/{member}', [Members\AdminMemberController::class, 'unlockTwoFa'])
                     ->middleware('check.menu.edit:members.index')
-                    ->name('unlock-2fa');
+                    ->name('unlock-two-fa');
                 Route::post('/force-logout-all', [Members\AdminMemberSettingsController::class, 'forceLogoutAll'])
                     ->middleware('check.menu.edit:members.settings')
                     ->name('force-logout-all');
