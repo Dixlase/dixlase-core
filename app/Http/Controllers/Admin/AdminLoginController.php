@@ -456,18 +456,18 @@ class AdminLoginController extends AdminController
         $currentMethod = TwoFaMethod::EMAIL->value;
 
         // Passkeyが有効かチェック
-        $passkeyEnabled = MemberSetting::getValue('two_fa_passkey_enabled', '0') === '1';
+        $twoFaPasskeyEnabled = MemberSetting::getValue('two_fa_passkey_enabled', '0') === '1';
         
-        // メンバーがPasskeyを登録しているかチェック
+        // メンバーがPasskeyを登録していてかチェック
         $passkeyService = app(PasskeyAuthenticationService::class);
-        $hasPasskey = $passkeyService->getCredentials($member)->isNotEmpty();
-
+        $twoFaHasPasskey = $passkeyService->hasDevices($member);
+        
         // 有効な認証方法のリストを作成
         $availableMethods = [];
         foreach ($enabledMethods as $method) {
             if ($method !== $currentMethod) { // 現在の方法は除外
                 // Passkeyの場合は、有効かつ登録済みの場合のみ表示
-                if ($method === TwoFaMethod::PASSKEY->value && (!$passkeyEnabled || !$hasPasskey)) {
+                if ($method === TwoFaMethod::PASSKEY->value && (!$twoFaPasskeyEnabled || !$twoFaHasPasskey)) {
                     continue;
                 }
                 
