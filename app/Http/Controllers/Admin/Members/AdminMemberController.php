@@ -214,12 +214,12 @@ class AdminMemberController extends AdminLoggedInController
 
         $twoFaPasskeyEnabled = $this->memberSettingRepository->get('two_fa_passkey_enabled', '0') === '1';
         $passkeyService = app(\App\Services\PasskeyAuthenticationService::class);
-        $this->viewParams['passkeyDevices'] = $passkeyService->getDevices($member);
-        $this->viewParams['passkeyEnabled'] = $twoFaPasskeyEnabled;
+        $this->viewParams['twoFaPasskeyDevices'] = $passkeyService->getDevices($member);
+        $this->viewParams['twoFaPasskeyEnabled'] = $twoFaPasskeyEnabled;
 
         $recoveryCodeService = app(\App\Services\RecoveryCodeService::class);
-        $this->viewParams['recoveryCodesCount'] = $recoveryCodeService->getRemainingCount($member);
-        $this->viewParams['hasRecoveryCodes'] = $recoveryCodeService->hasRecoveryCodes($member);
+        $this->viewParams['twoFaRecoveryCodesCount'] = $recoveryCodeService->getRemainingCount($member);
+        $this->viewParams['twoFaHasRecoveryCodes'] = $recoveryCodeService->hasRecoveryCodes($member);
 
         return view('admin.members.edit', $this->viewParams);
     }

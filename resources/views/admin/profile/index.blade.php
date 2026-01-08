@@ -248,9 +248,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @if($isMailServerTested && $twoFaForceMode !== \App\Enums\AuthenticationMode::Disabled->value)
         <x-two-fa-management
             :passkeyEnabled="$twoFaPasskeyEnabled"
-            :passkeyDevices="$passkeyDevices"
-            :hasRecoveryCodes="$hasRecoveryCodes"
-            :recoveryCodesCount="$recoveryCodesCount"
+            :passkeyDevices="$twoFaPasskeyDevices"
+            :hasRecoveryCodes="$twoFaHasRecoveryCodes"
+            :recoveryCodesCount="$twoFaRecoveryCodesCount"
             :trustedDevices="$trustedDevices ?? collect()"
             :showTrustedDevices="true"
             :routes="[
