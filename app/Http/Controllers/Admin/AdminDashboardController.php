@@ -22,14 +22,14 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Admin\AdminLoggedInController;
-use Illuminate\Support\Facades\Lang;
+use App\Http\Controllers\Admin\AdminController;
+use App\Services\TwoFa\TwoFaRecoveryCodeService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Enums\TwoFaMethod;
 use Illuminate\Http\Request;
 
-class AdminDashboardController extends AdminLoggedInController
+class AdminDashboardController extends AdminController
 {
     //初期設定を行う
     public function __construct()
@@ -59,7 +59,7 @@ class AdminDashboardController extends AdminLoggedInController
 
         // 回復コード情報を取得
         $user = Auth::guard('member')->user();
-        $twoFaRecoveryCodeService = app(\App\Services\TwoFaRecoveryCodeService::class);
+        $twoFaRecoveryCodeService = new TwoFaRecoveryCodeService();
         $this->viewParams['twoFaRecoveryCodesCount'] = $twoFaRecoveryCodeService->getRemainingCount($user);
         $this->viewParams['twoFaHasRecoveryCodes'] = $twoFaRecoveryCodeService->hasRecoveryCodes($user);
         $this->viewParams['twoFaCanRegenerateRecoveryCodes'] = $twoFaRecoveryCodeService->canRegenerate($user);

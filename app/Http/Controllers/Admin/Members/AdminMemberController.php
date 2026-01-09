@@ -33,6 +33,8 @@ use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
 use Illuminate\Support\Facades\Hash;
 use App\Services\MailServerValidatorService;
+use App\Services\TwoFa\TwoFaPasskeyService;
+use App\Services\TwoFa\TwoFaRecoveryCodeService;
 use App\Contracts\Repositories\MemberSettingRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 
@@ -213,11 +215,11 @@ class AdminMemberController extends AdminLoggedInController
         $this->loadMemberFormParams();
 
         $twoFaPasskeyEnabled = $this->memberSettingRepository->get('two_fa_passkey_enabled', '0') === '1';
-        $twoFaPasskeyService = app(\App\Services\TwoFaPasskeyService::class);
+        $twoFaPasskeyService = new TwoFaPasskeyService();
         $this->viewParams['twoFaPasskeyDevices'] = $twoFaPasskeyService->getDevices($member);
         $this->viewParams['twoFaPasskeyEnabled'] = $twoFaPasskeyEnabled;
 
-        $twoFaRecoveryCodeService = app(\App\Services\TwoFaRecoveryCodeService::class);
+        $twoFaRecoveryCodeService = new TwoFaRecoveryCodeService();
         $this->viewParams['twoFaRecoveryCodesCount'] = $twoFaRecoveryCodeService->getRemainingCount($member);
         $this->viewParams['twoFaHasRecoveryCodes'] = $twoFaRecoveryCodeService->hasRecoveryCodes($member);
 
@@ -437,7 +439,7 @@ class AdminMemberController extends AdminLoggedInController
      */
     public function revokePasskey(Request $request, Member $member, string $credentialId)
     {
-        $twoFaPasskeyService = app(\App\Services\TwoFaPasskeyService::class);
+        $twoFaPasskeyService = new TwoFaPasskeyService();
         
         try {
             if ($credentialId === 'all') {
@@ -481,7 +483,7 @@ class AdminMemberController extends AdminLoggedInController
      */
     public function revokeRecoveryCodes(Request $request, Member $member)
     {
-        $twoFaRecoveryCodeService = app(\App\Services\TwoFaRecoveryCodeService::class);
+        $twoFaRecoveryCodeService = new TwoFaRecoveryCodeService();
         
         try {
             $deletedCount = $twoFaRecoveryCodeService->revokeAll($member);

@@ -24,7 +24,7 @@ namespace Tests\Unit;
 
 use App\Models\Member;
 use App\Models\MemberTwoFaRecoveryCode;
-use App\Services\TwoFaRecoveryCodeService;
+use App\Services\TwoFa\TwoFaRecoveryCodeService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;

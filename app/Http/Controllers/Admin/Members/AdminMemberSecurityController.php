@@ -23,6 +23,8 @@
 namespace App\Http\Controllers\Admin\Members;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
+use App\Services\TwoFa\TwoFaPasskeyService;
+use App\Services\TwoFa\TwoFaRecoveryCodeService;
 use Illuminate\Http\Request;
 use App\Models\Member;
 use Illuminate\Support\Facades\Auth;
@@ -132,7 +134,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
      */
     public function revokePasskey(Request $request, Member $member, string $credentialId)
     {
-        $twoFaPasskeyService = app(\App\Services\TwoFaPasskeyService::class);
+        $twoFaPasskeyService = new TwoFaPasskeyService();
         
         try {
             if ($credentialId === 'all') {
@@ -176,7 +178,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
      */
     public function revokeRecoveryCodes(Request $request, Member $member)
     {
-        $twoFaRecoveryCodeService = app(\App\Services\TwoFaRecoveryCodeService::class);
+        $twoFaRecoveryCodeService = new TwoFaRecoveryCodeService();
         
         try {
             $deletedCount = $twoFaRecoveryCodeService->revokeAll($member);
