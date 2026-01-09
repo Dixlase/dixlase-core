@@ -32,6 +32,8 @@ use App\Rules\NotPwnedPassword;
 use App\Enums\Locale;
 use App\Models\MemberSetting;
 use App\Services\MailServerValidatorService;
+use App\Services\TwoFa\TwoFaPasskeyService;
+use App\Services\TwoFa\TwoFaRecoveryCodeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;

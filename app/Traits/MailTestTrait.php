@@ -412,7 +412,7 @@ trait MailTestTrait
             
             // 既に認証済みの場合
             if ($alreadyVerified && !$storedToken) {
-                return view('components.mail_verification_success', [
+                return view('components.mail-verification-success', [
                     'isInstall' => $context === 'install',
                     'alreadyVerified' => true
                 ]);
@@ -422,14 +422,14 @@ trait MailTestTrait
                 
                 // 既に認証済みかつトークンがnullの場合のみ（正常に完了済み）
                 if ($alreadyVerified && $storedToken === null) {
-                    return view('components.mail_verification_success', [
+                    return view('components.mail-verification-success', [
                         'isInstall' => $context === 'install',
                         'alreadyVerified' => true
                     ]);
                 }
                 
                 // それ以外は無効なトークンエラー
-                return view('components.mail_verification_error', [
+                return view('components.mail-verification-error', [
                     'errorType' => 'invalid_token',
                     'errorMessage' => __('mail.controller_messages.verification_token_invalid')
                 ]);

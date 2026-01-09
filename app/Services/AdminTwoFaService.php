@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Helpers\TwoFaHelper;
 use App\Services\EmailAuthenticationService;
 use App\Services\TwoFa\TwoFaAttemptService;
+use App\Services\TwoFa\TwoFaPasskeyService;
+use App\Services\TwoFa\TwoFaRecoveryCodeService;
 use App\Enums\TwoFaMethod;
 use Illuminate\Support\Facades\Log;
 

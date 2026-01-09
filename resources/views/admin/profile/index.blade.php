@@ -192,7 +192,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <section class="transition-colors-unified">
                 <h2>{{ __('auth.two_fa_settings') }}</h2>
 
-                <x-two-fa-auth-selector
+                <x-two-fa.auth-selector
                     name="two_fa_mode"
                     :value="old('two_fa_mode', (string) ($twoFaMode?->value ?? 0))"
                     :globalSetting="$twoFaForceMode"
@@ -246,7 +246,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- 2FA管理セクション（メールサーバー設定済み、かつ二段階認証が有効の場合のみ表示） -->
     @if($isMailServerTested && $twoFaForceMode !== \App\Enums\AuthenticationMode::Disabled->value)
-        <x-two-fa-management
+        <x-two-fa.management
             :twoFaPasskeyEnabled="$twoFaPasskeyEnabled"
             :twoFaPasskeyDevices="$twoFaPasskeyDevices"
             :twoFaHasRecoveryCodes="$twoFaHasRecoveryCodes"

@@ -383,7 +383,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             $initialPasskeyEnabled = old('two_fa_passkey_enabled', $member->two_fa_passkey_enabled ?? true);
         @endphp
         
-        <x-two-fa-auth-selector
+        <x-two-fa.auth-selector
             name="two_fa_mode"
             :value="old('two_fa_mode', (string)$currentTwoFaMode)"
             :globalSetting="$forceTwoFa"
@@ -410,7 +410,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </p>
         </div>
         
-        <x-two-fa-management
+        <x-two-fa.management
             :twoFaPasskeyEnabled="$twoFaPasskeyEnabled"
             :twoFaPasskeyDevices="$twoFaPasskeyDevices"
             :twoFaHasRecoveryCodes="$twoFaHasRecoveryCodes"
