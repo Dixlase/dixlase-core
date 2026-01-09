@@ -61,7 +61,7 @@ class AdminMemberAuthController extends AdminMemberSettingsController
         }
 
         if (array_key_exists('two_fa_force_mode', $validated)) {
-            $this->memberSettingRepository->set('force_two_fa', (int) $validated['two_fa_force_mode']);
+            $this->memberSettingRepository->set('two_fa_mode', (int) $validated['two_fa_force_mode']);
         }
         if (array_key_exists('two_fa_passkey_mode', $validated)) {
             $this->memberSettingRepository->set('two_fa_passkey_mode', (string) $validated['two_fa_passkey_mode']);

@@ -204,11 +204,30 @@ return [
         'default_method' => 'Default Authentication Method',
         'passkey_disabled_default_email_only' => 'When passkey is disabled, only email authentication is available.',
         'default_method_help' => 'Select the authentication method to use first at login.',
+        'global_setting_fixed' => 'Fixed by global settings',
+        // Authentication mode options
+        'authentication_mode' => [
+            'disabled' => 'Disabled',
+            'different_device' => 'Different device/IP login',
+            'always' => 'Always enabled',
+            'use_profile_setting' => 'Use Profile Setting',
+        ],
         'options' => [
             'disabled' => 'Disabled',
             'different_device' => 'Different device/IP login',
             'always' => 'Always enabled',
             'use_profile_setting' => 'Use Profile Setting',
+        ],
+        'passkey_mode' => [
+            'label' => 'Passkey Settings',
+            'help' => [
+                'profile_editable' => 'You can enable or disable passkey authentication',
+                'profile_forced_disabled' => 'Passkey authentication is disabled by global settings',
+                'profile_forced_enabled' => 'Passkey authentication is enabled by global settings',
+            ],
+            'options' => [
+                'enabled' => 'Enabled',
+            ],
         ],
     ],
 

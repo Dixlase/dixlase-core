@@ -203,11 +203,30 @@ return [
         'default_method' => 'デフォルトの認証方法',
         'passkey_disabled_default_email_only' => 'パスキーが無効の場合、メール認証のみ使用できます。',
         'default_method_help' => 'ログイン時に最初に使用する認証方法を選択します。',
+        'global_setting_fixed' => '全体設定により固定されています',
+        // 認証モードオプション
+        'authentication_mode' => [
+            'disabled' => '無効',
+            'different_device' => '異なるデバイス・IPでのログイン時',
+            'always' => '常に有効',
+            'use_profile_setting' => 'プロフィール設定に従う',
+        ],
         'options' => [
             'disabled' => '無効',
             'different_device' => '異なるデバイス・IPでのログイン時',
             'always' => '常に有効',
             'use_profile_setting' => 'プロフィール設定に従う',
+        ],
+        'passkey_mode' => [
+            'label' => 'パスキー設定',
+            'help' => [
+                'profile_editable' => 'パスキー認証の利用可否を設定できます',
+                'profile_forced_disabled' => '全体設定により、パスキー認証は無効に設定されています',
+                'profile_forced_enabled' => '全体設定により、パスキー認証は有効に設定されています',
+            ],
+            'options' => [
+                'enabled' => '有効',
+            ],
         ],
     ],
 

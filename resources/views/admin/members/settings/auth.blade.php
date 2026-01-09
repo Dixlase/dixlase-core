@@ -135,27 +135,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :message="__('admin/members/settings.mail_server_test_warning', ['url' => route('admin.settings.base.mail')])"
                 />
             @endif
-            {{-- 1. 二段階認証モード --}}
-            <x-two-fa.mode-selector
-                name="two_fa_force_mode"
-                :value="old('two_fa_force_mode', (string) $twoFaForceMode)"
-                :globalSetting="null"
-                :excludeUseProfileSetting="false"
+            
+            {{-- 全体設定用の二段階認証設定コンポーネント --}}
+            <x-two-fa.general-settings
+                twoFaModeName="two_fa_force_mode"
+                :twoFaModeValue="(string) $twoFaForceMode"
+                twoFaPasskeyModeName="two_fa_passkey_mode"
+                :twoFaPasskeyModeValue="(string) $twoFaPasskeyMode"
+                twoFaDefaultMethodName="two_fa_default_method"
+                :twoFaDefaultMethodValue="(string) $twoFaDefaultMethod"
                 :columns="4"
-            />
-
-            {{-- 2. 二段階認証方法（メール認証・パスキー設定） --}}
-            <x-two-fa.method-selector
-                name="two_fa_passkey_mode"
-                :value="(string) ($twoFaPasskeyMode ?? '2')"
-                :columns="3"
-            />
-
-            {{-- 3. デフォルトの認証方法 --}}
-            <x-two-fa.default-method
-                :twoFaPasskeyEnabled="old('two_fa_passkey_mode', $twoFaPasskeyMode) != '0'"
-                :twoFaDefaultMethod="(string) $twoFaDefaultMethod"
-                :columns="2"
             />
 
             <fieldset>

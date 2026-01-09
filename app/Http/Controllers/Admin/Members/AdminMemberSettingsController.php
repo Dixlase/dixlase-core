@@ -106,10 +106,10 @@ class AdminMemberSettingsController extends AdminLoggedInController
             ->values()
             ->toArray();
 
-        $twoFaForceMode = (int) $this->memberSettingRepository->get('force_two_fa', AuthenticationMode::Disabled->value);
+        $twoFaForceMode = (int) $this->memberSettingRepository->get('two_fa_mode', AuthenticationMode::Disabled->value);
         
-        if (old('force_two_fa') !== null) {
-            $twoFaForceMode = (int) old('force_two_fa');
+        if (old('two_fa_force_mode') !== null) {
+            $twoFaForceMode = (int) old('two_fa_force_mode');
         }
         
         $twoFactorGlobalOptions = collect(config('admin.global_two_factor_mode'))

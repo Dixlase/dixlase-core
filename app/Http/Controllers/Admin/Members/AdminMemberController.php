@@ -325,12 +325,16 @@ class AdminMemberController extends AdminLoggedInController
         }
         $this->viewParams['loginNotificationModeOptions'] = $loginNotificationOptions;
 
-        $twoFaForceMode = (int) $this->memberSettingRepository->get('force_two_fa', AuthenticationMode::Disabled->value);
+        $twoFaForceMode = (int) $this->memberSettingRepository->get('two_fa_mode', AuthenticationMode::Disabled->value);
         // Enumオブジェクトの場合は整数値に変換
         if ($twoFaForceMode instanceof AuthenticationMode) {
             $twoFaForceMode = $twoFaForceMode->value;
         }
         $this->viewParams['forceTwoFa'] = $twoFaForceMode;
+        
+        // パスキーモード設定を追加
+        $twoFaPasskeyMode = (int) $this->memberSettingRepository->get('two_fa_passkey_mode', '2');
+        $this->viewParams['twoFaPasskeyMode'] = $twoFaPasskeyMode;
         $twoFactorEnum = AuthenticationMode::tryFrom($twoFaForceMode);
         $this->viewParams['twoFactorModeLabel'] = $twoFactorEnum ? $twoFactorEnum->twoFactorLabel() : '';
         

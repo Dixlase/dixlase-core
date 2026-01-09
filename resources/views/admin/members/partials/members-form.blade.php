@@ -383,13 +383,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             $initialPasskeyEnabled = old('two_fa_passkey_enabled', $member->two_fa_passkey_enabled ?? true);
         @endphp
         
-        <x-two-fa.auth-selector
+        <x-two-fa.individual-auth-selector
             name="two_fa_mode"
             :value="old('two_fa_mode', (string)$currentTwoFaMode)"
             :globalSetting="$forceTwoFa"
             :excludeUseProfileSetting="true"
             :twoFaPasskeyGloballyEnabled="$twoFaPasskeyGloballyEnabled"
             :twoFaPasskeyEnabled="$initialPasskeyEnabled"
+            :twoFaPasskeyMode="(string)($twoFaPasskeyMode ?? '2')"
             :twoFaDefaultMethod="(string)($member->default_two_fa_method ?? $twoFaDefaultMethod)"
             :columns="3"
             :globalSettingsUrl="route('admin.members.settings.auth')"

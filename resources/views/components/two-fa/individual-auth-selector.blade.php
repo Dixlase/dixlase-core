@@ -26,32 +26,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'twoFaPasskeyGloballyEnabled' => false, // パスキーが全体で有効か
     'twoFaPasskeyEnabled' => true, // パスキーが個別に有効か
     'twoFaDefaultMethod' => '0', // デフォルトの二段階認証方法（0=メール, 1=パスキー）
+    'twoFaPasskeyMode' => '2', // 全体設定のパスキーモード（0=無効, 1=有効, 2=プロフィール設定に従う）
     'columns' => 3,
     'globalSettingsUrl' => null, // 全体設定へのリンクURL（nullの場合は注意書きを非表示）
 ])
 
-{{-- 1. 二段階認証モード --}}
-<x-two-fa.mode-selector
-    :name="$name"
-    :value="$value"
-    :globalSetting="$globalSetting"
-    :excludeUseProfileSetting="$excludeUseProfileSetting"
+{{-- 個別設定用のコンポーネントを使用 --}}
+<x-two-fa.individual-settings
+    :twoFaModeName="$name"
+    :twoFaModeValue="$value"
+    :twoFaGlobalSetting="$globalSetting"
+    :twoFaPasskeyEnabled="$twoFaPasskeyEnabled"
+    :twoFaPasskeyMode="$twoFaPasskeyMode"
+    :twoFaDefaultMethod="$twoFaDefaultMethod"
     :columns="$columns"
-/>
-
-{{-- 2. 二段階認証方法（メール認証・パスキー設定） --}}
-<x-two-fa.method-selector
-    name="two_fa_passkey_mode"
-    :value="(string) ($twoFaPasskeyEnabled ? '1' : '0')"
-    :columns="3"
     :globalSettingsUrl="$globalSettingsUrl"
 />
-
-{{-- 3. デフォルトの認証方法（パスキーが有効な場合のみ表示） --}}
-@if($twoFaPasskeyGloballyEnabled || $twoFaPasskeyEnabled)
-    <x-two-fa.default-method
-        :twoFaPasskeyEnabled="$twoFaPasskeyEnabled"
-        :twoFaDefaultMethod="$twoFaDefaultMethod"
-        :columns="2"
-    />
-@endif
