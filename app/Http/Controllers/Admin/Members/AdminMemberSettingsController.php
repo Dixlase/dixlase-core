@@ -130,6 +130,13 @@ class AdminMemberSettingsController extends AdminLoggedInController
             $twoFaPasskeyMode = (int) old('two_fa_passkey_mode');
         }
 
+        // デフォルトの二段階認証方法（0=メール, 1=パスキー）
+        $twoFaDefaultMethod = (int) $this->memberSettingRepository->get('two_fa_default_method', '0');
+        
+        if (old('two_fa_default_method') !== null) {
+            $twoFaDefaultMethod = (int) old('two_fa_default_method');
+        }
+
         $passwordResetEnabled = (bool) $this->memberSettingRepository->get('password_reset_enabled', true);
         $pwnedPasswordCheckEnabled = (bool) $this->memberSettingRepository->get('pwned_password_check_enabled', false);
         $loginAttemptLimitEnabled = (bool) $this->memberSettingRepository->get('login_attempt_limit_enabled', false);
@@ -180,6 +187,7 @@ class AdminMemberSettingsController extends AdminLoggedInController
         $this->viewParams['twoFaForceMode'] = $twoFaForceMode;
         $this->viewParams['twoFaGlobalOptions'] = $twoFactorGlobalOptions;
         $this->viewParams['twoFaPasskeyMode'] = $twoFaPasskeyMode;
+        $this->viewParams['twoFaDefaultMethod'] = $twoFaDefaultMethod;
         $this->viewParams['twoFaExpireMinutes'] = $twoFaExpireMinutes;
         $this->viewParams['twoFaResendIntervalSeconds'] = $twoFaResendIntervalSeconds;
         $this->viewParams['twoFaMaxAttempts'] = $twoFaMaxAttempts;

@@ -154,7 +154,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             {{-- 3. デフォルトの認証方法 --}}
             <x-two-fa.default-method
                 :twoFaPasskeyEnabled="old('two_fa_passkey_mode', $twoFaPasskeyMode) != '0'"
-                :twoFaDefaultMethod="'0'"
+                :twoFaDefaultMethod="(string) $twoFaDefaultMethod"
                 :columns="2"
             />
 
