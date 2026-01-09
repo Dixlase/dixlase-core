@@ -24,13 +24,32 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'globalSetting' => null,
     'excludeUseProfileSetting' => false,
     'columns' => 4,
+    'xModel' => null,
+    'isProfile' => false,
+    'isTwoFaEditable' => true,
 ])
 
 @php
     use App\Enums\AuthenticationMode;
     
-    $showSettings = ($globalSetting === AuthenticationMode::UseProfileSetting->value) || ($globalSetting === null);
-    $isFixedByGlobal = !$showSettings && $globalSetting !== null;
+    // プロフィール画面の場合は、isTwoFaEditableで判定
+    if ($isProfile) {
+        $showSettings = $isTwoFaEditable;
+        $isFixedByGlobal = !$isTwoFaEditable && $globalSetting !== null;
+    } else {
+        // 全体設定画面の場合は、従来通り
+        $showSettings = ($globalSetting === AuthenticationMode::UseProfileSetting->value) || ($globalSetting === null);
+        $isFixedByGlobal = !$showSettings && $globalSetting !== null;
+    }
+    
+    // デバッグ情報
+    $debugInfo = [
+        'isProfile' => $isProfile,
+        'isTwoFaEditable' => $isTwoFaEditable,
+        'globalSetting' => $globalSetting,
+        'showSettings' => $showSettings,
+        'isFixedByGlobal' => $isFixedByGlobal,
+    ];
     
     if ($excludeUseProfileSetting) {
         $options = [
@@ -76,7 +95,40 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     }
 @endphp
 
-@if($showSettings || $excludeUseProfileSetting)
+@if($isProfile)
+    {{-- プロフィール画面の場合 --}}
+    @if($showSettings)
+        <fieldset>
+            <legend>{{ __('components.two_fa.mode_label') }}</legend>
+            <x-form.radio-card-group
+                :name="$name"
+                :options="$options"
+                :value="$value"
+                :columns="$columns"
+                :xModel="$xModel"
+            />
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{!! __('components.two_fa.help') !!}</p>
+        </fieldset>
+    @elseif($isFixedByGlobal)
+        <fieldset>
+            <legend>{{ __('components.two_fa.mode_label') }}</legend>
+            <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
+                <p class="text-sm">
+                    @php
+                        $globalMode = AuthenticationMode::tryFrom($globalSetting);
+                        if ($globalMode) {
+                            echo str_replace(':account_type', __('common.account_types.member'), $globalMode->twoFactorLabel());
+                        }
+                    @endphp
+                </p>
+                <p class="text-xs mt-1">
+                    {{ __('components.two_fa.global_setting_fixed') }}
+                </p>
+            </div>
+        </fieldset>
+    @endif
+@elseif($showSettings || $excludeUseProfileSetting)
+    {{-- 全体設定画面の場合 --}}
     <fieldset>
         <legend>{{ __('components.two_fa.mode_label') }}</legend>
         <x-form.radio-card-group
@@ -84,6 +136,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :options="$options"
             :value="$value"
             :columns="$columns"
+            :xModel="$xModel"
         />
         <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{!! __('components.two_fa.help') !!}</p>
     </fieldset>
@@ -100,7 +153,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endphp
             </p>
             <p class="text-xs mt-1">
-                {{ __('common.two_fa_global_setting_fixed') }}
+                {{ __('components.two_fa.global_setting_fixed') }}
             </p>
         </div>
     </fieldset>

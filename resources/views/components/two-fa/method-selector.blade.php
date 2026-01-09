@@ -23,6 +23,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'value' => '2',
     'columns' => 3,
     'globalSettingsUrl' => null,
+    'xModel' => null,
+    'isProfile' => false,
+    'isPasskeyEditable' => false,
+    'forcedPasskeyValue' => null,
+    'currentPasskeyEnabled' => false,
 ])
 
 @php
@@ -60,20 +65,63 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 </fieldset>
 
 {{-- パスキー設定 --}}
-<fieldset>
-    <legend>{{ __('common.passkey_mode.label') }}</legend>
-    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-        {{ __('common.passkey_mode.help.global') }}
-    </p>
-    
-    <x-form.radio-card-group
-        :name="$name"
-        :options="$passkeyModeOptions"
-        :value="$currentPasskeyMode"
-        :columns="$columns"
-    />
-    
-    @error($name)
-        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-    @enderror
-</fieldset>
+@if($isProfile)
+    {{-- プロフィール設定の場合 --}}
+    <fieldset>
+        <legend>{{ __('common.passkey_mode.label') }}</legend>
+        
+        @if($isPasskeyEditable)
+            {{-- プロフィール設定に従う場合：トグルで編集可能 --}}
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                {{ __('common.passkey_mode.help.profile_editable') }}
+            </p>
+            <x-form.toggle
+                name="two_fa_passkey_enabled"
+                :label="__('common.passkey_mode.options.enabled')"
+                :checked="old('two_fa_passkey_enabled', $currentPasskeyEnabled)"
+                :xModel="$xModel"
+            />
+        @elseif($forcedPasskeyValue !== null)
+            {{-- 全体設定で強制されている場合：トグルを表示したまま操作不可 --}}
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                @if($forcedPasskeyValue === false)
+                    {{ __('common.passkey_mode.help.profile_forced_disabled') }}
+                @else
+                    {{ __('common.passkey_mode.help.profile_forced_enabled') }}
+                @endif
+            </p>
+            <div class="opacity-50 pointer-events-none">
+                <x-form.toggle
+                    name="two_fa_passkey_enabled"
+                    :label="__('common.passkey_mode.options.enabled')"
+                    :checked="$forcedPasskeyValue"
+                    :disabled="true"
+                />
+            </div>
+            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                <i class="fas fa-info-circle mr-1"></i>
+                {{ __('common.global_setting_fixed.two_fa', ['account_type' => __('common.account_types.member')]) }}
+            </p>
+        @endif
+    </fieldset>
+@else
+    {{-- 全体設定の場合 --}}
+    <fieldset>
+        <legend>{{ __('common.passkey_mode.label') }}</legend>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            {{ __('common.passkey_mode.help.global') }}
+        </p>
+        
+        <x-form.radio-card-group
+            :name="$name"
+            :options="$passkeyModeOptions"
+            :value="$currentPasskeyMode"
+            :columns="$columns"
+            :xModel="$xModel"
+        />
+        
+        @error($name)
+            <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+        @enderror
+    </fieldset>
+@endif

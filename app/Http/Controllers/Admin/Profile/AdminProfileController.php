@@ -166,7 +166,7 @@ class AdminProfileController extends AdminLoggedInController
 
         // 二段階認証設定の追加
         $twoFaForceMode = (int) MemberSetting::getValue(
-            'two_fa_force_mode',
+            'two_fa_mode',
             AuthenticationMode::UseProfileSetting->value
         );
         $twoFaMode = $member->two_fa_mode;
@@ -348,7 +348,7 @@ class AdminProfileController extends AdminLoggedInController
         $twoFaOldMode = is_int($member->two_fa_mode) ? $member->two_fa_mode : $member->two_fa_mode->value;
         
         // two_fa_mode は全体設定が UseProfileSetting のときだけ上書き
-        $twoFaForceMode = (int) MemberSetting::getValue('two_fa_force_mode', AuthenticationMode::UseProfileSetting->value);
+        $twoFaForceMode = (int) MemberSetting::getValue('two_fa_mode', AuthenticationMode::UseProfileSetting->value);
         if ($twoFaForceMode === AuthenticationMode::UseProfileSetting->value && array_key_exists('two_fa_mode', $validated)) {
             $member->two_fa_mode = (int) $validated['two_fa_mode'];
         }
@@ -370,8 +370,8 @@ class AdminProfileController extends AdminLoggedInController
         $shouldGenerateRecoveryCodes = false;
         
         \Log::info('[Profile] Recovery code generation check', [
-            'twoFaForceMode' => $twoFaForceMode,
-            'forceTwoFa_expected' => AuthenticationMode::UseProfileSetting->value,
+            'two_fa_mode' => $twoFaForceMode,
+            'two_fa_mode_expected' => AuthenticationMode::UseProfileSetting->value,
             'has_two_fa_mode_in_validated' => array_key_exists('two_fa_mode', $validated),
             'twoFaOldMode' => $twoFaOldMode,
             'twoFaNewMode' => isset($validated['two_fa_mode']) ? (int) $validated['two_fa_mode'] : null,

@@ -22,6 +22,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'twoFaPasskeyEnabled' => false,
     'twoFaDefaultMethod' => '0',
     'columns' => 2,
+    'xModel' => null,
 ])
 
 @php
@@ -32,31 +33,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     $currentDefaultMethod = old('two_fa_default_method', $twoFaDefaultMethod);
 @endphp
 
-<div x-data="{ passkeyEnabled: {{ $twoFaPasskeyEnabled ? 'true' : 'false' }} }">
-    <fieldset>
-        <legend>{{ __('components.two_fa.default_method') }}</legend>
-        
-        <div x-show="!passkeyEnabled" class="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
-            <p class="text-sm text-blue-800 dark:text-blue-200">
-                <i class="fas fa-info-circle mr-1"></i>
-                {{ __('components.two_fa.passkey_disabled_default_email_only') }}
-            </p>
-        </div>
-        
-        <div :class="{ 'opacity-50 pointer-events-none': !passkeyEnabled }">
-            <x-form.radio-card-group
-                name="two_fa_default_method"
-                :options="$defaultMethodOptions"
-                :value="$currentDefaultMethod"
-                :columns="$columns"
-            />
-        </div>
-        
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            {{ __('components.two_fa.default_method_help') }}
-        </p>
-        <x-form.error
-            :messages="$errors->get('two_fa_default_method')"
-        />
-    </fieldset>
-</div>
+{{-- ラジオカードグループのみ（親スコープで無効化制御） --}}
+<x-form.radio-card-group
+    name="two_fa_default_method"
+    :options="$defaultMethodOptions"
+    :value="$currentDefaultMethod"
+    :columns="$columns"
+    :xModel="$xModel"
+/>
+
+<p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+    {{ __('components.two_fa.default_method_help') }}
+</p>
+<x-form.error
+    :messages="$errors->get('two_fa_default_method')"
+/>

@@ -183,65 +183,61 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </section>
 
         <!-- 二段階認証設定（メールサーバー設定済みの場合のみ表示） -->
-        @if($isMailServerTested && ($twoFaForceMode === \App\Enums\AuthenticationMode::UseProfileSetting->value || $twoFaCurrentGlobalMode))
+        @if($isMailServerTested)
             @php
                 $member = Auth::guard('member')->user();
                 $twoFaPasskeyGloballyEnabled = in_array(\App\Enums\TwoFaMethod::PASSKEY->value, array_keys($twoFaEnabledMethods ?? []));
+                $isTwoFaEditable = $twoFaForceMode === \App\Enums\AuthenticationMode::UseProfileSetting->value;
             @endphp
             
-            <section class="transition-colors-unified">
-                <h2>{{ __('auth.two_fa_settings') }}</h2>
+<div x-data="{
+                twoFaMode: '{{ old('two_fa_mode', (string) ($twoFaMode?->value ?? 0)) }}',
+                passkeyEnabled: {{ $currentPasskeyEnabled ? 'true' : 'false' }},
+                get twoFaEnabled() {
+                    return this.twoFaMode !== '0';
+                }
+            }">
+                <section class="transition-colors-unified">
+                    <h2>{{ __('auth.two_fa_settings') }}</h2>
 
-                <x-two-fa.auth-selector
-                    name="two_fa_mode"
-                    :value="old('two_fa_mode', (string) ($twoFaMode?->value ?? 0))"
-                    :globalSetting="$twoFaForceMode"
-                    :excludeUseProfileSetting="true"
-                    :twoFaPasskeyGloballyEnabled="$twoFaPasskeyGloballyEnabled"
-                    :twoFaPasskeyEnabled="$currentPasskeyEnabled"
-                    :twoFaDefaultMethod="(string) (Auth::guard('member')->user()->two_fa_default_method ?? $twoFaDefaultMethod)"
-                    :columns="3"
-                />
-            </section>
+                    {{-- 1. 二段階認証モード --}}
+                    <x-two-fa.mode-selector
+                        name="two_fa_mode"
+                        :value="old('two_fa_mode', (string) ($twoFaMode?->value ?? 0))"
+                        :globalSetting="$twoFaForceMode"
+                        :excludeUseProfileSetting="true"
+                        :columns="3"
+                        :isProfile="true"
+                        :isTwoFaEditable="$isTwoFaEditable"
+                        xModel="twoFaMode"
+                    />
 
-            {{-- パスキー設定セクション --}}
-            <section class="transition-colors-unified">
-                <h2>{{ __('common.passkey_mode.label') }}</h2>
-                
-                @if($isPasskeyEditable)
-                    {{-- プロフィール設定に従う場合：トグルで編集可能 --}}
-                    <fieldset>
-                        <legend>{{ __('common.passkey_mode.help.profile_editable') }}</legend>
-                        <x-form.toggle
+                    {{-- 2. 二段階認証方法（メール認証・パスキー設定） --}}
+                    <div :class="{ 'opacity-50 pointer-events-none': !twoFaEnabled }">
+                        <x-two-fa.method-selector
                             name="two_fa_passkey_enabled"
-                            :label="__('common.passkey_mode.options.enabled')"
-                            :checked="old('two_fa_passkey_enabled', $currentPasskeyEnabled)"
+                            :value="(string) ($currentPasskeyEnabled ? '1' : '0')"
+                            :columns="3"
+                            :isProfile="true"
+                            :isPasskeyEditable="$isPasskeyEditable ?? false"
+                            :forcedPasskeyValue="$forcedPasskeyValue ?? null"
+                            :currentPasskeyEnabled="$currentPasskeyEnabled ?? false"
+                            xModel="passkeyEnabled"
                         />
-                    </fieldset>
-                @else
-                    {{-- 全体設定で強制されている場合：表示のみ --}}
-                    <fieldset>
-                        <legend>
-                            @if($forcedPasskeyValue === false)
-                                {{ __('common.passkey_mode.help.profile_forced_disabled') }}
-                            @else
-                                {{ __('common.passkey_mode.help.profile_forced_enabled') }}
-                            @endif
-                        </legend>
-                        <div class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
-                            <i class="fas {{ $forcedPasskeyValue ? 'fa-check-circle text-green-600 dark:text-green-400' : 'fa-times-circle text-gray-400 dark:text-gray-600' }}"></i>
-                            <span class="text-sm font-medium {{ $forcedPasskeyValue ? 'text-green-800 dark:text-green-200' : 'text-gray-600 dark:text-gray-400' }}">
-                                {{ $forcedPasskeyValue ? __('common.passkey_mode.options.enabled') : __('common.passkey_mode.options.disabled') }}
-                            </span>
-                        </div>
-                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            {{ __('common.global_setting_fixed.two_fa', ['account_type' => __('admin/members/index.member')]) }}
-                        </p>
-                    </fieldset>
-                @endif
-            </section>
+                    </div>
+
+                    {{-- 3. デフォルトの認証方法 --}}
+                    <div :class="{ 'opacity-50 pointer-events-none': !twoFaEnabled || !passkeyEnabled }">
+                        <x-two-fa.default-method
+                            :twoFaPasskeyEnabled="$currentPasskeyEnabled"
+                            :twoFaDefaultMethod="(string) (Auth::guard('member')->user()->two_fa_default_method ?? $twoFaDefaultMethod)"
+                            :columns="2"
+                        />
+                    </div>
+                </section>
+            </div>
         @endif
+
     </form>
 
     <!-- 2FA管理セクション（メールサーバー設定済み、かつ二段階認証が有効の場合のみ表示） -->
