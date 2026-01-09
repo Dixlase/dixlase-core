@@ -95,9 +95,10 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
             'login_attempt_lockout_duration' => 'required|integer|min:1|max:10080', // 最大1週間
             'login_attempt_lockout_notification_enabled' => 'required|boolean',
             'two_fa_force_mode' => ['required', new Enum(AuthenticationMode::class)],
+            'two_fa_passkey_mode' => 'required|integer|in:0,1,2', // 0=無効, 1=有効, 2=プロフィール設定に従う
+            'two_fa_default_method' => 'nullable|integer|in:0,1', // 0=メール, 1=パスキー（パスキー有効時のみ）
             'two_fa_expire_minutes' => 'required|integer|min:1|max:60', // 1-60分（メール認証）
             'two_fa_resend_interval_seconds' => 'required|integer|min:60|max:600', // 60-600秒（1-10分）
-            'two_fa_passkey_mode' => 'required|integer|in:0,1,2', // 0=無効, 1=有効, 2=プロフィール設定に従う
             'two_fa_max_attempts' => 'required|integer|min:1|max:10',
             'two_fa_attempt_window' => 'required|integer|min:5|max:60',
             'two_fa_lockout_duration' => 'required|integer|min:5|max:1440',

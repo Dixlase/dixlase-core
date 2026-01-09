@@ -29,7 +29,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         ['value' => '0', 'label' => __('common.email')],
         ['value' => '1', 'label' => __('components.two_fa.passkey')],
     ];
-    $currentDefaultMethod = old('default_two_fa_method', $twoFaDefaultMethod);
+    $currentDefaultMethod = old('two_fa_default_method', $twoFaDefaultMethod);
 @endphp
 
 <div x-data="{ passkeyEnabled: {{ $twoFaPasskeyEnabled ? 'true' : 'false' }} }">
@@ -45,7 +45,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <div :class="{ 'opacity-50 pointer-events-none': !passkeyEnabled }">
             <x-form.radio-card-group
-                name="default_two_fa_method"
+                name="two_fa_default_method"
                 :options="$defaultMethodOptions"
                 :value="$currentDefaultMethod"
                 :columns="$columns"
@@ -56,7 +56,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             {{ __('components.two_fa.default_method_help') }}
         </p>
         <x-form.error
-            :messages="$errors->get('default_two_fa_method')"
+            :messages="$errors->get('two_fa_default_method')"
         />
     </fieldset>
 </div>

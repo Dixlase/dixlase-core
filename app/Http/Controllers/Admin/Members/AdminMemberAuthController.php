@@ -60,17 +60,20 @@ class AdminMemberAuthController extends AdminMemberSettingsController
             $this->memberSettingRepository->set('login_attempt_lockout_notification_enabled', $validated['login_attempt_lockout_notification_enabled'] ? '1' : '0');
         }
 
-        if (array_key_exists('force_two_fa', $validated)) {
-            $this->memberSettingRepository->set('force_two_fa', (int) $validated['force_two_fa']);
+        if (array_key_exists('two_fa_force_mode', $validated)) {
+            $this->memberSettingRepository->set('force_two_fa', (int) $validated['two_fa_force_mode']);
+        }
+        if (array_key_exists('two_fa_passkey_mode', $validated)) {
+            $this->memberSettingRepository->set('two_fa_passkey_mode', (string) $validated['two_fa_passkey_mode']);
+        }
+        if (array_key_exists('two_fa_default_method', $validated)) {
+            $this->memberSettingRepository->set('two_fa_default_method', (string) $validated['two_fa_default_method']);
         }
         if (array_key_exists('two_fa_expire_minutes', $validated)) {
             $this->memberSettingRepository->set('two_fa_expire_minutes', (string) $validated['two_fa_expire_minutes']);
         }
         if (array_key_exists('two_fa_resend_interval_seconds', $validated)) {
             $this->memberSettingRepository->set('two_fa_resend_interval_seconds', (string) $validated['two_fa_resend_interval_seconds']);
-        }
-        if (array_key_exists('two_fa_passkey_mode', $validated)) {
-            $this->memberSettingRepository->set('two_fa_passkey_mode', (string) $validated['two_fa_passkey_mode']);
         }
         if (array_key_exists('two_fa_max_attempts', $validated)) {
             $this->memberSettingRepository->set('two_fa_max_attempts', (string) $validated['two_fa_max_attempts']);
