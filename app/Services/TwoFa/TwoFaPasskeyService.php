@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\TwoFa;
 
 use App\Models\Member;
 use App\Models\MemberTwoFaPasskey;

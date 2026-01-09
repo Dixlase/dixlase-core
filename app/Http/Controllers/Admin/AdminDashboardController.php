@@ -22,14 +22,14 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Services\TwoFa\TwoFaRecoveryCodeService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Enums\TwoFaMethod;
 use Illuminate\Http\Request;
 
-class AdminDashboardController extends AdminController
+class AdminDashboardController extends AdminLoggedInController
 {
     //初期設定を行う
     public function __construct()

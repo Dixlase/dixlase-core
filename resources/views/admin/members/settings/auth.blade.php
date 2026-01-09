@@ -135,41 +135,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :message="__('admin/members/settings.mail_server_test_warning', ['url' => route('admin.settings.base.mail')])"
                 />
             @endif
-            <x-two-fa-auth-selector
+            {{-- 1. 二段階認証モード --}}
+            <x-two-fa.mode-selector
                 name="two_fa_force_mode"
                 :value="old('two_fa_force_mode', (string) $twoFaForceMode)"
                 :globalSetting="null"
                 :excludeUseProfileSetting="false"
-                :twoFaPasskeyGloballyEnabled="true"
-                :twoFaPasskeyEnabled="old('passkey_two_fa_enabled', $passkeyEnabled ?? false)"
-                :twoFaDefaultMethod="'0'"
                 :columns="4"
-                :globalSettingsUrl="null"
             />
 
-            <fieldset>
-                <legend>{{ __('common.passkey_mode.label') }}</legend>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    {{ __('common.passkey_mode.help.global') }}
-                </p>
-                
-                @php
-                    use App\Enums\PasskeyMode;
-                    $passkeyModeOptions = PasskeyMode::getGlobalOptions();
-                    $currentPasskeyMode = old('two_fa_passkey_mode', $twoFaPasskeyMode ?? '2');
-                @endphp
-                
-                <x-form.radio-card-group
-                    name="two_fa_passkey_mode"
-                    :options="$passkeyModeOptions"
-                    :value="$currentPasskeyMode"
-                    :columns="3"
-                />
-                
-                @error('two_fa_passkey_mode')
-                    <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                @enderror
-            </fieldset>
+            {{-- 2. 二段階認証方法（メール認証・パスキー設定） --}}
+            <x-two-fa.method-selector
+                name="two_fa_passkey_mode"
+                :value="(string) ($twoFaPasskeyMode ?? '2')"
+                :columns="3"
+            />
+
+            {{-- 3. デフォルトの認証方法 --}}
+            <x-two-fa.default-method
+                :twoFaPasskeyEnabled="old('two_fa_passkey_mode', $twoFaPasskeyMode) != '0'"
+                :twoFaDefaultMethod="'0'"
+                :columns="2"
+            />
 
             <fieldset>
                 <legend>{{ __('admin/members/settings/auth.two_fa_expire_settings') }}</legend>
