@@ -43,9 +43,9 @@ use App\Helpers\TwoFaHelper;
 use App\Enums\TwoFaMethod;
 use App\Models\BaseSetting;
 use App\Models\MemberTwoFaToken;
-use App\Services\TwoFaAttemptService;
-use App\Services\TwoFaPasskeyService;
-use App\Services\TwoFaRecoveryCodeService;
+use App\Services\TwoFa\TwoFaAttemptService;
+use App\Services\TwoFa\TwoFaPasskeyService;
+use App\Services\TwoFa\TwoFaRecoveryCodeService;
 use App\Notifications\MemberVerificationCompletedNotification;
 use App\Notifications\AdminMemberVerifiedNotification;
 use Illuminate\Support\Facades\Log;
@@ -815,7 +815,7 @@ class AdminLoginController extends AdminController
         }
 
         try {
-            $twoFaPasskeyService = app(\App\Services\TwoFaPasskeyService::class);
+            $twoFaPasskeyService = new TwoFaPasskeyService();
 
             // Passkey認証が利用可能かチェック
             if (!$twoFaPasskeyService->isAvailable()) {
@@ -888,7 +888,7 @@ class AdminLoginController extends AdminController
         ]);
 
         try {
-            $twoFaPasskeyService = app(\App\Services\TwoFaPasskeyService::class);
+            $twoFaPasskeyService = new TwoFaPasskeyService();
             $credentialData = $request->input('response');
 
             // 認証レスポンスを検証
