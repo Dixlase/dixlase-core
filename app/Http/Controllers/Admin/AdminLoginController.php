@@ -638,7 +638,23 @@ class AdminLoginController extends AdminController
                 ->withErrors(['email' => __('two_fa.lockout.message', ['minutes' => $remainingMinutes])]);
         }
 
-        return view('two-fa.recovery_code_challenge');
+        // 利用可能な認証方法を取得（回復コード以外）
+        $twoFactorHelper = app(TwoFaHelper::class);
+        $enabledMethods = $twoFactorHelper->getEnabledTwoFaMethods();
+        $availableMethods = [];
+
+        foreach ($enabledMethods as $method) {
+            $methodEnum = TwoFaMethod::from($method);
+            $availableMethods[] = [
+                'value' => $method,
+                'label' => $methodEnum->label(),
+                'url' => $this->getTwoFaMethodRoute($method),
+            ];
+        }
+
+        return view('two-fa.recovery_code_challenge', [
+            'availableMethods' => $availableMethods,
+        ]);
     }
 
     /**
@@ -666,7 +682,7 @@ class AdminLoginController extends AdminController
                 ->withErrors(['email' => __('two_fa.lockout.message', ['minutes' => $remainingMinutes])]);
         }
 
-        $twoFaRecoveryCodeService = app(RecoveryCodeService::class);
+        $twoFaRecoveryCodeService = app(TwoFaRecoveryCodeService::class);
         $isValid = $twoFaRecoveryCodeService->validate($member, $request->recovery_code);
 
         // 試行を記録
@@ -790,7 +806,7 @@ class AdminLoginController extends AdminController
             }
         }
 
-        return view('two-fa.passkey_challenge', [
+        return view('two-fa.passkey-challenge', [
             'availableMethods' => $availableMethods,
             'currentMethod' => $currentMethod,
             'challengeAction' => route('admin.two-fa.passkey.challenge'),

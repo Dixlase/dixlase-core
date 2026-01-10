@@ -1,6 +1,12 @@
 <?php
 
 return [
+    // 二段階認証方法
+    'method' => [
+        'email' => 'メール認証',
+        'passkey' => 'Passkey認証',
+    ],
+    
     // メール認証
     'title' => '二段階認証',
     'email' => [
