@@ -127,19 +127,13 @@ class TwoFaHelper
         $settingModelClass = $settingModelClass ?? \App\Models\MemberSetting::class;
         $methods = [];
         
-        // メール認証
-        if ($settingModelClass::getValue('enabled_two_fa_email', '1') === '1') {
-            $methods[] = TwoFaMethod::EMAIL->value;
-        }
+        // メール認証（常に有効）
+        $methods[] = TwoFaMethod::EMAIL->value;
         
-        // Passkey認証
-        if ($settingModelClass::getValue('enabled_two_fa_passkey', '0') === '1') {
+        // Passkey認証（two_fa_passkey_modeが0以外なら有効）
+        $passkeyMode = (int) $settingModelClass::getValue('two_fa_passkey_mode', '2');
+        if ($passkeyMode > 0) {
             $methods[] = TwoFaMethod::PASSKEY->value;
-        }
-        
-        // 少なくとも1つの方法は有効にする（デフォルトはメール）
-        if (empty($methods)) {
-            $methods[] = TwoFaMethod::EMAIL->value;
         }
         
         return $methods;

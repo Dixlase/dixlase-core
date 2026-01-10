@@ -1,6 +1,12 @@
 <?php
 
 return [
+    // Two-factor authentication methods
+    'method' => [
+        'email' => 'Email Authentication',
+        'passkey' => 'Passkey Authentication',
+    ],
+    
     // Email Authentication
     'email' => [
         'title' => 'Two-Factor Authentication',

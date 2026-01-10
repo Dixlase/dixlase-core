@@ -10,8 +10,8 @@ enum TwoFaMethod: int
     public function label(): string
     {
         return match($this) {
-            self::EMAIL => __('common.two_fa_method.numbered_options.0'),
-            self::PASSKEY => __('common.two_fa_method.numbered_options.1'),
+            self::EMAIL => __('two_fa.method.email'),
+            self::PASSKEY => __('two_fa.method.passkey'),
         };
     }
     
@@ -36,8 +36,8 @@ enum TwoFaMethod: int
     public function translationKey(): string
     {
         return match($this) {
-            self::EMAIL => 'common.two_fa_method.numbered_options.0',
-            self::PASSKEY => 'common.two_fa_method.numbered_options.1',
+            self::EMAIL => 'two_fa.method.email',
+            self::PASSKEY => 'two_fa.method.passkey',
         };
     }
 
