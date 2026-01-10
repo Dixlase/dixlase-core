@@ -61,6 +61,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
         
         @if(!$twoFaPasskeyDevices || $twoFaPasskeyDevices->isEmpty())
+            <!-- Passkeyデバイス未登録の警告 -->
+            @if(!$adminContext)
+                <x-message 
+                    type="warning" 
+                    :message="'<strong>' . __('components.two_fa_management.passkey_warning_title') . '</strong><br>' . __('components.two_fa_management.passkey_warning_message') . '<br>' . __('components.two_fa_management.passkey_warning_action')" 
+                />
+            @endif
+            
             <p class="text-gray-600 dark:text-gray-400 mb-4">{{ __('components.two_fa_management.no_passkey_devices') }}</p>
         @else
             <div class="space-y-4 mb-4">

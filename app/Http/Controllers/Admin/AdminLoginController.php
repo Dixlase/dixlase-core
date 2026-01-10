@@ -638,9 +638,9 @@ class AdminLoginController extends AdminController
                 ->withErrors(['email' => __('two_fa.lockout.message', ['minutes' => $remainingMinutes])]);
         }
 
-        // 利用可能な認証方法を取得（回復コード以外）
+        // 利用可能な認証方法を取得（回復コード以外、Passkeyデバイス未登録時はPasskeyを除外）
         $twoFactorHelper = app(TwoFaHelper::class);
-        $enabledMethods = $twoFactorHelper->getEnabledTwoFaMethods();
+        $enabledMethods = $twoFactorHelper->getAvailableTwoFaMethodsForMember($member);
         $availableMethods = [];
 
         foreach ($enabledMethods as $method) {
@@ -652,8 +652,15 @@ class AdminLoginController extends AdminController
             ];
         }
 
+        // Passkeyが有効だがデバイスが未登録かチェック
+        $globalEnabledMethods = $twoFactorHelper->getEnabledTwoFaMethods();
+        $passkeyGloballyEnabled = in_array(TwoFaMethod::PASSKEY->value, $globalEnabledMethods);
+        $passkeyAvailableForMember = in_array(TwoFaMethod::PASSKEY->value, $enabledMethods);
+        $showPasskeyDeviceWarning = $passkeyGloballyEnabled && !$passkeyAvailableForMember;
+
         return view('two-fa.recovery_code_challenge', [
             'availableMethods' => $availableMethods,
+            'showPasskeyDeviceWarning' => $showPasskeyDeviceWarning,
         ]);
     }
 
@@ -741,9 +748,9 @@ class AdminLoginController extends AdminController
         $twoFactor = app(AdminTwoFaService::class);
         $twoFactor->generate($member, TwoFaMethod::EMAIL->value);
 
-        // 利用可能な認証方法を取得
+        // 利用可能な認証方法を取得（Passkeyデバイス未登録時はPasskeyを除外）
         $twoFactorHelper = app(TwoFaHelper::class);
-        $enabledMethods = $twoFactorHelper->getEnabledTwoFaMethods();
+        $enabledMethods = $twoFactorHelper->getAvailableTwoFaMethodsForMember($member);
         $availableMethods = [];
         $currentMethod = TwoFaMethod::EMAIL->value;
 
@@ -758,6 +765,12 @@ class AdminLoginController extends AdminController
             }
         }
 
+        // Passkeyが有効だがデバイスが未登録かチェック
+        $globalEnabledMethods = $twoFactorHelper->getEnabledTwoFaMethods();
+        $passkeyGloballyEnabled = in_array(TwoFaMethod::PASSKEY->value, $globalEnabledMethods);
+        $passkeyAvailableForMember = in_array(TwoFaMethod::PASSKEY->value, $enabledMethods);
+        $showPasskeyDeviceWarning = $passkeyGloballyEnabled && !$passkeyAvailableForMember;
+
         // 二段階認証の設定値を取得（メンバー設定 > コンフィグ）
         $twoFaExpireMinutes = (int) MemberSetting::getValue('two_fa_expire_minutes', config('two-fa.code_expiration', 5));
         $twoFaResendIntervalSeconds = (int) MemberSetting::getValue('two_fa_resend_interval_seconds', config('two-fa.resend_interval', 60));
@@ -770,6 +783,7 @@ class AdminLoginController extends AdminController
             'action' => route('admin.two-fa.email.verify'),
             'resendAction' => route('admin.two-fa.email.resend'),
             'loginRoute' => route('admin.login'),
+            'showPasskeyDeviceWarning' => $showPasskeyDeviceWarning,
         ]);
     }
 
@@ -789,9 +803,9 @@ class AdminLoginController extends AdminController
             return redirect()->route('admin.login');
         }
 
-        // 利用可能な認証方法を取得
+        // 利用可能な認証方法を取得（Passkeyデバイス未登録時はPasskeyを除外）
         $twoFactorHelper = app(TwoFaHelper::class);
-        $enabledMethods = $twoFactorHelper->getEnabledTwoFaMethods();
+        $enabledMethods = $twoFactorHelper->getAvailableTwoFaMethodsForMember($member);
         $availableMethods = [];
         $currentMethod = TwoFaMethod::PASSKEY->value;
 
@@ -806,12 +820,18 @@ class AdminLoginController extends AdminController
             }
         }
 
+        // Passkeyデバイスが未登録かチェック
+        $passkeyService = app(TwoFaPasskeyService::class);
+        $passkeyDevices = $passkeyService->getDevices($member);
+        $hasPasskeyDevices = !$passkeyDevices->isEmpty();
+
         return view('two-fa.passkey-challenge', [
             'availableMethods' => $availableMethods,
             'currentMethod' => $currentMethod,
             'challengeAction' => route('admin.two-fa.passkey.challenge'),
             'verifyAction' => route('admin.two-fa.passkey.verify'),
             'loginRoute' => route('admin.login'),
+            'hasPasskeyDevices' => $hasPasskeyDevices,
         ]);
     }
 

@@ -248,11 +248,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 if (!wrapper) return '{{ (string) ($twoFaMode?->value ?? 0) }}';
                 return Alpine.$data(wrapper).twoFaMode;
             },
+            get passkeyEnabled() {
+                const wrapper = document.getElementById('two-fa-settings-wrapper');
+                if (!wrapper) return {{ $currentPasskeyEnabled ? 'true' : 'false' }};
+                return Alpine.$data(wrapper).passkeyEnabled;
+            },
             get isTwoFaDisabled() {
                 return this.twoFaMode === '0';
+            },
+            get isPasskeyDisabled() {
+                return this.twoFaMode === '0' || !this.passkeyEnabled;
             }
         }">
-            <div :class="{ 'opacity-50 pointer-events-none': isTwoFaDisabled }">
+            <div :class="{ 'opacity-50 pointer-events-none': isPasskeyDisabled }">
                 <x-two-fa.management
                     :twoFaPasskeyEnabled="$twoFaPasskeyEnabled"
                     :twoFaPasskeyDevices="$twoFaPasskeyDevices"
