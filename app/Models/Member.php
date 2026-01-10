@@ -237,4 +237,12 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface
     {
         return $this->hasMany(\App\Models\MemberTwoFaAttempt::class, 'member_id');
     }
+
+    /**
+     * 二段階認証トークンのリレーション
+     */
+    public function twoFaTokens(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(\App\Models\MemberTwoFaToken::class, 'member_id');
+    }
 }
