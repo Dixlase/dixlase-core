@@ -18,6 +18,7 @@ class TwoFaAttemptService
             'success' => $success,
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
+            'created_at' => now(),
         ]);
 
         Log::info('[2FA Attempt] Recorded', [

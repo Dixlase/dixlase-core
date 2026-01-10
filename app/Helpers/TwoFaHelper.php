@@ -110,7 +110,7 @@ class TwoFaHelper
         $settingModelClass = $settingModelClass ?? \App\Models\MemberSetting::class;
         
         return [
-            'force_two_fa' => (int) $settingModelClass::getValue('force_two_fa', '0'),
+            'two_fa_mode' => (int) $settingModelClass::getValue('two_fa_mode', '0'),
             'enabled_methods' => $this->getEnabledTwoFaMethods($settingModelClass),
             'default_method' => (int) $settingModelClass::getValue('default_two_fa_method', (string)TwoFaMethod::EMAIL->value),
         ];
@@ -183,30 +183,70 @@ class TwoFaHelper
         }
         
         $systemSettings = $this->getTwoFaSettings($settingModelClass);
-        $forceTwoFa = $systemSettings['force_two_fa'] ?? 0;
+        $twoFaMode = $systemSettings['two_fa_mode'] ?? 0;
+        
+        Log::info('[2FA] isTwoFaEnabled check', [
+            'user_id' => $user->id,
+            'setting_class' => $settingModelClass,
+            'two_fa_mode' => $twoFaMode,
+            'user_two_fa_mode' => $user->two_fa_mode ?? null,
+        ]);
         
         // 全体設定: 0=Disabled（無効）, 1=DifferentDevice（異なるデバイス）, 2=Always（常に有効）, 3=UseProfileSetting（プロフィール設定に従う）
         
         // 無効の場合
-        if ($forceTwoFa === AuthenticationMode::Disabled->value) {
+        if ($twoFaMode === AuthenticationMode::Disabled->value) {
+            Log::info('[2FA] Disabled by global setting');
             return false;
         }
         
         // 全体設定で常に有効の場合
-        if ($forceTwoFa === AuthenticationMode::Always->value) {
+        if ($twoFaMode === AuthenticationMode::Always->value) {
+            Log::info('[2FA] Always enabled by global setting');
             return true;
         }
         
-        // プロフィール設定を使用する場合（force_two_fa = UseProfileSetting）
+        // 全体設定が「異なるデバイス」の場合
+        if ($twoFaMode === AuthenticationMode::DifferentDevice->value) {
+            $isDifferent = $this->isDifferentEnvironment($user);
+            Log::info('[2FA] DifferentDevice mode', ['is_different' => $isDifferent]);
+            return $isDifferent;
+        }
+        
+        // プロフィール設定を使用する場合（two_fa_mode = UseProfileSetting）
         $userMode = $user->two_fa_mode;
         
         // AuthenticationMode Enumの場合
         if ($userMode instanceof \App\Enums\AuthenticationMode) {
-            return $userMode->value > 0; // Disabled(0)以外は有効
+            $userModeValue = $userMode->value;
+        } else {
+            // 整数値の場合
+            $userModeValue = (int)$userMode;
         }
         
-        // 整数値の場合
-        return (int)$userMode > 0;
+        Log::info('[2FA] Using user profile setting', ['user_mode_value' => $userModeValue]);
+        
+        // ユーザー設定が無効の場合
+        if ($userModeValue === AuthenticationMode::Disabled->value) {
+            Log::info('[2FA] Disabled by user setting');
+            return false;
+        }
+        
+        // ユーザー設定が常に有効の場合
+        if ($userModeValue === AuthenticationMode::Always->value) {
+            Log::info('[2FA] Always enabled by user setting');
+            return true;
+        }
+        
+        // ユーザー設定が「異なるデバイス」の場合
+        if ($userModeValue === AuthenticationMode::DifferentDevice->value) {
+            $isDifferent = $this->isDifferentEnvironment($user);
+            Log::info('[2FA] DifferentDevice mode by user setting', ['is_different' => $isDifferent]);
+            return $isDifferent;
+        }
+        
+        Log::info('[2FA] No condition matched, returning false');
+        return false;
     }
 
     /**
@@ -219,7 +259,7 @@ class TwoFaHelper
     public function getEffectiveAuthMethod($user, ?string $settingModelClass = null): int
     {
         $settingModelClass = $settingModelClass ?? \App\Models\MemberSetting::class;
-        $userMethod = $user->default_two_fa_method ?? null;
+        $userMethod = $user->two_fa_default_method ?? null;
         $defaultMethod = (int) $settingModelClass::getValue('default_two_fa_method', (string)TwoFaMethod::EMAIL->value);
         $enabledMethods = $this->getEnabledTwoFaMethods($settingModelClass);
         $globalTwoFaMode = (int) $settingModelClass::getValue('force_two_fa', (string)AuthenticationMode::Disabled->value);
@@ -255,27 +295,19 @@ class TwoFaHelper
             'user_enabled_methods' => $userEnabledMethods,
         ]);
 
-        // グローバル設定が「プロフィール設定に従う」(3)以外の場合は、デフォルト認証方法を強制
-        if ($globalTwoFaMode !== AuthenticationMode::UseProfileSetting->value) {
-            if (in_array($defaultMethod, $userEnabledMethods, true)) {
-                Log::info('[2FA] Using global default method (forced)', ['method' => $defaultMethod, 'global_mode' => $globalTwoFaMode]);
-                return $defaultMethod;
-            }
-        }
-
-        // グローバル設定が「プロフィール設定に従う」(3)の場合のみ、ユーザー設定を考慮
+        // ユーザーが明示的に認証方法を設定している場合は、それを優先
         if ($userMethod !== null && in_array((int)$userMethod, $userEnabledMethods, true)) {
             Log::info('[2FA] Using user method', ['method' => (int)$userMethod]);
             return (int)$userMethod;
         }
 
-        // デフォルト方法が有効な場合はそれを使用
+        // ユーザー設定がない場合は、グローバルのデフォルト認証方法を使用
         if (in_array($defaultMethod, $userEnabledMethods, true)) {
-            Log::info('[2FA] Using default method', ['method' => $defaultMethod]);
+            Log::info('[2FA] Using global default method', ['method' => $defaultMethod]);
             return $defaultMethod;
         }
 
-        // 有効な方法の最初のものを使用
+        // デフォルト方法が有効でない場合は、有効な方法の最初のものを使用
         $fallbackMethod = !empty($userEnabledMethods) ? $userEnabledMethods[0] : TwoFaMethod::EMAIL->value;
         Log::info('[2FA] Using fallback method', ['method' => $fallbackMethod]);
         return $fallbackMethod;
