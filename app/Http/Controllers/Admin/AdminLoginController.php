@@ -484,7 +484,7 @@ class AdminLoginController extends AdminController
         $twoFaExpireMinutes = (int) MemberSetting::getValue('two_fa_expire_minutes', config('two-fa.code_expiration', 5));
         $twoFaResendIntervalSeconds = (int) MemberSetting::getValue('two_fa_resend_interval_seconds', config('two-fa.resend_interval', 60));
 
-        return view('two-fa.email_challenge', [
+        return view('two-fa.email-challenge', [
             'availableMethods' => $availableMethods,
             'currentMethod' => $currentMethod,
             'expireMinutes' => $twoFaExpireMinutes,
@@ -572,6 +572,13 @@ class AdminLoginController extends AdminController
 
         Auth::guard('member')->login($member, session('login.remember', false));
         session()->forget(['login.id', 'login.remember']);
+        
+        // 二段階認証ページがintended URLとして記憶されるのを防ぐ
+        $intendedUrl = session('url.intended');
+        if ($intendedUrl && (str_contains($intendedUrl, '/two-fa') || str_contains($intendedUrl, '/two-factor'))) {
+            session()->forget('url.intended');
+        }
+        
         $request->session()->regenerate(true);
         
         // ログイン後にメール認証トークンをチェック
@@ -739,7 +746,7 @@ class AdminLoginController extends AdminController
         $twoFaExpireMinutes = (int) MemberSetting::getValue('two_fa_expire_minutes', config('two-fa.code_expiration', 5));
         $twoFaResendIntervalSeconds = (int) MemberSetting::getValue('two_fa_resend_interval_seconds', config('two-fa.resend_interval', 60));
 
-        return view('two-fa.email_challenge', [
+        return view('two-fa.email-challenge', [
             'availableMethods' => $availableMethods,
             'currentMethod' => $currentMethod,
             'expireMinutes' => $twoFaExpireMinutes,

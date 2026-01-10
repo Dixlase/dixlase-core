@@ -29,7 +29,7 @@
     
     @if($showRecoveryCode)
         <div>
-            <a href="{{ route($context . '.two-factor.recovery-code.show') }}" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+            <a href="{{ route($context . '.two-fa.recovery-code.show') }}" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                 <i class="fas fa-life-ring mr-1"></i>{{ __('two_fa.recovery_code.use_recovery_code') }}
             </a>
         </div>

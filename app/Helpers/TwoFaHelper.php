@@ -8,6 +8,8 @@ use App\Traits\TwoFaTrait;
 use App\Models\MemberSetting;
 use App\Enums\TwoFaMethod;
 use App\Enums\AuthenticationMode;
+use App\Services\TwoFa\TwoFaRecoveryCodeService;
+use App\Services\TwoFa\TwoFaPasskeyService;
 
 class TwoFaHelper
 {

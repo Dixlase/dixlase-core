@@ -41,7 +41,7 @@ class TwoFaCodeMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.two_fa_code',
+            markdown: 'emails.two-fa-code',
             with: [
                 'code' => $this->code,
                 'appName' => $this->appName,
