@@ -34,9 +34,10 @@ use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
 use App\Enums\Locale;
 use App\Traits\HasPermissions;
+use App\Contracts\TwoFaInterface;
 
 
-class Member extends Authenticatable implements MustVerifyEmail
+class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface
 {
     use HasFactory, Notifiable, SoftDeletes, TwoFactorAuthenticatable, HasPermissions;
 
@@ -151,5 +152,89 @@ class Member extends Authenticatable implements MustVerifyEmail
     {
         // メール通知の送信先をpending_emailに変更（メールアドレス変更時）
         return $this->pending_email ?? $this->email;
+    }
+
+    // ========================================
+    // TwoFaInterface Implementation
+    // ========================================
+
+    /**
+     * ユーザーIDを取得
+     */
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    /**
+     * メールアドレスを取得
+     */
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
+
+    /**
+     * 表示名を取得
+     */
+    public function getDisplayName(): string
+    {
+        return $this->display_name ?? $this->account_name ?? $this->email;
+    }
+
+    /**
+     * アカウント名を取得
+     */
+    public function getAccountName(): ?string
+    {
+        return $this->account_name;
+    }
+
+    /**
+     * 二段階認証モードを取得
+     */
+    public function getTwoFaMode(): int
+    {
+        return $this->two_fa_mode ?? 0;
+    }
+
+    /**
+     * パスキーが有効かどうか
+     */
+    public function isTwoFaPasskeyEnabled(): bool
+    {
+        return ($this->two_fa_passkey_enabled ?? true) === true;
+    }
+
+    /**
+     * デフォルトの二段階認証方法を取得
+     */
+    public function getTwoFaDefaultMethod(): int
+    {
+        return $this->two_fa_default_method ?? 1;
+    }
+
+    /**
+     * パスキーデバイスのリレーション
+     */
+    public function twoFaPasskeys(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(\App\Models\MemberTwoFaPasskey::class, 'member_id');
+    }
+
+    /**
+     * 回復コードのリレーション
+     */
+    public function twoFaRecoveryCodes(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(\App\Models\MemberTwoFaRecoveryCode::class, 'member_id');
+    }
+
+    /**
+     * 二段階認証試行のリレーション
+     */
+    public function twoFaAttempts(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(\App\Models\MemberTwoFaAttempt::class, 'member_id');
     }
 }

@@ -183,6 +183,7 @@ return [
         'label' => 'Login Notification Mode',
         'help' => 'Configure when to send email notifications for logins.',
         'global_setting_help' => 'This setting is controlled by global configuration and cannot be changed.',
+        'global_setting_locked' => 'This setting is locked by global configuration and cannot be changed.',
         'options' => [
             'disabled' => 'Disabled',
             'different_device' => 'Notify only on different device/IP login',

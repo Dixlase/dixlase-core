@@ -2,8 +2,7 @@
 
 namespace App\Services\TwoFa;
 
-use App\Models\Member;
-use App\Models\MemberTwoFaRecoveryCode;
+use App\Contracts\TwoFaInterface;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
@@ -13,17 +12,17 @@ class TwoFaRecoveryCodeService
     /**
      * 回復コードを生成
      * 
-     * @param Member $member
+     * @param TwoFaInterface $user
      * @return array 生成された回復コード（平文）の配列
      */
-    public function generate(Member $member): array
+    public function generate(TwoFaInterface $user): array
     {
         // 生成個数を設定から取得（1-5個、デフォルト5個）
         $count = (int) \App\Models\MemberSetting::getValue('two_fa_recovery_codes_count', 5);
         $count = max(1, min(5, $count)); // 1-5の範囲に制限
 
         // 既存の回復コードを全て無効化
-        MemberTwoFaRecoveryCode::where('member_id', $member->id)->update(['disabled' => true]);
+        $user->twoFaRecoveryCodes()->update(['disabled' => true]);
 
         $codes = [];
         for ($i = 0; $i < $count; $i++) {
@@ -32,15 +31,14 @@ class TwoFaRecoveryCodeService
             $codes[] = $code;
 
             // ハッシュ化して保存
-            MemberTwoFaRecoveryCode::create([
-                'member_id' => $member->id,
+            $user->twoFaRecoveryCodes()->create([
                 'code' => Hash::make($code),
                 'disabled' => false,
             ]);
         }
 
         Log::info('[Recovery Code] Generated new codes', [
-            'member_id' => $member->id,
+            'user_id' => $user->getId(),
             'count' => $count,
         ]);
 
@@ -62,17 +60,17 @@ class TwoFaRecoveryCodeService
     /**
      * 回復コードを検証
      * 
-     * @param Member $member
+     * @param TwoFaInterface $user
      * @param string $code
      * @return bool
      */
-    public function validate(Member $member, string $code): bool
+    public function validate(TwoFaInterface $user, string $code): bool
     {
         // ハイフンやスペースを削除
         $code = preg_replace('/[\s\-]/', '', $code);
 
         // 有効な回復コードを取得
-        $recoveryCodes = MemberTwoFaRecoveryCode::where('member_id', $member->id)
+        $recoveryCodes = $user->twoFaRecoveryCodes()
             ->where('disabled', false)
             ->whereNull('used_at')
             ->get();
@@ -83,7 +81,7 @@ class TwoFaRecoveryCodeService
                 $recoveryCode->markAsUsed();
 
                 Log::info('[Recovery Code] Code used successfully', [
-                    'member_id' => $member->id,
+                    'user_id' => $user->getId(),
                     'recovery_code_id' => $recoveryCode->id,
                 ]);
 
@@ -92,7 +90,7 @@ class TwoFaRecoveryCodeService
         }
 
         Log::warning('[Recovery Code] Invalid code attempt', [
-            'member_id' => $member->id,
+            'user_id' => $user->getId(),
         ]);
 
         return false;
@@ -101,9 +99,9 @@ class TwoFaRecoveryCodeService
     /**
      * 残りの有効な回復コード数を取得
      */
-    public function getRemainingCount(Member $member): int
+    public function getRemainingCount(TwoFaInterface $user): int
     {
-        return MemberTwoFaRecoveryCode::where('member_id', $member->id)
+        return $user->twoFaRecoveryCodes()
             ->where('disabled', false)
             ->whereNull('used_at')
             ->count();
@@ -112,13 +110,13 @@ class TwoFaRecoveryCodeService
     /**
      * 回復コードを再生成可能かチェック
      * 
-     * @param Member $member
+     * @param TwoFaInterface $user
      * @return bool
      */
-    public function canRegenerate(Member $member): bool
+    public function canRegenerate(TwoFaInterface $user): bool
     {
         // 最後に生成した日時を取得
-        $lastGenerated = MemberTwoFaRecoveryCode::where('member_id', $member->id)
+        $lastGenerated = $user->twoFaRecoveryCodes()
             ->orderBy('created_at', 'desc')
             ->first();
 
@@ -136,9 +134,9 @@ class TwoFaRecoveryCodeService
     /**
      * 次回再生成可能な日時を取得
      */
-    public function getNextRegenerateTime(Member $member): ?Carbon
+    public function getNextRegenerateTime(TwoFaInterface $user): ?Carbon
     {
-        $lastGenerated = MemberTwoFaRecoveryCode::where('member_id', $member->id)
+        $lastGenerated = $user->twoFaRecoveryCodes()
             ->orderBy('created_at', 'desc')
             ->first();
 
@@ -153,9 +151,9 @@ class TwoFaRecoveryCodeService
     /**
      * 回復コードが存在するかチェック
      */
-    public function hasRecoveryCodes(Member $member): bool
+    public function hasRecoveryCodes(TwoFaInterface $user): bool
     {
-        return MemberTwoFaRecoveryCode::where('member_id', $member->id)
+        return $user->twoFaRecoveryCodes()
             ->where('disabled', false)
             ->exists();
     }
@@ -174,20 +172,20 @@ class TwoFaRecoveryCodeService
     /**
      * 全ての回復コードを削除（無効化）
      * 
-     * @param Member $member
+     * @param TwoFaInterface $user
      * @return int 削除された回復コード数
      */
-    public function revokeAll(Member $member): int
+    public function revokeAll(TwoFaInterface $user): int
     {
-        $count = MemberTwoFaRecoveryCode::where('member_id', $member->id)
+        $count = $user->twoFaRecoveryCodes()
             ->where('disabled', false)
             ->count();
 
-        MemberTwoFaRecoveryCode::where('member_id', $member->id)
+        $user->twoFaRecoveryCodes()
             ->update(['disabled' => true]);
 
-        Log::info('[Recovery Code] All codes revoked by admin', [
-            'member_id' => $member->id,
+        Log::info('[Recovery Code] All codes revoked', [
+            'user_id' => $user->getId(),
             'count' => $count,
         ]);
 

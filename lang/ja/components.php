@@ -182,6 +182,7 @@ return [
         'label' => 'ログイン通知モード',
         'help' => 'ログイン時にメール通知を送信するタイミングを設定します。',
         'global_setting_help' => 'この設定は全体設定で制御されており、変更できません。',
+        'global_setting_locked' => 'この設定は全体設定で固定されており、変更できません。',
         'options' => [
             'disabled' => '無効',
             'different_device' => '異なるデバイス・IPでのログイン時のみ通知',
