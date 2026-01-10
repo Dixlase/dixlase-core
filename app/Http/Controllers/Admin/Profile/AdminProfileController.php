@@ -399,7 +399,7 @@ class AdminProfileController extends AdminLoggedInController
                 
                 \Log::info('[Profile] Recovery codes existence check', [
                     'member_id' => $member->id,
-                    'has_recovery_codes' => $hasRecoveryCodes,
+                    'has_recovery_codes' => $twoFaHasRecoveryCodes,
                 ]);
                 
                 if (!$twoFaHasRecoveryCodes) {

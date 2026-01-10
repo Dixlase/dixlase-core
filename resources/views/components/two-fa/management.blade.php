@@ -28,6 +28,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'hideAddButtons' => false,
     'hideGenerateButton' => false,
     'adminContext' => false,
+    'disabled' => false,
     'routes' => [
         'passkey_register_options' => '',
         'passkey_register' => '',
@@ -41,7 +42,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'csrfToken' => '',
 ])
 
-<section class="mt-8 transition-colors-unified">
+<section class="mt-8 transition-colors-unified {{ $disabled ? 'opacity-50 pointer-events-none' : '' }}">
     <h2>{{ __('components.two_fa_management.title') }}</h2>
 
     <!-- Passkeyデバイス -->
@@ -98,7 +99,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </button>
         @endif
 
-        <!-- Passkeyの説明 -->
+        <!-- Passkeyの説明（管理者コンテキストでは非表示） -->
+        @if(!$adminContext)
         <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
             <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
                 <i class="fas fa-info-circle mr-2"></i>{{ __('components.two_fa_management.passkey_info_title') }}
@@ -107,11 +109,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <li>{{ __('components.two_fa_management.passkey_info_1') }}</li>
                 <li>{{ __('components.two_fa_management.passkey_info_2') }}</li>
                 <li>{{ __('components.two_fa_management.passkey_info_3') }}</li>
-                @if($adminContext)
-                <li>{{ __('components.two_fa_management.passkey_info_4') }}</li>
-                @endif
             </ul>
         </div>
+        @endif
     </div>
     @endif
 
@@ -151,7 +151,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </button>
         @endif
         
-        <!-- 回復コードの説明 -->
+        <!-- 回復コードの説明（管理者コンテキストでは非表示） -->
+        @if(!$adminContext)
         <div class="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
             <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
                 <i class="fas fa-info-circle mr-2"></i>{{ __('components.two_fa_management.recovery_codes_info_title') }}
@@ -164,7 +165,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <li>{{ __('components.two_fa_management.recovery_codes_info_5') }}</li>
                 <li>{{ __('components.two_fa_management.recovery_codes_info_6') }}</li>
             </ul>
-        </div>            
+        </div>
+        @endif
     </div>
 
     <!-- 信頼済みデバイス管理 -->
