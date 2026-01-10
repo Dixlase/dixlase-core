@@ -2,8 +2,7 @@
 
 namespace App\Services\TwoFa;
 
-use App\Models\Member;
-use App\Models\MemberTwoFaAttempt;
+use App\Contracts\TwoFaInterface;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
@@ -12,12 +11,17 @@ class TwoFaAttemptService
     /**
      * 2FA試行を記録
      */
-    public function recordAttempt(Member $member, string $attemptType, bool $success): void
+    public function recordAttempt(TwoFaInterface $user, string $attemptType, bool $success): void
     {
-        MemberTwoFaAttempt::record($member->id, $attemptType, $success);
+        $user->twoFaAttempts()->create([
+            'attempt_type' => $attemptType,
+            'success' => $success,
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
 
         Log::info('[2FA Attempt] Recorded', [
-            'member_id' => $member->id,
+            'user_id' => $user->getId(),
             'attempt_type' => $attemptType,
             'success' => $success,
         ]);
@@ -26,10 +30,10 @@ class TwoFaAttemptService
     /**
      * ロックアウト状態かチェック
      */
-    public function isLockedOut(Member $member): bool
+    public function isLockedOut(TwoFaInterface $user): bool
     {
         $lockoutDuration = $this->getLockoutDuration();
-        $lastLockout = $this->getLastLockoutTime($member);
+        $lastLockout = $this->getLastLockoutTime($user);
 
         if (!$lastLockout) {
             return false;
@@ -42,14 +46,14 @@ class TwoFaAttemptService
     /**
      * ロックアウト解除までの残り時間（分）を取得
      */
-    public function getRemainingLockoutTime(Member $member): ?int
+    public function getRemainingLockoutTime(TwoFaInterface $user): ?int
     {
-        if (!$this->isLockedOut($member)) {
+        if (!$this->isLockedOut($user)) {
             return null;
         }
 
         $lockoutDuration = $this->getLockoutDuration();
-        $lastLockout = $this->getLastLockoutTime($member);
+        $lastLockout = $this->getLastLockoutTime($user);
         $unlockAt = $lastLockout->addMinutes($lockoutDuration);
 
         return Carbon::now()->diffInMinutes($unlockAt, false);
@@ -58,15 +62,18 @@ class TwoFaAttemptService
     /**
      * 試行回数制限に達しているかチェック
      */
-    public function hasReachedMaxAttempts(Member $member): bool
+    public function hasReachedMaxAttempts(TwoFaInterface $user): bool
     {
         $maxAttempts = $this->getMaxAttempts();
         $timeWindow = $this->getAttemptWindow();
 
-        $failedAttempts = MemberTwoFaAttempt::getFailedAttemptsCount($member->id, $timeWindow);
+        $failedAttempts = $user->twoFaAttempts()
+            ->where('success', false)
+            ->where('created_at', '>=', Carbon::now()->subMinutes($timeWindow))
+            ->count();
 
         Log::info('[2FA Attempt] Check max attempts', [
-            'member_id' => $member->id,
+            'user_id' => $user->getId(),
             'failed_attempts' => $failedAttempts,
             'max_attempts' => $maxAttempts,
         ]);
@@ -77,11 +84,14 @@ class TwoFaAttemptService
     /**
      * 残りの試行可能回数を取得
      */
-    public function getRemainingAttempts(Member $member): int
+    public function getRemainingAttempts(TwoFaInterface $user): int
     {
         $maxAttempts = $this->getMaxAttempts();
         $timeWindow = $this->getAttemptWindow();
-        $failedAttempts = MemberTwoFaAttempt::getFailedAttemptsCount($member->id, $timeWindow);
+        $failedAttempts = $user->twoFaAttempts()
+            ->where('success', false)
+            ->where('created_at', '>=', Carbon::now()->subMinutes($timeWindow))
+            ->count();
 
         return max(0, $maxAttempts - $failedAttempts);
     }
@@ -89,13 +99,13 @@ class TwoFaAttemptService
     /**
      * 最後のロックアウト時刻を取得
      */
-    protected function getLastLockoutTime(Member $member): ?Carbon
+    protected function getLastLockoutTime(TwoFaInterface $user): ?Carbon
     {
         $maxAttempts = $this->getMaxAttempts();
         $timeWindow = $this->getAttemptWindow();
 
         // 時間枠内の失敗試行を取得
-        $attempts = MemberTwoFaAttempt::where('member_id', $member->id)
+        $attempts = $user->twoFaAttempts()
             ->where('success', false)
             ->where('created_at', '>=', Carbon::now()->subMinutes($timeWindow))
             ->orderBy('created_at', 'desc')
@@ -113,11 +123,11 @@ class TwoFaAttemptService
     /**
      * 成功時の処理（失敗記録をクリア）
      */
-    public function handleSuccess(Member $member): void
+    public function handleSuccess(TwoFaInterface $user): void
     {
         // 成功を記録（attempt_typeは呼び出し元で指定）
         Log::info('[2FA Attempt] Success - clearing failed attempts', [
-            'member_id' => $member->id,
+            'user_id' => $user->getId(),
         ]);
     }
 

@@ -58,4 +58,9 @@ interface TwoFaInterface
      * 二段階認証試行のリレーション
      */
     public function twoFaAttempts(): HasMany;
+
+    /**
+     * 二段階認証トークンのリレーション
+     */
+    public function twoFaTokens(): HasMany;
 }
