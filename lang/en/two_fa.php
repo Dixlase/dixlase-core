@@ -7,6 +7,10 @@ return [
         'passkey' => 'Passkey Authentication',
     ],
     
+    // Passkey device not registered warning
+    'passkey_device_not_registered_title' => 'No Passkey Device Registered',
+    'passkey_device_not_registered_message' => 'You need to register a device to use Passkey authentication.<br>Please register a device from your profile page.<br>Until then, please use other authentication methods.',
+    
     // Email Authentication
     'email' => [
         'title' => 'Two-Factor Authentication',

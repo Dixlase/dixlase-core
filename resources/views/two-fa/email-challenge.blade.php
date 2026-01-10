@@ -24,6 +24,14 @@
         'context' => 'admin'
     ])
 
+    <!-- Passkeyデバイス未登録警告 -->
+    @if($showPasskeyDeviceWarning ?? false)
+        <x-message 
+            type="warning" 
+            :message="'<strong>' . __('two_fa.passkey_device_not_registered_title') . '</strong><br>' . __('two_fa.passkey_device_not_registered_message')" 
+        />
+    @endif
+
     <!-- 別の認証方法へのリンク -->
     @include('two-fa.partials.alternative-methods', [
         'methods' => $availableMethods,

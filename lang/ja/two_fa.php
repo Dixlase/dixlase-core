@@ -7,6 +7,10 @@ return [
         'passkey' => 'Passkey認証',
     ],
     
+    // Passkeyデバイス未登録警告
+    'passkey_device_not_registered_title' => 'Passkeyデバイスが登録されていません',
+    'passkey_device_not_registered_message' => 'Passkey認証を使用するにはデバイスの登録が必要です。<br>プロフィール画面からデバイスを登録してください。<br>それまでは他の認証方法をご利用ください。',
+    
     // メール認証
     'title' => '二段階認証',
     'email' => [

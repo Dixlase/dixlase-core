@@ -117,7 +117,7 @@ class TwoFaHelper
     }
 
     /**
-     * 有効な二段階認証方法を取得
+     * 有効な二段階認証方法を取得（グローバル設定ベース）
      *
      * @param string|null $settingModelClass 設定モデルクラス名（null=MemberSetting）
      * @return array
@@ -134,6 +134,34 @@ class TwoFaHelper
         $passkeyMode = (int) $settingModelClass::getValue('two_fa_passkey_mode', '2');
         if ($passkeyMode > 0) {
             $methods[] = TwoFaMethod::PASSKEY->value;
+        }
+        
+        return $methods;
+    }
+
+    /**
+     * 特定のメンバーに対して利用可能な二段階認証方法を取得
+     * Passkeyデバイスが未登録の場合はPasskeyを除外
+     *
+     * @param mixed $member メンバーモデル
+     * @param string|null $settingModelClass 設定モデルクラス名（null=MemberSetting）
+     * @return array
+     */
+    public function getAvailableTwoFaMethodsForMember($member, ?string $settingModelClass = null): array
+    {
+        $methods = $this->getEnabledTwoFaMethods($settingModelClass);
+        
+        // Passkeyが有効な場合、デバイスが登録されているかチェック
+        if (in_array(TwoFaMethod::PASSKEY->value, $methods)) {
+            $passkeyService = app(TwoFaPasskeyService::class);
+            $devices = $passkeyService->getDevices($member);
+            
+            // デバイスが未登録の場合はPasskeyを除外
+            if ($devices->isEmpty()) {
+                $methods = array_values(array_filter($methods, function($method) {
+                    return $method !== TwoFaMethod::PASSKEY->value;
+                }));
+            }
         }
         
         return $methods;
@@ -203,6 +231,18 @@ class TwoFaHelper
             $userEnabledMethods = array_values(array_filter($enabledMethods, function($method) {
                 return $method !== TwoFaMethod::PASSKEY->value;
             }));
+        }
+        
+        // Passkeyデバイスが未登録の場合は、有効な方法からPasskeyを除外
+        if (in_array(TwoFaMethod::PASSKEY->value, $userEnabledMethods)) {
+            $passkeyService = app(TwoFaPasskeyService::class);
+            $devices = $passkeyService->getDevices($user);
+            
+            if ($devices->isEmpty()) {
+                $userEnabledMethods = array_values(array_filter($userEnabledMethods, function($method) {
+                    return $method !== TwoFaMethod::PASSKEY->value;
+                }));
+            }
         }
 
         Log::info('[2FA] getEffectiveAuthMethod', [

@@ -12,10 +12,20 @@
         $passkeyChallenge = $challengeAction ?? route('admin.two-fa.passkey.challenge');
         $passkeyVerify = $verifyAction ?? route('admin.two-fa.passkey.verify');
     @endphp
+    
+    <!-- Passkeyデバイス未登録警告 -->
+    @if(!($hasPasskeyDevices ?? true))
+        <x-message 
+            type="warning" 
+            :message="'<strong>' . __('two_fa.passkey_device_not_registered_title') . '</strong><br>' . __('two_fa.passkey_device_not_registered_message')" 
+        />
+    @endif
+    
     @include('two-fa.partials.passkey-challenge', [
         'challengeAction' => $passkeyChallenge,
         'verifyAction' => $passkeyVerify,
-        'context' => 'admin'
+        'context' => 'admin',
+        'hasPasskeyDevices' => $hasPasskeyDevices ?? true
     ])
 
     <!-- 別の認証方法へのリンク -->
