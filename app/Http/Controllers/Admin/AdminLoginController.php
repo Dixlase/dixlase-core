@@ -744,9 +744,27 @@ class AdminLoginController extends AdminController
             return redirect()->route('admin.login');
         }
 
-        // メール認証コードを生成・送信
-        $twoFactor = app(AdminTwoFaService::class);
-        $twoFactor->generate($member, TwoFaMethod::EMAIL->value);
+        // 既存の有効なコードがあるかチェック
+        $hasValidToken = MemberTwoFaToken::where('member_id', $member->id)
+            ->where('expires_at', '>', now())
+            ->exists();
+
+        // 有効なコードがない場合のみ新規生成・送信
+        if (!$hasValidToken) {
+            Log::info('[Email Challenge] メール認証画面表示 - コード生成開始', [
+                'member_id' => $member->id,
+                'email' => $member->email,
+            ]);
+            
+            $twoFactor = app(AdminTwoFaService::class);
+            $twoFactor->generate($member, TwoFaMethod::EMAIL->value);
+            
+            Log::info('[Email Challenge] コード生成・メール送信完了');
+        } else {
+            Log::info('[Email Challenge] 既存の有効なコードを再利用', [
+                'member_id' => $member->id,
+            ]);
+        }
 
         // 利用可能な認証方法を取得（Passkeyデバイス未登録時はPasskeyを除外）
         $twoFactorHelper = app(TwoFaHelper::class);
