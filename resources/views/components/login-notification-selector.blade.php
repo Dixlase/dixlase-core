@@ -32,8 +32,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     // 全体設定が無効の場合はセクションを非表示
     $hideSection = ($globalSetting === AuthenticationMode::Disabled->value);
     
-    // 全体設定が「プロフィール設定を反映」の場合、またはglobalSettingがnull（全体設定画面）の場合は設定を表示
-    $showSettings = ($globalSetting === AuthenticationMode::UseProfileSetting->value) || ($globalSetting === null);
+    // 設定可能かどうかの判定
+    // - 全体設定画面（globalSetting === null）の場合は常に設定可能
+    // - 個別設定画面（excludeUseProfileSetting === true）の場合、全体設定が「プロフィール設定に従う」の場合のみ設定可能
+    // - プロフィール画面（excludeUseProfileSetting === false）の場合、全体設定が「プロフィール設定に従う」の場合のみ設定可能
+    if ($globalSetting === null) {
+        // 全体設定画面
+        $showSettings = true;
+    } elseif ($excludeUseProfileSetting) {
+        // 個別設定画面（ユーザー作成・編集）
+        $showSettings = ($globalSetting === AuthenticationMode::UseProfileSetting->value);
+    } else {
+        // プロフィール画面
+        $showSettings = ($globalSetting === AuthenticationMode::UseProfileSetting->value);
+    }
     
     // オプションを取得
     if ($excludeUseProfileSetting) {
@@ -83,7 +95,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endphp
 
 @unless($hideSection)
-    @if($showSettings || $excludeUseProfileSetting)
+    @if($showSettings)
         {{-- 設定可能な場合 --}}
         <fieldset>
             <legend>{{ __('components.login_notification.label') }}</legend>
@@ -96,23 +108,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ __('components.login_notification.help') }}</p>
         </fieldset>
     @else
-        {{-- 全体設定で固定されている場合 --}}
+        {{-- 全体設定で固定されている場合：全体設定の値を選択状態で表示し操作不可にする --}}
         <fieldset>
             <legend>{{ __('components.login_notification.label') }}</legend>
-            <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
-                <p class="text-sm text-gray-700 dark:text-gray-300">
-                    <span class="font-medium">
-                        @if($globalSetting === AuthenticationMode::DifferentDevice->value)
-                            {{ AuthenticationMode::DifferentDevice->notificationLabel() }}
-                        @elseif($globalSetting === AuthenticationMode::Always->value)
-                            {{ AuthenticationMode::Always->notificationLabel() }}
-                        @endif
-                    </span>
-                </p>
-                <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                    {{ __('components.login_notification.global_setting_help') }}
-                </p>
-            </div>
+            <x-form.radio-card-group
+                :name="$name"
+                :options="$options"
+                :value="(string)$globalSetting"
+                :columns="$columns"
+                :disabled="true"
+            />
+            <p class="mt-2 text-sm text-yellow-600 dark:text-yellow-400">
+                <i class="fas fa-lock mr-1"></i>
+                {{ __('components.login_notification.global_setting_locked') }}
+            </p>
         </fieldset>
     @endif
 @endunless

@@ -2,9 +2,7 @@
 
 namespace App\Services\TwoFa;
 
-use App\Models\Member;
-use App\Models\MemberTwoFaPasskey;
-use App\Models\MembersTrustedDevice;
+use App\Contracts\TwoFaInterface;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -27,9 +25,9 @@ class TwoFaPasskeyService
     /**
      * ユーザーがPasskey認証情報を持っているか
      */
-    public function hasCredentials($user): bool
+    public function hasCredentials(TwoFaInterface $user): bool
     {
-        return MemberTwoFaPasskey::where('member_id', $user->id)->exists();
+        return $user->twoFaPasskeys()->exists();
     }
 
     /**
@@ -64,10 +62,9 @@ class TwoFaPasskeyService
     /**
      * Passkeyデバイスを登録
      */
-    public function register($user, string $credentialId, string $publicKey, string $name): MemberTwoFaPasskey
+    public function register(TwoFaInterface $user, string $credentialId, string $publicKey, string $name)
     {
-        return MemberTwoFaPasskey::create([
-            'member_id' => $user->id,
+        return $user->twoFaPasskeys()->create([
             'credential_id' => $credentialId,
             'public_key' => $publicKey,
             'name' => $name,
@@ -77,9 +74,9 @@ class TwoFaPasskeyService
     /**
      * Passkeyデバイス名を更新
      */
-    public function updateName($user, int $passkeyId, string $name): bool
+    public function updateName(TwoFaInterface $user, int $passkeyId, string $name): bool
     {
-        $passkey = MemberTwoFaPasskey::where('member_id', $user->id)
+        $passkey = $user->twoFaPasskeys()
             ->where('id', $passkeyId)
             ->first();
 
@@ -87,16 +84,16 @@ class TwoFaPasskeyService
             return false;
         }
 
-        $passkey->updateName($name);
+        $passkey->update(['name' => $name]);
         return true;
     }
 
     /**
      * Passkeyデバイスを削除
      */
-    public function delete($user, int $passkeyId): bool
+    public function delete(TwoFaInterface $user, int $passkeyId): bool
     {
-        return MemberTwoFaPasskey::where('member_id', $user->id)
+        return $user->twoFaPasskeys()
             ->where('id', $passkeyId)
             ->delete() > 0;
     }
@@ -104,9 +101,9 @@ class TwoFaPasskeyService
     /**
      * ユーザーの全Passkeyデバイスを取得
      */
-    public function getDevices($user)
+    public function getDevices(TwoFaInterface $user)
     {
-        return MemberTwoFaPasskey::where('member_id', $user->id)
+        return $user->twoFaPasskeys()
             ->orderBy('created_at', 'desc')
             ->get();
     }
@@ -122,9 +119,9 @@ class TwoFaPasskeyService
     /**
      * Passkeyデバイスの登録可能数に達しているか
      */
-    public function hasReachedMaxDevices($user): bool
+    public function hasReachedMaxDevices(TwoFaInterface $user): bool
     {
-        $currentCount = MemberTwoFaPasskey::where('member_id', $user->id)->count();
+        $currentCount = $user->twoFaPasskeys()->count();
         return $currentCount >= $this->getMaxDevices();
     }
 
@@ -135,20 +132,19 @@ class TwoFaPasskeyService
     /**
      * WebAuthn認証情報を登録
      */
-    public function registerCredential(Member $member, array $credentialData, string $deviceName = null): MemberTwoFaPasskey
+    public function registerCredential(TwoFaInterface $user, array $credentialData, string $deviceName = null)
     {
         $publicKey = $credentialData['publicKey'] ?? $credentialData['id'];
         
-        $credential = MemberTwoFaPasskey::create([
+        $credential = $user->twoFaPasskeys()->create([
             'id' => $credentialData['id'],
-            'member_id' => $member->id,
             'public_key' => $publicKey,
             'name' => $deviceName ?? $this->generateDeviceName(),
             'rp_id' => request()->getHost(),
             'origin' => request()->getSchemeAndHttpHost(),
         ]);
         
-        Log::info("[Passkey] 認証情報登録: ユーザーID {$member->id}, デバイス: " . ($deviceName ?? $this->generateDeviceName()));
+        Log::info("[Passkey] 認証情報登録: ユーザーID {$user->getId()}, デバイス: " . ($deviceName ?? $this->generateDeviceName()));
         
         return $credential;
     }
@@ -156,21 +152,21 @@ class TwoFaPasskeyService
     /**
      * WebAuthn認証を検証
      */
-    public function verifyAssertion(Member $member, array $assertionData): bool
+    public function verifyAssertion(TwoFaInterface $user, array $assertionData): bool
     {
-        $credential = MemberTwoFaPasskey::where('member_id', $member->id)
+        $credential = $user->twoFaPasskeys()
             ->where('id', $assertionData['id'])
             ->first();
             
         if (!$credential) {
-            Log::warning("[Passkey] 認証情報が見つかりません: ユーザーID {$member->id}");
+            Log::warning("[Passkey] 認証情報が見つかりません: ユーザーID {$user->getId()}");
             return false;
         }
         
         $response = $assertionData['response'] ?? [];
         
         if (empty($response['signature']) || empty($response['authenticatorData']) || empty($response['clientDataJSON'])) {
-            Log::warning("[Passkey] 不完全なレスポンスデータ: ユーザーID {$member->id}");
+            Log::warning("[Passkey] 不完全なレスポンスデータ: ユーザーID {$user->getId()}");
             return false;
         }
         
@@ -182,9 +178,9 @@ class TwoFaPasskeyService
         );
         
         if ($isValid) {
-            Log::info("[Passkey] 認証成功: ユーザーID {$member->id}");
+            Log::info("[Passkey] 認証成功: ユーザーID {$user->getId()}");
         } else {
-            Log::warning("[Passkey] 認証失敗: ユーザーID {$member->id}");
+            Log::warning("[Passkey] 認証失敗: ユーザーID {$user->getId()}");
         }
         
         return $isValid;
@@ -193,9 +189,9 @@ class TwoFaPasskeyService
     /**
      * WebAuthn認証情報一覧を取得
      */
-    public function getCredentials(Member $member)
+    public function getCredentials(TwoFaInterface $user)
     {
-        return MemberTwoFaPasskey::where('member_id', $member->id)
+        return $user->twoFaPasskeys()
             ->orderBy('created_at', 'desc')
             ->get();
     }
@@ -203,14 +199,14 @@ class TwoFaPasskeyService
     /**
      * WebAuthn認証情報を削除
      */
-    public function revokeCredential(Member $member, string $credentialId): bool
+    public function revokeCredential(TwoFaInterface $user, string $credentialId): bool
     {
-        $deleted = MemberTwoFaPasskey::where('member_id', $member->id)
+        $deleted = $user->twoFaPasskeys()
             ->where('id', $credentialId)
             ->delete();
             
         if ($deleted) {
-            Log::info("[Passkey] 認証情報削除: ユーザーID {$member->id}, 認証情報ID: {$credentialId}");
+            Log::info("[Passkey] 認証情報削除: ユーザーID {$user->getId()}, 認証情報ID: {$credentialId}");
         }
         
         return $deleted > 0;
@@ -219,13 +215,13 @@ class TwoFaPasskeyService
     /**
      * すべてのWebAuthn認証情報を削除
      */
-    public function revokeAllCredentials(Member $member): int
+    public function revokeAllCredentials(TwoFaInterface $user): int
     {
-        $count = MemberTwoFaPasskey::where('member_id', $member->id)->count();
-        $deleted = MemberTwoFaPasskey::where('member_id', $member->id)->delete();
+        $count = $user->twoFaPasskeys()->count();
+        $deleted = $user->twoFaPasskeys()->delete();
         
         if ($deleted) {
-            Log::info("[Passkey] すべての認証情報削除: ユーザーID {$member->id}, 削除数: {$count}");
+            Log::info("[Passkey] すべての認証情報削除: ユーザーID {$user->getId()}, 削除数: {$count}");
         }
         
         return $count;
@@ -234,7 +230,7 @@ class TwoFaPasskeyService
     /**
      * WebAuthn登録チャレンジを生成
      */
-    public function generateRegistrationChallenge(Member $member): array
+    public function generateRegistrationChallenge(TwoFaInterface $user): array
     {
         $challenge = random_bytes(32);
         $challengeBase64 = base64_encode($challenge);
@@ -246,9 +242,9 @@ class TwoFaPasskeyService
                 'id' => parse_url(config('app.url'), PHP_URL_HOST),
             ],
             'user' => [
-                'id' => base64_encode($member->id),
-                'name' => $member->email,
-                'displayName' => $member->display_name ?? $member->account_name ?? $member->email,
+                'id' => base64_encode($user->getId()),
+                'name' => $user->getEmail(),
+                'displayName' => $user->getDisplayName(),
             ],
             'pubKeyCredParams' => [
                 ['type' => 'public-key', 'alg' => -7],  // ES256
@@ -270,12 +266,12 @@ class TwoFaPasskeyService
     /**
      * WebAuthn認証チャレンジを生成
      */
-    public function generateAuthenticationChallenge(Member $member): array
+    public function generateAuthenticationChallenge(TwoFaInterface $user): array
     {
         $challenge = random_bytes(32);
         $challengeBase64 = base64_encode($challenge);
         
-        $credentials = $this->getCredentials($member);
+        $credentials = $this->getCredentials($user);
         $allowCredentials = $credentials->map(function ($credential) {
             return [
                 'type' => 'public-key',
