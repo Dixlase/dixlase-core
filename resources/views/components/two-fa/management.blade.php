@@ -107,6 +107,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <li>{{ __('components.two_fa_management.passkey_info_1') }}</li>
                 <li>{{ __('components.two_fa_management.passkey_info_2') }}</li>
                 <li>{{ __('components.two_fa_management.passkey_info_3') }}</li>
+                @if($adminContext)
+                <li>{{ __('components.two_fa_management.passkey_info_4') }}</li>
+                @endif
             </ul>
         </div>
     </div>

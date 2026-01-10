@@ -173,7 +173,8 @@ class AdminProfileController extends AdminLoggedInController
 
         // グローバル設定で有効な二段階認証方法を取得
         $twoFaPasskeyMode = (int) MemberSetting::getValue('two_fa_passkey_mode', '2');
-        $twoFaPasskeyEnabled = MemberSetting::getValue('two_fa_passkey_enabled', '0') === '1';
+        // two_fa_passkey_modeが0（無効）以外ならPasskeyは有効とみなす
+        $twoFaPasskeyEnabled = $twoFaPasskeyMode > 0;
         
         // パスキー設定の計算
         $twoFaPasskeyEditable = \App\Enums\PasskeyMode::isProfileEditable($twoFaPasskeyMode);

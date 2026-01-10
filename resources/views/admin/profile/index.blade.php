@@ -247,16 +247,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :twoFaPasskeyDevices="$twoFaPasskeyDevices"
             :twoFaHasRecoveryCodes="$twoFaHasRecoveryCodes"
             :twoFaRecoveryCodesCount="$twoFaRecoveryCodesCount"
-            :twoFaTrustedDevices="$trustedDevices ?? collect()"
-            :twoFaShowTrustedDevices="true"
+            :twoFaTrustedDevices="collect()"
+            :twoFaShowTrustedDevices="false"
             :routes="[
                 'passkey_register_options' => route('admin.profile.passkey.register-options'),
                 'passkey_register' => route('admin.profile.passkey.register'),
                 'passkey_delete' => route('admin.profile.passkey.revoke', ':id'),
                 'passkey_delete_all' => route('admin.profile.passkey.revoke-all'),
                 'recovery_codes_generate' => route('admin.profile.recovery-codes.generate'),
-                'trusted_device_delete' => route('admin.profile.trusted-device.revoke', ':id'),
-                'trusted_device_delete_all' => route('admin.profile.trusted-device.revoke-all'),
             ]"
             :csrfToken="csrf_token()"
         />
