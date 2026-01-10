@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Traits;
+namespace App\Traits\TwoFa;
 
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
@@ -9,10 +9,18 @@ use App\Models\MemberTwoFaToken;
 use App\Enums\AuthenticationMode;
 use App\Enums\TwoFaMethod;
 use App\Traits\DeviceDetectionTrait;
+use App\Services\TwoFa\TwoFaPasskeyService;
 
-trait TwoFaTrait
+/**
+ * 二段階認証の低レベルユーティリティ機能を提供するトレイト
+ * 
+ * コード生成・検証、設定取得、判定ロジックなど、
+ * 二段階認証の基本的な機能を提供します。
+ */
+trait TwoFaUtilityTrait
 {
     use DeviceDetectionTrait;
+
     /**
      * 二段階認証コードを生成してデータベースに保存
      *
@@ -172,7 +180,6 @@ trait TwoFaTrait
             default => AuthenticationMode::Disabled->value,
         };
     }
-
 
     /**
      * 信頼済みデバイスからのアクセスかチェック

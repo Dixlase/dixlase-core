@@ -4,7 +4,7 @@ namespace App\Helpers;
 
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
-use App\Traits\TwoFaTrait;
+use App\Traits\TwoFa\TwoFaUtilityTrait;
 use App\Models\MemberSetting;
 use App\Enums\TwoFaMethod;
 use App\Enums\AuthenticationMode;
@@ -13,7 +13,7 @@ use App\Services\TwoFa\TwoFaPasskeyService;
 
 class TwoFaHelper
 {
-    use TwoFaTrait;
+    use TwoFaUtilityTrait;
 
     /**
      * 設定値を取得する（MemberSettingから）

@@ -50,16 +50,58 @@ use App\Notifications\MemberVerificationCompletedNotification;
 use App\Notifications\AdminMemberVerifiedNotification;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use App\Traits\TwoFa\TwoFaAuthenticationTrait;
 
 
 
 class AdminLoginController extends AdminController
 {
+    use TwoFaAuthenticationTrait;
 
     //初期設定を行う
     public function __construct()
     {
         parent::__construct();
+    }
+    
+    /**
+     * 設定モデルクラス名を取得
+     */
+    protected function getSettingModelClass(): string
+    {
+        return MemberSetting::class;
+    }
+
+    /**
+     * ログイン画面のルート名を取得
+     */
+    protected function getLoginRoute(): string
+    {
+        return 'admin.login';
+    }
+
+    /**
+     * ダッシュボードのルート名を取得
+     */
+    protected function getDashboardRoute(): string
+    {
+        return 'admin.dashboard';
+    }
+
+    /**
+     * セッションキーのプレフィックスを取得
+     */
+    protected function getSessionPrefix(): string
+    {
+        return 'login';
+    }
+
+    /**
+     * 二段階認証サービスのインスタンスを取得
+     */
+    protected function getTwoFaService()
+    {
+        return app(AdminTwoFaService::class);
     }
     /**
      * Display the login view.
@@ -587,270 +629,12 @@ class AdminLoginController extends AdminController
         return redirect()->intended(route('admin.dashboard'));
     }
 
-    public function resendEmailCode(Request $request)
-    {
-        if (!session()->has('login.id')) {
-            return response()->json([
-                'success' => false,
-                'message' => __('auth.failed')
-            ], 401);
-        }
-
-        $member = Member::find(session('login.id'));
-
-        if (!$member) {
-            return response()->json([
-                'success' => false,
-                'message' => __('auth.failed')
-            ], 401);
-        }
-
-        $twoFactor = app(AdminTwoFaService::class);
-        $twoFactor->generate($member, TwoFaMethod::EMAIL->value);
-
-        return response()->json([
-            'success' => true,
-            'message' => __('two_fa.email.resend_success')
-        ]);
-    }
-
     /**
-     * 回復コード入力画面を表示
+     * 回復コード入力画面を表示（トレイトのメソッドを使用）
      */
     public function showRecoveryCodeForm()
     {
-        if (!session()->has('login.id')) {
-            return redirect()->route('admin.login');
-        }
-
-        $memberId = session('login.id');
-        $member = Member::find($memberId);
-
-        if (!$member) {
-            return redirect()->route('admin.login');
-        }
-
-        // ロックアウトチェック
-        $attemptService = app(TwoFaAttemptService::class);
-        if ($attemptService->isLockedOut($member)) {
-            $remainingMinutes = $attemptService->getRemainingLockoutTime($member);
-            return redirect()->route('admin.login')
-                ->withErrors(['email' => __('two_fa.lockout.message', ['minutes' => $remainingMinutes])]);
-        }
-
-        // 利用可能な認証方法を取得（回復コード以外、Passkeyデバイス未登録時はPasskeyを除外）
-        $twoFactorHelper = app(TwoFaHelper::class);
-        $enabledMethods = $twoFactorHelper->getAvailableTwoFaMethodsForMember($member);
-        $availableMethods = [];
-
-        foreach ($enabledMethods as $method) {
-            $methodEnum = TwoFaMethod::from($method);
-            $availableMethods[] = [
-                'value' => $method,
-                'label' => $methodEnum->label(),
-                'url' => $this->getTwoFaMethodRoute($method),
-            ];
-        }
-
-        // Passkeyが有効だがデバイスが未登録かチェック
-        $globalEnabledMethods = $twoFactorHelper->getEnabledTwoFaMethods();
-        $passkeyGloballyEnabled = in_array(TwoFaMethod::PASSKEY->value, $globalEnabledMethods);
-        $passkeyAvailableForMember = in_array(TwoFaMethod::PASSKEY->value, $enabledMethods);
-        $showPasskeyDeviceWarning = $passkeyGloballyEnabled && !$passkeyAvailableForMember;
-
-        return view('two-fa.recovery_code_challenge', [
-            'availableMethods' => $availableMethods,
-            'showPasskeyDeviceWarning' => $showPasskeyDeviceWarning,
-        ]);
-    }
-
-    /**
-     * 回復コードを検証
-     */
-    public function confirmRecoveryCode(Request $request)
-    {
-        $request->validate([
-            'recovery_code' => 'required|string',
-        ]);
-
-        $memberId = session('login.id');
-        $member = Member::find($memberId);
-
-        if (!$member) {
-            return redirect()->route('admin.login');
-        }
-
-        // ロックアウトチェック
-        $attemptService = app(TwoFaAttemptService::class);
-        if ($attemptService->isLockedOut($member)) {
-            $remainingMinutes = $attemptService->getRemainingLockoutTime($member);
-            session()->forget(['login.id', 'login.remember']);
-            return redirect()->route('admin.login')
-                ->withErrors(['email' => __('two_fa.lockout.message', ['minutes' => $remainingMinutes])]);
-        }
-
-        $twoFaRecoveryCodeService = app(TwoFaRecoveryCodeService::class);
-        $isValid = $twoFaRecoveryCodeService->validate($member, $request->recovery_code);
-
-        // 試行を記録
-        $attemptService->recordAttempt($member, 'recovery_code', $isValid);
-
-        if (!$isValid) {
-            // 最大試行回数に達したかチェック
-            if ($attemptService->hasReachedMaxAttempts($member)) {
-                $lockoutDuration = (int) MemberSetting::getValue('two_fa_lockout_duration', 30);
-                session()->forget(['login.id', 'login.remember']);
-                return redirect()->route('admin.login')
-                    ->withErrors(['email' => __('two_fa.lockout.locked', ['minutes' => $lockoutDuration])]);
-            }
-
-            // 残り試行回数を取得
-            $remainingAttempts = $attemptService->getRemainingAttempts($member);
-            return back()->withErrors([
-                'recovery_code' => __('two_fa.recovery_code.invalid_with_attempts', ['attempts' => $remainingAttempts])
-            ]);
-        }
-
-        // 成功したログインを記録（失敗記録をクリア）
-        app(AdminLoginLockoutService::class)->handleSuccessfulLogin($member->email);
-        $attemptService->handleSuccess($member);
-
-        // ログイン環境を記録、通知
-        app(AdminLoginNotificationService::class)->handle($member, $request);
-
-        Auth::guard('member')->login($member, session('login.remember', false));
-        session()->forget(['login.id', 'login.remember']);
-        $request->session()->regenerate(true);
-
-        // ログイン後にメール認証トークンをチェック
-        $this->processEmailVerificationIfPending($member, $request);
-
-        return redirect()->intended(route('admin.dashboard'));
-    }
-
-    /**
-     * メール認証フォームを表示
-     */
-    public function showEmailForm(Request $request)
-    {
-        if (!session()->has('login.id')) {
-            return redirect()->route('admin.login');
-        }
-
-        $memberId = session('login.id');
-        $member = Member::find($memberId);
-
-        if (!$member) {
-            return redirect()->route('admin.login');
-        }
-
-        // 既存の有効なコードがあるかチェック
-        $hasValidToken = MemberTwoFaToken::where('member_id', $member->id)
-            ->where('expires_at', '>', now())
-            ->exists();
-
-        // 有効なコードがない場合のみ新規生成・送信
-        if (!$hasValidToken) {
-            Log::info('[Email Challenge] メール認証画面表示 - コード生成開始', [
-                'member_id' => $member->id,
-                'email' => $member->email,
-            ]);
-            
-            $twoFactor = app(AdminTwoFaService::class);
-            $twoFactor->generate($member, TwoFaMethod::EMAIL->value);
-            
-            Log::info('[Email Challenge] コード生成・メール送信完了');
-        } else {
-            Log::info('[Email Challenge] 既存の有効なコードを再利用', [
-                'member_id' => $member->id,
-            ]);
-        }
-
-        // 利用可能な認証方法を取得（Passkeyデバイス未登録時はPasskeyを除外）
-        $twoFactorHelper = app(TwoFaHelper::class);
-        $enabledMethods = $twoFactorHelper->getAvailableTwoFaMethodsForMember($member);
-        $availableMethods = [];
-        $currentMethod = TwoFaMethod::EMAIL->value;
-
-        foreach ($enabledMethods as $method) {
-            if ($method !== $currentMethod) { // EMAIL以外
-                $methodEnum = TwoFaMethod::from($method);
-                $availableMethods[] = [
-                    'value' => $method,
-                    'label' => $methodEnum->label(),
-                    'url' => $this->getTwoFaMethodRoute($method),
-                ];
-            }
-        }
-
-        // Passkeyが有効だがデバイスが未登録かチェック
-        $globalEnabledMethods = $twoFactorHelper->getEnabledTwoFaMethods();
-        $passkeyGloballyEnabled = in_array(TwoFaMethod::PASSKEY->value, $globalEnabledMethods);
-        $passkeyAvailableForMember = in_array(TwoFaMethod::PASSKEY->value, $enabledMethods);
-        $showPasskeyDeviceWarning = $passkeyGloballyEnabled && !$passkeyAvailableForMember;
-
-        // 二段階認証の設定値を取得（メンバー設定 > コンフィグ）
-        $twoFaExpireMinutes = (int) MemberSetting::getValue('two_fa_expire_minutes', config('two-fa.code_expiration', 5));
-        $twoFaResendIntervalSeconds = (int) MemberSetting::getValue('two_fa_resend_interval_seconds', config('two-fa.resend_interval', 60));
-
-        return view('two-fa.email-challenge', [
-            'availableMethods' => $availableMethods,
-            'currentMethod' => $currentMethod,
-            'expireMinutes' => $twoFaExpireMinutes,
-            'resendIntervalSeconds' => $twoFaResendIntervalSeconds,
-            'action' => route('admin.two-fa.email.verify'),
-            'resendAction' => route('admin.two-fa.email.resend'),
-            'loginRoute' => route('admin.login'),
-            'showPasskeyDeviceWarning' => $showPasskeyDeviceWarning,
-        ]);
-    }
-
-    /**
-     * Passkey認証フォームを表示
-     */
-    public function showPasskeyForm(Request $request)
-    {
-        if (!session()->has('login.id')) {
-            return redirect()->route('admin.login');
-        }
-
-        $memberId = session('login.id');
-        $member = Member::find($memberId);
-
-        if (!$member) {
-            return redirect()->route('admin.login');
-        }
-
-        // 利用可能な認証方法を取得（Passkeyデバイス未登録時はPasskeyを除外）
-        $twoFactorHelper = app(TwoFaHelper::class);
-        $enabledMethods = $twoFactorHelper->getAvailableTwoFaMethodsForMember($member);
-        $availableMethods = [];
-        $currentMethod = TwoFaMethod::PASSKEY->value;
-
-        foreach ($enabledMethods as $method) {
-            if ($method !== $currentMethod) { // PASSKEY以外
-                $methodEnum = TwoFaMethod::from($method);
-                $availableMethods[] = [
-                    'value' => $method,
-                    'label' => $methodEnum->label(),
-                    'url' => $this->getTwoFaMethodRoute($method),
-                ];
-            }
-        }
-
-        // Passkeyデバイスが未登録かチェック
-        $passkeyService = app(TwoFaPasskeyService::class);
-        $passkeyDevices = $passkeyService->getDevices($member);
-        $hasPasskeyDevices = !$passkeyDevices->isEmpty();
-
-        return view('two-fa.passkey-challenge', [
-            'availableMethods' => $availableMethods,
-            'currentMethod' => $currentMethod,
-            'challengeAction' => route('admin.two-fa.passkey.challenge'),
-            'verifyAction' => route('admin.two-fa.passkey.verify'),
-            'loginRoute' => route('admin.login'),
-            'hasPasskeyDevices' => $hasPasskeyDevices,
-        ]);
+        return parent::showRecoveryCodeForm(request());
     }
 
     /**
