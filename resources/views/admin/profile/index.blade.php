@@ -196,7 +196,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 get twoFaEnabled() {
                     return this.twoFaMode !== '0';
                 }
-            }">
+            }" id="two-fa-settings-wrapper">
                 <section class="transition-colors-unified">
                     <h2>{{ __('auth.two_fa_settings') }}</h2>
 
@@ -240,24 +240,37 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     </form>
 
-    <!-- 2FA管理セクション（メールサーバー設定済み、かつ二段階認証が有効の場合のみ表示） -->
-    @if($isMailServerTested && $twoFaForceMode !== \App\Enums\AuthenticationMode::Disabled->value)
-        <x-two-fa.management
-            :twoFaPasskeyEnabled="$twoFaPasskeyEnabled"
-            :twoFaPasskeyDevices="$twoFaPasskeyDevices"
-            :twoFaHasRecoveryCodes="$twoFaHasRecoveryCodes"
-            :twoFaRecoveryCodesCount="$twoFaRecoveryCodesCount"
-            :twoFaTrustedDevices="collect()"
-            :twoFaShowTrustedDevices="false"
-            :routes="[
-                'passkey_register_options' => route('admin.profile.passkey.register-options'),
-                'passkey_register' => route('admin.profile.passkey.register'),
-                'passkey_delete' => route('admin.profile.passkey.revoke', ':id'),
-                'passkey_delete_all' => route('admin.profile.passkey.revoke-all'),
-                'recovery_codes_generate' => route('admin.profile.recovery-codes.generate'),
-            ]"
-            :csrfToken="csrf_token()"
-        />
+    <!-- 2FA管理セクション（メールサーバー設定済みの場合のみ表示） -->
+    @if($isMailServerTested)
+        <div x-data="{
+            get twoFaMode() {
+                const wrapper = document.getElementById('two-fa-settings-wrapper');
+                if (!wrapper) return '{{ (string) ($twoFaMode?->value ?? 0) }}';
+                return Alpine.$data(wrapper).twoFaMode;
+            },
+            get isTwoFaDisabled() {
+                return this.twoFaMode === '0';
+            }
+        }">
+            <div :class="{ 'opacity-50 pointer-events-none': isTwoFaDisabled }">
+                <x-two-fa.management
+                    :twoFaPasskeyEnabled="$twoFaPasskeyEnabled"
+                    :twoFaPasskeyDevices="$twoFaPasskeyDevices"
+                    :twoFaHasRecoveryCodes="$twoFaHasRecoveryCodes"
+                    :twoFaRecoveryCodesCount="$twoFaRecoveryCodesCount"
+                    :twoFaTrustedDevices="collect()"
+                    :twoFaShowTrustedDevices="false"
+                    :routes="[
+                        'passkey_register_options' => route('admin.profile.passkey.register-options'),
+                        'passkey_register' => route('admin.profile.passkey.register'),
+                        'passkey_delete' => route('admin.profile.passkey.revoke', ':id'),
+                        'passkey_delete_all' => route('admin.profile.passkey.revoke-all'),
+                        'recovery_codes_generate' => route('admin.profile.recovery-codes.generate'),
+                    ]"
+                    :csrfToken="csrf_token()"
+                />
+            </div>
+        </div>
     @endif
 
     {{-- セッションベースのモーダル --}}

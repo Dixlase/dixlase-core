@@ -214,7 +214,11 @@ class AdminMemberController extends AdminLoggedInController
 
         $this->loadMemberFormParams();
 
-        $twoFaPasskeyEnabled = $this->memberSettingRepository->get('two_fa_passkey_enabled', '0') === '1';
+        // グローバル設定で有効な二段階認証方法を取得
+        $twoFaPasskeyMode = (int) $this->memberSettingRepository->get('two_fa_passkey_mode', '2');
+        // two_fa_passkey_modeが0（無効）以外ならPasskeyは有効とみなす
+        $twoFaPasskeyEnabled = $twoFaPasskeyMode > 0;
+        
         $twoFaPasskeyService = new TwoFaPasskeyService();
         $this->viewParams['twoFaPasskeyDevices'] = $twoFaPasskeyService->getDevices($member);
         $this->viewParams['twoFaPasskeyEnabled'] = $twoFaPasskeyEnabled;
