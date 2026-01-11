@@ -180,13 +180,17 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 showSuccess();
-                // 認証成功後、適切なページにリダイレクト
+                // 認証成功後、サーバーから返されたURLにリダイレクト
                 setTimeout(() => {
-                    @if($context === 'admin')
-                    window.location.href = '{{ route("admin.dashboard") }}';
-                    @else
-                    window.location.reload();
-                    @endif
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    } else {
+                        @if($context === 'admin')
+                        window.location.href = '{{ route("admin.dashboard") }}';
+                        @else
+                        window.location.href = '{{ route("users-plugin::mypage.dashboard") }}';
+                        @endif
+                    }
                 }, 2000);
             } else {
                 showError(data.message || '認証の検証に失敗しました');
