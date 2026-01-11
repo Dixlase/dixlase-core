@@ -25,6 +25,9 @@ use App\Services\TwoFa\TwoFaAttemptService;
  * - getDashboardRoute(): ダッシュボードのルート名を返す
  * - getSessionPrefix(): セッションキーのプレフィックスを返す
  * - getTwoFaService(): 二段階認証サービスのインスタンスを返す
+ * - getUserModelClass(): ユーザーモデルクラス名を返す
+ * - getGuardName(): 認証ガード名を返す
+ * - getContext(): コンテキスト（'admin' or 'user'）を返す
  */
 trait TwoFaAuthenticationTrait
 {
@@ -363,4 +366,20 @@ trait TwoFaAuthenticationTrait
      * 二段階認証サービスのインスタンスを取得（継承先で実装）
      */
     abstract protected function getTwoFaService();
+
+    /**
+     * ユーザーモデルクラス名を取得（継承先で実装）
+     */
+    abstract protected function getUserModelClass(): string;
+
+    /**
+     * 認証ガード名を取得（継承先で実装）
+     */
+    abstract protected function getGuardName(): string;
+
+    /**
+     * コンテキストを取得（継承先で実装）
+     * @return string 'admin' or 'user'
+     */
+    abstract protected function getContext(): string;
 }
