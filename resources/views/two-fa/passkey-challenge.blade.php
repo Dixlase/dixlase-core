@@ -24,7 +24,7 @@
     @include('two-fa.partials.passkey-challenge', [
         'challengeAction' => $passkeyChallenge,
         'verifyAction' => $passkeyVerify,
-        'context' => 'admin',
+        'context' => $context ?? 'admin',
         'hasPasskeyDevices' => $hasPasskeyDevices ?? true
     ])
 
@@ -32,7 +32,7 @@
     @include('two-fa.partials.alternative-methods', [
         'methods' => $availableMethods,
         'currentMethod' => $currentMethod,
-        'context' => 'admin'
+        'context' => $context ?? 'admin'
     ])
 @endsection
 

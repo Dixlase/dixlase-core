@@ -29,7 +29,12 @@
     
     @if($showRecoveryCode)
         <div>
-            <a href="{{ route($context . '.two-fa.recovery-code.show') }}" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+            @php
+                $recoveryCodeRoute = $context === 'user' 
+                    ? 'users-plugin::mypage.two-fa.recovery-code.show' 
+                    : 'admin.two-fa.recovery-code.show';
+            @endphp
+            <a href="{{ route($recoveryCodeRoute) }}" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                 <i class="fas fa-life-ring mr-1"></i>{{ __('two_fa.recovery_code.use_recovery_code') }}
             </a>
         </div>
