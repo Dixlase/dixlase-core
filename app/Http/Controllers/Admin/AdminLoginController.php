@@ -103,6 +103,31 @@ class AdminLoginController extends AdminController
     {
         return app(AdminTwoFaService::class);
     }
+
+    /**
+     * ユーザーモデルクラス名を取得
+     */
+    protected function getUserModelClass(): string
+    {
+        return Member::class;
+    }
+
+    /**
+     * 認証ガード名を取得
+     */
+    protected function getGuardName(): string
+    {
+        return 'web';
+    }
+
+    /**
+     * コンテキストを取得
+     */
+    protected function getContext(): string
+    {
+        return 'admin';
+    }
+
     /**
      * Display the login view.
      */
