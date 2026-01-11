@@ -40,6 +40,10 @@ class BaseSettingsTableSeeder extends Seeder
             ['name' => 'locale', 'value' => config('app.locale', 'ja')],
             ['name' => 'timezone', 'value' => config('app.timezone', 'Asia/Tokyo')],
             
+            // 管理画面URL設定
+            ['name' => 'admin_url', 'value' => 'admin'],
+            ['name' => 'force_ssl', 'value' => '0'],
+            
             // メンテナンスモード
             ['name' => 'maintenance_mode', 'value' => config('app.maintenance_mode', false) ? '1' : '0'],
             ['name' => 'maintenance_message', 'value' => '現在メンテナンス中です。しばらくお待ちください。'],
