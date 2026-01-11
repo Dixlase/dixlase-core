@@ -23,14 +23,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Admin\AdminController;
-use Laravel\Fortify\Contracts\TwoFactorAuthenticationProvider;
 use App\Http\Requests\Admin\AdminLoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Member;
 use App\Models\MemberSetting;
-use App\Models\MembersTwoFaDevice;
 use Illuminate\Support\Facades\Hash;
 use App\Services\TwoFa\TwoFaService;
 use App\Services\AdminLoginNotificationService;
@@ -42,107 +40,14 @@ use App\Helpers\CaptchaHelper;
 use App\Helpers\TwoFaHelper;
 use App\Enums\TwoFaMethod;
 use App\Models\BaseSetting;
-use App\Models\MemberTwoFaToken;
-use App\Services\TwoFa\TwoFaAttemptService;
-use App\Services\TwoFa\TwoFaPasskeyService;
-use App\Services\TwoFa\TwoFaRecoveryCodeService;
 use App\Notifications\MemberVerificationCompletedNotification;
 use App\Notifications\AdminMemberVerifiedNotification;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
-use App\Traits\TwoFa\TwoFaAuthenticationTrait;
-use App\Repositories\BaseSettingRepository;
 
 
 
 class AdminLoginController extends AdminController
 {
-    use TwoFaAuthenticationTrait;
-
-    protected $baseSettingRepository;
-
-    //初期設定を行う
-    public function __construct(BaseSettingRepository $baseSettingRepository)
-    {
-        parent::__construct();
-        $this->baseSettingRepository = $baseSettingRepository;
-    }
-    
-    /**
-     * 設定モデルクラス名を取得
-     */
-    protected function getSettingModelClass(): string
-    {
-        return MemberSetting::class;
-    }
-
-    /**
-     * ログインルート名を取得
-     */
-    protected function getLoginRoute(): string
-    {
-        return 'admin.login';
-    }
-
-    /**
-     * ダッシュボードのルート名を取得
-     */
-    protected function getDashboardRoute(): string
-    {
-        return 'admin.dashboard';
-    }
-
-    /**
-     * セッションキーのプレフィックスを取得
-     */
-    protected function getSessionPrefix(): string
-    {
-        return 'login';
-    }
-
-    /**
-     * 二段階認証サービスのインスタンスを取得
-     */
-    protected function getTwoFaService()
-    {
-        return app(TwoFaService::class, [
-            'settingModelClass' => MemberSetting::class,
-            'context' => 'admin'
-        ]);
-    }
-
-    /**
-     * ユーザーモデルクラス名を取得
-     */
-    protected function getUserModelClass(): string
-    {
-        return Member::class;
-    }
-
-    /**
-     * 認証ガード名を取得
-     */
-    protected function getGuardName(): string
-    {
-        return 'web';
-    }
-
-    /**
-     * コンテキストを取得
-     */
-    protected function getContext(): string
-    {
-        return 'admin';
-    }
-
-    /**
-     * 二段階認証ルートのプレフィックスを取得
-     */
-    protected function getTwoFaRoutePrefix(): string
-    {
-        return $this->baseSettingRepository->get('admin_url', 'admin');
-    }
-
     /**
      * Display the login view.
      */
@@ -372,113 +277,17 @@ class AdminLoginController extends AdminController
      */
     protected function processEmailVerificationIfPending($member, $request)
     {
-        $verificationData = session('email_verification_pending');
+        $verificationService = app(\App\Services\AccountVerificationService::class);
         
-        if (!$verificationData) {
-            return;
-        }
-        
-        // トークンの有効期限チェック
-        if ($verificationData['expires_at'] < now()->timestamp) {
-            session()->forget('email_verification_pending');
-            session()->flash('error', __('auth.verification_token_expired'));
-            return;
-        }
-        
-        // ログインしたメンバーと認証待ちのメンバーが一致するかチェック
-        if ($member->id !== $verificationData['member_id']) {
-            session()->forget('email_verification_pending');
-            session()->flash('error', __('auth.verification_member_mismatch'));
-            return;
-        }
-        
-        // ハッシュを再検証
-        $expectedHash = sha1($verificationData['email']);
-        if (!hash_equals((string) $verificationData['hash'], $expectedHash)) {
-            session()->forget('email_verification_pending');
-            session()->flash('error', __('auth.verification_invalid'));
-            return;
-        }
-        
-        try {
-            if ($verificationData['is_email_change']) {
-                // メールアドレス変更の認証
-                $member->email = $member->pending_email;
-                $member->pending_email = null;
-                $member->email_verified_at = now();
-                $member->save();
-                
-                \Log::info('Email change verified after login', [
-                    'member_id' => $member->id,
-                    'new_email' => $member->email
-                ]);
-                
-                session()->flash('success', __('admin/profile.email_verification_success'));
-            } else {
-                // 新規アカウントの認証
-                $member->markEmailAsVerified();
-                
-                \Log::info('Account verified after login', [
-                    'member_id' => $member->id,
-                    'email' => $member->email
-                ]);
-                
-                session()->flash('success', __('admin/profile.account_verification_success'));
-                
-                // メールサーバー設定済みの場合のみ通知を送信
-                if (MailServerValidatorService::isMailServerTested()) {
-                    try {
-                        // メンバー本人に認証完了メールを送信
-                        $member->notify(new MemberVerificationCompletedNotification());
-                        
-                        \Log::info('Verification completed notification sent to member', [
-                            'member_id' => $member->id,
-                            'email' => $member->email
-                        ]);
-                    } catch (\Exception $e) {
-                        \Log::error('Failed to send verification completed notification to member', [
-                            'member_id' => $member->id,
-                            'error' => $e->getMessage()
-                        ]);
-                    }
-                    
-                    try {
-                        // 管理者に通知
-                        $adminEmail = BaseSetting::getValue('system_admin_email') 
-                            ?? BaseSetting::getValue('notification_email');
-                        
-                        if ($adminEmail) {
-                            Notification::route('mail', $adminEmail)
-                                ->notify(new AdminMemberVerifiedNotification(
-                                    $member,
-                                    now()->format('Y-m-d H:i:s')
-                                ));
-                            
-                            \Log::info('Verification notification sent to admin after login', [
-                                'member_id' => $member->id,
-                                'admin_email' => $adminEmail
-                            ]);
-                        }
-                    } catch (\Exception $e) {
-                        \Log::error('Failed to send verification notification to admin', [
-                            'member_id' => $member->id,
-                            'error' => $e->getMessage()
-                        ]);
-                    }
-                }
-            }
-            
-            // 認証完了後、セッションから削除
-            session()->forget('email_verification_pending');
-            
-        } catch (\Exception $e) {
-            \Log::error('Email verification failed after login', [
-                'member_id' => $member->id,
-                'error' => $e->getMessage()
-            ]);
-            session()->forget('email_verification_pending');
-            session()->flash('error', __('auth.verification_failed'));
-        }
+        $verificationService->processIfPending($member, [
+            'verification_completed_notification' => MemberVerificationCompletedNotification::class,
+            'admin_verified_notification' => AdminMemberVerifiedNotification::class,
+            'admin_email_setting_key' => 'system_admin_email',
+            'notification_email_setting_key' => 'notification_email',
+            'success_message_key' => 'admin/profile.account_verification_success',
+            'email_change_success_key' => 'admin/profile.email_verification_success',
+            'setting_model_class' => BaseSetting::class,
+        ]);
     }
 
     /**

@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\Front\AdminFrontController;
 use App\Http\Controllers\Admin\Media\AdminMediaController;
 use App\Http\Controllers\Admin\AdminLoginController;
+use App\Http\Controllers\Admin\AdminTwoFaController;
 use App\Http\Controllers\Admin\Auth\AdminConfirmablePasswordController;
 use App\Http\Controllers\Admin\Auth\AdminEmailVerificationNotificationController;
 use App\Http\Controllers\Admin\Auth\AdminEmailVerificationPromptController;
@@ -69,18 +70,18 @@ Route::prefix($adminUrl)->name('admin.')
         Route::post('/login', [AdminLoginController::class, 'store'])->name('login.store');
 
         // 二段階認証（メール）
-        Route::get('/two-fa-email', [AdminLoginController::class, 'showEmailChallenge'])->name('two-fa.email.show');
-        Route::post('/two-fa-email/verify', [AdminLoginController::class, 'verifyEmail'])->name('two-fa.email.verify');
-        Route::post('/two-fa-email/resend', [AdminLoginController::class, 'resendEmail'])->name('two-fa.email.resend');
+        Route::get('/two-fa-email', [AdminTwoFaController::class, 'showEmailChallenge'])->name('two-fa.email.show');
+        Route::post('/two-fa-email/verify', [AdminTwoFaController::class, 'verifyEmail'])->name('two-fa.email.verify');
+        Route::post('/two-fa-email/resend', [AdminTwoFaController::class, 'resendEmail'])->name('two-fa.email.resend');
         
         // Passkey認証
-        Route::get('/two-fa-passkey', [AdminLoginController::class, 'showPasskeyChallenge'])->name('two-fa.passkey.show');
-        Route::post('/two-fa-passkey/challenge', [AdminLoginController::class, 'getPasskeyChallenge'])->name('two-fa.passkey.challenge');
-        Route::post('/two-fa-passkey/verify', [AdminLoginController::class, 'verifyPasskey'])->name('two-fa.passkey.verify');
+        Route::get('/two-fa-passkey', [AdminTwoFaController::class, 'showPasskeyChallenge'])->name('two-fa.passkey.show');
+        Route::post('/two-fa-passkey/challenge', [AdminTwoFaController::class, 'getPasskeyChallenge'])->name('two-fa.passkey.challenge');
+        Route::post('/two-fa-passkey/verify', [AdminTwoFaController::class, 'verifyPasskey'])->name('two-fa.passkey.verify');
         
         // 回復コード
-        Route::get('/two-fa-recovery', [AdminLoginController::class, 'showRecoveryCodeChallenge'])->name('two-fa.recovery-code.show');
-        Route::post('/two-fa-recovery', [AdminLoginController::class, 'verifyRecoveryCode'])->name('two-fa.recovery-code.confirm');
+        Route::get('/two-fa-recovery', [AdminTwoFaController::class, 'showRecoveryCodeChallenge'])->name('two-fa.recovery-code.show');
+        Route::post('/two-fa-recovery', [AdminTwoFaController::class, 'verifyRecoveryCode'])->name('two-fa.recovery-code.confirm');
         
 
 
