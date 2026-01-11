@@ -630,14 +630,6 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * 回復コード入力画面を表示（トレイトのメソッドを使用）
-     */
-    public function showRecoveryCodeForm()
-    {
-        return parent::showRecoveryCodeForm(request());
-    }
-
-    /**
      * Passkey認証チャレンジを取得
      */
     public function getPasskeyChallenge(Request $request)
