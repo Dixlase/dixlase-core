@@ -9,7 +9,6 @@ use App\Models\MemberSetting;
 use App\Models\MemberTwoFaToken;
 use App\Enums\TwoFaMethod;
 use App\Helpers\TwoFaHelper;
-use App\Services\AdminTwoFaService;
 use App\Services\TwoFa\TwoFaPasskeyService;
 use App\Services\TwoFa\TwoFaAttemptService;
 
@@ -396,6 +395,12 @@ trait TwoFaAuthenticationTrait
     abstract protected function getSettingModelClass(): string;
 
     /**
+     * ログインルート名を取得（継承先で実装）
+     * @return string 例: 'admin.login' or 'users-plugin::mypage.login'
+     */
+    abstract protected function getLoginRoute(): string;
+
+    /**
      * セッションからユーザーを取得
      */
     protected function getUserFromSession()
@@ -554,5 +559,258 @@ trait TwoFaAuthenticationTrait
         }
 
         return $availableMethods;
+    }
+
+    /**
+     * メール認証チャレンジ画面を表示
+     */
+    public function showEmailChallenge(Request $request)
+    {
+        $user = $this->checkSessionAndGetUser();
+        if ($user instanceof \Illuminate\Http\RedirectResponse) {
+            return $user;
+        }
+
+        $currentMethod = \App\Enums\TwoFaMethod::EMAIL->value;
+        $availableMethods = $this->getAvailableMethods($currentMethod);
+        $settings = $this->getTwoFaSettings();
+
+        return view('two-fa.email-challenge', [
+            'availableMethods' => $availableMethods,
+            'currentMethod' => $currentMethod,
+            'expireMinutes' => $settings['expireMinutes'],
+            'resendIntervalSeconds' => $settings['resendIntervalSeconds'],
+            'context' => $this->getContext(),
+            'loginRoute' => route($this->getLoginRoute()),
+            'action' => route($this->getTwoFaRoutePrefix() . '.two-fa.email.verify'),
+            'resendAction' => route($this->getTwoFaRoutePrefix() . '.two-fa.email.resend'),
+        ]);
+    }
+
+    /**
+     * メール認証コードを検証
+     */
+    public function verifyEmail(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string',
+        ]);
+
+        $user = $this->checkSessionAndGetUser();
+        if ($user instanceof \Illuminate\Http\RedirectResponse) {
+            return $user;
+        }
+
+        if (!$this->verifyEmailCode($user, $request->code)) {
+            return back()->withErrors([
+                'code' => __('two_fa.email.invalid_code')
+            ]);
+        }
+
+        Log::info('[2FA] Email authentication success', [
+            'user_id' => $user->id,
+            'context' => $this->getContext()
+        ]);
+
+        return $this->completeAuthentication($user, $request);
+    }
+
+    /**
+     * メール認証コードを再送信
+     */
+    public function resendEmail(Request $request)
+    {
+        $user = $this->getUserFromSession();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.session_expired')
+            ], 401);
+        }
+
+        try {
+            $this->resendEmailCode($user);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('two_fa.email.resend_success')
+            ]);
+        } catch (\Exception $e) {
+            Log::error('[2FA] Email code resend failed', [
+                'user_id' => $user->id,
+                'context' => $this->getContext(),
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => __('two_fa.email.send_failed')
+            ], 500);
+        }
+    }
+
+    /**
+     * Passkey認証チャレンジ画面を表示
+     */
+    public function showPasskeyChallenge(Request $request)
+    {
+        $user = $this->checkSessionAndGetUser();
+        if ($user instanceof \Illuminate\Http\RedirectResponse) {
+            return $user;
+        }
+
+        $currentMethod = \App\Enums\TwoFaMethod::PASSKEY->value;
+        $availableMethods = $this->getAvailableMethods($currentMethod);
+
+        return view('two-fa.passkey-challenge', [
+            'availableMethods' => $availableMethods,
+            'currentMethod' => $currentMethod,
+            'context' => $this->getContext(),
+            'loginRoute' => route($this->getLoginRoute()),
+            'challengeAction' => route($this->getTwoFaRoutePrefix() . '.two-fa.passkey.challenge'),
+            'verifyAction' => route($this->getTwoFaRoutePrefix() . '.two-fa.passkey.verify'),
+        ]);
+    }
+
+    /**
+     * Passkey認証チャレンジを取得
+     */
+    public function getPasskeyChallenge(Request $request)
+    {
+        $user = $this->getUserFromSession();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.failed')
+            ], 401);
+        }
+
+        try {
+            $challenge = $this->generatePasskeyChallenge($user);
+
+            return response()->json([
+                'success' => true,
+                'challenge' => $challenge,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('[Passkey Challenge] Failed to generate challenge', [
+                'user_id' => $user->id,
+                'context' => $this->getContext(),
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => __('two_fa.passkey.challenge_failed'),
+            ], 500);
+        }
+    }
+
+    /**
+     * Passkey認証を検証
+     */
+    public function verifyPasskey(Request $request)
+    {
+        $user = $this->getUserFromSession();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.failed')
+            ], 401);
+        }
+
+        $request->validate([
+            'response' => 'required|array',
+            'response.id' => 'required|string',
+            'response.response' => 'required|array',
+        ]);
+
+        try {
+            $credentialData = $request->input('response');
+
+            if ($this->verifyPasskeyCredential($user, $credentialData)) {
+                Log::info('[Passkey Auth] Authentication success', [
+                    'user_id' => $user->id,
+                    'context' => $this->getContext()
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'redirect' => route($this->getDashboardRoute())
+                ]);
+            } else {
+                Log::warning('[Passkey Auth] Authentication failed', [
+                    'user_id' => $user->id,
+                    'context' => $this->getContext(),
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => __('auth.passkey_verification_failed')
+                ], 401);
+            }
+        } catch (\Exception $e) {
+            Log::error('[Passkey Auth] Verification error', [
+                'user_id' => $user->id,
+                'context' => $this->getContext(),
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.passkey_verification_error')
+            ], 500);
+        }
+    }
+
+    /**
+     * 回復コード認証チャレンジ画面を表示
+     */
+    public function showRecoveryCodeChallenge(Request $request)
+    {
+        $user = $this->checkSessionAndGetUser();
+        if ($user instanceof \Illuminate\Http\RedirectResponse) {
+            return $user;
+        }
+
+        $availableMethods = $this->getAvailableMethods();
+
+        return view('two-fa.recovery-code-challenge', [
+            'availableMethods' => $availableMethods,
+            'context' => $this->getContext(),
+            'loginRoute' => route($this->getLoginRoute()),
+            'action' => route($this->getTwoFaRoutePrefix() . '.two-fa.recovery-code.verify'),
+        ]);
+    }
+
+    /**
+     * 回復コードを検証
+     */
+    public function verifyRecoveryCode(Request $request)
+    {
+        $request->validate([
+            'recovery_code' => 'required|string',
+        ]);
+
+        $user = $this->checkSessionAndGetUser();
+        if ($user instanceof \Illuminate\Http\RedirectResponse) {
+            return $user;
+        }
+
+        if (!$this->verifyRecoveryCodeValue($user, $request->recovery_code)) {
+            return back()->withErrors([
+                'recovery_code' => __('two_fa.recovery_code.invalid')
+            ]);
+        }
+
+        Log::info('[2FA] Recovery code authentication success', [
+            'user_id' => $user->id,
+            'context' => $this->getContext()
+        ]);
+
+        return $this->completeAuthentication($user, $request);
     }
 }
