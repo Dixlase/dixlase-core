@@ -382,4 +382,177 @@ trait TwoFaAuthenticationTrait
      * @return string 'admin' or 'user'
      */
     abstract protected function getContext(): string;
+
+    /**
+     * 二段階認証ルートのプレフィックスを取得（継承先で実装）
+     * @return string 例: 'admin' or 'users-plugin::mypage'
+     */
+    abstract protected function getTwoFaRoutePrefix(): string;
+
+    /**
+     * 設定モデルクラス名を取得（継承先で実装）
+     * @return string 例: MemberSetting::class or DixlaseUsersUserSetting::class
+     */
+    abstract protected function getSettingModelClass(): string;
+
+    /**
+     * セッションからユーザーを取得
+     */
+    protected function getUserFromSession()
+    {
+        $sessionKey = $this->getSessionPrefix() . '.id';
+        $userId = session($sessionKey);
+        
+        if (!$userId) {
+            return null;
+        }
+        
+        $modelClass = $this->getUserModelClass();
+        return $modelClass::find($userId);
+    }
+
+    /**
+     * セッションチェックとユーザー取得（リダイレクト付き）
+     */
+    protected function checkSessionAndGetUser()
+    {
+        $user = $this->getUserFromSession();
+        
+        if (!$user) {
+            $loginRoute = $this->getContext() === 'admin' 
+                ? 'admin.login' 
+                : 'users-plugin::mypage.login';
+            return redirect()->route($loginRoute);
+        }
+        
+        return $user;
+    }
+
+    /**
+     * 認証成功後のログイン処理
+     */
+    protected function completeAuthentication($user, Request $request)
+    {
+        $sessionPrefix = $this->getSessionPrefix();
+        $remember = session($sessionPrefix . '.remember', false);
+        
+        Auth::guard($this->getGuardName())->login($user, $remember);
+        
+        session()->forget([
+            $sessionPrefix . '.id',
+            $sessionPrefix . '.remember'
+        ]);
+        $request->session()->regenerate();
+        
+        return redirect()->route($this->getDashboardRoute());
+    }
+
+    /**
+     * Passkeyチャレンジ生成の共通処理
+     */
+    protected function generatePasskeyChallenge($user): array
+    {
+        $twoFaPasskeyService = new \App\Services\TwoFa\TwoFaPasskeyService();
+        
+        // Passkey認証が利用可能かチェック
+        if (!$twoFaPasskeyService->isAvailable()) {
+            throw new \Exception(__('auth.passkey_https_required'));
+        }
+
+        // ユーザーがPasskeyを登録しているかチェック
+        $credentials = $twoFaPasskeyService->getCredentials($user);
+        if ($credentials->isEmpty()) {
+            throw new \Exception(__('auth.passkey_not_registered'));
+        }
+
+        // 認証チャレンジを生成
+        return $twoFaPasskeyService->generateAuthenticationChallenge($user);
+    }
+
+    /**
+     * Passkey検証の共通処理
+     */
+    protected function verifyPasskeyCredential($user, array $credential): bool
+    {
+        $twoFaPasskeyService = app(\App\Services\TwoFa\TwoFaPasskeyService::class);
+        return $twoFaPasskeyService->verifyAssertion($user, $credential);
+    }
+
+    /**
+     * 回復コード検証の共通処理
+     */
+    protected function verifyRecoveryCodeValue($user, string $code): bool
+    {
+        $recoveryCodeService = app(\App\Services\TwoFa\TwoFaRecoveryCodeService::class);
+        return $recoveryCodeService->validate($user, $code);
+    }
+
+    /**
+     * 認証方法に応じたルートを取得
+     */
+    protected function getTwoFaMethodRoute(int $method): string
+    {
+        $prefix = $this->getTwoFaRoutePrefix();
+        
+        return match($method) {
+            \App\Enums\TwoFaMethod::EMAIL->value => route("{$prefix}.two-fa.email.show"),
+            \App\Enums\TwoFaMethod::PASSKEY->value => route("{$prefix}.two-fa.passkey.show"),
+            default => route("{$prefix}.two-fa.email.show"),
+        };
+    }
+
+    /**
+     * 二段階認証設定値を取得
+     */
+    protected function getTwoFaSettings(): array
+    {
+        $settingModelClass = $this->getSettingModelClass();
+        
+        return [
+            'expireMinutes' => (int) $settingModelClass::getValue('two_fa_expire_minutes', config('two-fa.code_expiration', 5)),
+            'resendIntervalSeconds' => (int) $settingModelClass::getValue('two_fa_resend_interval_seconds', config('two-fa.resend_interval', 60)),
+        ];
+    }
+
+    /**
+     * メール認証コード検証の共通処理
+     */
+    protected function verifyEmailCode($user, string $code): bool
+    {
+        $twoFa = $this->getTwoFaService();
+        return $twoFa->validate($user, $code);
+    }
+
+    /**
+     * メール認証コード再送信の共通処理
+     */
+    protected function resendEmailCode($user): void
+    {
+        $twoFa = $this->getTwoFaService();
+        $twoFa->generate($user);
+    }
+
+    /**
+     * 利用可能な認証方法を取得
+     */
+    protected function getAvailableMethods(int $currentMethod = null): array
+    {
+        $twoFa = $this->getTwoFaService();
+        $systemSettings = $twoFa->getSystemSettings();
+        $enabledMethods = $systemSettings['enabled_methods'] ?? [\App\Enums\TwoFaMethod::EMAIL->value];
+
+        $availableMethods = [];
+        foreach ($enabledMethods as $method) {
+            if ($method !== $currentMethod) {
+                $methodEnum = \App\Enums\TwoFaMethod::from($method);
+                $availableMethods[] = [
+                    'value' => $method,
+                    'label' => $methodEnum->label(),
+                    'url' => $this->getTwoFaMethodRoute($method),
+                ];
+            }
+        }
+
+        return $availableMethods;
+    }
 }

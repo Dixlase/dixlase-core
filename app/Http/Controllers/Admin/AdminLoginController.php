@@ -51,6 +51,7 @@ use App\Notifications\AdminMemberVerifiedNotification;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use App\Traits\TwoFa\TwoFaAuthenticationTrait;
+use App\Repositories\BaseSettingRepository;
 
 
 
@@ -58,10 +59,13 @@ class AdminLoginController extends AdminController
 {
     use TwoFaAuthenticationTrait;
 
+    protected $baseSettingRepository;
+
     //初期設定を行う
-    public function __construct()
+    public function __construct(BaseSettingRepository $baseSettingRepository)
     {
         parent::__construct();
+        $this->baseSettingRepository = $baseSettingRepository;
     }
     
     /**
@@ -126,6 +130,14 @@ class AdminLoginController extends AdminController
     protected function getContext(): string
     {
         return 'admin';
+    }
+
+    /**
+     * 二段階認証ルートのプレフィックスを取得
+     */
+    protected function getTwoFaRoutePrefix(): string
+    {
+        return $this->baseSettingRepository->get('admin_url', 'admin');
     }
 
     /**
@@ -562,18 +574,6 @@ class AdminLoginController extends AdminController
         ]);
     }
 
-    /**
-     * 認証方法に応じたルートを取得
-     */
-    protected function getTwoFaMethodRoute(int $method): string
-    {
-        return match($method) {
-            TwoFaMethod::EMAIL->value => route('admin.two-fa.email.show'),
-            TwoFaMethod::PASSKEY->value => route('admin.two-fa.passkey.show'),
-            default => route('admin.two-fa.email.show'),
-        };
-    }
-
     public function verifyEmail(Request $request)
     {
         $request->validate([
@@ -659,15 +659,7 @@ class AdminLoginController extends AdminController
      */
     public function getPasskeyChallenge(Request $request)
     {
-        if (!session()->has('login.id')) {
-            return response()->json([
-                'success' => false,
-                'message' => __('auth.failed')
-            ], 401);
-        }
-
-        $memberId = session('login.id');
-        $member = Member::find($memberId);
+        $member = $this->getUserFromSession();
 
         if (!$member) {
             return response()->json([
@@ -677,46 +669,21 @@ class AdminLoginController extends AdminController
         }
 
         try {
-            $twoFaPasskeyService = new TwoFaPasskeyService();
-
-            // Passkey認証が利用可能かチェック
-            if (!$twoFaPasskeyService->isAvailable()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('auth.passkey_https_required')
-                ], 400);
-            }
-
-            // メンバーがPasskeyを登録しているかチェック
-            $credentials = $twoFaPasskeyService->getCredentials($member);
-            if ($credentials->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('auth.passkey_not_registered')
-                ], 400);
-            }
-
-            // 認証チャレンジを生成
-            $options = $twoFaPasskeyService->generateAuthenticationChallenge($member);
-
-            Log::info('[Passkey Auth] チャレンジ生成成功', [
-                'member_id' => $member->id,
-                'credentials_count' => $credentials->count()
-            ]);
+            $challenge = $this->generatePasskeyChallenge($member);
 
             return response()->json([
                 'success' => true,
-                'challenge' => $options
+                'challenge' => $challenge,
             ]);
         } catch (\Exception $e) {
-            Log::error('[Passkey Auth] チャレンジ生成エラー', [
+            Log::error('[Passkey Challenge] Failed to generate challenge', [
                 'member_id' => $member->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            
+
             return response()->json([
                 'success' => false,
-                'message' => __('auth.passkey_challenge_error')
+                'message' => __('two_fa.passkey.challenge_failed'),
             ], 500);
         }
     }
@@ -726,15 +693,7 @@ class AdminLoginController extends AdminController
      */
     public function verifyPasskey(Request $request)
     {
-        if (!session()->has('login.id')) {
-            return response()->json([
-                'success' => false,
-                'message' => __('auth.failed')
-            ], 401);
-        }
-
-        $memberId = session('login.id');
-        $member = Member::find($memberId);
+        $member = $this->getUserFromSession();
 
         if (!$member) {
             return response()->json([
@@ -750,13 +709,9 @@ class AdminLoginController extends AdminController
         ]);
 
         try {
-            $twoFaPasskeyService = new TwoFaPasskeyService();
             $credentialData = $request->input('response');
 
-            // 認証レスポンスを検証
-            $isValid = $twoFaPasskeyService->verifyAssertion($member, $credentialData);
-
-            if ($isValid) {
+            if ($this->verifyPasskeyCredential($member, $credentialData)) {
                 // 認証成功 - ログイン処理
                 $lockoutService = app(AdminLoginLockoutService::class);
                 $lockoutService->handleSuccessfulLogin($member->email);
@@ -766,11 +721,10 @@ class AdminLoginController extends AdminController
                 if ($twoFactorHelper->hasNoRecoveryCodes($member)) {
                     try {
                         $codes = $twoFactorHelper->generateRecoveryCodes($member, true);
-                        // セッションに保存してダッシュボードで表示
                         session(['auto_generated_recovery_codes' => $codes]);
-                        \Log::info("[Recovery Codes] Passkey認証後に自動生成: ユーザーID {$member->id}");
+                        Log::info("[Recovery Codes] Passkey認証後に自動生成: ユーザーID {$member->id}");
                     } catch (\Exception $e) {
-                        \Log::error("[Recovery Codes] Passkey認証後の自動生成失敗: " . $e->getMessage());
+                        Log::error("[Recovery Codes] Passkey認証後の自動生成失敗: " . $e->getMessage());
                     }
                 }
 
@@ -780,7 +734,6 @@ class AdminLoginController extends AdminController
                 Auth::guard('member')->login($member, session('login.remember', false));
                 $request->session()->regenerate();
 
-                // セッションクリーンアップ
                 session()->forget(['login.id', 'login.remember']);
 
                 Log::info('[Passkey Auth] 認証成功', [
@@ -793,7 +746,7 @@ class AdminLoginController extends AdminController
                 ]);
             } else {
                 Log::warning('[Passkey Auth] 認証失敗', [
-                    'member_id' => $member->id
+                    'member_id' => $member->id,
                 ]);
 
                 return response()->json([
