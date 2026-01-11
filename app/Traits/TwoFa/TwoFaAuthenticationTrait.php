@@ -161,7 +161,7 @@ trait TwoFaAuthenticationTrait
     /**
      * 回復コード入力画面を表示
      */
-    protected function showRecoveryCodeForm(Request $request)
+    public function showRecoveryCodeForm(Request $request)
     {
         $sessionKey = $this->getSessionPrefix() . '.id';
         
@@ -205,7 +205,7 @@ trait TwoFaAuthenticationTrait
         $passkeyAvailableForMember = in_array(TwoFaMethod::PASSKEY->value, $enabledMethods);
         $showPasskeyDeviceWarning = $passkeyGloballyEnabled && !$passkeyAvailableForMember;
 
-        return view('two-fa.recovery_code_challenge', [
+        return view('two-fa.recovery-code-challenge', [
             'availableMethods' => $availableMethods,
             'action' => $this->getTwoFaVerifyRoute('recovery-code'),
             'loginRoute' => route($this->getLoginRoute()),

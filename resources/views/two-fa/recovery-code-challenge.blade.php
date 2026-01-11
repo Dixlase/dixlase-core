@@ -8,7 +8,11 @@
 @section('description', __('two_fa.recovery_code.prompt'))
 
 @section('content')
-    <form method="POST" action="{{ route('admin.two-fa.recovery-code.confirm') }}" class="space-y-6" id="recoveryCodeForm">
+    @php
+        $formAction = $action ?? route('admin.two-fa.recovery-code.confirm');
+        $contextValue = $context ?? 'admin';
+    @endphp
+    <form method="POST" action="{{ $formAction }}" class="space-y-6" id="recoveryCodeForm">
         @csrf
 
         <!-- 回復コード入力 -->
@@ -103,13 +107,16 @@
     @include('two-fa.partials.alternative-methods', [
         'methods' => $availableMethods ?? [],
         'currentMethod' => null,
-        'context' => 'admin',
+        'context' => $contextValue,
         'showRecoveryCode' => false,
     ])
 @endsection
 
 @section('back_link')
-    <a href="{{ route('admin.login') }}" class="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
+    @php
+        $backRoute = $loginRoute ?? route('admin.login');
+    @endphp
+    <a href="{{ $backRoute }}" class="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
         ← {{ __('two_fa.back_to_login') }}
     </a>
 @endsection

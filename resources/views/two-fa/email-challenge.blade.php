@@ -11,6 +11,7 @@
     @php
         $verifyAction = $action ?? route('admin.two-fa.email.verify');
         $resendRoute = $resendAction ?? route('admin.two-fa.email.resend');
+        $contextValue = $context ?? 'admin';
     @endphp
     @include('two-fa.partials.email-challenge', [
         'action' => $verifyAction,
@@ -21,7 +22,7 @@
         'resendText' => __('two_fa.email.resend'),
         'expireMinutes' => $expireMinutes,
         'resendIntervalSeconds' => $resendIntervalSeconds,
-        'context' => 'admin'
+        'context' => $contextValue
     ])
 
     <!-- Passkeyデバイス未登録警告 -->
@@ -36,7 +37,7 @@
     @include('two-fa.partials.alternative-methods', [
         'methods' => $availableMethods,
         'currentMethod' => $currentMethod,
-        'context' => 'admin'
+        'context' => $contextValue
     ])
 @endsection
 
