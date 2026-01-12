@@ -404,8 +404,8 @@ class AdminProfileController extends AdminLoggedInController
                 
                 if (!$twoFaHasRecoveryCodes) {
                     try {
-                        $twoFactorHelper = app(\App\Helpers\TwoFaHelper::class);
-                        $codes = $twoFactorHelper->generateRecoveryCodes($member, true);
+                        $recoveryCodeService = app(\App\Services\TwoFa\TwoFaRecoveryCodeService::class);
+                        $codes = $recoveryCodeService->generate($member);
                         $shouldGenerateRecoveryCodes = true;
                         
                         \Log::info('[Profile] Recovery codes auto-generated on 2FA activation', [
@@ -656,9 +656,19 @@ class AdminProfileController extends AdminLoggedInController
     public function revokeTrustedDevice(Request $request, int $deviceId)
     {
         $member = Auth::guard('member')->user();
-        $twoFactorHelper = app(\App\Helpers\TwoFaHelper::class);
+        $passkeyService = app(\App\Services\TwoFa\TwoFaPasskeyService::class);
         
-        $result = $twoFactorHelper->revokeTrustedDevice($member, $deviceId);
+        if ($passkeyService->revokeDevice($member, $deviceId)) {
+            $result = [
+                'success' => true,
+                'message' => __('two_fa.trusted_device.revoked_successfully'),
+            ];
+        } else {
+            $result = [
+                'success' => false,
+                'message' => __('two_fa.trusted_device.not_found'),
+            ];
+        }
         
         $statusCode = $result['success'] ? 200 : (
             str_contains($result['message'], 'not_found') ? 404 : 500
@@ -676,9 +686,14 @@ class AdminProfileController extends AdminLoggedInController
     public function revokeAllTrustedDevices(Request $request)
     {
         $member = Auth::guard('member')->user();
-        $twoFactorHelper = app(\App\Helpers\TwoFaHelper::class);
+        $passkeyService = app(\App\Services\TwoFa\TwoFaPasskeyService::class);
         
-        $result = $twoFactorHelper->revokeAllTrustedDevices($member);
+        $count = $passkeyService->revokeAllTrustedDevices($member);
+        $result = [
+            'success' => true,
+            'count' => $count,
+            'message' => __('two_fa.trusted_device.all_revoked_successfully', ['count' => $count]),
+        ];
 
         return response()->json([
             'success' => $result['success'],
@@ -735,17 +750,16 @@ class AdminProfileController extends AdminLoggedInController
     public function generateRecoveryCodes(Request $request)
     {
         $member = Auth::guard('member')->user();
-        $twoFactorHelper = app(\App\Helpers\TwoFaHelper::class);
-        $twoFaRecoveryCodeService = new TwoFaRecoveryCodeService();
+        $recoveryCodeService = app(\App\Services\TwoFa\TwoFaRecoveryCodeService::class);
 
         // 既に回復コードが存在する場合は再生成として扱う
-        if ($twoFaRecoveryCodeService->hasRecoveryCodes($member)) {
+        if ($recoveryCodeService->hasRecoveryCodes($member)) {
             return $this->regenerateRecoveryCodes($request);
         }
 
         try {
             // 回復コードを生成（初回生成）
-            $codes = $twoFactorHelper->generateRecoveryCodes($member, false);
+            $codes = $recoveryCodeService->generate($member);
 
             return response()->json([
                 'success' => true,
@@ -766,9 +780,33 @@ class AdminProfileController extends AdminLoggedInController
     public function regenerateRecoveryCodes(Request $request)
     {
         $member = Auth::guard('member')->user();
-        $twoFactorHelper = app(\App\Helpers\TwoFaHelper::class);
+        $recoveryCodeService = app(\App\Services\TwoFa\TwoFaRecoveryCodeService::class);
 
-        $result = $twoFactorHelper->regenerateRecoveryCodes($member);
+        // 再生成可能かチェック
+        if (!$recoveryCodeService->canRegenerate($member)) {
+            $nextTime = $recoveryCodeService->getNextRegenerateTime($member);
+            return response()->json([
+                'success' => false,
+                'message' => __('admin/profile.recovery_codes_regenerate_too_soon', [
+                    'time' => $nextTime->format('Y-m-d H:i')
+                ]),
+                'next_time' => $nextTime->format('Y-m-d H:i'),
+            ], 429);
+        }
+
+        try {
+            $codes = $recoveryCodeService->generate($member);
+            $result = [
+                'success' => true,
+                'codes' => $codes,
+                'message' => __('admin/profile.recovery_codes_regenerated'),
+            ];
+        } catch (\Exception $e) {
+            $result = [
+                'success' => false,
+                'message' => __('admin/profile.recovery_codes_generation_error'),
+            ];
+        }
 
         if (!$result['success']) {
             $statusCode = isset($result['next_time']) ? 429 : 500;

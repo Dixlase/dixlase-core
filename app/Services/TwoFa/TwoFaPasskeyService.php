@@ -3,6 +3,8 @@
 namespace App\Services\TwoFa;
 
 use App\Contracts\TwoFaInterface;
+use App\Models\Member;
+use App\Models\MembersTrustedDevice;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -60,69 +62,13 @@ class TwoFaPasskeyService
     }
 
     /**
-     * Passkeyデバイスを登録
-     */
-    public function register(TwoFaInterface $user, string $credentialId, string $publicKey, string $name)
-    {
-        return $user->twoFaPasskeys()->create([
-            'credential_id' => $credentialId,
-            'public_key' => $publicKey,
-            'name' => $name,
-        ]);
-    }
-
-    /**
-     * Passkeyデバイス名を更新
-     */
-    public function updateName(TwoFaInterface $user, int $passkeyId, string $name): bool
-    {
-        $passkey = $user->twoFaPasskeys()
-            ->where('id', $passkeyId)
-            ->first();
-
-        if (!$passkey) {
-            return false;
-        }
-
-        $passkey->update(['name' => $name]);
-        return true;
-    }
-
-    /**
-     * Passkeyデバイスを削除
-     */
-    public function delete(TwoFaInterface $user, int $passkeyId): bool
-    {
-        return $user->twoFaPasskeys()
-            ->where('id', $passkeyId)
-            ->delete() > 0;
-    }
-
-    /**
      * ユーザーの全Passkeyデバイスを取得
+     * 
+     * @deprecated getCredentials()を使用してください
      */
     public function getDevices(TwoFaInterface $user)
     {
-        return $user->twoFaPasskeys()
-            ->orderBy('created_at', 'desc')
-            ->get();
-    }
-
-    /**
-     * Passkeyデバイスの登録可能数を取得
-     */
-    public function getMaxDevices(): int
-    {
-        return (int) \App\Models\MemberSetting::getValue('two_fa_passkey_max_devices', 3);
-    }
-
-    /**
-     * Passkeyデバイスの登録可能数に達しているか
-     */
-    public function hasReachedMaxDevices(TwoFaInterface $user): bool
-    {
-        $currentCount = $user->twoFaPasskeys()->count();
-        return $currentCount >= $this->getMaxDevices();
+        return $this->getCredentials($user);
     }
 
     // ========================================
@@ -461,5 +407,20 @@ class TwoFaPasskeyService
         return MembersTrustedDevice::where('member_id', $member->id)
             ->orderBy('updated_at', 'desc')
             ->get();
+    }
+
+    /**
+     * すべての信頼済みデバイスを削除
+     */
+    public function revokeAllTrustedDevices(Member $member): int
+    {
+        $count = MembersTrustedDevice::where('member_id', $member->id)->count();
+        $deleted = MembersTrustedDevice::where('member_id', $member->id)->delete();
+
+        if ($deleted) {
+            Log::info("[Passkey] すべての信頼済みデバイス削除: ユーザーID {$member->id}, 削除数: {$count}");
+        }
+
+        return $count;
     }
 }

@@ -2,18 +2,18 @@
 
 namespace App\Services;
 
-use App\Helpers\TwoFaHelper;
+use App\Services\TwoFa\TwoFaCodeService;
 use App\Mail\TwoFaCodeMail;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 
 class EmailAuthenticationService
 {
-    protected TwoFaHelper $helper;
+    protected TwoFaCodeService $codeService;
 
-    public function __construct(TwoFaHelper $helper)
+    public function __construct(TwoFaCodeService $codeService)
     {
-        $this->helper = $helper;
+        $this->codeService = $codeService;
     }
 
     /**
@@ -26,7 +26,7 @@ class EmailAuthenticationService
      */
     public function generateAndSendCode($user, string $context = 'admin', int $expireMinutes = null): string
     {
-        return $this->helper->generateAndSendCode(
+        return $this->codeService->generateAndSend(
             $user,
             TwoFaCodeMail::class,
             $expireMinutes,
@@ -43,7 +43,7 @@ class EmailAuthenticationService
      */
     public function validateCode($user, string $inputCode): bool
     {
-        return $this->helper->validateTwoFaCode($user, $inputCode);
+        return $this->codeService->validate($user, $inputCode);
     }
 
     /**
@@ -56,7 +56,7 @@ class EmailAuthenticationService
      */
     public function generateAndSendCodeWithCustomMail($user, string $mailClass, int $expireMinutes = null): string
     {
-        $code = $this->helper->generateTwoFaCode($user, $expireMinutes);
+        $code = $this->codeService->generate($user, $expireMinutes);
 
         // カスタムメールクラスでメール送信
         try {
