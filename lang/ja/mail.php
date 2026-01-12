@@ -41,15 +41,10 @@ return [
         'user_agent' => 'User-Agent:',
         'user_id' => 'ユーザーID:',
         'security_notice' => 'もしこのログインに心当たりがない場合は、すぐにパスワードを変更してください。',
-        'site_name' => 'サイト名:',
-        'site_url' => 'サイトURL:',
-        'action_button' => ':contextへアクセス',
-        'action_subcopy' => '":button_text" ボタンをクリックできない場合は、以下のURLをコピーしてWebブラウザに貼り付けてください:',
         'access_site' => 'サイトにアクセス',
         'regards' => 'よろしくお願いいたします。',
         'context' => [
             'admin' => '管理画面',
-            'mypage' => 'マイページ',
         ],
     ],
 

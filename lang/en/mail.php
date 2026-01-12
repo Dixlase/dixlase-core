@@ -41,15 +41,10 @@ return [
         'user_agent' => 'User-Agent:',
         'user_id' => 'User ID:',
         'security_notice' => 'If you do not recognize this login, please change your password immediately.',
-        'site_name' => 'Site Name:',
-        'site_url' => 'Site URL:',
-        'action_button' => 'Go to :context',
-        'action_subcopy' => 'If you\'re having trouble clicking the ":button_text" button, copy and paste the URL below into your web browser:',
         'access_site' => 'Access Site',
         'regards' => 'Best regards,',
         'context' => [
             'admin' => 'Admin Panel',
-            'mypage' => 'My Page',
         ],
     ],
 
