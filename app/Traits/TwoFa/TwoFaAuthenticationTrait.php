@@ -324,6 +324,18 @@ trait TwoFaAuthenticationTrait
             $sessionPrefix . '.email_sent'
         ]);
         
+        // ログイン通知を送信（ログイン前に送信）
+        if (method_exists($this, 'getLoginNotificationServiceClass')) {
+            try {
+                app($this->getLoginNotificationServiceClass())->handle($user, $request);
+            } catch (\Exception $e) {
+                Log::error('[2FA] Login notification failed', [
+                    'user_id' => $user->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+        
         // 先にログイン（AdminLoginControllerと同じ順序）
         Auth::guard($guardName)->login($user, $remember);
         
@@ -668,6 +680,18 @@ trait TwoFaAuthenticationTrait
                     $sessionPrefix . '.remember',
                     $sessionPrefix . '.email_sent'
                 ]);
+                
+                // ログイン通知を送信（ログイン前に送信）
+                if (method_exists($this, 'getLoginNotificationServiceClass')) {
+                    try {
+                        app($this->getLoginNotificationServiceClass())->handle($user, $request);
+                    } catch (\Exception $e) {
+                        Log::error('[2FA] Login notification failed (Passkey)', [
+                            'user_id' => $user->id,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
                 
                 // 先にログイン（AdminLoginControllerと同じ順序）
                 Auth::guard($guardName)->login($user, $remember);

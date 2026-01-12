@@ -30,10 +30,10 @@ return [
 
     // Login Notification Email
     'login_notification' => [
-        'subject_user' => '[Login Notification] :name, you have logged in',
-        'subject_system' => '[System Notification] Admin login detected',
+        'subject_user' => '[Login Notification] :name, you have logged in to :context',
+        'subject_system' => '[System Notification] Login to :context detected',
         'title' => 'Login Notification',
-        'user_message' => ':name, you have logged in.',
+        'user_message' => ':name, you have logged in to :context.',
         'system_message' => 'System Notification',
         'details_title' => 'Login Details:',
         'datetime' => 'Date & Time:',
@@ -41,8 +41,16 @@ return [
         'user_agent' => 'User-Agent:',
         'user_id' => 'User ID:',
         'security_notice' => 'If you do not recognize this login, please change your password immediately.',
+        'site_name' => 'Site Name:',
+        'site_url' => 'Site URL:',
+        'action_button' => 'Go to :context',
+        'action_subcopy' => 'If you\'re having trouble clicking the ":button_text" button, copy and paste the URL below into your web browser:',
         'access_site' => 'Access Site',
-        'regards' => 'Regards',
+        'regards' => 'Best regards,',
+        'context' => [
+            'admin' => 'Admin Panel',
+            'mypage' => 'My Page',
+        ],
     ],
 
     // Two-Factor Authentication Email
