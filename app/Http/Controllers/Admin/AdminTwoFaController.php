@@ -22,55 +22,19 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Admin\AdminController;
-use App\Models\Member;
 use App\Models\MemberSetting;
 use App\Services\TwoFa\TwoFaService;
-use App\Traits\TwoFa\TwoFaAuthenticationTrait;
-use App\Repositories\BaseSettingRepository;
 
-class AdminTwoFaController extends AdminController
+class AdminTwoFaController extends AdminAuthController
 {
-    use TwoFaAuthenticationTrait;
+    use \App\Traits\TwoFa\TwoFaAuthenticationTrait;
 
-    protected $baseSettingRepository;
-
-    public function __construct(BaseSettingRepository $baseSettingRepository)
-    {
-        parent::__construct();
-        $this->baseSettingRepository = $baseSettingRepository;
-    }
-    
     /**
      * 設定モデルクラス名を取得
      */
     protected function getSettingModelClass(): string
     {
         return MemberSetting::class;
-    }
-
-    /**
-     * ログインルート名を取得
-     */
-    protected function getLoginRoute(): string
-    {
-        return 'admin.login';
-    }
-
-    /**
-     * ダッシュボードのルート名を取得
-     */
-    protected function getDashboardRoute(): string
-    {
-        return 'admin.dashboard';
-    }
-
-    /**
-     * セッションキーのプレフィックスを取得
-     */
-    protected function getSessionPrefix(): string
-    {
-        return 'login';
     }
 
     /**
@@ -82,37 +46,5 @@ class AdminTwoFaController extends AdminController
             'settingModelClass' => MemberSetting::class,
             'context' => 'admin'
         ]);
-    }
-
-    /**
-     * ユーザーモデルクラス名を取得
-     */
-    protected function getUserModelClass(): string
-    {
-        return Member::class;
-    }
-
-    /**
-     * 認証ガード名を取得
-     */
-    protected function getGuardName(): string
-    {
-        return config('auth.defaults.guard', 'member');
-    }
-
-    /**
-     * コンテキストを取得
-     */
-    protected function getContext(): string
-    {
-        return 'admin';
-    }
-
-    /**
-     * 二段階認証ルートのプレフィックスを取得
-     */
-    protected function getTwoFaRoutePrefix(): string
-    {
-        return $this->baseSettingRepository->get('admin_url', 'admin');
     }
 }

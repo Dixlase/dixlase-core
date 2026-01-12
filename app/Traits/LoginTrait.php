@@ -55,38 +55,9 @@ trait LoginTrait
     abstract protected function getContext(): string;
 
     /**
-     * 二段階認証ルートのプレフィックスを取得（継承先で実装）
+     * 二段階認証ルートのプレフィックスを取得
      * 
      * @return string ルートプレフィックス（例: 'admin', 'users-plugin::mypage'）
      */
     abstract protected function getTwoFaRoutePrefix(): string;
-
-    /**
-     * メール認証設定を取得（継承先で実装）
-     * 
-     * @return array メール認証設定の配列
-     * 
-     * 設定項目:
-     * - verification_completed_notification: ユーザーへの認証完了通知クラス（オプション）
-     * - admin_verified_notification: 管理者への認証完了通知クラス（オプション）
-     * - admin_email_setting_key: 管理者メールアドレスの設定キー（オプション）
-     * - notification_email_setting_key: 通知メールアドレスの設定キー（オプション）
-     * - success_message_key: 認証成功メッセージの翻訳キー（必須）
-     * - email_change_success_key: メールアドレス変更成功メッセージの翻訳キー（必須）
-     * - setting_model_class: 設定モデルクラス（必須）
-     */
-    abstract protected function getEmailVerificationConfig(): array;
-
-    /**
-     * ログイン後にメール認証が待機中の場合、認証処理を実行
-     * 
-     * @param mixed $user ユーザーモデル（Member または DixlaseUsersUser）
-     * @param Request $request リクエストオブジェクト
-     * @return void
-     */
-    protected function processEmailVerificationIfPending($user, Request $request): void
-    {
-        $verificationService = app(\App\Services\AccountVerificationService::class);
-        $verificationService->processIfPending($user, $this->getEmailVerificationConfig());
-    }
 }

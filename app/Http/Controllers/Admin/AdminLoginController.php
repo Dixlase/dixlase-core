@@ -48,9 +48,8 @@ use Illuminate\Support\Facades\Log;
 
 
 
-class AdminLoginController extends AdminController
+class AdminLoginController extends AdminAuthController
 {
-    use \App\Traits\LoginTrait;
     /**
      * Display the login view.
      */
@@ -272,26 +271,10 @@ class AdminLoginController extends AdminController
             // ログイン後にメール認証トークンをチェック
             $this->processEmailVerificationIfPending($member, $request);
             
-            return redirect()->intended(route('admin.dashboard'));
+            return redirect()->route('admin.dashboard');
         }
     }
     
-    /**
-     * メール認証設定を取得
-     */
-    protected function getEmailVerificationConfig(): array
-    {
-        return [
-            'verification_completed_notification' => MemberVerificationCompletedNotification::class,
-            'admin_verified_notification' => AdminMemberVerifiedNotification::class,
-            'admin_email_setting_key' => 'system_admin_email',
-            'notification_email_setting_key' => 'notification_email',
-            'success_message_key' => 'admin/profile.account_verification_success',
-            'email_change_success_key' => 'admin/profile.email_verification_success',
-            'setting_model_class' => BaseSetting::class,
-        ];
-    }
-
     /**
      * Destroy an authenticated session.
      */
