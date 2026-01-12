@@ -3,6 +3,7 @@
 namespace App\Traits\TwoFa;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Models\Member;
 use App\Models\MemberSetting;
@@ -216,102 +217,11 @@ trait TwoFaAuthenticationTrait
     }
 
     /**
-     * メール認証コードを再送信
-     */
-    protected function resendEmailCode(Request $request)
-    {
-        $sessionKey = $this->getSessionPrefix() . '.id';
-        
-        if (!session()->has($sessionKey)) {
-            return response()->json([
-                'success' => false,
-                'message' => __('auth.failed')
-            ], 401);
-        }
-
-        $member = Member::find(session($sessionKey));
-
-        if (!$member) {
-            return response()->json([
-                'success' => false,
-                'message' => __('auth.failed')
-            ], 401);
-        }
-
-        $twoFactor = $this->getTwoFaService();
-        $twoFactor->generate($member, TwoFaMethod::EMAIL->value);
-
-        return response()->json([
-            'success' => true,
-            'message' => __('two_fa.email.resend_success')
-        ]);
-    }
-
-    /**
-     * Passkey認証チャレンジを取得
-     */
-    protected function getPasskeyChallenge(Request $request)
-    {
-        $sessionKey = $this->getSessionPrefix() . '.id';
-        
-        if (!session()->has($sessionKey)) {
-            return response()->json([
-                'success' => false,
-                'message' => __('auth.failed')
-            ], 401);
-        }
-
-        $memberId = session($sessionKey);
-        $member = Member::find($memberId);
-
-        if (!$member) {
-            return response()->json([
-                'success' => false,
-                'message' => __('auth.failed')
-            ], 401);
-        }
-
-        try {
-            $twoFaPasskeyService = new TwoFaPasskeyService();
-            $challenge = $twoFaPasskeyService->generateChallenge($member);
-
-            return response()->json([
-                'success' => true,
-                'challenge' => $challenge,
-            ]);
-        } catch (\Exception $e) {
-            Log::error('[Passkey Challenge] Failed to generate challenge', [
-                'member_id' => $member->id,
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => __('two_fa.passkey.challenge_failed'),
-            ], 500);
-        }
-    }
-
-    /**
-     * 認証方法に応じたルートを取得
-     */
-    protected function getTwoFaMethodRoute(int $method): string
-    {
-        $prefix = $this->getRoutePrefix();
-        
-        return match($method) {
-            TwoFaMethod::EMAIL->value => route($prefix . '.two-fa.email.show'),
-            TwoFaMethod::PASSKEY->value => route($prefix . '.two-fa.passkey.show'),
-            default => route($prefix . '.two-fa.email.show'),
-        };
-    }
-
-    /**
-     * 認証検証ルートを取得
+     * 検証ルートを取得
      */
     protected function getTwoFaVerifyRoute(string $method): string
     {
-        $prefix = $this->getRoutePrefix();
+        $prefix = $this->getTwoFaRoutePrefix();
         return route($prefix . '.two-fa.' . $method . '.verify');
     }
 
@@ -320,7 +230,7 @@ trait TwoFaAuthenticationTrait
      */
     protected function getTwoFaResendRoute(string $method): string
     {
-        $prefix = $this->getRoutePrefix();
+        $prefix = $this->getTwoFaRoutePrefix();
         return route($prefix . '.two-fa.' . $method . '.resend');
     }
 
@@ -329,16 +239,8 @@ trait TwoFaAuthenticationTrait
      */
     protected function getTwoFaChallengeRoute(string $method): string
     {
-        $prefix = $this->getRoutePrefix();
+        $prefix = $this->getTwoFaRoutePrefix();
         return route($prefix . '.two-fa.' . $method . '.challenge');
-    }
-
-    /**
-     * ルートプレフィックスを取得（デフォルト実装）
-     */
-    protected function getRoutePrefix(): string
-    {
-        return 'admin';
     }
 
     /**
@@ -389,18 +291,6 @@ trait TwoFaAuthenticationTrait
     abstract protected function getTwoFaRoutePrefix(): string;
 
     /**
-     * 設定モデルクラス名を取得（継承先で実装）
-     * @return string 例: MemberSetting::class or DixlaseUsersUserSetting::class
-     */
-    abstract protected function getSettingModelClass(): string;
-
-    /**
-     * ログインルート名を取得（継承先で実装）
-     * @return string 例: 'admin.login' or 'users-plugin::mypage.login'
-     */
-    abstract protected function getLoginRoute(): string;
-
-    /**
      * セッションからユーザーを取得
      */
     protected function getUserFromSession()
@@ -440,16 +330,40 @@ trait TwoFaAuthenticationTrait
     {
         $sessionPrefix = $this->getSessionPrefix();
         $remember = session($sessionPrefix . '.remember', false);
+        $guardName = $this->getGuardName();
+        $dashboardRoute = $this->getDashboardRoute();
         
-        Auth::guard($this->getGuardName())->login($user, $remember);
+        Log::info('[2FA] Starting completeAuthentication', [
+            'user_id' => $user->id,
+            'guard' => $guardName,
+            'remember' => $remember,
+            'dashboard_route' => $dashboardRoute,
+        ]);
         
+        // セッションクリーンアップ
         session()->forget([
             $sessionPrefix . '.id',
-            $sessionPrefix . '.remember'
+            $sessionPrefix . '.remember',
+            $sessionPrefix . '.email_sent'
         ]);
-        $request->session()->regenerate();
         
-        return redirect()->route($this->getDashboardRoute());
+        // 先にログイン（AdminLoginControllerと同じ順序）
+        Auth::guard($guardName)->login($user, $remember);
+        
+        Log::info('[2FA] Auth::login completed', [
+            'user_id' => $user->id,
+            'is_authenticated' => Auth::guard($guardName)->check(),
+            'authenticated_user_id' => Auth::guard($guardName)->id(),
+        ]);
+        
+        // ログイン後にセッションを再生成（AdminLoginControllerと同じ）
+        $request->session()->regenerate(true);
+        
+        Log::info('[2FA] Session regenerated, redirecting to dashboard', [
+            'dashboard_route' => $dashboardRoute,
+        ]);
+        
+        return redirect()->route($dashboardRoute);
     }
 
     /**
@@ -493,20 +407,6 @@ trait TwoFaAuthenticationTrait
     }
 
     /**
-     * 認証方法に応じたルートを取得
-     */
-    protected function getTwoFaMethodRoute(int $method): string
-    {
-        $prefix = $this->getTwoFaRoutePrefix();
-        
-        return match($method) {
-            \App\Enums\TwoFaMethod::EMAIL->value => route("{$prefix}.two-fa.email.show"),
-            \App\Enums\TwoFaMethod::PASSKEY->value => route("{$prefix}.two-fa.passkey.show"),
-            default => route("{$prefix}.two-fa.email.show"),
-        };
-    }
-
-    /**
      * 二段階認証設定値を取得
      */
     protected function getTwoFaSettings(): array
@@ -525,7 +425,7 @@ trait TwoFaAuthenticationTrait
     protected function verifyEmailCode($user, string $code): bool
     {
         $twoFa = $this->getTwoFaService();
-        return $twoFa->validate($user, $code);
+        return $twoFa->validate($user, $code, \App\Enums\TwoFaMethod::EMAIL->value);
     }
 
     /**
@@ -534,7 +434,11 @@ trait TwoFaAuthenticationTrait
     protected function resendEmailCode($user): void
     {
         $twoFa = $this->getTwoFaService();
-        $twoFa->generate($user);
+        $twoFa->generate($user, \App\Enums\TwoFaMethod::EMAIL->value);
+        
+        // セッションのメール送信済みフラグをクリア（次回showEmailChallengeで再送信可能にする）
+        $sessionKey = $this->getSessionPrefix() . '.email_sent';
+        session()->forget($sessionKey);
     }
 
     /**
@@ -547,13 +451,23 @@ trait TwoFaAuthenticationTrait
         $enabledMethods = $systemSettings['enabled_methods'] ?? [\App\Enums\TwoFaMethod::EMAIL->value];
 
         $availableMethods = [];
+        $prefix = $this->getTwoFaRoutePrefix();
+        
         foreach ($enabledMethods as $method) {
             if ($method !== $currentMethod) {
                 $methodEnum = \App\Enums\TwoFaMethod::from($method);
+                
+                // ルート名を生成
+                $routeName = match($method) {
+                    \App\Enums\TwoFaMethod::EMAIL->value => "{$prefix}.two-fa.email.show",
+                    \App\Enums\TwoFaMethod::PASSKEY->value => "{$prefix}.two-fa.passkey.show",
+                    default => "{$prefix}.two-fa.email.show",
+                };
+                
                 $availableMethods[] = [
                     'value' => $method,
                     'label' => $methodEnum->label(),
-                    'url' => $this->getTwoFaMethodRoute($method),
+                    'url' => route($routeName),
                 ];
             }
         }
@@ -569,6 +483,26 @@ trait TwoFaAuthenticationTrait
         $user = $this->checkSessionAndGetUser();
         if ($user instanceof \Illuminate\Http\RedirectResponse) {
             return $user;
+        }
+
+        // セッションにメール送信済みフラグがない場合のみメール送信
+        $sessionKey = $this->getSessionPrefix() . '.email_sent';
+        if (!session()->has($sessionKey)) {
+            $twoFa = $this->getTwoFaService();
+            try {
+                $twoFa->generate($user, \App\Enums\TwoFaMethod::EMAIL->value);
+                session([$sessionKey => true]);
+                \Illuminate\Support\Facades\Log::info('[2FA] Email code generated and sent', [
+                    'user_id' => $user->id,
+                    'context' => $this->getContext(),
+                ]);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('[2FA] Failed to generate email code', [
+                    'user_id' => $user->id,
+                    'error' => $e->getMessage(),
+                    'context' => $this->getContext(),
+                ]);
+            }
         }
 
         $currentMethod = \App\Enums\TwoFaMethod::EMAIL->value;

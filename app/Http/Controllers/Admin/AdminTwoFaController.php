@@ -119,10 +119,8 @@ class AdminTwoFaController extends AdminController
     /**
      * 認証方法に応じたルートを取得
      */
-    protected function getTwoFaMethodRoute(int $method): string
+    public static function getTwoFaMethodRoute(int $method, string $prefix = 'admin'): string
     {
-        $prefix = $this->getTwoFaRoutePrefix();
-        
         return match($method) {
             \App\Enums\TwoFaMethod::EMAIL->value => "{$prefix}.two-fa.email.show",
             \App\Enums\TwoFaMethod::PASSKEY->value => "{$prefix}.two-fa.passkey.show",
