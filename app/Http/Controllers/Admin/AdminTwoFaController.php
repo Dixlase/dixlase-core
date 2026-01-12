@@ -25,7 +25,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\MemberSetting;
 use App\Services\TwoFa\TwoFaService;
 
-class AdminTwoFaController extends AdminAuthController
+class AdminTwoFaController extends AdminLoginController
 {
     use \App\Traits\TwoFa\TwoFaAuthenticationTrait;
 
