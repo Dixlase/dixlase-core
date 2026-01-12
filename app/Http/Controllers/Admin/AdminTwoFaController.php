@@ -97,7 +97,7 @@ class AdminTwoFaController extends AdminController
      */
     protected function getGuardName(): string
     {
-        return 'web';
+        return config('auth.defaults.guard', 'member');
     }
 
     /**
@@ -114,17 +114,5 @@ class AdminTwoFaController extends AdminController
     protected function getTwoFaRoutePrefix(): string
     {
         return $this->baseSettingRepository->get('admin_url', 'admin');
-    }
-
-    /**
-     * 認証方法に応じたルートを取得
-     */
-    public static function getTwoFaMethodRoute(int $method, string $prefix = 'admin'): string
-    {
-        return match($method) {
-            \App\Enums\TwoFaMethod::EMAIL->value => "{$prefix}.two-fa.email.show",
-            \App\Enums\TwoFaMethod::PASSKEY->value => "{$prefix}.two-fa.passkey.show",
-            default => "{$prefix}.two-fa.email.show",
-        };
     }
 }

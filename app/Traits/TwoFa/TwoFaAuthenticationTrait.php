@@ -12,6 +12,7 @@ use App\Enums\TwoFaMethod;
 use App\Helpers\TwoFaHelper;
 use App\Services\TwoFa\TwoFaPasskeyService;
 use App\Services\TwoFa\TwoFaAttemptService;
+use App\Traits\LoginTrait;
 
 /**
  * 二段階認証のフロー制御機能を提供するトレイト
@@ -20,17 +21,14 @@ use App\Services\TwoFa\TwoFaAttemptService;
  * コントローラーで使用する高レベルの認証フロー機能を提供します。
  * 
  * 使用するコントローラーは以下の抽象メソッドを実装する必要があります：
- * - getSettingModelClass(): 設定モデルクラス名を返す
- * - getLoginRoute(): ログイン画面のルート名を返す
- * - getDashboardRoute(): ダッシュボードのルート名を返す
- * - getSessionPrefix(): セッションキーのプレフィックスを返す
  * - getTwoFaService(): 二段階認証サービスのインスタンスを返す
- * - getUserModelClass(): ユーザーモデルクラス名を返す
- * - getGuardName(): 認証ガード名を返す
- * - getContext(): コンテキスト（'admin' or 'user'）を返す
+ * 
+ * その他の設定メソッドはLoginTraitで定義されています。
  */
 trait TwoFaAuthenticationTrait
 {
+    use LoginTrait;
+
     /**
      * メール認証フォームを表示
      */
@@ -249,46 +247,25 @@ trait TwoFaAuthenticationTrait
     abstract protected function getSettingModelClass(): string;
 
     /**
-     * ログイン画面のルート名を取得（継承先で実装）
-     */
-    abstract protected function getLoginRoute(): string;
-
-    /**
-     * ダッシュボードのルート名を取得（継承先で実装）
-     */
-    abstract protected function getDashboardRoute(): string;
-
-    /**
-     * セッションキーのプレフィックスを取得（継承先で実装）
-     */
-    abstract protected function getSessionPrefix(): string;
-
-    /**
      * 二段階認証サービスのインスタンスを取得（継承先で実装）
      */
     abstract protected function getTwoFaService();
 
     /**
-     * ユーザーモデルクラス名を取得（継承先で実装）
+     * 認証方法に応じたルート名を取得
+     * @param int $method 認証方法（TwoFaMethod enum値）
+     * @return string ルート名（例: 'admin.two-fa.email.show'）
      */
-    abstract protected function getUserModelClass(): string;
-
-    /**
-     * 認証ガード名を取得（継承先で実装）
-     */
-    abstract protected function getGuardName(): string;
-
-    /**
-     * コンテキストを取得（継承先で実装）
-     * @return string 'admin' or 'user'
-     */
-    abstract protected function getContext(): string;
-
-    /**
-     * 二段階認証ルートのプレフィックスを取得（継承先で実装）
-     * @return string 例: 'admin' or 'users-plugin::mypage'
-     */
-    abstract protected function getTwoFaRoutePrefix(): string;
+    protected function getTwoFaMethodRoute(int $method): string
+    {
+        $prefix = $this->getTwoFaRoutePrefix();
+        
+        return match($method) {
+            \App\Enums\TwoFaMethod::EMAIL->value => "{$prefix}.two-fa.email.show",
+            \App\Enums\TwoFaMethod::PASSKEY->value => "{$prefix}.two-fa.passkey.show",
+            default => "{$prefix}.two-fa.email.show",
+        };
+    }
 
     /**
      * セッションからユーザーを取得
@@ -666,17 +643,54 @@ trait TwoFaAuthenticationTrait
             $credentialData = $request->input('response');
 
             if ($this->verifyPasskeyCredential($user, $credentialData)) {
-                Log::info('[Passkey Auth] Authentication success', [
+                Log::info('[2FA] Passkey authentication success', [
                     'user_id' => $user->id,
                     'context' => $this->getContext()
                 ]);
 
+                // completeAuthentication()を呼び出してログイン処理を実行
+                // ただし、JSONレスポンスが必要なので、ここでは手動でログイン処理を行う
+                $sessionPrefix = $this->getSessionPrefix();
+                $remember = session($sessionPrefix . '.remember', false);
+                $guardName = $this->getGuardName();
+                $dashboardRoute = $this->getDashboardRoute();
+                
+                Log::info('[2FA] Starting Passkey completeAuthentication', [
+                    'user_id' => $user->id,
+                    'guard' => $guardName,
+                    'remember' => $remember,
+                    'dashboard_route' => $dashboardRoute,
+                ]);
+                
+                // セッションクリーンアップ
+                session()->forget([
+                    $sessionPrefix . '.id',
+                    $sessionPrefix . '.remember',
+                    $sessionPrefix . '.email_sent'
+                ]);
+                
+                // 先にログイン（AdminLoginControllerと同じ順序）
+                Auth::guard($guardName)->login($user, $remember);
+                
+                Log::info('[2FA] Auth::login completed (Passkey)', [
+                    'user_id' => $user->id,
+                    'is_authenticated' => Auth::guard($guardName)->check(),
+                    'authenticated_user_id' => Auth::guard($guardName)->id(),
+                ]);
+                
+                // ログイン後にセッションを再生成（AdminLoginControllerと同じ）
+                $request->session()->regenerate(true);
+                
+                Log::info('[2FA] Session regenerated (Passkey), returning JSON redirect', [
+                    'dashboard_route' => $dashboardRoute,
+                ]);
+
                 return response()->json([
                     'success' => true,
-                    'redirect' => route($this->getDashboardRoute())
+                    'redirect' => route($dashboardRoute)
                 ]);
             } else {
-                Log::warning('[Passkey Auth] Authentication failed', [
+                Log::warning('[2FA] Passkey authentication failed', [
                     'user_id' => $user->id,
                     'context' => $this->getContext(),
                 ]);
@@ -687,7 +701,7 @@ trait TwoFaAuthenticationTrait
                 ], 401);
             }
         } catch (\Exception $e) {
-            Log::error('[Passkey Auth] Verification error', [
+            Log::error('[2FA] Passkey verification error', [
                 'user_id' => $user->id,
                 'context' => $this->getContext(),
                 'error' => $e->getMessage()
@@ -716,7 +730,7 @@ trait TwoFaAuthenticationTrait
             'availableMethods' => $availableMethods,
             'context' => $this->getContext(),
             'loginRoute' => route($this->getLoginRoute()),
-            'action' => route($this->getTwoFaRoutePrefix() . '.two-fa.recovery-code.verify'),
+            'action' => route($this->getTwoFaRoutePrefix() . '.two-fa.recovery-code.confirm'),
         ]);
     }
 

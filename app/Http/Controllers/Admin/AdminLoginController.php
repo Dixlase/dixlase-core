@@ -50,6 +50,7 @@ use Illuminate\Support\Facades\Log;
 
 class AdminLoginController extends AdminController
 {
+    use \App\Traits\LoginTrait;
     /**
      * Display the login view.
      */
@@ -248,7 +249,7 @@ class AdminLoginController extends AdminController
 
             // デフォルト認証方法に応じて適切なルートにリダイレクト
             $adminUrl = app(\App\Repositories\BaseSettingRepository::class)->get('admin_url', 'admin');
-            $redirectRoute = AdminTwoFaController::getTwoFaMethodRoute($effectiveMethod, $adminUrl);
+            $redirectRoute = \App\Helpers\TwoFaHelper::getTwoFaMethodRoute($adminUrl, $effectiveMethod);
             return redirect()->route($redirectRoute);
         } else {
             // メールサーバー未テスト時はログに記録
@@ -276,13 +277,11 @@ class AdminLoginController extends AdminController
     }
     
     /**
-     * ログイン後にメール認証が待機中の場合、認証処理を実行
+     * メール認証設定を取得
      */
-    protected function processEmailVerificationIfPending($member, $request)
+    protected function getEmailVerificationConfig(): array
     {
-        $verificationService = app(\App\Services\AccountVerificationService::class);
-        
-        $verificationService->processIfPending($member, [
+        return [
             'verification_completed_notification' => MemberVerificationCompletedNotification::class,
             'admin_verified_notification' => AdminMemberVerifiedNotification::class,
             'admin_email_setting_key' => 'system_admin_email',
@@ -290,7 +289,7 @@ class AdminLoginController extends AdminController
             'success_message_key' => 'admin/profile.account_verification_success',
             'email_change_success_key' => 'admin/profile.email_verification_success',
             'setting_model_class' => BaseSetting::class,
-        ]);
+        ];
     }
 
     /**
