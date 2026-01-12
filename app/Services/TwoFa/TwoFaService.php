@@ -105,17 +105,6 @@ class TwoFaService
     }
 
     /**
-     * 二段階認証が必要かどうかを判定
-     *
-     * @param mixed $user ユーザーモデル
-     * @return bool
-     */
-    public function isRequired($user): bool
-    {
-        return $this->helper->isTwoFaEnabled($user, $this->settingModelClass);
-    }
-
-    /**
      * システム設定を取得
      *
      * @return array

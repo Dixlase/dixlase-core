@@ -4,8 +4,6 @@ namespace App\Traits\TwoFa;
 
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Hash;
-use App\Models\MemberTwoFaToken;
 use App\Enums\AuthenticationMode;
 use App\Enums\TwoFaMethod;
 use App\Traits\DeviceDetectionTrait;
@@ -30,26 +28,8 @@ trait TwoFaUtilityTrait
      */
     public function generateTwoFaCode($user, int $expireMinutes = null): string
     {
-        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        
-        // デフォルトの有効期限設定（メンバー設定 > コンフィグ）
-        if ($expireMinutes === null) {
-            $expireMinutes = (int) \App\Models\MemberSetting::getValue('two_fa_expire_minutes', config('two-fa.code_expiration', 5));
-        }
-
-        // 古いコードを削除
-        MemberTwoFaToken::where('member_id', $user->id)->delete();
-
-        // 新しいコードを保存
-        MemberTwoFaToken::create([
-            'member_id' => $user->id,
-            'code' => Hash::make($code),
-            'expires_at' => now()->addMinutes($expireMinutes),
-        ]);
-
-        Log::info("[2FA] コード生成: ユーザーID {$user->id}");
-
-        return $code;
+        $codeService = app(\App\Services\TwoFa\TwoFaCodeService::class);
+        return $codeService->generate($user, $expireMinutes);
     }
 
     /**
@@ -61,16 +41,8 @@ trait TwoFaUtilityTrait
      */
     public function validateTwoFaCode($user, string $inputCode): bool
     {
-        $token = MemberTwoFaToken::where('member_id', $user->id)->latest()->first();
-
-        if (!$token || now()->greaterThan($token->expires_at) || !Hash::check($inputCode, $token->code)) {
-            return false;
-        }
-
-        // 使い切りコードなので削除
-        $token->delete();
-
-        return true;
+        $codeService = app(\App\Services\TwoFa\TwoFaCodeService::class);
+        return $codeService->validate($user, $inputCode);
     }
 
     /**

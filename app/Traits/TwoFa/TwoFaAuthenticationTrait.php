@@ -348,7 +348,7 @@ trait TwoFaAuthenticationTrait
      */
     protected function generatePasskeyChallenge($user): array
     {
-        $twoFaPasskeyService = new \App\Services\TwoFa\TwoFaPasskeyService();
+        $twoFaPasskeyService = app(\App\Services\TwoFa\TwoFaPasskeyService::class);
         
         // Passkey認証が利用可能かチェック
         if (!$twoFaPasskeyService->isAvailable()) {

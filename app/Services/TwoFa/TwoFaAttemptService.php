@@ -8,6 +8,13 @@ use Carbon\Carbon;
 
 class TwoFaAttemptService
 {
+    protected string $settingModelClass;
+
+    public function __construct(string $settingModelClass = \App\Models\MemberSetting::class)
+    {
+        $this->settingModelClass = $settingModelClass;
+    }
+
     /**
      * 2FA試行を記録
      */
@@ -137,7 +144,7 @@ class TwoFaAttemptService
      */
     protected function getMaxAttempts(): int
     {
-        return (int) \App\Models\MemberSetting::getValue('two_fa_max_attempts', 5);
+        return (int) $this->settingModelClass::getValue('two_fa_max_attempts', 5);
     }
 
     /**
@@ -145,7 +152,7 @@ class TwoFaAttemptService
      */
     protected function getAttemptWindow(): int
     {
-        return (int) \App\Models\MemberSetting::getValue('two_fa_attempt_window', 15);
+        return (int) $this->settingModelClass::getValue('two_fa_attempt_window', 15);
     }
 
     /**
@@ -153,7 +160,7 @@ class TwoFaAttemptService
      */
     protected function getLockoutDuration(): int
     {
-        return (int) \App\Models\MemberSetting::getValue('two_fa_lockout_duration', 30);
+        return (int) $this->settingModelClass::getValue('two_fa_lockout_duration', 30);
     }
 
     /**
@@ -161,6 +168,6 @@ class TwoFaAttemptService
      */
     public function isLockoutNotificationEnabled(): bool
     {
-        return (bool) \App\Models\MemberSetting::getValue('two_fa_lockout_notification_enabled', true);
+        return (bool) $this->settingModelClass::getValue('two_fa_lockout_notification_enabled', true);
     }
 }
