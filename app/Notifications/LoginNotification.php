@@ -171,25 +171,7 @@ class LoginNotification extends Notification
      */
     protected function getContextKey(): string
     {
-        return match ($this->context) {
-            'admin' => 'mail.login_notification.context.admin',
-            'mypage' => 'mail.login_notification.context.mypage',
-            default => 'mail.login_notification.context.admin',
-        };
-    }
-
-    /**
-     * Get the action URL for the notification.
-     *
-     * @return string|null
-     */
-    protected function getActionUrl(): ?string
-    {
-        return match ($this->context) {
-            'admin' => route('admin.dashboard'),
-            'mypage' => route('users-plugin::mypage.dashboard'),
-            default => null,
-        };
+        return 'mail.login_notification.context.admin';
     }
 
     /**
