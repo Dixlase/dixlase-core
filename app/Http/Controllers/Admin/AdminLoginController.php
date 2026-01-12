@@ -23,6 +23,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\AdminTwoFaController;
 use App\Http\Requests\Admin\AdminLoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -43,6 +44,7 @@ use App\Models\BaseSetting;
 use App\Notifications\MemberVerificationCompletedNotification;
 use App\Notifications\AdminMemberVerifiedNotification;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Log;
 
 
 
@@ -245,8 +247,9 @@ class AdminLoginController extends AdminController
             }
 
             // デフォルト認証方法に応じて適切なルートにリダイレクト
-            $redirectRoute = $this->getTwoFaMethodRoute($effectiveMethod);
-            return redirect($redirectRoute);
+            $adminUrl = app(\App\Repositories\BaseSettingRepository::class)->get('admin_url', 'admin');
+            $redirectRoute = AdminTwoFaController::getTwoFaMethodRoute($effectiveMethod, $adminUrl);
+            return redirect()->route($redirectRoute);
         } else {
             // メールサーバー未テスト時はログに記録
             if ($twoFactor->has($member) && !$mailServerTested) {
