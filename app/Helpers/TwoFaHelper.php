@@ -650,4 +650,20 @@ class TwoFaHelper
             ];
         }
     }
+
+    /**
+     * 認証方法に応じたルート名を取得
+     *
+     * @param string $prefix ルートプレフィックス（例: 'admin', 'users-plugin::mypage'）
+     * @param int $method 認証方法（TwoFaMethod enum値）
+     * @return string ルート名（例: 'admin.two-fa.email.show'）
+     */
+    public static function getTwoFaMethodRoute(string $prefix, int $method): string
+    {
+        return match($method) {
+            TwoFaMethod::EMAIL->value => "{$prefix}.two-fa.email.show",
+            TwoFaMethod::PASSKEY->value => "{$prefix}.two-fa.passkey.show",
+            default => "{$prefix}.two-fa.email.show",
+        };
+    }
 }
