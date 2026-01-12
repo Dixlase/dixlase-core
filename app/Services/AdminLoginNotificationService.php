@@ -2,40 +2,48 @@
 
 namespace App\Services;
 
-use App\Models\Member;
 use App\Models\MemberSetting;
 use App\Notifications\AdminLoginNotification;
-use Illuminate\Http\Request;
+use App\Traits\LoginNotificationTrait;
 
 /**
  * 管理画面ログイン通知サービス
  * 
- * LoginNotificationServiceを使用してメンバーのログイン通知を処理
+ * LoginNotificationTraitを使用してメンバーのログイン通知を処理
  */
 class AdminLoginNotificationService
 {
-    protected LoginNotificationService $loginNotificationService;
+    use LoginNotificationTrait;
 
-    public function __construct()
+    /**
+     * グローバル設定のキー名を取得
+     */
+    protected function getGlobalSettingKey(): string
     {
-        $this->loginNotificationService = new LoginNotificationService();
+        return 'login_notification_mode';
     }
 
     /**
-     * メンバーのログイン通知を処理
-     * 
-     * @param Member $member メンバーモデル
-     * @param Request $request リクエスト
-     * @return void
+     * 設定値を取得する関数を取得
      */
-    public function handle(Member $member, Request $request): void
+    protected function getSettingGetter(): callable
     {
-        $this->loginNotificationService->handle(
-            $member,
-            $request,
-            fn() => MemberSetting::getValue('login_notification_mode', '0'),
-            AdminLoginNotification::class,
-            'Admin login notification'
-        );
+        return fn() => MemberSetting::getValue($this->getGlobalSettingKey(), '0');
+    }
+
+    /**
+     * 通知クラス名を取得
+     */
+    protected function getNotificationClass(): string
+    {
+        return AdminLoginNotification::class;
+    }
+
+    /**
+     * ログコンテキスト名を取得
+     */
+    protected function getLogContext(): string
+    {
+        return 'Admin login notification';
     }
 }
