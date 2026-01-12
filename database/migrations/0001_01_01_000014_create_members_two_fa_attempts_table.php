@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('attempt_type', 20); // 'email', 'passkey', 'recovery_code'
             $table->string('ip_address', 45);
             $table->text('user_agent')->nullable();
-            $table->boolean('success')->default(false);
+            $table->boolean('successful')->default(false);
             $table->timestamp('created_at');
             
             // インデックス

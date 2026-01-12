@@ -18,11 +18,11 @@ class TwoFaAttemptService
     /**
      * 2FA試行を記録
      */
-    public function recordAttempt(TwoFaInterface $user, string $attemptType, bool $success): void
+    public function recordAttempt(TwoFaInterface $user, string $attemptType, bool $successful): void
     {
         $user->twoFaAttempts()->create([
             'attempt_type' => $attemptType,
-            'success' => $success,
+            'successful' => $successful,
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
             'created_at' => now(),
@@ -31,7 +31,7 @@ class TwoFaAttemptService
         Log::info('[2FA Attempt] Recorded', [
             'user_id' => $user->getId(),
             'attempt_type' => $attemptType,
-            'success' => $success,
+            'successful' => $successful,
         ]);
     }
 
@@ -76,7 +76,7 @@ class TwoFaAttemptService
         $timeWindow = $this->getAttemptWindow();
 
         $failedAttempts = $user->twoFaAttempts()
-            ->where('success', false)
+            ->where('successful', false)
             ->where('created_at', '>=', Carbon::now()->subMinutes($timeWindow))
             ->count();
 
@@ -97,11 +97,11 @@ class TwoFaAttemptService
         $maxAttempts = $this->getMaxAttempts();
         $timeWindow = $this->getAttemptWindow();
         $failedAttempts = $user->twoFaAttempts()
-            ->where('success', false)
+            ->where('successful', false)
             ->where('created_at', '>=', Carbon::now()->subMinutes($timeWindow))
             ->count();
 
-        return max(0, $maxAttempts - $failedAttempts);
+        return $maxAttempts - $failedAttempts;
     }
 
     /**
@@ -114,7 +114,7 @@ class TwoFaAttemptService
 
         // 時間枠内の失敗試行を取得
         $attempts = $user->twoFaAttempts()
-            ->where('success', false)
+            ->where('successful', false)
             ->where('created_at', '>=', Carbon::now()->subMinutes($timeWindow))
             ->orderBy('created_at', 'desc')
             ->take($maxAttempts)
