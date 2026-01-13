@@ -359,7 +359,7 @@ class AdminMemberController extends AdminLoggedInController
         $this->viewParams['twoFaMode'] = AuthenticationMode::from($this->viewParams['forceTwoFa']);
         $this->viewParams['twoFaUseProfileSettingValue'] = AuthenticationMode::UseProfileSetting->value;
         $this->viewParams['loginNotificationUseProfileSettingValue'] = AuthenticationMode::UseProfileSetting->value;
-        $this->viewParams['isMailServerTested'] = $this->isMailServerTested();
+        $this->viewParams['isMailServerTested'] = MailServerValidatorService::isMailServerTested();
     }
 
     public function forceLogout(Member $member)
