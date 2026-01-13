@@ -260,6 +260,8 @@ trait LoginTrait
             // メール認証の場合のみコード生成
             if ($effectiveMethod === \App\Enums\TwoFaMethod::EMAIL->value) {
                 $twoFactor->generate($user);
+                // セッションにメール送信済みフラグを設定（重複送信を防ぐ）
+                $request->session()->put($this->getSessionPrefix() . '.email_sent', true);
             }
 
             // デフォルト認証方法に応じて適切なルートにリダイレクト

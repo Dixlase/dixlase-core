@@ -47,6 +47,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     ];
     $iconClass = $iconClasses[$icon_type] ?? $iconClasses['warning'];
     
+    // icon_typeに応じて確認ボタンのvariantを自動設定（confirm_colorが指定されていない場合）
+    if (!isset($confirm_variant)) {
+        $iconTypeToVariant = [
+            'info' => 'primary',      // 青
+            'warning' => 'warning',   // 黄色
+            'danger' => 'danger',     // 赤
+            'success' => 'success'    // 緑
+        ];
+        $confirm_variant = $iconTypeToVariant[$icon_type] ?? 'primary';
+    }
+    
+    // 後方互換性: confirm_colorが指定されている場合はそれを使用
+    if (isset($confirm_color)) {
+        $colorToVariant = [
+            'blue' => 'primary',
+            'red' => 'danger',
+            'green' => 'success',
+            'yellow' => 'warning'
+        ];
+        $confirm_variant = $colorToVariant[$confirm_color] ?? $confirm_variant;
+    }
+    
     // slotが使用されているかチェック
     $hasCustomContent = !empty(trim($slot ?? ''));
     $hasCustomFooter = isset($footer) && !empty(trim($footer ?? ''));
