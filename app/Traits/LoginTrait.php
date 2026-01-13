@@ -62,13 +62,6 @@ trait LoginTrait
     abstract protected function getTwoFaRoutePrefix(): string;
 
     /**
-     * メール認証設定を取得（継承先で実装）
-     * 
-     * @return array メール認証設定の配列
-     */
-    abstract protected function getEmailVerificationConfig(): array;
-
-    /**
      * ログアウト後のリダイレクト先を取得（継承先で実装）
      * 
      * @return string リダイレクト先のルート名またはURL
@@ -130,19 +123,6 @@ trait LoginTrait
      * @return bool pending_emailログインのサポート
      */
     abstract protected function supportsPendingEmailLogin(): bool;
-
-    /**
-     * ログイン後にメール認証が待機中の場合、認証処理を実行
-     * 
-     * @param mixed $user ユーザーモデル（Member または DixlaseUsersUser）
-     * @param \Illuminate\Http\Request $request リクエストオブジェクト
-     * @return void
-     */
-    protected function processEmailVerificationIfPending($user, $request): void
-    {
-        $verificationService = app(\App\Services\AccountVerificationService::class);
-        $verificationService->processIfPending($user, $this->getEmailVerificationConfig());
-    }
 
     /**
      * Display the login view.

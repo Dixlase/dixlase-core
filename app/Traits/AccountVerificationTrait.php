@@ -20,35 +20,77 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Services;
+namespace App\Traits;
 
 use App\Services\MailServerValidatorService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
 /**
- * アカウント認証サービス
+ * アカウント認証の共通トレイト
  * 
- * メールアドレスの所有確認とアカウント有効化を処理
- * 管理メンバーとユーザープラグインの両方で使用可能
+ * メンバーとユーザーのアカウント認証処理で共通して使用される機能を提供します。
+ * このトレイトを使用するコントローラーは、以下の抽象メソッドを実装する必要があります。
  */
-class AccountVerificationService
+trait AccountVerificationTrait
 {
+    /**
+     * 認証完了通知クラスを取得（継承先で実装）
+     * 
+     * @return string|null 通知クラス名
+     */
+    abstract protected function getVerificationCompletedNotificationClass(): ?string;
+
+    /**
+     * 管理者通知クラスを取得（継承先で実装）
+     * 
+     * @return string|null 通知クラス名
+     */
+    abstract protected function getAdminVerifiedNotificationClass(): ?string;
+
+    /**
+     * 管理者メールアドレス設定キーを取得（継承先で実装）
+     * 
+     * @return string 設定キー名
+     */
+    abstract protected function getAdminEmailSettingKey(): string;
+
+    /**
+     * 通知メールアドレス設定キーを取得（継承先で実装）
+     * 
+     * @return string 設定キー名
+     */
+    abstract protected function getNotificationEmailSettingKey(): string;
+
+    /**
+     * 成功メッセージキーを取得（継承先で実装）
+     * 
+     * @return string 翻訳キー
+     */
+    abstract protected function getAccountVerificationSuccessKey(): string;
+
+    /**
+     * メール変更成功メッセージキーを取得（継承先で実装）
+     * 
+     * @return string 翻訳キー
+     */
+    abstract protected function getEmailChangeSuccessKey(): string;
+
+    /**
+     * 設定モデルクラスを取得（継承先で実装）
+     * 
+     * @return string 設定モデルクラス名
+     */
+    abstract protected function getSettingModelClass(): string;
+
     /**
      * ログイン後にメール認証が待機中の場合、認証処理を実行
      * 
-     * @param mixed $user ユーザーモデル（Member or DixlaseUsersUser）
-     * @param array $config 設定配列
-     *   - 'verification_completed_notification' => 認証完了通知クラス
-     *   - 'admin_verified_notification' => 管理者通知クラス
-     *   - 'admin_email_setting_key' => 管理者メールアドレスの設定キー
-     *   - 'notification_email_setting_key' => 通知メールアドレスの設定キー
-     *   - 'success_message_key' => 成功メッセージの翻訳キー
-     *   - 'email_change_success_key' => メール変更成功メッセージの翻訳キー
-     *   - 'setting_model_class' => 設定モデルクラス
+     * @param mixed $user ユーザーモデル（Member または User）
+     * @param \Illuminate\Http\Request $request リクエストオブジェクト
      * @return void
      */
-    public function processIfPending($user, array $config = [])
+    protected function processEmailVerificationIfPending($user, $request): void
     {
         $verificationData = session('email_verification_pending');
         
@@ -81,10 +123,10 @@ class AccountVerificationService
         try {
             if ($verificationData['is_email_change']) {
                 // メールアドレス変更の認証
-                $this->processEmailChange($user, $config);
+                $this->processEmailChange($user);
             } else {
                 // 新規アカウントの認証
-                $this->processAccountVerification($user, $config);
+                $this->processAccountVerification($user);
             }
             
             // 認証完了後、セッションから削除
@@ -104,10 +146,9 @@ class AccountVerificationService
      * メールアドレス変更の認証処理
      * 
      * @param mixed $user
-     * @param array $config
      * @return void
      */
-    protected function processEmailChange($user, array $config)
+    protected function processEmailChange($user): void
     {
         $user->email = $user->pending_email;
         $user->pending_email = null;
@@ -119,18 +160,16 @@ class AccountVerificationService
             'new_email' => $user->email
         ]);
         
-        $successKey = $config['email_change_success_key'] ?? 'admin/profile.email_verification_success';
-        session()->flash('success', __($successKey));
+        session()->flash('success', __($this->getEmailChangeSuccessKey()));
     }
 
     /**
      * 新規アカウントの認証処理
      * 
      * @param mixed $user
-     * @param array $config
      * @return void
      */
-    protected function processAccountVerification($user, array $config)
+    protected function processAccountVerification($user): void
     {
         $user->markEmailAsVerified();
         
@@ -139,12 +178,11 @@ class AccountVerificationService
             'email' => $user->email
         ]);
         
-        $successKey = $config['success_message_key'] ?? 'admin/profile.account_verification_success';
-        session()->flash('success', __($successKey));
+        session()->flash('success', __($this->getAccountVerificationSuccessKey()));
         
         // メールサーバー設定済みの場合のみ通知を送信
         if (MailServerValidatorService::isMailServerTested()) {
-            $this->sendVerificationNotifications($user, $config);
+            $this->sendVerificationNotifications($user);
         }
     }
 
@@ -152,15 +190,14 @@ class AccountVerificationService
      * 認証完了通知を送信
      * 
      * @param mixed $user
-     * @param array $config
      * @return void
      */
-    protected function sendVerificationNotifications($user, array $config)
+    protected function sendVerificationNotifications($user): void
     {
         // ユーザー本人に認証完了メールを送信
-        if (isset($config['verification_completed_notification'])) {
+        $notificationClass = $this->getVerificationCompletedNotificationClass();
+        if ($notificationClass && class_exists($notificationClass)) {
             try {
-                $notificationClass = $config['verification_completed_notification'];
                 $user->notify(new $notificationClass());
                 
                 Log::info('[Account Verification] Notification sent to user', [
@@ -176,16 +213,16 @@ class AccountVerificationService
         }
         
         // 管理者に通知
-        if (isset($config['admin_verified_notification']) && isset($config['setting_model_class'])) {
+        $adminNotificationClass = $this->getAdminVerifiedNotificationClass();
+        if ($adminNotificationClass && class_exists($adminNotificationClass)) {
             try {
-                $settingModel = $config['setting_model_class'];
-                $adminEmail = $settingModel::getValue($config['admin_email_setting_key'] ?? 'system_admin_email') 
-                    ?? $settingModel::getValue($config['notification_email_setting_key'] ?? 'notification_email');
+                $settingModel = $this->getSettingModelClass();
+                $adminEmail = $settingModel::getValue($this->getAdminEmailSettingKey()) 
+                    ?? $settingModel::getValue($this->getNotificationEmailSettingKey());
                 
                 if ($adminEmail) {
-                    $notificationClass = $config['admin_verified_notification'];
                     Notification::route('mail', $adminEmail)
-                        ->notify(new $notificationClass(
+                        ->notify(new $adminNotificationClass(
                             $user,
                             now()->format('Y-m-d H:i:s')
                         ));

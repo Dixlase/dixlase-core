@@ -14,6 +14,7 @@ use App\Repositories\BaseSettingRepository;
 class AdminLoginController extends AdminController
 {
     use \App\Traits\LoginTrait;
+    use \App\Traits\AccountVerificationTrait;
 
     protected BaseSettingRepository $baseSettingRepository;
 
@@ -80,19 +81,51 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * メール認証設定を取得
+     * 認証完了通知クラスを取得
      */
-    protected function getEmailVerificationConfig(): array
+    protected function getVerificationCompletedNotificationClass(): ?string
     {
-        return [
-            'verification_completed_notification' => \App\Notifications\MemberVerificationCompletedNotification::class,
-            'admin_verified_notification' => \App\Notifications\AdminMemberVerifiedNotification::class,
-            'admin_email_setting_key' => 'system_admin_email',
-            'notification_email_setting_key' => 'notification_email',
-            'success_message_key' => 'admin/profile.account_verification_success',
-            'email_change_success_key' => 'admin/profile.email_verification_success',
-            'setting_model_class' => \App\Models\BaseSetting::class,
-        ];
+        return \App\Notifications\MemberVerifiedNotification::class;
+    }
+
+    /**
+     * 管理者通知クラスを取得
+     */
+    protected function getAdminVerifiedNotificationClass(): ?string
+    {
+        return \App\Notifications\AdminMemberVerifiedNotification::class;
+    }
+
+    /**
+     * 管理者メールアドレス設定キーを取得
+     */
+    protected function getAdminEmailSettingKey(): string
+    {
+        return 'system_admin_email';
+    }
+
+    /**
+     * 通知メールアドレス設定キーを取得
+     */
+    protected function getNotificationEmailSettingKey(): string
+    {
+        return 'notification_email';
+    }
+
+    /**
+     * 成功メッセージキーを取得
+     */
+    protected function getAccountVerificationSuccessKey(): string
+    {
+        return 'admin/profile.account_verification_success';
+    }
+
+    /**
+     * メール変更成功メッセージキーを取得
+     */
+    protected function getEmailChangeSuccessKey(): string
+    {
+        return 'admin/profile.email_verification_success';
     }
 
     /**
