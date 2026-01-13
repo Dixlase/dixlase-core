@@ -435,7 +435,7 @@ Route::prefix($adminUrl)->name('admin.')
             });
 
             // ログアウト
-            Route::post('/logout', [AdminLoginController::class, 'destroy'])->name('logout');
+            Route::match(['get', 'post'], '/logout', [AdminLoginController::class, 'destroy'])->name('logout');
             
             // 有効化されているプラグインの管理画面ルートを自動読み込み
             \App\Helpers\PluginHelper::loadEnabledAdminRoutes();

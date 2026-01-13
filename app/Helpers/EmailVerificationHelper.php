@@ -75,7 +75,7 @@ class EmailVerificationHelper
                 
                 return [
                     'success' => true,
-                    'message' => __("{$context}.profile.email_verification_success"),
+                    'message' => __('account.email_verification_success'),
                     'redirect' => route("{$context}.profile"),
                 ];
             } else {
@@ -93,7 +93,7 @@ class EmailVerificationHelper
                 
                 return [
                     'success' => true,
-                    'message' => __("{$context}.profile.account_verification_success"),
+                    'message' => __('account.account_verification_success'),
                     'redirect' => route("{$context}.dashboard"),
                 ];
             }
@@ -307,7 +307,7 @@ class EmailVerificationHelper
     public function getLoginRequiredMessageKey(bool $isEmailChange): string
     {
         return $isEmailChange 
-            ? 'auth.verify_email_change_login_required'
-            : 'auth.verify_email_login_required';
+            ? 'account.verify_email_change_login_required'
+            : 'account.verify_email_login_required';
     }
 }

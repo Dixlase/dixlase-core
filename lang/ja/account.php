@@ -155,7 +155,16 @@ return [
         'link_sent' => '新しい認証リンクを送信しました。',
         'resend' => '認証メールを再送信',
         'logout' => 'ログアウト',
+        'login_required' => 'メールアドレスの認証を完了するには、ログインしてください。',
     ],
+    
+    'verification_required' => 'メールアドレスの認証が必要です',
+    'verification_notice_message' => 'アカウントを使用する前に、メールアドレスの認証が必要です。登録時に送信された認証メールをご確認ください。',
+    'verification_link_sent' => '新しい認証リンクをメールアドレスに送信しました。',
+    'verify_email_login_required' => 'メールアドレスの認証を完了するには、ログインしてください。',
+    'verify_email_change_login_required' => 'メールアドレスの変更を完了するには、ログインしてください。',
+    'account_verification_success' => 'アカウントの認証が完了しました。ログインしてください。',
+    'email_verification_success' => 'メールアドレスの変更が完了しました。',
 
     // パスワード確認
     'confirm_password' => [

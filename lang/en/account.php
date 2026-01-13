@@ -155,7 +155,16 @@ return [
         'link_sent' => 'A new verification link has been sent.',
         'resend' => 'Resend Verification Email',
         'logout' => 'Logout',
+        'login_required' => 'Please log in to complete your email address verification.',
     ],
+    
+    'verification_required' => 'Email Verification Required',
+    'verification_notice_message' => 'Before using your account, you need to verify your email address. Please check the verification email sent during registration.',
+    'verification_link_sent' => 'A new verification link has been sent to your email address.',
+    'verify_email_login_required' => 'Please log in to complete your email address verification.',
+    'verify_email_change_login_required' => 'Please log in to complete your email address change.',
+    'account_verification_success' => 'Your account verification is complete. Please log in.',
+    'email_verification_success' => 'Email address change has been completed.',
 
     // Confirm Password
     'confirm_password' => [

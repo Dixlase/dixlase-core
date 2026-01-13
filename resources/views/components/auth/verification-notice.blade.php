@@ -32,9 +32,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 </div>
 
 @if (session('resent') || session('status'))
-    <div class="mb-4 font-medium text-sm text-green-600 dark:text-green-400">
-        {{ $resentMessage }}
-    </div>
+    <x-message
+        type="success"
+        :message="$resentMessage"
+    />
 @endif
 
 <div class="mt-4 flex items-center justify-between">
