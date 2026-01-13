@@ -26,7 +26,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class MemberVerificationCompletedNotification extends Notification
+class MemberVerifiedNotification extends Notification
 {
     use Queueable;
 

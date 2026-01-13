@@ -150,59 +150,6 @@ class LoginHelper
         ]);
     }
 
-    /**
-     * ログイン後のメール認証処理
-     *
-     * @param mixed $user ユーザーモデル
-     * @param Request $request リクエスト
-     * @param string $context コンテキスト（admin, user等）
-     * @return void
-     */
-    public function processEmailVerificationIfPending($user, Request $request, string $context = 'admin'): void
-    {
-        $emailVerificationHelper = app(\App\Helpers\EmailVerificationHelper::class);
-        $verificationData = $emailVerificationHelper->getVerificationFromSession();
-
-        if (!$verificationData) {
-            return;
-        }
-
-        // 認証対象のユーザーと一致するかチェック
-        if ($verificationData['member_id'] !== $user->id) {
-            Log::warning('[Login] Email verification user mismatch', [
-                'logged_in_user_id' => $user->id,
-                'verification_user_id' => $verificationData['member_id'],
-            ]);
-            return;
-        }
-
-        // ハッシュ検証
-        if (!$emailVerificationHelper->verifyHash($user, $verificationData['hash'])) {
-            Log::warning('[Login] Email verification hash mismatch', [
-                'user_id' => $user->id,
-            ]);
-            $emailVerificationHelper->clearVerificationFromSession();
-            return;
-        }
-
-        // 認証処理を実行
-        $result = $emailVerificationHelper->processVerificationImmediately($user, $context);
-        $emailVerificationHelper->clearVerificationFromSession();
-
-        // 成功メッセージをセッションに保存
-        if ($result['success']) {
-            session()->flash('success', $result['message']);
-            Log::info('[Login] Email verification completed after login', [
-                'user_id' => $user->id,
-                'is_email_change' => $verificationData['is_email_change'],
-            ]);
-        } else {
-            session()->flash('error', $result['message']);
-            Log::error('[Login] Email verification failed after login', [
-                'user_id' => $user->id,
-            ]);
-        }
-    }
 
     /**
      * ログイン失敗時のエラーメッセージを生成
