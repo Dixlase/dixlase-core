@@ -81,22 +81,6 @@ class AdminLoginController extends AdminController
     }
 
     /**
-     * 認証完了通知クラスを取得
-     */
-    protected function getVerificationCompletedNotificationClass(): ?string
-    {
-        return \App\Notifications\MemberVerifiedNotification::class;
-    }
-
-    /**
-     * 管理者通知クラスを取得
-     */
-    protected function getAdminVerifiedNotificationClass(): ?string
-    {
-        return \App\Notifications\AdminMemberVerifiedNotification::class;
-    }
-
-    /**
      * 管理者メールアドレス設定キーを取得
      */
     protected function getAdminEmailSettingKey(): string
@@ -110,22 +94,6 @@ class AdminLoginController extends AdminController
     protected function getNotificationEmailSettingKey(): string
     {
         return 'notification_email';
-    }
-
-    /**
-     * 成功メッセージキーを取得
-     */
-    protected function getAccountVerificationSuccessKey(): string
-    {
-        return 'admin/profile.account_verification_success';
-    }
-
-    /**
-     * メール変更成功メッセージキーを取得
-     */
-    protected function getEmailChangeSuccessKey(): string
-    {
-        return 'admin/profile.email_verification_success';
     }
 
     /**

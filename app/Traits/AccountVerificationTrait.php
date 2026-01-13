@@ -35,18 +35,11 @@ use Illuminate\Support\Facades\Notification;
 trait AccountVerificationTrait
 {
     /**
-     * 認証完了通知クラスを取得（継承先で実装）
+     * コンテキストを取得（継承先で実装）
      * 
-     * @return string|null 通知クラス名
+     * @return string コンテキスト名（'admin', 'user' など）
      */
-    abstract protected function getVerificationCompletedNotificationClass(): ?string;
-
-    /**
-     * 管理者通知クラスを取得（継承先で実装）
-     * 
-     * @return string|null 通知クラス名
-     */
-    abstract protected function getAdminVerifiedNotificationClass(): ?string;
+    abstract protected function getContext(): string;
 
     /**
      * 管理者メールアドレス設定キーを取得（継承先で実装）
@@ -63,25 +56,39 @@ trait AccountVerificationTrait
     abstract protected function getNotificationEmailSettingKey(): string;
 
     /**
-     * 成功メッセージキーを取得（継承先で実装）
-     * 
-     * @return string 翻訳キー
-     */
-    abstract protected function getAccountVerificationSuccessKey(): string;
-
-    /**
-     * メール変更成功メッセージキーを取得（継承先で実装）
-     * 
-     * @return string 翻訳キー
-     */
-    abstract protected function getEmailChangeSuccessKey(): string;
-
-    /**
      * 設定モデルクラスを取得（継承先で実装）
      * 
      * @return string 設定モデルクラス名
      */
     abstract protected function getSettingModelClass(): string;
+
+    /**
+     * コンテキストに応じた認証完了通知クラスを取得
+     *
+     * @return string 通知クラス名
+     */
+    protected function getVerificationCompletedNotificationClass(): string
+    {
+        return match ($this->getContext()) {
+            'admin' => \App\Notifications\MemberVerificationCompletedNotification::class,
+            'user' => \App\Notifications\UserVerificationCompletedNotification::class,
+            default => \App\Notifications\MemberVerificationCompletedNotification::class,
+        };
+    }
+
+    /**
+     * コンテキストに応じた管理者通知クラスを取得
+     *
+     * @return string 通知クラス名
+     */
+    protected function getAdminVerifiedNotificationClass(): string
+    {
+        return match ($this->getContext()) {
+            'admin' => \App\Notifications\AdminMemberVerifiedNotification::class,
+            'user' => \App\Notifications\AdminUserVerifiedNotification::class,
+            default => \App\Notifications\AdminMemberVerifiedNotification::class,
+        };
+    }
 
     /**
      * ログイン後にメール認証が待機中の場合、認証処理を実行
@@ -160,7 +167,7 @@ trait AccountVerificationTrait
             'new_email' => $user->email
         ]);
         
-        session()->flash('success', __($this->getEmailChangeSuccessKey()));
+        session()->flash('success', __('account.email_verification_success'));
     }
 
     /**
@@ -178,7 +185,7 @@ trait AccountVerificationTrait
             'email' => $user->email
         ]);
         
-        session()->flash('success', __($this->getAccountVerificationSuccessKey()));
+        session()->flash('success', __('account.account_verification_success'));
         
         // メールサーバー設定済みの場合のみ通知を送信
         if (MailServerValidatorService::isMailServerTested()) {

@@ -28,7 +28,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @if(session('email_verification_pending') || session('info'))
         <x-message
             type="info"
-            :message="session('info') ?? __('auth.verify_email_login_required')"
+            :message="session('info') ?? __('account.verify_email_login_required')"
         />
     @endif
 
