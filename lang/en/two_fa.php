@@ -7,6 +7,23 @@ return [
         'passkey' => 'Passkey Authentication',
     ],
     
+    // Security levels
+    'security' => [
+        'level' => [
+            'very_high' => 'Very High',
+            'high' => 'High',
+            'medium' => 'Medium',
+            'low' => 'Low',
+        ],
+        'description' => [
+            'passkey' => 'The most secure method using biometric authentication or security keys. Uses authentication credentials stored on your device, making it resistant to phishing attacks and enabling secure login.',
+            'email' => 'Uses authentication codes sent to your email address. Protected by expiration time and usage limits, but depends on your email account security. Passkey is recommended for higher security needs.',
+            'recovery_code' => 'Emergency backup method. Use when Passkey or email authentication is unavailable. Recovery codes can only be used once and become invalid after use. Store them in a safe place.',
+        ],
+        'recommended' => 'Recommended',
+        'backup' => 'Backup',
+    ],
+    
     // Passkey device not registered warning
     'passkey_device_not_registered_title' => 'No Passkey Device Registered',
     'passkey_device_not_registered_message' => 'You need to register a device to use Passkey authentication.<br>Please register a device from your profile page.<br>Until then, please use other authentication methods.',
@@ -178,21 +195,12 @@ TEXT,
     'biometric' => [
         'https_required' => 'HTTPS connection is required.',
         'challenge_generation_failed' => 'Failed to generate challenge.',
-        'registered_successfully' => 'Biometric authentication has been registered.',
+        'registered_successfully' => 'Biometric authentication registered.',
         'registration_failed' => 'Failed to register biometric authentication.',
-        'revoked_successfully' => 'Biometric authentication has been deleted.',
+        'revoked_successfully' => 'Biometric authentication deleted.',
         'not_found' => 'Biometric authentication not found.',
         'revocation_failed' => 'Failed to delete biometric authentication.',
-        'all_revoked_successfully' => 'All biometric authentications have been deleted (:count items).',
+        'all_revoked_successfully' => 'All biometric authentications deleted (:count items).',
         'revoke_all_failed' => 'Failed to delete all biometric authentications.',
-    ],
-    
-    // Trusted Device
-    'trusted_device' => [
-        'revoked_successfully' => 'Trusted device has been deleted.',
-        'not_found' => 'Trusted device not found.',
-        'revocation_failed' => 'Failed to delete trusted device.',
-        'all_revoked_successfully' => 'All trusted devices have been deleted (:count items).',
-        'revoke_all_failed' => 'Failed to delete all trusted devices.',
     ],
 ];

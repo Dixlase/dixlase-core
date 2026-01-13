@@ -7,6 +7,23 @@ return [
         'passkey' => 'Passkey認証',
     ],
     
+    // セキュリティレベル
+    'security' => [
+        'level' => [
+            'very_high' => '非常に高い',
+            'high' => '高い',
+            'medium' => '中程度',
+            'low' => '低い',
+        ],
+        'description' => [
+            'passkey' => '生体認証またはセキュリティキーを使用する最も安全な方法です。デバイスに保存された認証情報を使用するため、フィッシング攻撃に強く、安全にログインできます。',
+            'email' => 'メールアドレスに送信される認証コードを使用します。有効期限や使用回数制限により保護されていますが、メールアカウントのセキュリティに依存します。より高いセキュリティが必要な場合はPasskeyの使用を推奨します。',
+            'recovery_code' => '緊急時のバックアップ手段です。Passkeyやメール認証が使用できない場合に使用します。回復コードは一度しか使用できず、使用後は無効になります。安全な場所に保管してください。',
+        ],
+        'recommended' => '推奨',
+        'backup' => 'バックアップ',
+    ],
+    
     // Passkeyデバイス未登録警告
     'passkey_device_not_registered_title' => 'Passkeyデバイスが登録されていません',
     'passkey_device_not_registered_message' => 'Passkey認証を使用するにはデバイスの登録が必要です。<br>プロフィール画面からデバイスを登録してください。<br>それまでは他の認証方法をご利用ください。',
@@ -185,14 +202,5 @@ TEXT,
         'revocation_failed' => '生体認証の削除に失敗しました。',
         'all_revoked_successfully' => 'すべての生体認証を削除しました（:count件）。',
         'revoke_all_failed' => '生体認証の一括削除に失敗しました。',
-    ],
-    
-    // 信頼済みデバイス
-    'trusted_device' => [
-        'revoked_successfully' => '信頼済みデバイスを削除しました。',
-        'not_found' => '信頼済みデバイスが見つかりません。',
-        'revocation_failed' => '信頼済みデバイスの削除に失敗しました。',
-        'all_revoked_successfully' => 'すべての信頼済みデバイスを削除しました（:count件）。',
-        'revoke_all_failed' => '信頼済みデバイスの一括削除に失敗しました。',
     ],
 ];
