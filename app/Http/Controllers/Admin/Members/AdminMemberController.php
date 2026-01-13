@@ -31,21 +31,33 @@ use App\Enums\AuthenticationMode;
 use App\Enums\AppearanceMode;
 use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
-use Illuminate\Support\Facades\Hash;
 use App\Services\MailServerValidatorService;
+use App\Helpers\PasswordHelper;
 use App\Services\TwoFa\TwoFaPasskeyService;
 use App\Services\TwoFa\TwoFaRecoveryCodeService;
 use App\Contracts\Repositories\MemberSettingRepositoryInterface;
 use Illuminate\Support\Facades\DB;
+use App\Traits\ManagesAccountTrait;
+use App\Traits\ManagesTwoFaTrait;
 
 class AdminMemberController extends AdminLoggedInController
 {
+    use ManagesAccountTrait, ManagesTwoFaTrait;
+
     protected MemberSettingRepositoryInterface $memberSettingRepository;
 
     public function __construct(MemberSettingRepositoryInterface $memberSettingRepository)
     {
         parent::__construct();
         $this->memberSettingRepository = $memberSettingRepository;
+    }
+
+    /**
+     * モデルのルートパラメータ名を取得
+     */
+    protected function getModelRouteParameterName(): string
+    {
+        return 'member';
     }
     /**
      * メンバー一覧
@@ -145,7 +157,7 @@ class AdminMemberController extends AdminLoggedInController
     public function store(AdminSettingsMemberStoreRequest $request)
     {
         $validated = $request->validated();
-        $validated['password'] = Hash::make($validated['password']);
+        $validated['password'] = PasswordHelper::hash($validated['password']);
 
         $isMailServerTested = MailServerValidatorService::isMailServerTested();
         $emailVerified = (string) $request->input('email_verified', $isMailServerTested ? '0' : '1');
@@ -242,49 +254,24 @@ class AdminMemberController extends AdminLoggedInController
             $validated['status'] = MemberStatus::Active->value;
         }
 
-        if (!empty($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
-        } else {
-            unset($validated['password']);
-        }
+        PasswordHelper::hashPasswordIfPresent($validated);
 
-        $isMailServerTested = MailServerValidatorService::isMailServerTested();
-        $emailVerified = (string) $request->input('email_verified', $isMailServerTested ? null : '1');
         $wasVerified = $member->hasVerifiedEmail();
-        $emailChanged = $request->input('email') !== $member->email;
-        
-        if (!$isMailServerTested) {
-            $validated['email_verified_at'] = now();
-        } elseif ($emailVerified === '1') {
-            $validated['email_verified_at'] = now();
-        } elseif ($emailVerified === '0') {
-            $validated['email_verified_at'] = null;
-        } elseif ($emailChanged && $wasVerified) {
-            $validated['email_verified_at'] = null;
-        }
-        
-        unset($validated['email_verified']);
+        $this->processEmailVerificationStatus($validated, $request, $member);
 
         $member->update($validated);
         $id = $member->id;
 
-        // メールアドレスが変更され、かつ以前は認証済みだった場合のみ認証メールを送信
-        $shouldSendEmail = $isMailServerTested && $emailChanged && $wasVerified;
-        
-        if ($shouldSendEmail && !$member->hasVerifiedEmail()) {
-            try {
-                $member->sendEmailVerificationNotification('email_change');
-                $message = __('admin/members/edit.messages.updated_with_verification_email');
-            } catch (\Exception $e) {
-                \Log::error('Failed to send verification email', [
-                    'member_id' => $member->id,
-                    'error' => $e->getMessage()
-                ]);
-                $message = __('admin/members/edit.messages.updated_but_email_failed');
-            }
-        } else {
-            $message = __('admin/members/edit.messages.updated');
-        }
+        $messageKey = $this->sendEmailVerificationIfNeeded(
+            $member,
+            $request,
+            $wasVerified,
+            'admin/members/edit.messages.updated_with_verification_email',
+            'admin/members/edit.messages.updated_but_email_failed',
+            'admin/members/edit.messages.updated'
+        );
+
+        $message = __($messageKey);
 
         return redirect()->route('admin.members.edit', ['member' => $id])->with('success', $message);
     }
@@ -377,16 +364,11 @@ class AdminMemberController extends AdminLoggedInController
 
     public function forceLogout(Member $member)
     {
-        $sessionTable = config('session.table', 'sessions');
-        
-        if ($sessionTable && DB::getSchemaBuilder()->hasTable($sessionTable)) {
-            DB::table($sessionTable)
-                ->where('user_id', $member->id)
-                ->delete();
-        }
-
-        return redirect()->route('admin.members.edit', ['member' => $member->id])
-            ->with('success', __('admin/members/edit.messages.force_logout_success'));
+        return $this->forceLogoutModel(
+            $member,
+            'admin/members/edit.messages.force_logout_success',
+            'admin.members.edit'
+        );
     }
 
     /**
@@ -394,11 +376,14 @@ class AdminMemberController extends AdminLoggedInController
      */
     public function unlockTwoFa(Member $member)
     {
-        \App\Models\MemberTwoFaAttempt::where('member_id', $member->id)->delete();
-        \App\Models\MemberLoginAttempt::where('identifier', $member->email)->delete();
-
-        return redirect()->route('admin.members.edit', ['member' => $member->id])
-            ->with('success', __('admin/members/edit.messages.unlock_lockout_success'));
+        return $this->unlockTwoFaForModel(
+            $member,
+            \App\Models\MemberTwoFaAttempt::class,
+            \App\Models\MemberLoginAttempt::class,
+            'member_id',
+            'admin/members/edit.messages.unlock_lockout_success',
+            'admin.members.edit'
+        );
     }
 
     /**
@@ -406,40 +391,12 @@ class AdminMemberController extends AdminLoggedInController
      */
     public function sendVerificationEmail(Member $member)
     {
-        try {
-            if (!$this->isMailServerTested()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('admin/members/form.mail_server_not_tested')
-                ], 400);
-            }
-
-            $member->email_verified_at = null;
-            $member->save();
-
-            $sessionTable = config('session.table', 'sessions');
-            if ($sessionTable && DB::getSchemaBuilder()->hasTable($sessionTable)) {
-                DB::table($sessionTable)
-                    ->where('user_id', $member->id)
-                    ->delete();
-            }
-
-            $member->sendEmailVerificationNotification('resend');
-
-            session()->flash('success', __('admin/members/edit.messages.verification_email_sent'));
-
-            return response()->json([
-                'success' => true,
-                'redirect' => route('admin.members.edit', ['member' => $member->id])
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('Failed to send verification email: ' . $e->getMessage());
-            
-            return response()->json([
-                'success' => false,
-                'message' => __('admin/members/edit.messages.verification_email_failed')
-            ], 500);
-        }
+        return $this->sendVerificationEmailToModel(
+            $member,
+            'admin/members/edit.messages.verification_email_sent',
+            'admin/members/edit.messages.verification_email_failed',
+            'admin.members.edit'
+        );
     }
 
     /**
@@ -447,43 +404,15 @@ class AdminMemberController extends AdminLoggedInController
      */
     public function revokePasskey(Request $request, Member $member, string $credentialId)
     {
-        $twoFaPasskeyService = new TwoFaPasskeyService();
-        
-        try {
-            if ($credentialId === 'all') {
-                $deletedCount = $twoFaPasskeyService->revokeAllCredentials($member);
-                
-                return response()->json([
-                    'success' => true,
-                    'message' => __('admin/members/form.passkey_all_deleted', ['count' => $deletedCount])
-                ]);
-            }
-            
-            $deleted = $twoFaPasskeyService->revokeCredential($member, $credentialId);
-            
-            if (!$deleted) {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('admin/profile.passkey_not_found')
-                ], 404);
-            }
-
-            return response()->json([
-                'success' => true,
-                'message' => __('admin/profile.passkey_deleted')
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('[Member Passkey Delete] Exception caught', [
-                'member_id' => $member->id,
-                'credential_id' => $credentialId,
-                'error' => $e->getMessage(),
-            ]);
-            
-            return response()->json([
-                'success' => false,
-                'message' => __('admin/profile.passkey_delete_error')
-            ], 500);
-        }
+        return $this->revokePasskeyForModel(
+            $request,
+            $member,
+            $credentialId,
+            'admin/members/form.passkey_all_deleted',
+            'admin/profile.passkey_not_found',
+            'admin/profile.passkey_deleted',
+            'admin/profile.passkey_delete_error'
+        );
     }
 
     /**
@@ -491,34 +420,11 @@ class AdminMemberController extends AdminLoggedInController
      */
     public function revokeRecoveryCodes(Request $request, Member $member)
     {
-        $twoFaRecoveryCodeService = new TwoFaRecoveryCodeService();
-        
-        try {
-            $deletedCount = $twoFaRecoveryCodeService->revokeAll($member);
-            
-            return response()->json([
-                'success' => true,
-                'message' => __('admin/members/form.recovery_codes_deleted', ['count' => $deletedCount])
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('[Member Recovery Code Delete] Exception caught', [
-                'member_id' => $member->id,
-                'error' => $e->getMessage(),
-            ]);
-            
-            return response()->json([
-                'success' => false,
-                'message' => __('admin/members/form.recovery_codes_delete_error')
-            ], 500);
-        }
-    }
-
-    private function isMailServerTested(): bool
-    {
-        $connectionTested = (bool) \App\Models\BaseSetting::getValue('mail_connection_tested', false);
-        $sendTested = (bool) \App\Models\BaseSetting::getValue('mail_send_tested', false);
-        $receiveTested = (bool) \App\Models\BaseSetting::getValue('mail_receive_tested', false);
-        
-        return $connectionTested && $sendTested && $receiveTested;
+        return $this->revokeRecoveryCodesForModel(
+            $request,
+            $member,
+            'admin/members/form.recovery_codes_deleted',
+            'admin/members/form.recovery_codes_delete_error'
+        );
     }
 }

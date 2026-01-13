@@ -36,14 +36,25 @@ use App\Services\TwoFa\TwoFaPasskeyService;
 use App\Services\TwoFa\TwoFaRecoveryCodeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Enum;
+use App\Traits\ManagesTwoFaTrait;
+use App\Helpers\PasswordHelper;
 
 class AdminProfileController extends AdminLoggedInController
 {
+    use ManagesTwoFaTrait;
+
     public function __construct()
     {
         parent::__construct();
+    }
+
+    /**
+     * モデルのルートパラメータ名を取得
+     */
+    protected function getModelRouteParameterName(): string
+    {
+        return 'member';
     }
 
     /**
@@ -336,7 +347,7 @@ class AdminProfileController extends AdminLoggedInController
         }
 
         if (!empty($validated['password'])) {
-            $member->password = Hash::make($validated['password']);
+            $member->password = PasswordHelper::hash($validated['password']);
         }
 
         // login_notification_mode は全体設定が UseProfileSetting のときだけ上書き
@@ -514,27 +525,11 @@ class AdminProfileController extends AdminLoggedInController
     public function passkeyRegisterOptions(Request $request)
     {
         $member = Auth::guard('member')->user();
-        $twoFaPasskeyService = new TwoFaPasskeyService();
         
-        try {
-            // WebAuthn登録チャレンジを生成
-            $options = $twoFaPasskeyService->generateRegistrationChallenge($member);
-            
-            return response()->json([
-                'success' => true,
-                'options' => $options
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('[Passkey] 登録チャレンジ生成エラー', [
-                'member_id' => $member->id,
-                'error' => $e->getMessage()
-            ]);
-            
-            return response()->json([
-                'success' => false,
-                'message' => __('admin/profile.passkey_register_options_error')
-            ], 500);
-        }
+        return $this->generatePasskeyRegistrationOptions(
+            $member,
+            'admin/profile.passkey_register_options_error'
+        );
     }
 
     /**
@@ -543,46 +538,13 @@ class AdminProfileController extends AdminLoggedInController
     public function passkeyRegister(Request $request)
     {
         $member = Auth::guard('member')->user();
-
-        $request->validate([
-            'credential' => 'required|array',
-            'credential.id' => 'required|string',
-            'credential.rawId' => 'required|string',
-            'credential.response' => 'required|array',
-            'credential.type' => 'required|string',
-            'device_name' => 'nullable|string|max:255',
-        ]);
-
-        $twoFaPasskeyService = new TwoFaPasskeyService();
         
-        try {
-            // WebAuthn認証情報を登録
-            $credential = $twoFaPasskeyService->registerCredential(
-                $member,
-                $request->input('credential'),
-                $request->input('device_name')
-            );
-
-            return response()->json([
-                'success' => true,
-                'message' => __('admin/profile.passkey_registered'),
-                'credential' => [
-                    'id' => $credential->id,
-                    'name' => $credential->name,
-                    'created_at' => $credential->created_at->format('Y-m-d H:i')
-                ]
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('[Passkey] 登録エラー', [
-                'member_id' => $member->id,
-                'error' => $e->getMessage()
-            ]);
-            
-            return response()->json([
-                'success' => false,
-                'message' => __('admin/profile.passkey_register_error')
-            ], 500);
-        }
+        return $this->registerPasskeyForModel(
+            $request,
+            $member,
+            'admin/profile.passkey_registered',
+            'admin/profile.passkey_register_error'
+        );
     }
 
     /**
@@ -590,115 +552,17 @@ class AdminProfileController extends AdminLoggedInController
      */
     public function revokePasskey(Request $request, string $credentialId)
     {
-        \Log::info('[Passkey Delete] Controller method called', [
-            'credential_id' => $credentialId,
-            'request_method' => $request->method(),
-            'request_path' => $request->path(),
-        ]);
-        
         $member = Auth::guard('member')->user();
-        \Log::info('[Passkey Delete] Member authenticated', [
-            'member_id' => $member->id,
-            'display_name' => $member->display_name ?? $member->account_name,
-        ]);
         
-        $passkeyService = new TwoFaPasskeyService();
-        
-        try {
-            // 一括削除の場合
-            if ($credentialId === 'all') {
-                \Log::info('[Passkey Delete] Deleting all passkeys');
-                $deletedCount = $passkeyService->revokeAllCredentials($member);
-                \Log::info('[Passkey Delete] All passkeys deleted', ['count' => $deletedCount]);
-                
-                return response()->json([
-                    'success' => true,
-                    'message' => __('admin/profile.passkey_deleted_all', ['count' => $deletedCount])
-                ]);
-            }
-            
-            // 個別削除の場合
-            \Log::info('[Passkey Delete] Calling revokeCredential service');
-            $deleted = $passkeyService->revokeCredential($member, $credentialId);
-            \Log::info('[Passkey Delete] Service returned', ['deleted' => $deleted]);
-            
-            if (!$deleted) {
-                \Log::warning('[Passkey Delete] Credential not found');
-                return response()->json([
-                    'success' => false,
-                    'message' => __('admin/profile.passkey_not_found')
-                ], 404);
-            }
-
-            \Log::info('[Passkey Delete] Successfully deleted');
-            return response()->json([
-                'success' => true,
-                'message' => __('admin/profile.passkey_deleted')
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('[Passkey Delete] Exception caught', [
-                'member_id' => $member->id,
-                'credential_id' => $credentialId,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
-            return response()->json([
-                'success' => false,
-                'message' => __('admin/profile.passkey_delete_error')
-            ], 500);
-        }
-    }
-
-    /**
-     * 信頼済みデバイスを削除
-     */
-    public function revokeTrustedDevice(Request $request, int $deviceId)
-    {
-        $member = Auth::guard('member')->user();
-        $passkeyService = app(\App\Services\TwoFa\TwoFaPasskeyService::class);
-        
-        if ($passkeyService->revokeDevice($member, $deviceId)) {
-            $result = [
-                'success' => true,
-                'message' => __('two_fa.trusted_device.revoked_successfully'),
-            ];
-        } else {
-            $result = [
-                'success' => false,
-                'message' => __('two_fa.trusted_device.not_found'),
-            ];
-        }
-        
-        $statusCode = $result['success'] ? 200 : (
-            str_contains($result['message'], 'not_found') ? 404 : 500
+        return $this->revokePasskeyForModel(
+            $request,
+            $member,
+            $credentialId,
+            'admin/profile.passkey_deleted_all',
+            'admin/profile.passkey_not_found',
+            'admin/profile.passkey_deleted',
+            'admin/profile.passkey_delete_error'
         );
-
-        return response()->json([
-            'success' => $result['success'],
-            'message' => $result['message']
-        ], $statusCode);
-    }
-
-    /**
-     * すべての信頼済みデバイスを削除
-     */
-    public function revokeAllTrustedDevices(Request $request)
-    {
-        $member = Auth::guard('member')->user();
-        $passkeyService = app(\App\Services\TwoFa\TwoFaPasskeyService::class);
-        
-        $count = $passkeyService->revokeAllTrustedDevices($member);
-        $result = [
-            'success' => true,
-            'count' => $count,
-            'message' => __('two_fa.trusted_device.all_revoked_successfully', ['count' => $count]),
-        ];
-
-        return response()->json([
-            'success' => $result['success'],
-            'message' => $result['message']
-        ], $result['success'] ? 200 : 500);
     }
 
     /**
@@ -757,21 +621,11 @@ class AdminProfileController extends AdminLoggedInController
             return $this->regenerateRecoveryCodes($request);
         }
 
-        try {
-            // 回復コードを生成（初回生成）
-            $codes = $recoveryCodeService->generate($member);
-
-            return response()->json([
-                'success' => true,
-                'codes' => $codes,
-                'message' => __('admin/profile.recovery_codes_generated')
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => __('admin/profile.recovery_codes_generation_error')
-            ], 500);
-        }
+        return $this->generateRecoveryCodesForModel(
+            $member,
+            'admin/profile.recovery_codes_generated',
+            'admin/profile.recovery_codes_generation_error'
+        );
     }
 
     /**
@@ -780,47 +634,13 @@ class AdminProfileController extends AdminLoggedInController
     public function regenerateRecoveryCodes(Request $request)
     {
         $member = Auth::guard('member')->user();
-        $recoveryCodeService = app(\App\Services\TwoFa\TwoFaRecoveryCodeService::class);
-
-        // 再生成可能かチェック
-        if (!$recoveryCodeService->canRegenerate($member)) {
-            $nextTime = $recoveryCodeService->getNextRegenerateTime($member);
-            return response()->json([
-                'success' => false,
-                'message' => __('admin/profile.recovery_codes_regenerate_too_soon', [
-                    'time' => $nextTime->format('Y-m-d H:i')
-                ]),
-                'next_time' => $nextTime->format('Y-m-d H:i'),
-            ], 429);
-        }
-
-        try {
-            $codes = $recoveryCodeService->generate($member);
-            $result = [
-                'success' => true,
-                'codes' => $codes,
-                'message' => __('admin/profile.recovery_codes_regenerated'),
-            ];
-        } catch (\Exception $e) {
-            $result = [
-                'success' => false,
-                'message' => __('admin/profile.recovery_codes_generation_error'),
-            ];
-        }
-
-        if (!$result['success']) {
-            $statusCode = isset($result['next_time']) ? 429 : 500;
-            return response()->json([
-                'success' => false,
-                'message' => $result['message']
-            ], $statusCode);
-        }
-
-        return response()->json([
-            'success' => true,
-            'codes' => $result['codes'],
-            'message' => $result['message']
-        ]);
+        
+        return $this->regenerateRecoveryCodesForModel(
+            $member,
+            'admin/profile.recovery_codes_regenerated',
+            'admin/profile.recovery_codes_regenerate_too_soon',
+            'admin/profile.recovery_codes_generation_error'
+        );
     }
 
     /**
@@ -828,14 +648,6 @@ class AdminProfileController extends AdminLoggedInController
      */
     public function clearRecoveryCodesSession(Request $request)
     {
-        session()->forget('auto_generated_recovery_codes');
-        
-        \Log::info('[Profile] Recovery codes session cleared', [
-            'member_id' => Auth::guard('member')->user()->id,
-        ]);
-
-        return response()->json([
-            'success' => true
-        ]);
+        return $this->clearRecoveryCodesSessionData();
     }
 }
