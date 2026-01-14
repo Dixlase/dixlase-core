@@ -301,4 +301,50 @@ return [
         'recovery_codes_delete_success' => '回復コードの削除に成功しました',
         'recovery_codes_delete_error' => '回復コードの削除に失敗しました',
     ],
+
+    // ログイン試行制限設定
+    'login_attempt_limit_settings' => [
+        'enabled' => 'ログイン試行制限機能',
+        'enabled_help' => '一定回数ログインに失敗するとアカウントを一時的にロックします。',
+        'max_attempts' => '最大試行回数（識別子ベース）',
+        'max_attempts_help' => 'ロックアウトまでの最大ログイン試行回数を設定します。',
+        'max_attempts_ip' => '最大試行回数（IPベース）',
+        'max_attempts_ip_help' => 'IPアドレスベースのロックアウトまでの最大ログイン試行回数を設定します。',
+        'time_window' => '時間窓（分）',
+        'time_window_help' => '試行回数をカウントする時間窓を分単位で設定します。',
+        'lockout_duration' => 'ロックアウト時間（分）',
+        'lockout_duration_help' => 'アカウントがロックされる時間を分単位で設定します。',
+        'notification_enabled' => 'ロックアウト通知',
+        'notification_help' => 'アカウントがロックされた時に管理者に通知します。',
+    ],
+
+    // 二段階認証詳細設定
+    'two_fa_detailed_settings' => [
+        'expire_settings' => '認証の有効期限',
+        'expire_minutes' => '認証の有効期限',
+        'expire_minutes_help' => '二段階認証コードの有効期限を分単位で設定します。',
+        'resend_interval_seconds' => '認証メール再送信間隔',
+        'resend_interval_seconds_help' => '認証メールを再送信できるまでの待機時間を秒単位で設定します。',
+        'attempt_limit_settings' => '2FA試行制限設定',
+        'max_attempts' => '最大試行回数',
+        'max_attempts_help' => '二段階認証の最大試行回数を設定します。',
+        'attempt_window' => '試行制限時間枠',
+        'attempt_window_help' => '試行回数をカウントする時間枠を分単位で設定します。',
+        'lockout_duration' => 'ロックアウト時間',
+        'lockout_duration_help' => '試行回数超過時のロックアウト時間を分単位で設定します。',
+        'lockout_notification_enabled' => '2FAロックアウト通知',
+        'lockout_notification_enabled_help' => '二段階認証のロックアウト時に管理者に通知します。',
+        'recovery_code_settings' => '回復コード設定',
+        'recovery_codes_count' => '回復コード生成個数',
+        'recovery_codes_count_help' => '生成する回復コードの個数を設定します。',
+        'recovery_code_regenerate_interval' => '回復コード再生成間隔',
+        'recovery_code_regenerate_interval_help' => '回復コードを再生成できるまでの待機時間を時間単位で設定します。',
+    ],
+
+    // CAPTCHA設定
+    'captcha_settings' => [
+        'not_enabled' => 'CAPTCHAを使用するには、<a href=":url" class="underline">セキュリティ設定</a>でCAPTCHAを有効にしてください。',
+        'not_authenticated' => 'CAPTCHAを使用するには、<a href=":url" class="underline">セキュリティ設定</a>でCAPTCHA認証を完了してください。',
+        'screens' => 'CAPTCHAを表示する画面',
+    ],
 ];

@@ -29,26 +29,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 ])
 
 {{-- 全体設定画面用の二段階認証設定コンポーネント --}}
-<div x-data="{
-    twoFaMode: '{{ old($twoFaModeName, (string) $twoFaModeValue) }}',
-    passkeyMode: '{{ old($twoFaPasskeyModeName, (string) $twoFaPasskeyModeValue) }}',
-    defaultMethod: '{{ old($twoFaDefaultMethodName, (string) $twoFaDefaultMethodValue) }}',
-    get twoFaEnabled() {
-        return this.twoFaMode !== '0';
-    },
-    get passkeyEnabled() {
-        return this.passkeyMode !== '0';
-    },
-    init() {
-        // パスキーモードの変更を監視
-        this.$watch('passkeyMode', value => {
-            // パスキーが無効になった場合、デフォルト認証方法を強制的にメール（0）に変更
-            if (value === '0') {
-                this.defaultMethod = '0';
-            }
-        });
-    }
-}">
+<div>
     {{-- 1. 二段階認証モード --}}
     <x-two-fa.mode-selector
         :name="$twoFaModeName"
