@@ -152,89 +152,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <h2>{{ __('common.account_settings') }}</h2>
         
         <!-- アカウント認証設定 -->
-        <fieldset>
-            <legend>{{ __('admin/members/form.account_verification') }}</legend>
-            
-
-            
-            @if(!isset($member) || !$member->exists)
-                {{-- 新規作成時 --}}
-                @php
-                    $emailVerifiedValue = old('email_verified', $isMailServerTested ? '0' : '1');
-                    $emailVerificationOptions = [
-                        ['value' => '0', 'label' => 'admin/members/form.account_verified_send_email'],
-                        ['value' => '1', 'label' => 'admin/members/form.account_verified'],
-                    ];
-                @endphp
-                <x-form.radio-card-group
-                    name="email_verified"
-                    :options="$emailVerificationOptions"
-                    :value="$emailVerifiedValue"
-                    :columns="2"
-                    :disabled="!$isMailServerTested"
-                />
-                <p class="description-text">{{ __('admin/members/form.account_verification_help_create') }}</p>
-            @else
-                {{-- 編集時 --}}
-                @php
-                    $emailVerifiedValue = old('email_verified', $member->hasVerifiedEmail() ? '1' : '0');
-                    $emailVerificationOptionsEdit = [
-                        ['value' => '0', 'label' => 'admin/members/form.account_unverified'],
-                        ['value' => '1', 'label' => 'admin/members/form.account_verified'],
-                    ];
-                @endphp
-                <x-form.radio-card-group
-                    name="email_verified"
-                    :options="$emailVerificationOptionsEdit"
-                    :value="$emailVerifiedValue"
-                    :columns="2"
-                    :disabled="!$isMailServerTested"
-                />
-                <p class="description-text">{{ __('admin/members/form.account_verification_help_edit') }}</p>
-                
-                {{-- 認証メール送信ボタン（編集時のみ） --}}
-                <div class="my-4">
-                    @if($isMailServerTested)
-                        <x-form.button
-                            type="button"
-                            variant="secondary"
-                            size="sm"
-                            :label="__('admin/members/form.send_verification_email_button')"
-                            icon="fas fa-envelope"
-                            id="send-verification-email-btn"
-                            onclick="sendVerificationEmail({{ $member->id }})"
-                        />
-                    @else
-                        <x-form.button
-                            type="button"
-                            variant="secondary"
-                            size="sm"
-                            :label="__('admin/members/form.send_verification_email_button')"
-                            icon="fas fa-envelope"
-                            id="send-verification-email-btn"
-                            :disabled="true"
-                        />
-                    @endif
-                </div>
-                @if(!$isMailServerTested)
-                    <p class="text-sm text-yellow-600 dark:text-yellow-400 mt-2">
-                        <i class="fas fa-exclamation-triangle mr-1"></i>
-                        {{ __('admin/members/form.mail_server_not_tested') }}
-                    </p>
-                @endif
-            @endif
-
-            @if(!$isMailServerTested)
-                <x-message
-                    type="info"
-                    :message="__('admin/members/form.account_verification_disabled')"
-                />
-            @endif
-            
-            <x-form.error
-                :messages="$errors->get('email_verified')"
-            />
-        </fieldset>
+        <x-account-verification
+            :entity="$member ?? null"
+            entityType="member"
+            :sendRoute="route('admin.members.send-verification-email', ['member' => ':id'])"
+            :isMailServerTested="$isMailServerTested"
+            :isEdit="isset($member) && $member->exists"
+            :errors="$errors"
+        />
         
         <!-- 言語設定 -->
         <fieldset>
@@ -270,36 +195,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </fieldset>
 
         <!-- アカウントステータス -->
-        <fieldset>
-            <legend>
-                {{ __('admin/members/create.account_status') }}
-                @if($isInitialAdmin)
-                    <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">（初期管理者のため変更不可）</span>
-                @endif
-            </legend>
-            
-            @if($isInitialAdmin)
-                <input type="hidden" name="status" value="1">
-                <p class="description-text">{{ __('admin/members/form.initial_admin_status_fixed') }}</p>
-            @else
-                @php
-                    $statusValue = old('status', (string) ($member->status->value ?? 1));
-                    $statusOptions = [
-                        ['value' => '1', 'label' => 'components.status.active', 'icon' => 'fas fa-check-circle', 'color' => 'green'],
-                        ['value' => '0', 'label' => 'components.status.inactive', 'icon' => 'fas fa-times-circle', 'color' => 'gray'],
-                    ];
-                @endphp
-                <x-form.radio-card-group
-                    name="status"
-                    :options="$statusOptions"
-                    :value="$statusValue"
-                    :columns="2"
-                />
-            @endif
-            <x-form.error
-                :messages="$errors->get('status')"
-            />
-        </fieldset>
+        <x-account-status
+            :entity="$member ?? null"
+            entityType="member"
+            :isInitialAdmin="$isInitialAdmin"
+            :errors="$errors"
+        />
 
         <!-- 管理者ロール -->
         <fieldset>
@@ -429,126 +330,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :csrfToken="csrf_token()"
         />
     </section>
-
-    <!-- 管理操作セクション -->
-    <section>
-        <h2>{{ __('common.management_operations') }}</h2>
-
-        <fieldset>
-            <legend>{{ __('admin/members/form.unlock_lockout') }}</legend>
-            <p class="mb-4">{{ __('admin/members/form.unlock_lockout_description') }}</p>
-            <x-form.button
-                variant="info"
-                icon="fas fa-unlock"
-                :label="__('admin/members/form.unlock_lockout_button')"
-                onclick="openModal('unlockLockoutModal')"
-            />
-        </fieldset>
-        
-        <fieldset>
-            <legend>{{ __('admin/members/form.force_logout') }}</legend>
-            <p class="mb-4">{{ __('admin/members/form.force_logout_description') }}</p>
-            <x-form.button
-                variant="warning"
-                icon="fas fa-sign-out-alt"
-                :label="__('admin/members/form.force_logout_button')"
-                onclick="openModal('forceLogoutModal')"
-            />
-        </fieldset>
-
-        @if(!$isInitialAdmin)
-            <fieldset>
-                <legend>{{ __('admin/members/form.delete_member') }}</legend>
-                <p class="mb-4">{{ __('admin/members/form.delete_member_description') }}</p>
-                <x-form.button
-                    variant="danger"
-                    icon="fas fa-trash"
-                    :label="__('admin/members/form.delete_member_button')"
-                    onclick="openModal('deleteMemberModal')"
-                />
-            </fieldset>
-        @endif
-    </section>
-@endif
-
-@if(isset($member) && $member->exists)
-    <!-- 隠しフォーム -->
-    <form id="forceLogoutForm-{{ $member->id }}" method="POST" action="{{ route('admin.members.force-logout', $member->id) }}" style="display: none;">
-        @csrf
-    </form>
-
-    <form id="unlockLockoutForm-{{ $member->id }}" method="POST" action="{{ route('admin.members.unlock-two-fa', $member->id) }}" style="display: none;">
-        @csrf
-    </form>
-
-    @if(!$isInitialAdmin)
-        <form id="deleteMemberForm-{{ $member->id }}" method="POST" action="{{ route('admin.members.destroy', $member->id) }}" style="display: none;">
-            @csrf
-            @method('DELETE')
-        </form>
-    @endif
-
-    <!-- モーダル -->
-    @php
-        $forceLogoutFormId = 'forceLogoutForm-' . $member->id;
-        $unlockLockoutFormId = 'unlockLockoutForm-' . $member->id;
-        $deleteMemberFormId = 'deleteMemberForm-' . $member->id;
-    @endphp
-    
-    @php
-        $forceLogoutModalTitle = __('admin/members/edit.modals.force_logout.title');
-        $forceLogoutModalMessage = __('admin/members/edit.modals.force_logout.message', ['name' => $member->display_name ?? $member->account_name]);
-        $forceLogoutConfirmLabel = __('admin/members/edit.modals.force_logout.confirm');
-        $forceLogoutCancelLabel = __('common.cancel');
-    @endphp
-    <x-modal
-        id="forceLogoutModal"
-        :title="$forceLogoutModalTitle"
-        :message="$forceLogoutModalMessage"
-        :confirm_label="$forceLogoutConfirmLabel"
-        :cancel_label="$forceLogoutCancelLabel"
-        :form="$forceLogoutFormId"
-        icon_type="warning"
-        confirm_color="yellow"
-    />
-
-    @php
-        $unlockModalTitle = __('admin/members/edit.modals.unlock_lockout.title');
-        $unlockModalMessage = __('admin/members/edit.modals.unlock_lockout.message', ['name' => $member->display_name ?? $member->account_name]);
-        $unlockConfirmLabel = __('admin/members/edit.modals.unlock_lockout.confirm');
-        $unlockCancelLabel = __('common.cancel');
-    @endphp
-    <x-modal
-        id="unlockLockoutModal"
-        :title="$unlockModalTitle"
-        :message="$unlockModalMessage"
-        :confirm_label="$unlockConfirmLabel"
-        :cancel_label="$unlockCancelLabel"
-        :form="$unlockLockoutFormId"
-        icon_type="info"
-        confirm_color="blue"
-    />
-
-    @if(!$isInitialAdmin)
-        @php
-            $deleteModalTitle = __('admin/members/edit.modals.delete.title');
-            $deleteModalMessage = __('admin/members/edit.modals.delete.message', ['name' => $member->display_name ?? $member->account_name]) . "\n\n" . __('admin/members/edit.modals.delete.warning');
-            $deleteConfirmLabel = __('common.delete');
-            $deleteCancelLabel = __('common.cancel');
-        @endphp
-        <x-modal
-            id="deleteMemberModal"
-            :title="$deleteModalTitle"
-            :message="$deleteModalMessage"
-            :confirm_label="$deleteConfirmLabel"
-            :cancel_label="$deleteCancelLabel"
-            :form="$deleteMemberFormId"
-            icon_type="danger"
-            confirm_color="red"
-        />
-    @endif
 @endif
 
 @if($includeForm && $formAction)
     </form>
+@endif
+
+@if(isset($member) && $member->exists)
+    <!-- 管理操作セクション -->
+    <x-danger-zone
+        :unlockRoute="route('admin.members.unlock-lockout', ['member' => $member->id])"
+        :forceLogoutRoute="route('admin.members.force-logout', ['member' => $member->id])"
+        :deleteRoute="!$isInitialAdmin ? route('admin.members.destroy', ['member' => $member->id]) : null"
+        :canDelete="!$isInitialAdmin"
+        entityType="member"
+    />
 @endif

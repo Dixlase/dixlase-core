@@ -347,4 +347,20 @@ return [
         'not_authenticated' => 'CAPTCHAを使用するには、<a href=":url" class="underline">セキュリティ設定</a>でCAPTCHA認証を完了してください。',
         'screens' => 'CAPTCHAを表示する画面',
     ],
+
+    // 危険ゾーン（管理操作）
+    'danger_zone' => [
+        'unlock_lockout' => 'ロックアウト解除',
+        'unlock_lockout_description' => 'ログイン試行制限と二段階認証のロックアウトを解除します。',
+        'unlock_lockout_button' => 'ロックアウトを解除',
+        'force_logout' => '強制ログアウト',
+        'force_logout_description' => 'このアカウントの全てのセッションを強制的に終了します。',
+        'force_logout_button' => '強制ログアウト',
+        'delete_member' => 'メンバーの削除',
+        'delete_member_description' => 'このメンバーを完全に削除します。この操作は取り消せません。',
+        'delete_member_button' => 'メンバーを削除',
+        'delete_user' => 'ユーザーの削除',
+        'delete_user_description' => 'このユーザーを完全に削除します。この操作は取り消せません。',
+        'delete_user_button' => 'ユーザーを削除',
+    ],
 ];
