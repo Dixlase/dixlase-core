@@ -458,13 +458,13 @@ trait MailTestTrait
             
 
             // 共有コンポーネントを使用
-            return view('components.mail_verification_success', [
+            return view('components.mail-verification-success', [
                 'isInstall' => $context === 'install'
             ]);
 
         } catch (\Exception $e) {
             
-            return view('components.mail_verification_error', [
+            return view('components.mail-verification-error', [
                 'errorType' => 'verification_error',
                 'errorMessage' => __('mail.controller_messages.verification_error', ['error' => $e->getMessage()])
             ]);
