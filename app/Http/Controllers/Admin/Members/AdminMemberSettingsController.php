@@ -141,6 +141,7 @@ class AdminMemberSettingsController extends AdminLoggedInController
         $pwnedPasswordCheckEnabled = (bool) $this->memberSettingRepository->get('pwned_password_check_enabled', false);
         $loginAttemptLimitEnabled = (bool) $this->memberSettingRepository->get('login_attempt_limit_enabled', false);
         $loginAttemptMaxAttempts = (int) $this->memberSettingRepository->get('login_attempt_max_attempts', 5);
+        $loginAttemptMaxAttemptsIp = (int) $this->memberSettingRepository->get('login_attempt_max_attempts_ip', $loginAttemptMaxAttempts * 2);
         $loginAttemptTimeWindow = (int) $this->memberSettingRepository->get('login_attempt_time_window', 15);
         $loginAttemptLockoutDuration = (int) $this->memberSettingRepository->get('login_attempt_lockout_duration', 30);
         $lockoutNotificationEnabled = (bool) $this->memberSettingRepository->get('login_attempt_lockout_notification_enabled', true);
@@ -179,6 +180,7 @@ class AdminMemberSettingsController extends AdminLoggedInController
         // ログイン試行制限設定
         $this->viewParams['loginAttemptLimitEnabled'] = $loginAttemptLimitEnabled;
         $this->viewParams['loginAttemptMaxAttempts'] = $loginAttemptMaxAttempts;
+        $this->viewParams['loginAttemptMaxAttemptsIp'] = $loginAttemptMaxAttemptsIp;
         $this->viewParams['loginAttemptTimeWindow'] = $loginAttemptTimeWindow;
         $this->viewParams['loginAttemptLockoutDuration'] = $loginAttemptLockoutDuration;
         $this->viewParams['lockoutNotificationEnabled'] = $lockoutNotificationEnabled;

@@ -50,6 +50,9 @@ class AdminMemberAuthController extends AdminMemberSettingsController
         if (array_key_exists('login_attempt_max_attempts', $validated)) {
             $this->memberSettingRepository->set('login_attempt_max_attempts', (string) $validated['login_attempt_max_attempts']);
         }
+        if (array_key_exists('login_attempt_max_attempts_ip', $validated)) {
+            $this->memberSettingRepository->set('login_attempt_max_attempts_ip', (string) $validated['login_attempt_max_attempts_ip']);
+        }
         if (array_key_exists('login_attempt_time_window', $validated)) {
             $this->memberSettingRepository->set('login_attempt_time_window', (string) $validated['login_attempt_time_window']);
         }

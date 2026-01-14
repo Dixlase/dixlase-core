@@ -2,12 +2,27 @@
 
 namespace App\Traits;
 
-use App\Models\MemberLoginAttempt;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
+/**
+ * ログイン試行制限の共通ロジックを提供するTrait
+ * 
+ * このTraitは、メンバーとユーザーのログイン試行制限処理で共通する
+ * ロジックを提供します。
+ * 
+ * 使用するコントローラーは以下の抽象メソッドを実装する必要があります：
+ * - getLoginAttemptModelClass(): ログイン試行モデルのクラス名を返す
+ * - getSetting(): 設定値を取得
+ */
 trait LoginLockoutTrait
 {
+    /**
+     * ログイン試行モデルのクラス名を取得
+     * 
+     * @return string
+     */
+    abstract protected function getLoginAttemptModelClass(): string;
     /**
      * ログイン試行制限が有効かどうかを確認
      *
@@ -80,7 +95,8 @@ trait LoginLockoutTrait
             return false;
         }
 
-        $failedAttempts = MemberLoginAttempt::getFailedAttemptsCount(
+        $modelClass = $this->getLoginAttemptModelClass();
+        $failedAttempts = $modelClass::getFailedAttemptsCount(
             $identifier,
             $this->getTimeWindow($timeWindowKey)
         );
@@ -105,7 +121,8 @@ trait LoginLockoutTrait
             return false;
         }
 
-        $failedAttempts = MemberLoginAttempt::getFailedAttemptsCountByIp(
+        $modelClass = $this->getLoginAttemptModelClass();
+        $failedAttempts = $modelClass::getFailedAttemptsCountByIp(
             $ipAddress,
             $this->getTimeWindow($timeWindowKey)
         );
@@ -131,7 +148,8 @@ trait LoginLockoutTrait
             return null;
         }
 
-        $lastFailedAttempt = MemberLoginAttempt::getLastFailedAttempt($identifier);
+        $modelClass = $this->getLoginAttemptModelClass();
+        $lastFailedAttempt = $modelClass::getLastFailedAttempt($identifier);
         if (!$lastFailedAttempt) {
             return null;
         }
@@ -154,9 +172,10 @@ trait LoginLockoutTrait
      * @param bool $successful
      * @return MemberLoginAttempt
      */
-    public function recordLoginAttempt(Request $request, string $identifier, bool $successful = false): MemberLoginAttempt
+    public function recordLoginAttempt(Request $request, string $identifier, bool $successful = false)
     {
-        return MemberLoginAttempt::recordAttempt(
+        $modelClass = $this->getLoginAttemptModelClass();
+        return $modelClass::recordAttempt(
             $identifier,
             $request->ip(),
             $request->userAgent(),
@@ -172,8 +191,10 @@ trait LoginLockoutTrait
      */
     public function handleSuccessfulLogin(string $identifier): void
     {
+        $modelClass = $this->getLoginAttemptModelClass();
+        
         // 成功したログインを記録
-        MemberLoginAttempt::recordAttempt(
+        $modelClass::recordAttempt(
             $identifier,
             request()->ip(),
             request()->userAgent(),
@@ -181,7 +202,7 @@ trait LoginLockoutTrait
         );
 
         // 失敗した試行記録をクリア
-        MemberLoginAttempt::clearFailedAttempts($identifier);
+        $modelClass::clearFailedAttempts($identifier);
     }
 
     /**
@@ -212,8 +233,10 @@ trait LoginLockoutTrait
             return $lockoutInfo;
         }
 
+        $modelClass = $this->getLoginAttemptModelClass();
+        
         // 現在の失敗回数を取得
-        $failedAttempts = MemberLoginAttempt::getFailedAttemptsCount(
+        $failedAttempts = $modelClass::getFailedAttemptsCount(
             $identifier,
             $this->getTimeWindow($timeWindowKey)
         );
