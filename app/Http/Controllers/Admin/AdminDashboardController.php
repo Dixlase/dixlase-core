@@ -39,23 +39,6 @@ class AdminDashboardController extends AdminLoggedInController
     //
     public function index()
     {
-        // デバッグ: セッションの状態を確認
-        Log::info('[Dashboard Index] Session check', [
-            'has_auto_generated_recovery_codes' => session()->has('auto_generated_recovery_codes'),
-            'auto_generated_recovery_codes' => session('auto_generated_recovery_codes'),
-            'all_session_keys' => array_keys(session()->all()),
-        ]);
-        
-        /*
-        Log::info('管理者情報:', [
-            'ID' => $this->member->id,
-            '名前' => $this->member->name,
-            'メール' => $this->member->email,
-            '役割' => $this->member->role,
-            '外観設定' => $this->member->appearance,
-            'ステータス' => $this->member->status,
-        ]);
-        */
 
         // 回復コード情報を取得
         $user = Auth::guard('member')->user();

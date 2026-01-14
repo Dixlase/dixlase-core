@@ -24,6 +24,7 @@ namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class FrontController extends Controller
 {
@@ -35,5 +36,49 @@ class FrontController extends Controller
     protected $viewParams = [];
     //protected $currentTheme = 'default';
 
-    public function __construct() {}
+    public function __construct()
+    {
+        // テーマ設定を取得してビューに渡す
+        $this->loadThemeSettings();
+    }
+
+    /**
+     * テーマ設定を読み込む
+     */
+    protected function loadThemeSettings(): void
+    {
+        try {
+            // アクティブなテーマを取得
+            $activeThemeId = DB::table('theme_settings')
+                ->where('key', 'enabled_theme_id')
+                ->value('value');
+
+            if (!$activeThemeId) {
+                $this->viewParams['themeSettings'] = (object) [];
+                return;
+            }
+
+            // テーマ情報を取得
+            $theme = DB::table('themes')->find($activeThemeId);
+            if (!$theme) {
+                $this->viewParams['themeSettings'] = (object) [];
+                return;
+            }
+
+            // テーマ固有の設定テーブル名を生成
+            $settingsTableName = 'thm_' . strtolower(str_replace('-', '_', $theme->slug)) . '_settings';
+            
+            // テーマ設定を取得（カラム名は'name'と'value'）
+            $settings = DB::table($settingsTableName)
+                ->get()
+                ->pluck('value', 'name');
+
+            // オブジェクトに変換してビューに渡す
+            $this->viewParams['themeSettings'] = (object) $settings->toArray();
+        } catch (\Exception $e) {
+            // エラーが発生した場合は空のオブジェクトを渡す
+            \Log::error('Failed to load theme settings: ' . $e->getMessage());
+            $this->viewParams['themeSettings'] = (object) [];
+        }
+    }
 }

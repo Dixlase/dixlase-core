@@ -75,15 +75,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
         <!-- ボタンとパスワードリセットリンク -->
-        <div class="flex items-center justify-between mt-4">
+        <div class="flex flex-col items-center justify-center mt-4">
             <x-form.button
                 type="submit"
                 variant="primary"
                 :label="__('common.login')"
-                class="dark:focus:ring-offset-gray-800"
+                class="dark:focus:ring-offset-gray-800 mb-6"
             />
 
-            @if (Route::has('admin.password.request') && ($passwordResetEnabled ?? true))
+            @if (($canResetPassword ?? false) && Route::has('admin.password.request'))
                 <a class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 hover:underline" href="{{ route('admin.password.request') }}">
                     {{ __('admin/auth.login.forgot_password') }}
                 </a>

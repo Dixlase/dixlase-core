@@ -59,14 +59,6 @@ class LoginNotificationService
         // ログイン詳細データを準備
         $loginDetails = $this->prepareLoginDetails($request);
 
-        // デバッグログ
-        Log::info($context . ' called', [
-            'user_email' => $user->email ?? 'N/A',
-            'user_id' => $user->id,
-            'ip' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-        ]);
-
         // メール送信可能性をチェック
         if (!$this->canSendNotification($user, $context)) {
             Log::info($context . ' skipped: Mail sending not available');
@@ -99,7 +91,6 @@ class LoginNotificationService
             $getGlobalSetting
         );
 
-        // デバッグログ
         Log::info($context . ' decision', [
             'user_email' => $user->email ?? 'N/A',
             'user_id' => $user->id,

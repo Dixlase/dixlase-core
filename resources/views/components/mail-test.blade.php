@@ -496,11 +496,6 @@
 
     // テストステータス更新関数（グローバルスコープに定義）
     function updateTestStatus(testType, success, testDate) {
-        
-        // デバッグ: testTypeと構築されるIDを確認
-        
-        // 直接IDで要素を取得してテスト
-        
         // コンテキストに関係なく要素を取得（存在する場合のみ更新）
         const icon = document.getElementById(testType + '-test-icon');
         const text = document.getElementById(testType + '-test-text');

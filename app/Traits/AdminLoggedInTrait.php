@@ -254,13 +254,6 @@ trait AdminLoggedInTrait
      */
     protected function resolveBreadcrumbLabel(string $translationPath, string $part): ?string
     {
-        // デバッグ: 現在のロケールを確認
-        \Log::debug('Breadcrumb Label Resolution', [
-            'locale' => app()->getLocale(),
-            'translationPath' => $translationPath,
-            'part' => $part,
-        ]);
-        
         // パターン1: {path}/index.heading
         $indexKey = $translationPath . '/index.heading';
         if (\Lang::has($indexKey)) {
