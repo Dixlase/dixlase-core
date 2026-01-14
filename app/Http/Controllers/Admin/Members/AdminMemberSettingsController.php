@@ -62,7 +62,7 @@ class AdminMemberSettingsController extends AdminLoggedInController
     public function forceLogoutAll()
     {
         $currentUserId = Auth::guard('member')->id();
-        $sessionTable = config('session.table', 'sessions');
+        $sessionTable = config('session.table', 'members_sessions');
         
         if ($sessionTable && DB::getSchemaBuilder()->hasTable($sessionTable)) {
             $deletedCount = DB::table($sessionTable)
