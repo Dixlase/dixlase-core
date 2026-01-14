@@ -58,7 +58,6 @@ class ApplySessionConfig
             ConfigHelper::applySessionConfig($guard);
         } catch (\Exception $e) {
             // If session config fails (e.g., during database operations), continue with defaults
-            \Log::debug('Session config application failed: ' . $e->getMessage());
         }
 
         return $next($request);

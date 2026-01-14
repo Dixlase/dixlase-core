@@ -104,11 +104,6 @@ class PluginHelper
                 $adminRoutePath = self::getPluginPath($plugin->directory) . '/routes/admin.php';
                 
                 if (File::exists($adminRoutePath)) {
-                    Log::debug('PluginHelper: Loading admin routes', [
-                        'plugin' => $plugin->directory,
-                        'path' => $adminRoutePath,
-                    ]);
-                    
                     include $adminRoutePath;
                 }
             }
@@ -141,11 +136,6 @@ class PluginHelper
                 $webRoutePath = self::getPluginPath($plugin->directory) . '/routes/web.php';
                 
                 if (File::exists($webRoutePath)) {
-                    Log::debug('PluginHelper: Loading web routes', [
-                        'plugin' => $plugin->directory,
-                        'path' => $webRoutePath,
-                    ]);
-                    
                     include $webRoutePath;
                 }
             }
@@ -178,11 +168,6 @@ class PluginHelper
                 $apiRoutePath = self::getPluginPath($plugin->directory) . '/routes/api.php';
                 
                 if (File::exists($apiRoutePath)) {
-                    Log::debug('PluginHelper: Loading API routes', [
-                        'plugin' => $plugin->directory,
-                        'path' => $apiRoutePath,
-                    ]);
-                    
                     include $apiRoutePath;
                 }
             }

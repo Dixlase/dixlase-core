@@ -42,26 +42,13 @@ class SetLocale
      */
     public function handle(Request $request, Closure $next): Response
     {
-        \Log::debug('SetLocale: Start', [
-            'path' => $request->path(),
-            'current_locale' => app()->getLocale(),
-            'member_authenticated' => auth('member')->check(),
-        ]);
-
         // 優先言語を取得
         $locale = $this->getPreferredLocale($request);
-        \Log::debug('SetLocale: Preferred locale', [
-            'preferred_locale' => $locale,
-        ]);
 
         // 言語を設定
         if ($locale && LocaleHelper::isSupported($locale)) {
             app()->setLocale($locale);
             session(['locale' => $locale]);
-            \Log::debug('SetLocale: Locale set', [
-                'locale' => $locale,
-                'new_app_locale' => app()->getLocale(),
-            ]);
         }
 
         return $next($request);
@@ -75,11 +62,6 @@ class SetLocale
         // 1. 管理メンバーのプロフィール言語設定を最優先（管理バー表示時）
         if (auth('member')->check()) {
             $member = auth('member')->user();
-            \Log::debug('SetLocale: Member check', [
-                'has_member' => !is_null($member),
-                'member_id' => $member->id ?? null,
-                'member_locale_raw' => $member->locale ?? null,
-            ]);
             
             if ($member && $member->locale) {
                 $memberLocale = $member->locale;
@@ -87,13 +69,8 @@ class SetLocale
                 if ($memberLocale instanceof \App\Enums\Locale) {
                     $memberLocale = $memberLocale->value;
                 }
-                \Log::debug('SetLocale: Member locale extracted', [
-                    'locale' => $memberLocale,
-                    'is_supported' => LocaleHelper::isSupported($memberLocale),
-                ]);
                 
                 if (LocaleHelper::isSupported($memberLocale)) {
-                    \Log::debug('SetLocale: Using member locale', ['locale' => $memberLocale]);
                     return $memberLocale;
                 }
             }
@@ -101,31 +78,24 @@ class SetLocale
 
         // 2. セッションから取得
         $sessionLocale = LocaleHelper::getSessionLocale();
-        \Log::debug('SetLocale: Session locale', ['locale' => $sessionLocale]);
         if ($sessionLocale && LocaleHelper::isSupported($sessionLocale)) {
-            \Log::debug('SetLocale: Using session locale', ['locale' => $sessionLocale]);
             return $sessionLocale;
         }
 
         // 3. ログイン中のユーザーの設定から取得
         $userLocale = LocaleHelper::getUserPreferredLocale();
-        \Log::debug('SetLocale: User locale', ['locale' => $userLocale]);
         if ($userLocale && LocaleHelper::isSupported($userLocale)) {
-            \Log::debug('SetLocale: Using user locale', ['locale' => $userLocale]);
             return $userLocale;
         }
 
         // 4. ブラウザの言語設定から取得
         $browserLocale = $this->getBrowserLocale($request);
-        \Log::debug('SetLocale: Browser locale', ['locale' => $browserLocale]);
         if ($browserLocale && LocaleHelper::isSupported($browserLocale)) {
-            \Log::debug('SetLocale: Using browser locale', ['locale' => $browserLocale]);
             return $browserLocale;
         }
 
         // 5. デフォルト言語
         $defaultLocale = LocaleHelper::getDefaultLocale();
-        \Log::debug('SetLocale: Using default locale', ['locale' => $defaultLocale]);
         return $defaultLocale;
     }
 

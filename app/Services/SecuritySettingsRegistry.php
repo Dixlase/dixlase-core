@@ -747,10 +747,8 @@ class SecuritySettingsRegistry
                     break;
             }
         } catch (\Exception $e) {
-            Log::debug("SecuritySettingsRegistry: Failed to get {$key} from {$source}: " . $e->getMessage());
+            return $default;
         }
-
-        return $default;
     }
 
     /**
