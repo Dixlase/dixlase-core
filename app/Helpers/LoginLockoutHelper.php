@@ -154,16 +154,6 @@ class LoginLockoutHelper
             $lockoutSettings['time_window']
         );
 
-        // デバッグログ出力
-        \Log::info('LoginLockout Debug', [
-            'identifier' => $identifier,
-            'failed_attempts' => $failedAttempts,
-            'max_attempts' => $lockoutSettings['max_attempts'],
-            'time_window' => $lockoutSettings['time_window'],
-            'lockout_duration' => $lockoutSettings['lockout_duration'],
-            'condition_check' => $failedAttempts >= $lockoutSettings['max_attempts']
-        ]);
-
         if ($failedAttempts >= $lockoutSettings['max_attempts']) {
             // 失敗回数が上限に達した場合、ロックアウト期間をチェック
             $remainingLockoutMinutes = static::getLockoutRemainingMinutes(

@@ -461,13 +461,7 @@ trait PluginLoaderTrait
      */
     protected function mergeAdminNavigation(string $pluginName = 'Unknown', string $configPath = null): void
     {
-        // デバッグ: 旧実装と新実装を比較
-        $useNewImplementation = true; // falseにすると旧実装を使用
-        
-        if ($useNewImplementation) {
-            // AdminHelperの共通メソッドを使用
-            \App\Helpers\AdminHelper::mergeAdminNavigation($pluginName, $configPath);
-            return;
-        }
+        // AdminHelperの共通メソッドを使用
+        \App\Helpers\AdminHelper::mergeAdminNavigation($pluginName, $configPath);
     }
 }

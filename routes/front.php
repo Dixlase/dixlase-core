@@ -33,6 +33,9 @@ Route::post('/csp-report', [CspReportController::class, 'report'])
     ->withoutMiddleware([
         \App\Http\Middleware\ContentSecurityPolicy::class,
         \Illuminate\Session\Middleware\StartSession::class,
+        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+        \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+        \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
     ]);
 
 // インストール済みの場合にアクセス可能なルート

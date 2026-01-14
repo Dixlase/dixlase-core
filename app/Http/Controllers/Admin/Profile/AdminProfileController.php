@@ -62,13 +62,6 @@ class AdminProfileController extends AdminLoggedInController
      */
     public function index()
     {
-        // デバッグ: セッションの状態を確認
-        \Log::info('[Profile Index] Session check', [
-            'has_auto_generated_recovery_codes' => session()->has('auto_generated_recovery_codes'),
-            'auto_generated_recovery_codes' => session('auto_generated_recovery_codes'),
-            'all_session_keys' => array_keys(session()->all()),
-        ]);
-        
         // 回復コードセッションは一度表示したらクリア（モーダルを閉じた後は表示しない）
         // ただし、このリクエストでは表示するため、ビューに渡した後にクリア
         
