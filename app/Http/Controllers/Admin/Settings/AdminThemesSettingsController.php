@@ -638,51 +638,27 @@ class AdminThemesSettingsController extends AdminLoggedInController
         $themesPath = base_path('themes');
         
         if (!File::exists($themesPath)) {
-            Log::debug('Themes path does not exist', ['path' => $themesPath]);
             return $uninstalledThemes;
         }
         
         // themesディレクトリ内のすべてのディレクトリを取得
         $directories = File::directories($themesPath);
-        Log::debug('Found theme directories', [
-            'count' => count($directories),
-            'directories' => array_map('basename', $directories)
-        ]);
         
         // インストール済みテーマのディレクトリ名を取得（プラグイン管理と同じロジック）
         $installedDirectories = Theme::pluck('directory')->toArray();
-        Log::debug('Installed theme directories from DB', [
-            'count' => count($installedDirectories),
-            'directories' => $installedDirectories
-        ]);
         
         foreach ($directories as $directory) {
             $dirName = basename($directory);
             
-            Log::debug('Checking theme directory', [
-                'directory' => $dirName,
-                'is_installed' => in_array($dirName, $installedDirectories)
-            ]);
-            
             // DBに登録されていないテーマを検出
             if (!in_array($dirName, $installedDirectories)) {
                 $themeInfo = $this->getThemeInfoFromDirectory($dirName);
-                Log::debug('Theme info retrieved', [
-                    'directory' => $dirName,
-                    'info_is_null' => is_null($themeInfo),
-                    'info' => $themeInfo
-                ]);
                 
                 if ($themeInfo) {
                     $uninstalledThemes[] = $themeInfo;
                 }
             }
         }
-        
-        Log::debug('Final uninstalled themes', [
-            'count' => count($uninstalledThemes),
-            'themes' => collect($uninstalledThemes)->pluck('directory')->toArray()
-        ]);
         
         return $uninstalledThemes;
     }

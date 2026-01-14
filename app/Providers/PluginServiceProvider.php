@@ -97,18 +97,13 @@ class PluginServiceProvider extends ServiceProvider
                             try {
                                 $this->app->register($provider);
                             } catch (\Exception $e) {
-                                // プロバイダー登録時のエラーは警告のみ（DBテーブル未作成など）
-                                Log::debug("Failed to register plugin provider: {$provider}", [
-                                    'error' => $e->getMessage()
-                                ]);
+                                // Provider registration failed, skip
                             }
                         }
                     }
                 }
             } catch (\Exception $e) {
-                Log::warning("Failed to load plugin manifest: {$pluginDirectory}", [
-                    'error' => $e->getMessage()
-                ]);
+                // Failed to load plugin manifest
             }
         }
     }
@@ -161,7 +156,7 @@ class PluginServiceProvider extends ServiceProvider
             $content = "<?php\n\n// Generated at: " . now()->toDateTimeString() . "\n\nreturn " . var_export($directories, true) . ";\n";
             File::put($cachePath, $content);
         } catch (\Exception $e) {
-            Log::debug('Failed to update enabled plugins cache: ' . $e->getMessage());
+            // Failed to update cache
         }
     }
 
@@ -193,9 +188,9 @@ class PluginServiceProvider extends ServiceProvider
             
             return $enabledPlugins;
         } catch (\Exception $e) {
-            Log::debug('Failed to refresh enabled plugins cache: ' . $e->getMessage());
-            return [];
+            // Failed to refresh cache
         }
+        return [];
     }
 
     /**
@@ -405,8 +400,7 @@ class PluginServiceProvider extends ServiceProvider
                 $this->commands($this->pluginCommands);
             }
         } catch (\Exception $e) {
-            // エラーの場合はログに記録してスキップ
-            Log::debug('Failed to register plugin commands: ' . $e->getMessage());
+            // Failed to register plugin commands
         }
     }
 

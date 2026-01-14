@@ -61,9 +61,9 @@ trait RegistersCspPolicy
                 return $loader->loadTheme($slug);
             }
         } catch (\Exception $e) {
-            Log::debug("CSP: Failed to register CSP for {$type}:{$slug} - " . $e->getMessage());
-            return [];
-        }
+            // Failed to register CSP
+        }    
+        return [];
     }
 
     /**
@@ -78,11 +78,11 @@ trait RegistersCspPolicy
     {
         try {
             $registry = app(\App\Services\Csp\CspPolicyRegistry::class);
-            $registry->addDirectives($directives, $source);
-            
-            Log::debug("CSP: Registered directives from {$source}", $directives);
+            if (!empty($directives)) {
+                $registry->addDirectives($directives, $source);
+            }
         } catch (\Exception $e) {
-            Log::debug("CSP: Failed to register directives - " . $e->getMessage());
+            // Failed to register directives
         }
     }
 }

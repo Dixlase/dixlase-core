@@ -94,7 +94,6 @@ class ConfigHelper
             }
         } catch (\Exception $e) {
             // If there's any database error (e.g., during installation), return null
-            Log::debug("Database access failed for {$model}::{$key} during installation: " . $e->getMessage());
         }
         
         return null;
@@ -185,7 +184,6 @@ class ConfigHelper
                 }
             } catch (\Exception $e) {
                 // If there's any database error (e.g., during installation), fall back to security settings
-                Log::debug('MemberSetting access failed during installation: ' . $e->getMessage());
             }
         }
 
@@ -429,7 +427,6 @@ class ConfigHelper
             ]);
         } catch (\Exception $e) {
             // If there's any error (e.g., during installation or DB issues), use defaults
-            Log::debug('Failed to apply session config: ' . $e->getMessage());
             
             // Set safe defaults
             config([
@@ -460,7 +457,6 @@ class ConfigHelper
                 }
             } catch (\Exception $e) {
                 // If there's any database error (e.g., during installation), use default values
-                Log::debug('MemberSetting access failed during installation: ' . $e->getMessage());
             }
         }
 

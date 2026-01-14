@@ -83,8 +83,7 @@ class CspExtensionLoader
                 $this->loadPlugin($plugin->slug);
             }
         } catch (\Exception $e) {
-            // データベース未設定時は無視
-            Log::debug('CSP: Could not load plugins - ' . $e->getMessage());
+            // Could not load plugins
         }
     }
 
@@ -106,8 +105,7 @@ class CspExtensionLoader
                 }
             }
         } catch (\Exception $e) {
-            // データベース未設定時は無視
-            Log::debug('CSP: Could not load themes - ' . $e->getMessage());
+            // Could not load themes
         }
     }
 
@@ -158,7 +156,6 @@ class CspExtensionLoader
 
         if (!empty($directives)) {
             $this->registry->addDirectives($directives, "{$type}:{$slug}");
-            Log::debug("CSP: Loaded directives from {$type}:{$slug}", $directives);
         }
 
         return $directives;

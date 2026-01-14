@@ -95,11 +95,6 @@ class ThemeHelper
             $adminRoutePath = base_path("themes/{$activeTheme->directory}/routes/admin.php");
             
             if (File::exists($adminRoutePath)) {
-                Log::debug('ThemeHelper: Loading theme admin routes', [
-                    'theme' => $activeTheme->directory,
-                    'path' => $adminRoutePath,
-                ]);
-                
                 include $adminRoutePath;
             }
         } catch (\Exception $e) {
@@ -127,11 +122,6 @@ class ThemeHelper
             $webRoutePath = base_path("themes/{$activeTheme->directory}/routes/web.php");
             
             if (File::exists($webRoutePath)) {
-                Log::debug('ThemeHelper: Loading theme web routes', [
-                    'theme' => $activeTheme->directory,
-                    'path' => $webRoutePath,
-                ]);
-                
                 include $webRoutePath;
             }
         } catch (\Exception $e) {
