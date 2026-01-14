@@ -35,7 +35,7 @@ class LockoutNotificationMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.lockout_notification',
+            markdown: 'emails.lockout-notification',
         );
     }
 

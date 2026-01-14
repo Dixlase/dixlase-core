@@ -69,7 +69,7 @@ class LoginLockoutHelper
             'max_attempts_key' => 'login_attempt_max_attempts',
             'time_window_key' => 'login_attempt_time_window',
             'lockout_duration_key' => 'login_attempt_lockout_duration',
-            'notification_enabled_key' => 'lockout_notification_enabled',
+            'notification_enabled_key' => 'login_attempt_lockout_notification_enabled',
         ];
 
         $keys = array_merge($defaultKeys, $settingKeys);
@@ -208,8 +208,20 @@ class LoginLockoutHelper
                             'last_notification' => $lastNotificationTime,
                             'settings' => $lockoutSettings
                         ]);
-                        static::sendLockoutNotification($identifier, $request, $lockoutSettings);
-                        session([$notificationKey => Carbon::now()->toDateTimeString()]);
+                        
+                        // 通知送信を試行し、成功した場合のみセッションに記録
+                        $sent = static::sendLockoutNotification($identifier, $request, $lockoutSettings);
+                        if ($sent) {
+                            session([$notificationKey => Carbon::now()->toDateTimeString()]);
+                            Log::info('LoginLockout: Notification sent and recorded', [
+                                'identifier' => $identifier,
+                                'notification_time' => Carbon::now()->toDateTimeString()
+                            ]);
+                        } else {
+                            Log::warning('LoginLockout: Notification failed, not recorded in session', [
+                                'identifier' => $identifier
+                            ]);
+                        }
                     } else {
                         Log::info('LoginLockout: Notification already sent recently', [
                             'identifier' => $identifier,
@@ -276,9 +288,9 @@ class LoginLockoutHelper
      * @param string $identifier
      * @param Request $request
      * @param array $settings
-     * @return void
+     * @return bool 送信成功時true、失敗時false
      */
-    public static function sendLockoutNotification(string $identifier, Request $request, array $settings): void
+    public static function sendLockoutNotification(string $identifier, Request $request, array $settings): bool
     {
         Log::info('LoginLockout: sendLockoutNotification called', [
             'identifier' => $identifier,
@@ -292,14 +304,14 @@ class LoginLockoutHelper
             
             if (empty($notificationEmail)) {
                 Log::warning('ロックアウト通知: 管理者メールアドレスが設定されていません');
-                return;
+                return false;
             }
 
             // メールサーバーが設定済みかチェック（SystemNotificationServiceの一部機能を借用）
             $systemNotificationService = new SystemNotificationService();
             if (!$systemNotificationService->isMailServerConfigured()) {
                 Log::warning('ロックアウト通知: メールサーバーが設定されていません');
-                return;
+                return false;
             }
 
             $subject = __('mail.lockout_notification.subject');
@@ -323,12 +335,15 @@ class LoginLockoutHelper
                 'ip_address' => $request->ip(),
                 'notification_email' => $notificationEmail,
             ]);
+            
+            return true;
         } catch (\Exception $e) {
             Log::error('ロックアウト通知の送信に失敗しました', [
                 'identifier' => $identifier,
                 'ip_address' => $request->ip(),
                 'error' => $e->getMessage(),
             ]);
+            return false;
         }
     }
 

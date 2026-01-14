@@ -302,4 +302,50 @@ return [
         'recovery_codes_delete_success' => 'Recovery codes deleted successfully',
         'recovery_codes_delete_error' => 'Failed to delete recovery codes',
     ],
+
+    // Login Attempt Limit Settings
+    'login_attempt_limit_settings' => [
+        'enabled' => 'Login Attempt Limit',
+        'enabled_help' => 'Temporarily lock the account after a certain number of failed login attempts.',
+        'max_attempts' => 'Maximum Attempts (Identifier-based)',
+        'max_attempts_help' => 'Set the maximum number of login attempts before lockout.',
+        'max_attempts_ip' => 'Maximum Attempts (IP-based)',
+        'max_attempts_ip_help' => 'Set the maximum number of login attempts before lockout based on IP address.',
+        'time_window' => 'Time Window (minutes)',
+        'time_window_help' => 'Set the time window in minutes for counting attempts.',
+        'lockout_duration' => 'Lockout Duration (minutes)',
+        'lockout_duration_help' => 'Set the duration in minutes that the account will be locked.',
+        'notification_enabled' => 'Lockout Notification',
+        'notification_help' => 'Notify administrators when an account is locked.',
+    ],
+
+    // Two-Factor Authentication Detailed Settings
+    'two_fa_detailed_settings' => [
+        'expire_settings' => 'Authentication Expiration',
+        'expire_minutes' => 'Authentication Expiration',
+        'expire_minutes_help' => 'Set the expiration time for two-factor authentication codes in minutes.',
+        'resend_interval_seconds' => 'Authentication Email Resend Interval',
+        'resend_interval_seconds_help' => 'Set the waiting time in seconds before authentication emails can be resent.',
+        'attempt_limit_settings' => '2FA Attempt Limit Settings',
+        'max_attempts' => 'Maximum Attempts',
+        'max_attempts_help' => 'Set the maximum number of two-factor authentication attempts.',
+        'attempt_window' => 'Attempt Limit Time Window',
+        'attempt_window_help' => 'Set the time window in minutes for counting attempts.',
+        'lockout_duration' => 'Lockout Duration',
+        'lockout_duration_help' => 'Set the lockout duration in minutes when attempt limit is exceeded.',
+        'lockout_notification_enabled' => '2FA Lockout Notification',
+        'lockout_notification_enabled_help' => 'Notify administrators when locked out from two-factor authentication.',
+        'recovery_code_settings' => 'Recovery Code Settings',
+        'recovery_codes_count' => 'Recovery Code Generation Count',
+        'recovery_codes_count_help' => 'Set the number of recovery codes to generate.',
+        'recovery_code_regenerate_interval' => 'Recovery Code Regeneration Interval',
+        'recovery_code_regenerate_interval_help' => 'Set the waiting time in hours before recovery codes can be regenerated.',
+    ],
+
+    // CAPTCHA Settings
+    'captcha_settings' => [
+        'not_enabled' => 'To use CAPTCHA, please enable it in <a href=":url" class="underline">Security Settings</a>.',
+        'not_authenticated' => 'To use CAPTCHA, please complete CAPTCHA authentication in <a href=":url" class="underline">Security Settings</a>.',
+        'screens' => 'Screens to Display CAPTCHA',
+    ],
 ];
