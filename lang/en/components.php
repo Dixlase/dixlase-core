@@ -346,6 +346,22 @@ return [
     'captcha_settings' => [
         'not_enabled' => 'To use CAPTCHA, please enable it in <a href=":url" class="underline">Security Settings</a>.',
         'not_authenticated' => 'To use CAPTCHA, please complete CAPTCHA authentication in <a href=":url" class="underline">Security Settings</a>.',
-        'screens' => 'Screens to Display CAPTCHA',
+        'screens' => 'Screens to display CAPTCHA',
+    ],
+
+    // Danger zone (management operations)
+    'danger_zone' => [
+        'unlock_lockout' => 'Unlock Lockout',
+        'unlock_lockout_description' => 'Unlock login attempt limit and two-factor authentication lockout.',
+        'unlock_lockout_button' => 'Unlock Lockout',
+        'force_logout' => 'Force Logout',
+        'force_logout_description' => 'Force logout all sessions for this account.',
+        'force_logout_button' => 'Force Logout',
+        'delete_member' => 'Delete Member',
+        'delete_member_description' => 'Permanently delete this member. This action cannot be undone.',
+        'delete_member_button' => 'Delete Member',
+        'delete_user' => 'Delete User',
+        'delete_user_description' => 'Permanently delete this user. This action cannot be undone.',
+        'delete_user_button' => 'Delete User',
     ],
 ];

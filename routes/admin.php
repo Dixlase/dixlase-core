@@ -201,9 +201,9 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/force-logout/{member}', [Members\AdminMemberController::class, 'forceLogout'])
                     ->middleware('check.menu.edit:members.index')
                     ->name('force-logout');
-                Route::post('/unlock-two-fa/{member}', [Members\AdminMemberController::class, 'unlockTwoFa'])
+                Route::post('/unlock-lockout/{member}', [Members\AdminMemberController::class, 'unlockTwoFa'])
                     ->middleware('check.menu.edit:members.index')
-                    ->name('unlock-two-fa');
+                    ->name('unlock-lockout');
                 Route::post('/force-logout-all', [Members\AdminMemberSettingsController::class, 'forceLogoutAll'])
                     ->middleware('check.menu.edit:members.settings')
                     ->name('force-logout-all');

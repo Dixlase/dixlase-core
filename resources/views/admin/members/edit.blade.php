@@ -38,50 +38,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'formId' => 'update-form',
         'includeForm' => true
     ])
-
-    <!-- 認証メール送信確認モーダル -->
-    <x-modal
-        id="verificationEmailModal"
-        :title="__('admin/members/form.send_verification_email_title')"
-        :message="__('admin/members/form.send_verification_email_confirm')"
-        :confirm_label="__('common.send')"
-        :cancel_label="__('common.cancel')"
-        icon_type="info"
-        confirm_color="blue"
-    />
-
-    <!-- Passkey削除確認モーダル -->
-    <x-modal 
-        id="deletePasskeyModal"
-        :title="__('admin/profile.confirm_delete_passkey_title')"
-        message=""
-        :confirm_label="__('common.delete')"
-        :cancel_label="__('common.cancel')"
-    />
-
-    <!-- Passkey一括削除確認モーダル -->
-    <x-modal 
-        id="deleteAllPasskeysModal"
-        :title="__('admin/profile.confirm_delete_all_passkeys_title')"
-        :message="__('admin/profile.confirm_delete_all_passkeys_message')"
-        :confirm_label="__('common.delete')"
-        :cancel_label="__('common.cancel')"
-    />
-
-    <!-- 回復コード削除確認モーダル -->
-    <x-modal 
-        id="deleteRecoveryCodesModal"
-        :title="__('admin/members/form.confirm_delete_recovery_codes_title')"
-        :message="__('admin/members/form.confirm_delete_recovery_codes_message')"
-        :confirm_label="__('common.delete')"
-        :cancel_label="__('common.cancel')"
-        confirm_variant="danger"
-    />
-
-    <!-- Passkey結果表示モーダル -->
-    @include('two-fa.partials.passkey-result-modal', [
-        'modalId' => 'passkeyResultModal'
-    ])
 @endsection
 
 @section('save')
@@ -99,74 +55,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @push('scripts')
 <script @cspNonce>
-let currentMemberId = null;
 let currentCredentialId = null;
 let currentPasskeyName = '';
-
-function sendVerificationEmail(memberId) {
-    // メンバーIDを保存
-    currentMemberId = memberId;
-    // モーダルを開く
-    window.ModalManager.open('verificationEmailModal');
-}
-
-function confirmSendVerificationEmail() {
-    if (!currentMemberId) {
-        return;
-    }
-
-    const button = document.getElementById('send-verification-email-btn');
-    const buttonText = button ? (button.querySelector('span') || button) : null;
-    const originalText = buttonText ? buttonText.textContent : '';
-    
-    // モーダルを閉じる
-    window.ModalManager.close('verificationEmailModal');
-    
-    // ボタンを無効化
-    if (button) {
-        button.disabled = true;
-        if (buttonText) {
-            buttonText.textContent = '{{ __("common.sending") }}...';
-        }
-    }
-    
-    fetch(`/admin/members/${currentMemberId}/send-verification-email`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-            'Accept': 'application/json'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // リダイレクト（フラッシュメッセージを表示）
-            window.location.href = data.redirect;
-        } else {
-            // エラーメッセージを表示
-            alert(data.message || '{{ __("admin.settings.members.messages.verification_email_failed") }}');
-            if (button) {
-                button.disabled = false;
-                if (buttonText) {
-                    buttonText.textContent = originalText;
-                }
-            }
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('{{ __("common.error_occurred") }}');
-        if (button) {
-            button.disabled = false;
-            if (buttonText) {
-                buttonText.textContent = originalText;
-            }
-        }
-    });
-    
-    currentMemberId = null;
-}
 
 // Passkey削除モーダルを開く
 function openDeletePasskeyModal(credentialId, name) {
