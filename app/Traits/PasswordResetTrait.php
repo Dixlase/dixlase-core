@@ -33,9 +33,75 @@ use Illuminate\Support\Str;
  * 
  * このTraitは、メンバーとユーザーのパスワードリセット処理で共通する
  * ロジックを提供します。
+ * 
+ * 使用するコントローラーは以下の抽象メソッドを実装する必要があります：
+ * - getSettingsGetter(): 設定取得用のクロージャを返す
+ * - getPasswordResetBroker(): Password brokerの名前を返す
+ * - getUserModelClass(): ユーザーモデルのクラス名を返す
+ * - getForgotPasswordViewName(): パスワードリセットリンク要求画面のビュー名を返す
+ * - getResetPasswordViewName(): パスワードリセット画面のビュー名を返す
+ * - getPasswordResetRoute(): パスワードリセット処理のルート名を返す
+ * - getLoginRoute(): ログイン画面のルート名を返す
+ * - getCaptchaAction(): CAPTCHAアクション名を返す
  */
 trait PasswordResetTrait
 {
+    /**
+     * 設定取得用のクロージャを取得
+     * 
+     * @return callable function($key, $default)
+     */
+    abstract protected function getSettingsGetter(): callable;
+
+    /**
+     * Password brokerの名前を取得
+     * 
+     * @return string 'members' または 'users'
+     */
+    abstract protected function getPasswordResetBroker(): string;
+
+    /**
+     * ユーザーモデルのクラス名を取得
+     * 
+     * @return string
+     */
+    abstract protected function getUserModelClass(): string;
+
+    /**
+     * パスワードリセットリンク要求画面のビュー名を取得
+     * 
+     * @return string
+     */
+    abstract protected function getForgotPasswordViewName(): string;
+
+    /**
+     * パスワードリセット画面のビュー名を取得
+     * 
+     * @return string
+     */
+    abstract protected function getResetPasswordViewName(): string;
+
+    /**
+     * パスワードリセット処理のルート名を取得
+     * 
+     * @return string
+     */
+    abstract protected function getPasswordResetRoute(): string;
+
+    /**
+     * ログイン画面のルート名を取得
+     * 
+     * @return string
+     */
+    abstract protected function getLoginRoute(): string;
+
+    /**
+     * CAPTCHAアクション名を取得
+     * 
+     * @return string
+     */
+    abstract protected function getCaptchaAction(): string;
+
     /**
      * パスワード設定を取得
      *
@@ -153,5 +219,158 @@ trait PasswordResetTrait
         }
 
         return false;
+    }
+
+    /**
+     * パスワードリセットリンク要求画面を表示（共通処理）
+     * 
+     * @return \Illuminate\View\View
+     */
+    protected function showForgotPasswordForm(): \Illuminate\View\View
+    {
+        $settingsGetter = $this->getSettingsGetter();
+        $this->validatePasswordResetAvailability($settingsGetter);
+        
+        // CAPTCHA設定を取得
+        $captchaEnabled = filter_var($settingsGetter('captcha_password_reset_enabled', '0'), FILTER_VALIDATE_BOOLEAN);
+
+        // CAPTCHAウィジェットを生成
+        $captchaWidget = null;
+        if ($captchaEnabled) {
+            $loginHelper = app(\App\Helpers\LoginHelper::class);
+            $captchaWidget = $loginHelper->generateCaptchaWidget($this->getCaptchaAction());
+        }
+        
+        return view($this->getForgotPasswordViewName(), array_merge(
+            $this->getForgotPasswordViewData(),
+            [
+                'captchaEnabled' => $captchaEnabled,
+                'captchaWidget' => $captchaWidget,
+            ]
+        ));
+    }
+
+    /**
+     * パスワードリセットリンク要求画面用の追加データを取得
+     * 
+     * @return array
+     */
+    protected function getForgotPasswordViewData(): array
+    {
+        // デフォルトは空配列、各コントローラーでオーバーライド可能
+        return [];
+    }
+
+    /**
+     * パスワードリセットリンク送信処理（共通処理）
+     * 
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    protected function sendPasswordResetLink(\Illuminate\Http\Request $request): \Illuminate\Http\RedirectResponse
+    {
+        $settingsGetter = $this->getSettingsGetter();
+        $this->validatePasswordResetAvailability($settingsGetter);
+        
+        // CAPTCHA設定を取得
+        $captchaEnabled = filter_var($settingsGetter('captcha_password_reset_enabled', '0'), FILTER_VALIDATE_BOOLEAN);
+
+        // CAPTCHAを検証
+        $captchaError = $this->validateCaptcha($request, $captchaEnabled);
+        if ($captchaError) {
+            return back()
+                ->withInput(['email' => $captchaError['email']])
+                ->withErrors($captchaError['errors']);
+        }
+
+        // バリデーションルールを取得
+        $request->validate($this->getPasswordResetLinkValidationRules());
+
+        // メールアドレスに対応するユーザーを確認
+        $userModelClass = $this->getUserModelClass();
+        $user = $userModelClass::where('email', $request->email)->first();
+        
+        // ユーザーが存在し、メール認証が未完了の場合はエラー
+        if ($this->requiresEmailVerification($user)) {
+            return back()
+                ->withInput($request->only('email'))
+                ->withErrors(['email' => __('auth.email_not_verified')]);
+        }
+
+        // パスワードリセットリンクを送信
+        $status = \Illuminate\Support\Facades\Password::broker($this->getPasswordResetBroker())->sendResetLink(
+            $request->only('email')
+        );
+
+        return $status == \Illuminate\Support\Facades\Password::RESET_LINK_SENT
+            ? back()->with('success', __($status))
+            : back()->withInput($request->only('email'))
+                ->withErrors(['email' => __($status)]);
+    }
+
+    /**
+     * パスワードリセット画面を表示（共通処理）
+     * 
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\View\View
+     */
+    protected function showResetPasswordForm(\Illuminate\Http\Request $request): \Illuminate\View\View
+    {
+        $settingsGetter = $this->getSettingsGetter();
+        $this->validatePasswordResetAvailability($settingsGetter);
+        
+        // パスワード設定を取得
+        $passwordSettings = $this->getPasswordSettings($settingsGetter);
+        
+        return view($this->getResetPasswordViewName(), array_merge(
+            $this->getResetPasswordViewData($request),
+            [
+                'passwordMinLength' => $passwordSettings['min_length'],
+                'passwordRequireUppercase' => $passwordSettings['require_uppercase'],
+                'passwordRequireNumber' => $passwordSettings['require_number'],
+                'passwordRequireSymbol' => $passwordSettings['require_symbol'],
+            ]
+        ));
+    }
+
+    /**
+     * パスワードリセット画面用の追加データを取得
+     * 
+     * @param \Illuminate\Http\Request $request
+     * @return array
+     */
+    protected function getResetPasswordViewData(\Illuminate\Http\Request $request): array
+    {
+        // デフォルトは空配列、各コントローラーでオーバーライド可能
+        return [];
+    }
+
+    /**
+     * パスワードリセット処理（共通処理）
+     * 
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    protected function resetPassword(\Illuminate\Http\Request $request): \Illuminate\Http\RedirectResponse
+    {
+        $settingsGetter = $this->getSettingsGetter();
+        
+        // パスワード設定を取得してバリデーション
+        $passwordSettings = $this->getPasswordSettings($settingsGetter);
+        $request->validate($this->getPasswordResetValidationRules($passwordSettings));
+
+        // パスワードリセットを実行
+        $status = \Illuminate\Support\Facades\Password::broker($this->getPasswordResetBroker())->reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user) use ($request) {
+                $this->performPasswordReset($user, $request->password);
+            }
+        );
+
+        // パスワードリセット成功時はログイン画面へリダイレクト
+        return $status == \Illuminate\Support\Facades\Password::PASSWORD_RESET
+            ? redirect()->route($this->getLoginRoute())->with('success', __($status))
+            : back()->withInput($request->only('email'))
+                ->withErrors(['email' => __($status)]);
     }
 }

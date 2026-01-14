@@ -50,11 +50,14 @@ trait ManagesAccountTrait
 
             $model->sendEmailVerificationNotification('resend');
 
-            session()->flash('success', __($successMessageKey));
-
+            $message = __($successMessageKey);
+            $redirectUrl = route($redirectRouteName, [$this->getModelRouteParameterName() => $model->id]);
+            
+            session()->flash('success', $message);
+            
             return response()->json([
                 'success' => true,
-                'redirect' => route($redirectRouteName, [$this->getModelRouteParameterName() => $model->id])
+                'redirect' => $redirectUrl
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to send verification email: ' . $e->getMessage());

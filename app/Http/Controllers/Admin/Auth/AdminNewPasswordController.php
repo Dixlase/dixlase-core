@@ -35,17 +35,75 @@ class AdminNewPasswordController extends Controller
     use PasswordResetTrait;
 
     /**
-     * Display the password reset view.
+     * 設定取得用のクロージャを取得
      */
-    public function create(Request $request): View
+    protected function getSettingsGetter(): callable
     {
-        $settingsGetter = fn($key, $default = null) => MemberSetting::getValue($key, $default);
-        $this->validatePasswordResetAvailability($settingsGetter);
-        
-        // パスワード設定を取得
-        $passwordSettings = $this->getPasswordSettings($settingsGetter);
-        
-        return view('auth.reset_password', [
+        return fn($key, $default = null) => MemberSetting::getValue($key, $default);
+    }
+
+    /**
+     * Password brokerの名前を取得
+     */
+    protected function getPasswordResetBroker(): string
+    {
+        return 'members';
+    }
+
+    /**
+     * ユーザーモデルのクラス名を取得
+     */
+    protected function getUserModelClass(): string
+    {
+        return \App\Models\Member::class;
+    }
+
+    /**
+     * パスワードリセットリンク要求画面のビュー名を取得
+     */
+    protected function getForgotPasswordViewName(): string
+    {
+        return 'auth.forgot-password';
+    }
+
+    /**
+     * パスワードリセット画面のビュー名を取得
+     */
+    protected function getResetPasswordViewName(): string
+    {
+        return 'auth.reset-password';
+    }
+
+    /**
+     * パスワードリセット処理のルート名を取得
+     */
+    protected function getPasswordResetRoute(): string
+    {
+        return 'admin.password.store';
+    }
+
+    /**
+     * ログイン画面のルート名を取得
+     */
+    protected function getLoginRoute(): string
+    {
+        return 'admin.login';
+    }
+
+    /**
+     * CAPTCHAアクション名を取得
+     */
+    protected function getCaptchaAction(): string
+    {
+        return 'admin_password_reset';
+    }
+
+    /**
+     * パスワードリセット画面用の追加データを取得
+     */
+    protected function getResetPasswordViewData(Request $request): array
+    {
+        return [
             'title' => __('admin/auth.reset_password.title'),
             'header' => __('admin/auth.reset_password.header'),
             'description' => __('admin/auth.reset_password.description'),
@@ -55,10 +113,15 @@ class AdminNewPasswordController extends Controller
             'emailLabel' => __('admin/auth.reset_password.email'),
             'passwordLabel' => __('admin/auth.reset_password.password'),
             'submitText' => __('admin/auth.reset_password.reset_password_button'),
-            'passwordMinLength' => $passwordSettings['min_length'],
-            'passwordRequireUppercase' => $passwordSettings['require_uppercase'],
-            'passwordRequireSymbol' => $passwordSettings['require_symbol'],
-        ]);
+        ];
+    }
+
+    /**
+     * Display the password reset view.
+     */
+    public function create(Request $request): View
+    {
+        return $this->showResetPasswordForm($request);
     }
 
     /**
@@ -68,28 +131,6 @@ class AdminNewPasswordController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $settingsGetter = fn($key, $default = null) => MemberSetting::getValue($key, $default);
-        
-        // パスワード設定を取得してバリデーション
-        $passwordSettings = $this->getPasswordSettings($settingsGetter);
-        $request->validate($this->getPasswordResetValidationRules($passwordSettings));
-
-        // Here we will attempt to reset the user's password. If it is successful we
-        // will update the password on an actual user model and persist it to the
-        // database. Otherwise we will parse the error and return the response.
-        $status = Password::broker('members')->reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user) use ($request) {
-                $this->performPasswordReset($user, $request->password);
-            }
-        );
-
-        // If the password was successfully reset, we will redirect the user back to
-        // the application's home authenticated view. If there is an error we can
-        // redirect them back to where they came from with their error message.
-        return $status == Password::PASSWORD_RESET
-            ? redirect()->route('admin.login')->with('success', __($status))
-            : back()->withInput($request->only('email'))
-            ->withErrors(['email' => __($status)]);
+        return $this->resetPassword($request);
     }
 }
