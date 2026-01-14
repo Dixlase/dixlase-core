@@ -42,7 +42,7 @@ class AdminMemberSecurityController extends AdminLoggedInController
      */
     public function forceLogout(Member $member)
     {
-        $sessionTable = config('session.table', 'sessions');
+        $sessionTable = config('session.table', 'members_sessions');
         
         if ($sessionTable && DB::getSchemaBuilder()->hasTable($sessionTable)) {
             DB::table($sessionTable)

@@ -60,6 +60,10 @@ return [
             'driver' => 'session',
             'provider' => 'members',
         ],
+        'user' => [
+            'driver' => 'session',
+            'provider' => 'users',
+        ],
     ],
 
     /*
@@ -83,6 +87,10 @@ return [
         'members' => [
             'driver' => 'eloquent',
             'model' => App\Models\Member::class,
+        ],
+        'users' => [
+            'driver' => 'eloquent',
+            'model' => Plugins\DixlaseUsers\App\Models\DixlaseUsersUser::class,
         ],
     ],
 
@@ -109,6 +117,12 @@ return [
         'members' => [
             'provider' => 'members',
             'table' => 'members_password_reset_tokens',
+            'expire' => 60,
+            'throttle' => env('APP_ENV') === 'local' ? 0 : env('PASSWORD_RESET_THROTTLE', 60),
+        ],
+        'users' => [
+            'provider' => 'users',
+            'table' => 'plg_dixlase_users_password_reset_tokens',
             'expire' => 60,
             'throttle' => env('APP_ENV') === 'local' ? 0 : env('PASSWORD_RESET_THROTTLE', 60),
         ],
