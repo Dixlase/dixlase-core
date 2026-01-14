@@ -140,9 +140,10 @@ trait LoginTrait
 
         // パスワードリセット機能の有効/無効設定を取得
         $passwordResetEnabled = $this->isPasswordResetEnabled();
-        
+        $canSendMail = \App\Services\MailServerValidatorService::canSendMail();
+                
         // メールサーバーが設定・テスト済みの場合のみパスワードリセットを有効にする
-        $viewParams['passwordResetEnabled'] = $passwordResetEnabled && \App\Services\MailServerValidatorService::canSendMail();
+        $viewParams['canResetPassword'] = $passwordResetEnabled && $canSendMail;
 
         // CAPTCHA設定を取得
         $captchaAction = $this->getCaptchaAction();

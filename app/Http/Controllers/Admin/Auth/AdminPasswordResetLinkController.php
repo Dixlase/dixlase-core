@@ -36,34 +36,89 @@ class AdminPasswordResetLinkController extends Controller
     use PasswordResetTrait;
 
     /**
-     * Display the password reset link request view.
+     * 設定取得用のクロージャを取得
      */
-    public function create(): View
+    protected function getSettingsGetter(): callable
     {
-        $this->validatePasswordResetAvailability(fn($key, $default = null) => MemberSetting::getValue($key, $default));
-        
-        // CAPTCHA設定を取得
-        $captchaPasswordResetEnabled = MemberSetting::getValue('captcha_password_reset_enabled', '0');
+        return fn($key, $default = null) => MemberSetting::getValue($key, $default);
+    }
 
-        // CAPTCHA設定
-        $captchaEnabled = filter_var($captchaPasswordResetEnabled, FILTER_VALIDATE_BOOLEAN);
+    /**
+     * Password brokerの名前を取得
+     */
+    protected function getPasswordResetBroker(): string
+    {
+        return 'members';
+    }
 
-        // CAPTCHAウィジェットを生成
-        $captchaWidget = null;
-        if ($captchaEnabled) {
-            $loginHelper = app(LoginHelper::class);
-            $captchaWidget = $loginHelper->generateCaptchaWidget('admin_password_reset');
-        }
-        
-        return view('auth.forgot_password', [
+    /**
+     * ユーザーモデルのクラス名を取得
+     */
+    protected function getUserModelClass(): string
+    {
+        return \App\Models\Member::class;
+    }
+
+    /**
+     * パスワードリセットリンク要求画面のビュー名を取得
+     */
+    protected function getForgotPasswordViewName(): string
+    {
+        return 'auth.forgot-password';
+    }
+
+    /**
+     * パスワードリセット画面のビュー名を取得
+     */
+    protected function getResetPasswordViewName(): string
+    {
+        return 'auth.reset-password';
+    }
+
+    /**
+     * パスワードリセット処理のルート名を取得
+     */
+    protected function getPasswordResetRoute(): string
+    {
+        return 'admin.password.store';
+    }
+
+    /**
+     * ログイン画面のルート名を取得
+     */
+    protected function getLoginRoute(): string
+    {
+        return 'admin.login';
+    }
+
+    /**
+     * CAPTCHAアクション名を取得
+     */
+    protected function getCaptchaAction(): string
+    {
+        return 'admin_password_reset';
+    }
+
+    /**
+     * パスワードリセットリンク要求画面用の追加データを取得
+     */
+    protected function getForgotPasswordViewData(): array
+    {
+        return [
             'title' => __('admin/auth.forgot_password.title'),
             'header' => __('admin/auth.forgot_password.header'),
             'description' => __('admin/auth.forgot_password.description'),
             'route' => route('admin.password.email'),
             'loginRoute' => route('admin.login'),
-            'captchaEnabled' => $captchaEnabled,
-            'captchaWidget' => $captchaWidget,
-        ]);
+        ];
+    }
+
+    /**
+     * Display the password reset link request view.
+     */
+    public function create(): View
+    {
+        return $this->showForgotPasswordForm();
     }
 
     /**
@@ -73,42 +128,6 @@ class AdminPasswordResetLinkController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $this->validatePasswordResetAvailability(fn($key, $default = null) => MemberSetting::getValue($key, $default));
-        
-        // CAPTCHA設定を取得
-        $captchaEnabled = filter_var(MemberSetting::getValue('captcha_password_reset_enabled', '0'), FILTER_VALIDATE_BOOLEAN);
-
-        // CAPTCHAを検証
-        $captchaError = $this->validateCaptcha($request, $captchaEnabled);
-        if ($captchaError) {
-            return back()
-                ->withInput(['email' => $captchaError['email']])
-                ->withErrors($captchaError['errors']);
-        }
-
-        // バリデーションルールを取得
-        $request->validate($this->getPasswordResetLinkValidationRules());
-
-        // メールアドレスに対応するメンバーを確認
-        $member = \App\Models\Member::where('email', $request->email)->first();
-        
-        // メンバーが存在し、メール認証が未完了の場合はエラー
-        if ($this->requiresEmailVerification($member)) {
-            return back()
-                ->withInput($request->only('email'))
-                ->withErrors(['email' => __('auth.email_not_verified')]);
-        }
-
-        // We will send the password reset link to this user. Once we have attempted
-        // to send the link, we will examine the response then see the message we
-        // need to show to the user. Finally, we'll send out a proper response.
-        $status = Password::broker('members')->sendResetLink(
-            $request->only('email')
-        );
-
-        return $status == Password::RESET_LINK_SENT
-            ? back()->with('success', __($status))
-            : back()->withInput($request->only('email'))
-            ->withErrors(['email' => __($status)]);
+        return $this->sendPasswordResetLink($request);
     }
 }
