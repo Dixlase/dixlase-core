@@ -13,14 +13,6 @@ class SessionServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
-    }
-
-    /**
-     * Bootstrap services.
-     */
-    public function boot(): void
-    {
         $this->app->singleton('session.guard-aware', function ($app) {
             $connection = $app['db']->connection(config('session.connection'));
             $table = config('session.table');
@@ -41,7 +33,13 @@ class SessionServiceProvider extends ServiceProvider
 
             return $handler;
         });
+    }
 
+    /**
+     * Bootstrap services.
+     */
+    public function boot(): void
+    {
         // セッションドライバーを拡張
         $this->app['session']->extend('guard-aware-database', function ($app) {
             return $app['session.guard-aware'];
