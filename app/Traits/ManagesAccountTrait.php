@@ -114,7 +114,10 @@ trait ManagesAccountTrait
         string $redirectRouteName
     ) {
         $twoFaAttemptModelClass::where($modelIdColumn, $model->id)->delete();
-        $loginAttemptModelClass::where('identifier', $model->email)->delete();
+        // 失敗した試行記録のみを削除（成功した記録は統計用に保持）
+        $loginAttemptModelClass::where('identifier', $model->email)
+            ->where('successful', false)
+            ->delete();
 
         return redirect()->route($redirectRouteName, [$this->getModelRouteParameterName() => $model->id])
             ->with('success', __($successMessageKey));

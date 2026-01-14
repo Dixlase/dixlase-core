@@ -163,7 +163,7 @@ return [
     'verification_link_sent' => '新しい認証リンクをメールアドレスに送信しました。',
     'verify_email_login_required' => 'メールアドレスの認証を完了するには、ログインしてください。',
     'verify_email_change_login_required' => 'メールアドレスの変更を完了するには、ログインしてください。',
-    'account_verification_success' => 'アカウントの認証が完了しました。ログインしてください。',
+    'account_verification_success' => 'アカウントの認証が完了しました。',
     'email_verification_success' => 'メールアドレスの変更が完了しました。',
 
     // パスワード確認

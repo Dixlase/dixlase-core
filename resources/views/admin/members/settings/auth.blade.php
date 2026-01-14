@@ -84,6 +84,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </fieldset>
 
                 <fieldset>
+                    <legend>{{ __('admin/members/settings/auth.login_attempt_max_attempts_ip') }}</legend>
+                    <x-form.text
+                        type="number"
+                        name="login_attempt_max_attempts_ip"
+                        :value="old('login_attempt_max_attempts_ip', $loginAttemptMaxAttemptsIp)"
+                        :min="1"
+                        :max="100"
+                        class="input-common input-sm"
+                    />
+                    <p>
+                        {{ __('admin/members/settings/auth.login_attempt_max_attempts_ip_help') }}
+                    </p>
+                </fieldset>
+
+                <fieldset>
                     <legend>{{ __('admin/members/settings/auth.login_attempt_time_window') }}</legend>
                     <x-form.text
                         type="number"

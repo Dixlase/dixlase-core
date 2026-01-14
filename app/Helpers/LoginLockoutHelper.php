@@ -195,14 +195,27 @@ class LoginLockoutHelper
                 $lockoutInfo['lockout_minutes'] = $remainingLockoutMinutes;
                 \Log::info('LoginLockout Result: Still locked', ['remaining_minutes' => $remainingLockoutMinutes]);
 
-                // ロックアウト通知を送信
+                // ロックアウト通知を送信（重複送信を防ぐ）
                 if ($lockoutSettings['notification_enabled']) {
-                    Log::info('LoginLockout: Sending notification', [
-                        'identifier' => $identifier,
-                        'notification_enabled' => $lockoutSettings['notification_enabled'],
-                        'settings' => $lockoutSettings
-                    ]);
-                    static::sendLockoutNotification($identifier, $request, $lockoutSettings);
+                    $notificationKey = 'lockout_notification_sent_' . md5($identifier);
+                    $lastNotificationTime = session($notificationKey);
+                    
+                    // 最後の通知から30分以上経過している場合のみ再送信
+                    if (!$lastNotificationTime || Carbon::parse($lastNotificationTime)->addMinutes(30)->isPast()) {
+                        Log::info('LoginLockout: Sending notification', [
+                            'identifier' => $identifier,
+                            'notification_enabled' => $lockoutSettings['notification_enabled'],
+                            'last_notification' => $lastNotificationTime,
+                            'settings' => $lockoutSettings
+                        ]);
+                        static::sendLockoutNotification($identifier, $request, $lockoutSettings);
+                        session([$notificationKey => Carbon::now()->toDateTimeString()]);
+                    } else {
+                        Log::info('LoginLockout: Notification already sent recently', [
+                            'identifier' => $identifier,
+                            'last_notification' => $lastNotificationTime
+                        ]);
+                    }
                 } else {
                     Log::info('LoginLockout: Notification disabled', [
                         'identifier' => $identifier,

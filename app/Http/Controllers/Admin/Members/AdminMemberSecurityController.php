@@ -60,7 +60,10 @@ class AdminMemberSecurityController extends AdminLoggedInController
     public function unlockTwoFa(Member $member)
     {
         \App\Models\MemberTwoFaAttempt::where('member_id', $member->id)->delete();
-        \App\Models\MemberLoginAttempt::where('identifier', $member->email)->delete();
+        // 失敗した試行記録のみを削除（成功した記録は統計用に保持）
+        \App\Models\MemberLoginAttempt::where('identifier', $member->email)
+            ->where('successful', false)
+            ->delete();
 
         return redirect()->route('admin.members.edit', ['member' => $member->id])
             ->with('success', __('admin/members/edit.messages.unlock_lockout_success'));

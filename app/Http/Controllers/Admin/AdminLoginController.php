@@ -113,6 +113,14 @@ class AdminLoginController extends AdminController
     }
 
     /**
+     * ログイン試行モデルクラス名を取得
+     */
+    protected function getLoginAttemptModelClass(): string
+    {
+        return \App\Models\MemberLoginAttempt::class;
+    }
+
+    /**
      * ロックアウトサービスクラス名を取得
      */
     protected function getLockoutServiceClass(): string

@@ -163,7 +163,7 @@ return [
     'verification_link_sent' => 'A new verification link has been sent to your email address.',
     'verify_email_login_required' => 'Please log in to complete your email address verification.',
     'verify_email_change_login_required' => 'Please log in to complete your email address change.',
-    'account_verification_success' => 'Your account verification is complete. Please log in.',
+    'account_verification_success' => 'Your account verification is complete.',
     'email_verification_success' => 'Email address change has been completed.',
 
     // Confirm Password
