@@ -201,13 +201,13 @@ class ConfigHelper
     }
 
     /**
-     * Get session driver
+     * Get session driver (fixed to guard-aware-database)
      * 
      * @return string Session driver name
      */
     public static function getSessionDriver(): string
     {
-        return self::get('session.driver', 'session_driver', 'file', 'string', 'SecuritySetting');
+        return 'guard-aware-database';
     }
 
     /**
@@ -230,16 +230,6 @@ class ConfigHelper
         return self::get('session.lifetime', 'session_lifetime', 120, 'int', 'SecuritySetting');
     }
 
-    /**
-     * Set session driver
-     * 
-     * @param string $driver Session driver name
-     * @return void
-     */
-    public static function setSessionDriver(string $driver): void
-    {
-        self::setToDatabase('session_driver', $driver, 'SecuritySetting');
-    }
 
     /**
      * Set session encryption setting
@@ -272,7 +262,7 @@ class ConfigHelper
      */
     public static function getAppName(): string
     {
-        return self::get('app.name', 'app_name', 'MySoftware', 'string', 'BaseSetting');
+        return self::get('app.name', 'app_name', 'Dixlase', 'string', 'BaseSetting');
     }
 
     /**

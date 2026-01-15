@@ -33,13 +33,6 @@ class CheckInstallationReady
         $isInstalled = ($installed === 'true' || $installed === true);
         
         // インストール完了後はログを出力しない
-        if (!$isInstalled) {
-            Log::channel('install')->info('=== CheckInstallationReady::handle() START ===', [
-                'url' => $request->url(),
-                'method' => $request->method(),
-                'route' => $request->route() ? $request->route()->getName() : 'no route'
-            ]);
-        }
         
         // セッションから言語を設定
         if (session()->has('install_locale')) {
@@ -121,28 +114,20 @@ class CheckInstallationReady
         $isMigrated = $this->checkMigrationCompleted($debugInfo, !$isInstalled);
         
         // インストール完了後はログを出力しない
-        if (!$isInstalled) {
-            Log::channel('install')->info('CheckInstallationReady: INSTALLED=' . var_export($installed, true) . ', isInstalled=' . var_export($isInstalled, true) . ', isMigrated=' . var_export($isMigrated, true) . ', Route=' . $currentRoute);
-            Log::channel('install')->info('CheckInstallationReady: Debug Info=' . json_encode($debugInfo, JSON_UNESCAPED_UNICODE));
-        }
         
         if (!$isInstalled) {
             // 未インストール状態の処理
-            Log::channel('install')->info('CheckInstallationReady: 未インストール状態');
             
             if ($request->is('install*') || $request->is('install/*')) {
-                Log::channel('install')->info('CheckInstallationReady: installルート内');
                 // installルート内でのアクセス
                 
                 if ($request->is('install/complete')) {
                     // 完了画面へのアクセス
                     if (!$isMigrated) {
                         // マイグレーション未完了なのに完了画面にアクセス → 初期画面へ
-                        Log::channel('install')->info('CheckInstallationReady: マイグレーション未完了 - install.indexにリダイレクト');
                         return redirect()->route('install.index');
                     }
                     // マイグレーション完了済みなら完了画面表示を許可
-                    Log::channel('install')->info('CheckInstallationReady: 完了画面表示を許可');
                     if ($request->hasSession()) {
                         session(['install_process_completed' => true]);
                     }
@@ -150,44 +135,36 @@ class CheckInstallationReady
                     
                 } elseif ($request->is('install/finalize') || $currentRoute === 'install.finalize') {
                     // finalize処理は常に許可（POSTリクエスト）
-                    Log::channel('install')->info('CheckInstallationReady: finalize処理を許可');
                     
                 } else {
                     // その他のインストールフロー（index, environment, settings, database, confirm）
                     if ($isMigrated) {
                         // マイグレーション完了済み → 完了画面へリダイレクト
-                        Log::channel('install')->info('CheckInstallationReady: マイグレーション完了済み - 完了画面にリダイレクト');
                         session(['install_process_completed' => true]);
                         return redirect()->route('install.complete');
                     }
                     // マイグレーション未完了ならインストールフロー続行を許可
-                    Log::channel('install')->info('CheckInstallationReady: インストールフロー続行を許可');
                 }
                 
             } else {
                 // install以外のルート（フロントページなど）へのアクセス
-                Log::channel('install')->info('CheckInstallationReady: install以外のルート');
                 
                 if ($isMigrated) {
                     // マイグレーション完了 → 完了画面へ
                     // ただし、既に完了画面へのリダイレクト中でなければ
                     // セッションが利用可能な場合のみチェック
                     if ($request->hasSession() && !$request->session()->has('_redirect_to_complete')) {
-                        Log::channel('install')->info('CheckInstallationReady: マイグレーション完了 - 完了画面にリダイレクト');
                         session(['install_process_completed' => true]);
                         $request->session()->put('_redirect_to_complete', true);
                         return redirect()->route('install.complete');
                     } elseif ($request->hasSession()) {
                         // リダイレクトループ防止: すでにリダイレクト済みの場合は通過
-                        Log::channel('install')->info('CheckInstallationReady: リダイレクトループ防止 - 通過');
                     } else {
                         // セッションが利用できない場合はリダイレクト
-                        Log::channel('install')->info('CheckInstallationReady: セッション未開始 - 完了画面にリダイレクト');
                         return redirect()->route('install.complete');
                     }
                 } else {
                     // マイグレーション未完了 → インストール開始画面へ
-                    Log::channel('install')->info('CheckInstallationReady: 未インストール - install.indexにリダイレクト');
                     return redirect()->route('install.index');
                 }
             }
@@ -232,98 +209,42 @@ class CheckInstallationReady
             $debugInfo['step2_migrations_table'] = $hasMigrationsTable ? 'OK' : 'SKIP (直接SQL実行の可能性)';
             
             if ($hasMigrationsTable) {
-            } else {
-                // その他のインストールフロー（index, environment, settings, database, confirm）
-                if ($isMigrated) {
-                    // マイグレーション完了済み → 完了画面へリダイレクト
-                    Log::channel('install')->info('CheckInstallationReady: マイグレーション完了済み - 完了画面にリダイレクト');
-                    session(['install_process_completed' => true]);
-                    return redirect()->route('install.complete');
-                }
-                // マイグレーション未完了ならインストールフロー続行を許可
-                Log::channel('install')->info('CheckInstallationReady: インストールフロー続行を許可');
-            }
-
-        } else {
-            // install以外のルート（フロントページなど）へのアクセス
-            Log::channel('install')->info('CheckInstallationReady: install以外のルート');
-
-            if ($isMigrated) {
-                // マイグレーション完了 → 完了画面へ
-                // ただし、既に完了画面へのリダイレクト中でなければ
-                // セッションが利用可能な場合のみチェック
-                if ($request->hasSession() && !$request->session()->has('_redirect_to_complete')) {
-                    Log::channel('install')->info('CheckInstallationReady: マイグレーション完了 - 完了画面にリダイレクト');
-                    session(['install_process_completed' => true]);
-                    $request->session()->put('_redirect_to_complete', true);
-                    return redirect()->route('install.complete');
-                } elseif ($request->hasSession()) {
-                    // リダイレクトループ防止: すでにリダイレクト済みの場合は通過
-                    Log::channel('install')->info('CheckInstallationReady: リダイレクトループ防止 - 通過');
-                } else {
-                    // セッションが利用できない場合はリダイレクト
-                    Log::channel('install')->info('CheckInstallationReady: セッション未開始 - 完了画面にリダイレクト');
-                    return redirect()->route('install.complete');
+                // ステップ3: マイグレーション実行レコード数をチェック
+                try {
+                    $migrationCount = DB::table('migrations')->count();
+                    $minRequiredMigrations = 15;
+                    $debugInfo['step3_migration_count'] = "{$migrationCount}件 (必要: {$minRequiredMigrations})";
+                    
+                    if ($migrationCount < $minRequiredMigrations) {
+                        return false;
+                    }
+                } catch (\Exception $e) {
+                    // テーブル名の問題などでエラーが発生した場合はスキップ
+                    $debugInfo['step3_migration_count'] = 'ERROR: ' . $e->getMessage();
                 }
             } else {
-                // マイグレーション未完了 → インストール開始画面へ
-                Log::channel('install')->info('CheckInstallationReady: 未インストール - install.indexにリダイレクト');
-                return redirect()->route('install.index');
+                $debugInfo['step3_migration_count'] = 'SKIP (migrationsテーブル不在)';
             }
-        }
-
-    } else {
-        // インストール済みの場合、インストール画面にはアクセスできないようにする
-        if ($request->is('install*') || $request->is('install/*')) {
-            return redirect('/')->with('message', 'このアプリケーションは既にインストールされています。');
-        }
-    }
-
-    return $next($request);
-}
-
-/**
- * マイグレーションが完了しているかチェック
- * 
- * 提案1（migrationsテーブル）+ 提案3（管理者チェック）の統合版
- * 
- * @param array $debugInfo デバッグ情報を格納する配列（参照渡し）
- * @param bool $logToInstall インストールログに出力するか（デフォルト: false）
- */
-private function checkMigrationCompleted(array &$debugInfo = [], bool $logToInstall = false): bool
-{
-    try {
-        // ステップ1: データベース接続をチェック
-        $dbName = DB::connection()->getDatabaseName();
-        $debugInfo['step1_db_connection'] = $dbName ? "OK ({$dbName})" : 'NG';
-
-        if (!$dbName) {
-            return false;
-        }
-
-        // ステップ2: migrationsテーブルが存在するかチェック（Laravel標準）
-        // ※ 直接SQL実行でインストールされた場合はmigrationsテーブルがない場合があるため
-        //    存在しない場合はスキップして次のチェックに進む
-        // テーブルプレフィックスを考慮: dls_migrations または migrations
-        $hasMigrationsTable = DB::getSchemaBuilder()->hasTable('migrations');
-        $debugInfo['step2_migrations_table'] = $hasMigrationsTable ? 'OK' : 'SKIP (直接SQL実行の可能性)';
-
-        if ($hasMigrationsTable) {
-            // ステップ3: マイグレーション実行レコード数をチェック
-            try {
-                $migrationCount = DB::table('migrations')->count();
-                $minRequiredMigrations = 15;
-                $debugInfo['step3_migration_count'] = "{$migrationCount}件 (必要: {$minRequiredMigrations})";
-
-                if ($migrationCount < $minRequiredMigrations) {
+            
+            // ステップ4: 主要テーブルの存在チェック（念のため）
+            $requiredTables = ['members', 'base_settings', 'themes'];
+            $tableStatus = [];
+            
+            foreach ($requiredTables as $table) {
+                $exists = DB::getSchemaBuilder()->hasTable($table);
+                $tableStatus[$table] = $exists ? 'OK' : 'NG';
+                
+                if (!$exists) {
+                    if ($logToInstall) {
+                        Log::info("CheckInstallationReady: 主要テーブル '{$table}' が存在しません");
+                    }
+                    $debugInfo['step4_tables'] = $tableStatus;
                     return false;
                 }
-            } catch (\Exception $e) {
-                // テーブル名の問題などでエラーが発生した場合はスキップ
-                $debugInfo['step3_migration_count'] = 'ERROR: ' . $e->getMessage();
             }
-        } else {
-            $debugInfo['step3_migration_count'] = 'SKIP (migrationsテーブル不在)';
+            $debugInfo['step4_tables'] = $tableStatus;
+            
+            // ステップ5: 管理者ユーザーが存在するかチェック（初期データ投入の証拠）
             // role=10: SUPER_ADMIN, role=9: ADMIN
             $adminCount = DB::table('members')
                 ->whereIn('role', [9, 10])

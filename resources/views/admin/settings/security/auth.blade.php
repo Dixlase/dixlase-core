@@ -30,28 +30,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <h2>{{ __('admin/settings/security/auth.session_management') }}</h2>
             <p>{{ __('admin/settings/security/auth.session_management_description') }}</p>
 
-            <!-- セッションドライバー -->
-            <fieldset>
-                <legend>{{ __('admin/settings/security/auth.session_driver') }}</legend>
-                                    
-                <x-form.select
-                    id="session_driver"
-                    name="session_driver"
-                    :options="[
-                        'file' => __('admin/settings/security/auth.session_driver_file'),
-                        'database' => __('admin/settings/security/auth.session_driver_database'),
-                        'redis' => __('admin/settings/security/auth.session_driver_redis'),
-                        'memcached' => __('admin/settings/security/auth.session_driver_memcached'),
-                        'cookie' => __('admin/settings/security/auth.session_driver_cookie'),
-                        'array' => __('admin/settings/security/auth.session_driver_array'),
-                    ]"
-                    :value="old('session_driver', $settings['session_driver'])"
-                    class="input-common input-xl"
-                />
-                
-                <p>{{ __('admin/settings/security/auth.session_driver_help') }}</p>
-            </fieldset>
-
             <!-- セッション暗号化 -->
             <fieldset>
                 <x-form.toggle

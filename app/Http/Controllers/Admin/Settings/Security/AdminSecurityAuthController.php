@@ -45,7 +45,6 @@ class AdminSecurityAuthController extends AdminLoggedInController
         
         $settings = [
             // Session settings
-            'session_driver' => ConfigHelper::getSessionDriver(),
             'session_encrypt' => ConfigHelper::getSessionEncrypt(),
             'session_lifetime' => ConfigHelper::getSessionLifetime(),
             // Password security settings
@@ -63,14 +62,12 @@ class AdminSecurityAuthController extends AdminLoggedInController
     public function update(Request $request)
     {
         $validated = $request->validate([
-            'session_driver' => 'required|in:file,database,redis,memcached,cookie,array',
             'session_encrypt' => 'boolean',
             'session_lifetime' => 'required|integer|min:1|max:43200',
             'pwned_password_check_enabled' => 'boolean',
         ]);
 
         // セッション設定を更新
-        ConfigHelper::setSessionDriver($validated['session_driver']);
         ConfigHelper::setSessionEncrypt($validated['session_encrypt'] ?? false);
         ConfigHelper::setSessionLifetime($validated['session_lifetime']);
 
