@@ -50,6 +50,7 @@ class PasswordResetTest extends TestCase
 
 
         $this->post('/mypage/forgot-password', ['email' => $user->email]);
+        
         // テストの中に追加
         Notification::assertSentTo($user, ResetPassword::class, function ($notification) {
             Log::info('Notification sent with token: ' . $notification->token); // ログに通知の内容を記録

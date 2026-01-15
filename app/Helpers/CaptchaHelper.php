@@ -36,11 +36,32 @@ class CaptchaHelper
      */
     public static function getSettings(): array
     {
+        $driver = SecuritySetting::get('captcha_driver', 'google');
+        
+        // プロバイダー別のキーを取得
+        $siteKey = '';
+        $secretKey = '';
+        
+        switch ($driver) {
+            case 'google':
+                $siteKey = SecuritySetting::get('captcha_google_site_key', '');
+                $secretKey = SecuritySetting::get('captcha_google_secret_key', '');
+                break;
+            case 'google_enterprise':
+                $siteKey = SecuritySetting::get('captcha_google_enterprise_site_key', '');
+                $secretKey = SecuritySetting::get('captcha_google_enterprise_secret_key', '');
+                break;
+            case 'turnstile':
+                $siteKey = SecuritySetting::get('captcha_turnstile_site_key', '');
+                $secretKey = SecuritySetting::get('captcha_turnstile_secret_key', '');
+                break;
+        }
+        
         return [
             'enabled' => filter_var(SecuritySetting::get('captcha_enabled', false), FILTER_VALIDATE_BOOLEAN),
-            'driver' => SecuritySetting::get('captcha_driver', 'google'),
-            'site_key' => SecuritySetting::get('captcha_site_key', ''),
-            'secret_key' => SecuritySetting::get('captcha_secret_key', ''),
+            'driver' => $driver,
+            'site_key' => $siteKey,
+            'secret_key' => $secretKey,
             'google_version' => SecuritySetting::get('captcha_google_version', 'v3'),
             'google_min_score' => (float) SecuritySetting::get('captcha_google_min_score', 0.5),
             'google_project_id' => SecuritySetting::get('captcha_google_project_id', ''),

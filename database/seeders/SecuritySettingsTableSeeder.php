@@ -87,16 +87,6 @@ class SecuritySettingsTableSeeder extends Seeder
             ['value' => '0']
         );
 
-        // 統一キー設定（プロバイダー共通・後方互換性用）
-        SecuritySetting::updateOrCreate(
-            ['name' => 'captcha_site_key'],
-            ['value' => '']
-        );
-
-        SecuritySetting::updateOrCreate(
-            ['name' => 'captcha_secret_key'],
-            ['value' => '']
-        );
 
         // Google reCAPTCHA プロバイダー固有設定
         SecuritySetting::updateOrCreate(
