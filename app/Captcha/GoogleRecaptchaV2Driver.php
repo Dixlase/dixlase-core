@@ -39,11 +39,6 @@ class GoogleRecaptchaV2Driver implements CaptchaDriver
             'version' => CaptchaHelper::getGoogleVersion(),
             'verify_url' => 'https://www.google.com/recaptcha/api/siteverify',
         ], $config);
-        
-        Log::info('GoogleRecaptchaV2Driver constructor', [
-            'site_key' => substr($this->config['site_key'], 0, 10) . '...',
-            'version' => $this->config['version']
-        ]);
     }
 
     public function renderScript(): string
@@ -73,11 +68,6 @@ class GoogleRecaptchaV2Driver implements CaptchaDriver
         $action = $options['action'] ?? 'submit';
         $callback = $options['callback'] ?? 'onRecaptchaCallback';
         $scriptTag = $this->renderScript();
-        
-        Log::info('GoogleRecaptchaV2Driver renderWidget', [
-            'siteKey' => $siteKey,
-            'version' => $version
-        ]);
         
         if ($version === 'v2_invisible') {
             // v2 Invisible: チェックボックスなし、フォーム送信時に自動実行
@@ -159,18 +149,10 @@ class GoogleRecaptchaV2Driver implements CaptchaDriver
     public function verify(Request $request): CaptchaResult
     {
         if (!$this->isEnabled()) {
-            Log::info('GoogleRecaptchaV2Driver verify - CAPTCHA disabled, bypassing');
             return new CaptchaResult(true, null, null, [], ['bypass' => true]);
         }
 
         $response = $request->input('g-recaptcha-response');
-        
-        Log::info('GoogleRecaptchaV2Driver verify - Start', [
-            'version' => $this->config['version'],
-            'has_token' => !empty($response),
-            'token_length' => strlen($response ?? ''),
-            'ip' => $request->ip()
-        ]);
         
         if (empty($response)) {
             Log::warning('GoogleRecaptchaV2Driver verify - No token provided');
@@ -186,26 +168,17 @@ class GoogleRecaptchaV2Driver implements CaptchaDriver
 
             $result = $httpResponse->json();
 
-            if (!$result['success']) {
-                Log::warning('GoogleRecaptchaV2Driver verification failed', [
-                    'errors' => $result['error-codes'] ?? [],
-                    'ip' => $request->ip(),
-                ]);
-
-                return new CaptchaResult(
-                    false,
-                    null,
-                    null,
-                    ['captcha' => 'reCAPTCHA verification failed'],
-                    ['error_codes' => $result['error-codes'] ?? []]
-                );
+            if ($result['success']) {
+                return new CaptchaResult(true, null, null, [], []);
             }
 
-            Log::info('GoogleRecaptchaV2Driver verification success', [
-                'ip' => $request->ip()
-            ]);
-
-            return new CaptchaResult(true, null, null, [], []);
+            return new CaptchaResult(
+                false,
+                null,
+                null,
+                ['captcha' => 'reCAPTCHA verification failed'],
+                ['error_codes' => $result['error-codes'] ?? []]
+            );
 
         } catch (\Exception $e) {
             Log::error('GoogleRecaptchaV2Driver verification error', [

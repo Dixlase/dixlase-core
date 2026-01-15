@@ -200,16 +200,9 @@ class AppServiceProvider extends ServiceProvider
             // コマンドライン引数をチェックしてプラグイン管理コマンド実行中かを判定
             $isPluginManagementCommand = $this->isPluginManagementCommand();
             
-            \Log::info("AppServiceProvider: Boot check", [
-                'is_plugin_management_command' => $isPluginManagementCommand,
-                'argv' => $_SERVER['argv'] ?? 'not_available'
-            ]);
-            
             if (!$isPluginManagementCommand) {
                 // プラグインのロード
                 $this->loadEnabledPlugins();
-            } else {
-                \Log::info("AppServiceProvider: Skipping plugin loading during plugin management command");
             }
             // カスタムファイルのロード
             foreach ($fileTypes as $type => $typeConfig) {

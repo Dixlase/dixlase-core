@@ -71,11 +71,6 @@ class ThemeServiceProvider extends ServiceProvider
             if ($activeTheme) {
                 $themePath = base_path("themes/{$activeTheme->directory}");
                 
-                Log::info('Processing active theme', [
-                    'theme' => $activeTheme->directory,
-                    'slug' => $activeTheme->slug
-                ]);
-                
                 // Load config files
                 try {
                     $this->loadThemeConfigs($activeTheme, $themePath);
@@ -165,12 +160,6 @@ class ThemeServiceProvider extends ServiceProvider
         // Add the language directory with 'themes' namespace
         // This allows using __('themes::theme.key') or __('themes::admin.settings.key')
         $this->loadTranslationsFrom($langPath, 'themes');
-        
-        Log::info('Theme language files loaded', [
-            'theme' => $theme->directory,
-            'namespace' => 'themes',
-            'path' => $langPath
-        ]);
     }
 
     /**
@@ -186,12 +175,6 @@ class ThemeServiceProvider extends ServiceProvider
 
         // Register theme views with namespace
         $this->loadViewsFrom($viewsPath, 'themes');
-        
-        Log::info('Theme views loaded', [
-            'theme' => $theme->directory,
-            'namespace' => 'themes',
-            'path' => $viewsPath
-        ]);
     }
 
     /**
@@ -224,10 +207,6 @@ class ThemeServiceProvider extends ServiceProvider
         $webRoutePath = "{$themePath}/routes/web.php";
         if (File::exists($webRoutePath)) {
             include $webRoutePath;
-            Log::info('Theme web routes loaded', [
-                'theme' => $activeTheme->directory,
-                'path' => $webRoutePath
-            ]);
         }
         
         // Load admin routes within the admin route group
@@ -244,11 +223,6 @@ class ThemeServiceProvider extends ServiceProvider
                         include $adminRoutePath;
                     });
                 });
-            
-            Log::info('Theme admin routes loaded', [
-                'theme' => $activeTheme->directory,
-                'path' => $adminRoutePath
-            ]);
         }
     }
 }

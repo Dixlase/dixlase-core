@@ -239,12 +239,9 @@ class AdminSystemLogsController extends AdminLoggedInController
 
         try {
             if ($type === 'all' || $type === 'dixlase') {
-                Log::info('ログ出力テスト - 通常ログ', [
-                    'test_type' => 'dixlase_log',
-                    'timestamp' => now()->toDateTimeString(),
-                    'user_id' => auth()->id(),
-                    'user_name' => auth()->user()->name,
-                ]);
+                if ($request->input('test_type') === 'info') {
+                    Log::info('ログ出力テスト - 通常ログ');
+                }
                 $results['dixlase'] = 'success';
             }
 

@@ -39,10 +39,6 @@ class GoogleRecaptchaV3Driver implements CaptchaDriver
             'min_score' => CaptchaHelper::getGoogleMinScore(),
             'verify_url' => 'https://www.google.com/recaptcha/api/siteverify',
         ], $config);
-        
-        Log::info('GoogleRecaptchaV3Driver constructor', [
-            'site_key' => substr($this->config['site_key'], 0, 10) . '...'
-        ]);
     }
 
     public function renderScript(): string
@@ -79,11 +75,6 @@ class GoogleRecaptchaV3Driver implements CaptchaDriver
             $nonce = $nonceValue ? ' nonce="' . $nonceValue . '"' : '';
         }
         
-        Log::info('GoogleRecaptchaV3Driver renderWidget', [
-            'siteKey' => $siteKey,
-            'action' => $action
-        ]);
-        
         return $scriptTag . "
             <input type=\"hidden\" id=\"g-recaptcha-response\" name=\"g-recaptcha-response\" value=\"\">
             <script{$nonce}>
@@ -111,17 +102,10 @@ class GoogleRecaptchaV3Driver implements CaptchaDriver
     public function verify(Request $request): CaptchaResult
     {
         if (!$this->isEnabled()) {
-            Log::info('GoogleRecaptchaV3Driver verify - CAPTCHA disabled, bypassing');
             return new CaptchaResult(true, null, null, [], ['bypass' => true]);
         }
 
         $response = $request->input('g-recaptcha-response');
-        
-        Log::info('GoogleRecaptchaV3Driver verify - Start', [
-            'has_token' => !empty($response),
-            'token_length' => strlen($response ?? ''),
-            'ip' => $request->ip()
-        ]);
         
         if (empty($response)) {
             Log::warning('GoogleRecaptchaV3Driver verify - No token provided');
@@ -155,11 +139,9 @@ class GoogleRecaptchaV3Driver implements CaptchaDriver
             $score = $result['score'] ?? 0;
             $action = $result['action'] ?? null;
 
-            Log::info('GoogleRecaptchaV3Driver verification success', [
-                'score' => $score,
-                'action' => $action,
-                'ip' => $request->ip()
-            ]);
+            if ($result['success'] && $score >= $this->config['min_score']) {
+                return new CaptchaResult(true, $score, $action, [], ['score' => $score]);
+            }
 
             if ($score < $this->config['min_score']) {
                 Log::warning('GoogleRecaptchaV3Driver score too low', [

@@ -268,22 +268,15 @@ class AdminHelper
      */
     public static function mergeAdminNavigation(string $name = 'Unknown', string $configPath = null): void
     {
-        \Log::channel('dixlase')->info("=== {$name}: mergeAdminNavigation START ===", [
-            'timestamp' => now()->toDateTimeString(),
-            'config_path' => $configPath
-        ]);
-        
         $configFile = $configPath;
         
         if (!file_exists($configFile)) {
-            \Log::channel('dixlase')->info("{$name}: Config file not found", ['path' => $configFile]);
             return;
         }
 
         $config = require $configFile;
         
         if (!isset($config['nav']) || !is_array($config['nav'])) {
-            \Log::channel('dixlase')->info("{$name}: No nav config found");
             return;
         }
 
@@ -291,28 +284,15 @@ class AdminHelper
         // IMPORTANT: 静的変数でキャッシュして、Laravelのconfig()の問題を回避
         // キャッシュがある場合は必ず使用（プラグインのマージを保持）
         if (self::$navigationCache !== null) {
-            \Log::channel('dixlase')->info("{$name}: Using cached navigation", [
-                'cached_settings_children' => isset(self::$navigationCache['settings']['children']) ? array_keys(self::$navigationCache['settings']['children']) : 'none'
-            ]);
             $existingNav = self::$navigationCache;
         } else {
             // 初回のみconfig()から取得
             // IMPORTANT: app()->config['admin.nav']を必ず使用（プラグインのマージを保持）
             $fromAppConfig = app()->config['admin.nav'] ?? null;
             
-            \Log::channel('dixlase')->info("{$name}: Config retrieval comparison (first time)", [
-                'from_app_config_is_null' => is_null($fromAppConfig),
-                'from_app_config_keys' => $fromAppConfig ? array_keys($fromAppConfig) : 'null',
-                'from_app_config_settings_children' => isset($fromAppConfig['settings']['children']) ? array_keys($fromAppConfig['settings']['children']) : 'none',
-            ]);
-            
             // app()->configがnullの場合のみconfig()から読み込む
             if ($fromAppConfig === null) {
                 $fromAppConfig = config('admin.nav', []);
-                \Log::channel('dixlase')->info("{$name}: Fallback to config() helper", [
-                    'config_helper_keys' => array_keys($fromAppConfig),
-                    'config_helper_settings_children' => isset($fromAppConfig['settings']['children']) ? array_keys($fromAppConfig['settings']['children']) : 'none',
-                ]);
             }
             
             $existingNav = $fromAppConfig;
@@ -325,12 +305,8 @@ class AdminHelper
              !isset($existingNav['settings']['children']['base']) ||
              !isset($existingNav['settings']['children']['security']))) {
             
-            \Log::channel('dixlase')->warning("{$name}: Core admin.nav settings missing or incomplete, checking if reload needed");
-            
             // 完全に空の場合のみ再読み込み
             if (empty($existingNav)) {
-                \Log::channel('dixlase')->warning("{$name}: Config is empty, forcing reload from config file");
-                
                 // コアの設定ファイルを直接読み込み
                 $coreConfigPath = config_path('admin.php');
                 if (file_exists($coreConfigPath)) {
@@ -339,34 +315,13 @@ class AdminHelper
                         // コアの設定で初期化
                         $existingNav = $coreConfig['nav'];
                         config(['admin.nav' => $existingNav]);
-                        \Log::channel('dixlase')->info("{$name}: Core admin.nav settings reloaded", [
-                            'core_settings_children' => isset($existingNav['settings']['children']) ? array_keys($existingNav['settings']['children']) : 'none'
-                        ]);
                     }
                 }
-            } else {
-                \Log::channel('dixlase')->info("{$name}: Config exists but incomplete, keeping existing config to preserve theme/plugin changes");
             }
         }
         
-        \Log::channel('dixlase')->info("{$name}: Before merge", [
-            'existing_nav_keys' => array_keys($existingNav),
-            'config_nav_keys' => array_keys($config['nav']),
-            'existing_settings' => isset($existingNav['settings']) ? [
-                'keys' => array_keys($existingNav['settings']),
-                'children' => isset($existingNav['settings']['children']) ? array_keys($existingNav['settings']['children']) : 'no_children'
-            ] : 'not_exists'
-        ]);
-        
         // ナビゲーション設定をマージ
         foreach ($config['nav'] as $key => $value) {
-            \Log::channel('dixlase')->info("{$name}: Processing nav key '{$key}'", [
-                'has_children' => isset($value['children']),
-                'existing_key_exists' => isset($existingNav[$key]),
-                'has_insert_after' => isset($value['_insert_after']),
-                'has_insert_before' => isset($value['_insert_before'])
-            ]);
-            
             // 挿入位置の情報を保存
             $insertAfter = $value['_insert_after'] ?? null;
             $insertBefore = $value['_insert_before'] ?? null;
@@ -376,43 +331,19 @@ class AdminHelper
             
             // 既存の設定がある場合は子項目をマージ
             if (isset($existingNav[$key])) {
-                \Log::channel('dixlase')->info("{$name}: Merging with existing key '{$key}'", [
-                    'existing_structure' => $existingNav[$key],
-                    'new_structure' => $value
-                ]);
-                
                 // 既存の設定を保持しつつ、子項目をマージ
                 if (isset($value['children']) && isset($existingNav[$key]['children'])) {
-                    \Log::channel('dixlase')->info("{$name}: Merging children for '{$key}'", [
-                        'existing_children_keys' => array_keys($existingNav[$key]['children']),
-                        'new_children_keys' => array_keys($value['children'])
-                    ]);
                     // 再帰的にマージ（3階層目以降も対応）
                     $existingNav[$key]['children'] = self::deepMergeNavigation(
                         $existingNav[$key]['children'],
                         $value['children'],
                         $name
                     );
-                    \Log::channel('dixlase')->info("{$name}: After children merge for '{$key}'", [
-                        'merged_children_keys' => array_keys($existingNav[$key]['children'])
-                    ]);
                 } elseif (isset($value['children'])) {
-                    \Log::channel('dixlase')->info("{$name}: Adding children to existing '{$key}' (no existing children)");
                     $existingNav[$key]['children'] = $value['children'];
-                }
-                
-                // その他のプロパティは既存の設定を優先（上書きしない）
-                foreach ($value as $prop => $propValue) {
-                    if ($prop !== 'children') {
-                        \Log::channel('dixlase')->info("{$name}: Skipping property '{$prop}' for '{$key}' (existing setting preserved)");
-                    }
                 }
             } else {
                 // 新しいキーの場合は挿入位置を考慮して追加
-                \Log::channel('dixlase')->info("{$name}: Adding new key '{$key}'", [
-                    'insert_after' => $insertAfter,
-                    'insert_before' => $insertBefore
-                ]);
                 
                 if ($insertAfter || $insertBefore) {
                     // 挿入位置が指定されている場合
@@ -426,38 +357,11 @@ class AdminHelper
         
         // マージした設定を反映
         // IMPORTANT: 静的変数にキャッシュして、次回以降のマージで使用
-        \Log::channel('dixlase')->info("{$name}: Before setting config", [
-            'existingNav_settings_children' => isset($existingNav['settings']['children']) ? array_keys($existingNav['settings']['children']) : 'none'
-        ]);
-        
-        // 静的変数にキャッシュ
         self::$navigationCache = $existingNav;
         
         // Laravelの設定にも反映（ビューなどで使用される）
         app()->config['admin.nav'] = $existingNav;
         config(['admin.nav' => $existingNav]);
-        
-        // 設定後の確認
-        \Log::channel('dixlase')->info("{$name}: After setting config", [
-            'cached_settings_children' => isset(self::$navigationCache['settings']['children']) ? array_keys(self::$navigationCache['settings']['children']) : 'none',
-            'app_config_settings_children' => isset(app()->config['admin.nav']['settings']['children']) ? array_keys(app()->config['admin.nav']['settings']['children']) : 'none'
-        ]);
-        
-        \Log::channel('dixlase')->info("=== {$name}: mergeAdminNavigation END ===", [
-            'final_nav_keys' => array_keys($existingNav),
-            'final_nav_full' => $existingNav,
-            'final_settings_children' => isset($existingNav['settings']['children']) ? array_keys($existingNav['settings']['children']) : 'none',
-            'final_settings_full' => isset($existingNav['settings']) ? $existingNav['settings'] : 'none'
-        ]);
-        
-        // 設定セクションの詳細を出力
-        if (isset($existingNav['settings'])) {
-            \Log::channel('dixlase')->info("=== {$name}: SETTINGS SECTION DETAIL ===", [
-                'settings_full' => $existingNav['settings'],
-                'settings_children_count' => isset($existingNav['settings']['children']) ? count($existingNav['settings']['children']) : 0,
-                'settings_children_keys' => isset($existingNav['settings']['children']) ? array_keys($existingNav['settings']['children']) : []
-            ]);
-        }
     }
 
     /**
@@ -479,7 +383,6 @@ class AdminHelper
         foreach ($nav as $navKey => $navValue) {
             // _insert_before の処理
             if ($insertBefore && $navKey === $insertBefore && !$inserted) {
-                \Log::channel('dixlase')->info("{$name}: Inserting '{$key}' before '{$insertBefore}'");
                 $newNav[$key] = $value;
                 $inserted = true;
             }
@@ -489,7 +392,6 @@ class AdminHelper
             
             // _insert_after の処理
             if ($insertAfter && $navKey === $insertAfter && !$inserted) {
-                \Log::channel('dixlase')->info("{$name}: Inserting '{$key}' after '{$insertAfter}'");
                 $newNav[$key] = $value;
                 $inserted = true;
             }
@@ -497,7 +399,6 @@ class AdminHelper
         
         // 挿入位置が見つからなかった場合は最後に追加
         if (!$inserted) {
-            \Log::channel('dixlase')->warning("{$name}: Insert position not found for '{$key}', adding at the end");
             $newNav[$key] = $value;
         }
         
@@ -521,7 +422,6 @@ class AdminHelper
                     // 両方が配列の場合
                     if (isset($value['children']) && isset($existing[$key]['children'])) {
                         // 子項目がある場合は再帰的にマージ
-                        \Log::channel('dixlase')->info("{$name}: Deep merging '{$key}' with children");
                         $existing[$key]['children'] = self::deepMergeNavigation(
                             $existing[$key]['children'],
                             $value['children'],
@@ -530,7 +430,6 @@ class AdminHelper
                         // children以外のプロパティは既存を保持
                     } elseif (isset($value['children'])) {
                         // 新しい項目にchildrenがある場合は追加
-                        \Log::channel('dixlase')->info("{$name}: Adding children to existing '{$key}'");
                         $existing[$key]['children'] = $value['children'];
                     }
                     // それ以外のプロパティは既存を保持（上書きしない）
@@ -540,7 +439,6 @@ class AdminHelper
                 }
             } else {
                 // 新しい項目の場合はそのまま追加
-                \Log::channel('dixlase')->info("{$name}: Adding new item '{$key}'");
                 $existing[$key] = $value;
             }
         }

@@ -150,9 +150,7 @@ class CheckInstallationSteps
             return $next($request);
         }
         
-        $currentStep = $this->getStepFromRoute($currentRoute);
-
-        Log::info('currentRoute:' . $currentRoute);
+        $currentRoute = $request->route()->getName();
         
         // 完了ページはインストール完了フラグがあれば許可
         if ($currentRoute === 'install.complete') {

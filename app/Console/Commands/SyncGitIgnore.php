@@ -241,8 +241,8 @@ class SyncGitIgnore extends Command
             }
 
             File::put($gitIgnorePath, $content);
-            $this->info(__('admin/command.git_sync.added', ['path' => $exclusionLine]));
-            Log::info("Added {$type} exclusion to .gitignore: {$exclusionLine}");
+            $newContent = implode("\n", $lines);
+            file_put_contents($gitignorePath, $newContent);
 
             return true;
         } catch (\Exception $e) {
@@ -273,8 +273,8 @@ class SyncGitIgnore extends Command
             $content = implode("\n", array_values($filteredLines));
             File::put($gitIgnorePath, $content);
 
-            $this->info(__('admin/command.git_sync.removed', ['path' => $exclusionLine]));
-            Log::info("Removed {$type} exclusion from .gitignore: {$exclusionLine}");
+            $newContent = implode("\n", $lines);
+            file_put_contents($gitignorePath, $newContent);
 
             return true;
         } catch (\Exception $e) {

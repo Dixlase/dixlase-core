@@ -92,17 +92,7 @@ class CaptchaTestService
         $secretKey = $settings['captcha_secret_key'] ?? CaptchaHelper::getSecretKey();
         $version = $settings['captcha_google_version'] ?? 'v3';
         
-        Log::info('CAPTCHA Test Debug - Starting Google reCAPTCHA test', [
-            'site_key' => substr($siteKey, 0, 10) . '...',
-            'secret_key' => substr($secretKey, 0, 10) . '...',
-            'version' => $version
-        ]);
-        
         if (empty($siteKey) || empty($secretKey)) {
-            Log::warning('CAPTCHA Test Debug - Missing keys', [
-                'has_site_key' => !empty($siteKey),
-                'has_secret_key' => !empty($secretKey)
-            ]);
             return [
                 'success' => false,
                 'message' => __('admin/settings/security/captcha.test_keys_missing')
@@ -129,12 +119,6 @@ class CaptchaTestService
         $siteKey = $settings['captcha_site_key'] ?? CaptchaHelper::getSiteKey();
         $secretKey = $settings['captcha_secret_key'] ?? CaptchaHelper::getSecretKey();
         $projectId = $settings['captcha_google_project_id'] ?? CaptchaHelper::getGoogleProjectId();
-        
-        Log::info('CAPTCHA Test Debug - Starting Google reCAPTCHA Enterprise test', [
-            'site_key' => substr($siteKey, 0, 10) . '...',
-            'secret_key' => substr($secretKey, 0, 10) . '...',
-            'project_id' => $projectId
-        ]);
         
         if (empty($siteKey) || empty($secretKey) || empty($projectId)) {
             return [
@@ -389,12 +373,6 @@ class CaptchaTestService
             $data = $response->json();
             $errorCodes = $data['error-codes'] ?? [];
             
-            Log::info('CAPTCHA version compatibility test', [
-                'version' => $version,
-                'response' => $data,
-                'error_codes' => $errorCodes
-            ]);
-            
             // v3キーの特徴を検出
             $hasV3Features = isset($data['score']) || isset($data['action']);
             
@@ -492,11 +470,6 @@ class CaptchaTestService
      */
     private function performAdvancedVersionTest(string $secretKey, string $version, string $siteKey): array
     {
-        Log::info('CAPTCHA Advanced Version Test - Starting', [
-            'version' => $version,
-            'site_key' => substr($siteKey, 0, 10) . '...'
-        ]);
-
         // 1. 基本的なキー検証
         $basicTest = $this->testBasicKeyValidity($secretKey);
         if (!$basicTest['valid']) {
@@ -505,7 +478,6 @@ class CaptchaTestService
 
         // 2. サイトキーのパターン分析
         $keyAnalysis = $this->analyzeSiteKeyPattern($siteKey);
-        Log::info('CAPTCHA Advanced Version Test - Key Analysis', $keyAnalysis);
 
         // 3. 複数のテストトークンでバージョン特性を検証
         $versionCheck = $this->checkVersionCharacteristics($secretKey, $version);
@@ -568,11 +540,6 @@ class CaptchaTestService
      */
     private function checkVersionCharacteristics(string $secretKey, string $version): array
     {
-        Log::info('CAPTCHA Version Check - Starting comprehensive test', [
-            'version' => $version,
-            'secret_key_prefix' => substr($secretKey, 0, 10) . '...'
-        ]);
-
         // 1. 基本的なAPIテスト（空のレスポンス）
         $basicResponse = $this->testWithEmptyResponse($secretKey);
         
@@ -603,11 +570,6 @@ class CaptchaTestService
 
         $data = $response->successful() ? $response->json() : [];
         
-        Log::info('CAPTCHA Version Test - Basic API Test', [
-            'data' => $data,
-            'error_codes' => $data['error-codes'] ?? []
-        ]);
-
         return $data;
     }
 
@@ -625,13 +587,6 @@ class CaptchaTestService
 
         $data = $response->successful() ? $response->json() : [];
         
-        Log::info('CAPTCHA Version Test - v3 Characteristics Test', [
-            'data' => $data,
-            'has_score' => isset($data['score']),
-            'has_action' => isset($data['action']),
-            'error_codes' => $data['error-codes'] ?? []
-        ]);
-
         return $data;
     }
 
@@ -649,12 +604,6 @@ class CaptchaTestService
         $data = $response->successful() ? $response->json() : [];
         $statusCode = $response->status();
         
-        Log::info('CAPTCHA Version Test - Enterprise API Test', [
-            'status_code' => $statusCode,
-            'data' => $data,
-            'is_enterprise_endpoint' => $statusCode !== 404
-        ]);
-
         return array_merge($data, ['_enterprise_status' => $statusCode]);
     }
 
@@ -663,11 +612,6 @@ class CaptchaTestService
      */
     private function analyzeResponsePatterns(array $responses, string $version): array
     {
-        Log::info('CAPTCHA Version Analysis - Starting pattern analysis', [
-            'version' => $version,
-            'response_keys' => array_keys($responses)
-        ]);
-
         // 簡略化されたバージョン検証アプローチ
         // Google reCAPTCHAの実際の動作に基づいて判定
         
@@ -684,12 +628,7 @@ class CaptchaTestService
 
         // 現在は基本的な接続テストのみ実行
         // バージョンミスマッチ検出は実際のキーの動作パターンが明確になるまで無効化
-        Log::info('CAPTCHA Version Analysis - Simplified validation', [
-            'version' => $version,
-            'basic_errors' => $errorCodes,
-            'validation_result' => 'pass_basic_connectivity'
-        ]);
-
+        
         return ['valid' => true];
     }
 

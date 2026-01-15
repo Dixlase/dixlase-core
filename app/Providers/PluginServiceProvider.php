@@ -232,8 +232,6 @@ class PluginServiceProvider extends ServiceProvider
             foreach ($enabledPlugins as $plugin) {
                 $pluginPath = base_path("plugins/{$plugin->directory}");
                 
-                Log::info('Processing plugin config', ['plugin' => $plugin->directory, 'slug' => $plugin->slug]);
-                
                 // Load config files
                 try {
                     $this->loadPluginConfigs($plugin, $pluginPath);
