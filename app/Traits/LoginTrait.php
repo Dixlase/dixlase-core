@@ -148,19 +148,9 @@ trait LoginTrait
         // CAPTCHA設定を取得
         $captchaAction = $this->getCaptchaAction();
         $captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha($captchaAction);
-        
-        if ($captchaEnabled) {
-            $viewParams['captchaEnabled'] = true;
-            $viewParams['captchaDriver'] = \App\Helpers\CaptchaHelper::getDriver();
-            
-            // CAPTCHAウィジェットを生成
-            $captchaDriverInstance = app(\App\Captcha\CaptchaDriver::class);
-            $widget = $captchaDriverInstance->renderWidget(['action' => $captchaAction]);
-            
-            $viewParams['captchaWidget'] = $widget;
-        } else {
-            $viewParams['captchaEnabled'] = false;
-        }
+        $viewParams['captchaEnabled'] = $captchaEnabled;
+        $viewParams['captchaDriver'] = \App\Helpers\CaptchaHelper::getDriver();
+        $viewParams['captchaWidget'] = \App\Helpers\CaptchaHelper::renderWidget($captchaAction);
 
         return view($this->getLoginViewName(), $viewParams);
     }
@@ -181,15 +171,12 @@ trait LoginTrait
 
         // CAPTCHA検証
         $captchaAction = $this->getCaptchaAction();
-        if (\App\Helpers\CaptchaHelper::shouldShowCaptcha($captchaAction)) {
-            $captchaDriverInstance = app(\App\Captcha\CaptchaDriver::class);
-            $captchaResult = $captchaDriverInstance->verify($request);
-            
-            if (!$captchaResult->isValid()) {
-                return back()->withErrors([
-                    'captcha' => $captchaResult->getErrorMessage(),
-                ])->withInput($request->except('password'));
-            }
+        $captchaResult = \App\Helpers\CaptchaHelper::verify($request, $captchaAction);
+        
+        if ($captchaResult && !$captchaResult->isValid()) {
+            return back()->withErrors([
+                'captcha' => $captchaResult->getErrorMessage(),
+            ])->withInput($request->except('password'));
         }
 
         // ロックアウト状態をチェック
