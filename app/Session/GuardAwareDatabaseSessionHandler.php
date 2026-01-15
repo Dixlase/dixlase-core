@@ -162,9 +162,6 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
      */
     public function write($sessionId, $data): bool
     {
-        $guard = $this->getCurrentGuard();
-        $table = $this->getTable();
-        
         $payload = $this->getDefaultPayload($data);
 
         if (!$this->exists) {
@@ -198,9 +195,10 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
         }
 
         $table = $this->getTable();
+        $guard = $this->getCurrentGuard();
         
-        // ゲスト用テーブルの場合はuser_idを含めない
-        if ($table === 'sessions') {
+        // ゲスト用テーブルの場合（guardがnull）はuser_id/member_idを含めない
+        if ($guard === null) {
             return array_merge($payload, [
                 'ip_address' => $this->ipAddress(),
                 'user_agent' => $this->userAgent(),
@@ -208,7 +206,7 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
         }
         
         // メンバー用テーブルの場合はmember_idを使用
-        if ($table === 'members_sessions') {
+        if ($guard === 'member') {
             return array_merge($payload, [
                 'member_id' => $this->userId(),
                 'ip_address' => $this->ipAddress(),
