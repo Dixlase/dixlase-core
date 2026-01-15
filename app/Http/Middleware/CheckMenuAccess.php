@@ -16,25 +16,9 @@ class CheckMenuAccess
      */
     public function handle(Request $request, Closure $next, string $menuKey)
     {
-        \Log::info('CheckMenuAccess: Checking access', [
-            'menu_key' => $menuKey,
-            'url' => $request->url(),
-            'user_id' => auth()->id(),
-            'user_role' => auth()->user()?->role?->value
-        ]);
-        
         $canAccess = AdminHelper::canAccessMenu($menuKey);
         
-        \Log::info('CheckMenuAccess: Result', [
-            'menu_key' => $menuKey,
-            'can_access' => $canAccess
-        ]);
-        
         if (!$canAccess) {
-            \Log::warning('CheckMenuAccess: Access denied', [
-                'menu_key' => $menuKey,
-                'url' => $request->url()
-            ]);
             abort(403, 'アクセス権限がありません。');
         }
 

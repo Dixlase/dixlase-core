@@ -85,24 +85,12 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
         }
 
         $path = request()->path();
-        \Log::info('GuardAwareDatabaseSessionHandler: getCurrentGuard called', [
-            'path' => $path,
-            'resolver_count' => count($this->guardResolvers),
-        ]);
-
         $guard = null;
 
         // カスタムリゾルバーを優先的に実行
         foreach ($this->guardResolvers as $index => $resolver) {
             $guard = $resolver(request());
-            \Log::info('GuardAwareDatabaseSessionHandler: Resolver executed', [
-                'resolver_index' => $index,
-                'returned_guard' => $guard,
-            ]);
             if ($guard !== null) {
-                \Log::info('GuardAwareDatabaseSessionHandler: Guard selected by resolver', [
-                    'guard' => $guard,
-                ]);
                 $this->currentGuard = $guard;
                 return $guard;
             }
@@ -112,9 +100,6 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
         
         // 管理画面の場合はmemberガード
         if (str_starts_with($path, 'admin')) {
-            \Log::info('GuardAwareDatabaseSessionHandler: Guard selected by default (admin)', [
-                'guard' => 'member',
-            ]);
             $this->currentGuard = 'member';
             return 'member';
         }
@@ -122,15 +107,11 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
         // 認証済みのガードを確認
         foreach (array_keys(config('auth.guards', [])) as $guard) {
             if (Auth::guard($guard)->check()) {
-                \Log::info('GuardAwareDatabaseSessionHandler: Guard selected by auth check', [
-                    'guard' => $guard,
-                ]);
                 $this->currentGuard = $guard;
                 return $guard;
             }
         }
 
-        \Log::info('GuardAwareDatabaseSessionHandler: No guard found');
         $this->currentGuard = null;
         return null;
     }
@@ -183,13 +164,6 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
     {
         $guard = $this->getCurrentGuard();
         $table = $this->getTable();
-        
-        Log::info('GuardAwareDatabaseSessionHandler: write called', [
-            'session_id' => $sessionId,
-            'guard' => $guard,
-            'table' => $table,
-            'exists' => $this->exists,
-        ]);
         
         $payload = $this->getDefaultPayload($data);
 
@@ -273,12 +247,6 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
      */
     protected function performInsert($sessionId, $payload)
     {
-        \Log::info('GuardAwareDatabaseSessionHandler: performInsert called', [
-            'session_id' => $sessionId,
-            'table' => $this->getTable(),
-            'trace' => array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 0, 5),
-        ]);
-        
         try {
             return $this->getQuery()->insert(array_merge(
                 ['id' => $sessionId],
@@ -299,12 +267,6 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
     {
         $table = $this->getTable();
         
-        Log::info('GuardAwareDatabaseSessionHandler: filterPayloadForTable', [
-            'table' => $table,
-            'payload_keys_before' => array_keys($payload),
-            'has_user_id' => isset($payload['user_id']),
-        ]);
-        
         // ゲスト用テーブル（sessions）の場合はuser_idを除外
         if ($table === 'sessions') {
             unset($payload['user_id']);
@@ -314,13 +276,6 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
             $payload['member_id'] = $payload['user_id'];
             unset($payload['user_id']);
         }
-        
-        Log::info('GuardAwareDatabaseSessionHandler: filterPayloadForTable after', [
-            'table' => $table,
-            'payload_keys_after' => array_keys($payload),
-            'has_user_id' => isset($payload['user_id']),
-            'has_member_id' => isset($payload['member_id']),
-        ]);
         
         return $payload;
     }

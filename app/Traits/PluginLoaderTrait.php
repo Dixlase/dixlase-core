@@ -40,35 +40,24 @@ trait PluginLoaderTrait
     {
         // コマンドライン引数から直接チェック
         $pluginManagementFlag = $this->getUninstallingPluginFromArgs();
-        \Log::info("PluginLoaderTrait: loadEnabledPlugins called", [
-            'plugin_management_flag' => $pluginManagementFlag,
-            'argv' => $_SERVER['argv'] ?? 'not_available'
-        ]);
 
         // プラグイン管理コマンド実行中はプラグインローダーをスキップ
         if ($pluginManagementFlag === 'PLUGIN_MANAGEMENT_COMMAND') {
-            \Log::info("PluginLoaderTrait: Skipping plugin loading during plugin management command");
             return;
         }
 
         // app:uninstall コマンド実行中もスキップ
         if (isset($_SERVER['argv']) && in_array('app:uninstall', $_SERVER['argv'])) {
-            \Log::info("PluginLoaderTrait: Skipping plugin loading during app:uninstall command");
             return;
         }
 
         //Pluginテーブルのenabled_atがnullでないレコードを取得
         //テーブルが存在しているか確認
         if (!Schema::hasTable('plugins')) {
-            \Log::info("PluginLoaderTrait: plugins table does not exist, skipping plugin loading");
             return;
         }
 
         $plugins = Plugin::whereNotNull('enabled_at')->get();
-        \Log::info("PluginLoaderTrait: Found enabled plugins", [
-            'count' => $plugins->count(),
-            'plugins' => $plugins->pluck('name')->toArray()
-        ]);
 
         foreach ($plugins as $plugin) {
             $pluginName = $plugin->name;
@@ -77,32 +66,14 @@ trait PluginLoaderTrait
             $pluginPath = base_path('plugins/' . $pluginDirectory);
             $customPluginPath = base_path('custom/plugins/' . $pluginDirectory);
 
-            \Log::info("PluginLoaderTrait: Processing plugin", [
-                'plugin_name' => $pluginName
-            ]);
-
             // プラグインのファイルをロード
             $this->loadPluginFiles($pluginName, $pluginPath, $customPluginPath, $pluginSlug);
-
 
             // サービスプロバイダの登録 (プラグインのファイルをロードした後)
             $providerClass = $this->resolvePluginServiceProvider($pluginName, $pluginDirectory);
 
-            \Log::info("PluginLoaderTrait: ServiceProvider resolution", [
-                'plugin_name' => $pluginName,
-                'provider_class' => $providerClass,
-                'will_register' => !empty($providerClass)
-            ]);
-
             if ($providerClass) {
-                \Log::info("PluginLoaderTrait: Registering ServiceProvider", [
-                    'plugin_name' => $pluginName,
-                    'provider_class' => $providerClass
-                ]);
                 $this->app->register($providerClass);
-                \Log::info("PluginLoaderTrait: ServiceProvider registered successfully", [
-                    'plugin_name' => $pluginName
-                ]);
             }
         }
     }

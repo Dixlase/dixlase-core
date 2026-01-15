@@ -43,11 +43,8 @@ class AdminMediaStoreRequest extends FormRequest
      */
     public function rules(): array
     {
-        $allowedFileTypes = json_decode(MediaSetting::where('name', 'allowed_file_types')->value('value'), true);
-        $maxFileSize = MediaSetting::where('name', 'max_file_size')->value('value') ?? '2048';
-
-        Log::info('許可されたファイルタイプ: ' . json_encode($allowedFileTypes));
-        Log::info('最大ファイルサイズ: ' . $maxFileSize . 'KB');
+        $allowedFileTypes = $this->getAllowedFileTypes();
+        $maxFileSize = $this->getMaxFileSize();
 
         return [
             'file' => 'required|file|mimes:' . implode(',', $allowedFileTypes) . '|max:' . $maxFileSize,

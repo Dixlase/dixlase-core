@@ -41,12 +41,6 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
             'min_score' => CaptchaHelper::getGoogleMinScore(),
             'project_id' => CaptchaHelper::getGoogleProjectId(),
         ], $config);
-        
-        Log::info('GoogleRecaptchaEnterpriseDriver constructor', [
-            'site_key' => substr($this->config['site_key'], 0, 10) . '...',
-            'api_key' => substr($this->config['api_key'], 0, 10) . '...',
-            'project_id' => $this->config['project_id']
-        ]);
     }
 
     public function renderScript(): string
@@ -82,11 +76,6 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
             $nonceValue = csp_nonce();
             $nonce = $nonceValue ? ' nonce="' . $nonceValue . '"' : '';
         }
-        
-        Log::info('GoogleRecaptchaEnterpriseDriver renderWidget', [
-            'siteKey' => $siteKey,
-            'action' => $action
-        ]);
         
         return $scriptTag . "
             <input type=\"hidden\" id=\"g-recaptcha-response\" name=\"g-recaptcha-response\" value=\"\">
@@ -124,11 +113,6 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
     protected function verifyWithEnterpriseAPI(Request $request, string $token): CaptchaResult
     {
         try {
-            Log::info('reCAPTCHA Enterprise verification attempt', [
-                'project_id' => $this->config['project_id'],
-                'site_key' => substr($this->config['site_key'], 0, 10) . '...',
-                'api_key' => substr($this->config['api_key'], 0, 10) . '...'
-            ]);
             
             // Enterprise REST APIを使用（APIキーベース認証）
             $apiUrl = "https://recaptchaenterprise.googleapis.com/v1/projects/{$this->config['project_id']}/assessments?key={$this->config['api_key']}";
@@ -143,12 +127,6 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
                 ]
             ];
 
-            Log::info('reCAPTCHA Enterprise API call', [
-                'api_url' => preg_replace('/key=[^&]+/', 'key=***', $apiUrl),
-                'site_key' => substr($this->config['site_key'], 0, 10) . '...',
-                'token_length' => strlen($token),
-                'user_ip' => $request->ip()
-            ]);
             
             $timeout = config('security.external_services.captcha_timeout', 10);
             
@@ -169,13 +147,6 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
             
             $result = $httpResponse->json();
             
-            Log::info('reCAPTCHA Enterprise API response', [
-                'token_valid' => $result['tokenProperties']['valid'] ?? false,
-                'score' => $result['riskAnalysis']['score'] ?? null,
-                'action' => $result['tokenProperties']['action'] ?? null,
-                'invalid_reason' => ($result['tokenProperties']['valid'] ?? false) ? null : ($result['tokenProperties']['invalidReason'] ?? 'unknown')
-            ]);
-
             if (!($result['tokenProperties']['valid'] ?? false)) {
                 Log::warning('reCAPTCHA Enterprise verification failed', [
                     'reason' => $result['tokenProperties']['invalidReason'] ?? 'unknown',

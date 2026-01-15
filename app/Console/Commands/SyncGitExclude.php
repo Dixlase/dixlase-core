@@ -208,9 +208,6 @@ class SyncGitExclude extends Command
             
             $content = implode("\n", $lines);
             File::put($excludePath, $content);
-            
-            $this->info(__('admin/command.git_sync.added', ['path' => $pluginPath]));
-            Log::info("Added plugin exclusion to .git/info/exclude: {$pluginPath}");
 
             return true;
         } catch (\Exception $e) {
@@ -240,9 +237,6 @@ class SyncGitExclude extends Command
 
             $content = implode("\n", array_values($filteredLines));
             File::put($excludePath, $content);
-
-            $this->info(__('admin/command.git_sync.removed', ['path' => $pluginPath]));
-            Log::info("Removed plugin exclusion from .git/info/exclude: {$pluginPath}");
 
             return true;
         } catch (\Exception $e) {
@@ -281,9 +275,6 @@ class SyncGitExclude extends Command
             
             $content = implode("\n", $lines);
             File::put($excludePath, $content);
-            
-            $this->info(__('admin/command.git_sync.added', ['path' => $themePath]));
-            Log::info("Added theme exclusion to .git/info/exclude: {$themePath}");
 
             return true;
         } catch (\Exception $e) {
@@ -313,9 +304,6 @@ class SyncGitExclude extends Command
 
             $content = implode("\n", array_values($filteredLines));
             File::put($excludePath, $content);
-
-            $this->info(__('admin/command.git_sync.removed', ['path' => $themePath]));
-            Log::info("Removed theme exclusion from .git/info/exclude: {$themePath}");
 
             return true;
         } catch (\Exception $e) {

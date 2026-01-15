@@ -43,7 +43,6 @@ class Authenticate extends BaseAuthenticate
         // 親クラスでは「$this->authenticate($request, $guards)」をコールし、未認証なら unauthenticated() を呼ぶ
         // → unauthenticated() は redirectTo($request) を呼びだす
 
-        //Log::info('Authenticate: guard=member, id=' . Auth::guard('member')->id() . ', check=' . (Auth::guard('member')->check() ? 'true' : 'false'));
 
         $this->authenticate($request, $guards);
 

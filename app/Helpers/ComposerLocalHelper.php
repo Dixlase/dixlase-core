@@ -59,12 +59,7 @@ class ComposerLocalHelper
             
             // JSONファイルとして保存
             $json = json_encode($composerLocal, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-            File::put($composerLocalPath, $json);
-            
-            Log::info('Synced composer.local.json', [
-                'plugins' => count($plugins),
-                'themes' => count($themes)
-            ]);
+            file_put_contents($composerLocalPath, json_encode($composerLocal, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
             
             return true;
         } catch (\Exception $e) {
