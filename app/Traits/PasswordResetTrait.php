@@ -158,31 +158,6 @@ trait PasswordResetTrait
         return PasswordValidationService::getPasswordResetLinkValidationRules();
     }
 
-    /**
-     * CAPTCHAを検証（有効な場合のみ）
-     *
-     * @param Request $request リクエスト
-     * @param bool $captchaEnabled CAPTCHA有効フラグ
-     * @return array|null エラーがある場合は ['email' => string, 'errors' => array]、成功時はnull
-     */
-    protected function validateCaptcha(Request $request, bool $captchaEnabled): ?array
-    {
-        if (!$captchaEnabled) {
-            return null;
-        }
-
-        $captchaDriver = app(\App\Captcha\CaptchaDriver::class);
-        $result = $captchaDriver->verify($request);
-
-        if (!$result->isValid()) {
-            return [
-                'email' => $request->input('email'),
-                'errors' => ['captcha' => $result->getErrorMessage() ?? __('auth.captcha_failed')],
-            ];
-        }
-
-        return null;
-    }
 
     /**
      * パスワードリセット処理を実行
@@ -232,20 +207,16 @@ trait PasswordResetTrait
         $this->validatePasswordResetAvailability($settingsGetter);
         
         // CAPTCHA設定を取得
-        $captchaEnabled = filter_var($settingsGetter('captcha_password_reset_enabled', '0'), FILTER_VALIDATE_BOOLEAN);
-
-        // CAPTCHAウィジェットを生成
-        $captchaWidget = null;
-        if ($captchaEnabled) {
-            $loginHelper = app(\App\Helpers\LoginHelper::class);
-            $captchaWidget = $loginHelper->generateCaptchaWidget($this->getCaptchaAction());
-        }
+        $captchaAction = $this->getCaptchaAction();
+        $captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha($captchaAction);
+        $captchaWidget = \App\Helpers\CaptchaHelper::renderWidget($captchaAction);
         
         return view($this->getForgotPasswordViewName(), array_merge(
             $this->getForgotPasswordViewData(),
             [
                 'captchaEnabled' => $captchaEnabled,
                 'captchaWidget' => $captchaWidget,
+                'loginRoute' => route($this->getLoginRoute()),
             ]
         ));
     }
@@ -272,15 +243,14 @@ trait PasswordResetTrait
         $settingsGetter = $this->getSettingsGetter();
         $this->validatePasswordResetAvailability($settingsGetter);
         
-        // CAPTCHA設定を取得
-        $captchaEnabled = filter_var($settingsGetter('captcha_password_reset_enabled', '0'), FILTER_VALIDATE_BOOLEAN);
-
-        // CAPTCHAを検証
-        $captchaError = $this->validateCaptcha($request, $captchaEnabled);
-        if ($captchaError) {
-            return back()
-                ->withInput(['email' => $captchaError['email']])
-                ->withErrors($captchaError['errors']);
+        // CAPTCHA検証
+        $captchaAction = $this->getCaptchaAction();
+        $captchaResult = \App\Helpers\CaptchaHelper::verify($request, $captchaAction);
+        
+        if ($captchaResult && !$captchaResult->isValid()) {
+            return back()->withErrors([
+                'captcha' => $captchaResult->getErrorMessage(),
+            ])->withInput($request->only('email'));
         }
 
         // バリデーションルールを取得
