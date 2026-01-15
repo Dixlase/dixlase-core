@@ -55,10 +55,15 @@ class AdminSecurityNotificationsController extends AdminLoggedInController
         $mailSendTested = (bool) ($sessionTestResults['mail_send_tested'] ?? BaseSetting::getValue('mail_send_tested', false));
         $mailReceiveTested = (bool) ($sessionTestResults['mail_receive_tested'] ?? BaseSetting::getValue('mail_receive_tested', false));
 
+        // システム管理者メールアドレスの設定状態を確認
+        $systemAdminEmail = BaseSetting::getValue('system_admin_email', '');
+        $hasSystemAdminEmail = !empty($systemAdminEmail);
+
         $this->viewParams['settings'] = $settings;
         $this->viewParams['mailConnectionTested'] = $mailConnectionTested;
         $this->viewParams['mailSendTested'] = $mailSendTested;
         $this->viewParams['mailReceiveTested'] = $mailReceiveTested;
+        $this->viewParams['hasSystemAdminEmail'] = $hasSystemAdminEmail;
 
         return view('admin.settings.security.notifications', $this->viewParams);
     }
