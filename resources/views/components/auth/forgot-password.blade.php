@@ -61,5 +61,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :label="__('common.send_password_reset_link')"
             class="w-full"
         />
+        
     </section>
+
+    @section('back_link')
+        <a class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 hover:underline mt-4" href="{{ $loginRoute }}">
+            {{ __('admin/auth.forgot_password.back_to_login') }}
+        </a>
+    @endsection
+
 </form>

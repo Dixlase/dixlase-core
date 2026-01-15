@@ -154,7 +154,7 @@ trait LoginTrait
             $viewParams['captchaDriver'] = \App\Helpers\CaptchaHelper::getDriver();
             
             // CAPTCHAウィジェットを生成
-            $captchaDriverInstance = app(\App\Services\Captcha\CaptchaDriver::class);
+            $captchaDriverInstance = app(\App\Captcha\CaptchaDriver::class);
             $widget = $captchaDriverInstance->renderWidget(['action' => $captchaAction]);
             
             $viewParams['captchaWidget'] = $widget;
@@ -182,7 +182,7 @@ trait LoginTrait
         // CAPTCHA検証
         $captchaAction = $this->getCaptchaAction();
         if (\App\Helpers\CaptchaHelper::shouldShowCaptcha($captchaAction)) {
-            $captchaDriverInstance = app(\App\Services\Captcha\CaptchaDriver::class);
+            $captchaDriverInstance = app(\App\Captcha\CaptchaDriver::class);
             $captchaResult = $captchaDriverInstance->verify($request);
             
             if (!$captchaResult->isValid()) {
