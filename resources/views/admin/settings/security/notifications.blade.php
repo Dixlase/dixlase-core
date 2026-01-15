@@ -31,6 +31,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <h2>{{ __('admin/settings/security/notifications.title') }}</h2>
             <p>{{ __('admin/settings/security/notifications.description') }}</p>
 
+            <!-- システム管理者メール未設定の警告 -->
+            @if(!$hasSystemAdminEmail)
+                <div class="mt-4">
+                    <x-message
+                        type="warning"
+                        :message="__('admin/settings/security/notifications.system_admin_email_required', ['url' => route('admin.settings.base.mail')])"
+                    />
+                </div>
+            @endif
+
             <!-- メールサーバー設定の確認メッセージ -->
             @if(!($mailConnectionTested && $mailSendTested && $mailReceiveTested))
                 <div class="mt-4">

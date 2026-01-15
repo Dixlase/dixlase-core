@@ -20,7 +20,8 @@ return [
     'enabled_help' => 'Configure whether to send email notifications when system errors occur.',
     'log_levels' => 'Log Levels to Notify',
     'log_levels_help' => 'Select log levels to send notifications for. By notifying only high-importance errors, you can receive only necessary information.',
-    'mail_test_required' => 'To use the error notification function, please complete mail server settings and mail tests in <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">basic settings</a>.',
+    'system_admin_email_required' => 'To receive error notifications, please set the system administrator email address in <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">mail settings</a>.',
+    'mail_test_required' => 'To use the error notification function, please complete mail server settings and mail tests in <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">mail settings</a>.',
     'log_level_options' => [
         'emergency' => 'Emergency - System is unusable',
         'alert' => 'Alert - Immediate action required',

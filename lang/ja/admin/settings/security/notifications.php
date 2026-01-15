@@ -20,7 +20,8 @@ return [
     'enabled_help' => 'システムエラーが発生した際にメール通知を送信するかどうかを設定します。',
     'log_levels' => '通知するログレベル',
     'log_levels_help' => '通知を送信するログレベルを選択してください。重要度の高いエラーのみを通知することで、必要な情報だけを受け取れます。',
-    'mail_test_required' => 'エラー通知機能を使用するには、<a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">基本設定</a>でメールサーバー設定とメールテストをすべて完了してください。',
+    'system_admin_email_required' => 'エラー通知を受信するには、<a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">メール設定</a>でシステム管理者メールアドレスを設定してください。',
+    'mail_test_required' => 'エラー通知機能を使用するには、<a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">メール設定</a>でメールサーバー設定とメールテストをすべて完了してください。',
     'log_level_options' => [
         'emergency' => 'Emergency（緊急）- システムが使用不可',
         'alert' => 'Alert（警告）- 即座に対応が必要',

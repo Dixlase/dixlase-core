@@ -40,6 +40,17 @@ class AdminDashboardController extends AdminLoggedInController
     public function index()
     {
 
+// ログレベル別テスト
+Log::debug('DEBUGレベル - 通知されないはず', ['level' => 'debug']);
+Log::info('INFOレベル - 通知されないはず', ['level' => 'info']);
+Log::notice('NOTICEレベル - 通知されないはず', ['level' => 'notice']);
+Log::warning('WARNINGレベル - 通知されないはず（デフォルト設定）', ['level' => 'warning']);
+Log::error('ERRORレベル - 通知される', ['level' => 'error']);
+Log::critical('CRITICALレベル - 通知される', ['level' => 'critical']);
+Log::alert('ALERTレベル - 通知される', ['level' => 'alert']);
+Log::emergency('EMERGENCYレベル - 通知される', ['level' => 'emergency']);
+
+
         // 回復コード情報を取得
         $user = Auth::guard('member')->user();
         $twoFaRecoveryCodeService = new TwoFaRecoveryCodeService();

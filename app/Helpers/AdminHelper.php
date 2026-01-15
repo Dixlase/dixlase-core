@@ -73,43 +73,24 @@ class AdminHelper
     public static function canAccessMenu(string $menuKey): bool
     {
         $user = Auth::user();
-        \Log::channel('dixlase')->info('canAccessMenu: Start', [
-            'menu_key' => $menuKey,
-            'user_id' => $user?->id,
-            'user_role' => $user?->role?->value
-        ]);
         
         if (!$user) {
-            \Log::channel('dixlase')->warning('canAccessMenu: No user');
             return false;
         }
 
         if ($user->role->value === MemberRole::SUPER_ADMIN->value) {
-            \Log::channel('dixlase')->info('canAccessMenu: Super admin access granted');
             return true;
         }
 
         $permission = MemberRolePermission::where('menu_key', $menuKey)->first();
-        \Log::channel('dixlase')->info('canAccessMenu: Permission lookup', [
-            'menu_key' => $menuKey,
-            'permission_found' => !is_null($permission),
-            'permission' => $permission ? [
-                'id' => $permission->id,
-                'menu_key' => $permission->menu_key,
-                'access_roles' => $permission->access_roles,
-                'view_roles' => $permission->view_roles
-            ] : null
-        ]);
         
         // 親項目の権限がない場合、子項目の権限をチェック
         if (!$permission) {
-            \Log::channel('dixlase')->info('canAccessMenu: Parent permission not found, checking children', ['menu_key' => $menuKey]);
             
             // 子項目の権限を検索（例: media -> media.%）
             $childPermissions = MemberRolePermission::where('menu_key', 'LIKE', $menuKey . '.%')->get();
             
             if ($childPermissions->isEmpty()) {
-                \Log::channel('dixlase')->warning('canAccessMenu: No permissions found (parent or children)', ['menu_key' => $menuKey]);
                 return false;
             }
             
@@ -117,32 +98,14 @@ class AdminHelper
             foreach ($childPermissions as $childPermission) {
                 // ユーザーの権限値が設定された最低権限値以上であればアクセス可能
                 if ($childPermission->canAccess($user->role) || $childPermission->canView($user->role)) {
-                    \Log::channel('dixlase')->info('canAccessMenu: Access granted via child permission', [
-                        'parent_menu_key' => $menuKey,
-                        'child_menu_key' => $childPermission->menu_key,
-                        'user_role_value' => $user->role->value,
-                        'required_access_role' => $childPermission->access_roles,
-                        'required_view_role' => $childPermission->view_roles
-                    ]);
                     return true;
                 }
             }
-            
-            \Log::channel('dixlase')->warning('canAccessMenu: No child permissions match user role', ['menu_key' => $menuKey]);
             return false;
         }
 
         // ユーザーの権限値が設定された最低権限値以上であればアクセス可能
-        $hasAccess = $permission->canAccess($user->role) || $permission->canView($user->role);
-        
-        \Log::channel('dixlase')->info('canAccessMenu: Access check result', [
-            'user_role' => $user->role->value,
-            'required_access_role' => $permission->access_roles,
-            'required_view_role' => $permission->view_roles,
-            'has_access' => $hasAccess
-        ]);
-        
-        return $hasAccess;
+        return $permission->canAccess($user->role) || $permission->canView($user->role);
     }
 
     /**
