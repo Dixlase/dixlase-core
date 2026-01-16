@@ -7,7 +7,7 @@ use App\Enums\Locale;
 use App\Enums\AuthenticationMode;
 use App\Enums\TwoFaMethod;
 use App\Models\MemberSetting;
-use App\Services\PasswordValidationService;
+use App\Services\PasswordService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Enum;
@@ -40,7 +40,7 @@ class ProfileUpdateRequest extends FormRequest
         $passwordCheckPwned = (bool) MemberSetting::getValue('password_check_pwned', false);
 
         // パスワードバリデーションルールを構築（任意入力）
-        $passwordRules = PasswordValidationService::buildPasswordRules(
+        $passwordRules = PasswordService::buildPasswordRules(
             $passwordMinLength,
             $passwordRequireUppercase,
             $passwordRequireLowercase,

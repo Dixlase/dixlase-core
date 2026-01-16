@@ -62,7 +62,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 id="account_name"
                 name="account_name"
                 :value="old('account_name', $member->account_name ?? '')"
-                :required="true"
                 pattern="^[a-zA-Z0-9]+$"
                 minlength="3"
                 maxlength="20"

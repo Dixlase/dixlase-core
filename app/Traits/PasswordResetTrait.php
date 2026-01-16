@@ -22,7 +22,7 @@
 
 namespace App\Traits;
 
-use App\Services\PasswordValidationService;
+use App\Services\PasswordService;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -128,7 +128,7 @@ trait PasswordResetTrait
      */
     protected function validatePasswordResetAvailability(callable $settingsGetter): void
     {
-        PasswordValidationService::abortIfPasswordResetUnavailable($settingsGetter);
+        PasswordService::abortIfPasswordResetUnavailable($settingsGetter);
     }
 
     /**
@@ -139,7 +139,7 @@ trait PasswordResetTrait
      */
     protected function getPasswordResetValidationRules(array $passwordSettings): array
     {
-        return PasswordValidationService::getPasswordResetValidationRules(
+        return PasswordService::getPasswordResetValidationRules(
             $passwordSettings['min_length'],
             $passwordSettings['require_uppercase'],
             $passwordSettings['require_number'],
@@ -155,7 +155,7 @@ trait PasswordResetTrait
      */
     protected function getPasswordResetLinkValidationRules(): array
     {
-        return PasswordValidationService::getPasswordResetLinkValidationRules();
+        return PasswordService::getPasswordResetLinkValidationRules();
     }
 
 

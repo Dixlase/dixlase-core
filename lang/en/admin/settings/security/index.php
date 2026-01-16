@@ -15,6 +15,7 @@
 return [
     'heading' => 'Security Settings Overview',
     'description' => 'View the overview and status of each security setting.',
+    'password_security' => 'Password Breach Check',
     'session_driver' => 'Session Driver',
     'captcha_active' => 'CAPTCHA Active',
     'captcha_test_required' => 'Test Required',
