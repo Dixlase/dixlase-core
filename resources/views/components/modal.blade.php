@@ -22,51 +22,76 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'id' => 'confirmationModal', // モーダルのID
     'title' => '確認',          // モーダルのタイトル
     'message' => 'この操作を実行しますか？', // モーダルのメッセージ
-    'confirm_label' => '確認',     // 確認ボタンのテキスト
-    'cancel_label' => 'キャンセル', // キャンセルボタンのテキスト
-    'close_label' => null,        // 閉じるボタンのテキスト（設定すると閉じるボタンのみモード）
+    'confirmLabel' => '確認',     // 確認ボタンのテキスト
+    'confirm_label' => null,      // 後方互換性
+    'cancelLabel' => 'キャンセル', // キャンセルボタンのテキスト
+    'cancel_label' => null,       // 後方互換性
+    'closeLabel' => null,         // 閉じるボタンのテキスト（設定すると閉じるボタンのみモード）
+    'close_label' => null,        // 後方互換性
     'class' => '',               // モーダルのカスタムクラス
     // ↓ チェックボックス用追加パラメータ
     'checkbox' => false,          // チェックボックスを表示するかどうか
-    'checkbox_name' => 'remove_db_data', // name属性
-    'checkbox_label' => 'データベースを削除する', // チェックボックスのラベル
+    'checkboxName' => 'remove_db_data', // name属性
+    'checkbox_name' => null,      // 後方互換性
+    'checkboxLabel' => 'データベースを削除する', // チェックボックスのラベル
+    'checkbox_label' => null,     // 後方互換性
     'form' => null,              // フォームのID
     // ↓ 新しいカスタマイズパラメータ
-    'icon_type' => 'info',     // アイコンタイプ: warning, danger, info, success
-    'confirm_color' => 'blue',     // 確認ボタンの色: blue, red, green, yellow
-    'close_only' => false,        // 閉じるボタンのみ表示モード
+    'iconType' => 'info',         // アイコンタイプ: warning, danger, info, success
+    'icon_type' => null,          // 後方互換性
+    'confirmColor' => 'blue',     // 確認ボタンの色: blue, red, green, yellow
+    'confirm_color' => null,      // 後方互換性
+    'closeOnly' => false,         // 閉じるボタンのみ表示モード
+    'close_only' => null,         // 後方互換性
     'dismissible' => true,        // 背景クリックで閉じるかどうか（デフォルト: true）
 ])
 
 @php
+    // 後方互換性: ケバブケースとスネークケースの統一
+    $iconType = $icon_type ?? $iconType;
+    $confirmColor = $confirm_color ?? $confirmColor;
+    $confirmLabel = $confirm_label ?? $confirmLabel;
+    $cancelLabel = $cancel_label ?? $cancelLabel;
+    $closeLabel = $close_label ?? $closeLabel;
+    $closeOnly = $close_only ?? $closeOnly;
+    $checkboxName = $checkbox_name ?? $checkboxName;
+    $checkboxLabel = $checkbox_label ?? $checkboxLabel;
+    
     $iconClasses = [
         'warning' => 'fas fa-exclamation-triangle',
         'danger' => 'fas fa-times-circle',
         'info' => 'fas fa-info-circle',
         'success' => 'fas fa-check-circle'
     ];
-    $iconClass = $iconClasses[$icon_type] ?? $iconClasses['warning'];
+    $iconClass = $iconClasses[$iconType] ?? $iconClasses['warning'];
     
-    // icon_typeに応じて確認ボタンのvariantを自動設定（confirm_colorが指定されていない場合）
-    if (!isset($confirm_variant)) {
-        $iconTypeToVariant = [
-            'info' => 'primary',      // 青
-            'warning' => 'warning',   // 黄色
-            'danger' => 'danger',     // 赤
-            'success' => 'success'    // 緑
-        ];
-        $confirm_variant = $iconTypeToVariant[$icon_type] ?? 'primary';
-    }
+    // アイコンの色を設定
+    $iconColorClasses = [
+        'warning' => 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-400',
+        'danger' => 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400',
+        'info' => 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400',
+        'success' => 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400'
+    ];
+    $iconColorClass = $iconColorClasses[$iconType] ?? $iconColorClasses['info'];
     
-    // 後方互換性: confirm_colorが指定されている場合はそれを使用
-    if (isset($confirm_color)) {
-        $colorToVariant = [
-            'blue' => 'primary',
-            'red' => 'danger',
-            'green' => 'success',
-            'yellow' => 'warning'
-        ];
-        $confirm_variant = $colorToVariant[$confirm_color] ?? $confirm_variant;
+    // icon_typeに応じて確認ボタンのvariantを自動設定
+    $iconTypeToVariant = [
+        'info' => 'primary',      // 青
+        'warning' => 'warning',   // 黄色
+        'danger' => 'danger',     // 赤
+        'success' => 'success'    // 緑
+    ];
+    $confirm_variant = $iconTypeToVariant[$iconType] ?? 'primary';
+    
+    // confirm_colorが指定されている場合はそれを優先
+    $colorToVariant = [
+        'blue' => 'primary',
+        'red' => 'danger',
+        'green' => 'success',
+        'yellow' => 'warning'
+    ];
+    if ($confirmColor && isset($colorToVariant[$confirmColor])) {
+        $confirm_variant = $colorToVariant[$confirmColor];
     }
     
     // slotが使用されているかチェック
@@ -80,8 +105,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="modal-content">
             @if(!$hasCustomContent)
                 {{-- 標準モード：既存の確認ダイアログ --}}
-                <div class="modal-icon modal-icon--{{ $icon_type }}">
-                    <i class="{{ $iconClass }}" aria-hidden="true"></i>
+                <div class="flex items-center justify-center w-16 h-16 mx-auto rounded-full {{ $iconColorClass }}">
+                    <i class="{{ $iconClass }} text-3xl" aria-hidden="true"></i>
                 </div>
                 
                 <div class="modal-body">
@@ -93,8 +118,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @if($checkbox)
                         <div class="modal-checkbox">
                             <label>
-                                <input type="checkbox" name="{{ $checkbox_name }}" value="1" />
-                                <span class="text-left">{!! $checkbox_label !!}</span>
+                                <input type="checkbox" name="{{ $checkboxName }}" value="1" />
+                                <span class="text-left">{!! $checkboxLabel !!}</span>
                             </label>
                         </div>
                     @endif
@@ -107,12 +132,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <div class="modal-actions">
             @if(!$hasCustomFooter)
-                @if($close_only || $close_label)
+                @if($closeOnly || $closeLabel)
                     {{-- 閉じるボタンのみモード --}}
                     <x-form.button
                         type="button"
                         variant="secondary"
-                        :label="$close_label ?? __('common.close')"
+                        :label="$closeLabel ?? __('common.close')"
                         onclick="closeModal('{{ $id }}')"
                         class="mx-2"
                     />
@@ -121,14 +146,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <x-form.button
                         type="button"
                         variant="secondary"
-                        :label="$cancel_label ?? __('common.cancel')"
+                        :label="$cancelLabel ?? __('common.cancel')"
                         onclick="closeModal('{{ $id }}')"
                         class="mx-2"
                     />
                     <x-form.button
                         :type="$form ? 'submit' : 'button'"
                         :variant="$confirm_variant ?? 'primary'"
-                        :label="$confirm_label ?? __('common.confirm')"
+                        :label="$confirmLabel ?? __('common.confirm')"
                         :form="$form"
                         class="mx-2"
                     />
