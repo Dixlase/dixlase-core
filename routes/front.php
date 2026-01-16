@@ -42,6 +42,41 @@ Route::post('/csp-report', [CspReportController::class, 'report'])
 Route::middleware(['web', 'front.ip'])->group(
     function () {
         Route::get('/', [FrontWelcomeController::class, 'index'])->name('welcome');
+        
+        // フロントログテスト用ルート（開発用）
+        Route::get('/test-front-log', function () {
+            \Illuminate\Support\Facades\Log::channel('front_activity')->info('フロント操作ログテスト', [
+                'action' => 'ページ閲覧',
+                'page' => 'テストページ',
+                'user_id' => null,
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'url' => request()->fullUrl(),
+                'method' => request()->method(),
+                'timestamp' => now()->toDateTimeString(),
+            ]);
+            
+            \Illuminate\Support\Facades\Log::channel('front_error')->error('フロントエラーログテスト', [
+                'error' => 'テストエラー',
+                'error_type' => 'test_error',
+                'user_id' => null,
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'url' => request()->fullUrl(),
+                'method' => request()->method(),
+                'timestamp' => now()->toDateTimeString(),
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'フロントログを出力しました',
+                'logs' => [
+                    'front_activity' => 'storage/logs/front_activity.log または front_activity-' . now()->format('Y-m-d') . '.log',
+                    'front_error' => 'storage/logs/front_error.log または front_error-' . now()->format('Y-m-d') . '.log',
+                ],
+                'admin_url' => route('admin.settings.systems.logs.files', ['type' => 'front_activity']),
+            ]);
+        })->name('test.front.log');
 
         //テーマのアセットファイル
         Route::get('assets/{type}/{file}', function ($type, $file) {

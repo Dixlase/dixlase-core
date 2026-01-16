@@ -40,29 +40,32 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @include('admin::settings.systems.logs.partials.navigation', ['logType' => 'audit', 'currentView' => 'db', 'pageType' => 'audit'])
 
     @if(!$tableExists)
-    <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
-        <div class="flex">
-            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-            </svg>
-            <div class="ml-3">
-                <p class="text-sm text-yellow-700 dark:text-yellow-300">
-                    {{ __('admin/settings/systems/logs/index.table_not_exists') }}
-                </p>
+        <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
+            <div class="flex">
+                <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+                <div class="ml-3">
+                    <p class="text-sm text-yellow-700 dark:text-yellow-300">
+                        {{ __('admin/settings/systems/logs/index.table_not_exists') }}
+                    </p>
+                </div>
             </div>
         </div>
-    </div>
     @else
 
     <!-- Action Buttons -->
     <nav class="flex flex-row items-center justify-center md:justify-end gap-2 mb-4">
         @if($auditLogs->count() > 0)
-        <!-- Export Button -->
-        <a href="{{ route('admin.settings.systems.logs.audit.export', request()->query()) }}" 
-           class="action-button action-button--success flex-shrink-0">
-            <i class="fas fa-download mr-2"></i>
-            {{ __('admin/settings/systems/logs/index.export_csv') }}
-        </a>
+            <!-- Export Button -->
+            <x-form.button
+                type="link"
+                variant="success"
+                :href="route('admin.settings.systems.logs.audit.export', request()->query())"
+                :label="__('admin/settings/systems/logs/index.export_csv')"
+                icon="fas fa-download"
+                class="flex-shrink-0"
+            />
         @endif
     </nav>
 
@@ -85,35 +88,45 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {{-- 検索 --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ __('admin/settings/systems/logs/index.search') }}
-                        </label>
-                        <input type="text" name="search" value="{{ request('search') }}"
-                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
-                               placeholder="{{ __('admin/settings/systems/logs/index.search_placeholder') }}">
+                        <x-form.label
+                            for="search"
+                            :text="__('admin/settings/systems/logs/index.search')"
+                            class="mb-1"
+                        />
+                        <x-form.text
+                            type="text"
+                            name="search"
+                            id="search"
+                            :value="request('search')"
+                            :placeholder="__('admin/settings/systems/logs/index.search_placeholder')"
+                            class="!w-full"
+                        />
                     </div>
 
                     {{-- カテゴリ --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ __('admin/settings/systems/logs/index.category') }}
-                        </label>
-                        <select name="category" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
-                            <option value="">{{ __('common.all') }}</option>
-                            @foreach($categories as $category)
-                            <option value="{{ $category }}" {{ request('category') == $category ? 'selected' : '' }}>
-                                {{ __('admin/settings/systems/logs/index.categories.' . $category, [], $category) }}
-                            </option>
-                            @endforeach
-                        </select>
+                        <x-form.label
+                            for="category"
+                            :text="__('admin/settings/systems/logs/index.category')"
+                            class="mb-1"
+                        />
+                        <x-form.select
+                            name="category"
+                            id="category"
+                            :options="array_merge(['' => 'common.all'], array_combine($categories, array_map(fn($cat) => 'admin/settings/systems/logs/index.categories.' . $cat, $categories)))"
+                            :value="request('category')"
+                            class="!w-full"
+                        />
                     </div>
 
                     {{-- アクション --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ __('admin/settings/systems/logs/index.action') }}
-                        </label>
-                        <select name="action" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
+                        <x-form.label
+                            for="action"
+                            :text="__('admin/settings/systems/logs/index.action')"
+                            class="mb-1"
+                        />
+                        <select name="action" id="action" class="input-common block w-full max-w-full p-2 pr-10 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-white">
                             <option value="">{{ __('common.all') }}</option>
                             @foreach($actions as $action)
                             <option value="{{ $action }}" {{ request('action') == $action ? 'selected' : '' }}>
@@ -125,76 +138,104 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                     {{-- 重要度 --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ __('admin/settings/systems/logs/index.severity') }}
-                        </label>
-                        <select name="severity" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
-                            <option value="">{{ __('common.all') }}</option>
-                            @foreach($severities as $severity)
-                            <option value="{{ $severity }}" {{ request('severity') == $severity ? 'selected' : '' }}>
-                                {{ __('admin/settings/systems/logs/index.severities.' . $severity) }}
-                            </option>
-                            @endforeach
-                        </select>
+                        <x-form.label
+                            for="severity"
+                            :text="__('admin/settings/systems/logs/index.severity')"
+                            class="mb-1"
+                        />
+                        <x-form.select
+                            name="severity"
+                            id="severity"
+                            :options="array_merge(['' => 'common.all'], array_combine($severities, array_map(fn($sev) => 'admin/settings/systems/logs/index.severities.' . $sev, $severities)))"
+                            :value="request('severity')"
+                            class="!w-full"
+                        />
                     </div>
 
                     {{-- 結果 --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ __('admin/settings/systems/logs/index.outcome') }}
-                        </label>
-                        <select name="outcome" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
-                            <option value="">{{ __('common.all') }}</option>
-                            @foreach($outcomes as $outcome)
-                            <option value="{{ $outcome }}" {{ request('outcome') == $outcome ? 'selected' : '' }}>
-                                {{ __('admin/settings/systems/logs/index.outcomes.' . $outcome) }}
-                            </option>
-                            @endforeach
-                        </select>
+                        <x-form.label
+                            for="outcome"
+                            :text="__('admin/settings/systems/logs/index.outcome')"
+                            class="mb-1"
+                        />
+                        <x-form.select
+                            name="outcome"
+                            id="outcome"
+                            :options="array_merge(['' => 'common.all'], array_combine($outcomes, array_map(fn($out) => 'admin/settings/systems/logs/index.outcomes.' . $out, $outcomes)))"
+                            :value="request('outcome')"
+                            class="!w-full"
+                        />
                     </div>
 
                     {{-- IPアドレス --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ __('admin/settings/systems/logs/index.ip_address') }}
-                        </label>
-                        <input type="text" name="ip_address" value="{{ request('ip_address') }}"
-                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
-                               placeholder="192.168.1.1">
+                        <x-form.label
+                            for="ip_address"
+                            :text="__('admin/settings/systems/logs/index.ip_address')"
+                            class="mb-1"
+                        />
+                        <x-form.text
+                            type="text"
+                            name="ip_address"
+                            id="ip_address"
+                            :value="request('ip_address')"
+                            placeholder="192.168.1.1"
+                            class="!w-full"
+                        />
                     </div>
 
                     {{-- 開始日 --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ __('admin/settings/systems/logs/index.date_from') }}
-                        </label>
-                        <input type="date" name="date_from" value="{{ request('date_from') }}"
-                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
+                        <x-form.label
+                            for="date_from"
+                            :text="__('admin/settings/systems/logs/index.date_from')"
+                            class="mb-1"
+                        />
+                        <x-form.text
+                            type="date"
+                            name="date_from"
+                            id="date_from"
+                            :value="request('date_from')"
+                            class="!w-full"
+                        />
                     </div>
 
                     {{-- 終了日 --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {{ __('admin/settings/systems/logs/index.date_to') }}
-                        </label>
-                        <input type="date" name="date_to" value="{{ request('date_to') }}"
-                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
+                        <x-form.label
+                            for="date_to"
+                            :text="__('admin/settings/systems/logs/index.date_to')"
+                            class="mb-1"
+                        />
+                        <x-form.text
+                            type="date"
+                            name="date_to"
+                            id="date_to"
+                            :value="request('date_to')"
+                            class="!w-full"
+                        />
                     </div>
                 </div>
 
                 <div class="mt-4 flex justify-end space-x-2">
-                    <a href="{{ route('admin.settings.systems.logs.index') }}" 
-                       class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
-                        {{ __('common.reset') }}
-                    </a>
-                    <button type="submit" 
-                            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-md">
-                        {{ __('common.search') }}
-                    </button>
+                    <x-form.button
+                        type="link"
+                        variant="secondary"
+                        :href="route('admin.settings.systems.logs.index')"
+                        :label="__('common.reset')"
+                    />
+                    <x-form.button
+                        type="submit"
+                        variant="primary"
+                        :label="__('common.search')"
+                    />
                 </div>
             </form>
         </div>
     </div>
+
+    
 
     <!-- Pagination Controls -->
     <x-pagination-controls
@@ -328,33 +369,59 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     />
 
     <!-- Cleanup Section -->
-    <div class="mt-6 bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-            {{ __('admin/settings/systems/logs/index.cleanup_title') }}
-        </h3>
-        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            {{ __('admin/settings/systems/logs/index.cleanup_description') }}
-        </p>
-        <form method="POST" action="{{ route('admin.settings.systems.logs.audit.cleanup') }}" 
-              onsubmit="return confirm('{{ __('admin/settings/systems/logs/index.cleanup_confirm') }}')">
-            @csrf
-            <div class="flex items-center gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        {{ __('admin/settings/systems/logs/index.cleanup_days') }}
-                    </label>
-                    <input type="number" name="days" value="90" min="0" 
-                           class="w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
+    <div class="flex justify-between items-center my-6 bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                {{ __('admin/settings/systems/logs/index.cleanup_title') }}
+            </h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                {{ __('admin/settings/systems/logs/index.cleanup_description') }}
+            </p>
+        </div>
+        <div>
+            <form method="POST" action="{{ route('admin.settings.systems.logs.audit.cleanup') }}" id="cleanupAuditLogForm">
+                @csrf
+                <div class="flex items-center gap-4">
+                    <div>
+                        <x-form.label
+                            for="cleanup_days"
+                            :text="__('admin/settings/systems/logs/index.cleanup_days')"
+                            class="mb-1"
+                        />
+                        <x-form.text
+                            type="number"
+                            name="days"
+                            id="cleanup_days"
+                            :value="90"
+                            :min="0"
+                            class="!w-24"
+                        />
+                    </div>
+                    <div class="pt-6">
+                        <x-form.button
+                            type="button"
+                            variant="danger"
+                            :label="__('admin/settings/systems/logs/index.cleanup_button')"
+                            icon="fas fa-trash"
+                            onclick="openModal('cleanupConfirmModal')"
+                        />
+                    </div>
                 </div>
-                <div class="pt-6">
-                    <button type="submit" class="action-button action-button--danger">
-                        <i class="fas fa-trash mr-2"></i>
-                        {{ __('admin/settings/systems/logs/index.cleanup_button') }}
-                    </button>
-                </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
+
+    <!-- Cleanup Confirmation Modal -->
+    <x-modal
+        id="cleanupConfirmModal"
+        :title="__('admin/settings/systems/logs/index.cleanup_modal.title')"
+        :message="__('admin/settings/systems/logs/index.cleanup_modal.confirm_message')"
+        :confirm_label="__('admin/settings/systems/logs/index.cleanup_button')"
+        :cancel_label="__('common.cancel')"
+        icon_type="warning"
+        confirm_color="red"
+        form="cleanupAuditLogForm"
+    />
 
     @endif
 

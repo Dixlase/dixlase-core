@@ -63,6 +63,10 @@ return [
     'cleanup_description' => '指定した日数より古い監査ログを削除します。0を指定すると全てのログを削除します。',
     'cleanup_confirm' => '指定した日数より古い監査ログを削除しますか？この操作は取り消せません。',
     'cleanup_success' => ':count 件の監査ログを削除しました。',
+    'cleanup_modal' => [
+        'title' => '監査ログのクリーンアップ',
+        'confirm_message' => '監査ログを削除してもよろしいですか？<br>この操作は元に戻せません。',
+    ],
     'categories' => [
         'auth' => '認証',
         'account' => 'アカウント',

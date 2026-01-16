@@ -102,8 +102,9 @@ class AdminSystemLogsController extends AdminLoggedInController
                 'normal' => __('admin/settings/systems/logs/files.level_filter.normal'),
                 'debug' => __('admin/settings/systems/logs/files.level_filter.debug'),
             ];
+            $this->viewParams['tableExists'] = true; // ファイルログの場合は常にtrue
 
-            return response()->view('admin::settings.systems.logs.index', $this->viewParams);
+            return response()->view('admin::settings.systems.logs.files', $this->viewParams);
         }
 
         $perPage = $request->input('per_page', 50);
@@ -206,27 +207,85 @@ class AdminSystemLogsController extends AdminLoggedInController
      */
     public function clear(Request $request, $type = 'activity')
     {
+        $days = (int) $request->input('days', 0);
         $fileName = $this->logPaths[$type] ?? $this->logPaths['activity'];
-        $filePath = storage_path("logs/{$fileName}");
-
-        if (!File::exists($filePath)) {
-            $filePath = $this->findDailyLogFile($fileName);
-        }
-
+        
         try {
-            if ($filePath && File::exists($filePath)) {
-                File::put($filePath, '');
-                $clearedFileName = basename($filePath);
-                return redirect()->route('admin.settings.systems.logs', ['type' => $type])
-                    ->with('success', __('admin/settings/systems/logs.system.messages.clear_success', ['filename' => $clearedFileName]));
+            if ($days === 0) {
+                // 0日の場合は全ログファイルを削除
+                $clearedCount = $this->clearAllLogFiles($fileName);
+                
+                return redirect()->route('admin.settings.systems.logs.files', ['type' => $type])
+                    ->with('success', __('admin/settings/systems/logs/files.clear_all_success', ['count' => $clearedCount]));
             } else {
-                return redirect()->route('admin.settings.systems.logs', ['type' => $type])
-                    ->with('error', __('admin/settings/systems/logs.system.messages.clear_error', ['filename' => $fileName]));
+                // 指定日数以前のログファイルを削除
+                $clearedCount = $this->clearOldLogFiles($fileName, $days);
+                
+                return redirect()->route('admin.settings.systems.logs.files', ['type' => $type])
+                    ->with('success', __('admin/settings/systems/logs/files.clear_old_success', ['days' => $days, 'count' => $clearedCount]));
             }
         } catch (\Exception $e) {
-            return redirect()->route('admin.settings.systems.logs', ['type' => $type])
-                ->with('error', __('admin/settings/systems/logs.system.messages.clear_failed', ['error' => $e->getMessage()]));
+            return redirect()->route('admin.settings.systems.logs.files', ['type' => $type])
+                ->with('error', __('admin/settings/systems/logs/files.clear_failed', ['error' => $e->getMessage()]));
         }
+    }
+
+    /**
+     * すべてのログファイルをクリア
+     */
+    protected function clearAllLogFiles(string $fileName): int
+    {
+        $logsPath = storage_path('logs');
+        $baseName = pathinfo($fileName, PATHINFO_FILENAME);
+        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+        $clearedCount = 0;
+        
+        // 日付なしのファイルをクリア
+        $baseFilePath = "{$logsPath}/{$fileName}";
+        if (File::exists($baseFilePath)) {
+            File::put($baseFilePath, '');
+            $clearedCount++;
+        }
+        
+        // 日付付きファイルをクリア（過去90日分）
+        for ($i = 0; $i < 90; $i++) {
+            $date = now()->subDays($i)->format('Y-m-d');
+            $dailyFileName = "{$baseName}-{$date}.{$extension}";
+            $dailyFilePath = "{$logsPath}/{$dailyFileName}";
+            
+            if (File::exists($dailyFilePath)) {
+                File::put($dailyFilePath, '');
+                $clearedCount++;
+            }
+        }
+        
+        return $clearedCount;
+    }
+
+    /**
+     * 指定日数以前のログファイルを削除
+     */
+    protected function clearOldLogFiles(string $fileName, int $days): int
+    {
+        $logsPath = storage_path('logs');
+        $baseName = pathinfo($fileName, PATHINFO_FILENAME);
+        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+        $cutoffDate = now()->subDays($days);
+        $clearedCount = 0;
+        
+        // 日付付きファイルを検索して削除（過去90日分）
+        for ($i = $days; $i < 90; $i++) {
+            $date = now()->subDays($i)->format('Y-m-d');
+            $dailyFileName = "{$baseName}-{$date}.{$extension}";
+            $dailyFilePath = "{$logsPath}/{$dailyFileName}";
+            
+            if (File::exists($dailyFilePath)) {
+                File::delete($dailyFilePath);
+                $clearedCount++;
+            }
+        }
+        
+        return $clearedCount;
     }
 
     /**
@@ -620,8 +679,8 @@ class AdminSystemLogsController extends AdminLoggedInController
             AuditLog::where('occurred_at', '<', $cutoff)->delete();
         }
 
-        return redirect()->route('admin.settings.systems.logs', ['type' => 'audit', 'view' => 'db'])
-            ->with('success', __('admin/settings/systems/logs.audit.cleanup_success', ['count' => $count]));
+        return redirect()->route('admin.settings.systems.logs.index')
+            ->with('success', __('admin/settings/systems/logs/index.cleanup_success', ['count' => $count]));
     }
 
     /**
