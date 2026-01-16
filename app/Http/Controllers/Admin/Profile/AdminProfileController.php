@@ -38,7 +38,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Enum;
 use App\Traits\ManagesTwoFaTrait;
-use App\Helpers\PasswordHelper;
+use App\Services\PasswordService;
 
 class AdminProfileController extends AdminLoggedInController
 {
@@ -340,7 +340,7 @@ class AdminProfileController extends AdminLoggedInController
         }
 
         if (!empty($validated['password'])) {
-            $member->password = PasswordHelper::hash($validated['password']);
+            $member->password = PasswordService::hash($validated['password']);
         }
 
         // login_notification_mode は全体設定が UseProfileSetting のときだけ上書き

@@ -40,7 +40,8 @@ return [
         'security' => [
             'text' => 'セキュリティ設定',
             'index' => '概要',
-            'auth' => '認証・セッション',
+            'password' => 'パスワード',
+            'session' => 'セッション',
             'captcha' => 'CAPTCHA',
             'ip' => 'IPアクセス制御',
             'extensions' => '拡張機能',

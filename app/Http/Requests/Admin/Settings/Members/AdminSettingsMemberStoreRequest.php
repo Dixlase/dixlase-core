@@ -26,7 +26,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Enums\MemberRole;
 use App\Models\MemberSetting;
-use App\Services\PasswordValidationService;
+use App\Services\PasswordService;
 
 class AdminSettingsMemberStoreRequest extends FormRequest
 {
@@ -58,17 +58,15 @@ class AdminSettingsMemberStoreRequest extends FormRequest
         $passwordRequireLowercase = (bool) MemberSetting::getValue('password_require_lowercase', true);
         $passwordRequireNumber = (bool) MemberSetting::getValue('password_require_number', true);
         $passwordRequireSymbol = (bool) MemberSetting::getValue('password_require_symbol', false);
-        $passwordCheckPwned = (bool) MemberSetting::getValue('password_check_pwned', false);
 
         // パスワードバリデーションルールを構築
-        $passwordRules = PasswordValidationService::buildPasswordRules(
+        $passwordRules = PasswordService::buildPasswordRules(
             $passwordMinLength,
             $passwordRequireUppercase,
             $passwordRequireLowercase,
             $passwordRequireNumber,
             $passwordRequireSymbol,
-            !$isUpdate, // 新規作成時は必須、編集時は任意
-            $passwordCheckPwned
+            !$isUpdate // 新規作成時は必須、編集時は任意
         );
 
         $rules = [

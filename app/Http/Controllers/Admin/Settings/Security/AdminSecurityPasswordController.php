@@ -24,10 +24,9 @@ namespace App\Http\Controllers\Admin\Settings\Security;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
-use App\Helpers\ConfigHelper;
 use Illuminate\Http\Request;
 
-class AdminSecurityAuthController extends AdminLoggedInController
+class AdminSecurityPasswordController extends AdminLoggedInController
 {
     protected SecuritySettingRepositoryInterface $securitySettingRepository;
 
@@ -38,43 +37,32 @@ class AdminSecurityAuthController extends AdminLoggedInController
     }
 
     /**
-     * 認証・セッション設定ページ
+     * パスワードセキュリティ設定ページ
      */
     public function index()
     {
-        
         $settings = [
-            // Session settings
-            'session_encrypt' => ConfigHelper::getSessionEncrypt(),
-            'session_lifetime' => ConfigHelper::getSessionLifetime(),
-            // Password security settings
             'pwned_password_check_enabled' => filter_var($this->securitySettingRepository->get('pwned_password_check_enabled', false), FILTER_VALIDATE_BOOLEAN),
         ];
 
         $this->viewParams['settings'] = $settings;
 
-        return view('admin.settings.security.auth', $this->viewParams);
+        return view('admin.settings.security.password', $this->viewParams);
     }
 
     /**
-     * 認証・セッション設定の更新
+     * パスワードセキュリティ設定の更新
      */
     public function update(Request $request)
     {
         $validated = $request->validate([
-            'session_encrypt' => 'boolean',
-            'session_lifetime' => 'required|integer|min:1|max:43200',
             'pwned_password_check_enabled' => 'boolean',
         ]);
-
-        // セッション設定を更新
-        ConfigHelper::setSessionEncrypt($validated['session_encrypt'] ?? false);
-        ConfigHelper::setSessionLifetime($validated['session_lifetime']);
 
         // パスワードセキュリティ設定を更新
         $this->securitySettingRepository->set('pwned_password_check_enabled', $validated['pwned_password_check_enabled'] ?? false);
 
-        return redirect()->route('admin.settings.security.auth')
-            ->with('success', __('admin/settings/security/auth.settings_updated'));
+        return redirect()->route('admin.settings.security.password')
+            ->with('success', __('admin/settings/security/password.settings_updated'));
     }
 }

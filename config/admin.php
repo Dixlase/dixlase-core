@@ -180,10 +180,15 @@ return [
                             'route' => 'admin.settings.security.index',
                             'icon' => 'fas fa-fw fa-tachometer-alt',
                         ],
-                        'auth' => [
-                            'text' => 'admin/nav.settings.security.auth',
-                            'route' => 'admin.settings.security.auth',
-                            'icon' => 'fas fa-fw fa-user-lock',
+                        'password' => [
+                            'text' => 'admin/nav.settings.security.password',
+                            'route' => 'admin.settings.security.password',
+                            'icon' => 'fas fa-fw fa-key',
+                        ],
+                        'session' => [
+                            'text' => 'admin/nav.settings.security.session',
+                            'route' => 'admin.settings.security.session',
+                            'icon' => 'fas fa-fw fa-clock',
                         ],
                         'captcha' => [
                             'text' => 'admin/nav.settings.security.captcha',

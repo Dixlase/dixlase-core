@@ -32,7 +32,7 @@ use App\Enums\AppearanceMode;
 use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
 use App\Services\MailServerValidatorService;
-use App\Helpers\PasswordHelper;
+use App\Services\PasswordService;
 use App\Services\TwoFa\TwoFaPasskeyService;
 use App\Services\TwoFa\TwoFaRecoveryCodeService;
 use App\Contracts\Repositories\MemberSettingRepositoryInterface;
@@ -157,7 +157,7 @@ class AdminMemberController extends AdminLoggedInController
     public function store(AdminSettingsMemberStoreRequest $request)
     {
         $validated = $request->validated();
-        $validated['password'] = PasswordHelper::hash($validated['password']);
+        $validated['password'] = PasswordService::hash($validated['password']);
 
         $isMailServerTested = MailServerValidatorService::isMailServerTested();
         $emailVerified = (string) $request->input('email_verified', $isMailServerTested ? '0' : '1');
@@ -254,7 +254,7 @@ class AdminMemberController extends AdminLoggedInController
             $validated['status'] = MemberStatus::Active->value;
         }
 
-        PasswordHelper::hashPasswordIfPresent($validated);
+        PasswordService::hashPasswordIfPresent($validated);
 
         $wasVerified = $member->hasVerifiedEmail();
         $this->processEmailVerificationStatus($validated, $request, $member);

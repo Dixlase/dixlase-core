@@ -56,9 +56,6 @@ class AdminMemberPasswordController extends AdminMemberSettingsController
         if (array_key_exists('password_reset_enabled', $validated)) {
             $this->memberSettingRepository->set('password_reset_enabled', (bool) $validated['password_reset_enabled']);
         }
-        if (array_key_exists('pwned_password_check_enabled', $validated)) {
-            $this->memberSettingRepository->set('pwned_password_check_enabled', (bool) $validated['pwned_password_check_enabled']);
-        }
 
         return redirect()->back()
             ->with('success', __('admin/members/settings/index.updated'));

@@ -40,6 +40,7 @@ class SecuritySettingsTableSeeder extends Seeder
      */
     public function run(): void
     {
+        
         // System error notification settings
         SecuritySetting::updateOrCreate(
             ['name' => 'notification_enabled'],
@@ -49,6 +50,12 @@ class SecuritySettingsTableSeeder extends Seeder
         SecuritySetting::updateOrCreate(
             ['name' => 'notification_log_levels'],
             ['value' => implode(',', LogLevel::getDefaultNotificationLevels())]
+        );
+
+        // Password security settings
+        SecuritySetting::updateOrCreate(
+            ['name' => 'pwned_password_check_enabled'],
+            ['value' => '1']
         );
 
         // reCAPTCHA settings

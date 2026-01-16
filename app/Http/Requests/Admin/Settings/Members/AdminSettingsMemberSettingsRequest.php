@@ -52,8 +52,6 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
             'login_attempt_lockout_notification_enabled' => filter_var($this->input('login_attempt_lockout_notification_enabled'), FILTER_VALIDATE_BOOLEAN),
             // パスワードリセット機能設定
             'password_reset_enabled' => filter_var($this->input('password_reset_enabled'), FILTER_VALIDATE_BOOLEAN),
-            // パスワード辞書攻撃対策設定
-            'pwned_password_check_enabled' => filter_var($this->input('pwned_password_check_enabled'), FILTER_VALIDATE_BOOLEAN),
             // 管理メンバー用セッション設定
             'members_session_lifetime_enabled' => filter_var($this->input('members_session_lifetime_enabled'), FILTER_VALIDATE_BOOLEAN),
             // 二段階認証設定
@@ -79,7 +77,6 @@ class AdminSettingsMemberSettingsRequest extends FormRequest
             'password_require_number' => 'required|boolean',
             'password_require_symbol' => 'required|boolean',
             'password_reset_enabled' => 'required|boolean',
-            'pwned_password_check_enabled' => 'required|boolean',
         ];
 
         $sessionRules = [

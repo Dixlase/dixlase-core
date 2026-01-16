@@ -22,20 +22,88 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use App\Rules\NotPwnedPassword;
 use App\Services\MailServerValidatorService;
 
 /**
- * パスワードバリデーションサービス
+ * パスワードサービス
  * 
- * メンバー管理とユーザー管理の両方で使用できる共通のパスワードバリデーション機能を提供
- * 設定の取得は呼び出し側で行い、このサービスはバリデーションロジックのみを提供
+ * パスワードに関する包括的な機能を提供：
+ * - ハッシュ化・検証
+ * - バリデーションルール構築
+ * - パスワードリセット関連機能
+ * 
+ * メンバー管理とユーザー管理の両方で使用可能
  */
-class PasswordValidationService
+class PasswordService
 {
+    // =================================================================
+    // ハッシュ化・検証関連
+    // =================================================================
+
+    /**
+     * パスワードをハッシュ化（文字列を直接ハッシュ化）
+     *
+     * @param string $password 平文パスワード
+     * @return string ハッシュ化されたパスワード
+     */
+    public static function hash(string $password): string
+    {
+        return Hash::make($password);
+    }
+
+    /**
+     * パスワードをハッシュ化（配列内のパスワードフィールドを処理）
+     * 
+     * パスワードが空の場合は配列から削除します。
+     * パスワードが存在する場合はハッシュ化します。
+     *
+     * @param array &$data パスワードフィールドを含む配列（参照渡し）
+     * @param string $field パスワードフィールド名（デフォルト: 'password'）
+     * @return void
+     */
+    public static function hashPasswordIfPresent(array &$data, string $field = 'password'): void
+    {
+        if (!empty($data[$field])) {
+            $data[$field] = Hash::make($data[$field]);
+        } else {
+            unset($data[$field]);
+        }
+    }
+
+    /**
+     * パスワードを検証
+     *
+     * @param string $password 平文パスワード
+     * @param string $hashedPassword ハッシュ化されたパスワード
+     * @return bool
+     */
+    public static function verify(string $password, string $hashedPassword): bool
+    {
+        return Hash::check($password, $hashedPassword);
+    }
+
+    /**
+     * パスワードの再ハッシュ化が必要かチェック
+     *
+     * @param string $hashedPassword ハッシュ化されたパスワード
+     * @return bool
+     */
+    public static function needsRehash(string $hashedPassword): bool
+    {
+        return Hash::needsRehash($hashedPassword);
+    }
+
+    // =================================================================
+    // バリデーション関連
+    // =================================================================
+
     /**
      * パスワードバリデーションルールを構築
+     * 
+     * 漏洩パスワードチェックはセキュリティ設定から自動的に取得されます
      * 
      * @param int $minLength 最小文字数
      * @param bool $requireUppercase 大文字を必須にするか
@@ -43,7 +111,6 @@ class PasswordValidationService
      * @param bool $requireNumber 数字を必須にするか
      * @param bool $requireSymbol 記号を必須にするか
      * @param bool $isRequired パスワード入力を必須にするか
-     * @param bool $checkPwned 漏洩パスワードチェックを行うか
      * @return array バリデーションルール配列
      */
     public static function buildPasswordRules(
@@ -52,8 +119,7 @@ class PasswordValidationService
         bool $requireLowercase,
         bool $requireNumber,
         bool $requireSymbol,
-        bool $isRequired = true,
-        bool $checkPwned = false
+        bool $isRequired = true
     ): array {
         $rules = $isRequired ? ['required'] : ['nullable'];
         
@@ -80,7 +146,12 @@ class PasswordValidationService
         $rules[] = $passwordRule;
         $rules[] = 'confirmed';
 
-        // 漏洩パスワードチェック
+        // 漏洩パスワードチェック（セキュリティ設定から自動取得）
+        $checkPwned = filter_var(
+            \App\Models\SecuritySetting::get('pwned_password_check_enabled', false),
+            FILTER_VALIDATE_BOOLEAN
+        );
+        
         if ($checkPwned) {
             $rules[] = new NotPwnedPassword();
         }
@@ -152,19 +223,19 @@ class PasswordValidationService
     /**
      * パスワードリセット用のバリデーションルールを取得
      * 
+     * 漏洩パスワードチェックはセキュリティ設定から自動的に取得されます
+     * 
      * @param int $minLength 最小文字数
      * @param bool $requireUppercase 大文字・小文字の混在を必須にするか
      * @param bool $requireNumber 数字を必須にするか
      * @param bool $requireSymbol 記号を必須にするか
-     * @param bool $checkPwned 漏洩パスワードチェックを行うか
      * @return array
      */
     public static function getPasswordResetValidationRules(
         int $minLength,
         bool $requireUppercase,
         bool $requireNumber,
-        bool $requireSymbol,
-        bool $checkPwned = false
+        bool $requireSymbol
     ): array {
         return [
             'token' => ['required'],
@@ -175,8 +246,7 @@ class PasswordValidationService
                 true, // requireLowercase - always required
                 $requireNumber,
                 $requireSymbol,
-                true, // isRequired
-                $checkPwned
+                true // isRequired
             ),
         ];
     }

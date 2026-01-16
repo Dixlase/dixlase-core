@@ -92,26 +92,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </fieldset>
         </section>
 
-        <!-- パスワード辞書攻撃対策設定 -->
-        <section>
-            <h2>{{ __('admin/members/settings/password.pwned_settings') }}</h2>
-
-            <fieldset>
-                <x-form.toggle
-                    name="pwned_password_check_enabled"
-                    :label="__('admin/members/settings/password.pwned_check_enabled')"
-                    :checked="old('pwned_password_check_enabled', $pwnedPasswordCheckEnabled)"
-                />
-                <p class="mt-2">
-                    {!! __('admin/members/settings/password.pwned_help') !!}
-                </p>
-                <!-- API情報 -->
-                <x-message
-                    type="info"
-                    :message="__('admin/members/settings/password.pwned_api_info')"
-                />
-            </fieldset>
-        </section>
     </form>
 </div>
 @endsection
