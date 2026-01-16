@@ -22,27 +22,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
-    <form id="security-auth-form" method="POST" action="{{ route('admin.settings.security.auth.update') }}">
+    <form id="security-session-form" method="POST" action="{{ route('admin.settings.security.session.update') }}">
         @csrf
         
         <!-- セッション管理設定 -->
         <section>
-            <h2>{{ __('admin/settings/security/auth.session_management') }}</h2>
-            <p>{{ __('admin/settings/security/auth.session_management_description') }}</p>
+            <h2>{{ __('admin/settings/security/session.session_management') }}</h2>
+            <p>{{ __('admin/settings/security/session.session_management_description') }}</p>
 
             <!-- セッション暗号化 -->
             <fieldset>
                 <x-form.toggle
                     name="session_encrypt"
-                    :label="__('admin/settings/security/auth.session_encrypt')"
+                    :label="__('admin/settings/security/session.session_encrypt')"
                     :checked="old('session_encrypt', $settings['session_encrypt'])"
                 />
-                <p class="mt-2">{{ __('admin/settings/security/auth.session_encrypt_help') }}</p>
+                <p class="mt-2">{{ __('admin/settings/security/session.session_encrypt_help') }}</p>
             </fieldset>
 
             <!-- デフォルトセッション有効時間 -->
             <fieldset>
-                <legend>{{ __('admin/settings/security/auth.session_lifetime') }}</legend>
+                <legend>{{ __('admin/settings/security/session.session_lifetime') }}</legend>
                 
                 <div class="flex items-center space-x-3 mt-2">
                     <x-form.text
@@ -60,35 +60,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </span>
                 </div>
                 
-                <p id="session_lifetime_help">{{ __('admin/settings/security/auth.session_lifetime_help') }}</p>
-            </fieldset>
-        </section>
-
-        <!-- パスワードセキュリティ設定 -->
-        <section>
-            <h2>{{ __('admin/settings/security/auth.password_security_settings') }}</h2>
-            <p>{{ __('admin/settings/security/auth.password_security_description') }}</p>
-
-            <!-- パスワード漏洩チェック -->
-            <fieldset>
-                <legend>{{ __('admin/settings/security/auth.pwned_password_check') }}</legend>
-                <p>{{ __('admin/settings/security/auth.pwned_password_check_help') }}</p>
-                
-                <x-form.toggle
-                    :label="__('common.enabled')"
-                    id="pwned_password_check_enabled"
-                    name="pwned_password_check_enabled"
-                    :checked="old('pwned_password_check_enabled', $settings['pwned_password_check_enabled'])"
-                />
-                
-                <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                    <div class="flex items-start gap-2">
-                        <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
-                        <div class="text-sm text-blue-700 dark:text-blue-300">
-                            <p>{{ __('admin/settings/security/auth.pwned_password_api_info') }}</p>
-                        </div>
-                    </div>
-                </div>
+                <p id="session_lifetime_help">{{ __('admin/settings/security/session.session_lifetime_help') }}</p>
             </fieldset>
         </section>
 
@@ -104,6 +76,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :message="__('common.save_confirmation_message')"
         :confirm_label="__('common.save')"
         :cancel_label="__('common.cancel')"
-        form="security-auth-form"
+        form="security-session-form"
     />
 @endsection

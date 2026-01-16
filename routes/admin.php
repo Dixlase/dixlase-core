@@ -274,11 +274,17 @@ Route::prefix($adminUrl)->name('admin.')
                 // 概要
                 Route::get('/', [Security\AdminSecurityIndexController::class, 'index'])->name('index');
                 
-                // 認証・セッション
-                Route::get('/auth', [Security\AdminSecurityAuthController::class, 'index'])->name('auth');
-                Route::post('/auth', [Security\AdminSecurityAuthController::class, 'update'])
+                // パスワードセキュリティ
+                Route::get('/password', [Security\AdminSecurityPasswordController::class, 'index'])->name('password');
+                Route::post('/password', [Security\AdminSecurityPasswordController::class, 'update'])
                     ->middleware('check.menu.edit:settings.security')
-                    ->name('auth.update');
+                    ->name('password.update');
+                
+                // セッション管理
+                Route::get('/session', [Security\AdminSecuritySessionController::class, 'index'])->name('session');
+                Route::post('/session', [Security\AdminSecuritySessionController::class, 'update'])
+                    ->middleware('check.menu.edit:settings.security')
+                    ->name('session.update');
                 
                 // CAPTCHA
                 Route::get('/captcha', [Security\AdminSecurityCaptchaController::class, 'index'])->name('captcha');

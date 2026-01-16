@@ -40,7 +40,8 @@ return [
         'security' => [
             'text' => 'Security Settings',
             'index' => 'Overview',
-            'auth' => 'Authentication & Session',
+            'password' => 'Password',
+            'session' => 'Session',
             'captcha' => 'CAPTCHA',
             'ip' => 'IP Access Control',
             'extensions' => 'Extensions',

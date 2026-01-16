@@ -23,12 +23,6 @@ class MembersSettingsSeeder extends Seeder
             ['key' => 'password_require_number', 'value' => '1'], // デフォルト: 数字を含める
             ['key' => 'password_require_symbol', 'value' => '1'], // デフォルト: 記号を含める
 
-            // パスワードリセット機能設定
-            ['key' => 'password_reset_enabled', 'value' => '0'], // デフォルト: 無効
-
-            // パスワード辞書攻撃対策設定
-            ['key' => 'pwned_password_check_enabled', 'value' => '0'], // デフォルト: 無効
-
             // ログイン通知設定
             ['key' => 'login_notification_mode', 'value' => '3'], // 0=無効, 1=異なるデバイス, 2=常に有効, 3=プロフィール設定に従う
             ['key' => 'login_notification_send_to_system', 'value' => '0'], // デフォルト: システム通知無効
