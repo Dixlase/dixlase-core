@@ -99,18 +99,18 @@ trait PwnedPasswordTrait
      */
     public function isPwnedPasswordCheckEnabled(string $settingKey = 'pwned_password_check_enabled'): bool
     {
-        // MemberSettingクラスが存在する場合はそれを使用（デフォルト）
-        if (class_exists('\App\Models\MemberSetting')) {
+        // SecuritySettingクラスが存在する場合はそれを使用（優先）
+        if (class_exists('\App\Models\SecuritySetting')) {
             return filter_var(
-                \App\Models\MemberSetting::getValue($settingKey, false),
+                \App\Models\SecuritySetting::get($settingKey, false),
                 FILTER_VALIDATE_BOOLEAN
             );
         }
 
-        // SecuritySettingクラスが存在する場合はそれを使用（後方互換性）
-        if (class_exists('\App\Models\SecuritySetting')) {
+        // MemberSettingクラスが存在する場合はそれを使用（後方互換性）
+        if (class_exists('\App\Models\MemberSetting')) {
             return filter_var(
-                \App\Models\SecuritySetting::get($settingKey, false),
+                \App\Models\MemberSetting::getValue($settingKey, false),
                 FILTER_VALIDATE_BOOLEAN
             );
         }

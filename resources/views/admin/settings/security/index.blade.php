@@ -27,12 +27,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- セキュリティステータスカード -->
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
-        <!-- 認証・セッション -->
-        <a href="{{ route('admin.settings.security.auth') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
+        <!-- パスワード -->
+        <a href="{{ route('admin.settings.security.password') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
-                    <i class="fas fa-user-lock text-blue-500 text-xl mr-3"></i>
-                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.security.auth') }}</h3>
+                    <i class="fas fa-key text-blue-500 text-xl mr-3"></i>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.security.password') }}</h3>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+            </div>
+            <div class="text-sm text-gray-600 dark:text-gray-400">
+                <p>{{ __('admin/settings/security/index.password_security') }}</p>
+            </div>
+        </a>
+
+        <!-- セッション -->
+        <a href="{{ route('admin.settings.security.session') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center">
+                    <i class="fas fa-clock text-green-500 text-xl mr-3"></i>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/nav.settings.security.session') }}</h3>
                 </div>
                 <i class="fas fa-chevron-right text-gray-400"></i>
             </div>

@@ -147,13 +147,18 @@ class PasswordService
         $rules[] = 'confirmed';
 
         // 漏洩パスワードチェック（セキュリティ設定から自動取得）
-        $checkPwned = filter_var(
-            \App\Models\SecuritySetting::get('pwned_password_check_enabled', false),
-            FILTER_VALIDATE_BOOLEAN
-        );
+        $checkPwnedSetting = \App\Models\SecuritySetting::get('pwned_password_check_enabled', false);
+        $checkPwned = filter_var($checkPwnedSetting, FILTER_VALIDATE_BOOLEAN);
+        
+        \Log::info('PasswordService: Pwned password check', [
+            'setting_value' => $checkPwnedSetting,
+            'check_pwned' => $checkPwned,
+            'will_add_rule' => $checkPwned
+        ]);
         
         if ($checkPwned) {
             $rules[] = new NotPwnedPassword();
+            \Log::info('PasswordService: NotPwnedPassword rule added');
         }
 
         return $rules;
