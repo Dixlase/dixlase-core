@@ -63,6 +63,10 @@ return [
     'cleanup_description' => 'Delete audit logs older than the specified number of days. Setting 0 will delete all logs.',
     'cleanup_confirm' => 'Are you sure you want to delete audit logs older than the specified days? This action cannot be undone.',
     'cleanup_success' => 'Successfully deleted :count audit log(s).',
+    'cleanup_modal' => [
+        'title' => 'Audit Log Cleanup',
+        'confirm_message' => 'Are you sure you want to delete the audit logs?<br>This action cannot be undone.',
+    ],
     'categories' => [
         'auth' => 'Authentication',
         'account' => 'Account',

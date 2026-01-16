@@ -41,10 +41,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     
     <!-- Action Buttons -->
-    <nav class="flex flex-row flex-wrap items-center justify-between gap-2 mb-4">
+    <nav class="flex flex-row items-center justify-center md:justify-end gap-2 mb-4">
         <!-- Date Selector -->
         @if(!empty($availableDates) && count($availableDates) > 1)
-        <div class="flex items-center gap-2">
+        <div>
             <label for="date-select" class="text-sm font-medium text-gray-700 dark:text-gray-300">
                 {{ __('admin/settings/systems/logs/files.date_select') }}:
             </label>
@@ -58,27 +58,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endforeach
             </select>
         </div>
-        @else
-        <div></div>
         @endif
 
-        <div class="flex items-center gap-2">
-            <!-- Download Button -->
-            <a href="{{ route('admin.settings.systems.logs.download', ['type' => $logType, 'date' => $selectedDate ?? '']) }}" class="action-button action-button--success flex-shrink-0">
-                <i class="fas fa-download mr-2"></i>
-                {{ __('common.download') }}
-            </a>
-
-            <!-- Clear Button -->
-            <form method="POST" action="{{ route('admin.settings.systems.logs.clear', ['type' => $logType]) }}" 
-                onsubmit="return confirm('{{ __('admin/settings/systems/logs/files.clear_confirm') }}')">
-                @csrf
-                <button type="submit" class="action-button action-button--danger flex-shrink-0">
-                    <i class="fas fa-trash mr-2"></i>
-                    {{ __('common.clear') }}
-                </button>
-            </form>
-        </div>
+        <!-- Download Button -->
+        <x-form.button
+            type="link"
+            variant="success"
+            :href="route('admin.settings.systems.logs.download', ['type' => $logType, 'date' => $selectedDate ?? ''])"
+            :label="__('common.download')"
+            icon="fas fa-download"
+            class="flex-shrink-0"
+        />
     </nav>
 
     <!-- Log Level Filter -->
@@ -101,10 +91,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :values="$levelFilters ?? ['error', 'warning', 'normal', 'debug']"
                     flexDirection="row"
                 />
-                <button type="submit" class="action-button action-button--primary text-sm">
-                    <i class="fas fa-filter mr-1"></i>
-                    {{ __('common.filter') }}
-                </button>
+                <x-form.button
+                    type="submit"
+                    variant="primary"
+                    :label="__('common.filter')"
+                    icon="fas fa-filter"
+                    size="sm"
+                />
             </div>
         </form>
     </div>
@@ -306,6 +299,62 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         ])"
         :mobilePageRange="0"
         :desktopPageRange="2"
+    />
+
+    <!-- Cleanup Section -->
+    <div class="flex justify-between items-center my-6 bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                {{ __('admin/settings/systems/logs/files.cleanup_title') }}
+            </h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                {{ __('admin/settings/systems/logs/files.cleanup_description') }}
+            </p>
+        </div>
+        <div>
+            <form method="POST" action="{{ route('admin.settings.systems.logs.clear', ['type' => $logType]) }}" id="clearLogForm">
+                @csrf
+                <div class="flex items-center gap-4">
+                    <div>
+                        <x-form.label
+                            for="cleanup_days"
+                            :text="__('admin/settings/systems/logs/index.cleanup_days')"
+                            class="mb-1"
+                        />
+                        <x-form.text
+                            type="number"
+                            name="days"
+                            id="cleanup_days"
+                            :value="90"
+                            :min="0"
+                            :max="365"
+                            class="!w-24"
+                        />
+                    </div>
+                    <div class="pt-6">
+                        <x-form.button
+                            type="button"
+                            variant="danger"
+                            :label="__('common.clear')"
+                            icon="fas fa-trash"
+                            onclick="openModal('clearConfirmModal')"
+                        />
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Clear Confirmation Modal -->
+    <x-modal
+        id="clearConfirmModal"
+        :title="__('admin/settings/systems/logs/files.clear_modal.title')"
+        :message="__('admin/settings/systems/logs/files.clear_modal.confirm_message')"
+        :confirm_label="__('common.clear')"
+        :cancel_label="__('common.cancel')"
+        icon_type="warning"
+        confirm_color="red"
+        form="clearLogForm"
     />
 
 @endsection
