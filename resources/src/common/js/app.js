@@ -20,6 +20,9 @@
 
 import '../scss/style.scss';
 import './bootstrap';
+import '../../components/tooltip';
+import '../../components/color-picker';
+import '../../components/email-input';
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse'
 

@@ -28,7 +28,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'help' => null,
 ])
 
-<div class="space-y-2">
+<div x-data="colorPicker('{{ old($name, $value) }}')" class="space-y-2">
     @if ($label)
         <x-form.label :for="$id ?? $name" :required="$required">
             {{ $label }}
@@ -39,14 +39,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <input type="color"
             id="{{ $id ?? $name }}"
             name="{{ $name }}"
-            value="{{ old($name, $value) }}"
+            x-model="color"
             @if ($disabled) disabled @endif
             @if ($required) required @endif
             class="h-10 w-20 rounded border border-gray-300 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600"
         >
         <input type="text"
-            id="{{ $id ?? $name }}_text"
-            value="{{ old($name, $value) }}"
+            x-model="color"
             readonly
             class="block flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm text-sm dark:bg-gray-800 dark:border-gray-500 dark:text-white"
         >
@@ -58,16 +57,3 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <x-form.error :name="$name" />
 </div>
-
-<script @cspNonce>
-    document.addEventListener('DOMContentLoaded', function() {
-        const colorInput = document.getElementById('{{ $id ?? $name }}');
-        const textInput = document.getElementById('{{ $id ?? $name }}_text');
-        
-        if (colorInput && textInput) {
-            colorInput.addEventListener('input', function() {
-                textInput.value = this.value;
-            });
-        }
-    });
-</script>

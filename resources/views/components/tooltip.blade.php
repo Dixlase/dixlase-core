@@ -28,8 +28,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 ])
 
 @php
-    $tooltipId = $id ?? 'tooltip-' . uniqid();
-    
     $positionClasses = [
         'top' => 'bottom-full left-1/2 -translate-x-1/2 mb-2',
         'bottom' => 'top-full left-0 mt-2',
@@ -39,21 +37,30 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     $positionClass = $positionClasses[$position] ?? $positionClasses['bottom'];
 @endphp
 
-<div class="tooltip-container relative inline-block" data-tooltip-id="{{ $tooltipId }}" data-tooltip-trigger="{{ $trigger }}">
+<div x-data="tooltip()" 
+     @click.away="hide()"
+     class="tooltip-container relative inline-block">
     {{-- トリガー要素（slotで指定） --}}
     <div class="tooltip-trigger cursor-pointer" 
-         @if($trigger === 'click') onclick="toggleTooltip('{{ $tooltipId }}')" @endif
-         @if($trigger === 'hover') onmouseenter="showTooltip('{{ $tooltipId }}')" onmouseleave="hideTooltip('{{ $tooltipId }}')" @endif
+         @if($trigger === 'click')
+             @click="toggle()"
+         @else
+             @mouseenter="show()"
+             @mouseleave="hide()"
+         @endif
     >
         {{ $trigger_slot ?? $slot }}
     </div>
     
     {{-- ツールチップ本体 --}}
-    <div id="{{ $tooltipId }}" 
-         class="tooltip-content hidden absolute {{ $positionClass }} {{ $width }} bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-3"
-         style="z-index: 9999;"
-         @if($trigger === 'hover') onmouseenter="showTooltip('{{ $tooltipId }}')" onmouseleave="hideTooltip('{{ $tooltipId }}')" @endif
-    >
+    <div x-show="isOpen"
+         x-transition
+         @if($trigger === 'hover')
+             @mouseenter="show()"
+             @mouseleave="hide()"
+         @endif
+         class="tooltip-content absolute {{ $positionClass }} {{ $width }} bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-3"
+         style="z-index: 9999;">
         @if($title || $closable)
             <div class="flex items-center justify-between mb-2">
                 @if($title)
@@ -62,7 +69,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <span></span>
                 @endif
                 @if($closable && $trigger === 'click')
-                    <button type="button" onclick="hideTooltip('{{ $tooltipId }}')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 ml-2">
+                    <button type="button" @click="hide()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 ml-2">
                         <i class="fas fa-times"></i>
                     </button>
                 @endif
@@ -75,71 +82,3 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
 </div>
-
-@once
-@push('scripts')
-<script @cspNonce>
-// ツールチップマネージャー
-if (typeof window.TooltipManager === 'undefined') {
-    window.TooltipManager = {
-        show: function(tooltipId) {
-            const tooltip = document.getElementById(tooltipId);
-            if (tooltip) {
-                // 他のクリックトリガーのツールチップを閉じる
-                document.querySelectorAll('.tooltip-content').forEach(t => {
-                    const container = t.closest('.tooltip-container');
-                    if (container && container.dataset.tooltipTrigger === 'click' && t.id !== tooltipId) {
-                        t.classList.add('hidden');
-                    }
-                });
-                tooltip.classList.remove('hidden');
-            }
-        },
-        
-        hide: function(tooltipId) {
-            const tooltip = document.getElementById(tooltipId);
-            if (tooltip) {
-                tooltip.classList.add('hidden');
-            }
-        },
-        
-        toggle: function(tooltipId) {
-            const tooltip = document.getElementById(tooltipId);
-            if (tooltip) {
-                if (tooltip.classList.contains('hidden')) {
-                    this.show(tooltipId);
-                } else {
-                    this.hide(tooltipId);
-                }
-            }
-        }
-    };
-    
-    // グローバル関数
-    window.showTooltip = function(tooltipId) {
-        window.TooltipManager.show(tooltipId);
-    };
-    
-    window.hideTooltip = function(tooltipId) {
-        window.TooltipManager.hide(tooltipId);
-    };
-    
-    window.toggleTooltip = function(tooltipId) {
-        window.TooltipManager.toggle(tooltipId);
-    };
-    
-    // ツールチップ外クリックで閉じる
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.tooltip-container')) {
-            document.querySelectorAll('.tooltip-content').forEach(t => {
-                const container = t.closest('.tooltip-container');
-                if (container && container.dataset.tooltipTrigger === 'click') {
-                    t.classList.add('hidden');
-                }
-            });
-        }
-    });
-}
-</script>
-@endpush
-@endonce
