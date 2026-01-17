@@ -25,6 +25,7 @@ import '../../components/color-picker';
 import '../../components/email-input';
 import '../../components/password-tools';
 import '../../components/notification';
+import '../../components/modal';
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse'
 
