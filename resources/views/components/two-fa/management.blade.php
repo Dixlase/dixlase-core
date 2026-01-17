@@ -972,7 +972,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     confirm_label="{{ __('common.ok') }}"
     cancel_label="{{ __('common.cancel') }}"
     icon_type="warning"
-    confirm_color="blue"
+    confirm_color="yellow"
 />
 
 <!-- 回復コード削除確認モーダル（管理画面用） -->

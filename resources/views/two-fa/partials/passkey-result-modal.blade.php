@@ -23,18 +23,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     $modalId = $modalId ?? 'passkeyResultModal';
 @endphp
 
-<div id="{{ $modalId }}" class="modal" style="display: none;">
-    <div class="modal-overlay"></div>
-    <div class="modal-container" onclick="event.stopPropagation()">
+<div id="{{ $modalId }}" 
+     class="modal" 
+     x-data="passkeyResultModal()" 
+     x-show="show" 
+     x-cloak
+     @keydown.escape.window="close()"
+     style="display: none;">
+    <div class="modal-overlay bg-white/80 dark:bg-black/50" @click="close()"></div>
+    <div class="modal-container" @click.stop style="transition: transform 300ms ease-out, opacity 300ms ease-out;">
         <div class="modal-content">
-            <div id="{{ $modalId }}_icon" class="modal-icon modal-icon--success">
-                <i class="fas fa-check-circle" aria-hidden="true"></i>
+            <div :class="modalIconClass">
+                <i :class="iconClass" aria-hidden="true"></i>
             </div>
             
             <div class="modal-body">
-                <h2 id="{{ $modalId }}_title" class="modal-title"></h2>
+                <h2 class="modal-title" x-text="title"></h2>
                 <div class="modal-message">
-                    <p id="{{ $modalId }}_message"></p>
+                    <p x-text="message"></p>
                 </div>
             </div>
         </div>
@@ -44,70 +50,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 type="button"
                 variant="primary"
                 :label="__('common.close')"
-                onclick="window.PasskeyResultModal.close('{{ $modalId }}')"
+                @click="close()"
                 class="mx-2"
             />
         </div>
     </div>
 </div>
 
-@push('scripts')
-<script @cspNonce>
-// Passkey結果表示モーダルマネージャー
-if (typeof window.PasskeyResultModal === 'undefined') {
-    window.PasskeyResultModal = {
-        // コールバック関数を保存
-        callbacks: {},
-        
-        // 成功モーダルを表示
-        showSuccess: function(modalId, title, message, callback) {
-            this.show(modalId, 'success', title, message, callback);
-        },
-        
-        // エラーモーダルを表示
-        showError: function(modalId, title, message, callback) {
-            this.show(modalId, 'danger', title, message, callback);
-        },
-        
-        // モーダルを表示
-        show: function(modalId, type, title, message, callback) {
-            this.callbacks[modalId] = callback;
-            
-            const iconElement = document.getElementById(modalId + '_icon');
-            const titleElement = document.getElementById(modalId + '_title');
-            const messageElement = document.getElementById(modalId + '_message');
-            
-            if (iconElement) {
-                // アイコンタイプを設定
-                iconElement.className = 'modal-icon modal-icon--' + type;
-                const iconClass = type === 'success' ? 'fa-check-circle' : 
-                                 type === 'danger' ? 'fa-times-circle' : 
-                                 type === 'warning' ? 'fa-exclamation-triangle' : 
-                                 'fa-info-circle';
-                iconElement.querySelector('i').className = 'fas ' + iconClass;
-            }
-            
-            if (titleElement) {
-                titleElement.textContent = title;
-            }
-            
-            if (messageElement) {
-                messageElement.textContent = message;
-            }
-            
-            openModal(modalId);
-        },
-        
-        // モーダルを閉じる
-        close: function(modalId) {
-            closeModal(modalId);
-            
-            if (this.callbacks[modalId]) {
-                this.callbacks[modalId]();
-                delete this.callbacks[modalId];
-            }
-        }
-    };
-}
-</script>
-@endpush
