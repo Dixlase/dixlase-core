@@ -161,17 +161,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <x-form.button
                         type="button"
                         variant="secondary"
-                        :label="$cancelLabel ?? __('common.cancel')"
+                        label="{{ $cancelLabel ?? __('common.cancel') }}"
                         @click="close()"
                         class="mx-2"
                     />
-                    <x-form.button
-                        :type="$form ? 'submit' : 'button'"
-                        :variant="$confirm_variant ?? 'primary'"
-                        :label="$confirmLabel ?? __('common.confirm')"
-                        :form="$form"
-                        class="mx-2"
-                    />
+                    @if($form)
+                        <x-form.button
+                            type="submit"
+                            variant="{{ $confirm_variant ?? 'primary' }}"
+                            label="{{ $confirmLabel ?? __('common.confirm') }}"
+                            form="{{ $form }}"
+                            @click="submitModalForm('{{ $form }}')"
+                            class="mx-2"
+                        />
+                    @else
+                        <x-form.button
+                            type="button"
+                            variant="{{ $confirm_variant ?? 'primary' }}"
+                            label="{{ $confirmLabel ?? __('common.confirm') }}"
+                            class="mx-2"
+                        />
+                    @endif
                 @endif
             @else
                 {{-- カスタムフッター --}}

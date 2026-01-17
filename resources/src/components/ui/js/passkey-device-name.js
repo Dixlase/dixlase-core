@@ -111,6 +111,12 @@ if (typeof window.PasskeyDeviceNameModal === 'undefined') {
             }
         },
 
+        prompt: function (modalId, title, defaultValue = '') {
+            return new Promise((resolve) => {
+                this.open(modalId, resolve, defaultValue);
+            });
+        },
+
         confirm: function (modalId) {
             const modalElement = document.getElementById(modalId);
             if (modalElement && modalElement._x_dataStack) {

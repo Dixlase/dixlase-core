@@ -164,29 +164,39 @@ window.displayRecoveryCodesError = function (modalId, errorMessage) {
     const modal = document.getElementById(modalId);
     if (!modal) return;
 
+    // モーダルのコンテンツ部分を更新
     const modalContent = modal.querySelector('.space-y-4');
-    if (!modalContent) return;
-
-    const errorHTML = `
-        <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-            <p class="text-sm text-red-800 dark:text-red-200">
-                <i class="fas fa-exclamation-circle mr-2"></i>
-                ${errorMessage}
-            </p>
-        </div>
-    `;
-
-    modalContent.innerHTML = errorHTML;
-
-    const modalTitle = modal.querySelector('h3');
-    if (modalTitle) {
-        modalTitle.textContent = window.translations?.error || 'Error';
+    if (modalContent) {
+        const errorHTML = `
+            <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                <p class="text-sm text-red-800 dark:text-red-200">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    ${errorMessage}
+                </p>
+            </div>
+        `;
+        modalContent.innerHTML = errorHTML;
     }
 
-    const closeBtn = document.getElementById(modalId + '-close-btn');
-    if (closeBtn) {
-        closeBtn.disabled = false;
-        closeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    // modal-actionsを更新
+    const modalActions = modal.querySelector('.modal-actions');
+    if (modalActions) {
+        const closeLabel = window.translations?.common?.close || window.translations?.close || '閉じる';
+        const actionsHTML = `
+            <button 
+                type="button"
+                onclick="closeModal('${modalId}')"
+                class="inline-flex items-center justify-center font-semibold rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed bg-gray-200 dark:bg-gray-500 text-gray-900 dark:text-white hover:bg-gray-700 focus:ring-gray-500 px-4 py-2 text-sm mx-2">
+                ${closeLabel}
+            </button>
+        `;
+        modalActions.innerHTML = actionsHTML;
+    }
+
+    // タイトルを更新
+    const modalTitle = modal.querySelector('h3');
+    if (modalTitle) {
+        modalTitle.textContent = window.translations?.common?.error || window.translations?.error || 'エラー';
     }
 };
 

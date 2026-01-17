@@ -128,8 +128,36 @@ window.closeModal = function (modalId) {
 };
 
 window.submitModalForm = function (formId) {
+    console.log('[submitModalForm] Called with formId:', formId);
+
+    // Check if it's a 2FA management modal action
+    const actionMap = {
+        'deleteTrustedDeviceForm': 'deleteTrustedDevice',
+        'deleteAllTrustedDevicesForm': 'deleteAllTrustedDevices',
+        'deletePasskeyForm': 'deletePasskey',
+        'deleteAllPasskeysForm': 'deleteAllPasskeys',
+        'deleteRecoveryCodesForm': 'deleteRecoveryCodes',
+        'confirmGenerateRecoveryCodesForm': 'confirmGenerateRecoveryCodes'
+    };
+
+    if (actionMap[formId]) {
+        console.log('[submitModalForm] Found action mapping:', actionMap[formId]);
+        console.log('[submitModalForm] Function exists?', typeof window[actionMap[formId]]);
+
+        if (typeof window[actionMap[formId]] === 'function') {
+            console.log('[submitModalForm] Calling function:', actionMap[formId]);
+            window[actionMap[formId]]();
+            return;
+        }
+    }
+
+    // Default behavior: submit actual form
+    console.log('[submitModalForm] Looking for form element:', formId);
     const form = document.getElementById(formId);
     if (form) {
+        console.log('[submitModalForm] Submitting form');
         form.submit();
+    } else {
+        console.warn('[submitModalForm] No form found and no action mapped');
     }
 };
