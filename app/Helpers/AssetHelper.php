@@ -72,8 +72,9 @@ if (!function_exists('render_vite_assets')) {
         
         if ($addFoucPrevention) {
             $output .= '<style>body{opacity:0;visibility:hidden;}</style>';
+            $nonceAttr = get_csp_nonce_attr();
             $output .= <<<HTML
-<script>
+<script{$nonceAttr}>
     window.addEventListener('load', () => {
         document.body.style.visibility = 'visible';
         document.body.style.opacity = '1';
