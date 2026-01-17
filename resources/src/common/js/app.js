@@ -23,6 +23,8 @@ import './bootstrap';
 import '../../components/tooltip';
 import '../../components/color-picker';
 import '../../components/email-input';
+import '../../components/password-tools';
+import '../../components/notification';
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse'
 
