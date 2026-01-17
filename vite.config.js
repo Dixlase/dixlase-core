@@ -91,10 +91,10 @@ export default defineConfig(({ command }) => ({
         host: '0.0.0.0',        // Docker コンテナ内で全てのインターフェースをバインド
         port: 5173,
         strictPort: true,       // ポートが使用中なら失敗する
-        https: {
+        https: command === 'serve' ? {
             key: fs.readFileSync('/etc/ssl/private/localhost.key'),
             cert: fs.readFileSync('/etc/ssl/private/localhost.crt'),
-        },
+        } : false,
         watch: {
             usePolling: true,     // ポーリングでファイル変更を検知
             interval: 100,        // ポーリングの間隔（お好みで調整）
