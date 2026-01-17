@@ -29,7 +29,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     $cancelLabel = $cancelLabel ?? null;
 @endphp
 
-<div id="{{ $modalId }}" class="modal">
+<div id="{{ $modalId }}" class="modal" style="display: none;">
     <div class="modal-overlay" onclick="closeModal('{{ $modalId }}')"></div>
     <div class="modal-container" onclick="event.stopPropagation()">
         <div class="modal-content">

@@ -23,7 +23,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     $modalId = $modalId ?? 'passkeyResultModal';
 @endphp
 
-<div id="{{ $modalId }}" class="modal">
+<div id="{{ $modalId }}" class="modal" style="display: none;">
     <div class="modal-overlay"></div>
     <div class="modal-container" onclick="event.stopPropagation()">
         <div class="modal-content">

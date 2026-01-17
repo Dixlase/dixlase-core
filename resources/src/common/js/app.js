@@ -20,12 +20,12 @@
 
 import '../scss/style.scss';
 import './bootstrap';
-import '../../components/tooltip';
-import '../../components/color-picker';
-import '../../components/email-input';
-import '../../components/password-tools';
-import '../../components/notification';
-import '../../components/modal';
+import '../../components/ui/js/tooltip';
+import '../../components/form/js/color-picker';
+import '../../components/form/js/email-input';
+import '../../components/form/js/password-tools';
+import '../../components/ui/js/notification';
+import '../../components/ui/js/modal';
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse'
 
