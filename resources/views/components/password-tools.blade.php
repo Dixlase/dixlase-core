@@ -40,90 +40,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'showConfirmationOnChange' => false,
 ])
 
-<div class="relative">
-    <x-form.text
-        type="password"
-        :id="$id"
-        :name="$name"
-        value=""
-        :required="$required"
-        autocomplete="new-password"
-        class="password-input input-full"
-    />
-
-    <!-- パスワードツールバー -->
-    <div class="absolute top-0 right-2 h-full flex items-center gap-1" role="toolbar" aria-label="{{ __('components.password_messages.toolbar_label') }}">
-    <!-- 自動生成ボタン -->
-        <div class="group relative">
-            <button 
-                type="button" 
-                class="px-2 py-1 text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 transition-colors"
-                onclick="PasswordTools.generatePassword('{{ $id }}', '{{ $id }}_confirmation')"
-                aria-label="{{ __('components.password_messages.tooltip.generate') }}"
-                title="{{ __('components.password_messages.tooltip.generate') }}">
-                <i class="fa-solid fa-random" aria-hidden="true"></i>
-        </button>
-            <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block text-xs rounded bg-gray-800 text-white px-2 py-1 whitespace-nowrap z-10 pointer-events-none" role="tooltip">
-            {{ __('components.password_messages.tooltip.generate') }}
-        </span>
-    </div>
-
-        <!-- コピーボタン -->
-        <div class="group relative">
-            <button 
-                type="button" 
-                class="px-2 py-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
-                onclick="PasswordTools.copyPassword('{{ $id }}')"
-                aria-label="{{ __('components.password_messages.tooltip.copy') }}"
-                title="{{ __('components.password_messages.tooltip.copy') }}">
-                <i class="fa-solid fa-copy" aria-hidden="true"></i>
-        </button>
-            <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block text-xs rounded bg-gray-800 text-white px-2 py-1 whitespace-nowrap z-10 pointer-events-none" role="tooltip">
-            {{ __('components.password_messages.tooltip.copy') }}
-        </span>
-    </div>
-
-        <!-- 表示切り替えボタン -->
-        <div class="group relative">
-            <button 
-                type="button" 
-                class="px-2 py-1 text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white transition-colors"
-                onclick="PasswordTools.togglePassword('{{ $id }}', '{{ $id }}_confirmation', '{{ $id }}-eye')"
-                aria-label="{{ __('components.password_messages.tooltip.toggle') }}"
-                aria-pressed="false"
-                title="{{ __('components.password_messages.tooltip.toggle') }}">
-                <i id="{{ $id }}-eye" class="fa-solid fa-eye" aria-hidden="true"></i>
-        </button>
-            <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block text-xs rounded bg-gray-800 text-white px-2 py-1 whitespace-nowrap z-10 pointer-events-none" role="tooltip">
-            {{ __('components.password_messages.tooltip.toggle') }}
-        </span>
-    </div>
-</div>
-</div>
-
-@if($showConfirmation)
-    <fieldset id="{{ $id }}-confirmation-fieldset" @if($showConfirmationOnChange) style="display: none;" @endif>
-        <legend class="text-gray-700 dark:text-gray-300">{{ __('common.password') }}（{{ __('common.confirm') }}）</legend>
-        <div class="relative">
-            <x-form.text
-                type="password"
-                :id="$id . '_confirmation'"
-                :name="$name . '_confirmation'"
-                value=""
-                :required="$required"
-                autocomplete="new-password"
-                class="password-confirmation-input w-full"
-            />
-            <!-- パスワード一致判定アイコン -->
-            <div id="{{ $id }}-match-indicator" class="absolute top-0 right-2 h-full flex items-center" style="display: none;">
-                <i id="{{ $id }}-match-icon" class="fas fa-check text-green-500"></i>
-            </div>
-        </div>
-    </fieldset>
-@endif
-
-
-
 @php
     // 長さの要件（常に必須）
     $lengthBase = $minLength < $recommendedLength
@@ -160,418 +76,137 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     }
 @endphp
 
-<p id="{{ $id }}-strength-message" class="text-sm mt-1 text-gray-700 dark:text-gray-300 h-[1em]"></p>
+<div x-data="passwordTools({
+        minLength: {{ $minLength }},
+        recommendedLength: {{ $recommendedLength }},
+        requireUppercase: {{ $requireUppercase ? 'true' : 'false' }},
+        requireLowercase: {{ $requireLowercase ? 'true' : 'false' }},
+        requireNumber: {{ $requireNumber ? 'true' : 'false' }},
+        requireSymbol: {{ $requireSymbol ? 'true' : 'false' }},
+        showConfirmation: {{ $showConfirmation ? 'true' : 'false' }},
+        showConfirmationOnChange: {{ $showConfirmationOnChange ? 'true' : 'false' }}
+    })"
+    data-msg-error="{{ __('components.password_messages.error') }}"
+    data-msg-weak="{{ __('components.password_messages.requirements.weak') }}"
+    data-msg-normal="{{ __('components.password_messages.requirements.normal') }}"
+    data-msg-strong="{{ __('components.password_messages.requirements.strong') }}"
+    data-msg-very-strong="{{ __('components.password_messages.requirements.very_strong') }}">
+    <div class="relative">
+        <input
+            :type="showPassword ? 'text' : 'password'"
+            id="{{ $id }}"
+            name="{{ $name }}"
+            x-model="password"
+            @if($required) required @endif
+            autocomplete="new-password"
+            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-800 dark:border-gray-500 dark:text-white password-input"
+        />
 
-<div id="{{ $id }}-strength-bar" class="h-2 w-32 bg-gray-200 dark:bg-gray-700 rounded-lg mt-2">
-    <div id="{{ $id }}-strength-fill" class="h-2 bg-red-500 rounded-lg transition-all" style="width: 0%;"></div>
+        <!-- パスワードツールバー -->
+        <div class="absolute top-0 right-2 h-full flex items-center gap-1" role="toolbar" aria-label="{{ __('components.password_messages.toolbar_label') }}">
+            <!-- 自動生成ボタン -->
+            <div class="group relative">
+                <button 
+                    type="button" 
+                    @click="generatePassword()"
+                    class="px-2 py-1 text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 transition-colors"
+                    aria-label="{{ __('components.password_messages.tooltip.generate') }}"
+                    title="{{ __('components.password_messages.tooltip.generate') }}">
+                    <i class="fa-solid fa-random" aria-hidden="true"></i>
+                </button>
+                <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block text-xs rounded bg-gray-800 text-white px-2 py-1 whitespace-nowrap z-10 pointer-events-none" role="tooltip">
+                    {{ __('components.password_messages.tooltip.generate') }}
+                </span>
+            </div>
+
+            <!-- コピーボタン -->
+            <div class="group relative">
+                <button 
+                    type="button" 
+                    @click="copyPassword()"
+                    class="px-2 py-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                    aria-label="{{ __('components.password_messages.tooltip.copy') }}"
+                    title="{{ __('components.password_messages.tooltip.copy') }}">
+                    <i class="fa-solid fa-copy" aria-hidden="true"></i>
+                </button>
+                <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block text-xs rounded bg-gray-800 text-white px-2 py-1 whitespace-nowrap z-10 pointer-events-none" role="tooltip">
+                    {{ __('components.password_messages.tooltip.copy') }}
+                </span>
+            </div>
+
+            <!-- 表示切り替えボタン -->
+            <div class="group relative">
+                <button 
+                    type="button" 
+                    @click="togglePasswordVisibility()"
+                    class="px-2 py-1 text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white transition-colors"
+                    :aria-pressed="showPassword ? 'true' : 'false'"
+                    aria-label="{{ __('components.password_messages.tooltip.toggle') }}"
+                    title="{{ __('components.password_messages.tooltip.toggle') }}">
+                    <i :class="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" aria-hidden="true"></i>
+                </button>
+                <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 hidden group-hover:block text-xs rounded bg-gray-800 text-white px-2 py-1 whitespace-nowrap z-10 pointer-events-none" role="tooltip">
+                    {{ __('components.password_messages.tooltip.toggle') }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    @if($showConfirmation)
+        <fieldset x-show="shouldShowConfirmation" x-transition class="mt-4">
+            <legend class="text-gray-700 dark:text-gray-300">{{ __('common.password') }}（{{ __('common.confirm') }}）</legend>
+            <div class="relative">
+                <input
+                    :type="showPassword ? 'text' : 'password'"
+                    id="{{ $id }}_confirmation"
+                    name="{{ $name }}_confirmation"
+                    x-model="passwordConfirmation"
+                    :required="shouldShowConfirmation && {{ $required ? 'true' : 'false' }}"
+                    autocomplete="new-password"
+                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-800 dark:border-gray-500 dark:text-white password-confirmation-input"
+                />
+                <!-- パスワード一致判定アイコン -->
+                <div x-show="showMatchIndicator" x-transition class="absolute top-0 right-2 h-full flex items-center">
+                    <i :class="matchIconClass"></i>
+                </div>
+            </div>
+        </fieldset>
+    @endif
+
+
+
+    <p x-text="strengthMessage" class="text-sm mt-1 text-gray-700 dark:text-gray-300 h-[1em]"></p>
+
+    <div class="h-2 w-32 bg-gray-200 dark:bg-gray-700 rounded-lg mt-2">
+        <div :class="strengthBarColor" class="h-2 rounded-lg transition-all" :style="`width: ${strengthBarWidth}`"></div>
+    </div>
+
+    <!-- パスワード要件リスト -->
+    <ul class="text-sm mt-2 text-gray-700 dark:text-gray-300 space-y-1">
+        <li class="flex items-center">
+            <i :class="requirementIconClass('lowercase')" aria-hidden="true"></i>
+            <span>{{ $lowercaseText }}</span>
+        </li>
+        <li class="flex items-center">
+            <i :class="requirementIconClass('number')" aria-hidden="true"></i>
+            <span>{{ $numberText }}</span>
+        </li>
+        <li class="flex items-center">
+            <i :class="requirementIconClass('length')" aria-hidden="true"></i>
+            <span>{{ $lengthText }}</span>
+        </li>
+        <li class="flex items-center">
+            <i :class="requirementIconClass('uppercase')" aria-hidden="true"></i>
+            <span>{{ $uppercaseText }}</span>
+        </li>
+        <li class="flex items-center">
+            <i :class="requirementIconClass('symbol')" aria-hidden="true"></i>
+            <span>{{ $symbolText }}</span>
+        </li>
+    </ul>
 </div>
 
-<!-- パスワード要件リスト -->
-<ul id="{{ $id }}-requirements" class="text-sm mt-2 text-gray-700 dark:text-gray-300 space-y-1">
-    <li id="{{ $id }}-req-lowercase" data-text="{{ $lowercaseText }}" class="flex items-center">
-        <i class="fas fa-times-circle text-red-500 mr-2"></i>
-        <span>{{ $lowercaseText }}</span>
-    </li>
-    <li id="{{ $id }}-req-number" data-text="{{ $numberText }}" class="flex items-center">
-        <i class="fas fa-times-circle text-red-500 mr-2"></i>
-        <span>{{ $numberText }}</span>
-    </li>
-    <li id="{{ $id }}-req-length" data-text="{{ $lengthText }}" class="flex items-center">
-        <i class="fas fa-times-circle text-red-500 mr-2"></i>
-        <span>{{ $lengthText }}</span>
-    </li>
-    <li id="{{ $id }}-req-uppercase" data-text="{{ $uppercaseText }}" class="flex items-center">
-        <i class="fas fa-times-circle text-red-500 mr-2"></i>
-        <span>{{ $uppercaseText }}</span>
-    </li>
-    <li id="{{ $id }}-req-symbol" data-text="{{ $symbolText }}" class="flex items-center">
-        <i class="fas fa-times-circle text-red-500 mr-2"></i>
-        <span>{{ $symbolText }}</span>
-    </li>
-</ul>
 
-
-<script @cspNonce>
-    window.PasswordMessages = {
-        error: @json(__('components.password_messages.error')),
-        weak: @json(__('components.password_messages.requirements.weak')),
-        normal: @json(__('components.password_messages.requirements.normal')),
-        strong: @json(__('components.password_messages.requirements.strong')),
-        veryStrong: @json(__('components.password_messages.requirements.very_strong')),
-        requiredLabel: @json(__('components.password_messages.requirements.required_label')),
-        optionalLabel: @json(__('components.password_messages.requirements.optional_label')),
-    };
-
-    window.PasswordTooltips = {
-        generate: @json(__('components.password_messages.tooltip.generate')),
-        copy: @json(__('components.password_messages.tooltip.copy')),
-        toggle: @json(__('components.password_messages.tooltip.toggle')),
-    };
-
-    window.PasswordPolicy = {
-        minLength: @json($minLength),
-        recommendedLength: @json($recommendedLength),
-        requireUppercase: @json($requireUppercase),
-        requireLowercase: @json($requireLowercase),
-        requireNumber: @json($requireNumber),
-        requireSymbol: @json($requireSymbol),
-    };
-
-    // PasswordTools 機能を統合
-    window.PasswordTools = {
-        togglePassword: function(passwordId = 'password', confirmId = 'password_confirmation', eyeId = 'password-eye') {
-            const passwordInput = document.getElementById(passwordId);
-            const confirmInput = document.getElementById(confirmId);
-            const eyeIcon = document.getElementById(eyeId);
-
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                if (confirmInput) confirmInput.type = 'text';
-                if (eyeIcon) eyeIcon.classList.replace('fa-eye', 'fa-eye-slash');
-            } else {
-                passwordInput.type = 'password';
-                if (confirmInput) confirmInput.type = 'password';
-                if (eyeIcon) eyeIcon.classList.replace('fa-eye-slash', 'fa-eye');
-            }
-        },
-
-        generatePassword: function(passwordId = 'password', confirmId = 'password_confirmation') {
-            const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            const lowercase = 'abcdefghijklmnopqrstuvwxyz';
-            const numbers = '0123456789';
-            const symbols = '!@#$%^&*()_-+=[]{}|:;"<>,.?/~';
-            const allChars = uppercase + lowercase + numbers + symbols;
-
-            const policy = window.PasswordPolicy || {
-                minLength: 8,
-                recommendedLength: 12,
-                requireUppercase: true,
-                requireLowercase: true,
-                requireNumber: true,
-                requireSymbol: false,
-            };
-
-            // 強いパスワード用に16文字をデフォルトとする
-            const desiredLength = Math.max(policy.minLength, policy.recommendedLength, 16);
-
-            // 必須文字をそれぞれ1文字ずつ入れる
-            let password = [];
-
-            if (policy.requireUppercase) {
-                password.push(uppercase.charAt(Math.floor(Math.random() * uppercase.length)));
-            }
-            if (policy.requireLowercase) {
-                password.push(lowercase.charAt(Math.floor(Math.random() * lowercase.length)));
-            }
-            if (policy.requireNumber) {
-                password.push(numbers.charAt(Math.floor(Math.random() * numbers.length)));
-            }
-            if (policy.requireSymbol) {
-                password.push(symbols.charAt(Math.floor(Math.random() * symbols.length)));
-            }
-
-            // 必須以外の残りを埋める
-            while (password.length < desiredLength) {
-                password.push(allChars.charAt(Math.floor(Math.random() * allChars.length)));
-            }
-
-            // シャッフル
-            password = password.sort(() => Math.random() - 0.5).join('');
-
-            const passwordInput = document.getElementById(passwordId);
-            const confirmInput = document.getElementById(confirmId);
-
-            if (passwordInput) {
-                passwordInput.value = password;
-                passwordInput.type = 'text';
-            }
-            if (confirmInput) {
-                confirmInput.value = password;
-                confirmInput.type = 'text';
-            }
-
-            const eyeIcon = document.getElementById(passwordId + '-eye');
-            if (eyeIcon) eyeIcon.classList.replace('fa-eye', 'fa-eye-slash');
-
-            this.checkPasswordStrength(passwordId);
-        },
-
-        copyPassword: function(passwordId = 'password') {
-            const passwordInput = document.getElementById(passwordId);
-            if (passwordInput) {
-                navigator.clipboard.writeText(passwordInput.value).then(() => {
-                    alert('パスワードがコピーされました！');
-                });
-            }
-        },
-
-        checkPasswordStrength: function(passwordId = 'password') {
-            const password = document.getElementById(passwordId)?.value || '';
-            const strengthBar = document.getElementById(passwordId + '-strength-fill');
-            const strengthMessage = document.getElementById(passwordId + '-strength-message');
-            const errorMessage = document.getElementById(passwordId + '-validation-error');
-
-            const hasUpper = /[A-Z]/.test(password);
-            const hasLower = /[a-z]/.test(password);
-            const hasNumber = /[0-9]/.test(password);
-            const hasSymbol = /[!@#$%^&*()_\-+=\[\]{}|\\:;"'<>,.?/~`]/.test(password);
-            const length = password.length;
-
-            const policy = window.PasswordPolicy || {
-                minLength: 8,
-                recommendedLength: 12,
-                requireUppercase: true,
-                requireLowercase: true,
-                requireNumber: true,
-                requireSymbol: false,
-            };
-
-            // インジケーター更新
-            this.updateRequirementIndicator(passwordId + '-req-length', length >= policy.minLength, true);
-            this.updateRequirementIndicator(passwordId + '-req-lowercase', hasLower, policy.requireLowercase);
-            this.updateRequirementIndicator(passwordId + '-req-number', hasNumber, policy.requireNumber);
-            this.updateRequirementIndicator(passwordId + '-req-uppercase', hasUpper, policy.requireUppercase);
-            this.updateRequirementIndicator(passwordId + '-req-symbol', hasSymbol, policy.requireSymbol);
-
-            const allRequiredValid =
-                length >= policy.minLength &&
-                (!policy.requireLowercase || hasLower) &&
-                (!policy.requireNumber || hasNumber) &&
-                (!policy.requireUppercase || hasUpper) &&
-                (!policy.requireSymbol || hasSymbol);
-
-            let message = '';
-            let barWidth = '0%';
-            let barColor = 'bg-red-500';
-
-            if (!allRequiredValid) {
-                message = window.PasswordMessages.error;
-                barWidth = '20%';
-                barColor = 'bg-red-500';
-                errorMessage?.classList.remove('hidden');
-            } else {
-                errorMessage?.classList.add('hidden');
-
-                // 大文字・小文字・数字・記号の全てを含むか
-                const hasAllTypes = hasUpper && hasLower && hasNumber && hasSymbol;
-                // 記号以外の3タイプ（大文字・小文字・数字）を含むか
-                const hasThreeTypes = hasUpper && hasLower && hasNumber;
-
-                if (hasAllTypes && length >= 16) {
-                    // 全タイプ + 16文字以上 → 非常に強い
-                    message = window.PasswordMessages.veryStrong;
-                    barWidth = '100%';
-                    barColor = 'bg-blue-500';
-                } else if (hasAllTypes && length >= 12) {
-                    // 全タイプ + 12文字以上 → 強い
-                    message = window.PasswordMessages.strong;
-                    barWidth = '80%';
-                    barColor = 'bg-green-500';
-                } else if (hasAllTypes && length < 12) {
-                    // 全タイプだが12文字未満 → 普通
-                    message = window.PasswordMessages.normal;
-                    barWidth = '60%';
-                    barColor = 'bg-yellow-500';
-                } else if (!policy.requireSymbol && hasThreeTypes && length >= policy.minLength) {
-                    // 記号が任意 かつ 3タイプ（大文字・小文字・数字）+ 最小文字数以上 → 普通
-                    message = window.PasswordMessages.normal;
-                    barWidth = '60%';
-                    barColor = 'bg-yellow-500';
-                } else if (length >= 12) {
-                    // 12文字以上（但し条件不足）→ 普通
-                    message = window.PasswordMessages.normal;
-                    barWidth = '60%';
-                    barColor = 'bg-yellow-500';
-                } else {
-                    // その他（必須条件のみ満たす）→ 弱い
-                    message = window.PasswordMessages.weak;
-                    barWidth = '40%';
-                    barColor = 'bg-orange-400';
-                }
-            }
-
-            if (strengthMessage) strengthMessage.innerText = message;
-            if (strengthBar) {
-                strengthBar.style.width = barWidth;
-                strengthBar.className = `h-2 rounded-lg transition-all ${barColor}`;
-            }
-        },
-
-        updateRequirementIndicator: function(elementId, isValid, required = false, extraText = '') {
-            const element = document.getElementById(elementId);
-            
-            if (!element) {
-                return;
-            }
-
-            // data-text属性の値をそのまま使用（Blade側で既に必須/任意が含まれている）
-            const displayText = element.dataset.text || '';
-            const suffix = extraText || '';
-            
-            // アイコンとテキスト要素を取得（子要素として直接取得）
-            const children = element.children;
-            let iconElement = null;
-            let textElement = null;
-            
-            // 子要素を順に確認
-            // FontAwesome 6は <i> を <svg> に変換するため、両方をチェック
-            for (let i = 0; i < children.length; i++) {
-                const child = children[i];
-                
-                // アイコン要素: <i> または <svg> (FontAwesome変換後)
-                if (child.tagName === 'I' || child.tagName === 'SVG' || child.tagName === 'svg') {
-                    iconElement = child;
-                } else if (child.tagName === 'SPAN') {
-                    textElement = child;
-                }
-            }
-            
-            if (iconElement && textElement) {
-                // アイコンのクラスを更新（FontAwesomeのSVG変換に対応）
-                // 既存のクラスを保持しながら、アイコンと色のクラスのみを変更
-                
-                // 古いアイコンと色のクラスを削除
-                iconElement.classList.remove('fa-times-circle', 'fa-check-circle');
-                iconElement.classList.remove('text-red-500', 'text-green-500');
-                
-                // 新しいアイコンと色のクラスを追加
-                if (isValid) {
-                    iconElement.classList.add('fa-check-circle', 'text-green-500');
-                } else {
-                    iconElement.classList.add('fa-times-circle', 'text-red-500');
-                }
-                
-                // 必須のクラスが存在することを確認（FontAwesome変換後も維持）
-                if (!iconElement.classList.contains('fas')) {
-                    iconElement.classList.add('fas');
-                }
-                if (!iconElement.classList.contains('mr-2')) {
-                    iconElement.classList.add('mr-2');
-                }
-                
-                textElement.textContent = `${displayText}${suffix}`;
-            }
-        },
-
-        checkPasswordMatch: function(passwordId = 'password') {
-            const passwordInput = document.getElementById(passwordId);
-            const confirmInput = document.getElementById(passwordId + '_confirmation');
-            const matchIndicator = document.getElementById(passwordId + '-match-indicator');
-            const matchIcon = document.getElementById(passwordId + '-match-icon');
-
-            if (!passwordInput || !confirmInput || !matchIndicator || !matchIcon) {
-                return;
-            }
-
-            const password = passwordInput.value;
-            const confirm = confirmInput.value;
-
-            // 確認欄が空の場合はアイコンを非表示
-            if (confirm === '') {
-                matchIndicator.style.display = 'none';
-                return;
-            }
-
-            // 確認欄に入力がある場合はアイコンを表示
-            matchIndicator.style.display = 'flex';
-
-            // パスワードが一致しているかチェック
-            // FontAwesomeのSVG変換に対応するため、classList操作を使用
-            if (password === confirm && password !== '') {
-                // 一致: 緑のチェックマーク
-                matchIcon.classList.remove('fa-times', 'text-red-500');
-                matchIcon.classList.add('fa-check', 'text-green-500');
-            } else {
-                // 不一致: 赤のバツマーク
-                matchIcon.classList.remove('fa-check', 'text-green-500');
-                matchIcon.classList.add('fa-times', 'text-red-500');
-            }
-            
-            // 必須のクラスが存在することを確認（FontAwesome変換後も維持）
-            if (!matchIcon.classList.contains('fas')) {
-                matchIcon.classList.add('fas');
-            }
-        }
-    };
-
-    // パスワード入力フィールドのイベントリスナーを設定
-    (function() {
-        const passwordId = '{{ $id }}';
-        const showConfirmation = {{ $showConfirmation ? 'true' : 'false' }};
-        const showConfirmationOnChange = {{ $showConfirmationOnChange ? 'true' : 'false' }};
-        
-        const setupPasswordListener = function() {
-            const passwordInput = document.getElementById(passwordId);
-            const confirmInput = document.getElementById(passwordId + '_confirmation');
-            const confirmationFieldset = document.getElementById(passwordId + '-confirmation-fieldset');
-            
-            if (passwordInput && !passwordInput.hasAttribute('data-password-listener')) {
-                passwordInput.setAttribute('data-password-listener', 'true');
-                passwordInput.addEventListener('keyup', function() {
-                    if (typeof PasswordTools !== 'undefined' && typeof PasswordTools.checkPasswordStrength === 'function') {
-                        PasswordTools.checkPasswordStrength(passwordId);
-                    }
-                    // 確認欄が表示されている場合は一致判定も実行
-                    if (showConfirmation && typeof PasswordTools !== 'undefined' && typeof PasswordTools.checkPasswordMatch === 'function') {
-                        PasswordTools.checkPasswordMatch(passwordId);
-                    }
-                });
-                
-                // 変更時のみ確認欄を表示する場合のイベントリスナー
-                if (showConfirmationOnChange && confirmationFieldset) {
-                    passwordInput.addEventListener('input', function() {
-                        if (this.value !== '') {
-                            // パスワードが入力された場合は確認欄を表示
-                            confirmationFieldset.style.display = 'block';
-                            if (confirmInput) {
-                                confirmInput.required = true;
-                            }
-                        } else {
-                            // パスワードが空の場合は確認欄を非表示
-                            confirmationFieldset.style.display = 'none';
-                            if (confirmInput) {
-                                confirmInput.required = false;
-                                confirmInput.value = '';
-                            }
-                        }
-                    });
-                }
-                
-                // 初期チェック
-                if (typeof PasswordTools !== 'undefined' && typeof PasswordTools.checkPasswordStrength === 'function') {
-                    PasswordTools.checkPasswordStrength(passwordId);
-                }
-            }
-
-            // 確認欄のイベントリスナーを設定
-            if (showConfirmation && confirmInput && !confirmInput.hasAttribute('data-password-listener')) {
-                confirmInput.setAttribute('data-password-listener', 'true');
-                confirmInput.addEventListener('keyup', function() {
-                    if (typeof PasswordTools !== 'undefined' && typeof PasswordTools.checkPasswordMatch === 'function') {
-                        PasswordTools.checkPasswordMatch(passwordId);
-                    }
-                });
-            }
-        };
-
-        // DOMとPasswordToolsの両方が準備できるまで待つ
-        const initListener = function() {
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', setupPasswordListener);
-            } else {
-                // DOMは既に読み込まれているが、PasswordToolsが定義されているか確認
-                if (typeof PasswordTools !== 'undefined') {
-                    setupPasswordListener();
-                } else {
-                    // PasswordToolsの定義を少し待つ
-                    setTimeout(setupPasswordListener, 50);
-                }
-            }
-        };
-        
-        initListener();
-    })();
-</script>
 
 
 
