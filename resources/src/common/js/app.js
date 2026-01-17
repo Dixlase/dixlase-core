@@ -29,6 +29,8 @@ import '../../components/ui/js/modal';
 import '../../components/ui/js/passkey-device-name';
 import '../../components/ui/js/passkey-result';
 import '../../components/ui/js/recovery-codes';
+import '../../components/ui/js/webauthn-utils';
+import '../../components/ui/js/two-fa-management';
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse'
 
