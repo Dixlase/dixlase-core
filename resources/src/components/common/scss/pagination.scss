@@ -1,0 +1,38 @@
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2025 exc-D inc.
+ * Website: https://exc-d.com
+ *
+ * Pagination component styles
+ */
+
+.pagination-button {
+    @apply px-3 py-2 text-sm rounded-md transition-colors duration-200;
+    @apply bg-white border border-gray-300 hover:bg-gray-50;
+    @apply dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600 dark:text-gray-200;
+
+    &--disabled {
+        @apply text-gray-400 bg-gray-100 cursor-not-allowed;
+        @apply dark:bg-gray-800 dark:border-gray-600 dark:text-gray-500;
+    }
+}
+
+.pagination-info {
+    @apply text-sm text-gray-600 dark:text-gray-400;
+}
+
+.pagination-number {
+    @apply px-2 md:px-3 py-2 text-sm rounded-md transition-colors duration-200;
+    @apply bg-white border border-gray-300 hover:bg-gray-50;
+    @apply dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600 dark:text-gray-200;
+
+    &--current {
+        @apply bg-blue-500 text-white border-blue-500;
+        @apply dark:bg-blue-600 dark:border-blue-600;
+    }
+}
+
+.pagination-ellipsis {
+    @apply px-1 md:px-2 text-gray-500 dark:text-gray-400;
+}

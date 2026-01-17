@@ -1,0 +1,143 @@
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2025 exc-D inc.
+ * Website: https://exc-d.com
+ *
+ * Modal component styles
+ */
+
+.modal {
+    @apply fixed inset-0 z-50;
+    background-color: transparent !important; // ダークモードでの背景色を無効化
+
+    &-overlay {
+        @apply fixed inset-0 overflow-y-auto h-full w-full;
+    }
+
+    &-container {
+        @apply relative top-40 mx-auto p-4 sm:p-6 border dark:border-gray-700 w-[95vw] max-w-[28rem] shadow-lg rounded-xl bg-white dark:bg-black z-10;
+    }
+
+    &-content {
+        @apply mt-3 text-center;
+    }
+
+    &-body {
+        @apply mt-3 text-center;
+    }
+
+    &-icon {
+        @apply mx-auto flex items-center justify-center h-16 w-16 rounded-full;
+
+        &--warning {
+            @apply bg-yellow-100 dark:bg-yellow-600;
+
+            i {
+                @apply text-3xl text-yellow-600 dark:text-white;
+            }
+        }
+
+        &--danger {
+            @apply bg-red-100 dark:bg-red-600;
+
+            i {
+                @apply text-3xl text-red-600 dark:text-red-100;
+            }
+        }
+
+        &--info {
+            @apply bg-blue-100 dark:bg-blue-600;
+
+            i {
+                @apply text-3xl text-blue-600 dark:text-blue-100;
+            }
+        }
+
+        &--success {
+            @apply bg-green-100 dark:bg-green-900/20;
+
+            i {
+                @apply text-3xl text-green-600 dark:text-green-400;
+            }
+        }
+    }
+
+    &-title {
+        @apply text-xl leading-7 font-semibold text-gray-900 dark:text-white mt-5;
+    }
+
+    &-message {
+        @apply mt-3 px-4 sm:px-8 py-3 sm:py-4;
+
+        p {
+            @apply text-sm sm:text-base text-gray-600 dark:text-gray-300;
+        }
+    }
+
+    &-checkbox {
+        @apply mt-4;
+
+        label {
+            @apply inline-flex items-center;
+
+            input {
+                @apply mr-2 rounded;
+            }
+
+            span {
+                @apply text-sm text-gray-900 dark:text-white;
+            }
+        }
+    }
+
+    &-actions {
+        @apply flex items-center justify-center px-4 sm:px-6 py-3 sm:py-4;
+    }
+
+    &-button {
+        @apply px-4 sm:px-4 py-2 text-sm sm:text-sm font-medium rounded-md min-w-[6rem] sm:min-w-[7rem] focus:outline-none focus:ring-2 whitespace-nowrap;
+
+        &--confirm {
+            @apply text-white mr-2 font-semibold;
+
+            &.blue {
+                @apply bg-blue-500 hover:bg-blue-600 focus:ring-blue-300;
+            }
+
+            &.red {
+                @apply bg-red-500 hover:bg-red-600 focus:ring-red-300;
+            }
+
+            &.green {
+                @apply bg-green-500 hover:bg-green-600 focus:ring-green-300;
+            }
+
+            &.yellow {
+                @apply bg-yellow-500 hover:bg-yellow-600 focus:ring-yellow-300;
+            }
+        }
+
+        &--cancel {
+            @apply bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white hover:bg-gray-400 dark:hover:bg-gray-500 focus:ring-gray-300;
+        }
+    }
+
+    // アニメーション有効化
+    &--animate {
+        @apply transition-opacity duration-300;
+
+        .modal-container {
+            @apply transition-transform duration-300;
+        }
+    }
+
+    // 表示状態
+    &--visible {
+        @apply opacity-100 pointer-events-auto;
+
+        .modal-container {
+            @apply scale-100;
+        }
+    }
+}

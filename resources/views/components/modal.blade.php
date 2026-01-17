@@ -110,7 +110,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
      x-transition:enter-end="opacity-100"
      x-transition:leave="transition ease-in duration-200"
      x-transition:leave-start="opacity-100"
-     x-transition:leave-end="opacity-0">
+     x-transition:leave-end="opacity-0"
+     style="display: none;">
     <div class="modal-overlay bg-white/80 dark:bg-black/50" 
          @click="closeOnBackdrop({{ $dismissible ? 'true' : 'false' }})"></div>
     <div class="modal-container" 
