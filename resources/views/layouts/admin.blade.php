@@ -45,6 +45,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     </head>
     <body class="admin font-sans antialiased transition-colors-unified dark:bg-black dark:text-white"
+          data-default-appearance="{{ $appearance }}"
           x-data="{ openSidebar: false, openUserMenu: false, sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true', sidebarReady: false }"
           x-init="$nextTick(() => { sidebarReady = true }); $watch('sidebarCollapsed', value => localStorage.setItem('sidebarCollapsed', value))">
         <div class="min-h-screen">
@@ -151,69 +152,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @yield('modals')
         @endif
         @stack('modals')
-        <script @cspNonce>
-            // Alpine.js関数を先に定義
-            function appearanceTheme(defaultValue) {
-                return {
-                    theme: defaultValue, // データベースの値を優先
-                    isDark: false,
-                    themeReady: false, // 外観モード変更時のみトランジションを有効にする
-
-                    applyTheme(enableTransition = false) {
-                        this.isDark = this.theme === '2' || (this.theme === '0' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-                        // プロフィール画面でのみlocalStorageに保存（リアルタイム変更のため）
-                        if (document.querySelector('[data-profile-theme]')) {
-                            localStorage.setItem('appearance', this.theme);
-                        }
-                        // トランジションを有効にするかどうか
-                        if (enableTransition) {
-                            this.themeReady = true;
-                        }
-                        document.documentElement.classList.toggle('dark', this.isDark);
-                        document.documentElement.classList.toggle('light', !this.isDark);
-                    },
-
-                    init() {
-                        // プロフィール画面のみlocalStorageの値を使用（リアルタイム変更のため）
-                        if (document.querySelector('[data-profile-theme]')) {
-                            const storedTheme = localStorage.getItem('appearance');
-                            if (storedTheme !== null) {
-                                this.theme = storedTheme;
-                            }
-                        }
-                        // その他の画面（メンバー管理画面含む）はDBの値を優先
-                        
-                        // 初期適用時はトランジションなし
-                        this.applyTheme(false);
-
-                        // 外観モード変更のイベントリスナー
-                        document.querySelectorAll('input[name="appearance"]').forEach((el) => {
-                            // プロフィール画面とメンバー管理画面の外観設定は除外
-                            if (el.closest('[data-profile-theme]') || el.closest('[data-member-theme]')) {
-                                return;
-                            }
-                            el.addEventListener('change', (e) => {
-                                this.theme = e.target.value;
-                                this.applyTheme(true); // 変更時はトランジション有効
-                            });
-                        });
-                    }
-                }
-            }
-
-            // テーマストア（後方互換性のため）
-            window.themeStore = {
-                theme: localStorage.getItem('appearance') ?? '{{ $appearance }}',
-                isDark: false,
-                applyTheme() {
-                    this.isDark = this.theme === '2' || (this.theme === '0' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-                    localStorage.setItem('appearance', this.theme);
-                    document.documentElement.classList.toggle('dark', this.isDark);
-                    document.documentElement.classList.toggle('light', !this.isDark);
-                }
-            };
-
-        </script>
 
         {{-- Page-specific styles --}}
         @hasSection('styles')

@@ -38,9 +38,32 @@ return [
     |--------------------------------------------------------------------------
     |
     | CSPの動作モードを指定します。
-    | - 'development': 開発モード（Report-Only、インラインJS許可）
-    | - 'standard': 標準モード（nonce付きインラインのみ許可）
-    | - 'strict': 厳格モード（インライン一切禁止）
+    |
+    | - 'development': 開発モード
+    |   - Report-Only（ブロックせず記録のみ）
+    |   - インラインJS/CSS許可（unsafe-inline）
+    |   - eval許可（unsafe-eval）
+    |   - 拒否ドメインのみブロック可能
+    |   - プラグイン互換性：最大
+    |
+    | - 'standard': 標準モード（本番推奨）
+    |   - CSP強制（ブロック）
+    |   - インライン実行コード：ヘルパー経由（nonce付き）のみ許可
+    |   - onclick等属性イベント：警告（移行期は動作許可）
+    |   - unsafe-eval禁止
+    |   - strict-dynamic推奨（任意）
+    |   - プラグイン互換性：高
+    |
+    | - 'strict': 厳格モード（最大セキュリティ）
+    |   - CSP強制（ブロック）
+    |   - インライン実行コード：完全禁止（nonceでも不可）
+    |   - データ受け渡し：type="application/json"、data-*のみ許可
+    |   - 外部JSのみ（dixlase-boot.js経由で初期化）
+    |   - onclick等属性イベント：禁止
+    |   - unsafe-eval禁止
+    |   - strict-dynamic推奨（ON）
+    |   - requires_inline_js: trueのプラグイン：有効化不可
+    |   - プラグイン互換性：CSP Readyのみ
     |
     | 実際の設定はデータベース（SecuritySetting）から読み込まれます。
     |
@@ -56,32 +79,56 @@ return [
     |
     */
     'modes' => [
-        // 開発モード: インラインJS/CSS許可、Report-Onlyで違反を記録
+        // 開発モード: 最大互換性、Report-Onlyで違反を記録
         'development' => [
             'header' => 'Content-Security-Policy-Report-Only',
             'allow_inline_scripts' => true,
             'allow_inline_styles' => true,
             'allow_eval' => true,
+            'allow_unsafe_inline' => true,
             'require_nonce' => false,
             'block_inline_plugins' => false,
+            'enforce_deny_domains' => false, // 拒否ドメインも警告のみ
+            'strict_dynamic' => false,
+            'description' => 'テーマ/プラグイン開発用。すべて動作するが違反を記録。',
+            'description_en' => 'For theme/plugin development. Everything works but violations are logged.',
         ],
-        // 標準モード: nonce付きインラインのみ許可
+        
+        // 標準モード: 本番推奨、nonce付きインラインのみ許可
         'standard' => [
             'header' => 'Content-Security-Policy',
-            'allow_inline_scripts' => false,
-            'allow_inline_styles' => false,
+            'allow_inline_scripts' => false, // unsafe-inline禁止
+            'allow_inline_styles' => false,  // unsafe-inline禁止
             'allow_eval' => false,
-            'require_nonce' => true,
+            'allow_unsafe_inline' => false,
+            'require_nonce' => true,         // ヘルパー経由でnonceを要求
+            'allow_nonce_inline_execution' => true, // nonce付き実行コードは許可
             'block_inline_plugins' => false,
+            'enforce_deny_domains' => true,  // 拒否ドメインを強制ブロック
+            'strict_dynamic' => false,       // 任意（互換性のためデフォルトOFF）
+            'warn_onclick' => true,          // onclick等を警告（ブロックはしない）
+            'description' => '本番運用推奨。ヘルパー経由のインラインは許可。',
+            'description_en' => 'Recommended for production. Inline via helpers allowed.',
         ],
-        // 厳格モード: インライン一切禁止、requires_inline_jsプラグインをブロック
+        
+        // 厳格モード: 最大セキュリティ、外部JSのみ
         'strict' => [
             'header' => 'Content-Security-Policy',
             'allow_inline_scripts' => false,
             'allow_inline_styles' => false,
             'allow_eval' => false,
-            'require_nonce' => true,
-            'block_inline_plugins' => true,
+            'allow_unsafe_inline' => false,
+            'require_nonce' => false,        // nonceも使用しない（外部JSのみ）
+            'allow_nonce_inline_execution' => false, // nonce付きでも実行コード禁止
+            'allow_json_script' => true,     // type="application/json"は許可
+            'allow_data_attributes' => true, // data-*属性は許可
+            'block_inline_plugins' => true,  // requires_inline_js: trueを拒否
+            'enforce_deny_domains' => true,
+            'strict_dynamic' => true,        // 推奨ON
+            'block_onclick' => true,         // onclick等を完全ブロック
+            'require_bootloader' => true,    // dixlase-boot.js必須
+            'description' => '最大セキュリティ。CSP Readyプラグインのみ動作。',
+            'description_en' => 'Maximum security. Only CSP Ready plugins work.',
         ],
     ],
 
