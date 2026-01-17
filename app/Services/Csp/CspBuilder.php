@@ -357,7 +357,96 @@ class CspBuilder
             }, $values);
         }
 
+        // CSPモード設定に基づいてディレクティブを調整
+        $directives = $this->applyModeSettings($directives);
+
         return $directives;
+    }
+
+    /**
+     * CSPモード設定に基づいてディレクティブを調整
+     */
+    protected function applyModeSettings(array $directives): array
+    {
+        $mode = $this->getCspMode();
+        $modeConfig = config("csp.modes.{$mode}", []);
+
+        if (!isset($directives['script-src'])) {
+            return $directives;
+        }
+
+        // 開発モードの場合
+        if ($mode === 'development') {
+            // 'strict-dynamic'を削除（'unsafe-inline'と競合するため）
+            $directives['script-src'] = array_filter($directives['script-src'], function ($value) {
+                return $value !== "'strict-dynamic'";
+            });
+            
+            // 'unsafe-inline'を追加（まだ存在しない場合）
+            if (!in_array("'unsafe-inline'", $directives['script-src'])) {
+                $directives['script-src'][] = "'unsafe-inline'";
+            }
+            
+            $directives['script-src'] = array_values($directives['script-src']);
+        } else {
+            // 標準・厳格モード
+            
+            // allow_evalがfalseの場合、'unsafe-eval'を削除
+            $allowEval = $modeConfig['allow_eval'] ?? true;
+            if ($allowEval === false) {
+                $directives['script-src'] = array_filter($directives['script-src'], function ($value) {
+                    return $value !== "'unsafe-eval'";
+                });
+            }
+
+            // allow_inline_scriptsがfalseの場合、'unsafe-inline'を削除
+            $allowInlineScripts = $modeConfig['allow_inline_scripts'] ?? true;
+            if ($allowInlineScripts === false) {
+                $directives['script-src'] = array_filter($directives['script-src'], function ($value) {
+                    return $value !== "'unsafe-inline'";
+                });
+            }
+            
+            $directives['script-src'] = array_values($directives['script-src']);
+        }
+
+        return $directives;
+    }
+
+    /**
+     * CSPモード（development/standard/strict）を取得
+     */
+    protected function getCspMode(): string
+    {
+        // 設定ファイルのデフォルト値
+        $configMode = config('csp.mode', 'development');
+
+        // データベースの設定を優先
+        try {
+            $dbMode = SecuritySetting::get('csp_mode');
+            if (!empty($dbMode)) {
+                // 数値文字列を文字列モード名に変換
+                $modeMap = [
+                    '0' => 'development',
+                    '1' => 'standard',
+                    '2' => 'strict',
+                    0 => 'development',
+                    1 => 'standard',
+                    2 => 'strict',
+                ];
+                
+                // 数値の場合は変換、文字列の場合はそのまま
+                if (isset($modeMap[$dbMode])) {
+                    return $modeMap[$dbMode];
+                }
+                
+                return $dbMode;
+            }
+        } catch (\Exception $e) {
+            // データベース未設定時は設定ファイルの値を使用
+        }
+
+        return $configMode;
     }
 
     /**
@@ -401,33 +490,19 @@ class CspBuilder
     }
 
     /**
-     * CSPモードを取得（enforce/report-only）
-     */
-    public function getMode(): string
-    {
-        // 設定ファイルのデフォルト値
-        $configMode = config('csp.mode', 'report-only');
-
-        // データベースの設定を優先
-        try {
-            $dbMode = SecuritySetting::get('csp_mode');
-            if (!empty($dbMode)) {
-                return $dbMode;
-            }
-        } catch (\Exception $e) {
-            // データベース未設定時は設定ファイルの値を使用
-        }
-
-        return $configMode;
-    }
-
-    /**
      * CSPヘッダー名を取得
      */
     public function getHeaderName(): string
     {
-        return $this->getMode() === 'enforce'
-            ? 'Content-Security-Policy'
-            : 'Content-Security-Policy-Report-Only';
+        $mode = $this->getCspMode();
+        $modeConfig = config("csp.modes.{$mode}", []);
+        
+        // モード設定からヘッダー名を取得
+        if (isset($modeConfig['header'])) {
+            return $modeConfig['header'];
+        }
+        
+        // デフォルトはContent-Security-Policy
+        return 'Content-Security-Policy';
     }
 }
