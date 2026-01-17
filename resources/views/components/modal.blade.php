@@ -99,9 +99,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     $hasCustomFooter = isset($footer) && !empty(trim($footer ?? ''));
 @endphp
 
-<div id="{{ $id }}" class="modal">
-    <div class="modal-overlay" @if($dismissible) onclick="closeModal('{{ $id }}')" @endif></div>
-    <div class="modal-container" onclick="event.stopPropagation()">
+<div id="{{ $id }}" 
+     class="modal"
+     x-data="modal()"
+     x-show="show"
+     x-cloak
+     @keydown.escape.window="handleEscape($event)"
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition ease-in duration-200"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0">
+    <div class="modal-overlay bg-white/80 dark:bg-black/50" 
+         @click="closeOnBackdrop({{ $dismissible ? 'true' : 'false' }})"></div>
+    <div class="modal-container" 
+         @click.stop
+         style="transition: opacity 300ms ease-out, transform 300ms ease-out;">
         <div class="modal-content">
             @if(!$hasCustomContent)
                 {{-- 標準モード：既存の確認ダイアログ --}}
@@ -138,7 +152,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         type="button"
                         variant="secondary"
                         :label="$closeLabel ?? __('common.close')"
-                        onclick="closeModal('{{ $id }}')"
+                        @click="close()"
                         class="mx-2"
                     />
                 @else
@@ -147,7 +161,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         type="button"
                         variant="secondary"
                         :label="$cancelLabel ?? __('common.cancel')"
-                        onclick="closeModal('{{ $id }}')"
+                        @click="close()"
                         class="mx-2"
                     />
                     <x-form.button
@@ -166,95 +180,3 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </div>
 </div>
 
-@push('scripts')
-<script @cspNonce>
-// モーダルマネージャーが未初期化の場合のみ実行（重複実行を防ぐ）
-if (typeof window.ModalManager === 'undefined') {
-    // デバッグモード（本番環境では false に設定）
-    window.MODAL_DEBUG = false;
-
-    // モーダル関数をグローバルスコープで定義（名前空間を使用）
-    window.ModalManager = {
-        // モーダルを開く関数
-        open: function(modalId) {
-            if (window.MODAL_DEBUG) console.log('ModalManager.open called with:', modalId);
-            
-            const modal = document.getElementById(modalId);
-            if (window.MODAL_DEBUG) console.log('Modal element found:', modal);
-            
-            if (modal) {
-                // アニメーションを有効化
-                modal.classList.add('modal--animate');
-                
-                // 少し遅延してから表示（アニメーション準備のため）
-                requestAnimationFrame(() => {
-                    modal.classList.add('modal--visible');
-                    if (window.MODAL_DEBUG) console.log('Added modal--visible class');
-                });
-            } else {
-                if (window.MODAL_DEBUG) console.error('Modal not found with ID:', modalId);
-            }
-        },
-
-        // モーダルを閉じる関数
-        close: function(modalId) {
-            if (window.MODAL_DEBUG) console.log('ModalManager.close called with:', modalId);
-            
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.classList.remove('modal--visible');
-                
-                // アニメーション完了後にアニメーションクラスを削除
-                setTimeout(() => {
-                    modal.classList.remove('modal--animate');
-                    if (window.MODAL_DEBUG) console.log('Modal closed and animation disabled');
-                }, 300); // transition duration と同じ時間
-            } else {
-                if (window.MODAL_DEBUG) console.error('Modal not found with ID:', modalId);
-            }
-        },
-
-        // フォーム送信関数
-        submitForm: function(formId) {
-            if (window.MODAL_DEBUG) console.log('ModalManager.submitForm called with:', formId);
-            
-            const form = document.getElementById(formId);
-            if (form) {
-                form.submit();
-            } else {
-                if (window.MODAL_DEBUG) console.error('Form not found with ID:', formId);
-            }
-        }
-    };
-
-    // 後方互換性のための関数エイリアス
-    window.openModal = function(modalId) {
-        window.ModalManager.open(modalId);
-    };
-
-    window.closeModal = function(modalId) {
-        window.ModalManager.close(modalId);
-    };
-
-    window.submitModalForm = function(formId) {
-        window.ModalManager.submitForm(formId);
-    };
-
-    // ESCキーでモーダルを閉じる（DOMContentLoaded後に設定）
-    document.addEventListener('DOMContentLoaded', function() {
-        if (window.MODAL_DEBUG) console.log('Modal script loaded - DOMContentLoaded');
-        if (window.MODAL_DEBUG) console.log('ModalManager available:', typeof window.ModalManager);
-        
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                const visibleModal = document.querySelector('.modal--visible');
-                if (visibleModal && visibleModal.id) {
-                    if (window.MODAL_DEBUG) console.log('ESC pressed, closing modal:', visibleModal.id);
-                    window.ModalManager.close(visibleModal.id);
-                }
-            }
-        });
-    });
-}
-</script>
-@endpush

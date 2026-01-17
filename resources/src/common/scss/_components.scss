@@ -91,16 +91,15 @@
 
 // Modal component styles
 .modal {
-    @apply bg-white dark:bg-gray-900 fixed inset-0 z-50 opacity-0 pointer-events-none;
+    @apply fixed inset-0 z-50;
     background-color: transparent !important; // ダークモードでの背景色を無効化
 
     &-overlay {
         @apply fixed inset-0 overflow-y-auto h-full w-full;
-        background-color: rgba(0, 0, 0, 0.75);
     }
 
     &-container {
-        @apply relative top-20 mx-auto p-4 sm:p-6 border dark:border-gray-700 w-[95vw] max-w-[28rem] shadow-lg rounded-xl bg-white dark:bg-black scale-95 z-10;
+        @apply relative top-40 mx-auto p-4 sm:p-6 border dark:border-gray-700 w-[95vw] max-w-[28rem] shadow-lg rounded-xl bg-white dark:bg-black z-10;
     }
 
     &-content {
