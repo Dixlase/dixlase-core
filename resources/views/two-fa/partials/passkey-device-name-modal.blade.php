@@ -29,9 +29,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     $cancelLabel = $cancelLabel ?? null;
 @endphp
 
-<div id="{{ $modalId }}" class="modal" style="display: none;">
-    <div class="modal-overlay" onclick="closeModal('{{ $modalId }}')"></div>
-    <div class="modal-container" onclick="event.stopPropagation()">
+<div id="{{ $modalId }}" 
+     class="modal" 
+     x-data="passkeyDeviceNameModal()" 
+     x-show="show" 
+     x-cloak
+     @keydown.enter.window="handleEnter($event)"
+     @keydown.escape.window="cancel()"
+     style="display: none;">
+    <div class="modal-overlay bg-white/80 dark:bg-black/50" @click="cancel()"></div>
+    <div class="modal-container" @click.stop style="transition: transform 300ms ease-out, opacity 300ms ease-out;">
         <div class="modal-content">
             <div class="modal-icon modal-icon--info">
                 <i class="fas fa-fingerprint" aria-hidden="true"></i>
@@ -50,6 +57,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <input 
                         type="text" 
                         id="{{ $modalId }}_input"
+                        x-model="deviceName"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                         placeholder="{{ $inputPlaceholder }}"
                         maxlength="255"
@@ -63,85 +71,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 type="button"
                 variant="secondary"
                 :label="$cancelLabel ?? __('common.cancel')"
-                onclick="window.PasskeyDeviceNameModal.cancel('{{ $modalId }}')"
+                @click="cancel()"
                 class="mx-2"
             />
             <x-form.button
                 type="button"
                 variant="primary"
                 :label="$confirmLabel ?? __('common.ok')"
-                onclick="window.PasskeyDeviceNameModal.confirm('{{ $modalId }}')"
+                @click="confirm()"
                 class="mx-2"
             />
         </div>
     </div>
 </div>
 
-@push('scripts')
-<script @cspNonce>
-// Passkeyデバイス名入力モーダルマネージャー
-if (typeof window.PasskeyDeviceNameModal === 'undefined') {
-    window.PasskeyDeviceNameModal = {
-        // コールバック関数を保存
-        callbacks: {},
-        
-        // モーダルを開く
-        open: function(modalId, callback, defaultValue = '') {
-            this.callbacks[modalId] = callback;
-            const input = document.getElementById(modalId + '_input');
-            if (input) {
-                input.value = defaultValue;
-            }
-            openModal(modalId);
-            
-            // フォーカスを設定（少し遅延）
-            setTimeout(() => {
-                if (input) {
-                    input.focus();
-                    // デフォルト値がある場合は全選択
-                    if (defaultValue) {
-                        input.select();
-                    }
-                }
-            }, 100);
-        },
-        
-        // 確認ボタン
-        confirm: function(modalId) {
-            const input = document.getElementById(modalId + '_input');
-            const value = input ? input.value.trim() : '';
-            
-            closeModal(modalId);
-            
-            if (this.callbacks[modalId]) {
-                this.callbacks[modalId](value);
-                delete this.callbacks[modalId];
-            }
-        },
-        
-        // キャンセルボタン
-        cancel: function(modalId) {
-            closeModal(modalId);
-            
-            if (this.callbacks[modalId]) {
-                this.callbacks[modalId](null);
-                delete this.callbacks[modalId];
-            }
-        }
-    };
-    
-    // Enterキーで確認
-    document.addEventListener('DOMContentLoaded', function() {
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Enter') {
-                const visibleModal = document.querySelector('.modal--visible');
-                if (visibleModal && visibleModal.id.includes('passkeyDeviceNameModal')) {
-                    event.preventDefault();
-                    window.PasskeyDeviceNameModal.confirm(visibleModal.id);
-                }
-            }
-        });
-    });
-}
-</script>
-@endpush

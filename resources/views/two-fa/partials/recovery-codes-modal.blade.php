@@ -31,7 +31,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endphp
 
 <x-modal :id="$modalId" :title="$error ? __('common.error') : ($title ?? __('two_fa.recovery_codes.title'))" :icon_type="$error ? 'danger' : 'warning'" :dismissible="false">
-    <div class="space-y-4">
+    <div class="space-y-4" x-data="recoveryCodesModal('{{ $modalId }}', @json($codes), {{ $autoOpen ? 'true' : 'false' }}, {{ $clearSessionRoute ? "'$clearSessionRoute'" : 'null' }})">
         @if($error)
             {{-- エラー表示モード --}}
             <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
@@ -67,7 +67,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             </div>
                         @endforeach
                     @else
-                        <!-- JavaScriptで動的に追加 -->
+                        <template x-for="code in formattedCodes" :key="code">
+                            <div class="p-2 bg-white dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600 text-center" x-text="code"></div>
+                        </template>
                     @endif
                 </div>
             </div>
@@ -75,14 +77,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex gap-2">
                 <button 
                     type="button"
-                    onclick="downloadRecoveryCodesFromModal('{{ $modalId }}')"
+                    @click="downloadCodes()"
                     class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     <i class="fas fa-download mr-2"></i>{{ __('common.download') }}
                 </button>
                 <button 
                     type="button"
                     id="{{ $modalId }}-copy-btn"
-                    onclick="copyRecoveryCodesFromModal('{{ $modalId }}')"
+                    x-ref="copyBtn"
+                    @click="copyCodes()"
                     class="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
                     <i class="fas fa-copy mr-2"></i>{{ __('common.copy') }}
                 </button>
@@ -94,7 +97,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <input 
                         type="checkbox" 
                         id="{{ $modalId }}-saved-checkbox"
-                        onchange="checkRecoveryCodesSavedFromModal('{{ $modalId }}')"
+                        x-model="isSaved"
                         class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                     <span class="ml-3 text-sm text-red-800 dark:text-red-200 font-semibold">
                         <i class="fas fa-exclamation-circle mr-1"></i>
@@ -103,186 +106,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </label>
             </div>
         @endif
+        
+        <!-- フッターボタン -->
+        <div class="mt-6 flex justify-center border-t border-gray-200 dark:border-gray-700 pt-4">
+            <button 
+                type="button"
+                id="{{ $modalId }}-close-btn"
+                @click="handleClose()"
+                @if(!$error) :disabled="!canClose" @endif
+                class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                :class="{ 'opacity-50 cursor-not-allowed': @if(!$error) !canClose @else false @endif }">
+                {{ __('common.close') }}
+            </button>
+        </div>
     </div>
     
+    {{-- カスタムフッター（何も表示しない） --}}
     <x-slot name="footer">
-        <button 
-            type="button"
-            id="{{ $modalId }}-close-btn"
-            onclick="closeModal('{{ $modalId }}')"
-            @if(!$error) disabled @endif
-            class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 @if(!$error) opacity-50 cursor-not-allowed @endif">
-            {{ __('common.close') }}
-        </button>
+        {{-- デフォルトボタンを非表示にするため、空のdivを配置 --}}
+        <div style="display: none;"></div>
     </x-slot>
 </x-modal>
-
-{{-- コードデータをJavaScriptに渡す --}}
-@if(!$isDynamic && !empty($codes))
-@push('scripts')
-<script @cspNonce>
-    // 回復コードデータを格納
-    document.addEventListener('DOMContentLoaded', function() {
-        window.recoveryCodesData = window.recoveryCodesData || {};
-        window.recoveryCodesData['{{ $modalId }}'] = @json($codes);
-    });
-</script>
-@endpush
-@endif
-
-@if($autoOpen)
-@push('scripts')
-<script @cspNonce>
-    // モーダルを自動表示
-    document.addEventListener('DOMContentLoaded', function() {
-        openModal('{{ $modalId }}');
-    });
-</script>
-@endpush
-@endif
-
-@if($clearSessionRoute)
-@push('scripts')
-<script @cspNonce>
-    // 自動生成モーダルを閉じるときにセッションをクリア
-    document.addEventListener('DOMContentLoaded', function() {
-        const closeBtn = document.getElementById('{{ $modalId }}-close-btn');
-        
-        if (closeBtn) {
-            closeBtn.addEventListener('click', async function() {
-                try {
-                    await fetch('{{ $clearSessionRoute }}', {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        }
-                    });
-                    console.log('[{{ $modalId }}] Recovery codes session cleared');
-                } catch (error) {
-                    console.error('[{{ $modalId }}] Failed to clear session:', error);
-                }
-            });
-        }
-    });
-</script>
-@endpush
-@endif
-
-@once
-@push('scripts')
-<script @cspNonce>
-    // 回復コードモーダル用のグローバル変数
-    window.recoveryCodesData = window.recoveryCodesData || {};
-    
-    // 回復コードをフォーマット（5桁ごとにハイフン）
-    function formatRecoveryCode(code) {
-        return code.match(/.{1,5}/g).join('-');
-    }
-    
-    // 回復コードを動的に表示（JavaScript用）
-    function displayRecoveryCodesInModal(modalId, codes) {
-        window.recoveryCodesData[modalId] = codes;
-        const container = document.getElementById(modalId + '-codes-list');
-        if (container) {
-            container.innerHTML = codes.map(code => 
-                `<div class="p-2 bg-white dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600 text-center">${formatRecoveryCode(code)}</div>`
-            ).join('');
-        }
-    }
-    
-    // エラーメッセージを動的に表示（JavaScript用）
-    function displayRecoveryCodesError(modalId, errorMessage) {
-        const modal = document.getElementById(modalId);
-        if (!modal) return;
-        
-        // モーダルの内容を取得
-        const modalContent = modal.querySelector('.space-y-4');
-        if (!modalContent) return;
-        
-        // エラー表示用HTMLを作成
-        const errorHTML = `
-            <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                <p class="text-sm text-red-800 dark:text-red-200">
-                    <i class="fas fa-exclamation-circle mr-2"></i>
-                    ${errorMessage}
-                </p>
-            </div>
-        `;
-        
-        // モーダルの内容を置き換え
-        modalContent.innerHTML = errorHTML;
-        
-        // モーダルタイトルをエラーに変更
-        const modalTitle = modal.querySelector('h3');
-        if (modalTitle) {
-            modalTitle.textContent = '{{ __("common.error") }}';
-        }
-        
-        // 閉じるボタンを有効化
-        const closeBtn = document.getElementById(modalId + '-close-btn');
-        if (closeBtn) {
-            closeBtn.disabled = false;
-            closeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-        }
-    }
-    
-    // 回復コードをダウンロード
-    function downloadRecoveryCodesFromModal(modalId) {
-        const codes = window.recoveryCodesData[modalId] || [];
-        const text = codes.map(code => formatRecoveryCode(code)).join('\n');
-        const blob = new Blob([text], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'recovery-codes-' + new Date().toISOString().split('T')[0] + '.txt';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
-    
-    // 回復コードをコピー
-    function copyRecoveryCodesFromModal(modalId) {
-        const codes = window.recoveryCodesData[modalId] || [];
-        const text = codes.map(code => formatRecoveryCode(code)).join('\n');
-        const copyBtn = document.getElementById(modalId + '-copy-btn');
-        const originalHTML = copyBtn.innerHTML;
-        
-        navigator.clipboard.writeText(text).then(() => {
-            // コピー成功：チェックアイコンを表示
-            copyBtn.innerHTML = '<i class="fas fa-check mr-2"></i>{{ __("common.copied") }}';
-            copyBtn.classList.remove('bg-gray-600', 'hover:bg-gray-700');
-            copyBtn.classList.add('bg-green-600', 'hover:bg-green-700');
-            
-            // 2秒後に元に戻す
-            setTimeout(() => {
-                copyBtn.innerHTML = originalHTML;
-                copyBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
-                copyBtn.classList.add('bg-gray-600', 'hover:bg-gray-700');
-            }, 2000);
-        }).catch(err => {
-            console.error('Copy error:', err);
-            alert('{{ __("common.copy_failed") }}');
-        });
-    }
-    
-    // 回復コード保管確認チェックボックスの状態を監視
-    function checkRecoveryCodesSavedFromModal(modalId) {
-        const checkbox = document.getElementById(modalId + '-saved-checkbox');
-        const closeBtn = document.getElementById(modalId + '-close-btn');
-        
-        if (checkbox && closeBtn) {
-            closeBtn.disabled = !checkbox.checked;
-            
-            if (checkbox.checked) {
-                closeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            } else {
-                closeBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            }
-        }
-    }
-</script>
-@endpush
-@endonce

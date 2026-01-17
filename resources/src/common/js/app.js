@@ -26,6 +26,9 @@ import '../../components/form/js/email-input';
 import '../../components/form/js/password-tools';
 import '../../components/ui/js/notification';
 import '../../components/ui/js/modal';
+import '../../components/ui/js/passkey-device-name';
+import '../../components/ui/js/passkey-result';
+import '../../components/ui/js/recovery-codes';
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse'
 
