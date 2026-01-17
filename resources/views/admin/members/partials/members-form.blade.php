@@ -323,8 +323,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :adminContext="true"
             :routes="[
                 'passkey_delete' => url('admin/members/passkey/' . $member->id . '/:id'),
-                'passkey_delete_all' => url('admin/members/passkey/' . $member->id . '/revoke-all'),
-                'recovery_codes_delete' => url('admin/members/recovery-codes/' . $member->id . '/revoke'),
+                'passkey_delete_all' => url('admin/members/passkey/' . $member->id . '/all'),
+                'recovery_codes_delete' => url('admin/members/recovery-codes/' . $member->id),
             ]"
             :csrfToken="csrf_token()"
         />

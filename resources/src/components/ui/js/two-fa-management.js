@@ -99,12 +99,16 @@ window.twoFaManagement = function (routes, csrfToken, translations) {
                 }
 
             } catch (error) {
+                // ユーザーがキャンセルまたはタイムアウトした場合は静かに終了
+                if (error.name === 'NotAllowedError') {
+                    return;
+                }
+
+                // その他のエラーはログに記録して表示
                 console.error('[Passkey] 登録エラー:', error);
 
                 let errorMessage;
-                if (error.name === 'NotAllowedError') {
-                    errorMessage = this.translations.passkey_cancelled;
-                } else if (error.name === 'InvalidStateError') {
+                if (error.name === 'InvalidStateError') {
                     errorMessage = this.translations.passkey_already_registered;
                 } else {
                     errorMessage = this.translations.passkey_register_error + '\n\n' + error.message;
@@ -379,7 +383,7 @@ window.twoFaManagement = function (routes, csrfToken, translations) {
 
                 const data = await response.json();
 
-                if (data.success) {
+                if (response.ok && data.success) {
                     if (typeof displayRecoveryCodesInModal === 'function') {
                         displayRecoveryCodesInModal('manualRecoveryCodesModal', data.codes);
                     }
@@ -387,6 +391,7 @@ window.twoFaManagement = function (routes, csrfToken, translations) {
                         openModal('manualRecoveryCodesModal');
                     }
                 } else {
+                    // エラーメッセージを表示
                     if (typeof displayRecoveryCodesError === 'function') {
                         displayRecoveryCodesError('manualRecoveryCodesModal', data.message || this.translations.error);
                     }
