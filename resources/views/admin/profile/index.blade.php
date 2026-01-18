@@ -22,7 +22,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
-    <h1 class="text-2xl font-bold mb-6">{{ __('admin/profile/index.heading') }}</h1>
+
     <p class="text-gray-600 dark:text-gray-400 mb-8">{{ __('admin/profile/index.description') }}</p>
 
     <!-- 設定カード -->

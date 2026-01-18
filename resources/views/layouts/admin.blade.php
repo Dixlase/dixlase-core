@@ -55,7 +55,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <div class="min-h-screen flex">
                 <!-- Navigation Sidebar (Desktop only) -->
-                <aside class="md:fixed md:h-full hidden sm:block w-64 flex-shrink-0 border-gray-300 @if($transitionEnabled ?? false) transition-all duration-[500ms] @else transition-transform duration-300 @endif"
+                <aside class="md:fixed md:h-full hidden sm:block w-64 flex-shrink-0 border-gray-300 @if($transitionEnabled ?? false) transition-all duration-[300ms] @else transition-transform duration-300 @endif"
                        :class="{
                            '-translate-x-64': sidebarCollapsed,
                            'translate-x-0': !sidebarCollapsed
@@ -74,26 +74,55 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             'translate-x-0': sidebarCollapsed,
                             'translate-x-64': !sidebarCollapsed
                         }"
-                        :style="sidebarReady ? 'transition: transform 300ms ease-in-out' : ''"
+                        :style="sidebarReady ? 'transition: transform 200ms ease-in-out' : ''"
                         aria-label="Toggle sidebar menu">
                     <i class="fas text-sm" :class="sidebarCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'"></i>
                 </button>
 
                 <!-- Main Content Area -->
-                <main class="mt-12 ml-0 md:pl-4 lg:pl-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white @if($transitionEnabled ?? false) transition-all duration-[500ms] @endif"
+                <main class="mt-12 ml-0 md:pl-4 lg:pl-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white"
                       :class="{
                           'md:ml-0': sidebarCollapsed,
                           'md:ml-64': !sidebarCollapsed
                       }"
                       x-init="
-                          // 初回表示後にサイドバートグル用のトランジションを追加
-                          $nextTick(() => { 
-                              if (!(@if($transitionEnabled ?? false) true @else false @endif)) { 
-                                  setTimeout(() => {
+                          (() => {
+                              let isAppearancePage = @if($transitionEnabled ?? false) true @else false @endif;
+                              
+                              // 初回表示後にトランジションを追加（全ページ共通）
+                              setTimeout(() => {
+                                  // transition-colorsを削除してからtransition-allを追加
+                                  $el.classList.remove('transition-colors');
+                                  
+                                  if (isAppearancePage) {
+                                      // 外観設定ページ: 外観モード切り替え用のトランジション（300ms）
                                       $el.classList.add('transition-all', 'duration-300');
-                                  }, 100);
-                              }
-                          })
+                                      $el.style.transitionProperty = 'all';
+                                      $el.style.transitionDuration = '300ms';
+                                  } else {
+                                      // 他のページ: サイドバートグル用のトランジション（300ms）
+                                      $el.classList.add('transition-all', 'duration-300');
+                                      $el.style.transitionProperty = 'all';
+                                      $el.style.transitionDuration = '300ms';
+                                  }
+                              }, 100);
+                              
+                              // transition-colorsが追加されたら即座に削除（外観モード切り替え時の対策）
+                              const observer = new MutationObserver((mutations) => {
+                                  mutations.forEach((mutation) => {
+                                      if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                                          if ($el.classList.contains('transition-colors') && $el.classList.contains('transition-all')) {
+                                              $el.classList.remove('transition-colors');
+                                          }
+                                      }
+                                  });
+                              });
+                              
+                              observer.observe($el, {
+                                  attributes: true,
+                                  attributeFilter: ['class']
+                              });
+                          })();
                       "
                       role="main">
 
@@ -135,15 +164,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </div>
                     @endif
 
-                    <!-- Page Heading -->
-                    @if (isset($heading))
-                        <header class="w-full px-6 lg:px-8 mt-8 @if($transitionEnabled ?? false) transition-colors duration-[500ms] @endif">
-                            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                                {{ $heading }}
-                            </h1>
-                        </header>
-                    @endif
-
                     <!-- Page Content -->
                     <article class="w-full px-6 lg:px-8 pb-8 mt-8">
                         <x-flash-message />
@@ -151,7 +171,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </article>
 
                     @hasSection('save')
-                        <div class="sticky bottom-0 z-30 backdrop-blur-sm bg-white/75 dark:bg-gray-900/75 border-t border-gray-200 dark:border-gray-700 px-4 sm:px-6 lg:px-8 py-3 @if($transitionEnabled ?? false) transition-colors duration-[500ms] @endif">
+                        <div class="sticky bottom-0 z-30 backdrop-blur-sm bg-white/75 dark:bg-gray-900/75 border-t border-gray-200 dark:border-gray-700 px-4 sm:px-6 lg:px-8 py-3 @if($transitionEnabled ?? false) transition-colors duration-[0ms] @endif">
                             <div class="w-full mx-auto flex justify-center">
                                 @yield('save')
                             </div>

@@ -9,11 +9,12 @@
 class AppearanceTransitionManager {
     constructor() {
         // アニメーション時間を一元管理（ミリ秒）
-        this.transitionDuration = 500;
+        this.transitionDuration = 300; // 通常の要素（サイドバー、フッターなど）
+        this.backgroundTransitionDuration = 200; // メインコンテンツとセクションの背景色
         this.transitionClass = `transition-colors duration-[${this.transitionDuration}ms]`;
         this.isAppearancePage = false;
         this.elementsToAnimate = [];
-        this.debug = true; // デバッグモード
+        this.debug = false; // デバッグモード
     }
 
     /**
@@ -67,28 +68,11 @@ class AppearanceTransitionManager {
         this.elementsToAnimate.forEach(element => {
             this.addTransitionClass(element);
         });
-
-        // 管理バーと保存ボタンエリアのdurationを強制更新
-        this.forceUpdateSpecialElements();
-    }
-
-    /**
-     * 管理バーと保存ボタンエリアのdurationを強制的に更新する
-     */
-    forceUpdateSpecialElements() {
-        const adminBar = document.querySelector('#admin-bar');
-        const saveButtonArea = document.querySelector('.sticky.bottom-0');
-
-        if (adminBar) {
-            this.updateTransitionDuration(adminBar);
-        }
-        if (saveButtonArea) {
-            this.updateTransitionDuration(saveButtonArea);
-        }
     }
 
     /**
      * アニメーション対象の要素を取得
+     * 注: 管理バー、保存ボタンエリア、main要素は個別設定のため除外
      */
     getElementsToAnimate() {
         const elements = [];
@@ -113,25 +97,15 @@ class AppearanceTransitionManager {
         const sidebar = document.querySelector('aside[role="navigation"]');
         if (sidebar) elements.push(sidebar);
 
-        // 3. 管理バー
-        const adminBar = document.querySelector('#admin-bar');
-        if (adminBar) elements.push(adminBar);
-
-        // 4. ページヘッダー（タイトルと説明）
+        // 3. ページヘッダー（タイトルと説明）
         const pageHeader = document.querySelector('header.w-full');
         if (pageHeader) elements.push(pageHeader);
 
-        // 5. メインコンテンツエリア
-        const mainContent = document.querySelector('main');
-        if (mainContent) elements.push(mainContent);
-
-        // 6. 保存ボタンエリア（sticky bottom）
-        const saveButtonArea = document.querySelector('.sticky.bottom-0');
-        if (saveButtonArea) elements.push(saveButtonArea);
-
-        // 7. フッター（存在する場合）
+        // 4. フッター
         const footer = document.querySelector('footer');
         if (footer) elements.push(footer);
+
+        // 注: main要素はAlpine.jsで管理するため除外
 
         return elements;
     }
@@ -142,29 +116,35 @@ class AppearanceTransitionManager {
     addTransitionClass(element) {
         if (!element) return;
 
+        // section要素かどうかを判定
+        const isSection = element.tagName.toLowerCase() === 'section';
+        const duration = isSection ? this.backgroundTransitionDuration : this.transitionDuration;
+
         // 既存のクラスを保持しながら追加
         const existingClasses = element.className;
         const hadTransition = existingClasses.includes('transition-colors') || existingClasses.includes('transition-all');
 
         if (!hadTransition) {
-            element.classList.add('transition-colors', `duration-[${this.transitionDuration}ms]`);
+            element.classList.add('transition-colors', `duration-[${duration}ms]`);
 
             if (this.debug) {
                 console.log('[AppearanceTransition] トランジション追加', {
                     element: this.getElementSelector(element),
-                    duration: `${this.transitionDuration}ms`,
+                    duration: `${duration}ms`,
+                    isSection: isSection,
                     before: existingClasses,
                     after: element.className
                 });
             }
         } else {
             // 既存のdurationクラスを統一する
-            this.updateTransitionDuration(element);
+            this.updateTransitionDuration(element, duration);
 
             if (this.debug) {
                 console.log('[AppearanceTransition] トランジション既存（duration更新）', {
                     element: this.getElementSelector(element),
-                    duration: `${this.transitionDuration}ms`,
+                    duration: `${duration}ms`,
+                    isSection: isSection,
                     classes: element.className
                 });
             }
@@ -185,7 +165,9 @@ class AppearanceTransitionManager {
     /**
      * 要素のtransition durationを統一する
      */
-    updateTransitionDuration(element) {
+    updateTransitionDuration(element, duration = null) {
+        const targetDuration = duration || this.transitionDuration;
+
         // 既存のduration-*クラスを削除（duration-[500ms]などの任意値も含む）
         const classes = element.className.split(' ');
         const filteredClasses = classes.filter(cls =>
@@ -193,13 +175,20 @@ class AppearanceTransitionManager {
         );
         element.className = filteredClasses.join(' ');
 
+        // ブラウザにスタイルの再計算を強制
+        void element.offsetHeight;
+
         // 新しいdurationを追加
-        element.classList.add(`duration-[${this.transitionDuration}ms]`);
+        element.classList.add(`duration-[${targetDuration}ms]`);
+
+        // インラインスタイルで確実に適用（Tailwindクラスが効かない場合の保険）
+        element.style.transitionDuration = `${targetDuration}ms`;
 
         if (this.debug) {
             console.log('[AppearanceTransition] Duration更新完了', {
                 element: this.getElementSelector(element),
-                newDuration: `${this.transitionDuration}ms`
+                newDuration: `${targetDuration}ms`,
+                computedStyle: window.getComputedStyle(element).transitionDuration
             });
         }
     }
