@@ -22,8 +22,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
-    <h1 class="text-2xl font-bold mb-2">{{ __('admin/settings/security/integrity.heading') }}</h1>
-    <p class="text-gray-600 dark:text-gray-400 mb-6">{{ __('admin/settings/security/integrity.description') }}</p>
 
     <!-- ベースライン情報 -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6 mb-6">

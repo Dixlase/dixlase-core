@@ -22,8 +22,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
-    <h1 class="text-2xl font-bold mb-6">{{ __('admin/settings/base/index.heading') }}</h1>
-    <p class="text-gray-600 dark:text-gray-400 mb-8">{{ __('admin/settings/base/index.description') }}</p>
 
     <!-- 設定カード -->
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
