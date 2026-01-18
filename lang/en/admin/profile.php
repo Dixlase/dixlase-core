@@ -98,6 +98,9 @@ return [
     'recovery_codes_admin_note' => 'Administrators cannot generate or regenerate recovery codes. Only the member themselves can do this.',
     'recovery_codes_info_3' => 'Each generated recovery code can only be used once and becomes invalid after use.',
     'recovery_codes_info_4' => 'Once recovery codes are generated, they cannot be regenerated for a certain period of time.',
-    'recovery_codes_info_5' => 'Do not share recovery codes with others.',
-    'recovery_codes_info_6' => 'Save the generated recovery codes in a safe place by downloading, copying, taking a screenshot, photographing, or printing them.',
+    'recovery_codes_info_5' => 'Do not share recovery codes with anyone.',
+    'recovery_codes_info_6' => 'Store generated recovery codes in a safe place by downloading, copying, taking a screenshot, photo, or printing them.',
+    
+    // Two-factor authentication requirement message
+    'two_factor_requires_mail_server' => 'To use two-factor authentication, please complete mail server configuration and testing in base settings.',
 ];

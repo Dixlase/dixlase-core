@@ -26,7 +26,16 @@ return [
         'upload' => 'Media Upload',
         'settings' => 'Media Settings'
     ],
-    'profile' => 'Profile Settings',
+    'profile' => [
+        'text' => 'Profile Settings',
+        'index' => 'Overview',
+        'basic' => 'Basic Information',
+        'password' => 'Password Settings',
+        'appearance' => 'Appearance Settings',
+        'notifications' => 'Notification Settings',
+        'two_factor' => 'Two-Factor Authentication',
+        'two_factor_management' => '2FA Management',
+    ],
     'settings' => [
         'text' => 'Global Settings',
         'base' => [

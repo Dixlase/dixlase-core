@@ -110,7 +110,7 @@
                         <div class="bg-white dark:bg-black">
                             <a href="{{ route('admin.profile') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
                                 <i class="fas fa-user w-5 text-center mr-2 text-gray-500 dark:text-gray-400"></i>
-                                <span>{{ __('admin/nav.profile') }}</span>
+                                <span>{{ __('admin/nav.profile.text') }}</span>
                             </a>
                         </div>
                         <div class="border-t border-gray-200 dark:border-gray-700"></div>
@@ -177,7 +177,7 @@
                 <a href="{{ route('admin.profile') }}"
                    class="flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition">
                     <i class="fas fa-user w-5 text-center mr-3 text-gray-500 dark:text-gray-400"></i>
-                    <span>{{ __('admin/nav.profile') }}</span>
+                    <span>{{ __('admin/nav.profile.text') }}</span>
                 </a>
 
                 {{-- ログアウト --}}

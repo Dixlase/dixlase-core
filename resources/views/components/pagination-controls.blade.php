@@ -10,7 +10,7 @@
     'showSort' => false, // ソート機能を表示するか
 ])
 
-<div class="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+<div x-data="paginationControls()" class="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
     <!-- 総件数表示（左側） -->
     <div class="text-sm text-gray-700 dark:text-gray-300">
         @if($paginator)
@@ -68,49 +68,3 @@
         </div>
     </div>
 </div>
-
-@push('scripts')
-<script @cspNonce>
-document.addEventListener('DOMContentLoaded', function() {
-    const perPageSelect = document.getElementById('perPage');
-    const sortBySelect = document.getElementById('sortBy');
-    const sortOrderButton = document.getElementById('sortOrder');
-    
-    // 表示件数変更
-    if (perPageSelect) {
-        perPageSelect.addEventListener('change', function() {
-            const currentUrl = new URL(window.location);
-            currentUrl.searchParams.set('per_page', this.value);
-            currentUrl.searchParams.delete('page'); // ページ番号をリセット
-            
-            window.location.href = currentUrl.toString();
-        });
-    }
-    
-    // ソートフィールド変更
-    if (sortBySelect) {
-        sortBySelect.addEventListener('change', function() {
-            const currentUrl = new URL(window.location);
-            currentUrl.searchParams.set('sort', this.value);
-            currentUrl.searchParams.delete('page'); // ページ番号をリセット
-            
-            window.location.href = currentUrl.toString();
-        });
-    }
-    
-    // ソート順序変更
-    if (sortOrderButton) {
-        sortOrderButton.addEventListener('click', function() {
-            const currentOrder = this.getAttribute('data-order');
-            const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
-            
-            const currentUrl = new URL(window.location);
-            currentUrl.searchParams.set('order', newOrder);
-            currentUrl.searchParams.delete('page'); // ページ番号をリセット
-            
-            window.location.href = currentUrl.toString();
-        });
-    }
-});
-</script>
-@endpush

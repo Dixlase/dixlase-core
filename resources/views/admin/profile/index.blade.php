@@ -21,330 +21,107 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('layouts.admin')
 
 @section('content')
+<div class="mx-auto">
+    <h1 class="text-2xl font-bold mb-6">{{ __('admin/profile/index.heading') }}</h1>
+    <p class="text-gray-600 dark:text-gray-400 mb-8">{{ __('admin/profile/index.description') }}</p>
 
-    <form method="POST" action="{{ route('admin.profile.update') }}" id="profile-form">
-        @csrf
-
+    <!-- 設定カード -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
         <!-- 基本情報 -->
-        <section class="transition-colors-unified">
-            <h2>{{ __('common.basic_info') }}</h2>
-            
-            <fieldset>
-                <legend>{{ __('common.account_name') }}</legend>
-                <x-form.text
-                    name="account_name"
-                    :value="old('account_name', $member->account_name)"
-                    :required="true"
-                    pattern="^[a-zA-Z0-9]+$"
-                    minlength="3"
-                    maxlength="20"
-                    class="w-full"
-                />
-                <p class="description-text">{!! __('admin/profile.account_name_help') !!}</p>
-                @error('account_name')
-                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
-            </fieldset>
-
-            <fieldset>
-                <legend>{{ __('common.display_name') }}</legend>
-                <x-form.text
-                    name="display_name"
-                    :value="old('display_name', $member->display_name)"
-                    class="w-full"
-                />
-                <p class="description-text">{{ __('admin/profile.display_name_help') }}</p>
-                @error('display_name')
-                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
-            </fieldset>
-
-            <fieldset>
-                <legend>{{ __('common.description') }}</legend>
-                <x-form.textarea
-                    name="description"
-                    :value="old('description', $member->description)"
-                    :rows="3"
-                    class="w-full"
-                />
-                @error('description')
-                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
-            </fieldset>
-
-            <x-email-input
-                id="profile_email"
-                name="email"
-                :value="old('email', $member->email)"
-                :required="false"
-                :showConfirmation="true"
-                :showConfirmationOnChange="true"
-            />
-            @error('email')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-            @enderror
-            @error('email_confirmation')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-            @enderror
-            
-            @if($hasPendingEmail)
-                <div class="mt-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
-                    <p class="text-sm text-yellow-800 dark:text-yellow-200">
-                        <i class="fas fa-exclamation-triangle mr-2"></i>
-                        {!! __('admin/profile.pending_email_notice', ['email' => $pendingEmail]) !!}
-                    </p>
-                    <p class="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
-                        {{ __('admin/profile.current_email', ['email' => $member->email]) }}
-                    </p>
+        <a href="{{ route('admin.profile.basic') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center">
+                    <i class="fas fa-user text-blue-500 text-xl mr-3"></i>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/profile/index.basic_info') }}</h3>
                 </div>
-            @else
-                <p class="description-text">
-                    @if($isMailServerTested)
-                        {!! __('admin/profile.email_change_help') !!}
-                    @else
-                        {!! __('admin/profile.email_change_help_no_mail') !!}
-                    @endif
-                </p>
-            @endif
-
-            <fieldset>
-                <legend>{{ __('common.locale') }}</legend>
-                <x-form.select
-                    name="locale"
-                    :options="$localeOptions"
-                    :value="old('locale', $member->locale?->value)"
-                    :nullable="true"
-                    :nullLabel="__('admin/profile.use_system_default')"
-                />
-                @error('locale')
-                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
-                <p>{{ __('admin/profile.language_help') }}</p>
-            </fieldset>
-        </section>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+            </div>
+            <div class="text-sm text-gray-600 dark:text-gray-400">
+                <p class="truncate">{{ $member->account_name }}</p>
+                <p class="text-xs mt-1">{{ $member->email }}</p>
+            </div>
+        </a>
 
         <!-- パスワード設定 -->
-        <section class="transition-colors-unified">
-            <h2>{{ __('common.password_settings') }}</h2>
-            
-            <fieldset>
-                <legend>{{ __('admin/profile.password_change_only') }}</legend>
-                <x-password-tools
-                    name="password"
-                    id="profile_password"
-                    :required="false"
-                    :minLength="$passwordMinLength"
-                    :requireUppercase="$passwordRequireUppercase"
-                    :requireLowercase="true"
-                    :requireNumber="true"
-                    :requireSymbol="$passwordRequireSymbol"
-                    :showConfirmation="true"
-                    :showConfirmationOnChange="true"
-                />
-            </fieldset>
-        </section>
+        <a href="{{ route('admin.profile.password') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center">
+                    <i class="fas fa-key text-purple-500 text-xl mr-3"></i>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/profile/index.password') }}</h3>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+            </div>
+            <div class="text-sm text-gray-600 dark:text-gray-400">
+                <p>{{ __('admin/profile/index.password_description') }}</p>
+            </div>
+        </a>
 
         <!-- 外観設定 -->
-        @php
-            $appearanceValue = old('appearance', (string) ($member->appearance->value ?? 0));
-        @endphp
-
-        <section class="transition-colors-unified">
-            <h2>{{ __('common.appearance_settings') }}</h2>
-            <div class="lg:w-1/2">
-                <x-appearance-mode-selector
-                    name="appearance"
-                    :value="$appearanceValue"
-                    :enableRealtimeSwitch="true"
-                    :columns="3"
-                    color="primary"
-                    variant="filled"
-                    :showCheck="true"
-                />
+        <a href="{{ route('admin.profile.appearance') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center">
+                    <i class="fas fa-palette text-green-500 text-xl mr-3"></i>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/profile/index.appearance') }}</h3>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
-        </section>
+            <div class="text-sm text-gray-600 dark:text-gray-400">
+                <p>{{ $member->appearance?->label() ?? __('common.appearance_mode.options.0') }}</p>
+            </div>
+        </a>
 
-        <!-- ログイン通知設定 -->
-        @php
-            $loginNotificationModeValue = $loginNotificationMode instanceof \App\Enums\AuthenticationMode 
-                ? $loginNotificationMode->value 
-                : ($loginNotificationMode ?? 1);
-        @endphp
+        <!-- 通知設定 -->
+        <a href="{{ route('admin.profile.notifications') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center">
+                    <i class="fas fa-bell text-yellow-500 text-xl mr-3"></i>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/profile/index.notifications') }}</h3>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+            </div>
+            <div class="text-sm text-gray-600 dark:text-gray-400">
+                <p>{{ __('admin/profile/index.notifications_description') }}</p>
+            </div>
+        </a>
 
-        <section class="transition-colors-unified">
-            <h2>{{ __('auth.login_notification_mode.label') }}</h2>
-            <x-login-notification-selector
-                name="login_notification_mode"
-                :value="old('login_notification_mode', (string) $loginNotificationModeValue)"
-                :globalSetting="(int) ($loginNoticeGlobal ?? 0)"
-                :excludeUseProfileSetting="true"
-                :columns="3"
-            />
-        </section>
-
-        <!-- 二段階認証設定（メールサーバー設定済みの場合のみ表示） -->
+        <!-- 二段階認証設定 -->
         @if($isMailServerTested)
-            @php
-                $member = Auth::guard('member')->user();
-                $twoFaPasskeyGloballyEnabled = in_array(\App\Enums\TwoFaMethod::PASSKEY->value, array_keys($twoFaEnabledMethods ?? []));
-                $isTwoFaEditable = $twoFaForceMode === \App\Enums\AuthenticationMode::UseProfileSetting->value;
-            @endphp
-            
-<div x-data="{
-                twoFaMode: '{{ old('two_fa_mode', (string) ($twoFaMode?->value ?? 0)) }}',
-                passkeyEnabled: {{ $currentPasskeyEnabled ? 'true' : 'false' }},
-                get twoFaEnabled() {
-                    return this.twoFaMode !== '0';
-                }
-            }" id="two-fa-settings-wrapper">
-                <section class="transition-colors-unified">
-                    <h2>{{ __('auth.two_fa_settings') }}</h2>
-
-                    {{-- 1. 二段階認証モード --}}
-                    <x-two-fa.mode-selector
-                        name="two_fa_mode"
-                        :value="old('two_fa_mode', (string) ($twoFaMode?->value ?? 0))"
-                        :globalSetting="$twoFaForceMode"
-                        :excludeUseProfileSetting="true"
-                        :columns="3"
-                        :isProfile="true"
-                        :isTwoFaEditable="$isTwoFaEditable"
-                        xModel="twoFaMode"
-                    />
-
-                    {{-- 2. 二段階認証方法（メール認証・パスキー設定） --}}
-                    <div :class="{ 'opacity-50 pointer-events-none': !twoFaEnabled }">
-                        <x-two-fa.method-selector
-                            name="two_fa_passkey_enabled"
-                            :value="(string) ($currentPasskeyEnabled ? '1' : '0')"
-                            :columns="3"
-                            :isProfile="true"
-                            :isPasskeyEditable="$isPasskeyEditable ?? false"
-                            :forcedPasskeyValue="$forcedPasskeyValue ?? null"
-                            :currentPasskeyEnabled="$currentPasskeyEnabled ?? false"
-                            xModel="passkeyEnabled"
-                        />
-                    </div>
-
-                    {{-- 3. デフォルトの認証方法 --}}
-                    <div :class="{ 'opacity-50 pointer-events-none': !twoFaEnabled || !passkeyEnabled }">
-                        <x-two-fa.default-method
-                            :twoFaPasskeyEnabled="$currentPasskeyEnabled"
-                            :twoFaDefaultMethod="(string) (Auth::guard('member')->user()->two_fa_default_method ?? $twoFaDefaultMethod)"
-                            :columns="2"
-                        />
-                    </div>
-                </section>
+        <a href="{{ route('admin.profile.two-factor') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center">
+                    <i class="fas fa-shield-alt text-red-500 text-xl mr-3"></i>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/profile/index.two_factor') }}</h3>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
-        @endif
-
-    </form>
-
-    <!-- 2FA管理セクション（メールサーバー設定済みの場合のみ表示） -->
-    @if($isMailServerTested)
-        <div x-data="{
-            get twoFaMode() {
-                const wrapper = document.getElementById('two-fa-settings-wrapper');
-                if (!wrapper) return '{{ (string) ($twoFaMode?->value ?? 0) }}';
-                return Alpine.$data(wrapper).twoFaMode;
-            },
-            get passkeyEnabled() {
-                const wrapper = document.getElementById('two-fa-settings-wrapper');
-                if (!wrapper) return {{ $currentPasskeyEnabled ? 'true' : 'false' }};
-                return Alpine.$data(wrapper).passkeyEnabled;
-            },
-            get isTwoFaDisabled() {
-                return this.twoFaMode === '0';
-            },
-            get isPasskeyDisabled() {
-                return this.twoFaMode === '0' || !this.passkeyEnabled;
-            }
-        }">
-            <div :class="{ 'opacity-50 pointer-events-none': isPasskeyDisabled }">
-                <x-two-fa.management
-                    :twoFaPasskeyEnabled="$twoFaPasskeyEnabled"
-                    :twoFaPasskeyDevices="$twoFaPasskeyDevices"
-                    :twoFaHasRecoveryCodes="$twoFaHasRecoveryCodes"
-                    :twoFaRecoveryCodesCount="$twoFaRecoveryCodesCount"
-                    :twoFaTrustedDevices="collect()"
-                    :twoFaShowTrustedDevices="false"
-                    :routes="[
-                        'passkey_register_options' => route('admin.profile.passkey.register-options'),
-                        'passkey_register' => route('admin.profile.passkey.register'),
-                        'passkey_delete' => route('admin.profile.passkey.revoke', ':id'),
-                        'passkey_delete_all' => route('admin.profile.passkey.revoke-all'),
-                        'recovery_codes_generate' => route('admin.profile.recovery-codes.generate'),
-                    ]"
-                    :csrfToken="csrf_token()"
-                />
+            <div class="text-sm">
+                @if($twoFaMode?->value > 0)
+                    <span class="inline-flex items-center text-green-600 dark:text-green-400">
+                        <i class="fas fa-check-circle mr-1"></i>{{ __('common.enabled') }}
+                    </span>
+                @else
+                    <span class="inline-flex items-center text-gray-500">
+                        <i class="fas fa-times-circle mr-1"></i>{{ __('common.disabled') }}
+                    </span>
+                @endif
             </div>
-        </div>
-    @endif
+        </a>
 
-    {{-- セッションベースのモーダル --}}
-    @if(session('auto_generated_recovery_codes'))
-        @include('two-fa.partials.recovery-codes-modal', [
-            'modalId' => 'profileAutoGeneratedRecoveryCodesModal',
-            'title' => __('two_fa.recovery_codes.auto_generated_title'),
-            'codes' => session('auto_generated_recovery_codes'),
-            'isAutoGenerated' => true,
-            'autoOpen' => true
-        ])
-    @endif
-
-    @if(session('recovery_code_error'))
-        @include('two-fa.partials.recovery-codes-modal', [
-            'modalId' => 'recoveryCodeErrorModal',
-            'error' => session('recovery_code_error'),
-            'autoOpen' => true
-        ])
-    @endif
-
-@endsection
-
-@section('save')
-    <x-save
-        id_confirmation="confirmProfileModal"
-        :label="__('common.update')"
-        :title="__('admin/profile.confirm_title')"
-        :message="__('admin/profile.confirm_message')"
-        :confirm_label="__('common.update')"
-        :cancel_label="__('common.cancel')"
-        form="profile-form"
-    />
-@endsection
-
-@push('scripts')
-<!-- プロフィールページ専用のフォーム要素トランジション -->
-<style>
-    #profile-form input, 
-    #profile-form textarea, 
-    #profile-form select, 
-    #profile-form button, 
-    #profile-form fieldset, 
-    #profile-form legend {
-        transition: border-color var(--transition-duration) ease-in-out,
-                   box-shadow var(--transition-duration) ease-in-out,
-                   background-color var(--transition-duration) ease-in-out,
-                   color var(--transition-duration) ease-in-out;
-    }
-</style>
-
-<script @cspNonce>
-    // === グローバル関数はコンポーネントで定義されています ===
-    // openDeleteTrustedDeviceModal, revokeTrustedDevice, revokeAllTrustedDevices
-    // openDeletePasskeyModal, revokePasskey, revokeAllPasskeys
-    // registerPasskey, confirmGenerateRecoveryCodes
-
-    document.addEventListener('DOMContentLoaded', function() {
-        // フォーム送信成功時にグローバルテーマストアを更新
-        @if(session('success'))
-            const savedAppearance = '{{ old('appearance', (string) ($member->appearance->value ?? 0)) }}';
-            if (window.themeStore) {
-                window.themeStore.theme = savedAppearance;
-                window.themeStore.applyTheme();
-            }
+        <!-- 二段階認証管理 -->
+        <a href="{{ route('admin.profile.two-factor-management') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center">
+                    <i class="fas fa-fingerprint text-indigo-500 text-xl mr-3"></i>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{{ __('admin/profile/index.two_factor_management') }}</h3>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+            </div>
+            <div class="text-sm text-gray-600 dark:text-gray-400">
+                <p>{{ __('admin/profile/index.passkey_count', ['count' => $twoFaPasskeyDevices->count()]) }}</p>
+                <p class="text-xs mt-1">{{ __('admin/profile/index.recovery_codes_count', ['count' => $twoFaRecoveryCodesCount]) }}</p>
+            </div>
+        </a>
         @endif
-    });
-</script>
-@endpush
+    </div>
+</div>
+@endsection

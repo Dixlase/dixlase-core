@@ -1,0 +1,83 @@
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2025 exc-D inc.
+ * Website: https://exc-d.com
+ *
+ * Theme Switcher Component
+ * Manages appearance theme (light/dark/auto) switching functionality
+ */
+
+/**
+ * Alpine.js用の外観テーマ管理関数
+ * @param {string} defaultValue - データベースから取得したデフォルト値
+ * @returns {Object} Alpine.jsコンポーネント
+ */
+window.appearanceMode = function (defaultValue) {
+    return {
+        theme: defaultValue,
+        isDark: false,
+        themeReady: false,
+
+        applyTheme(enableTransition = false) {
+            this.isDark = this.theme === '2' || (this.theme === '0' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+            if (document.querySelector('[data-profile-theme]')) {
+                localStorage.setItem('appearance', this.theme);
+            }
+
+            if (enableTransition) {
+                this.themeReady = true;
+            }
+
+            document.documentElement.classList.toggle('dark', this.isDark);
+            document.documentElement.classList.toggle('light', !this.isDark);
+        },
+
+        init() {
+            if (document.querySelector('[data-profile-theme]')) {
+                const storedTheme = localStorage.getItem('appearance');
+                if (storedTheme !== null) {
+                    this.theme = storedTheme;
+                }
+            }
+
+            this.applyTheme(false);
+
+            document.querySelectorAll('input[name="appearance"]').forEach((el) => {
+                if (el.closest('[data-profile-theme]') || el.closest('[data-member-theme]')) {
+                    return;
+                }
+                el.addEventListener('change', (e) => {
+                    this.theme = e.target.value;
+                    this.applyTheme(true);
+                });
+            });
+        }
+    };
+};
+
+/**
+ * テーマストアを初期化（後方互換性のため）
+ */
+function initThemeStore() {
+    const defaultAppearance = document.body?.dataset.defaultAppearance ?? '0';
+
+    window.themeStore = {
+        theme: localStorage.getItem('appearance') ?? defaultAppearance,
+        isDark: false,
+
+        applyTheme() {
+            this.isDark = this.theme === '2' || (this.theme === '0' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            localStorage.setItem('appearance', this.theme);
+            document.documentElement.classList.toggle('dark', this.isDark);
+            document.documentElement.classList.toggle('light', !this.isDark);
+        }
+    };
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initThemeStore);
+} else {
+    initThemeStore();
+}
