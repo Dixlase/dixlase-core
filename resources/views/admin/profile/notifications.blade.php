@@ -33,7 +33,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endphp
 
         <section class="transition-colors-unified">
-            <h2>{{ __('auth.login_notification_mode.label') }}</h2>
+            <h2>{{ __('admin/profile/notifications.login_notification_mode') }}</h2>
             <x-login-notification-selector
                 name="login_notification_mode"
                 :value="old('login_notification_mode', (string) $loginNotificationModeValue)"
