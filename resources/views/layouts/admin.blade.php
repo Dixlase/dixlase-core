@@ -22,7 +22,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <html
     lang="{{ str_replace('_', '-', env('APP_LOCALE', config('app.locale', 'en'))) }}"
     class="{{ $htmlClass ?? '' }}"
-    x-data="appearanceTheme('{{ $appearance }}')"
+    x-data="appearanceMode('{{ $appearance }}')"
     x-init="init()"
     :class="{ 'dark': isDark, 'light': !isDark, 'theme-ready': themeReady }"
 >

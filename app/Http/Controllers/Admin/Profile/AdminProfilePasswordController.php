@@ -1,0 +1,66 @@
+<?php
+
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2025 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+namespace App\Http\Controllers\Admin\Profile;
+
+use App\Http\Controllers\Admin\AdminLoggedInController;
+use App\Http\Requests\Admin\Profile\ProfileUpdateRequest;
+use App\Models\MemberSetting;
+use App\Services\PasswordService;
+use Illuminate\Support\Facades\Auth;
+
+class AdminProfilePasswordController extends AdminLoggedInController
+{
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
+    /**
+     * Show the password edit page.
+     */
+    public function index()
+    {
+        // パスワード条件の取得
+        $this->viewParams['passwordMinLength'] = (int) MemberSetting::getValue('password_min_length', 8);
+        $this->viewParams['passwordRequireUppercase'] = (bool) MemberSetting::getValue('password_require_uppercase', true);
+        $this->viewParams['passwordRequireSymbol'] = (bool) MemberSetting::getValue('password_require_symbol', false);
+        
+        return view('admin.profile.password', $this->viewParams);
+    }
+
+    /**
+     * Update password.
+     */
+    public function update(ProfileUpdateRequest $request)
+    {
+        $member = Auth::guard('member')->user();
+        $validated = $request->validated();
+        
+        if (!empty($validated['password'])) {
+            $member->password = PasswordService::hash($validated['password']);
+            $member->save();
+        }
+        
+        return redirect()->route('admin.profile.password')->with('success', __('admin/profile.updated'));
+    }
+}

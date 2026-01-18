@@ -1,8 +1,10 @@
+<?php
+
 /**
  * This file is part of Dixlase.
  *
  * Copyright (C) 2025 exc-D inc.
- * Website: https://exc-d.com
+ * https://exc-d.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -18,14 +20,19 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-// =============================================================================
-// Dixlase Front Common Styles
-// =============================================================================
-// このファイルはフロントページで使用される共通スタイルを定義します
-// テーマはこのファイルをインポートして、共通コンポーネントを利用できます
-
-// 1. 共通コンポーネントスタイル (管理画面・プラグイン・フロント共通)
-//@use '../../common/scss/components';
-
-// 2. フロント固有スタイル (必要に応じて追加)
-// @use 'front-specific';
+return [
+    'heading' => 'Profile Settings',
+    'description' => 'Manage your account information, security settings, appearance, and more.',
+    
+    'basic_info' => 'Basic Information',
+    'password' => 'Password Settings',
+    'password_description' => 'Change your password',
+    'appearance' => 'Appearance Settings',
+    'notifications' => 'Notification Settings',
+    'notifications_description' => 'Login notifications and more',
+    'two_factor' => 'Two-Factor Authentication',
+    'two_factor_management' => '2FA Management',
+    
+    'passkey_count' => 'Passkeys: :count',
+    'recovery_codes_count' => 'Recovery Codes: :count',
+];

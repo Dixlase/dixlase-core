@@ -20,6 +20,7 @@
 
 import '../scss/style.scss';
 import './bootstrap';
+import './appearance';
 import '../../components/ui/js/tooltip';
 import '../../components/form/js/color-picker';
 import '../../components/form/js/email-input';
@@ -31,6 +32,7 @@ import '../../components/ui/js/passkey-result';
 import '../../components/ui/js/recovery-codes';
 import '../../components/ui/js/webauthn-utils';
 import '../../components/ui/js/two-fa-management';
+import '../../components/ui/js/pagination-controls';
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse'
 

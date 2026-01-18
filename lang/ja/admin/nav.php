@@ -26,7 +26,16 @@ return [
         'upload' => 'メディアアップロード',
         'settings' => 'メディア設定'
     ],
-    'profile' => 'プロフィール設定',
+    'profile' => [
+        'text' => 'プロフィール設定',
+        'index' => '概要',
+        'basic' => '基本情報',
+        'password' => 'パスワード設定',
+        'appearance' => '外観設定',
+        'notifications' => '通知設定',
+        'two_factor' => '二段階認証設定',
+        'two_factor_management' => '二段階認証管理',
+    ],
     'settings' => [
         'text' => '全体設定',
         'base' => [

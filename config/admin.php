@@ -85,9 +85,45 @@ return [
             ]
         ],
         'profile' => [
-            'text' => 'admin/nav.profile',
-            'route' => 'admin.profile',
+            'text' => 'admin/nav.profile.text',
             'icon' => 'fas fa-fw fa-id-badge',
+            'children' => [
+                'index' => [
+                    'text' => 'admin/nav.profile.index',
+                    'route' => 'admin.profile',
+                    'icon' => 'fas fa-fw fa-home',
+                ],
+                'basic' => [
+                    'text' => 'admin/nav.profile.basic',
+                    'route' => 'admin.profile.basic',
+                    'icon' => 'fas fa-fw fa-user',
+                ],
+                'password' => [
+                    'text' => 'admin/nav.profile.password',
+                    'route' => 'admin.profile.password',
+                    'icon' => 'fas fa-fw fa-key',
+                ],
+                'appearance' => [
+                    'text' => 'admin/nav.profile.appearance',
+                    'route' => 'admin.profile.appearance',
+                    'icon' => 'fas fa-fw fa-palette',
+                ],
+                'notifications' => [
+                    'text' => 'admin/nav.profile.notifications',
+                    'route' => 'admin.profile.notifications',
+                    'icon' => 'fas fa-fw fa-bell',
+                ],
+                'two_factor' => [
+                    'text' => 'admin/nav.profile.two_factor',
+                    'route' => 'admin.profile.two-factor',
+                    'icon' => 'fas fa-fw fa-shield-alt',
+                ],
+                'two_factor_management' => [
+                    'text' => 'admin/nav.profile.two_factor_management',
+                    'route' => 'admin.profile.two-factor-management',
+                    'icon' => 'fas fa-fw fa-fingerprint',
+                ],
+            ]
         ],
         'members' => [
             'text' => 'admin/nav.settings.members.text',

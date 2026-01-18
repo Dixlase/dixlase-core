@@ -42,6 +42,12 @@ use App\Http\Controllers\Admin\Settings\Systems;
 use App\Http\Controllers\Admin\Members;
 use App\Http\Controllers\Admin\Settings\AdminThemesSettingsController;
 use App\Http\Controllers\Admin\Profile\AdminProfileController;
+use App\Http\Controllers\Admin\Profile\AdminProfileBasicController;
+use App\Http\Controllers\Admin\Profile\AdminProfilePasswordController;
+use App\Http\Controllers\Admin\Profile\AdminProfileAppearanceController;
+use App\Http\Controllers\Admin\Profile\AdminProfileNotificationsController;
+use App\Http\Controllers\Admin\Profile\AdminProfileTwoFactorController;
+use App\Http\Controllers\Admin\Profile\AdminProfileTwoFactorManagementController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\SecuritySetting;
@@ -162,22 +168,40 @@ Route::prefix($adminUrl)->name('admin.')
 
             // プロフィール設定（全員アクセス可能）
             Route::get('/profile', [AdminProfileController::class, 'index'])->name('profile');
-            Route::post('/profile', [AdminProfileController::class, 'update'])->name('profile.update');
+            
+            // 基本情報
+            Route::get('/profile/basic', [AdminProfileBasicController::class, 'index'])->name('profile.basic');
+            Route::post('/profile/basic', [AdminProfileBasicController::class, 'update'])->name('profile.basic.update');
+            
+            // パスワード設定
+            Route::get('/profile/password', [AdminProfilePasswordController::class, 'index'])->name('profile.password');
+            Route::post('/profile/password', [AdminProfilePasswordController::class, 'update'])->name('profile.password.update');
+            
+            // 外観設定
+            Route::get('/profile/appearance', [AdminProfileAppearanceController::class, 'index'])->name('profile.appearance');
+            Route::post('/profile/appearance', [AdminProfileAppearanceController::class, 'update'])->name('profile.appearance.update');
+            
+            // 通知設定
+            Route::get('/profile/notifications', [AdminProfileNotificationsController::class, 'index'])->name('profile.notifications');
+            Route::post('/profile/notifications', [AdminProfileNotificationsController::class, 'update'])->name('profile.notifications.update');
+            
+            // 二段階認証設定
+            Route::get('/profile/two-factor', [AdminProfileTwoFactorController::class, 'index'])->name('profile.two-factor');
+            Route::post('/profile/two-factor', [AdminProfileTwoFactorController::class, 'update'])->name('profile.two-factor.update');
+            
+            // 二段階認証管理
+            Route::get('/profile/two-factor-management', [AdminProfileTwoFactorManagementController::class, 'index'])->name('profile.two-factor-management');
             
             // Passkey管理
-            Route::post('/profile/passkey/register-options', [AdminProfileController::class, 'passkeyRegisterOptions'])->name('profile.passkey.register-options');
-            Route::post('/profile/passkey/register', [AdminProfileController::class, 'passkeyRegister'])->name('profile.passkey.register');
-            Route::delete('/profile/passkey/{credentialId}', [AdminProfileController::class, 'revokePasskey'])->name('profile.passkey.revoke');
-            Route::delete('/profile/passkey/all', [AdminProfileController::class, 'revokeAllPasskeys'])->name('profile.passkey.revoke-all');
-            
-            // 信頼済みデバイス管理
-            Route::delete('/profile/trusted-device/{deviceId}', [AdminProfileController::class, 'revokeTrustedDevice'])->name('profile.trusted-device.revoke');
-            Route::delete('/profile/trusted-device/all', [AdminProfileController::class, 'revokeAllTrustedDevices'])->name('profile.trusted-device.revoke-all');
+            Route::post('/profile/passkey/register-options', [AdminProfileTwoFactorManagementController::class, 'passkeyRegisterOptions'])->name('profile.passkey.register-options');
+            Route::post('/profile/passkey/register', [AdminProfileTwoFactorManagementController::class, 'passkeyRegister'])->name('profile.passkey.register');
+            Route::delete('/profile/passkey/{credentialId}', [AdminProfileTwoFactorManagementController::class, 'revokePasskey'])->name('profile.passkey.revoke');
+            Route::delete('/profile/passkey/all', [AdminProfileTwoFactorManagementController::class, 'revokeAllPasskeys'])->name('profile.passkey.revoke-all');
             
             // 回復コード管理
-            Route::post('/profile/recovery-codes/generate', [AdminProfileController::class, 'generateRecoveryCodes'])->name('profile.recovery-codes.generate');
-            Route::post('/profile/recovery-codes/regenerate', [AdminProfileController::class, 'regenerateRecoveryCodes'])->name('profile.recovery-codes.regenerate');
-            Route::post('/profile/recovery-codes/clear-session', [AdminProfileController::class, 'clearRecoveryCodesSession'])->name('profile.recovery-codes.clear-session');
+            Route::post('/profile/recovery-codes/generate', [AdminProfileTwoFactorManagementController::class, 'generateRecoveryCodes'])->name('profile.recovery-codes.generate');
+            Route::post('/profile/recovery-codes/regenerate', [AdminProfileTwoFactorManagementController::class, 'regenerateRecoveryCodes'])->name('profile.recovery-codes.regenerate');
+            Route::post('/profile/recovery-codes/clear-session', [AdminProfileTwoFactorManagementController::class, 'clearRecoveryCodesSession'])->name('profile.recovery-codes.clear-session');
 
             // メンバー管理（権限チェック付き）
             Route::middleware('check.menu.access:members')->prefix('members')->name('members.')->group(function () {
