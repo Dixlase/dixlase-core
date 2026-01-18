@@ -12,6 +12,8 @@ export default defineConfig(({ command }) => ({
                 'resources/src/admin/scss/style.scss',
                 'resources/src/common/js/app.js',
                 'resources/src/common/scss/style.scss',
+                'resources/src/install/js/app.js',
+                'resources/src/install/scss/style.scss',
             ],
             refresh: [
                 // デフォルトのBladeテンプレート
@@ -64,6 +66,8 @@ export default defineConfig(({ command }) => ({
                 admin_css: path.resolve(__dirname, 'resources/src/admin/scss/style.scss'),
                 common_js: path.resolve(__dirname, 'resources/src/common/js/app.js'),
                 common_css: path.resolve(__dirname, 'resources/src/common/scss/style.scss'),
+                install_js: path.resolve(__dirname, 'resources/src/install/js/app.js'),
+                install_css: path.resolve(__dirname, 'resources/src/install/scss/style.scss'),
             },
             output: {
                 // JavaScriptファイルの名前を指定
