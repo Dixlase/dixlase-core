@@ -181,8 +181,14 @@ class AppearanceTransitionManager {
         // 新しいdurationを追加
         element.classList.add(`duration-[${targetDuration}ms]`);
 
-        // インラインスタイルで確実に適用（Tailwindクラスが効かない場合の保険）
+        // インラインスタイルで確実に適用
+        // transition-allクラスがあっても、インラインスタイルで明示的に設定
+        const hasTransitionAll = element.classList.contains('transition-all');
+        if (hasTransitionAll) {
+            element.style.transitionProperty = 'all';
+        }
         element.style.transitionDuration = `${targetDuration}ms`;
+        element.style.transitionTimingFunction = 'cubic-bezier(0.4, 0, 0.2, 1)';
 
         if (this.debug) {
             console.log('[AppearanceTransition] Duration更新完了', {

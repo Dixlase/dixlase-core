@@ -19,3 +19,4 @@
  */
 
 import '../scss/style.scss';
+import './appearance-transition';

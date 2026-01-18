@@ -14,7 +14,8 @@
 @if($isAuthenticated)
 @props(['isAdminLayout' => false])
 
-<div x-data="{ openSidebar: false, openUserMenu: false, userMenuOpen: false }" 
+<div x-data="Object.assign(adminBar(), { openSidebar: false, openUserMenu: false, userMenuOpen: false })" 
+     x-init="init()"
      id="admin-bar" class="fixed top-0 left-0 right-0 backdrop-blur-sm text-gray-700 dark:text-white bg-white/75 dark:bg-gray-900/75 border-b border-gray-300 dark:border-gray-700 shadow-md transition-colors duration-[150ms]" style="z-index: 9000;">
     <div class="w-full mx-auto px-4">
         <div class="flex items-center justify-between h-12">
@@ -213,8 +214,4 @@
     }
 
 </style>
-
-<script @cspNonce>
-    document.body.classList.add('has-admin-bar');
-</script>
 @endif
