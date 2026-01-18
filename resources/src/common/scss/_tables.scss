@@ -7,95 +7,37 @@
  * Common table styles shared across admin, install, and front screens.
  */
 
-// 基本テーブルスタイル
-.table-common {
-    width: 100%;
-    font-size: 0.875rem;
-    line-height: 1.25rem;
-    text-align: left;
+// 基本テーブルスタイル（.table-common と .component-table を統合）
+.table-common,
+.component-table {
+    @apply w-full text-sm text-left rtl:text-right mb-4;
 
     thead {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        background-color: rgb(243 244 246); // gray-100
-        color: rgb(31 41 55); // gray-800
+        @apply text-xs uppercase bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white;
 
         tr th {
-            padding: 1rem;
-            border-bottom: 1px solid rgb(229 231 235); // gray-200
+            @apply px-4 py-4 border-b border-gray-200 dark:border-gray-700;
         }
     }
 
     tbody {
         tr {
-            border-bottom: 1px solid rgb(229 231 235); // gray-200
-
-            &:nth-child(odd) {
-                background-color: rgb(255 255 255); // white
-            }
-
-            &:nth-child(even) {
-                background-color: rgb(249 250 251); // gray-50
-            }
+            @apply odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700;
 
             &.selected {
-                background-color: rgb(229 231 235); // gray-200
+                @apply bg-gray-200 dark:bg-gray-600;
 
                 &:hover {
-                    background-color: rgb(229 231 235);
+                    @apply bg-gray-200 dark:bg-gray-600;
                 }
             }
         }
 
         td {
-            padding: 1rem;
-            border-bottom: 1px solid rgb(229 231 235); // gray-200
+            @apply px-4 py-4 border-b border-gray-200 dark:border-gray-700;
 
             &.selected {
-                border-bottom-color: rgb(229 231 235);
-            }
-        }
-    }
-}
-
-// ダークモード対応
-.dark .table-common,
-html.dark .table-common {
-    thead {
-        background-color: rgb(31 41 55); // gray-800
-        color: rgb(255 255 255);
-
-        tr th {
-            border-bottom-color: rgb(55 65 81); // gray-700
-        }
-    }
-
-    tbody {
-        tr {
-            border-bottom-color: rgb(55 65 81); // gray-700
-
-            &:nth-child(odd) {
-                background-color: rgb(17 24 39); // gray-900
-            }
-
-            &:nth-child(even) {
-                background-color: rgb(31 41 55); // gray-800
-            }
-
-            &.selected {
-                background-color: rgb(75 85 99); // gray-600
-
-                &:hover {
-                    background-color: rgb(75 85 99);
-                }
-            }
-        }
-
-        td {
-            border-bottom-color: rgb(55 65 81); // gray-700
-
-            &.selected {
-                border-bottom-color: rgb(55 65 81);
+                @apply border-b border-gray-200 dark:border-gray-700;
             }
         }
     }
@@ -103,123 +45,98 @@ html.dark .table-common {
 
 // レスポンシブテーブル
 .responsive-table {
-    width: 100%;
-    overflow-x: auto;
-    background-color: rgb(255 255 255);
-    border-radius: 0.5rem;
-    border: 1px solid rgb(229 231 235); // gray-200
-    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    @apply w-full overflow-x-auto bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm;
 
     table {
-        width: 100%;
-        min-width: 100%;
-        border-collapse: collapse;
+        @apply w-full min-w-full border-collapse;
 
         thead {
-            background-color: rgb(249 250 251); // gray-50
+            @apply bg-gray-50 dark:bg-gray-800;
 
             th {
-                padding: 0.75rem 1rem;
-                text-align: left;
-                font-size: 0.75rem;
-                font-weight: 500;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-                color: rgb(107 114 128); // gray-500
+                @apply px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400;
             }
         }
 
         tbody tr {
-            border-bottom: 1px solid rgb(229 231 235); // gray-200
+            @apply border-b border-gray-200 dark:border-gray-700;
         }
 
         td {
-            padding: 0.5rem 1rem 0.5rem 1rem;
-            font-size: 0.875rem;
-            color: rgb(17 24 39); // gray-900
+            @apply px-4 py-2 text-sm text-gray-900 dark:text-gray-100;
         }
     }
 
     // モバイル表示（カード形式）
     @media (max-width: 768px) {
-        table {
-            border: 0;
 
-            thead {
-                position: absolute;
-                width: 1px;
-                height: 1px;
-                padding: 0;
-                margin: -1px;
-                overflow: hidden;
-                clip: rect(0, 0, 0, 0);
-                white-space: nowrap;
-                border: 0;
+        table,
+        thead,
+        tbody,
+        th,
+        td,
+        tr {
+            display: block;
+        }
+
+        thead tr {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+        }
+
+        tbody tr {
+            @apply mb-4 border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900;
+
+            &:nth-child(odd) {
+                @apply bg-gray-50 dark:bg-gray-800;
+            }
+        }
+
+        td {
+            @apply border-0 p-0 text-left;
+
+            &:last-child {
+                @apply border-b-0;
             }
 
-            tbody tr {
-                display: block;
-                margin-bottom: 1rem;
-                border: 1px solid rgb(229 231 235);
-                border-radius: 0.5rem;
+            // ID表示（左上）
+            &[data-label*="id"] {
+                @apply absolute top-4 left-4 font-bold text-gray-500 dark:text-gray-400 text-sm;
             }
 
-            td {
-                display: block;
-                text-align: right;
-                padding: 0.75rem 1rem;
-                border-bottom: 1px solid rgb(229 231 235);
+            // アクション表示（右上）
+            &[data-label*="actions"] {
+                @apply absolute top-4 right-4 z-10;
+            }
+
+            // 主要フィールド表示
+            &[data-label*="name"],
+            &[data-label*="email"],
+            &[data-label*="role"] {
+                @apply block mt-2 ml-[60px] mr-[80px];
+
+                &:before {
+                    content: attr(data-label) ": ";
+                    @apply inline-block min-w-[80px] font-bold text-gray-700 dark:text-gray-300;
+                }
+            }
+
+            &[data-label*="name"] {
+                @apply mt-10 text-lg font-semibold;
+            }
+
+            // 汎用データラベル表示
+            &:not([data-label*="id"]):not([data-label*="actions"]):not([data-label*="name"]):not([data-label*="email"]):not([data-label*="role"]) {
+                @apply block mt-2 text-right px-4 py-3 border-b border-gray-200 dark:border-gray-700;
 
                 &:last-child {
-                    border-bottom: 0;
+                    @apply border-b-0;
                 }
 
                 &::before {
                     content: attr(data-label);
-                    float: left;
-                    font-weight: 700;
-                    color: rgb(55 65 81); // gray-700
-                }
-            }
-        }
-    }
-}
-
-// ダークモード対応
-.dark .responsive-table,
-html.dark .responsive-table {
-    background-color: rgb(17 24 39); // gray-900
-    border-color: rgb(55 65 81); // gray-700
-
-    table {
-        thead {
-            background-color: rgb(31 41 55); // gray-800
-
-            th {
-                color: rgb(156 163 175); // gray-400
-            }
-        }
-
-        tbody tr {
-            border-bottom-color: rgb(55 65 81); // gray-700
-        }
-
-        td {
-            color: rgb(243 244 246); // gray-100
-        }
-    }
-
-    @media (max-width: 768px) {
-        table {
-            tbody tr {
-                border-color: rgb(55 65 81);
-            }
-
-            td {
-                border-bottom-color: rgb(55 65 81);
-
-                &::before {
-                    color: rgb(209 213 219); // gray-300
+                    @apply float-left font-bold text-gray-700 dark:text-gray-300;
                 }
             }
         }
@@ -228,24 +145,13 @@ html.dark .responsive-table {
 
 // 空の状態表示
 .empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem 0;
-    color: rgb(107 114 128); // gray-500
+    @apply flex flex-col items-center justify-center py-8 text-gray-500 dark:text-gray-400;
 
     i {
-        margin-bottom: 1rem;
+        @apply mb-4;
     }
 
     p {
-        font-size: 1rem;
-        font-weight: 500;
+        @apply text-base font-medium;
     }
-}
-
-.dark .empty-state,
-html.dark .empty-state {
-    color: rgb(156 163 175); // gray-400
 }

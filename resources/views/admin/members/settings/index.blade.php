@@ -139,7 +139,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </section>
 </div>
 
-<x-modal
+<x-ui.modal
     id="forceLogoutAllModal"
     :title="__('admin/members/settings/index.force_logout_all_modal.title')"
     :message="__('admin/members/settings/index.force_logout_all_modal.message')"

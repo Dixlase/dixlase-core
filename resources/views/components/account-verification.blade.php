@@ -117,7 +117,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <!-- 認証メール送信確認モーダル -->
 @if($isEdit)
-    <x-modal
+    <x-ui.modal
         id="verificationEmailModal"
         :title="__($prefix . '.send_verification_email_title')"
         :message="__($prefix . ($entityType === 'member' ? '.send_verification_email_confirm' : '.send_verification_email_message'))"

@@ -59,7 +59,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 @section('modals')
     <!-- 全メンバー強制ログアウト確認モーダル -->
-    <x-modal
+    <x-ui.modal
         id="forceLogoutAllModal"
         :title="__('admin/members/settings.force_logout_all_modal.title')"
         :message="__('admin/members/settings.force_logout_all_modal.message')"

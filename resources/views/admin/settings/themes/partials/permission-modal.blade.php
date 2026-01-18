@@ -14,7 +14,7 @@ https://exc-d.com
     $cspDiagnostic = $isModel ? ($theme->csp_diagnostic ?? null) : ($theme['csp_diagnostic'] ?? null);
 @endphp
 
-<x-modal
+<x-ui.modal
     :id="$permissionModalId"
     :title="__('admin/settings/themes/index.permissions.details_title') . ' - ' . $themeName"
     icon_type="info"

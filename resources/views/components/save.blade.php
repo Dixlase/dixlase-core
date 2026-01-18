@@ -65,7 +65,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <!-- {{ __('common.save_confirmation_title') }} -->
 @push('modals')
-    <x-modal
+    <x-ui.modal
         :id="$id_confirmation"
         :title="$title ?? __('common.save_confirmation_title')"
         :message="$message ?? __('common.save_confirmation_message')"
