@@ -30,136 +30,18 @@
 @endphp
 
 @if($isInstall)
-<script @cspNonce>
-document.addEventListener('DOMContentLoaded', function() {
-    // メール設定の入力フィールドを監視
-    const mailInputs = document.querySelectorAll('.mail-setting-input');
-    
-    mailInputs.forEach(input => {
-        input.addEventListener('change', function() {
-            resetMailTestResults();
-        });
-        
-        input.addEventListener('input', function() {
-            resetMailTestResults();
-        });
-    });
-    
-    function resetMailTestResults() {
-        // セッションをリセット（サーバーサイドでの処理が必要）
-        fetch('{{ route("install.mail.reset-tests") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            }
-        })
-        .then(response => {
-            console.log('Response status:', response.status);
-            console.log('Response headers:', response.headers.get('content-type'));
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.text(); // まずテキストとして取得
-        })
-        .then(text => {
-            console.log('Raw response:', text);
-            try {
-                const data = JSON.parse(text);
-                console.log('Mail tests reset response:', data);
-                console.log('Session reset debug info:', data.debug);
-            } catch (e) {
-                console.error('JSON parse error:', e);
-                console.error('Response text:', text);
-            }
-        })
-        .catch(error => {
-            console.error('Error resetting mail tests:', error);
-        });
-        // エラーが発生してもUIはリセットする
-        resetTestStatusUI();
-    }
-    
-    function resetTestStatusUI() {
-        // メインステータスをリセット
-        const mainStatusDiv = document.getElementById('mail-test-status');
-        const mainIcon = document.getElementById('status-icon');
-        const mainTitle = document.getElementById('status-title');
-        
-        if (mainStatusDiv && mainIcon && mainTitle) {
-            mainStatusDiv.className = 'mt-6 p-4 border rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800';
-            
-            // SVGアイコンの場合はsetAttributeを使用
-            if (mainIcon.tagName === 'svg' || mainIcon.classList.contains('svg-inline--fa')) {
-                mainIcon.setAttribute('class', 'fas fa-exclamation-triangle text-yellow-400 text-xl');
-            } else {
-                mainIcon.className = 'fas fa-exclamation-triangle text-yellow-400 text-xl';
-            }
-            
-            mainTitle.className = 'text-sm font-medium text-yellow-800 dark:text-yellow-200';
-            mainTitle.textContent = 'メールテストが未完了です';
-        }
-        
-        // JavaScript変数もリセット
-        if (typeof connectionTested !== 'undefined') {
-            connectionTested = false;
-        }
-        if (typeof sendTested !== 'undefined') {
-            sendTested = false;
-        }
-        if (typeof receiveTested !== 'undefined') {
-            receiveTested = false;
-        }
-        
-        // 個別テストアイコンをリセット
-        resetTestIcon('connection');
-        resetTestIcon('send');
-        resetTestIcon('receive');
-        
-        // メインステータスを強制的に更新（mail-test.blade.phpの関数を呼び出し）
-        console.log('=== resetTestStatusUI デバッグ ===');
-        console.log('updateInstallMainStatus関数の存在:', typeof updateInstallMainStatus);
-        if (typeof updateInstallMainStatus === 'function') {
-            console.log('updateInstallMainStatus関数を呼び出し中...');
-            updateInstallMainStatus();
-            console.log('updateInstallMainStatus関数呼び出し完了');
-        } else {
-            console.log('updateInstallMainStatus関数が見つかりません');
-        }
-        
-        // テストボタンを無効化
-        const connectionBtn = document.getElementById('test-connection-btn');
-        const mailBtn = document.getElementById('test-mail-btn');
-        
-        if (connectionBtn) {
-            connectionBtn.disabled = false;
-        }
-        
-        if (mailBtn) {
-            mailBtn.disabled = true;
-            mailBtn.className = 'py-2 px-4 rounded transition-colors duration-200 font-bold bg-gray-400 text-white cursor-not-allowed';
-        }
-    }
-    
-    function resetTestIcon(testType) {
-        const icon = document.getElementById(testType + '-test-icon');
-        const text = document.getElementById(testType + '-test-text');
-        const dateSpan = document.getElementById(testType + '-test-date');
-        
-        if (icon) {
-            icon.className = 'mr-2 fas fa-times-circle text-gray-400';
-        }
-        
-        if (text) {
-            text.className = 'text-sm text-gray-600 dark:text-gray-400';
-        }
-        
-        if (dateSpan) {
-            dateSpan.textContent = '';
-        }
-    }
-});
-</script>
+{{-- CSP対応: data属性で設定を渡す --}}
+@php
+$mailServerFormConfig = [
+    'routes' => [
+        'resetTests' => route('install.mail.reset-tests')
+    ],
+    'translations' => [
+        'testIncomplete' => 'メールテストが未完了です'
+    ]
+];
+@endphp
+<div data-mail-server-form-config='@json($mailServerFormConfig)' style="display:none;"></div>
 @endif
 
 <!-- Mailer -->
