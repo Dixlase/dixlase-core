@@ -55,12 +55,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <div class="min-h-screen flex">
                 <!-- Navigation Sidebar (Desktop only) -->
-                <aside class="md:fixed md:h-full hidden sm:block w-64 flex-shrink-0 border-gray-300"
+                <aside class="md:fixed md:h-full hidden sm:block w-64 flex-shrink-0 border-gray-300 @if($transitionEnabled ?? false) transition-all duration-[500ms] @else transition-transform duration-300 @endif"
                        :class="{
                            '-translate-x-64': sidebarCollapsed,
                            'translate-x-0': !sidebarCollapsed
                        }"
-                       :style="sidebarReady ? 'transition: transform 300ms ease-in-out, background-color 500ms ease-in-out, color 500ms ease-in-out, border-color 500ms ease-in-out' : ''"
                        role="navigation" aria-label="Main navigation">
                     @include('admin.partials.sidebar', [
                         'transitionEnabled' => $transitionEnabled ?? null,
@@ -81,16 +80,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </button>
 
                 <!-- Main Content Area -->
-                <main class="mt-12 ml-0 md:pl-4 lg:pl-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white"
+                <main class="mt-12 ml-0 md:pl-4 lg:pl-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white @if($transitionEnabled ?? false) transition-all duration-[500ms] @endif"
                       :class="{
                           'md:ml-0': sidebarCollapsed,
                           'md:ml-64': !sidebarCollapsed
                       }"
-                      :style="sidebarReady ? 'transition: margin 300ms ease-in-out, background-color 500ms ease-in-out, color 500ms ease-in-out' : ''"
+                      x-init="
+                          // 初回表示後にサイドバートグル用のトランジションを追加
+                          $nextTick(() => { 
+                              if (!(@if($transitionEnabled ?? false) true @else false @endif)) { 
+                                  setTimeout(() => {
+                                      $el.classList.add('transition-all', 'duration-300');
+                                  }, 100);
+                              }
+                          })
+                      "
                       role="main">
 
                     <!-- Page Header -->
-                    <header class="mx-auto py-6 px-8 mb-2 bg-white text-gray-800 border-b border-gray-300 dark:border-gray-700 dark:bg-black dark:text-white {{ empty($transitionEnabled) ? '' : 'transition-colors-unified' }}">
+                    <header class="mx-auto py-6 px-8 mb-2 bg-white text-gray-800 border-b border-gray-300 dark:border-gray-700 dark:bg-black dark:text-white @if($transitionEnabled ?? false) transition-colors duration-[500ms] @endif">
                         <h1 class="font-semibold text-xl leading-tight text-gray-800 dark:text-white">
                             {{ __($heading) }}
                         </h1>
@@ -127,6 +135,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </div>
                     @endif
 
+                    <!-- Page Heading -->
+                    @if (isset($heading))
+                        <header class="w-full px-6 lg:px-8 mt-8 @if($transitionEnabled ?? false) transition-colors duration-[500ms] @endif">
+                            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                                {{ $heading }}
+                            </h1>
+                        </header>
+                    @endif
+
                     <!-- Page Content -->
                     <article class="w-full px-6 lg:px-8 pb-8 mt-8">
                         <x-flash-message />
@@ -134,7 +151,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </article>
 
                     @hasSection('save')
-                        <div class="sticky bottom-0 z-30 backdrop-blur-sm bg-white/75 dark:bg-gray-900/75 border-t border-gray-200 dark:border-gray-700 px-4 sm:px-6 lg:px-8 py-3">
+                        <div class="sticky bottom-0 z-30 backdrop-blur-sm bg-white/75 dark:bg-gray-900/75 border-t border-gray-200 dark:border-gray-700 px-4 sm:px-6 lg:px-8 py-3 @if($transitionEnabled ?? false) transition-colors duration-[500ms] @endif">
                             <div class="w-full mx-auto flex justify-center">
                                 @yield('save')
                             </div>
