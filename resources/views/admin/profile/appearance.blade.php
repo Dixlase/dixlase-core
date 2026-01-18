@@ -22,7 +22,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 
-    <form method="POST" action="{{ route('admin.profile.appearance.update') }}" id="profile-appearance-form">
+    <form method="POST" action="{{ route('admin.profile.appearance.update') }}" id="profile-appearance-form"
+          x-data="appearanceForm()"
+          x-init="init()"
+          data-success="{{ session('success') ? '1' : '' }}"
+          data-appearance="{{ old('appearance', (string) ($member->appearance->value ?? 0)) }}">
         @csrf
 
         <!-- 外観設定 -->
@@ -62,8 +66,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @push('scripts')
-<!-- プロフィールページ専用のフォーム要素トランジション -->
 <style>
+    :root {
+        --transition-duration: 500ms;
+    }
+
     #profile-appearance-form input, 
     #profile-appearance-form textarea, 
     #profile-appearance-form select, 
@@ -76,17 +83,4 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                    color var(--transition-duration) ease-in-out;
     }
 </style>
-
-<script @cspNonce>
-    document.addEventListener('DOMContentLoaded', function() {
-        // フォーム送信成功時にグローバルテーマストアを更新
-        @if(session('success'))
-            const savedAppearance = '{{ old('appearance', (string) ($member->appearance->value ?? 0)) }}';
-            if (window.themeStore) {
-                window.themeStore.theme = savedAppearance;
-                window.themeStore.applyTheme();
-            }
-        @endif
-    });
-</script>
 @endpush

@@ -99,11 +99,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                       $el.classList.add('transition-all', 'duration-300');
                                       $el.style.transitionProperty = 'all';
                                       $el.style.transitionDuration = '300ms';
+                                      $el.style.transitionTimingFunction = 'cubic-bezier(0.4, 0, 0.2, 1)';
                                   } else {
                                       // 他のページ: サイドバートグル用のトランジション（300ms）
                                       $el.classList.add('transition-all', 'duration-300');
                                       $el.style.transitionProperty = 'all';
                                       $el.style.transitionDuration = '300ms';
+                                      $el.style.transitionTimingFunction = 'cubic-bezier(0.4, 0, 0.2, 1)';
                                   }
                               }, 100);
                               
