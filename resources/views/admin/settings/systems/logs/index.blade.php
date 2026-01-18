@@ -238,7 +238,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     
 
     <!-- Pagination Controls -->
-    <x-pagination-controls
+    <x-ui.pagination-controls
         :paginator="$auditLogs"
         :perPageOptions="[25, 50, 100, 200]"
         :currentPerPage="request('per_page', 50)"
@@ -246,7 +246,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         perPageLabel="components.pagination.per_page_label"
     />
 
-    <x-pagination
+    <x-ui.pagination
         :pagination="[
             'current_page' => $auditLogs->currentPage(),
             'last_page' => $auditLogs->lastPage(),
@@ -342,7 +342,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </section>
 
     <!-- Pagination Controls -->
-    <x-pagination-controls
+    <x-ui.pagination-controls
         :paginator="$auditLogs"
         :perPageOptions="[25, 50, 100, 200]"
         :currentPerPage="request('per_page', 50)"
@@ -350,7 +350,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         perPageLabel="components.pagination.per_page_label"
     />
 
-    <x-pagination
+    <x-ui.pagination
         :pagination="[
             'current_page' => $auditLogs->currentPage(),
             'last_page' => $auditLogs->lastPage(),
