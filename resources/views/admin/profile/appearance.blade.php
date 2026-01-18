@@ -30,7 +30,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             $appearanceValue = old('appearance', (string) ($member->appearance->value ?? 0));
         @endphp
 
-        <section class="transition-colors-unified">
+        <section class="transition-colors duration-[500ms]">
             <h2>{{ __('common.appearance_settings') }}</h2>
             <div class="lg:w-1/2">
                 <x-appearance-mode-selector

@@ -21,6 +21,7 @@
 import '../scss/style.scss';
 import './bootstrap';
 import './appearance';
+import './appearance-transition';
 import '../../components/ui/js/tooltip';
 import '../../components/form/js/color-picker';
 import '../../components/form/js/email-input';
