@@ -26,7 +26,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     $autoOpen = $autoOpen ?? false;
 @endphp
 
-<x-modal :id="$modalId" :title="__('admin/dashboard.method_change_modal.title')" icon_type="info">
+<x-ui.modal :id="$modalId" :title="__('admin/dashboard.method_change_modal.title')" icon_type="info">
     <div class="space-y-4">
         {{-- 説明メッセージ --}}
         <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">

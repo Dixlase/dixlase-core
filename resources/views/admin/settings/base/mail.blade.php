@@ -29,14 +29,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <section>
         <h2>{{ __('admin/settings/base/mail.mail_server_settings') }}</h2>
 
-        <x-mail-server-form
+        <x-mail-server.form
             :settings="$settings"
             :mailers="$mailers"
             :encryptions="$encryptions"
             context="admin"
         />
 
-        <x-mail-test
+        <x-mail-server.test
             context="admin"
             :connectionTestRoute="route('admin.settings.base.mail.test-connection')"
             :mailTestRoute="route('admin.settings.base.mail.test-mail')"

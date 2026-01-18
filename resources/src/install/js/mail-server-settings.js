@@ -8,7 +8,7 @@
  * Handles mail server form input monitoring and test result reset for installation context
  */
 
-import { MailFormBase } from '../../components/mail/js/mail-server-settings-base';
+import { MailFormBase } from '../../components/mail-server/js/settings-base';
 
 class MailForm extends MailFormBase {
     constructor(config) {
