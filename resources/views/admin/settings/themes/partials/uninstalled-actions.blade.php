@@ -32,7 +32,7 @@ https://exc-d.com
         onclick="openModal('installThemeModal-{{ $theme['directory'] }}')"
     />
 
-    <x-modal
+    <x-ui.modal
         id="installThemeModal-{{ $theme['directory'] }}"
         :title="$hasWarnings ? __('admin/settings/themes/index.permissions.install_warning_title') : __('admin/settings/themes/index.install.confirm_title')"
         :confirm_label="__('common.install')"
@@ -95,7 +95,7 @@ https://exc-d.com
         onclick="openModal('deleteThemeModal-{{ $theme['directory'] }}')"
     />
 
-    <x-modal
+    <x-ui.modal
         id="deleteThemeModal-{{ $theme['directory'] }}"
         :title="__('admin/settings/themes/index.delete.confirm_title')"
         :message="str_replace('{name}', $theme['name'], __('admin/settings/themes/index.delete.confirm_message'))"

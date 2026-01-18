@@ -89,7 +89,7 @@ https://exc-d.com
                 class="py-2 px-3"
             />
             
-            <x-modal
+            <x-ui.modal
                 :id="$enableModalId"
                 :title="__('admin/settings/plugins/index.permissions.enable_warning_title')"
                 icon_type="warning"
@@ -137,7 +137,7 @@ https://exc-d.com
             class="py-2 px-3"
         />
 
-        <x-modal
+        <x-ui.modal
             id="uninstallModal-{{ $plugin->id }}"
             :title="__('admin/settings/plugins/index.uninstall.confirm_title')"
             :message="str_replace('{name}', $plugin->name, __('admin/settings/plugins/index.uninstall.confirm_message'))"

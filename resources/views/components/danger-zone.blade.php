@@ -74,7 +74,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <!-- モーダル -->
 @if($unlockRoute)
-    <x-modal
+    <x-ui.modal
         id="unlockLockoutModal"
         :title="__('components.danger_zone.unlock_lockout')"
         :message="__('components.danger_zone.unlock_lockout_description')"
@@ -87,7 +87,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endif
 
 @if($forceLogoutRoute)
-    <x-modal
+    <x-ui.modal
         id="forceLogoutModal"
         :title="__('components.danger_zone.force_logout')"
         :message="__('components.danger_zone.force_logout_description')"
@@ -100,7 +100,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endif
 
 @if($deleteRoute && $canDelete)
-    <x-modal
+    <x-ui.modal
         id="delete{{ ucfirst($entityType) }}Modal"
         :title="__('common.delete_confirmation_title')"
         :message="__('components.danger_zone.delete_' . $entityType . '_description')"

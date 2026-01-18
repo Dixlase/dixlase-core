@@ -236,7 +236,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @foreach($cleanupInfo as $type => $info)
-<x-modal
+<x-ui.modal
     id="cleanupModal{{ ucfirst($type) }}"
     title="{{ __('admin/settings/systems/database.modal.title') }}"
     message="{{ __('admin/settings/systems/database.modal.message_single', ['name' => $info['name']]) }}"
@@ -248,7 +248,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 />
 @endforeach
 
-<x-modal
+<x-ui.modal
     id="cleanupAllModal"
     title="{{ __('admin/settings/systems/database.modal.title') }}"
     message="{{ __('admin/settings/systems/database.modal.message_all') }}"
@@ -261,7 +261,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @if(!empty($pluginCleanupInfo))
 @foreach($pluginCleanupInfo as $key => $info)
-<x-modal
+<x-ui.modal
     id="cleanupModal{{ Str::camel($key) }}"
     title="{{ __('admin/settings/systems/database.modal.title') }}"
     message="{{ __('admin/settings/systems/database.modal.message_plugin', ['name' => $info['name'], 'plugin' => $info['plugin_name']]) }}"

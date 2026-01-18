@@ -346,7 +346,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </div>
 
     <!-- Clear Confirmation Modal -->
-    <x-modal
+    <x-ui.modal
         id="clearConfirmModal"
         :title="__('admin/settings/systems/logs/files.clear_modal.title')"
         :message="__('admin/settings/systems/logs/files.clear_modal.confirm_message')"

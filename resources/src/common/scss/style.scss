@@ -27,9 +27,8 @@
 @use 'typography';
 @use 'buttons';
 @use 'tables';
-@use '../../components/common/scss/navigation';
-@use '../../components/common/scss/pagination';
-@use '../../components/common/scss/table';
+@use '../../components/ui/scss/navigation';
+@use '../../components/ui/scss/pagination';
 @use '../../components/ui/scss/modal';
 @use '../../components/ui/scss/message';
 @use '../../components/ui/scss/status-badge';

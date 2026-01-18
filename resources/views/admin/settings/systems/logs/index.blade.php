@@ -412,7 +412,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </div>
 
     <!-- Cleanup Confirmation Modal -->
-    <x-modal
+    <x-ui.modal
         id="cleanupConfirmModal"
         :title="__('admin/settings/systems/logs/index.cleanup_modal.title')"
         :message="__('admin/settings/systems/logs/index.cleanup_modal.confirm_message')"

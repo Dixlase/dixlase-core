@@ -76,7 +76,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endif
 
 <!-- 認証メール送信確認モーダル -->
-<x-modal
+<x-ui.modal
     id="verificationEmailModal"
     :title="$modalTitle"
     :message="$modalMessage"

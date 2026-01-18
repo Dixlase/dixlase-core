@@ -74,7 +74,7 @@ https://exc-d.com
                 onclick="openModal('{{ $enableModalId }}')"
             />
             
-            <x-modal
+            <x-ui.modal
                 :id="$enableModalId"
                 :title="__('admin/settings/themes/index.permissions.enable_warning_title')"
                 icon_type="warning"
@@ -122,7 +122,7 @@ https://exc-d.com
             onclick="openModal('uninstallThemeModal-{{ $theme->id }}')"
         />
 
-        <x-modal
+        <x-ui.modal
             id="uninstallThemeModal-{{ $theme->id }}"
             :title="__('admin/settings/themes/index.uninstall.confirm_title')"
             :message="str_replace('{name}', $theme->name, __('admin/settings/themes/index.uninstall.confirm_message'))"

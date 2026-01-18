@@ -14,7 +14,7 @@ https://exc-d.com
     $cspDiagnostic = $isModel ? ($plugin->csp_diagnostic ?? null) : ($plugin['csp_diagnostic'] ?? null);
 @endphp
 
-<x-modal
+<x-ui.modal
     :id="$permissionModalId"
     :title="__('admin/settings/plugins/index.permissions.details_title') . ' - ' . $pluginName"
     icon_type="info"
