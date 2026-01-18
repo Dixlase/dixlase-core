@@ -23,7 +23,7 @@
 namespace App\Http\Controllers\Admin\Profile;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
-use App\Http\Requests\Admin\Profile\ProfileUpdateRequest;
+use App\Http\Requests\Admin\Profile\ProfileAppearanceUpdateRequest;
 use Illuminate\Support\Facades\Auth;
 
 class AdminProfileAppearanceController extends AdminLoggedInController
@@ -53,7 +53,7 @@ class AdminProfileAppearanceController extends AdminLoggedInController
     /**
      * Update appearance.
      */
-    public function update(ProfileUpdateRequest $request)
+    public function update(ProfileAppearanceUpdateRequest $request)
     {
         $member = Auth::guard('member')->user();
         $validated = $request->validated();

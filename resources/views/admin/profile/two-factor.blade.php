@@ -47,7 +47,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 }
             }" id="two-fa-settings-wrapper">
                 <section class="transition-colors-unified">
-                    <h2>{{ __('auth.two_fa_settings') }}</h2>
+                    <h2>{{ __('admin/profile/two-factor.two_fa_settings') }}</h2>
 
                     {{-- 1. 二段階認証モード --}}
                     <x-two-fa.mode-selector

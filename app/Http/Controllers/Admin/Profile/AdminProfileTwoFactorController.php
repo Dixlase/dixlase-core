@@ -23,7 +23,7 @@
 namespace App\Http\Controllers\Admin\Profile;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
-use App\Http\Requests\Admin\Profile\ProfileUpdateRequest;
+use App\Http\Requests\Admin\Profile\ProfileTwoFactorUpdateRequest;
 use App\Enums\AuthenticationMode;
 use App\Enums\TwoFaMethod;
 use App\Models\MemberSetting;
@@ -57,7 +57,7 @@ class AdminProfileTwoFactorController extends AdminLoggedInController
     /**
      * Update two-factor authentication settings.
      */
-    public function update(ProfileUpdateRequest $request)
+    public function update(ProfileTwoFactorUpdateRequest $request)
     {
         $member = Auth::guard('member')->user();
         $validated = $request->validated();

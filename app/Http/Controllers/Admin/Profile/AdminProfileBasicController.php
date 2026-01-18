@@ -23,7 +23,7 @@
 namespace App\Http\Controllers\Admin\Profile;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
-use App\Http\Requests\Admin\Profile\ProfileUpdateRequest;
+use App\Http\Requests\Admin\Profile\ProfileBasicUpdateRequest;
 use App\Enums\Locale;
 use App\Services\MailServerValidatorService;
 use Illuminate\Support\Facades\Auth;
@@ -58,7 +58,7 @@ class AdminProfileBasicController extends AdminLoggedInController
     /**
      * Update basic information.
      */
-    public function update(ProfileUpdateRequest $request)
+    public function update(ProfileBasicUpdateRequest $request)
     {
         $member = Auth::guard('member')->user();
         $validated = $request->validated();

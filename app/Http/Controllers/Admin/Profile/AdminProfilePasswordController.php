@@ -23,7 +23,7 @@
 namespace App\Http\Controllers\Admin\Profile;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
-use App\Http\Requests\Admin\Profile\ProfileUpdateRequest;
+use App\Http\Requests\Admin\Profile\ProfilePasswordUpdateRequest;
 use App\Models\MemberSetting;
 use App\Services\PasswordService;
 use Illuminate\Support\Facades\Auth;
@@ -51,7 +51,7 @@ class AdminProfilePasswordController extends AdminLoggedInController
     /**
      * Update password.
      */
-    public function update(ProfileUpdateRequest $request)
+    public function update(ProfilePasswordUpdateRequest $request)
     {
         $member = Auth::guard('member')->user();
         $validated = $request->validated();

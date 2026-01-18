@@ -23,7 +23,7 @@
 namespace App\Http\Controllers\Admin\Profile;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
-use App\Http\Requests\Admin\Profile\ProfileUpdateRequest;
+use App\Http\Requests\Admin\Profile\ProfileNotificationsUpdateRequest;
 use App\Enums\AuthenticationMode;
 use App\Models\MemberSetting;
 use Illuminate\Support\Facades\Auth;
@@ -58,7 +58,7 @@ class AdminProfileNotificationsController extends AdminLoggedInController
     /**
      * Update notifications.
      */
-    public function update(ProfileUpdateRequest $request)
+    public function update(ProfileNotificationsUpdateRequest $request)
     {
         $member = Auth::guard('member')->user();
         $validated = $request->validated();
