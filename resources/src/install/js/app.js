@@ -19,4 +19,4 @@
  */
 
 import '../scss/style.scss';
-import './mail-server-form';
+import './mail-server-settings';
