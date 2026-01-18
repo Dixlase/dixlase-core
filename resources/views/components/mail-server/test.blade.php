@@ -207,4 +207,4 @@ $mailTestConfig = [
 <div data-mail-test-config='@json($mailTestConfig)' style="display:none;"></div>
 
 <!-- 通知コンポーネントを読み込み -->
-<x-notification />
+<x-ui.notification />

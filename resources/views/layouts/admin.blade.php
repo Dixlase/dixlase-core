@@ -41,7 +41,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {!! load_active_assets() !!}
 
         {{-- 通知コンポーネント（他のスクリプトより先に読み込み） --}}
-        <x-notification />
+        <x-ui.notification />
 
     </head>
     <body class="admin font-sans antialiased transition-colors-unified dark:bg-black dark:text-white"
@@ -50,7 +50,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           x-init="$nextTick(() => { sidebarReady = true }); $watch('sidebarCollapsed', value => localStorage.setItem('sidebarCollapsed', value))">
         <div class="min-h-screen">
             <!-- Admin Bar (Header) -->
-            <x-admin-bar :isAdminLayout="true" />
+            <x-ui.admin-bar :isAdminLayout="true" />
 
 
             <div class="min-h-screen flex">

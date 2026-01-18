@@ -21,22 +21,23 @@
 import '../scss/style.scss';
 import './bootstrap';
 import './appearance';
-import '../../components/ui/js/tooltip';
 import '../../components/form/js/color-picker';
 import '../../components/form/js/email-input';
 import '../../components/form/js/password-tools';
 import '../../components/ui/js/notification';
 import '../../components/ui/js/modal';
-import '../../components/ui/js/passkey-device-name';
-import '../../components/ui/js/passkey-result';
-import '../../components/ui/js/recovery-codes';
-import '../../components/ui/js/webauthn-utils';
-import '../../components/ui/js/two-fa-management';
+import '../../components/ui/js/tooltip';
 import '../../components/ui/js/pagination-controls';
 import '../../components/ui/js/admin-bar';
 import '../../components/ui/js/appearance-form';
-import '../../components/mail/js/mail-server-test';
-import '../../components/mail/js/mail-server-verification';
+import '../../components/two-fa/js/passkey-device-name';
+import '../../components/two-fa/js/passkey-result';
+import '../../components/two-fa/js/recovery-codes';
+import '../../components/two-fa/js/webauthn-utils';
+import '../../components/two-fa/js/two-fa-management';
+
+import '../../components/mail-server/js/test';
+import '../../components/mail-server/js/verification';
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse'
 
