@@ -302,33 +302,10 @@ class MailTest {
     }
 
     showNotification(type, message, duration = 5000) {
-        // 既存の通知を削除
-        const existingNotification = document.getElementById('mail-test-notification');
-        if (existingNotification) {
-            existingNotification.remove();
+        // グローバル通知システムを使用（notification.js）
+        if (typeof window.showNotification === 'function') {
+            window.showNotification(type, message, duration);
         }
-
-        // 通知要素を作成
-        const notification = document.createElement('div');
-        notification.id = 'mail-test-notification';
-        notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-opacity duration-300 ${type === 'success' ? 'bg-green-500 text-white' :
-            type === 'error' ? 'bg-red-500 text-white' :
-                'bg-blue-500 text-white'
-            }`;
-        notification.innerHTML = `
-            <div class="flex items-center">
-                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} mr-2"></i>
-                <span>${message}</span>
-            </div>
-        `;
-
-        document.body.appendChild(notification);
-
-        // 指定時間後に自動削除
-        setTimeout(() => {
-            notification.style.opacity = '0';
-            setTimeout(() => notification.remove(), 300);
-        }, duration);
     }
 
     updateTestStatus(testType, success, testDate) {
@@ -483,11 +460,7 @@ window.updateTestStatus = function (testType, success, testDate) {
     }
 };
 
-window.showNotification = function (type, message, duration) {
-    if (window.mailTestInstance) {
-        window.mailTestInstance.showNotification(type, message, duration);
-    }
-};
+// window.showNotificationは削除（notification.jsのグローバル関数を使用）
 
 // DOMContentLoaded時に自動初期化
 document.addEventListener('DOMContentLoaded', function () {

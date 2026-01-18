@@ -36,6 +36,8 @@ import '../../components/ui/js/pagination-controls';
 import '../../components/ui/js/admin-bar';
 import '../../components/ui/js/appearance-form';
 import '../../components/ui/js/mail-test';
+import '../../components/ui/js/mail-server-form';
+import '../../components/ui/js/mail-settings';
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse'
 
