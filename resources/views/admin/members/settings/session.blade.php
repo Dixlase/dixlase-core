@@ -87,30 +87,3 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         form="member-settings-form"
     />
 @endsection
-
-@section('scripts')
-    <script @cspNonce>
-        document.addEventListener('DOMContentLoaded', function() {
-            const modals = document.querySelectorAll('[id$="Modal"]');
-
-            modals.forEach(modal => {
-                modal.addEventListener('click', function(e) {
-                    if (e.target === this) {
-                        closeModal(this.id);
-                    }
-                });
-            });
-
-            const confirmationModal = document.getElementById('confirmationModal');
-
-            if (confirmationModal) {
-                const confirmButton = confirmationModal.querySelector('button[type="submit"]');
-                if (confirmButton) {
-                    confirmButton.addEventListener('click', () => {
-                        document.getElementById('member-settings-form').submit();
-                    });
-                }
-            }
-        });
-    </script>
-@endsection

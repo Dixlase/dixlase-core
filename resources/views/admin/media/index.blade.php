@@ -105,7 +105,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 上部のページネーションと表示件数設定 -->
     @if($media->hasPages() || $media->count() > 0)
         <div class="media-controls">
-            <x-pagination-controls
+            <x-ui.pagination-controls
                 :paginator="$media"
                 :perPageOptions="[10, 25, 50, 100]"
                 :currentPerPage="request('per_page', 25)"
@@ -122,7 +122,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :currentOrder="$currentOrder ?? 'desc'"
             />
             
-            <x-pagination
+            <x-ui.pagination
                 :pagination="[
                     'current_page' => $media->currentPage(),
                     'last_page' => $media->lastPage(),
@@ -157,7 +157,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- 下部のページネーション -->
     @if($media->hasPages())
         <div class="media-controls media-controls--bottom">
-            <x-pagination
+            <x-ui.pagination
                 :pagination="[
                     'current_page' => $media->currentPage(),
                     'last_page' => $media->lastPage(),

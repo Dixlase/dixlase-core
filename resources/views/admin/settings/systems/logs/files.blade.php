@@ -104,7 +104,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @endif
 
     <!-- ページネーション制御 -->
-    <x-pagination-controls
+    <x-ui.pagination-controls
         :paginator="(object) [
             'total' => $pagination['total'] ?? 0,
             'currentPage' => $pagination['current_page'] ?? 1,
@@ -118,7 +118,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     />
 
     <!-- Pagination Controls -->
-    <x-pagination
+    <x-ui.pagination
         :pagination="$pagination ?? null"
         route="admin.settings.systems.logs.files"
         :routeParams="array_merge(
@@ -276,7 +276,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </section>
 
     <!-- ページネーション制御 -->
-    <x-pagination-controls
+    <x-ui.pagination-controls
         :paginator="(object) [
             'total' => $pagination['total'] ?? 0,
             'currentPage' => $pagination['current_page'] ?? 1,
@@ -290,7 +290,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     />
 
     <!-- Pagination Controls -->
-    <x-pagination
+    <x-ui.pagination
         :pagination="$pagination ?? null"
         route="admin.settings.systems.logs.files"
         :routeParams="array_filter([
