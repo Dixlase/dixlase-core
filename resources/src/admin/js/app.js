@@ -19,5 +19,5 @@
  */
 
 import '../scss/style.scss';
-import './appearance-transition';
-import '../settings/base/js/mail-settings';
+import '../profile/js/appearance-mode';
+import '../settings/base/js/mail-server-settings';

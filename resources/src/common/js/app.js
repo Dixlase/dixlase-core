@@ -35,8 +35,8 @@ import '../../components/ui/js/two-fa-management';
 import '../../components/ui/js/pagination-controls';
 import '../../components/ui/js/admin-bar';
 import '../../components/ui/js/appearance-form';
-import '../../components/mail/js/mail-test';
-import '../../components/mail/js/mail-verification';
+import '../../components/mail/js/mail-server-test';
+import '../../components/mail/js/mail-server-verification';
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse'
 
