@@ -9,16 +9,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $translations['title'] }} - {{ config('app.name', 'MySoftware') }}</title>
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script @cspNonce>
-        tailwind.config = {
-            darkMode: 'class',
-        }
-    </script>
-    
-    <!-- ダークモード自動判別スクリプト -->
-    @vite('resources/src/components/mail-server/js/dark-mode.js')
+    <!-- Tailwind CSS + Dark Mode + Verification Scripts (Strict CSP) -->
+    {!! load_mail_verification_assets('success') !!}
 </head>
 <body class="bg-gray-50 dark:bg-gray-900">
     <main class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8" role="main">
@@ -106,7 +98,5 @@
             </nav>
         </article>
     </main>
-
-    @vite('resources/src/components/mail-server/js/verification-success.js')
 </body>
 </html>

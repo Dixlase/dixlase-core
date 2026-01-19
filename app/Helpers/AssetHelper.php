@@ -516,3 +516,55 @@ if (!function_exists('load_auth_assets')) {
     }
 }
 
+if (!function_exists('load_mail_verification_assets')) {
+    /**
+     * メール認証ページ用：Tailwind CSSとダークモードスクリプトを読み込む（厳格CSP対応）
+     *
+     * @param string $scriptType 'success' or 'error'
+     * @return string
+     */
+    function load_mail_verification_assets(string $scriptType = 'success'): string
+    {
+        $output = '';
+
+        if (is_vite_dev_server()) {
+            // 開発環境：Vite経由で読み込み
+            $output .= render_vite_assets([
+                'resources/src/common/scss/style.scss',
+                'resources/src/components/mail-server/js/dark-mode.js',
+                "resources/src/components/mail-server/js/verification-{$scriptType}.js"
+            ], false, false);
+        } else {
+            // 本番環境：ビルド済みファイルを読み込み
+            $manifestPath = public_path('assets/build/manifest.json');
+            $assetBasePath = 'assets/build/';
+            
+            // Tailwind CSS
+            $output .= load_assets_from_manifest(
+                $manifestPath,
+                $assetBasePath,
+                ['scss/style.scss'],
+                'resources/src/common'
+            );
+            
+            // ダークモードスクリプト
+            $output .= load_assets_from_manifest(
+                $manifestPath,
+                $assetBasePath,
+                ['js/dark-mode.js'],
+                'resources/src/components/mail-server'
+            );
+            
+            // 認証ページ固有スクリプト
+            $output .= load_assets_from_manifest(
+                $manifestPath,
+                $assetBasePath,
+                ["js/verification-{$scriptType}.js"],
+                'resources/src/components/mail-server'
+            );
+        }
+
+        return $output;
+    }
+}
+
