@@ -1,15 +1,20 @@
 @php
     $translations = __('mail.verification_success');
     $alreadyVerified = $alreadyVerified ?? false;
+    
+    // Server-side dark mode detection (Strict CSP compliant)
+    $prefersDark = request()->cookie('prefers_dark') === '1';
+    $htmlClass = $prefersDark ? 'dark' : '';
 @endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="{{ $htmlClass }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
     <title>{{ $translations['title'] }} - {{ config('app.name', 'MySoftware') }}</title>
     
-    <!-- Tailwind CSS + Dark Mode + Verification Scripts (Strict CSP) -->
+    <!-- Tailwind CSS + Verification Scripts (Strict CSP) -->
     {!! load_mail_verification_assets('success') !!}
 </head>
 <body class="bg-gray-50 dark:bg-gray-900">
@@ -91,7 +96,8 @@
             <nav class="flex justify-center" aria-label="{{ __('mail.verification_success.actions') }}">
                 <button 
                     type="button"
-                    onclick="closeVerificationWindow('{{ __('mail.verification_success.completed_message') }}')" 
+                    id="close-verification-btn"
+                    data-message="{{ __('mail.verification_success.completed_message') }}"
                     class="bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-lg transition-colors duration-200">
                     {{ __('mail.verification_success.close_button') }}
                 </button>

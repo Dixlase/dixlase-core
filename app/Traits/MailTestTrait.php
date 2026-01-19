@@ -412,7 +412,7 @@ trait MailTestTrait
             
             // 既に認証済みの場合
             if ($alreadyVerified && !$storedToken) {
-                return view('admin.settings.base.mail-verification-success', [
+                return view('components.mail-server.verification-success', [
                     'isInstall' => $context === 'install',
                     'alreadyVerified' => true
                 ]);
@@ -422,14 +422,14 @@ trait MailTestTrait
                 
                 // 既に認証済みかつトークンがnullの場合のみ（正常に完了済み）
                 if ($alreadyVerified && $storedToken === null) {
-                    return view('admin.settings.base.mail-verification-success', [
+                    return view('components.mail-server.verification-success', [
                         'isInstall' => $context === 'install',
                         'alreadyVerified' => true
                     ]);
                 }
                 
                 // それ以外は無効なトークンエラー
-                return view('admin.settings.base.mail-verification-error', [
+                return view('components.mail-server.verification-error', [
                     'errorType' => 'invalid_token',
                     'errorMessage' => __('mail.controller_messages.verification_token_invalid')
                 ]);
@@ -458,13 +458,13 @@ trait MailTestTrait
             
 
             // 共有コンポーネントを使用
-            return view('admin.settings.base.mail-verification-success', [
+            return view('components.mail-server.verification-success', [
                 'isInstall' => $context === 'install'
             ]);
 
         } catch (\Exception $e) {
             
-            return view('admin.settings.base.mail-verification-error', [
+            return view('components.mail-server.verification-error', [
                 'errorType' => 'verification_error',
                 'errorMessage' => __('mail.controller_messages.verification_error', ['error' => $e->getMessage()])
             ]);
