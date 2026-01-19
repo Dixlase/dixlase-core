@@ -30,12 +30,12 @@ import '../../components/ui/js/tooltip';
 import '../../components/ui/js/pagination-controls';
 import '../../components/ui/js/admin-bar';
 import '../../components/ui/js/appearance-form';
+import '../../components/auth/js/account-verification';
 import '../../components/two-fa/js/passkey-device-name';
 import '../../components/two-fa/js/passkey-result';
 import '../../components/two-fa/js/recovery-codes';
 import '../../components/two-fa/js/webauthn-utils';
 import '../../components/two-fa/js/two-fa-management';
-
 import '../../components/mail-server/js/test';
 import '../../components/mail-server/js/verification';
 import Alpine from 'alpinejs';

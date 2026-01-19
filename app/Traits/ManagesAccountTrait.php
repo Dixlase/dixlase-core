@@ -41,10 +41,14 @@ trait ManagesAccountTrait
             $model->email_verified_at = null;
             $model->save();
 
-            $sessionTable = config('session.table', 'sessions');
-            if ($sessionTable && DB::getSchemaBuilder()->hasTable($sessionTable)) {
+            // モデルの種類に応じて適切なセッションテーブルとカラムを使用
+            $isMember = $model instanceof \App\Models\Member;
+            $sessionTable = $isMember ? 'members_sessions' : 'users_sessions';
+            $idColumn = $isMember ? 'member_id' : 'user_id';
+            
+            if (DB::getSchemaBuilder()->hasTable($sessionTable)) {
                 DB::table($sessionTable)
-                    ->where('user_id', $model->id)
+                    ->where($idColumn, $model->id)
                     ->delete();
             }
 
@@ -82,11 +86,14 @@ trait ManagesAccountTrait
         string $successMessageKey,
         string $redirectRouteName
     ) {
-        $sessionTable = config('session.table', 'sessions');
+        // モデルの種類に応じて適切なセッションテーブルとカラムを使用
+        $isMember = $model instanceof \App\Models\Member;
+        $sessionTable = $isMember ? 'members_sessions' : 'users_sessions';
+        $idColumn = $isMember ? 'member_id' : 'user_id';
         
-        if ($sessionTable && DB::getSchemaBuilder()->hasTable($sessionTable)) {
+        if (DB::getSchemaBuilder()->hasTable($sessionTable)) {
             DB::table($sessionTable)
-                ->where('user_id', $model->id)
+                ->where($idColumn, $model->id)
                 ->delete();
         }
 

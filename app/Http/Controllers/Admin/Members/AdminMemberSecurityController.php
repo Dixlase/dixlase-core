@@ -107,10 +107,11 @@ class AdminMemberSecurityController extends AdminLoggedInController
             $member->email_verified_at = null;
             $member->save();
 
-            $sessionTable = config('session.table', 'sessions');
-            if ($sessionTable && DB::getSchemaBuilder()->hasTable($sessionTable)) {
-                DB::table($sessionTable)
-                    ->where('user_id', $member->id)
+            // メンバー用のセッションテーブルを使用
+            $memberSessionTable = 'members_sessions';
+            if (DB::getSchemaBuilder()->hasTable($memberSessionTable)) {
+                DB::table($memberSessionTable)
+                    ->where('member_id', $member->id)
                     ->delete();
             }
 
