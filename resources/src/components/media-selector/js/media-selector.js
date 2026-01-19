@@ -51,8 +51,9 @@ async function loadMediaForSelector(modalId, page = 1) {
     const grid = document.getElementById(`${modalId}-grid`);
     if (!grid) return;
 
-    const apiUrl = window.mediaApiUrl || '/admin/media/api';
-    const errorMessage = window.mediaErrorMessage || 'Failed to load media';
+    const modal = document.getElementById(modalId);
+    const apiUrl = modal?.dataset.apiUrl || '/admin/media/api';
+    const errorMessage = modal?.dataset.errorMessage || 'Failed to load media';
 
     try {
         const response = await fetch(`${apiUrl}?page=${page}&per_page=20`);
@@ -78,7 +79,8 @@ async function loadMediaForSelector(modalId, page = 1) {
  */
 function renderMediaGrid(modalId, mediaItems) {
     const grid = document.getElementById(`${modalId}-grid`);
-    const noMediaMessage = window.mediaNoMediaMessage || 'No media found';
+    const modal = document.getElementById(modalId);
+    const noMediaMessage = modal?.dataset.noMediaMessage || 'No media found';
 
     if (!grid || !mediaItems || mediaItems.length === 0) {
         grid.innerHTML = `
