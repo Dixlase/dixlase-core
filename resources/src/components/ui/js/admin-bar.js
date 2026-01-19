@@ -21,6 +21,16 @@ window.adminBar = function () {
                     document.body.classList.add('has-admin-bar');
                 }
             });
+
+            // 外観設定ページかどうかを判定
+            const isAppearancePage = window.location.pathname.includes('/profile/appearance');
+
+            if (isAppearancePage) {
+                // 外観設定ページ: 初回表示後にトランジションを追加
+                setTimeout(() => {
+                    this.$el.classList.add('transition-colors', 'duration-[150ms]');
+                }, 100);
+            }
         }
     };
 };

@@ -173,6 +173,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <!-- 削除確認モーダル -->
 <x-ui.modal
     id="deleteModal"
+    data-delete-message="{{ __('admin/media.index.delete_message') }}"
     :title="__('admin/media.preview.delete_confirmation')"
     message=""
     :confirm_label="__('common.delete')"
@@ -183,76 +184,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 />
 
 <!-- 削除用フォーム -->
-<form id="deleteForm" method="POST" style="display: none;">
+<form id="deleteForm" data-base-url="{{ url('admin/media/delete') }}" method="POST" style="display: none;">
     @csrf
     @method('DELETE')
 </form>
 
 
-@push('scripts')
-<script @cspNonce>
-let currentFileId = null;
-let currentFileName = '';
-
-function openDeleteModal(fileId, fileName) {
-    currentFileId = fileId;
-    currentFileName = fileName;
-    
-    // モーダルのメッセージを動的に設定
-    const modal = document.getElementById('deleteModal');
-    const messageElement = modal.querySelector('.modal-message p');
-    messageElement.textContent = `「${fileName}」を削除しますか？この操作は取り消せません。`;
-    
-    // フォームのアクションを設定
-    const form = document.getElementById('deleteForm');
-    form.action = `{{ url('admin/media/delete') }}/${fileId}`;
-    
-    // モーダルを開く
-    openModal('deleteModal');
-}
-
-function copyMediaUrl(url, button) {
-    const originalIcon = button.innerHTML;
-    
-    navigator.clipboard.writeText(url).then(function() {
-        // 成功時のフィードバック
-        button.innerHTML = '<i class="fas fa-check" aria-hidden="true"></i>';
-        button.classList.remove('action-btn--copy');
-        button.classList.add('action-btn--success');
-        
-        // 2秒後に元に戻す
-        setTimeout(function() {
-            button.innerHTML = originalIcon;
-            button.classList.remove('action-btn--success');
-            button.classList.add('action-btn--copy');
-        }, 2000);
-    }).catch(function(err) {
-        // エラー時のフォールバック（古いブラウザ対応）
-        try {
-            // 一時的なテキストエリアを作成してコピー
-            const textArea = document.createElement('textarea');
-            textArea.value = url;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-            
-            // 成功フィードバック
-            button.innerHTML = '<i class="fas fa-check" aria-hidden="true"></i>';
-            setTimeout(function() {
-                button.innerHTML = originalIcon;
-            }, 2000);
-        } catch (e) {
-            // 完全に失敗した場合
-            button.innerHTML = '<i class="fas fa-times" aria-hidden="true"></i>';
-            setTimeout(function() {
-                button.innerHTML = originalIcon;
-            }, 2000);
-        }
-    });
-}
-</script>
-@endpush
 </div>
 
 @endsection

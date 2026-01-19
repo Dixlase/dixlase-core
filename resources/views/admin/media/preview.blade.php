@@ -99,6 +99,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                            class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm" 
                            readonly>
                     <button onclick="copyToClipboard()" 
+                            data-copied-text="{{ __('common.copied') }}"
+                            data-copy-failed-text="{{ __('admin/media.preview.copy_failed') }}"
                             class="bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition dark:bg-green-600 dark:hover:bg-green-700 flex items-center gap-2">
                         <i class="fas fa-copy"></i> {{ __('common.copy') }}
                     </button>
@@ -138,41 +140,4 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </div>
     </div>
-@endsection
-
-@section('scripts')
-<script @cspNonce>
-function copyToClipboard() {
-    const urlInput = document.getElementById('mediaUrl');
-    const copyButton = event.target.closest('button');
-    const originalText = copyButton.innerHTML;
-    
-    urlInput.select();
-    urlInput.setSelectionRange(0, urlInput.value.length); // モバイル対応
-    
-    navigator.clipboard.writeText(urlInput.value).then(function() {
-        // 成功時のフィードバック
-        copyButton.innerHTML = '<i class="fas fa-check"></i> {{ __('common.copied') }}';
-        copyButton.classList.remove('bg-green-500', 'hover:bg-green-600', 'dark:bg-green-600', 'dark:hover:bg-green-700');
-        copyButton.classList.add('bg-blue-500', 'hover:bg-blue-600', 'dark:bg-blue-600', 'dark:hover:bg-blue-700');
-        
-        // 2秒後に元に戻す
-        setTimeout(function() {
-            copyButton.classList.remove('bg-blue-500', 'hover:bg-blue-600', 'dark:bg-blue-600', 'dark:hover:bg-blue-700');
-            copyButton.classList.add('bg-green-500', 'hover:bg-green-600', 'dark:bg-green-600', 'dark:hover:bg-green-700');
-        }, 2000);
-    }).catch(function(err) {
-        // エラー時のフォールバック（古いブラウザ対応）
-        try {
-            document.execCommand('copy');
-            copyButton.innerHTML = '<i class="fas fa-check"></i> {{ __('common.copied') }}';
-            setTimeout(function() {
-                copyButton.innerHTML = originalText;
-            }, 2000);
-        } catch (e) {
-            alert('{{ __('admin/media.preview.copy_failed') }}');
-        }
-    });
-}
-</script>
 @endsection

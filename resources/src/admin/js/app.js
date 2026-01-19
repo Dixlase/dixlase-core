@@ -19,5 +19,7 @@
  */
 
 import '../scss/style.scss';
+import '../media/js/index';
+import '../media/js/preview';
 import '../profile/js/appearance-mode';
 import '../settings/base/js/mail-server-settings';
