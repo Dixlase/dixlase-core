@@ -42,7 +42,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         1. Tooltip コンポーネント
                     </h3>
                     <div class="flex items-center gap-4">
-                        <x-tooltip title="クリック型ツールチップ" trigger="click">
+                        <x-ui.tooltip title="クリック型ツールチップ" trigger="click">
                             <button class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md">
                                 クリックしてツールチップを表示
                             </button>
@@ -52,7 +52,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             </x-slot>
                         </x-tooltip>
 
-                        <x-tooltip title="ホバー型ツールチップ" trigger="hover" position="top">
+                        <x-ui.tooltip title="ホバー型ツールチップ" trigger="hover" position="top">
                             <button class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md">
                                 ホバーでツールチップを表示
                             </button>
@@ -112,10 +112,47 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
                 </div>
 
+                {{-- Modal テスト --}}
+                <div class="space-y-3">
+                    <h3 class="text-lg font-medium text-gray-800 dark:text-gray-200">
+                        4. Modal コンポーネント
+                    </h3>
+                    <div class="max-w-md space-y-3">
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            各ボタンをクリックしてモーダルを表示します。
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <button @click="openModal('test-modal-info')" 
+                                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-info-circle mr-2"></i>情報モーダル
+                            </button>
+                            <button @click="openModal('test-modal-warning')" 
+                                    class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition-colors">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>警告モーダル
+                            </button>
+                            <button @click="openModal('test-modal-danger')" 
+                                    class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
+                                <i class="fas fa-times-circle mr-2"></i>危険モーダル
+                            </button>
+                        </div>
+                        <div class="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg text-xs space-y-1">
+                            <p class="font-semibold text-gray-700 dark:text-gray-300">機能テスト:</p>
+                            <ul class="list-disc list-inside text-gray-600 dark:text-gray-400 space-y-1">
+                                <li>✅ 3種類のモーダルタイプ（情報、警告、危険）</li>
+                                <li>🎨 タイプ別のアイコンと色</li>
+                                <li>❌ キャンセル/確認ボタン</li>
+                                <li>⌨️ ESCキーで閉じる</li>
+                                <li>🖱️ 背景クリックで閉じる</li>
+                                <li>✨ スムーズなアニメーション</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
                 {{-- Notification テスト --}}
                 <div class="space-y-3">
                     <h3 class="text-lg font-medium text-gray-800 dark:text-gray-200">
-                        4. Notification コンポーネント
+                        5. Notification コンポーネント
                     </h3>
                     <div class="max-w-md space-y-3">
                         <p class="text-sm text-gray-600 dark:text-gray-400">
@@ -216,6 +253,34 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
         </div>
+
+        {{-- テスト用モーダル --}}
+        <x-ui.modal 
+            id="test-modal-info"
+            icon-type="info"
+            title="情報モーダル"
+            message="これは情報モーダルのテストです。Alpine.jsで実装されています。"
+            confirm-label="OK"
+            cancel-label="キャンセル"
+        />
+
+        <x-ui.modal 
+            id="test-modal-warning"
+            icon-type="warning"
+            title="警告モーダル"
+            message="これは警告モーダルのテストです。注意が必要な操作を確認します。"
+            confirm-label="続行"
+            cancel-label="キャンセル"
+        />
+
+        <x-ui.modal 
+            id="test-modal-danger"
+            icon-type="danger"
+            title="危険な操作"
+            message="この操作は取り消せません。本当に実行しますか？"
+            confirm-label="削除"
+            cancel-label="キャンセル"
+        />
 
          {{__('custom.welcome')}};
          {{__('admin/nav.custom.text')}};

@@ -88,7 +88,7 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
         $guard = null;
 
         // カスタムリゾルバーを優先的に実行
-        foreach ($this->guardResolvers as $index => $resolver) {
+        foreach ($this->guardResolvers as $resolver) {
             $guard = $resolver(request());
             if ($guard !== null) {
                 $this->currentGuard = $guard;
@@ -96,22 +96,22 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
             }
         }
 
-        // デフォルトのガード判定（管理画面のみ）
+        // パスベースのガード判定（優先順位が高い）
         
         // 管理画面の場合はmemberガード
         if (str_starts_with($path, 'admin')) {
             $this->currentGuard = 'member';
             return 'member';
         }
-
-        // 認証済みのガードを確認
-        foreach (array_keys(config('auth.guards', [])) as $guard) {
-            if (Auth::guard($guard)->check()) {
-                $this->currentGuard = $guard;
-                return $guard;
-            }
+        
+        // Mypageの場合はuserガード
+        if (str_starts_with($path, 'mypage')) {
+            $this->currentGuard = 'user';
+            return 'user';
         }
 
+        // その他のパスはデフォルトテーブル（sessions）を使用
+        // 認証状態チェックは循環参照を引き起こすため削除
         $this->currentGuard = null;
         return null;
     }
@@ -130,13 +130,11 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
 
         if ($this->expired($session)) {
             $this->exists = true;
-
             return '';
         }
 
         if (isset($session->payload)) {
             $this->exists = true;
-
             return base64_decode($session->payload);
         }
 

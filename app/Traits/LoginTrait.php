@@ -264,8 +264,11 @@ trait LoginTrait
             app($this->getLoginNotificationServiceClass())->handle($user, $request);
 
             // 2FA不要なら即ログイン
-            \Illuminate\Support\Facades\Auth::guard($this->getGuardName())->login($user, $request->boolean('remember'));
-            $request->session()->regenerate(true);
+            $guardName = $this->getGuardName();
+            $remember = $request->boolean('remember');
+            
+            Auth::guard($guardName)->login($user, $remember);
+            $request->session()->regenerate();
             
             // ログイン後にメール認証トークンをチェック
             $this->processEmailVerificationIfPending($user, $request);
