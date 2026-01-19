@@ -32,9 +32,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
      aria-labelledby="{{ $id }}-title"
      role="dialog"
      aria-modal="true">
-    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+    <div class="flex w-full items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
         <!-- モーダルコンテンツ -->
-        <div class="inline-block w-full max-w-6xl overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl dark:bg-gray-800 sm:my-8 sm:align-middle">
+        <div class="inline-block max-w-6xl mx-8 overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl dark:bg-gray-800 mb-8 mt-36 mx-10sm:align-middle">
             <!-- ヘッダー -->
             <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                 <h3 id="{{ $id }}-title" class="text-lg font-semibold text-gray-900 dark:text-white">
