@@ -82,6 +82,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     icon="fas fa-envelope"
                     id="send-verification-email-btn"
                     onclick="sendVerificationEmail({{ $entity->id }})"
+                    data-send-route="{{ $sendRoute }}"
+                    data-sending-text="{{ __('common.sending') }}..."
+                    data-error-message="{{ __('common.error_occurred') }}"
                 />
             @else
                 <x-form.button
@@ -126,90 +129,4 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         icon-type="info"
         confirm-color="blue"
     />
-
-    @push('scripts')
-    <script @cspNonce>
-    (function() {
-        let currentEntityId = {{ $entity->id ?? 'null' }};
-
-        window.sendVerificationEmail = function(entityId) {
-            currentEntityId = entityId || {{ $entity->id ?? 'null' }};
-            window.ModalManager.open('verificationEmailModal');
-        };
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const verificationModal = document.getElementById('verificationEmailModal');
-            
-            if (verificationModal) {
-                const buttons = verificationModal.querySelectorAll('button');
-                const confirmButton = buttons[1]; // 2番目のボタンが確認ボタン
-                
-                if (confirmButton) {
-                    confirmButton.removeAttribute('onclick');
-                    confirmButton.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        confirmSendVerificationEmail();
-                    });
-                }
-            }
-        });
-
-        function confirmSendVerificationEmail() {
-            if (!currentEntityId) {
-                return;
-            }
-
-            const button = document.getElementById('send-verification-email-btn');
-            const buttonText = button ? (button.querySelector('span') || button) : null;
-            const originalText = buttonText ? buttonText.textContent : '';
-            
-            window.ModalManager.close('verificationEmailModal');
-            
-            if (button) {
-                button.disabled = true;
-                if (buttonText) {
-                    buttonText.textContent = '{{ __("common.sending") }}...';
-                }
-            }
-            
-            const route = '{{ $sendRoute }}'.replace(':id', currentEntityId);
-            
-            fetch(route, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    window.location.href = data.redirect;
-                } else {
-                    alert(data.message || '{{ __("common.error_occurred") }}');
-                    if (button) {
-                        button.disabled = false;
-                        if (buttonText) {
-                            buttonText.textContent = originalText;
-                        }
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('{{ __("common.error_occurred") }}');
-                if (button) {
-                    button.disabled = false;
-                    if (buttonText) {
-                        buttonText.textContent = originalText;
-                    }
-                }
-            });
-            
-            currentEntityId = null;
-        }
-    })();
-    </script>
-    @endpush
 @endif

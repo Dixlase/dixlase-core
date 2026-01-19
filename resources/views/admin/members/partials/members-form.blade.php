@@ -151,7 +151,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <h2>{{ __('common.account_settings') }}</h2>
         
         <!-- アカウント認証設定 -->
-        <x-account-verification
+        <x-auth.account-verification
             :entity="$member ?? null"
             entityType="member"
             :sendRoute="route('admin.members.send-verification-email', ['member' => ':id'])"
