@@ -4,6 +4,25 @@
  */
 
 /**
+ * Dark mode detection and cookie sync (Strict CSP compliant)
+ * Sets prefers_dark cookie for server-side detection
+ */
+(function () {
+    const theme = localStorage.getItem('appearance') || '0';
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const isDark = theme === '2' || (theme === '0' && systemDark);
+
+    // Apply dark class if not already set by server
+    if (isDark && !document.documentElement.classList.contains('dark')) {
+        document.documentElement.classList.add('dark');
+    }
+
+    // Set cookie for server-side detection (1 year expiry)
+    const cookieValue = isDark ? '1' : '0';
+    document.cookie = `prefers_dark=${cookieValue}; path=/; max-age=31536000; SameSite=Lax`;
+})();
+
+/**
  * Close verification window and notify parent
  */
 window.closeVerificationWindow = function (completedMessage) {
@@ -23,13 +42,10 @@ window.closeVerificationWindow = function (completedMessage) {
  * Initialize verification success page
  */
 function initVerificationSuccess() {
-    console.log('[Mail Verification] Success page loaded');
-
     // Record completion in session storage
     try {
         sessionStorage.setItem('mail_receive_test_completed', 'true');
         sessionStorage.setItem('mail_receive_test_date', new Date().toLocaleString());
-        console.log('[Mail Verification] Recorded completion in session storage');
     } catch (e) {
         console.error('[Mail Verification] Failed to save to session storage:', e);
     }
@@ -37,16 +53,11 @@ function initVerificationSuccess() {
     // Reload parent window if available
     if (window.opener && !window.opener.closed) {
         try {
-            console.log('[Mail Verification] Reloading parent window...');
             window.opener.location.reload();
-            console.log('[Mail Verification] Parent window reloaded');
         } catch (e) {
             console.error('[Mail Verification] Failed to reload parent window:', e);
         }
     } else {
-        console.log('[Mail Verification] Parent window not available');
-        console.log('[Mail Verification] Please return to the original page and reload');
-
         // Alternative: Use BroadcastChannel for cross-tab communication
         try {
             const channel = new BroadcastChannel('mail_test_channel');
@@ -54,7 +65,6 @@ function initVerificationSuccess() {
                 type: 'mail_receive_test_completed',
                 timestamp: new Date().toISOString()
             });
-            console.log('[Mail Verification] Sent message via BroadcastChannel');
             channel.close();
         } catch (e) {
             console.error('[Mail Verification] Failed to send via BroadcastChannel:', e);
@@ -69,7 +79,23 @@ setTimeout(function () {
     }
 }, 5000);
 
+// Attach event listener to close button
+function attachCloseButtonListener() {
+    const closeBtn = document.getElementById('close-verification-btn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function () {
+            const message = this.dataset.message || '';
+            closeVerificationWindow(message);
+        });
+    }
+}
+
+// Attach listener immediately if DOM is ready, otherwise wait for DOMContentLoaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', attachCloseButtonListener);
+} else {
+    attachCloseButtonListener();
+}
+
 // Initialize on page load
 window.addEventListener('load', initVerificationSuccess);
-
-console.log('[Mail Verification Success] Script loaded');

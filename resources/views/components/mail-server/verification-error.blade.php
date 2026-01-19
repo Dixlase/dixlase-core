@@ -2,15 +2,20 @@
     $translations = __('mail.verification_error');
     $errorType = $errorType ?? 'invalid_token';
     $errorMessage = $errorMessage ?? '';
+    
+    // Server-side dark mode detection (Strict CSP compliant)
+    $prefersDark = request()->cookie('prefers_dark') === '1';
+    $htmlClass = $prefersDark ? 'dark' : '';
 @endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="{{ $htmlClass }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
     <title>{{ $translations['title'] }} - {{ config('app.name', 'MySoftware') }}</title>
     
-    <!-- Tailwind CSS + Dark Mode + Verification Scripts (Strict CSP) -->
+    <!-- Tailwind CSS + Verification Scripts (Strict CSP) -->
     {!! load_mail_verification_assets('error') !!}
 </head>
 <body class="bg-gray-50 dark:bg-gray-900">
@@ -71,7 +76,8 @@
             <nav class="flex justify-center" aria-label="{{ __('mail.verification_error.actions') }}">
                 <button 
                     type="button"
-                    onclick="closeVerificationWindow('{{ $translations['error_occurred'] }}')" 
+                    id="close-verification-btn"
+                    data-message="{{ $translations['error_occurred'] }}"
                     class="bg-gray-600 dark:bg-gray-500 hover:bg-gray-700 dark:hover:bg-gray-600 text-white font-medium py-2 px-6 rounded-lg transition-colors duration-200">
                     {{ $translations['close_button'] }}
                 </button>

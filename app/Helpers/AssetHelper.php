@@ -528,12 +528,10 @@ if (!function_exists('load_mail_verification_assets')) {
         $output = '';
 
         if (is_vite_dev_server()) {
-            // 開発環境：Vite経由で読み込み
-            $output .= render_vite_assets([
-                'resources/src/common/scss/style.scss',
-                'resources/src/components/mail-server/js/dark-mode.js',
-                "resources/src/components/mail-server/js/verification-{$scriptType}.js"
-            ], false, false);
+            // 開発環境：Vite経由で読み込み（各ファイルを個別に読み込む）
+            $output .= render_vite_assets(['resources/src/common/scss/style.scss'], false, false);
+            $output .= render_vite_assets(['resources/src/components/mail-server/js/dark-mode.js'], false, false);
+            $output .= render_vite_assets(["resources/src/components/mail-server/js/verification-{$scriptType}.js"], false, false);
         } else {
             // 本番環境：ビルド済みファイルを読み込み
             $manifestPath = public_path('assets/build/manifest.json');

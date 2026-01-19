@@ -71,6 +71,9 @@ export default defineConfig(({ command }) => ({
                 common_css: path.resolve(__dirname, 'resources/src/common/scss/style.scss'),
                 install_js: path.resolve(__dirname, 'resources/src/install/js/app.js'),
                 install_css: path.resolve(__dirname, 'resources/src/install/scss/style.scss'),
+                'mail-server-dark-mode': path.resolve(__dirname, 'resources/src/components/mail-server/js/dark-mode.js'),
+                'mail-server-verification-success': path.resolve(__dirname, 'resources/src/components/mail-server/js/verification-success.js'),
+                'mail-server-verification-error': path.resolve(__dirname, 'resources/src/components/mail-server/js/verification-error.js'),
             },
             output: {
                 // JavaScriptファイルの名前を指定
