@@ -14,6 +14,9 @@ export default defineConfig(({ command }) => ({
                 'resources/src/common/scss/style.scss',
                 'resources/src/install/js/app.js',
                 'resources/src/install/scss/style.scss',
+                'resources/src/components/mail-server/js/dark-mode.js',
+                'resources/src/components/mail-server/js/verification-success.js',
+                'resources/src/components/mail-server/js/verification-error.js',
             ],
             refresh: [
                 // デフォルトのBladeテンプレート

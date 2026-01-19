@@ -38,6 +38,8 @@ import '../../components/two-fa/js/webauthn-utils';
 import '../../components/two-fa/js/two-fa-management';
 import '../../components/mail-server/js/test';
 import '../../components/mail-server/js/verification';
+import '../../components/content-editor/js/alpine-translations';
+import '../../components/media-selector/js/media-selector';
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse'
 
