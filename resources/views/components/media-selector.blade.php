@@ -29,6 +29,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <!-- メディア選択モーダル -->
 <div id="{{ $id }}" 
      class="fixed inset-0 z-50 hidden overflow-y-auto bg-gray-900 bg-opacity-50 dark:bg-opacity-70"
+     data-api-url="{{ route('admin.media.api') }}"
+     data-error-message="{{ __('common.error_loading_media') }}"
+     data-no-media-message="{{ __('common.no_media_found') }}"
      aria-labelledby="{{ $id }}-title"
      role="dialog"
      aria-modal="true">
@@ -109,14 +112,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 </div>
 
 @once
-@push('scripts')
-<script @cspNonce>
-// Expose data for external JS
-window.mediaApiUrl = '{{ route('admin.media.api') }}';
-window.mediaErrorMessage = '{{ __('common.error_loading_media') }}';
-window.mediaNoMediaMessage = '{{ __('common.no_media_found') }}';
-</script>
-@endpush
 
 @push('styles')
 <style>
