@@ -305,14 +305,7 @@ $editorTranslations = [
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script @cspNonce>
-// Alpine.js用の翻訳ヘルパー
-document.addEventListener('alpine:init', () => {
-    Alpine.magic('t', () => {
-        return (key) => {
-            const translations = @json($editorTranslations);
-            return translations[key] || key;
-        };
-    });
-});
+// Expose translations to external JS
+window.editorTranslations = @json($editorTranslations);
 </script>
 @endpush

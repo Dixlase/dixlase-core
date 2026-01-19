@@ -18,45 +18,7 @@
     </script>
     
     <!-- ダークモード自動判別スクリプト -->
-    <script @cspNonce>
-        // ページ読み込み前にダークモードを適用
-        (function() {
-            // 1. 親ウィンドウの設定を確認
-            let theme = null;
-            
-            if (window.opener && !window.opener.closed) {
-                try {
-                    // 親ウィンドウのlocalStorageから取得
-                    theme = window.opener.localStorage.getItem('theme');
-                } catch (e) {
-                    console.log('親ウィンドウのテーマ取得失敗:', e);
-                }
-            }
-            
-            // 2. 親ウィンドウから取得できない場合は自身のlocalStorageを確認
-            if (!theme) {
-                theme = localStorage.getItem('theme');
-            }
-            
-            // 3. どちらもない場合はシステム設定を使用
-            if (!theme) {
-                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    theme = 'dark';
-                } else {
-                    theme = 'light';
-                }
-            }
-            
-            // 4. テーマを適用
-            if (theme === 'dark') {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-            
-            console.log('適用されたテーマ:', theme);
-        })();
-    </script>
+    @vite('resources/src/components/mail-server/js/dark-mode.js')
 </head>
 <body class="bg-gray-50 dark:bg-gray-900">
     <main class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8" role="main">
@@ -137,7 +99,7 @@
             <nav class="flex justify-center" aria-label="{{ __('mail.verification_success.actions') }}">
                 <button 
                     type="button"
-                    onclick="closeWindow()" 
+                    onclick="closeVerificationWindow('{{ __('mail.verification_success.completed_message') }}')" 
                     class="bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-lg transition-colors duration-200">
                     {{ __('mail.verification_success.close_button') }}
                 </button>
@@ -145,68 +107,6 @@
         </article>
     </main>
 
-    <script @cspNonce>
-        function closeWindow() {
-            // 親ウィンドウにメッセージを送信
-            if (window.opener) {
-                window.opener.postMessage({
-                    type: 'mail_receive_test_completed',
-                    message: '{{ __('mail.verification_success.completed_message') }}'
-                }, window.location.origin);
-            }
-            
-            // ウィンドウを閉じる
-            window.close();
-        }
-
-        // 5秒後に自動でウィンドウを閉じる
-        setTimeout(function() {
-            if (window.opener) {
-                // 親ウィンドウが存在する場合のみ自動で閉じる
-                window.close();
-            }
-        }, 5000);
-
-        // ページ読み込み時の処理
-        window.addEventListener('load', function() {
-            console.log('=== メール認証成功ページ読み込み完了 ===');
-            
-            // セッションストレージに受信テスト完了を記録
-            try {
-                sessionStorage.setItem('mail_receive_test_completed', 'true');
-                sessionStorage.setItem('mail_receive_test_date', new Date().toLocaleString());
-                console.log('✅ セッションストレージに受信テスト完了を記録しました');
-            } catch (e) {
-                console.error('❌ セッションストレージへの保存に失敗しました:', e);
-            }
-            
-            // 親ウィンドウをリロード（可能な場合）
-            if (window.opener && !window.opener.closed) {
-                try {
-                    console.log('親ウィンドウをリロードします...');
-                    window.opener.location.reload();
-                    console.log('✅ 親ウィンドウのリロード完了');
-                } catch (e) {
-                    console.error('❌ 親ウィンドウのリロードに失敗しました:', e);
-                }
-            } else {
-                console.log('❌ 親ウィンドウが存在しないか閉じられています');
-                console.log('💡 元のページに戻ってリロードしてください');
-                
-                // 代替案：BroadcastChannelを使用してタブ間通信
-                try {
-                    const channel = new BroadcastChannel('mail_test_channel');
-                    channel.postMessage({
-                        type: 'mail_receive_test_completed',
-                        timestamp: new Date().toISOString()
-                    });
-                    console.log('✅ BroadcastChannelでメッセージを送信しました');
-                    channel.close();
-                } catch (e) {
-                    console.error('❌ BroadcastChannelの送信に失敗しました:', e);
-                }
-            }
-        });
-    </script>
+    @vite('resources/src/components/mail-server/js/verification-success.js')
 </body>
 </html>

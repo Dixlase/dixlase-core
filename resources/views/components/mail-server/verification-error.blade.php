@@ -19,45 +19,7 @@
     </script>
     
     <!-- ダークモード自動判別スクリプト -->
-    <script @cspNonce>
-        // ページ読み込み前にダークモードを適用
-        (function() {
-            // 1. 親ウィンドウの設定を確認
-            let theme = null;
-            
-            if (window.opener && !window.opener.closed) {
-                try {
-                    // 親ウィンドウのlocalStorageから取得
-                    theme = window.opener.localStorage.getItem('theme');
-                } catch (e) {
-                    console.log('親ウィンドウのテーマ取得失敗:', e);
-                }
-            }
-            
-            // 2. 親ウィンドウから取得できない場合は自身のlocalStorageを確認
-            if (!theme) {
-                theme = localStorage.getItem('theme');
-            }
-            
-            // 3. どちらもない場合はシステム設定を使用
-            if (!theme) {
-                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    theme = 'dark';
-                } else {
-                    theme = 'light';
-                }
-            }
-            
-            // 4. テーマを適用
-            if (theme === 'dark') {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-            
-            console.log('適用されたテーマ:', theme);
-        })();
-    </script>
+    @vite('resources/src/components/mail-server/js/dark-mode.js')
 </head>
 <body class="bg-gray-50 dark:bg-gray-900">
     <main class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8" role="main">
@@ -117,7 +79,7 @@
             <nav class="flex justify-center" aria-label="{{ __('mail.verification_error.actions') }}">
                 <button 
                     type="button"
-                    onclick="closeWindow()" 
+                    onclick="closeVerificationWindow('{{ $translations['error_occurred'] }}')" 
                     class="bg-gray-600 dark:bg-gray-500 hover:bg-gray-700 dark:hover:bg-gray-600 text-white font-medium py-2 px-6 rounded-lg transition-colors duration-200">
                     {{ $translations['close_button'] }}
                 </button>
@@ -125,26 +87,6 @@
         </article>
     </main>
 
-    <script @cspNonce>
-        function closeWindow() {
-            // 親ウィンドウにエラーメッセージを送信
-            if (window.opener) {
-                window.opener.postMessage({
-                    type: 'mail_verification_error',
-                    message: '{{ $translations['error_occurred'] }}'
-                }, window.location.origin);
-            }
-            
-            // ウィンドウを閉じる
-            window.close();
-        }
-
-        // 10秒後に自動でウィンドウを閉じる
-        setTimeout(function() {
-            if (window.opener) {
-                window.close();
-            }
-        }, 10000);
-    </script>
+    @vite('resources/src/components/mail-server/js/verification-error.js')
 </body>
 </html>
