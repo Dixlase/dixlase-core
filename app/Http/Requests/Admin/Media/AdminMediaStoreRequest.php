@@ -69,6 +69,24 @@ class AdminMediaStoreRequest extends FormRequest
         return json_decode(MediaSetting::where('name', 'allowed_file_types')->value('value'), true);
     }
 
+    /**
+     * Get allowed file types from settings
+     */
+    protected function getAllowedFileTypes(): array
+    {
+        $allowedTypes = MediaSetting::where('name', 'allowed_file_types')->value('value');
+        return $allowedTypes ? json_decode($allowedTypes, true) : ['jpg', 'jpeg', 'png', 'gif', 'pdf'];
+    }
+
+    /**
+     * Get max file size from settings (in KB)
+     */
+    protected function getMaxFileSize(): int
+    {
+        $maxSize = MediaSetting::where('name', 'max_file_size')->value('value');
+        return $maxSize ? (int)$maxSize : 2048;
+    }
+
     public function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
     {
         Log::error('バリデーションエラー: ' . json_encode($validator->errors()->all()));

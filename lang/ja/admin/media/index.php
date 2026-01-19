@@ -21,6 +21,7 @@ return [
     'preview' => 'プレビュー',
     'download' => 'ダウンロード',
     'delete' => '削除',
+    'delete_message' => '「{fileName}」を削除しますか？この操作は取り消せません。',
     
     'search' => [
         'file_name_placeholder' => 'ファイル名で検索',

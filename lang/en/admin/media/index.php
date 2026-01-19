@@ -21,6 +21,7 @@ return [
     'preview' => 'Preview',
     'download' => 'Download',
     'delete' => 'Delete',
+    'delete_message' => 'Are you sure you want to delete "{fileName}"? This action cannot be undone.',
     
     'search' => [
         'file_name_placeholder' => 'Search by file name',
