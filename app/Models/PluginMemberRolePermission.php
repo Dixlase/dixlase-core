@@ -26,6 +26,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Enums\MemberRole;
 
+/**
+ * @deprecated このモデルは廃止されました。
+ *             新方式では RolePermissionOverride モデルと PermissionRegistry サービスを使用してください。
+ *             詳細は docs/role-permission-system.md を参照してください。
+ */
 class PluginMemberRolePermission extends Model
 {
     use HasFactory;

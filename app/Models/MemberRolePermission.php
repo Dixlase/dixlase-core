@@ -5,6 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Enums\MemberRole;
 
+/**
+ * @deprecated このモデルは廃止されました。
+ *             新方式では RolePermissionOverride モデルと PermissionRegistry サービスを使用してください。
+ *             詳細は docs/role-permission-system.md を参照してください。
+ */
 class MemberRolePermission extends Model
 {
     protected $table = 'members_role_permissions';

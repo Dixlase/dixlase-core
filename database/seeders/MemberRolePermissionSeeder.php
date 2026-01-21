@@ -10,6 +10,11 @@ use App\Enums\MemberRole;
 /**
  * メンバー権限設定のシーダー
  * 
+ * @deprecated このシーダーは廃止されました。
+ *             新方式では config/roles.php でデフォルト権限を宣言し、
+ *             管理画面で変更した場合のみ role_permission_overrides テーブルに保存します。
+ *             詳細は docs/role-permission-system.md を参照してください。
+ * 
  * access_roles: 編集権限 - この値以上の権限を持つユーザーが編集可能
  * view_roles: 閲覧権限 - この値以上の権限を持つユーザーが閲覧可能
  * 

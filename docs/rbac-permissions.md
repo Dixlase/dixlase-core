@@ -171,14 +171,20 @@ $permissions = $member->getPermissions();
 
 ## メニュー権限との連携
 
-`MemberRolePermission`テーブルでメニューごとの権限をカスタマイズできます。Permission Enumで定義された最低ロールよりも厳しい制限を設定できます。
+> **Note:** 権限システムがリファクタリングされました。
+> 詳細は `docs/role-permission-system.md` を参照してください。
+
+新方式では `PermissionRegistry` サービスを使用してメニューごとの権限をチェックします。
+デフォルト権限は `config/roles.php` で宣言し、管理画面で変更した場合のみ `role_permission_overrides` テーブルに保存されます。
 
 ```php
-// メニュー権限の取得
-$permission = MemberRolePermission::where('menu_key', 'settings.security')->first();
+use App\Services\PermissionRegistry;
+
+// メニュー権限の取得（デフォルト＋オーバーライド合成済み）
+$effective = PermissionRegistry::getEffective('settings.security');
 
 // アクセス可能かチェック
-if ($permission->canAccess($member->role)) {
+if (PermissionRegistry::canAccess('settings.security', $member->role)) {
     // ...
 }
 ```
