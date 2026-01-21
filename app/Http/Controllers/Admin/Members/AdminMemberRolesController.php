@@ -43,19 +43,19 @@ class AdminMemberRolesController extends AdminLoggedInController
         $roles = MemberRole::cases();
         $menuList = config('admin.nav');
 
-        // コア権限（デフォルト＋オーバーライド合成済み）
+        // コア権限（デフォルト＋オーバーライド合成済み）- ネスト構造
         $corePermissions = PermissionRegistry::getAllCorePermissions();
         
-        // コアメニューから権限設定用のアイテムを収集
-        $corePermissionItems = $this->collectMenuPermissions($menuList);
+        // コア権限（フラット形式）- フォーム送信用
+        $corePermissionsFlat = PermissionRegistry::getAllCorePermissionsFlat();
         
         // プラグイン権限グループを収集
         $pluginPermissionGroups = $this->collectPluginPermissions();
 
         $this->viewParams['permissions'] = $corePermissions;
+        $this->viewParams['permissionsFlat'] = $corePermissionsFlat;
         $this->viewParams['roles'] = $roles;
         $this->viewParams['menuList'] = $menuList;
-        $this->viewParams['permissionItems'] = $corePermissionItems;
         $this->viewParams['pluginPermissionGroups'] = $pluginPermissionGroups;
 
         return view('admin.members.settings.roles', $this->viewParams);
@@ -79,12 +79,12 @@ class AdminMemberRolesController extends AdminLoggedInController
             $accessRoles = isset($values['access_roles']) ? (int) $values['access_roles'] : MemberRole::GUEST->value;
             $viewRoles = isset($values['view_roles']) ? (int) $values['view_roles'] : MemberRole::GUEST->value;
             
-            // デフォルト値を取得
-            $default = config("roles.permissions.{$menuKey}");
+            // デフォルト値を取得（ネスト構造対応）
+            $default = PermissionRegistry::getEffective($menuKey);
             
             if ($default) {
                 // デフォルト値と同じ場合はオーバーライドを削除
-                if ($accessRoles === $default['access_roles'] && $viewRoles === $default['view_roles']) {
+                if ($accessRoles === $default['default_access_roles'] && $viewRoles === $default['default_view_roles']) {
                     RolePermissionOverride::resetCoreOverride($menuKey);
                 } else {
                     // デフォルト値と異なる場合はオーバーライドを保存

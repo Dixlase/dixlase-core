@@ -37,48 +37,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </div>
         
-        <div class="permission-groups space-y-6 mb-10" x-data="{ openSections: {} }">
-            @php
-                $currentSection = null;
-                $sectionItems = [];
-            @endphp
-            
-            @foreach ($permissionItems as $index => $item)
-                @if ($item['type'] === 'heading')
-                    {{-- 前のセクションがあれば出力 --}}
-                    @if ($currentSection !== null)
-                        @include('admin.members.partials.roles-permission-group', [
-                            'sectionTitle' => $currentSection,
-                            'sectionId' => 'section_' . md5($currentSection),
-                            'items' => $sectionItems,
-                            'permissions' => $permissions,
-                            'roles' => $roles
-                        ])
-                    @endif
-                    
-                    {{-- 新しいセクションを開始 --}}
-                    @php
-                        $currentSection = $item['title'];
-                        $sectionItems = [];
-                    @endphp
-                @elseif ($item['type'] === 'permission')
-                    {{-- セクション内のアイテムを収集 --}}
-                    @php
-                        $sectionItems[] = $item;
-                    @endphp
-                @endif
-            @endforeach
-            
-            {{-- 最後のセクションを出力 --}}
-            @if ($currentSection !== null)
-                @include('admin.members.partials.roles-permission-group', [
-                    'sectionTitle' => $currentSection,
-                    'sectionId' => 'section_' . md5($currentSection),
-                    'items' => $sectionItems,
-                    'permissions' => $permissions,
-                    'roles' => $roles
+        <div class="permission-groups space-y-2 mb-10">
+            @foreach ($permissions as $key => $item)
+                @include('admin.members.partials.roles-permission-accordion', [
+                    'key' => $key,
+                    'item' => $item,
+                    'menuList' => $menuList,
+                    'permissionsFlat' => $permissionsFlat,
+                    'roles' => $roles,
+                    'prefix' => '',
+                    'depth' => 0
                 ])
-            @endif
+            @endforeach
         </div>
     </div>
     

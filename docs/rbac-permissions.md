@@ -203,9 +203,11 @@ if (PermissionRegistry::canAccess('settings.security', $member->role)) {
 })
 ```
 
+## 関連ドキュメント
+
+- [権限設定システム](./role-permission-system.md) - 宣言と保存の分離アーキテクチャ、PermissionRegistry、プラグイン開発ガイド
+
 ## β版以降の予定
 
-- 権限のカスタマイズUI
 - 危険な操作の強制再認証
 - 権限変更の監査ログ
-- プラグイン独自権限の登録API

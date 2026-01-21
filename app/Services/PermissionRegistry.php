@@ -74,7 +74,7 @@ class PermissionRegistry
     /**
      * 実効権限を取得（コア機能）
      * 
-     * @param string $menuKey メニューキー（例：settings.base）
+     * @param string $menuKey メニューキー（例：settings.base.index）
      * @return array{access_roles: int, view_roles: int}|null
      */
     public static function getEffective(string $menuKey): ?array
@@ -82,9 +82,8 @@ class PermissionRegistry
         $cacheKey = self::CACHE_PREFIX . 'core:' . $menuKey;
         
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($menuKey) {
-            // デフォルト値を取得（配列キーとしてアクセス、ドット記法は使わない）
-            $permissions = config('roles.permissions');
-            $default = $permissions[$menuKey] ?? null;
+            // デフォルト値を取得（ネスト構造から取得）
+            $default = self::getDefaultFromNestedConfig($menuKey);
             
             if ($default === null) {
                 return null;
@@ -111,6 +110,50 @@ class PermissionRegistry
                 'default_view_roles' => $default['view_roles'],
             ];
         });
+    }
+
+    /**
+     * ネスト構造のconfigからドット記法のキーで権限を取得
+     * 
+     * @param string $menuKey ドット記法のメニューキー（例：settings.base.index）
+     * @return array{access_roles: int, view_roles: int}|null
+     */
+    protected static function getDefaultFromNestedConfig(string $menuKey): ?array
+    {
+        $permissions = config('roles.permissions', []);
+        $parts = explode('.', $menuKey);
+        
+        $current = $permissions;
+        foreach ($parts as $part) {
+            if (!is_array($current)) {
+                return null;
+            }
+            
+            // 直接キーがある場合
+            if (isset($current[$part])) {
+                // access_rolesがあれば権限定義
+                if (isset($current[$part]['access_roles'])) {
+                    return $current[$part];
+                }
+                // childrenがあればさらに深く
+                if (isset($current[$part]['children'])) {
+                    $current = $current[$part]['children'];
+                    continue;
+                }
+                // それ以外は次の階層へ
+                $current = $current[$part];
+                continue;
+            }
+            
+            return null;
+        }
+        
+        // 最終的にaccess_rolesがあれば権限定義
+        if (is_array($current) && isset($current['access_roles'])) {
+            return $current;
+        }
+        
+        return null;
     }
 
     /**
@@ -183,6 +226,7 @@ class PermissionRegistry
 
     /**
      * コア機能の全権限定義を取得（デフォルト＋オーバーライド合成済み）
+     * ネスト構造を維持して返す
      */
     public static function getAllCorePermissions(): array
     {
@@ -192,8 +236,27 @@ class PermissionRegistry
             $defaults = config('roles.permissions', []);
             $overrides = RolePermissionOverride::getAllCoreOverrides()->keyBy('menu_key');
             
+            return self::mergePermissionsWithOverrides($defaults, $overrides);
+        });
+    }
+
+    /**
+     * コア機能の全権限定義をフラット形式で取得（デフォルト＋オーバーライド合成済み）
+     * キーはドット記法（例：settings.base.index）
+     */
+    public static function getAllCorePermissionsFlat(): array
+    {
+        $cacheKey = self::CACHE_PREFIX . 'all_core_flat';
+        
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () {
+            $defaults = config('roles.permissions', []);
+            $overrides = RolePermissionOverride::getAllCoreOverrides()->keyBy('menu_key');
+            
+            $flat = [];
+            self::flattenPermissions($defaults, '', $flat);
+            
             $result = [];
-            foreach ($defaults as $menuKey => $default) {
+            foreach ($flat as $menuKey => $default) {
                 $override = $overrides->get($menuKey);
                 
                 $result[$menuKey] = [
@@ -207,6 +270,70 @@ class PermissionRegistry
             
             return $result;
         });
+    }
+
+    /**
+     * ネスト構造の権限定義をフラット化
+     */
+    protected static function flattenPermissions(array $permissions, string $prefix, array &$result): void
+    {
+        foreach ($permissions as $key => $value) {
+            $fullKey = $prefix ? "{$prefix}.{$key}" : $key;
+            
+            if (isset($value['access_roles'])) {
+                // 権限定義
+                $result[$fullKey] = $value;
+            }
+            
+            if (isset($value['children'])) {
+                // 子要素を再帰処理
+                self::flattenPermissions($value['children'], $fullKey, $result);
+            }
+        }
+    }
+
+    /**
+     * ネスト構造の権限定義にオーバーライドをマージ
+     */
+    protected static function mergePermissionsWithOverrides(array $permissions, $overrides, string $prefix = ''): array
+    {
+        $result = [];
+        
+        foreach ($permissions as $key => $value) {
+            $fullKey = $prefix ? "{$prefix}.{$key}" : $key;
+            
+            if (isset($value['access_roles'])) {
+                // 権限定義
+                $override = $overrides->get($fullKey);
+                $result[$key] = [
+                    'access_roles' => $override?->access_roles ?? $value['access_roles'],
+                    'view_roles' => $override?->view_roles ?? $value['view_roles'],
+                    'is_overridden' => $override !== null,
+                    'default_access_roles' => $value['access_roles'],
+                    'default_view_roles' => $value['view_roles'],
+                ];
+                
+                // childrenがあれば再帰処理
+                if (isset($value['children'])) {
+                    $result[$key]['children'] = self::mergePermissionsWithOverrides(
+                        $value['children'],
+                        $overrides,
+                        $fullKey
+                    );
+                }
+            } elseif (isset($value['children'])) {
+                // 権限定義なしでchildrenのみ
+                $result[$key] = [
+                    'children' => self::mergePermissionsWithOverrides(
+                        $value['children'],
+                        $overrides,
+                        $fullKey
+                    ),
+                ];
+            }
+        }
+        
+        return $result;
     }
 
     /**
@@ -350,12 +477,16 @@ class PermissionRegistry
      */
     public static function clearCache(): void
     {
-        // コア権限キャッシュをクリア
+        // コア権限キャッシュをクリア（フラット化してすべてのキーを取得）
         $corePermissions = config('roles.permissions', []);
-        foreach (array_keys($corePermissions) as $menuKey) {
+        $flat = [];
+        self::flattenPermissions($corePermissions, '', $flat);
+        
+        foreach (array_keys($flat) as $menuKey) {
             Cache::forget(self::CACHE_PREFIX . 'core:' . $menuKey);
         }
         Cache::forget(self::CACHE_PREFIX . 'all_core');
+        Cache::forget(self::CACHE_PREFIX . 'all_core_flat');
         
         // プラグイン権限キャッシュをクリア
         foreach (array_keys(self::$pluginPermissions) as $pluginSlug) {
