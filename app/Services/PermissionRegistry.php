@@ -82,8 +82,9 @@ class PermissionRegistry
         $cacheKey = self::CACHE_PREFIX . 'core:' . $menuKey;
         
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($menuKey) {
-            // デフォルト値を取得
-            $default = config("roles.permissions.{$menuKey}");
+            // デフォルト値を取得（配列キーとしてアクセス、ドット記法は使わない）
+            $permissions = config('roles.permissions');
+            $default = $permissions[$menuKey] ?? null;
             
             if ($default === null) {
                 return null;
