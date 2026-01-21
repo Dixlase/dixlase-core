@@ -58,4 +58,14 @@ return [
     'default_two_factor_method_help' => 'Select the authentication method to be displayed first during two-factor authentication.',
     'passkey_disabled_default_email_only' => 'Passkey authentication is disabled, so the default authentication method is automatically set to email authentication.',
     'two_fa_management_admin_note' => 'Administrators cannot add Passkey devices or generate recovery codes. Only deletion is allowed. Addition and generation can only be performed by the member themselves.',
+    
+    // Role permission descriptions
+    'role_permissions_info' => 'Permission Scope by Role',
+    'role_super_admin_description' => 'Full access to all administrative functions, including managing other administrators. Has permission to change system settings.',
+    'role_admin_description' => 'Access to most admin panel features, but cannot manage other administrators or change system settings.',
+    'role_editor_description' => 'Can create, edit, and publish content. Can also edit content created by other members.',
+    'role_author_description' => 'Can only create, edit, and publish their own content. Cannot edit content created by other members.',
+    'role_contributor_description' => 'Can create and edit content, but cannot publish. Requires approval from editors or higher.',
+    'role_receptionist_description' => 'Limited access to functions necessary for reception duties. Cannot create or edit content.',
+    'role_guest_description' => 'Minimal viewing permissions only. Cannot access most administrative functions.',
 ];

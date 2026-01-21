@@ -37,7 +37,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </div>
         
-        <div class="permission-groups space-y-2 mb-10">
+        {{-- 除外項目の説明 --}}
+        <x-message type="info" :message="__('admin/members/settings/roles.excluded_items_note')" />
+        
+        <div class="permission-groups mt-6">
             @foreach ($permissions as $key => $item)
                 @include('admin.members.partials.roles-permission-accordion', [
                     'key' => $key,
@@ -65,7 +68,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
             
-            <div class="permission-groups space-y-4 mb-10">
+            <div class="permission-groups space-y-2 mb-10">
                 @foreach ($pluginPermissionGroups as $pluginGroup)
                     <div class="plugin-permission-group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm" x-data="{ open: false }">
                         {{-- プラグインヘッダー --}}

@@ -29,6 +29,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'hideGenerateButton' => false,
     'adminContext' => false,
     'disabled' => false,
+    'twoFaDisabled' => false,
+    'passkeyDisabled' => false,
     'routes' => [
         'passkey_register_options' => '',
         'passkey_register' => '',
@@ -65,7 +67,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <!-- Passkeyデバイス -->
     @if($twoFaPasskeyEnabled)
-    <div>
+    <div class="{{ $passkeyDisabled ? 'opacity-50 pointer-events-none' : '' }}">
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-semibold">{{ __('components.two_fa_management.passkey_devices') }}</h3>
             @if($twoFaPasskeyDevices && !$twoFaPasskeyDevices->isEmpty())
@@ -142,7 +144,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @endif
 
     <!-- 回復コード -->
-    <div class="mb-8">
+    <div class="mb-8 {{ $twoFaDisabled ? 'opacity-50 pointer-events-none' : '' }}">
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-semibold">{{ __('components.two_fa_management.recovery_codes_title') }}</h3>
         </div>

@@ -231,6 +231,37 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :value="$roleValue"
                     :columns="4"
                 />
+                
+                {{-- ロールの権限範囲説明 --}}
+                <div class="mt-4">
+                    <x-message type="info">
+                        <x-slot name="message">
+                            <strong>{{ __('admin/members/form.role_permissions_info') }}</strong>
+                            <dl class="mt-3">
+                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ \App\Enums\MemberRole::SUPER_ADMIN->label() }}</dt>
+                                <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_super_admin_description') }}</dd>
+                                
+                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ \App\Enums\MemberRole::ADMIN->label() }}</dt>
+                                <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_admin_description') }}</dd>
+                                
+                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ \App\Enums\MemberRole::EDITOR->label() }}</dt>
+                                <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_editor_description') }}</dd>
+                                
+                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ \App\Enums\MemberRole::AUTHOR->label() }}</dt>
+                                <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_author_description') }}</dd>
+                                
+                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ \App\Enums\MemberRole::CONTRIBUTOR->label() }}</dt>
+                                <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_contributor_description') }}</dd>
+                                
+                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ \App\Enums\MemberRole::RECEPTIONIST->label() }}</dt>
+                                <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_receptionist_description') }}</dd>
+                                
+                                <dt class="font-semibold text-blue-900 dark:text-blue-100">{{ \App\Enums\MemberRole::GUEST->label() }}</dt>
+                                <dd class="ml-4 text-blue-800 dark:text-blue-200">{{ __('admin/members/form.role_guest_description') }}</dd>
+                            </dl>
+                        </x-slot>
+                    </x-message>
+                </div>
             @endif
             <x-form.error
                 :messages="$errors->get('role')"

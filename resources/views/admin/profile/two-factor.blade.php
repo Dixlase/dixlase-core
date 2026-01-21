@@ -46,6 +46,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     return this.twoFaMode !== '0';
                 }
             }" id="two-fa-settings-wrapper">
+                {{-- Passkeyが有効だがデバイスが未登録の場合の警告 --}}
+                @if($currentPasskeyEnabled && $twoFaPasskeyDevices->isEmpty())
+                    <div class="mb-6">
+                        <x-message 
+                            type="warning" 
+                            :message="__('admin/profile.passkey_no_devices_notice', ['url' => route('admin.profile.two-factor-management')])"
+                        />
+                    </div>
+                @endif
+
                 <section class="transition-colors-unified">
                     <h2>{{ __('admin/profile/two-factor.two_fa_settings') }}</h2>
 

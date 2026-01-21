@@ -82,6 +82,11 @@ class AdminHelper
             return true;
         }
 
+        // ダッシュボードは全員アクセス可能（閲覧のみ）
+        if ($menuKey === 'dashboard') {
+            return true;
+        }
+
         if ($user->role->value === MemberRole::SUPER_ADMIN->value) {
             return true;
         }
@@ -129,6 +134,11 @@ class AdminHelper
             return true;
         }
 
+        // ダッシュボードは全員閲覧可能
+        if ($menuKey === 'dashboard') {
+            return true;
+        }
+
         if ($user->role->value === MemberRole::SUPER_ADMIN->value) {
             return true;
         }
@@ -150,6 +160,11 @@ class AdminHelper
         // プロフィールは全員編集可能（自分自身の設定）
         if (str_starts_with($menuKey, 'profile')) {
             return true;
+        }
+
+        // ダッシュボードは閲覧のみで編集不可
+        if ($menuKey === 'dashboard') {
+            return false;
         }
 
         if ($user->role->value === MemberRole::SUPER_ADMIN->value) {
