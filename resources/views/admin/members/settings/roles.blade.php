@@ -99,7 +99,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @foreach ($pluginPermissionGroups as $pluginGroup)
                     @include('admin.members.partials.roles-plugin-permission-group', [
                         'pluginGroup' => $pluginGroup,
-                        'pluginPermissions' => $pluginPermissions[$pluginGroup['slug']] ?? collect(),
+                        'pluginPermissions' => \App\Services\PermissionRegistry::getAllPluginPermissions($pluginGroup['slug']),
                         'roles' => $roles
                     ])
                 @endforeach

@@ -28,8 +28,7 @@ use App\Models\Member;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use App\Models\BaseSetting;
-use App\Models\MemberRolePermission;
-use App\Models\PluginMemberRolePermission;
+use App\Services\PermissionRegistry;
 
 
 class AdminHelper
@@ -82,35 +81,36 @@ class AdminHelper
             return true;
         }
 
-        $permission = MemberRolePermission::where('menu_key', $menuKey)->first();
+        // PermissionRegistryを使用して実効権限をチェック
+        $effective = PermissionRegistry::getEffective($menuKey);
         
-        // 親項目の権限がない場合、子項目の権限をチェック
-        if (!$permission) {
+        // 権限定義がない場合、子項目の権限をチェック
+        if ($effective === null) {
+            // 子項目の権限を検索（例: media -> media.index, media.upload）
+            $allPermissions = PermissionRegistry::getAllCorePermissions();
+            $hasChildAccess = false;
             
-            // 子項目の権限を検索（例: media -> media.%）
-            $childPermissions = MemberRolePermission::where('menu_key', 'LIKE', $menuKey . '.%')->get();
-            
-            if ($childPermissions->isEmpty()) {
-                return false;
-            }
-            
-            // 子項目のいずれかに権限があるかチェック（>=比較）
-            foreach ($childPermissions as $childPermission) {
-                // ユーザーの権限値が設定された最低権限値以上であればアクセス可能
-                if ($childPermission->canAccess($user->role) || $childPermission->canView($user->role)) {
-                    return true;
+            foreach ($allPermissions as $key => $permission) {
+                if (str_starts_with($key, $menuKey . '.')) {
+                    if ($user->role->value >= $permission['access_roles'] || 
+                        $user->role->value >= $permission['view_roles']) {
+                        $hasChildAccess = true;
+                        break;
+                    }
                 }
             }
-            return false;
+            
+            return $hasChildAccess;
         }
 
         // ユーザーの権限値が設定された最低権限値以上であればアクセス可能
-        return $permission->canAccess($user->role) || $permission->canView($user->role);
+        return $user->role->value >= $effective['access_roles'] || 
+               $user->role->value >= $effective['view_roles'];
     }
 
     /**
      * メニューの閲覧権限をチェック（編集はできないが表示はできる）
-     * ユーザーの権限値がaccess_roles以上であれば閲覧可能
+     * ユーザーの権限値がview_roles以上であれば閲覧可能
      */
     public static function canViewMenu(string $menuKey): bool
     {
@@ -123,18 +123,12 @@ class AdminHelper
             return true;
         }
 
-        $permission = MemberRolePermission::where('menu_key', $menuKey)->first();
-        if (!$permission) {
-            return false;
-        }
-
-        // ユーザーの権限値がaccess_roles以上であれば閲覧可能
-        return $permission->canAccess($user->role);
+        return PermissionRegistry::canView($menuKey, $user->role);
     }
 
     /**
      * メニューの編集権限をチェック
-     * ユーザーの権限値がview_roles以上であれば編集可能
+     * ユーザーの権限値がaccess_roles以上であれば編集可能
      */
     public static function canEditMenu(string $menuKey): bool
     {
@@ -147,13 +141,7 @@ class AdminHelper
             return true;
         }
 
-        $permission = MemberRolePermission::where('menu_key', $menuKey)->first();
-        if (!$permission) {
-            return false;
-        }
-
-        // ユーザーの権限値がview_roles以上であれば編集可能
-        return $permission->canView($user->role);
+        return PermissionRegistry::canAccess($menuKey, $user->role);
     }
 
     /**
@@ -170,13 +158,16 @@ class AdminHelper
             return true;
         }
 
-        $permission = PluginMemberRolePermission::getPermission($pluginSlug, $menuKey);
-        if (!$permission) {
+        // PermissionRegistryを使用
+        $effective = PermissionRegistry::getPluginEffective($pluginSlug, $menuKey);
+        
+        if ($effective === null) {
             // 権限設定がない場合はADMIN以上でアクセス可能
             return $user->role->value >= MemberRole::ADMIN->value;
         }
 
-        return $permission->canAccess($user->role) || $permission->canView($user->role);
+        return $user->role->value >= $effective['access_roles'] || 
+               $user->role->value >= $effective['view_roles'];
     }
 
     /**
@@ -193,12 +184,7 @@ class AdminHelper
             return true;
         }
 
-        $permission = PluginMemberRolePermission::getPermission($pluginSlug, $menuKey);
-        if (!$permission) {
-            return $user->role->value >= MemberRole::ADMIN->value;
-        }
-
-        return $permission->canAccess($user->role);
+        return PermissionRegistry::canViewPlugin($pluginSlug, $menuKey, $user->role);
     }
 
     /**
@@ -215,12 +201,7 @@ class AdminHelper
             return true;
         }
 
-        $permission = PluginMemberRolePermission::getPermission($pluginSlug, $menuKey);
-        if (!$permission) {
-            return $user->role->value >= MemberRole::ADMIN->value;
-        }
-
-        return $permission->canEdit($user->role);
+        return PermissionRegistry::canAccessPlugin($pluginSlug, $menuKey, $user->role);
     }
 
     /**

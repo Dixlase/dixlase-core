@@ -27,7 +27,6 @@ namespace App\Services;
 use App\Enums\MemberRole;
 use App\Enums\Permission;
 use App\Models\Member;
-use App\Models\MemberRolePermission;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
@@ -100,8 +99,8 @@ class PermissionService
         // Check menu-based permission override (if exists)
         $menuKey = self::permissionToMenuKey($permission);
         if ($menuKey) {
-            $menuPermission = self::getMenuPermission($menuKey);
-            if ($menuPermission && $role->value < $menuPermission->access_roles) {
+            $effective = PermissionRegistry::getEffective($menuKey);
+            if ($effective && $role->value < $effective['access_roles']) {
                 return false;
             }
         }
@@ -232,18 +231,14 @@ class PermissionService
     }
 
     /**
-     * Get menu permission from cache or database
+     * Get menu permission from PermissionRegistry
      *
      * @param string $menuKey
-     * @return MemberRolePermission|null
+     * @return array|null
      */
-    protected static function getMenuPermission(string $menuKey): ?MemberRolePermission
+    protected static function getMenuPermission(string $menuKey): ?array
     {
-        $cacheKey = "menu_permission:{$menuKey}";
-
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($menuKey) {
-            return MemberRolePermission::where('menu_key', $menuKey)->first();
-        });
+        return PermissionRegistry::getEffective($menuKey);
     }
 
     /**
@@ -308,7 +303,7 @@ class PermissionService
      */
     public static function clearMenuCache(string $menuKey): void
     {
-        Cache::forget("menu_permission:{$menuKey}");
+        PermissionRegistry::clearMenuCache($menuKey);
     }
 
     /**
@@ -316,11 +311,7 @@ class PermissionService
      */
     public static function clearAllCache(): void
     {
-        // Clear all menu permission caches
-        $permissions = MemberRolePermission::all();
-        foreach ($permissions as $permission) {
-            self::clearMenuCache($permission->menu_key);
-        }
+        PermissionRegistry::clearCache();
     }
 
     /**

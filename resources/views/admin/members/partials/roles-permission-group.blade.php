@@ -102,9 +102,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="p-6 space-y-6">
             @foreach ($items as $item)
                 @php
-                    // 現在の設定値を取得（整数として）
-                    $accessRoleValue = $permissions[$item['menuKey']]->access_roles ?? $minSelectableRole;
-                    $viewRoleValue = $permissions[$item['menuKey']]->view_roles ?? $minSelectableRole;
+                    // 現在の設定値を取得（配列形式）
+                    $permission = $permissions[$item['menuKey']] ?? null;
+                    $accessRoleValue = $permission['access_roles'] ?? $minSelectableRole;
+                    $viewRoleValue = $permission['view_roles'] ?? $minSelectableRole;
+                    $isOverridden = $permission['is_overridden'] ?? false;
+                    $defaultAccessRoles = $permission['default_access_roles'] ?? $minSelectableRole;
+                    $defaultViewRoles = $permission['default_view_roles'] ?? $minSelectableRole;
                     
                     // 設定値がログインユーザーの権限を超えている場合は、最大値に制限
                     $accessRoleValue = min($accessRoleValue, $maxSelectableRole);

@@ -113,10 +113,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="p-6 space-y-6">
             @foreach ($pluginGroup['items'] as $item)
                 @php
-                    // 現在の設定値を取得（デフォルトはADMIN）
+                    // 現在の設定値を取得（配列形式、デフォルトはADMIN）
                     $defaultRole = \App\Enums\MemberRole::ADMIN->value;
-                    $accessRoleValue = $pluginPermissions[$item['menuKey']]->access_roles ?? $defaultRole;
-                    $viewRoleValue = $pluginPermissions[$item['menuKey']]->view_roles ?? $defaultRole;
+                    $permission = $pluginPermissions[$item['menuKey']] ?? null;
+                    $accessRoleValue = $permission['access_roles'] ?? $defaultRole;
+                    $viewRoleValue = $permission['view_roles'] ?? $defaultRole;
+                    $isOverridden = $permission['is_overridden'] ?? false;
+                    $defaultAccessRoles = $permission['default_access_roles'] ?? $defaultRole;
+                    $defaultViewRoles = $permission['default_view_roles'] ?? $defaultRole;
                     
                     // 設定値がログインユーザーの権限を超えている場合は、最大値に制限
                     $accessRoleValue = min($accessRoleValue, $maxSelectableRole);
