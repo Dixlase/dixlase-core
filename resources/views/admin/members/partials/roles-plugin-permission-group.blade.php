@@ -110,7 +110,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         x-transition:leave-start="opacity-100 max-h-screen"
         x-transition:leave-end="opacity-0 max-h-0"
     >
-        <div class="p-6 space-y-6">
+        <div class="p-6">
             @foreach ($pluginGroup['items'] as $item)
                 @php
                     // 現在の設定値を取得（配列形式、デフォルトはADMIN）

@@ -52,11 +52,8 @@ return [
     |
     */
     'permissions' => [
-        // ダッシュボード
-        'dashboard' => [
-            'access_roles' => MemberRole::CONTRIBUTOR->value,
-            'view_roles' => MemberRole::GUEST->value,
-        ],
+        // ダッシュボード（dashboard）は権限設定から除外
+        // 閲覧のみのページで、ゲストでも閲覧可能（AdminHelperで固定）
 
         // フロントページ管理
         'front' => [

@@ -41,24 +41,41 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 return this.twoFaMode === '0' || !this.passkeyEnabled;
             }
         }">
-            <div :class="{ 'opacity-50 pointer-events-none': isPasskeyDisabled }">
-                <x-two-fa.management
-                    :twoFaPasskeyEnabled="$twoFaPasskeyEnabled"
-                    :twoFaPasskeyDevices="$twoFaPasskeyDevices"
-                    :twoFaHasRecoveryCodes="$twoFaHasRecoveryCodes"
-                    :twoFaRecoveryCodesCount="$twoFaRecoveryCodesCount"
-                    :twoFaTrustedDevices="collect()"
-                    :twoFaShowTrustedDevices="false"
-                    :routes="[
-                        'passkey_register_options' => route('admin.profile.passkey.register-options'),
-                        'passkey_register' => route('admin.profile.passkey.register'),
-                        'passkey_delete' => route('admin.profile.passkey.revoke', ':id'),
-                        'passkey_delete_all' => route('admin.profile.passkey.revoke-all'),
-                        'recovery_codes_generate' => route('admin.profile.recovery-codes.generate'),
-                    ]"
-                    :csrfToken="csrf_token()"
+            {{-- 二段階認証が無効な場合の説明 --}}
+            <div x-show="isTwoFaDisabled" class="mb-6">
+                <x-message 
+                    type="warning" 
+                    :message="__('admin/profile.two_fa_disabled_notice')"
                 />
             </div>
+
+            {{-- Passkeyが無効な場合の説明 --}}
+            <div x-show="!isTwoFaDisabled && !passkeyEnabled" class="mb-6">
+                <x-message 
+                    type="warning" 
+                    :message="__('admin/profile.passkey_disabled_notice')"
+                />
+            </div>
+
+            {{-- 二段階認証管理コンポーネント --}}
+            <x-two-fa.management
+                :twoFaPasskeyEnabled="$twoFaPasskeyEnabled"
+                :twoFaPasskeyDevices="$twoFaPasskeyDevices"
+                :twoFaHasRecoveryCodes="$twoFaHasRecoveryCodes"
+                :twoFaRecoveryCodesCount="$twoFaRecoveryCodesCount"
+                :twoFaTrustedDevices="collect()"
+                :twoFaShowTrustedDevices="false"
+                :twoFaDisabled="$twoFaMode?->value === 0"
+                :passkeyDisabled="$twoFaMode?->value === 0 || !$currentPasskeyEnabled"
+                :routes="[
+                    'passkey_register_options' => route('admin.profile.passkey.register-options'),
+                    'passkey_register' => route('admin.profile.passkey.register'),
+                    'passkey_delete' => route('admin.profile.passkey.revoke', ':id'),
+                    'passkey_delete_all' => route('admin.profile.passkey.revoke-all'),
+                    'recovery_codes_generate' => route('admin.profile.recovery-codes.generate'),
+                ]"
+                :csrfToken="csrf_token()"
+            />
         </div>
 
         {{-- セッションベースのモーダル --}}

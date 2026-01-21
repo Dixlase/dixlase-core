@@ -18,6 +18,7 @@ return [
     
     'core_permissions' => 'Core Permissions',
     'core_permissions_description' => 'Set access permissions for Dixlase core features.',
+    'excluded_items_note' => '* Dashboard and Profile are accessible to all users and are excluded from permission settings.',
     
     'plugin_permissions' => 'Plugin Permissions',
     'plugin_permissions_description' => 'Set access permissions for installed plugins.',

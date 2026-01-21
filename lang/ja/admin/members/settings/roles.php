@@ -18,6 +18,7 @@ return [
     
     'core_permissions' => 'コア機能の権限',
     'core_permissions_description' => 'Dixlaseのコア機能に対するアクセス権限を設定します。',
+    'excluded_items_note' => '※ ダッシュボードとプロフィールは全員がアクセス可能なため、権限設定から除外されています。',
     
     'plugin_permissions' => 'プラグインの権限',
     'plugin_permissions_description' => 'インストール済みプラグインに対するアクセス権限を設定します。',

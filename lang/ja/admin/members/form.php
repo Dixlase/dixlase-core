@@ -58,4 +58,14 @@ return [
     'default_two_factor_method_help' => '二段階認証時に最初に表示される認証方法を選択します。',
     'passkey_disabled_default_email_only' => 'パスキー認証を無効にしているため、デフォルトの認証方法は自動的にメール認証になります。',
     'two_fa_management_admin_note' => '管理者はPasskeyデバイスの追加や回復コードの生成はできません。削除のみ可能です。追加・生成はメンバー本人のみが実行できます。',
+    
+    // ロールの権限範囲説明
+    'role_permissions_info' => 'ロールごとの権限範囲',
+    'role_super_admin_description' => 'すべての管理機能にアクセスでき、他の管理者の管理も可能です。システム設定の変更権限を持ちます。',
+    'role_admin_description' => '管理画面のほとんどの機能にアクセスできますが、他の管理者の管理やシステム設定の変更はできません。',
+    'role_editor_description' => 'コンテンツの作成・編集・公開が可能です。他のメンバーが作成したコンテンツも編集できます。',
+    'role_author_description' => '自分が作成したコンテンツのみ作成・編集・公開が可能です。他のメンバーのコンテンツは編集できません。',
+    'role_contributor_description' => 'コンテンツの作成・編集が可能ですが、公開はできません。編集者以上の承認が必要です。',
+    'role_receptionist_description' => '受付業務に必要な限定的な機能のみ利用できます。コンテンツの作成・編集はできません。',
+    'role_guest_description' => '最小限の閲覧権限のみを持ちます。ほとんどの管理機能にアクセスできません。',
 ];
