@@ -46,6 +46,10 @@ return [
     |--------------------------------------------------------------------------
     | コア機能のデフォルト権限
     |--------------------------------------------------------------------------
+    |
+    | config/admin.php の nav 構造と同じ階層構造で定義
+    | 権限設定画面でアコーディオン形式で表示するため
+    |
     */
     'permissions' => [
         // ダッシュボード
@@ -55,201 +59,219 @@ return [
         ],
 
         // フロントページ管理
-        'front.index' => [
-            'access_roles' => MemberRole::EDITOR->value,
-            'view_roles' => MemberRole::EDITOR->value,
-        ],
-        'front.edit' => [
-            'access_roles' => MemberRole::EDITOR->value,
-            'view_roles' => MemberRole::EDITOR->value,
-        ],
-        'front.settings' => [
-            'access_roles' => MemberRole::ADMIN->value,
-            'view_roles' => MemberRole::ADMIN->value,
+        'front' => [
+            'children' => [
+                'index' => [
+                    'access_roles' => MemberRole::EDITOR->value,
+                    'view_roles' => MemberRole::EDITOR->value,
+                ],
+                'edit' => [
+                    'access_roles' => MemberRole::EDITOR->value,
+                    'view_roles' => MemberRole::EDITOR->value,
+                ],
+                'settings' => [
+                    'access_roles' => MemberRole::ADMIN->value,
+                    'view_roles' => MemberRole::ADMIN->value,
+                ],
+            ],
         ],
 
         // メディア管理
-        'media.index' => [
-            'access_roles' => MemberRole::CONTRIBUTOR->value,
-            'view_roles' => MemberRole::CONTRIBUTOR->value,
-        ],
-        'media.upload' => [
-            'access_roles' => MemberRole::CONTRIBUTOR->value,
-            'view_roles' => MemberRole::CONTRIBUTOR->value,
-        ],
-        'media.settings' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
+        'media' => [
+            'children' => [
+                'index' => [
+                    'access_roles' => MemberRole::CONTRIBUTOR->value,
+                    'view_roles' => MemberRole::CONTRIBUTOR->value,
+                ],
+                'upload' => [
+                    'access_roles' => MemberRole::CONTRIBUTOR->value,
+                    'view_roles' => MemberRole::CONTRIBUTOR->value,
+                ],
+                'settings' => [
+                    'access_roles' => MemberRole::SUPER_ADMIN->value,
+                    'view_roles' => MemberRole::SUPER_ADMIN->value,
+                ],
+            ],
         ],
 
-        // プロフィール（自分自身の設定なので全員アクセス可能）
-        'profile.index' => [
-            'access_roles' => MemberRole::GUEST->value,
-            'view_roles' => MemberRole::GUEST->value,
-        ],
-        'profile.basic' => [
-            'access_roles' => MemberRole::GUEST->value,
-            'view_roles' => MemberRole::GUEST->value,
-        ],
-        'profile.password' => [
-            'access_roles' => MemberRole::GUEST->value,
-            'view_roles' => MemberRole::GUEST->value,
-        ],
-        'profile.appearance' => [
-            'access_roles' => MemberRole::GUEST->value,
-            'view_roles' => MemberRole::GUEST->value,
-        ],
-        'profile.notifications' => [
-            'access_roles' => MemberRole::GUEST->value,
-            'view_roles' => MemberRole::GUEST->value,
-        ],
-        'profile.two_factor' => [
-            'access_roles' => MemberRole::GUEST->value,
-            'view_roles' => MemberRole::GUEST->value,
-        ],
-        'profile.two_factor_management' => [
-            'access_roles' => MemberRole::GUEST->value,
-            'view_roles' => MemberRole::GUEST->value,
-        ],
+        // プロフィール（profile）は権限設定から除外
+        // 自分自身の設定なので全員が読み書き可能（AdminHelperで固定）
 
         // メンバー管理
-        'members.index' => [
-            'access_roles' => MemberRole::ADMIN->value,
-            'view_roles' => MemberRole::ADMIN->value,
-        ],
-        'members.create' => [
-            'access_roles' => MemberRole::ADMIN->value,
-            'view_roles' => MemberRole::ADMIN->value,
-        ],
-        'members.settings.overview' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
-        ],
-        'members.settings.password' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
-        ],
-        'members.settings.session' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
-        ],
-        'members.settings.auth' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
-        ],
-        'members.settings.roles' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
-        ],
-
-        // 全体設定 - 基本設定
-        'settings.base.index' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
-        ],
-        'settings.base.site' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
-        ],
-        'settings.base.admin' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
-        ],
-        'settings.base.mail' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
-        ],
-        'settings.base.maintenance' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
+        'members' => [
+            'children' => [
+                'index' => [
+                    'access_roles' => MemberRole::ADMIN->value,
+                    'view_roles' => MemberRole::ADMIN->value,
+                ],
+                'create' => [
+                    'access_roles' => MemberRole::ADMIN->value,
+                    'view_roles' => MemberRole::ADMIN->value,
+                ],
+                'settings' => [
+                    'children' => [
+                        'overview' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                        'password' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                        'session' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                        'auth' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                        'roles' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                    ],
+                ],
+            ],
         ],
 
-        // 全体設定 - セキュリティ設定
-        'settings.security.index' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
-        ],
-        'settings.security.password' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
-        ],
-        'settings.security.session' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
-        ],
-        'settings.security.captcha' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
-        ],
-        'settings.security.ip' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
-        ],
-        'settings.security.extensions' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
-        ],
-        'settings.security.csp' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
-        ],
-        'settings.security.notifications' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
-        ],
-        'settings.security.environment' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
-        ],
-        'settings.security.integrity' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
-        ],
+        // 全体設定
+        'settings' => [
+            'children' => [
+                // 基本設定
+                'base' => [
+                    'children' => [
+                        'index' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                        'site' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                        'admin' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                        'mail' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                        'maintenance' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                    ],
+                ],
 
-        // 全体設定 - テーマ管理
-        'settings.themes.index' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
-        ],
-        'settings.themes.add' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
-        ],
+                // セキュリティ設定
+                'security' => [
+                    'children' => [
+                        'index' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                        'password' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                        'session' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                        'captcha' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                        'ip' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                        'extensions' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                        'csp' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                        'notifications' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                        'environment' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                        'integrity' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                    ],
+                ],
 
-        // 全体設定 - プラグイン管理
-        'settings.plugins.index' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
-        ],
-        'settings.plugins.add' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
-        ],
+                // テーマ管理
+                'themes' => [
+                    'children' => [
+                        'index' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                        'add' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                    ],
+                ],
 
-        // 全体設定 - システム管理
-        'settings.systems.cache' => [
-            'access_roles' => MemberRole::ADMIN->value,
-            'view_roles' => MemberRole::ADMIN->value,
-        ],
-        'settings.systems.database' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
-        ],
-        'settings.systems.api' => [
-            'access_roles' => MemberRole::SUPER_ADMIN->value,
-            'view_roles' => MemberRole::SUPER_ADMIN->value,
-        ],
-        'settings.systems.logs.audit' => [
-            'access_roles' => MemberRole::ADMIN->value,
-            'view_roles' => MemberRole::ADMIN->value,
-        ],
-        'settings.systems.logs.files' => [
-            'access_roles' => MemberRole::ADMIN->value,
-            'view_roles' => MemberRole::ADMIN->value,
-        ],
-        'settings.systems.info' => [
-            'access_roles' => MemberRole::ADMIN->value,
-            'view_roles' => MemberRole::ADMIN->value,
+                // プラグイン管理
+                'plugins' => [
+                    'children' => [
+                        'index' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                        'add' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                    ],
+                ],
+
+                // システム管理
+                'systems' => [
+                    'children' => [
+                        'cache' => [
+                            'access_roles' => MemberRole::ADMIN->value,
+                            'view_roles' => MemberRole::ADMIN->value,
+                        ],
+                        'database' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                        'api' => [
+                            'access_roles' => MemberRole::SUPER_ADMIN->value,
+                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                        ],
+                        'logs' => [
+                            'children' => [
+                                'audit' => [
+                                    'access_roles' => MemberRole::ADMIN->value,
+                                    'view_roles' => MemberRole::ADMIN->value,
+                                ],
+                                'files' => [
+                                    'access_roles' => MemberRole::ADMIN->value,
+                                    'view_roles' => MemberRole::ADMIN->value,
+                                ],
+                            ],
+                        ],
+                        'info' => [
+                            'access_roles' => MemberRole::ADMIN->value,
+                            'view_roles' => MemberRole::ADMIN->value,
+                        ],
+                    ],
+                ],
+            ],
         ],
     ],
 ];

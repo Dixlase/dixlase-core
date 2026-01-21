@@ -54,8 +54,8 @@ return new class extends Migration
             // 閲覧権限（この値以上の権限を持つユーザーが閲覧可能）
             $table->unsignedTinyInteger('view_roles')->nullable();
             
-            // 更新者
-            $table->foreignId('updated_by')->nullable()->constrained('members')->nullOnDelete();
+            // 更新者（外部キー制約は add_foreign_key_constraints で追加）
+            $table->unsignedBigInteger('updated_by')->nullable();
             
             $table->timestamps();
             

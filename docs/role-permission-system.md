@@ -279,21 +279,11 @@ $orphans = RolePermissionOverride::findOrphanOverrides($activePlugins);
 $deletedCount = RolePermissionOverride::deleteOrphanOverrides($activePlugins);
 ```
 
-## 移行ガイド
+## 関連ドキュメント
 
-### 旧方式からの移行
+- [RBAC/権限モデル](./rbac-permissions.md) - ロール階層、Permission Enum、権限チェックの使い方
 
-旧方式（`members_role_permissions`, `plugins_members_role_permissions`）からの移行:
-
-1. 新マイグレーションを実行して `role_permission_overrides` テーブルを作成
-2. 既存の設定値がデフォルトと異なる場合のみ、オーバーライドとして移行
-3. 旧テーブルを削除
-
-```bash
-php artisan migrate
-```
-
-## 関連ファイル
+## 関連ソースファイル
 
 - `config/roles.php` - コアのデフォルト権限定義
 - `app/Models/RolePermissionOverride.php` - オーバーライドモデル

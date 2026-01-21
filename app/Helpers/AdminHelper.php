@@ -77,6 +77,11 @@ class AdminHelper
             return false;
         }
 
+        // プロフィールは全員アクセス可能（自分自身の設定）
+        if (str_starts_with($menuKey, 'profile')) {
+            return true;
+        }
+
         if ($user->role->value === MemberRole::SUPER_ADMIN->value) {
             return true;
         }
@@ -119,6 +124,11 @@ class AdminHelper
             return false;
         }
 
+        // プロフィールは全員閲覧可能（自分自身の設定）
+        if (str_starts_with($menuKey, 'profile')) {
+            return true;
+        }
+
         if ($user->role->value === MemberRole::SUPER_ADMIN->value) {
             return true;
         }
@@ -135,6 +145,11 @@ class AdminHelper
         $user = Auth::user();
         if (!$user) {
             return false;
+        }
+
+        // プロフィールは全員編集可能（自分自身の設定）
+        if (str_starts_with($menuKey, 'profile')) {
+            return true;
         }
 
         if ($user->role->value === MemberRole::SUPER_ADMIN->value) {

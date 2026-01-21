@@ -141,6 +141,18 @@ return new class extends Migration
                 ->on('webhook_deliveries')
                 ->cascadeOnDelete();
         });
+
+        // ========================================
+        // role_permission_overrides テーブルへの外部キー
+        // ========================================
+
+        // role_permission_overrides.updated_by -> members.id
+        Schema::table('role_permission_overrides', function (Blueprint $table) {
+            $table->foreign('updated_by')
+                ->references('id')
+                ->on('members')
+                ->nullOnDelete();
+        });
     }
 
     /**
@@ -148,6 +160,11 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // role_permission_overrides.updated_by
+        Schema::table('role_permission_overrides', function (Blueprint $table) {
+            $table->dropForeign(['updated_by']);
+        });
+
         // webhook_dead_letters.delivery_id
         Schema::table('webhook_dead_letters', function (Blueprint $table) {
             $table->dropForeign(['delivery_id']);
