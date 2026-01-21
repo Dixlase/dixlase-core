@@ -32,8 +32,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <i class="fas fa-cog text-indigo-600 dark:text-indigo-400"></i>
             </div>
             <div>
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ __('admin/members/settings.roles.core_permissions') }}</h2>
-                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/members/settings.roles.core_permissions_description') }}</p>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ __('admin/members/settings/roles.core_permissions') }}</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/members/settings/roles.core_permissions_description') }}</p>
             </div>
         </div>
         
@@ -60,18 +60,58 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <i class="fas fa-puzzle-piece text-purple-600 dark:text-purple-400"></i>
                 </div>
                 <div>
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ __('admin/members/settings.roles.plugin_permissions') }}</h2>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/members/settings.roles.plugin_permissions_description') }}</p>
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ __('admin/members/settings/roles.plugin_permissions') }}</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/members/settings/roles.plugin_permissions_description') }}</p>
                 </div>
             </div>
             
-            <div class="permission-groups space-y-6 mb-10" x-data="{ openSections: {} }">
+            <div class="permission-groups space-y-4 mb-10">
                 @foreach ($pluginPermissionGroups as $pluginGroup)
-                    @include('admin.members.partials.roles-plugin-permission-group', [
-                        'pluginGroup' => $pluginGroup,
-                        'pluginPermissions' => \App\Services\PermissionRegistry::getAllPluginPermissions($pluginGroup['slug']),
-                        'roles' => $roles
-                    ])
+                    <div class="plugin-permission-group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm" x-data="{ open: false }">
+                        {{-- プラグインヘッダー --}}
+                        <button 
+                            type="button"
+                            class="w-full px-6 py-4 text-left flex items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors rounded-lg focus:outline-none"
+                            @click="open = !open"
+                            :class="{ 'border-b border-gray-200 dark:border-gray-600 rounded-t-lg rounded-b-none': open }"
+                        >
+                            <i class="fas fa-chevron-right w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform duration-200 mr-3"
+                               :class="{ 'rotate-90': open }"></i>
+                            <i class="fas fa-puzzle-piece w-5 h-5 text-purple-600 dark:text-purple-400 mr-3"></i>
+                            <div class="flex-grow">
+                                <span class="font-semibold text-gray-900 dark:text-white">{{ $pluginGroup['name'] }}</span>
+                                @if ($pluginGroup['description'])
+                                    @php
+                                        $description = is_array($pluginGroup['description']) 
+                                            ? ($pluginGroup['description'][app()->getLocale()] ?? $pluginGroup['description']['ja'] ?? $pluginGroup['description']['en'] ?? '')
+                                            : $pluginGroup['description'];
+                                    @endphp
+                                    @if ($description)
+                                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ $description }}</p>
+                                    @endif
+                                @endif
+                            </div>
+                            <span class="text-xs text-gray-500 dark:text-gray-400 font-mono ml-2">({{ $pluginGroup['slug'] }})</span>
+                        </button>
+                        
+                        {{-- プラグイン権限コンテンツ --}}
+                        <div x-show="open" x-collapse class="p-4">
+                            <div class="space-y-2">
+                                @foreach ($pluginGroup['permissions'] as $key => $item)
+                                    @include('admin.members.partials.roles-plugin-permission-accordion', [
+                                        'key' => $key,
+                                        'item' => $item,
+                                        'pluginSlug' => $pluginGroup['slug'],
+                                        'pluginNav' => $pluginGroup['nav'],
+                                        'permissionsFlat' => $pluginGroup['permissionsFlat'],
+                                        'roles' => $roles,
+                                        'prefix' => '',
+                                        'depth' => 0
+                                    ])
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
                 @endforeach
             </div>
         </div>

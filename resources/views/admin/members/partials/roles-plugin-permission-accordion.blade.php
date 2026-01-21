@@ -25,7 +25,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     // ナビゲーション設定からアイコンとテキストを取得
     $navItem = null;
     $navParts = explode('.', $menuKey);
-    $currentNav = $menuList;
+    $currentNav = $pluginNav;
     foreach ($navParts as $part) {
         if (isset($currentNav[$part])) {
             $navItem = $currentNav[$part];
@@ -57,7 +57,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     $hasChildren = isset($item['children']) && !empty($item['children']);
     
     // ユニークID
-    $accordionId = 'perm_' . str_replace('.', '_', $menuKey);
+    $accordionId = 'plugin_perm_' . $pluginSlug . '_' . str_replace('.', '_', $menuKey);
     
     // 深さに応じたインデント
     $indentClass = match($depth) {
@@ -106,34 +106,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <div class="permission-accordion {{ $indentClass }}" x-data="{ open: false }">
     @if ($hasChildren || $hasPermission)
         {{-- アコーディオンヘッダー --}}
-        <div class="flex items-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg mb-1 {{ $hasChildren ? '' : 'hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-            @if ($hasChildren)
-                <button 
-                    type="button"
-                    class="flex-1 px-4 py-3 text-left flex items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors rounded-lg focus:outline-none"
-                    @click="open = !open"
-                >
-                    <i class="fas fa-chevron-right w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform duration-200 mr-3"
-                       :class="{ 'rotate-90': open }"></i>
-                    <i class="{{ $icon }} w-5 h-5 text-gray-600 dark:text-gray-400 mr-3"></i>
-                    <span class="font-medium text-gray-900 dark:text-white">{{ $title }}</span>
-                    @if ($hasPermission)
-                        <span class="ml-2 text-xs text-gray-500 dark:text-gray-400 font-mono">({{ $menuKey }})</span>
-                    @endif
-                </button>
-            @else
-                <button 
-                    type="button"
-                    class="flex-1 px-4 py-3 text-left flex items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors rounded-lg focus:outline-none"
-                    @click="open = !open"
-                >
-                    <i class="fas fa-chevron-right w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform duration-200 mr-3"
-                       :class="{ 'rotate-90': open }"></i>
-                    <i class="{{ $icon }} w-5 h-5 text-gray-600 dark:text-gray-400 mr-3"></i>
-                    <span class="font-medium text-gray-900 dark:text-white">{{ $title }}</span>
-                    <span class="ml-2 text-xs text-gray-500 dark:text-gray-400 font-mono">({{ $menuKey }})</span>
-                </button>
-            @endif
+        <div class="flex items-center bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg mb-1">
+            <button 
+                type="button"
+                class="flex-1 px-4 py-3 text-left flex items-center hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors rounded-lg focus:outline-none"
+                @click="open = !open"
+            >
+                <i class="fas fa-chevron-right w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform duration-200 mr-3"
+                   :class="{ 'rotate-90': open }"></i>
+                <i class="{{ $icon }} w-5 h-5 text-gray-600 dark:text-gray-400 mr-3"></i>
+                <span class="font-medium text-gray-900 dark:text-white">{{ $title }}</span>
+                <span class="ml-2 text-xs text-gray-500 dark:text-gray-400 font-mono">({{ $menuKey }})</span>
+            </button>
         </div>
         
         {{-- アコーディオンコンテンツ --}}
@@ -146,8 +130,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @php
                     // 現在の設定値を取得
                     $permission = $permissionsFlat[$menuKey] ?? null;
-                    $accessRoleValue = $permission['access_roles'] ?? $minSelectableRole;
-                    $viewRoleValue = $permission['view_roles'] ?? $minSelectableRole;
+                    $accessRoleValue = $permission['access_roles'] ?? \App\Enums\MemberRole::ADMIN->value;
+                    $viewRoleValue = $permission['view_roles'] ?? \App\Enums\MemberRole::ADMIN->value;
                     $isOverridden = $permission['is_overridden'] ?? false;
                     
                     // 設定値がログインユーザーの権限を超えている場合は、最大値に制限
@@ -159,11 +143,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     $viewRoleIndex = $valueToIndex[$viewRoleValue] ?? 0;
                     
                     // ユニークなIDを生成
-                    $accessId = 'access_' . str_replace('.', '_', $menuKey);
-                    $viewId = 'view_' . str_replace('.', '_', $menuKey);
+                    $accessId = 'plugin_access_' . $pluginSlug . '_' . str_replace('.', '_', $menuKey);
+                    $viewId = 'plugin_view_' . $pluginSlug . '_' . str_replace('.', '_', $menuKey);
                 @endphp
                 
-                <div class="bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg p-4 mb-2 {{ $indentClass }}">
+                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-4 mb-2 {{ $indentClass }}">
                     <div class="grid md:grid-cols-2 gap-6">
                         <!-- Access Permissions (編集権限) -->
                         <fieldset class="permission-section">
@@ -180,7 +164,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                      get actualValue() { return this.roleValues[this.rangeIndex] || this.roleValues[0]; }
                                  }">
                                 <input type="hidden" 
-                                       name="permissions[{{ $menuKey }}][access_roles]" 
+                                       name="plugin_permissions[{{ $pluginSlug }}][{{ $menuKey }}][access_roles]" 
                                        :value="actualValue">
                                 
                                 <x-form.range
@@ -213,7 +197,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                      get actualValue() { return this.roleValues[this.rangeIndex] || this.roleValues[0]; }
                                  }">
                                 <input type="hidden" 
-                                       name="permissions[{{ $menuKey }}][view_roles]" 
+                                       name="plugin_permissions[{{ $pluginSlug }}][{{ $menuKey }}][view_roles]" 
                                        :value="actualValue">
                                 
                                 <x-form.range
@@ -244,10 +228,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @if ($hasChildren)
                 <div class="space-y-1 mt-1">
                     @foreach ($item['children'] as $childKey => $childItem)
-                        @include('admin.members.partials.roles-permission-accordion', [
+                        @include('admin.members.partials.roles-plugin-permission-accordion', [
                             'key' => $childKey,
                             'item' => $childItem,
-                            'menuList' => $menuList,
+                            'pluginSlug' => $pluginSlug,
+                            'pluginNav' => $pluginNav,
                             'permissionsFlat' => $permissionsFlat,
                             'roles' => $roles,
                             'prefix' => $menuKey,

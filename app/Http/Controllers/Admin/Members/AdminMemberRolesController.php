@@ -153,6 +153,7 @@ class AdminMemberRolesController extends AdminLoggedInController
 
     /**
      * インストール済みプラグインから権限設定用のアイテムを収集
+     * roles.phpが存在するプラグインのみ対象
      */
     private function collectPluginPermissions(): array
     {
@@ -180,27 +181,36 @@ class AdminMemberRolesController extends AdminLoggedInController
                 continue;
             }
 
-            $pluginSlug = $pluginInfo['slug'] ?? basename($pluginDir);
+            // PermissionRegistryはディレクトリ名をスラッグとして使用するため、basename($pluginDir)を使用
+            $pluginSlug = basename($pluginDir);
             $pluginName = $pluginInfo['name'] ?? $pluginSlug;
             
+            // roles.phpが存在するプラグインのみ対象
+            $rolesConfigPath = $pluginDir . '/config/roles.php';
+            if (!file_exists($rolesConfigPath)) {
+                continue;
+            }
+            
+            // admin.phpからナビゲーション情報を取得（アイコン・テキスト用）
             $adminConfigPath = $pluginDir . '/config/admin.php';
-            if (!file_exists($adminConfigPath)) {
-                continue;
+            $adminNav = [];
+            if (file_exists($adminConfigPath)) {
+                $adminConfig = require $adminConfigPath;
+                $adminNav = $adminConfig['nav'] ?? [];
             }
             
-            $adminConfig = require $adminConfigPath;
-            if (!isset($adminConfig['nav']) || !is_array($adminConfig['nav'])) {
-                continue;
-            }
-
-            $items = $this->collectPluginMenuPermissions($adminConfig['nav'], $pluginSlug);
+            // 権限設定を取得（ネスト構造）
+            $permissions = PermissionRegistry::getAllPluginPermissions($pluginSlug);
+            $permissionsFlat = PermissionRegistry::getAllPluginPermissionsFlat($pluginSlug);
             
-            if (!empty($items)) {
+            if (!empty($permissions)) {
                 $pluginGroups[] = [
                     'slug' => $pluginSlug,
                     'name' => $pluginName,
                     'description' => $pluginInfo['description'] ?? null,
-                    'items' => $items,
+                    'permissions' => $permissions,
+                    'permissionsFlat' => $permissionsFlat,
+                    'nav' => $adminNav,
                 ];
             }
         }

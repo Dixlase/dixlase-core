@@ -104,7 +104,7 @@ return [
                     'access_roles' => MemberRole::ADMIN->value,
                     'view_roles' => MemberRole::ADMIN->value,
                 ],
-                'create' => [
+                'create_edit' => [
                     'access_roles' => MemberRole::ADMIN->value,
                     'view_roles' => MemberRole::ADMIN->value,
                 ],

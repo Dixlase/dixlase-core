@@ -203,7 +203,7 @@ class PermissionRegistry
     }
 
     /**
-     * プラグインのデフォルト権限を取得
+     * プラグインのデフォルト権限を取得（ネスト構造対応）
      */
     protected static function getPluginDefault(string $pluginSlug, string $menuKey): ?array
     {
@@ -216,9 +216,50 @@ class PermissionRegistry
         $pluginRolesPath = base_path("plugins/{$pluginSlug}/config/roles.php");
         if (file_exists($pluginRolesPath)) {
             $pluginRoles = require $pluginRolesPath;
-            if (isset($pluginRoles['permissions'][$menuKey])) {
-                return $pluginRoles['permissions'][$menuKey];
+            $permissions = $pluginRoles['permissions'] ?? [];
+            
+            // ネスト構造から取得
+            return self::getDefaultFromNestedArray($permissions, $menuKey);
+        }
+        
+        return null;
+    }
+
+    /**
+     * ネスト構造の配列からドット記法のキーで権限を取得
+     */
+    protected static function getDefaultFromNestedArray(array $permissions, string $menuKey): ?array
+    {
+        $parts = explode('.', $menuKey);
+        
+        $current = $permissions;
+        foreach ($parts as $part) {
+            if (!is_array($current)) {
+                return null;
             }
+            
+            // 直接キーがある場合
+            if (isset($current[$part])) {
+                // access_rolesがあれば権限定義
+                if (isset($current[$part]['access_roles'])) {
+                    return $current[$part];
+                }
+                // childrenがあればさらに深く
+                if (isset($current[$part]['children'])) {
+                    $current = $current[$part]['children'];
+                    continue;
+                }
+                // それ以外は次の階層へ
+                $current = $current[$part];
+                continue;
+            }
+            
+            return null;
+        }
+        
+        // 最終的にaccess_rolesがあれば権限定義
+        if (is_array($current) && isset($current['access_roles'])) {
+            return $current;
         }
         
         return null;
@@ -338,6 +379,7 @@ class PermissionRegistry
 
     /**
      * プラグインの全権限定義を取得（デフォルト＋オーバーライド合成済み）
+     * ネスト構造を維持して返す
      */
     public static function getAllPluginPermissions(string $pluginSlug): array
     {
@@ -351,13 +393,41 @@ class PermissionRegistry
             $pluginRolesPath = base_path("plugins/{$pluginSlug}/config/roles.php");
             if (file_exists($pluginRolesPath)) {
                 $pluginRoles = require $pluginRolesPath;
-                $defaults = array_merge($defaults, $pluginRoles['permissions'] ?? []);
+                $defaults = array_merge_recursive($defaults, $pluginRoles['permissions'] ?? []);
             }
             
             $overrides = RolePermissionOverride::getAllPluginOverrides($pluginSlug)->keyBy('menu_key');
             
+            return self::mergePermissionsWithOverrides($defaults, $overrides);
+        });
+    }
+
+    /**
+     * プラグインの全権限定義をフラット形式で取得（デフォルト＋オーバーライド合成済み）
+     * キーはドット記法（例：pages.index）
+     */
+    public static function getAllPluginPermissionsFlat(string $pluginSlug): array
+    {
+        $cacheKey = self::CACHE_PREFIX . "all_plugin_flat:{$pluginSlug}";
+        
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($pluginSlug) {
+            // プラグインのデフォルト権限を取得
+            $defaults = self::$pluginPermissions[$pluginSlug] ?? [];
+            
+            // config/roles.phpからも取得
+            $pluginRolesPath = base_path("plugins/{$pluginSlug}/config/roles.php");
+            if (file_exists($pluginRolesPath)) {
+                $pluginRoles = require $pluginRolesPath;
+                $defaults = array_merge_recursive($defaults, $pluginRoles['permissions'] ?? []);
+            }
+            
+            $overrides = RolePermissionOverride::getAllPluginOverrides($pluginSlug)->keyBy('menu_key');
+            
+            $flat = [];
+            self::flattenPermissions($defaults, '', $flat);
+            
             $result = [];
-            foreach ($defaults as $menuKey => $default) {
+            foreach ($flat as $menuKey => $default) {
                 $override = $overrides->get($menuKey);
                 
                 $result[$menuKey] = [
