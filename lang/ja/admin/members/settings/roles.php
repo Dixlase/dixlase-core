@@ -30,4 +30,9 @@ return [
     
     'overridden_from_default' => 'デフォルト値から変更されています',
     'reset_to_default' => 'デフォルトに戻す',
+    
+    // 権限キーのラベル（ナビゲーションにないもの）
+    'permission_labels' => [
+        'create_edit' => '新規作成・編集',
+    ],
 ];

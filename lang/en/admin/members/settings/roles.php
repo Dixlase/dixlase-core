@@ -30,4 +30,9 @@ return [
     
     'overridden_from_default' => 'Modified from default value',
     'reset_to_default' => 'Reset to default',
+    
+    // Permission key labels (not in navigation)
+    'permission_labels' => [
+        'create_edit' => 'Create & Edit',
+    ],
 ];
