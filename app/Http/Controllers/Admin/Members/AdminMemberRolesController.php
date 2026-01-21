@@ -24,8 +24,8 @@ namespace App\Http\Controllers\Admin\Members;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use Illuminate\Http\Request;
-use App\Models\MemberRolePermission;
-use App\Models\PluginMemberRolePermission;
+use App\Models\RolePermissionOverride;
+use App\Services\PermissionRegistry;
 use App\Enums\MemberRole;
 
 class AdminMemberRolesController extends AdminLoggedInController
@@ -40,19 +40,19 @@ class AdminMemberRolesController extends AdminLoggedInController
      */
     public function index()
     {
-        $permissions = MemberRolePermission::all()->keyBy('menu_key');
         $roles = MemberRole::cases();
         $menuList = config('admin.nav');
 
-        $corePermissionItems = $this->collectMenuPermissions($menuList);
-        $pluginPermissionGroups = $this->collectPluginPermissions();
+        // コア権限（デフォルト＋オーバーライド合成済み）
+        $corePermissions = PermissionRegistry::getAllCorePermissions();
         
-        $pluginPermissions = PluginMemberRolePermission::all()
-            ->groupBy('plugin_slug')
-            ->map(fn($items) => $items->keyBy('menu_key'));
+        // コアメニューから権限設定用のアイテムを収集
+        $corePermissionItems = $this->collectMenuPermissions($menuList);
+        
+        // プラグイン権限グループを収集
+        $pluginPermissionGroups = $this->collectPluginPermissions();
 
-        $this->viewParams['permissions'] = $permissions;
-        $this->viewParams['pluginPermissions'] = $pluginPermissions;
+        $this->viewParams['permissions'] = $corePermissions;
         $this->viewParams['roles'] = $roles;
         $this->viewParams['menuList'] = $menuList;
         $this->viewParams['permissionItems'] = $corePermissionItems;
@@ -63,41 +63,92 @@ class AdminMemberRolesController extends AdminLoggedInController
 
     /**
      * 権限設定更新
+     * 
+     * デフォルト値と異なる場合のみオーバーライドとして保存
+     * デフォルト値に戻す場合はオーバーライドを削除
      */
     public function update(Request $request)
     {
-        $this->authorizeEdit('members.roles');
+        $this->authorizeEdit('members.settings.roles');
 
+        $memberId = auth()->id();
         $data = $request->input('permissions', []);
 
+        // コア権限の処理
         foreach ($data as $menuKey => $values) {
-            MemberRolePermission::updateOrCreate(
-                ['menu_key' => $menuKey],
-                [
-                    'access_roles' => isset($values['access_roles']) ? (int) $values['access_roles'] : MemberRole::GUEST->value,
-                    'view_roles' => isset($values['view_roles']) ? (int) $values['view_roles'] : MemberRole::GUEST->value,
-                ]
-            );
+            $accessRoles = isset($values['access_roles']) ? (int) $values['access_roles'] : MemberRole::GUEST->value;
+            $viewRoles = isset($values['view_roles']) ? (int) $values['view_roles'] : MemberRole::GUEST->value;
+            
+            // デフォルト値を取得
+            $default = config("roles.permissions.{$menuKey}");
+            
+            if ($default) {
+                // デフォルト値と同じ場合はオーバーライドを削除
+                if ($accessRoles === $default['access_roles'] && $viewRoles === $default['view_roles']) {
+                    RolePermissionOverride::resetCoreOverride($menuKey);
+                } else {
+                    // デフォルト値と異なる場合はオーバーライドを保存
+                    RolePermissionOverride::setCoreOverride($menuKey, $accessRoles, $viewRoles, $memberId);
+                }
+            }
         }
 
+        // プラグイン権限の処理
         $pluginData = $request->input('plugin_permissions', []);
 
         foreach ($pluginData as $pluginSlug => $menuItems) {
             foreach ($menuItems as $menuKey => $values) {
-                PluginMemberRolePermission::updateOrCreate(
-                    [
-                        'plugin_slug' => $pluginSlug,
-                        'menu_key' => $menuKey,
-                    ],
-                    [
-                        'access_roles' => isset($values['access_roles']) ? (int) $values['access_roles'] : MemberRole::ADMIN->value,
-                        'view_roles' => isset($values['view_roles']) ? (int) $values['view_roles'] : MemberRole::ADMIN->value,
-                    ]
-                );
+                $accessRoles = isset($values['access_roles']) ? (int) $values['access_roles'] : MemberRole::ADMIN->value;
+                $viewRoles = isset($values['view_roles']) ? (int) $values['view_roles'] : MemberRole::ADMIN->value;
+                
+                // プラグインのデフォルト値を取得
+                $pluginRolesPath = base_path("plugins/{$pluginSlug}/config/roles.php");
+                $default = null;
+                if (file_exists($pluginRolesPath)) {
+                    $pluginRoles = require $pluginRolesPath;
+                    $default = $pluginRoles['permissions'][$menuKey] ?? null;
+                }
+                
+                if ($default) {
+                    // デフォルト値と同じ場合はオーバーライドを削除
+                    if ($accessRoles === $default['access_roles'] && $viewRoles === $default['view_roles']) {
+                        RolePermissionOverride::resetPluginOverride($pluginSlug, $menuKey);
+                    } else {
+                        // デフォルト値と異なる場合はオーバーライドを保存
+                        RolePermissionOverride::setPluginOverride($pluginSlug, $menuKey, $accessRoles, $viewRoles, $memberId);
+                    }
+                } else {
+                    // デフォルト値がない場合は常にオーバーライドを保存
+                    RolePermissionOverride::setPluginOverride($pluginSlug, $menuKey, $accessRoles, $viewRoles, $memberId);
+                }
             }
         }
 
+        // キャッシュをクリア
+        PermissionRegistry::clearCache();
+
         return redirect()->back()->with('success', __('admin/members/index.messages.permissions_saved'));
+    }
+
+    /**
+     * 権限をデフォルトにリセット
+     */
+    public function reset(Request $request)
+    {
+        $this->authorizeEdit('members.settings.roles');
+
+        $menuKey = $request->input('menu_key');
+        $pluginSlug = $request->input('plugin_slug');
+
+        if ($pluginSlug) {
+            RolePermissionOverride::resetPluginOverride($pluginSlug, $menuKey);
+        } else {
+            RolePermissionOverride::resetCoreOverride($menuKey);
+        }
+
+        PermissionRegistry::clearCache();
+
+        return response()->json(['success' => true]);
     }
 
     /**
