@@ -133,7 +133,7 @@ class RolePermissionOverride extends Model
      */
     public static function setCoreOverride(string $menuKey, int $accessRoles, int $viewRoles, ?int $updatedBy = null): self
     {
-        return static::updateOrCreate(
+        $result = static::updateOrCreate(
             [
                 'source_type' => self::SOURCE_CORE,
                 'source_id' => null,
@@ -145,6 +145,11 @@ class RolePermissionOverride extends Model
                 'updated_by' => $updatedBy,
             ]
         );
+        
+        // キャッシュをクリア
+        \App\Services\PermissionRegistry::clearMenuCache($menuKey);
+        
+        return $result;
     }
 
     /**
@@ -152,7 +157,7 @@ class RolePermissionOverride extends Model
      */
     public static function setPluginOverride(string $pluginSlug, string $menuKey, int $accessRoles, int $viewRoles, ?int $updatedBy = null): self
     {
-        return static::updateOrCreate(
+        $result = static::updateOrCreate(
             [
                 'source_type' => self::SOURCE_PLUGIN,
                 'source_id' => $pluginSlug,
@@ -164,6 +169,11 @@ class RolePermissionOverride extends Model
                 'updated_by' => $updatedBy,
             ]
         );
+        
+        // キャッシュをクリア
+        \App\Services\PermissionRegistry::clearMenuCache($menuKey, $pluginSlug);
+        
+        return $result;
     }
 
     /**
@@ -171,10 +181,15 @@ class RolePermissionOverride extends Model
      */
     public static function resetCoreOverride(string $menuKey): bool
     {
-        return static::where('source_type', self::SOURCE_CORE)
+        $result = static::where('source_type', self::SOURCE_CORE)
             ->whereNull('source_id')
             ->where('menu_key', $menuKey)
             ->delete() > 0;
+        
+        // キャッシュをクリア
+        \App\Services\PermissionRegistry::clearMenuCache($menuKey);
+        
+        return $result;
     }
 
     /**
@@ -182,10 +197,15 @@ class RolePermissionOverride extends Model
      */
     public static function resetPluginOverride(string $pluginSlug, string $menuKey): bool
     {
-        return static::where('source_type', self::SOURCE_PLUGIN)
+        $result = static::where('source_type', self::SOURCE_PLUGIN)
             ->where('source_id', $pluginSlug)
             ->where('menu_key', $menuKey)
             ->delete() > 0;
+        
+        // キャッシュをクリア
+        \App\Services\PermissionRegistry::clearMenuCache($menuKey, $pluginSlug);
+        
+        return $result;
     }
 
     /**

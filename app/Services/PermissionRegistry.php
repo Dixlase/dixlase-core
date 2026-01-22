@@ -167,7 +167,23 @@ class PermissionRegistry
     {
         $cacheKey = self::CACHE_PREFIX . "plugin:{$pluginSlug}:{$menuKey}";
         
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($pluginSlug, $menuKey) {
+        // キャッシュの存在確認
+        $cached = Cache::get($cacheKey);
+        \Log::info("getPluginEffective called", [
+            'plugin' => $pluginSlug,
+            'menu_key' => $menuKey,
+            'cache_key' => $cacheKey,
+            'cache_exists' => $cached !== null,
+            'cached_value' => $cached,
+        ]);
+        
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($pluginSlug, $menuKey, $cacheKey) {
+            \Log::info("getPluginEffective: Computing fresh value", [
+                'plugin' => $pluginSlug,
+                'menu_key' => $menuKey,
+                'cache_key' => $cacheKey,
+            ]);
+            
             // プラグインのデフォルト値を取得
             $default = self::getPluginDefault($pluginSlug, $menuKey);
             
@@ -181,6 +197,17 @@ class PermissionRegistry
             
             // オーバーライドを取得
             $override = RolePermissionOverride::getPluginOverride($pluginSlug, $menuKey);
+            
+            \Log::info("getPluginEffective: Override check", [
+                'plugin' => $pluginSlug,
+                'menu_key' => $menuKey,
+                'has_override' => $override !== null,
+                'override_data' => $override ? [
+                    'access_roles' => $override->access_roles,
+                    'view_roles' => $override->view_roles,
+                ] : null,
+                'default_data' => $default,
+            ]);
             
             if ($override) {
                 return [
@@ -560,7 +587,17 @@ class PermissionRegistry
         
         // プラグイン権限キャッシュをクリア
         foreach (array_keys(self::$pluginPermissions) as $pluginSlug) {
+            // プラグイン全体のキャッシュをクリア
             Cache::forget(self::CACHE_PREFIX . "all_plugin:{$pluginSlug}");
+            
+            // プラグインの個別メニューキーのキャッシュをクリア
+            $pluginPerms = self::$pluginPermissions[$pluginSlug] ?? [];
+            $pluginFlat = [];
+            self::flattenPermissions($pluginPerms, '', $pluginFlat);
+            
+            foreach (array_keys($pluginFlat) as $menuKey) {
+                Cache::forget(self::CACHE_PREFIX . "plugin:{$pluginSlug}:{$menuKey}");
+            }
         }
     }
 
@@ -570,11 +607,32 @@ class PermissionRegistry
     public static function clearMenuCache(string $menuKey, ?string $pluginSlug = null): void
     {
         if ($pluginSlug) {
-            Cache::forget(self::CACHE_PREFIX . "plugin:{$pluginSlug}:{$menuKey}");
-            Cache::forget(self::CACHE_PREFIX . "all_plugin:{$pluginSlug}");
+            $cacheKey1 = self::CACHE_PREFIX . "plugin:{$pluginSlug}:{$menuKey}";
+            $cacheKey2 = self::CACHE_PREFIX . "all_plugin:{$pluginSlug}";
+            $cacheKey3 = self::CACHE_PREFIX . "all_plugin_flat:{$pluginSlug}";
+            \Log::info("Clearing plugin cache", [
+                'plugin' => $pluginSlug,
+                'menu_key' => $menuKey,
+                'cache_key_1' => $cacheKey1,
+                'cache_key_2' => $cacheKey2,
+                'cache_key_3' => $cacheKey3,
+            ]);
+            Cache::forget($cacheKey1);
+            Cache::forget($cacheKey2);
+            Cache::forget($cacheKey3);
         } else {
-            Cache::forget(self::CACHE_PREFIX . 'core:' . $menuKey);
-            Cache::forget(self::CACHE_PREFIX . 'all_core');
+            $cacheKey1 = self::CACHE_PREFIX . 'core:' . $menuKey;
+            $cacheKey2 = self::CACHE_PREFIX . 'all_core';
+            $cacheKey3 = self::CACHE_PREFIX . 'all_core_flat';
+            \Log::info("Clearing core cache", [
+                'menu_key' => $menuKey,
+                'cache_key_1' => $cacheKey1,
+                'cache_key_2' => $cacheKey2,
+                'cache_key_3' => $cacheKey3,
+            ]);
+            Cache::forget($cacheKey1);
+            Cache::forget($cacheKey2);
+            Cache::forget($cacheKey3);
         }
     }
 
