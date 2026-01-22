@@ -42,7 +42,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         
         <div class="permission-groups mt-6">
             @foreach ($permissions as $key => $item)
-                @include('admin.members.partials.roles-permission-accordion', [
+                @include('admin.members.settings.partials.roles-permission-accordion', [
                     'key' => $key,
                     'item' => $item,
                     'menuList' => $menuList,
@@ -101,7 +101,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <div x-show="open" x-collapse class="p-4">
                             <div class="space-y-2">
                                 @foreach ($pluginGroup['permissions'] as $key => $item)
-                                    @include('admin.members.partials.roles-plugin-permission-accordion', [
+                                    @include('admin.members.settings.partials.roles-plugin-permission-accordion', [
                                         'key' => $key,
                                         'item' => $item,
                                         'pluginSlug' => $pluginGroup['slug'],

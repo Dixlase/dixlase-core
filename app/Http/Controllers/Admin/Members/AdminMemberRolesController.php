@@ -74,11 +74,21 @@ class AdminMemberRolesController extends AdminLoggedInController
 
         $memberId = auth()->id();
         $data = $request->input('permissions', []);
+        
+        // バリデーションエラーを収集
+        $errors = [];
 
         // コア権限の処理
         foreach ($data as $menuKey => $values) {
             $accessRoles = isset($values['access_roles']) ? (int) $values['access_roles'] : MemberRole::GUEST->value;
             $viewRoles = isset($values['view_roles']) ? (int) $values['view_roles'] : MemberRole::GUEST->value;
+            
+            // 編集権限が閲覧権限より下でないかチェック
+            if ($accessRoles < $viewRoles) {
+                $errors[] = __('admin/members/settings/roles.validation.access_must_be_greater_than_view', [
+                    'menu_key' => $menuKey,
+                ]);
+            }
             
             // デフォルト値を取得（ネスト構造対応）
             $default = PermissionRegistry::getEffective($menuKey);
@@ -102,6 +112,13 @@ class AdminMemberRolesController extends AdminLoggedInController
                 $accessRoles = isset($values['access_roles']) ? (int) $values['access_roles'] : MemberRole::ADMIN->value;
                 $viewRoles = isset($values['view_roles']) ? (int) $values['view_roles'] : MemberRole::ADMIN->value;
                 
+                // 編集権限が閲覧権限より下でないかチェック
+                if ($accessRoles < $viewRoles) {
+                    $errors[] = __('admin/members/settings/roles.validation.access_must_be_greater_than_view', [
+                        'menu_key' => "{$pluginSlug}.{$menuKey}",
+                    ]);
+                }
+                
                 // PermissionRegistryを使ってデフォルト値を取得（ネスト構造対応）
                 $effective = PermissionRegistry::getPluginEffective($pluginSlug, $menuKey);
                 
@@ -115,6 +132,11 @@ class AdminMemberRolesController extends AdminLoggedInController
                     }
                 }
             }
+        }
+
+        // バリデーションエラーがある場合はリダイレクト
+        if (!empty($errors)) {
+            return redirect()->back()->withErrors($errors)->withInput();
         }
 
         // キャッシュをクリア
