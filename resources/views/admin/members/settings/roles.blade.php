@@ -147,7 +147,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     .permission-groups {
         display: grid;
-        gap: 1.5rem;
+        gap: 1rem;
     }
 
     .permission-group {

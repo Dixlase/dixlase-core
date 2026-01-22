@@ -481,6 +481,17 @@ class PermissionRegistry
         $effective = self::getEffective($menuKey);
         
         if ($effective === null) {
+            // 権限定義がない場合、子項目の権限をチェック
+            $allPermissions = self::getAllCorePermissionsFlat();
+            
+            foreach ($allPermissions as $key => $permission) {
+                if (str_starts_with($key, $menuKey . '.')) {
+                    if ($userRole->value >= $permission['access_roles']) {
+                        return true;
+                    }
+                }
+            }
+            
             return false;
         }
         
@@ -499,6 +510,17 @@ class PermissionRegistry
         $effective = self::getEffective($menuKey);
         
         if ($effective === null) {
+            // 権限定義がない場合、子項目の権限をチェック
+            $allPermissions = self::getAllCorePermissionsFlat();
+            
+            foreach ($allPermissions as $key => $permission) {
+                if (str_starts_with($key, $menuKey . '.')) {
+                    if ($userRole->value >= $permission['view_roles']) {
+                        return true;
+                    }
+                }
+            }
+            
             return false;
         }
         

@@ -134,7 +134,7 @@ return [
                     'route' => 'admin.members.index',
                     'icon' => 'fas fa-fw fa-users',
                 ],
-                'create' => [
+                'create_edit' => [
                     'text' => 'admin/nav.settings.members.create',
                     'route' => 'admin.members.create',
                     'icon' => 'fas fa-fw fa-user-plus',

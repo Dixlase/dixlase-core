@@ -207,10 +207,18 @@ Route::prefix($adminUrl)->name('admin.')
             Route::middleware('check.menu.access:members')->prefix('members')->name('members.')->group(function () {
                 // メンバー一覧・CRUD
                 Route::get('/', [Members\AdminMemberController::class, 'index'])->name('index');
-                Route::get('/create', [Members\AdminMemberController::class, 'create'])->name('create');
-                Route::post('/', [Members\AdminMemberController::class, 'store'])->name('store');
-                Route::get('/edit/{member}', [Members\AdminMemberController::class, 'edit'])->name('edit');
-                Route::post('/update/{member}', [Members\AdminMemberController::class, 'update'])->name('update');
+                Route::get('/create', [Members\AdminMemberController::class, 'create'])
+                    ->middleware('check.menu.access:members.create_edit')
+                    ->name('create');
+                Route::post('/', [Members\AdminMemberController::class, 'store'])
+                    ->middleware('check.menu.access:members.create_edit')
+                    ->name('store');
+                Route::get('/edit/{member}', [Members\AdminMemberController::class, 'edit'])
+                    ->middleware('check.menu.access:members.create_edit')
+                    ->name('edit');
+                Route::post('/update/{member}', [Members\AdminMemberController::class, 'update'])
+                    ->middleware('check.menu.access:members.create_edit')
+                    ->name('update');
                 Route::delete('/destroy/{member}', [Members\AdminMemberController::class, 'destroy'])
                     ->middleware('check.menu.edit:members.index')
                     ->name('destroy');
