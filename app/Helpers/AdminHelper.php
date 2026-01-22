@@ -97,7 +97,7 @@ class AdminHelper
         // 権限定義がない場合、子項目の権限をチェック
         if ($effective === null) {
             // 子項目の権限を検索（例: media -> media.index, media.upload）
-            $allPermissions = PermissionRegistry::getAllCorePermissions();
+            $allPermissions = PermissionRegistry::getAllCorePermissionsFlat();
             $hasChildAccess = false;
             
             foreach ($allPermissions as $key => $permission) {
