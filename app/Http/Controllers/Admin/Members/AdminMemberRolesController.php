@@ -52,21 +52,6 @@ class AdminMemberRolesController extends AdminLoggedInController
         // プラグイン権限グループを収集
         $pluginPermissionGroups = $this->collectPluginPermissions();
         
-        // デバッグ: プラグイン権限の内容をログ出力（フラット形式を使用）
-        foreach ($pluginPermissionGroups as $group) {
-            $pluginSlug = $group['slug'];
-            foreach ($group['permissionsFlat'] as $menuKey => $permission) {
-                \Log::info("Display plugin permission", [
-                    'plugin' => $pluginSlug,
-                    'menu_key' => $menuKey,
-                    'access_roles' => $permission['access_roles'] ?? null,
-                    'view_roles' => $permission['view_roles'] ?? null,
-                    'is_overridden' => $permission['is_overridden'] ?? null,
-                    'default_access' => $permission['default_access_roles'] ?? null,
-                    'default_view' => $permission['default_view_roles'] ?? null,
-                ]);
-            }
-        }
 
         $this->viewParams['permissions'] = $corePermissions;
         $this->viewParams['permissionsFlat'] = $corePermissionsFlat;
@@ -99,23 +84,12 @@ class AdminMemberRolesController extends AdminLoggedInController
             $default = PermissionRegistry::getEffective($menuKey);
             
             if ($default) {
-                // デバッグログ
-                \Log::info("Core permission update: {$menuKey}", [
-                    'submitted_access' => $accessRoles,
-                    'submitted_view' => $viewRoles,
-                    'default_access' => $default['default_access_roles'],
-                    'default_view' => $default['default_view_roles'],
-                    'is_same' => ($accessRoles === $default['default_access_roles'] && $viewRoles === $default['default_view_roles']),
-                ]);
-                
                 // デフォルト値と同じ場合はオーバーライドを削除
                 if ($accessRoles === $default['default_access_roles'] && $viewRoles === $default['default_view_roles']) {
                     RolePermissionOverride::resetCoreOverride($menuKey);
-                    \Log::info("Core permission reset: {$menuKey}");
                 } else {
                     // デフォルト値と異なる場合はオーバーライドを保存
                     RolePermissionOverride::setCoreOverride($menuKey, $accessRoles, $viewRoles, $memberId);
-                    \Log::info("Core permission saved: {$menuKey}");
                 }
             }
         }
@@ -132,23 +106,12 @@ class AdminMemberRolesController extends AdminLoggedInController
                 $effective = PermissionRegistry::getPluginEffective($pluginSlug, $menuKey);
                 
                 if ($effective) {
-                    // デバッグログ
-                    \Log::info("Plugin permission update: {$pluginSlug}.{$menuKey}", [
-                        'submitted_access' => $accessRoles,
-                        'submitted_view' => $viewRoles,
-                        'default_access' => $effective['default_access_roles'],
-                        'default_view' => $effective['default_view_roles'],
-                        'is_same' => ($accessRoles === $effective['default_access_roles'] && $viewRoles === $effective['default_view_roles']),
-                    ]);
-                    
                     // デフォルト値と同じ場合はオーバーライドを削除
                     if ($accessRoles === $effective['default_access_roles'] && $viewRoles === $effective['default_view_roles']) {
                         RolePermissionOverride::resetPluginOverride($pluginSlug, $menuKey);
-                        \Log::info("Plugin permission reset: {$pluginSlug}.{$menuKey}");
                     } else {
                         // デフォルト値と異なる場合はオーバーライドを保存
                         RolePermissionOverride::setPluginOverride($pluginSlug, $menuKey, $accessRoles, $viewRoles, $memberId);
-                        \Log::info("Plugin permission saved: {$pluginSlug}.{$menuKey}");
                     }
                 }
             }

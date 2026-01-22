@@ -35,6 +35,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'onchange' => null,
     'ariaLabel' => null,
     'ariaDescribedby' => null,
+    'defaultValue' => null, // デフォルト値（変更検出用）
+    'modifiedColor' => 'amber', // 変更時の色
 ])
 
 @php
@@ -92,6 +94,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 'text' => 'text-red-600 dark:text-red-400',
                 'bg' => 'bg-red-600 dark:bg-red-400',
             ],
+            'amber' => [
+                'text' => 'text-amber-600 dark:text-amber-400',
+                'bg' => 'bg-amber-500 dark:bg-amber-400',
+            ],
         ];
     @endphp
 
@@ -103,17 +109,32 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     // ラベルの位置を計算（0% ～ 100%）
                     $position = $labelCount > 1 ? ($labelValue - $min) / ($max - $min) * 100 : 50;
                     
-                    // このラベルの色を取得（指定がなければblue）
+                    // このラベルの色を取得（指定がなければblue、デフォルト値と異なる場合はmodifiedColor）
                     $labelColor = $labelColors[$labelValue] ?? 'blue';
+                    $modifiedColorClass = $colorClasses[$modifiedColor]['text'] ?? $colorClasses['amber']['text'];
+                    $modifiedBgClass = $colorClasses[$modifiedColor]['bg'] ?? $colorClasses['amber']['bg'];
                     $textColorClass = $colorClasses[$labelColor]['text'] ?? $colorClasses['blue']['text'];
                     $bgColorClass = $colorClasses[$labelColor]['bg'] ?? $colorClasses['blue']['bg'];
                 @endphp
                 <span class="absolute flex flex-col items-center cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                       style="left: {{ $position }}%; transform: translateX(-50%);"
                       @click="{{ $modelVar }} = {{ $labelValue }}"
-                      :class="{ '{{ $textColorClass }} font-semibold': {{ $modelVar }} == {{ $labelValue }} }">
+                      :class="{ 
+                          @if($defaultValue !== null)
+                          '{{ $modifiedColorClass }} font-semibold': {{ $modelVar }} == {{ $labelValue }} && {{ $modelVar }} != {{ $defaultValue }},
+                          @endif
+                          '{{ $textColorClass }} font-semibold': {{ $modelVar }} == {{ $labelValue }} @if($defaultValue !== null) && {{ $modelVar }} == {{ $defaultValue }} @endif
+                      }">
                     <span class="w-1 h-1 mb-1 rounded-full"
-                          :class="{{ $modelVar }} == {{ $labelValue }} ? '{{ $bgColorClass }}' : 'bg-gray-300 dark:bg-gray-600'"></span>
+                          :class="
+                              {{ $modelVar }} == {{ $labelValue }} 
+                              @if($defaultValue !== null)
+                              ? ({{ $modelVar }} != {{ $defaultValue }} ? '{{ $modifiedBgClass }}' : '{{ $bgColorClass }}')
+                              @else
+                              ? '{{ $bgColorClass }}'
+                              @endif
+                              : 'bg-gray-300 dark:bg-gray-600'
+                          "></span>
                     <span class="whitespace-nowrap">{{ __($labelText) }}</span>
                 </span>
             @endforeach

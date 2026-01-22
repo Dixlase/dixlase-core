@@ -118,11 +118,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     $accessRoleIndex = $valueToIndex[$accessRoleValue] ?? 0;
                     $viewRoleIndex = $valueToIndex[$viewRoleValue] ?? 0;
                     
+                    // デフォルト値のインデックスを計算
+                    $defaultAccessIndex = $valueToIndex[$defaultAccessRoles] ?? null;
+                    $defaultViewIndex = $valueToIndex[$defaultViewRoles] ?? null;
+                    
                     // ユニークなIDを生成
                     $accessId = 'access_' . str_replace('.', '_', $item['menuKey']);
                     $viewId = 'view_' . str_replace('.', '_', $item['menuKey']);
                 @endphp
-
+                
                 <section class="permission-group bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-6">
                     <header class="permission-group__header mb-6">
                         <h3 class="permission-group__title text-lg font-semibold text-gray-900 dark:text-white">
@@ -165,6 +169,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     :showValue="false"
                                     :showLabels="true"
                                     xModel="rangeIndex"
+                                    :defaultValue="$defaultAccessIndex"
                                 />
                             </div>
                         </fieldset>
@@ -200,6 +205,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     :showValue="false"
                                     :showLabels="true"
                                     xModel="rangeIndex"
+                                    :defaultValue="$defaultViewIndex"
                                 />
                             </div>
                         </fieldset>

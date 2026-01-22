@@ -149,6 +149,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     $accessRoleValue = $permission['access_roles'] ?? $minSelectableRole;
                     $viewRoleValue = $permission['view_roles'] ?? $minSelectableRole;
                     $isOverridden = $permission['is_overridden'] ?? false;
+                    $defaultAccessRoles = $permission['default_access_roles'] ?? $minSelectableRole;
+                    $defaultViewRoles = $permission['default_view_roles'] ?? $minSelectableRole;
                     
                     // 設定値がログインユーザーの権限を超えている場合は、最大値に制限
                     $accessRoleValue = min($accessRoleValue, $maxSelectableRole);
@@ -157,6 +159,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     // 実際の値からインデックスに変換
                     $accessRoleIndex = $valueToIndex[$accessRoleValue] ?? 0;
                     $viewRoleIndex = $valueToIndex[$viewRoleValue] ?? 0;
+                    
+                    // デフォルト値のインデックスを計算
+                    $defaultAccessIndex = $valueToIndex[$defaultAccessRoles] ?? null;
+                    $defaultViewIndex = $valueToIndex[$defaultViewRoles] ?? null;
                     
                     // ユニークなIDを生成
                     $accessId = 'access_' . str_replace('.', '_', $menuKey);
@@ -194,6 +200,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     :showValue="false"
                                     :showLabels="true"
                                     xModel="rangeIndex"
+                                    :defaultValue="$defaultAccessIndex"
                                 />
                             </div>
                         </fieldset>
@@ -227,6 +234,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     :showValue="false"
                                     :showLabels="true"
                                     xModel="rangeIndex"
+                                    :defaultValue="$defaultViewIndex"
                                 />
                             </div>
                         </fieldset>

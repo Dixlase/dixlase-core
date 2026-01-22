@@ -130,6 +130,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     $accessRoleIndex = $valueToIndex[$accessRoleValue] ?? ($valueToIndex[$defaultRole] ?? 0);
                     $viewRoleIndex = $valueToIndex[$viewRoleValue] ?? ($valueToIndex[$defaultRole] ?? 0);
                     
+                    // デフォルト値のインデックスを計算
+                    $defaultAccessIndex = $valueToIndex[$defaultAccessRoles] ?? null;
+                    $defaultViewIndex = $valueToIndex[$defaultViewRoles] ?? null;
+                    
                     // ユニークなIDを生成
                     $accessId = 'plugin_access_' . str_replace(['.', '-'], '_', $pluginSlug . '_' . $item['menuKey']);
                     $viewId = 'plugin_view_' . str_replace(['.', '-'], '_', $pluginSlug . '_' . $item['menuKey']);
@@ -177,6 +181,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     :showValue="false"
                                     :showLabels="true"
                                     xModel="rangeIndex"
+                                    :defaultValue="$defaultAccessIndex"
                                 />
                             </div>
                         </fieldset>
@@ -212,6 +217,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     :showValue="false"
                                     :showLabels="true"
                                     xModel="rangeIndex"
+                                    :defaultValue="$defaultViewIndex"
                                 />
                             </div>
                         </fieldset>
