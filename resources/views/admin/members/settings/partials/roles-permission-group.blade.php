@@ -127,7 +127,30 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     $viewId = 'view_' . str_replace('.', '_', $item['menuKey']);
                 @endphp
                 
-                <section class="permission-group bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-6">
+                <section class="permission-group bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-6"
+                         x-data="{
+                             accessIndex: {{ $accessRoleIndex }},
+                             viewIndex: {{ $viewRoleIndex }},
+                             roleValues: {{ json_encode(array_values($roleValues)) }},
+                             get accessValue() { return this.roleValues[this.accessIndex] || this.roleValues[0]; },
+                             get viewValue() { return this.roleValues[this.viewIndex] || this.roleValues[0]; },
+                             init() {
+                                 this.$watch('accessIndex', (newValue, oldValue) => {
+                                     if (parseInt(newValue) < parseInt(this.viewIndex)) {
+                                         this.$nextTick(() => {
+                                             this.accessIndex = this.viewIndex;
+                                         });
+                                     }
+                                 });
+                                 this.$watch('viewIndex', (newValue, oldValue) => {
+                                     if (parseInt(this.accessIndex) < parseInt(newValue)) {
+                                         this.$nextTick(() => {
+                                             this.accessIndex = newValue;
+                                         });
+                                     }
+                                 });
+                             }
+                         }">
                     <header class="permission-group__header mb-6">
                         <h3 class="permission-group__title text-lg font-semibold text-gray-900 dark:text-white">
                             {{ $item['title'] }}
@@ -138,42 +161,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </header>
 
                     <div class="permission-group__content grid md:grid-cols-2 gap-8">
-                        <!-- Access Permissions (編集権限) -->
-                        <fieldset class="permission-section">
-                            <legend class="permission-section__title text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                                {{ __('admin/members/settings.roles.access_roles') }}
-                            </legend>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                                {{ __('admin/members/settings.roles.access_roles_help') }}
-                            </p>
-                            
-                            <div class="permission-section__options" 
-                                 x-data="{ 
-                                     rangeIndex: {{ $accessRoleIndex }},
-                                     roleValues: {{ json_encode(array_values($roleValues)) }},
-                                     get actualValue() { return this.roleValues[this.rangeIndex] || this.roleValues[0]; }
-                                 }">
-                                {{-- Hidden input for actual value --}}
-                                <input type="hidden" 
-                                       name="permissions[{{ $item['menuKey'] }}][access_roles]" 
-                                       :value="actualValue">
-                                
-                                <x-form.range
-                                    :id="$accessId"
-                                    :name="''"
-                                    :value="$accessRoleIndex"
-                                    :min="0"
-                                    :max="$maxIndex"
-                                    :step="1"
-                                    :labels="$roleLabelsForRange"
-                                    :showValue="false"
-                                    :showLabels="true"
-                                    xModel="rangeIndex"
-                                    :defaultValue="$defaultAccessIndex"
-                                />
-                            </div>
-                        </fieldset>
-
                         <!-- View Permissions (閲覧権限) -->
                         <fieldset class="permission-section">
                             <legend class="permission-section__title text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
@@ -183,16 +170,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 {{ __('admin/members/settings.roles.view_roles_help') }}
                             </p>
                             
-                            <div class="permission-section__options"
-                                 x-data="{ 
-                                     rangeIndex: {{ $viewRoleIndex }},
-                                     roleValues: {{ json_encode(array_values($roleValues)) }},
-                                     get actualValue() { return this.roleValues[this.rangeIndex] || this.roleValues[0]; }
-                                 }">
-                                {{-- Hidden input for actual value --}}
+                            <div>
                                 <input type="hidden" 
                                        name="permissions[{{ $item['menuKey'] }}][view_roles]" 
-                                       :value="actualValue">
+                                       :value="viewValue">
                                 
                                 <x-form.range
                                     :id="$viewId"
@@ -204,8 +185,38 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     :labels="$roleLabelsForRange"
                                     :showValue="false"
                                     :showLabels="true"
-                                    xModel="rangeIndex"
+                                    xModel="viewIndex"
                                     :defaultValue="$defaultViewIndex"
+                                />
+                            </div>
+                        </fieldset>
+
+                        <!-- Access Permissions (編集権限) -->
+                        <fieldset class="permission-section">
+                            <legend class="permission-section__title text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                                {{ __('admin/members/settings.roles.access_roles') }}
+                            </legend>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                                {{ __('admin/members/settings.roles.access_roles_help') }}
+                            </p>
+                            
+                            <div>
+                                <input type="hidden" 
+                                       name="permissions[{{ $item['menuKey'] }}][access_roles]" 
+                                       :value="accessValue">
+                                
+                                <x-form.range
+                                    :id="$accessId"
+                                    :name="''"
+                                    :value="$accessRoleIndex"
+                                    :min="0"
+                                    :max="$maxIndex"
+                                    :step="1"
+                                    :labels="$roleLabelsForRange"
+                                    :showValue="false"
+                                    :showLabels="true"
+                                    xModel="accessIndex"
+                                    :defaultValue="$defaultAccessIndex"
                                 />
                             </div>
                         </fieldset>

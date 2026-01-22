@@ -155,8 +155,8 @@ return [
                             'view_roles' => MemberRole::SUPER_ADMIN->value,
                         ],
                         'maintenance' => [
-                            'access_roles' => MemberRole::SUPER_ADMIN->value,
-                            'view_roles' => MemberRole::SUPER_ADMIN->value,
+                            'access_roles' => MemberRole::ADMIN->value,
+                            'view_roles' => MemberRole::ADMIN->value,
                         ],
                     ],
                 ],
