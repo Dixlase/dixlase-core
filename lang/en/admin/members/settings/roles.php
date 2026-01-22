@@ -36,4 +36,9 @@ return [
     'permission_labels' => [
         'create_edit' => 'Create & Edit',
     ],
+    
+    // Validation
+    'validation' => [
+        'access_must_be_greater_than_view' => 'Edit permission must be equal to or greater than view permission (:menu_key)',
+    ],
 ];

@@ -169,42 +169,35 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     $viewId = 'view_' . str_replace('.', '_', $menuKey);
                 @endphp
                 
-                <div class="bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg p-4 mb-2 {{ $indentClass }}">
+                <div class="bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg p-4 mb-2 {{ $indentClass }}"
+                     x-data="{
+                         accessIndex: {{ $accessRoleIndex }},
+                         viewIndex: {{ $viewRoleIndex }},
+                         roleValues: {{ json_encode(array_values($roleValues)) }},
+                         get accessValue() { return this.roleValues[this.accessIndex] || this.roleValues[0]; },
+                         get viewValue() { return this.roleValues[this.viewIndex] || this.roleValues[0]; },
+                         init() {
+                             // accessIndexの変更を監視
+                             this.$watch('accessIndex', (newValue, oldValue) => {
+                                 // 編集権限が閲覧権限より下にならないように制限
+                                 if (parseInt(newValue) < parseInt(this.viewIndex)) {
+                                     this.$nextTick(() => {
+                                         this.accessIndex = this.viewIndex;
+                                     });
+                                 }
+                             });
+                             // viewIndexの変更を監視
+                             this.$watch('viewIndex', (newValue, oldValue) => {
+                                 // 閲覧権限を上げたときに編集権限がそれより下なら自動的に上げる
+                                 if (parseInt(this.accessIndex) < parseInt(newValue)) {
+                                     this.$nextTick(() => {
+                                         this.accessIndex = newValue;
+                                     });
+                                 }
+                             });
+                         }
+                     }">
                     <div class="grid md:grid-cols-2 gap-6">
-                        <!-- Access Permissions (編集権限) -->
-                        <fieldset class="permission-section">
-                            <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                {{ __('admin/members/settings/roles.access_roles') }}
-                            </legend>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                                {{ __('admin/members/settings/roles.access_roles_help') }}
-                            </p>
-                            
-                            <div x-data="{ 
-                                     rangeIndex: {{ $accessRoleIndex }},
-                                     roleValues: {{ json_encode(array_values($roleValues)) }},
-                                     get actualValue() { return this.roleValues[this.rangeIndex] || this.roleValues[0]; }
-                                 }">
-                                <input type="hidden" 
-                                       name="permissions[{{ $menuKey }}][access_roles]" 
-                                       :value="actualValue">
-                                
-                                <x-form.range
-                                    :id="$accessId"
-                                    :name="''"
-                                    :value="$accessRoleIndex"
-                                    :min="0"
-                                    :max="$maxIndex"
-                                    :step="1"
-                                    :labels="$roleLabelsForRange"
-                                    :showValue="false"
-                                    :showLabels="true"
-                                    xModel="rangeIndex"
-                                    :defaultValue="$defaultAccessIndex"
-                                />
-                            </div>
-                        </fieldset>
-
                         <!-- View Permissions (閲覧権限) -->
                         <fieldset class="permission-section">
                             <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -214,14 +207,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 {{ __('admin/members/settings/roles.view_roles_help') }}
                             </p>
                             
-                            <div x-data="{ 
-                                     rangeIndex: {{ $viewRoleIndex }},
-                                     roleValues: {{ json_encode(array_values($roleValues)) }},
-                                     get actualValue() { return this.roleValues[this.rangeIndex] || this.roleValues[0]; }
-                                 }">
+                            <div>
                                 <input type="hidden" 
                                        name="permissions[{{ $menuKey }}][view_roles]" 
-                                       :value="actualValue">
+                                       :value="viewValue">
                                 
                                 <x-form.range
                                     :id="$viewId"
@@ -233,8 +222,38 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     :labels="$roleLabelsForRange"
                                     :showValue="false"
                                     :showLabels="true"
-                                    xModel="rangeIndex"
+                                    xModel="viewIndex"
                                     :defaultValue="$defaultViewIndex"
+                                />
+                            </div>
+                        </fieldset>
+
+                        <!-- Access Permissions (編集権限) -->
+                        <fieldset class="permission-section">
+                            <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                {{ __('admin/members/settings/roles.access_roles') }}
+                            </legend>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                                {{ __('admin/members/settings/roles.access_roles_help') }}
+                            </p>
+                            
+                            <div>
+                                <input type="hidden" 
+                                       name="permissions[{{ $menuKey }}][access_roles]" 
+                                       :value="accessValue">
+                                
+                                <x-form.range
+                                    :id="$accessId"
+                                    :name="''"
+                                    :value="$accessRoleIndex"
+                                    :min="0"
+                                    :max="$maxIndex"
+                                    :step="1"
+                                    :labels="$roleLabelsForRange"
+                                    :showValue="false"
+                                    :showLabels="true"
+                                    xModel="accessIndex"
+                                    :defaultValue="$defaultAccessIndex"
                                 />
                             </div>
                         </fieldset>
@@ -252,7 +271,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @if ($hasChildren)
                 <div class="space-y-1 mt-1">
                     @foreach ($item['children'] as $childKey => $childItem)
-                        @include('admin.members.partials.roles-permission-accordion', [
+                        @include('admin.members.settings.partials.roles-permission-accordion', [
                             'key' => $childKey,
                             'item' => $childItem,
                             'menuList' => $menuList,

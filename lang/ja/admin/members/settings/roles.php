@@ -36,4 +36,9 @@ return [
     'permission_labels' => [
         'create_edit' => '新規作成・編集',
     ],
+    
+    // バリデーション
+    'validation' => [
+        'access_must_be_greater_than_view' => '編集権限は閲覧権限以上である必要があります（:menu_key）',
+    ],
 ];
