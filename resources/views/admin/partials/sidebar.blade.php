@@ -82,7 +82,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                      \App\Helpers\AdminHelper::canEditMenuOrPlugin($plugin_slug, $role_key) || 
                                      \App\Helpers\AdminHelper::canViewMenuOrPlugin($plugin_slug, $role_key);
                     
-                    // 親項目に権限がない場合、子項目の権限をチェック
+                    // 親メニューに権限がない場合、子メニューの権限をチェック
                     if (!$has_permission && isset($item['children']) && is_array($item['children'])) {
                         foreach ($item['children'] as $child_key => $child_item) {
                             $child_role_key = $key . '.' . $child_key;
@@ -93,6 +93,46 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 $has_permission = true;
                                 break;
                             }
+                        }
+                    }
+                    
+                    // 親メニューがアコーディオン（ルートなし）で、子メニューが全て非表示の場合は親メニューも非表示
+                    if ($has_permission && !isset($item['route']) && isset($item['children']) && is_array($item['children'])) {
+                        $has_visible_children = false;
+                        foreach ($item['children'] as $child_key => $child_item) {
+                            $child_role_key = $key . '.' . $child_key;
+                            $child_plugin_slug = $child_item['plugin_slug'] ?? $plugin_slug;
+                            
+                            $can_edit = \App\Helpers\AdminHelper::canEditMenuOrPlugin($child_plugin_slug, $child_role_key);
+                            $can_view = \App\Helpers\AdminHelper::canViewMenuOrPlugin($child_plugin_slug, $child_role_key);
+                            
+                            // 子項目が表示可能かチェック
+                            $child_is_visible = $can_edit || $can_view;
+                            
+                            // 子項目がさらに孫項目を持つ場合、孫項目の権限もチェック
+                            if (!$child_is_visible && isset($child_item['children']) && is_array($child_item['children'])) {
+                                foreach ($child_item['children'] as $grandchild_key => $grandchild_item) {
+                                    $grandchild_role_key = $child_role_key . '.' . $grandchild_key;
+                                    $grandchild_plugin_slug = $grandchild_item['plugin_slug'] ?? $child_plugin_slug;
+                                    
+                                    $gc_can_edit = \App\Helpers\AdminHelper::canEditMenuOrPlugin($grandchild_plugin_slug, $grandchild_role_key);
+                                    $gc_can_view = \App\Helpers\AdminHelper::canViewMenuOrPlugin($grandchild_plugin_slug, $grandchild_role_key);
+                                    
+                                    if ($gc_can_edit || $gc_can_view) {
+                                        $child_is_visible = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            if ($child_is_visible) {
+                                $has_visible_children = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!$has_visible_children) {
+                            $has_permission = false;
                         }
                     }
                 @endphp
@@ -129,6 +169,40 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 // 子項目の権限チェック
                                 $child_has_permission = \App\Helpers\AdminHelper::canEditMenuOrPlugin($child_plugin_slug, $child_role_key) || 
                                                        \App\Helpers\AdminHelper::canViewMenuOrPlugin($child_plugin_slug, $child_role_key);
+                                
+                                // 子項目に権限がない場合、孫項目の権限をチェック
+                                if (!$child_has_permission && isset($child_item['children']) && is_array($child_item['children'])) {
+                                    foreach ($child_item['children'] as $grandchild_key => $grandchild_item) {
+                                        $grandchild_role_key = $child_role_key . '.' . $grandchild_key;
+                                        $grandchild_plugin_slug = $grandchild_item['plugin_slug'] ?? $child_plugin_slug;
+                                        
+                                        if (\App\Helpers\AdminHelper::canEditMenuOrPlugin($grandchild_plugin_slug, $grandchild_role_key) || 
+                                            \App\Helpers\AdminHelper::canViewMenuOrPlugin($grandchild_plugin_slug, $grandchild_role_key)) {
+                                            $child_has_permission = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                                
+                                // 子項目がアコーディオンの場合、表示可能な孫項目があるかチェック
+                                if ($child_has_permission && !isset($child_item['route']) && isset($child_item['children']) && is_array($child_item['children'])) {
+                                    $has_visible_grandchildren = false;
+                                    foreach ($child_item['children'] as $grandchild_key => $grandchild_item) {
+                                        $grandchild_role_key = $child_role_key . '.' . $grandchild_key;
+                                        $grandchild_plugin_slug = $grandchild_item['plugin_slug'] ?? $child_plugin_slug;
+                                        
+                                        if (\App\Helpers\AdminHelper::canEditMenuOrPlugin($grandchild_plugin_slug, $grandchild_role_key) || 
+                                            \App\Helpers\AdminHelper::canViewMenuOrPlugin($grandchild_plugin_slug, $grandchild_role_key)) {
+                                            $has_visible_grandchildren = true;
+                                            break;
+                                        }
+                                    }
+                                    
+                                    // 表示可能な孫項目がない場合は子項目も非表示
+                                    if (!$has_visible_grandchildren) {
+                                        $child_has_permission = false;
+                                    }
+                                }
                             @endphp
                             @if ($child_has_permission)
                                 @if (isset($child_item['route']) && is_string($child_item['route']) && Route::has($child_item['route']))
@@ -171,13 +245,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                     @php
                                                         // 孫項目の権限キーを生成（親キー.子キー.孫キー）
                                                         $grand_child_role_key = $key . '.' . $child_key . '.' . $grand_child_key;
+                                                        $grand_child_plugin_slug = $grand_child_item['plugin_slug'] ?? $child_plugin_slug;
                                                     @endphp
-                                                    @if (isset($grand_child_item['route']) && is_string($grand_child_item['route']) && Route::has($grand_child_item['route']) && isset($grand_child_item['icon']) && is_string($grand_child_item['icon']) && isset($grand_child_item['text']) && is_string($grand_child_item['text']) && (\App\Helpers\AdminHelper::canEditMenu($grand_child_role_key) || \App\Helpers\AdminHelper::canViewMenu($grand_child_role_key)))
+                                                    @if (isset($grand_child_item['route']) && is_string($grand_child_item['route']) && Route::has($grand_child_item['route']) && isset($grand_child_item['icon']) && is_string($grand_child_item['icon']) && isset($grand_child_item['text']) && is_string($grand_child_item['text']) && (\App\Helpers\AdminHelper::canEditMenuOrPlugin($grand_child_plugin_slug, $grand_child_role_key) || \App\Helpers\AdminHelper::canViewMenuOrPlugin($grand_child_plugin_slug, $grand_child_role_key)))
                                                         <a href="{{ route($grand_child_item['route']) }}"
                                                         class="{{ $button_class }} {{ $grand_child_item['route'] === $route_name ? 'sidebar-link-active' : 'sidebar-link' }}">
                                                             <i class="{{ $grand_child_item['icon'] }} mr-3"></i>
                                                             <span>{{ __($grand_child_item['text']) }}</span>
-                                                            @if (!\App\Helpers\AdminHelper::canEditMenu($grand_child_role_key))
+                                                            @if (!\App\Helpers\AdminHelper::canEditMenuOrPlugin($grand_child_plugin_slug, $grand_child_role_key))
                                                                 <span class="text-xs text-gray-400">(閲覧のみ)</span>
                                                             @endif
                                                         </a>
