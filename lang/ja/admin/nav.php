@@ -62,7 +62,7 @@ return [
         'members' => [
             'text' => 'メンバー管理',
             'index' => 'メンバーマスター',
-            'create' => '新規メンバー作成',
+            'create' => 'メンバー新規作成',
             'profile' => 'プロフィール設定',
             'roles' => 'メンバー権限設定',
             'roles_short' => '権限設定',

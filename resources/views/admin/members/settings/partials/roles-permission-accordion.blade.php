@@ -39,14 +39,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     $icon = $navItem['icon'] ?? 'fas fa-folder';
     $text = $navItem['text'] ?? $key;
     
-    // ナビゲーションにないキーの場合、翻訳ファイルからラベルを取得
-    if ($navItem === null) {
-        $permissionLabel = __('admin/members/settings/roles.permission_labels.' . $key);
-        // 翻訳が見つからない場合はキーをそのまま使用
-        $title = $permissionLabel !== 'admin/members/settings/roles.permission_labels.' . $key 
-            ? $permissionLabel 
-            : $key;
+    // 権限設定専用のラベルがあるか確認
+    $permissionLabel = __('admin/members/settings/roles.permission_labels.' . $key);
+    $hasPermissionLabel = $permissionLabel !== 'admin/members/settings/roles.permission_labels.' . $key;
+    
+    if ($hasPermissionLabel) {
+        // 権限設定専用のラベルがある場合はそれを使用
+        $title = $permissionLabel;
+    } elseif ($navItem === null) {
+        // ナビゲーションにもない場合はキーをそのまま使用
+        $title = $key;
     } else {
+        // ナビゲーションのテキストを使用
         $title = __($text);
     }
     

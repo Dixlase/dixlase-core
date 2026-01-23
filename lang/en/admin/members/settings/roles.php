@@ -34,7 +34,7 @@ return [
     
     // Permission key labels (not in navigation)
     'permission_labels' => [
-        'create_edit' => 'Create & Edit',
+        'create_edit' => 'Member Create & Edit',
     ],
     
     // Validation
