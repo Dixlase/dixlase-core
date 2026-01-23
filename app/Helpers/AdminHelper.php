@@ -235,6 +235,36 @@ class AdminHelper
     }
 
     /**
+     * メニューの編集権限をチェック（コア/プラグイン統合）
+     * 
+     * @param string|null $pluginSlug プラグインスラッグ（nullの場合はコアメニュー）
+     * @param string $menuKey メニューキー
+     * @return bool 編集権限があればtrue
+     */
+    public static function canEditMenuOrPlugin(?string $pluginSlug, string $menuKey): bool
+    {
+        if ($pluginSlug) {
+            return self::canEditPluginMenu($pluginSlug, $menuKey);
+        }
+        return self::canEditMenu($menuKey);
+    }
+
+    /**
+     * メニューの閲覧権限をチェック（コア/プラグイン統合）
+     * 
+     * @param string|null $pluginSlug プラグインスラッグ（nullの場合はコアメニュー）
+     * @param string $menuKey メニューキー
+     * @return bool 閲覧権限があればtrue
+     */
+    public static function canViewMenuOrPlugin(?string $pluginSlug, string $menuKey): bool
+    {
+        if ($pluginSlug) {
+            return self::canViewPluginMenu($pluginSlug, $menuKey);
+        }
+        return self::canViewMenu($menuKey);
+    }
+
+    /**
      * 管理画面のナビゲーション設定をマージ
      * 
      * @param string $name プラグイン/テーマ名（デバッグ用）
@@ -303,6 +333,15 @@ class AdminHelper
             // _insert_after や _insert_before を削除
             unset($value['_insert_after'], $value['_insert_before']);
             
+            // プラグインメニューの場合、plugin_slug情報を追加
+            if ($name !== 'Unknown' && $name !== 'Theme') {
+                $value['plugin_slug'] = $name;
+                // 子項目にもplugin_slugを追加
+                if (isset($value['children'])) {
+                    $value['children'] = self::addPluginSlugToChildren($value['children'], $name);
+                }
+            }
+            
             // 既存の設定がある場合は子項目をマージ
             if (isset($existingNav[$key])) {
                 // 既存の設定を保持しつつ、子項目をマージ
@@ -315,6 +354,10 @@ class AdminHelper
                     );
                 } elseif (isset($value['children'])) {
                     $existingNav[$key]['children'] = $value['children'];
+                }
+                // plugin_slug情報を更新
+                if (isset($value['plugin_slug'])) {
+                    $existingNav[$key]['plugin_slug'] = $value['plugin_slug'];
                 }
             } else {
                 // 新しいキーの場合は挿入位置を考慮して追加
@@ -336,6 +379,24 @@ class AdminHelper
         // Laravelの設定にも反映（ビューなどで使用される）
         app()->config['admin.nav'] = $existingNav;
         config(['admin.nav' => $existingNav]);
+    }
+
+    /**
+     * 子項目にplugin_slug情報を再帰的に追加
+     * 
+     * @param array $children 子項目の配列
+     * @param string $pluginSlug プラグインスラッグ
+     * @return array plugin_slug情報が追加された子項目の配列
+     */
+    protected static function addPluginSlugToChildren(array $children, string $pluginSlug): array
+    {
+        foreach ($children as $key => $value) {
+            $children[$key]['plugin_slug'] = $pluginSlug;
+            if (isset($value['children']) && is_array($value['children'])) {
+                $children[$key]['children'] = self::addPluginSlugToChildren($value['children'], $pluginSlug);
+            }
+        }
+        return $children;
     }
 
     /**

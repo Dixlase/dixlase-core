@@ -74,14 +74,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     // ダッシュボードとプロフィールは全員アクセス可能
                     $is_public_menu = in_array($key, ['dashboard', 'profile']);
                     
+                    // プラグインスラッグを取得
+                    $plugin_slug = $item['plugin_slug'] ?? null;
+                    
                     // 親項目の権限チェック
-                    $has_permission = $is_public_menu || \App\Helpers\AdminHelper::canEditMenu($role_key) || \App\Helpers\AdminHelper::canViewMenu($role_key);
+                    $has_permission = $is_public_menu || 
+                                     \App\Helpers\AdminHelper::canEditMenuOrPlugin($plugin_slug, $role_key) || 
+                                     \App\Helpers\AdminHelper::canViewMenuOrPlugin($plugin_slug, $role_key);
                     
                     // 親項目に権限がない場合、子項目の権限をチェック
                     if (!$has_permission && isset($item['children']) && is_array($item['children'])) {
                         foreach ($item['children'] as $child_key => $child_item) {
                             $child_role_key = $key . '.' . $child_key;
-                            if (\App\Helpers\AdminHelper::canEditMenu($child_role_key) || \App\Helpers\AdminHelper::canViewMenu($child_role_key)) {
+                            $child_plugin_slug = $child_item['plugin_slug'] ?? $plugin_slug;
+                            
+                            if (\App\Helpers\AdminHelper::canEditMenuOrPlugin($child_plugin_slug, $child_role_key) || 
+                                \App\Helpers\AdminHelper::canViewMenuOrPlugin($child_plugin_slug, $child_role_key)) {
                                 $has_permission = true;
                                 break;
                             }
@@ -116,9 +124,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             @php
                                 // 子項目の権限キーを生成（親キー.子キー）
                                 $child_role_key = $key . '.' . $child_key;
+                                $child_plugin_slug = $child_item['plugin_slug'] ?? $plugin_slug;
                                 
+                                // 子項目の権限チェック
+                                $child_has_permission = \App\Helpers\AdminHelper::canEditMenuOrPlugin($child_plugin_slug, $child_role_key) || 
+                                                       \App\Helpers\AdminHelper::canViewMenuOrPlugin($child_plugin_slug, $child_role_key);
                             @endphp
-                            @if (\App\Helpers\AdminHelper::canEditMenu($child_role_key) || \App\Helpers\AdminHelper::canViewMenu($child_role_key))
+                            @if ($child_has_permission)
                                 @if (isset($child_item['route']) && is_string($child_item['route']) && Route::has($child_item['route']))
                                     <a href="{{ route($child_item['route']) }}" 
                                     class="{{ $button_class }} {{ $child_item['route'] === $route_name ? 'bg-gray-200 text-gray-900 font-bold border-blue-500 pl-3 rounded-md hover:bg-gray-300 hover:text-black dark:bg-gray-100 dark:text-black dark:hover:bg-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white' }} {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
