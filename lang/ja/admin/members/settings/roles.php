@@ -34,7 +34,7 @@ return [
     
     // 権限キーのラベル（ナビゲーションにないもの）
     'permission_labels' => [
-        'create_edit' => '新規作成・編集',
+        'create_edit' => 'メンバー新規作成・編集',
     ],
     
     // バリデーション

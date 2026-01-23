@@ -62,7 +62,7 @@ return [
         'members' => [
             'text' => 'Member Management',
             'index' => 'Member Master',
-            'create' => 'Create New Member',
+            'create' => 'Member Create',
             'edit' => 'Edit',
             'profile' => 'Profile Settings',
             'roles' => 'Member Role Settings',

@@ -41,11 +41,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     
     // ナビゲーションにないキーの場合、翻訳ファイルからラベルを取得
     if ($navItem === null) {
-        $permissionLabel = __('admin/members/settings/roles.permission_labels.' . $key);
-        // 翻訳が見つからない場合はキーをそのまま使用
-        $title = $permissionLabel !== 'admin/members/settings/roles.permission_labels.' . $key 
-            ? $permissionLabel 
-            : $key;
+        // プラグイン固有の翻訳キーを試す
+        // DixlaseUsers -> users-plugin のように変換
+        $pluginNamespace = strtolower(str_replace('Dixlase', '', $pluginSlug)) . '-plugin';
+        $pluginTransKey = $pluginNamespace . '::admin/nav.permission_labels.' . $key;
+        $pluginLabel = __($pluginTransKey);
+        
+        // プラグイン翻訳が見つかった場合
+        if ($pluginLabel !== $pluginTransKey) {
+            $title = $pluginLabel;
+        } else {
+            // コアの翻訳を試す
+            $permissionLabel = __('admin/members/settings/roles.permission_labels.' . $key);
+            $title = $permissionLabel !== 'admin/members/settings/roles.permission_labels.' . $key 
+                ? $permissionLabel 
+                : $key;
+        }
     } else {
         $title = __($text);
     }
