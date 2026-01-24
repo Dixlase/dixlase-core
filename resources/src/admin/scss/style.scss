@@ -24,3 +24,12 @@
 
 // Page-specific styles
 @use '../members/settings/scss/roles';
+
+// Profile styles
+@use '../admin/profile/scss/appearance';
+
+// Media management styles
+@use '../admin/media/scss/media';
+
+// Component styles (admin-specific)
+@use '../../components/ui/scss/admin-bar';

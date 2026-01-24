@@ -110,14 +110,3 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
 </div>
-
-@once
-
-@push('styles')
-<style>
-.media-selector-item.selected .relative {
-    @apply ring-2 ring-blue-600;
-}
-</style>
-@endpush
-@endonce

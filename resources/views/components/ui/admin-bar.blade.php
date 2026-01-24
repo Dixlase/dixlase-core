@@ -194,24 +194,3 @@
         </div>
     </div>
 @endif
-
-{{-- 管理バー用のスタイル調整 --}}
-<style>
-    body.has-admin-bar {
-        padding-top: 0;
-    }
-    
-    #admin-bar a,
-    #admin-bar button {
-        user-select: none;
-    }
-    
-    /* モバイル対応 */
-    @media (max-width: 640px) {
-        #admin-bar .hidden {
-            display: none !important;
-        }
-    }
-
-</style>
-@endif
