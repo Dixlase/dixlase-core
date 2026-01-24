@@ -27,6 +27,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use App\Http\Requests\Admin\Settings\Systems\AdminSystemDatabaseCleanupRequest;
 
 class AdminSystemDatabaseController extends AdminLoggedInController
 {
@@ -103,10 +104,11 @@ class AdminSystemDatabaseController extends AdminLoggedInController
     /**
      * 個別データベースクリーンアップ
      */
-    public function cleanup(Request $request)
+    public function cleanup(AdminSystemDatabaseCleanupRequest $request)
     {
-        $type = $request->input('type');
-        $days = (int) $request->input('days');
+        $validated = $request->validated();
+        $type = $validated['type'];
+        $days = (int) $validated['days'];
         $message = '';
         $success = true;
         $count = 0;

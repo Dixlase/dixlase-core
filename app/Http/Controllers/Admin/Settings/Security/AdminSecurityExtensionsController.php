@@ -29,6 +29,7 @@ use App\Enums\ExtensionSecurityPreset;
 use App\Enums\SecurityAction;
 use App\Models\BaseSetting;
 use Illuminate\Http\Request;
+use App\Http\Requests\Admin\Settings\Security\AdminSecurityExtensionsUpdateRequest;
 
 class AdminSecurityExtensionsController extends AdminLoggedInController
 {
@@ -82,24 +83,9 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
     /**
      * 拡張機能セキュリティ設定の更新
      */
-    public function update(Request $request)
+    public function update(AdminSecurityExtensionsUpdateRequest $request)
     {
-        $validated = $request->validate([
-            'extension_security_preset' => 'required|in:strict,balanced,development,custom',
-            'extension_require_signature' => 'boolean',
-            'extension_require_permission_definition' => 'boolean',
-            'extension_allow_undefined_permissions' => 'boolean',
-            'extension_plugin_max_health_level' => 'required|integer|min:0|max:3',
-            'extension_theme_max_health_level' => 'required|integer|min:0|max:3',
-            'extension_allow_logic_themes' => 'boolean',
-            'extension_permission_mismatch_action' => 'required|' . SecurityAction::validationRule(),
-            'extension_notify_on_install' => 'boolean',
-            'extension_notify_on_uninstall' => 'boolean',
-            'extension_notify_on_enable' => 'boolean',
-            'extension_notify_on_disable' => 'boolean',
-            'extension_notify_on_unhealthy' => 'boolean',
-            'extension_log_operations' => 'boolean',
-        ]);
+        $validated = $request->validated();
 
         // 拡張機能セキュリティ設定を更新
         $this->securitySettingRepository->set('extension_security_preset', $validated['extension_security_preset']);

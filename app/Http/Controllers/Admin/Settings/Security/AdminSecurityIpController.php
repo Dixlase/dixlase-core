@@ -25,6 +25,7 @@ namespace App\Http\Controllers\Admin\Settings\Security;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 use Illuminate\Http\Request;
+use App\Http\Requests\Admin\Settings\Security\AdminSecurityIpUpdateRequest;
 
 class AdminSecurityIpController extends AdminLoggedInController
 {
@@ -61,18 +62,9 @@ class AdminSecurityIpController extends AdminLoggedInController
     /**
      * IPアクセス制御設定の更新
      */
-    public function update(Request $request)
+    public function update(AdminSecurityIpUpdateRequest $request)
     {
-        $validated = $request->validate([
-            'enable_allowed_admin_ips' => 'boolean',
-            'allowed_admin_ips' => 'nullable|string',
-            'enable_blocked_admin_ips' => 'boolean',
-            'blocked_admin_ips' => 'nullable|string',
-            'enable_allowed_front_ips' => 'boolean',
-            'allowed_front_ips' => 'nullable|string',
-            'enable_blocked_front_ips' => 'boolean',
-            'blocked_front_ips' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         // IP設定を更新
         $this->securitySettingRepository->set('enable_allowed_admin_ips', $validated['enable_allowed_admin_ips'] ?? false);

@@ -25,6 +25,7 @@ namespace App\Http\Controllers\Admin\Settings\Security;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 use Illuminate\Http\Request;
+use App\Http\Requests\Admin\Settings\Security\AdminSecurityPasswordUpdateRequest;
 
 class AdminSecurityPasswordController extends AdminLoggedInController
 {
@@ -53,11 +54,9 @@ class AdminSecurityPasswordController extends AdminLoggedInController
     /**
      * パスワードセキュリティ設定の更新
      */
-    public function update(Request $request)
+    public function update(AdminSecurityPasswordUpdateRequest $request)
     {
-        $validated = $request->validate([
-            'pwned_password_check_enabled' => 'boolean',
-        ]);
+        $validated = $request->validated();
 
         // パスワードセキュリティ設定を更新
         $this->securitySettingRepository->set('pwned_password_check_enabled', $validated['pwned_password_check_enabled'] ?? false);

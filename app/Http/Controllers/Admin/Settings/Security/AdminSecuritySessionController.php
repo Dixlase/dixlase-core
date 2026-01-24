@@ -25,6 +25,7 @@ namespace App\Http\Controllers\Admin\Settings\Security;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Helpers\ConfigHelper;
 use Illuminate\Http\Request;
+use App\Http\Requests\Admin\Settings\Security\AdminSecuritySessionUpdateRequest;
 
 class AdminSecuritySessionController extends AdminLoggedInController
 {
@@ -51,12 +52,9 @@ class AdminSecuritySessionController extends AdminLoggedInController
     /**
      * セッション設定の更新
      */
-    public function update(Request $request)
+    public function update(AdminSecuritySessionUpdateRequest $request)
     {
-        $validated = $request->validate([
-            'session_encrypt' => 'boolean',
-            'session_lifetime' => 'required|integer|min:1|max:43200',
-        ]);
+        $validated = $request->validated();
 
         // セッション設定を更新
         ConfigHelper::setSessionEncrypt($validated['session_encrypt'] ?? false);

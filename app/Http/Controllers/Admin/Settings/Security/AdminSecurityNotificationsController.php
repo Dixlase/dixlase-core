@@ -27,6 +27,7 @@ use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 use App\Enums\LogLevel;
 use App\Models\BaseSetting;
 use Illuminate\Http\Request;
+use App\Http\Requests\Admin\Settings\Security\AdminSecurityNotificationsUpdateRequest;
 
 class AdminSecurityNotificationsController extends AdminLoggedInController
 {
@@ -71,13 +72,9 @@ class AdminSecurityNotificationsController extends AdminLoggedInController
     /**
      * 通知設定の更新
      */
-    public function update(Request $request)
+    public function update(AdminSecurityNotificationsUpdateRequest $request)
     {
-        $validated = $request->validate([
-            'notification_enabled' => 'boolean',
-            'notification_log_levels' => 'nullable|array',
-            'notification_log_levels.*' => 'integer|min:1|max:8',
-        ]);
+        $validated = $request->validated();
 
         // 通知設定を更新
         $this->securitySettingRepository->set('notification_enabled', $validated['notification_enabled'] ?? false);

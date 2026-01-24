@@ -30,6 +30,7 @@ use App\Contracts\Repositories\BaseSettingRepositoryInterface;
 use App\Traits\MailTestTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Http\Requests\Admin\Settings\Base\AdminBaseMailUpdateRequest;
 
 class AdminBaseMailController extends AdminLoggedInController
 {
@@ -99,18 +100,9 @@ class AdminBaseMailController extends AdminLoggedInController
     /**
      * メール設定の更新
      */
-    public function update(Request $request)
+    public function update(AdminBaseMailUpdateRequest $request)
     {
-        $validated = $request->validate([
-            'mail_mailer' => 'required|string|in:smtp,sendmail,log',
-            'mail_host' => 'nullable|string|max:255',
-            'mail_port' => 'nullable|integer|min:1|max:65535',
-            'mail_username' => 'nullable|string|max:255',
-            'mail_password' => 'nullable|string|max:255',
-            'mail_encryption' => 'nullable|string|in:tls,ssl,',
-            'mail_from_address' => 'nullable|email|max:255',
-            'system_admin_email' => 'nullable|email|max:255',
-        ]);
+        $validated = $request->validated();
 
         // .envに保存
         $envData = [

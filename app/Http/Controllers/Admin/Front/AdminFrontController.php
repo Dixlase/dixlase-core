@@ -29,6 +29,8 @@ use App\Models\Media;
 use App\Services\FrontPageContentService;
 use Illuminate\Http\Request;
 use App\Contracts\Repositories\FrontSettingRepositoryInterface;
+use App\Http\Requests\Admin\Front\AdminFrontEditUpdateRequest;
+use App\Http\Requests\Admin\Front\AdminFrontSettingsUpdateRequest;
 
 class AdminFrontController extends AdminLoggedinController
 {
@@ -89,14 +91,9 @@ class AdminFrontController extends AdminLoggedinController
     /**
      * フロントページ編集の保存
      */
-    public function updateEdit(Request $request)
+    public function updateEdit(AdminFrontEditUpdateRequest $request)
     {
-        $validated = $request->validate([
-            'storage_type' => 'required|in:database,file',
-            'editor_type' => 'required|in:gui,markdown,html,blade',
-            'title' => 'nullable|string|max:255',
-            'content' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
         
         // GUIエディタの場合は強制的にDBに
         $storageType = $validated['storage_type'];
@@ -206,12 +203,8 @@ class AdminFrontController extends AdminLoggedinController
     /**
      * フロントページ設定の保存
      */
-    public function updateSettings(Request $request)
+    public function updateSettings(AdminFrontSettingsUpdateRequest $request)
     {
-        $request->validate([
-            'front_ogp_image_id' => 'nullable|exists:media,id',
-            'front_description' => 'nullable|string|max:1000',
-        ]);
         
         // 設定を保存
         $this->frontSettingRepository->set('front_ogp_image_id', $request->input('front_ogp_image_id'));

@@ -25,6 +25,7 @@ namespace App\Http\Controllers\Admin\Settings\Systems;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use App\Http\Requests\Admin\Settings\Systems\AdminSystemCacheClearRequest;
 
 class AdminSystemCacheController extends AdminLoggedInController
 {
@@ -69,9 +70,9 @@ class AdminSystemCacheController extends AdminLoggedInController
     /**
      * 個別キャッシュクリア
      */
-    public function clear(Request $request)
+    public function clear(AdminSystemCacheClearRequest $request)
     {
-        $type = $request->input('type');
+        $type = $request->validated()['type'];
         $message = '';
         $success = true;
 
