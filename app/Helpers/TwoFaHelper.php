@@ -338,7 +338,7 @@ class TwoFaHelper
     /**
      * 認証方法に応じたルート名を取得
      *
-     * @param string $prefix ルートプレフィックス（例: 'admin', 'users-plugin::mypage'）
+     * @param string $prefix ルートプレフィックス（例: 'admin', 'dixlase-users::mypage'）
      * @param int $method 認証方法（TwoFaMethod enum値）
      * @return string ルート名（例: 'admin.two-fa.email.show'）
      */

@@ -42,7 +42,7 @@ trait EmailVerificationTrait
     /**
      * コンテキストに応じた件名キーを取得
      *
-     * @param string $prefix 翻訳キーのプレフィックス（例: 'mail.member_verify_email', 'users-plugin::mail.verify_email'）
+     * @param string $prefix 翻訳キーのプレフィックス（例: 'mail.member_verify_email', 'dixlase-users::mail.verify_email'）
      * @return string 件名の翻訳キー
      */
     protected function getSubjectKey(string $prefix): string

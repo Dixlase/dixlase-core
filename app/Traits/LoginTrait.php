@@ -16,14 +16,14 @@ trait LoginTrait
     /**
      * ログイン画面のルート名を取得（継承先で実装）
      * 
-     * @return string ルート名（例: 'admin.login', 'users-plugin::mypage.login'）
+     * @return string ルート名（例: 'admin.login', 'dixlase-users::mypage.login'）
      */
     abstract protected function getLoginRoute(): string;
 
     /**
      * ダッシュボードのルート名を取得（継承先で実装）
      * 
-     * @return string ルート名（例: 'admin.dashboard', 'users-plugin::mypage.dashboard'）
+     * @return string ルート名（例: 'admin.dashboard', 'dixlase-users::mypage.dashboard'）
      */
     abstract protected function getDashboardRoute(): string;
 
@@ -58,7 +58,7 @@ trait LoginTrait
     /**
      * 二段階認証ルートのプレフィックスを取得
      * 
-     * @return string ルートプレフィックス（例: 'admin', 'users-plugin::mypage'）
+     * @return string ルートプレフィックス（例: 'admin', 'dixlase-users::mypage'）
      */
     abstract protected function getTwoFaRoutePrefix(): string;
 

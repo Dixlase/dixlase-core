@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         @if($context === 'admin')
                         window.location.href = '{{ route("admin.dashboard") }}';
                         @else
-                        window.location.href = '{{ route("users-plugin::mypage.dashboard") }}';
+                        window.location.href = '{{ route("dixlase-users::mypage.dashboard") }}';
                         @endif
                     }
                 }, 2000);

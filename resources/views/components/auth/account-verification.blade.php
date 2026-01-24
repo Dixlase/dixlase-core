@@ -28,7 +28,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 ])
 
 @php
-    $prefix = $entityType === 'member' ? 'admin/members/form' : 'users-plugin::admin/users/form';
+    $prefix = $entityType === 'member' ? 'admin/members/form' : 'dixlase-users::admin/users/form';
     
     // 新規作成時のオプション
     $emailVerifiedValueCreate = old('email_verified', $isMailServerTested ? '0' : '1');

@@ -359,7 +359,7 @@ trait AdminLoggedInTrait
         }
         
         // プラグインのルート名の場合、プレフィックスを処理
-        // 例: users-plugin::admin.users.index -> users-plugin::admin/users/index.description
+        // 例: dixlase-users::admin.users.index -> dixlase-users::admin/users/index.description
         if (str_contains($routeName, '::')) {
             [$pluginPrefix, $route] = explode('::', $routeName, 2);
             
