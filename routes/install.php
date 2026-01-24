@@ -21,6 +21,13 @@
  */
 
 use App\Http\Controllers\Install\InstallController;
+use App\Http\Controllers\Install\InstallSettingsController;
+use App\Http\Controllers\Install\InstallEnvironmentController;
+use App\Http\Controllers\Install\InstallDatabaseController;
+use App\Http\Controllers\Install\InstallMailController;
+use App\Http\Controllers\Install\InstallSecurityController;
+use App\Http\Controllers\Install\InstallConfirmController;
+use App\Http\Controllers\Install\InstallCompleteController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -29,46 +36,46 @@ use Illuminate\Http\Request;
 Route::prefix('install')->name('install.')->middleware('install.steps')->group(
     function () {
         // 言語切り替え（AJAX専用）
-        Route::post('/language/{locale}', [InstallController::class, 'setLanguage'])->name('language');
+        Route::post('/language/{locale}', [InstallSettingsController::class, 'setLanguage'])->name('language');
         
         Route::get('/', [InstallController::class, 'index'])->name('index');
 
         //基本設定
-        Route::get('/settings', [InstallController::class, 'create'])->name('settings');
-        Route::post('/settings', [InstallController::class, 'storeSettings'])->name('settings.store');
+        Route::get('/settings', [InstallSettingsController::class, 'create'])->name('settings');
+        Route::post('/settings', [InstallSettingsController::class, 'store'])->name('settings.store');
 
         //環境設定
-        Route::get('/environment', [InstallController::class, 'environment'])->name('environment');
-        Route::post('/environment', [InstallController::class, 'storeEnvironment'])->name('environment.store');
+        Route::get('/environment', [InstallEnvironmentController::class, 'create'])->name('environment');
+        Route::post('/environment', [InstallEnvironmentController::class, 'store'])->name('environment.store');
 
         //データベース設定
-        Route::get('/database', [InstallController::class, 'database'])->name('database');
-        Route::post('/database', [InstallController::class, 'storeDatabase'])->name('database.store');
+        Route::get('/database', [InstallDatabaseController::class, 'create'])->name('database');
+        Route::post('/database', [InstallDatabaseController::class, 'store'])->name('database.store');
 
         //メールサーバー設定
-        Route::get('/mail', [InstallController::class, 'mail'])->name('mail');
-        Route::post('/mail', [InstallController::class, 'storeMail'])->name('mail.store');
+        Route::get('/mail', [InstallMailController::class, 'create'])->name('mail');
+        Route::post('/mail', [InstallMailController::class, 'store'])->name('mail.store');
         
         // メールテスト関連のルート
-        Route::post('/test-mail-connection', [InstallController::class, 'testMailConnection'])->name('mail.test-connection');
-        Route::post('/test-mail-send', [InstallController::class, 'testMailSend'])->name('mail.test-send');
-        Route::get('/verify-mail/{token}', [InstallController::class, 'verifyMail'])->name('mail.verify-mail');
-        Route::post('/reset-mail-tests', [InstallController::class, 'resetMailTests'])->name('mail.reset-tests');
+        Route::post('/test-mail-connection', [InstallMailController::class, 'testConnection'])->name('mail.test-connection');
+        Route::post('/test-mail-send', [InstallMailController::class, 'testSend'])->name('mail.test-send');
+        Route::get('/verify-mail/{token}', [InstallMailController::class, 'verify'])->name('mail.verify-mail');
+        Route::post('/reset-mail-tests', [InstallMailController::class, 'resetTests'])->name('mail.reset-tests');
 
         //セキュリティ設定
-        Route::get('/security', [InstallController::class, 'security'])->name('security');
-        Route::post('/security', [InstallController::class, 'storeSecurity'])->name('security.store');
+        Route::get('/security', [InstallSecurityController::class, 'create'])->name('security');
+        Route::post('/security', [InstallSecurityController::class, 'store'])->name('security.store');
 
         //確認画面
-        Route::get('/confirm', [InstallController::class, 'confirm'])->name('confirm');
-        Route::post('/confirm', [InstallController::class, 'confirmStore'])->name('confirm.store');
+        Route::get('/confirm', [InstallConfirmController::class, 'show'])->name('confirm');
+        Route::post('/confirm', [InstallConfirmController::class, 'store'])->name('confirm.store');
         //インストール完了画面
-        Route::get('/complete', [InstallController::class, 'complete'])->name('complete');
+        Route::get('/complete', [InstallCompleteController::class, 'show'])->name('complete');
         
         //インストール最終化
-        Route::post('/finalize', [InstallController::class, 'finalize'])->name('finalize');
+        Route::post('/finalize', [InstallCompleteController::class, 'finalize'])->name('finalize');
 
         //データベース接続テスト
-        Route::post('/test-db', [InstallController::class, 'testDatabaseConnection'])->name('install.test-db');
+        Route::post('/test-db', [InstallDatabaseController::class, 'testConnection'])->name('install.test-db');
     }
 );
