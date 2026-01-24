@@ -108,6 +108,7 @@
         'methods' => $availableMethods ?? [],
         'currentMethod' => null,
         'context' => $contextValue,
+        'recoveryCodeRoute' => null,
         'showRecoveryCode' => false,
     ])
 @endsection

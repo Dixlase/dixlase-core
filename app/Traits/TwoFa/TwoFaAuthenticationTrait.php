@@ -10,6 +10,7 @@ use App\Models\MemberSetting;
 use App\Models\MemberTwoFaToken;
 use App\Enums\TwoFaMethod;
 use App\Helpers\TwoFaHelper;
+use App\Services\Auth\AuthContextRegistryService;
 use App\Services\TwoFa\TwoFaPasskeyService;
 use App\Services\TwoFa\TwoFaAttemptService;
 use App\Traits\LoginTrait;
@@ -291,9 +292,14 @@ trait TwoFaAuthenticationTrait
         $user = $this->getUserFromSession();
         
         if (!$user) {
-            $loginRoute = $this->getContext() === 'admin' 
-                ? 'admin.login' 
-                : 'dixlase-users::mypage.login';
+            $context = $this->getContext();
+            $loginRoute = AuthContextRegistryService::getRoute($context, 'login');
+            
+            // フォールバック: コンテキストが登録されていない場合
+            if (!$loginRoute) {
+                $loginRoute = $context === 'admin' ? 'admin.login' : 'login';
+            }
+            
             return redirect()->route($loginRoute);
         }
         
@@ -497,16 +503,22 @@ trait TwoFaAuthenticationTrait
         $currentMethod = \App\Enums\TwoFaMethod::EMAIL->value;
         $availableMethods = $this->getAvailableMethods($currentMethod);
         $settings = $this->getTwoFaSettings();
+        
+        // リカバリーコードルートを取得
+        $context = $this->getContext();
+        $recoveryCodeRoute = $this->getRecoveryCodeRoute();
 
         return view('two-fa.email-challenge', [
             'availableMethods' => $availableMethods,
             'currentMethod' => $currentMethod,
             'expireMinutes' => $settings['expireMinutes'],
             'resendIntervalSeconds' => $settings['resendIntervalSeconds'],
-            'context' => $this->getContext(),
+            'context' => $context,
+            'contextValue' => $context,
             'loginRoute' => route($this->getLoginRoute()),
             'action' => route($this->getTwoFaRoutePrefix() . '.two-fa.email.verify'),
             'resendAction' => route($this->getTwoFaRoutePrefix() . '.two-fa.email.resend'),
+            'recoveryCodeRoute' => $recoveryCodeRoute,
         ]);
     }
 
@@ -585,14 +597,21 @@ trait TwoFaAuthenticationTrait
 
         $currentMethod = \App\Enums\TwoFaMethod::PASSKEY->value;
         $availableMethods = $this->getAvailableMethods($currentMethod);
+        
+        // リカバリーコードルートとダッシュボードルートを取得
+        $context = $this->getContext();
+        $recoveryCodeRoute = $this->getRecoveryCodeRoute();
+        $dashboardRoute = $this->getDashboardRoute();
 
         return view('two-fa.passkey-challenge', [
             'availableMethods' => $availableMethods,
             'currentMethod' => $currentMethod,
-            'context' => $this->getContext(),
+            'context' => $context,
             'loginRoute' => route($this->getLoginRoute()),
             'challengeAction' => route($this->getTwoFaRoutePrefix() . '.two-fa.passkey.challenge'),
             'verifyAction' => route($this->getTwoFaRoutePrefix() . '.two-fa.passkey.verify'),
+            'recoveryCodeRoute' => $recoveryCodeRoute,
+            'dashboardRoute' => $dashboardRoute,
         ]);
     }
 

@@ -37,7 +37,8 @@
     @include('two-fa.partials.alternative-methods', [
         'methods' => $availableMethods,
         'currentMethod' => $currentMethod,
-        'context' => $contextValue
+        'context' => $contextValue,
+        'recoveryCodeRoute' => $recoveryCodeRoute ?? null
     ])
 @endsection
 

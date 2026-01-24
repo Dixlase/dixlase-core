@@ -126,6 +126,13 @@ trait LoginTrait
     abstract protected function supportsPendingEmailLogin(): bool;
 
     /**
+     * リカバリーコード画面のルート名を取得（継承先で実装）
+     * 
+     * @return string ルート名（例: 'admin.two-fa.recovery-code.show', 'dixlase-users::mypage.two-fa.recovery-code.show'）
+     */
+    abstract protected function getRecoveryCodeRoute(): string;
+
+    /**
      * Display the login view.
      * 
      * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse

@@ -25,10 +25,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'isMailServerTested' => true,
     'isEdit' => false,
     'errors' => null,
+    'translationPrefix' => null, // コントローラーから渡される翻訳プレフィックス
 ])
 
 @php
-    $prefix = $entityType === 'member' ? 'admin/members/form' : 'dixlase-users::admin/users/form';
+    // 翻訳プレフィックスが渡されていない場合はメンバー用のみフォールバック（後方互換性）
+    $prefix = $translationPrefix ?? 'admin/members/form';
     
     // 新規作成時のオプション
     $emailVerifiedValueCreate = old('email_verified', $isMailServerTested ? '0' : '1');

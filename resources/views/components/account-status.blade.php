@@ -19,43 +19,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @props([
-    'entity' => null,
-    'entityType' => 'member', // 'member' or 'user'
+    'statusValue' => null, // ステータス値（コントローラーから渡す）
+    'statusOptions' => [], // ステータスオプション（コントローラーから渡す、必須）
+    'columns' => 2, // カラム数（コントローラーから渡す）
+    'legendLabel' => null, // 凡例ラベル（コントローラーから渡す）
     'isInitialAdmin' => false,
     'showDescriptions' => false,
+    'descriptions' => [], // ステータス説明配列（コントローラーから渡す）
     'errors' => null,
 ])
 
-@php
-    $prefix = $entityType === 'member' ? 'admin/members' : 'dixlase-users::admin/users/form';
-    
-    // ステータス値を取得
-    if ($entityType === 'member') {
-        $statusValue = old('status', (string) ($entity->status->value ?? 1));
-    } else {
-        $statusValue = old('status', (string) ($entity->status ?? 1));
-    }
-    
-    // メンバーのステータスオプション（有効/無効のみ）
-    $memberStatusOptions = [
-        ['value' => '1', 'label' => 'components.status.active', 'icon' => 'fas fa-check-circle', 'color' => 'green'],
-        ['value' => '0', 'label' => 'components.status.inactive', 'icon' => 'fas fa-times-circle', 'color' => 'gray'],
-    ];
-    
-    // ユーザーのステータスオプション（有効/無効/停止）
-    $userStatusOptions = [
-        ['value' => '1', 'label' => 'dixlase-users::admin/users/form.status_active', 'icon' => 'fas fa-check-circle', 'color' => 'green'],
-        ['value' => '0', 'label' => 'dixlase-users::admin/users/form.status_inactive', 'icon' => 'fas fa-times-circle', 'color' => 'gray'],
-        ['value' => '2', 'label' => 'dixlase-users::admin/users/form.status_suspended', 'icon' => 'fas fa-ban', 'color' => 'red'],
-    ];
-    
-    $statusOptions = $entityType === 'member' ? $memberStatusOptions : $userStatusOptions;
-    $columns = $entityType === 'member' ? 2 : 3;
-@endphp
-
 <fieldset>
     <legend>
-        {{ $entityType === 'member' ? __('admin/members/create.account_status') : __('dixlase-users::admin/users/form.status') }}
+        {{ $legendLabel }}
         @if($isInitialAdmin)
             <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">（初期管理者のため変更不可）</span>
         @endif
@@ -73,30 +49,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             class="mb-3"
         />
         
-        @if($showDescriptions && $entityType === 'user')
-            {{-- ユーザーステータスの説明 --}}
+        @if($showDescriptions && !empty($descriptions))
+            {{-- ステータスの説明 --}}
             <div class="my-4 space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                <div class="flex items-start space-x-2">
-                    <i class="fas fa-check-circle text-green-600 dark:text-green-400 mt-0.5"></i>
-                    <div>
-                        <strong class="text-gray-900 dark:text-white">{{ __('dixlase-users::admin/users/form.status_active') }}:</strong>
-                        <span>{{ __('dixlase-users::admin/users/form.status_active_description') }}</span>
+                @foreach($descriptions as $description)
+                    <div class="flex items-start space-x-2">
+                        <i class="{{ $description['icon'] }} {{ $description['iconColor'] }} mt-0.5"></i>
+                        <div>
+                            <strong class="text-gray-900 dark:text-white">{{ $description['label'] }}:</strong>
+                            <span>{{ $description['text'] }}</span>
+                        </div>
                     </div>
-                </div>
-                <div class="flex items-start space-x-2">
-                    <i class="fas fa-times-circle text-gray-600 dark:text-gray-400 mt-0.5"></i>
-                    <div>
-                        <strong class="text-gray-900 dark:text-white">{{ __('dixlase-users::admin/users/form.status_inactive') }}:</strong>
-                        <span>{{ __('dixlase-users::admin/users/form.status_inactive_description') }}</span>
-                    </div>
-                </div>
-                <div class="flex items-start space-x-2">
-                    <i class="fas fa-ban text-red-600 dark:text-red-400 mt-0.5"></i>
-                    <div>
-                        <strong class="text-gray-900 dark:text-white">{{ __('dixlase-users::admin/users/form.status_suspended') }}:</strong>
-                        <span>{{ __('dixlase-users::admin/users/form.status_suspended_description') }}</span>
-                    </div>
-                </div>
+                @endforeach
             </div>
         @endif
     @endif

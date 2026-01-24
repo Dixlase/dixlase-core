@@ -134,7 +134,12 @@ class AdminMemberController extends AdminLoggedInController
         $this->viewParams['roleValue'] = (int) request()->old('role', MemberRole::ADMIN->value);
         $this->viewParams['appearanceOptions'] = AppearanceMode::translationOptions();
         $this->viewParams['localeOptions'] = \App\Enums\Locale::availableOptions();
-        $this->viewParams['statusOptions'] = MemberStatus::options();
+        
+        // ステータスオプションをコンポーネント用の形式に変換
+        $this->viewParams['statusOptions'] = [
+            ['value' => '1', 'label' => 'components.status.active', 'icon' => 'fas fa-check-circle', 'color' => 'green'],
+            ['value' => '0', 'label' => 'components.status.inactive', 'icon' => 'fas fa-times-circle', 'color' => 'gray'],
+        ];
 
         $statusOld = request()->old('status');
         $statusValue = null;
@@ -145,6 +150,7 @@ class AdminMemberController extends AdminLoggedInController
         }
         $this->viewParams['statusValue'] = $statusValue;
         $this->viewParams['requirePassword'] = true;
+        $this->viewParams['verificationTranslationPrefix'] = 'admin/members/form';
 
         $this->loadMemberFormParams();
 
@@ -212,17 +218,16 @@ class AdminMemberController extends AdminLoggedInController
         $this->viewParams['loginNotificationUseProfileSettingValue'] = AuthenticationMode::UseProfileSetting->value;
         $this->viewParams['twoFactorUseProfileSettingValue'] = AuthenticationMode::UseProfileSetting->value;
         
-        if ($isInitialAdmin) {
-            $this->viewParams['statusOptions'] = [
-                MemberStatus::Active->value => MemberStatus::Active->label()
-            ];
-        } else {
-            $this->viewParams['statusOptions'] = MemberStatus::options();
-        }
+        // ステータスオプションをコンポーネント用の形式に変換
+        $this->viewParams['statusOptions'] = [
+            ['value' => '1', 'label' => 'components.status.active', 'icon' => 'fas fa-check-circle', 'color' => 'green'],
+            ['value' => '0', 'label' => 'components.status.inactive', 'icon' => 'fas fa-times-circle', 'color' => 'gray'],
+        ];
 
         $this->viewParams['roleValue'] = (int) request()->old('role', $member->role?->value ?? MemberRole::ADMIN->value);
         $this->viewParams['statusValue'] = (int) request()->old('status', $member->status?->value ?? MemberStatus::Active->value);
         $this->viewParams['requirePassword'] = false;
+        $this->viewParams['verificationTranslationPrefix'] = 'admin/members/form';
 
         $this->loadMemberFormParams();
 
