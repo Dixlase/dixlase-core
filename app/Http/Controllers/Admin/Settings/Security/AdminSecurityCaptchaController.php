@@ -28,6 +28,7 @@ use App\Services\CaptchaTestService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Http\Requests\Admin\Settings\Security\AdminSecurityCaptchaUpdateRequest;
 
 class AdminSecurityCaptchaController extends AdminLoggedInController
 {
@@ -84,18 +85,9 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
     /**
      * CAPTCHA設定の更新
      */
-    public function update(Request $request)
+    public function update(AdminSecurityCaptchaUpdateRequest $request)
     {
-        $validated = $request->validate([
-            'captcha_enabled' => 'boolean',
-            'captcha_driver' => 'required_if:captcha_enabled,1|in:google,google_enterprise,turnstile',
-            'captcha_site_key' => 'required_if:captcha_enabled,1|nullable|string|max:255',
-            'captcha_secret_key' => 'required_if:captcha_enabled,1|nullable|string|max:255',
-            'captcha_google_version' => 'nullable|in:v2_checkbox,v2_invisible,v3',
-            'captcha_google_min_score' => 'nullable|numeric|min:0|max:1',
-            'captcha_google_project_id' => 'nullable|string|max:255',
-            'captcha_authentication_result' => 'nullable|boolean',
-        ]);
+        $validated = $request->validated();
 
         // 現在のCAPTCHA設定を取得
         $currentDriver = $this->securitySettingRepository->get('captcha_driver', 'google');

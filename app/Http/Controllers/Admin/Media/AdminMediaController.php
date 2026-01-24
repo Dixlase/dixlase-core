@@ -28,6 +28,8 @@ use App\Models\Media;
 use Illuminate\Support\Facades\Storage;
 use App\Models\MediaSetting;
 use App\Http\Requests\Admin\Media\AdminMediaStoreRequest;
+use App\Http\Requests\Admin\Media\AdminMediaUpdateRequest;
+use App\Http\Requests\Admin\Media\AdminMediaSettingsUpdateRequest;
 use App\Contracts\Repositories\MediaSettingRepositoryInterface;
 use App\Contracts\Repositories\MediaRepositoryInterface;
 use App\Services\Media\MediaSecurityService;
@@ -269,14 +271,8 @@ class AdminMediaController extends AdminLoggedInController
     /**
      * メディア情報を更新
      */
-    public function updateMedia(Request $request, Media $media)
+    public function updateMedia(AdminMediaUpdateRequest $request, Media $media)
     {
-        $request->validate([
-            'caption' => 'nullable|string|max:255',
-            'alt_text' => 'nullable|string|max:255',
-            'description' => 'nullable|string|max:1000',
-        ]);
-
         $this->mediaRepository->update($media->id, [
             'caption' => $request->input('caption'),
             'alt_text' => $request->input('alt_text'),
@@ -350,48 +346,24 @@ class AdminMediaController extends AdminLoggedInController
     /**
      * Show the form for creating a new resource.
      */
-    public function update(Request $request)
+    public function update(AdminMediaSettingsUpdateRequest $request)
     {
-        $fileExtensions = config('admin.fileExtensions');
-
-        $request->validate([
-            'allowed_file_types' => 'array',
-            'allowed_file_types.*' => 'in:' . implode(',', $fileExtensions),
-            'max_file_size' => 'required|integer|min:1|max:100', // 1MB to 100MB（レガシー互換用）
-            // ファイルタイプ別サイズ上限（MB）
-            'max_file_size_image' => 'required|integer|min:1|max:100',
-            'max_file_size_video' => 'required|integer|min:1|max:1000',
-            'max_file_size_document' => 'required|integer|min:1|max:100',
-            'max_file_size_archive' => 'required|integer|min:1|max:500',
-            // セキュリティ設定
-            'svg_sanitization_enabled' => 'boolean',
-            'zip_security_enabled' => 'boolean',
-            'mime_validation_enabled' => 'boolean',
-            // ZIP詳細設定
-            'zip_max_compression_ratio' => 'required|integer|min:10|max:1000',
-            'zip_max_file_count' => 'required|integer|min:10|max:10000',
-        ]);
-
         $selectedTypes = $request->input('allowed_file_types', []);
         $maxFileSizeMB = $request->input('max_file_size');
-        $maxFileSize = round($maxFileSizeMB * 1024); // Convert MB to KB for storage
+        $maxFileSize = round($maxFileSizeMB * 1024);
 
-        // 基本設定
         $this->mediaSettingRepository->set('allowed_file_types', $selectedTypes);
         $this->mediaSettingRepository->set('max_file_size', $maxFileSize);
 
-        // ファイルタイプ別サイズ上限（MBからKBに変換）
         $this->mediaSettingRepository->set('max_file_size_image', round($request->input('max_file_size_image') * 1024));
         $this->mediaSettingRepository->set('max_file_size_video', round($request->input('max_file_size_video') * 1024));
         $this->mediaSettingRepository->set('max_file_size_document', round($request->input('max_file_size_document') * 1024));
         $this->mediaSettingRepository->set('max_file_size_archive', round($request->input('max_file_size_archive') * 1024));
 
-        // セキュリティ設定
         $this->mediaSettingRepository->set('svg_sanitization_enabled', $request->boolean('svg_sanitization_enabled') ? '1' : '0');
         $this->mediaSettingRepository->set('zip_security_enabled', $request->boolean('zip_security_enabled') ? '1' : '0');
         $this->mediaSettingRepository->set('mime_validation_enabled', $request->boolean('mime_validation_enabled') ? '1' : '0');
 
-        // ZIP詳細設定
         $this->mediaSettingRepository->set('zip_max_compression_ratio', $request->input('zip_max_compression_ratio'));
         $this->mediaSettingRepository->set('zip_max_file_count', $request->input('zip_max_file_count'));
 

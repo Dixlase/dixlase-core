@@ -28,6 +28,7 @@ use App\Helpers\TimezoneHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Contracts\Repositories\BaseSettingRepositoryInterface;
 use Illuminate\Http\Request;
+use App\Http\Requests\Admin\Settings\Base\AdminBaseSiteUpdateRequest;
 
 class AdminBaseSiteController extends AdminLoggedInController
 {
@@ -75,17 +76,9 @@ class AdminBaseSiteController extends AdminLoggedInController
     /**
      * サイト設定の更新
      */
-    public function update(Request $request)
+    public function update(AdminBaseSiteUpdateRequest $request)
     {
-        $validated = $request->validate([
-            'app_name' => 'required|string|max:255',
-            'site_description' => 'nullable|string|max:1000',
-            'site_keywords' => 'nullable|string|max:500',
-            'locale' => 'required|string|in:' . implode(',', array_keys(config('admin.locale.available', []))),
-            'timezone' => 'required|string|timezone',
-            'default_ogp_image_id' => 'nullable|integer|exists:media,id',
-            'twitter_card_type' => 'required|string|in:summary,summary_large_image',
-        ]);
+        $validated = $request->validated();
 
         // .envに保存
         $envData = [

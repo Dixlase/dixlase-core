@@ -26,6 +26,7 @@ use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Helpers\EnvHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Http\Requests\Admin\Settings\Security\AdminSecurityEnvironmentUpdateRequest;
 
 class AdminSecurityEnvironmentController extends AdminLoggedInController
 {
@@ -48,12 +49,9 @@ class AdminSecurityEnvironmentController extends AdminLoggedInController
     /**
      * 環境設定の更新
      */
-    public function update(Request $request)
+    public function update(AdminSecurityEnvironmentUpdateRequest $request)
     {
-        $validated = $request->validate([
-            'app_env' => 'required|in:local,staging,production',
-            'app_debug' => 'required|boolean',
-        ]);
+        $validated = $request->validated();
 
         // 本番環境でデバッグモードが有効の場合は警告
         if ($validated['app_env'] === 'production' && $validated['app_debug']) {

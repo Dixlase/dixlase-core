@@ -38,6 +38,9 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Log;
 use App\Helpers\GitExcludeHelper;
 use App\Helpers\GitIgnoreHelper;
+use App\Http\Requests\Admin\Settings\AdminPluginUploadRequest;
+use App\Http\Requests\Admin\Settings\AdminPluginInstallRequest;
+use App\Http\Requests\Admin\Settings\AdminPluginDeleteRequest;
 use App\Helpers\ComposerLocalHelper;
 use App\Services\Plugin\PluginPermissionService;
 use App\Models\PluginAudit;
@@ -240,20 +243,8 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     /**
      * プラグインのアップロード（ZIPファイルの解凍とファイル配置のみ）
      */
-    public function upload(Request $request)
+    public function upload(AdminPluginUploadRequest $request)
     {
-        // アップロード最大サイズを取得
-        $uploadMaxFilesize = ini_get('upload_max_filesize');
-        $maxBytes = $this->parsePhpSize($uploadMaxFilesize);
-
-        $request->validate([
-            'plugin_file' => [
-                'required',
-                'file',
-                'mimes:zip',
-                'max:' . floor($maxBytes / 1024), // kB単位に変換
-            ],
-        ]);
 
         // ZIPファイルを一時保存
         $file = $request->file('plugin_file');
@@ -353,13 +344,11 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     /**
      * アンインストール済みプラグインをインストール
      */
-    public function install(Request $request)
+    public function install(AdminPluginInstallRequest $request)
     {
-        $request->validate([
-            'directory' => 'required|string',
-        ]);
+        $validated = $request->validated();
         
-        $pluginDir = $request->input('directory');
+        $pluginDir = $validated['directory'];
         $pluginPath = base_path("plugins/{$pluginDir}");
         
         if (!File::exists($pluginPath)) {
@@ -532,13 +521,11 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 /**
      * プラグインを完全に削除（ファイル + DBレコード）
      */
-    public function delete(Request $request)
+    public function delete(AdminPluginDeleteRequest $request)
     {
-        $request->validate([
-            'directory' => 'required|string',
-        ]);
+        $validated = $request->validated();
         
-        $pluginDir = $request->input('directory');
+        $pluginDir = $validated['directory'];
         
         // DBレコードが存在するか確認
         $plugin = Plugin::where('directory', $pluginDir)->first();

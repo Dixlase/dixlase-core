@@ -27,6 +27,7 @@ use App\Contracts\Repositories\SecuritySettingRepositoryInterface;
 use App\Enums\CspMode;
 use App\Enums\CspBlocklistAction;
 use Illuminate\Http\Request;
+use App\Http\Requests\Admin\Settings\Security\AdminSecurityCspUpdateRequest;
 
 class AdminSecurityCspController extends AdminLoggedInController
 {
@@ -65,26 +66,9 @@ class AdminSecurityCspController extends AdminLoggedInController
     /**
      * CSP設定の更新
      */
-    public function update(Request $request)
+    public function update(AdminSecurityCspUpdateRequest $request)
     {
-        // CSP有効時のみモードを必須にする
-        $cspEnabled = filter_var($request->input('csp_enabled'), FILTER_VALIDATE_BOOLEAN);
-        
-        $rules = [
-            'csp_enabled' => 'boolean',
-            'csp_mode' => $cspEnabled ? 'required|' . CspMode::validationRule() : 'nullable|' . CspMode::validationRule(),
-            'csp_log_violations' => 'boolean',
-            'csp_exclude_dev_tools' => 'boolean',
-            'csp_trusted_domains' => 'nullable|string',
-            'csp_denied_domains' => 'nullable|string',
-            'csp_custom_directives' => 'nullable|string',
-            'csp_blocklist_check_enabled' => 'boolean',
-            'csp_blocklist_action' => $cspEnabled ? 'required|' . CspBlocklistAction::validationRule() : 'nullable|' . CspBlocklistAction::validationRule(),
-            'csp_blocklist_categories' => 'nullable|array',
-            'csp_blocklist_categories.*' => 'string',
-        ];
-        
-        $validated = $request->validate($rules);
+        $validated = $request->validated();
 
         // CSP設定を更新
         $this->securitySettingRepository->set('csp_enabled', $validated['csp_enabled'] ?? false);

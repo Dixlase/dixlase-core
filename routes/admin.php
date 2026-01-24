@@ -31,7 +31,6 @@ use App\Http\Controllers\Admin\Auth\AdminEmailVerificationNotificationController
 use App\Http\Controllers\Admin\Auth\AdminEmailVerificationPromptController;
 use App\Http\Controllers\Admin\Auth\AdminNewPasswordController;
 use App\Http\Controllers\Admin\Auth\AdminPasswordResetLinkController;
-use App\Http\Controllers\Admin\Auth\AdminRegisteredUserController;
 use App\Http\Controllers\Admin\Auth\AdminVerifyEmailController;
 use App\Http\Controllers\Admin\Settings\AdminBaseSettingsController;
 use App\Http\Controllers\Admin\Settings\Base;

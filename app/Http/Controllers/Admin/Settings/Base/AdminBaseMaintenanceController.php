@@ -27,6 +27,7 @@ use App\Helpers\EnvHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Contracts\Repositories\BaseSettingRepositoryInterface;
 use Illuminate\Http\Request;
+use App\Http\Requests\Admin\Settings\Base\AdminBaseMaintenanceUpdateRequest;
 
 class AdminBaseMaintenanceController extends AdminLoggedInController
 {
@@ -57,12 +58,9 @@ class AdminBaseMaintenanceController extends AdminLoggedInController
     /**
      * メンテナンス設定の更新
      */
-    public function update(Request $request)
+    public function update(AdminBaseMaintenanceUpdateRequest $request)
     {
-        $validated = $request->validate([
-            'maintenance_mode' => 'nullable|boolean',
-            'maintenance_message' => 'nullable|string|max:2000',
-        ]);
+        $validated = $request->validated();
 
         $maintenanceMode = (int) ($validated['maintenance_mode'] ?? 0);
 

@@ -28,6 +28,8 @@ use App\Contracts\Repositories\ApiSettingRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Http\Requests\Admin\Settings\Systems\AdminSystemApiUpdateRequest;
+use App\Http\Requests\Admin\Settings\Systems\AdminSystemApiGenerateKeyRequest;
 
 class AdminSystemApiController extends AdminLoggedInController
 {
@@ -75,13 +77,9 @@ class AdminSystemApiController extends AdminLoggedInController
     /**
      * API設定を更新
      */
-    public function update(Request $request)
+    public function update(AdminSystemApiUpdateRequest $request)
     {
-        $validated = $request->validate([
-            'api_enabled' => 'nullable|boolean',
-            'api_rate_limit' => 'nullable|integer|min:1|max:10000',
-            'api_signature_required' => 'nullable|boolean',
-        ]);
+        $validated = $request->validated();
         
         $this->apiSettingRepository->set('api_enabled', $validated['api_enabled'] ?? false);
         $this->apiSettingRepository->set('api_rate_limit', $validated['api_rate_limit'] ?? 60);
@@ -99,18 +97,9 @@ class AdminSystemApiController extends AdminLoggedInController
     /**
      * 新しいAPIキーを生成
      */
-    public function generateKey(Request $request)
+    public function generateKey(AdminSystemApiGenerateKeyRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:100',
-            'environment' => 'required|in:live,test',
-            'scopes' => 'nullable|array',
-            'scopes.*' => 'string',
-            'rate_limit' => 'nullable|integer|min:1|max:10000',
-            'allowed_ips' => 'nullable|string',
-            'expires_at' => 'nullable|date|after:today',
-            'description' => 'nullable|string|max:500',
-        ]);
+        $validated = $request->validated();
         
         // 許可IPリストをパース
         $allowedIps = null;

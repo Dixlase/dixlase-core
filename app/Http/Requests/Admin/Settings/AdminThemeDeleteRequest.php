@@ -20,30 +20,29 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Controllers\Admin\Auth;
+namespace App\Http\Requests\Admin\Settings;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
+use Illuminate\Foundation\Http\FormRequest;
 
-class AdminPasswordController extends Controller
+class AdminThemeDeleteRequest extends FormRequest
 {
     /**
-     * Update the user's password.
+     * Determine if the user is authorized to make this request.
      */
-    public function update(Request $request): RedirectResponse
+    public function authorize(): bool
     {
-        $validated = $request->validateWithBag('updatePassword', [
-            'current_password' => ['required', 'current_password'],
-            'password' => ['required', Password::defaults(), 'confirmed'],
-        ]);
+        return true;
+    }
 
-        $request->user('members')->update([
-            'password' => Hash::make($validated['password']),
-        ]);
-
-        return back()->with('status', 'password-updated');
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        return [
+            'directory' => 'required|string',
+        ];
     }
 }

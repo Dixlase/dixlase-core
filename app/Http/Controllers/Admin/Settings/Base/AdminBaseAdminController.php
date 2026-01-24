@@ -28,6 +28,7 @@ use App\Contracts\Repositories\BaseSettingRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use App\Http\Requests\Admin\Settings\Base\AdminBaseAdminUpdateRequest;
 
 class AdminBaseAdminController extends AdminLoggedInController
 {
@@ -58,11 +59,9 @@ class AdminBaseAdminController extends AdminLoggedInController
     /**
      * 管理画面設定の更新
      */
-    public function update(Request $request)
+    public function update(AdminBaseAdminUpdateRequest $request)
     {
-        $validated = $request->validate([
-            'admin_url' => 'required|string|max:100|regex:/^[a-zA-Z0-9_-]+$/',
-        ]);
+        $validated = $request->validated();
 
         $forceSsl = $request->has('force_ssl') ? 1 : 0;
 

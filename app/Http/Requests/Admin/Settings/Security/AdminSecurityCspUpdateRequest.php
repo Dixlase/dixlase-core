@@ -1,0 +1,62 @@
+<?php
+
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2025 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+namespace App\Http\Requests\Admin\Settings\Security;
+
+use App\Enums\CspMode;
+use App\Enums\CspBlocklistAction;
+use Illuminate\Foundation\Http\FormRequest;
+
+class AdminSecurityCspUpdateRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        $cspEnabled = filter_var($this->input('csp_enabled'), FILTER_VALIDATE_BOOLEAN);
+        
+        return [
+            'csp_enabled' => 'boolean',
+            'csp_mode' => $cspEnabled ? 'required|' . CspMode::validationRule() : 'nullable|' . CspMode::validationRule(),
+            'csp_log_violations' => 'boolean',
+            'csp_exclude_dev_tools' => 'boolean',
+            'csp_trusted_domains' => 'nullable|string',
+            'csp_denied_domains' => 'nullable|string',
+            'csp_custom_directives' => 'nullable|string',
+            'csp_blocklist_check_enabled' => 'boolean',
+            'csp_blocklist_action' => $cspEnabled ? 'required|' . CspBlocklistAction::validationRule() : 'nullable|' . CspBlocklistAction::validationRule(),
+            'csp_blocklist_categories' => 'nullable|array',
+            'csp_blocklist_categories.*' => 'string',
+        ];
+    }
+}

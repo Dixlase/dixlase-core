@@ -1,0 +1,54 @@
+<?php
+
+/**
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2025 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+namespace App\Http\Requests\Admin\Settings\Base;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class AdminBaseSiteUpdateRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        return [
+            'app_name' => 'required|string|max:255',
+            'site_description' => 'nullable|string|max:1000',
+            'site_keywords' => 'nullable|string|max:500',
+            'locale' => 'required|string|in:' . implode(',', array_keys(config('admin.locale.available', []))),
+            'timezone' => 'required|string|timezone',
+            'default_ogp_image_id' => 'nullable|integer|exists:media,id',
+            'twitter_card_type' => 'required|string|in:summary,summary_large_image',
+        ];
+    }
+}

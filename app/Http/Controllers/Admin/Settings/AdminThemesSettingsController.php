@@ -37,6 +37,9 @@ use App\Helpers\ComposerLocalHelper;
 use App\Services\Theme\ThemePermissionService;
 use App\Services\ExtensionOperationService;
 use App\Services\Csp\CspDiagnosticService;
+use App\Http\Requests\Admin\Settings\AdminThemeUploadRequest;
+use App\Http\Requests\Admin\Settings\AdminThemeInstallRequest;
+use App\Http\Requests\Admin\Settings\AdminThemeDeleteRequest;
 
 
 
@@ -262,11 +265,8 @@ class AdminThemesSettingsController extends AdminLoggedInController
         /**
      * テーマのアップロード（ZIPファイルの解凍とファイル配置のみ）
      */
-    public function upload(Request $request)
+    public function upload(AdminThemeUploadRequest $request)
     {
-        $request->validate([
-            'theme' => 'required|mimes:zip',
-        ]);
 
         $zip = new \ZipArchive;
         $uploadedFile = $request->file('theme');
@@ -356,13 +356,11 @@ class AdminThemesSettingsController extends AdminLoggedInController
     /**
      * アンインストール済みテーマをインストール
      */
-    public function install(Request $request)
+    public function install(AdminThemeInstallRequest $request)
     {
-        $request->validate([
-            'directory' => 'required|string',
-        ]);
+        $validated = $request->validated();
         
-        $themeDir = $request->input('directory');
+        $themeDir = $validated['directory'];
         
         try {
             // Artisanコマンドを実行してテーマをインストール（--forceオプション付き）
@@ -543,13 +541,11 @@ class AdminThemesSettingsController extends AdminLoggedInController
     /**
      * テーマを完全に削除（ファイル + DBレコード）
      */
-    public function delete(Request $request)
+    public function delete(AdminThemeDeleteRequest $request)
     {
-        $request->validate([
-            'directory' => 'required|string',
-        ]);
+        $validated = $request->validated();
         
-        $themeDir = $request->input('directory');
+        $themeDir = $validated['directory'];
         
         // DBレコードが存在するか確認
         $theme = Theme::where('directory', $themeDir)->first();
