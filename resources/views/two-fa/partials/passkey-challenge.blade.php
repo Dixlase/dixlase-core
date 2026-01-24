@@ -2,6 +2,7 @@
 @php
     $context = $context ?? 'admin';
     $hasPasskeyDevices = $hasPasskeyDevices ?? true;
+    $dashboardRoute = $dashboardRoute ?? null; // コントローラーから渡される
 @endphp
 
 <div id="passkey-auth-container">
@@ -185,11 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (data.redirect) {
                         window.location.href = data.redirect;
                     } else {
-                        @if($context === 'admin')
-                        window.location.href = '{{ route("admin.dashboard") }}';
-                        @else
-                        window.location.href = '{{ route("dixlase-users::mypage.dashboard") }}';
-                        @endif
+                        window.location.href = '{{ $dashboardRoute ? route($dashboardRoute) : '#' }}';
                     }
                 }, 2000);
             } else {

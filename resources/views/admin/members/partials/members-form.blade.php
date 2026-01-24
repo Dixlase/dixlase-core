@@ -155,6 +155,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :entity="$member ?? null"
             entityType="member"
             :sendRoute="route('admin.members.send-verification-email', ['member' => ':id'])"
+            :translationPrefix="$verificationTranslationPrefix ?? null"
             :isMailServerTested="$isMailServerTested"
             :isEdit="isset($member) && $member->exists"
             :errors="$errors"
@@ -195,8 +196,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <!-- アカウントステータス -->
         <x-account-status
-            :entity="$member ?? null"
-            entityType="member"
+            :statusValue="(string) $statusValue"
+            :statusOptions="$statusOptions"
+            :columns="2"
+            :legendLabel="__('admin/members/create.account_status')"
             :isInitialAdmin="$isInitialAdmin"
             :errors="$errors"
         />

@@ -173,6 +173,14 @@ class AdminLoginController extends AdminController
      */
     protected function supportsPendingEmailLogin(): bool
     {
-        return true;
+        return false;
+    }
+
+    /**
+     * リカバリーコード画面のルート名を取得
+     */
+    protected function getRecoveryCodeRoute(): string
+    {
+        return 'admin.two-fa.recovery-code.show';
     }
 }
