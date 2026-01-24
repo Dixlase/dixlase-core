@@ -27,7 +27,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 ])
 
 @php
-    $prefix = $entityType === 'member' ? 'admin/members' : 'users-plugin::admin/users/form';
+    $prefix = $entityType === 'member' ? 'admin/members' : 'dixlase-users::admin/users/form';
     
     // ステータス値を取得
     if ($entityType === 'member') {
@@ -44,9 +44,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     
     // ユーザーのステータスオプション（有効/無効/停止）
     $userStatusOptions = [
-        ['value' => '1', 'label' => 'users-plugin::admin/users/form.status_active', 'icon' => 'fas fa-check-circle', 'color' => 'green'],
-        ['value' => '0', 'label' => 'users-plugin::admin/users/form.status_inactive', 'icon' => 'fas fa-times-circle', 'color' => 'gray'],
-        ['value' => '2', 'label' => 'users-plugin::admin/users/form.status_suspended', 'icon' => 'fas fa-ban', 'color' => 'red'],
+        ['value' => '1', 'label' => 'dixlase-users::admin/users/form.status_active', 'icon' => 'fas fa-check-circle', 'color' => 'green'],
+        ['value' => '0', 'label' => 'dixlase-users::admin/users/form.status_inactive', 'icon' => 'fas fa-times-circle', 'color' => 'gray'],
+        ['value' => '2', 'label' => 'dixlase-users::admin/users/form.status_suspended', 'icon' => 'fas fa-ban', 'color' => 'red'],
     ];
     
     $statusOptions = $entityType === 'member' ? $memberStatusOptions : $userStatusOptions;
@@ -55,7 +55,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <fieldset>
     <legend>
-        {{ $entityType === 'member' ? __('admin/members/create.account_status') : __('users-plugin::admin/users/form.status') }}
+        {{ $entityType === 'member' ? __('admin/members/create.account_status') : __('dixlase-users::admin/users/form.status') }}
         @if($isInitialAdmin)
             <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">（初期管理者のため変更不可）</span>
         @endif
@@ -79,22 +79,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div class="flex items-start space-x-2">
                     <i class="fas fa-check-circle text-green-600 dark:text-green-400 mt-0.5"></i>
                     <div>
-                        <strong class="text-gray-900 dark:text-white">{{ __('users-plugin::admin/users/form.status_active') }}:</strong>
-                        <span>{{ __('users-plugin::admin/users/form.status_active_description') }}</span>
+                        <strong class="text-gray-900 dark:text-white">{{ __('dixlase-users::admin/users/form.status_active') }}:</strong>
+                        <span>{{ __('dixlase-users::admin/users/form.status_active_description') }}</span>
                     </div>
                 </div>
                 <div class="flex items-start space-x-2">
                     <i class="fas fa-times-circle text-gray-600 dark:text-gray-400 mt-0.5"></i>
                     <div>
-                        <strong class="text-gray-900 dark:text-white">{{ __('users-plugin::admin/users/form.status_inactive') }}:</strong>
-                        <span>{{ __('users-plugin::admin/users/form.status_inactive_description') }}</span>
+                        <strong class="text-gray-900 dark:text-white">{{ __('dixlase-users::admin/users/form.status_inactive') }}:</strong>
+                        <span>{{ __('dixlase-users::admin/users/form.status_inactive_description') }}</span>
                     </div>
                 </div>
                 <div class="flex items-start space-x-2">
                     <i class="fas fa-ban text-red-600 dark:text-red-400 mt-0.5"></i>
                     <div>
-                        <strong class="text-gray-900 dark:text-white">{{ __('users-plugin::admin/users/form.status_suspended') }}:</strong>
-                        <span>{{ __('users-plugin::admin/users/form.status_suspended_description') }}</span>
+                        <strong class="text-gray-900 dark:text-white">{{ __('dixlase-users::admin/users/form.status_suspended') }}:</strong>
+                        <span>{{ __('dixlase-users::admin/users/form.status_suspended_description') }}</span>
                     </div>
                 </div>
             </div>

@@ -293,7 +293,7 @@ trait TwoFaAuthenticationTrait
         if (!$user) {
             $loginRoute = $this->getContext() === 'admin' 
                 ? 'admin.login' 
-                : 'users-plugin::mypage.login';
+                : 'dixlase-users::mypage.login';
             return redirect()->route($loginRoute);
         }
         

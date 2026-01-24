@@ -31,7 +31,7 @@
         <div>
             @php
                 $recoveryCodeRoute = $context === 'user' 
-                    ? 'users-plugin::mypage.two-fa.recovery-code.show' 
+                    ? 'dixlase-users::mypage.two-fa.recovery-code.show' 
                     : 'admin.two-fa.recovery-code.show';
             @endphp
             <a href="{{ route($recoveryCodeRoute) }}" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
