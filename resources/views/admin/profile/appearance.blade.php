@@ -64,23 +64,3 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         form="profile-appearance-form"
     />
 @endsection
-
-@push('scripts')
-<style>
-    :root {
-        --transition-duration: 500ms;
-    }
-
-    #profile-appearance-form input, 
-    #profile-appearance-form textarea, 
-    #profile-appearance-form select, 
-    #profile-appearance-form button, 
-    #profile-appearance-form fieldset, 
-    #profile-appearance-form legend {
-        transition: border-color var(--transition-duration) ease-in-out,
-                   box-shadow var(--transition-duration) ease-in-out,
-                   background-color var(--transition-duration) ease-in-out,
-                   color var(--transition-duration) ease-in-out;
-    }
-</style>
-@endpush

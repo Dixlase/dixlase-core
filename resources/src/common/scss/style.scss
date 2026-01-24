@@ -33,6 +33,15 @@
 @use '../../components/ui/scss/message';
 @use '../../components/ui/scss/status-badge';
 
+// Form components
+@use '../../components/form/scss/range';
+
+// Other components
+@use '../../components/scss/media-selector';
+
+// Vendor styles
+@use '../../vendor/mail/html/scss/layout';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
