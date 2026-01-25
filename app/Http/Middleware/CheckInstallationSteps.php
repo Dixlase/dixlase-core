@@ -158,6 +158,13 @@ class CheckInstallationSteps
         }
         
         // インデックスページは常に許可
+        if ($currentRoute === 'install.index') {
+            return $next($request);
+        }
+        
+        // 現在のステップを取得
+        $currentStep = $this->getStepFromRoute($currentRoute);
+        
         if ($currentStep > 0) {
             $installData = session()->all();
             

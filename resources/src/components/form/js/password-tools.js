@@ -243,9 +243,17 @@ window.passwordTools = function (config = {}) {
         // 一致アイコンのクラス
         get matchIconClass() {
             if (this.isPasswordMatching) {
-                return 'fas fa-check text-green-500';
+                return 'fas fa-check text-green-600 dark:text-green-400';
             }
-            return 'fas fa-times text-red-500';
+            return 'fas fa-times text-red-600 dark:text-red-400';
+        },
+
+        // 一致アイコンのHTML（完全に置き換え）
+        get matchIconHtml() {
+            if (this.isPasswordMatching) {
+                return '<i class="fas fa-check text-green-600 dark:text-green-400"></i>';
+            }
+            return '<i class="fas fa-times text-red-600 dark:text-red-400"></i>';
         },
 
         // 要件アイコンのクラス

@@ -34,6 +34,11 @@ class CheckInstallationReady
         
         // インストール完了後はログを出力しない
         
+        // インストール中はセッションドライバーをfileに切り替え
+        if (!$isInstalled) {
+            $this->ensureFileSessionDriver();
+        }
+        
         // セッションから言語を設定
         if (session()->has('install_locale')) {
             app()->setLocale(session('install_locale'));
@@ -287,6 +292,33 @@ class CheckInstallationReady
                 Log::channel('install')->info('CheckInstallationReady: マイグレーションチェックエラー - ' . $e->getMessage());
             }
             return false;
+        }
+    }
+
+    /**
+     * インストール中はセッションドライバーをfileに切り替え
+     * DBテーブルがまだ存在しない状態でguard-aware-databaseドライバーを使うとエラーになるため
+     */
+    private function ensureFileSessionDriver(): void
+    {
+        $currentDriver = config('session.driver');
+        
+        // 既にfileドライバーの場合は何もしない
+        if ($currentDriver === 'file') {
+            return;
+        }
+        
+        // database系ドライバーの場合はfileに切り替え
+        if (in_array($currentDriver, ['database', 'guard-aware-database'])) {
+            config(['session.driver' => 'file']);
+            
+            // セッションマネージャーを再バインド
+            app()->forgetInstance('session');
+            app()->forgetInstance('session.store');
+            
+            Log::channel('install')->info('CheckInstallationReady: セッションドライバーを一時的にfileに切り替えました', [
+                'original_driver' => $currentDriver
+            ]);
         }
     }
 
