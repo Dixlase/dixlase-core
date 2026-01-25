@@ -38,6 +38,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     
     // 変更時のみ確認欄を表示（true = 入力時に確認欄を表示, false = 常に表示）
     'showConfirmationOnChange' => false,
+    
+    // 確認欄でコピー・ペースト・カットを禁止（true = 禁止, false = 許可）
+    'disableConfirmationCopyPaste' => false,
 ])
 
 @php
@@ -84,13 +87,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         requireNumber: {{ $requireNumber ? 'true' : 'false' }},
         requireSymbol: {{ $requireSymbol ? 'true' : 'false' }},
         showConfirmation: {{ $showConfirmation ? 'true' : 'false' }},
-        showConfirmationOnChange: {{ $showConfirmationOnChange ? 'true' : 'false' }}
+        showConfirmationOnChange: {{ $showConfirmationOnChange ? 'true' : 'false' }},
+        disableConfirmationCopyPaste: {{ $disableConfirmationCopyPaste ? 'true' : 'false' }},
+        confirmationInputId: '{{ $id }}_confirmation'
     })"
     data-msg-error="{{ __('components.password_messages.error') }}"
     data-msg-weak="{{ __('components.password_messages.requirements.weak') }}"
     data-msg-normal="{{ __('components.password_messages.requirements.normal') }}"
     data-msg-strong="{{ __('components.password_messages.requirements.strong') }}"
-    data-msg-very-strong="{{ __('components.password_messages.requirements.very_strong') }}">
+    data-msg-very-strong="{{ __('components.password_messages.requirements.very_strong') }}"
+    data-msg-paste-error="{{ __('install.password_paste_error') }}">
     <div class="relative">
         <input
             :type="showPassword ? 'text' : 'password'"

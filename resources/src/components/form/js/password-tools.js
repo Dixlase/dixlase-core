@@ -31,6 +31,8 @@ window.passwordTools = function (config = {}) {
         showPassword: false,
         showConfirmation: config.showConfirmation || false,
         showConfirmationOnChange: config.showConfirmationOnChange || false,
+        disableConfirmationCopyPaste: config.disableConfirmationCopyPaste || false,
+        confirmationInputId: config.confirmationInputId || '',
 
         // Password policy
         policy: {
@@ -54,7 +56,8 @@ window.passwordTools = function (config = {}) {
                 normal: el.dataset.msgNormal || '普通',
                 strong: el.dataset.msgStrong || '強い',
                 veryStrong: el.dataset.msgVeryStrong || '非常に強い',
-                copySuccess: 'パスワードがコピーされました！'
+                copySuccess: 'パスワードがコピーされました！',
+                pasteError: el.dataset.msgPasteError || 'パスワード確認欄へのペーストは禁止されています。'
             };
 
             this.$watch('password', () => {
@@ -69,6 +72,37 @@ window.passwordTools = function (config = {}) {
                     this.checkPasswordMatch();
                 }
             });
+
+            // 確認欄のコピペ禁止を設定
+            if (this.disableConfirmationCopyPaste && this.confirmationInputId) {
+                this.$nextTick(() => {
+                    this.setupConfirmationCopyPasteProtection();
+                });
+            }
+        },
+
+        // 確認欄のコピペ禁止を設定
+        setupConfirmationCopyPasteProtection() {
+            const confirmInput = document.getElementById(this.confirmationInputId);
+
+            if (confirmInput) {
+                confirmInput.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    alert(this.messages.pasteError);
+                });
+
+                confirmInput.addEventListener('copy', (e) => {
+                    e.preventDefault();
+                });
+
+                confirmInput.addEventListener('cut', (e) => {
+                    e.preventDefault();
+                });
+
+                confirmInput.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                });
+            }
         },
 
         // 確認欄を表示するかどうか

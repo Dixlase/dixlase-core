@@ -96,6 +96,7 @@
                     id="admin_password"
                     :required="false"
                     :showConfirmation="true"
+                    :disableConfirmationCopyPaste="true"
                     :minLength="8"
                     :requireUppercase="true"
                     :requireLowercase="true"
@@ -120,31 +121,5 @@
         />
     </nav>
 </form>
-
-<script @cspNonce>
-    // パスワード確認欄でコピー＆ペーストを禁止
-    document.addEventListener('DOMContentLoaded', function() {
-        const confirmInput = document.getElementById("admin_password_confirmation");
-        
-        if (confirmInput) {
-            confirmInput.addEventListener("paste", function(e) {
-                e.preventDefault();
-                alert("{{ __('install.password_paste_error') }}");
-            });
-
-            confirmInput.addEventListener("copy", function(e) {
-                e.preventDefault();
-            });
-
-            confirmInput.addEventListener("cut", function(e) {
-                e.preventDefault();
-            });
-
-            confirmInput.addEventListener("contextmenu", function(e) {
-                e.preventDefault();
-            });
-        }
-    });
-</script>
 
 @endsection
