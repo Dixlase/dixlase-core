@@ -127,9 +127,12 @@ class InstallCompleteController extends BaseInstallController
     {
         Log::channel('install')->info('=== InstallCompleteController::finalize() 開始 ===');
         
-        // INSTALLED=trueを設定
+        // INSTALLED=trueを設定 & セッションドライバーをguard-aware-databaseに戻す
         Log::channel('install')->info('INSTALLED=trueを設定中...');
-        $this->updateEnv(['INSTALLED' => 'true']);
+        $this->updateEnv([
+            'INSTALLED' => 'true',
+            'SESSION_DRIVER' => 'guard-aware-database'
+        ]);
         
         // 環境変数を即座に反映（putenvで現在のプロセスに反映）
         putenv('INSTALLED=true');
@@ -137,7 +140,7 @@ class InstallCompleteController extends BaseInstallController
         $_SERVER['INSTALLED'] = 'true';
         
         // Artisanコマンドは実行しない（APP_KEY再生成とセッション破壊を防ぐため）
-        Log::channel('install')->info('INSTALLED=true設定完了', [
+        Log::channel('install')->info('INSTALLED=true設定完了 & セッションドライバーをguard-aware-databaseに復元', [
             'env_INSTALLED' => env('INSTALLED'),
             'putenv_check' => getenv('INSTALLED')
         ]);

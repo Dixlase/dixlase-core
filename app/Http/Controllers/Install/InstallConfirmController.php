@@ -217,7 +217,7 @@ class InstallConfirmController extends BaseInstallController
             
             // 元のSESSION_DRIVERを保存
             preg_match('/SESSION_DRIVER=(.+)/', $envContent, $matches);
-            $originalSessionDriver = $matches[1] ?? 'database';
+            $originalSessionDriver = $matches[1] ?? 'guard-aware-database';
             
             // SESSION_DRIVERをfileに変更
             $envContent = preg_replace('/SESSION_DRIVER=.+/', 'SESSION_DRIVER=file', $envContent);

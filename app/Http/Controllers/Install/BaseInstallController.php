@@ -22,7 +22,7 @@
 
 namespace App\Http\Controllers\Install;
 
-use App\Http\Controllers\Controller;
+use Illuminate\Routing\Controller;
 use App\Helpers\EnvHelper;
 use Illuminate\Support\Facades\File;
 
