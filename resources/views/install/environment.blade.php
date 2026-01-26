@@ -45,7 +45,6 @@
                     name="app_env"
                     :options="$envOptions"
                     :value="old('app_env', session('install_data.app_env', 'local'))"
-                    onchange="toggleDebugMode()"
                     class="input-lg"
                 />
             </div>
@@ -131,18 +130,9 @@
             <div>
                 <x-form.label for="app_timezone" :text="is_array(__('install.timezone')) ? __('install.timezone.label') : __('install.timezone')" :required="true" />
             @php
-                // 現在のタイムゾーンを取得（セッションがあればそれを使い、なければブラウザのタイムゾーンを検出）
+                // 現在のタイムゾーンを取得（セッションがあればそれを使い、なければクッキーから取得）
                 $currentTz = old('app_timezone', session('install_data.app_timezone', ''));
                 if (empty($currentTz)) {
-                    // ブラウザのタイムゾーンを検出
-                    echo '<script @cspNonce>
-                        try {
-                            const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                            document.cookie = `user_timezone=${userTimeZone};path=/;samesite=lax`;
-                        } catch (e) {
-                            console.error("タイムゾーンの検出に失敗しました:", e);
-                        }
-                    </script>';
                     // PHPでクッキーから取得を試みる
                     $currentTz = $_COOKIE['user_timezone'] ?? 'Asia/Tokyo'; // デフォルトは東京
                 }
@@ -199,65 +189,5 @@
         />
     </nav>
 </form>
-
-<script @cspNonce>
-    // デバッグモードの有効・無効を切り替える
-    function toggleDebugMode() {
-        let envSelect = document.getElementById('app_env');
-        let debugCheckbox = document.getElementById('app_debug');
-        let debugNote = document.getElementById('debug-note');
-
-        if (envSelect.value === 'production') {
-            debugCheckbox.disabled = true;
-            debugCheckbox.checked = false;
-            debugNote.style.display = 'block';
-        } else {
-            debugCheckbox.disabled = false;
-            debugNote.style.display = 'none';
-        }
-    }
-
-    // ページ読み込み時に実行
-    document.addEventListener('DOMContentLoaded', toggleDebugMode);
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const appUrlInput = document.getElementById('app_url');
-        const forceSslCheckbox = document.getElementById('force_ssl');
-        const protocolDisplay = document.getElementById('protocol_display');
-        const adminUrlPrefix = document.getElementById('admin_url_prefix');
-
-        function updateUrls() {
-            const protocol = forceSslCheckbox.checked ? 'https://' : 'http://';
-            const appUrl = appUrlInput.value.trim().replace(/^(https?:\/\/)?/, ''); // プロトコルを除去し、空白も削除
-
-            // アプリケーションURLのプロトコル表示を更新
-            protocolDisplay.innerText = protocol;
-            
-            // 管理画面URLのプレフィックスを更新（アプリケーションURL + スラッシュ）
-            if (appUrl) {
-                adminUrlPrefix.innerText = protocol + appUrl + '/';
-            } else {
-                adminUrlPrefix.innerText = protocol;
-            }
-        }
-
-        // 初回ロード時にURLを更新
-        updateUrls();
-
-        // SSL設定変更時にリアルタイム更新
-        forceSslCheckbox.addEventListener('change', function() {
-            updateUrls();
-        });
-
-        // アプリケーションURL入力時にリアルタイム更新
-        appUrlInput.addEventListener('input', function() {
-            updateUrls();
-        });
-
-        // アプリケーションURL入力フィールドのフォーカス時とブラー時にも更新
-        appUrlInput.addEventListener('focus', updateUrls);
-        appUrlInput.addEventListener('blur', updateUrls);
-    });
-</script>
 
 @endsection
