@@ -247,31 +247,45 @@ class InstallConfirmController extends BaseInstallController
             Artisan::call('config:clear');
             Log::channel('install')->info('セッションドライバーを復元', ['driver' => $originalSessionDriver]);
             
-            // シーダー実行
-            Log::channel('install')->info('シーダー実行チェック開始');
-            if (!DB::table('members_role_permissions')->exists()) {
-                Log::channel('install')->info('DatabaseSeeder実行開始');
-                Artisan::call('db:seed', [
-                    '--class' => 'DatabaseSeeder',
-                    '--force' => true
-                ]);
-                Log::channel('install')->info('DatabaseSeeder実行完了');
-            } else {
-                Log::channel('install')->info('members_role_permissionsテーブルが既に存在するため、シーダーをスキップ');
-            }
+            // DB接続を再確立（テーブルプレフィックスを正しく適用するため）
+            DB::purge();
+            DB::reconnect();
+            
+            // デバッグ: 現在のテーブルプレフィックスと全テーブル一覧を取得
+            $prefix = DB::connection()->getTablePrefix();
+            $tables = DB::select('SHOW TABLES');
+            $tableNames = array_map(function($table) {
+                return array_values((array)$table)[0];
+            }, $tables);
+            Log::channel('install')->info('DB接続を再確立しました', [
+                'prefix' => $prefix,
+                'tables_count' => count($tableNames),
+                'sample_tables' => array_slice($tableNames, 0, 5)
+            ]);
+            
+            // シーダー実行（テーブル存在チェックをスキップして無条件で実行）
+            Log::channel('install')->info('DatabaseSeeder実行開始');
+            Artisan::call('db:seed', [
+                '--class' => 'DatabaseSeeder',
+                '--force' => true
+            ]);
+            Log::channel('install')->info('DatabaseSeeder実行完了');
+
+            // テーマのマイグレーションを実行
+            Log::channel('install')->info('DixlaseDefaultTheme マイグレーション開始');
+            Artisan::call('migrate', [
+                '--path' => 'themes/DixlaseDefaultTheme/database/migrations',
+                '--force' => true
+            ]);
+            Log::channel('install')->info('DixlaseDefaultTheme マイグレーション完了');
 
             // テーマシーダーを実行
-            Log::channel('install')->info('テーマシーダー実行チェック開始');
-            if (!DB::table('thm_dixlase_default_theme_settings')->exists()) {
-                Log::channel('install')->info('DixlaseDefaultTheme DatabaseSeeder実行開始');
-                Artisan::call('db:seed', [
-                    '--class' => 'Themes\\DixlaseDefaultTheme\\Database\\Seeders\\DatabaseSeeder',
-                    '--force' => true
-                ]);
-                Log::channel('install')->info('DixlaseDefaultTheme DatabaseSeeder実行完了（設定 + 権限）');
-            } else {
-                Log::channel('install')->info('thm_dixlase_default_theme_settingsテーブルが既に存在するため、テーマシーダーをスキップ');
-            }
+            Log::channel('install')->info('DixlaseDefaultTheme DatabaseSeeder実行開始');
+            Artisan::call('db:seed', [
+                '--class' => 'Themes\\DixlaseDefaultTheme\\Database\\Seeders\\DatabaseSeeder',
+                '--force' => true
+            ]);
+            Log::channel('install')->info('DixlaseDefaultTheme DatabaseSeeder実行完了（設定 + 権限）');
 
             // 初期データの投入
             Log::channel('install')->info('初期データ投入開始');

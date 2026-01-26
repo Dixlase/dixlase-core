@@ -117,7 +117,7 @@
             <x-form.toggle
                 name="preserve_data"
                 id="preserve_data"
-                :checked="old('preserve_data', session('install_data.preserve_data', false))"
+                :checked="old('preserve_data', session('install_data.preserve_data', false)) === true"
                 :label="__('install.preserve_database')"
             />
             <x-form.help-text :text="__('install.preserve_database_help')" />

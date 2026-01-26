@@ -19,23 +19,15 @@
  */
 
 /**
- * ページ読み込み前にダークモードを即座に適用（フラッシュ防止）
- */
-(function () {
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        document.documentElement.classList.add('dark');
-    }
-})();
-
-/**
  * Alpine.js ダークモード検出関数
+ * PCのシステム設定に自動的に従う
  */
 window.installTheme = function () {
     return {
         isDark: window.matchMedia('(prefers-color-scheme: dark)').matches,
 
         init() {
-            // ダークモード設定の変更を監視
+            // PCのダークモード設定変更を監視して自動的に反映
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
                 this.isDark = e.matches;
             });
