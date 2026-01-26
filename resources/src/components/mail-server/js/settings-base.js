@@ -126,13 +126,23 @@ export class MailFormBase {
         // テキストのスタイルをリセット
         const text = document.getElementById(`${testType}-test-text`);
         if (text) {
-            text.className = 'text-sm text-gray-600 dark:text-gray-400';
+            // SVG要素の場合はsetAttributeを使用
+            if (text.tagName === 'svg' || text instanceof SVGElement) {
+                text.setAttribute('class', 'text-sm text-gray-600 dark:text-gray-400');
+            } else {
+                text.className = 'text-sm text-gray-600 dark:text-gray-400';
+            }
         }
 
         // メイン表示のテキストもリセット
         const textMain = document.getElementById(`${testType}-test-text-main`);
         if (textMain) {
-            textMain.className = 'text-sm text-gray-600 dark:text-gray-400';
+            // SVG要素の場合はsetAttributeを使用
+            if (textMain.tagName === 'svg' || textMain instanceof SVGElement) {
+                textMain.setAttribute('class', 'text-sm text-gray-600 dark:text-gray-400');
+            } else {
+                textMain.className = 'text-sm text-gray-600 dark:text-gray-400';
+            }
         }
 
         // 日付をクリア

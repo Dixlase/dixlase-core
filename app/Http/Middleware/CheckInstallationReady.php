@@ -14,8 +14,9 @@ class CheckInstallationReady
      * インストールチェックから除外するパス
      */
     protected array $excludedPaths = [
-        'csp-report',       // CSP違反レポートエンドポイント
-        '_boost/*',         // MCP/Windsurf開発ツール
+        'csp-report',              // CSP違反レポートエンドポイント
+        '_boost/*',                // MCP/Windsurf開発ツール
+        'install/verify-mail/*',   // インストール中のメール受信確認
     ];
 
     /**
@@ -241,7 +242,7 @@ class CheckInstallationReady
                 
                 if (!$exists) {
                     if ($logToInstall) {
-                        Log::info("CheckInstallationReady: 主要テーブル '{$table}' が存在しません");
+                        Log::channel('install')->debug("CheckInstallationReady: 主要テーブル '{$table}' が存在しません");
                     }
                     $debugInfo['step4_tables'] = $tableStatus;
                     return false;

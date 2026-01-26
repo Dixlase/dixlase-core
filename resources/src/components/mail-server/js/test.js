@@ -320,7 +320,11 @@ class MailTest {
             // ステータス表示の要素を更新
             const text = document.getElementById(testType + '-test-text');
             if (text) {
-                text.className = 'text-sm text-green-700 dark:text-green-300';
+                if (text.tagName === 'svg' || text instanceof SVGElement) {
+                    text.setAttribute('class', 'text-sm text-green-700 dark:text-green-300');
+                } else {
+                    text.className = 'text-sm text-green-700 dark:text-green-300';
+                }
             }
 
             const dateSpan = document.getElementById(testType + '-test-date');
@@ -331,12 +335,20 @@ class MailTest {
             // メイン表示の要素も更新
             const iconMain = document.getElementById(testType + '-test-icon-main');
             if (iconMain) {
-                iconMain.className = 'mr-2 fas fa-check-circle text-green-500';
+                if (iconMain.tagName === 'svg' || iconMain instanceof SVGElement) {
+                    iconMain.setAttribute('class', 'mr-2 fas fa-check-circle text-green-500');
+                } else {
+                    iconMain.className = 'mr-2 fas fa-check-circle text-green-500';
+                }
             }
 
             const textMain = document.getElementById(testType + '-test-text-main');
             if (textMain) {
-                textMain.className = 'text-sm text-green-700 dark:text-green-300';
+                if (textMain.tagName === 'svg' || textMain instanceof SVGElement) {
+                    textMain.setAttribute('class', 'text-sm text-green-700 dark:text-green-300');
+                } else {
+                    textMain.className = 'text-sm text-green-700 dark:text-green-300';
+                }
             }
 
             const dateSpanMain = document.getElementById(testType + '-test-date-main');
@@ -393,14 +405,38 @@ class MailTest {
         }
 
         if (allTestsComplete) {
-            mainStatusDiv.className = 'mt-6 p-4 border rounded-lg bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
-            mainIcon.className = 'fas fa-check-circle text-green-400 text-xl';
-            mainTitle.className = 'text-sm font-medium text-green-800 dark:text-green-200';
+            if (mainStatusDiv.tagName === 'svg' || mainStatusDiv instanceof SVGElement) {
+                mainStatusDiv.setAttribute('class', 'mt-6 p-4 border rounded-lg bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800');
+            } else {
+                mainStatusDiv.className = 'mt-6 p-4 border rounded-lg bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
+            }
+            if (mainIcon.tagName === 'svg' || mainIcon instanceof SVGElement) {
+                mainIcon.setAttribute('class', 'fas fa-check-circle text-green-400 text-xl');
+            } else {
+                mainIcon.className = 'fas fa-check-circle text-green-400 text-xl';
+            }
+            if (mainTitle.tagName === 'svg' || mainTitle instanceof SVGElement) {
+                mainTitle.setAttribute('class', 'text-sm font-medium text-green-800 dark:text-green-200');
+            } else {
+                mainTitle.className = 'text-sm font-medium text-green-800 dark:text-green-200';
+            }
             mainTitle.textContent = this.translations.threeStageTestComplete;
         } else {
-            mainStatusDiv.className = 'mt-6 p-4 border rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800';
-            mainIcon.className = 'fas fa-exclamation-triangle text-yellow-400 text-xl';
-            mainTitle.className = 'text-sm font-medium text-yellow-800 dark:text-yellow-200';
+            if (mainStatusDiv.tagName === 'svg' || mainStatusDiv instanceof SVGElement) {
+                mainStatusDiv.setAttribute('class', 'mt-6 p-4 border rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800');
+            } else {
+                mainStatusDiv.className = 'mt-6 p-4 border rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800';
+            }
+            if (mainIcon.tagName === 'svg' || mainIcon instanceof SVGElement) {
+                mainIcon.setAttribute('class', 'fas fa-exclamation-triangle text-yellow-400 text-xl');
+            } else {
+                mainIcon.className = 'fas fa-exclamation-triangle text-yellow-400 text-xl';
+            }
+            if (mainTitle.tagName === 'svg' || mainTitle instanceof SVGElement) {
+                mainTitle.setAttribute('class', 'text-sm font-medium text-yellow-800 dark:text-yellow-200');
+            } else {
+                mainTitle.className = 'text-sm font-medium text-yellow-800 dark:text-yellow-200';
+            }
             mainTitle.textContent = this.translations.threeStageTestIncomplete;
         }
     }
