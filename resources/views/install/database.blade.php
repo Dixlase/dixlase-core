@@ -128,6 +128,10 @@
     <section aria-labelledby="connection-test-heading">
         <h2 id="connection-test-heading" class="sr-only">{{ __('install.database_connection_test') }}</h2>
         
+        <!-- 外部JSで使用するデータ -->
+        <input type="hidden" id="db-test-url" value="{{ url('/install/test-db') }}">
+        <input type="hidden" id="db-success-message" value="{{ __('install.db_test_success') }}">
+        
         <div class="text-center space-y-3">
             <p id="db-test-result" class="text-sm text-red-600 dark:text-red-400" role="status" aria-live="polite">
                 {{ __('install.db_test_required') }}
@@ -171,92 +175,4 @@
     </nav>
 </form>
 
-<script @cspNonce>
-    let isDbTestSuccessful = false;
-
-    function togglePassword() {
-        let passwordField = document.getElementById("db_password");
-        let eyeIcon = document.getElementById("password-eye");
-        
-        if (passwordField.type === "password") {
-            passwordField.type = "text";
-            eyeIcon.classList.remove("fa-eye");
-            eyeIcon.classList.add("fa-eye-slash");
-        } else {
-            passwordField.type = "password";
-            eyeIcon.classList.remove("fa-eye-slash");
-            eyeIcon.classList.add("fa-eye");
-        }
-    }
-
-    function testDatabaseConnection() {
-        let dbHost = document.getElementById('db_host').value;
-        let dbPort = document.getElementById('db_port').value;
-        let dbDatabase = document.getElementById('db_database').value;
-        let dbUsername = document.getElementById('db_username').value;
-        let dbPassword = document.getElementById('db_password').value;
-        let dbConnection = document.getElementById('db_connection').value;
-
-        fetch("{{ url('/install/test-db') }}", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": "{{ csrf_token() }}"
-            },
-            body: JSON.stringify({
-                db_connection: dbConnection,
-                db_host: dbHost,
-                db_port: dbPort,
-                db_database: dbDatabase,
-                db_username: dbUsername,
-                db_password: dbPassword
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            let resultElement = document.getElementById('db-test-result');
-            resultElement.innerText = data.message;
-            
-            if (data.success) {
-                resultElement.classList.remove('text-red-600', 'dark:text-red-400');
-                resultElement.classList.add('text-green-600', 'dark:text-green-400');
-            } else {
-                resultElement.classList.remove('text-green-600', 'dark:text-green-400');
-                resultElement.classList.add('text-red-600', 'dark:text-red-400');
-            }
-
-            isDbTestSuccessful = data.success;
-            updateNextButtonState();
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            isDbTestSuccessful = false;
-            updateNextButtonState();
-        });
-    }
-
-    function updateNextButtonState() {
-        let nextButton = document.getElementById('next-button');
-        let resultMessage = document.getElementById('db-test-result');
-        let tooltip = document.getElementById('tooltip');
-
-        if (isDbTestSuccessful) {
-            nextButton.disabled = false;
-            nextButton.classList.remove("bg-blue-400", "dark:bg-blue-400", "cursor-not-allowed");
-            nextButton.classList.add("bg-blue-600", "dark:bg-blue-500", "hover:bg-blue-700", "dark:hover:bg-blue-600");
-
-            resultMessage.innerText = "{{ __('install.db_test_success') }}";
-            resultMessage.classList.remove("text-red-600", "dark:text-red-400");
-            resultMessage.classList.add("text-green-600", "dark:text-green-400");
-
-            tooltip.classList.add("hidden"); // ツールチップを非表示
-        } else {
-            nextButton.disabled = true;
-            nextButton.classList.remove("bg-blue-600", "dark:bg-blue-500", "hover:bg-blue-700", "dark:hover:bg-blue-600");
-            nextButton.classList.add("bg-blue-400", "dark:bg-blue-400", "cursor-not-allowed");
-
-            tooltip.classList.remove("hidden"); // ツールチップを表示
-        }
-    }
-</script>
 @endsection

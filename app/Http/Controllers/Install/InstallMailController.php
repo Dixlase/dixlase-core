@@ -25,6 +25,7 @@ namespace App\Http\Controllers\Install;
 use App\Http\Requests\Install\InstallMailRequest;
 use App\Http\Requests\MailServerRequest;
 use App\Traits\MailTestTrait;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 
@@ -115,11 +116,11 @@ class InstallMailController extends BaseInstallController
     /**
      * メール受信確認
      */
-    public function verify(MailServerRequest $request)
+    public function verify(Request $request, $token)
     {
         $locale = $this->getCurrentLocale();
         app()->setLocale($locale);
-        return $this->performMailVerification($request, 'install');
+        return $this->performMailVerification($token, 'install');
     }
 
     /**
