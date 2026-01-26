@@ -19,4 +19,6 @@
  */
 
 import '../scss/style.scss';
-import './mail-server-settings';
+import './layout';
+import './environment';
+import '../../components/mail-server/js/settings-install';

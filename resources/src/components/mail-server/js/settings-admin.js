@@ -11,7 +11,7 @@
  * - postMessage handling for mail verification
  */
 
-import { MailFormBase } from '../../../../components/mail-server/js/settings-base';
+import { MailFormBase } from './settings-base';
 
 class MailForm extends MailFormBase {
     constructor(config) {

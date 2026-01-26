@@ -11,13 +11,13 @@
     @if (app()->environment('local'))
         {{-- 開発環境ではリソースを直接読み込み --}}
         @vite([
-            'resources/src/install/js/install-layout.js',
+            'resources/src/install/js/app.js',
             'resources/src/common/js/app.js',
             'resources/src/common/scss/style.scss'
         ])
     @else
         {{-- 本番環境ではmanifest.jsonを読み込み --}}
-        @vite(['resources/src/install/js/install-layout.js', 'resources/src/common/js/app.js', 'resources/src/common/scss/style.scss'], 'build')
+        @vite(['resources/src/install/js/app.js', 'resources/src/common/js/app.js', 'resources/src/common/scss/style.scss'], 'build')
     @endif
 
 
