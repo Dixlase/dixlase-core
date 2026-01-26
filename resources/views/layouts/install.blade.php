@@ -5,9 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title') | {{ config('app.name') }}</title>
+    
+    <!-- ダークモード初期化スクリプト（最優先で読み込み） -->
+    @if (app()->environment('local'))
+        @vite(['resources/src/install/js/dark-mode-init.js'])
+    @else
+        @vite(['resources/src/install/js/dark-mode-init.js'], 'assets/build')
+    @endif
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js" crossorigin="anonymous"></script>
 
-        <!-- Scripts -->
+    <!-- メインスクリプト -->
     @if (app()->environment('local'))
         {{-- 開発環境ではリソースを直接読み込み --}}
         @vite([
@@ -17,7 +25,7 @@
         ])
     @else
         {{-- 本番環境ではmanifest.jsonを読み込み --}}
-        @vite(['resources/src/install/js/app.js', 'resources/src/common/js/app.js', 'resources/src/common/scss/style.scss'], 'build')
+        @vite(['resources/src/install/js/app.js', 'resources/src/common/js/app.js', 'resources/src/common/scss/style.scss'], 'assets/build')
     @endif
 
 

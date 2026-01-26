@@ -38,7 +38,6 @@ class DatabaseSeeder extends Seeder
             FrontSettingsTableSeeder::class,
             MediaTableSeeder::class,
             MediaSettingsSeeder::class,
-            // MemberRolePermissionSeeder は廃止（権限はconfig/roles.phpで宣言）
             MembersSettingsSeeder::class,
             SecuritySettingsTableSeeder::class,
             ThemeSettingsTableSeeder::class,

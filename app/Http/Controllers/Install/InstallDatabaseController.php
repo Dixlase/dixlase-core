@@ -58,7 +58,9 @@ class InstallDatabaseController extends BaseInstallController
             $data['db_password'] = Crypt::encryptString($request->db_password);
         }
 
-        $data['preserve_data'] = $request->has('preserve_data');
+        // preserve_dataを明示的にブール値として保存
+        // トグルコンポーネントはON時に'1'、OFF時に'0'を送信する
+        $data['preserve_data'] = $request->input('preserve_data') === '1';
 
         session(['install_data' => array_merge(session('install_data', []), $data)]);
 

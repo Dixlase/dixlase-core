@@ -171,7 +171,7 @@ class InstallCompleteController extends BaseInstallController
     /**
      * .envファイルを更新する
      */
-    private function updateEnv(array $values)
+    protected function updateEnv(array $values): void
     {
         $envPath = base_path('.env');
 
@@ -205,7 +205,7 @@ class InstallCompleteController extends BaseInstallController
     /**
      * .env用に値をフォーマットする
      */
-    private function formatEnvValue($value): string
+    protected function formatEnvValue($value): string
     {
         // nullの場合は空文字列
         if ($value === null) {
