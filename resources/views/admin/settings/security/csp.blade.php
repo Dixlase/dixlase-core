@@ -264,20 +264,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <x-ui.modal
     id="cspConfirmationModal"
     :title="__('admin/settings/security/csp.confirmation_modal_title')"
+    :message="__('admin/settings/security/csp.confirmation_modal_message', ['seconds' => '<span id=\'csp-countdown\'>10</span>'])"
     icon-type="warning"
     :dismissible="false"
     data-confirm-url="{{ route('admin.settings.security.csp.confirm') }}"
     data-rollback-url="{{ route('admin.settings.security.csp.rollback') }}"
     data-confirm-message="{{ __('admin/settings/security/csp.settings_confirmed') }}"
 >
-    <div class="modal-body">
-        <div class="text-center mb-4">
-            <p class="text-lg font-semibold mb-2" id="csp-countdown-message">
-                {!! __('admin/settings/security/csp.confirmation_modal_message', ['seconds' => '<span id="csp-countdown">10</span>']) !!}
-            </p>
-        </div>
-    </div>
-    
     <x-slot name="footer">
         <x-form.button
             type="button"
