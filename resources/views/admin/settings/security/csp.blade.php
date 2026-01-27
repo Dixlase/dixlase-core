@@ -258,3 +258,45 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         form="security-csp-form"
     />
 @endsection
+
+{{-- CSP設定確認モーダル --}}
+@if(session('show_csp_confirmation'))
+<x-ui.modal
+    id="cspConfirmationModal"
+    :title="__('admin/settings/security/csp.confirmation_modal_title')"
+    icon-type="warning"
+    :dismissible="false"
+    data-confirm-url="{{ route('admin.settings.security.csp.confirm') }}"
+    data-rollback-url="{{ route('admin.settings.security.csp.rollback') }}"
+    data-confirm-message="{{ __('admin/settings/security/csp.settings_confirmed') }}"
+>
+    <div class="modal-body">
+        <div class="text-center mb-4">
+            <p class="text-lg font-semibold mb-2" id="csp-countdown-message">
+                {!! __('admin/settings/security/csp.confirmation_modal_message', ['seconds' => '<span id="csp-countdown">10</span>']) !!}
+            </p>
+        </div>
+    </div>
+    
+    <x-slot name="footer">
+        <x-form.button
+            type="button"
+            variant="secondary"
+            :label="__('admin/settings/security/csp.confirmation_modal_cancel')"
+            @click="rollbackCspSettings()"
+            class="mx-2"
+        />
+        <x-form.button
+            type="button"
+            variant="primary"
+            :label="__('admin/settings/security/csp.confirmation_modal_confirm')"
+            @click="confirmCspSettings()"
+            class="mx-2"
+        />
+    </x-slot>
+</x-ui.modal>
+
+@push('scripts')
+    @vite('resources/src/admin/settings/security/js/csp-confirmation.js')
+@endpush
+@endif

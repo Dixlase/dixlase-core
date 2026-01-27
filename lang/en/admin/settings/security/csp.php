@@ -78,4 +78,14 @@ tracking.example.com',
     'strict_mode_blocked_reason' => 'This plugin requires inline JS and cannot be enabled in CSP strict mode.',
     'development_mode_warning' => 'CSP development mode allows all scripts, which poses security risks. It is recommended to use standard or strict mode in production environments.',
     'settings_updated' => 'CSP settings have been updated.',
+    
+    // Confirmation Modal
+    'confirmation_modal_title' => 'Confirm CSP Settings',
+    'confirmation_modal_message' => 'CSP settings have been changed.<br><br>If the page is displaying correctly, please click <strong>"Use This Setting"</strong>.<br><br><strong class="text-red-600 dark:text-red-400">Settings will automatically revert in :seconds seconds.</strong>',
+    'confirmation_modal_confirm' => 'Use This Setting',
+    'confirmation_modal_cancel' => 'Revert',
+    'settings_confirmed' => 'CSP settings have been confirmed.',
+    'settings_rolled_back' => 'CSP settings have been reverted.',
+    'no_previous_settings' => 'Previous settings not found.',
+    'rollback_warning' => 'Settings will automatically revert in :seconds seconds if not confirmed.',
 ];
