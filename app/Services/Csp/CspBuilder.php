@@ -488,6 +488,14 @@ class CspBuilder
             return 'development';
         }
         
+        // 管理画面コンテキストの場合、admin_modeを優先
+        if ($this->isAdminContext()) {
+            $adminMode = $this->getAdminCspMode();
+            if ($adminMode !== null) {
+                return $adminMode;
+            }
+        }
+        
         // 設定ファイルのデフォルト値
         $configMode = config('csp.mode', 'development');
 
@@ -517,6 +525,42 @@ class CspBuilder
         }
 
         return $configMode;
+    }
+
+    /**
+     * 管理画面専用のCSPモードを取得
+     */
+    protected function getAdminCspMode(): ?string
+    {
+        // 設定ファイルのadmin_mode
+        $configAdminMode = config('csp.admin_mode');
+        
+        // データベースの設定を優先
+        try {
+            $dbAdminMode = SecuritySetting::get('csp_admin_mode');
+            if (!empty($dbAdminMode)) {
+                // 数値文字列を文字列モード名に変換
+                $modeMap = [
+                    '0' => 'development',
+                    '1' => 'standard',
+                    '2' => 'strict',
+                    0 => 'development',
+                    1 => 'standard',
+                    2 => 'strict',
+                ];
+                
+                // 数値の場合は変換、文字列の場合はそのまま
+                if (isset($modeMap[$dbAdminMode])) {
+                    return $modeMap[$dbAdminMode];
+                }
+                
+                return $dbAdminMode;
+            }
+        } catch (\Exception $e) {
+            // データベース未設定時は設定ファイルの値を使用
+        }
+
+        return $configAdminMode;
     }
 
     /**
