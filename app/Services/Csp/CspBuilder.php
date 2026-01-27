@@ -62,6 +62,11 @@ class CspBuilder
      */
     public function build(): string
     {
+        // セーフモードの場合はCSPを無効化（空文字列を返す）
+        if (session('csp_safe_mode')) {
+            return '';
+        }
+        
         $directives = $this->collectAllDirectives();
         $directives = $this->processDirectives($directives);
         

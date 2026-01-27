@@ -88,4 +88,12 @@ tracking.example.com',
     'settings_rolled_back' => 'CSP設定を元に戻しました。',
     'no_previous_settings' => '前回の設定が見つかりません。',
     'rollback_warning' => '設定を確認しないと:seconds秒後に自動的に元の設定に戻ります。',
+    
+    // セーフモード
+    'safe_mode_banner_title' => '⚠️ CSPセーフモードが有効です',
+    'safe_mode_banner_message' => 'CSPが無効化されています。セキュリティリスクがあるため、設定完了後は必ずセーフモードを解除してください。',
+    'safe_mode_go_to_settings' => 'CSP設定へ',
+    'safe_mode_disable' => 'セーフモード解除',
+    'safe_mode_disabled' => 'CSPセーフモードを解除しました。',
+    'safe_mode_admin_only' => 'CSPセーフモードは管理者のみ使用できます。',
 ];

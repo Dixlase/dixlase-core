@@ -49,6 +49,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           x-data="adminLayout()"
           x-init="init()">
         <div class="min-h-screen">
+            <!-- CSP Safe Mode Banner -->
+            <x-csp-safe-mode-banner />
+            
             <!-- Admin Bar (Header) -->
             <x-ui.admin-bar :isAdminLayout="true" />
 

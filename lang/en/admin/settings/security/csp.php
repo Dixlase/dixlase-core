@@ -88,4 +88,12 @@ tracking.example.com',
     'settings_rolled_back' => 'CSP settings have been reverted.',
     'no_previous_settings' => 'Previous settings not found.',
     'rollback_warning' => 'Settings will automatically revert in :seconds seconds if not confirmed.',
+    
+    // Safe Mode
+    'safe_mode_banner_title' => '⚠️ CSP Safe Mode is Active',
+    'safe_mode_banner_message' => 'CSP is disabled. This poses a security risk. Please disable safe mode after completing your configuration.',
+    'safe_mode_go_to_settings' => 'Go to CSP Settings',
+    'safe_mode_disable' => 'Disable Safe Mode',
+    'safe_mode_disabled' => 'CSP safe mode has been disabled.',
+    'safe_mode_admin_only' => 'CSP safe mode is only available to administrators.',
 ];

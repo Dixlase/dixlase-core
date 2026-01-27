@@ -351,6 +351,8 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/csp/rollback', [Security\AdminSecurityCspController::class, 'rollback'])
                     ->middleware('check.menu.edit:settings.security')
                     ->name('csp.rollback');
+                Route::post('/csp/disable-safe-mode', [Security\AdminSecurityCspController::class, 'disableSafeMode'])
+                    ->name('csp.disable-safe-mode');
                 
                 // 通知
                 Route::get('/notifications', [Security\AdminSecurityNotificationsController::class, 'index'])->name('notifications');
