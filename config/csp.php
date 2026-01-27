@@ -181,7 +181,8 @@ return [
         // 'strict-dynamic' でnonce付きスクリプトから読み込まれるスクリプトも許可
         // 'unsafe-eval' はAlpine.jsが必要とするため追加
         // CAPTCHA用: Cloudflare Turnstile, Google reCAPTCHA
-        'script-src' => ["'self'", "'nonce'", "'strict-dynamic'", "'unsafe-eval'", 'https://challenges.cloudflare.com', 'https://www.google.com', 'https://www.gstatic.com'],
+        // 開発環境: Vite開発サーバー
+        'script-src' => ["'self'", "'nonce'", "'strict-dynamic'", "'unsafe-eval'", 'https://challenges.cloudflare.com', 'https://www.google.com', 'https://www.gstatic.com', 'https://localhost:5173'],
 
         // スクリプト属性（onclick等のイベントハンドラ属性）
         // Alpine.jsの@click等のディレクティブはイベントハンドラ属性として展開されるため必要

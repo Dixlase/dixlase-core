@@ -40,6 +40,8 @@ import '../../components/content-editor/js/alpine-translations';
 import '../../components/media-selector/js/media-selector';
 import '../../components/mail-server/js/test';
 import '../../components/mail-server/js/verification';
+import '../../admin/js/layout';
+import '../../admin/settings/security/js/csp';
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse'
 

@@ -22,11 +22,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
-<div x-data="{ 
-    cspEnabled: {{ old('csp_enabled', $settings['csp_enabled']) ? 'true' : 'false' }},
-    cspMode: '{{ old('csp_mode', $settings['csp_mode'] ?? \App\Enums\CspMode::default()->value) }}',
-    appEnv: '{{ config('app.env') }}'
-}">
+<div x-data="cspSettings()"
+     data-csp-enabled="{{ old('csp_enabled', $settings['csp_enabled']) ? 'true' : 'false' }}"
+     data-csp-mode="{{ old('csp_mode', $settings['csp_mode'] ?? \App\Enums\CspMode::default()->value) }}"
+     data-app-env="{{ config('app.env') }}">
     <form id="security-csp-form" method="POST" action="{{ route('admin.settings.security.csp.update') }}">
         @csrf
         
@@ -136,7 +135,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </fieldset>
 
                 <!-- ブロックリスト照合設定 -->
-                <fieldset class="mb-4" x-data="{ blocklistEnabled: {{ old('csp_blocklist_check_enabled', $settings['csp_blocklist_check_enabled'] ?? false) ? 'true' : 'false' }} }">
+                <fieldset class="mb-4" 
+                          x-data="cspBlocklistSettings()"
+                          data-blocklist-enabled="{{ old('csp_blocklist_check_enabled', $settings['csp_blocklist_check_enabled'] ?? false) ? 'true' : 'false' }}">
                     <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin/settings/security/csp.blocklist_check_title') }}</legend>
                     
                     <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">{!! __('admin/settings/security/csp.blocklist_check_description') !!}</p>

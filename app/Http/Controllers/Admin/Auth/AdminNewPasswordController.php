@@ -22,7 +22,7 @@
 
 namespace App\Http\Controllers\Admin\Auth;
 
-use App\Http\Controllers\Controller;
+use Illuminate\Routing\Controller;
 use App\Models\MemberSetting;
 use App\Traits\PasswordResetTrait;
 use Illuminate\Http\RedirectResponse;
