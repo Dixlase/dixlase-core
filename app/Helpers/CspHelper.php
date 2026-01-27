@@ -36,6 +36,14 @@ if (!function_exists('csp_nonce')) {
      */
     function csp_nonce(): string
     {
+        // リクエスト属性に保存されたnonce値を優先的に使用
+        // （CSPミドルウェアが設定した値と一致させるため）
+        $request = request();
+        if ($request && $request->attributes->has('csp_nonce')) {
+            return $request->attributes->get('csp_nonce');
+        }
+        
+        // フォールバック: CspNonceGeneratorから取得
         return app(CspNonceGenerator::class)->getNonce();
     }
 }

@@ -61,9 +61,31 @@ if (!function_exists('render_vite_assets')) {
         $output = '';
         
         if (!empty($files)) {
-            $output .= \Illuminate\Support\Facades\Blade::render(
+            // CSP nonceを最初に取得（シングルトンなので同じ値が返される）
+            $nonce = function_exists('csp_nonce') ? csp_nonce() : null;
+            
+            // Viteディレクティブを描画
+            $viteOutput = \Illuminate\Support\Facades\Blade::render(
                 '@vite(' . implode(', ', array_map(fn($file) => "'{$file}'", $files)) . ')'
             );
+            
+            // Viteが生成したスクリプトタグのnonceを置き換え
+            if ($nonce) {
+                // 既存のnonce属性を削除してから新しいnonceを追加
+                $viteOutput = preg_replace(
+                    '/<script\s+nonce="[^"]*"\s*/i',
+                    '<script ',
+                    $viteOutput
+                );
+                // カスタムnonceを追加
+                $viteOutput = preg_replace(
+                    '/<script\s+(type="module"\s+)?src=/i',
+                    '<script nonce="' . $nonce . '" $1src=',
+                    $viteOutput
+                );
+            }
+            
+            $output .= $viteOutput;
         }
         
         if ($addXCloak) {

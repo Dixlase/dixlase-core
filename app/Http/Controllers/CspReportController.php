@@ -42,6 +42,7 @@ class CspReportController extends Controller
     protected array $devToolPatterns = [
         // Windsurf/MCP browser logger
         'browser-logger',
+        'browser-logger-active',
         '_boost',
         // Vite開発サーバー
         '@vite',
@@ -125,7 +126,6 @@ class CspReportController extends Controller
         if ($this->isLocalDevInlineViolation($report)) {
             return true;
         }
-
         return false;
     }
 
@@ -142,6 +142,7 @@ class CspReportController extends Controller
 
         $blockedUri = $report['blocked-uri'] ?? $report['blockedURL'] ?? '';
         $directive = $report['violated-directive'] ?? $report['effectiveDirective'] ?? '';
+        $sourceFile = $report['source-file'] ?? $report['sourceFile'] ?? '';
 
         // インラインスクリプト違反かどうか
         if ($blockedUri !== 'inline') {
@@ -153,7 +154,16 @@ class CspReportController extends Controller
             return false;
         }
 
-        // 開発環境でのインラインスクリプト違反は開発ツールによるものと判断
+        // source-fileが開発ツール関連のパターンに一致する場合は除外
+        foreach ($this->devToolPatterns as $pattern) {
+            if (stripos($sourceFile, $pattern) !== false) {
+                return true;
+            }
+        }
+
+        // 開発環境（local/staging）では、インラインスクリプト違反を除外
+        // （MCP/Windsurf等の開発ツールが注入するスクリプトを考慮）
+        // 本番環境では正常にログに記録される
         return true;
     }
 

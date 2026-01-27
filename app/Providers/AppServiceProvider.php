@@ -48,6 +48,7 @@ use App\Contracts\Mail\MailServiceInterface;
 use App\Services\MailService;
 use App\Contracts\Logging\LogServiceInterface;
 use App\Services\LogService;
+use Illuminate\Support\Facades\Vite;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -75,6 +76,9 @@ class AppServiceProvider extends ServiceProvider
 
         // ログ出力サービスをバインド
         $this->app->bind(LogServiceInterface::class, LogService::class);
+        
+        // CSP Nonce Generatorをシングルトンとして登録（リクエストごとに同じnonce値を使用）
+        $this->app->singleton(\App\Services\Csp\CspNonceGenerator::class);
     }
 
     /**
@@ -87,6 +91,10 @@ class AppServiceProvider extends ServiceProvider
         if (!file_exists(base_path('.env'))) {
             return;
         }
+        
+        // ViteのCSP nonce機能を無効化（カスタム実装を使用）
+        // これによりViteは独自のnonceを生成しなくなる
+        config(['vite.csp_nonce' => false]);
 
         // インストール済みかどうかをチェック（config経由で取得することでキャッシュに対応）
         // env()は本番環境でキャッシュされると更新されないため、config()を使用
