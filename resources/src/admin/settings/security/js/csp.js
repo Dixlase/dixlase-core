@@ -18,10 +18,26 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import '../scss/style.scss';
-import './layout';
-import '../media/js/index';
-import '../media/js/preview';
-import '../profile/js/appearance-mode';
-import '../../components/mail-server/js/settings-admin';
-import '../settings/security/js/csp';
+/**
+ * CSP Settings Alpine.js Component
+ * 
+ * CSP設定画面の状態管理
+ */
+window.cspSettings = function() {
+    return {
+        cspEnabled: this.$el.dataset.cspEnabled === 'true',
+        cspMode: this.$el.dataset.cspMode || 'development',
+        appEnv: this.$el.dataset.appEnv || 'local',
+    };
+};
+
+/**
+ * CSP Blocklist Settings Alpine.js Component
+ * 
+ * CSPブロックリスト設定の状態管理
+ */
+window.cspBlocklistSettings = function() {
+    return {
+        blocklistEnabled: this.$el.dataset.blocklistEnabled === 'true',
+    };
+};

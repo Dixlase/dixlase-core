@@ -46,8 +46,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </head>
     <body class="admin font-sans antialiased transition-colors-unified dark:bg-black dark:text-white"
           data-default-appearance="{{ $appearance }}"
-          x-data="{ openSidebar: false, openUserMenu: false, sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true', sidebarReady: false }"
-          x-init="$nextTick(() => { sidebarReady = true }); $watch('sidebarCollapsed', value => localStorage.setItem('sidebarCollapsed', value))">
+          x-data="adminLayout()"
+          x-init="init()">
         <div class="min-h-screen">
             <!-- Admin Bar (Header) -->
             <x-ui.admin-bar :isAdminLayout="true" />

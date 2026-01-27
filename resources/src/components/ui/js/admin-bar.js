@@ -14,6 +14,11 @@
  */
 window.adminBar = function () {
     return {
+        // サイドバーとメニューの開閉状態
+        openSidebar: false,
+        openUserMenu: false,
+        userMenuOpen: false,
+
         init() {
             // 管理バーが存在する場合、bodyにクラスを追加
             this.$nextTick(() => {
