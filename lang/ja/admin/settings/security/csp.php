@@ -78,4 +78,14 @@ tracking.example.com',
     'strict_mode_blocked_reason' => 'このプラグインはインラインJSを必要とするため、CSP厳格モードでは有効化できません。',
     'development_mode_warning' => 'CSP開発モードはすべてのスクリプトを許可するため、セキュリティリスクがあります。本番環境では標準モードまたは厳格モードの使用を推奨します。',
     'settings_updated' => 'CSP設定が更新されました。',
+    
+    // 確認モーダル
+    'confirmation_modal_title' => 'CSP設定の確認',
+    'confirmation_modal_message' => 'CSP設定を変更しました。<br><br>画面が正常に表示されていれば<strong>「この設定を使う」</strong>ボタンを押してください。<br><br><strong class="text-red-600 dark:text-red-400">:seconds秒後に自動的に元の設定に戻ります。</strong>',
+    'confirmation_modal_confirm' => 'この設定を使う',
+    'confirmation_modal_cancel' => '元に戻す',
+    'settings_confirmed' => 'CSP設定が確定されました。',
+    'settings_rolled_back' => 'CSP設定を元に戻しました。',
+    'no_previous_settings' => '前回の設定が見つかりません。',
+    'rollback_warning' => '設定を確認しないと:seconds秒後に自動的に元の設定に戻ります。',
 ];

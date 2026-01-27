@@ -345,6 +345,12 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/csp', [Security\AdminSecurityCspController::class, 'update'])
                     ->middleware('check.menu.edit:settings.security')
                     ->name('csp.update');
+                Route::post('/csp/confirm', [Security\AdminSecurityCspController::class, 'confirm'])
+                    ->middleware('check.menu.edit:settings.security')
+                    ->name('csp.confirm');
+                Route::post('/csp/rollback', [Security\AdminSecurityCspController::class, 'rollback'])
+                    ->middleware('check.menu.edit:settings.security')
+                    ->name('csp.rollback');
                 
                 // 通知
                 Route::get('/notifications', [Security\AdminSecurityNotificationsController::class, 'index'])->name('notifications');

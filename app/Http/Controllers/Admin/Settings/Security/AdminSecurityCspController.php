@@ -70,6 +70,25 @@ class AdminSecurityCspController extends AdminLoggedInController
     {
         $validated = $request->validated();
 
+        // 現在の設定をセッションに退避（ロールバック用）
+        $previousSettings = [
+            'csp_enabled' => $this->securitySettingRepository->get('csp_enabled', true),
+            'csp_mode' => $this->securitySettingRepository->get('csp_mode', (string) CspMode::default()->value),
+            'csp_admin_mode' => $this->securitySettingRepository->get('csp_admin_mode'),
+            'csp_log_violations' => $this->securitySettingRepository->get('csp_log_violations', true),
+            'csp_exclude_dev_tools' => $this->securitySettingRepository->get('csp_exclude_dev_tools', true),
+            'csp_trusted_domains' => $this->securitySettingRepository->get('csp_trusted_domains', ''),
+            'csp_denied_domains' => $this->securitySettingRepository->get('csp_denied_domains', ''),
+            'csp_custom_directives' => $this->securitySettingRepository->get('csp_custom_directives', ''),
+            'csp_blocklist_check_enabled' => $this->securitySettingRepository->get('csp_blocklist_check_enabled', false),
+            'csp_blocklist_action' => $this->securitySettingRepository->get('csp_blocklist_action', (string) CspBlocklistAction::default()->value),
+            'csp_blocklist_enabled_categories' => $this->securitySettingRepository->get('csp_blocklist_enabled_categories', ''),
+        ];
+        
+        session(['csp_previous_settings' => $previousSettings]);
+        session(['csp_pending_confirmation' => true]);
+        session(['csp_confirmation_expires_at' => now()->addSeconds(10)]);
+
         // CSP設定を更新
         $this->securitySettingRepository->set('csp_enabled', $validated['csp_enabled'] ?? false);
         $this->securitySettingRepository->set('csp_mode', $validated['csp_mode'] ?? (string) CspMode::default()->value);
@@ -86,6 +105,53 @@ class AdminSecurityCspController extends AdminLoggedInController
         $this->securitySettingRepository->set('csp_blocklist_enabled_categories', implode(',', $categories));
 
         return redirect()->route('admin.settings.security.csp')
-            ->with('success', __('admin/settings/security/csp.settings_updated'));
+            ->with('success', __('admin/settings/security/csp.settings_updated'))
+            ->with('show_csp_confirmation', true);
+    }
+
+    /**
+     * CSP設定変更の確認
+     */
+    public function confirm(Request $request)
+    {
+        // 確認済みフラグをセッションに保存
+        session()->forget('csp_pending_confirmation');
+        session()->forget('csp_previous_settings');
+        session()->forget('csp_confirmation_expires_at');
+
+        return response()->json([
+            'success' => true,
+            'message' => __('admin/settings/security/csp.settings_confirmed')
+        ]);
+    }
+
+    /**
+     * CSP設定変更のロールバック
+     */
+    public function rollback(Request $request)
+    {
+        $previousSettings = session('csp_previous_settings');
+        
+        if (!$previousSettings) {
+            return response()->json([
+                'success' => false,
+                'message' => __('admin/settings/security/csp.no_previous_settings')
+            ], 400);
+        }
+
+        // 前回の設定に戻す
+        foreach ($previousSettings as $key => $value) {
+            $this->securitySettingRepository->set($key, $value);
+        }
+
+        // セッションをクリア
+        session()->forget('csp_pending_confirmation');
+        session()->forget('csp_previous_settings');
+        session()->forget('csp_confirmation_expires_at');
+
+        return response()->json([
+            'success' => true,
+            'message' => __('admin/settings/security/csp.settings_rolled_back')
+        ]);
     }
 }
