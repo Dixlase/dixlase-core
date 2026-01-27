@@ -154,4 +154,24 @@ class AdminSecurityCspController extends AdminLoggedInController
             'message' => __('admin/settings/security/csp.settings_rolled_back')
         ]);
     }
+
+    /**
+     * CSPセーフモードを無効化
+     */
+    public function disableSafeMode(Request $request)
+    {
+        // セーフモードフラグをセッションから削除
+        session()->forget('csp_safe_mode');
+
+        // ログに記録
+        \Log::channel('admin_activity')->info('CSPセーフモード無効化', [
+            'user_id' => auth()->id(),
+            'user_name' => auth()->user()->name,
+            'ip' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
+        return redirect()->back()
+            ->with('success', __('admin/settings/security/csp.safe_mode_disabled'));
+    }
 }
