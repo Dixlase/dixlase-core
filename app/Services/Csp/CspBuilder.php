@@ -418,6 +418,12 @@ class CspBuilder
      */
     protected function getCspMode(): string
     {
+        // Vite開発サーバー実行時は強制的に開発モードを使用
+        // （strict-dynamicとVite開発サーバーは互換性がないため）
+        if (function_exists('is_vite_dev_server') && is_vite_dev_server()) {
+            return 'development';
+        }
+        
         // 設定ファイルのデフォルト値
         $configMode = config('csp.mode', 'development');
 

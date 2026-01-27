@@ -99,11 +99,11 @@ return [
             'header' => 'Content-Security-Policy',
             'allow_inline_scripts' => false, // unsafe-inline禁止
             'allow_inline_styles' => false,  // unsafe-inline禁止
-            'allow_eval' => false,
+            'allow_eval' => true,            // Alpine.jsが必要とするため許可
             'allow_unsafe_inline' => false,
             'require_nonce' => true,         // ヘルパー経由でnonceを要求
             'allow_nonce_inline_execution' => true, // nonce付き実行コードは許可
-            'block_inline_plugins' => false,
+            'block_inline_plugins' => true,
             'enforce_deny_domains' => true,  // 拒否ドメインを強制ブロック
             'strict_dynamic' => false,       // 任意（互換性のためデフォルトOFF）
             'warn_onclick' => true,          // onclick等を警告（ブロックはしない）

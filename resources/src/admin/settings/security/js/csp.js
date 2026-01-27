@@ -23,11 +23,18 @@
  * 
  * CSP設定画面の状態管理
  */
-window.cspSettings = function() {
+window.cspSettings = function () {
     return {
-        cspEnabled: this.$el.dataset.cspEnabled === 'true',
-        cspMode: this.$el.dataset.cspMode || 'development',
-        appEnv: this.$el.dataset.appEnv || 'local',
+        cspEnabled: false,
+        cspMode: 'development',
+        appEnv: 'local',
+
+        init() {
+            // data-*属性から初期値を取得
+            this.cspEnabled = this.$el.dataset.cspEnabled === 'true';
+            this.cspMode = this.$el.dataset.cspMode || 'development';
+            this.appEnv = this.$el.dataset.appEnv || 'local';
+        }
     };
 };
 
@@ -36,8 +43,13 @@ window.cspSettings = function() {
  * 
  * CSPブロックリスト設定の状態管理
  */
-window.cspBlocklistSettings = function() {
+window.cspBlocklistSettings = function () {
     return {
-        blocklistEnabled: this.$el.dataset.blocklistEnabled === 'true',
+        blocklistEnabled: false,
+
+        init() {
+            // data-*属性から初期値を取得
+            this.blocklistEnabled = this.$el.dataset.blocklistEnabled === 'true';
+        }
     };
 };
