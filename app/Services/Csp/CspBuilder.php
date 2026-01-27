@@ -84,21 +84,41 @@ class CspBuilder
         $contextDirectives = $this->getContextDirectives();
         $directives = $this->mergeDirectives($directives, $contextDirectives);
 
-        // 4. データベースからの追加ディレクティブ
+        // 4. 管理画面専用のディレクティブを追加
+        if ($this->isAdminContext()) {
+            $adminDirectives = config('csp.admin_directives', []);
+            $directives = $this->mergeDirectives($directives, $adminDirectives);
+        }
+
+        // 5. データベースからの追加ディレクティブ
         $dbDirectives = $this->getDatabaseDirectives();
         $directives = $this->mergeDirectives($directives, $dbDirectives);
 
-        // 5. プラグイン/テーマからのディレクティブ
+        // 6. プラグイン/テーマからのディレクティブ
         $registryDirectives = $this->registry->collectDirectives();
         $directives = $this->mergeDirectives($directives, $registryDirectives);
 
-        // 6. 拒否ドメインを除外（最優先）
+        // 7. 拒否ドメインを除外（最優先）
         $directives = $this->filterDeniedDomains($directives);
 
-        // 7. レポートURIを追加
+        // 8. レポートURIを追加
         $directives = $this->addReportUri($directives);
 
         return $directives;
+    }
+
+    /**
+     * 管理画面コンテキストかどうかを判定
+     */
+    protected function isAdminContext(): bool
+    {
+        $request = request();
+        if (!$request) {
+            return false;
+        }
+
+        // URLパスが /admin で始まる場合は管理画面
+        return str_starts_with($request->path(), 'admin');
     }
 
     /**
@@ -407,7 +427,51 @@ class CspBuilder
                 });
             }
             
+            // strict_dynamicがfalseの場合、'strict-dynamic'を削除
+            $strictDynamic = $modeConfig['strict_dynamic'] ?? false;
+            if ($strictDynamic === false) {
+                $directives['script-src'] = array_filter($directives['script-src'], function ($value) {
+                    return $value !== "'strict-dynamic'";
+                });
+            }
+            
             $directives['script-src'] = array_values($directives['script-src']);
+        }
+
+        // script-src-attrの制御
+        $blockScriptAttr = $modeConfig['block_script_attr'] ?? false;
+        if ($blockScriptAttr && isset($directives['script-src-attr'])) {
+            $directives['script-src-attr'] = ["'none'"];
+        }
+
+        // style-srcの制御
+        if (isset($directives['style-src'])) {
+            $allowInlineStyles = $modeConfig['allow_inline_styles'] ?? true;
+            
+            if ($mode === 'development') {
+                // 開発モード: unsafe-inlineを維持
+                if (!in_array("'unsafe-inline'", $directives['style-src'])) {
+                    $directives['style-src'][] = "'unsafe-inline'";
+                }
+            } elseif ($mode === 'standard') {
+                // 標準モード: nonce/hash経由のみ（unsafe-inlineは削除）
+                if ($allowInlineStyles === false) {
+                    $directives['style-src'] = array_filter($directives['style-src'], function ($value) {
+                        return $value !== "'unsafe-inline'";
+                    });
+                    // nonceを追加（まだ存在しない場合）
+                    if (!in_array("'nonce'", $directives['style-src'])) {
+                        $directives['style-src'][] = "'nonce'";
+                    }
+                }
+            } elseif ($mode === 'strict') {
+                // 厳格モード: 外部CSSのみ（unsafe-inlineとnonceを削除）
+                $directives['style-src'] = array_filter($directives['style-src'], function ($value) {
+                    return $value !== "'unsafe-inline'" && $value !== "'nonce'";
+                });
+            }
+            
+            $directives['style-src'] = array_values($directives['style-src']);
         }
 
         return $directives;

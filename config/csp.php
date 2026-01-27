@@ -105,8 +105,9 @@ return [
             'allow_nonce_inline_execution' => true, // nonce付き実行コードは許可
             'block_inline_plugins' => true,
             'enforce_deny_domains' => true,  // 拒否ドメインを強制ブロック
-            'strict_dynamic' => false,       // 任意（互換性のためデフォルトOFF）
+            'strict_dynamic' => true,        // 推奨ON（入口を絞る）
             'warn_onclick' => true,          // onclick等を警告（ブロックはしない）
+            'block_script_attr' => true,     // script-src-attrでunsafe-inline禁止
             'description' => '本番運用推奨。ヘルパー経由のインラインは許可。',
             'description_en' => 'Recommended for production. Inline via helpers allowed.',
         ],
@@ -185,8 +186,9 @@ return [
         'script-src' => ["'self'", "'nonce'", "'strict-dynamic'", "'unsafe-eval'", 'https://challenges.cloudflare.com', 'https://www.google.com', 'https://www.gstatic.com', 'https://localhost:5173'],
 
         // スクリプト属性（onclick等のイベントハンドラ属性）
-        // Alpine.jsの@click等のディレクティブはイベントハンドラ属性として展開されるため必要
-        'script-src-attr' => ["'unsafe-inline'"],
+        // 注意: 開発モードのみ許可。標準/厳格モードでは'none'に設定される
+        // Alpine.jsの@click等はscript-src-attrではなくscript-srcで制御される
+        'script-src-attr' => ["'unsafe-inline'"], // 開発モード用
 
         // スタイル
         // 'unsafe-inline'はnonceと併用すると無視されるため、インラインスタイル（element.style）を許可するには
@@ -216,6 +218,7 @@ return [
         'frame-src' => ["'self'", 'https://challenges.cloudflare.com', 'https://www.google.com', 'https://www.gstatic.com'],
 
         // フレーム祖先（このページを埋め込める親）
+        // 注意: 管理画面では'none'に上書きされる（クリックジャッキング対策）
         'frame-ancestors' => ["'self'"],
 
         // フォームの送信先
@@ -230,6 +233,20 @@ return [
         // ワーカー
         'worker-src' => ["'self'", 'blob:'],
 
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin-specific Directives
+    |--------------------------------------------------------------------------
+    |
+    | 管理画面専用のCSPディレクティブ。
+    | これらは管理画面でのみ適用され、フロントエンドの設定を上書きします。
+    |
+    */
+    'admin_directives' => [
+        // 管理画面はiframe埋め込みを完全禁止（クリックジャッキング対策）
+        'frame-ancestors' => ["'none'"],
     ],
 
     /*
