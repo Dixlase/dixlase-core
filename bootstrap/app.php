@@ -19,7 +19,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->use([
             \App\Http\Middleware\CheckInstallationReady::class, // インストール準備状況チェック + インストール状態チェック
             \App\Http\Middleware\ApplySessionConfig::class, // セッション設定の動的適用
-            \App\Http\Middleware\CspSafeMode::class, // CSPセーフモード検出
             \App\Http\Middleware\ContentSecurityPolicy::class, // CSPヘッダー付与
         ]);
         
@@ -30,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
         
         // 認証が必要なミドルウェアは後で実行
         $middleware->appendToGroup('web', [
+            \App\Http\Middleware\CspSafeMode::class, // CSPセーフモード検出（認証後に実行）
             \App\Http\Middleware\SetLocale::class, // フロントページ言語設定（管理メンバー優先）
             \App\Http\Middleware\SetMemberLocale::class, // 管理メンバー個別言語設定（管理画面用）
         ]);

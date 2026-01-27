@@ -19,7 +19,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @if(session('csp_safe_mode'))
-<div class="fixed top-0 left-0 right-0 z-50 bg-red-600 dark:bg-red-700 text-white shadow-lg" role="alert">
+<div class="fixed top-0 left-0 right-0 z-[60] bg-red-600 dark:bg-red-700 text-white shadow-lg" role="alert" id="csp-safe-mode-banner">
     <div class="container mx-auto px-4 py-3">
         <div class="flex items-center justify-between">
             <div class="flex items-center space-x-3">
@@ -50,6 +50,44 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </div>
 </div>
 
-<!-- セーフモードバナーの高さ分だけコンテンツを下げる -->
-<div class="h-20"></div>
+<style>
+    /* セーフモードバナーが表示されている場合、サイドバー非表示ボタンの位置を調整 */
+    body:has(#csp-safe-mode-banner) button[aria-label="Toggle sidebar menu"] {
+        top: calc(5.25rem + var(--csp-banner-height, 0px)) !important;
+    }
+</style>
+
+<script>
+    // セーフモードバナーが表示されている場合、Admin Barと各要素を下にずらす
+    document.addEventListener('DOMContentLoaded', function() {
+        const banner = document.getElementById('csp-safe-mode-banner');
+        const adminBar = document.getElementById('admin-bar');
+        
+        if (banner) {
+            const bannerHeight = banner.offsetHeight;
+            
+            // CSSカスタムプロパティにバナーの高さを設定
+            document.documentElement.style.setProperty('--csp-banner-height', bannerHeight + 'px');
+            
+            // Admin Barをバナーの下に配置
+            if (adminBar) {
+                adminBar.style.top = bannerHeight + 'px';
+            }
+            
+            // サイドバーとメインコンテンツのmargin-topを調整
+            const sidebar = document.querySelector('aside[role="navigation"]');
+            const mainContent = document.querySelector('main');
+            
+            if (sidebar) {
+                const currentMarginTop = parseFloat(getComputedStyle(sidebar).marginTop) || 0;
+                sidebar.style.marginTop = (currentMarginTop + bannerHeight) + 'px';
+            }
+            
+            if (mainContent) {
+                const currentMarginTop = parseFloat(getComputedStyle(mainContent).marginTop) || 0;
+                mainContent.style.marginTop = (currentMarginTop + bannerHeight) + 'px';
+            }
+        }
+    });
+</script>
 @endif
