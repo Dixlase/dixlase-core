@@ -22,4 +22,5 @@ import '../scss/style.scss';
 import './layout';
 import './environment';
 import './database';
+import './complete';
 import '../../components/mail-server/js/settings-install';
