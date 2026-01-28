@@ -34,12 +34,13 @@ use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
 use App\Enums\Locale;
 use App\Traits\HasPermissions;
+use App\Traits\TwoFa\TwoFactorEnableCheck;
 use App\Contracts\TwoFaInterface;
 
 
 class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface
 {
-    use HasFactory, Notifiable, SoftDeletes, TwoFactorAuthenticatable, HasPermissions;
+    use HasFactory, Notifiable, SoftDeletes, TwoFactorAuthenticatable, HasPermissions, TwoFactorEnableCheck;
 
 
     /**

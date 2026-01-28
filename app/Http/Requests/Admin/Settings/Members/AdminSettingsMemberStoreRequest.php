@@ -27,9 +27,11 @@ use Illuminate\Validation\Rule;
 use App\Enums\MemberRole;
 use App\Models\MemberSetting;
 use App\Services\PasswordService;
+use App\Traits\TwoFa\TwoFactorEnableCheck;
 
 class AdminSettingsMemberStoreRequest extends FormRequest
 {
+    use TwoFactorEnableCheck;
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -121,6 +123,41 @@ class AdminSettingsMemberStoreRequest extends FormRequest
                 'two_fa_mode' => $globalTwoFaMode,
             ]);
         }
+    }
+
+    /**
+     * カスタムバリデーションルールを追加
+     */
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $member = $this->route('member');
+            $twoFaMode = (int) $this->input('two_fa_mode', 0);
+            
+            // 2FAを有効化しようとしている場合（モード1または2）
+            if ($twoFaMode === 1 || $twoFaMode === 2) {
+                // 既存メンバーの編集の場合のみチェック
+                if ($member) {
+                    if (!$member->canEnableTwoFa()) {
+                        $validator->errors()->add(
+                            'two_fa_mode',
+                            __('admin/members/validation.two_fa_cannot_enable')
+                        );
+                    }
+                }
+                // 新規作成の場合は、メールサーバーが設定されていればOK
+                // （作成後に回復コードやパスキーを登録できるため）
+                else {
+                    $mailConfigured = $this->isMailServerConfigured();
+                    if (!$mailConfigured) {
+                        $validator->errors()->add(
+                            'two_fa_mode',
+                            __('admin/members/validation.two_fa_cannot_enable_new_member')
+                        );
+                    }
+                }
+            }
+        });
     }
 
     /**

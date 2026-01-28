@@ -28,4 +28,6 @@ return [
     'appearance_invalid' => '無効な外観モードが選択されています。',
     'status_required' => 'ステータスを選択してください。',
     'status_invalid' => '無効なステータスが選択されています。',
+    'two_fa_cannot_enable' => '二段階認証を有効化できません。メールサーバーの設定、パスキーの登録、または回復コードの生成のいずれかが必要です。',
+    'two_fa_cannot_enable_new_member' => '新規メンバーの二段階認証を有効化するには、メールサーバーの設定が必要です。',
 ];
