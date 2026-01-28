@@ -13,5 +13,5 @@
  */
 
 return [
-    'two_fa_cannot_enable' => 'Cannot enable two-factor authentication. A mail server configuration, passkey registration, or recovery code generation is required.',
+    'two_fa_cannot_enable' => 'Cannot enable two-factor authentication. Mail server configuration is required.',
 ];

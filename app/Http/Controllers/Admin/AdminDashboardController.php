@@ -24,9 +24,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Services\TwoFa\TwoFaRecoveryCodeService;
+use App\Services\TwoFa\TwoFaPasskeyService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Enums\TwoFaMethod;
+use App\Enums\AuthenticationMode;
 use Illuminate\Http\Request;
 
 class AdminDashboardController extends AdminLoggedInController
@@ -39,18 +41,6 @@ class AdminDashboardController extends AdminLoggedInController
     //
     public function index()
     {
-
-// ログレベル別テスト
-Log::debug('DEBUGレベル - 通知されないはず', ['level' => 'debug']);
-Log::info('INFOレベル - 通知されないはず', ['level' => 'info']);
-Log::notice('NOTICEレベル - 通知されないはず', ['level' => 'notice']);
-Log::warning('WARNINGレベル - 通知されないはず（デフォルト設定）', ['level' => 'warning']);
-Log::error('ERRORレベル - 通知される', ['level' => 'error']);
-Log::critical('CRITICALレベル - 通知される', ['level' => 'critical']);
-Log::alert('ALERTレベル - 通知される', ['level' => 'alert']);
-Log::emergency('EMERGENCYレベル - 通知される', ['level' => 'emergency']);
-
-
         // 回復コード情報を取得
         $user = Auth::guard('member')->user();
         $twoFaRecoveryCodeService = new TwoFaRecoveryCodeService();
@@ -58,6 +48,41 @@ Log::emergency('EMERGENCYレベル - 通知される', ['level' => 'emergency'])
         $this->viewParams['twoFaHasRecoveryCodes'] = $twoFaRecoveryCodeService->hasRecoveryCodes($user);
         $this->viewParams['twoFaCanRegenerateRecoveryCodes'] = $twoFaRecoveryCodeService->canRegenerate($user);
         $this->viewParams['twoFaNextRegenerateTime'] = $twoFaRecoveryCodeService->getNextRegenerateTime($user);
+
+        // 2FAが有効かつ回復コード未生成の場合、自動生成してモーダル表示
+        $twoFaMode = is_int($user->two_fa_mode) ? $user->two_fa_mode : $user->two_fa_mode->value;
+        $isTwoFaEnabled = ($twoFaMode === AuthenticationMode::Always->value || $twoFaMode === AuthenticationMode::Optional->value);
+        
+        $shouldGenerateRecoveryCodes = false;
+        $shouldPromptPasskey = false;
+        
+        if ($isTwoFaEnabled && !$twoFaRecoveryCodeService->hasRecoveryCodes($user)) {
+            // 回復コードを自動生成
+            try {
+                $codes = $twoFaRecoveryCodeService->generate($user);
+                $shouldGenerateRecoveryCodes = true;
+                $this->viewParams['auto_generated_recovery_codes'] = $codes;
+            } catch (\Exception $e) {
+                Log::error('[Dashboard] Failed to auto-generate recovery codes', [
+                    'member_id' => $user->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+        
+        // パスキーが有効かつデバイス未登録の場合、促進モーダルを表示
+        if ($isTwoFaEnabled) {
+            $passkeyEnabled = $user->two_fa_passkey_enabled ?? true;
+            if ($passkeyEnabled) {
+                $twoFaPasskeyService = new TwoFaPasskeyService();
+                $passkeyDevices = $twoFaPasskeyService->getDevices($user);
+                
+                if ($passkeyDevices->isEmpty()) {
+                    $shouldPromptPasskey = true;
+                    $this->viewParams['prompt_passkey_registration'] = true;
+                }
+            }
+        }
 
         return view('admin::dashboard', $this->viewParams);
     }

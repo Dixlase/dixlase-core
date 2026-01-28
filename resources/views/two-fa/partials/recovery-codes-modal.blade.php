@@ -28,10 +28,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     $isDynamic = $isDynamic ?? false; // JavaScriptで動的に表示する場合
     $error = $error ?? null; // エラーメッセージ（エラー表示モード）
     $clearSessionRoute = $clearSessionRoute ?? null; // セッションクリア用ルート（自動生成時のみ）
+    $nextModal = $nextModal ?? null; // 次に開くモーダルのID
 @endphp
 
 <x-ui.modal :id="$modalId" :title="$error ? __('common.error') : ($title ?? __('two_fa.recovery_codes.title'))" :icon_type="$error ? 'danger' : 'warning'" :dismissible="false">
-    <div class="space-y-4" x-data="recoveryCodesModal('{{ $modalId }}', @json($codes), {{ $autoOpen ? 'true' : 'false' }}, {{ $clearSessionRoute ? "'$clearSessionRoute'" : 'null' }})">
+    <div class="space-y-4" x-data="recoveryCodesModal('{{ $modalId }}', @json($codes), {{ $autoOpen ? 'true' : 'false' }}, {{ $clearSessionRoute ? "'$clearSessionRoute'" : 'null' }}, {{ $nextModal ? "'$nextModal'" : 'null' }})">
         @if($error)
             {{-- エラー表示モード --}}
             <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
