@@ -29,5 +29,21 @@ return [
     'pwned_password_description' => 'Check if passwords are in breach databases to prevent use of unsafe passwords.',
     'pwned_password_check_enabled' => 'Dictionary Attack Protection',
     'pwned_password_help' => 'When enabled, password safety will be checked using the Have I Been Pwned API during member creation, editing, and password changes.',
-    'settings_updated' => 'Authentication & session settings have been updated.',
+    
+    // Common Settings
+    'common_settings' => 'Common Settings',
+    'common_settings_description' => 'Common password security settings applied to all user types.',
+    
+    // Default Password Policy
+    'default_password_policy' => 'Default Password Policy',
+    'default_password_policy_description' => 'Default password requirements applied to members and when plugin custom settings are disabled.',
+    'password_requirements' => 'Password Requirements',
+    'min_length' => 'Minimum Length',
+    'require_uppercase' => 'Require Uppercase',
+    'require_number' => 'Require Number',
+    'require_symbol' => 'Require Symbol',
+    'reset_enabled' => 'Enable Password Reset',
+    'plugin_custom_hint' => 'Plugins (such as DixlaseUsers) can set their own password policies. When plugin custom settings are enabled, they take priority.',
+    
+    'settings_updated' => 'Password security settings have been updated.',
 ];

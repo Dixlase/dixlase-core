@@ -30,5 +30,21 @@ return [
     'pwned_password_description' => 'パスワードが漏洩データベースに含まれていないかをチェックし、安全でないパスワードの使用を防ぎます。',
     'pwned_password_check_enabled' => '辞書攻撃対策',
     'pwned_password_help' => '有効にすると、メンバー作成・編集・パスワード変更時にHave I Been Pwned APIを使用してパスワードの安全性をチェックします。',
-    'settings_updated' => '認証・セッション設定が更新されました。',
+    
+    // 共通設定
+    'common_settings' => '共通設定',
+    'common_settings_description' => 'すべてのユーザータイプに適用される共通のパスワードセキュリティ設定です。',
+    
+    // デフォルトパスワードポリシー
+    'default_password_policy' => 'デフォルトパスワードポリシー',
+    'default_password_policy_description' => 'メンバーおよびプラグインでカスタム設定が無効な場合に適用されるデフォルトのパスワード要件です。',
+    'password_requirements' => 'パスワード要件',
+    'min_length' => '最小文字数',
+    'require_uppercase' => '大文字を含める',
+    'require_number' => '数字を含める',
+    'require_symbol' => '記号を含める',
+    'reset_enabled' => 'パスワードリセット機能を有効化',
+    'plugin_custom_hint' => 'プラグイン（DixlaseUsersなど）で独自のパスワードポリシーを設定できます。プラグインでカスタム設定が有効な場合、そちらが優先されます。',
+    
+    'settings_updated' => 'パスワードセキュリティ設定が更新されました。',
 ];

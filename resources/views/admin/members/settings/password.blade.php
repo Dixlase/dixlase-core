@@ -22,96 +22,46 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="max-w-7xl mx-auto">
-    <form method="POST" action="{{ route('admin.members.settings.password.update') }}" id="member-settings-form">
-        @csrf
-        <input type="hidden" name="settings_section" value="password">
-
-        <!-- パスワード条件設定 -->
-        <section>
-            <h2>{{ __('admin/members/settings/password.conditions') }}</h2>
-            <fieldset>
-                <legend>{{ __('admin/members/settings/password.min_length') }}</legend>
-                <x-form.radio-card-group
-                    name="password_min_length"
-                    :options="$minLengthOptions"
-                    :value="old('password_min_length', (string) $passwordMinLength)"
-                    :columns="3"
-                    class="mb-4"
-                />
-            </fieldset>
-
-            <!-- 大文字 -->
-            <fieldset>
-                <x-form.toggle
-                    name="password_require_uppercase"
-                    :label="__('admin/members/settings/password.require_uppercase')"
-                    :checked="old('password_require_uppercase', $passwordRequireUppercase)"
-                />
-            </fieldset>
-
-            <!-- 数字 -->
-            <fieldset>
-                <x-form.toggle
-                    name="password_require_number"
-                    :label="__('admin/members/settings/password.require_number')"
-                    :checked="old('password_require_number', $passwordRequireNumber)"
-                />
-            </fieldset>
-
-            <!-- 記号 -->
-            <fieldset>
-                <x-form.toggle
-                    name="password_require_symbol"
-                    :label="__('admin/members/settings/password.require_symbol')"
-                    :checked="old('password_require_symbol', $passwordRequireSymbol)"
-                />
-            </fieldset>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                {{ __('admin/members/settings/password.security_warning') }}
-            </p>
-        </section>
-
-        <!-- パスワードリセット機能設定 -->
-        <section>
-            <h2>{{ __('admin/members/settings/password.reset_settings') }}</h2>
-            @if(!$isMailServerTested)
-                <x-message
-                    type="warning"
-                    :message="__('admin/members/settings.mail_server_test_warning', ['url' => route('admin.settings.base.mail')])"
-                />
-            @endif
-            <fieldset>
-                <x-form.toggle
-                    name="password_reset_enabled"
-                    :label="__('admin/members/settings/password.reset_enabled')"
-                    :checked="old('password_reset_enabled', $passwordResetEnabled)"
-                />
-                <p class="mt-2">
-                    {!! __('admin/members/settings/password.reset_help') !!}
-                </p>
-            </fieldset>
-        </section>
-
-    </form>
+    <!-- パスワードポリシー設定 -->
+    <section>
+        <h2>{{ __('admin/members/settings/password.password_policy') }}</h2>
+        <p>{{ __('admin/members/settings/password.password_policy_description') }}</p>
+        
+        <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <div class="flex items-start gap-3">
+                <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+                <div>
+                    <p class="text-sm text-blue-700 dark:text-blue-300 mb-2">
+                        {{ __('admin/members/settings/password.managed_in_security_settings') }}
+                    </p>
+                    <a href="{{ route('admin.settings.security.password') }}" class="inline-flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
+                        <i class="fas fa-external-link-alt"></i>
+                        {{ __('admin/members/settings/password.go_to_security_settings') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4 p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {{ __('admin/members/settings/password.current_policy') }}
+            </h3>
+            <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                <li>• {{ __('admin/members/settings/password.min_length') }}: {{ $passwordMinLength }}{{ __('admin/members/settings/password.characters') }}</li>
+                @if($passwordRequireUppercase)
+                    <li>• {{ __('admin/members/settings/password.require_uppercase') }}</li>
+                @endif
+                @if($passwordRequireNumber)
+                    <li>• {{ __('admin/members/settings/password.require_number') }}</li>
+                @endif
+                @if($passwordRequireSymbol)
+                    <li>• {{ __('admin/members/settings/password.require_symbol') }}</li>
+                @endif
+                @if($passwordResetEnabled)
+                    <li>• {{ __('admin/members/settings/password.reset_enabled') }}</li>
+                @endif
+            </ul>
+        </div>
+    </section>
 </div>
-@endsection
-
-@section('save')
-    <x-form.button
-        type="button"
-        :label="__('common.update')"
-        class="button-save"
-        onclick="openModal('confirmationModal')"
-    />
-@endsection
-
-@section('modals')
-    <x-ui.modal
-        id="confirmationModal"
-        :title="__('common.update_confirmation_title')"
-        :message="__('common.update_confirmation_message')"
-        :confirm_label="__('common.update')"
-        :cancel_label="__('common.cancel')"
-        form="member-settings-form"
-    />
 @endsection
