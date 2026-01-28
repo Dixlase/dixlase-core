@@ -318,6 +318,12 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:settings.security')
                     ->name('password.update');
                 
+                // ログイン試行制限
+                Route::get('/login-attempt', [Security\AdminSecurityLoginAttemptController::class, 'index'])->name('login-attempt');
+                Route::post('/login-attempt', [Security\AdminSecurityLoginAttemptController::class, 'update'])
+                    ->middleware('check.menu.edit:settings.security')
+                    ->name('login-attempt.update');
+                
                 // セッション管理
                 Route::get('/session', [Security\AdminSecuritySessionController::class, 'index'])->name('session');
                 Route::post('/session', [Security\AdminSecuritySessionController::class, 'update'])
