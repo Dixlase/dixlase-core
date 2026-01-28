@@ -25,10 +25,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <form id="security-password-form" method="POST" action="{{ route('admin.settings.security.password.update') }}">
         @csrf
         
-        <!-- パスワードセキュリティ設定 -->
+        <!-- 共通設定 -->
         <section>
-            <h2>{{ __('admin/settings/security/password.password_security_settings') }}</h2>
-            <p>{{ __('admin/settings/security/password.password_security_description') }}</p>
+            <h2>{{ __('admin/settings/security/password.common_settings') }}</h2>
+            <p>{{ __('admin/settings/security/password.common_settings_description') }}</p>
 
             <!-- パスワード漏洩チェック -->
             <fieldset>
@@ -51,6 +51,69 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
                 </div>
             </fieldset>
+        </section>
+
+        <!-- デフォルトパスワードポリシー -->
+        <section>
+            <h2>{{ __('admin/settings/security/password.default_password_policy') }}</h2>
+            <p>{{ __('admin/settings/security/password.default_password_policy_description') }}</p>
+
+            <fieldset>
+                <legend>{{ __('admin/settings/security/password.password_requirements') }}</legend>
+                
+                <!-- 最小文字数 -->
+                <x-form.input
+                    :label="__('admin/settings/security/password.min_length')"
+                    type="number"
+                    id="password_min_length_default"
+                    name="password_min_length_default"
+                    :value="old('password_min_length_default', $settings['password_min_length_default'])"
+                    min="4"
+                    max="128"
+                    required
+                />
+                
+                <!-- 大文字要求 -->
+                <x-form.toggle
+                    :label="__('admin/settings/security/password.require_uppercase')"
+                    id="password_require_uppercase_default"
+                    name="password_require_uppercase_default"
+                    :checked="old('password_require_uppercase_default', $settings['password_require_uppercase_default'])"
+                />
+                
+                <!-- 数字要求 -->
+                <x-form.toggle
+                    :label="__('admin/settings/security/password.require_number')"
+                    id="password_require_number_default"
+                    name="password_require_number_default"
+                    :checked="old('password_require_number_default', $settings['password_require_number_default'])"
+                />
+                
+                <!-- 記号要求 -->
+                <x-form.toggle
+                    :label="__('admin/settings/security/password.require_symbol')"
+                    id="password_require_symbol_default"
+                    name="password_require_symbol_default"
+                    :checked="old('password_require_symbol_default', $settings['password_require_symbol_default'])"
+                />
+                
+                <!-- パスワードリセット有効化 -->
+                <x-form.toggle
+                    :label="__('admin/settings/security/password.reset_enabled')"
+                    id="password_reset_enabled_default"
+                    name="password_reset_enabled_default"
+                    :checked="old('password_reset_enabled_default', $settings['password_reset_enabled_default'])"
+                />
+            </fieldset>
+
+            <div class="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                <div class="flex items-start gap-2">
+                    <i class="fas fa-lightbulb text-yellow-500 mt-0.5"></i>
+                    <div class="text-sm text-yellow-700 dark:text-yellow-300">
+                        <p>{{ __('admin/settings/security/password.plugin_custom_hint') }}</p>
+                    </div>
+                </div>
+            </div>
         </section>
 
     </form>

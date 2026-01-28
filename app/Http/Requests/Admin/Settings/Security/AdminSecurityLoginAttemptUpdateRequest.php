@@ -24,7 +24,7 @@ namespace App\Http\Requests\Admin\Settings\Security;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class AdminSecurityPasswordUpdateRequest extends FormRequest
+class AdminSecurityLoginAttemptUpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -42,15 +42,12 @@ class AdminSecurityPasswordUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // 共通設定
-            'pwned_password_check_enabled' => 'boolean',
-            
-            // デフォルトパスワードポリシー
-            'password_min_length_default' => 'required|integer|min:4|max:128',
-            'password_require_uppercase_default' => 'boolean',
-            'password_require_number_default' => 'boolean',
-            'password_require_symbol_default' => 'boolean',
-            'password_reset_enabled_default' => 'boolean',
+            'login_attempt_limit_enabled_default' => 'boolean',
+            'login_attempt_max_attempts_default' => 'required|integer|min:1|max:100',
+            'login_attempt_max_attempts_ip_default' => 'required|integer|min:1|max:200',
+            'login_attempt_time_window_default' => 'required|integer|min:1|max:1440',
+            'login_attempt_lockout_duration_default' => 'required|integer|min:1|max:10080',
+            'login_attempt_lockout_notification_enabled_default' => 'boolean',
         ];
     }
 }
